@@ -5698,6 +5698,50 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUGGESTION_HOMEPAGE" desc="When a page fails to load, sometimes we provide a suggesting of trying just the hostname of the site.">
         Go to the home page of the site:
       </message>
+      <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG" desc="When a web page fails to load, in some cases we suggest reconfiguring the firewall.">
+        Try adding
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        as a permitted program in your firewall or antivirus software's settings. If it is
+        already a permitted program, try deleting it from the list of permitted programs
+        and adding it again.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG" desc="When a web page fails to load, in some cases we suggest checking the proxy server configuration.">
+        If you use a proxy server, check your proxy settings or check with your network administrator
+        to make sure the proxy server is working.
+      </message>
+      <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE" desc="When a web page fails to load, in some cases we suggest disabling the proxy server.">
+        If you don't believe you should be using a proxy server, try the following steps:
+        <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It</ex></ph>
+      </message>
+      <if expr="os == 'darwin'">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Mac OSX instructions for disabling use of a proxy server.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and uncheck any proxies that have been selected.
+        </message>
+      </if>
+      <if expr="os == 'linux2'">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Wrench menu &gt; Options &gt; Under the Hood &gt; Change proxy settings
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
+        </message>
+      </if>
+      <if expr="os != 'darwin' and os != 'linux2'">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Windows instructions for disabling use of a proxy server.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Wrench menu &gt; Options &gt; Under the Hood &gt; Change proxy settings &gt; LAN Settings
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and uncheck &quot;Use a proxy server for your LAN.&quot;
+        </message>
+      </if>
+
       <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE" desc="When a web page fails to load, we provide a link to the help center to learn more about the failure.">
         <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about this problem.
       </message>
@@ -5741,7 +5785,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
       </message>
-
+      <message name="IDS_ERRORPAGES_SUMMARY_ADDRESS_UNREACHABLE" desc="Summary in the error page when we can't reach a site.  This is slightly more specific than just being unable to connect, as it means we can't find a route to the server.">
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        cannot reach the website.  This is typically caused by network issues,
+        but can also be the result of a misconfigured firewall or proxy server.
+      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Summary in the error page when we're not being allowed to access the network.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
         is having trouble accessing the network.
@@ -5749,53 +5797,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         This may be because your firewall or antivirus software wrongly thinks
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
         is an intruder on your computer and is blocking it from connecting to the Internet.
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        To fix this problem, try adding
-        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        as a permitted program in your firewall or antivirus software's settings. If it is
-        already a permitted program, try deleting it from the list of permitted programs
-        and adding it again.
       </message>
-
       <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Summary in the error page when the proxy server connection failed.">
         A proxy server is a server that acts as an intermediary between your computer and other servers.  Right now, your system is configured to use a proxy, but
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
         can't connect to it.
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        If you use a proxy server, check your proxy settings or check with your network administrator to make sure the proxy server is working.
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        If you don't believe you should be using a proxy server, try the following steps:
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It</ex></ph>
       </message>
-
-      <if expr="os == 'darwin'">
-        <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM" desc="Summary (platform dependent section) in the error page when the proxy server connection failed.  Describes the system configuration method used for setting proxy servers under Mac OSX.">
-          Go to
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          <ph name="END_BOLD">&lt;/strong&gt;</ph>
-          and uncheck any proxies that have been selected.
-        </message>
-      </if>
-      <if expr="os == 'linux2'">
-        <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM" desc="Summary (platform dependent section) in the error page when the proxy server connection failed.  Describes the Chromium configuration method used for setting proxy servers under Linux.">
-          Go to the
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-          Wrench menu &gt; Options &gt; Under the Hood &gt; Change proxy settings
-          <ph name="END_BOLD">&lt;/strong&gt;</ph>
-          and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
-        </message>
-      </if>
-      <if expr="os != 'darwin' and os != 'linux2'">
-        <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM" desc="Summary (platform dependent section) in the error page when the proxy server connection failed.  Describes the Chromium configuration method used for setting proxy servers under Windows.  Note that the localized version of the quoted text ('Use a proxy server for your LAN') can also be found at control panel > Internet Options > Connections > LAN Settings.">
-          Go to the
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-          Wrench menu &gt; Options &gt; Under the Hood &gt; Change proxy settings &gt; LAN Settings
-          <ph name="END_BOLD">&lt;/strong&gt;</ph>
-          and uncheck &quot;Use a proxy server for your LAN.&quot;
-        </message>
-      </if>
 
       <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
@@ -5843,7 +5850,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Run<ph name="END_BOLD">&lt;/strong&gt;</ph>,
           type
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD">&lt;/strong&gt;</ph>,
-          and then click OK.
+          and then click
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>OK<ph name="END_BOLD">&lt;/strong&gt;</ph>.
         </message>
       </if>
 
@@ -5898,6 +5906,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
         The server could not be found.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_ADDRESS_UNREACHABLE" desc="The error message displayed when we can't reach a server.">
+        Unable to reach the server.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_NETWORK_ACCESS_DENIED" desc="The error message displayed when we're not being allowed to access the network.">
         Unable to access the network.
