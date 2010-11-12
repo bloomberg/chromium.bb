@@ -47,12 +47,7 @@
            toolbaritem to appear correctly. -->
       <toolbaritem id="ceee-browser-item" title="&ceee.browser.label;"
           flex="1" tooltiptext="&ceee.browser.tooltip;">
-        <deck id="ceee-frame-deck" flex="1" selectedIndex="1">
-          <!-- The ChromeFrame will be placed as a child of this element
-               just before the following div element in the overlay.js file. -->
-          <div xmlns="http://www.w3.org/1999/xhtml"
-               style="background-color:white"/>
-        </deck>
+        <!-- The ChromeFrame will be placed as a child of this element. -->
       </toolbaritem>
     </toolbar>
   </toolbox>
@@ -69,15 +64,13 @@
       <label id="ceee-sidebar-label"
              value="My title"
              style="font-size:14pt;"/>
-      <!-- The ChromeFrame will be placed as a child of this element
-               just before the following div element in the overlay.js file. -->
+      <!-- The ChromeFrame will be placed as a child of this element. -->
     </vbox>
   </hbox>
 
   <window id="main-window">
     <vbox id="ceee-sidebar-icon-box">
-      <!-- The ChromeFrame will be placed as a child of this element
-               just before the following div element in the overlay.js file. -->
+      <!-- The ChromeFrame will be placed as a child of this element. -->
     </vbox>
   </window>
 

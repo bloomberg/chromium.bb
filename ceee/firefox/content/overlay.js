@@ -306,7 +306,7 @@ CEEE_Class.prototype.createChromeFrame_ = function() {
   var onCfMessage = function(evt, target) {impl.onCfMessage_(evt, target);};
 
   this.cfHelper_ = new CEEE_CfHelper(this);
-  var parent = document.getElementById('ceee-frame-deck');
+  var parent = document.getElementById('ceee-browser-item');
   var cf = this.cfHelper_.create(parent, this.cfHelper_.CHROME_FRAME_ID,
       onCfReady, onCfMessage);
 };

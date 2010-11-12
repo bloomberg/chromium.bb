@@ -290,9 +290,8 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
 }
 
 void ChromeFrameNPAPI::Uninitialize() {
-  // Don't call SetReadyState as it will end up calling FireEvent.
-  // We are in the context of NPP_DESTROY.
-  ready_state_ = READYSTATE_UNINITIALIZED;
+  if (ready_state_ != READYSTATE_UNINITIALIZED)
+    SetReadyState(READYSTATE_UNINITIALIZED);
 
   UnsubscribeFromFocusEvents();
 
@@ -851,7 +850,7 @@ void ChromeFrameNPAPI::OnMessageFromChromeFrame(int tab_handle,
     }
     DLOG_IF(WARNING, !invoke) << "InvokeDefault failed";
   } else {
-    NOTREACHED() << "CreateMessageEvent";
+    DLOG(WARNING) << "CreateMessageEvent failed, probably exiting";
   }
 }
 
