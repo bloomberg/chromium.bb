@@ -122,7 +122,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
 // This tests that whenever you clear values from the Find box and close it that
 // it respects that and doesn't show you the last search, as reported in bug:
 // http://crbug.com/40121.
-IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
+// Disabled, http://crbug.com/62937.
+IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_PrepopulateRespectBlank) {
 #if defined(OS_MACOSX)
   // FindInPage on Mac doesn't use prepopulated values. Search there is global.
   return;
