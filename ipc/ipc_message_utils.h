@@ -241,6 +241,14 @@ struct ParamTraits<unsigned long long> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template <>
+struct ParamTraits<unsigned short> {
+  typedef unsigned short param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
 // Note that the IPC layer doesn't sanitize NaNs and +/- INF values.  Clients
 // should be sure to check the sanity of these values after receiving them over
 // IPC.

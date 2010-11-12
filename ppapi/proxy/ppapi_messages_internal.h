@@ -137,6 +137,13 @@ IPC_BEGIN_MESSAGES(PpapiHost)
   IPC_MESSAGE_CONTROL1(PpapiHostMsg_PluginLoaded,
                        IPC::ChannelHandle /* handle */)
 
+  // PPB_Buffer.
+  IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
+                             PP_Module /* module */,
+                             int32_t /* size */,
+                             PP_Resource /* result_resource */,
+                             uint64_t /* result_shm_handle */)
+
   // PPB_Core.
   IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource, PP_Resource)
   IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource, PP_Resource)
@@ -177,6 +184,53 @@ IPC_BEGIN_MESSAGES(PpapiHost)
   IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_CanLockCursor,
                              PP_Instance /* instance */,
                              PP_Bool /* result */)
+
+  // PPB_Flash.
+  IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
+                      PP_Instance /* instance */,
+                      bool /* on_top */)
+  IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFlash_DrawGlyphs,
+                      pp::proxy::PPBFlash_DrawGlyphs_Params /* params */)
+  IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
+                             PP_Module /* module */,
+                             std::string /* url */,
+                             pp::proxy::SerializedVar /* result */)
+  IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenModuleLocalFile,
+                             PP_Module /* module */,
+                             std::string /* path */,
+                             int32_t /* mode */,
+                             IPC::PlatformFileForTransit /* file_handle */,
+                             int32_t /* result */)
+  IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_RenameModuleLocalFile,
+                             PP_Module /* module */,
+                             std::string /* path_from */,
+                             std::string /* path_to */,
+                             int32_t /* result */)
+  IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_DeleteModuleLocalFileOrDir,
+                             PP_Module /* module */,
+                             std::string /* path */,
+                             bool /* recursive */,
+                             int32_t /* result */)
+  IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_CreateModuleLocalDir,
+                             PP_Module /* module */,
+                             std::string /* path */,
+                             int32_t /* result */)
+  IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlash_QueryModuleLocalFile,
+                             PP_Module /* module */,
+                             std::string /* path */,
+                             PP_FileInfo_Dev /* info */,
+                             int32_t /* result */)
+  IPC_SYNC_MESSAGE_ROUTED2_2(
+      PpapiHostMsg_PPBFlash_GetModuleLocalDirContents,
+      PP_Module /* module */,
+      std::string /* path */,
+      std::vector<pp::proxy::SerializedDirEntry> /* entries */,
+      int32_t /* result */)
+  IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_NavigateToURL,
+                             PP_Instance /* instance */,
+                             std::string /* url */,
+                             std::string /* target */,
+                             bool /* result */)
 
   // PPB_Font.
   IPC_SYNC_MESSAGE_ROUTED2_3(
@@ -281,6 +335,18 @@ IPC_BEGIN_MESSAGES(PpapiHost)
                              pp::proxy::SerializedVar /* script */,
                              pp::proxy::SerializedVar /* out_exception */,
                              pp::proxy::SerializedVar /* result */)
+
+  IPC_SYNC_MESSAGE_ROUTED3_1(
+      PpapiHostMsg_PPBPdf_GetFontFileWithFallback,
+      PP_Module /* module */,
+      pp::proxy::SerializedFontDescription /* description */,
+      int32_t /* charset */,
+      PP_Resource /* result */)
+  IPC_SYNC_MESSAGE_ROUTED2_1(
+      PpapiHostMsg_PPBPdf_GetFontTableForPrivateFontFile,
+      PP_Resource /* font_file */,
+      uint32_t /* table */,
+      std::string /* result */)
 
   // PPB_Testing.
   IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBTesting_ReadImageData,

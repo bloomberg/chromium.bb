@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/ppb_var.h"
 
 // This actually defines the implementations of all the IPC message functions.

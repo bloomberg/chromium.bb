@@ -34,6 +34,11 @@ struct SerializedFontDescription {
   int32_t word_spacing;
 };
 
+struct SerializedDirEntry {
+  std::string name;
+  bool is_dir;
+};
+
 // Since there are so many parameters, DrawTextAt requires this separate
 // structure. This includes everything but the font name. Because the font name
 // is a var, it's much more convenient to use the normal way of passing a
@@ -48,6 +53,17 @@ struct PPBFont_DrawTextAt_Params {
   PP_Rect clip;
   bool clip_is_null;
   PP_Bool image_data_is_opaque;
+};
+
+struct PPBFlash_DrawGlyphs_Params {
+  PP_Resource pp_image_data;
+  SerializedFontDescription font_desc;
+  uint32_t color;
+  PP_Point position;
+  PP_Rect clip;
+  float transformation[3][3];
+  std::vector<uint16_t> glyph_indices;
+  std::vector<PP_Point> glyph_advances;
 };
 
 }  // namespace proxy

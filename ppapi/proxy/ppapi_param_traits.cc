@@ -6,6 +6,7 @@
 
 #include <string.h>  // For memcpy
 
+#include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -34,6 +35,46 @@ bool ParamTraits<PP_Bool>::Read(const Message* m, void** iter, param_type* r) {
 
 // static
 void ParamTraits<PP_Bool>::Log(const param_type& p, std::string* l) {
+}
+
+// PP_FileInfo_Dev -------------------------------------------------------------
+
+// static
+void ParamTraits<PP_FileInfo_Dev>::Write(Message* m, const param_type& p) {
+  ParamTraits<int64_t>::Write(m, p.size);
+  ParamTraits<int>::Write(m, static_cast<int>(p.type));
+  ParamTraits<int>::Write(m, static_cast<int>(p.system_type));
+  ParamTraits<double>::Write(m, p.creation_time);
+  ParamTraits<double>::Write(m, p.last_access_time);
+  ParamTraits<double>::Write(m, p.last_modified_time);
+}
+
+// static
+bool ParamTraits<PP_FileInfo_Dev>::Read(const Message* m, void** iter,
+                                        param_type* r) {
+  int type, system_type;
+  if (!ParamTraits<int64_t>::Read(m, iter, &r->size) ||
+      !ParamTraits<int>::Read(m, iter, &type) ||
+      !ParamTraits<int>::Read(m, iter, &system_type) ||
+      !ParamTraits<double>::Read(m, iter, &r->creation_time) ||
+      !ParamTraits<double>::Read(m, iter, &r->last_access_time) ||
+      !ParamTraits<double>::Read(m, iter, &r->last_modified_time))
+    return false;
+  if (type != PP_FILETYPE_REGULAR &&
+      type != PP_FILETYPE_DIRECTORY &&
+      type != PP_FILETYPE_OTHER)
+    return false;
+  r->type = static_cast<PP_FileType_Dev>(type);
+  if (system_type != PP_FILESYSTEMTYPE_EXTERNAL &&
+      system_type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
+      system_type != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
+    return false;
+  r->system_type = static_cast<PP_FileSystemType_Dev>(system_type);
+  return true;
+}
+
+// static
+void ParamTraits<PP_FileInfo_Dev>::Log(const param_type& p, std::string* l) {
 }
 
 // PP_InputEvent ---------------------------------------------------------------
@@ -139,6 +180,62 @@ bool ParamTraits<PP_Size>::Read(const Message* m, void** iter, param_type* r) {
 void ParamTraits<PP_Size>::Log(const param_type& p, std::string* l) {
 }
 
+// PPBFlash_DrawGlyphs_Params --------------------------------------------------
+
+// static
+void ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<PP_Resource>::Write(m, p.pp_image_data);
+  ParamTraits<pp::proxy::SerializedFontDescription>::Write(m, p.font_desc);
+  ParamTraits<uint32_t>::Write(m, p.color);
+  ParamTraits<PP_Point>::Write(m, p.position);
+  ParamTraits<PP_Rect>::Write(m, p.clip);
+  ParamTraits<float>::Write(m, p.transformation[0][0]);
+  ParamTraits<float>::Write(m, p.transformation[0][1]);
+  ParamTraits<float>::Write(m, p.transformation[0][2]);
+  ParamTraits<float>::Write(m, p.transformation[1][0]);
+  ParamTraits<float>::Write(m, p.transformation[1][1]);
+  ParamTraits<float>::Write(m, p.transformation[1][2]);
+  ParamTraits<float>::Write(m, p.transformation[2][0]);
+  ParamTraits<float>::Write(m, p.transformation[2][1]);
+  ParamTraits<float>::Write(m, p.transformation[2][2]);
+  ParamTraits<std::vector<uint16_t> >::Write(m, p.glyph_indices);
+  ParamTraits<std::vector<PP_Point> >::Write(m, p.glyph_advances);
+}
+
+// static
+bool ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Read(
+    const Message* m,
+    void** iter,
+    param_type* r) {
+  return
+      ParamTraits<PP_Resource>::Read(m, iter, &r->pp_image_data) &&
+      ParamTraits<pp::proxy::SerializedFontDescription>::Read(m, iter,
+                                                              &r->font_desc) &&
+      ParamTraits<uint32_t>::Read(m, iter, &r->color) &&
+      ParamTraits<PP_Point>::Read(m, iter, &r->position) &&
+      ParamTraits<PP_Rect>::Read(m, iter, &r->clip) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[0][0]) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[0][1]) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[0][2]) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[1][0]) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[1][1]) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[1][2]) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[2][0]) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[2][1]) &&
+      ParamTraits<float>::Read(m, iter, &r->transformation[2][2]) &&
+      ParamTraits<std::vector<uint16_t> >::Read(m, iter, &r->glyph_indices) &&
+      ParamTraits<std::vector<PP_Point> >::Read(m, iter, &r->glyph_advances) &&
+      r->glyph_indices.size() == r->glyph_advances.size();
+}
+
+// static
+void ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
 // PPBFont_DrawTextAt_Params ---------------------------------------------------
 
 // static
@@ -177,6 +274,28 @@ bool ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Read(
 void ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Log(
     const param_type& p,
     std::string* l) {
+}
+
+// SerializedDirEntry ----------------------------------------------------------
+
+// static
+void ParamTraits<pp::proxy::SerializedDirEntry>::Write(Message* m,
+                                                       const param_type& p) {
+  ParamTraits<std::string>::Write(m, p.name);
+  ParamTraits<bool>::Write(m, p.is_dir);
+}
+
+// static
+bool ParamTraits<pp::proxy::SerializedDirEntry>::Read(const Message* m,
+                                                      void** iter,
+                                                      param_type* r) {
+  return ParamTraits<std::string>::Read(m, iter, &r->name) &&
+         ParamTraits<bool>::Read(m, iter, &r->is_dir);
+}
+
+// static
+void ParamTraits<pp::proxy::SerializedDirEntry>::Log(const param_type& p,
+                                                     std::string* l) {
 }
 
 // SerializedVar ---------------------------------------------------------------

@@ -12,9 +12,12 @@
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
+#include "ppapi/c/dev/ppb_cursor_control_dev.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
@@ -28,6 +31,7 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_char_set_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
@@ -36,6 +40,7 @@
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
+#include "ppapi/proxy/ppb_pdf_proxy.h"
 #include "ppapi/proxy/ppb_testing_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
@@ -44,6 +49,7 @@
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
+#include "webkit/glue/plugins/ppb_private.h"
 
 namespace pp {
 namespace proxy {
@@ -210,6 +216,8 @@ void Dispatcher::OnMsgDeclareInterfaces(
 InterfaceProxy* Dispatcher::CreateProxyForInterface(
     const std::string& interface_name,
     const void* interface_functions) {
+  if (interface_name == PPB_BUFFER_DEV_INTERFACE)
+    return new PPB_Buffer_Proxy(this, interface_functions);
   if (interface_name == PPB_CHAR_SET_DEV_INTERFACE)
     return new PPB_CharSet_Proxy(this, interface_functions);
   if (interface_name == PPB_CORE_INTERFACE)
@@ -226,6 +234,8 @@ InterfaceProxy* Dispatcher::CreateProxyForInterface(
     return new PPB_ImageData_Proxy(this, interface_functions);
   if (interface_name == PPB_INSTANCE_INTERFACE)
     return new PPB_Instance_Proxy(this, interface_functions);
+  if (interface_name == PPB_PRIVATE_INTERFACE)
+    return new PPB_Pdf_Proxy(this, interface_functions);
   if (interface_name == PPB_TESTING_DEV_INTERFACE)
     return new PPB_Testing_Proxy(this, interface_functions);
   if (interface_name == PPB_URLLOADER_INTERFACE)
