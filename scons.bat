@@ -20,7 +20,7 @@ set PRESCONS_PATH=%PATH%
 set PYTHONPATH=%~dp0..\third_party\scons\scons-local
 
 :: Add python, gnu_binutils and mingw to the path
-set PATH=%~dp0..\third_party\python_24;%PATH%;%~dp0src\third_party\gnu_binutils\files;%~dp0..\third_party\mingw-w64\mingw\bin;
+set PATH=%~dp0..\third_party\python_26;%PATH%;%~dp0src\third_party\gnu_binutils\files;%~dp0..\third_party\mingw-w64\mingw\bin;
 
 :: Stop incessant CYGWIN complains about "MS-DOS style path"
 set CYGWIN=nodosfilewarning %CYGWIN%

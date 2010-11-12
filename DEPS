@@ -12,7 +12,7 @@ vars = {
   "gyp_rev": "805",
   "gtest_rev": "267",
   "tools_rev": "3639",
-  "python_rev": "22967",
+  "python_26_rev": "53573",
   "wix_rev": "153",
   "lcov_rev": "54822",
 }
@@ -78,9 +78,9 @@ deps = {
 
 deps_os = {
   "win": {
-    "third_party/python_24":
-      (Var("chromium_trunk") + "/deps/third_party/python_24@" +
-       Var("python_rev")),
+    "third_party/python_26":
+      (Var("chromium_trunk") + "/tools/third_party/python_26@" +
+       Var("python_26_rev")),
     "third_party/wix_2_0_4221":
       (Var("o3d_trunk") + "/googleclient/third_party/wix_2_0_4221@" +
        Var("wix_rev")),
