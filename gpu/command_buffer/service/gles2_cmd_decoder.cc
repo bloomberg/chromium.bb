@@ -3660,7 +3660,7 @@ void GLES2DecoderImpl::DoUniform1fv(
   if (type == GL_BOOL) {
     scoped_array<GLint> temp(new GLint[count]);
     for (GLsizei ii = 0; ii < count; ++ii) {
-      temp[ii] = static_cast<GLint>(value[ii]);
+      temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
     DoUniform1iv(location, count, temp.get());
   } else {
@@ -3678,7 +3678,7 @@ void GLES2DecoderImpl::DoUniform2fv(
     GLsizei num_values = count * 2;
     scoped_array<GLint> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
-      temp[ii] = static_cast<GLint>(value[ii]);
+      temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
     glUniform2iv(location, count, temp.get());
   } else {
@@ -3696,7 +3696,7 @@ void GLES2DecoderImpl::DoUniform3fv(
     GLsizei num_values = count * 3;
     scoped_array<GLint> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
-      temp[ii] = static_cast<GLint>(value[ii]);
+      temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
     glUniform3iv(location, count, temp.get());
   } else {
@@ -3714,7 +3714,7 @@ void GLES2DecoderImpl::DoUniform4fv(
     GLsizei num_values = count * 4;
     scoped_array<GLint> temp(new GLint[num_values]);
     for (GLsizei ii = 0; ii < num_values; ++ii) {
-      temp[ii] = static_cast<GLint>(value[ii]);
+      temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
     glUniform4iv(location, count, temp.get());
   } else {
