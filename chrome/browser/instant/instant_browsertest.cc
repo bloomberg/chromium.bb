@@ -162,7 +162,8 @@ class InstantTest : public InProcessBrowserTest {
 // 3. Test resize events.
 
 #if defined(OS_WIN)
-#define MAYBE_OnChangeEvent OnChangeEvent
+// Disabled, http://crbug.com/62940.
+#define MAYBE_OnChangeEvent DISABLED_OnChangeEvent
 #else
 #define MAYBE_OnChangeEvent DISABLED_OnChangeEvent
 #endif
