@@ -33,6 +33,7 @@ void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
 #endif  // !defined(TOOLKIT_VIEWS)
 
 #if defined(OS_CHROMEOS)
+  prefs->focus_ring_color = SkColorSetARGB(255, 229, 151, 0);
   prefs->active_selection_bg_color = SkColorSetRGB(0xDC, 0xE4, 0xFA);
   prefs->active_selection_fg_color = SK_ColorBLACK;
   prefs->inactive_selection_bg_color = SkColorSetRGB(0xF7, 0xF7, 0xF7);
