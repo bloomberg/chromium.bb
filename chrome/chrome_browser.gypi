@@ -2893,7 +2893,6 @@
         'browser/tab_contents/render_view_host_delegate_helper.h',
         'browser/tab_contents/render_view_host_manager.cc',
         'browser/tab_contents/render_view_host_manager.h',
-        'browser/tab_contents/security_style.h',
         'browser/tab_contents/tab_contents.cc',
         'browser/tab_contents/tab_contents.h',
         'browser/tab_contents/tab_contents_delegate.cc',

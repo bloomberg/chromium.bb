@@ -18,9 +18,9 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chrome/browser/download/save_package.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/common/page_type.h"
+#include "chrome/common/security_style.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
@@ -323,7 +323,7 @@ class TabProxy : public AutomationResourceProxy,
 
   // Returns the type of the page currently showing (normal, interstitial,
   // error).
-  bool GetPageType(NavigationEntry::PageType* page_type) WARN_UNUSED_RESULT;
+  bool GetPageType(PageType* page_type) WARN_UNUSED_RESULT;
 
   // Simulates the user action on the SSL blocking page.  if |proceed| is true,
   // this is equivalent to clicking the 'Proceed' button, if false to 'Take me

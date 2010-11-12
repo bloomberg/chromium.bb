@@ -613,8 +613,7 @@ IPC_BEGIN_MESSAGES(Automation)
   // Response:
   //  - bool: whether the operation was successful.
   //  - PageType: the type of the page currently displayed.
-  IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_GetPageType, int, bool,
-                             NavigationEntry::PageType)
+  IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_GetPageType, int, bool, PageType)
 
   // This message simulates the user action on the SSL blocking page showing in
   // the specified tab.  This message is only effective if an interstitial page

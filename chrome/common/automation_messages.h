@@ -11,8 +11,9 @@
 #include "base/basictypes.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/common_param_traits.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/security_style.h"
+#include "chrome/common/page_type.h"
+#include "chrome/common/security_style.h"
+#include "chrome/common/common_param_traits.h"
 #include "gfx/rect.h"
 #include "net/base/upload_data.h"
 
@@ -198,8 +199,8 @@ struct ParamTraits<SecurityStyle> {
 };
 
 template <>
-struct ParamTraits<NavigationEntry::PageType> {
-  typedef NavigationEntry::PageType param_type;
+struct ParamTraits<PageType> {
+  typedef PageType param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteInt(p);
   }
@@ -207,19 +208,19 @@ struct ParamTraits<NavigationEntry::PageType> {
     int type;
     if (!m->ReadInt(iter, &type))
       return false;
-    *p = static_cast<NavigationEntry::PageType>(type);
+    *p = static_cast<PageType>(type);
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
     std::string control;
     switch (p) {
-     case NavigationEntry::NORMAL_PAGE:
+     case NORMAL_PAGE:
       control = "NORMAL_PAGE";
       break;
-     case NavigationEntry::ERROR_PAGE:
+     case ERROR_PAGE:
       control = "ERROR_PAGE";
       break;
-     case NavigationEntry::INTERSTITIAL_PAGE:
+     case INTERSTITIAL_PAGE:
       control = "INTERSTITIAL_PAGE";
       break;
      default:
