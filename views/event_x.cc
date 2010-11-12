@@ -5,6 +5,9 @@
 #include "views/event.h"
 
 #include <gdk/gdkx.h>
+#if defined(HAVE_XINPUT2)
+#include <X11/extensions/XInput2.h>
+#endif
 
 #include "app/keyboard_code_conversion_x.h"
 #include "views/widget/root_view.h"
@@ -32,8 +35,8 @@ int GetEventFlagsFromXState(unsigned int state) {
   return flags;
 }
 
-// Get the event flag for the button in XButtonEvent. During a KeyPress event,
-// |state| in XButtonEvent does not include the button that has just been
+// Get the event flag for the button in XButtonEvent. During a ButtonPress
+// event, |state| in XButtonEvent does not include the button that has just been
 // pressed. Instead |state| contains flags for the buttons (if any) that had
 // already been pressed before the current button, and |button| stores the most
 // current pressed button. So, if you press down left mouse button, and while
@@ -54,6 +57,20 @@ int GetEventFlagsForButton(int button) {
   return 0;
 }
 
+#if defined(HAVE_XINPUT2)
+int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
+  int buttonflags = 0;
+
+  for (int i = 0; i < 8 * xievent->buttons.mask_len; i++) {
+    if (XIMaskIsSet(xievent->buttons.mask, i)) {
+      buttonflags |= GetEventFlagsForButton(i);
+    }
+  }
+
+  return buttonflags;
+}
+#endif  // HAVE_XINPUT2
+
 Event::EventType GetMouseEventType(XEvent* xev) {
   switch (xev->type) {
     case ButtonPress:
@@ -65,6 +82,21 @@ Event::EventType GetMouseEventType(XEvent* xev) {
         return Event::ET_MOUSE_DRAGGED;
       }
       return Event::ET_MOUSE_MOVED;
+#if defined(HAVE_XINPUT2)
+    case GenericEvent: {
+      XIDeviceEvent* xievent =
+          static_cast<XIDeviceEvent*>(xev->xcookie.data);
+      switch (xievent->evtype) {
+        case XI_ButtonPress:
+          return Event::ET_MOUSE_PRESSED;
+        case XI_ButtonRelease:
+          return Event::ET_MOUSE_RELEASED;
+        case XI_Motion:
+          return GetButtonMaskForX2Event(xievent) ? Event::ET_MOUSE_DRAGGED :
+              Event::ET_MOUSE_MOVED;
+      }
+    }
+#endif
   }
 
   return Event::ET_UNKNOWN;
@@ -78,6 +110,15 @@ gfx::Point GetMouseEventLocation(XEvent* xev) {
 
     case MotionNotify:
       return gfx::Point(xev->xmotion.x, xev->xmotion.y);
+
+#if defined(HAVE_XINPUT2)
+    case GenericEvent: {
+      XIDeviceEvent* xievent =
+          static_cast<XIDeviceEvent*>(xev->xcookie.data);
+      return gfx::Point(static_cast<int>(xievent->event_x),
+                        static_cast<int>(xievent->event_y));
+    }
+#endif
   }
 
   return gfx::Point();
@@ -92,6 +133,23 @@ int GetMouseEventFlags(XEvent* xev) {
 
     case MotionNotify:
       return GetEventFlagsFromXState(xev->xmotion.state);
+
+#if defined(HAVE_XINPUT2)
+    case GenericEvent: {
+      XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+      switch (xievent->evtype) {
+        case XI_ButtonPress:
+        case XI_ButtonRelease:
+          return GetButtonMaskForX2Event(xievent) |
+                 GetEventFlagsFromXState(xievent->mods.effective) |
+                 GetEventFlagsForButton(xievent->detail);
+
+        case XI_Motion:
+           return GetButtonMaskForX2Event(xievent) |
+                  GetEventFlagsFromXState(xievent->mods.effective);
+      }
+    }
+#endif
   }
 
   return 0;
