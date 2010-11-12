@@ -42,12 +42,39 @@
    (which should always be valid) if the enum's size is SIZE, and otherwise the
    size of the array will be -1 (which all/most compilers should flag as an
    error).  This is wrapped inside a struct, because if it is a simple global
-   we get multiple definition errors at link time. */
-#define PP_COMPILE_ASSERT_SIZE_IN_BYTES(NAME, SIZE) \
+   we get multiple definition errors at link time.
+
+   NAME is the name of the type without any spaces or the struct or enum
+   keywords.
+
+   CTYPENAME is the typename required by C.  I.e., for a struct or enum, the
+   appropriate keyword must be included.
+
+   SIZE is the expected size in bytes.
+ */
+#define PP_COMPILE_ASSERT_SIZE_IN_BYTES_IMPL(NAME, CTYPENAME, SIZE) \
 struct _dummy_struct_for_##NAME { \
 char _COMPILE_ASSERT_FAILED_The_type_named_ \
 ## NAME ## _is_not_ ## SIZE ## \
-_bytes_wide[(sizeof(NAME) == SIZE) ? 1 : -1]; }
+_bytes_wide[(sizeof(CTYPENAME) == SIZE) ? 1 : -1]; }
+
+/* PP_COMPILE_ASSERT_SIZE_IN_BYTES is for typenames that contain no spaces.
+   E.g.:
+   PP_COMPILE_ASSERT_SIZE_IN_BYTES(int, 4);
+   typedef struct { int a; } Foo;
+   PP_COMPILE_ASSERT_SIZE_IN_BYTES(Foo, 4);
+ */
+#define PP_COMPILE_ASSERT_SIZE_IN_BYTES(NAME, SIZE) \
+PP_COMPILE_ASSERT_SIZE_IN_BYTES_IMPL(NAME, NAME, SIZE)
+
+/* PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES is for typenames that contain 'struct'
+   in C.  That is, struct names that are not typedefs.
+   E.g.:
+   struct Foo { int a; };
+   PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(Foo, 4);
+ */
+#define PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(NAME, SIZE) \
+PP_COMPILE_ASSERT_SIZE_IN_BYTES_IMPL(NAME, struct NAME, SIZE)
 
 /**
  * @}
