@@ -9,6 +9,7 @@
 #include "base/message_pump_glib.h"
 
 #include <bitset>
+#include <set>
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -28,12 +29,33 @@ class MessagePumpGlibX : public MessagePumpForUI {
   // was captured and being processed by GDK (when |false|).
   bool IsDispatchingEvent(void) { return dispatching_event_; }
 
+#if defined(HAVE_XINPUT2)
+  // Setup an X Window for XInput2 events.
+  void SetupXInput2ForXWindow(Window xid);
+#endif
+
  private:
   static void EventDispatcherX(GdkEvent* event, gpointer data);
 
   // Update the lookup table and flag the events that should be captured and
   // processed so that GDK doesn't get to them.
   void InitializeEventsToCapture(void);
+
+#if defined(HAVE_XINPUT2)
+  // Initialize X2 input.
+  void InitializeXInput2(void);
+
+  // The opcode used for checking events.
+  int xiopcode_;
+
+  // The list of master pointer devices. We maintain this list so that it is not
+  // necessary to query X for the list of devices for each GdkWindow created.
+  std::set<int> masters_;
+
+  // The list of slave (physical) pointer devices.
+  // TODO(sad): This is currently unused, and may be removed eventually.
+  std::set<int> slaves_;
+#endif
 
   // The event source for GDK events.
   GSource* gdksource_;
