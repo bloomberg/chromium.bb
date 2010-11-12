@@ -21,7 +21,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/net/url_request_slow_http_job.h"
 #include "chrome/browser/view_ids.h"
-#include "chrome/common/automation_messages.h"
+//#include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
@@ -1561,9 +1561,15 @@ class AutomationProxySnapshotTest : public UITest {
   ScopedTempDir snapshot_dir_;
 };
 
+// See http://crbug.com/63022.
+#if defined(OS_LINUX)
+#define MAYBE_ContentSmallerThanView FAILS_ContentSmallerThanView
+#else
+#define MAYBE_ContentSmallerThanView ContentSmallerThanView
+#endif
 // Tests that taking a snapshot when the content is smaller than the view
 // produces a snapshot equal to the view size.
-TEST_F(AutomationProxySnapshotTest, ContentSmallerThanView) {
+TEST_F(AutomationProxySnapshotTest, MAYBE_ContentSmallerThanView) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -1589,9 +1595,15 @@ TEST_F(AutomationProxySnapshotTest, ContentSmallerThanView) {
   ASSERT_EQ(view_bounds.height(), bitmap.height());
 }
 
+// See http://crbug.com/63022.
+#if defined(OS_LINUX)
+#define MAYBE_ContentLargerThanView FAILS_ContentLargerThanView
+#else
+#define MAYBE_ContentLargerThanView ContentLargerThanView
+#endif
 // Tests that taking a snapshot when the content is larger than the view
 // produces a snapshot equal to the content size.
-TEST_F(AutomationProxySnapshotTest, ContentLargerThanView) {
+TEST_F(AutomationProxySnapshotTest, MAYBE_ContentLargerThanView) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -1641,6 +1653,9 @@ TEST_F(AutomationProxySnapshotTest, LargeSnapshot) {
 #if defined(OS_MACOSX)
 // Most pixels on mac are slightly off.
 #define MAYBE_ContentsCorrect DISABLED_ContentsCorrect
+#elif defined(OS_LINUX)
+// See http://crbug.com/63022.
+#define MAYBE_ContentsCorrect FAILS_ContentsCorrect
 #else
 #define MAYBE_ContentsCorrect ContentsCorrect
 #endif
