@@ -749,6 +749,8 @@
         'browser/chromeos/version_loader.cc',
         'browser/chromeos/version_loader.h',
         'browser/chromeos/view_ids.h',
+        'browser/chromeos/views/copy_background.cc',
+        'browser/chromeos/views/copy_background.h',
         'browser/chromeos/views/menu_locator.cc',
         'browser/chromeos/views/menu_locator.h',
         'browser/chromeos/views/native_menu_domui.cc',
