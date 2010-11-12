@@ -201,40 +201,19 @@ const PPB_URLLoader ppb_urlloader = {
   &Close
 };
 
-// Renderer status updates -----------------------------------------------------
-
-// Data associated with callbacks for ReadResponseBody.
-struct ReadCallbackInfo {
-  base::WeakPtr<PPB_URLLoader_Proxy> loader;
-  PP_Resource pp_resource;
-  std::string read_buffer;
-};
-
-// Callback for renderer calls to ReadResponseBody. This function will forward
-// the result to the plugin and clean up the callback info.
-void ReadCallbackHandler(void* user_data, int32_t result) {
-  scoped_ptr<ReadCallbackInfo> info(static_cast<ReadCallbackInfo*>(user_data));
-  if (!info->loader)
-    return;
-
-  int32_t bytes_read = 0;
-  if (result > 0)
-    bytes_read = result;  // Positive results indicate bytes read.
-  info->read_buffer.resize(bytes_read);
-
-  info->loader->dispatcher()->Send(
-      new PpapiMsg_PPBURLLoader_ReadResponseBody_Ack(
-          INTERFACE_ID_PPB_URL_LOADER, info->pp_resource,
-          result, info->read_buffer));
-}
-
 }  // namespace
 
 // PPB_URLLoader_Proxy ---------------------------------------------------------
 
+struct PPB_URLLoader_Proxy::ReadCallbackInfo {
+  PP_Resource pp_resource;
+  std::string read_buffer;
+};
+
 PPB_URLLoader_Proxy::PPB_URLLoader_Proxy(Dispatcher* dispatcher,
                                          const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+    : InterfaceProxy(dispatcher, target_interface),
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_URLLoader_Proxy::~PPB_URLLoader_Proxy() {
@@ -326,18 +305,20 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBody(
   // destroyed. Depending on the cleanup ordering, we may not need the weak
   // pointer here.)
   ReadCallbackInfo* info = new ReadCallbackInfo;
-  info->loader = AsWeakPtr();
   info->pp_resource = loader;
   info->read_buffer.resize(bytes_to_read);
 
+  CompletionCallback callback = callback_factory_.NewCallback(
+      &PPB_URLLoader_Proxy::OnReadCallback, info);
+
   int32_t result = ppb_url_loader_target()->ReadResponseBody(
       loader, const_cast<char*>(info->read_buffer.c_str()), bytes_to_read,
-      PP_MakeCompletionCallback(&ReadCallbackHandler, info));
+      callback.pp_completion_callback());
   if (result != PP_ERROR_WOULDBLOCK) {
     // Send error (or perhaps success for synchronous reads) back to plugin.
     // The callback function is already set up to do this and also delete the
     // callback info.
-    ReadCallbackHandler(info, result);
+    callback.Run(result);
   }
 }
 
@@ -397,6 +378,20 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBodyAck(PP_Resource pp_resource,
   object->current_read_callback_ = PP_BlockUntilComplete();
   object->current_read_buffer_ = NULL;
   PP_RunCompletionCallback(&temp_callback, result);
+}
+
+void PPB_URLLoader_Proxy::OnReadCallback(int32_t result,
+                                         ReadCallbackInfo* info) {
+  int32_t bytes_read = 0;
+  if (result > 0)
+    bytes_read = result;  // Positive results indicate bytes read.
+  info->read_buffer.resize(bytes_read);
+
+  dispatcher()->Send(new PpapiMsg_PPBURLLoader_ReadResponseBody_Ack(
+      INTERFACE_ID_PPB_URL_LOADER, info->pp_resource,
+      result, info->read_buffer));
+
+  delete info;
 }
 
 }  // namespace proxy

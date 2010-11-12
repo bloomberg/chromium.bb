@@ -5,22 +5,22 @@
 #ifndef PPAPI_PPB_URL_LOADER_PROXY_H_
 #define PPAPI_PPB_URL_LOADER_PROXY_H_
 
-#include "base/weak_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 
 struct PPB_URLLoader;
 
 namespace pp {
 namespace proxy {
 
-class PPB_URLLoader_Proxy : public InterfaceProxy,
-                            public base::SupportsWeakPtr<PPB_URLLoader_Proxy> {
+class PPB_URLLoader_Proxy : public InterfaceProxy {
  public:
   PPB_URLLoader_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_URLLoader_Proxy();
@@ -41,6 +41,9 @@ class PPB_URLLoader_Proxy : public InterfaceProxy,
   virtual void OnMessageReceived(const IPC::Message& msg);
 
  private:
+  // Data associated with callbacks for ReadResponseBody.
+  struct ReadCallbackInfo;
+
   // Plugin->renderer message handlers.
   void OnMsgCreate(PP_Instance instance,
                    PP_Resource* result);
@@ -66,6 +69,13 @@ class PPB_URLLoader_Proxy : public InterfaceProxy,
   void OnMsgReadResponseBodyAck(PP_Resource pp_resource,
                                 int32_t result,
                                 const std::string& data);
+
+  // Handles callbacks for read complete messages. Takes ownership of the info
+  // pointer.
+  void OnReadCallback(int32_t result, ReadCallbackInfo* info);
+
+  CompletionCallbackFactory<PPB_URLLoader_Proxy,
+                            ProxyNonThreadSafeRefCount> callback_factory_;
 };
 
 }  // namespace proxy

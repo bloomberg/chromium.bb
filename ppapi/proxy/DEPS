@@ -4,4 +4,11 @@ include_rules = [
   # headers (which don't depend on anything else).
   "+webkit/glue/plugins/ppb_private.h",
   "+webkit/glue/plugins/ppb_private2.h",
+
+  # We don't want the proxy to depend on the C++ layer, which is appropriate
+  # for plugins only. However, the completion callback factory is a very useful
+  # tool that we would otherwise have to duplicate, and has no other
+  # dependencies, so we allow that.
+  "-ppapi/cpp",
+  "+ppapi/cpp/completion_callback.h"
 ]

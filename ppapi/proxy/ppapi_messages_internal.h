@@ -88,6 +88,11 @@ IPC_BEGIN_MESSAGES(Ppapi)
                       int64 /* ppp_class */,
                       int64 /* object */)
 
+  // PPB_Graphics2D.
+  IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
+                      PP_Resource /* graphics_2d */,
+                      int32_t /* pp_error */)
+
   // PPP_Instance.
   IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
                              PP_Instance /* instance */,
@@ -294,10 +299,8 @@ IPC_BEGIN_MESSAGES(PpapiHost)
   IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_ReplaceContents,
                       PP_Resource /* graphics_2d */,
                       PP_Resource /* image_data */)
-  IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBGraphics2D_Flush,
-                             PP_Resource /* graphics_2d */,
-                             uint32_t /* serialized_callback */,
-                             int32_t /* result */)
+  IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics2D_Flush,
+                      PP_Resource /* graphics_2d */)
 
   // PPB_ImageData.
   IPC_SYNC_MESSAGE_ROUTED0_1(

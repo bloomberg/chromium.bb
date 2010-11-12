@@ -12,7 +12,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
 
 struct PPB_Graphics2D;
 struct PP_Point;
@@ -36,7 +38,7 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
   virtual void OnMessageReceived(const IPC::Message& msg);
 
  private:
-  // Message handlers.
+  // Plugin->renderer message handlers.
   void OnMsgCreate(PP_Module module,
                    const PP_Size& size,
                    PP_Bool is_always_opaque,
@@ -52,9 +54,16 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
                    const PP_Point& amount);
   void OnMsgReplaceContents(PP_Resource graphics_2d,
                             PP_Resource image_data);
-  void OnMsgFlush(PP_Resource graphics_2d,
-                  uint32_t serialized_callback,
-                  int32_t* result);
+  void OnMsgFlush(PP_Resource graphics_2d);
+
+  // Renderer->plugin message handlers.
+  void OnMsgFlushACK(PP_Resource graphics_2d, int32_t pp_error);
+
+  // Called in the renderer to send the given flush ACK to the plugin.
+  void SendFlushACKToPlugin(int32_t result, PP_Resource graphics_2d);
+
+  CompletionCallbackFactory<PPB_Graphics2D_Proxy,
+                            ProxyNonThreadSafeRefCount> callback_factory_;
 };
 
 }  // namespace proxy

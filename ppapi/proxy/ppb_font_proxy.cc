@@ -246,18 +246,24 @@ void PPB_Font_Proxy::OnMsgCreate(
   in_desc.letter_spacing = in_description.letter_spacing;
   in_desc.word_spacing = in_description.word_spacing;
 
+  PP_FontDescription_Dev out_desc;
+  SerializedVarOutParam out_face_name(&out_description->face);
+
   *result = ppb_font_target()->Create(pp_module, &in_desc);
-  if (!*result)
+  if (!*result) {
+    // Even in the failure case we need to set the var for the name or it
+    // will have no dispatcher set, and the serialization layer will assert
+    // when we're sending it to the browser.
+    *out_face_name.OutParam(dispatcher()) = PP_MakeUndefined();
     return;
+  }
 
   // Get the metrics and resulting description to return to the browser.
-  PP_FontDescription_Dev out_desc;
   PP_FontMetrics_Dev metrics;
   ppb_font_target()->Describe(*result, &out_desc, &metrics);
 
   // Convert the PP_Var in the resulting description to an out param. This
   // should clean up the ref |Describe| assigned to our font name.
-  SerializedVarOutParam out_face_name(&out_description->face);
   *out_face_name.OutParam(dispatcher()) = out_desc.face;
 
   // The rest of the font description is easy.

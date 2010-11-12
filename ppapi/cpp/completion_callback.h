@@ -101,7 +101,8 @@ class CompletionCallback {
 //
 //     void ReadMore() {
 //       CompletionCallback cc = factory_.NewCallback(&MyHandler::DidRead);
-//       int32_t rv = fio_.Read(offset_, buf_, sizeof(buf_), cc);
+//       int32_t rv = fio_.Read(offset_, buf_, sizeof(buf_),
+//                              cc.pp_completion_callback());
 //       if (rv != PP_ERROR_WOULDBLOCK)
 //         cc.Run(rv);
 //     }

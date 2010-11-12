@@ -4,8 +4,9 @@
 
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 
-#include <string.h>  // For memset
+#include <string.h>  // For memset.
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -21,7 +22,9 @@ namespace proxy {
 class Graphics2D : public PluginResource {
  public:
   Graphics2D(const PP_Size& size, PP_Bool is_always_opaque)
-      : size_(size), is_always_opaque_(is_always_opaque) {
+      : size_(size),
+        is_always_opaque_(is_always_opaque),
+        current_flush_callback_(PP_BlockUntilComplete()) {
   }
 
   // Resource overrides.
@@ -30,9 +33,22 @@ class Graphics2D : public PluginResource {
   const PP_Size& size() const { return size_; }
   PP_Bool is_always_opaque() const { return is_always_opaque_; }
 
+  bool is_flush_pending() const { return !!current_flush_callback_.func; }
+
+  PP_CompletionCallback current_flush_callback() const {
+    return current_flush_callback_;
+  }
+  void set_current_flush_callback(PP_CompletionCallback cb) {
+    current_flush_callback_ = cb;
+  }
+
  private:
   PP_Size size_;
   PP_Bool is_always_opaque_;
+
+  // In the plugin, this is the current callback set for Flushes. When the
+  // callback function pointer is non-NULL, we're waiting for a flush ACK.
+  PP_CompletionCallback current_flush_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Graphics2D);
 };
@@ -103,13 +119,22 @@ void ReplaceContents(PP_Resource graphics_2d, PP_Resource image_data) {
 
 int32_t Flush(PP_Resource graphics_2d,
               PP_CompletionCallback callback) {
-  PluginDispatcher* dispatcher = PluginDispatcher::Get();
-  int32_t result = PP_ERROR_FAILED;
-  dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_Flush(
-      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d,
-      dispatcher->callback_tracker().SendCallback(callback),
-      &result));
-  return result;
+  Graphics2D* object = PluginResource::GetAs<Graphics2D>(graphics_2d);
+  if (!object)
+    return PP_ERROR_BADRESOURCE;
+
+  // For now, disallow blocking calls. We'll need to add support for other
+  // threads to this later.
+  if (!callback.func)
+    return PP_ERROR_BADARGUMENT;
+
+  if (object->is_flush_pending())
+    return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
+  object->set_current_flush_callback(callback);
+
+  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBGraphics2D_Flush(
+      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d));
+  return PP_ERROR_WOULDBLOCK;
 }
 
 const PPB_Graphics2D ppb_graphics_2d = {
@@ -126,7 +151,8 @@ const PPB_Graphics2D ppb_graphics_2d = {
 
 PPB_Graphics2D_Proxy::PPB_Graphics2D_Proxy(Dispatcher* dispatcher,
                                            const void* target_interface)
-    : InterfaceProxy(dispatcher, target_interface) {
+    : InterfaceProxy(dispatcher, target_interface),
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Graphics2D_Proxy::~PPB_Graphics2D_Proxy() {
@@ -152,6 +178,9 @@ void PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgReplaceContents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Flush,
                         OnMsgFlush)
+
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBGraphics2D_FlushACK,
+                        OnMsgFlushACK)
   IPC_END_MESSAGE_MAP()
   // FIXME(brettw) handle bad messages!
 }
@@ -188,14 +217,39 @@ void PPB_Graphics2D_Proxy::OnMsgReplaceContents(PP_Resource graphics_2d,
   ppb_graphics_2d_target()->ReplaceContents(graphics_2d, image_data);
 }
 
-void PPB_Graphics2D_Proxy::OnMsgFlush(PP_Resource graphics_2d,
-                                      uint32_t serialized_callback,
-                                      int32_t* result) {
-  // TODO(brettw) this should be a non-sync function. Ideally it would call
-  // the callback with a failure code from here if you weren't allowed to
-  // call Flush there.
-  *result = ppb_graphics_2d_target()->Flush(
-      graphics_2d, ReceiveCallback(serialized_callback));
+void PPB_Graphics2D_Proxy::OnMsgFlush(PP_Resource graphics_2d) {
+  CompletionCallback callback = callback_factory_.NewCallback(
+      &PPB_Graphics2D_Proxy::SendFlushACKToPlugin, graphics_2d);
+  int32_t result = ppb_graphics_2d_target()->Flush(
+      graphics_2d, callback.pp_completion_callback());
+  if (result != PP_ERROR_WOULDBLOCK) {
+    // There was some error, so we won't get a flush callback. We need to now
+    // issue the ACK to the plugin hears about the error. This will also clean
+    // up the data associated with the callback.
+    callback.Run(result);
+  }
+}
+
+void PPB_Graphics2D_Proxy::OnMsgFlushACK(PP_Resource resource,
+                                         int32_t pp_error) {
+  Graphics2D* object = PluginResource::GetAs<Graphics2D>(resource);
+  if (!object) {
+    // The plugin has released the graphics 2D object so don't issue the
+    // callback.
+    return;
+  }
+
+  // Be careful to make the callback NULL again before issuing the callback
+  // since the plugin might want to flush from within the callback.
+  PP_CompletionCallback callback = object->current_flush_callback();
+  object->set_current_flush_callback(PP_BlockUntilComplete());
+  PP_RunCompletionCallback(&callback, pp_error);
+}
+
+void PPB_Graphics2D_Proxy::SendFlushACKToPlugin(int32_t result,
+                                                PP_Resource graphics_2d) {
+  dispatcher()->Send(new PpapiMsg_PPBGraphics2D_FlushACK(
+      INTERFACE_ID_PPB_GRAPHICS_2D, graphics_2d, result));
 }
 
 }  // namespace proxy
