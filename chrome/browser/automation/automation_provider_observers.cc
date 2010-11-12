@@ -8,9 +8,12 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -18,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/save_package.h"
@@ -30,14 +34,17 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/codec/png_codec.h"
 #include "gfx/rect.h"
 
 #if defined(OS_CHROMEOS)
@@ -897,28 +904,28 @@ void FindInPageNotificationObserver::Observe(
 // static
 const int FindInPageNotificationObserver::kFindInPageRequestId = -1;
 
-DomOperationNotificationObserver::DomOperationNotificationObserver(
-    AutomationProvider* automation)
-    : automation_(automation) {
+DomOperationObserver::DomOperationObserver() {
   registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());
 }
 
-DomOperationNotificationObserver::~DomOperationNotificationObserver() {
-}
-
-void DomOperationNotificationObserver::Observe(
+void DomOperationObserver::Observe(
     NotificationType type, const NotificationSource& source,
     const NotificationDetails& details) {
   if (NotificationType::DOM_OPERATION_RESPONSE == type) {
     Details<DomOperationNotificationDetails> dom_op_details(details);
+    OnDomOperationCompleted(dom_op_details->json());
+  }
+}
 
-    IPC::Message* reply_message = automation_->reply_message_release();
-    if (reply_message) {
-      AutomationMsg_DomOperation::WriteReplyParams(reply_message,
-                                                   dom_op_details->json());
-      automation_->Send(reply_message);
-    }
+void DomOperationMessageSender::OnDomOperationCompleted(
+    const std::string& json) {
+  IPC::Message* reply_message = automation_->reply_message_release();
+  if (reply_message) {
+    AutomationMsg_DomOperation::WriteReplyParams(reply_message, json);
+    automation_->Send(reply_message);
+  } else {
+    LOG(ERROR) << "DOM operation completed, but no reply message";
   }
 }
 
@@ -1327,6 +1334,73 @@ void SavePackageNotificationObserver::Observe(
   } else {
     NOTREACHED();
   }
+}
+
+PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
+                                     IPC::Message* reply_message,
+                                     RenderViewHost* render_view,
+                                     const FilePath& path)
+    : automation_(automation),
+      reply_message_(reply_message),
+      render_view_(render_view),
+      image_path_(path),
+      received_width_(false) {}
+
+void PageSnapshotTaker::Start() {
+  ExecuteScript(L"window.domAutomationController.send(document.width);");
+}
+
+void PageSnapshotTaker::OnDomOperationCompleted(const std::string& json) {
+  int dimension;
+  if (!base::StringToInt(json, &dimension)) {
+    LOG(ERROR) << "Could not parse received dimensions: " << json;
+    SendMessage(false);
+  } else if (!received_width_) {
+    received_width_ = true;
+    entire_page_size_.set_width(dimension);
+
+    ExecuteScript(L"window.domAutomationController.send(document.height);");
+  } else {
+    entire_page_size_.set_height(dimension);
+
+    ThumbnailGenerator* generator =
+        g_browser_process->GetThumbnailGenerator();
+    ThumbnailGenerator::ThumbnailReadyCallback* callback =
+        NewCallback(this, &PageSnapshotTaker::OnSnapshotTaken);
+    // Don't actually start the thumbnail generator, this leads to crashes on
+    // Mac, crbug.com/62986. Instead, just hook the generator to the
+    // RenderViewHost manually.
+    render_view_->set_painting_observer(generator);
+    generator->AskForSnapshot(render_view_, false, callback,
+                              entire_page_size_, entire_page_size_);
+  }
+}
+
+void PageSnapshotTaker::OnSnapshotTaken(const SkBitmap& bitmap) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  std::vector<unsigned char> png_data;
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data);
+  int bytes_written = file_util::WriteFile(image_path_,
+      reinterpret_cast<char*>(&png_data[0]), png_data.size());
+  SendMessage(bytes_written == static_cast<int>(png_data.size()));
+}
+
+void PageSnapshotTaker::ExecuteScript(const std::wstring& javascript) {
+  std::wstring set_automation_id;
+  base::SStringPrintf(
+      &set_automation_id,
+      L"window.domAutomationController.setAutomationId(%d);",
+      reply_message_->routing_id());
+
+  render_view_->ExecuteJavascriptInWebFrame(L"", set_automation_id);
+  render_view_->ExecuteJavascriptInWebFrame(L"", javascript);
+}
+
+void PageSnapshotTaker::SendMessage(bool success) {
+  AutomationMsg_CaptureEntirePageAsPNG::WriteReplyParams(reply_message_,
+                                                         success);
+  automation_->Send(reply_message_);
+  delete this;
 }
 
 AutocompleteEditFocusedObserver::AutocompleteEditFocusedObserver(

@@ -415,6 +415,8 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowTitle, GetWindowTitle)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CaptureEntirePageAsPNG,
+                                    CaptureEntirePageAsPNG)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SendJSONRequest,
                                     SendJSONRequest)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabCountToBecome,
@@ -1978,6 +1980,22 @@ void TestingAutomationProvider::GetBlockedPopupCount(int handle, int* count) {
           *count = 0;
         }
       }
+  }
+}
+
+void TestingAutomationProvider::CaptureEntirePageAsPNG(
+    int tab_handle, const FilePath& path, IPC::Message* reply_message) {
+  RenderViewHost* render_view = GetViewForTab(tab_handle);
+  if (render_view) {
+    // This will delete itself when finished.
+    PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
+        this, reply_message, render_view, path);
+    snapshot_taker->Start();
+  } else {
+    LOG(ERROR) << "Could not get render view for tab handle";
+    AutomationMsg_CaptureEntirePageAsPNG::WriteReplyParams(reply_message,
+                                                           false);
+    Send(reply_message);
   }
 }
 

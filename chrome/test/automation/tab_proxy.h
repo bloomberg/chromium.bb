@@ -378,6 +378,10 @@ class TabProxy : public AutomationResourceProxy,
   // Loads all blocked plug-ins on the page.
   bool LoadBlockedPlugins() WARN_UNUSED_RESULT;
 
+  // Captures the entire page and saves as a PNG at the given path. Returns
+  // true on success.
+  bool CaptureEntirePageAsPNG(const FilePath& path) WARN_UNUSED_RESULT;
+
 #if defined(OS_WIN)
   // Resizes the tab window.
   // The parent_window parameter allows a parent to be specified for the window

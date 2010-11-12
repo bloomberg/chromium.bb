@@ -345,6 +345,11 @@ class TestingAutomationProvider : public AutomationProvider,
   // Returns the number of blocked popups in the tab |handle|.
   void GetBlockedPopupCount(int handle, int* count);
 
+  // Captures the entire page for the given tab and saves it as PNG at the
+  // given path.
+  void CaptureEntirePageAsPNG(int tab_handle, const FilePath& path,
+                              IPC::Message* reply_message);
+
   // Generic pattern for pyautolib
   // Uses the JSON interface for input/output.
   void SendJSONRequest(int handle,

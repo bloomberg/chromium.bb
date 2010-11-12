@@ -1447,4 +1447,14 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* tab handle */,
                              bool /* success */)
 
+  // Captures the entire page for the tab, including those portions not in
+  // view, and saves the image as a PNG in the given file location.
+  // Request:
+  //   -int: Tab handle
+  //   -FilePath: Path to save the captured image to
+  // Response:
+  //   -bool: Whether the method succeeded
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_CaptureEntirePageAsPNG, int,
+                             FilePath, bool)
+
 IPC_END_MESSAGES(Automation)

@@ -737,6 +737,16 @@ bool TabProxy::LoadBlockedPlugins() {
   return succeeded;
 }
 
+bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
+  if (!is_valid())
+    return false;
+
+  bool succeeded = false;
+  sender_->Send(new AutomationMsg_CaptureEntirePageAsPNG(0, handle_, path,
+                                                         &succeeded));
+  return succeeded;
+}
+
 #if defined(OS_WIN)
 void TabProxy::Reposition(HWND window, HWND window_insert_after, int left,
                           int top, int width, int height, int flags,

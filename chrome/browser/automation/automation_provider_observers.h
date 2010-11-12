@@ -33,6 +33,7 @@ class Browser;
 class Extension;
 class ExtensionProcessManager;
 class NavigationController;
+class RenderViewHost;
 class SavePackage;
 class TabContents;
 class TranslateInfoBarDelegate;
@@ -472,20 +473,34 @@ class FindInPageNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
 };
 
-class DomOperationNotificationObserver : public NotificationObserver {
+class DomOperationObserver : public NotificationObserver {
  public:
-  explicit DomOperationNotificationObserver(AutomationProvider* automation);
-  ~DomOperationNotificationObserver();
+  DomOperationObserver();
+  virtual ~DomOperationObserver() {}
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  virtual void OnDomOperationCompleted(const std::string& json) = 0;
+
  private:
   NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(DomOperationObserver);
+};
+
+class DomOperationMessageSender : public DomOperationObserver {
+ public:
+  explicit DomOperationMessageSender(AutomationProvider* automation)
+      : automation_(automation) {}
+
+  virtual void OnDomOperationCompleted(const std::string& json);
+
+ private:
   AutomationProvider* automation_;
 
-  DISALLOW_COPY_AND_ASSIGN(DomOperationNotificationObserver);
+  DISALLOW_COPY_AND_ASSIGN(DomOperationMessageSender);
 };
 
 class DocumentPrintedNotificationObserver : public NotificationObserver {
@@ -867,6 +882,42 @@ class SavePackageNotificationObserver : public NotificationObserver {
   IPC::Message* reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageNotificationObserver);
+};
+
+// This class manages taking a snapshot of a page. This requires waiting on
+// asynchronous callbacks and notifications.
+class PageSnapshotTaker : public DomOperationObserver {
+ public:
+  PageSnapshotTaker(AutomationProvider* automation,
+                    IPC::Message* reply_message,
+                    RenderViewHost* render_view,
+                    const FilePath& path);
+
+  // Start the process of taking a snapshot of the entire page.
+  void Start();
+
+ private:
+  // Overriden from DomOperationObserver.
+  virtual void OnDomOperationCompleted(const std::string& json);
+
+  // Called by the ThumbnailGenerator when the requested snapshot has been
+  // generated.
+  void OnSnapshotTaken(const SkBitmap& bitmap);
+
+  // Helper method to send arbitrary javascript to the renderer for evaluation.
+  void ExecuteScript(const std::wstring& javascript);
+
+  // Helper method to send a response back to the client. Deletes this.
+  void SendMessage(bool success);
+
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  RenderViewHost* render_view_;
+  FilePath image_path_;
+  bool received_width_;
+  gfx::Size entire_page_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageSnapshotTaker);
 };
 
 // Allows automation provider to wait until the autocomplete edit
