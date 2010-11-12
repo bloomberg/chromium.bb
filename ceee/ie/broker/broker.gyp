@@ -21,6 +21,7 @@
         '../../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../../ceee/common/common.gyp:initializing_coclass',
         '../../../ceee/common/common.gyp:ceee_common',
+        '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
       ],
       'sources': [
         'api_dispatcher.cc',
