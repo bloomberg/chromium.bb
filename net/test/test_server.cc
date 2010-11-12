@@ -191,6 +191,7 @@ std::string TestServer::GetScheme() const {
     case TYPE_FTP:
       return "ftp";
     case TYPE_HTTP:
+    case TYPE_SYNC:
       return "http";
     case TYPE_HTTPS:
       return "https";
@@ -330,6 +331,8 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
 
   if (type_ == TYPE_FTP) {
     command_line->AppendArg("-f");
+  } else if (type_ == TYPE_SYNC) {
+    command_line->AppendArg("--sync");
   } else if (type_ == TYPE_HTTPS) {
     FilePath certificate_path(certificates_dir_);
     certificate_path = certificate_path.Append(

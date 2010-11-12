@@ -55,30 +55,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   };
 
   // A LiveSyncTest must be associated with a particular test type.
-  explicit LiveSyncTest(TestType test_type)
-      : test_type_(test_type),
-        num_clients_(-1),
-        test_server_handle_(base::kNullProcessHandle) {
-    InProcessBrowserTest::set_show_window(true);
-    switch (test_type_) {
-      case SINGLE_CLIENT: {
-        num_clients_ = 1;
-        break;
-      }
-      case TWO_CLIENT: {
-        num_clients_ = 2;
-        break;
-      }
-      case MULTIPLE_CLIENT: {
-        num_clients_ = 3;
-        break;
-      }
-      case MANY_CLIENT: {
-        num_clients_ = 10;
-        break;
-      }
-    }
-  }
+  explicit LiveSyncTest(TestType test_type);
 
   virtual ~LiveSyncTest() {}
 
@@ -193,6 +170,9 @@ class LiveSyncTest : public InProcessBrowserTest {
   // clearing an invalid proxy configuration.
   void SetProxyConfig(URLRequestContextGetter* context,
                       const net::ProxyConfig& proxy_config);
+
+  // Test server of type sync, started on demand.
+  net::TestServer sync_server_;
 
   // Used to differentiate between single-client, two-client, multi-client and
   // many-client tests.

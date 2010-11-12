@@ -27,6 +27,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"
+#include "net/test/test_server.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
@@ -85,6 +86,32 @@ class SetProxyConfigTask : public Task {
   URLRequestContextGetter* url_request_context_getter_;
   net::ProxyConfig proxy_config_;
 };
+
+LiveSyncTest::LiveSyncTest(TestType test_type)
+    : sync_server_(net::TestServer::TYPE_SYNC, FilePath()),
+      test_type_(test_type),
+      num_clients_(-1),
+      test_server_handle_(base::kNullProcessHandle) {
+  InProcessBrowserTest::set_show_window(true);
+  switch (test_type_) {
+    case SINGLE_CLIENT: {
+      num_clients_ = 1;
+      break;
+    }
+    case TWO_CLIENT: {
+      num_clients_ = 2;
+      break;
+    }
+    case MULTIPLE_CLIENT: {
+      num_clients_ = 3;
+      break;
+    }
+    case MANY_CLIENT: {
+      num_clients_ = 10;
+      break;
+    }
+  }
+}
 
 void LiveSyncTest::SetUp() {
   // At this point, the browser hasn't been launched, and no services are
@@ -292,13 +319,11 @@ void LiveSyncTest::SetUpTestServerIfRequired() {
 }
 
 bool LiveSyncTest::SetUpLocalPythonTestServer() {
-  EXPECT_TRUE(test_server()->Start())
+  EXPECT_TRUE(sync_server_.Start())
       << "Could not launch local python test server.";
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  std::string sync_service_url = StringPrintf("http://%s:%d/chromiumsync",
-      test_server()->host_port_pair().host().c_str(),
-      test_server()->host_port_pair().port());
+  std::string sync_service_url = sync_server_.GetURL("chromiumsync").spec();
   cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
   VLOG(1) << "Started local python test server at " << sync_service_url;
 
@@ -337,7 +362,7 @@ bool LiveSyncTest::SetUpLocalTestServer() {
 }
 
 bool LiveSyncTest::TearDownLocalPythonTestServer() {
-  if (!test_server()->Stop()) {
+  if (!sync_server_.Stop()) {
     LOG(ERROR) << "Could not stop local python test server.";
     return false;
   }
