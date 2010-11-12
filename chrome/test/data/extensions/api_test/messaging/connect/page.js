@@ -1,18 +1,18 @@
 JSON.parse = function() {
   return "JSON.parse clobbered by content script.";
-}
+};
 
 JSON.stringify = function() {
   return "JSON.stringify clobbered by content script.";
-}
+};
 
 Array.prototype.toJSON = function() {
   return "Array.prototype.toJSON clobbered by content script.";
-}
+};
 
 Object.prototype.toJSON = function() {
   return "Object.prototype.toJSON clobbered by content script.";
-}
+};
 
 // For complex connect tests.
 chrome.extension.onConnect.addListener(function(port) {
@@ -31,6 +31,10 @@ chrome.extension.onConnect.addListener(function(port) {
       window.location = "about:blank";
     } else if (msg.testPortName) {
       port.postMessage({portName:port.name});
+    } else if (msg.testSendRequestFromTabError) {
+      testSendRequestFromTabError();
+    } else if (msg.testConnectFromTabError) {
+      testConnectFromTabError();
     }
   });
 });
@@ -54,6 +58,24 @@ function testSendRequestFromTab() {
       console.log('testSendRequestFromTab sent');
       chrome.extension.sendRequest({step: 2});
     }
+  });
+}
+
+// Tests sendRequest to an invalid extension.
+function testSendRequestFromTabError() {
+  // try sending a request to a bad extension id
+  chrome.extension.sendRequest("bad-extension-id", {m: 1}, function(response) {
+    var success = (response === undefined && chrome.extension.lastError);
+    chrome.extension.sendRequest({success: success});
+  });
+}
+
+// Tests connecting to an invalid extension.
+function testConnectFromTabError() {
+  var port = chrome.extension.connect("bad-extension-id");
+  port.onDisconnect.addListener(function() {
+    var success = (chrome.extension.lastError ? true : false);
+    chrome.extension.sendRequest({success: success});
   });
 }
 

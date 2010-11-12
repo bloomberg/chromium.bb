@@ -55,7 +55,7 @@ var chrome = chrome || {};
     });
     PortAddRef(portId);
     return port;
-  }
+  };
 
   // Called by native code when a channel has been opened to this context.
   chromeHidden.Port.dispatchOnConnect = function(portId, channelName, tab,
@@ -151,7 +151,7 @@ var chrome = chrome || {};
   chrome.Port.prototype.disconnect = function() {
     delete ports[this.portId_];
     CloseChannel(this.portId_, true);
-  }
+  };
 
   // This function is called on context initialization for both content scripts
   // and extension contexts.
@@ -207,6 +207,11 @@ var chrome = chrome || {};
       var port = chrome.extension.connect(targetId,
                                           {name: chromeHidden.kRequestChannel});
       port.postMessage(request);
+      port.onDisconnect.addListener(function() {
+        // For onDisconnects, we only notify the callback if there was an error
+        if (chrome.extension.lastError && responseCallback)
+          responseCallback();
+      });
       port.onMessage.addListener(function(response) {
         if (responseCallback)
           responseCallback(response);
@@ -231,7 +236,7 @@ var chrome = chrome || {};
     if (warnOnPrivilegedApiAccess) {
       setupApiStubs();
     }
-  }
+  };
 
   var notSupportedSuffix = " is not supported in content scripts. " +
       "See the content scripts documentation for more details.";
@@ -299,7 +304,6 @@ var chrome = chrome || {};
       "extension.getExtensionTabs",
       "extension.getToolstrips",
       "extension.getViews",
-      "extension.lastError",
       "extension.onConnectExternal",
       "extension.onRequestExternal",
       "extension.setUpdateUrlData",

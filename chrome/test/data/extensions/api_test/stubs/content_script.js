@@ -73,7 +73,8 @@ function testPath(path, expectError) {
       // This is the last component - we expect it to either be defined or
       // to throw an error on access.
       try {
-        if (typeof(module[parts[i]]) == "undefined") {
+        if (typeof(module[parts[i]]) == "undefined" &&
+            path != "extension.lastError") {
           logToConsoleAndStdout(" fail (undefined and not throwing error): " +
                                 path);
           return false;

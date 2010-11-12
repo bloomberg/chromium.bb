@@ -46,6 +46,7 @@
       "lastError": {
         "type": "object",
         "optional": true,
+        "unprivileged": true,
         "description": "Set for the lifetime of a callback if an ansychronous extension api has resulted in an error. If no error has occured lastError will be <var>undefined</var>.",
         "properties": {
           "message": { "type": "string", "description": "Description of the error that has taken place." }
@@ -80,14 +81,14 @@
         ],
         "returns": {
           "$ref": "Port",
-          "description": "Port through which messages can be sent and received with the extension."
+          "description": "Port through which messages can be sent and received with the extension. The port's <a href='extension.html#type-Port'>onDisconnect</a> event is fired if extension does not exist. "
         }
       },
       {
         "name": "sendRequest",
         "type": "function",
         "unprivileged": true,
-        "description": "Sends a single request to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single request with an optional response.",
+        "description": "Sends a single request to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single request with an optional response. The <a href='extension.html#event-onRequest'>chrome.extension.onRequest</a> event is fired in each page of the extension.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           { "type": "any", "name": "request" },
@@ -99,7 +100,7 @@
               {
                 "name": "response",
                 "type": "any",
-                "description": "The JSON response object sent by the handler of the request."
+                "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the extension, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
               }
             ]
           }

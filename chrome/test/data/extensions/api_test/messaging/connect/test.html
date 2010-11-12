@@ -1,19 +1,19 @@
 <script>
 JSON.parse = function() {
   return "JSON.parse clobbered by extension.";
-}
+};
 
 JSON.stringify = function() {
   return "JSON.stringify clobbered by extension.";
-}
+};
 
 Array.prototype.toJSON = function() {
   return "Array.prototype.toJSON clobbered by extension.";
-}
+};
 
 Object.prototype.toJSON = function() {
   return "Object.prototype.toJSON clobbered by extension.";
-}
+};
 
 // Keep track of the tab that we're running tests in, for simplicity.
 var testTab = null;
@@ -80,7 +80,8 @@ chrome.test.getConfig(function(config) {
 
     // Tests receiving a request from a content script and responding.
     function sendRequestFromTab() {
-      chrome.extension.onRequest.addListener(
+      var doneListening = chrome.test.listenForever(
+        chrome.extension.onRequest,
         function(request, sender, sendResponse) {
           chrome.test.assertTrue("url" in sender.tab, "no tab available.");
           chrome.test.assertEq(sender.id, location.host);
@@ -92,7 +93,7 @@ chrome.test.getConfig(function(config) {
             // Step 2.
             chrome.test.assertEq(request.step, 2);
             sendResponse();
-            chrome.test.succeed();
+            doneListening();
           }
       });
 
@@ -100,6 +101,40 @@ chrome.test.getConfig(function(config) {
       port.postMessage({testSendRequestFromTab: true});
       port.disconnect();
       chrome.test.log("sendRequestFromTab: sent first message to tab");
+    },
+
+    // Tests error handling when sending a request from a content script to an
+    // invalid extension.
+    function sendRequestFromTabError() {
+      chrome.test.listenOnce(
+        chrome.extension.onRequest,
+        function(request, sender, sendResponse) {
+          if (!request.success)
+            chrome.test.fail();
+        }
+      );
+
+      var port = chrome.tabs.connect(testTab.id);
+      port.postMessage({testSendRequestFromTabError: true});
+      port.disconnect();
+      chrome.test.log("testSendRequestFromTabError: send 1st message to tab");
+    },
+
+    // Tests error handling when connecting to an invalid extension from a
+    // content script.
+    function connectFromTabError() {
+      chrome.test.listenOnce(
+        chrome.extension.onRequest,
+        function(request, sender, sendResponse) {
+          if (!request.success)
+            chrome.test.fail();
+        }
+      );
+
+      var port = chrome.tabs.connect(testTab.id);
+      port.postMessage({testConnectFromTabError: true});
+      port.disconnect();
+      chrome.test.log("testConnectFromTabError: sent 1st message to tab");
     },
 
     // Tests sending a request to a tab and receiving a response.
