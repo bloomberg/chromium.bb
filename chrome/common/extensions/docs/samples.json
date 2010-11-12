@@ -46,7 +46,6 @@
     "chrome.experimental.omnibox.sendSuggestions": "experimental.omnibox.html#method-sendSuggestions", 
     "chrome.experimental.omnibox.styleDim": "experimental.omnibox.html#method-styleDim", 
     "chrome.experimental.omnibox.styleMatch": "experimental.omnibox.html#method-styleMatch", 
-    "chrome.experimental.omnibox.styleNone": "experimental.omnibox.html#method-styleNone", 
     "chrome.experimental.omnibox.styleUrl": "experimental.omnibox.html#method-styleUrl", 
     "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab", 
     "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated", 
@@ -84,6 +83,7 @@
     "chrome.extension.onRequest": "extension.html#event-onRequest", 
     "chrome.extension.onRequestExternal": "extension.html#event-onRequestExternal", 
     "chrome.extension.sendRequest": "extension.html#method-sendRequest", 
+    "chrome.extension.setUpdateUrlData": "extension.html#method-setUpdateUrlData", 
     "chrome.history.addUrl": "history.html#method-addUrl", 
     "chrome.history.deleteAll": "history.html#method-deleteAll", 
     "chrome.history.deleteRange": "history.html#method-deleteRange", 
@@ -383,7 +383,6 @@
         "chrome.experimental.omnibox.onInputChanged", 
         "chrome.experimental.omnibox.onInputEntered", 
         "chrome.experimental.omnibox.styleMatch", 
-        "chrome.experimental.omnibox.styleNone", 
         "chrome.experimental.omnibox.styleUrl", 
         "chrome.tabs.get", 
         "chrome.tabs.getSelected", 
@@ -402,12 +401,12 @@
       "protocols": [
         "http://"
       ], 
-      "search_string": "CHROMIUM SEARCH ADD SUPPORT TO THE OMNIBOX TO SEARCH THE CHROMIUM SOURCE CODE. BACKGROUND_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED CHROME.EXPERIMENTAL.OMNIBOX.STYLEMATCH CHROME.EXPERIMENTAL.OMNIBOX.STYLENONE CHROME.EXPERIMENTAL.OMNIBOX.STYLEURL CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE", 
+      "search_string": "CHROMIUM SEARCH ADD SUPPORT TO THE OMNIBOX TO SEARCH THE CHROMIUM SOURCE CODE. BACKGROUND_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED CHROME.EXPERIMENTAL.OMNIBOX.STYLEMATCH CHROME.EXPERIMENTAL.OMNIBOX.STYLEURL CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE", 
       "source_files": [
         "background.html", 
         "manifest.json"
       ], 
-      "source_hash": "ba6f3a8372fa886784ffe18bb53563547f9a9488", 
+      "source_hash": "2fafe4f19972d3c27e79545708b4f826a2911313", 
       "zip_path": "examples/extensions/chrome_search.zip"
     }, 
     {
@@ -585,7 +584,6 @@
         "chrome.experimental.omnibox.onInputChanged", 
         "chrome.experimental.omnibox.onInputEntered", 
         "chrome.experimental.omnibox.styleMatch", 
-        "chrome.experimental.omnibox.styleNone", 
         "chrome.tabs.create", 
         "chrome.tabs.get", 
         "chrome.tabs.onRemoved", 
@@ -604,7 +602,7 @@
       "protocols": [
         "http://"
       ], 
-      "search_string": "EXTENSION DOCS SEARCH SEARCH THE CHROME EXTENSIONS DOCUMENTATION.  TO USE, TYPE CRDOC PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED CHROME.EXPERIMENTAL.OMNIBOX.STYLEMATCH CHROME.EXPERIMENTAL.OMNIBOX.STYLENONE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONREMOVED CHROME.TABS.UPDATE", 
+      "search_string": "EXTENSION DOCS SEARCH SEARCH THE CHROME EXTENSIONS DOCUMENTATION.  TO USE, TYPE CRDOC PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED CHROME.EXPERIMENTAL.OMNIBOX.STYLEMATCH CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONREMOVED CHROME.TABS.UPDATE", 
       "source_files": [
         "background.html", 
         "manifest.json"
