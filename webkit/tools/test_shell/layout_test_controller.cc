@@ -1473,16 +1473,19 @@ void LayoutTestController::setEditingBehavior(const CppArgumentList& args,
                                               CppVariant* result) {
   result->SetNull();
   WebString key = WebString::fromUTF8(args[0].ToString());
+  WebKit::WebSettings::EditingBehavior behavior;
   if (key == "mac") {
-    shell_->webView()->settings()->setEditingBehavior(
-        WebKit::WebSettings::EditingBehaviorMac);
+    behavior = WebKit::WebSettings::EditingBehaviorMac;
   } else if (key == "win") {
-    shell_->webView()->settings()->setEditingBehavior(
-        WebKit::WebSettings::EditingBehaviorWin);
+    behavior = WebKit::WebSettings::EditingBehaviorWin;
+  } else if (key == "unix") {
+    behavior = WebKit::WebSettings::EditingBehaviorUnix;
   } else {
-    LogErrorToConsole("Passed invalid editing bahavior. "
-                      "Should be 'mac' or 'win'.");
+    LogErrorToConsole("Passed invalid editing behavior. "
+                      "Should be 'mac', 'win', or 'unix'.");
+    return;
   }
+  shell_->webView()->settings()->setEditingBehavior(behavior);
 }
 
 void LayoutTestController::setGeolocationPermission(const CppArgumentList& args,
@@ -1537,7 +1540,7 @@ void LayoutTestController::setMockDeviceOrientation(const CppArgumentList& args,
   shell_->device_orientation_client_mock()->setOrientation(orientation);
 }
 
-void LayoutTestController::hasSpellingMarker(const CppArgumentList& arguments, 
+void LayoutTestController::hasSpellingMarker(const CppArgumentList& arguments,
                                              CppVariant* result) {
   if (arguments.size() < 2 || !arguments[0].isNumber() || !arguments[1].isNumber())
     return;
