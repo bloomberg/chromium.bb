@@ -58,7 +58,7 @@ enum ConfigurationPolicyType {
   kPolicyEnableAuthNegotiatePort,
   kPolicyAuthServerWhitelist,
   kPolicyAuthNegotiateDelegateWhitelist,
-
+  kPolicyGSSAPILibraryName,
 };
 
 static const int kPolicyNoProxyServerMode = 0;

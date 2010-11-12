@@ -20,6 +20,7 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
       { switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist },
       { switches::kAuthNegotiateDelegateWhitelist,
           prefs::kAuthNegotiateDelegateWhitelist },
+      { switches::kGSSAPILibraryName, prefs::kGSSAPILibraryName },
 };
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry

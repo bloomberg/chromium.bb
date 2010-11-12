@@ -405,6 +405,7 @@ extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kAuthServerWhitelist[];
 extern const char kAuthNegotiateDelegateWhitelist[];
+extern const char kGSSAPILibraryName[];
 
 }  // namespace prefs
 

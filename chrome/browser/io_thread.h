@@ -144,6 +144,7 @@ class IOThread : public BrowserProcessSubThread {
   bool negotiate_enable_port_;
   std::string auth_server_whitelist_;
   std::string auth_delegate_whitelist_;
+  std::string gssapi_library_name_;
 
   // These member variables are initialized by a task posted to the IO thread,
   // which gets posted by calling certain member functions of IOThread.

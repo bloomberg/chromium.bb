@@ -639,6 +639,9 @@ const char kGpuProcess[]                    = "gpu-process";
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
+// Specifies a custom name for the GSSAPI library to load.
+const char kGSSAPILibraryName[]             = "gssapi-library-name";
+
 // These flags show the man page on Linux. They are equivalent to each
 // other.
 const char kHelp[]                          = "help";

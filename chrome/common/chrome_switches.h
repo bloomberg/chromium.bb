@@ -188,6 +188,7 @@ extern const char kForceRendererAccessibility[];
 extern const char kGpuLauncher[];
 extern const char kGpuProcess[];
 extern const char kGpuStartupDialog[];
+extern const char kGSSAPILibraryName[];
 extern const char kHelp[];
 extern const char kHelpShort[];
 extern const char kHideIcons[];

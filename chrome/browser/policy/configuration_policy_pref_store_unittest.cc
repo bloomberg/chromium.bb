@@ -114,7 +114,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyAuthServerWhitelist,
                     prefs::kAuthServerWhitelist),
         TypeAndName(kPolicyAuthNegotiateDelegateWhitelist,
-                    prefs::kAuthNegotiateDelegateWhitelist)));
+                    prefs::kAuthNegotiateDelegateWhitelist),
+        TypeAndName(kPolicyGSSAPILibraryName,
+                    prefs::kGSSAPILibraryName)));
 
 // Test cases for boolean-valued policy settings.
 class ConfigurationPolicyPrefStoreBooleanTest

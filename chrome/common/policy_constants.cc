@@ -63,6 +63,7 @@ const char kDisableAuthNegotiateCnameLookup[] =
 const char kEnableAuthNegotiatePort[] = "EnableAuthNegotiatePort";
 const char kAuthServerWhitelist[] = "AuthServerWhitelist";
 const char kAuthNegotiateDelegateWhitelist[] = "AuthNegotiateDelegateWhitelist";
+const char kGSSAPILibraryName[] = "GSSAPILibraryName";
 
 // Chrome Frame specific policy constants
 const char kChromeFrameRendererSettings[] = "ChromeFrameRendererSettings";

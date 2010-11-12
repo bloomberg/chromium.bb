@@ -229,6 +229,7 @@ IOThread::IOThread(PrefService* local_state)
   auth_server_whitelist_ = local_state->GetString(prefs::kAuthServerWhitelist);
   auth_delegate_whitelist_ = local_state->GetString(
       prefs::kAuthNegotiateDelegateWhitelist);
+  gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
 }
 
 IOThread::~IOThread() {
@@ -428,6 +429,7 @@ void IOThread::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
   local_state->RegisterStringPref(prefs::kAuthServerWhitelist, "");
   local_state->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
+  local_state->RegisterStringPref(prefs::kGSSAPILibraryName, "");
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
@@ -447,6 +449,7 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
       supported_schemes,
       globals_->url_security_manager.get(),
       resolver,
+      gssapi_library_name_,
       negotiate_disable_cname_lookup_,
       negotiate_enable_port_);
 }

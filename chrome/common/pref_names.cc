@@ -1041,6 +1041,8 @@ const char kAuthServerWhitelist[] = "auth.server_whitelist";
 // with.
 const char kAuthNegotiateDelegateWhitelist[] =
     "auth.negotiate_delegate_whitelist";
+// String that specifies the name of a custom GSSAPI library to load.
+const char kGSSAPILibraryName[] = "auth.gssapi_library_name";
 
 #if defined(OS_CHROMEOS)
 // Dictionary for transient storage of settings that should go into signed

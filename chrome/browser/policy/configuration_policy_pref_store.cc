@@ -165,6 +165,8 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
     prefs::kAuthServerWhitelist },
   { Value::TYPE_STRING, kPolicyAuthNegotiateDelegateWhitelist,
     prefs::kAuthNegotiateDelegateWhitelist },
+  { Value::TYPE_STRING, kPolicyGSSAPILibraryName,
+    prefs::kGSSAPILibraryName },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -269,6 +271,9 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kAuthServerWhitelist },
     { kPolicyAuthNegotiateDelegateWhitelist, Value::TYPE_STRING,
       key::kAuthNegotiateDelegateWhitelist },
+    { kPolicyGSSAPILibraryName, Value::TYPE_STRING,
+      key::kGSSAPILibraryName },
+
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

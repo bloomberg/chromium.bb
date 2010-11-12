@@ -42,8 +42,10 @@
 
 #include <atlbase.h>
 #include <atlwin.h>
-#include <windows.h>
 #include <objbase.h>
+#include <windows.h>
+
+#include <vector>
 
 #if defined(USE_SYSTEM_LIBBZ2)
 #include <bzlib.h>
@@ -168,8 +170,8 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
     base::SplitString(csv_auth_schemes, ',', &supported_schemes);
 
     http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
-        supported_schemes, url_security_manager_.get(), host_resolver_, false,
-        false);
+        supported_schemes, url_security_manager_.get(), host_resolver_,
+        std::string(), false, false);
 
     http_transaction_factory_ = new net::HttpCache(
         net::HttpNetworkLayer::CreateFactory(host_resolver_,

@@ -401,6 +401,12 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_AUTHNEGOTIATEDELEGATEWHITELIST_DESC" desc="Description of the 'auth negotiate delegate whitelist' policy.">
       Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.
     </message>
+    <message name="IDS_POLICY_GSSAPILIBRARYNAME_CAPTION" desc="Caption of the 'GSSAPI library name' policy">
+      GSSAPI library name
+    </message>
+    <message name="IDS_POLICY_GSSAPILIBRARYNAME_DESC" desc="Description of the 'GSSAPI library name' policy">
+      Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name, or a full path. If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.
+    </message>
     <!-- End HTTP Authentication Policy messages -->
 
     <message name="IDS_POLICY_METRICSREPORTINGENABLED_CAPTION" desc="Caption of the 'crash reporting' policy.">
