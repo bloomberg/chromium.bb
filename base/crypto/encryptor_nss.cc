@@ -48,9 +48,6 @@ bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
 }
 
 bool Encryptor::Encrypt(const std::string& plaintext, std::string* ciphertext) {
-  if (plaintext.size() == 0)
-    return false;
-
   ScopedPK11Context context(PK11_CreateContextBySymKey(CKM_AES_CBC_PAD,
                                                        CKA_ENCRYPT,
                                                        key_->key(),

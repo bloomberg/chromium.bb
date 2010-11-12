@@ -44,7 +44,12 @@ class Encryptor {
   SymmetricKey* key_;
   Mode mode_;
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+  bool Crypt(bool encrypt,  // Pass true to encrypt, false to decrypt.
+             const std::string& input,
+             std::string* output);
+  std::string iv_;
+#elif defined(USE_NSS)
   ScopedPK11Slot slot_;
   ScopedSECItem param_;
 #elif defined(OS_MACOSX)

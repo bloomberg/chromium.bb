@@ -51,7 +51,9 @@ class SymmetricKey {
   // SymmetricKey.
   static SymmetricKey* Import(Algorithm algorithm, const std::string& raw_key);
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+  const std::string& key() { return key_; }
+#elif defined(USE_NSS)
   PK11SymKey* key() const { return key_.get(); }
 #elif defined(OS_MACOSX)
   CSSM_DATA cssm_data() const;

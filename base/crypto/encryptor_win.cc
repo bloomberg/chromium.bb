@@ -93,6 +93,8 @@ bool Encryptor::Encrypt(const std::string& plaintext, std::string* ciphertext) {
 
 bool Encryptor::Decrypt(const std::string& ciphertext, std::string* plaintext) {
   DWORD data_len = ciphertext.size();
+  if (data_len == 0)
+    return false;
 
   std::vector<BYTE> tmp(data_len);
   memcpy(&tmp[0], ciphertext.data(), data_len);

@@ -55,17 +55,6 @@ class ScopedOpenSSLSafeSizeBuffer {
 // are send to VLOG(1), on a release build they are disregarded.
 void ClearOpenSSLERRStack();
 
-// Put an instance of this class on the call stack to automatically clear the
-// OpenSSL error stack on exit of your function.
-class ScopedOpenSSLERRClearer {
- public:
-  ScopedOpenSSLERRClearer() {}
-  ~ScopedOpenSSLERRClearer() { ClearOpenSSLERRStack(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedOpenSSLERRClearer);
-};
-
 }  // namespace base
 
 #endif  // BASE_OPENSSL_UTIL_H_

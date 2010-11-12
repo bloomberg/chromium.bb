@@ -8,6 +8,7 @@
 
 #include "base/crypto/symmetric_key.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(EncryptorTest, EncryptDecrypt) {
@@ -107,4 +108,125 @@ TEST(EncryptorTest, EncryptAES256CBC) {
   EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
 
   EXPECT_EQ(plaintext, decypted);
+}
+
+// Expected output derived from the NSS implementation.
+TEST(EncryptorTest, EncryptAES128CBCRegression) {
+  std::string key = "128=SixteenBytes";
+  std::string iv = "Sweet Sixteen IV";
+  std::string plaintext = "Plain text with a g-clef U+1D11E \360\235\204\236";
+  std::string expected_ciphertext_hex =
+      "D4A67A0BA33C30F207344D81D1E944BBE65587C3D7D9939A"
+      "C070C62B9C15A3EA312EA4AD1BC7929F4D3C16B03AD5ADA8";
+
+  scoped_ptr<base::SymmetricKey> sym_key(base::SymmetricKey::Import(
+      base::SymmetricKey::AES, key));
+  ASSERT_TRUE(NULL != sym_key.get());
+
+  base::Encryptor encryptor;
+  // The IV must be exactly as long a the cipher block size.
+  EXPECT_EQ(16U, iv.size());
+  EXPECT_TRUE(encryptor.Init(sym_key.get(), base::Encryptor::CBC, iv));
+
+  std::string ciphertext;
+  EXPECT_TRUE(encryptor.Encrypt(plaintext, &ciphertext));
+  EXPECT_EQ(expected_ciphertext_hex, base::HexEncode(ciphertext.data(),
+                                                     ciphertext.size()));
+
+  std::string decypted;
+  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
+  EXPECT_EQ(plaintext, decypted);
+}
+
+// Expected output derived from the NSS implementation.
+TEST(EncryptorTest, EncryptAES192CBCRegression) {
+  std::string key = "192bitsIsTwentyFourByte!";
+  std::string iv = "Sweet Sixteen IV";
+  std::string plaintext = "Small text";
+  std::string expected_ciphertext_hex = "78DE5D7C2714FC5C61346C5416F6C89A";
+
+  scoped_ptr<base::SymmetricKey> sym_key(base::SymmetricKey::Import(
+      base::SymmetricKey::AES, key));
+  ASSERT_TRUE(NULL != sym_key.get());
+
+  base::Encryptor encryptor;
+  // The IV must be exactly as long a the cipher block size.
+  EXPECT_EQ(16U, iv.size());
+  EXPECT_TRUE(encryptor.Init(sym_key.get(), base::Encryptor::CBC, iv));
+
+  std::string ciphertext;
+  EXPECT_TRUE(encryptor.Encrypt(plaintext, &ciphertext));
+  EXPECT_EQ(expected_ciphertext_hex, base::HexEncode(ciphertext.data(),
+                                                     ciphertext.size()));
+
+  std::string decypted;
+  EXPECT_TRUE(encryptor.Decrypt(ciphertext, &decypted));
+  EXPECT_EQ(plaintext, decypted);
+}
+
+// Not all platforms allow import/generation of symmetric keys with an
+// unsupported size.
+#if !defined(OS_WIN) && !defined(USE_NSS)
+TEST(EncryptorTest, UnsupportedKeySize) {
+  std::string key = "7 = bad";
+  std::string iv = "Sweet Sixteen IV";
+  scoped_ptr<base::SymmetricKey> sym_key(base::SymmetricKey::Import(
+      base::SymmetricKey::AES, key));
+  ASSERT_TRUE(NULL != sym_key.get());
+
+  base::Encryptor encryptor;
+  // The IV must be exactly as long a the cipher block size.
+  EXPECT_EQ(16U, iv.size());
+  EXPECT_FALSE(encryptor.Init(sym_key.get(), base::Encryptor::CBC, iv));
+}
+#endif  // unsupported platforms.
+
+TEST(EncryptorTest, UnsupportedIV) {
+  std::string key = "128=SixteenBytes";
+  std::string iv = "OnlyForteen :(";
+  scoped_ptr<base::SymmetricKey> sym_key(base::SymmetricKey::Import(
+      base::SymmetricKey::AES, key));
+  ASSERT_TRUE(NULL != sym_key.get());
+
+  base::Encryptor encryptor;
+  EXPECT_FALSE(encryptor.Init(sym_key.get(), base::Encryptor::CBC, iv));
+}
+
+TEST(EncryptorTest, EmptyEncrypt) {
+  std::string key = "128=SixteenBytes";
+  std::string iv = "Sweet Sixteen IV";
+  std::string plaintext;
+  std::string expected_ciphertext_hex = "8518B8878D34E7185E300D0FCC426396";
+
+  scoped_ptr<base::SymmetricKey> sym_key(base::SymmetricKey::Import(
+      base::SymmetricKey::AES, key));
+  ASSERT_TRUE(NULL != sym_key.get());
+
+  base::Encryptor encryptor;
+  // The IV must be exactly as long a the cipher block size.
+  EXPECT_EQ(16U, iv.size());
+  EXPECT_TRUE(encryptor.Init(sym_key.get(), base::Encryptor::CBC, iv));
+
+  std::string ciphertext;
+  EXPECT_TRUE(encryptor.Encrypt(plaintext, &ciphertext));
+  EXPECT_EQ(expected_ciphertext_hex, base::HexEncode(ciphertext.data(),
+                                                     ciphertext.size()));
+}
+
+TEST(EncryptorTest, EmptyDecrypt) {
+  std::string key = "128=SixteenBytes";
+  std::string iv = "Sweet Sixteen IV";
+
+  scoped_ptr<base::SymmetricKey> sym_key(base::SymmetricKey::Import(
+      base::SymmetricKey::AES, key));
+  ASSERT_TRUE(NULL != sym_key.get());
+
+  base::Encryptor encryptor;
+  // The IV must be exactly as long a the cipher block size.
+  EXPECT_EQ(16U, iv.size());
+  EXPECT_TRUE(encryptor.Init(sym_key.get(), base::Encryptor::CBC, iv));
+
+  std::string decrypted;
+  EXPECT_FALSE(encryptor.Decrypt("", &decrypted));
+  EXPECT_EQ("", decrypted);
 }
