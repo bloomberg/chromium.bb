@@ -3125,7 +3125,7 @@ long Track::GetNext(
 
     pNextEntry = pCluster->GetNext(pCurrEntry);
 
-    for (int i = 0; i < 100; ++i)  //arbitrary upper bound to search
+    for (int i = 0; ; )
     {
         while (pNextEntry)
         {
@@ -3171,6 +3171,14 @@ long Track::GetNext(
         }
 
         pNextEntry = pCluster->GetFirst();
+
+        if (pNextEntry == NULL)  //empty cluster
+            continue;
+
+        ++i;
+
+        if (i >= 100)
+            break;
     }
 
     //NOTE: if we get here, it means that we didn't find a block with
