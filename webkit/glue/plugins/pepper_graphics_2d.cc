@@ -299,7 +299,7 @@ void Graphics2D::Scroll(const PP_Rect* clip_rect, const PP_Point* amount) {
   int32 dx = amount->x;
   int32 dy = amount->y;
   if (dx <= -image_data_->width() || dx >= image_data_->width() ||
-      dx <= -image_data_->height() || dy >= image_data_->height())
+      dy <= -image_data_->height() || dy >= image_data_->height())
     return;
 
   operation.scroll_dx = dx;
