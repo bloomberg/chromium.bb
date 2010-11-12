@@ -821,6 +821,8 @@ int ChromeMain(int argc, char** argv) {
 #endif
       } else if (process_type == switches::kWorkerProcess) {
         rv = WorkerMain(main_params);
+      } else if (process_type == switches::kPpapiPluginProcess) {
+        rv = PpapiPluginMain(main_params);
       } else {
         NOTREACHED() << "Unknown process type: " << process_type;
       }

@@ -51,11 +51,14 @@ void PpapiPluginProcessHost::Init(const FilePath& path,
   if (!plugin_launcher.empty())
     cmd_line->PrependWrapper(plugin_launcher);
 
+  // On posix, having a plugin launcher means we need to use another process
+  // instead of just forking the zygote.
   Launch(
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(OS_POSIX)
-      true, base::environment_vector(),
+      plugin_launcher.empty(),
+      base::environment_vector(),
 #endif
       cmd_line);
 }
