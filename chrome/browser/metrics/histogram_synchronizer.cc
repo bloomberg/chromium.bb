@@ -16,17 +16,18 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 
+static const int kNeverUsableSequenceNumber = -2;
+
 HistogramSynchronizer::HistogramSynchronizer()
   : lock_(),
     received_all_renderer_histograms_(&lock_),
     callback_task_(NULL),
     callback_thread_(NULL),
-    io_message_loop_(NULL),
-    next_available_sequence_number_(-2),
-    async_sequence_number_(-2),
+    next_available_sequence_number_(kNeverUsableSequenceNumber),
+    async_sequence_number_(kNeverUsableSequenceNumber),
     async_renderers_pending_(0),
     async_callback_start_time_(TimeTicks::Now()),
-    synchronous_sequence_number_(-2),
+    synchronous_sequence_number_(kNeverUsableSequenceNumber),
     synchronous_renderers_pending_(0) {
   DCHECK(histogram_synchronizer_ == NULL);
   histogram_synchronizer_ = this;
@@ -71,7 +72,7 @@ void HistogramSynchronizer::FetchRendererHistogramsSynchronously(
     }
     unresponsive_renderer_count = synchronous_renderers_pending_;
     synchronous_renderers_pending_ = 0;
-    synchronous_sequence_number_ = 0;
+    synchronous_sequence_number_ = kNeverUsableSequenceNumber;
   }
   UMA_HISTOGRAM_COUNTS("Histogram.RendersNotRespondingSynchronous",
                        unresponsive_renderer_count);
@@ -138,7 +139,7 @@ void HistogramSynchronizer::DeserializeHistogramList(
   if (current_synchronizer == NULL)
     return;
 
-  DCHECK(current_synchronizer->IsOnIoThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (std::vector<std::string>::const_iterator it = histograms.begin();
        it < histograms.end();
@@ -152,7 +153,7 @@ void HistogramSynchronizer::DeserializeHistogramList(
 
 bool HistogramSynchronizer::DecrementPendingRenderers(int sequence_number) {
   if (sequence_number == async_sequence_number_) {
-    DCHECK(IsOnIoThread());
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if ((async_renderers_pending_ == 0) ||
         (--async_renderers_pending_ > 0))
       return false;
@@ -173,7 +174,7 @@ bool HistogramSynchronizer::DecrementPendingRenderers(int sequence_number) {
     DCHECK_EQ(synchronous_renderers_pending_, 0);
   }
 
-  // We could call Signal() without holding the lock.
+  // We can call Signal() without holding the lock.
   received_all_renderer_histograms_.Signal();
   return true;
 }
@@ -182,7 +183,7 @@ bool HistogramSynchronizer::DecrementPendingRenderers(int sequence_number) {
 void HistogramSynchronizer::SetCallbackTaskToCallAfterGettingHistograms(
     MessageLoop* callback_thread,
     Task* callback_task) {
-  DCHECK(IsOnIoThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Test for the existence of a previous task, and post call to post it if it
   // exists. We promised to post it after some timeout... and at this point, we
@@ -204,7 +205,7 @@ void HistogramSynchronizer::SetCallbackTaskToCallAfterGettingHistograms(
 
 void HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback(
     int sequence_number) {
-  DCHECK(IsOnIoThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (sequence_number == async_sequence_number_) {
      CallCallbackTaskAndResetData();
@@ -215,7 +216,7 @@ void HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback(
 // the renderers, call the callback_task if a callback_task exists. This is
 // called on IO Thread.
 void HistogramSynchronizer::CallCallbackTaskAndResetData() {
-  DCHECK(IsOnIoThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // callback_task_ would be set to NULL, if we have heard from all renderers
   // and we would have called the callback_task already.
@@ -236,6 +237,7 @@ void HistogramSynchronizer::CallCallbackTaskAndResetData() {
   async_callback_start_time_ = TimeTicks::Now();
   callback_task_ = NULL;
   callback_thread_ = NULL;
+  async_sequence_number_ = kNeverUsableSequenceNumber;
 }
 
 int HistogramSynchronizer::GetNextAvailableSequenceNumber(
@@ -243,14 +245,14 @@ int HistogramSynchronizer::GetNextAvailableSequenceNumber(
   AutoLock auto_lock(lock_);
   ++next_available_sequence_number_;
   if (0 > next_available_sequence_number_) {
-    // We wrapped around.
+    // We wrapped around, so we need to bypass the reserved number.
     next_available_sequence_number_ =
         chrome::kHistogramSynchronizerReservedSequenceNumber + 1;
   }
   DCHECK_NE(next_available_sequence_number_,
             chrome::kHistogramSynchronizerReservedSequenceNumber);
   if (requester == ASYNC_HISTOGRAMS) {
-    DCHECK(IsOnIoThread());
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     async_sequence_number_ = next_available_sequence_number_;
     async_renderers_pending_ = 1;
   } else if (requester == SYNCHRONOUS_HISTOGRAMS) {
@@ -263,7 +265,7 @@ int HistogramSynchronizer::GetNextAvailableSequenceNumber(
 void HistogramSynchronizer::IncrementPendingRenderers(
     RendererHistogramRequester requester) {
   if (requester == ASYNC_HISTOGRAMS) {
-    DCHECK(IsOnIoThread());
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     DCHECK_GT(async_renderers_pending_, 0);
     ++async_renderers_pending_;
   } else {
@@ -271,13 +273,6 @@ void HistogramSynchronizer::IncrementPendingRenderers(
     DCHECK_GT(synchronous_renderers_pending_, 0);
     ++synchronous_renderers_pending_;
   }
-}
-
-bool HistogramSynchronizer::IsOnIoThread() {
-  if (io_message_loop_ == NULL) {
-    io_message_loop_ = MessageLoop::current();
-  }
-  return (MessageLoop::current() == io_message_loop_);
 }
 
 // static

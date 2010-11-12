@@ -81,12 +81,6 @@ class HistogramSynchronizer : public
   // of the given type.
   void IncrementPendingRenderers(RendererHistogramRequester requester);
 
-  // For use ONLY in a DCHECK. This method initializes io_message_loop_ in its
-  // first call and then compares io_message_loop_ with MessageLoop::current()
-  // in subsequent calls. This method guarantees we're consistently on the
-  // singular IO thread and we don't need to worry about locks.
-  bool IsOnIoThread();
-
   // This lock_ protects access to next_sequence_number_,
   // synchronous_renderers_pending_, and synchronous_sequence_number_.
   Lock lock_;
@@ -101,17 +95,12 @@ class HistogramSynchronizer : public
   Task* callback_task_;
   MessageLoop* callback_thread_;
 
-  // For use ONLY in a DCHECK and is used in IsOnIoThread(). io_message_loop_ is
-  // initialized during the first call to IsOnIoThread(), and then compares
-  // MessageLoop::current() against io_message_loop_ in subsequent calls for
-  // consistency.
-  MessageLoop* io_message_loop_;
-
   // We don't track the actual renderers that are contacted for an update, only
   // the count of the number of renderers, and we can sometimes time-out and
   // give up on a "slow to respond" renderer.  We use a sequence_number to be
   // sure a response from a renderer is associated with the current round of
   // requests (and not merely a VERY belated prior response).
+  // All sequence numbers used are non-negative.
   // next_available_sequence_number_ is the next available number (used to
   // avoid reuse for a long time).  Access is protected by lock_.
   int next_available_sequence_number_;
