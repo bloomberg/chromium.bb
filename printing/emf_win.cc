@@ -58,7 +58,6 @@ bool Emf::Init(const void* src_buffer, uint32 src_buffer_size) {
   DCHECK(!emf_ && !hdc_);
   emf_ = SetEnhMetaFileBits(src_buffer_size,
                             reinterpret_cast<const BYTE*>(src_buffer));
-  DCHECK(emf_);
   return emf_ != NULL;
 }
 

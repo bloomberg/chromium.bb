@@ -18,15 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-#if defined(OS_WIN)
-#ifndef NDEBUG
-namespace {
-void IgnoreAssertHandler(const std::string& str) {
-}
-}  // namespace
-#endif  // NDEBUG
-#endif // defined(OS_WIN)
-
 // Tests that serialize/deserialize correctly understand each other
 TEST(IPCMessageTest, Serialize) {
   const char* serialize_cases[] = {
@@ -234,12 +225,11 @@ TEST(IPCMessageTest, PageRange) {
   EXPECT_TRUE(input == output);
 }
 
-// Enabling this test breaks assert handling for test suite. Bug 55177.
 // Tests printing::NativeMetafile serialization.
-TEST(IPCMessageTest, DISABLED_Metafile) {
-  // TODO(sanjeevr): Make this test meaningful for non-Windows platforms. We
-  // need to initialize the metafile using alternate means on the other OSes.
+// TODO(sanjeevr): Make this test meaningful for non-Windows platforms. We
+// need to initialize the metafile using alternate means on the other OSes.
 #if defined(OS_WIN)
+TEST(IPCMessageTest, Metafile) {
   printing::NativeMetafile metafile;
   RECT test_rect = {0, 0, 100, 100};
   // Create a metsfile using the screen DC as a reference.
@@ -269,14 +259,8 @@ TEST(IPCMessageTest, DISABLED_Metafile) {
   // Make sure we don't read out the metafile!
   printing::NativeMetafile bad_output;
   iter = NULL;
-  // The Emf code on Windows DCHECKs if it cannot create the metafile.
-#ifndef NDEBUG
-  logging::SetLogAssertHandler(IgnoreAssertHandler);
-#endif  // NDEBUG
   EXPECT_FALSE(IPC::ParamTraits<printing::NativeMetafile>::Read(
       &bad_msg, &iter, &bad_output));
-#else  // defined(OS_WIN)
-  NOTIMPLEMENTED();
-#endif  // defined(OS_WIN)
 }
+#endif  // defined(OS_WIN)
 
