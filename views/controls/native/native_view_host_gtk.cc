@@ -244,7 +244,8 @@ void NativeViewHostGtk::ShowWidget(int x, int y, int w, int h) {
 }
 
 void NativeViewHostGtk::HideWidget() {
-  gtk_widget_hide(fixed_);
+  if (fixed_)
+    gtk_widget_hide(fixed_);
 }
 
 void NativeViewHostGtk::SetFocus() {
