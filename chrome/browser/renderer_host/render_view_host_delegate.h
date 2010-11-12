@@ -587,13 +587,6 @@ class RenderViewHostDelegate {
     virtual ~BookmarkDrag() {}
   };
 
-  class BlockedPlugin {
-   public:
-    virtual void OnNonSandboxedPluginBlocked(const std::string& plugin,
-                                             const string16& name) = 0;
-    virtual void OnBlockedPluginLoaded() = 0;
-  };
-
   // SSL -----------------------------------------------------------------------
   // Interface for UI and other RenderViewHost-specific interactions with SSL.
 
@@ -664,7 +657,6 @@ class RenderViewHostDelegate {
   virtual Autocomplete* GetAutocompleteDelegate();
   virtual AutoFill* GetAutoFillDelegate();
   virtual BookmarkDrag* GetBookmarkDragDelegate();
-  virtual BlockedPlugin* GetBlockedPluginDelegate();
   virtual SSL* GetSSLDelegate();
   virtual FileSelect* GetFileSelectDelegate();
 

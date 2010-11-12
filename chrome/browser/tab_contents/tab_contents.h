@@ -66,7 +66,6 @@ struct PasswordForm;
 class AutocompleteHistoryManager;
 class AutoFillManager;
 class BlockedContentContainer;
-class BlockedPluginManager;
 class DOMUI;
 class DownloadItem;
 class Extension;
@@ -931,7 +930,6 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
   virtual RenderViewHostDelegate::Autocomplete* GetAutocompleteDelegate();
   virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
-  virtual RenderViewHostDelegate::BlockedPlugin* GetBlockedPluginDelegate();
   virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
   virtual RenderViewHostDelegate::FileSelect* GetFileSelectDelegate();
   virtual AutomationResourceRoutingDelegate*
@@ -1108,9 +1106,6 @@ class TabContents : public PageNavigator,
 
   // TabContentsSSLHelper, lazily created.
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
-
-  // BlockedPluginManager, lazily created.
-  scoped_ptr<BlockedPluginManager> blocked_plugin_manager_;
 
   // FileSelectHelper, lazily created.
   scoped_ptr<FileSelectHelper> file_select_helper_;

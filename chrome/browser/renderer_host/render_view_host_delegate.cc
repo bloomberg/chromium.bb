@@ -69,11 +69,6 @@ RenderViewHostDelegate::GetBookmarkDragDelegate() {
   return NULL;
 }
 
-RenderViewHostDelegate::BlockedPlugin*
-RenderViewHostDelegate::GetBlockedPluginDelegate() {
-  return NULL;
-}
-
 RenderViewHostDelegate::SSL*
 RenderViewHostDelegate::GetSSLDelegate() {
   return NULL;

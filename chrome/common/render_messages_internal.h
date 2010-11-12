@@ -1858,16 +1858,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_MissingPluginStatus,
                       int /* status */)
 
-  // Notifies when a non-sandboxed plugin was blocked.
-  // |plugin| is the identifier for the plugin (currently its path),
-  // |name| is its user-visible name.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_NonSandboxedPluginBlocked,
-                      std::string /* plugin */,
-                      string16 /* name */)
-
-  // Notifies when a blocked plugin was loaded via click-to-load.
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_BlockedPluginLoaded)
-
   // Sent by the renderer process to indicate that a plugin instance has
   // crashed.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,

@@ -272,8 +272,6 @@
         'browser/background_mode_manager.h',
         'browser/blocked_content_container.cc',
         'browser/blocked_content_container.h',
-        'browser/blocked_plugin_manager.cc',
-        'browser/blocked_plugin_manager.h',
         'browser/bookmarks/bookmark_codec.cc',
         'browser/bookmarks/bookmark_codec.h',
         'browser/bookmarks/bookmark_context_menu_controller.cc',

@@ -656,9 +656,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnDevToolsRuntimePropertyChanged(const std::string& name,
                                         const std::string& value);
   void OnMissingPluginStatus(int status);
-  void OnNonSandboxedPluginBlocked(const std::string& plugin,
-                                   const string16& name);
-  void OnBlockedPluginLoaded();
   void OnCrashedPlugin(const FilePath& plugin_path);
   void OnDisabledOutdatedPlugin(const string16& name, const GURL& update_url);
 
