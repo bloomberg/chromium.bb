@@ -30,6 +30,8 @@ static const char test_page_contents[] =
   "<html><head><title>Google</title></head><body><h1>Google</h1></body></html>";
 static const uint32 test_page_contents_len = arraysize(test_page_contents) - 1;
 
+static const char kShmemSegmentName[] = "DeferredResourceLoaderTest";
+
 // Listens for request response data and stores it so that it can be compared
 // to the reference data.
 class TestRequestCallback : public ResourceLoaderBridge::Peer {
@@ -289,13 +291,14 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
 
  protected:
   virtual void SetUp() {
-    EXPECT_EQ(true, shared_handle_.CreateNamed("DeferredResourceLoaderTest",
-                                               false, 100));
     ResourceDispatcherTest::SetUp();
+    shared_handle_.Delete(kShmemSegmentName);
+    EXPECT_EQ(true, shared_handle_.CreateNamed(kShmemSegmentName, false, 100));
   }
 
   virtual void TearDown() {
     shared_handle_.Close();
+    EXPECT_TRUE(shared_handle_.Delete(kShmemSegmentName));
     ResourceDispatcherTest::TearDown();
   }
 
@@ -325,4 +328,3 @@ TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
   message_loop.RunAllPending();
   delete bridge;
 }
-
