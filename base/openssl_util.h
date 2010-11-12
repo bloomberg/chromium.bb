@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_OPENNSSL_UTIL_H_
-#define BASE_OPENNSSL_UTIL_H_
+#ifndef BASE_OPENSSL_UTIL_H_
+#define BASE_OPENSSL_UTIL_H_
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/tracked.h"
 
 namespace base {
 
@@ -46,8 +47,25 @@ class ScopedOpenSSLSafeSizeBuffer {
   // Temporary buffer writen into in the case where the caller's
   // buffer is not of sufficient size.
   unsigned char min_sized_buffer_[MIN_SIZE];
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedOpenSSLSafeSizeBuffer);
+};
+
+// Drains the OpenSSL ERR_get_error stack. On a debug build the error codes
+// are send to VLOG(1), on a release build they are disregarded.
+void ClearOpenSSLERRStack();
+
+// Put an instance of this class on the call stack to automatically clear the
+// OpenSSL error stack on exit of your function.
+class ScopedOpenSSLERRClearer {
+ public:
+  ScopedOpenSSLERRClearer() {}
+  ~ScopedOpenSSLERRClearer() { ClearOpenSSLERRStack(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedOpenSSLERRClearer);
 };
 
 }  // namespace base
 
-#endif  // BASE_NSS_UTIL_H_
+#endif  // BASE_OPENSSL_UTIL_H_

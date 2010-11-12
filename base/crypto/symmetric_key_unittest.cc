@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,156 +67,160 @@ TEST(SymmetricKeyTest, ImportDerivedKey) {
 }
 
 struct PBKDF2TestVector {
+  base::SymmetricKey::Algorithm algorithm;
   const char* password;
   const char* salt;
   unsigned int rounds;
   unsigned int key_size_in_bits;
-  const uint8 expected[21];  // string literals need 1 extra NUL byte
+  const char* expected;  // ASCII encoded hex bytes
 };
 
-static const PBKDF2TestVector test_vectors[] = {
+class SymmetricKeyDeriveKeyFromPasswordTest
+    : public testing::TestWithParam<PBKDF2TestVector> {
+};
+
+TEST_P(SymmetricKeyDeriveKeyFromPasswordTest, DeriveKeyFromPassword) {
+  PBKDF2TestVector test_data(GetParam());
+#if defined(OS_MACOSX)
+  // The OS X crypto libraries have minimum salt and iteration requirements
+  // so some of the tests below will cause them to barf. Skip these.
+  if (strlen(test_data.salt) < 8 || test_data.rounds < 1000) {
+    VLOG(1) << "Skipped test vector for " << test_data.expected;
+    return;
+  }
+#endif  // OS_MACOSX
+
+  scoped_ptr<base::SymmetricKey> key(
+      base::SymmetricKey::DeriveKeyFromPassword(
+          test_data.algorithm,
+          test_data.password, test_data.salt,
+          test_data.rounds, test_data.key_size_in_bits));
+  ASSERT_TRUE(NULL != key.get());
+
+  std::string raw_key;
+  key->GetRawKey(&raw_key);
+  EXPECT_EQ(test_data.key_size_in_bits / 8, raw_key.size());
+  EXPECT_EQ(test_data.expected,
+            StringToLowerASCII(base::HexEncode(raw_key.data(),
+                                               raw_key.size())));
+}
+
+static const PBKDF2TestVector kTestVectors[] = {
   // These tests come from
   // http://www.ietf.org/id/draft-josefsson-pbkdf2-test-vectors-00.txt
   {
+    base::SymmetricKey::HMAC_SHA1,
     "password",
     "salt",
     1,
     160,
-    "\x0c\x60\xc8\x0f\x96\x1f\x0e\x71\xf3\xa9"
-    "\xb5\x24\xaf\x60\x12\x06\x2f\xe0\x37\xa6",
+    "0c60c80f961f0e71f3a9b524af6012062fe037a6",
   },
   {
+    base::SymmetricKey::HMAC_SHA1,
     "password",
     "salt",
     2,
     160,
-    "\xea\x6c\x01\x4d\xc7\x2d\x6f\x8c\xcd\x1e"
-    "\xd9\x2a\xce\x1d\x41\xf0\xd8\xde\x89\x57",
+    "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957",
   },
   {
+    base::SymmetricKey::HMAC_SHA1,
     "password",
     "salt",
     4096,
     160,
-    "\x4b\x00\x79\x01\xb7\x65\x48\x9a\xbe\xad"
-    "\x49\xd9\x26\xf7\x21\xd0\x65\xa4\x29\xc1",
+    "4b007901b765489abead49d926f721d065a429c1",
   },
   // This test takes over 30s to run on the trybots.
 #if 0
   {
+    base::SymmetricKey::HMAC_SHA1,
     "password",
     "salt",
     16777216,
     160,
-    "\xee\xfe\x3d\x61\xcd\x4d\xa4\xe4\xe9\x94"
-    "\x5b\x3d\x6b\xa2\x15\x8c\x26\x34\xe9\x84",
+    "eefe3d61cd4da4e4e9945b3d6ba2158c2634e984",
   },
 #endif
 
   // These tests come from RFC 3962, via BSD source code at
   // http://www.openbsd.org/cgi-bin/cvsweb/src/sbin/bioctl/pbkdf2.c?rev=HEAD&content-type=text/plain
   {
+    base::SymmetricKey::HMAC_SHA1,
     "password",
     "ATHENA.MIT.EDUraeburn",
     1,
     160,
-    {
-      0xcd, 0xed, 0xb5, 0x28, 0x1b, 0xb2, 0xf8, 0x01,
-      0x56, 0x5a, 0x11, 0x22, 0xb2, 0x56, 0x35, 0x15,
-      0x0a, 0xd1, 0xf7, 0xa0
-    },
+    "cdedb5281bb2f801565a1122b25635150ad1f7a0",
   },
   {
+    base::SymmetricKey::HMAC_SHA1,
     "password",
     "ATHENA.MIT.EDUraeburn",
     2,
     160,
-    {
-      0x01, 0xdb, 0xee, 0x7f, 0x4a, 0x9e, 0x24, 0x3e,
-      0x98, 0x8b, 0x62, 0xc7, 0x3c, 0xda, 0x93, 0x5d,
-      0xa0, 0x53, 0x78, 0xb9
-    },
+    "01dbee7f4a9e243e988b62c73cda935da05378b9",
   },
   {
+    base::SymmetricKey::HMAC_SHA1,
     "password",
     "ATHENA.MIT.EDUraeburn",
     1200,
     160,
-    {
-      0x5c, 0x08, 0xeb, 0x61, 0xfd, 0xf7, 0x1e, 0x4e,
-      0x4e, 0xc3, 0xcf, 0x6b, 0xa1, 0xf5, 0x51, 0x2b,
-      0xa7, 0xe5, 0x2d, 0xdb
-    },
+    "5c08eb61fdf71e4e4ec3cf6ba1f5512ba7e52ddb",
   },
   {
+    base::SymmetricKey::HMAC_SHA1,
     "password",
     "\0224VxxV4\022", /* 0x1234567878563412 */
     5,
     160,
-    {
-      0xd1, 0xda, 0xa7, 0x86, 0x15, 0xf2, 0x87, 0xe6,
-      0xa1, 0xc8, 0xb1, 0x20, 0xd7, 0x06, 0x2a, 0x49,
-      0x3f, 0x98, 0xd2, 0x03
-    },
+    "d1daa78615f287e6a1c8b120d7062a493f98d203",
   },
   {
+    base::SymmetricKey::HMAC_SHA1,
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "pass phrase equals block size",
     1200,
     160,
-    {
-      0x13, 0x9c, 0x30, 0xc0, 0x96, 0x6b, 0xc3, 0x2b,
-      0xa5, 0x5f, 0xdb, 0xf2, 0x12, 0x53, 0x0a, 0xc9,
-      0xc5, 0xec, 0x59, 0xf1
-    },
+    "139c30c0966bc32ba55fdbf212530ac9c5ec59f1",
   },
   {
+    base::SymmetricKey::HMAC_SHA1,
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "pass phrase exceeds block size",
     1200,
     160,
-    {
-      0x9c, 0xca, 0xd6, 0xd4, 0x68, 0x77, 0x0c, 0xd5,
-      0x1b, 0x10, 0xe6, 0xa6, 0x87, 0x21, 0xbe, 0x61,
-      0x1a, 0x8b, 0x4d, 0x28
-    },
+    "9ccad6d468770cd51b10e6a68721be611a8b4d28",
   },
   {
+    base::SymmetricKey::HMAC_SHA1,
     "\360\235\204\236", /* g-clef (0xf09d849e) */
     "EXAMPLE.COMpianist",
     50,
     160,
-    {
-      0x6b, 0x9c, 0xf2, 0x6d, 0x45, 0x45, 0x5a, 0x43,
-      0xa5, 0xb8, 0xbb, 0x27, 0x6a, 0x40, 0x3b, 0x39,
-      0xe7, 0xfe, 0x37, 0xa0
-    },
-  }
+    "6b9cf26d45455a43a5b8bb276a403b39e7fe37a0",
+  },
+
+  // Regression tests for AES keys, derived from the Linux NSS implementation.
+  {
+    base::SymmetricKey::AES,
+    "A test password",
+    "saltsalt",
+    1,
+    256,
+    "44899a7777f0e6e8b752f875f02044b8ac593de146de896f2e8a816e315a36de",
+  },
+  {
+    base::SymmetricKey::AES,
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "pass phrase exceeds block size",
+    20,
+    256,
+    "e0739745dc28b8721ba402e05214d2ac1eab54cf72bee1fba388297a09eb493c",
+  },
 };
 
-TEST(SymmetricKeyTest, DeriveKeyFromPassword) {
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_vectors); ++i) {
-    SCOPED_TRACE(StringPrintf("Test[%u]", i));
-#if defined(OS_MACOSX)
-    // The OS X crypto libraries have minimum salt and iteration requirements
-    // so some of the above tests will cause them to barf. Skip these.
-    if (strlen(test_vectors[i].salt) < 8 || test_vectors[i].rounds < 1000) {
-      VLOG(1) << "Skipped test vector #" << i;
-      continue;
-    }
-#endif  // OS_MACOSX
-    scoped_ptr<base::SymmetricKey> key(
-        base::SymmetricKey::DeriveKeyFromPassword(
-            base::SymmetricKey::HMAC_SHA1,
-            test_vectors[i].password, test_vectors[i].salt,
-            test_vectors[i].rounds, test_vectors[i].key_size_in_bits));
-    ASSERT_TRUE(NULL != key.get());
-
-    std::string raw_key;
-    key->GetRawKey(&raw_key);
-    EXPECT_EQ(test_vectors[i].key_size_in_bits / 8, raw_key.size());
-    EXPECT_EQ(0, memcmp(test_vectors[i].expected,
-                        raw_key.data(),
-                        raw_key.size()));
-  }
-}
+INSTANTIATE_TEST_CASE_P(, SymmetricKeyDeriveKeyFromPasswordTest,
+                        testing::ValuesIn(kTestVectors));
