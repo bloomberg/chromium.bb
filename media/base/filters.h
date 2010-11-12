@@ -42,7 +42,6 @@ class Decoder;
 class DemuxerStream;
 class FilterHost;
 class MediaFilter;
-class WritableBuffer;
 
 // Identifies the type of filter implementation. Each filter has to be one of
 // the following types. This is used to identify filter object during
