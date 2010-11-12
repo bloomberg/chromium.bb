@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "chrome/browser/browser_init.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "googleurl/src/gurl.h"
 
 class PrefService;
