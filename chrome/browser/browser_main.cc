@@ -105,6 +105,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
+#include <dbus/dbus-glib.h>
 #include "chrome/browser/browser_main_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #endif
@@ -163,6 +164,10 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/views/browser_dialogs.h"
+#endif
+
+#if defined(TOOLKIT_USES_GTK)
+#include "gfx/gtk_util.h"
 #endif
 
 // BrowserMainParts ------------------------------------------------------------
@@ -760,18 +765,104 @@ void MaybeChangeUIFont() {
 }
 #endif
 
+#if defined(TOOLKIT_USES_GTK)
+static void GLibLogHandler(const gchar* log_domain,
+                           GLogLevelFlags log_level,
+                           const gchar* message,
+                           gpointer userdata) {
+  if (!log_domain)
+    log_domain = "<unknown>";
+  if (!message)
+    message = "<no message>";
+
+  if (strstr(message, "Loading IM context type") ||
+      strstr(message, "wrong ELF class: ELFCLASS64")) {
+    // http://crbug.com/9643
+    // Until we have a real 64-bit build or all of these 32-bit package issues
+    // are sorted out, don't fatal on ELF 32/64-bit mismatch warnings and don't
+    // spam the user with more than one of them.
+    static bool alerted = false;
+    if (!alerted) {
+      LOG(ERROR) << "Bug 9643: " << log_domain << ": " << message;
+      alerted = true;
+    }
+  } else if (strstr(message, "gtk_widget_size_allocate(): attempt to "
+                             "allocate widget with width") &&
+             !GTK_CHECK_VERSION(2, 16, 1)) {
+    // This warning only occurs in obsolete versions of GTK and is harmless.
+    // http://crbug.com/11133
+  } else if (strstr(message, "Theme file for default has no") ||
+             strstr(message, "Theme directory") ||
+             strstr(message, "theme pixmap")) {
+    LOG(ERROR) << "GTK theme error: " << message;
+  } else if (strstr(message, "gtk_drag_dest_leave: assertion")) {
+    LOG(ERROR) << "Drag destination deleted: http://crbug.com/18557";
+  } else {
+#ifdef NDEBUG
+    LOG(ERROR) << log_domain << ": " << message;
+#else
+    LOG(FATAL) << log_domain << ": " << message;
+#endif
+  }
+}
+
+static void SetUpGLibLogHandler() {
+  // Register GLib-handled assertions to go through our logging system.
+  const char* kLogDomains[] = { NULL, "Gtk", "Gdk", "GLib", "GLib-GObject" };
+  for (size_t i = 0; i < arraysize(kLogDomains); i++) {
+    g_log_set_handler(kLogDomains[i],
+                      static_cast<GLogLevelFlags>(G_LOG_FLAG_RECURSION |
+                                                  G_LOG_FLAG_FATAL |
+                                                  G_LOG_LEVEL_ERROR |
+                                                  G_LOG_LEVEL_CRITICAL |
+                                                  G_LOG_LEVEL_WARNING),
+                      GLibLogHandler,
+                      NULL);
+  }
+}
+#endif
+
+void InitializeToolkit(const MainFunctionParams& parameters) {
+  // TODO(evan): this function is rather subtle, due to the variety
+  // of intersecting ifdefs we have.  To keep it easy to follow, there
+  // are no #else branches on any #ifs.
+
+#if defined(TOOLKIT_USES_GTK)
+  // We want to call g_thread_init(), but in some codepaths (tests) it
+  // is possible it has already been called.  In older versions of
+  // GTK, it is an error to call g_thread_init twice; unfortunately,
+  // the API to tell whether it has been called already was also only
+  // added in a newer version of GTK!  Thankfully, this non-intuitive
+  // check is actually equivalent and sufficient to work around the
+  // error.
+  if (!g_thread_supported())
+    g_thread_init(NULL);
+  // Glib type system initialization. Needed at least for gconf,
+  // used in net/proxy/proxy_config_service_linux.cc. Most likely
+  // this is superfluous as gtk_init() ought to do this. It's
+  // definitely harmless, so retained as a reminder of this
+  // requirement for gconf.
+  g_type_init();
+  // We use glib-dbus for geolocation and it's possible other libraries
+  // (e.g. gnome-keyring) will use it, so initialize its threading here
+  // as well.
+  dbus_g_thread_init();
+  gfx::GtkInitFromCommandLine(parameters.command_line_);
+  SetUpGLibLogHandler();
+#endif
+
 #if defined(TOOLKIT_GTK)
-void InitializeToolkit() {
   // It is important for this to happen before the first run dialog, as it
   // styles the dialog as well.
   gtk_util::InitRCStyles();
-}
-#elif defined(TOOLKIT_VIEWS)
-void InitializeToolkit() {
+#endif
+
+#if defined(TOOLKIT_VIEWS)
   // The delegate needs to be set before any UI is created so that windows
   // display the correct icon.
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
+#endif
 
 #if defined(OS_WIN)
   gfx::PlatformFontWin::adjust_font_callback = &AdjustUIFont;
@@ -784,10 +875,6 @@ void InitializeToolkit() {
   InitCommonControlsEx(&config);
 #endif
 }
-#else
-void InitializeToolkit() {
-}
-#endif
 
 #if defined(OS_CHROMEOS)
 
@@ -921,6 +1008,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
       parts(BrowserMainParts::CreateBrowserMainParts(parameters));
 
   parts->EarlyInitialization();
+
+  // Must happen before we try to use a message loop or display any UI.
+  InitializeToolkit(parameters);
+
   parts->MainMessageLoopStart();
 
   // WARNING: If we get a WM_ENDSESSION, objects created on the stack here
@@ -1009,8 +1100,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (IsMetricsReportingEnabled(local_state))
     InitCrashReporter();
 #endif
-
-  InitializeToolkit();  // Must happen before we try to display any UI.
 
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.

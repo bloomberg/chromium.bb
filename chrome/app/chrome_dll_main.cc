@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(port): the ifdefs in here are a first step towards trying to determine
-// the correct abstraction for all the OS functionality required at this
-// stage of process initialization. It should not be taken as a final
-// abstraction.
-
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -18,13 +13,9 @@
 #elif defined(OS_POSIX)
 #include <locale.h>
 #include <signal.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #endif
 
 #if defined(USE_X11)
-#include <dbus/dbus-glib.h>
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -65,17 +56,8 @@
 #include "chrome/common/url_constants.h"
 #include "ipc/ipc_switches.h"
 
-#if defined(USE_NSS)
-#include "base/nss_util.h"
-#endif
-
 #if defined(USE_X11)
 #include "app/x11_util.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
-#include "chrome/browser/zygote_host_linux.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -214,63 +196,6 @@ bool HasDeprecatedArguments(const std::wstring& command_line) {
 }
 
 #endif  // defined(OS_WIN)
-
-#if defined(USE_X11)
-static void GLibLogHandler(const gchar* log_domain,
-                           GLogLevelFlags log_level,
-                           const gchar* message,
-                           gpointer userdata) {
-  if (!log_domain)
-    log_domain = "<unknown>";
-  if (!message)
-    message = "<no message>";
-
-  if (strstr(message, "Loading IM context type") ||
-      strstr(message, "wrong ELF class: ELFCLASS64")) {
-    // http://crbug.com/9643
-    // Until we have a real 64-bit build or all of these 32-bit package issues
-    // are sorted out, don't fatal on ELF 32/64-bit mismatch warnings and don't
-    // spam the user with more than one of them.
-    static bool alerted = false;
-    if (!alerted) {
-      LOG(ERROR) << "Bug 9643: " << log_domain << ": " << message;
-      alerted = true;
-    }
-  } else if (strstr(message, "gtk_widget_size_allocate(): attempt to "
-                             "allocate widget with width") &&
-             !GTK_CHECK_VERSION(2, 16, 1)) {
-    // This warning only occurs in obsolete versions of GTK and is harmless.
-    // http://crbug.com/11133
-  } else if (strstr(message, "Theme file for default has no") ||
-             strstr(message, "Theme directory") ||
-             strstr(message, "theme pixmap")) {
-    LOG(ERROR) << "GTK theme error: " << message;
-  } else if (strstr(message, "gtk_drag_dest_leave: assertion")) {
-    LOG(ERROR) << "Drag destination deleted: http://crbug.com/18557";
-  } else {
-#ifdef NDEBUG
-    LOG(ERROR) << log_domain << ": " << message;
-#else
-    LOG(FATAL) << log_domain << ": " << message;
-#endif
-  }
-}
-
-static void SetUpGLibLogHandler() {
-  // Register GLib-handled assertions to go through our logging system.
-  const char* kLogDomains[] = { NULL, "Gtk", "Gdk", "GLib", "GLib-GObject" };
-  for (size_t i = 0; i < arraysize(kLogDomains); i++) {
-    g_log_set_handler(kLogDomains[i],
-                      static_cast<GLogLevelFlags>(G_LOG_FLAG_RECURSION |
-                                                  G_LOG_FLAG_FATAL |
-                                                  G_LOG_LEVEL_ERROR |
-                                                  G_LOG_LEVEL_CRITICAL |
-                                                  G_LOG_LEVEL_WARNING),
-                      GLibLogHandler,
-                      NULL);
-  }
-}
-#endif  // defined(USE_X11)
 
 #if defined(OS_LINUX)
 static void AdjustLinuxOOMScore(const std::string& process_type) {
@@ -908,54 +833,6 @@ int ChromeMain(int argc, char** argv) {
   } else if (process_type == switches::kServiceProcess) {
     rv = ServiceProcessMain(main_params);
   } else if (process_type.empty()) {
-#if defined(OS_LINUX)
-    const char* sandbox_binary = NULL;
-    struct stat st;
-
-    // In Chromium branded builds, developers can set an environment variable to
-    // use the development sandbox. See
-    // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
-    if (stat("/proc/self/exe", &st) == 0 && st.st_uid == getuid())
-      sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
-
-#if defined(LINUX_SANDBOX_PATH)
-    if (!sandbox_binary)
-      sandbox_binary = LINUX_SANDBOX_PATH;
-#endif
-
-    std::string sandbox_cmd;
-    if (sandbox_binary && !parsed_command_line.HasSwitch(switches::kNoSandbox))
-      sandbox_cmd = sandbox_binary;
-
-    // Tickle the sandbox host and zygote host so they fork now.
-    RenderSandboxHostLinux* shost = Singleton<RenderSandboxHostLinux>::get();
-    shost->Init(sandbox_cmd);
-    ZygoteHost* zhost = Singleton<ZygoteHost>::get();
-    zhost->Init(sandbox_cmd);
-
-#if defined(USE_NSS)
-    // We want to be sure to init NSPR on the main thread.
-    base::EnsureNSPRInit();
-#endif
-
-    g_thread_init(NULL);
-    // Glib type system initialization. Needed at least for gconf,
-    // used in net/proxy/proxy_config_service_linux.cc. Most likely
-    // this is superfluous as gtk_init() ought to do this. It's
-    // definitely harmless, so retained as a reminder of this
-    // requirement for gconf.
-    g_type_init();
-    // We use glib-dbus for geolocation and it's possible other libraries
-    // (e.g. gnome-keyring) will use it, so initialize its threading here
-    // as well.
-    dbus_g_thread_init();
-    // gtk_init() can change |argc| and |argv|.
-    gtk_init(&argc, &argv);
-    SetUpGLibLogHandler();
-
-    x11_util::SetDefaultX11ErrorHandlers();
-#endif  // defined(OS_LINUX)
-
     rv = BrowserMain(main_params);
   } else {
     NOTREACHED() << "Unknown process type";

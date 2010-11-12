@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_BROWSER_MAIN_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_BROWSER_MAIN_CHROMEOS_H_
 
-#include "chrome/browser/browser_main_posix.h"
+#include "chrome/browser/browser_main_gtk.h"
 
-class BrowserMainPartsChromeos : public BrowserMainPartsPosix {
+class BrowserMainPartsChromeos : public BrowserMainPartsGtk {
  public:
   explicit BrowserMainPartsChromeos(const MainFunctionParams& parameters)
-      : BrowserMainPartsPosix(parameters) {}
+      : BrowserMainPartsGtk(parameters) {}
 
  protected:
   virtual void PostMainMessageLoopStart();
