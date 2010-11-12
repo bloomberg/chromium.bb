@@ -266,7 +266,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       a dictionary of items from private_tests_info.txt
     """
     private_file = os.path.join(
-        self.DataDir(), 'private', 'private_tests_info.txt')
+        self.DataDir(), 'pyauto_private', 'private_tests_info.txt')
     assert os.path.exists(private_file), '%s missing' % private_file
     return self.EvalDataFrom(private_file)
 
