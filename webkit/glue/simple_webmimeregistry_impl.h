@@ -11,6 +11,9 @@ namespace webkit_glue {
 
 class SimpleWebMimeRegistryImpl : public WebKit::WebMimeRegistry {
  public:
+  SimpleWebMimeRegistryImpl() {}
+  virtual ~SimpleWebMimeRegistryImpl() {}
+
   // WebMimeRegistry methods:
   virtual WebKit::WebMimeRegistry::SupportsType supportsMIMEType(
       const WebKit::WebString&);
