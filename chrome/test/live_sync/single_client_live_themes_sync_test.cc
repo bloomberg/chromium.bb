@@ -23,33 +23,31 @@ class SingleClientLiveThemesSyncTest : public LiveThemesSyncTest {
 IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, CustomTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  scoped_refptr<Extension> theme = GetTheme(0);
   ASSERT_EQ(NULL, GetCustomTheme(GetProfile(0)));
   ASSERT_EQ(NULL, GetCustomTheme(verifier()));
 
-  SetTheme(GetProfile(0), theme);
-  SetTheme(verifier(), theme);
-  ASSERT_EQ(theme, GetCustomTheme(GetProfile(0)));
-  ASSERT_EQ(theme, GetCustomTheme(verifier()));
+  SetTheme(GetProfile(0), GetTheme(0));
+  SetTheme(verifier(), GetTheme(0));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
-      "Waiting for themes change."));
+      "Waiting for custom themes change."));
 
-  ASSERT_EQ(theme, GetCustomTheme(GetProfile(0)));
-  ASSERT_EQ(theme, GetCustomTheme(verifier()));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(verifier()));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  scoped_refptr<Extension> theme = GetTheme(0);
-  SetTheme(GetProfile(0), theme);
-  SetTheme(verifier(), theme);
+  SetTheme(GetProfile(0), GetTheme(0));
+  SetTheme(verifier(), GetTheme(0));
   ASSERT_FALSE(UsingNativeTheme(GetProfile(0)));
   ASSERT_FALSE(UsingNativeTheme(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
-      "Waiting for themes change."));
+      "Waiting for custom themes change."));
 
   GetProfile(0)->SetNativeTheme();
   verifier()->SetNativeTheme();
@@ -57,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(UsingNativeTheme(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
-      "Waiting for native theme change."));
+      "Waiting for native themes change."));
 
   ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
   ASSERT_TRUE(UsingNativeTheme(verifier()));
@@ -66,14 +64,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, NativeTheme) {
 IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  scoped_refptr<Extension> theme = GetTheme(0);
-  SetTheme(GetProfile(0), theme);
-  SetTheme(verifier(), theme);
+  SetTheme(GetProfile(0), GetTheme(0));
+  SetTheme(verifier(), GetTheme(0));
   ASSERT_FALSE(UsingDefaultTheme(GetProfile(0)));
   ASSERT_FALSE(UsingDefaultTheme(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
-      "Waiting for themes change."));
+      "Waiting for custom themes change."));
 
   GetProfile(0)->ClearTheme();
   verifier()->ClearTheme();
@@ -81,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientLiveThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(UsingDefaultTheme(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
-      "Waiting for cleared theme change."));
+      "Waiting for native themes change."));
 
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(0)));
   ASSERT_TRUE(UsingDefaultTheme(verifier()));

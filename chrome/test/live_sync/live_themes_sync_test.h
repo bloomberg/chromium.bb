@@ -12,25 +12,17 @@
 #include "base/compiler_specific.h"
 #include "base/scoped_temp_dir.h"
 #include "base/ref_counted.h"
-#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/live_extensions_sync_test_base.h"
 
 class Extension;
 class Profile;
 
-class LiveThemesSyncTest : public LiveSyncTest {
+class LiveThemesSyncTest : public LiveExtensionsSyncTestBase {
  public:
   explicit LiveThemesSyncTest(TestType test_type);
   virtual ~LiveThemesSyncTest();
 
-  // Like LiveSyncTest::SetupClients(), but also initializes
-  // extensions for each profile and also creates n themes (n =
-  // num_clients()).
-  virtual bool SetupClients() WARN_UNUSED_RESULT;
-
  protected:
-  // Get the index'th theme created by SetupClients().
-  scoped_refptr<Extension> GetTheme(int index) WARN_UNUSED_RESULT;
-
   // Set the theme of the given profile to a custom theme from the
   // given theme extension.
   static void SetTheme(Profile* profile, scoped_refptr<Extension> theme);
@@ -58,9 +50,6 @@ class LiveThemesSyncTest : public LiveSyncTest {
                                 const Extension* theme) WARN_UNUSED_RESULT;
 
  private:
-  ScopedTempDir theme_dir_;
-  std::vector<scoped_refptr<Extension> > themes_;
-
   DISALLOW_COPY_AND_ASSIGN(LiveThemesSyncTest);
 };
 

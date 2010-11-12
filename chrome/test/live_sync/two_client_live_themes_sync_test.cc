@@ -23,36 +23,34 @@ class TwoClientLiveThemesSyncTest : public LiveThemesSyncTest {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  scoped_refptr<Extension> theme = GetTheme(0);
   ASSERT_EQ(NULL, GetCustomTheme(GetProfile(0)));
   ASSERT_EQ(NULL, GetCustomTheme(GetProfile(1)));
   ASSERT_EQ(NULL, GetCustomTheme(verifier()));
 
-  SetTheme(GetProfile(0), theme);
-  SetTheme(verifier(), theme);
-  ASSERT_EQ(theme, GetCustomTheme(GetProfile(0)));
+  SetTheme(GetProfile(0), GetTheme(0));
+  SetTheme(verifier(), GetTheme(0));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
   ASSERT_EQ(NULL, GetCustomTheme(GetProfile(1)));
-  ASSERT_EQ(theme, GetCustomTheme(verifier()));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  ASSERT_EQ(theme, GetCustomTheme(GetProfile(0)));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
   // TODO(akalin): Add functions to simulate when a pending extension
   // is installed as well as when a pending extension fails to
   // install.
-  ASSERT_TRUE(ExtensionIsPendingInstall(GetProfile(1), theme));
-  ASSERT_EQ(theme, GetCustomTheme(verifier()));
+  ASSERT_TRUE(ExtensionIsPendingInstall(GetProfile(1), GetTheme(0)));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(verifier()));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  scoped_refptr<Extension> theme = GetTheme(0);
-  SetTheme(GetProfile(0), theme);
-  SetTheme(GetProfile(1), theme);
-  SetTheme(verifier(), theme);
+  SetTheme(GetProfile(0), GetTheme(0));
+  SetTheme(GetProfile(1), GetTheme(0));
+  SetTheme(verifier(), GetTheme(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AwaitQuiescence());
 
   GetProfile(0)->SetNativeTheme();
   verifier()->SetNativeTheme();
@@ -70,12 +68,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  scoped_refptr<Extension> theme = GetTheme(0);
-  SetTheme(GetProfile(0), theme);
-  SetTheme(GetProfile(1), theme);
-  SetTheme(verifier(), theme);
+  SetTheme(GetProfile(0), GetTheme(0));
+  SetTheme(GetProfile(1), GetTheme(0));
+  SetTheme(verifier(), GetTheme(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AwaitQuiescence());
 
   GetProfile(0)->ClearTheme();
   verifier()->ClearTheme();
@@ -112,10 +109,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeDefaultRace) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomNativeRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  scoped_refptr<Extension> theme = GetTheme(0);
-  SetTheme(GetProfile(0), theme);
+  SetTheme(GetProfile(0), GetTheme(0));
   GetProfile(1)->SetNativeTheme();
-  ASSERT_EQ(theme, GetCustomTheme(GetProfile(0)));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
   ASSERT_TRUE(UsingNativeTheme(GetProfile(1)));
 
   ASSERT_TRUE(AwaitQuiescence());
@@ -123,27 +119,28 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomNativeRace) {
   // TODO(akalin): Add function to wait for pending extensions to be
   // installed.
 
-  ASSERT_EQ(HasOrWillHaveCustomTheme(GetProfile(0), theme),
-            HasOrWillHaveCustomTheme(GetProfile(1), theme));
+  ASSERT_EQ(HasOrWillHaveCustomTheme(GetProfile(0), GetTheme(0)),
+            HasOrWillHaveCustomTheme(GetProfile(1), GetTheme(0)));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomDefaultRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  scoped_refptr<Extension> theme = GetTheme(0);
-  SetTheme(GetProfile(0), theme);
+  SetTheme(GetProfile(0), GetTheme(0));
   GetProfile(1)->ClearTheme();
-  ASSERT_EQ(theme, GetCustomTheme(GetProfile(0)));
+  ASSERT_EQ(GetTheme(0), GetCustomTheme(GetProfile(0)));
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(1)));
 
   ASSERT_TRUE(AwaitQuiescence());
 
-  ASSERT_EQ(HasOrWillHaveCustomTheme(GetProfile(0), theme),
-            HasOrWillHaveCustomTheme(GetProfile(1), theme));
+  ASSERT_EQ(HasOrWillHaveCustomTheme(GetProfile(0), GetTheme(0)),
+            HasOrWillHaveCustomTheme(GetProfile(1), GetTheme(0)));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomCustomRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // TODO(akalin): Generalize this to n clients.
 
   SetTheme(GetProfile(0), GetTheme(0));
   SetTheme(GetProfile(1), GetTheme(1));
