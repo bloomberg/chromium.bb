@@ -8,10 +8,10 @@
 
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 
 class DOMUI;
+class Extension;
 class Value;
 class PrefService;
 
@@ -63,10 +63,12 @@ class ShownSectionsHandler : public DOMMessageHandler,
                                int old_pref_version,
                                int new_pref_version);
 
+  static void OnExtensionInstalled(PrefService* prefs,
+                                   const Extension* extension);
+
  private:
   PrefService* pref_service_;
   PrefChangeRegistrar pref_registrar_;
-  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ShownSectionsHandler);
 };

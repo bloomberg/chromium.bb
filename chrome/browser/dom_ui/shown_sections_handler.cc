@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 
@@ -55,9 +54,6 @@ ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
 }
 
 void ShownSectionsHandler::RegisterMessages() {
-  notification_registrar_.Add(this, NotificationType::EXTENSION_INSTALLED,
-                              Source<Profile>(dom_ui_->GetProfile()));
-
   dom_ui_->RegisterMessageCallback("getShownSections",
       NewCallback(this, &ShownSectionsHandler::HandleGetShownSections));
   dom_ui_->RegisterMessageCallback("setShownSections",
@@ -73,21 +69,6 @@ void ShownSectionsHandler::Observe(NotificationType type,
     int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
     FundamentalValue sections_value(sections);
     dom_ui_->CallJavascriptFunction(L"setShownSections", sections_value);
-  } else if (type == NotificationType::EXTENSION_INSTALLED) {
-    if (Details<const Extension>(details).ptr()->is_app()) {
-      int mode = pref_service_->GetInteger(prefs::kNTPShownSections);
-
-      // De-minimize the apps section.
-      mode &= ~MINIMIZED_APPS;
-
-      // Hide any open sections.
-      mode &= ~ALL_SECTIONS_MASK;
-
-      // Show the apps section.
-      mode |= APPS;
-
-      pref_service_->SetInteger(prefs::kNTPShownSections, mode);
-    }
   } else {
     NOTREACHED();
   }
@@ -136,4 +117,23 @@ void ShownSectionsHandler::MigrateUserPrefs(PrefService* pref_service,
 
   if (changed)
     pref_service->SetInteger(prefs::kNTPShownSections, shown_sections);
+}
+
+// static
+void ShownSectionsHandler::OnExtensionInstalled(PrefService* prefs,
+                                                const Extension* extension) {
+  if (extension->is_app()) {
+    int mode = prefs->GetInteger(prefs::kNTPShownSections);
+
+    // De-minimize the apps section.
+    mode &= ~MINIMIZED_APPS;
+
+    // Hide any open sections.
+    mode &= ~ALL_SECTIONS_MASK;
+
+    // Show the apps section.
+    mode |= APPS;
+
+    prefs->SetInteger(prefs::kNTPShownSections, mode);
+  }
 }

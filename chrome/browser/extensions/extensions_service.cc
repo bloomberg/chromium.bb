@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
@@ -1689,6 +1690,7 @@ void ExtensionsService::OnExtensionInstalled(const Extension* extension,
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
                             extension->GetHistogramType(), 100);
+  ShownSectionsHandler::OnExtensionInstalled(profile_->GetPrefs(), extension);
   extension_prefs_->OnExtensionInstalled(
       extension, initial_state, initial_enable_incognito);
 
