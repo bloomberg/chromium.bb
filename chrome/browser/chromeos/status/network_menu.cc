@@ -385,6 +385,7 @@ SkBitmap NetworkMenu::IconForNetworkStrength(int strength, bool black) {
   return *ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
 }
 
+// static
 SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular) {
   DCHECK(cellular);
   // Compose wifi icon by superimposing various icons.
@@ -405,6 +406,22 @@ SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular) {
       break;
   }
   return *ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
+}
+
+// static
+SkBitmap NetworkMenu::IconForNetworkConnecting(double animation_value,
+                                               bool black) {
+  // Draw animation of bars icon fading in and out.
+  // We are fading between 0 bars and a third of the opacity of 4 bars.
+  // Use the current value of the animation to calculate the alpha value
+  // of how transparent the icon is.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return SkBitmapOperations::CreateBlendedBitmap(
+      *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
+                                 IDR_STATUSBAR_NETWORK_BARS0),
+      *rb.GetBitmapNamed(black ? IDR_STATUSBAR_NETWORK_BARS4_BLACK :
+                                 IDR_STATUSBAR_NETWORK_BARS4),
+      animation_value / 3);
 }
 
 // static

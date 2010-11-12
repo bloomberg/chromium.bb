@@ -33,7 +33,7 @@ NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       parent_window_(parent_window) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(Tween::LINEAR);
+  animation_connecting_.SetTweenType(Tween::EASE_IN_OUT);
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
   // The initial state will be updated on Refresh.
   // See network_selection_view.cc.
@@ -48,14 +48,8 @@ NetworkDropdownButton::~NetworkDropdownButton() {
 
 void NetworkDropdownButton::AnimationProgressed(const Animation* animation) {
   if (animation == &animation_connecting_) {
-    // Figure out which image to draw. We want a value between 0-100.
-    // 0 represents no signal and 100 represents full signal strength.
-    int value = static_cast<int>(animation_connecting_.GetCurrentValue()*100.0);
-    if (value < 0)
-      value = 0;
-    else if (value > 100)
-      value = 100;
-    SetIcon(IconForNetworkStrength(value, true));
+    SetIcon(IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
+                                     true));
     SchedulePaint();
   } else {
     MenuButton::AnimationProgressed(animation);
@@ -91,14 +85,14 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
         DCHECK(active_network->type() == TYPE_WIFI ||
                active_network->type() == TYPE_CELLULAR);
         wireless = static_cast<const WirelessNetwork*>(active_network);
-        SetIcon(IconForNetworkStrength(wireless->strength(), false));
+        SetIcon(IconForNetworkStrength(wireless->strength(), true));
         SetText(ASCIIToWide(wireless->name()));
       }
     } else if (cros->wifi_connecting() || cros->cellular_connecting()) {
       if (!animation_connecting_.is_animating()) {
         animation_connecting_.Reset();
         animation_connecting_.StartThrobbing(-1);
-        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS1_BLACK));
+        SetIcon(IconForNetworkConnecting(0, true));
       }
       if (cros->wifi_connecting())
         SetText(ASCIIToWide(cros->wifi_network()->name()));
