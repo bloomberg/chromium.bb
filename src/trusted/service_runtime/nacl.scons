@@ -9,9 +9,10 @@ Import('env')
 
 HALT_SLED_SIZE=32
 
+# Valgrind gets confused by these tests
+
 if env.IsRunningUnderValgrind():
   Return()
-
 
 # ----------------------------------------------------------
 # Tests that require a NaCl module
@@ -31,26 +32,33 @@ else:
 
 def NewAsmEnv(env, *alist, **kwarg):
   asm_env = env.Clone()
+  elf_patcher_addenda = ''
   if ARGUMENTS.get('bitcode'):
     asm_env.Replace(CC=env['CC_NATIVE'])
+    elf_patcher_addenda = (' && ${PYTHON}' +
+                           ' ${SCONSTRUCT_DIR}/tools/elf_patcher.py' +
+                           ' -a 16' +
+                           ' -h ${SCONSTRUCT_DIR}/src/include/nacl_elf.h' +
+                           ' ${TARGET}')
   if env['TARGET_ARCHITECTURE'] == 'x86':
     if env['TARGET_SUBARCH'] == '32':
-      asm_env['LINKCOM'] = ('${LD} -melf_nacl -e _start ${RO_START}' +
-                            ' ${RW_START} -o ${TARGET} ${SOURCES}')
+      asm_env['LINKCOM'] = ('${LD} -melf_nacl -e _start -Ttext 0x20000' +
+                            ' ${RO_START} ${RW_START}' +
+                            ' -o ${TARGET} ${SOURCES}' +
+                            elf_patcher_addenda)
     elif env['TARGET_SUBARCH'] == '64':
-      asm_env['LINKCOM'] = ('${LD} -melf64_nacl -e _start ${RO_START}' +
-                            ' ${RW_START} -o ${TARGET} ${SOURCES}')
+      asm_env['LINKCOM'] = ('${LD} -melf64_nacl -e _start -Ttext 0x20000' +
+                            ' ${RO_START} ${RW_START}' +
+                            ' -o ${TARGET} ${SOURCES}' +
+                            elf_patcher_addenda)
     else:
       raise Exception, 'new subarchtecture for x86?!?'
   elif env['TARGET_ARCHITECTURE'] == 'arm':
     asm_env['LINKCOM'] = ('${LD} --native-client -e _start -Ttext 0x20000' +
                           ' -nostdlib -static' +
                           ' ${RO_START} ${RW_START} -o ${TARGET} ${SOURCES}' +
-                          ' && ${PYTHON}' +
-                          ' ${SCONSTRUCT_DIR}/tools/elf_patcher.py' +
-                          ' -a 16 -h ${SCONSTRUCT_DIR}/src/include/nacl_elf.h' +
-                          ' ${TARGET}')
-  else:
+                          elf_patcher_addenda)
+
     raise Exception, 'unknown architecture'
 
   asm_env.Append(CPPDEFINES = [
