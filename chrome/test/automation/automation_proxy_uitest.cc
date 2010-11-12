@@ -21,7 +21,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/net/url_request_slow_http_job.h"
 #include "chrome/browser/view_ids.h"
-//#include "chrome/common/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
