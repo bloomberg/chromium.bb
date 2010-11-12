@@ -12,3 +12,4 @@
 // This actually defines the implementations of all the IPC message functions.
 #define MESSAGES_INTERNAL_IMPL_FILE "ppapi/proxy/ppapi_messages_internal.h"
 #include "ipc/ipc_message_impl_macros.h"
+
