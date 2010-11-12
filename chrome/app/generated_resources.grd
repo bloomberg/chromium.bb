@@ -4104,6 +4104,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SNAP_START_DESCRIPTION" desc="Description of the 'Snap Start' lab.">
         Enables an experimental TLS extension which removes a round trip from HTTPS handshakes.
       </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME" desc="Name of the 'Experimental Extension APIs' lab.">
+        Experimental Extension APIs
+      </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION" desc="Description of the 'Experimental Extension APIs' lab.">
+        Enables experimental extension APIs. Note that the extension gallery doesn't allow you to upload extensions that use experimental APIs.
+      </message>
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">

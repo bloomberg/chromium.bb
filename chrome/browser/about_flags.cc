@@ -185,6 +185,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     switches::kEnableSnapStart
   },
+  {
+    "extension-apis",   // Do not change; see above.
+    IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
+    IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION,
+    kOsAll,
+    switches::kEnableExperimentalExtensionApis
+  },
 };
 
 const Experiment* experiments = kExperiments;
