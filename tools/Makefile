@@ -397,13 +397,17 @@ BUILD/stamp-binutils: SRC/stamp-binutils | BUILD
 	  touch SRC/binutils/ld/ldgram.y ; \
 	  touch SRC/binutils/ld/ldlex.l ; \
 	fi
+	# We'd like to build binutils with -Werror, but there are a
+	# number of warnings in the Mac version of GCC that prevent
+	# use from building with -Werror today.
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="gcc" \
 	  CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
 	  LDFLAGS="-s" \
 	  ../../SRC/binutils/configure \
 	    --prefix=$(SDKROOT) \
-	    --target=${CROSSARCH}
+	    --target=${CROSSARCH} \
+	    --disable-werror
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
