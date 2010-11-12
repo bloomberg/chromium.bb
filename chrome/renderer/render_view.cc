@@ -95,6 +95,7 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "media/base/media_switches.h"
@@ -1105,14 +1106,19 @@ bool RenderView::CaptureThumbnail(WebView* view,
   SkBitmap subset;
   device.accessBitmap(false).extractSubset(&subset, src_rect);
 
-  // Resample the subset that we want to get it the right size.
+  // First do a fast downsample by powers of two to get close to the final size.
+  SkBitmap downsampled_subset =
+      SkBitmapOperations::DownsampleByTwoUntilSize(subset, w, h);
+
+  // Do a high-quality resize from the downscaled size to the final size.
   *thumbnail = skia::ImageOperations::Resize(
-      subset, skia::ImageOperations::RESIZE_LANCZOS3, w, h);
+      downsampled_subset, skia::ImageOperations::RESIZE_LANCZOS3, w, h);
 
   score->boring_score = CalculateBoringScore(thumbnail);
 
   HISTOGRAM_TIMES("Renderer4.Thumbnail",
                   base::TimeTicks::Now() - beginning_time);
+
   return true;
 }
 
