@@ -158,6 +158,26 @@ IPC_BEGIN_MESSAGES(PpapiHost)
                              PP_Module /* module */,
                              pp::proxy::SerializedVar /* result */)
 
+  // PPB_CursorControl.
+  IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBCursorControl_SetCursor,
+                             PP_Instance /* instance */,
+                             int32_t /* type */,
+                             PP_Resource /* custom_image */,
+                             PP_Point /* hot_spot */,
+                             PP_Bool /* result */)
+  IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_LockCursor,
+                             PP_Instance /* instance */,
+                             PP_Bool /* result */)
+  IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_UnlockCursor,
+                             PP_Instance /* instance */,
+                             PP_Bool /* result */)
+  IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_HasCursorLock,
+                             PP_Instance /* instance */,
+                             PP_Bool /* result */)
+  IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_CanLockCursor,
+                             PP_Instance /* instance */,
+                             PP_Bool /* result */)
+
   // PPB_Font.
   IPC_SYNC_MESSAGE_ROUTED2_3(
       PpapiHostMsg_PPBFont_Create,
@@ -191,6 +211,14 @@ IPC_BEGIN_MESSAGES(PpapiHost)
                              uint32_t /* char_offset */,
                              int32_t /* result */)
 
+  // PPB_Fullscreen.
+  IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFullscreen_IsFullscreen,
+                             PP_Instance /* instance */,
+                             PP_Bool /* result */)
+  IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFullscreen_SetFullscreen,
+                             PP_Instance /* instance */,
+                             PP_Bool /* fullscreen */,
+                             PP_Bool /* result */)
 
   // PPB_Graphics2D.
   IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics2D_Create,

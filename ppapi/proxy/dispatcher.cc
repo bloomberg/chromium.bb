@@ -14,6 +14,8 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/dev/ppb_cursor_control_dev.h"
+#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
@@ -28,7 +30,9 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_char_set_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
+#include "ppapi/proxy/ppb_cursor_control_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
+#include "ppapi/proxy/ppb_fullscreen_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
@@ -210,8 +214,12 @@ InterfaceProxy* Dispatcher::CreateProxyForInterface(
     return new PPB_CharSet_Proxy(this, interface_functions);
   if (interface_name == PPB_CORE_INTERFACE)
     return new PPB_Core_Proxy(this, interface_functions);
+  if (interface_name == PPB_CURSOR_CONTROL_DEV_INTERFACE)
+    return new PPB_CursorControl_Proxy(this, interface_functions);
   if (interface_name == PPB_FONT_DEV_INTERFACE)
     return new PPB_Font_Proxy(this, interface_functions);
+  if (interface_name == PPB_FULLSCREEN_DEV_INTERFACE)
+    return new PPB_Fullscreen_Proxy(this, interface_functions);
   if (interface_name == PPB_GRAPHICS_2D_INTERFACE)
     return new PPB_Graphics2D_Proxy(this, interface_functions);
   if (interface_name == PPB_IMAGEDATA_INTERFACE)
