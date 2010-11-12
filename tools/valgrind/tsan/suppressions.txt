@@ -63,6 +63,16 @@
 }
 
 ############################
+# Benign races
+{
+  bug_62694 [benign race in Histogram]
+  ThreadSanitizer:Race
+  ...
+  fun:base::Histogram::Add
+  fun:net::CookieMonster::*
+}
+
+############################
 # Real races in third_party
 {
   bug_23244 (libevent)
@@ -251,6 +261,13 @@
    ThreadSanitizer sanity test (ToolsSanityTest.DataRace).
    ThreadSanitizer:Race
    fun:*TOOLS_SANITY_TEST_CONCURRENT_THREAD*ThreadMain*
+}
+
+{
+   Benign race (or even a false positive) on atomics in ThreadCollisionWarner
+   ThreadSanitizer:Race
+   fun:base::subtle::NoBarrier_Store
+   fun:base::ThreadCollisionWarner::Leave
 }
 
 ############################
