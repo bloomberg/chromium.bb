@@ -340,9 +340,7 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void deleteTexture(unsigned);
 
   virtual void synthesizeGLError(unsigned long error);
-  virtual bool supportsBGRA();  // TODO(kbr): remove
 
-  virtual bool supportsMapSubCHROMIUM();  // TODO(kbr): remove
   virtual void* mapBufferSubDataCHROMIUM(
       unsigned target, int offset, int size, unsigned access);
   virtual void unmapBufferSubDataCHROMIUM(const void*);
@@ -358,8 +356,6 @@ class WebGraphicsContext3DCommandBufferImpl
       unsigned access);
   virtual void unmapTexSubImage2DCHROMIUM(const void*);
 
-  // TODO(kbr): remove supportsCopyTextureToParentTextureCHROMIUM
-  virtual bool supportsCopyTextureToParentTextureCHROMIUM();
   virtual void copyTextureToParentTextureCHROMIUM(
       unsigned texture, unsigned parentTexture);
 

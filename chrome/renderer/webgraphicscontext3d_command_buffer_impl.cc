@@ -330,29 +330,6 @@ void WebGraphicsContext3DCommandBufferImpl::synthesizeGLError(
   }
 }
 
-static bool supports_extension(const char *ext_name) {
-  const char* extensions = (const char *) glGetString(GL_EXTENSIONS);
-  CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
-  while (t.GetNext()) {
-    if (t.token() == ext_name) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::supportsBGRA() {
-  static bool is_supported =
-    supports_extension("GL_EXT_texture_format_BGRA8888") &&
-    supports_extension("GL_EXT_read_format_bgra");
-  return is_supported;
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::supportsMapSubCHROMIUM() {
-  static bool is_supported = supports_extension("GL_CHROMIUM_map_sub");
-  return is_supported;
-}
-
 void* WebGraphicsContext3DCommandBufferImpl::mapBufferSubDataCHROMIUM(
     unsigned target,
     int offset,
@@ -383,11 +360,6 @@ void* WebGraphicsContext3DCommandBufferImpl::mapTexSubImage2DCHROMIUM(
 void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
     const void* mem) {
   glUnmapTexSubImage2D(mem);
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::
-    supportsCopyTextureToParentTextureCHROMIUM() {
-  return true;
 }
 
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
