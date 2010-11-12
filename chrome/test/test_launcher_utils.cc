@@ -30,6 +30,9 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // Enable warning level logging so that we can see when bad stuff happens.
   command_line->AppendSwitch(switches::kEnableLogging);
   command_line->AppendSwitchASCII(switches::kLoggingLevel, "1");  // warning
+
+  // Disable safebrowsing autoupdate.
+  command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
 }
 
 bool OverrideUserDataDir(const FilePath& user_data_dir) {
