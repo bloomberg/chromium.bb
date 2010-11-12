@@ -378,6 +378,14 @@
    fun:_ZN4spdy10SpdyFramer22DecompressControlFrameERKNS_16SpdyControlFrameE
    fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
 }
+{
+  zlibz_value4_deflate_libpng
+  Memcheck:Value4
+  ...
+  fun:deflate*
+  ...
+  fun:*png*
+}
 #-- end of zlib filters
 {
    bug_33394
@@ -3254,7 +3262,6 @@
    fun:_ZN3net19TCPClientSocketPoolD0Ev
    fun:_ZN10scoped_ptrIN3net19TCPClientSocketPoolEED1Ev
 }
-
 {
    bug_62801
    Memcheck:Addr4
@@ -3270,4 +3277,30 @@
    fun:start_thread
    fun:clone
 }
-
+{
+   bug_62943 (Cond)
+   Memcheck:Cond
+   ...
+   fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
+   fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
+   fun:_ZN13safe_browsing26ClientSideDetectionService32StartClientReportPhishingRequestERK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS1_bEE
+   fun:_Z16DispatchToMethodIN13safe_browsing26ClientSideDetectionServiceEMS1_FvRK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS2_bEEES2_dS5_SA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+}
+{
+   bug_62943 (Value4)
+   Memcheck:Value4
+   ...
+   fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
+   fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
+   fun:_ZN13safe_browsing26ClientSideDetectionService32StartClientReportPhishingRequestERK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS1_bEE
+   fun:_Z16DispatchToMethodIN13safe_browsing26ClientSideDetectionServiceEMS1_FvRK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS2_bEEES2_dS5_SA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+}
+{
+   bug_62943 (Leak)
+   Memcheck:Leak
+   ...
+   fun:_ZN21FakeURLFetcherFactory16CreateURLFetcherEiRK4GURLN10URLFetcher11RequestTypeEPNS3_8DelegateE
+   fun:_ZN10URLFetcher6CreateEiRK4GURLNS_11RequestTypeEPNS_8DelegateE
+   fun:_ZN13safe_browsing26ClientSideDetectionService32StartClientReportPhishingRequestERK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS1_bEE
+   fun:_Z16DispatchToMethodIN13safe_browsing26ClientSideDetectionServiceEMS1_FvRK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS2_bEEES2_dS5_SA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+}

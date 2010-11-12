@@ -145,7 +145,7 @@
   fun:std::vector::_M_insert_aux
   fun:std::vector::push_back
   fun:IPC::ChannelProxy::Context::OnAddFilter
-  fun:void DispatchToMethod
+  fun:*DispatchToMethod
   fun:RunnableMethod::Run
 }
 {
@@ -455,7 +455,7 @@
    Heapcheck:Leak
    fun:CallbackRunner* NewCallback
    fun:media::PipelineImpl::FilterStateTransitionTask
-   fun:void DispatchToMethod
+   fun:*DispatchToMethod
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
 }
@@ -645,7 +645,7 @@
    Heapcheck:Leak
    fun:Callback*::Type* NewCallback
    fun:remoting::SessionManager::DoEncode
-   fun:void DispatchToMethod
+   fun:*DispatchToMethod
    fun:RunnableMethod::Run
 }
 {
@@ -715,7 +715,7 @@
    Heapcheck:Leak
    ...
    fun:net::SingleThreadedProxyResolver::Job::DoQuery
-   fun:void DispatchToMethod
+   fun:*DispatchToMethod
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
    fun:MessageLoop::DeferOrRunPendingTask
@@ -874,7 +874,7 @@
    Heapcheck:Leak
    fun:base::WaitableEventWatcher::StartWatching
    fun:IPC::SyncChannel::SyncContext::OnChannelOpened
-   fun:void DispatchToMethod
+   fun:*DispatchToMethod
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
 }
@@ -1052,4 +1052,13 @@
    fun:ReloadButtonGtkTest_*_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
+}
+{
+   bug_62943
+   Heapcheck:Leak
+   ...
+   fun:FakeURLFetcherFactory::CreateURLFetcher
+   fun:URLFetcher::Create
+   fun:safe_browsing::ClientSideDetectionService::StartClientReportPhishingRequest
+   fun:*DispatchToMethod
 }
