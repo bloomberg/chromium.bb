@@ -24,31 +24,22 @@ class MockNotificationUI : public BalloonCollectionImpl::NotificationUI {
   virtual void SetActiveView(BalloonViewImpl* view) {}
 };
 
-MockBalloonCollection::MockBalloonCollection()
-    : log_proxy_(new LoggingNotificationProxy()) {
+MockBalloonCollection::MockBalloonCollection() {
   set_notification_ui(new MockNotificationUI());
 }
 
 void MockBalloonCollection::Add(const Notification& notification,
                                 Profile* profile) {
-  // Swap in the logging proxy for the purpose of logging calls that
+  // Swap in a logging proxy for the purpose of logging calls that
   // would be made into javascript, then pass this down to the
   // balloon collection.
-  Notification test_notification(notification.origin_url(),
-                                 notification.content_url(),
-                                 notification.display_source(),
-                                 string16(), /* replace_id */
-                                 log_proxy_.get());
+  Notification test_notification(
+      notification.origin_url(),
+      notification.content_url(),
+      notification.display_source(),
+      notification.replace_id(),
+      new LoggingNotificationProxy(notification.notification_id()));
   BalloonCollectionImpl::Add(test_notification, profile);
-}
-
-bool MockBalloonCollection::Remove(const Notification& notification) {
-  Notification test_notification(notification.origin_url(),
-                                 notification.content_url(),
-                                 notification.display_source(),
-                                 string16(), /* replace_id */
-                                 log_proxy_.get());
-  return BalloonCollectionImpl::Remove(test_notification);
 }
 
 Balloon* MockBalloonCollection::MakeBalloon(const Notification& notification,

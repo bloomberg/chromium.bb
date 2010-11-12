@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_collection_base.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 
@@ -41,14 +42,13 @@ class BalloonCollectionImpl : public BalloonCollection
   // BalloonCollection interface.
   virtual void Add(const Notification& notification,
                    Profile* profile);
-  virtual bool Remove(const Notification& notification);
+  virtual bool RemoveById(const std::string& id);
+  virtual bool RemoveBySourceOrigin(const GURL& source_origin);
   virtual bool HasSpace() const;
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
   virtual void DisplayChanged();
   virtual void OnBalloonClosed(Balloon* source);
-  virtual const Balloons& GetActiveBalloons() {
-    return balloons_;
-  }
+  virtual const Balloons& GetActiveBalloons() { return base_.balloons(); }
 
   // MessageLoopForUI::Observer interface.
 #if defined(OS_WIN)
@@ -135,9 +135,6 @@ class BalloonCollectionImpl : public BalloonCollection
                                Profile* profile);
 
  private:
-  // The number of balloons being displayed.
-  int count() const { return balloons_.size(); }
-
   // Adjusts the positions of the balloons (e.g., when one is closed).
   // Implemented by each platform for specific UI requirements.
   void PositionBalloons(bool is_reposition);
@@ -149,6 +146,12 @@ class BalloonCollectionImpl : public BalloonCollection
   // Get the work area on Mac OS, without inverting the coordinates.
   static gfx::Rect GetMacWorkArea();
 #endif
+
+  // Base implementation for the collection of active balloons.
+  BalloonCollectionBase base_;
+
+  // The layout parameters for balloons in this collection.
+  Layout layout_;
 
 #if USE_OFFSETS
   // Start and stop observing all UI events.
@@ -163,16 +166,7 @@ class BalloonCollectionImpl : public BalloonCollection
 
   // Is the current cursor in the balloon area?
   bool IsCursorInBalloonCollection() const;
-#endif
 
-  // Queue of active balloons.
-  typedef std::deque<Balloon*> Balloons;
-  Balloons balloons_;
-
-  // The layout parameters for balloons in this collection.
-  Layout layout_;
-
-#if USE_OFFSETS
   // Factory for generating delayed reposition tasks on mouse motion.
   ScopedRunnableMethodFactory<BalloonCollectionImpl> reposition_factory_;
 

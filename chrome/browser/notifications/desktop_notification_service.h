@@ -6,24 +6,24 @@
 #define CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_SERVICE_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 
+class Notification;
 class NotificationUIManager;
 class NotificationsPrefsCache;
 class PrefService;
 class Profile;
-class Task;
 class TabContents;
 struct ViewHostMsg_ShowNotification_Params;
 
@@ -121,6 +121,8 @@ class DesktopNotificationService : public NotificationObserver {
   void StartObserving();
   void StopObserving();
 
+  void OnPrefsChanged(const std::string& pref_name);
+
   // Takes a notification object and shows it in the UI.
   void ShowNotification(const Notification& notification);
 
@@ -143,7 +145,8 @@ class DesktopNotificationService : public NotificationObserver {
   // UI for desktop toasts.
   NotificationUIManager* ui_manager_;
 
-  PrefChangeRegistrar registrar_;
+  PrefChangeRegistrar prefs_registrar_;
+  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };

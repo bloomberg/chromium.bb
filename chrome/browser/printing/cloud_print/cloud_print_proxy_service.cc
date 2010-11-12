@@ -124,9 +124,8 @@ void CloudPrintProxyService::OnTokenExpiredNotificationClick() {
 
 void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
   if (token_expired_delegate_.get()) {
-    g_browser_process->notification_ui_manager()->Cancel(
-        Notification(GURL(), GURL(), string16(), string16(),
-                     token_expired_delegate_.get()));
+    g_browser_process->notification_ui_manager()->CancelById(
+        token_expired_delegate_->id());
     token_expired_delegate_ = NULL;
     if (!keep_alive)
       BrowserList::EndKeepAlive();
