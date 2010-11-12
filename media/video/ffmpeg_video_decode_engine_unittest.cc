@@ -64,8 +64,8 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
     VideoFrame::CreateFrame(VideoFrame::YV12,
                             kWidth,
                             kHeight,
-                            StreamSample::kInvalidTimestamp,
-                            StreamSample::kInvalidTimestamp,
+                            kNoTimestamp,
+                            kNoTimestamp,
                             &video_frame_);
   }
 

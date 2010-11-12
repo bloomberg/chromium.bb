@@ -105,8 +105,8 @@ void FFmpegVideoDecodeEngine::Initialize(
       VideoFrame::CreateFrame(VideoFrame::YV12,
                               config.width,
                               config.height,
-                              StreamSample::kInvalidTimestamp,
-                              StreamSample::kInvalidTimestamp,
+                              kNoTimestamp,
+                              kNoTimestamp,
                               &video_frame);
       if (!video_frame.get()) {
         buffer_allocated = false;

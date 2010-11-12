@@ -88,8 +88,8 @@ scoped_refptr<VideoFrame> FFmpegVideoAllocator::DecodeDone(
       codec_context->width, codec_context->height, 3,
       av_frame->data,
       av_frame->linesize,
-      StreamSample::kInvalidTimestamp,
-      StreamSample::kInvalidTimestamp,
+      kNoTimestamp,
+      kNoTimestamp,
       ffmpeg_video_frame,  // |private_buffer_|.
       &frame);
 #endif

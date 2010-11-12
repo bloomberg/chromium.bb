@@ -924,8 +924,8 @@ scoped_refptr<VideoFrame> OmxVideoDecodeEngine::CreateOmxBufferVideoFrame(
       VideoFrame::YV12,
       width_, height_, 3,
       data, strides,
-      StreamSample::kInvalidTimestamp,
-      StreamSample::kInvalidTimestamp,
+      kNoTimestamp,
+      kNoTimestamp,
       omx_buffer,
       &video_frame);
 
