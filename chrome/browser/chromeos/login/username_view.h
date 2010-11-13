@@ -8,39 +8,36 @@
 
 #include <string>
 
-#include "views/view.h"
+#include "views/controls/label.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
+// Forward declaration.
 namespace gfx {
-class Font;
-}  // namespace gfx
-
-namespace views {
-class Label;
-}  // namespace views
+  class Rect;
+}
 
 namespace chromeos {
-// View that contains two parts. First one is a label with username, second one
-// is an empty view with gradient transparency background.
-class UsernameView : public views::View {
+// Label with customized paddings and long text fade out.
+class UsernameView : public views::Label {
  public:
-  explicit UsernameView(const std::wstring& username);
+  UsernameView(const std::wstring& username);
   virtual ~UsernameView() {}
 
-  // Set the font of the username text.
-  void SetFont(const gfx::Font& font);
-
-  // Returns username label.
-  views::Label* label() const {
-    return label_;
-  }
-
-  // views::View overrides.
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  // Overriden from views::Label.
+  virtual void Paint(gfx::Canvas* canvas);
 
  private:
-  views::Label* label_;
-  views::View* gradient_;
+  // Paints username to the bitmap with the bounds given.
+  void PaintUsername(const gfx::Rect& bounds);
+
+  // Holds painted username.
+  scoped_ptr<SkBitmap> text_image_;
+
+  // Holds width of the text drawn.
+  int text_width_;
+
+  // Holds margins width (depends on the height).
+  int margin_width_;
 
   DISALLOW_COPY_AND_ASSIGN(UsernameView);
 };

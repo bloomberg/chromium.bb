@@ -4,56 +4,92 @@
 
 #include "chrome/browser/chromeos/login/username_view.h"
 
-#include "chrome/browser/chromeos/login/helper.h"
+#include "base/logging.h"
+#include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
+#include "gfx/rect.h"
+#include "third_party/skia/include/core/SkComposeShader.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/background.h"
-#include "views/painter.h"
-#include "views/controls/label.h"
 
 namespace {
 // Username label background color.
 const SkColor kLabelBackgoundColor = 0x55000000;
+// Holds margin to height ratio.
+const double kMarginRatio = 1.0 / 3.0;
 }  // namespace
 
 namespace chromeos {
 
-UsernameView::UsernameView(const std::wstring& username) {
-  label_ = new views::Label(username);
-  label_->SetColor(login::kTextColor);
-  label_->set_background(
-      views::Background::CreateSolidBackground(kLabelBackgoundColor));
-  label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  AddChildView(label_);
-
-  gradient_ = new views::View;
-  gradient_->SetVisible(false);
-  views::Background* gradient_background =
-      views::Background::CreateBackgroundPainter(true,
-          views::Painter::CreateHorizontalGradient(
-              kLabelBackgoundColor, 0x00000000));
-  gradient_->set_background(gradient_background);
-  AddChildView(gradient_);
+UsernameView::UsernameView(const std::wstring& username)
+    : views::Label(username) {
 }
 
-void UsernameView::SetFont(const gfx::Font& font) {
-  label_->SetFont(font);
+void UsernameView::Paint(gfx::Canvas* canvas) {
+  gfx::Rect bounds = GetLocalBounds(false);
+  if (!text_image_.get())
+    PaintUsername(bounds);
+
+  DCHECK(bounds.size() ==
+         gfx::Size(text_image_->width(), text_image_->height()));
+
+  // Only alpha channel counts.
+  SkColor gradient_colors[2];
+  gradient_colors[0] = 0xFFFFFFFF;
+  gradient_colors[1] = 0x00FFFFFF;
+
+  int gradient_start = std::min(margin_width_ + text_width_,
+                                bounds.width() - bounds.height());
+
+  SkPoint gradient_borders[2];
+  gradient_borders[0].set(SkIntToScalar(gradient_start), SkIntToScalar(0));
+  gradient_borders[1].set(SkIntToScalar(
+      gradient_start + bounds.height()), SkIntToScalar(0));
+
+  SkShader* gradient_shader =
+      SkGradientShader::CreateLinear(gradient_borders, gradient_colors, NULL, 2,
+                                     SkShader::kClamp_TileMode, NULL);
+  SkShader* image_shader = SkShader::CreateBitmapShader(
+      *text_image_,
+      SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode);
+
+  SkXfermode* mode = SkXfermode::Create(SkXfermode::kSrcIn_Mode);
+  SkShader* composite_shader = new SkComposeShader(gradient_shader,
+                                                   image_shader, mode);
+  gradient_shader->unref();
+  image_shader->unref();
+
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setFilterBitmap(true);
+  paint.setShader(composite_shader)->unref();
+  canvas->DrawRectInt(bounds.x(), bounds.y(),
+                      bounds.width(), bounds.height(), paint);
 }
 
-// views::View
-void UsernameView::Layout() {
-  int text_width = std::min(label_->GetPreferredSize().width(), width());
-  label_->SetBounds(0, 0, text_width, height());
-  int gradient_width = std::min(width() - text_width, height());
-  if (gradient_width > 0)  {
-    gradient_->SetVisible(true);
-    gradient_->SetBounds(0 + text_width, 0, gradient_width, height());
-  } else {
-    // No place for the gradient part.
-    gradient_->SetVisible(false);
-  }
-}
+void UsernameView::PaintUsername(const gfx::Rect& bounds) {
+  margin_width_ = bounds.height() * kMarginRatio;
+  gfx::CanvasSkia canvas(bounds.width(), bounds.height(), false);
+  // Draw background.
+  canvas.drawColor(kLabelBackgoundColor);
+  // Calculate needed space.
+  int flags = gfx::Canvas::TEXT_ALIGN_LEFT |
+      gfx::Canvas::TEXT_VALIGN_MIDDLE |
+      gfx::Canvas::NO_ELLIPSIS;
+  int text_height;
+  gfx::CanvasSkia::SizeStringInt(GetText(), font(),
+                                 &text_width_, &text_height,
+                                 flags);
+  text_width_ = std::min(text_width_, bounds.width() - margin_width_);
+  // Draw the text.
+  canvas.DrawStringInt(GetText(), font(), GetColor(),
+                        bounds.x() + margin_width_, bounds.y(),
+                        bounds.width() - margin_width_, bounds.height(),
+                        flags);
 
-gfx::Size UsernameView::GetPreferredSize() {
-  return label_->GetPreferredSize();
+  text_image_.reset(new SkBitmap(canvas.ExtractBitmap()));
+  text_image_->buildMipMap(false);
 }
 
 }  // namespace chromeos
