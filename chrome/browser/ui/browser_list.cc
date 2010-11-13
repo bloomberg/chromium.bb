@@ -67,9 +67,21 @@ class BrowserActivityObserver : public NotificationObserver {
   void LogBrowserTabCount() const {
     int tab_count = 0;
     for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-         browser_iterator != BrowserList::end(); browser_iterator++)
+         browser_iterator != BrowserList::end(); browser_iterator++) {
+      // Record how many tabs each window has open.
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerWindow",
+                                  (*browser_iterator)->tab_count(), 1, 200, 50);
       tab_count += (*browser_iterator)->tab_count();
+    }
+    // Record how many tabs total are open (across all windows).
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tab_count, 1, 200, 50);
+
+    Browser* browser = BrowserList::GetLastActive();
+    if (browser) {
+      // Record how many tabs the active window has open.
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountActiveWindow",
+                                  browser->tab_count(), 1, 200, 50);
+    }
   }
 
   NotificationRegistrar registrar_;
