@@ -84,11 +84,12 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // label colors for the IDR resource |id|.
   GtkIconSet* GetIconSetForId(int id) const;
 
-  // This method returns averages of the thumb part and of the track colors.
-  // Used when rendering scrollbars.
-  static void GetScrollbarColors(GdkColor* thumb_active_color,
-                                 GdkColor* thumb_inactive_color,
-                                 GdkColor* track_color);
+  // This method returns the colors webkit will use for the scrollbars. When no
+  // colors are specified by the GTK+ theme, this function averages of the
+  // thumb part and of the track colors.
+  void GetScrollbarColors(GdkColor* thumb_active_color,
+                          GdkColor* thumb_inactive_color,
+                          GdkColor* track_color);
 
   // Expose the inner label. Only used for testing.
   GtkWidget* fake_label() { return fake_label_.get(); }
@@ -162,6 +163,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // BrowserThemeProvider interface and the colors we send to webkit.
   void LoadGtkValues();
 
+  // Reads in explicit theme frame colors from the ChromeGtkFrame style class
+  // or generates them per our fallback algorithm.
+  GdkColor BuildFrameColors(GtkStyle* frame_style);
+
   // Sets the values that we send to webkit to safe defaults.
   void LoadDefaultValues();
 
@@ -173,8 +178,15 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Sets the underlying theme colors/tints from a GTK color.
   void SetThemeColorFromGtk(int id, const GdkColor* color);
   void SetThemeTintFromGtk(int id, const GdkColor* color);
-  void BuildTintedFrameColor(int color_id, int tint_id);
-  void SetTintToExactColor(int id, const GdkColor* color);
+
+  // Creates and returns a frame color, either using |gtk_base| verbatim if
+  // non-NULL, or tinting |base| with |tint|. Also sets |color_id| and
+  // |tint_id| to the returned color.
+  GdkColor BuildAndSetFrameColor(const GdkColor* base,
+                                 const GdkColor* gtk_base,
+                                 const color_utils::HSL& tint,
+                                 int color_id,
+                                 int tint_id);
 
   // Split out from FreePlatformCaches so it can be called in our destructor;
   // FreePlatformCaches() is called from the BrowserThemeProvider's destructor,
@@ -188,9 +200,12 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Lazily generates each bitmap used in the gtk theme.
   SkBitmap* GenerateGtkThemeBitmap(int id) const;
 
-  // Tints IDR_THEME_FRAME based based on |tint_id|. Used during lazy
-  // generation of the gtk theme bitmaps.
-  SkBitmap* GenerateFrameImage(int tint_id) const;
+  // Creates a GTK+ version of IDR_THEME_FRAME. Instead of tinting, this
+  // creates a theme configurable gradient ending with |color_id| at the
+  // bottom, and |gradient_name| at the top if that color is specified in the
+  // theme.
+  SkBitmap* GenerateFrameImage(int color_id,
+                               const char* gradient_name) const;
 
   // Takes the base frame image |base_id| and tints it with |tint_id|.
   SkBitmap* GenerateTabImage(int base_id) const;
