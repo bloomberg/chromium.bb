@@ -255,7 +255,8 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
     CellularNetwork* cellular = cros->FindCellularNetworkByPath(
         menu_items_[index].wireless_path);
     if (cellular) {
-      if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED) {
+      if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED ||
+          cellular->needs_new_plan()) {
         ActivateCellular(cellular);
         return true;
       } else if (cros->cellular_network() &&
@@ -589,16 +590,17 @@ void NetworkMenu::InitMenuItems() {
     for (size_t i = 0; i < cell_networks.size(); ++i) {
       chromeos::ActivationState activation_state =
           cell_networks[i]->activation_state();
+
       // If we are on the OOBE/login screen, do not show activating 3G option.
       if (!IsBrowserMode() && activation_state != ACTIVATION_STATE_ACTIVATED)
         continue;
 
-      if (activation_state == ACTIVATION_STATE_NOT_ACTIVATED) {
+      if (activation_state == ACTIVATION_STATE_NOT_ACTIVATED ||
+          activation_state == ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE,
             ASCIIToUTF16(cell_networks[i]->name()));
-      } else if (activation_state == ACTIVATION_STATE_PARTIALLY_ACTIVATED ||
-                 activation_state == ACTIVATION_STATE_ACTIVATING) {
+      } else if (activation_state == ACTIVATION_STATE_ACTIVATING) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
             ASCIIToUTF16(cell_networks[i]->name()),
@@ -624,15 +626,31 @@ void NetworkMenu::InitMenuItems() {
                                              true);
       SkBitmap badge = BadgeForNetworkTechnology(cell_networks[i]);
       int flag = FLAG_CELLULAR;
-      if (active_cellular &&
-          cell_networks[i]->service_path() ==
-              active_cellular->service_path() &&
-          (cell_networks[i]->connecting() || cell_networks[i]->connected()))
+      bool isActive = active_cellular &&
+          cell_networks[i]->service_path() == active_cellular->service_path() &&
+          (cell_networks[i]->connecting() || cell_networks[i]->connected());
+      if (isActive)
         flag |= FLAG_ASSOCIATED;
       menu_items_.push_back(
           MenuItem(menus::MenuModel::TYPE_COMMAND, label,
                    IconForDisplay(icon, badge),
                    cell_networks[i]->service_path(), flag));
+      if (isActive) {
+        label.clear();
+        if (active_cellular->needs_new_plan()) {
+          label = l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL);
+        } else if (!active_cellular->GetDataPlans().empty()) {
+          const chromeos::CellularDataPlan& plan =
+              *active_cellular->GetDataPlans().begin();
+          label = plan.GetUsageInfo();
+        }
+        if (label.length()) {
+          menu_items_.push_back(
+              MenuItem(menus::MenuModel::TYPE_COMMAND,
+                       label, SkBitmap(),
+                       std::string(), FLAG_DISABLED));
+        }
+      }
     }
   }
 
@@ -760,8 +778,9 @@ void NetworkMenu::ShowCellular(const CellularNetwork* cellular,
 void NetworkMenu::ActivateCellular(const CellularNetwork* cellular) const {
   DCHECK(cellular);
   Browser* browser = BrowserList::GetLastActive();
-  // TODO(stevenjb) : specify which service to activate.
-  browser->ShowSingletonTab(GURL(chrome::kChromeUIMobileSetupURL));
+  if (!browser)
+    return;
+  browser->OpenMobilePlanTabAndActivate();
 }
 
 void NetworkMenu::ShowEthernet(const EthernetNetwork* ethernet) const {

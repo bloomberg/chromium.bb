@@ -33,7 +33,8 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   typedef std::map<std::string, CellularNetwork*> ServicePathCellularMap;
  private:
   virtual void CreateModalPopup(views::WindowDelegate* view);
-  virtual void MobileSetup(const ListValue* args);
+  virtual void OpenMobileSetupPage(const ListValue* args);
+  virtual void OpenMoreInfoPage(const ListValue* args);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj);

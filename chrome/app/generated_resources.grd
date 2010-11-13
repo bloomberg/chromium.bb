@@ -8908,8 +8908,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
-      <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link">
+      <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link on notification when there is no cellular plan">
         Purchase more...
+      </message>
+      <message name="IDS_NETWORK_MORE_INFO_MESSAGE" desc="Message for more info link on cellular plan low data notification">
+        More info...
       </message>
       <message name="IDS_NETWORK_LOW_DATA_TITLE" desc="Title for network low data notification">
         Low <ph name="network">$1<ex>YBH</ex></ph> data
@@ -8920,8 +8923,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NETWORK_DATA_REMAINING_MESSAGE" desc="Message for network data remaining notification">
         <ph name="megabytes">$1<ex>50</ex></ph> MB remaining
       </message>
+      <message name="IDS_NETWORK_DATA_AVAILABLE_MESSAGE" desc="Message for network data available menu item">
+        <ph name="megabytes">$1<ex>50</ex></ph> MB available
+      </message>
+      <message name="IDS_NETWORK_NO_DATA_PLAN_MESSAGE" desc="Message for network data remaining notification">
+        No active <ph name="network">$1<ex>YBH</ex></ph> data plan
+      </message>
       <message name="IDS_NETWORK_NEARING_EXPIRATION_TITLE" desc="Title for network nearing expiration notification">
         Nearing <ph name="network">$1<ex>YBH</ex></ph> expiration
+      </message>
+      <message name="IDS_NETWORK_NO_DATA_PLAN_TITLE" desc="Title for no cellular data plan notification">
+        <ph name="network">$1<ex>YBH</ex></ph> no data plan
       </message>
       <message name="IDS_NETWORK_DATA_EXPIRED_TITLE" desc="Title for network data expired notification">
         <ph name="network">$1<ex>YBH</ex></ph> data expired

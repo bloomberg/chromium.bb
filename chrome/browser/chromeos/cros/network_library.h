@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/platform_thread.h"
 #include "base/singleton.h"
+#include "base/string16.h"
 #include "base/timer.h"
 #include "cros/chromeos_network.h"
 
@@ -172,7 +173,19 @@ class CellularDataPlan {
       plan_end_time(base::Time::FromInternalValue(plan.plan_end_time)),
       plan_data_bytes(plan.plan_data_bytes),
       data_bytes_used(plan.data_bytes_used) { }
-
+  // Formats cellular plan description.
+  string16 GetPlanDesciption() const;
+  // Evaluates cellular plans status and returns warning string if it is near
+  // expiration.
+  string16 GetRemainingWarning() const;
+  // Formats remaining plan data description.
+  string16 GetDataRemainingDesciption() const;
+  // Formats plan expiration description.
+  string16 GetPlanExpiration() const;
+  // Formats plan usage info.
+  string16 GetUsageInfo() const;
+  int64 remaining_minutes() const;
+  int64 remaining_mbytes() const;
   std::string plan_name;
   CellularDataPlanType plan_type;
   base::Time update_time;
@@ -206,6 +219,10 @@ class CellularNetwork : public WirelessNetwork {
   }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
   bool restricted_pool() const { return restricted_pool_; }
+  bool needs_new_plan() const {
+    return restricted_pool() && connected() &&
+        activation_state() == ACTIVATION_STATE_ACTIVATED;
+  }
   const std::string& service_name() const { return service_name_; }
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }

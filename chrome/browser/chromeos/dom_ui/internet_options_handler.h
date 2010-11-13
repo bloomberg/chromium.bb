@@ -70,10 +70,6 @@ class InternetOptionsHandler
   // plan settings into human readable texts.
   DictionaryValue* CellularDataPlanToDictionary(
       const chromeos::CellularDataPlan& plan);
-  // Evaluates cellular plans status and returns warning string if it is near
-  // expiration.
-  string16 GetPlanWarning(
-      const chromeos::CellularDataPlan& plan);
   // Creates the map of a network
   ListValue* GetNetwork(const std::string& service_path, const SkBitmap& icon,
       const std::string& name, bool connecting, bool connected,

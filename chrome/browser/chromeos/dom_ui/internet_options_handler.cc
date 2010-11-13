@@ -449,88 +449,12 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
 
   DictionaryValue* plan_dict = new DictionaryValue();
   plan_dict->SetInteger("plan_type", plan.plan_type);
-  // Format plan details into readable text.
-  string16 description;
-  string16 remaining;
-  switch (plan.plan_type) {
-    case chromeos::CELLULAR_DATA_PLAN_UNKNOWN: {
-      return NULL;
-      break;
-    }
-    case chromeos::CELLULAR_DATA_PLAN_UNLIMITED: {
-      description = l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA,
-          WideToUTF16(base::TimeFormatFriendlyDate(plan.plan_start_time)));
-
-      remaining = l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED);
-      break;
-    }
-    case chromeos::CELLULAR_DATA_PLAN_METERED_PAID: {
-      description = l10n_util::GetStringFUTF16(
-                IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA,
-                FormatBytes(plan.plan_data_bytes,
-                            GetByteDisplayUnits(plan.plan_data_bytes),
-                            true),
-                WideToUTF16(base::TimeFormatFriendlyDate(
-                    plan.plan_start_time)));
-      remaining = FormatBytes(plan.plan_data_bytes - plan.data_bytes_used,
-          GetByteDisplayUnits(plan.plan_data_bytes - plan.data_bytes_used),
-          true);
-      break;
-    }
-    case chromeos::CELLULAR_DATA_PLAN_METERED_BASE: {
-      description = l10n_util::GetStringFUTF16(
-                IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA,
-                FormatBytes(plan.plan_data_bytes,
-                            GetByteDisplayUnits(plan.plan_data_bytes),
-                            true),
-                WideToUTF16(base::TimeFormatFriendlyDate(
-                            plan.plan_start_time)));
-      remaining = FormatBytes(plan.plan_data_bytes - plan.data_bytes_used,
-          GetByteDisplayUnits(plan.plan_data_bytes - plan.data_bytes_used),
-          true);
-      break;
-    }
-  }
-  string16 expiration = TimeFormat::TimeRemaining(
-      plan.plan_end_time - base::Time::Now());
   plan_dict->SetString("name", plan.plan_name);
-  plan_dict->SetString("planSummary", description);
-  plan_dict->SetString("dataRemaining", remaining);
-  plan_dict->SetString("planExpires", expiration);
-  plan_dict->SetString("warning", GetPlanWarning(plan));
+  plan_dict->SetString("planSummary", plan.GetPlanDesciption());
+  plan_dict->SetString("dataRemaining", plan.GetDataRemainingDesciption());
+  plan_dict->SetString("planExpires", plan.GetPlanExpiration());
+  plan_dict->SetString("warning", plan.GetRemainingWarning());
   return plan_dict;
-}
-
-string16 InternetOptionsHandler::GetPlanWarning(
-    const chromeos::CellularDataPlan& plan) {
-  if (plan.plan_type == chromeos::CELLULAR_DATA_PLAN_UNLIMITED) {
-    // Time based plan. Show nearing expiration and data expiration.
-    int64 time_left = base::TimeDelta(
-        plan.plan_end_time - plan.update_time).InSeconds();
-    if (time_left <= 0) {
-      return l10n_util::GetStringFUTF16(
-          IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0"));
-    } else if (time_left <= chromeos::kCellularDataVeryLowSecs) {
-      return l10n_util::GetStringFUTF16(
-          IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(time_left/60)));
-    }
-  } else if (plan.plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_PAID ||
-             plan.plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_BASE) {
-    // Metered plan. Show low data and out of data.
-    int64 bytes_remaining = plan.plan_data_bytes - plan.data_bytes_used;
-    if (bytes_remaining <= 0) {
-      return l10n_util::GetStringFUTF16(
-          IDS_NETWORK_DATA_REMAINING_MESSAGE, ASCIIToUTF16("0"));
-    } else if (bytes_remaining <= chromeos::kCellularDataVeryLowBytes) {
-      return l10n_util::GetStringFUTF16(
-          IDS_NETWORK_DATA_REMAINING_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(bytes_remaining/(1024*1024))));
-    }
-  }
-  return string16();
 }
 
 void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {

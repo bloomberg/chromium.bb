@@ -8,6 +8,7 @@
 #include <map>
 
 #include "app/l10n_util.h"
+#include "base/i18n/time_formatting.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -15,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -342,6 +344,124 @@ void WirelessNetwork::Clear() {
   favorite_ = false;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// CellularDataPlan
+
+string16 CellularDataPlan::GetPlanDesciption() const {
+  switch (plan_type) {
+    case chromeos::CELLULAR_DATA_PLAN_UNLIMITED: {
+      return l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA,
+          WideToUTF16(base::TimeFormatFriendlyDate(plan_start_time)));
+      break;
+    }
+    case chromeos::CELLULAR_DATA_PLAN_METERED_PAID: {
+      return l10n_util::GetStringFUTF16(
+                IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA,
+                FormatBytes(plan_data_bytes,
+                            GetByteDisplayUnits(plan_data_bytes),
+                            true),
+                WideToUTF16(base::TimeFormatFriendlyDate(
+                                plan_start_time)));
+    }
+    case chromeos::CELLULAR_DATA_PLAN_METERED_BASE: {
+      return l10n_util::GetStringFUTF16(
+                IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA,
+                FormatBytes(plan_data_bytes,
+                            GetByteDisplayUnits(plan_data_bytes),
+                            true),
+                WideToUTF16(base::TimeFormatFriendlyDate(
+                                plan_start_time)));
+    default:
+      break;
+    }
+  }
+  return string16();
+}
+
+string16 CellularDataPlan::GetRemainingWarning() const {
+  if (plan_type == chromeos::CELLULAR_DATA_PLAN_UNLIMITED) {
+    // Time based plan. Show nearing expiration and data expiration.
+    int64 time_left = base::TimeDelta(
+        plan_end_time - update_time).InSeconds();
+    if (time_left <= 0) {
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0"));
+    } else if (time_left <= chromeos::kCellularDataVeryLowSecs) {
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
+          UTF8ToUTF16(base::Int64ToString(time_left/60)));
+    }
+  } else if (plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_PAID ||
+             plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_BASE) {
+    // Metered plan. Show low data and out of data.
+    int64 bytes_remaining = plan_data_bytes - data_bytes_used;
+    if (bytes_remaining <= 0) {
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_DATA_REMAINING_MESSAGE, ASCIIToUTF16("0"));
+    } else if (bytes_remaining <= chromeos::kCellularDataVeryLowBytes) {
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_DATA_REMAINING_MESSAGE,
+          UTF8ToUTF16(base::Int64ToString(bytes_remaining/(1024*1024))));
+    }
+  }
+  return string16();
+}
+
+string16 CellularDataPlan::GetDataRemainingDesciption() const {
+  switch (plan_type) {
+    case chromeos::CELLULAR_DATA_PLAN_UNLIMITED: {
+      return l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED);
+    }
+    case chromeos::CELLULAR_DATA_PLAN_METERED_PAID: {
+      return FormatBytes(plan_data_bytes - data_bytes_used,
+          GetByteDisplayUnits(plan_data_bytes - data_bytes_used),
+          true);
+    }
+    case chromeos::CELLULAR_DATA_PLAN_METERED_BASE: {
+      return FormatBytes(plan_data_bytes - data_bytes_used,
+          GetByteDisplayUnits(plan_data_bytes - data_bytes_used),
+          true);
+    }
+    default:
+      break;
+  }
+  return string16();
+}
+
+string16 CellularDataPlan::GetUsageInfo() const {
+  if (plan_type == chromeos::CELLULAR_DATA_PLAN_UNLIMITED) {
+    // Time based plan. Show nearing expiration and data expiration.
+    int64 time_left = base::TimeDelta(
+        plan_end_time - update_time).InSeconds();
+    return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
+          UTF8ToUTF16(base::Int64ToString(time_left/60)));
+  } else if (plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_PAID ||
+             plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_BASE) {
+    // Metered plan. Show low data and out of data.
+    int64 bytes_remaining = plan_data_bytes - data_bytes_used;
+    if (bytes_remaining <= 0)
+      bytes_remaining = 0;
+    return l10n_util::GetStringFUTF16(
+        IDS_NETWORK_DATA_AVAILABLE_MESSAGE,
+        UTF8ToUTF16(base::Int64ToString(bytes_remaining/(1024*1024))));
+  }
+  return string16();
+}
+
+int64 CellularDataPlan::remaining_minutes() const {
+  return base::TimeDelta(plan_end_time - update_time).InMinutes();
+}
+
+int64 CellularDataPlan::remaining_mbytes() const {
+  return (plan_data_bytes - data_bytes_used) / (1024 * 1024);
+}
+
+string16 CellularDataPlan::GetPlanExpiration() const {
+  return TimeFormat::TimeRemaining(plan_end_time - base::Time::Now());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork
@@ -1424,6 +1544,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
     std::string prev_cellular_service_path = cellular_ ?
         cellular_->service_path() : std::string();
+    bool prev_cellular_connected = cellular_ ?
+        cellular_->connected() : false;
 
     ClearNetworks();
 
@@ -1442,8 +1564,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       if (cellular_networks_[i]->connecting_or_connected()) {
         cellular_ = cellular_networks_[i];
         // If new cellular, then request update of the data plan list.
-        if (cellular_networks_[i]->service_path() !=
-                prev_cellular_service_path) {
+        if ((cellular_networks_[i]->service_path() !=
+                 prev_cellular_service_path) ||
+            (!prev_cellular_connected && cellular_networks_[i]->connected())) {
           RefreshCellularDataPlans(cellular_);
         }
         break;  // There is only one connected or connecting cellular network.

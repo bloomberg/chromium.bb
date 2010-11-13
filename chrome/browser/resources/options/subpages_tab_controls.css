@@ -13,7 +13,7 @@ found in the LICENSE file.
   position: relative;
   background: white;
   border: 1px solid #A0A0A0;  /* light gray */
-  border-bottom: 1px solid white;
+  border-bottom: 2px solid white;
   -webkit-border-top-left-radius: 3px;
   -webkit-border-top-right-radius: 3px;
 }
