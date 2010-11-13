@@ -637,15 +637,15 @@ class SandboxIPCProcess  {
 
 // Runs on the main thread at startup.
 RenderSandboxHostLinux::RenderSandboxHostLinux()
-    : init_(false),
+    : initialized_(false),
       renderer_socket_(0),
       childs_lifeline_fd_(0),
       pid_(0) {
 }
 
 void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
-  DCHECK(!init_);
-  init_ = true;
+  DCHECK(!initialized_);
+  initialized_ = true;
 
   int fds[2];
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the renderer from
@@ -673,7 +673,7 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
 }
 
 RenderSandboxHostLinux::~RenderSandboxHostLinux() {
-  if (init_) {
+  if (initialized_) {
     if (HANDLE_EINTR(close(renderer_socket_)) < 0)
       PLOG(ERROR) << "close";
     if (HANDLE_EINTR(close(childs_lifeline_fd_)) < 0)

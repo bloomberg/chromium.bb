@@ -20,11 +20,11 @@ class RenderSandboxHostLinux {
   // Get the file descriptor which renderers should be given in order to signal
   // crashes to the browser.
   int GetRendererSocket() const {
-    DCHECK(init_);
+    DCHECK(initialized_);
     return renderer_socket_;
   }
   pid_t pid() const {
-    DCHECK(init_);
+    DCHECK(initialized_);
     return pid_;
   }
   void Init(const std::string& sandbox_path);
@@ -35,7 +35,9 @@ class RenderSandboxHostLinux {
   RenderSandboxHostLinux();
   ~RenderSandboxHostLinux();
 
-  bool init_;
+  // Whether Init() has been called yet.
+  bool initialized_;
+
   int renderer_socket_;
   int childs_lifeline_fd_;
   pid_t pid_;
