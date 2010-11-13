@@ -22,6 +22,14 @@
           '.',
         ],
       },
+      'conditions': [
+        ['OS=="linux" and (branding=="Chrome" or disable_sse2==1)', {
+          'sources/': [
+            ['exclude', 'transform-sse1.c'],
+            ['exclude', 'transform-sse2.c'],
+          ],
+        },],
+      ],
     },
   ],
 }
