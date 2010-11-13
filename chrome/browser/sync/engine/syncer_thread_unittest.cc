@@ -699,8 +699,9 @@ TEST_F(SyncerThreadWithSyncerTest, Nudge) {
 
 
 
-// Flaky, see http://crbug.com/62880.
-TEST_F(SyncerThreadWithSyncerTest, FLAKY_NudgeWithDataTypes) {
+// Disabled (Bug 62880).
+// TODO(zea): Fix RequestPause/RequestResume and get this working.
+TEST_F(SyncerThreadWithSyncerTest, DISABLED_NudgeWithDataTypes) {
   SyncShareIntercept interceptor;
   connection()->SetMidCommitObserver(&interceptor);
   // We don't want a poll to happen during this test (except the first one).
