@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 
+#include "chrome/browser/chromeos/frame/bubble_frame_view.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/views/html_dialog_view.h"
+#include "chrome/common/notification_service.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -49,7 +51,8 @@ LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
       parent_window_(parent_window),
       title_(title),
       url_(url),
-      style_(style) {
+      style_(style),
+      bubble_frame_view_(NULL) {
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());
   height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
@@ -63,19 +66,23 @@ void LoginHtmlDialog::Show() {
   HtmlDialogWithoutContextMenuView* html_view =
       new HtmlDialogWithoutContextMenuView(ProfileManager::GetDefaultProfile(),
                                            this);
-  switch (style_) {
-    case STYLE_BUBBLE:
-      chromeos::BubbleWindow::Create(parent_window_,
-                                     gfx::Rect(),
-                                     chromeos::BubbleWindow::STYLE_XBAR,
-                                     html_view);
-      break;
-    case STYLE_GENERIC:
-    default:
-      views::Window::CreateChromeWindow(parent_window_,
-                                        gfx::Rect(),
-                                        html_view);
-      break;
+  if (style_ & STYLE_BUBBLE) {
+    views::Window* bubble_window = BubbleWindow::Create(
+        parent_window_, gfx::Rect(),
+        static_cast<BubbleWindow::Style>(
+            BubbleWindow::STYLE_XBAR | BubbleWindow::STYLE_THROBBER),
+        html_view);
+    bubble_frame_view_ = static_cast<BubbleFrameView*>(
+        bubble_window->GetNonClientView()->frame_view());
+  } else {
+    (void)views::Window::CreateChromeWindow(
+        parent_window_, gfx::Rect(), html_view);
+  }
+  if (bubble_frame_view_) {
+    bubble_frame_view_->StartThrobber();
+    notification_registrar_.Add(this,
+                                NotificationType::LOAD_COMPLETED_MAIN_FRAME,
+                                NotificationService::AllSources());
   }
   html_view->InitDialog();
   html_view->window()->Show();
@@ -85,6 +92,14 @@ void LoginHtmlDialog::SetDialogSize(int width, int height) {
   DCHECK(width >= 0 && height >= 0);
   width_ = width;
   height_ = height;
+}
+
+void LoginHtmlDialog::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  DCHECK(type.value == NotificationType::LOAD_COMPLETED_MAIN_FRAME);
+  if (bubble_frame_view_)
+    bubble_frame_view_->StopThrobber();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

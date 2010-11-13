@@ -52,6 +52,9 @@ class BubbleFrameView : public views::NonClientFrameView,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
 
+  void StartThrobber();
+  void StopThrobber();
+
  private:
   // The window that owns this view.
   views::Window* frame_;
@@ -67,6 +70,9 @@ class BubbleFrameView : public views::NonClientFrameView,
 
   // Close button for STYLE_XBAR case.
   views::ImageButton* close_button_;
+
+  // Throbber is optional. Employed by STYLE_THROBBER.
+  views::Throbber* throbber_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };

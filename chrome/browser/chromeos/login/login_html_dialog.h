@@ -9,13 +9,18 @@
 #include <string>
 
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 
 namespace chromeos {
 
+class BubbleFrameView;
+
 // Launches html dialog during OOBE/Login with specified URL and title.
-class LoginHtmlDialog : public HtmlDialogUIDelegate {
+class LoginHtmlDialog : public HtmlDialogUIDelegate,
+                        public NotificationObserver {
  public:
   // Delegate class to get notifications from the dialog.
   class Delegate {
@@ -59,6 +64,11 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate {
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
   virtual bool ShouldShowDialogTitle() const { return true; }
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   // Notifications receiver.
   Delegate* delegate_;
@@ -67,6 +77,8 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate {
   std::wstring title_;
   GURL url_;
   Style style_;
+  NotificationRegistrar notification_registrar_;
+  BubbleFrameView* bubble_frame_view_;
 
   // Dialog display size.
   int width_;

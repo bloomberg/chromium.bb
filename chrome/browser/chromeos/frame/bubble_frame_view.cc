@@ -11,10 +11,12 @@
 #include "gfx/path.h"
 #include "gfx/rect.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
+#include "views/controls/throbber.h"
 #include "views/window/hit_test.h"
 #include "views/window/window.h"
 #include "views/window/window_delegate.h"
@@ -35,7 +37,8 @@ BubbleFrameView::BubbleFrameView(views::Window* frame,
     : frame_(frame),
       style_(style),
       title_(NULL),
-      close_button_(NULL) {
+      close_button_(NULL),
+      throbber_(NULL) {
   set_border(new BubbleBorder(BubbleBorder::NONE));
 
   if (frame_->GetDelegate()->ShouldShowWindowTitle()) {
@@ -56,9 +59,28 @@ BubbleFrameView::BubbleFrameView(views::Window* frame,
         rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
     AddChildView(close_button_);
   }
+
+  if (style_ & BubbleWindow::STYLE_THROBBER) {
+    throbber_ = CreateDefaultSmoothedThrobber();
+    AddChildView(throbber_);
+  }
 }
 
 BubbleFrameView::~BubbleFrameView() {
+}
+
+void BubbleFrameView::StartThrobber() {
+  DCHECK(throbber_ != NULL);
+  if (title_)
+    title_->SetText(std::wstring());
+  throbber_->Start();
+}
+
+void BubbleFrameView::StopThrobber() {
+  DCHECK(throbber_ != NULL);
+  throbber_->Stop();
+  if (title_)
+    title_->SetText(frame_->GetDelegate()->GetWindowTitle());
 }
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
@@ -68,20 +90,25 @@ gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
 gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   gfx::Insets insets = GetInsets();
-  gfx::Size title_size;
-  if (title_) {
-    title_size = title_->GetPreferredSize();
-  }
 
-  gfx::Size close_button_size = gfx::Size();
-  if (close_button_) {
+  gfx::Size title_size;
+  if (title_)
+    title_size = title_->GetPreferredSize();
+  gfx::Size close_button_size;
+  if (close_button_)
     close_button_size = close_button_->GetPreferredSize();
-  }
+  gfx::Size throbber_size;
+  if (throbber_)
+    throbber_size = throbber_->GetPreferredSize();
 
   int top_height = insets.top();
-  if (title_size.height() > 0 || close_button_size.height() > 0)
-    top_height += std::max(title_size.height(), close_button_size.height()) +
-        kTitleContentPadding;
+  if (title_size.height() > 0 ||
+      close_button_size.height() > 0 ||
+      throbber_size.height() > 0) {
+    top_height += kTitleContentPadding + std::max(
+        std::max(title_size.height(), close_button_size.height()),
+        throbber_size.height());
+  }
   return gfx::Rect(std::max(0, client_bounds.x() - insets.left()),
                    std::max(0, client_bounds.y() - top_height),
                    client_bounds.width() + insets.width(),
@@ -125,14 +152,14 @@ void BubbleFrameView::Layout() {
   gfx::Insets insets = GetInsets();
 
   gfx::Size title_size;
-  if (title_) {
+  if (title_)
     title_size = title_->GetPreferredSize();
-  }
-
-  gfx::Size close_button_size = gfx::Size();
-  if (close_button_) {
+  gfx::Size close_button_size;
+  if (close_button_)
     close_button_size = close_button_->GetPreferredSize();
-  }
+  gfx::Size throbber_size;
+  if (throbber_)
+    throbber_size = throbber_->GetPreferredSize();
 
   if (title_) {
     title_->SetBounds(
@@ -147,10 +174,21 @@ void BubbleFrameView::Layout() {
         close_button_size.width(), close_button_size.height());
   }
 
+  if (throbber_) {
+    throbber_->SetBounds(
+        insets.left(), insets.top(),
+        std::min(throbber_size.width(), width()),
+        throbber_size.height());
+  }
+
   int top_height = insets.top();
-  if (title_size.height() > 0 || close_button_size.height() > 0)
-    top_height += std::max(title_size.height(), close_button_size.height()) +
-        kTitleContentPadding;
+  if (title_size.height() > 0 ||
+      close_button_size.height() > 0 ||
+      throbber_size.height() > 0) {
+    top_height += kTitleContentPadding + std::max(
+        std::max(title_size.height(), close_button_size.height()),
+        throbber_size.height());
+  }
   client_view_bounds_.SetRect(insets.left(), top_height,
       std::max(0, width() - insets.width()),
       std::max(0, height() - top_height - insets.bottom()));
@@ -177,9 +215,8 @@ void BubbleFrameView::Paint(gfx::Canvas* canvas) {
 
 void BubbleFrameView::ButtonPressed(views::Button* sender,
                                     const views::Event& event) {
-  if (close_button_ != NULL && sender == close_button_) {
+  if (close_button_ != NULL && sender == close_button_)
     frame_->Close();
-  }
 }
 
 }  // namespace chromeos
