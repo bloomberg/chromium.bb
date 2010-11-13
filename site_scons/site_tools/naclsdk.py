@@ -219,11 +219,7 @@ def _SetEnvForPnacl(env, arch):
   pnacl_sdk_ld_flags = ' -arch %s' % arch
   pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
 
-  # NOTE: only in bitcode compilation scenarios where
-  #       CC compiles to bitcode and
-  #       CC_NATIVE compiles to native code
-  #       (CC_NATIVE had to handle both .c and .S files)
-  cc_native_map = {
+  cc_other_map = {
       'arm':    pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
       'x86-32': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl-gcc',
       'x86-64': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl64-gcc'
@@ -235,7 +231,12 @@ def _SetEnvForPnacl(env, arch):
               # Replace the normal unix tools with the PNaCl ones.
               CC=pnacl_sdk_cc + pnacl_sdk_cc_flags,
               CXX=pnacl_sdk_cxx + pnacl_sdk_cxx_flags,
-              CC_NATIVE=cc_native_map[arch],
+              # NOTE: only in bitcode compilation scenarios where
+              #       CC compiles to bitcode and
+              #       CC_NATIVE compiles to native code
+              #       (CC_NATIVE had to handle both .c and .S files)
+              CC_NATIVE=pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
+              CC_OTHER=cc_other_map[arch],
               LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,
               # Grrr... and sometimes we need raw assembly and the real ld.
               LD=(pnacl_sdk_root + '/arm-none-linux-gnueabi/bin/' +

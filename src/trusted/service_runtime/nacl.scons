@@ -34,7 +34,7 @@ def NewAsmEnv(env, *alist, **kwarg):
   asm_env = env.Clone()
   elf_patcher_addenda = ''
   if ARGUMENTS.get('bitcode'):
-    asm_env.Replace(CC=env['CC_NATIVE'])
+    asm_env.Replace(CC=env['CC_OTHER'])
     elf_patcher_addenda = (' && ${PYTHON}' +
                            ' ${SCONSTRUCT_DIR}/tools/elf_patcher.py' +
                            ' -a 16' +
