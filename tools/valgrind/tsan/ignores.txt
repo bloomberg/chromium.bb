@@ -61,6 +61,8 @@ src:*base/thread_local_storage*
 # Don't instrument code dealing with atomics (base::subtle)
 fun:*base*subtle*Release_Store*
 fun:*base*subtle*NoBarrier_CompareAndSwap*
+# Keep some mangling so we don't match NoBarrier_AtomicIncrement
+fun:*base*subtle23Barrier_AtomicIncrement*
 
 # Don't instrument tcmalloc
 src:*/tcmalloc/*
