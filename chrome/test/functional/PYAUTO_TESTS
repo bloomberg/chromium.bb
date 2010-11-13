@@ -80,7 +80,6 @@
   ],
 
   'linux': [  # linux != chromeos
-    '-omnibox',  # http://crbug.com/44203
     '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
   ],

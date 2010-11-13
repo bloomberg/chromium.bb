@@ -438,6 +438,22 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  # TODO(ace): Remove this hack, update bug 62783.
+  def WaitUntilOmniboxReadyHack(self, windex=0):
+    """Wait until the omnibox is ready for input.
+
+    This is a hack workaround for linux platform, which returns from
+    synchronous window creation methods before the omnibox is fully functional.
+
+    No-op on non-linux platforms.
+
+    Args:
+      windex: the index of the browser to work on.
+    """
+    if self.IsLinux():
+      return self.WaitUntil(
+          lambda : self.GetOmniboxInfo(windex).Properties('has_focus'))
+
   def WaitUntilOmniboxQueryDone(self, windex=0):
     """Wait until omnibox has finished populating results.
 

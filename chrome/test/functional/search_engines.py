@@ -131,6 +131,7 @@ class SearchEnginesTest(pyauto.PyUITest):
 
     # Test tab to search in an incognito window.
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.WaitUntilOmniboxReadyHack(windex=1)
     self.SetOmniboxText('google.com\tincognito', 1)
     self.OmniboxAcceptInput(1)
     loc = self.GetActiveTabURL(1).spec()

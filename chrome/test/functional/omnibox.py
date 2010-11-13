@@ -29,6 +29,7 @@ class OmniboxTest(pyauto.PyUITest):
 
   def testFocusOnStartup(self):
     """Verify that omnibox has focus on startup."""
+    self.WaitUntilOmniboxReadyHack()
     self.assertTrue(self.GetOmniboxInfo().Properties('has_focus'))
 
   def _GetOmniboxMatchesFor(self, text, windex=0, attr_dict=None):
@@ -72,9 +73,11 @@ class OmniboxTest(pyauto.PyUITest):
     _VerifyHistoryResult([url, title], title)
     # Verify results in another window
     self.OpenNewBrowserWindow(True)
+    self.WaitUntilOmniboxReadyHack(windex=1)
     _VerifyHistoryResult([url, title], title, windex=1)
     # Verify results in an incognito window
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.WaitUntilOmniboxReadyHack(windex=2)
     _VerifyHistoryResult([url, title], title, windex=2)
 
   def testSelect(self):
@@ -213,4 +216,3 @@ class OmniboxTest(pyauto.PyUITest):
 
 if __name__ == '__main__':
   pyauto_functional.Main()
-
