@@ -145,6 +145,12 @@ html[hide-menu=false] #navbar-container {
   width: 65%;
 }
 
+#navbar-container > ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
 .navbar-item, .navbar-item2 {
   padding: 7px 0;
   -webkit-padding-end: 24px;
@@ -156,22 +162,11 @@ html[hide-menu=false] #navbar-container {
 }
 
 .navbar-item-selected {
-  background: -webkit-gradient(linear,
-                               left top,
-                               right top,
-                               from(#eaeef3),
-                               color-stop(0.95, #b4c8ea),
-                               to(#9bacc5));
+  background: #bbcee9;
+  border-top: 1px solid #8faad9;
+  border-bottom: 1px solid #8faad9;
   font-weight: bold;
   color: black;
-}
-
-html[dir='rtl'] .navbar-item-selected {
-  background: -webkit-gradient(linear,
-                               right top,
-                               left top,
-                               from(white),
-                               to(#d6def3));
 }
 
 .navbar-item-normal {
