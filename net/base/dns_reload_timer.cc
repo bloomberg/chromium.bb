@@ -5,11 +5,11 @@
 #include "net/base/dns_reload_timer.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
-#include "base/lazy_instance.h"
+#include "base/singleton.h"
 #include "base/thread_local_storage.h"
 #include "base/time.h"
 
-namespace {
+namespace net {
 
 // On Linux/BSD, changes to /etc/resolv.conf can go unnoticed thus resulting
 // in DNS queries failing either because nameservers are unknown on startup
@@ -58,7 +58,7 @@ class DnsReloadTimer {
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<DnsReloadTimer>;
+  friend struct DefaultSingletonTraits<DnsReloadTimer>;
 
   DnsReloadTimer() {
     // During testing the DnsReloadTimer Singleton may be created and destroyed
@@ -81,16 +81,8 @@ class DnsReloadTimer {
 // static
 ThreadLocalStorage::Slot DnsReloadTimer::tls_index_(base::LINKER_INITIALIZED);
 
-base::LazyInstance<DnsReloadTimer,
-                   base::LeakyLazyInstanceTraits<DnsReloadTimer> >
-    g_dns_reload_timer(base::LINKER_INITIALIZED);
-
-}  // namespace
-
-namespace net {
-
 bool DnsReloadTimerHasExpired() {
-  DnsReloadTimer* dns_timer = g_dns_reload_timer.Pointer();
+  DnsReloadTimer* dns_timer = Singleton<DnsReloadTimer>::get();
   return dns_timer->Expired();
 }
 

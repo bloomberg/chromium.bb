@@ -9,13 +9,8 @@
 
 namespace base {
 
-// Certain behavior is disallowed on certain threads.  ThreadRestrictions helps
-// enforce these rules.  Examples of such rules:
-//
-// * Do not do blocking IO (makes the thread janky)
-// * Do not access Singleton/LazyInstance (may lead to shutdown crashes)
-//
-// Here's more about how the IO protection works:
+// ThreadRestrictions helps protect threads that should not block from
+// making blocking calls.  It works like this:
 //
 // 1) If a thread should not be allowed to make IO calls, mark it:
 //      base::ThreadRestrictions::SetIOAllowed(false);
@@ -50,20 +45,6 @@ class ThreadRestrictions {
     DISALLOW_COPY_AND_ASSIGN(ScopedAllowIO);
   };
 
-  // Constructing a ScopedAllowSingleton temporarily allows accessing for the
-  // current thread.  Doing this is almost always incorrect.
-  class ScopedAllowSingleton {
-   public:
-    ScopedAllowSingleton() { previous_value_ = SetSingletonAllowed(true); }
-    ~ScopedAllowSingleton() { SetSingletonAllowed(previous_value_); }
-   private:
-    // Whether singleton use is allowed when the ScopedAllowSingleton was
-    // constructed.
-    bool previous_value_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedAllowSingleton);
-  };
-
 #ifndef NDEBUG
   // Set whether the current thread to make IO calls.
   // Threads start out in the *allowed* state.
@@ -74,25 +55,15 @@ class ThreadRestrictions {
   // and DCHECK if not.  See the block comment above the class for
   // a discussion of where to add these checks.
   static void AssertIOAllowed();
-
-  // Set whether the current thread can use singletons.  Returns the previous
-  // value.
-  static bool SetSingletonAllowed(bool allowed);
-
-  // Check whether the current thread is allowed to use singletons (Singleton /
-  // LazyInstance).  DCHECKs if not.
-  static void AssertSingletonAllowed();
 #else
   // In Release builds, inline the empty definitions of these functions so
   // that they can be compiled out.
   static bool SetIOAllowed(bool allowed) { return true; }
   static void AssertIOAllowed() {}
-  static bool SetSingletonAllowed(bool allowed) { return true; }
-  static void AssertSingletonAllowed() {}
 #endif
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ThreadRestrictions);
+  ThreadRestrictions();  // class for namespacing only
 };
 
 }  // namespace base

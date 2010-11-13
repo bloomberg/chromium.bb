@@ -18,9 +18,6 @@ namespace {
 LazyInstance<ThreadLocalBoolean, LeakyLazyInstanceTraits<ThreadLocalBoolean> >
     g_io_disallowed(LINKER_INITIALIZED);
 
-LazyInstance<ThreadLocalBoolean, LeakyLazyInstanceTraits<ThreadLocalBoolean> >
-    g_singleton_disallowed(LINKER_INITIALIZED);
-
 }  // anonymous namespace
 
 // static
@@ -40,21 +37,6 @@ void ThreadRestrictions::AssertIOAllowed() {
         "base::ThreadRestrictions::SetIOAllowed() in this thread's "
         "startup.";
   }
-}
-
-bool ThreadRestrictions::SetSingletonAllowed(bool allowed) {
-  bool previous_allowed = g_singleton_disallowed.Get().Get();
-  g_singleton_disallowed.Get().Set(!allowed);
-  return !previous_allowed;
-}
-
-// static
-void ThreadRestrictions::AssertSingletonAllowed() {
-  if (g_singleton_disallowed.Get().Get())
-    LOG(FATAL) << "LazyInstance/Singleton is not allowed to be used on this "
-               << "thread.  Most likely it's because this thread is not "
-               << "joinable, so AtExitManager may have deleted the object "
-               << "on shutdown, leading to a potential shutdown crash.";
 }
 
 }  // namespace base

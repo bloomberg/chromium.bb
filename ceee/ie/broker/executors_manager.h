@@ -90,10 +90,14 @@ class ExecutorsManager {
 
   // Traits for Singleton<ExecutorsManager> so that we can pass an argument
   // to the constructor.
-  struct SingletonTraits : public DefaultSingletonTraits<ExecutorsManager> {
+  struct SingletonTraits {
     static ExecutorsManager* New() {
       return new ExecutorsManager(false);  // By default, we want a thread.
     }
+    static void Delete(ExecutorsManager* x) {
+      delete x;
+    }
+    static const bool kRegisterAtExit = true;
   };
 
  protected:
