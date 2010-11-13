@@ -34,16 +34,18 @@ cr.define('options', function() {
       $('customize-sync').onclick = function(event) {
         OptionsPage.showPageByName('sync');
       };
+      $('sync-action-link').onclick = function(event) {
+        chrome.send('showSyncLoginDialog');
+      };
       $('start-stop-sync').onclick = function(event) {
         if (self.syncSetupCompleted)
           self.showStopSyncingOverlay_();
         else
-          self.showSyncLoginDialog_();
+          chrome.send('showSyncLoginDialog');
       };
       $('privacy-dashboard-link').onclick = function(event) {
         chrome.send('openPrivacyDashboardTabAndActivate');
       };
-
       $('showpasswords').onclick = function(event) {
         PasswordsExceptions.load();
         OptionsPage.showPageByName('passwordsExceptions');
@@ -51,7 +53,6 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordsExceptions']);
       };
-
       $('autofill_options').onclick = function(event) {
         OptionsPage.showPageByName('autoFillOptions');
         chrome.send('coreOptionsUserMetricsAction',
@@ -69,7 +70,6 @@ cr.define('options', function() {
         $('themes_GTK_button').onclick = function(event) {
           chrome.send('themesSetGTK');
         };
-
         $('themes_set_classic').onclick = function(event) {
           chrome.send('themesReset');
         };
@@ -99,10 +99,6 @@ cr.define('options', function() {
           localStrings.getString('stop_syncing_confirm_button_label'),
           undefined,
           function() { chrome.send('stopSyncing'); });
-    },
-
-    showSyncLoginDialog_: function(event) {
-      chrome.send('showSyncLoginDialog');
     },
 
     setElementVisible_: function(element, visible) {
