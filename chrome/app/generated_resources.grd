@@ -9014,7 +9014,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Fix network issues
       </message>
       <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
-        Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>
+        Sign in
       </message>
       <message name="IDS_LOGIN_TITLE_HINT" desc="Hint under title 'Sign in to Chrome OS'">
         with your Google Account
