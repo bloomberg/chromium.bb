@@ -45,11 +45,16 @@
 #include "views/widget/widget_gtk.h"
 
 namespace {
-// The maxium times that the screen locker should try to grab input,
-// and its interval. It has to be able to grab all inputs in 30 seconds,
-// otherwise chromium process fails and the session is terminated.
+
+// The maximum duration for which locker should try to grab the keyboard and
+// mouse and its interval for regrabbing on failure.
+const int kMaxGrabFailureSec = 30;
 const int64 kRetryGrabIntervalMs = 500;
-const int kGrabFailureLimit = 60;
+
+// Maximum number of times we'll try to grab the keyboard and mouse before
+// giving up.  If we hit the limit, Chrome exits and the session is terminated.
+const int kMaxGrabFailures = kMaxGrabFailureSec * 1000 / kRetryGrabIntervalMs;
+
 // Each keyboard layout has a dummy input method ID which starts with "xkb:".
 const char kValidInputMethodPrefix[] = "xkb:";
 
@@ -176,12 +181,12 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
 
-// A ScreenLock window that covers entire screen to keeps the keyboard
+// A ScreenLock window that covers entire screen to keep the keyboard
 // focus/events inside the grab widget.
 class LockWindow : public views::WidgetGtk {
  public:
   LockWindow()
-      : WidgetGtk(views::WidgetGtk::TYPE_WINDOW),
+      : views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW),
         toplevel_focus_widget_(NULL) {
     EnableDoubleBuffer(true);
   }
@@ -338,9 +343,10 @@ void GrabWidget::TryGrabAllInputs() {
   }
   if ((kbd_grab_status_ != GDK_GRAB_SUCCESS ||
        mouse_grab_status_ != GDK_GRAB_SUCCESS) &&
-      grab_failure_count_++ < kGrabFailureLimit) {
-    LOG(WARNING) << "Failed to grab inputs. Trying again in 1 second: kbd="
-        << kbd_grab_status_ << ", mouse=" << mouse_grab_status_;
+      grab_failure_count_++ < kMaxGrabFailures) {
+    LOG(WARNING) << "Failed to grab inputs. Trying again in "
+                 << kRetryGrabIntervalMs << " ms: kbd="
+                 << kbd_grab_status_ << ", mouse=" << mouse_grab_status_;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         task_factory_.NewRunnableMethod(&GrabWidget::TryGrabAllInputs),
@@ -561,6 +567,14 @@ void ScreenLocker::Init() {
   LockWindow* lock_window = new LockWindow();
   lock_window_ = lock_window;
   lock_window_->Init(NULL, init_bounds);
+
+  // Add the window to its own group so that its grab won't be stolen if
+  // gtk_grab_add() gets called on behalf on a non-screen-locker widget (e.g.
+  // a modal dialog) -- see http://crosbug.com/8999.
+  GtkWindowGroup* window_group = gtk_window_group_new();
+  gtk_window_group_add_window(window_group,
+                              GTK_WINDOW(lock_window_->GetNativeView()));
+  g_object_unref(window_group);
 
   g_signal_connect(lock_window_->GetNativeView(), "client-event",
                    G_CALLBACK(OnClientEventThunk), this);

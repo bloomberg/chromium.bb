@@ -87,7 +87,7 @@ class ScreenLockView : public views::View,
   // User's picture, signout button and password field.
   views::View* main_;
 
-  // Username thaty overlays on top of user's picture.
+  // Username that overlays on top of user's picture.
   views::View* username_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockView);

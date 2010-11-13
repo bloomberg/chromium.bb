@@ -185,7 +185,7 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // The time when the screen locker object is created.
   base::Time start_time_;
-  // The time when the authenticaton is started.
+  // The time when the authentication is started.
   base::Time authentication_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLocker);
