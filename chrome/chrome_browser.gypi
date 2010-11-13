@@ -2206,6 +2206,8 @@
         'browser/metrics/metrics_service.h',
         'browser/metrics/user_metrics.cc',
         'browser/metrics/user_metrics.h',
+        'browser/mime_registry_dispatcher.cc',
+        'browser/mime_registry_dispatcher.h',
         'browser/modal_html_dialog_delegate.cc',
         'browser/modal_html_dialog_delegate.h',
         'browser/nacl_host/nacl_broker_host_win.cc',

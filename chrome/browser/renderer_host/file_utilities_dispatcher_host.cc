@@ -52,18 +52,16 @@ void FileUtilitiesDispatcherHost::Shutdown() {
 }
 
 bool FileUtilitiesDispatcherHost::OnMessageReceived(
-    const IPC::Message& message, bool* message_was_ok) {
+    const IPC::Message& message) {
   DCHECK(!shutdown_);
-  *message_was_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(FileUtilitiesDispatcherHost,
-                           message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(FileUtilitiesDispatcherHost, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileModificationTime,
                                     OnGetFileModificationTime)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenFile, OnOpenFile)
-    IPC_MESSAGE_UNHANDLED((handled = false, msg_is_ok__ = true))
-  IPC_END_MESSAGE_MAP_EX()
+    IPC_MESSAGE_UNHANDLED((handled = false))
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

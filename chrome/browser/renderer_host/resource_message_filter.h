@@ -43,6 +43,7 @@ struct FontDescriptor;
 class GeolocationDispatcherHostOld;
 class HostZoomMap;
 class IndexedDBDispatcherHost;
+class MimeRegistryDispatcher;
 class NotificationsPrefsCache;
 class PpapiPluginProcessHost;
 class Profile;
@@ -258,12 +259,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
 
   void OnRevealFolderInOS(const FilePath& path);
-  void OnGetMimeTypeFromExtension(const FilePath::StringType& ext,
-                                  std::string* mime_type);
-  void OnGetMimeTypeFromFile(const FilePath& file_path,
-                             std::string* mime_type);
-  void OnGetPreferredExtensionForMimeType(const std::string& mime_type,
-                                          FilePath::StringType* ext);
   void OnGetCPBrowsingContext(uint32* context);
 
 #if defined(OS_WIN)
@@ -507,6 +502,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Handles file utilities messages.
   scoped_refptr<FileUtilitiesDispatcherHost> file_utilities_dispatcher_host_;
+
+  // Handles mime registry requests.
+  scoped_refptr<MimeRegistryDispatcher> mime_registry_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

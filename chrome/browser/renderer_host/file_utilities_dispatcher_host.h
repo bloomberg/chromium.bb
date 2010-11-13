@@ -25,7 +25,7 @@ class FileUtilitiesDispatcherHost
   FileUtilitiesDispatcherHost(IPC::Message::Sender* sender, int process_id);
   void Init(base::ProcessHandle process_handle);
   void Shutdown();
-  bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
+  bool OnMessageReceived(const IPC::Message& message);
 
   void Send(IPC::Message* message);
 

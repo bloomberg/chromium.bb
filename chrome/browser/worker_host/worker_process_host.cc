@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
+#include "chrome/browser/mime_registry_dispatcher.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
@@ -74,7 +75,9 @@ WorkerProcessHost::WorkerProcessHost(
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
           new FileSystemDispatcherHost(this, request_context))),
       ALLOW_THIS_IN_INITIALIZER_LIST(file_utilities_dispatcher_host_(
-          new FileUtilitiesDispatcherHost(this, this->id()))) {
+          new FileUtilitiesDispatcherHost(this, this->id()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(mime_registry_dispatcher_(
+          new MimeRegistryDispatcher(this))) {
   next_route_id_callback_.reset(NewCallbackWithReturnValue(
       WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   db_dispatcher_host_ = new DatabaseDispatcherHost(
@@ -95,6 +98,9 @@ WorkerProcessHost::~WorkerProcessHost() {
 
   // Shut down the file utilities dispatcher host.
   file_utilities_dispatcher_host_->Shutdown();
+
+  // Shut down the mime registry dispatcher host.
+  mime_registry_dispatcher_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -278,7 +284,8 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
       db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       blob_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       file_system_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
-      file_utilities_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
+      file_utilities_dispatcher_host_->OnMessageReceived(message) ||
+      mime_registry_dispatcher_->OnMessageReceived(message) ||
       MessagePortDispatcher::GetInstance()->OnMessageReceived(
           message, this, next_route_id_callback_.get(), &msg_is_ok);
 
@@ -293,12 +300,6 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
                           OnWorkerContextClosed);
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
                           OnForwardToWorker)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromExtension,
-                          OnGetMimeTypeFromExtension)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromFile,
-                          OnGetMimeTypeFromFile)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetPreferredExtensionForMimeType,
-                          OnGetPreferredExtensionForMimeType)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP_EX()
   }
@@ -522,21 +523,6 @@ void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
 
 void WorkerProcessHost::OnForwardToWorker(const IPC::Message& message) {
   WorkerService::GetInstance()->ForwardMessage(message, this);
-}
-
-void WorkerProcessHost::OnGetMimeTypeFromExtension(
-    const FilePath::StringType& ext, std::string* mime_type) {
-  net::GetMimeTypeFromExtension(ext, mime_type);
-}
-
-void WorkerProcessHost::OnGetMimeTypeFromFile(
-    const FilePath& file_path, std::string* mime_type) {
-  net::GetMimeTypeFromFile(file_path, mime_type);
-}
-
-void WorkerProcessHost::OnGetPreferredExtensionForMimeType(
-    const std::string& mime_type, FilePath::StringType* ext) {
-  net::GetPreferredExtensionForMimeType(mime_type, ext);
 }
 
 void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,
