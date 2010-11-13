@@ -1071,6 +1071,7 @@
    fun:std::string::_S_construct_aux
    fun:std::string::_S_construct
    fun:basic_string
+   ...
    fun:safe_browsing::ClientSideDetectionServiceTest_SendClientReportPhishingRequest_Test::TestBody
 }
 {
@@ -1084,4 +1085,26 @@
    fun:std::string::operator=
    fun:URLFetcher::set_upload_data
    fun:safe_browsing::ClientSideDetectionService::StartClientReportPhishingRequest
+}
+{
+   bug_62943d
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:bool ::InitCanonical
+   fun:GURL
+   fun:safe_browsing::ClientSideDetectionService::StartClientReportPhishingRequest
+}
+{
+   bug_62943e
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::_Rep::_M_grab
+   fun:basic_string
+   fun:FakeURLFetcherFactory::SetFakeResponse
+   fun:safe_browsing::ClientSideDetectionServiceTest::SetClientReportPhishingResponse
 }
