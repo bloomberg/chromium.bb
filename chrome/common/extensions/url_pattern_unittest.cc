@@ -16,7 +16,7 @@ static const int kAllSchemes =
     URLPattern::SCHEME_FTP |
     URLPattern::SCHEME_CHROMEUI;
 
-TEST(URLPatternTest, ParseInvalid) {
+TEST(ExtensionURLPatternTest, ParseInvalid) {
   const struct {
     const char* pattern;
     URLPattern::ParseResult expected_result;
@@ -42,7 +42,7 @@ TEST(URLPatternTest, ParseInvalid) {
 };
 
 // all pages for a given scheme
-TEST(URLPatternTest, Match1) {
+TEST(ExtensionURLPatternTest, Match1) {
   URLPattern pattern(kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*/*"));
   EXPECT_EQ("http", pattern.scheme());
@@ -58,7 +58,7 @@ TEST(URLPatternTest, Match1) {
 }
 
 // all domains
-TEST(URLPatternTest, Match2) {
+TEST(ExtensionURLPatternTest, Match2) {
   URLPattern pattern(kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("https://*/foo*"));
   EXPECT_EQ("https", pattern.scheme());
@@ -90,7 +90,7 @@ TEST(URLPatternTest, Match3) {
 }
 
 // glob escaping
-TEST(URLPatternTest, Match5) {
+TEST(ExtensionURLPatternTest, Match5) {
   URLPattern pattern(kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
             pattern.Parse("file:///foo?bar\\*baz"));
@@ -104,7 +104,7 @@ TEST(URLPatternTest, Match5) {
 }
 
 // ip addresses
-TEST(URLPatternTest, Match6) {
+TEST(ExtensionURLPatternTest, Match6) {
   URLPattern pattern(kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
             pattern.Parse("http://127.0.0.1/*"));
@@ -117,7 +117,7 @@ TEST(URLPatternTest, Match6) {
 }
 
 // subdomain matching with ip addresses
-TEST(URLPatternTest, Match7) {
+TEST(ExtensionURLPatternTest, Match7) {
   URLPattern pattern(kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
             pattern.Parse("http://*.0.0.1/*")); // allowed, but useless
@@ -131,7 +131,7 @@ TEST(URLPatternTest, Match7) {
 };
 
 // unicode
-TEST(URLPatternTest, Match8) {
+TEST(ExtensionURLPatternTest, Match8) {
   URLPattern pattern(kAllSchemes);
   // The below is the ASCII encoding of the following URL:
   // http://*.\xe1\x80\xbf/a\xc2\x81\xe1*
@@ -149,7 +149,7 @@ TEST(URLPatternTest, Match8) {
 };
 
 // chrome://
-TEST(URLPatternTest, Match9) {
+TEST(ExtensionURLPatternTest, Match9) {
   URLPattern pattern(kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
             pattern.Parse("chrome://favicon/*"));
@@ -164,7 +164,7 @@ TEST(URLPatternTest, Match9) {
 };
 
 // *://
-TEST(URLPatternTest, Match10) {
+TEST(ExtensionURLPatternTest, Match10) {
   URLPattern pattern(kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("*://*/*"));
   EXPECT_TRUE(pattern.MatchesScheme("http"));
@@ -181,7 +181,7 @@ TEST(URLPatternTest, Match10) {
 };
 
 // <all_urls>
-TEST(URLPatternTest, Match11) {
+TEST(ExtensionURLPatternTest, Match11) {
   URLPattern pattern(kAllSchemes);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("<all_urls>"));
   EXPECT_TRUE(pattern.MatchesScheme("chrome"));
@@ -197,7 +197,7 @@ TEST(URLPatternTest, Match11) {
 };
 
 // SCHEME_ALL matches all schemes.
-TEST(URLPatternTest, Match12) {
+TEST(ExtensionURLPatternTest, Match12) {
   URLPattern pattern(URLPattern::SCHEME_ALL);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("<all_urls>"));
   EXPECT_TRUE(pattern.MatchesScheme("chrome"));
@@ -234,7 +234,7 @@ static const struct MatchPatterns {
 };
 
 // SCHEME_ALL and specific schemes.
-TEST(URLPatternTest, Match13) {
+TEST(ExtensionURLPatternTest, Match13) {
   for (size_t i = 0; i < arraysize(kMatch13UrlPatternTestCases); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(URLPattern::PARSE_SUCCESS,
@@ -268,7 +268,7 @@ static const struct GetAsStringPatterns {
   { "javascript:atemyhomework" },
 };
 
-TEST(URLPatternTest, GetAsString) {
+TEST(ExtensionURLPatternTest, GetAsString) {
   for (size_t i = 0; i < arraysize(kGetAsStringTestCases); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(URLPattern::PARSE_SUCCESS,
@@ -286,7 +286,7 @@ void TestPatternOverlap(const URLPattern& pattern1, const URLPattern& pattern2,
       << pattern2.GetAsString() << ", " << pattern1.GetAsString();
 }
 
-TEST(URLPatternTest, OverlapsWith) {
+TEST(ExtensionURLPatternTest, OverlapsWith) {
   URLPattern pattern1(kAllSchemes, "http://www.google.com/foo/*");
   URLPattern pattern2(kAllSchemes, "https://www.google.com/foo/*");
   URLPattern pattern3(kAllSchemes, "http://*.google.com/foo/*");
@@ -317,7 +317,7 @@ TEST(URLPatternTest, OverlapsWith) {
   TestPatternOverlap(pattern7, pattern10, true);
 }
 
-TEST(URLPatternTest, ConvertToExplicitSchemes) {
+TEST(ExtensionURLPatternTest, ConvertToExplicitSchemes) {
   std::vector<URLPattern> all_urls(URLPattern(
       kAllSchemes,
       "<all_urls>").ConvertToExplicitSchemes());
