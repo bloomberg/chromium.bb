@@ -59,6 +59,8 @@ env.Command(target=ppp_rpc_files,
 # Server interfaces for RPCs exported by the browser.
 ppb_specinputs = ['objectstub.srpc',
                   'ppb_core.srpc',
+                  'ppb_graphics_2d.srpc',
+                  'ppb_image_data.srpc',
                   ]
 
 ppb_rpc_h = GENERATED + '/ppb_rpc.h'
@@ -102,6 +104,8 @@ env.DualLibrary('ppapi_browser',
                 ['browser_core.cc',
                  'browser_completion_callback_invoker.cc',
                  'browser_globals.cc',
+                 'browser_graphics_2d.cc',
+                 'browser_image_data.cc',
                  'browser_instance.cc',
                  'browser_ppp.cc',
                  'browser_upcall.cc',

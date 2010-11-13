@@ -1,0 +1,56 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods used to implement PPB_ImageData calls from
+# the plugin.  The functions are described in ppapi/c/ppb_image_data.h.
+{
+ 'name': 'PpbGraphics2DRpc',
+ 'rpcs': [
+          {'name': 'PPB_Graphics2D_Create',
+           'inputs': [['module', 'int64_t'],
+                      ['size', 'int32_t[]'],
+                      ['is_always_opaque', 'int32_t'],
+                     ],
+           'outputs': [['resource', 'int64_t'],
+                      ]
+          },
+          {'name': 'PPB_Graphics2D_IsGraphics2D',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['success', 'int32_t'],
+                      ]
+          },
+          {'name': 'PPB_Graphics2D_Describe',
+           'inputs': [['graphics_2d', 'int64_t'],
+                     ],
+           'outputs': [['size', 'int32_t[]'],
+                       ['is_always_opaque', 'int32_t'],
+                       ['success', 'int32_t'],
+                      ]
+          },
+          {'name': 'PPB_Graphics2D_PaintImageData',
+           'inputs': [['graphics_2d', 'int64_t'],
+                      ['image', 'int64_t'],
+                      ['top_left', 'int32_t[]'],
+                      ['src_rect', 'int32_t[]'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'PPB_Graphics2D_Scroll',
+           'inputs': [['graphics_2d', 'int64_t'],
+                      ['clip_rect', 'int32_t[]'],
+                      ['amount', 'int32_t[]'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'PPB_Graphics2D_ReplaceContents',
+           'inputs': [['graphics_2d', 'int64_t'],
+                      ['image', 'int64_t'],
+                     ],
+           'outputs': []
+          },
+          # Flush is in upcall.srpc, because it can be called from other
+          # threads.
+         ]
+}

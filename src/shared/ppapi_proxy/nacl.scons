@@ -41,6 +41,8 @@ env.Command(target=ppp_rpc_files,
 # Browser interfaces used in client RPCs to the browser.
 ppb_specinputs = ['objectstub.srpc',
                   'ppb_core.srpc',
+                  'ppb_image_data.srpc',
+                  'ppb_graphics_2d.srpc',
                   ]
 
 ppb_rpc_h = GENERATED + '/ppb_rpc.h'

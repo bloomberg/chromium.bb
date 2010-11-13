@@ -12,6 +12,9 @@ namespace ppapi_proxy {
 // All of these methods are called from the browser main (UI, JavaScript, ...)
 // thread.
 
+const PP_Resource kInvalidResourceId = 0;
+
+
 namespace {
 
 std::map<PP_Instance, BrowserPpp*>* instance_to_ppp_map = NULL;

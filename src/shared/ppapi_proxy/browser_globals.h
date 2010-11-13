@@ -58,6 +58,9 @@ const PPB_Core* CoreInterface();
 // Set by SetBrowserGetInterface.
 const PPB_Var_Deprecated* VarInterface();
 
+// PPAPI constants used in the proxy.
+extern const PP_Resource kInvalidResourceId;
+
 }  // namespace ppapi_proxy
 
 #endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_

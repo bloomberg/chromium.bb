@@ -3,19 +3,29 @@
 # found in the LICENSE file.
 
 # This file declares the RPC methods that support calls from the module to
-# the browser but are required to be done on the NPAPI thread.  These methods
-# are invoked on a separate channel that is listened to by a separate thread
-# in the browser plugin.
+# the browser but are invoked from other than the PPAPI main thread.  These
+# methods are invoked on a separate channel that is listened to by a separate
+# thread in the browser plugin.
 {
  'name': 'PppUpcallRpc',
  'rpcs': [
           # The ppapi_proxy plugin has already created a closure, and requests
           # a callback from the browser on the PPAPI main thread.
-          {'name': 'PPP_Core_CallOnMainThread',
+          {'name': 'PPB_Core_CallOnMainThread',
            'inputs': [['closure_number', 'int32_t'],
                       ['delay_in_milliseconds', 'int32_t'],
                      ],
            'outputs': []
+          },
+          # Flushing the 2D device can be done from threads other than the
+          # main thread.  At least, at the application layer.  They also may
+          # need to invoke a completion callback.
+          {'name': 'PPB_Graphics2D_Flush',
+           'inputs': [['device_context', 'int64_t'],
+                      ['callback_index', 'int32_t'],
+                     ],
+           'outputs': [['result', 'int32_t'],
+                      ]
           },
          ]
 }

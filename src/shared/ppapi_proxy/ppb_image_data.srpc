@@ -1,0 +1,44 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods used to implement PPB_ImageData calls from
+# the plugin.  The functions are described in ppapi/c/ppb_image_data.h.
+{
+ 'name': 'PpbImageDataRpc',
+ 'rpcs': [
+          {'name': 'PPB_ImageData_GetNativeImageDataFormat',
+           'inputs': [],
+           'outputs': [['format', 'int32_t'],
+                      ]
+          },
+          {'name': 'PPB_ImageData_IsImageDataFormatSupported',
+           'inputs': [['format', 'int32_t'],
+                     ],
+           'outputs': [['success', 'int32_t'],
+                      ]
+          },
+          {'name': 'PPB_ImageData_Create',
+           'inputs': [['module', 'int64_t'],
+                      ['format', 'int32_t'],
+                      ['size', 'int32_t[]'],
+                      ['init_to_zero', 'int32_t'],
+                     ],
+           'outputs': [['resource', 'int64_t'],
+                      ]
+          },
+          {'name': 'PPB_ImageData_IsImageData',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['success', 'int32_t'],
+                      ]
+          },
+          {'name': 'PPB_ImageData_Describe',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['desc', 'int32_t[]'],
+                       ['success', 'int32_t'],
+                      ]
+          },
+         ]
+}

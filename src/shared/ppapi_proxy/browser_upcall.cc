@@ -6,16 +6,17 @@
 
 #include <new>
 
-#include "native_client/src/include/portability.h"
-#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "gen/native_client/src/shared/ppapi_proxy/upcall.h"
+#include "native_client/src/include/portability.h"
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/pp_completion_callback.h"
 
 // Support for "upcalls" -- RPCs to the browser that are done from other than
 // the main thread.  These calls are synchronized by the ppapi_proxy library
@@ -123,7 +124,7 @@ DescWrapper* BrowserUpcall::Start(struct NaClThread* nacl_thread,
 
 // Implementation of the upcall RPC service.
 
-void PppUpcallRpcServer::PPP_Core_CallOnMainThread(
+void PppUpcallRpcServer::PPB_Core_CallOnMainThread(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     int32_t closure_number,
@@ -142,4 +143,17 @@ void PppUpcallRpcServer::PPP_Core_CallOnMainThread(
                                                  completion_callback,
                                                  0);
   rpc->result = NACL_SRPC_RESULT_OK;
+}
+
+void PppUpcallRpcServer::PPB_Graphics2D_Flush(NaClSrpcRpc* rpc,
+                                              NaClSrpcClosure* done,
+                                              int64_t device_context,
+                                              int32_t callback_index,
+                                              int32_t* result) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  UNREFERENCED_PARAMETER(device_context);
+  UNREFERENCED_PARAMETER(callback_index);
+  UNREFERENCED_PARAMETER(result);
+  NACL_UNIMPLEMENTED();
 }
