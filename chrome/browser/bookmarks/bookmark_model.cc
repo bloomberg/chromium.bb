@@ -232,9 +232,9 @@ void BookmarkModel::Copy(const BookmarkNode* node,
   SetDateGroupModified(new_parent, Time::Now());
   BookmarkDragData drag_data_(node);
   std::vector<BookmarkDragData::Element> elements(drag_data_.elements);
-  // CloneDragData will use BookmarkModel methods to do the job, so we
+  // CloneBookmarkNode will use BookmarkModel methods to do the job, so we
   // don't need to send notifications here.
-  bookmark_utils::CloneDragData(this, elements, new_parent, index);
+  bookmark_utils::CloneBookmarkNode(this, elements, new_parent, index);
 
   if (store_.get())
     store_->ScheduleSave();

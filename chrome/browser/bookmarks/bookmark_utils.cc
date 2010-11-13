@@ -86,13 +86,10 @@ class NewBrowserPageNavigator : public PageNavigator {
   DISALLOW_COPY_AND_ASSIGN(NewBrowserPageNavigator);
 };
 
-// TODO(mrossetti): Rename CloneDragDataImpl to CloneBookmarkNodeImpl.
-// See: http://crbug.com/37891
-
-void CloneDragDataImpl(BookmarkModel* model,
-                       const BookmarkDragData::Element& element,
-                       const BookmarkNode* parent,
-                       int index_to_add_at) {
+void CloneBookmarkNodeImpl(BookmarkModel* model,
+                           const BookmarkDragData::Element& element,
+                           const BookmarkNode* parent,
+                           int index_to_add_at) {
   if (element.is_url) {
     model->AddURL(parent, index_to_add_at, element.title, element.url);
   } else {
@@ -100,7 +97,7 @@ void CloneDragDataImpl(BookmarkModel* model,
                                                      index_to_add_at,
                                                      element.title);
     for (int i = 0; i < static_cast<int>(element.children.size()); ++i)
-      CloneDragDataImpl(model, element.children[i], new_folder, i);
+      CloneBookmarkNodeImpl(model, element.children[i], new_folder, i);
   }
 }
 
@@ -269,7 +266,7 @@ int PerformBookmarkDrop(Profile* profile,
     return DragDropTypes::DRAG_NONE;
   }
   // Dropping a group from different profile. Always accept.
-  bookmark_utils::CloneDragData(model, data.elements, parent_node, index);
+  bookmark_utils::CloneBookmarkNode(model, data.elements, parent_node, index);
   return DragDropTypes::DRAG_COPY;
 }
 
@@ -306,16 +303,16 @@ bool IsValidDropLocation(Profile* profile,
   return true;
 }
 
-void CloneDragData(BookmarkModel* model,
-                   const std::vector<BookmarkDragData::Element>& elements,
-                   const BookmarkNode* parent,
-                   int index_to_add_at) {
+void CloneBookmarkNode(BookmarkModel* model,
+                       const std::vector<BookmarkDragData::Element>& elements,
+                       const BookmarkNode* parent,
+                       int index_to_add_at) {
   if (!parent->is_folder() || !model) {
     NOTREACHED();
     return;
   }
   for (size_t i = 0; i < elements.size(); ++i)
-    CloneDragDataImpl(model, elements[i], parent, index_to_add_at + i);
+    CloneBookmarkNodeImpl(model, elements[i], parent, index_to_add_at + i);
 }
 
 
@@ -420,7 +417,8 @@ void PasteFromClipboard(BookmarkModel* model,
 
   if (index == -1)
     index = parent->GetChildCount();
-  bookmark_utils::CloneDragData(model, bookmark_data.elements, parent, index);
+  bookmark_utils::CloneBookmarkNode(
+      model, bookmark_data.elements, parent, index);
 }
 
 bool CanPasteFromClipboard(const BookmarkNode* node) {
