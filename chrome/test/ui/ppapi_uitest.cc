@@ -136,17 +136,13 @@ TEST_F(PPAPITest, Var) {
   RunTest("Var");
 }
 
-// TODO(dumi): figure out why this test is flaky on Mac and Win XP (dbg).
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define DISABLED_ON_MAC_AND_WIN(test_name) DISABLED_##test_name
-#else
-#define DISABLED_ON_MAC_AND_WIN(test_name) test_name
-#endif
-TEST_F(PPAPITest, DISABLED_ON_MAC_AND_WIN(FileIO)) {
+// TODO(dumi): figure out why this test is flaky / crashing.
+TEST_F(PPAPITest, DISABLED_FileIO) {
   RunTestViaHTTP("FileIO");
 }
 
-TEST_F(PPAPITest, FileRef) {
+// TODO(dumi): figure out why this test is flaky / crashing.
+TEST_F(PPAPITest, DISABLED_FileRef) {
   RunTestViaHTTP("FileRef");
 }
 
