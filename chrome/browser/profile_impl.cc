@@ -293,15 +293,21 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // for a spec on where cache files go.  The net effect for most systems is we
   // use ~/.cache/chromium/ for Chromium and ~/.cache/google-chrome/ for
   // official builds.
+  // If we're using a different user-data-dir, though, fall through
+  // to the "normal" cache directory (a subdirectory of that).
+  // TODO(evan): all of this logic belongs in path_service; refactor and remove
+  // this IsOverriden business.
+  if (!PathService::IsOverridden(chrome::DIR_USER_DATA)) {
 #if defined(GOOGLE_CHROME_BUILD)
-  const char kCacheDir[] = "google-chrome";
+    const char kCacheDir[] = "google-chrome";
 #else
-  const char kCacheDir[] = "chromium";
+    const char kCacheDir[] = "chromium";
 #endif
-  PathService::Get(base::DIR_USER_CACHE, &base_cache_path_);
-  base_cache_path_ = base_cache_path_.Append(kCacheDir);
-  if (!file_util::PathExists(base_cache_path_))
-    file_util::CreateDirectory(base_cache_path_);
+    PathService::Get(base::DIR_USER_CACHE, &base_cache_path_);
+    base_cache_path_ = base_cache_path_.Append(kCacheDir);
+    if (!file_util::PathExists(base_cache_path_))
+      file_util::CreateDirectory(base_cache_path_);
+  }
 #endif
   if (base_cache_path_.empty())
     base_cache_path_ = path_;
