@@ -347,7 +347,6 @@ bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
     initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;
 
   policy->SetTokenLevel(initial_token, sandbox::USER_LIMITED);
-
   policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
 
   // TODO(cpu): Proxy registry access and remove these policies.
@@ -362,6 +361,26 @@ bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
     return false;
   return true;
 }
+
+// Returns true of the plugin specified in |cmd_line| is the built-in
+// flash plugin and optionally returns its full path in |flash_path|
+bool IsBuiltInFlash(const CommandLine* cmd_line, FilePath* flash_path) {
+  std::wstring plugin_dll = cmd_line->
+      GetSwitchValueNative(switches::kPluginPath);
+
+  FilePath builtin_flash;
+  if (!PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_flash))
+    return false;
+
+  FilePath plugin_path(plugin_dll);
+  if (plugin_path != builtin_flash)
+    return false;
+
+  if (flash_path)
+    *flash_path = plugin_path;
+  return true;
+}
+
 
 // Adds the custom policy rules for a given plugin. |trusted_plugins| contains
 // the comma separate list of plugin dll names that should not be sandboxed.
@@ -382,18 +401,15 @@ bool AddPolicyForPlugin(CommandLine* cmd_line,
   }
 
   // The built-in flash gets a custom, more restricted sandbox.
-  FilePath builtin_flash;
-  if (PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_flash)) {
-    FilePath plugin_path(plugin_dll);
-    if (plugin_path == builtin_flash) {
-      // Spawn the flash broker and apply sandbox policy.
-      if (!LoadFlashBroker(plugin_path, cmd_line)) {
-        // Could not start the broker, use a very weak policy instead.
-        DLOG(WARNING) << "Failed to start flash broker";
-        return ApplyPolicyForTrustedPlugin(policy);
-      }
-      return ApplyPolicyForBuiltInFlashPlugin(policy);
+  FilePath flash_path;
+  if (IsBuiltInFlash(cmd_line, &flash_path)) {
+    // Spawn the flash broker and apply sandbox policy.
+    if (!LoadFlashBroker(flash_path, cmd_line)) {
+      // Could not start the broker, use a very weak policy instead.
+      DLOG(WARNING) << "Failed to start flash broker";
+      return ApplyPolicyForTrustedPlugin(policy);
     }
+    return ApplyPolicyForBuiltInFlashPlugin(policy);
   }
 
   PluginPolicyCategory policy_category =
@@ -484,12 +500,28 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   TRACE_EVENT_BEGIN("StartProcessWithAccess", 0, type_str);
 
+  // To decide if the process is going to be sandboxed we have two cases.
+  // First case: all process types except the nacl broker, gpu process and
+  // the plugin process are sandboxed by default.
   bool in_sandbox =
       (type != ChildProcessInfo::NACL_BROKER_PROCESS) &&
-      !browser_command_line.HasSwitch(switches::kNoSandbox) &&
-      (type != ChildProcessInfo::PLUGIN_PROCESS ||
-       browser_command_line.HasSwitch(switches::kSafePlugins)) &&
-      (type != ChildProcessInfo::GPU_PROCESS);
+      (type != ChildProcessInfo::GPU_PROCESS) &&
+      (type != ChildProcessInfo::PLUGIN_PROCESS);
+
+  // Second case: If it is the plugin process then it depends on it being
+  // the built-in flash, the user forcing plugins into sandbox or the
+  // the user explicitly excluding flash from the sandbox.
+  if (!in_sandbox && (type == ChildProcessInfo::PLUGIN_PROCESS)) {
+      in_sandbox = browser_command_line.HasSwitch(switches::kSafePlugins) ||
+          (IsBuiltInFlash(cmd_line, NULL) &&
+           !browser_command_line.HasSwitch(switches::kDisableFlashSandbox));
+  }
+
+  if (browser_command_line.HasSwitch(switches::kNoSandbox)) {
+    // The user has explicity opted-out from all sandboxing.
+    in_sandbox = false;
+  }
+
 #if !defined (GOOGLE_CHROME_BUILD)
   if (browser_command_line.HasSwitch(switches::kInProcessPlugins)) {
     // In process plugins won't work if the sandbox is enabled.

@@ -200,6 +200,9 @@ const char kDisableExtensionsFileAccessCheck[] =
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
 
+// Disables the sandbox for the built-in flash player.
+const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
+
 // Suppresses support for the Geolocation javascript API.
 const char kDisableGeolocation[]            = "disable-geolocation";
 
