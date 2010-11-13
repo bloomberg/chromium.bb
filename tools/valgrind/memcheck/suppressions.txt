@@ -2168,7 +2168,7 @@
    bug_46161
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net14DnsReloadTimer7ExpiredEv
+   fun:*DnsReloadTimer7ExpiredEv
    fun:_ZN3net24DnsReloadTimerHasExpiredEv
    fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
    fun:_ZN3net15ResolveAddrInfoEPNS_16HostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
