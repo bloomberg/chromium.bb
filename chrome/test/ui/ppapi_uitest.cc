@@ -134,3 +134,15 @@ TEST_F(PPAPITest, CharSet) {
 TEST_F(PPAPITest, Var) {
   RunTest("Var");
 }
+
+TEST_F(PPAPITest, FileIO) {
+  RunTestViaHTTP("FileIO");
+}
+
+TEST_F(PPAPITest, FileRef) {
+  RunTestViaHTTP("FileRef");
+}
+
+TEST_F(PPAPITest, DirectoryReader) {
+  RunTestViaHTTP("DirectoryReader");
+}
