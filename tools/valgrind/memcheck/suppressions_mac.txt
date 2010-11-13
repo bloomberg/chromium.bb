@@ -1215,3 +1215,33 @@
    fun:_ZN18FileVersionInfoMac15product_versionEv
    fun:_ZNK6chrome11VersionInfo7VersionEv
 }
+{
+   bug_63024a
+   Memcheck:Cond
+   fun:memcpy
+   fun:_ZN8Security13NameValuePair9CloneDataERKNS_8CssmDataE
+   fun:_ZN8Security13NameValuePairC2ERKNS_8CssmDataE
+   fun:_ZN8Security19NameValueDictionary12MakeFromDataERKNS_8CssmDataE
+   fun:_ZN8Security19NameValueDictionaryC2ERKNS_8CssmDataE
+   fun:_ZN8Security12KeychainCore12CCallbackMgr7consumeEjjRKNS_8CssmDataE
+   fun:_ZN8Security14SecurityServer16NotificationPort7receiveERKNS_12MachPlusPlus7MessageE
+   fun:_ZN8Security12MachPlusPlus10CFAutoPort10cfCallbackEP12__CFMachPortPvlS4_
+}
+{
+   bug_63024b
+   Memcheck:Cond
+   fun:_ZN8Security19NameValueDictionary12MakeFromDataERKNS_8CssmDataE
+   fun:_ZN8Security19NameValueDictionaryC2ERKNS_8CssmDataE
+   fun:_ZN8Security12KeychainCore12CCallbackMgr7consumeEjjRKNS_8CssmDataE
+   fun:_ZN8Security14SecurityServer16NotificationPort7receiveERKNS_12MachPlusPlus7MessageE
+   fun:_ZN8Security12MachPlusPlus10CFAutoPort10cfCallbackEP12__CFMachPortPvlS4_
+}
+{
+   bug_63024c
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN8Security19NameValueDictionaryD2Ev
+   fun:_ZN8Security12KeychainCore12CCallbackMgr7consumeEjjRKNS_8CssmDataE
+   fun:_ZN8Security14SecurityServer16NotificationPort7receiveERKNS_12MachPlusPlus7MessageE
+   fun:_ZN8Security12MachPlusPlus10CFAutoPort10cfCallbackEP12__CFMachPortPvlS4_
+}
