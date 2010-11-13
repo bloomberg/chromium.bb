@@ -31,8 +31,7 @@ class MenuButton : public TextButton {
   // The menu button's class name.
   static const char kViewClassName[];
 
-  //
-  // Create a Button
+  // Create a Button.
   MenuButton(ButtonListener* listener,
              const std::wstring& text,
              ViewMenuDelegate* menu_delegate,
@@ -51,7 +50,7 @@ class MenuButton : public TextButton {
   virtual void Paint(gfx::Canvas* canvas, bool for_drag);
 
   // These methods are overriden to implement a simple push button
-  // behavior
+  // behavior.
   virtual bool OnMousePressed(const MouseEvent& e);
   virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
   virtual void OnMouseExited(const MouseEvent& event);

@@ -54,7 +54,7 @@ MenuButton::MenuButton(ButtonListener* listener,
       menu_delegate_(menu_delegate),
       show_menu_marker_(show_menu_marker),
       menu_marker_(ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                       IDR_MENU_DROPARROW)),
+          IDR_MENU_DROPARROW)),
       destroyed_flag_(NULL) {
   set_alignment(TextButton::ALIGN_LEFT);
 }

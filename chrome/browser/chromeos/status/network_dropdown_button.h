@@ -9,7 +9,7 @@
 #include "app/throb_animation.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
-#include "views/controls/button/menu_button.h"
+#include "chrome/browser/chromeos/views/dropdown_button.h"
 
 namespace chromeos {
 
@@ -17,7 +17,7 @@ namespace chromeos {
 // This class will handle getting the networks to show connected network
 // at top level and populating the menu.
 // See NetworkMenu for more details.
-class NetworkDropdownButton : public views::MenuButton,
+class NetworkDropdownButton : public DropDownButton,
                               public NetworkMenu,
                               public NetworkLibrary::NetworkManagerObserver {
  public:

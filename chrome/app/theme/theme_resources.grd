@@ -590,6 +590,24 @@
         <include name="IDR_SCROLL_THUMB_H" file="chromeos_scroll_thumb_h.png" type="BINDATA" />
         <include name="IDR_SCROLL_THUMB_P" file="chromeos_scroll_thumb_p.png" type="BINDATA" />
         <include name="IDR_SHUTDOWN_ICON" file="shutdown_icon.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_BOTTOM_H" file="textbutton_dropdown_b_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_BOTTOM_LEFT_H" file="textbutton_dropdown_bl_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_BOTTOM_LEFT_P" file="textbutton_dropdown_bl_p.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_BOTTOM_P" file="textbutton_dropdown_b_p.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_BOTTOM_RIGHT_H" file="textbutton_dropdown_br_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_BOTTOM_RIGHT_P" file="textbutton_dropdown_br_p.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_CENTER_H" file="textbutton_dropdown_c_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_CENTER_P" file="textbutton_dropdown_c_p.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_LEFT_H" file="textbutton_dropdown_l_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_LEFT_P" file="textbutton_dropdown_l_p.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_RIGHT_H" file="textbutton_dropdown_r_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_RIGHT_P" file="textbutton_dropdown_r_p.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_TOP_H" file="textbutton_dropdown_t_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_TOP_LEFT_H" file="textbutton_dropdown_tl_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_TOP_LEFT_P" file="textbutton_dropdown_tl_p.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_TOP_P" file="textbutton_dropdown_t_p.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_TOP_RIGHT_H" file="textbutton_dropdown_tr_h.png" type="BINDATA" />
+	<include name="IDR_DROPDOWN_TOP_RIGHT_P" file="textbutton_dropdown_tr_p.png" type="BINDATA" />
       </if>
     </includes>
   </release>

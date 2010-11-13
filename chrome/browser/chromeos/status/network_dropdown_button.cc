@@ -25,10 +25,10 @@ const int NetworkDropdownButton::kThrobDuration = 1000;
 
 NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
                                              gfx::NativeWindow parent_window)
-    : MenuButton(NULL,
-                 l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE),
-                 this,
-                 true),
+    : DropDownButton(NULL,
+                     l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE),
+                     this,
+                     true),
       browser_mode_(browser_mode),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       parent_window_(parent_window) {

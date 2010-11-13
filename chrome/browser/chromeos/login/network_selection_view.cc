@@ -65,7 +65,7 @@ const int kControlPaddingRow = 15;
 const int kWelcomeTitleFontDelta = 5;
 
 // Fixed size for language/keyboard/network controls height.
-const int kSelectionBoxHeight = 30;
+const int kSelectionBoxHeight = 29;
 
 // Menu button is drawn using our custom icons in resources. See
 // TextButtonBorder::Paint() for details. So this offset compensate
@@ -120,14 +120,14 @@ class NetworkControlReportOnActivate : public NetworkDropdownButton {
 };
 
 // MenuButton with custom processing on focus events.
-class NotifyingMenuButton : public views::MenuButton {
+class NotifyingMenuButton : public DropDownButton {
  public:
   NotifyingMenuButton(views::ButtonListener* listener,
                       const std::wstring& text,
                       views::ViewMenuDelegate* menu_delegate,
                       bool show_menu_marker,
                       NetworkScreenDelegate* delegate)
-      : MenuButton(listener, text, menu_delegate, show_menu_marker),
+      : DropDownButton(listener, text, menu_delegate, show_menu_marker),
         delegate_(delegate) {}
 
   // Overridden from View:
@@ -305,7 +305,7 @@ void NetworkSelectionView::Init() {
   select_keyboard_label_ = new views::Label();
   select_keyboard_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
 
-  keyboards_menubutton_ = new views::MenuButton(
+  keyboards_menubutton_ = new DropDownButton(
       NULL /* listener */, L"", delegate_->keyboard_switch_menu(),
       true /* show_menu_marker */);
   InitMenuButtonProperties(keyboards_menubutton_);
