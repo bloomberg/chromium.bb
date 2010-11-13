@@ -274,6 +274,8 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
        ext.Desire("GL_OES_standard_derivatives"))) {
     AddExtensionString("GL_OES_standard_derivatives");
     feature_flags_.oes_standard_derivatives = true;
+    validators_.hint_target.AddValue(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
+    validators_.g_l_state.AddValue(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
   }
 
   // TODO(gman): Add support for these extensions.

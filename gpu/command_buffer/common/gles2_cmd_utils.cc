@@ -291,6 +291,10 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_CURRENT_VERTEX_ATTRIB:
       return 4;
 
+    // -- glHint with GL_OES_standard_derivatives
+    case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES:
+      return 1;
+
     // bad enum
     default:
       return 0;

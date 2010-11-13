@@ -382,6 +382,10 @@ TEST_F(FeatureInfoTest, InitializeOES_standard_derivatives) {
   info_.Initialize(NULL);
   EXPECT_THAT(info_.extensions(), HasSubstr("GL_OES_standard_derivatives"));
   EXPECT_TRUE(info_.feature_flags().oes_standard_derivatives);
+  EXPECT_TRUE(info_.validators()->hint_target.IsValid(
+      GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES));
+  EXPECT_TRUE(info_.validators()->g_l_state.IsValid(
+      GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES));
 }
 
 TEST_F(FeatureInfoTest, InitializeCHROMIUM_webglsl) {
