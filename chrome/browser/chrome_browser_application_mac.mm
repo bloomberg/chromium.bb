@@ -55,7 +55,7 @@ static IMP gOriginalInitIMP = NULL;
 
   if (!found) {
     // Update breakpad with the exception info.
-    static const NSString* kNSExceptionKey = @"nsexception";
+    static NSString* const kNSExceptionKey = @"nsexception";
     NSString* value =
         [NSString stringWithFormat:@"%@ reason %@", aName, aReason];
     SetCrashKeyValue(kNSExceptionKey, value);
