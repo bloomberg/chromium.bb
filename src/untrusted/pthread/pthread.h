@@ -19,6 +19,8 @@
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #include <stdint.h>
+#include <sched.h>
+#include <time.h>
 #include <sys/nacl_nice.h>
 #include <sys/queue.h>
 #include <sys/types.h>
