@@ -60,19 +60,18 @@ PP_Resource GetFontFileWithFallback(
     PP_Module module_id,
     const PP_FontDescription_Dev* description,
     PP_PrivateFontCharset charset) {
+  PluginDispatcher* dispatcher = PluginDispatcher::Get();
   SerializedFontDescription desc;
-  // TODO(brettw): serialize the description!
+  desc.SetFromPPFontDescription(dispatcher, *description, true);
 
   PP_Resource result = 0;
-  PluginDispatcher::Get()->Send(
-      new PpapiHostMsg_PPBPdf_GetFontFileWithFallback(
-          INTERFACE_ID_PPB_PDF, module_id, desc, charset, &result));
+  dispatcher->Send(new PpapiHostMsg_PPBPdf_GetFontFileWithFallback(
+      INTERFACE_ID_PPB_PDF, module_id, desc, charset, &result));
   if (!result)
     return 0;
 
   linked_ptr<PrivateFontFile> object(new PrivateFontFile);
-  PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
-      result, object);
+  dispatcher->plugin_resource_tracker()->AddResource(result, object);
   return result;
 }
 
@@ -142,7 +141,7 @@ void PPB_Pdf_Proxy::OnMsgGetFontFileWithFallback(
     int32_t charset,
     PP_Resource* result) {
   PP_FontDescription_Dev desc;
-  // TODO(brettw) deserialize this value!
+  in_desc.SetToPPFontDescription(dispatcher(), &desc, false);
   *result = ppb_pdf_target()->GetFontFileWithFallback(module, &desc,
       static_cast<PP_PrivateFontCharset>(charset));
 }

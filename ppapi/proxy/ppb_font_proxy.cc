@@ -21,6 +21,7 @@ class Font : public PluginResource {
   virtual Font* AsFont() { return this; }
 
   PP_FontDescription_Dev& desc() { return desc_; }
+  PP_FontDescription_Dev* desc_ptr() { return &desc_; }
   PP_FontMetrics_Dev& metrics() { return metrics_; }
 
  private:
@@ -46,16 +47,8 @@ PP_Resource Create(PP_Module module_id,
                    const PP_FontDescription_Dev* description) {
   PluginDispatcher* dispatcher = PluginDispatcher::Get();
 
-  // Convert the input font description to a SerializedFontDescription.
   SerializedFontDescription in_description;
-  in_description.face = SerializedVarSendInput(dispatcher, description->face);
-  in_description.family = description->family;
-  in_description.size = description->size;
-  in_description.weight = description->weight;
-  in_description.italic = description->italic;
-  in_description.small_caps = description->small_caps;
-  in_description.letter_spacing = description->letter_spacing;
-  in_description.word_spacing = description->word_spacing;
+  in_description.SetFromPPFontDescription(dispatcher, *description, true);
 
   PP_Resource result;
   SerializedFontDescription out_description;
@@ -68,31 +61,14 @@ PP_Resource Create(PP_Module module_id,
     return 0;  // Failure creating font.
 
   linked_ptr<Font> object(new Font);
-
-  // Jump through some hoops to get a PP_Var with a single ref to it in our
-  // resource object.
-  ReceiveSerializedVarReturnValue face_return_value;
-  *static_cast<SerializedVar*>(&face_return_value) = out_description.face;
-  object->desc().face = face_return_value.Return(dispatcher);
-
-  // Convert the rest of the font description.
-  object->desc().family =
-      static_cast<PP_FontFamily_Dev>(out_description.family);
-  object->desc().size = out_description.size;
-  object->desc().weight =
-      static_cast<PP_FontWeight_Dev>(out_description.weight);
-  object->desc().italic = out_description.italic;
-  object->desc().small_caps = out_description.small_caps;
-  object->desc().letter_spacing = out_description.letter_spacing;
-  object->desc().word_spacing = out_description.word_spacing;
+  out_description.SetToPPFontDescription(dispatcher, object->desc_ptr(), true);
 
   // Convert the metrics, this is just serialized as a string of bytes.
   if (out_metrics.size() != sizeof(PP_FontMetrics_Dev))
     return 0;
   memcpy(&object->metrics(), out_metrics.data(), sizeof(PP_FontMetrics_Dev));
 
-  PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
-      result, object);
+  dispatcher->plugin_resource_tracker()->AddResource(result, object);
   return result;
 }
 
@@ -233,51 +209,28 @@ void PPB_Font_Proxy::OnMsgCreate(
     SerializedFontDescription* out_description,
     std::string* out_metrics) {
   // Convert the face name in the input description.
-  PP_FontDescription_Dev in_desc;
-  SerializedVarReceiveInput in_face_name(in_description.face);
-  in_desc.face = in_face_name.Get(dispatcher());
+  PP_FontDescription_Dev in_pp_desc;
+  in_description.SetToPPFontDescription(dispatcher(), &in_pp_desc, false);
 
-  // The rest of the font description is easy.
-  in_desc.family = static_cast<PP_FontFamily_Dev>(in_description.family);
-  in_desc.size = in_description.size;
-  in_desc.weight = static_cast<PP_FontWeight_Dev>(in_description.weight);
-  in_desc.italic = in_description.italic;
-  in_desc.small_caps = in_description.small_caps;
-  in_desc.letter_spacing = in_description.letter_spacing;
-  in_desc.word_spacing = in_description.word_spacing;
+  // Make sure the output is always defined so we can still serialize it back
+  // to the plugin below.
+  PP_FontDescription_Dev out_pp_desc;
+  memset(&out_pp_desc, 0, sizeof(PP_FontDescription_Dev));
+  out_pp_desc.face = PP_MakeUndefined();
 
-  PP_FontDescription_Dev out_desc;
-  SerializedVarOutParam out_face_name(&out_description->face);
-
-  *result = ppb_font_target()->Create(pp_module, &in_desc);
-  if (!*result) {
-    // Even in the failure case we need to set the var for the name or it
-    // will have no dispatcher set, and the serialization layer will assert
-    // when we're sending it to the browser.
-    *out_face_name.OutParam(dispatcher()) = PP_MakeUndefined();
-    return;
+  *result = ppb_font_target()->Create(pp_module, &in_pp_desc);
+  if (*result) {
+    // Get the metrics and resulting description to return to the browser.
+    PP_FontMetrics_Dev metrics;
+    if (ppb_font_target()->Describe(*result, &out_pp_desc, &metrics)) {
+        out_metrics->assign(reinterpret_cast<const char*>(&metrics),
+                            sizeof(PP_FontMetrics_Dev));
+    }
   }
 
-  // Get the metrics and resulting description to return to the browser.
-  PP_FontMetrics_Dev metrics;
-  ppb_font_target()->Describe(*result, &out_desc, &metrics);
-
-  // Convert the PP_Var in the resulting description to an out param. This
-  // should clean up the ref |Describe| assigned to our font name.
-  *out_face_name.OutParam(dispatcher()) = out_desc.face;
-
-  // The rest of the font description is easy.
-  out_description->family = out_desc.family;
-  out_description->size = out_desc.size;
-  out_description->weight = out_desc.weight;
-  out_description->italic = out_desc.italic;
-  out_description->small_caps = out_desc.small_caps;
-  out_description->letter_spacing = out_desc.letter_spacing;
-  out_description->word_spacing = out_desc.word_spacing;
-
-  // Metrics are just serialized as a string.
-  out_metrics->assign(reinterpret_cast<const char*>(&metrics),
-                      sizeof(PP_FontMetrics_Dev));
+  // This must always get called or it will assert when trying to serialize
+  // the un-filled-in SerializedFontDescription as the return value.
+  out_description->SetFromPPFontDescription(dispatcher(), out_pp_desc, false);
 }
 
 void PPB_Font_Proxy::OnMsgDrawTextAt(SerializedVarReceiveInput text,

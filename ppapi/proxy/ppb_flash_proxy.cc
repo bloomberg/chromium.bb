@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
@@ -62,13 +63,35 @@ bool DrawGlyphs(PP_Resource pp_image_data,
                 uint32_t glyph_count,
                 uint16_t glyph_indices[],
                 PP_Point glyph_advances[]) {
-  return false; // TODO(brettw): implement this.
+  Dispatcher* dispatcher = PluginDispatcher::Get();
+
+  PPBFlash_DrawGlyphs_Params params;
+  params.pp_image_data = pp_image_data;
+  params.font_desc.SetFromPPFontDescription(dispatcher, *font_desc, true);
+  params.color = color;
+  params.position = position;
+  params.clip = clip;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++)
+      params.transformation[i][j] = transformation[i][j];
+  }
+
+  params.glyph_indices.insert(params.glyph_indices.begin(),
+                              &glyph_indices[0],
+                              &glyph_indices[glyph_count]);
+  params.glyph_advances.insert(params.glyph_advances.begin(),
+                               &glyph_advances[0],
+                               &glyph_advances[glyph_count]);
+
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_DrawGlyphs(
+      INTERFACE_ID_PPB_FLASH, params));
+  return true;
 }
 
 PP_Var GetProxyForURL(PP_Module pp_module, const char* url) {
   ReceiveSerializedVarReturnValue result;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBFlash_GetProxyForURL(
-          INTERFACE_ID_PPB_FLASH, pp_module, url, &result));
+      INTERFACE_ID_PPB_FLASH, pp_module, url, &result));
   return result.Return(PluginDispatcher::Get());
 }
 
@@ -214,7 +237,20 @@ void PPB_Flash_Proxy::OnMsgSetInstanceAlwaysOnTop(
 
 void PPB_Flash_Proxy::OnMsgDrawGlyphs(
     const pp::proxy::PPBFlash_DrawGlyphs_Params& params) {
-  // TODO(brettw) implement this.
+  PP_FontDescription_Dev font_desc;
+  params.font_desc.SetToPPFontDescription(dispatcher(), &font_desc, false);
+
+  if (params.glyph_indices.size() != params.glyph_advances.size() ||
+      params.glyph_indices.empty())
+    return;
+
+  ppb_flash_target()->DrawGlyphs(
+      params.pp_image_data, &font_desc, params.color,
+      params.position, params.clip,
+      const_cast<float(*)[3]>(params.transformation),
+      static_cast<uint32_t>(params.glyph_indices.size()),
+      const_cast<uint16_t*>(&params.glyph_indices[0]),
+      const_cast<PP_Point*>(&params.glyph_advances[0]));
 }
 
 void PPB_Flash_Proxy::OnMsgGetProxyForURL(PP_Module module,

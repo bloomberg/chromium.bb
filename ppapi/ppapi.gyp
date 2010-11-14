@@ -554,6 +554,8 @@
         'proxy/ppp_class_proxy.h',
         'proxy/ppp_instance_proxy.cc',
         'proxy/ppp_instance_proxy.h',
+        'proxy/serialized_structs.cc',
+        'proxy/serialized_structs.h',
         'proxy/serialized_var.cc',
         'proxy/serialized_var.h',
         'proxy/var_serialization_rules.h',
