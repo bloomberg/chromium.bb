@@ -15,7 +15,9 @@ PaintManager::PaintManager()
     : instance_(NULL),
       client_(NULL),
       is_always_opaque_(false),
-      callback_factory_(NULL) {
+      callback_factory_(NULL),
+      manual_callback_pending_(false),
+      flush_pending_(false) {
   // Set the callback object outside of the initializer list to avoid a
   // compiler warning about using "this" in an initializer list.
   callback_factory_.Initialize(this);
@@ -27,7 +29,9 @@ PaintManager::PaintManager(Instance* instance,
     : instance_(instance),
       client_(client),
       is_always_opaque_(is_always_opaque),
-      callback_factory_(NULL) {
+      callback_factory_(NULL),
+      manual_callback_pending_(false),
+      flush_pending_(false) {
   // Set the callback object outside of the initializer list to avoid a
   // compiler warning about using "this" in an initializer list.
   callback_factory_.Initialize(this);
@@ -167,7 +171,7 @@ void PaintManager::OnManualCallbackComplete(int32_t) {
   // invalid regions. Even though we only schedule this callback when something
   // is pending, a Flush callback could have come in before this callback was
   // executed and that could have cleared the queue.
-  if (aggregator_.HasPendingUpdate())
+  if (aggregator_.HasPendingUpdate() && !flush_pending_)
     DoPaint();
 }
 
