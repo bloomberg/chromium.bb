@@ -54,15 +54,38 @@ static IMP gOriginalInitIMP = NULL;
   }
 
   if (!found) {
-    // Dear reader: something you just did provoked an NSException.
-    // Please check your backtrace and see if you can't file a bug with
-    // a repro case.  You should be able to safely continue past the
-    // NOTREACHED(), but feel free to comment it out locally if it is
-    // making your job hard.
-    DLOG(ERROR) << "Someone is preparing to raise an exception!  "
-                << base::SysNSStringToUTF8(aName) << " *** "
-                << base::SysNSStringToUTF8(aReason);
-    NOTREACHED();
+    // Update breakpad with the exception info.
+    static const NSString* kNSExceptionKey = @"nsexception";
+    NSString* value =
+        [NSString stringWithFormat:@"%@ reason %@", aName, aReason];
+    SetCrashKeyValue(kNSExceptionKey, value);
+
+    // Force crash for selected exceptions to generate crash dumps.
+    BOOL fatal = NO;
+    if (aName == NSInternalInconsistencyException) {
+      NSString* const kNSMenuItemArrayBoundsCheck =
+          @"Invalid parameter not satisfying: (index >= 0) && (index < [_itemArray count])";
+      if ([aReason isEqualToString:kNSMenuItemArrayBoundsCheck]) {
+        fatal = YES;
+      }
+    }
+
+    // Dear reader: Something you just did provoked an NSException.
+    // NSException is implemented in terms of setjmp()/longjmp(),
+    // which does poor things when combined with C++ scoping
+    // (destructors are skipped).  Chrome should be NSException-free,
+    // please check your backtrace and see if you can't file a bug
+    // with a repro case.
+    if (fatal) {
+      LOG(FATAL) << "Someone is trying to raise an exception!  "
+                 << base::SysNSStringToUTF8(value);
+    } else {
+      // Make sure that developers see when their code throws
+      // exceptions.
+      DLOG(ERROR) << "Someone is trying to raise an exception!  "
+                  << base::SysNSStringToUTF8(value);
+      NOTREACHED();
+    }
   }
 
   // Forward to the original version.
@@ -171,7 +194,7 @@ BOOL SwizzleNSExceptionInit() {
 }
 
 - init {
-  DCHECK(SwizzleNSExceptionInit());
+  CHECK(SwizzleNSExceptionInit());
   return [super init];
 }
 
