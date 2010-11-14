@@ -188,12 +188,12 @@ bool CheckMachineLevelInstall() {
       const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
       const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
       win_util::MessageBox(NULL, text, caption, flags);
-      std::wstring uninstall_cmd = InstallUtil::GetChromeUninstallCmd(false);
-      if (!uninstall_cmd.empty()) {
-        uninstall_cmd.append(L" --");
-        uninstall_cmd.append(installer_util::switches::kForceUninstall);
-        uninstall_cmd.append(L" --");
-        uninstall_cmd.append(installer_util::switches::kDoNotRemoveSharedItems);
+      FilePath uninstall_path(InstallUtil::GetChromeUninstallCmd(false));
+      CommandLine uninstall_cmd(uninstall_path);
+      if (!uninstall_cmd.GetProgram().value().empty()) {
+        uninstall_cmd.AppendSwitch(installer_util::switches::kForceUninstall);
+        uninstall_cmd.AppendSwitch(
+            installer_util::switches::kDoNotRemoveSharedItems);
         base::LaunchApp(uninstall_cmd, false, false, NULL);
       }
       return true;

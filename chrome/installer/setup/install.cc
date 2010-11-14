@@ -82,15 +82,10 @@ void AddInstallerCopyTasks(const std::wstring& exe_path,
   }
 }
 
-// A little helper function to save on tons of WideToASCII call sites.
-void AppendWideSwitch(CommandLine* cmd, const wchar_t* switch_name) {
-  cmd->AppendSwitch(WideToASCII(switch_name));
-}
-
 void AppendUninstallCommandLineFlags(CommandLine* uninstall_cmd,
                                      bool is_system) {
   DCHECK(uninstall_cmd);
-  AppendWideSwitch(uninstall_cmd, installer_util::switches::kUninstall);
+  uninstall_cmd->AppendSwitch(installer_util::switches::kUninstall);
 
   // TODO(tommi): In case of multiple installations, we need to create multiple
   // uninstall entries, and not one magic one for all.
@@ -99,26 +94,26 @@ void AppendUninstallCommandLineFlags(CommandLine* uninstall_cmd,
   DCHECK(!prefs.is_multi_install());
 
   if (prefs.install_chrome_frame()) {
-    AppendWideSwitch(uninstall_cmd, installer_util::switches::kDeleteProfile);
-    AppendWideSwitch(uninstall_cmd, installer_util::switches::kChromeFrame);
+    uninstall_cmd->AppendSwitch(installer_util::switches::kDeleteProfile);
+    uninstall_cmd->AppendSwitch(installer_util::switches::kChromeFrame);
   }
 
   if (InstallUtil::IsChromeSxSProcess()) {
-    AppendWideSwitch(uninstall_cmd, installer_util::switches::kChromeSxS);
+    uninstall_cmd->AppendSwitch(installer_util::switches::kChromeSxS);
   }
 
   if (InstallUtil::IsMSIProcess(is_system)) {
-    AppendWideSwitch(uninstall_cmd, installer_util::switches::kMsi);
+    uninstall_cmd->AppendSwitch(installer_util::switches::kMsi);
   }
 
   // Propagate the verbose logging switch to uninstalls too.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(installer_util::switches::kVerboseLogging)) {
-    AppendWideSwitch(uninstall_cmd, installer_util::switches::kVerboseLogging);
+    uninstall_cmd->AppendSwitch(installer_util::switches::kVerboseLogging);
   }
 
   if (is_system) {
-    AppendWideSwitch(uninstall_cmd, installer_util::switches::kSystemLevel);
+    uninstall_cmd->AppendSwitch(installer_util::switches::kSystemLevel);
   }
 }
 
@@ -420,30 +415,26 @@ bool DoPostInstallTasks(HKEY reg_root,
                                        google_update::kRegOldVersionField,
                                        current_version.c_str(),
                                        true);
+    FilePath installer_path(installer::GetInstallerPathUnderChrome(install_path,
+        new_version.GetString()));
+    installer_path = installer_path.Append(
+        file_util::GetFilenameFromPath(exe_path));
 
-    std::wstring rename_cmd(installer::GetInstallerPathUnderChrome(
-        install_path, new_version.GetString()));
-    file_util::AppendToPath(&rename_cmd,
-                            file_util::GetFilenameFromPath(exe_path));
-    rename_cmd = L"\"" + rename_cmd +
-                 L"\" --" + installer_util::switches::kRenameChromeExe;
+    CommandLine rename_cmd(installer_path);
+    rename_cmd.AppendSwitch(installer_util::switches::kRenameChromeExe);
     if (is_system_install)
-      rename_cmd = rename_cmd + L" --" + installer_util::switches::kSystemLevel;
+      rename_cmd.AppendSwitch(installer_util::switches::kSystemLevel);
 
-    if (prefs.install_chrome_frame()) {
-      rename_cmd += L" --";
-      rename_cmd += installer_util::switches::kChromeFrame;
-    }
+    if (prefs.install_chrome_frame())
+      rename_cmd.AppendSwitch(installer_util::switches::kChromeFrame);
 
-    if (InstallUtil::IsChromeSxSProcess()) {
-      rename_cmd += L" --";
-      rename_cmd += installer_util::switches::kChromeSxS;
-    }
+    if (InstallUtil::IsChromeSxSProcess())
+      rename_cmd.AppendSwitch(installer_util::switches::kChromeSxS);
 
     inuse_list->AddSetRegValueWorkItem(reg_root,
                                        version_key,
                                        google_update::kRegRenameCmdField,
-                                       rename_cmd.c_str(),
+                                       rename_cmd.command_line_string(),
                                        true);
     if (!inuse_list->Do()) {
       LOG(ERROR) << "Couldn't write opv/cmd values to registry.";

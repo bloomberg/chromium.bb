@@ -470,7 +470,7 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 installer_util::InstallStatus installer_setup::UninstallChrome(
     const std::wstring& exe_path, bool system_uninstall,
     bool remove_all, bool force_uninstall,
-    const CommandLine& cmd_line, const wchar_t* cmd_params) {
+    const CommandLine& cmd_line) {
   installer_util::InstallStatus status = installer_util::UNINSTALL_CONFIRMED;
   std::wstring suffix;
   if (!ShellUtil::GetUserSpecificDefaultBrowserSuffix(&suffix))
@@ -496,23 +496,19 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
         !::IsUserAnAdmin() &&
         (base::win::GetVersion() >= base::win::VERSION_VISTA) &&
         !cmd_line.HasSwitch(installer_util::switches::kRunAsAdmin)) {
-      std::wstring exe = cmd_line.GetProgram().value();
-      std::wstring params(cmd_params);
+      CommandLine new_cmd(CommandLine::NO_PROGRAM);
+      new_cmd.AppendArguments(cmd_line, true);
       // Append --run-as-admin flag to let the new instance of setup.exe know
       // that we already tried to launch ourselves as admin.
-      params.append(L" --");
-      params.append(installer_util::switches::kRunAsAdmin);
+      new_cmd.AppendSwitch(installer_util::switches::kRunAsAdmin);
       // Append --remove-chrome-registration to remove registry keys only.
-      params.append(L" --");
-      params.append(installer_util::switches::kRemoveChromeRegistration);
+      new_cmd.AppendSwitch(installer_util::switches::kRemoveChromeRegistration);
       if (!suffix.empty()) {
-        params.append(L" --");
-        params.append(ASCIIToWide(
-            installer_util::switches::kRegisterChromeBrowserSuffix));
-        params.append(L"=\"" + suffix + L"\"");
+        new_cmd.AppendSwitchNative(
+            installer_util::switches::kRegisterChromeBrowserSuffix, suffix);
       }
       DWORD exit_code = installer_util::UNKNOWN_STATUS;
-      InstallUtil::ExecuteExeAsAdmin(exe, params, &exit_code);
+      InstallUtil::ExecuteExeAsAdmin(new_cmd, &exit_code);
     }
   }
 

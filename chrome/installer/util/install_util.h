@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
@@ -33,9 +34,7 @@ class RegKey;
 class InstallUtil {
  public:
   // Launches given exe as admin on Vista.
-  static bool ExecuteExeAsAdmin(const std::wstring& exe,
-                                const std::wstring& params,
-                                DWORD* exit_code);
+  static bool ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code);
 
   // Reads the uninstall command for Chromium from registry and returns it.
   // If system_install is true the command is read from HKLM, otherwise

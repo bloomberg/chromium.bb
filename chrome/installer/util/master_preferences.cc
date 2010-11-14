@@ -92,7 +92,7 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
   // distribution dictionary.  Currently all switches added will be set to
   // 'true'.
   static const struct CmdLineSwitchToDistributionSwitch {
-    const wchar_t* cmd_line_switch;
+    const char* cmd_line_switch;
     const char* distribution_switch;
   } translate_switches[] = {
     { installer_util::switches::kCeee,
@@ -136,7 +136,7 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
 
   // See if the log file path was specified on the command line.
   std::wstring str_value(cmd_line.GetSwitchValueNative(
-      WideToASCII(installer_util::switches::kLogFile)));
+      installer_util::switches::kLogFile));
   if (!str_value.empty()) {
     name.resize(arraysize(kDistroDict) - 1);
     name.append(".").append(installer_util::master_preferences::kLogFile);
