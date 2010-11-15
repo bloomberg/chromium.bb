@@ -72,13 +72,19 @@ gdb_test = env.CommandGdbTestNacl(
     command=[env.File('hello_world_gdb.nexe')],
     stdout_golden=env.File('hello_world_gdb.stdout'),
     input=env.File('hello_world_gdb.in'),
-    filter_regex=("'(Breakpoint 1 at)|"
-                   "(Breakpoint 1, )0x[0-9]+ (in hello_world)|"
-                   "^(#0 ) 0x[0-9a-f]+ (in hello_world)|"
-                   "^(#1 ) 0x[0-9a-f]+ (in main)'"
+    filter_regex=("\"^(Breakpoint 1 at)|"
+                   "^(Breakpoint 1, )0x[0-9a-fA-F]+ (in hello_world)|"
+                   "^(#0 ) 0x[0-9a-fA-F]+ (in hello_world)|"
+                   "^(#1 ) 0x[0-9a-fA-F]+ (in main)\""
                    ),
     filter_group_only='true',
     )
+
+# Currently gdb only works on Linux
+if env.Bit('host_linux'):
+  env.AddNodeToTestSuite(['hello_world_gdb.nexe', gdb_test],
+                         ['medium_tests'], 'gdb_minimal_test')
+
 
 # TODO(mseaborn): explain this magic
 if 'TRUSTED_ENV' in env:
@@ -95,17 +101,14 @@ if 'TRUSTED_ENV' in env:
         ['${SCONSTRUCT_DIR}/src/trusted/validator_x86/ncval_annotate_test.py',
          env['TRUSTED_ENV'].SubstList2('${STAGING_DIR}/ncval${PROGSUFFIX}')],
         '$PYTHON ${SOURCES[0].abspath}')]
+
+  # If we aren't running on a tester (built_elsewhere),
+  # try to use the toolchain.
+  if not ARGUMENTS.get('built_elsewhere'):
+    # Eventually we may want more SDK tests.
+    env.AddNodeToTestSuite(['libs_present_test.nexe', toolchain_tests],
+                           ['small_tests'], 'sdk_minimal_test')
+
 else:
   print ('WARNING: no trusted env specified so skipping toolchain test. '
          'Try, e.g. MODE=dbg-linux,nacl')
-  toolchain_tests = []
-
-# If we aren't running on a tester (built_elsewhere),
-# try to use the toolchain.
-if not ARGUMENTS.get('built_elsewhere'):
-  # Eventually we may want more SDK tests.
-  env.AddNodeToTestSuite(['libs_present_test.nexe', toolchain_tests],
-                         ['small_tests'], 'sdk_minimal_test')
-
-  env.AddNodeToTestSuite(['hello_world_gdb.nexe', gdb_test],
-                         [], 'gdb_minimal_test')
