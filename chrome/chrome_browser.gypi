@@ -4188,13 +4188,6 @@
             'browser/importer/ie_importer.cc',
           ],
         }],
-        [ 'use_openssl==1', {
-          'sources!': [
-            'browser/importer/nss_decryptor.cc',
-            'browser/importer/nss_decryptor_system_nss.cc',
-            'browser/importer/nss_decryptor_system_nss.h',
-          ],
-        }],
       ],
     },
     {
