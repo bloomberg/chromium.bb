@@ -6,3 +6,6 @@
 // until the changes can be landed upstream.
 
 BUG62760 WIN : inspector/styles-source-lines-inline.html = TIMEOUT PASS
+
+BUG63225 WIN : fast/forms/submit-form-attributes.html = CRASH
+BUG63225 MAC : fast/forms/submit-form-attributes.html = CRASH
