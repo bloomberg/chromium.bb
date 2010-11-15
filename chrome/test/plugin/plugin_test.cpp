@@ -185,7 +185,7 @@ TEST_F(ClickToPlayPluginTest, FlashDocument) {
 
 #if defined(OS_WIN)
 // Windows only test
-TEST_F(PluginTest, FlashSecurity) {
+TEST_F(PluginTest, DISABLED_FlashSecurity) {
   TestPlugin("flash.html", action_max_timeout_ms(), false);
 }
 #endif  // defined(OS_WIN)
