@@ -597,8 +597,6 @@ void ScreenLocker::Init() {
         new GrabWidgetRootView(screen_lock_view_));
   }
 
-  lock_widget_->Show();
-
   // Configuring the background url.
   std::string url_string =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -617,6 +615,10 @@ void ScreenLocker::Init() {
 
   lock_window_->SetContentsView(background_view_);
   lock_window_->Show();
+
+  // Show lock_widget after the lock_window is shown so that
+  // we can grab inputs immediately.
+  lock_widget_->Show();
 
   // Don't let X draw default background, which was causing flash on
   // resume.
