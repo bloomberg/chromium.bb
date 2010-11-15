@@ -73,6 +73,9 @@ class CFUrlRequestUnittestRunner
 
   void StartTests();
 
+  // Borrowed from TestSuite::Initialize().
+  static void InitializeLogging();
+
  protected:
   // This is the thread that runs all the UrlRequest tests.
   // Within its context, the Initialize() and Shutdown() routines above
@@ -82,8 +85,6 @@ class CFUrlRequestUnittestRunner
   static void TakeDownBrowser(CFUrlRequestUnittestRunner* me);
 
  protected:
-  // Borrowed from TestSuite::Initialize().
-  void InitializeLogging();
 
  protected:
   ScopedHandle test_thread_;
