@@ -17,5 +17,5 @@ DOC = """
 This is a wrapper test for Chrome browser_test.
 """
 
-job.run_test('desktopui_BrowserTest', group=0, total_groups=4)
+job.run_test('desktopui_BrowserTest', group=3, total_groups=4)
 

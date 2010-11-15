@@ -3,19 +3,16 @@
 # found in the LICENSE file.
 
 AUTHOR = "Chrome OS Team"
-NAME = "desktopui_BrowserTest"
-PURPOSE = "Verify basic browsing capability of Chrome."
-CRITERIA = """
-This test will fail if any of the commands chrome executes returns an error.
-"""
+NAME = "desktopui_UITest"
+PURPOSE = "Verify Chrome executes and renders basic pages."
+CRITERIA = "This test will fail if running Chrome returns a command error."
 TIME = "LONG"
 TEST_CATEGORY = "Functional"
 TEST_CLASS = "desktopui"
 TEST_TYPE = "client"
 
 DOC = """
-This is a wrapper test for Chrome browser_test.
+This is a wrapper test for Chrome ui_tests
 """
 
-job.run_test('desktopui_BrowserTest', group=0, total_groups=4)
-
+job.run_test('desktopui_UITest', group=2, total_groups=4)
