@@ -20,7 +20,9 @@
         '../../../../views/views.gyp:views',
       ],
       'sources': [
+        'candidate_window.h',
         'candidate_window.cc',
+        'candidate_window_main.cc',
         # For loading libcros.
         '../cros/cros_library_loader.cc',
       ],

@@ -1,41 +1,26 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// TODO(satorux):
-// - Implement a scroll bar or an indicator showing where you are in the
-//   candidate window.
+
+#include "chrome/browser/chromeos/input_method/candidate_window.h"
 
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "app/app_paths.h"
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
-#include "base/at_exit.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
-#include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library_loader.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
-#include "cros/chromeos_cros_api.h"
 #include "cros/chromeos_input_method_ui.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
-#include "grit/app_locale_settings.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/event.h"
 #include "views/fill_layout.h"
-#include "views/focus/accelerator_handler.h"
 #include "views/grid_layout.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
@@ -508,13 +493,17 @@ class CandidateView : public views::View {
   views::Label* annotation_label_;
 };
 
+// The implementation of CandidateWindowController.
 // CandidateWindowController controls the CandidateWindow.
-class CandidateWindowController : public CandidateWindowView::Observer {
+class CandidateWindowController::Impl : public CandidateWindowView::Observer {
  public:
-  CandidateWindowController();
-  virtual ~CandidateWindowController();
+  Impl();
+  virtual ~Impl();
+
+  // Initializes the candidate window. Returns true on success.
   bool Init();
 
+ private:
   // Returns the work area of the monitor nearest the candidate window.
   gfx::Rect GetMonitorWorkAreaNearestWindow();
 
@@ -533,7 +522,6 @@ class CandidateWindowController : public CandidateWindowView::Observer {
     cursor_location_ = cursor_location;
   }
 
- private:
   // Creates the candidate window view.
   void CreateView();
 
@@ -1076,26 +1064,27 @@ int CandidateWindowView::GetHorizontalOffset() {
 }
 
 
-bool CandidateWindowController::Init() {
+bool CandidateWindowController::Impl::Init() {
   // Initialize the input method UI status connection.
   InputMethodUiStatusMonitorFunctions functions;
   functions.hide_auxiliary_text =
-      &CandidateWindowController::OnHideAuxiliaryText;
+      &CandidateWindowController::Impl::OnHideAuxiliaryText;
   functions.hide_lookup_table =
-      &CandidateWindowController::OnHideLookupTable;
+      &CandidateWindowController::Impl::OnHideLookupTable;
   functions.set_cursor_location =
-      &CandidateWindowController::OnSetCursorLocation;
+      &CandidateWindowController::Impl::OnSetCursorLocation;
   functions.update_auxiliary_text =
-      &CandidateWindowController::OnUpdateAuxiliaryText;
+      &CandidateWindowController::Impl::OnUpdateAuxiliaryText;
   functions.update_lookup_table =
-      &CandidateWindowController::OnUpdateLookupTable;
+      &CandidateWindowController::Impl::OnUpdateLookupTable;
   ui_status_connection_ = MonitorInputMethodUiStatus(functions, this);
   if (!ui_status_connection_) {
     LOG(ERROR) << "MonitorInputMethodUiStatus() failed.";
     return false;
   }
-  MonitorInputMethodConnection(ui_status_connection_,
-                               &CandidateWindowController::OnConnectionChange);
+  MonitorInputMethodConnection(
+      ui_status_connection_,
+      &CandidateWindowController::Impl::OnConnectionChange);
 
   // Create the candidate window view.
   CreateView();
@@ -1103,7 +1092,7 @@ bool CandidateWindowController::Init() {
   return true;
 }
 
-void CandidateWindowController::CreateView() {
+void CandidateWindowController::Impl::CreateView() {
   // Create a non-decorated frame.
   frame_.reset(views::Widget::CreatePopupWidget(
       views::Widget::NotTransparent,
@@ -1126,22 +1115,22 @@ void CandidateWindowController::CreateView() {
   root_view->SetContentsView(candidate_window_);
 }
 
-CandidateWindowController::CandidateWindowController()
+CandidateWindowController::Impl::Impl()
     : ui_status_connection_(NULL),
       frame_(NULL) {
 }
 
-CandidateWindowController::~CandidateWindowController() {
+CandidateWindowController::Impl::~Impl() {
   candidate_window_->RemoveObserver(this);
   chromeos::DisconnectInputMethodUiStatus(ui_status_connection_);
 }
 
-gfx::Rect CandidateWindowController::GetMonitorWorkAreaNearestWindow() {
+gfx::Rect CandidateWindowController::Impl::GetMonitorWorkAreaNearestWindow() {
   return views::Screen::GetMonitorWorkAreaNearestWindow(
       frame_->GetNativeView());
 }
 
-void CandidateWindowController::MoveCandidateWindow(
+void CandidateWindowController::Impl::MoveCandidateWindow(
     const gfx::Rect& cursor_location,
     int horizontal_offset) {
   const int x = cursor_location.x();
@@ -1177,30 +1166,30 @@ void CandidateWindowController::MoveCandidateWindow(
   frame_->SetBounds(frame_bounds);
 }
 
-void CandidateWindowController::OnHideAuxiliaryText(
+void CandidateWindowController::Impl::OnHideAuxiliaryText(
     void* input_method_library) {
-  CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(input_method_library);
+  CandidateWindowController::Impl* controller =
+      static_cast<CandidateWindowController::Impl*>(input_method_library);
 
   controller->candidate_window_->HideAuxiliaryText();
 }
 
-void CandidateWindowController::OnHideLookupTable(
+void CandidateWindowController::Impl::OnHideLookupTable(
     void* input_method_library) {
-  CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(input_method_library);
+  CandidateWindowController::Impl* controller =
+      static_cast<CandidateWindowController::Impl*>(input_method_library);
 
   controller->frame_->Hide();
 }
 
-void CandidateWindowController::OnSetCursorLocation(
+void CandidateWindowController::Impl::OnSetCursorLocation(
     void* input_method_library,
     int x,
     int y,
     int width,
     int height) {
-  CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(input_method_library);
+  CandidateWindowController::Impl* controller =
+      static_cast<CandidateWindowController::Impl*>(input_method_library);
 
   // A workaround for http://crosbug.com/6460. We should ignore very short Y
   // move to prevent the window from shaking up and down.
@@ -1223,12 +1212,12 @@ void CandidateWindowController::OnSetCursorLocation(
   controller->candidate_window_->ResizeAndSchedulePaint();
 }
 
-void CandidateWindowController::OnUpdateAuxiliaryText(
+void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
     void* input_method_library,
     const std::string& utf8_text,
     bool visible) {
-  CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(input_method_library);
+  CandidateWindowController::Impl* controller =
+      static_cast<CandidateWindowController::Impl*>(input_method_library);
   // If it's not visible, hide the auxiliary text and return.
   if (!visible) {
     controller->candidate_window_->HideAuxiliaryText();
@@ -1238,11 +1227,11 @@ void CandidateWindowController::OnUpdateAuxiliaryText(
   controller->candidate_window_->ShowAuxiliaryText();
 }
 
-void CandidateWindowController::OnUpdateLookupTable(
+void CandidateWindowController::Impl::OnUpdateLookupTable(
     void* input_method_library,
     const InputMethodLookupTable& lookup_table) {
-  CandidateWindowController* controller =
-      static_cast<CandidateWindowController*>(input_method_library);
+  CandidateWindowController::Impl* controller =
+      static_cast<CandidateWindowController::Impl*>(input_method_library);
 
   // If it's not visible, hide the window and return.
   if (!lookup_table.visible) {
@@ -1260,13 +1249,13 @@ void CandidateWindowController::OnUpdateLookupTable(
       controller->candidate_window_->GetHorizontalOffset());
 }
 
-void CandidateWindowController::OnCandidateCommitted(int index,
+void CandidateWindowController::Impl::OnCandidateCommitted(int index,
                                                      int button,
                                                      int flags) {
   NotifyCandidateClicked(ui_status_connection_, index, button, flags);
 }
 
-void CandidateWindowController::OnConnectionChange(
+void CandidateWindowController::Impl::OnConnectionChange(
     void* input_method_library,
     bool connected) {
   if (!connected) {
@@ -1275,60 +1264,16 @@ void CandidateWindowController::OnConnectionChange(
   }
 }
 
-}  // namespace chromeos
-
-int main(int argc, char** argv) {
-  // Initialize gtk stuff.
-  g_thread_init(NULL);
-  g_type_init();
-  gtk_init(&argc, &argv);
-
-  // Initialize Chrome stuff.
-  base::AtExitManager exit_manager;
-  base::EnableTerminationOnHeapCorruption();
-  app::RegisterPathProvider();
-  CommandLine::Init(argc, argv);
-
-  // Check if the UI language code is passed from the command line,
-  // otherwise, default to "en-US".
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string ui_language_code =
-      command_line.GetSwitchValueASCII(switches::kCandidateWindowLang);
-  if (ui_language_code.empty()) {
-    ui_language_code = "en-US";
-  }
-  ResourceBundle::InitSharedInstance(ui_language_code);
-
-  // Change the UI font if needed.
-  const std::string font_name =
-      l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS);
-  // The font name should not be empty here, but just in case.
-  if (font_name != "default" && !font_name.empty()) {
-    // Don't use gtk_util::SetGtkFont() in chrome/browser/gtk not to
-    // introduce a dependency to it.
-    g_object_set(gtk_settings_get_default(),
-                 "gtk-font-name", font_name.c_str(), NULL);
-  }
-
-  // Load libcros.
-  chrome::RegisterPathProvider();  // for libcros.so.
-  chromeos::CrosLibraryLoader lib_loader;
-  std::string error_string;
-  CHECK(lib_loader.Load(&error_string))
-      << "Failed to load libcros, " << error_string;
-
-  // Create the main message loop.
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-
-  // Create the candidate window controller.
-  chromeos::CandidateWindowController controller;
-  if (!controller.Init()) {
-    return 1;
-  }
-
-  // Start the main loop.
-  views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->Run(&accelerator_handler);
-
-  return 0;
+CandidateWindowController::CandidateWindowController() :
+    impl_(new CandidateWindowController::Impl) {
 }
+
+CandidateWindowController::~CandidateWindowController() {
+  delete impl_;
+}
+
+bool CandidateWindowController::Init() {
+  return impl_->Init();
+}
+
+}  // namespace chromeos
