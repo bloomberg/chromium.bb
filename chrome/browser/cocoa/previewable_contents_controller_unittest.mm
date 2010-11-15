@@ -11,16 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-@interface PreviewableContentsController (ExposedForTesting)
-- (NSButton*)closeButton;
-@end
-
-@implementation PreviewableContentsController (ExposedForTesting)
-- (NSButton*)closeButton {
-  return closeButton_;
-}
-@end
-
 namespace {
 
 class PreviewableContentsControllerTest : public CocoaTest {
@@ -35,11 +25,6 @@ class PreviewableContentsControllerTest : public CocoaTest {
 };
 
 TEST_VIEW(PreviewableContentsControllerTest, [controller_ view])
-
-// Adds the view to a window and displays it.
-TEST_F(PreviewableContentsControllerTest, TestImagesLoadedProperly) {
-  EXPECT_TRUE([[[controller_ closeButton] image] isValid]);
-}
 
 // TODO(rohitrao): Test showing and hiding the preview.  This may require
 // changing the interface to take in a TabContentsView* instead of a

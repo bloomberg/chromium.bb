@@ -26,9 +26,6 @@ class TabContents;
   // Container view for the "active" contents.
   IBOutlet NSView* activeContainer_;
 
-  // The close preview button.
-  IBOutlet NSButton* closeButton_;
-
   // The preview TabContents.  Will be NULL if no preview is currently showing.
   TabContents* previewContents_;  // weak
 }
@@ -44,9 +41,6 @@ class TabContents;
 
 // Returns YES if the preview contents is currently showing.
 - (BOOL)isShowingPreview;
-
-// Simply calls |-hidePreview|.  Convenience method for use by the close button.
-- (IBAction)closePreview:(id)sender;
 
 @end
 

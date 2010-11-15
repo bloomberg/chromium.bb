@@ -8,12 +8,6 @@
 #include "base/mac_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
-@interface PreviewableContentsController(PrivateMethods)
-// Shows or hides the "close preview" button.  Adds the button to the view
-// hierarchy, if needed.
-- (void)showCloseButton:(BOOL)show;
-@end
-
 @implementation PreviewableContentsController
 
 @synthesize activeContainer = activeContainer_;
@@ -36,54 +30,23 @@
   NSView* previewView = previewContents_->GetNativeView();
   [previewView setFrame:[[self view] bounds]];
 
-  // Hide the active container, add the preview contents, and show the tear
-  // image.
+  // Hide the active container and add the preview contents.
   [activeContainer_ setHidden:YES];
   [[self view] addSubview:previewView];
-  [self showCloseButton:YES];
 }
 
 - (void)hidePreview {
   DCHECK(previewContents_);
 
-  // Remove the preview contents, hide the tear image, and reshow the active
-  // container.
-  [self showCloseButton:NO];
+  // Remove the preview contents and reshow the active container.
   [previewContents_->GetNativeView() removeFromSuperview];
   [activeContainer_ setHidden:NO];
 
   previewContents_ = nil;
 }
 
-- (IBAction)closePreview:(id)sender {
-  // Hiding right now leads to crashes.
-  // TODO(rohitrao): Actually hide the preview.
-}
-
 - (BOOL)isShowingPreview {
   return previewContents_ != nil;
-}
-
-@end
-
-@implementation PreviewableContentsController(PrivateMethods)
-
-- (void)showCloseButton:(BOOL)show {
-  if (!show) {
-    [closeButton_ removeFromSuperview];
-    return;
-  }
-
-  if ([closeButton_ superview])
-    return;  // Already in the view hierarchy.
-
-  // Add the close button to the upper left corner.
-  NSView* view = [self view];
-  NSRect frame = [closeButton_ frame];
-  frame.origin.x = NSMinX([view bounds]);
-  frame.origin.y = NSMaxY([view bounds]) - NSHeight(frame);
-  [closeButton_ setFrame:frame];
-  [view addSubview:closeButton_];
 }
 
 @end

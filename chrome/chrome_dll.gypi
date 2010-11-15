@@ -258,7 +258,6 @@
                 'app/theme/menu_hierarchy_arrow.pdf',
                 'app/theme/menu_overflow_down.pdf',
                 'app/theme/menu_overflow_up.pdf',
-                'app/theme/match_preview_tear.png',
                 'app/theme/nav.pdf',
                 'app/theme/newtab.pdf',
                 'app/theme/newtab_h.pdf',
