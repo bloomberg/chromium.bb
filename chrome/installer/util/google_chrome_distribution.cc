@@ -139,14 +139,15 @@ bool RelaunchSetup(const std::string& flag, int value,
 
   // Re-add the system level toast flag.
   if (system_level_toast) {
-    new_cmd_line.AppendSwitch(installer_util::switches::kSystemLevelToast);
+    new_cmd_line.AppendSwitch(
+      WideToASCII(installer_util::switches::kSystemLevelToast));
 
     // Re-add the toast result key. We need to do this because Setup running as
     // system passes the key to Setup running as user, but that child process
     // does not perform the actual toasting, it launches another Setup (as user)
     // to do so. That is the process that needs the key.
     const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
-    std::string key(installer_util::switches::kToastResultsKey);
+    std::string key = WideToASCII(installer_util::switches::kToastResultsKey);
     std::string toast_key = current_cmd_line.GetSwitchValueASCII(key);
     if (!toast_key.empty()) {
       new_cmd_line.AppendSwitchASCII(key, toast_key);
@@ -216,16 +217,17 @@ bool FixDACLsForExecute(const wchar_t* exe) {
 // the computer is on but nobody has logged in locally.
 // Remote Desktop sessions do not count as interactive sessions; running this
 // method as a user logged in via remote desktop will do nothing.
-bool RelaunchSetupAsConsoleUser(const std::string& flag) {
+bool RelaunchSetupAsConsoleUser(const std::wstring& flag) {
   FilePath setup_exe = CommandLine::ForCurrentProcess()->GetProgram();
   CommandLine cmd_line(setup_exe);
-  cmd_line.AppendSwitch(flag);
+  cmd_line.AppendSwitch(WideToASCII(flag));
 
   // Get the Google Update results key, and pass it on the command line to
   // the child process.
   int key = GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey();
-  cmd_line.AppendSwitchASCII(installer_util::switches::kToastResultsKey,
-                             base::IntToString(key));
+  cmd_line.AppendSwitchASCII(
+      WideToASCII(installer_util::switches::kToastResultsKey),
+      base::IntToString(key));
 
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     // Make sure that in Vista and Above we have the proper DACLs so
@@ -528,7 +530,7 @@ void SetClient(std::wstring experiment_group, bool last_write) {
     if (cmd_line.HasSwitch(installer_util::switches::kToastResultsKey)) {
       // Get the handle to the key under HKLM.
       base::StringToInt(cmd_line.GetSwitchValueASCII(
-          installer_util::switches::kToastResultsKey).c_str(),
+          WideToASCII(installer_util::switches::kToastResultsKey)).c_str(),
           &reg_key_handle);
     } else {
       reg_key_handle = 0;

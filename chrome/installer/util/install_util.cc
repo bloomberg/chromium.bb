@@ -12,6 +12,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -36,28 +37,14 @@ const MasterPreferences& InstallUtil::GetMasterPreferencesForCurrentProcess() {
   return prefs;
 }
 
-bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
-  FilePath::StringType program(cmd.GetProgram().value());
-  DCHECK(!program.empty());
-  DCHECK(program[0] != '\"');
-
-  CommandLine::StringType params(cmd.command_line_string());
-  if (params[0] == '"') {
-    DCHECK_EQ('"', params[program.length() + 1]);
-    DCHECK_EQ(program, params.substr(1, program.length()));
-    params = params.substr(program.length() + 2);
-  } else {
-    DCHECK_EQ(program, params.substr(0, program.length()));
-    params = params.substr(program.length());
-  }
-
-  TrimWhitespace(params, TRIM_ALL, &params);
-
+bool InstallUtil::ExecuteExeAsAdmin(const std::wstring& exe,
+                                    const std::wstring& params,
+                                    DWORD* exit_code) {
   SHELLEXECUTEINFO info = {0};
   info.cbSize = sizeof(SHELLEXECUTEINFO);
   info.fMask = SEE_MASK_NOCLOSEPROCESS;
   info.lpVerb = L"runas";
-  info.lpFile = program.c_str();
+  info.lpFile = exe.c_str();
   info.lpParameters = params.c_str();
   info.nShow = SW_SHOW;
   if (::ShellExecuteEx(&info) == FALSE)

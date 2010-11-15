@@ -401,6 +401,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
 }
 
 installer_util::InstallStatus UninstallChrome(const CommandLine& cmd_line,
+                                              const wchar_t* cmd_params,
                                               const installer::Version* version,
                                               bool system_install) {
   VLOG(1) << "Uninstalling Chome";
@@ -419,7 +420,7 @@ installer_util::InstallStatus UninstallChrome(const CommandLine& cmd_line,
   return installer_setup::UninstallChrome(cmd_line.GetProgram().value(),
                                           system_install,
                                           remove_all, force,
-                                          cmd_line);
+                                          cmd_line, cmd_params);
 }
 
 installer_util::InstallStatus ShowEULADialog(const std::wstring& inner_frame) {
@@ -680,13 +681,14 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   if (system_install && !IsUserAnAdmin()) {
     if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
         !parsed_command_line.HasSwitch(installer_util::switches::kRunAsAdmin)) {
-      CommandLine new_cmd(CommandLine::NO_PROGRAM);
-      new_cmd.AppendArguments(parsed_command_line, true);
+      std::wstring exe = parsed_command_line.GetProgram().value();
+      std::wstring params(command_line);
       // Append --run-as-admin flag to let the new instance of setup.exe know
       // that we already tried to launch ourselves as admin.
-      new_cmd.AppendSwitch(installer_util::switches::kRunAsAdmin);
+      params.append(L" --");
+      params.append(installer_util::switches::kRunAsAdmin);
       DWORD exit_code = installer_util::UNKNOWN_STATUS;
-      InstallUtil::ExecuteExeAsAdmin(new_cmd, &exit_code);
+      InstallUtil::ExecuteExeAsAdmin(exe, params, &exit_code);
       return exit_code;
     } else {
       LOG(ERROR) << "Non admin user can not install system level Chrome.";
@@ -708,6 +710,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // If --uninstall option is given, uninstall chrome
   if (parsed_command_line.HasSwitch(installer_util::switches::kUninstall)) {
     install_status = UninstallChrome(parsed_command_line,
+                                     command_line,
                                      installed_version.get(),
                                      system_install);
   // If --uninstall option is not specified, we assume it is install case.

@@ -42,10 +42,11 @@ void RemoveLegacyRegistryKeys();
 //                  any checks for Chrome running.
 // cmd_line: CommandLine that contains information about the command that
 //           was used to launch current uninstaller.
+// cmd_params: Command line parameters passed to the uninstaller.
 installer_util::InstallStatus UninstallChrome(
     const std::wstring& exe_path, bool system_uninstall,
     bool remove_all, bool force_uninstall,
-    const CommandLine& cmd_line);
+    const CommandLine& cmd_line, const wchar_t* cmd_params);
 
 }  // namespace installer_setup
 

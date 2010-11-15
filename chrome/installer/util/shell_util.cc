@@ -295,10 +295,10 @@ bool IsChromeRegistered(const std::wstring& chrome_exe,
   return registered;
 }
 
-// This method registers Chrome on Vista by launching an elevated setup.exe.
-// That will show the user the standard Vista elevation prompt. If the user
-// accepts it the new process will make the necessary changes and return SUCCESS
-// that we capture and return.
+// This method registers Chrome on Vista by launching eleavated setup.exe.
+// That will show user standard Vista elevation prompt. If user accepts it
+// the new process will make the necessary changes and return SUCCESS that
+// we capture and return.
 bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
                               const std::wstring& suffix) {
   FilePath exe_path =
@@ -314,23 +314,26 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
     CommandLine command_line = CommandLine::FromString(uninstall_string);
     exe_path = command_line.GetProgram();
   }
-
   if (file_util::PathExists(exe_path)) {
-    CommandLine cmd(exe_path);
-    cmd.AppendSwitchNative(installer_util::switches::kRegisterChromeBrowser,
-                           chrome_exe);
+    std::wstring params(L"--");
+    params.append(
+        ASCIIToWide(installer_util::switches::kRegisterChromeBrowser));
+    params.append(L"=\"" + chrome_exe + L"\"");
     if (!suffix.empty()) {
-      cmd.AppendSwitchNative(
-          installer_util::switches::kRegisterChromeBrowserSuffix, suffix);
+      params.append(L" --");
+      params.append(ASCIIToWide(
+          installer_util::switches::kRegisterChromeBrowserSuffix));
+      params.append(L"=\"" + suffix + L"\"");
     }
 
     CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
     if (browser_command_line.HasSwitch(switches::kChromeFrame)) {
-      cmd.AppendSwitch(installer_util::switches::kChromeFrame);
+      params.append(L" --");
+      params.append(installer_util::switches::kChromeFrame);
     }
 
     DWORD ret_val = 0;
-    InstallUtil::ExecuteExeAsAdmin(cmd, &ret_val);
+    InstallUtil::ExecuteExeAsAdmin(exe_path.value(), params, &ret_val);
     if (ret_val == 0)
       return true;
   }
