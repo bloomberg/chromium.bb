@@ -612,6 +612,51 @@
     }, 
     {
       "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.browserAction.setBadgeBackgroundColor", 
+        "chrome.browserAction.setBadgeText", 
+        "chrome.browserAction.setIcon", 
+        "chrome.browserAction.setTitle", 
+        "chrome.extension.getBackgroundPage", 
+        "chrome.extension.onRequest", 
+        "chrome.extension.sendRequest", 
+        "chrome.i18n.getMessage", 
+        "chrome.tabs.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getAllInWindow", 
+        "chrome.tabs.onUpdated", 
+        "chrome.tabs.update"
+      ], 
+      "description": "Quickly see the time until your next meeting from any of your calendars. Click on the button to be taken to your calendar.", 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "options_page", 
+        "tabs"
+      ], 
+      "icon": "images/icon-128.gif", 
+      "id": "8b0dd31216235941bdd8eb33fda915ef5cf79a82", 
+      "name": "Google Calendar Checker (by Google)", 
+      "path": "examples/extensions/calendar/", 
+      "protocols": [
+        "http://", 
+        "https://"
+      ], 
+      "search_string": "GOOGLE CALENDAR CHECKER (BY GOOGLE) QUICKLY SEE THE TIME UNTIL YOUR NEXT MEETING FROM ANY OF YOUR CALENDARS. CLICK ON THE BUTTON TO BE TAKEN TO YOUR CALENDAR. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE", 
+      "source_files": [
+        "_locales/en/messages.json", 
+        "javascript/background.js", 
+        "javascript/options.js", 
+        "javascript/util.js", 
+        "manifest.json", 
+        "views/background.html", 
+        "views/options.html"
+      ], 
+      "source_hash": "3d9782a3e8315bbbca36c63297db2c8926df4521", 
+      "zip_path": "examples/extensions/calendar.zip"
+    }, 
+    {
+      "api_calls": [
         "chrome.browserAction.setBadgeText", 
         "chrome.extension.getBackgroundPage", 
         "chrome.extension.getURL", 
@@ -872,7 +917,7 @@
         "info.html", 
         "manifest.json"
       ], 
-      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991", 
+      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a", 
       "zip_path": "examples/extensions/imageinfo.zip"
     }, 
     {
@@ -1010,31 +1055,6 @@
         "tabs"
       ], 
       "icon": "news_icon.png", 
-      "id": "3aea027164cb9b732ba4a8c51cb93708891726ef", 
-      "name": "News Reader", 
-      "path": "examples/extensions/news/", 
-      "protocols": [
-        "http://"
-      ], 
-      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE", 
-      "source_files": [
-        "feed.html", 
-        "manifest.json"
-      ], 
-      "source_hash": "a813691c130f873f94db92069dad36747b60d910", 
-      "zip_path": "examples/extensions/news.zip"
-    }, 
-    {
-      "api_calls": [
-        "chrome.tabs.create"
-      ], 
-      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
-      "features": [
-        "browser_action", 
-        "popup", 
-        "tabs"
-      ], 
-      "icon": "news_icon.png", 
       "id": "597015d3bcce3da693b02314afd607bec4f55291", 
       "name": "News Reader", 
       "path": "examples/extensions/news_a11y/", 
@@ -1078,6 +1098,43 @@
       ], 
       "source_hash": "381268f1183beaeba8d6596e736dc2c00a55fd21", 
       "zip_path": "examples/extensions/news_i18n.zip"
+    }, 
+    {
+      "api_calls": [
+        "chrome.extension.getURL", 
+        "chrome.i18n.getMessage", 
+        "chrome.tabs.create"
+      ], 
+      "description": "Displays the latest stories from Google News in a popup.", 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "options_page", 
+        "popup", 
+        "tabs"
+      ], 
+      "icon": "images/news_icon.png", 
+      "id": "3aea027164cb9b732ba4a8c51cb93708891726ef", 
+      "name": "News Reader (by Google)", 
+      "path": "examples/extensions/news/", 
+      "protocols": [
+        "http://"
+      ], 
+      "search_string": "NEWS READER (BY GOOGLE) DISPLAYS THE LATEST STORIES FROM GOOGLE NEWS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.EXTENSION.GETURL CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE", 
+      "source_files": [
+        "_locales/en/messages.json", 
+        "css/feed.css", 
+        "css/options.css", 
+        "javascript/feed.js", 
+        "javascript/options.js", 
+        "javascript/util.js", 
+        "manifest.json", 
+        "views/background.html", 
+        "views/feed.html", 
+        "views/options.html"
+      ], 
+      "source_hash": "cc21920e101dd4d4c535f4842e3f0ab4be285166", 
+      "zip_path": "examples/extensions/news.zip"
     }, 
     {
       "api_calls": [
