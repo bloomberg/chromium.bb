@@ -2838,6 +2838,7 @@
    fun:_Znw*
    fun:_ZN7cricket9Transport17OnRemoteCandidateERKNS_9CandidateE
    fun:_ZN7cricket9Transport18OnRemoteCandidatesERKSt6vectorINS_9CandidateESaIS2_EE
+   ...
    fun:_ZN7cricket7Session22OnTransportInfoMessageERKNS_14SessionMessageEPNS_12MessageErrorE
    fun:_ZN7cricket7Session17OnIncomingMessageERKNS_14SessionMessageE
    fun:_ZN7cricket14SessionManager17OnIncomingMessageEPKN4buzz10XmlElementE
