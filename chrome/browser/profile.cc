@@ -581,6 +581,10 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetExtensionInfoMap();
   }
 
+  virtual PromoCounter* GetInstantPromoCounter() {
+    return NULL;
+  }
+
  private:
   NotificationRegistrar registrar_;
 

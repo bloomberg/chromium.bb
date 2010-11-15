@@ -8,6 +8,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -48,11 +49,7 @@ bool InstantConfirmView::Accept(bool window_closing) {
 }
 
 bool InstantConfirmView::Accept() {
-  PrefService* prefs = profile_->GetPrefs();
-  if (prefs) {
-    prefs->SetBoolean(prefs::kInstantEnabled, true);
-    prefs->SetBoolean(prefs::kInstantConfirmDialogShown, true);
-  }
+  InstantController::Enable(profile_);
   return true;
 }
 

@@ -180,9 +180,10 @@ class TestingProfile : public Profile {
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
     return NULL;
   }
-  // Initialized the profile's PrefService with an explicity specified
-  // PrefService. Must be called before the TestingProfile.
-  // The profile takes ownership of |pref|.
+  // Sets the profile's PrefService. If a pref service hasn't been explicitly
+  // set GetPrefs creates one, so normally you need not invoke this. If you need
+  // to set a pref service you must invoke this before GetPrefs.
+  // TestingPrefService takes ownership of |prefs|.
   void SetPrefService(PrefService* prefs);
   virtual PrefService* GetPrefs();
   virtual TemplateURLModel* GetTemplateURLModel() {
@@ -306,6 +307,7 @@ class TestingProfile : public Profile {
   virtual CloudPrintProxyService* GetCloudPrintProxyService() { return NULL; }
   virtual ChromeBlobStorageContext* GetBlobStorageContext() { return NULL; }
   virtual ExtensionInfoMap* GetExtensionInfoMap() { return NULL; }
+  virtual PromoCounter* GetInstantPromoCounter() { return NULL; }
 
  protected:
   base::Time start_time_;

@@ -7,9 +7,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif  // defined(OS_WIN)
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/views/event_utils.h"
@@ -24,6 +21,10 @@
 #include "views/controls/label.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/widget/widget.h"
+
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#endif
 
 // static
 const double InfoBar::kDefaultTargetHeight = 36.0;

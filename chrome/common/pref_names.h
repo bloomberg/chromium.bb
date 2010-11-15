@@ -80,6 +80,10 @@ extern const char kDisableSpdy[];
 extern const char kCookiePromptExpanded[];
 extern const char kInstantConfirmDialogShown[];
 extern const char kInstantEnabled[];
+extern const char kInstantEnabledOnce[];
+extern const char kInstantEnabledTime[];
+extern const char kInstantPromo[];
+extern const char kInstantType[];
 #if defined(USE_NSS) || defined(USE_OPENSSL)
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSL2Enabled[];

@@ -40,12 +40,16 @@ class InstantController : public InstantLoaderDelegate {
  public:
   // Variations of instant support.
   enum Type {
+    // NOTE: these values are persisted to prefs. Don't change them!
+
     // Search results are shown for the best guess of what we think the user was
     // planning on typing.
-    PREDICTIVE_TYPE,
+    PREDICTIVE_TYPE = 0,
 
     // Search results are shown for exactly what was typed.
     VERBATIM_TYPE,
+
+    LAST_TYPE = VERBATIM_TYPE,
   };
 
   InstantController(Profile* profile, InstantDelegate* delegate);
@@ -54,11 +58,20 @@ class InstantController : public InstantLoaderDelegate {
   // Registers instant related preferences.
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // Records instant metrics.
+  static void RecordMetrics(Profile* profile);
+
   // Returns true if either type of instant is enabled.
   static bool IsEnabled(Profile* profile);
 
   // Returns true if the specified type of instant is enabled.
   static bool IsEnabled(Profile* profile, Type type);
+
+  // Enables instant.
+  static void Enable(Profile* profile);
+
+  // Disables instant.
+  static void Disable(Profile* profile);
 
   // Invoked as the user types in the omnibox with the url to navigate to.  If
   // the url is empty and there is a preview TabContents it is destroyed. If url

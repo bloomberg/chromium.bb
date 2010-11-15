@@ -15,7 +15,9 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/instant/instant_opt_in.h"
+#include "chrome/browser/instant/instant_confirm_dialog.h"
+#include "chrome/browser/instant/promo_counter.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "gfx/canvas_skia.h"
@@ -131,12 +133,13 @@ const int kOptInButtonPadding = 2;
 
 // Padding around the opt in view.
 const int kOptInLeftPadding = 12;
-const int kOptInRightPadding = 6;
+const int kOptInRightPadding = 10;
 const int kOptInTopPadding = 6;
-const int kOptInBottomPadding = 3;
+const int kOptInBottomPadding = 5;
 
-// Padding between the top of the opt-in view and the separator.
-const int kOptInSeparatorSpacing = 2;
+// Horizontal/Vertical inset of the promo background.
+const int kOptInBackgroundHInset = 6;
+const int kOptInBackgroundVInset = 2;
 
 // Border for instant opt-in buttons. Consists of two 9 patch painters: one for
 // the normal state, the other for the pressed state.
@@ -192,7 +195,10 @@ class AutocompletePopupContentsView::InstantOptInView
   InstantOptInView(AutocompletePopupContentsView* contents_view,
                    const gfx::Font& label_font,
                    const gfx::Font& button_font)
-      : contents_view_(contents_view) {
+      : contents_view_(contents_view),
+        bg_painter_(views::Painter::CreateVerticalGradient(
+                        SkColorSetRGB(255, 242, 183),
+                        SkColorSetRGB(250, 230, 145))) {
     views::Label* label =
         new views::Label(l10n_util::GetString(IDS_INSTANT_OPT_IN_LABEL));
     label->SetFont(label_font);
@@ -227,11 +233,14 @@ class AutocompletePopupContentsView::InstantOptInView
   }
 
   virtual void Paint(gfx::Canvas* canvas) {
-    SkColor line_color = color_utils::AlphaBlend(GetColor(NORMAL, DIMMED_TEXT),
-                                                 GetColor(NORMAL, BACKGROUND),
-                                                 48);
-    canvas->DrawLineInt(
-        line_color, 0, kOptInSeparatorSpacing, width(), kOptInSeparatorSpacing);
+    canvas->Save();
+    canvas->TranslateInt(kOptInBackgroundHInset, kOptInBackgroundVInset);
+    bg_painter_->Paint(width() - kOptInBackgroundHInset * 2,
+                       height() - kOptInBackgroundVInset * 2, canvas);
+    canvas->DrawRectInt(ResourceBundle::toolbar_separator_color, 0, 0,
+                        width() - kOptInBackgroundHInset * 2,
+                        height() - kOptInBackgroundVInset * 2);
+    canvas->Restore();
   }
 
  private:
@@ -252,6 +261,7 @@ class AutocompletePopupContentsView::InstantOptInView
   }
 
   AutocompletePopupContentsView* contents_view_;
+  scoped_ptr<views::Painter> bg_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantOptInView);
 };
@@ -849,9 +859,14 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   for (size_t i = model_->result().size(); i < child_rv_count; ++i)
     GetChildViewAt(i)->SetVisible(false);
 
-  if (!opt_in_view_ && browser::ShouldShowInstantOptIn(model_->profile())) {
+  PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
+  if (!opt_in_view_ && counter && counter->ShouldShow(base::Time::Now())) {
     opt_in_view_ = new InstantOptInView(this, result_bold_font_, result_font_);
     AddChildView(opt_in_view_);
+  } else if (opt_in_view_ && (!counter ||
+                              !counter->ShouldShow(base::Time::Now()))) {
+    delete opt_in_view_;
+    opt_in_view_ = NULL;
   }
 
   if (opt_in_view_)
@@ -1185,7 +1200,12 @@ gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
 void AutocompletePopupContentsView::UserPressedOptIn(bool opt_in) {
   delete opt_in_view_;
   opt_in_view_ = NULL;
-  browser::UserPickedInstantOptIn(location_bar_->GetWindow()->GetNativeWindow(),
-                                  model_->profile(), opt_in);
+  PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
+  DCHECK(counter);
+  counter->Hide();
+  if (opt_in) {
+    browser::ShowInstantConfirmDialogIfNecessary(
+        location_bar_->GetWindow()->GetNativeWindow(), model_->profile());
+  }
   UpdatePopupAppearance();
 }

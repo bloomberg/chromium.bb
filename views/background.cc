@@ -93,12 +93,12 @@ Background* Background::CreateStandardPanelBackground() {
 //static
 Background* Background::CreateVerticalGradientBackground(
     const SkColor& color1, const SkColor& color2) {
-    Background* background = CreateBackgroundPainter(
-        true, Painter::CreateVerticalGradient(color1, color2));
-    background->SetNativeControlColor(
-        color_utils::AlphaBlend(color1, color2, 128));
+  Background* background = CreateBackgroundPainter(
+      true, Painter::CreateVerticalGradient(color1, color2));
+  background->SetNativeControlColor(
+      color_utils::AlphaBlend(color1, color2, 128));
 
-    return background;
+  return background;
 }
 
 //static

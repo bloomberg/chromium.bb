@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -213,6 +215,7 @@ GeneralPageView::GeneralPageView(Profile* profile)
       default_search_group_(NULL),
       default_search_manage_engines_button_(NULL),
       instant_checkbox_(NULL),
+      instant_type_label_(NULL),
       instant_link_(NULL),
       default_browser_group_(NULL),
       default_browser_status_label_(NULL),
@@ -295,7 +298,7 @@ void GeneralPageView::ButtonPressed(
       browser::ShowInstantConfirmDialogIfNecessary(
           GetWindow()->GetNativeWindow(), profile());
     } else {
-      profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, false);
+      InstantController::Disable(profile());
     }
   }
 }
@@ -441,8 +444,19 @@ void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
         !show_home_button_.IsManaged());
   }
 
-  if (!pref_name || *pref_name == prefs::kInstantEnabled)
-    instant_checkbox_->SetChecked(prefs->GetBoolean(prefs::kInstantEnabled));
+  if (!pref_name || *pref_name == prefs::kInstantEnabled) {
+    bool is_instant_enabled = prefs->GetBoolean(prefs::kInstantEnabled);
+    instant_checkbox_->SetChecked(is_instant_enabled);
+    if (is_instant_enabled) {
+      instant_type_label_->SetText(
+          L"[" +
+          UTF8ToWide(
+              base::IntToString(prefs->GetInteger(prefs::kInstantType))) +
+          L"]");
+    }
+    instant_type_label_->SetVisible(is_instant_enabled);
+    instant_type_label_->GetParent()->Layout();
+  }
 }
 
 void GeneralPageView::HighlightGroup(OptionsGroup highlight_group) {
@@ -655,8 +669,10 @@ void GeneralPageView::InitDefaultSearchGroup() {
 
   instant_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_INSTANT_PREF));
-  instant_checkbox_->SetMultiLine(true);
+  instant_checkbox_->SetMultiLine(false);
   instant_checkbox_->set_listener(this);
+
+  instant_type_label_ = new views::Label();
 
   instant_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
   instant_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -677,9 +693,11 @@ void GeneralPageView::InitDefaultSearchGroup() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
-  const int single_column_view_set_id = 1;
-  column_set = layout->AddColumnSet(single_column_view_set_id);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+  const int checkbox_column_view_set_id = 1;
+  column_set = layout->AddColumnSet(checkbox_column_view_set_id);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   const int link_column_set_id = 2;
@@ -697,8 +715,9 @@ void GeneralPageView::InitDefaultSearchGroup() {
   layout->AddView(default_search_manage_engines_button_);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 
-  layout->StartRow(0, single_column_view_set_id);
+  layout->StartRow(0, checkbox_column_view_set_id);
   layout->AddView(instant_checkbox_);
+  layout->AddView(instant_type_label_);
   layout->AddPaddingRow(0, 0);
 
   layout->StartRow(0, link_column_set_id);

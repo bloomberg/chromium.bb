@@ -46,6 +46,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
@@ -92,7 +93,9 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/password_manager/password_store_win.h"
+#include "chrome/installer/util/install_util.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
@@ -255,6 +258,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       start_time_(Time::Now()),
       spellcheck_host_(NULL),
       spellcheck_host_ready_(false),
+#if defined(OS_WIN)
+      checked_instant_promo_(false),
+#endif
       shutdown_session_service_(false) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
@@ -348,6 +354,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // Log the profile size after a reasonable startup delay.
   BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
                                  new ProfileSizeTask(path_), 112000);
+
+  InstantController::RecordMetrics(this);
 }
 
 void ProfileImpl::InitExtensions() {
@@ -1301,6 +1309,28 @@ ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
 
 ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {
   return extension_info_map_.get();
+}
+
+PromoCounter* ProfileImpl::GetInstantPromoCounter() {
+#if defined(OS_WIN)
+  // TODO: enable this when we're ready to turn on the promo.
+  /*
+  if (!checked_instant_promo_) {
+    checked_instant_promo_ = true;
+    PrefService* prefs = GetPrefs();
+    if (!prefs->GetBoolean(prefs::kInstantEnabledOnce) &&
+        !InstantController::IsEnabled(this) &&
+        InstallUtil::IsChromeSxSProcess()) {
+      DCHECK(!instant_promo_counter_.get());
+      instant_promo_counter_.reset(
+          new PromoCounter(this, prefs::kInstantPromo, "Instant.Promo", 3, 3));
+    }
+  }
+  */
+  return instant_promo_counter_.get();
+#else
+  return NULL;
+#endif
 }
 
 #if defined(OS_CHROMEOS)

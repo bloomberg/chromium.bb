@@ -10,10 +10,9 @@
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/show_options_url.h"
-#include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 
@@ -66,13 +65,8 @@ InstantConfirmDialogGtk::~InstantConfirmDialogGtk() {
 
 void InstantConfirmDialogGtk::OnDialogResponse(GtkWidget* dialog,
                                                int response) {
-  if (response == GTK_RESPONSE_ACCEPT) {
-    PrefService* service = profile_->GetPrefs();
-    if (service) {
-      service->SetBoolean(prefs::kInstantEnabled, true);
-      service->SetBoolean(prefs::kInstantConfirmDialogShown, true);
-    }
-  }
+  if (response == GTK_RESPONSE_ACCEPT)
+    InstantController::Enable(profile_);
 
   delete this;
 }

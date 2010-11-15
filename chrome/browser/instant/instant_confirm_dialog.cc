@@ -4,6 +4,8 @@
 
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 
+#include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -19,8 +21,12 @@ void ShowInstantConfirmDialogIfNecessary(gfx::NativeWindow parent,
   if (!prefs)
     return;
 
+  PromoCounter* promo_counter = profile->GetInstantPromoCounter();
+  if (promo_counter)
+    promo_counter->Hide();
+
   if (prefs->GetBoolean(prefs::kInstantConfirmDialogShown)) {
-    prefs->SetBoolean(prefs::kInstantEnabled, true);
+    InstantController::Enable(profile);
     return;
   }
 

@@ -212,6 +212,19 @@ const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 // Boolean pref indicating if instant is enabled.
 const char kInstantEnabled[] = "instant.enabled";
 
+// Boolean pref indicating if instant was ever enabled.
+const char kInstantEnabledOnce[] = "instant.enabled_once";
+
+// Time when instant was last enabled.
+const char kInstantEnabledTime[] = "instant.enabled_time";
+
+// Used to maintain instant promo keys. See PromoCounter for details of subkeys
+// that are used.
+const char kInstantPromo[] = "instant.promo";
+
+// Type of instant. This is one of the enums defined in InstantController::TYPE.
+const char kInstantType[] = "instant.type";
+
 #if defined(USE_NSS) || defined(USE_OPENSSL)
 // Prefs for SSLConfigServicePref.  Currently, these are only present on
 // and used by NSS/OpenSSL using OSes.

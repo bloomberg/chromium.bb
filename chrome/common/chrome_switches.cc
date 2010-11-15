@@ -1004,9 +1004,6 @@ const char kServiceAccountLsid[]            = "service-account-lsid";
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
 
-// If true the instant opt-in promo is shown in the omnibox.
-const char kShowInstantOptIn[]              = "show-instant-opt-in";
-
 // Renders a border around composited Render Layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[]    = "show-composited-layer-borders";

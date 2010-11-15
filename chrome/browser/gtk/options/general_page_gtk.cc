@@ -20,6 +20,7 @@
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/url_picker_dialog_gtk.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -555,7 +556,7 @@ void GeneralPageGtk::OnInstantToggled(GtkWidget* toggle_button) {
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(instant_checkbox_), false);
     browser::ShowInstantConfirmDialogIfNecessary(GetWindow(), profile());
   } else {
-    instant_.SetValue(enabled);
+    InstantController::Disable(profile());
   }
 
   // TODO(estade): UMA?

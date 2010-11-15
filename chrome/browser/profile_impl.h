@@ -122,6 +122,7 @@ class ProfileImpl : public Profile,
   void InitCloudPrintProxyService();
   virtual ChromeBlobStorageContext* GetBlobStorageContext();
   virtual ExtensionInfoMap* GetExtensionInfoMap();
+  virtual PromoCounter* GetInstantPromoCounter();
   virtual BrowserSignin* GetBrowserSignin();
 
 #if defined(OS_CHROMEOS)
@@ -246,6 +247,11 @@ class ProfileImpl : public Profile,
   // Indicates whether |spellcheck_host_| has told us initialization is
   // finished.
   bool spellcheck_host_ready_;
+
+#if defined(OS_WIN)
+  bool checked_instant_promo_;
+  scoped_ptr<PromoCounter> instant_promo_counter_;
+#endif
 
   // Set to true when ShutdownSessionService is invoked. If true
   // GetSessionService won't recreate the SessionService.

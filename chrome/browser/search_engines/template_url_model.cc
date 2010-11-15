@@ -576,6 +576,7 @@ void TemplateURLModel::Observe(NotificationType type,
   }
 }
 
+// static
 void TemplateURLModel::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(
       prefs::kDefaultSearchProviderEnabled, true);
