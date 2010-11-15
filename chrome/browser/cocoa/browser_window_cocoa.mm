@@ -577,6 +577,10 @@ void BrowserWindowCocoa::OpenTabpose() {
   [controller_ openTabpose];
 }
 
+void BrowserWindowCocoa::PrepareForInstant() {
+  // TODO: implement fade as done on windows.
+}
+
 void BrowserWindowCocoa::ShowInstant(TabContents* preview_contents) {
   [controller_ showInstant:preview_contents];
 }

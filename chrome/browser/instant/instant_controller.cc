@@ -93,6 +93,9 @@ void InstantController::Update(TabContents* tab_contents,
   if (!loader_manager_.get())
     loader_manager_.reset(new InstantLoaderManager(this));
 
+  if (!is_active_)
+    delegate_->PrepareForInstant();
+
   if (ShouldUpdateNow(template_url_id, match.destination_url)) {
     UpdateLoader(template_url, match.destination_url, match.transition,
                  user_text, suggested_text);

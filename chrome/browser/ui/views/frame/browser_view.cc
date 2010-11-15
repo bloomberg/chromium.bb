@@ -1362,11 +1362,24 @@ void BrowserView::ToggleTabStripMode() {
   frame_->TabStripDisplayModeChanged();
 }
 
+void BrowserView::PrepareForInstant() {
+  contents_->FadeActiveContents();
+}
+
 void BrowserView::ShowInstant(TabContents* preview_contents) {
   if (!preview_container_)
     preview_container_ = new TabContentsContainer();
   contents_->SetPreview(preview_container_, preview_contents);
   preview_container_->ChangeTabContents(preview_contents);
+
+#if defined(OS_WIN)
+  // Removing the fade is instant (on windows). We need to force the preview to
+  // draw, otherwise the current page flickers before the new page appears.
+  RedrawWindow(preview_contents->view()->GetContentNativeView(), NULL, NULL,
+               RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
+#endif
+
+  contents_->RemoveFade();
 }
 
 void BrowserView::HideInstant() {
@@ -1378,6 +1391,7 @@ void BrowserView::HideInstant() {
   contents_->SetPreview(NULL, NULL);
   delete preview_container_;
   preview_container_ = NULL;
+  contents_->RemoveFade();
 }
 
 gfx::Rect BrowserView::GetInstantBounds() {

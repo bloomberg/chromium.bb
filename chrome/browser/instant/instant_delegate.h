@@ -18,6 +18,11 @@ class Rect;
 // InstantController for details.
 class InstantDelegate {
  public:
+  // Invoked when instant starts loading, but before the preview tab contents is
+  // ready to be shown. This may be used to animate between the states.
+  // This is followed by ShowInstant and/or HideInstant.
+  virtual void PrepareForInstant() = 0;
+
   // Invoked when the instant TabContents should be shown.
   virtual void ShowInstant(TabContents* preview_contents) = 0;
 

@@ -773,6 +773,7 @@ class Browser : public TabHandlerDelegate,
   virtual void OnStateChanged();
 
   // Overriden from InstantDelegate:
+  virtual void PrepareForInstant();
   virtual void ShowInstant(TabContents* preview_contents);
   virtual void HideInstant();
   virtual void CommitInstant(TabContents* preview_contents);

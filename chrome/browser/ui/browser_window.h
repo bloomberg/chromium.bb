@@ -322,6 +322,9 @@ class BrowserWindow {
   virtual void OpenTabpose() = 0;
 #endif
 
+  // See InstantDelegate for details.
+  virtual void PrepareForInstant() = 0;
+
   // Invoked when instant's tab contents should be shown.
   virtual void ShowInstant(TabContents* preview_contents) = 0;
 

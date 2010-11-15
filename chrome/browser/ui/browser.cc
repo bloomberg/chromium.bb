@@ -26,9 +26,6 @@
 #include "gfx/point.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#if defined(OS_WIN)
-#include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
-#endif  // defined(OS_WIN)
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
@@ -115,6 +112,7 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
+#include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/download/save_package.h"
@@ -3336,6 +3334,10 @@ void Browser::OnStateChanged() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, InstantDelegate implementation:
+
+void Browser::PrepareForInstant() {
+  window_->PrepareForInstant();
+}
 
 void Browser::ShowInstant(TabContents* preview_contents) {
   DCHECK(instant_->tab_contents() == GetSelectedTabContents());

@@ -1127,6 +1127,10 @@ void BrowserWindowGtk::Paste() {
   DoCutCopyPaste(this, &RenderViewHost::Paste, "paste-clipboard");
 }
 
+void BrowserWindowGtk::PrepareForInstant() {
+  // TODO: implement fade as done on windows.
+}
+
 void BrowserWindowGtk::ShowInstant(TabContents* preview_contents) {
   contents_container_->SetPreviewContents(preview_contents);
 }

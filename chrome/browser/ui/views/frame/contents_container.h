@@ -6,14 +6,21 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_CONTAINER_H_
 #pragma once
 
+#include "app/animation.h"
+#include "base/scoped_ptr.h"
 #include "views/view.h"
 
+class SlideAnimation;
 class TabContents;
+
+namespace views {
+class Widget;
+}
 
 // ContentsContainer is responsible for managing the TabContents views.
 // ContentsContainer has up to two children: one for the currently active
 // TabContents and one for instant's TabContents.
-class ContentsContainer : public views::View {
+class ContentsContainer : public views::View, public AnimationDelegate {
  public:
   explicit ContentsContainer(views::View* active);
   virtual ~ContentsContainer();
@@ -35,8 +42,17 @@ class ContentsContainer : public views::View {
   // retuns the bounds the preview would be shown at.
   gfx::Rect GetPreviewBounds();
 
+  // Fades out the active contents.
+  void FadeActiveContents();
+
+  // Removes the fade. This is done implicitly when the preview is made active.
+  void RemoveFade();
+
   // View overrides:
   virtual void Layout();
+
+  // AnimationDelegate overrides:
+  virtual void AnimationProgressed(const Animation* animation);
 
  private:
   views::View* active_;
@@ -44,6 +60,13 @@ class ContentsContainer : public views::View {
   views::View* preview_;
 
   TabContents* preview_tab_contents_;
+
+  // Translucent Widget positioned right above the active view that is used to
+  // make the active view appear faded out.
+  views::Widget* active_overlay_;
+
+  // Animation used to vary the opacity of active_overlay.
+  scoped_ptr<SlideAnimation> overlay_animation_;
 
   // The margin between the top and the active view. This is used to make the
   // preview overlap the bookmark bar on the new tab page.
