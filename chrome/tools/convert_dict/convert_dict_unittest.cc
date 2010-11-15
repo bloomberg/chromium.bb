@@ -114,7 +114,17 @@ void RunDictionaryTest(const char* codepage,
     writer.SetOtherCommands(aff_reader.other_commands());
     writer.SetWords(dic_reader.words());
 
-    VerifyWords(dic_reader.words(), writer.GetBDict());
+    std::string bdict_data = writer.GetBDict();
+    VerifyWords(dic_reader.words(), bdict_data);
+    EXPECT_TRUE(hunspell::BDict::Verify(bdict_data.data(), bdict_data.size()));
+
+    // Trim the end of this BDICT and verify our verifier tells these trimmed
+    // BDICTs are corrupted.
+    for (size_t i = 1; i < bdict_data.size(); ++i) {
+      SCOPED_TRACE(StringPrintf("i = %" PRIuS, i));
+      EXPECT_FALSE(hunspell::BDict::Verify(bdict_data.data(),
+                                           bdict_data.size() - i));
+    }
   }
 
   // Deletes the temporary files.

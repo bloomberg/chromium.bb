@@ -24,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/hunspell/google/bdict.h"
 
 namespace {
 
@@ -286,6 +287,16 @@ void SpellCheckHost::OnURLFetchComplete(const URLFetcher* source,
 
 void SpellCheckHost::SaveDictionaryData() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // To prevent corrupted dictionary data from causing a renderer crash, scan
+  // the dictionary data and verify it is sane before save it to a file.
+  if (!hunspell::BDict::Verify(data_.data(), data_.size())) {
+    LOG(ERROR) << "Failure to verify the downloaded dictionary.";
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &SpellCheckHost::InformObserverOfInitialization));
+    return;
+  }
 
   size_t bytes_written =
       file_util::WriteFile(bdict_file_path_, data_.data(), data_.length());
