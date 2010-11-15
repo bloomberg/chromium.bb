@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -109,7 +109,7 @@ static URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
 }
 
 TestShellRequestContextParams* g_request_context_params = NULL;
-URLRequestContext* g_request_context = NULL;
+TestShellRequestContext* g_request_context = NULL;
 base::Thread* g_cache_thread = NULL;
 
 //-----------------------------------------------------------------------------
@@ -144,17 +144,19 @@ class IOThread : public base::Thread {
     SimpleAppCacheSystem::InitializeOnIOThread(g_request_context);
     SimpleSocketStreamBridge::InitializeOnIOThread(g_request_context);
     SimpleFileWriter::InitializeOnIOThread(g_request_context);
-
     TestShellWebBlobRegistryImpl::InitializeOnIOThread(
-        static_cast<TestShellRequestContext*>(g_request_context)->
-            blob_storage_controller());
+        g_request_context->blob_storage_controller());
+
     URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
   }
 
   virtual void CleanUp() {
-    SimpleSocketStreamBridge::Cleanup();
+    // In reverse order of initialization.
     TestShellWebBlobRegistryImpl::Cleanup();
     SimpleFileWriter::CleanupOnIOThread();
+    SimpleSocketStreamBridge::Cleanup();
+    SimpleAppCacheSystem::CleanupOnIOThread();
+
     if (g_request_context) {
       g_request_context->Release();
       g_request_context = NULL;

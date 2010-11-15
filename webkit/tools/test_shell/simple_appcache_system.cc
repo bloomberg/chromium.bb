@@ -390,7 +390,6 @@ void SimpleAppCacheSystem::InitOnIOThread(URLRequestContext* request_context) {
 
   DCHECK(!io_message_loop_);
   io_message_loop_ = MessageLoop::current();
-  io_message_loop_->AddDestructionObserver(this);
 
   if (!db_thread_.IsRunning())
     db_thread_.Start();
@@ -404,6 +403,19 @@ void SimpleAppCacheSystem::InitOnIOThread(URLRequestContext* request_context) {
   backend_impl_->Initialize(service_, frontend_proxy_.get(), kSingleProcessId);
 
   AppCacheInterceptor::EnsureRegistered();
+}
+
+void SimpleAppCacheSystem::CleanupIOThread() {
+  DCHECK(is_io_thread());
+
+  delete backend_impl_;
+  delete service_;
+  backend_impl_ = NULL;
+  service_ = NULL;
+  io_message_loop_ = NULL;
+
+  // Just in case the main thread is waiting on it.
+  backend_proxy_->SignalEvent();
 }
 
 WebApplicationCacheHost* SimpleAppCacheSystem::CreateCacheHostForWebKit(
@@ -437,17 +449,4 @@ void SimpleAppCacheSystem::GetExtraResponseBits(
     AppCacheInterceptor::GetExtraResponseInfo(
         request, cache_id, manifest_url);
   }
-}
-
-void SimpleAppCacheSystem::WillDestroyCurrentMessageLoop() {
-  DCHECK(is_io_thread());
-
-  delete backend_impl_;
-  delete service_;
-  backend_impl_ = NULL;
-  service_ = NULL;
-  io_message_loop_ = NULL;
-
-  // Just in case the main thread is waiting on it.
-  backend_proxy_->SignalEvent();
 }
