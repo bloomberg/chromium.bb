@@ -303,15 +303,14 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
 }
 
 TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
-  const std::wstring kChromeInstall(L"setup.exe");
-  const std::wstring kCfInstall(StringPrintf(L"setup.exe --%ls",
-      installer_util::switches::kChromeFrame));
-  const std::wstring kCeeeInstall(StringPrintf(L"setup.exe --%ls",
-      installer_util::switches::kCeee));
+  std::wstringstream chrome_cmd, cf_cmd, ceee_cmd;
+  chrome_cmd << "setup.exe";
+  cf_cmd << "setup.exe --" << installer_util::switches::kChromeFrame;
+  ceee_cmd << "setup.exe --" << installer_util::switches::kCeee;
 
-  CommandLine chrome_install(CommandLine::FromString(kChromeInstall));
-  CommandLine cf_install(CommandLine::FromString(kCfInstall));
-  CommandLine ceee_install(CommandLine::FromString(kCeeeInstall));
+  CommandLine chrome_install(CommandLine::FromString(chrome_cmd.str()));
+  CommandLine cf_install(CommandLine::FromString(cf_cmd.str()));
+  CommandLine ceee_install(CommandLine::FromString(ceee_cmd.str()));
 
   installer_util::MasterPreferences pref_chrome(chrome_install);
   installer_util::MasterPreferences pref_cf(cf_install);
@@ -334,33 +333,27 @@ TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
 }
 
 TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
-  const std::wstring kChromeInstall(StringPrintf(L"setup.exe --%ls --%ls",
-      installer_util::switches::kMultiInstall,
-      installer_util::switches::kChrome));
-  const std::wstring kCfInstall(StringPrintf(L"setup.exe --%ls --%ls",
-      installer_util::switches::kMultiInstall,
-      installer_util::switches::kChromeFrame));
-  const std::wstring kCeeeInstall(StringPrintf(L"setup.exe --%ls --%ls",
-      installer_util::switches::kMultiInstall,
-      installer_util::switches::kCeee));
-  const std::wstring kChromeCfInstall(
-      StringPrintf(L"setup.exe --%ls --%ls --%ls",
-          installer_util::switches::kMultiInstall,
-          installer_util::switches::kChrome,
-          installer_util::switches::kChromeFrame));
-  const std::wstring kChromeCeeeCfInstall(
-      StringPrintf(L"setup.exe --%ls --%ls --%ls --%ls",
-          installer_util::switches::kMultiInstall,
-          installer_util::switches::kChrome,
-          installer_util::switches::kChromeFrame,
-          installer_util::switches::kCeee));
+  using installer_util::switches::kMultiInstall;
+  using installer_util::switches::kChrome;
+  using installer_util::switches::kChromeFrame;
+  using installer_util::switches::kCeee;
 
-  CommandLine chrome_install(CommandLine::FromString(kChromeInstall));
-  CommandLine cf_install(CommandLine::FromString(kCfInstall));
-  CommandLine ceee_install(CommandLine::FromString(kCeeeInstall));
-  CommandLine chrome_cf_install(CommandLine::FromString(kChromeCfInstall));
+  std::wstringstream chrome_cmd, cf_cmd, ceee_cmd, chrome_cf_cmd,
+      chrome_ceee_cf_cmd;
+  chrome_cmd << "setup.exe --" << kMultiInstall << " --" << kChrome;
+  cf_cmd << "setup.exe --" << kMultiInstall << " --" << kChromeFrame;
+  ceee_cmd << "setup.exe --" << kMultiInstall << " --" << kCeee;
+  chrome_cf_cmd << "setup.exe --" << kMultiInstall << " --" << kChrome <<
+      " --" << kChromeFrame;
+  chrome_ceee_cf_cmd << "setup.exe --" << kMultiInstall << " --" << kChrome <<
+      " --" << kChromeFrame << " --" << kCeee;
+
+  CommandLine chrome_install(CommandLine::FromString(chrome_cmd.str()));
+  CommandLine cf_install(CommandLine::FromString(cf_cmd.str()));
+  CommandLine ceee_install(CommandLine::FromString(ceee_cmd.str()));
+  CommandLine chrome_cf_install(CommandLine::FromString(chrome_cf_cmd.str()));
   CommandLine chrome_cf_ceee_install(
-      CommandLine::FromString(kChromeCeeeCfInstall));
+      CommandLine::FromString(chrome_ceee_cf_cmd.str()));
 
   installer_util::MasterPreferences pref_chrome(chrome_install);
   installer_util::MasterPreferences pref_cf(cf_install);

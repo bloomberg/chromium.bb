@@ -9,50 +9,50 @@ namespace installer_util {
 namespace switches {
 
 // Install CEEE.
-const wchar_t kCeee[] = L"ceee";
+const char kCeee[] = "ceee";
 
 // Install Chrome.
 // Currently this is only required when used in combination with kMultiInstall.
-const wchar_t kChrome[] = L"chrome";
+const char kChrome[] = "chrome";
 
 // Run the installer in Chrome Frame mode.
-const wchar_t kChromeFrame[] = L"chrome-frame";
+const char kChromeFrame[] = "chrome-frame";
 
 // Run the installer for Chrome SxS.
-const wchar_t kChromeSxS[] = L"chrome-sxs";
+const char kChromeSxS[] = "chrome-sxs";
 
 // Create Desktop and QuickLaunch shortcuts
-const wchar_t kCreateAllShortcuts[] = L"create-all-shortcuts";
+const char kCreateAllShortcuts[] = "create-all-shortcuts";
 
 // Delete user profile data. This param is useful only when specified with
 // kUninstall, otherwise it is silently ignored.
-const wchar_t kDeleteProfile[] = L"delete-profile";
+const char kDeleteProfile[] = "delete-profile";
 
 // Disable logging
-const wchar_t kDisableLogging[] = L"disable-logging";
+const char kDisableLogging[] = "disable-logging";
 
 // Prevent installer from creating desktop shortcuts.
-const wchar_t kDoNotCreateShortcuts[] = L"do-not-create-shortcuts";
+const char kDoNotCreateShortcuts[] = "do-not-create-shortcuts";
 
 // Prevent installer from launching Chrome after a successful first install.
-const wchar_t kDoNotLaunchChrome[] = L"do-not-launch-chrome";
+const char kDoNotLaunchChrome[] = "do-not-launch-chrome";
 
 // Prevents installer from writing the Google Update key that causes Google
 // Update to launch Chrome after a first install.
-const wchar_t kDoNotRegisterForUpdateLaunch[] =
-    L"do-not-register-for-update-launch";
+const char kDoNotRegisterForUpdateLaunch[] =
+    "do-not-register-for-update-launch";
 
 // By default we remove all shared (between users) files, registry entries etc
 // during uninstall. If this option is specified together with kUninstall option
 // we do not clean up shared entries otherwise this option is ignored.
-const wchar_t kDoNotRemoveSharedItems[] = L"do-not-remove-shared-items";
+const char kDoNotRemoveSharedItems[] = "do-not-remove-shared-items";
 
 // Enable logging at the error level. This is the default behavior.
-const wchar_t kEnableLogging[] = L"enable-logging";
+const char kEnableLogging[] = "enable-logging";
 
 // If present, setup will uninstall chrome without asking for any
 // confirmation from user.
-const wchar_t kForceUninstall[] = L"force-uninstall";
+const char kForceUninstall[] = "force-uninstall";
 
 // Specify the file path of Chrome archive for install.
 const char kInstallArchive[] = "install-archive";
@@ -61,20 +61,20 @@ const char kInstallArchive[] = "install-archive";
 const char kInstallerData[] = "installerdata";
 
 // If present, specify file path to write logging info.
-const wchar_t kLogFile[] = L"log-file";
+const char kLogFile[] = "log-file";
 
 // Register Chrome as default browser on the system. Usually this will require
 // that setup is running as admin. If running as admin we try to register
 // as default browser at system level, if running as non-admin we try to
 // register as default browser only for the current user.
-const wchar_t kMakeChromeDefault[] = L"make-chrome-default";
+const char kMakeChromeDefault[] = "make-chrome-default";
 
 // Tells installer to expect to be run as a subsidiary to an MSI.
-const wchar_t kMsi[] = L"msi";
+const char kMsi[] = "msi";
 
 // Tells installer to install multiple products specified on the command line.
 // (e.g. Chrome Frame, CEEE, Chrome)
-const wchar_t kMultiInstall[] = L"multi-install";
+const char kMultiInstall[] = "multi-install";
 
 // Useful only when used with --update-setup-exe, otherwise ignored. It
 // specifies the full path where updated setup.exe will be stored.
@@ -90,20 +90,20 @@ const char kRegisterChromeBrowserSuffix[] =
 
 // Renames chrome.exe to old_chrome.exe and renames new_chrome.exe to chrome.exe
 // to support in-use updates. Also deletes opv key.
-const wchar_t kRenameChromeExe[] = L"rename-chrome-exe";
+const char kRenameChromeExe[] = "rename-chrome-exe";
 
 // Removes Chrome registration from current machine. Requires admin rights.
-const wchar_t kRemoveChromeRegistration[] = L"remove-chrome-registration";
+const char kRemoveChromeRegistration[] = "remove-chrome-registration";
 
 // When we try to relaunch setup.exe as admin on Vista, we append this command
 // line flag so that we try the launch only once.
-const wchar_t kRunAsAdmin[] = L"run-as-admin";
+const char kRunAsAdmin[] = "run-as-admin";
 
 // Install Chrome to system wise location. The default is per user install.
-const wchar_t kSystemLevel[] = L"system-level";
+const char kSystemLevel[] = "system-level";
 
 // If present, setup will uninstall chrome.
-const wchar_t kUninstall[] = L"uninstall";
+const char kUninstall[] = "uninstall";
 
 // Also see --new-setup-exe. This command line option specifies a diff patch
 // that setup.exe will apply to itself and store the resulting binary in the
@@ -111,23 +111,23 @@ const wchar_t kUninstall[] = L"uninstall";
 const char kUpdateSetupExe[] = "update-setup-exe";
 
 // Enable verbose logging (info level).
-const wchar_t kVerboseLogging[] = L"verbose-logging";
+const char kVerboseLogging[] = "verbose-logging";
 
 // Show the embedded EULA dialog.
 const char kShowEula[] = "show-eula";
 
 // Use the alternate desktop shortcut name.
-const wchar_t kAltDesktopShortcut[] = L"alt-desktop-shortcut";
+const char kAltDesktopShortcut[] = "alt-desktop-shortcut";
 
 // Perform the inactive user toast experiment.
 const char kInactiveUserToast[] = "inactive-user-toast";
 
 // User toast experiment switch from system context to user context.
-const wchar_t kSystemLevelToast[] = L"system-level-toast";
+const char kSystemLevelToast[] = "system-level-toast";
 
 // A handle value of the key to write the results of the toast experiment
 // to. See DuplicateGoogleUpdateSystemClientKey for details.
-const wchar_t kToastResultsKey[] = L"toast-results-key";
+const char kToastResultsKey[] = "toast-results-key";
 
 }  // namespace switches
 
