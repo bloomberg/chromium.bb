@@ -746,11 +746,16 @@ void CloseWindow(HWND* window) {
 TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
   // Please see http://code.google.com/p/chromium/issues/detail?id=60987
   // for more information on why this test is disabled for Vista with IE7.
-  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
-      GetInstalledIEVersion() == IE_7) {
-    LOG(INFO) << "Not running test on Vista with IE7";
-    return;
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    if (GetInstalledIEVersion() == IE_7) {
+      LOG(INFO) << "Not running test on Vista with IE7";
+      return;
+    } else if (GetInstalledIEVersion() == IE_9) {
+      LOG(INFO) << "Not running test on Vista/Windows 7 with IE9";
+      return;
+    }
   }
+
   chrome_frame_test::MockWindowObserver download_watcher;
   download_watcher.WatchWindow("File Download", "");
 

@@ -638,6 +638,10 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_CFInstanceIfrPost) {
 const wchar_t kCFIPostPage[] = L"CFInstance_post_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstancePost) {
+  if (chrome_frame_test::GetInstalledIEVersion() == IE_9) {
+    LOG(INFO) << "Not running test on Vista/Windows 7 with IE9";
+    return;
+  }
   SimpleBrowserTest(IE, kCFIPostPage);
 }
 
@@ -662,6 +666,10 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_CFInstancePost) {
 const wchar_t kCFIRPCPage[] = L"CFInstance_rpc_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPC) {
+  if (chrome_frame_test::GetInstalledIEVersion() == IE_9) {
+    LOG(INFO) << "Not running test on Vista/Windows 7 with IE9";
+    return;
+  }
   SimpleBrowserTest(IE, kCFIRPCPage);
 }
 
@@ -687,6 +695,10 @@ const wchar_t kCFIRPCInternalPage[] =
     L"CFInstance_rpc_internal_host.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPCInternal) {
+  if (chrome_frame_test::GetInstalledIEVersion() == IE_9) {
+    LOG(INFO) << "Not running test on Vista/Windows 7 with IE9";
+    return;
+  }
   SimpleBrowserTest(IE, kCFIRPCInternalPage);
 }
 
@@ -1110,7 +1122,8 @@ TEST_F(ChromeFrameTestWithWebServer, FAILS_FullTabModeIE_RefreshMshtmlTest) {
   for (; it != connections.end(); ++it) {
     test_server::Connection* c = (*it);
     const test_server::Request& r = c->request();
-    if (ASCIIToWide(r.path().substr(1)).compare(kPages[0]) == 0) {
+    if (!r.path().empty() &&
+        ASCIIToWide(r.path().substr(1)).compare(kPages[0]) == 0) {
       requests_for_first_page++;
       std::string ua(GetHeaderValue(r.headers(), "User-Agent"));
       EXPECT_NE(std::string::npos, ua.find("chromeframe"));
