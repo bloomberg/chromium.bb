@@ -278,18 +278,18 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   proxy_->SetDataSource(buffered_data_source);
 
   if (use_simple_data_source) {
-    filter_collection_->AddFilter(simple_data_source);
-    filter_collection_->AddFilter(buffered_data_source);
+    filter_collection_->AddDataSource(simple_data_source);
+    filter_collection_->AddDataSource(buffered_data_source);
   } else {
-    filter_collection_->AddFilter(buffered_data_source);
-    filter_collection_->AddFilter(simple_data_source);
+    filter_collection_->AddDataSource(buffered_data_source);
+    filter_collection_->AddDataSource(simple_data_source);
   }
 
   // Add in the default filter factories.
-  filter_collection_->AddFilter(new media::FFmpegDemuxer());
-  filter_collection_->AddFilter(new media::FFmpegAudioDecoder());
-  filter_collection_->AddFilter(new media::FFmpegVideoDecoder(NULL));
-  filter_collection_->AddFilter(new media::NullAudioRenderer());
+  filter_collection_->AddDemuxer(new media::FFmpegDemuxer());
+  filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder());
+  filter_collection_->AddVideoDecoder(new media::FFmpegVideoDecoder(NULL));
+  filter_collection_->AddAudioRenderer(new media::NullAudioRenderer());
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

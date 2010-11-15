@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "media/tools/player_wtl/movie.h"
 
@@ -55,17 +55,17 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
 
   // Create filter collection.
   scoped_ptr<MediaFilterCollection> collection(new MediaFilterCollection());
-  collection->AddFilter(new FileDataSource());
-  collection->AddFilter(new FFmpegAudioDecoder());
-  collection->AddFilter(new FFmpegDemuxer());
-  collection->AddFilter(new FFmpegVideoDecoder(NULL));
+  collection->AddDataSource(new FileDataSource());
+  collection->AddAudioDecoder(new FFmpegAudioDecoder());
+  collection->AddDemuxer(new FFmpegDemuxer());
+  collection->AddVideoDecoder(new FFmpegVideoDecoder(NULL));
 
   if (enable_audio_) {
-    collection->AddFilter(new AudioRendererImpl());
+    collection->AddAudioRenderer(new AudioRendererImpl());
   } else {
-    collection->AddFilter(new media::NullAudioRenderer());
+    collection->AddAudioRenderer(new media::NullAudioRenderer());
   }
-  collection->AddFilter(video_renderer);
+  collection->AddVideoRenderer(video_renderer);
 
   thread_.reset(new base::Thread("PipelineThread"));
   thread_->Start();
