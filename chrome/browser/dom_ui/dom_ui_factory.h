@@ -35,8 +35,13 @@ class DOMUIFactory {
   // to determine security policy.
   static bool HasDOMUIScheme(const GURL& url);
 
-  // Returns true if the given URL will use the DOM UI system.
+  // Returns true if the given URL must use the DOM UI system.
   static bool UseDOMUIForURL(Profile* profile, const GURL& url);
+
+  // Returns true if the given URL can be loaded by DOM UI system.  This
+  // includes URLs that can be loaded by normal tabs as well, such as
+  // javascript: URLs or about:hang.
+  static bool IsURLAcceptableForDOMUI(Profile* profile, const GURL& url);
 
   // Allocates a new DOMUI object for the given URL, and returns it. If the URL
   // is not a DOM UI URL, then it will return NULL. When non-NULL, ownership of

@@ -234,6 +234,20 @@ bool DOMUIFactory::UseDOMUIForURL(Profile* profile, const GURL& url) {
 }
 
 // static
+bool DOMUIFactory::IsURLAcceptableForDOMUI(Profile* profile, const GURL& url) {
+  return UseDOMUIForURL(profile, url) ||
+      // javacsript: URLs are allowed to run in DOM UI pages
+      url.SchemeIs(chrome::kJavaScriptScheme) ||
+      // It's possible to load about:blank in a DOM UI renderer.
+      // See http://crbug.com/42547
+      url.spec() == chrome::kAboutBlankURL ||
+      // about:crash, about:hang, and about:shorthang are allowed.
+      url.spec() == chrome::kAboutCrashURL ||
+      url.spec() == chrome::kAboutHangURL ||
+      url.spec() == chrome::kAboutShorthangURL;
+}
+
+// static
 DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
                                        const GURL& url) {
   DOMUIFactoryFunction function = GetDOMUIFactoryFunction(

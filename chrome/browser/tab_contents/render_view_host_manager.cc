@@ -310,9 +310,15 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   // For security, we should transition between processes when one is a DOM UI
   // page and one isn't.
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  if (DOMUIFactory::UseDOMUIForURL(profile, cur_entry->url()) !=
-      DOMUIFactory::UseDOMUIForURL(profile, new_entry->url()))
-    return true;
+  if (DOMUIFactory::UseDOMUIForURL(profile, cur_entry->url())) {
+    // Force swap if it's not an acceptable URL for DOM UI.
+    if (!DOMUIFactory::IsURLAcceptableForDOMUI(profile, new_entry->url()))
+      return true;
+  } else {
+    // Force swap if it's a DOM UI URL.
+    if (DOMUIFactory::UseDOMUIForURL(profile, new_entry->url()))
+      return true;
+  }
 
   // Also, we must switch if one is an extension and the other is not the exact
   // same extension.
