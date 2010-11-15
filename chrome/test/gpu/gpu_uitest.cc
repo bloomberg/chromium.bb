@@ -4,7 +4,10 @@
 
 #include <string>
 
+#include "app/gfx/gl/gl_implementation.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 
@@ -14,17 +17,26 @@ class GPUUITest : public UITest {
   }
 
   virtual void SetUp() {
+    EXPECT_TRUE(test_launcher_utils::OverrideGLImplementation(
+        &launch_arguments_,
+        gfx::kGLImplementationOSMesaName));
+
+#if defined(OS_MACOSX)
+    // Accelerated compositing does not work with OSMesa. AcceleratedSurface
+    // assumes GL contexts are native.
+    launch_arguments_.AppendSwitch(switches::kDisableAcceleratedCompositing);
+#endif
+
     UITest::SetUp();
+
     gpu_test_dir_ = test_data_directory_.AppendASCII("gpu");
   }
 
   FilePath gpu_test_dir_;
 };
 
-TEST_F(GPUUITest, UITestLaunchedWithOSMesa) {
+TEST_F(GPUUITest, UITestCanLaunchWithOSMesa) {
   // Check the webgl test reports success and that the renderer was OSMesa.
-  // We use OSMesa for tests in order to get consistent results across a
-  // variety of boxes.
   NavigateToURL(
       net::FilePathToFileURL(gpu_test_dir_.AppendASCII("webgl.html")));
 

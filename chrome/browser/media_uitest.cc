@@ -2,16 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/gfx/gl/gl_implementation.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/platform_thread.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/ui/ui_layout_test.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 
 class MediaTest : public UITest {
  protected:
+  virtual void SetUp() {
+    EXPECT_TRUE(test_launcher_utils::OverrideGLImplementation(
+        &launch_arguments_,
+        gfx::kGLImplementationOSMesaName));
+
+#if defined(OS_MACOSX)
+    // Accelerated compositing does not work with OSMesa. AcceleratedSurface
+    // assumes GL contexts are native.
+    launch_arguments_.AppendSwitch(switches::kDisableAcceleratedCompositing);
+#endif
+
+    UITest::SetUp();
+  }
+
   void PlayMedia(const char* tag, const char* media_file) {
     FilePath test_file(test_data_directory_);
     test_file = test_file.AppendASCII("media/player.html");
@@ -48,28 +65,6 @@ class MediaTest : public UITest {
   }
 };
 
-#if defined(OS_WIN)
-
-// Tests always fail on windows:  http://crbug.com/55477
-#define MAYBE_VideoBearTheora DISABLED_VideoBearTheora
-#define MAYBE_VideoBearSilentTheora DISABLED_VideoBearSilentTheora
-#define MAYBE_VideoBearWebm DISABLED_VideoBearWebm
-#define MAYBE_VideoBearSilentWebm DISABLED_VideoBearSilentWebm
-#define MAYBE_VideoBearMp4 DISABLED_VideoBearMp4
-#define MAYBE_VideoBearSilentMp4 DISABLED_VideoBearSilentMp4
-#define MAYBE_VideoBearWav DISABLED_VideoBearWav
-#define MAYBE_MediaUILayoutTest DISABLED_MediaUILayoutTest
-
-#else
-
-#define MAYBE_VideoBearTheora VideoBearTheora
-#define MAYBE_VideoBearSilentTheora VideoBearSilentTheora
-#define MAYBE_VideoBearWebm VideoBearWebm
-#define MAYBE_VideoBearSilentWebm VideoBearSilentWebm
-#define MAYBE_VideoBearMp4 VideoBearMp4
-#define MAYBE_VideoBearSilentMp4 VideoBearSilentMp4
-#define MAYBE_VideoBearWav VideoBearWav
-
 #if defined(OS_LINUX)
 // Test fails on linux: http://crbug.com/56364
 #define MAYBE_MediaUILayoutTest DISABLED_MediaUILayoutTest
@@ -77,35 +72,33 @@ class MediaTest : public UITest {
 #define MAYBE_MediaUILayoutTest MediaUILayoutTest
 #endif
 
-#endif
-
-TEST_F(MediaTest, MAYBE_VideoBearTheora) {
+TEST_F(MediaTest, VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
 
-TEST_F(MediaTest, MAYBE_VideoBearSilentTheora) {
+TEST_F(MediaTest, VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv");
 }
 
-TEST_F(MediaTest, MAYBE_VideoBearWebm) {
+TEST_F(MediaTest, VideoBearWebm) {
   PlayVideo("bear.webm");
 }
 
-TEST_F(MediaTest, MAYBE_VideoBearSilentWebm) {
+TEST_F(MediaTest, VideoBearSilentWebm) {
   PlayVideo("bear_silent.webm");
 }
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-TEST_F(MediaTest, MAYBE_VideoBearMp4) {
+TEST_F(MediaTest, VideoBearMp4) {
   PlayVideo("bear.mp4");
 }
 
-TEST_F(MediaTest, MAYBE_VideoBearSilentMp4) {
+TEST_F(MediaTest, VideoBearSilentMp4) {
   PlayVideo("bear_silent.mp4");
 }
 #endif
 
-TEST_F(MediaTest, MAYBE_VideoBearWav) {
+TEST_F(MediaTest, VideoBearWav) {
   PlayVideo("bear.wav");
 }
 

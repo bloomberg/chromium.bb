@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/chrome_paths.h"
@@ -54,6 +56,16 @@ bool OverrideUserDataDir(const FilePath& user_data_dir) {
 #endif
 
   return success;
+}
+
+bool OverrideGLImplementation(CommandLine* command_line,
+                              std::string& implementation_name) {
+  if (command_line->HasSwitch(switches::kUseGL))
+    return false;
+
+  command_line->AppendSwitchASCII(switches::kUseGL, implementation_name);
+
+  return true;
 }
 
 }  // namespace test_launcher_utils
