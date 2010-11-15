@@ -29,6 +29,10 @@
         'oleacc.lib',
         'iepmapi.lib',
       ],
+      'include_dirs': [
+        # For chrome_tab.h
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
       'configurations': {
         'Debug': {
           'msvs_precompiled_source': '../../common/precompile.cc',
@@ -73,6 +77,8 @@
         # Allows us to include .tlb and .h files generated
         # from our .idl without undue trouble
         '$(IntDir)',
+        # For version.h
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

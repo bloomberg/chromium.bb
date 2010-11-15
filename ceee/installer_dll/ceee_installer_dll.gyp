@@ -25,6 +25,8 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
+        # For version.h
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
         'installer_helper.cc',

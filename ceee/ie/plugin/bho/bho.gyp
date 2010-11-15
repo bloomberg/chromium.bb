@@ -21,6 +21,7 @@
         '../../../common/common.gyp:ceee_common',
         '../../../common/common.gyp:initializing_coclass',
         '../../../../base/base.gyp:base',
+        '../../../../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
         # For the vtable patching stuff...
         '../../../../chrome_frame/chrome_frame.gyp:chrome_frame_ie',
       ],
@@ -75,6 +76,10 @@
         '../../../../chrome_frame/renderer_glue.cc',  # needed for cf_ie.lib
         '../../../../chrome/common/extensions/extension_resource.cc',
         '../../../../chrome/common/extensions/extension_resource.h',
+      ],
+      'include_dirs': [
+        # For chrome_tab.h
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'configurations': {
         'Debug': {

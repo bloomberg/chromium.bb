@@ -40,6 +40,8 @@
       ],
       'include_dirs': [
         '../../..',
+        # For chrome_tab.h
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
     },
     {
@@ -104,6 +106,10 @@
         '../../../chrome/common/extensions/url_pattern.h',
         '../../../chrome/common/extensions/user_script.cc',
         '../../../chrome/common/extensions/user_script.h',
+      ],
+      'include_dirs': [
+        # For chrome_tab.h
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'direct_dependent_settings': {
         'include_dirs': [

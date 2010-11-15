@@ -59,6 +59,10 @@
         'window_events_funnel.cc',
         'window_events_funnel.h',
       ],
+      'include_dirs': [
+        # For chrome_tab.h
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
       'configurations': {
         'Debug': {
           'msvs_precompiled_source': '../common/precompile.cc',
@@ -89,6 +93,7 @@
         '../../../ceee/common/common.gyp:ceee_common',
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_frame_ie',  # for GUIDs.
+        '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
@@ -97,6 +102,10 @@
           'SubSystem': '2',
         },
       },
+      'include_dirs': [
+        # For version.h
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
       'libraries': [
         'oleacc.lib',
         'iepmapi.lib',
