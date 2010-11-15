@@ -313,9 +313,12 @@ void GoogleURLTracker::Observe(NotificationType type,
       StartFetchIfDesirable();
       break;
 
-    case NotificationType::NAV_ENTRY_PENDING:
-      OnNavigationPending(source, controller_->pending_entry()->url());
+    case NotificationType::NAV_ENTRY_PENDING: {
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      OnNavigationPending(source, controller->pending_entry()->url());
       break;
+    }
 
     case NotificationType::NAV_ENTRY_COMMITTED:
     case NotificationType::TAB_CLOSED:
