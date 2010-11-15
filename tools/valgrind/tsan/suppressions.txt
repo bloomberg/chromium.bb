@@ -156,35 +156,6 @@
   fun:exit
 }
 
-{
-  bug_61585a
-  ThreadSanitizer:UnlockForeign
-  fun:pthread_mutex_destroy
-  ...
-  fun:NSS_Shutdown
-  ...
-  fun:*AtExitManager*
-}
-
-{
-  bug_61585b
-  ThreadSanitizer:UnlockNonLocked
-  fun:pthread_mutex_unlock
-  fun:PR_Unlock
-  fun:nssSession_ExitMonitor
-  fun:find_objects
-  ...
-  fun:nssTrustDomain_FindCertificatesBySubject
-  ...
-}
-
-{
-  bug_61753
-  ThreadSanitizer:Race
-  ...
-  fun:*AtExitManager*
-}
-
 ############################
 # Data races in tests
 
