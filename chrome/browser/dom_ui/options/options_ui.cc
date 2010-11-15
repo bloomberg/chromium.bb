@@ -240,6 +240,8 @@ RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
 }
 
 void OptionsUI::InitializeHandlers() {
+  DCHECK(!GetProfile()->IsOffTheRecord());
+
   std::vector<DOMMessageHandler*>::iterator iter;
   for (iter = handlers_.begin(); iter != handlers_.end(); ++iter) {
     (static_cast<OptionsPageUIHandler*>(*iter))->Initialize();

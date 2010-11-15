@@ -672,6 +672,7 @@ void Browser::OpenHelpWindow(Profile* profile) {
   browser->window()->Show();
 }
 
+// static
 void Browser::OpenOptionsWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
   browser->ShowOptionsTab(chrome::kDefaultOptionsSubPage);

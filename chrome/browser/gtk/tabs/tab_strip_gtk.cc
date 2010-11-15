@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/gtk_util.h"
@@ -1612,19 +1614,18 @@ bool TabStripGtk::CompleteDrop(guchar* data) {
   if (!url.is_valid())
     return false;
 
+  browser::NavigateParams params(window()->browser(), url,
+                                 PageTransition::LINK);
+  params.tabstrip_index = drop_index;
+
   if (drop_before) {
-    // Insert a new tab.
-    TabContents* contents =
-        model_->delegate()->CreateTabContentsForURL(
-            url, GURL(), model_->profile(), PageTransition::TYPED, false,
-            NULL);
-    model_->AddTabContents(contents, drop_index, PageTransition::GENERATED,
-                           TabStripModel::ADD_SELECTED);
+    params.disposition = NEW_FOREGROUND_TAB;
   } else {
-    model_->GetTabContentsAt(drop_index)->controller().LoadURL(
-        url, GURL(), PageTransition::GENERATED);
-    model_->SelectTabContentsAt(drop_index, true);
+    params.disposition = CURRENT_TAB;
+    params.source_contents = model_->GetTabContentsAt(drop_index);
   }
+
+  browser::Navigate(&params);
 
   return true;
 }
@@ -1974,19 +1975,9 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget) {
       if (!gtk_util::URLFromPrimarySelection(model_->profile(), &url))
         return;
 
-      TabContents* contents =
-          model_->delegate()->CreateTabContentsForURL(
-              url,
-              GURL(),  // referrer
-              model_->profile(),
-              PageTransition::TYPED,
-              false,   // defer_load
-              NULL);   // instance
-      model_->AddTabContents(
-          contents,
-          -1,     // index
-          PageTransition::TYPED,
-          TabStripModel::ADD_SELECTED);
+      Browser* browser = window_->browser();
+      DCHECK(browser);
+      browser->AddSelectedTabWithURL(url, PageTransition::TYPED);
       break;
     }
     default:
