@@ -58,7 +58,8 @@ class SearchProviderTest : public testing::Test,
   void RunTillProviderDone();
 
   // Invokes Start on provider_, then runs all pending tasks.
-  void QueryForInput(const string16& text);
+  void QueryForInput(const string16& text,
+                     bool prevent_inline_autocomplete);
 
   // See description above class for details of these fields.
   TemplateURL* default_t_url_;
@@ -162,10 +163,11 @@ void SearchProviderTest::RunTillProviderDone() {
 #endif
 }
 
-void SearchProviderTest::QueryForInput(const string16& text) {
+void SearchProviderTest::QueryForInput(const string16& text,
+                                       bool prevent_inline_autocomplete) {
   // Start a query.
   AutocompleteInput input(UTF16ToWide(text), std::wstring(),
-                          false, false, true, false);
+                          prevent_inline_autocomplete, false, true, false);
   provider_->Start(input, false);
 
   // RunAllPending so that the task scheduled by SearchProvider to create the
@@ -198,7 +200,7 @@ AutocompleteMatch SearchProviderTest::FindMatchWithDestination(
 // created for the default provider suggest results.
 TEST_F(SearchProviderTest, QueryDefaultProvider) {
   string16 term = term1_.substr(0, term1_.size() - 1);
-  QueryForInput(term);
+  QueryForInput(term, false);
 
   // Make sure the default providers suggest service was queried.
   TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
@@ -226,12 +228,21 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   ASSERT_TRUE(!match.destination_url.is_empty());
 }
 
+TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
+  string16 term = term1_.substr(0, term1_.size() - 1);
+  QueryForInput(term, true);
+
+  ASSERT_FALSE(provider_->matches().empty());
+  ASSERT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+            provider_->matches()[0].type);
+}
+
 // Issues a query that matches the registered keyword and makes sure history
 // is queried as well as URLFetchers getting created.
 TEST_F(SearchProviderTest, QueryKeywordProvider) {
   string16 term = keyword_term_.substr(0, keyword_term_.size() - 1);
   QueryForInput(WideToUTF16(keyword_t_url_->keyword()) +
-                UTF8ToUTF16(" ") + term);
+                UTF8ToUTF16(" ") + term, false);
 
   // Make sure the default providers suggest service was queried.
   TestURLFetcher* default_fetcher = test_factory_.GetFetcherByID(
@@ -295,7 +306,7 @@ TEST_F(SearchProviderTest, DontSendPrivateDataToSuggest) {
   };
 
   for (size_t i = 0; i < arraysize(inputs); ++i) {
-    QueryForInput(ASCIIToUTF16(inputs[i]));
+    QueryForInput(ASCIIToUTF16(inputs[i]), false);
     // Make sure the default providers suggest service was not queried.
     ASSERT_TRUE(test_factory_.GetFetcherByID(
         SearchProvider::kDefaultProviderURLFetcherID) == NULL);

@@ -574,7 +574,8 @@ int SearchProvider::CalculateRelevanceForHistory(const Time& time,
   double elapsed_time = std::max((Time::Now() - time).InSecondsF(), 0.);
 
   if (providers_.is_primary_provider(is_keyword) &&
-      input_.type() != AutocompleteInput::URL) {
+      input_.type() != AutocompleteInput::URL &&
+      !input_.prevent_inline_autocomplete()) {
     // Searches with the past two days get a different curve.
     const double autocomplete_time= 2 * 24 * 60 * 60;
     if (elapsed_time < autocomplete_time) {
