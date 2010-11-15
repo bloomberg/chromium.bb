@@ -36,9 +36,7 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
  private:
   void ObserveThemeChanged();
   void ShowSyncLoginDialog(const ListValue* args);
-  void OpenPrivacyDashboardTabAndActivate(const ListValue* args);
   void ThemesReset(const ListValue* args);
-  void ThemesGallery(const ListValue* args);
 #if defined(TOOLKIT_GTK)
   void ThemesSetGTK(const ListValue* args);
 #endif

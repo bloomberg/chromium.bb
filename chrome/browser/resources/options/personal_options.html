@@ -26,8 +26,8 @@
         <button id="start-stop-sync"></button>
         <button id="customize-sync""></button>
       </div>
-      <button id="privacy-dashboard-link" class="link-button"
-          i18n-content="privacy_dashboard_link"></button>
+      <a href="https://www.google.com/dashboard" id="privacy-dashboard-link"
+          i18n-content="privacy_dashboard_link" target="_blank"></a>
     </div>
   </section>
   <section>
@@ -74,7 +74,8 @@
             i18n-content="themes_GTK_button"></button>
         <button id="themes_set_classic"
             i18n-content="themes_set_classic"></button>
-        <a i18n-content="themes_gallery" id="themes-gallery" href="#"></a>
+        <a id="themes-gallery" i18n-content="themes_gallery"
+            i18n-values="href:themes_gallery_url" target="_blank"></a>
       </div>
       <label class="radio">
         <input name="decorations_radio"
@@ -96,7 +97,8 @@
     <h3 i18n-content="themes"></h3>
     <div>
       <button id="themes_reset" i18n-content="themes_reset"></button>
-      <a i18n-content="themes_gallery" id="themes-gallery" href="#"></a>
+      <a id="themes-gallery" i18n-content="themes_gallery"
+          i18n-values="href:themes_gallery_url" target="_blank"></a>
     </div>
   </section>
 </if>

@@ -73,18 +73,12 @@ cr.define('options', function() {
         $('themes_set_classic').onclick = function(event) {
           chrome.send('themesReset');
         };
-        $('themes-gallery').onclick = function(event) {
-          chrome.send('themesGallery');
-        }
       }
 
       if (cr.isMac || cr.isWindows || cr.isChromeOS) {
         $('themes_reset').onclick = function(event) {
           chrome.send('themesReset');
         };
-        $('themes-gallery').onclick = function(event) {
-          chrome.send('themesGallery');
-        }
       }
 
       if (cr.isChromeOS) {
