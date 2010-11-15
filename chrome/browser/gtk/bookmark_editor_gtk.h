@@ -9,6 +9,7 @@
 #include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
 #include "base/gtest_prod_util.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -16,6 +17,7 @@
 class GURL;
 
 typedef union  _GdkEvent GdkEvent;
+typedef struct _GdkEventButton GdkEventButton;
 typedef struct _GtkTreeIter GtkTreeIter;
 typedef struct _GtkTreeSelection GtkTreeSelection;
 typedef struct _GtkTreeStore GtkTreeStore;
@@ -47,6 +49,9 @@ class BookmarkEditorGtk : public BookmarkEditor,
   void Close();
 
  private:
+  class ContextMenuController;
+  friend class ContextMenuController;
+
   void Init(GtkWindow* parent_window);
 
   // BookmarkModel observer methods. Any structural change results in
@@ -104,6 +109,13 @@ class BookmarkEditorGtk : public BookmarkEditor,
 
   CHROMEGTK_CALLBACK_0(BookmarkEditorGtk, void, OnNewFolderClicked);
 
+  CHROMEGTK_CALLBACK_1(BookmarkEditorGtk, gboolean, OnTreeViewButtonPressEvent,
+                       GdkEventButton*);
+
+  void ShowContextMenu();
+
+  void NewFolder();
+
   // Profile the entry is from.
   Profile* profile_;
 
@@ -140,6 +152,9 @@ class BookmarkEditorGtk : public BookmarkEditor,
 
   // Is the tree shown?
   bool show_tree_;
+
+  // The context menu controller.
+  scoped_ptr<ContextMenuController> menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditorGtk);
 };
