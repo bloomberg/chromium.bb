@@ -278,7 +278,7 @@ bool ParseIconSizes(const string16& text,
                     bool* is_any) {
   *is_any = false;
   std::vector<string16> size_strings;
-  SplitStringAlongWhitespace(text, &size_strings);
+  base::SplitStringAlongWhitespace(text, &size_strings);
   for (size_t i = 0; i < size_strings.size(); ++i) {
     if (EqualsASCII(size_strings[i], "any")) {
       *is_any = true;

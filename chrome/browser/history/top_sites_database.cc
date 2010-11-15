@@ -5,6 +5,7 @@
 #include "app/sql/connection.h"
 #include "app/sql/transaction.h"
 #include "base/file_util.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_types.h"
@@ -134,8 +135,8 @@ std::string TopSitesDatabase::GetRedirects(const MostVisitedURL& url) {
 void TopSitesDatabase::SetRedirects(const std::string& redirects,
                                     MostVisitedURL* url) {
   std::vector<std::string> redirects_vector;
-  SplitStringAlongWhitespace(redirects, &redirects_vector);
-  for (size_t i = 0; i < redirects_vector.size(); i++)
+  base::SplitStringAlongWhitespace(redirects, &redirects_vector);
+  for (size_t i = 0; i < redirects_vector.size(); ++i)
     url->redirects.push_back(GURL(redirects_vector[i]));
 }
 

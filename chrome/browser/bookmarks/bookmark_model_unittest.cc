@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
@@ -621,7 +622,7 @@ static void PopulateNodeFromString(const std::string& description,
                                    TestNode* parent) {
   std::vector<std::string> elements;
   size_t index = 0;
-  SplitStringAlongWhitespace(description, &elements);
+  base::SplitStringAlongWhitespace(description, &elements);
   PopulateNodeImpl(elements, &index, parent);
 }
 

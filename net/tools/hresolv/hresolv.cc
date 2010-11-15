@@ -390,7 +390,7 @@ bool ReadHostsAndTimesFromFile(const FilePath& path,
        it != line_end;
        ++it) {
     std::vector<std::string> tokens;
-    SplitStringAlongWhitespace(*it, &tokens);
+    base::SplitStringAlongWhitespace(*it, &tokens);
     switch (tokens.size()) {
       case 0:
         // Unexpected, but keep going.

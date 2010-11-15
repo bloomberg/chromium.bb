@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 
 #include "app/resource_bundle.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -361,7 +362,7 @@ std::string BrowserThemeProvider::AlignmentToString(int alignment) {
 // static
 int BrowserThemeProvider::StringToAlignment(const std::string& alignment) {
   std::vector<std::wstring> split;
-  SplitStringAlongWhitespace(UTF8ToWide(alignment), &split);
+  base::SplitStringAlongWhitespace(UTF8ToWide(alignment), &split);
 
   int alignment_mask = 0;
   for (std::vector<std::wstring>::iterator alignments(split.begin());
