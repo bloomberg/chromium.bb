@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
+#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
@@ -54,9 +55,8 @@ namespace chromeos {
 
 namespace {
 
-// Prefix for Auth token received from ClientLogin request.
+// Affixes for Auth token received from ClientLogin request.
 const char kAuthPrefix[] = "Auth=";
-// Suffix for Auth token received from ClientLogin request.
 const char kAuthSuffix[] = "\n";
 
 // Increase logging level for Guest mode to avoid LOG(INFO) messages in logs.
@@ -99,6 +99,9 @@ class LoginUtilsImpl : public LoginUtils {
   virtual void PrewarmAuthentication();
 
  private:
+  // Check user's profile for kApplicationLocale setting.
+  void RespectLocalePreference(PrefService* pref);
+
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
   bool browser_launch_enabled_;
 
@@ -211,6 +214,8 @@ void LoginUtilsImpl::CompleteLogin(
   }
   btl->AddLoginTimeMarker("TPMOwned", false);
 
+  RespectLocalePreference(profile->GetPrefs());
+
   static const char kFallbackInputMethodLocale[] = "en-US";
   if (first_login) {
     std::string locale(g_browser_process->GetApplicationLocale());
@@ -256,6 +261,19 @@ void LoginUtilsImpl::CompleteLogin(
   }
 
   DoBrowserLaunch(profile);
+}
+
+void LoginUtilsImpl::RespectLocalePreference(PrefService* pref) {
+  std::string pref_locale = pref->GetString(prefs::kApplicationLocale);
+  if (pref_locale.empty()) {
+    // TODO(dilmah): current code will clobber existing setting in case
+    // language preference was set via another device
+    // but still not synced yet.  Profile is not synced at this point yet.
+    pref->SetString(prefs::kApplicationLocale,
+                    g_browser_process->GetApplicationLocale());
+  } else {
+    LanguageSwitchMenu::SwitchLanguage(pref_locale);
+  }
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {

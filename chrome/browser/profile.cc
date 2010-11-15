@@ -96,6 +96,14 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties);
   prefs->RegisterBooleanPref(prefs::kDisableExtensions, false);
   prefs->RegisterStringPref(prefs::kSelectFileLastDirectory, "");
+#if defined(OS_CHROMEOS)
+  // TODO(dilmah): For OS_CHROMEOS we maintain kApplicationLocale in both
+  // local state and user's profile.  For other platforms we maintain
+  // kApplicationLocale only in local state.
+  // In the future we may want to maintain kApplicationLocale
+  // in user's profile for other platforms as well.
+  prefs->RegisterStringPref(prefs::kApplicationLocale, "");
+#endif
 }
 
 // static

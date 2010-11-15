@@ -20,7 +20,12 @@ extern const char kHomePage[];
 extern const char kSessionExitedCleanly[];
 extern const char kRestoreOnStartup[];
 extern const char kURLsToRestoreOnStartup[];
+
+// For OS_CHROMEOS we maintain kApplicationLocale property in both local state
+// and user's profile.  Global property determines locale of login screen,
+// while user's profile determines his personal locale preference.
 extern const char kApplicationLocale[];
+
 extern const char kDefaultCharset[];
 extern const char kAcceptLanguages[];
 extern const char kStaticEncodings[];

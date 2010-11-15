@@ -78,8 +78,11 @@ void LanguageSwitchMenu::SetFirstLevelMenuWidth(int width) {
 
 // static
 void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
-  // Save new locale.
   DCHECK(g_browser_process);
+  if (g_browser_process->GetApplicationLocale() == locale) {
+    return;
+  }
+  // Save new locale.
   PrefService* prefs = g_browser_process->local_state();
   // TODO(markusheintz): If the preference is managed and can not be changed by
   // the user, changing the language should be disabled in the UI.

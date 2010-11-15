@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "app/l10n_util.h"
+#include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
@@ -57,7 +59,8 @@ void LanguageOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("remove_button",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
   localized_strings->SetString("sign_out_button",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON));
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON));
   localized_strings->SetString("add_language_instructions",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS));
@@ -287,9 +290,17 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
   UserMetrics::RecordComputedAction(action);
 
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kApplicationLocale, language_code);
-  prefs->SavePersistentPrefs();
+  // We maintain kApplicationLocale property in both a global storage
+  // and user's profile.  Global property determines locale of login screen,
+  // while user's profile determines his personal locale preference.
+  PrefService* prefs[] = {
+      g_browser_process->local_state(),
+      dom_ui_->GetProfile()->GetPrefs()
+  };
+  for (size_t i = 0; i < arraysize(prefs); ++i) {
+    prefs[i]->SetString(prefs::kApplicationLocale, language_code);
+    prefs[i]->SavePersistentPrefs();
+  }
   dom_ui_->CallJavascriptFunction(
       L"options.LanguageOptions.uiLanguageSaved");
 }
