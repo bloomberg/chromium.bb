@@ -223,36 +223,37 @@ class ContentScriptManagerTest: public testing::Test {
 
   // Set up to expect scripting initialization.
   void ExpectScriptInitialization() {
-    EXPECT_CALL(*script_host_,
-        RegisterScriptObject(StrEq(L"window"), _, true))
-            .WillOnce(Return(S_OK));
-
-    EXPECT_CALL(*script_host_,
-        RunScript(testing::StartsWith(L"ceee-content://"), _))
-        .Times(5)
-            .WillRepeatedly(Return(S_OK));
-
-    // Return the mock function for start/end init.
-    EXPECT_CALL(*script_host_, RunExpression(StrEq(L"ceee.startInit_"), _))
-        .WillOnce(
-            DoAll(
-                CopyVariantToArgument<1>(CComVariant(function_keeper_)),
-                Return(S_OK)));
-    EXPECT_CALL(*script_host_, RunExpression(StrEq(L"ceee.endInit_"), _))
-        .WillOnce(
-            DoAll(
-                CopyVariantToArgument<1>(CComVariant(function_keeper_)),
-                Return(S_OK)));
-
     EXPECT_CALL(*frame_host_, GetExtensionId(_)).WillOnce(DoAll(
         SetArgumentPointee<0>(std::wstring(kExtensionId)),
         Return(S_OK)));
 
-    // And expect two invocations.
+    EXPECT_CALL(*script_host_,
+        RunScript(testing::StartsWith(L"ceee-content://"), _))
+        .Times(5).WillRepeatedly(Return(S_OK));
+
+    // Return the mock function for start/end init.
+    EXPECT_CALL(*script_host_, RunExpression(StrEq(L"ceee.startInit_"), _))
+        .WillOnce(DoAll(
+            CopyVariantToArgument<1>(CComVariant(function_keeper_)),
+            Return(S_OK)));
+    EXPECT_CALL(*script_host_, RunExpression(StrEq(L"ceee.endInit_"), _))
+        .WillOnce(DoAll(
+            CopyVariantToArgument<1>(CComVariant(function_keeper_)),
+            Return(S_OK)));
+
+    // Register the window object and initialize its globals.
+    EXPECT_CALL(*script_host_,
+        RegisterScriptObject(StrEq(L"window"), _, false))
+            .WillOnce(Return(S_OK));
+    EXPECT_CALL(*script_host_, RunExpression(StrEq(L"ceee.initGlobals_"), _))
+        .WillOnce(DoAll(
+            CopyVariantToArgument<1>(CComVariant(function_keeper_)),
+            Return(S_OK)));
+
+    // And expect three invocations.
     // TODO(siggi@chromium.org): be more specific?
     EXPECT_CALL(*function_, Invoke(_, _, _, _, _, _, _, _))
-        .Times(2)
-            .WillRepeatedly(Return(S_OK));
+        .Times(3).WillRepeatedly(Return(S_OK));
   }
 
   void ExpectCreateScriptHost(TestingContentScriptManager* manager) {

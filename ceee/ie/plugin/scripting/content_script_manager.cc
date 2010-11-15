@@ -157,6 +157,8 @@ HRESULT ContentScriptManager::InitializeScriptHost(
 
   CComPtr<IExtensionPortMessagingProvider> messaging_provider;
   HRESULT hr = host_->GetExtensionPortMessagingProvider(&messaging_provider);
+  if (FAILED(hr))
+    return hr;
   hr = ContentScriptNativeApi::CreateInitialized(messaging_provider,
                                                  &native_api_);
   if (FAILED(hr))
@@ -169,14 +171,18 @@ HRESULT ContentScriptManager::InitializeScriptHost(
 
   // Execute the bootstrap scripts.
   hr = BootstrapScriptHost(script_host, native_api_, extension_id.c_str());
+  if (FAILED(hr))
+    return hr;
 
+  // Register the window object and manually make its members global.
   CComPtr<IHTMLWindow2> window;
   hr = document->get_parentWindow(&window);
   if (FAILED(hr))
     return hr;
-
-  // Register the window object and make its members global.
-  hr = script_host->RegisterScriptObject(L"window", window, true);
+  hr = script_host->RegisterScriptObject(L"window", window, false);
+  if (FAILED(hr))
+    return hr;
+  hr = InvokeNamedFunction(script_host, L"ceee.initGlobals_", NULL, 0);
 
   return hr;
 }

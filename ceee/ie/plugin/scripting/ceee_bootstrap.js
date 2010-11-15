@@ -111,7 +111,60 @@ ceee.endInit_ = function (nativenativeContentScriptApi, extensionId) {
 
   // Delete the ceee namespace from globals.
   delete ceee;
-}
+};
+
+ceee.initGlobals_ = function() {
+  // We expose a subset of the Window interface defined at
+  // http://www.w3.org/TR/html5/browsers.html#the-window-object
+  // to the global namespace. We purposely skip all event handler
+  // attributes (e.g. onclick).
+
+  // Browsing context.
+  self = window.self;
+  document = window.document;
+  name = window.name;
+  location = window.location;
+  history = window.history;
+  undoManager = window.undoManager;
+  locationbar = window.locationbar;
+  menubar = window.menubar;
+  scrollbars = window.scrollbars;
+  statusbar = window.statusbar;
+  toolbar = window.toolbar;
+  close = window.close;
+  stop = window.stop;
+  focus = window.focus;
+  blur = window.blur;
+
+  // Other browsing contexts.
+  frames = window.frames;
+  length = window.length;
+  top = window.top;
+  opener = window.opener;
+  parent = window.parent;
+  frameElement = window.frameElement;
+  open = window.open;
+
+  // User agent.
+  navigator = window.navigator;
+  applicationCache = window.applicationCache;
+
+  // User prompts.
+  alert = window.alert;
+  confirm = window.confirm;
+  prompt = window.prompt;
+  print = window.print;
+  showModalDialog = window.showModalDialog;
+
+  // EventTarget interface.
+  addEventListener = window.addEventListener;
+  removeEventListener = window.removeEventListener;
+  dispatchEvent = window.dispatchEvent;
+
+  // Old IE event model.
+  attachEvent = window.attachEvent;
+  detachEvent = window.detachEvent;
+};
 
 console.log = console.log || function (msg) {
   if (nativeContentScriptApi)
