@@ -31,5 +31,5 @@ node = env.BrowserTester(
     browser='*firefox')
 # Disabling test on mac, see:
 #   http://code.google.com/p/nativeclient/issues/detail?id=1170
-if not env['TRUSTED_ENV'].Bit('mac'):
+if 'TRUSTED_ENV' in env and not env['TRUSTED_ENV'].Bit('mac'):
   env.AddNodeToTestSuite(node, ['browser_tests'], 'run_inbrowser_test_runner')
