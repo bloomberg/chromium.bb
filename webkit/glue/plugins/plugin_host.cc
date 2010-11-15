@@ -134,6 +134,10 @@ void PluginHost::InitializeHostFuncs() {
   host_funcs_.unscheduletimer = NPN_UnscheduleTimer;
   host_funcs_.popupcontextmenu = NPN_PopUpContextMenu;
   host_funcs_.convertpoint = NPN_ConvertPoint;
+  host_funcs_.handleevent = NPN_HandleEvent;
+  host_funcs_.unfocusinstance = NPN_UnfocusInstance;
+  // TODO: Implement redirect handling: http://crbug.com/63030
+  host_funcs_.urlredirectresponse = NULL;
 }
 
 void PluginHost::PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides) {
@@ -1085,5 +1089,18 @@ NPBool NPN_ConvertPoint(NPP id, double sourceX, double sourceY,
   NOTREACHED();
   return false;
 }
+
+NPBool NPN_HandleEvent(NPP id, void *event, NPBool handled) {
+  // TODO: Implement advanced key handling: http://crbug.com/46578
+  NOTIMPLEMENTED();
+  return false;
+}
+
+NPBool NPN_UnfocusInstance(NPP id, NPFocusDirection direction) {
+  // TODO: Implement advanced key handling: http://crbug.com/46578
+  NOTIMPLEMENTED();
+  return false;
+}
+
 
 }  // extern "C"
