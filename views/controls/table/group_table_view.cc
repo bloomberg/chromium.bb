@@ -21,10 +21,12 @@ GroupTableView::GroupTableView(GroupTableModel* model,
                                TableTypes table_type,
                                bool single_selection,
                                bool resizable_columns,
-                               bool autosize_columns)
+                               bool autosize_columns,
+                               bool draw_group_separators)
     : TableView(model, columns, table_type, false, resizable_columns,
                 autosize_columns),
     model_(model),
+    draw_group_separators_(draw_group_separators),
     ALLOW_THIS_IN_INITIALIZER_LIST(sync_selection_factory_(this)) {
 }
 
@@ -168,6 +170,9 @@ void GroupTableView::OnSelectedStateChanged() {
 // Draws the line separator betweens the groups.
 void GroupTableView::PostPaint(int model_row, int column, bool selected,
                                const gfx::Rect& bounds, HDC hdc) {
+  if (!draw_group_separators_)
+    return;
+
   GroupRange group_range;
   model_->GetGroupRangeForItem(model_row, &group_range);
 

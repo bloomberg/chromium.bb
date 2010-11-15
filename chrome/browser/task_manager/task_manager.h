@@ -102,6 +102,10 @@ class TaskManager {
         const WebKit::WebCache::ResourceTypeStats& stats) {}
     virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
                                    size_t v8_memory_used) {}
+
+    // Returns true if this resource is not visible to the user because it lives
+    // in the background (e.g. extension background page, background contents).
+    virtual bool IsBackground() const { return false; }
   };
 
   // ResourceProviders are responsible for adding/removing resources to the task
@@ -155,6 +159,12 @@ class TaskManager {
   void RemoveResource(Resource* resource);
 
   void OnWindowClosed();
+
+  // Invoked when a change to a resource has occurred that should cause any
+  // observers to completely refresh themselves (for example, the creation of
+  // a background resource in a process). Results in all observers receiving
+  // OnModelChanged() events.
+  void ModelChanged();
 
   // Returns the singleton instance (and initializes it if necessary).
   static TaskManager* GetInstance();
@@ -259,6 +269,10 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   // rendered by the same process are groupped together).
   bool IsResourceFirstInGroup(int index) const;
 
+  // Returns true if the resource runs in the background (not visible to the
+  // user, e.g. extension background pages and BackgroundContents).
+  bool IsBackgroundResource(int index) const;
+
   // Returns icon to be used for resource (for example a favicon).
   SkBitmap GetResourceIcon(int index) const;
 
@@ -299,6 +313,10 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   void StopUpdating();
 
   void Clear();  // Removes all items.
+
+  // Sends OnModelChanged() to all observers to inform them of significant
+  // changes to the model.
+  void ModelChanged();
 
   void NotifyResourceTypeStats(
         base::ProcessId renderer_id,

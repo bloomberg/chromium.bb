@@ -80,6 +80,10 @@ std::wstring TableModel::GetTooltip(int row) {
   return std::wstring();
 }
 
+bool TableModel::ShouldIndent(int row) {
+  return false;
+}
+
 bool TableModel::HasGroups() {
   return false;
 }

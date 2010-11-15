@@ -353,7 +353,7 @@ void HungRendererDialogView::Init() {
   columns.push_back(TableColumn());
   hung_pages_table_ = new views::GroupTableView(
       hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true,
-      false, true);
+      false, true, false);
   hung_pages_table_->SetPreferredSize(
     gfx::Size(kTableViewWidth, kTableViewHeight));
 

@@ -81,9 +81,9 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   ~TaskManagerTabContentsResource();
 
   // TaskManager::Resource methods:
-  std::wstring GetTitle() const;
-  SkBitmap GetIcon() const;
-  TabContents* GetTabContents() const;
+  virtual std::wstring GetTitle() const;
+  virtual SkBitmap GetIcon() const;
+  virtual TabContents* GetTabContents() const;
 
  private:
   TabContents* tab_contents_;
@@ -141,10 +141,11 @@ class TaskManagerBackgroundContentsResource
   ~TaskManagerBackgroundContentsResource();
 
   // TaskManager::Resource methods:
-  std::wstring GetTitle() const;
-  const std::wstring& application_name() const { return application_name_; }
-  SkBitmap GetIcon() const;
+  virtual std::wstring GetTitle() const;
+  virtual SkBitmap GetIcon() const;
+  virtual bool IsBackground() const;
 
+  const std::wstring& application_name() const { return application_name_; }
  private:
   BackgroundContents* background_contents_;
 
@@ -309,6 +310,8 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   // Returns the pid of the extension process.
   int process_id() const { return pid_; }
 
+  // Returns true if the associated extension has a background page.
+  bool IsBackground() const;
  private:
   // The icon painted for the extension process.
   static SkBitmap* default_icon_;

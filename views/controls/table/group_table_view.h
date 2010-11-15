@@ -37,7 +37,8 @@ class GroupTableView : public TableView {
   GroupTableView(GroupTableModel* model,
                  const std::vector<TableColumn>& columns,
                  TableTypes table_type, bool single_selection,
-                 bool resizable_columns, bool autosize_columns);
+                 bool resizable_columns, bool autosize_columns,
+                 bool draw_group_separators);
   virtual ~GroupTableView();
 
   virtual std::string GetClassName() const;
@@ -69,6 +70,9 @@ class GroupTableView : public TableView {
   void SyncSelection();
 
   GroupTableModel* model_;
+
+  // If true, draw separators between groups.
+  bool draw_group_separators_;
 
   // A factory to make the selection consistent among groups.
   ScopedRunnableMethodFactory<GroupTableView> sync_selection_factory_;

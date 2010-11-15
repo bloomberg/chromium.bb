@@ -3483,6 +3483,12 @@ each locale. -->
       <message name="IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT" desc="The text of the web browser process row">
         Browser
       </message>
+      <message name="IDS_TASK_MANAGER_BACKGROUND_SEPARATOR" desc="The heading for the background pages grouping in the task manager">
+        Background Apps and Extensions
+      </message>
+      <message name="IDS_TASK_MANAGER_FOREGROUND_SEPARATOR" desc="The heading for the foreground pages grouping in the task manager">
+        Browser Tabs and Plugins
+      </message>
       <message name="IDS_TASK_MANAGER_EXTENSION_PREFIX" desc="The prefix for a Task Manager extension row (always visible if the extension has a view)">
         Extension: <ph name="EXTENSION_NAME">$1<ex>Sample Extension</ex></ph>
       </message>

@@ -37,6 +37,10 @@
 static const int kDefaultWidth = 460;
 static const int kDefaultHeight = 270;
 
+// The group IDs used to separate background pages from foreground tabs.
+static const int kBackgroundGroupId = 0;
+static const int kForegroundGroupId = 1;
+
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,9 +64,13 @@ class TaskManagerTableModel : public views::GroupTableModel,
   int RowCount();
   std::wstring GetText(int row, int column);
   SkBitmap GetIcon(int row);
+  bool ShouldIndent(int row);
   void GetGroupRangeForItem(int item, views::GroupRange* range);
   void SetObserver(TableModelObserver* observer);
   virtual int CompareValues(int row1, int row2, int column_id);
+  virtual Groups GetGroups();
+  virtual bool HasGroups();
+  virtual int GetGroupID(int row);
 
   // TaskManagerModelObserver.
   virtual void OnModelChanged();
@@ -150,6 +158,10 @@ SkBitmap TaskManagerTableModel::GetIcon(int row) {
   return model_->GetResourceIcon(row);
 }
 
+bool TaskManagerTableModel::ShouldIndent(int row) {
+  return !model_->IsResourceFirstInGroup(row);
+}
+
 void TaskManagerTableModel::GetGroupRangeForItem(int item,
                                                  views::GroupRange* range) {
   std::pair<int, int> range_pair = model_->GetGroupRangeForResource(item);
@@ -165,6 +177,41 @@ int TaskManagerTableModel::CompareValues(int row1, int row2, int column_id) {
   return model_->CompareValues(row1, row2, column_id);
 }
 
+bool TaskManagerTableModel::HasGroups() {
+  return true;
+}
+
+int TaskManagerTableModel::GetGroupID(int row) {
+  // If there are any background resources in the group range, put the whole
+  // range in the background group.
+  std::pair<int, int> range_pair = model_->GetGroupRangeForResource(row);
+  for (int i = range_pair.first;
+       i < range_pair.first + range_pair.second;
+       ++i) {
+    if (model_->IsBackgroundResource(i))
+      return kBackgroundGroupId;
+  }
+  return kForegroundGroupId;
+}
+
+TableModel::Groups TaskManagerTableModel::GetGroups() {
+  Groups groups;
+
+  Group background_group;
+  background_group.title =
+      l10n_util::GetString(IDS_TASK_MANAGER_BACKGROUND_SEPARATOR);
+  background_group.id = kBackgroundGroupId;
+  groups.push_back(background_group);
+
+  Group foreground_group;
+  foreground_group.title =
+      l10n_util::GetString(IDS_TASK_MANAGER_FOREGROUND_SEPARATOR);
+  foreground_group.id = kForegroundGroupId;
+  groups.push_back(foreground_group);
+
+  return groups;
+}
+
 void TaskManagerTableModel::OnModelChanged() {
   if (observer_)
     observer_->OnModelChanged();
@@ -178,6 +225,11 @@ void TaskManagerTableModel::OnItemsChanged(int start, int length) {
 void TaskManagerTableModel::OnItemsAdded(int start, int length) {
   if (observer_)
     observer_->OnItemsAdded(start, length);
+  // There's a bug in the Windows ListView where inserting items with groups
+  // enabled puts them in the wrong position, so we just rebuild the list view
+  // in this case.
+  // (see: http://connect.microsoft.com/VisualStudio/feedback/details/115345/)
+  OnModelChanged();
 }
 
 void TaskManagerTableModel::OnItemsRemoved(int start, int length) {
@@ -301,7 +353,8 @@ TaskManagerView::~TaskManagerView() {
 void TaskManagerView::Init() {
   table_model_.reset(new TaskManagerTableModel(model_));
 
-  columns_.push_back(TableColumn(IDS_TASK_MANAGER_PAGE_COLUMN,
+  // Page column has no header label.
+  columns_.push_back(TableColumn(IDS_TASK_MANAGER_PAGE_COLUMN, L"",
                                  TableColumn::LEFT, -1, 1));
   columns_.back().sortable = true;
   columns_.push_back(TableColumn(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN,
@@ -341,7 +394,7 @@ void TaskManagerView::Init() {
 
   tab_table_ = new views::GroupTableView(table_model_.get(), columns_,
                                          views::ICON_AND_TEXT, false, true,
-                                         true);
+                                         true, false);
 
   // Hide some columns by default
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PROCESS_ID_COLUMN, false);

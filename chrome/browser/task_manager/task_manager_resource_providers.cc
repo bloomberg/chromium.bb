@@ -382,6 +382,10 @@ SkBitmap TaskManagerBackgroundContentsResource::GetIcon() const {
   return *default_icon_;
 }
 
+bool TaskManagerBackgroundContentsResource::IsBackground() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerBackgroundContentsResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////
@@ -550,6 +554,9 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
       }
       Add(Details<BackgroundContentsOpenedDetails>(details)->contents,
           application_name);
+      // Opening a new BackgroundContents needs to force the display to refresh
+      // (applications may now be considered "background" that weren't before).
+      task_manager_->ModelChanged();
       break;
     }
     case NotificationType::BACKGROUND_CONTENTS_NAVIGATED: {
@@ -565,6 +572,9 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
     }
     case NotificationType::BACKGROUND_CONTENTS_DELETED:
       Remove(Details<BackgroundContents>(details).ptr());
+      // Closing a BackgroundContents needs to force the display to refresh
+      // (applications may now be considered "foreground" that weren't before).
+      task_manager_->ModelChanged();
       break;
     default:
       NOTREACHED() << "Unexpected notification.";
@@ -845,6 +855,11 @@ base::ProcessHandle TaskManagerExtensionProcessResource::GetProcess() const {
 
 const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
   return extension_host_->extension();
+}
+
+bool TaskManagerExtensionProcessResource::IsBackground() const {
+  return extension_host_->GetRenderViewType() ==
+      ViewType::EXTENSION_BACKGROUND_PAGE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

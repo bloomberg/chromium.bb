@@ -1406,11 +1406,15 @@ void TableView::UpdateListViewCache0(int start, int length, bool add) {
   LVITEM item = {0};
   if (add) {
     const bool has_groups = model_->HasGroups();
-    item.mask = has_groups ? (LVIF_GROUPID | LVIF_PARAM) : LVIF_PARAM;
     for (int i = start; i < start + length; ++i) {
+      item.mask = has_groups ? (LVIF_GROUPID | LVIF_PARAM) : LVIF_PARAM;
       item.iItem = i;
       if (has_groups)
         item.iGroupId = model_->GetGroupID(i);
+      if (model_->ShouldIndent(i)) {
+        item.mask |= LVIF_INDENT;
+        item.iIndent = 1;
+      }
       item.lParam = i;
       ListView_InsertItem(list_view_, &item);
     }

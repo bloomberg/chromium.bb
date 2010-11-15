@@ -45,6 +45,9 @@ class TableModel {
   // column zero.
   virtual std::wstring GetTooltip(int row);
 
+  // If true, this row should be indented.
+  virtual bool ShouldIndent(int row);
+
   // Returns true if the TableView has groups. Groups provide a way to visually
   // delineate the rows in a table view. When groups are enabled table view
   // shows a visual separator for each group, followed by all the rows in
