@@ -274,6 +274,9 @@ deps_os = {
 
     "src/third_party/openssl":
       "/trunk/deps/third_party/openssl@65717",
+
+    "src/third_party/cros":
+      Var("chromium_git") + "/cros.git@d4465704",
   },
 }
 
