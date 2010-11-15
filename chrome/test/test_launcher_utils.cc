@@ -59,7 +59,7 @@ bool OverrideUserDataDir(const FilePath& user_data_dir) {
 }
 
 bool OverrideGLImplementation(CommandLine* command_line,
-                              std::string& implementation_name) {
+                              const std::string& implementation_name) {
   if (command_line->HasSwitch(switches::kUseGL))
     return false;
 
