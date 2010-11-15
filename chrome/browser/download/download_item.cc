@@ -325,6 +325,8 @@ bool DownloadItem::TimeRemaining(base::TimeDelta* remaining) const {
 }
 
 int64 DownloadItem::CurrentSpeed() const {
+  if (is_paused_)
+    return 0;
   base::TimeDelta diff = base::TimeTicks::Now() - start_tick_;
   int64 diff_ms = diff.InMilliseconds();
   return diff_ms == 0 ? 0 : received_bytes_ * 1000 / diff_ms;
