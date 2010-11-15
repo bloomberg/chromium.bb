@@ -51,10 +51,13 @@ std::wstring GetExtensionPath();
 FilePath GetInstalledExtensionPath();
 base::Time GetInstalledExtensionTime();
 
-// Return true if the extension is outdated compared to the registry
+// Return true if extension installation should be attempted according
+// to the registry. Note that Chrome will silently fail installation of
+// an extension version older than what is already installed.
 bool NeedToInstallExtension();
 
-// Install an extension and sets the right registry values
+// Sets the right registry values to cache the fact that we asked
+// Chrome to install an extension.
 void SetInstalledExtensionPath(const FilePath& path);
 
 // Returns true if the given path ends with .crx or is empty (as an

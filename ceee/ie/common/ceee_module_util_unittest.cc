@@ -22,8 +22,8 @@
 #include "ceee/testing/utils/mock_win32.h"
 #include "ceee/testing/utils/test_utils.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace {
 
@@ -130,7 +130,8 @@ TEST_F(CeeeModuleUtilTest, ExtensionPathTestNoRegistry) {
   file_util::Delete(temp_path, true);
 }
 
-TEST_F(CeeeModuleUtilTest, ExtensionPathTest) {
+// http://code.google.com/p/chromium/issues/detail?id=62856
+TEST_F(CeeeModuleUtilTest, FLAKY_ExtensionPathTest) {
   namespace cmu = ceee_module_util;
 
   // The FilePath::Get method shouldn't be called if we take the value

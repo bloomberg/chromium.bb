@@ -14,6 +14,13 @@
 #include "ceee/common/process_utils_win.h"
 #include "chrome/installer/util/google_update_constants.h"
 
+#include "version.h"  // NOLINT
+
+// TODO(joi@chromium.org): would be nice to move these (and non-L counterparts)
+// to e.g. base/string_util.h
+#define LSTRINGIZE2(x) L ## #x
+#define LSTRINGIZE(x) LSTRINGIZE2(x)
+
 namespace {
 
 const wchar_t* kRegistryPath = L"SOFTWARE\\Google\\CEEE";
@@ -21,6 +28,8 @@ const wchar_t* kRegistryValueToolbandIsHidden = L"toolband_is_hidden";
 const wchar_t* kRegistryValueToolbandPlaced = L"toolband_placed";
 const wchar_t* kRegistryValueCrxInstalledPath = L"crx_installed_path";
 const wchar_t* kRegistryValueCrxInstalledTime = L"crx_installed_time";
+const wchar_t* kRegistryValueCrxInstalledByVersion =
+    L"crx_installed_runtime_version";
 
 // Global state needed by the BHO and the
 // toolband, to indicate whether ShowDW calls should affect
@@ -173,10 +182,22 @@ bool NeedToInstallExtension() {
     if (crx_path == GetInstalledExtensionPath()) {
       base::Time installed_time;
       base::PlatformFileInfo extension_info;
-      const bool success = file_util::GetFileInfo(crx_path, &extension_info);
+      bool success = file_util::GetFileInfo(crx_path, &extension_info);
       // If the call above didn't succeed, assume we need to install.
-      return !success ||
-          extension_info.last_modified > GetInstalledExtensionTime();
+      if (!success ||
+          extension_info.last_modified > GetInstalledExtensionTime()) {
+        return true;
+      } else {
+        // We also check that the current version of Chrome was the one
+        // that attempted installation; if not, changes such as a change
+        // in the location of a profile directory might have occurred, and
+        // we might need to retry installation.
+        std::wstring version_string;
+        base::win::RegKey hkcu(HKEY_CURRENT_USER, kRegistryPath, KEY_READ);
+        success = hkcu.ReadValue(
+            kRegistryValueCrxInstalledByVersion, &version_string);
+        return !success || version_string != LSTRINGIZE(CHROME_VERSION_STRING);
+      }
     }
 
     return true;
@@ -201,6 +222,9 @@ void SetInstalledExtensionPath(const FilePath& path) {
   write_result = key.WriteValue(kRegistryValueCrxInstalledPath,
                                 path.value().c_str());
   DCHECK(write_result);
+
+  write_result = key.WriteValue(kRegistryValueCrxInstalledByVersion,
+                                LSTRINGIZE(CHROME_VERSION_STRING));
 }
 
 bool IsCrxOrEmpty(const std::wstring& path) {
