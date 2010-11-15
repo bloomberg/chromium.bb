@@ -42,10 +42,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   virtual void SetUp() {
     FilePath pdf_path;
     PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-#if !defined(OS_MACOSX)
-    // http://crbug.com/61258: renderer always crashes on Mac.
     have_plugin_ = file_util::PathExists(pdf_path);
-#endif
     InProcessBrowserTest::SetUp();
   }
 
@@ -185,9 +182,16 @@ class PDFBrowserTest : public InProcessBrowserTest,
   FilePath snapshot_filename_;
 };
 
+#if defined(OS_MACOSX)
+// See http://crbug.com/63223
+#define MAYBE_Basic FLAKY_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
 // Tests basic PDF rendering.  This can be broken depending on bad merges with
 // the vendor, so it's important that we have basic sanity checking.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
   if (!have_plugin())
     return;
 
@@ -196,8 +200,15 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Basic) {
   ASSERT_NO_FATAL_FAILURE(VerifySnapshot("pdf_browsertest.png"));
 }
 
+#if defined(OS_MACOSX)
+// See http://crbug.com/63223
+#define MAYBE_Scroll FLAKY_Scroll
+#else
+#define MAYBE_Scroll Scroll
+#endif
+
 // Tests that scrolling works.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Scroll) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   if (!have_plugin())
     return;
 
@@ -216,7 +227,14 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Scroll) {
   ASSERT_NO_FATAL_FAILURE(VerifySnapshot("pdf_browsertest_scroll.png"));
 }
 
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FindAndCopy) {
+#if defined(OS_MACOSX)
+// See http://crbug.com/63223
+#define MAYBE_FindAndCopy FLAKY_FindAndCopy
+#else
+#define MAYBE_FindAndCopy FindAndCopy
+#endif
+
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   if (!have_plugin())
     return;
 

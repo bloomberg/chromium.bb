@@ -145,8 +145,14 @@ bool FSRefFromPath(const std::string& path, FSRef* ref) {
   return status == noErr;
 }
 
+static bool g_override_am_i_bundled = false;
+static bool g_override_am_i_bundled_value = false;
+
 // Adapted from http://developer.apple.com/carbon/tipsandtricks.html#AmIBundled
-bool AmIBundled() {
+static bool UncachedAmIBundled() {
+  if (g_override_am_i_bundled)
+    return g_override_am_i_bundled_value;
+
   ProcessSerialNumber psn = {0, kCurrentProcess};
 
   FSRef fsref;
@@ -165,6 +171,23 @@ bool AmIBundled() {
   }
 
   return info.nodeFlags & kFSNodeIsDirectoryMask;
+}
+
+bool AmIBundled() {
+  // If the return value is not cached, this function will return different
+  // values depending on when it's called. This confuses some client code, see
+  // http://crbug.com/63183 .
+  static bool result = UncachedAmIBundled();
+  DCHECK_EQ(result, UncachedAmIBundled())
+      << "The return value of AmIBundled() changed. This will confuse tests. "
+      << "Call SetAmIBundled() override manually if your test binary "
+      << "delay-loads the framework.";
+  return result;
+}
+
+void SetOverrideAmIBundled(bool value) {
+  g_override_am_i_bundled = true;
+  g_override_am_i_bundled_value = value;
 }
 
 bool IsBackgroundOnlyProcess() {

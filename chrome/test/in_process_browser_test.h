@@ -110,7 +110,7 @@ class InProcessBrowserTest : public testing::Test {
   virtual void CleanUpOnMainThread() {}
 
   // Returns the testing server. Guaranteed to be non-NULL.
-  net::TestServer* test_server() { return &test_server_; }
+  net::TestServer* test_server() { return test_server_.get(); }
 
   // Creates a browser with a single tab (about:blank), waits for the tab to
   // finish loading and shows the browser.
@@ -153,7 +153,7 @@ class InProcessBrowserTest : public testing::Test {
   Browser* browser_;
 
   // Testing server, started on demand.
-  net::TestServer test_server_;
+  scoped_ptr<net::TestServer> test_server_;
 
   // Whether this test requires the browser windows to be shown (interactive
   // tests for example need the windows shown).

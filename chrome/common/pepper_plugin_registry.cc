@@ -153,7 +153,7 @@ void PepperPluginRegistry::GetInternalPluginInfo(
   // RendererMain() and BrowserMain().  This seemed like the better tradeoff.
   //
   // TODO(ajwong): Think up a better way to maintain the plugin registration
-  // information. Pehraps by construction of a singly linked list of
+  // information. Perhaps by construction of a singly linked list of
   // plugin initializers that is built with static initializers?
 
 #if defined(ENABLE_REMOTING)

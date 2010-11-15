@@ -50,6 +50,7 @@ bool FSRefFromPath(const std::string& path, FSRef* ref);
 
 // Returns true if the application is running from a bundle
 bool AmIBundled();
+void SetOverrideAmIBundled(bool value);
 
 // Returns true if this process is marked as a "Background only process".
 bool IsBackgroundOnlyProcess();

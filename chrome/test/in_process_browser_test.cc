@@ -43,13 +43,17 @@
 #include "net/test/test_server.h"
 #include "sandbox/src/dep.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/views/frame/browser_view.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/views/frame/browser_view.h"
+#endif
 
 namespace {
 
@@ -75,12 +79,32 @@ static const char kBrowserTestType[] = "browser";
 
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
-      test_server_(net::TestServer::TYPE_HTTP,
-                   FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
       show_window_(false),
       dom_automation_enabled_(false),
       tab_closeable_state_watcher_enabled_(false),
       original_single_process_(false) {
+#if defined(OS_MACOSX)
+  mac_util::SetOverrideAmIBundled(true);
+#endif
+
+  // Before we run the browser, we have to hack the path to the exe to match
+  // what it would be if Chrome was running, because it is used to fork renderer
+  // processes, on Linux at least (failure to do so will cause a browser_test to
+  // be run instead of a renderer).
+  FilePath chrome_path;
+  CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
+  chrome_path = chrome_path.DirName();
+#if defined(OS_WIN)
+  chrome_path = chrome_path.Append(chrome::kBrowserProcessExecutablePath);
+#elif defined(OS_POSIX)
+  chrome_path = chrome_path.Append(
+      WideToASCII(chrome::kBrowserProcessExecutablePath));
+#endif
+  CHECK(PathService::Override(base::FILE_EXE, chrome_path));
+
+  test_server_.reset(new net::TestServer(
+      net::TestServer::TYPE_HTTP,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data"))));
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() {
@@ -154,9 +178,6 @@ void InProcessBrowserTest::SetUp() {
   // they'll try to use browser_tests which doesn't contain ChromeMain.
   FilePath subprocess_path;
   PathService::Get(base::FILE_EXE, &subprocess_path);
-  subprocess_path = subprocess_path.DirName();
-  subprocess_path = subprocess_path.AppendASCII(WideToASCII(
-      chrome::kBrowserProcessExecutablePath));
 #if defined(OS_MACOSX)
   // Recreate the real environment, run the helper within the app bundle.
   subprocess_path = subprocess_path.DirName().DirName();
@@ -204,21 +225,6 @@ void InProcessBrowserTest::SetUp() {
       host_resolver_.get());
 
   SetUpInProcessBrowserTestFixture();
-
-  // Before we run the browser, we have to hack the path to the exe to match
-  // what it would be if Chrome was running, because it is used to fork renderer
-  // processes, on Linux at least (failure to do so will cause a browser_test to
-  // be run instead of a renderer).
-  FilePath chrome_path;
-  CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
-  chrome_path = chrome_path.DirName();
-#if defined(OS_WIN)
-  chrome_path = chrome_path.Append(chrome::kBrowserProcessExecutablePath);
-#elif defined(OS_POSIX)
-  chrome_path = chrome_path.Append(
-      WideToASCII(chrome::kBrowserProcessExecutablePath));
-#endif
-  CHECK(PathService::Override(base::FILE_EXE, chrome_path));
 
   BrowserMain(params);
   TearDownInProcessBrowserTestFixture();
