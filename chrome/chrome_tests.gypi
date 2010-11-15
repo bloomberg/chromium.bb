@@ -828,6 +828,7 @@
             'chrome_nacl_win64',
             'crash_service',  # run time dependency
             'nacl_security_tests', # run time dependency
+            'nacl_security_tests64', # run time dependency
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
             '../views/views.gyp:views',
