@@ -38,6 +38,7 @@ ClientSideDetectionService::ClientSideDetectionService(
     : model_path_(model_path),
       model_status_(UNKNOWN_STATUS),
       model_file_(base::kInvalidPlatformFileValue),
+      model_fetcher_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       request_context_getter_(request_context_getter) {
 }
@@ -47,7 +48,6 @@ ClientSideDetectionService::~ClientSideDetectionService() {
   STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
                                  client_phishing_reports_.end());
   client_phishing_reports_.clear();
-  model_fetcher_.reset();
   STLDeleteElements(&open_callbacks_);
   CloseModelFile();
 }
@@ -102,14 +102,17 @@ void ClientSideDetectionService::OnURLFetchComplete(
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {
-  if (source == model_fetcher_.get()) {
+  if (source == model_fetcher_) {
     HandleModelResponse(source, url, status, response_code, cookies, data);
+    // The fetcher object will be invalid after this method returns.
+    model_fetcher_ = NULL;
   } else if (client_phishing_reports_.find(source) !=
              client_phishing_reports_.end()) {
     HandlePhishingVerdict(source, url, status, response_code, cookies, data);
   } else {
     NOTREACHED();
   }
+  delete source;
 }
 
 void ClientSideDetectionService::SetModelStatus(ModelStatus status) {
@@ -136,10 +139,10 @@ void ClientSideDetectionService::OpenModelFileDone(
     SetModelStatus(READY_STATUS);
   } else if (base::PLATFORM_FILE_ERROR_NOT_FOUND == error_code) {
     // We need to fetch the model since it does not exist yet.
-    model_fetcher_.reset(URLFetcher::Create(0 /* ID is not used */,
-                                            GURL(kClientModelUrl),
-                                            URLFetcher::GET,
-                                            this));
+    model_fetcher_ = URLFetcher::Create(0 /* ID is not used */,
+                                        GURL(kClientModelUrl),
+                                        URLFetcher::GET,
+                                        this);
     model_fetcher_->set_request_context(request_context_getter_.get());
     model_fetcher_->Start();
   } else {

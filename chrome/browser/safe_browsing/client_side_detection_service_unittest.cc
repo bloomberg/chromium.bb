@@ -161,6 +161,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   // Valid thumbnail but the server returns an error.
   thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
   ASSERT_TRUE(thumbnail.allocPixels());
+  thumbnail.eraseRGB(255, 0, 0);
   SetClientReportPhishingResponse("", false /* fail */);
   EXPECT_FALSE(SendClientReportPhishingRequest(url, score, thumbnail));
 

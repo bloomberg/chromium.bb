@@ -3278,33 +3278,6 @@
    fun:clone
 }
 {
-   bug_62943 (Cond)
-   Memcheck:Cond
-   ...
-   fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
-   fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
-   fun:_ZN13safe_browsing26ClientSideDetectionService32StartClientReportPhishingRequestERK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS1_bEE
-   fun:_Z16DispatchToMethodIN13safe_browsing26ClientSideDetectionServiceEMS1_FvRK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS2_bEEES2_dS5_SA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-}
-{
-   bug_62943 (Value4)
-   Memcheck:Value4
-   ...
-   fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
-   fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
-   fun:_ZN13safe_browsing26ClientSideDetectionService32StartClientReportPhishingRequestERK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS1_bEE
-   fun:_Z16DispatchToMethodIN13safe_browsing26ClientSideDetectionServiceEMS1_FvRK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS2_bEEES2_dS5_SA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-}
-{
-   bug_62943 (Leak)
-   Memcheck:Leak
-   ...
-   fun:_ZN21FakeURLFetcherFactory16CreateURLFetcherEiRK4GURLN10URLFetcher11RequestTypeEPNS3_8DelegateE
-   fun:_ZN10URLFetcher6CreateEiRK4GURLNS_11RequestTypeEPNS_8DelegateE
-   fun:_ZN13safe_browsing26ClientSideDetectionService32StartClientReportPhishingRequestERK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS1_bEE
-   fun:_Z16DispatchToMethodIN13safe_browsing26ClientSideDetectionServiceEMS1_FvRK4GURLd8SkBitmapP14CallbackRunnerI6Tuple2IS2_bEEES2_dS5_SA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-}
-{
    bug_63015
    Memcheck:Addr2
    fun:_ZN7WebCore18stringToLengthTypeERPKtS1_
