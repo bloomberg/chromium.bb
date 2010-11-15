@@ -213,8 +213,8 @@ TEST(MetricsLogTest, CreateHash) {
     // the metrics server uses.
     std::string hash_hex = "0x";
     for (size_t j = 0; j < 8; j++) {
-      StringAppendF(&hash_hex, "%02x",
-                    static_cast<uint8>(hash_string.data()[j]));
+      base::StringAppendF(&hash_hex, "%02x",
+                          static_cast<uint8>(hash_string.data()[j]));
     }
     EXPECT_EQ(cases[i].output, hash_hex);
   }

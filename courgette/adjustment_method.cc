@@ -81,11 +81,11 @@ struct OrderLabelInfoByAddressAscending {
 
 static std::string ToString(LabelInfo* info) {
   std::string s;
-  StringAppendF(&s, "%c%d", "pm"[info->is_model_], info->debug_index_);
+  base::StringAppendF(&s, "%c%d", "pm"[info->is_model_], info->debug_index_);
   if (info->label_->index_ != Label::kNoIndex)
-    StringAppendF(&s, " (%d)", info->label_->index_);
+    base::StringAppendF(&s, " (%d)", info->label_->index_);
 
-  StringAppendF(&s, " #%u", info->refs_);
+  base::StringAppendF(&s, " #%u", info->refs_);
   return s;
 }
 

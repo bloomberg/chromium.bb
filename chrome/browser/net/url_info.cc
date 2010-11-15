@@ -251,10 +251,10 @@ static std::string HoursMinutesSeconds(int seconds) {
   int print_minutes = minutes % 60;
   int print_hours = minutes/60;
   if (print_hours)
-    StringAppendF(&result, "%.2d:",  print_hours);
+    base::StringAppendF(&result, "%.2d:",  print_hours);
   if (print_hours || print_minutes)
-    StringAppendF(&result, "%2.2d:",  print_minutes);
-  StringAppendF(&result, "%2.2d",  print_seconds);
+    base::StringAppendF(&result, "%2.2d:",  print_minutes);
+  base::StringAppendF(&result, "%2.2d",  print_seconds);
   return result;
 }
 
@@ -266,8 +266,8 @@ void UrlInfo::GetHtmlTable(const UrlInfoTable host_infos,
   if (0 == host_infos.size())
     return;
   output->append(description);
-  StringAppendF(output, "%" PRIuS " %s", host_infos.size(),
-                (1 == host_infos.size()) ? "hostname" : "hostnames");
+  base::StringAppendF(output, "%" PRIuS " %s", host_infos.size(),
+                      (1 == host_infos.size()) ? "hostname" : "hostnames");
 
   if (brief) {
     output->append("<br><br>");
@@ -291,18 +291,21 @@ void UrlInfo::GetHtmlTable(const UrlInfoTable host_infos,
   for (UrlInfoTable::const_iterator it(host_infos.begin());
        it != host_infos.end(); it++) {
     queue.sample((it->queue_duration_.InMilliseconds()));
-    StringAppendF(output, row_format,
-                  RemoveJs(it->url_.spec()).c_str(),
-                  HoursMinutesSeconds(when.sample(
-                      (current_time - it->time_).InSeconds())).c_str(),
-                  it->GetAsciiMotivation().c_str());
+    base::StringAppendF(
+        output,
+        row_format,
+        RemoveJs(it->url_.spec()).c_str(),
+                 HoursMinutesSeconds(when.sample(
+                     (current_time - it->time_).InSeconds())).c_str(),
+        it->GetAsciiMotivation().c_str());
   }
   output->append("</table>");
 
 #ifndef NDEBUG
-  StringAppendF(output,
-                "Prefetch Queue Durations: min=%d, avg=%d, max=%d<br><br>",
-                queue.minimum(), queue.average(), queue.maximum());
+  base::StringAppendF(
+      output,
+      "Prefetch Queue Durations: min=%d, avg=%d, max=%d<br><br>",
+      queue.minimum(), queue.average(), queue.maximum());
 #endif
 
   output->append("<br>");

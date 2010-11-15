@@ -107,7 +107,7 @@ class ShutdownTest : public UIPerfTest {
 
     std::string times;
     for (int i = 0; i < numCycles; ++i)
-      StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
+      base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
     PrintResultList(graph, "", trace, times, "ms", important);
   }
 };

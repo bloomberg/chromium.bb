@@ -55,7 +55,7 @@ bool IsBlacklistedBySha1sum(const FilePath& path) {
     std::string sha1 = base::SHA1HashString(file_content);
     std::string sha1_readable;
     for (size_t j = 0; j < sha1.size(); j++)
-      StringAppendF(&sha1_readable, "%02x", sha1[j] & 0xFF);
+      base::StringAppendF(&sha1_readable, "%02x", sha1[j] & 0xFF);
     if (bad_entries[i].sha1 == sha1_readable)
       return true;
   }

@@ -94,7 +94,7 @@ bool Sandbox::QuotePlainString(const std::string& src_utf8, std::string* dst) {
     if (c < 32 || c > 126) {
       // Any characters that aren't printable ASCII get the \u treatment.
       unsigned int as_uint = static_cast<unsigned int>(c);
-      StringAppendF(dst, "\\u%04X", as_uint);
+      base::StringAppendF(dst, "\\u%04X", as_uint);
       continue;
     }
 

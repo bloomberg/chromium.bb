@@ -55,7 +55,7 @@ std::string BuildOSCpuInfo() {
   }
 #endif
 
-  StringAppendF(
+  base::StringAppendF(
       &os_cpu,
 #if defined(OS_WIN)
       "Windows NT %d.%d",
@@ -91,12 +91,12 @@ std::string MakeUserAgentForServiceProcess() {
   std::string extra_version_info;
   if (!version_info.IsOfficialBuild())
     extra_version_info = "-devel";
-  StringAppendF(&user_agent,
-                "Chrome Service %s(%s)%s %s ",
-                version_info.Version().c_str(),
-                version_info.LastChange().c_str(),
-                extra_version_info.c_str(),
-                BuildOSCpuInfo().c_str());
+  base::StringAppendF(&user_agent,
+                      "Chrome Service %s(%s)%s %s ",
+                      version_info.Version().c_str(),
+                      version_info.LastChange().c_str(),
+                      extra_version_info.c_str(),
+                      BuildOSCpuInfo().c_str());
   return user_agent;
 }
 

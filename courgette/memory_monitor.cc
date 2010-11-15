@@ -47,8 +47,8 @@ struct H {
     }
     if (!print) return;
     std::string o;
-    StringAppendF(&o, "%u:", tick_ + d_tick_);
-    StringAppendF(&o, " (%c%s)", sign, fmt(w).c_str());
+    base::StringAppendF(&o, "%u:", tick_ + d_tick_);
+    base::StringAppendF(&o, " (%c%s)", sign, fmt(w).c_str());
     size_t sum = 0;
     for (M::iterator p = c_.begin(); p != c_.end(); ++p) {
       size_t s = p->first;
@@ -56,13 +56,13 @@ struct H {
       if (n) {
         if (s*n >= 64*1024)
           if (n == 1)
-            StringAppendF(&o, "  %s", fmt(s).c_str());
+            base::StringAppendF(&o, "  %s", fmt(s).c_str());
           else
-            StringAppendF(&o, "  %s*%u", fmt(s).c_str(), n);
+            base::StringAppendF(&o, "  %s*%u", fmt(s).c_str(), n);
         sum += s*n;
         }
     }
-    StringAppendF(&o, "  = %s", fmt(sum).c_str());
+    base::StringAppendF(&o, "  = %s", fmt(sum).c_str());
     LOG(INFO) << o;
     //printf("%s\n", o.c_str());
     if (sum > 200*1024*1024) {

@@ -88,11 +88,11 @@ void AddHTMLListItem(const std::string& element_title,
 void AddHTMLButton(const std::string& title,
                    const std::string& command,
                    std::string* out) {
-  StringAppendF(out,
-                "<input type=\"button\" value=\"%s\" "
-                    "onclick=\"SubmitCommand('%s')\" />",
-                title.c_str(),
-                command.c_str());
+  base::StringAppendF(out,
+                      "<input type=\"button\" value=\"%s\" "
+                      "onclick=\"SubmitCommand('%s')\" />",
+                      title.c_str(),
+                      command.c_str());
 }
 
 }  // namespace

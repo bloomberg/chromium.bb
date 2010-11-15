@@ -576,8 +576,9 @@ class AutomationProxyTest3 : public UITest {
 
 std::wstring CreateJSStringForDOMQuery(const std::wstring& id) {
   std::wstring jscript(L"window.domAutomationController");
-  StringAppendF(&jscript, L".send(document.getElementById('%ls').nodeName);",
-                id.c_str());
+  base::StringAppendF(&jscript,
+                      L".send(document.getElementById('%ls').nodeName);",
+                      id.c_str());
   return jscript;
 }
 

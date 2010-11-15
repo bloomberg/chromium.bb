@@ -202,8 +202,11 @@ class StartupTest : public UIPerfTest {
     }
 
     std::string times;
-    for (int i = 0; i < numCycles; ++i)
-      StringAppendF(&times, "%.2f,", timings[i].end_to_end.InMillisecondsF());
+    for (int i = 0; i < numCycles; ++i) {
+      base::StringAppendF(&times,
+                          "%.2f,",
+                          timings[i].end_to_end.InMillisecondsF());
+    }
     PrintResultList(graph, "", trace, times, "ms", important);
 
     if (num_tabs > 0) {
@@ -213,13 +216,13 @@ class StartupTest : public UIPerfTest {
       times.clear();
       name = name_base + "-start";
       for (int i = 0; i < numCycles; ++i)
-        StringAppendF(&times, "%.2f,", timings[i].first_start_ms);
+        base::StringAppendF(&times, "%.2f,", timings[i].first_start_ms);
       PrintResultList(graph, "", name.c_str(), times, "ms", important);
 
       times.clear();
       name = name_base + "-first";
       for (int i = 0; i < numCycles; ++i)
-        StringAppendF(&times, "%.2f,", timings[i].first_stop_ms);
+        base::StringAppendF(&times, "%.2f,", timings[i].first_stop_ms);
       PrintResultList(graph, "", name.c_str(), times, "ms", important);
 
       if (nth_timed_tab > 0) {
@@ -227,7 +230,7 @@ class StartupTest : public UIPerfTest {
         times.clear();
         name = name_base + "-" + base::IntToString(nth_timed_tab);
         for (int i = 0; i < numCycles; ++i)
-          StringAppendF(&times, "%.2f,", timings[i].nth_tab_stop_ms);
+          base::StringAppendF(&times, "%.2f,", timings[i].nth_tab_stop_ms);
         PrintResultList(graph, "", name.c_str(), times, "ms", important);
       }
 
@@ -236,7 +239,7 @@ class StartupTest : public UIPerfTest {
         times.clear();
         name = name_base + "-all";
         for (int i = 0; i < numCycles; ++i)
-          StringAppendF(&times, "%.2f,", timings[i].last_stop_ms);
+          base::StringAppendF(&times, "%.2f,", timings[i].last_stop_ms);
         PrintResultList(graph, "", name.c_str(), times, "ms", important);
       }
     }

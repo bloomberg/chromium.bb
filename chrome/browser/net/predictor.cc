@@ -361,14 +361,16 @@ void Predictor::GetHtmlReferrerLists(std::string* output) {
     for (Referrer::iterator future_url = referrer->begin();
          future_url != referrer->end(); ++future_url) {
       output->append("<tr align=right>");
-      if (first_set_of_futures)
-        StringAppendF(output, "<td rowspan=%d>%s</td><td rowspan=%d>%d</td>",
-                      static_cast<int>(referrer->size()),
-                      it->spec().c_str(),
-                      static_cast<int>(referrer->size()),
-                      static_cast<int>(referrer->use_count()));
+      if (first_set_of_futures) {
+        base::StringAppendF(output,
+                            "<td rowspan=%d>%s</td><td rowspan=%d>%d</td>",
+                            static_cast<int>(referrer->size()),
+                            it->spec().c_str(),
+                            static_cast<int>(referrer->size()),
+                            static_cast<int>(referrer->use_count()));
+      }
       first_set_of_futures = false;
-      StringAppendF(output,
+      base::StringAppendF(output,
           "<td>%d</td><td>%d</td><td>%d</td><td>%2.3f</td><td>%s</td></tr>",
           static_cast<int>(future_url->second.navigation_count()),
           static_cast<int>(future_url->second.preconnection_count()),

@@ -88,8 +88,8 @@ FilePath TextDatabase::IDToFileName(DBIdent id) {
   // scheme: the caller should assign IDs as it feels fit with the knowledge
   // that they will apppear on disk in this form.
   FilePath::StringType filename(file_base());
-  StringAppendF(&filename, FILE_PATH_LITERAL("%d-%02d"),
-                id / 100, id % 100);
+  base::StringAppendF(&filename, FILE_PATH_LITERAL("%d-%02d"),
+                      id / 100, id % 100);
   return FilePath(filename);
 }
 

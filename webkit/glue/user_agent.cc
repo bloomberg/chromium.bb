@@ -52,7 +52,7 @@ std::string BuildOSCpuInfo() {
   }
 #endif
 
-  StringAppendF(
+  base::StringAppendF(
       &os_cpu,
 #if defined(OS_WIN)
       "Windows NT %d.%d",
@@ -102,7 +102,7 @@ void BuildUserAgent(bool mimic_windows, std::string* result) {
   std::string product = GetProductVersion();
 
   // Derived from Safari's UA string.
-  StringAppendF(
+  base::StringAppendF(
       result,
       "Mozilla/5.0 (%s; %c; %s; %s) AppleWebKit/%d.%d"
       " (KHTML, like Gecko) %s Safari/%d.%d",

@@ -148,7 +148,7 @@ URLRequestContextGetter* CloudPrintURLFetcher::GetRequestContextGetter() {
       new ServiceURLRequestContextGetter();
   // Now set up the user agent for cloudprint.
   std::string user_agent = getter->user_agent();
-  StringAppendF(&user_agent, " %s", kCloudPrintUserAgent);
+  base::StringAppendF(&user_agent, " %s", kCloudPrintUserAgent);
   getter->set_user_agent(user_agent);
   return getter;
 }

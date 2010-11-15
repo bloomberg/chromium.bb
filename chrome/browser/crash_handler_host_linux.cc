@@ -256,8 +256,8 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     // /proc/[pid]/syscall is formatted as follows:
     // syscall_number arg1 ... arg6 sp pc
     // but we just check syscall_number through arg3.
-    StringAppendF(&expected_syscall_data, "%d 0x%x %p 0x1 ",
-                  SYS_read, tid_fd, tid_buf_addr);
+    base::StringAppendF(&expected_syscall_data, "%d 0x%x %p 0x1 ",
+                        SYS_read, tid_fd, tid_buf_addr);
     pid_t crashing_tid =
         base::FindThreadIDWithSyscall(crashing_pid, expected_syscall_data);
     if (crashing_tid == -1) {

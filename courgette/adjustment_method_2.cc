@@ -202,11 +202,11 @@ typedef std::vector<LabelInfo*> Trace;
 
 std::string ToString(const LabelInfo* info) {
   std::string s;
-  StringAppendF(&s, "%c%d", "pm"[info->is_model_], info->debug_index_);
+  base::StringAppendF(&s, "%c%d", "pm"[info->is_model_], info->debug_index_);
   if (info->label_->index_ != Label::kNoIndex)
-    StringAppendF(&s, " (%d)", info->label_->index_);
+    base::StringAppendF(&s, " (%d)", info->label_->index_);
 
-  StringAppendF(&s, " #%u", info->refs_);
+  base::StringAppendF(&s, " #%u", info->refs_);
   return s;
 }
 
@@ -431,13 +431,14 @@ std::string ToString(const Shingle* instance) {
   std::string s;
   const char* sep = "<";
   for (size_t i = 0; i < Shingle::kWidth; ++i) {
-    // StringAppendF(&s, "%s%x ", sep, instance.at(i)->label_->rva_);
+    // base::StringAppendF(&s, "%s%x ", sep, instance.at(i)->label_->rva_);
     s += sep;
     s += ToString(instance->at(i));
     sep = ", ";
   }
-  StringAppendF(&s, ">(%" PRIuS ")@{%" PRIuS "}", instance->exemplar_position_,
-                instance->position_count());
+  base::StringAppendF(&s, ">(%" PRIuS ")@{%" PRIuS "}",
+                      instance->exemplar_position_,
+                      instance->position_count());
   return s;
 }
 
@@ -523,7 +524,7 @@ std::string ToString(const ShinglePattern::Index* index) {
   if (index == NULL) {
     s = "<null>";
   } else {
-    StringAppendF(&s, "<%d: ", index->variables_);
+    base::StringAppendF(&s, "<%d: ", index->variables_);
     const char* sep = "";
     for (size_t i = 0;  i < Shingle::kWidth;  ++i) {
       s += sep;
@@ -531,11 +532,11 @@ std::string ToString(const ShinglePattern::Index* index) {
       uint32 kind = index->kinds_[i];
       int offset = kind & ShinglePattern::kOffsetMask;
       if (kind & ShinglePattern::kVariable)
-        StringAppendF(&s, "V%d", offset);
+        base::StringAppendF(&s, "V%d", offset);
       else
-        StringAppendF(&s, "%d", index->assigned_indexes_[offset]);
+        base::StringAppendF(&s, "%d", index->assigned_indexes_[offset]);
      }
-    StringAppendF(&s, " %x", index->hash_);
+    base::StringAppendF(&s, " %x", index->hash_);
     s += ">";
   }
   return s;
@@ -553,7 +554,7 @@ std::string HistogramToString(const ShinglePattern::Histogram& histogram,
       s += " ...";
       break;
     }
-    StringAppendF(&s, " %" PRIuS, p->count());
+    base::StringAppendF(&s, " %" PRIuS, p->count());
   }
   return s;
 }
@@ -573,7 +574,7 @@ std::string HistogramToStringFull(const ShinglePattern::Histogram& histogram,
       s += "...\n";
       break;
     }
-    StringAppendF(&s, "(%" PRIuS ") ", p->count());
+    base::StringAppendF(&s, "(%" PRIuS ") ", p->count());
     s += ToString(&(*p->instance()));
     s += "\n";
   }
@@ -587,14 +588,14 @@ std::string ToString(const ShinglePattern* pattern, size_t snippet_max = 3) {
   } else {
     s = "{";
     s += ToString(pattern->index_);
-    StringAppendF(&s, ";  %d(%d):",
-                  static_cast<int>(pattern->model_histogram_.size()),
-                  pattern->model_coverage_);
+    base::StringAppendF(&s, ";  %d(%d):",
+                        static_cast<int>(pattern->model_histogram_.size()),
+                        pattern->model_coverage_);
 
     s += HistogramToString(pattern->model_histogram_, snippet_max);
-    StringAppendF(&s, ";  %d(%d):",
-                  static_cast<int>(pattern->program_histogram_.size()),
-                  pattern->program_coverage_);
+    base::StringAppendF(&s, ";  %d(%d):",
+                        static_cast<int>(pattern->program_histogram_.size()),
+                        pattern->program_coverage_);
     s += HistogramToString(pattern->program_histogram_, snippet_max);
     s += "}";
   }
@@ -608,9 +609,9 @@ std::string ShinglePatternToStringFull(const ShinglePattern* pattern,
   s += "\n";
   size_t model_size = pattern->model_histogram_.size();
   size_t program_size = pattern->program_histogram_.size();
-  StringAppendF(&s, "  model shingles %" PRIuS "\n", model_size);
+  base::StringAppendF(&s, "  model shingles %" PRIuS "\n", model_size);
   s += HistogramToStringFull(pattern->model_histogram_, "    ", max);
-  StringAppendF(&s, "  program shingles %" PRIuS "\n", program_size);
+  base::StringAppendF(&s, "  program shingles %" PRIuS "\n", program_size);
   s += HistogramToStringFull(pattern->program_histogram_, "    ", max);
   return s;
 }

@@ -401,12 +401,13 @@ std::string SelectFileDialogImpl::FileBrowseDelegate::GetDialogArgs() const {
     for (size_t j = 0; j < file_types_.extensions[i].size(); ++j) {
       if (!exts.empty())
         exts.append(",");
-      StringAppendF(&exts, "\"%s\"", file_types_.extensions[i][j].c_str());
+      base::StringAppendF(&exts, "\"%s\"",
+                          file_types_.extensions[i][j].c_str());
     }
 
     if (!exts_list.empty())
       exts_list.append(",");
-    StringAppendF(&exts_list, "[%s]", exts.c_str());
+    base::StringAppendF(&exts_list, "[%s]", exts.c_str());
 
     std::string desc;
     if (i < file_types_.extension_description_overrides.size()) {
@@ -423,7 +424,7 @@ std::string SelectFileDialogImpl::FileBrowseDelegate::GetDialogArgs() const {
 
     if (!desc_list.empty())
       desc_list.append(",");
-    StringAppendF(&desc_list, "\"%s\"", desc.c_str());
+    base::StringAppendF(&desc_list, "\"%s\"", desc.c_str());
   }
 
   std::string filename = default_path_.BaseName().value();

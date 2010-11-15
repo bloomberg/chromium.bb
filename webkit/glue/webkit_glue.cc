@@ -157,11 +157,11 @@ std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
 
   if (offset.width() > 0 || offset.height() > 0) {
     if (web_frame->parent()) {
-      StringAppendF(&result, L"frame '%ls' ", UTF16ToWide(
+      base::StringAppendF(&result, L"frame '%ls' ", UTF16ToWide(
           web_frame->name()).c_str());
     }
-    StringAppendF(&result, L"scrolled to %d,%d\n",
-                  offset.width(), offset.height());
+    base::StringAppendF(&result, L"scrolled to %d,%d\n",
+                        offset.width(), offset.height());
   }
 
   if (recursive) {

@@ -35,7 +35,7 @@ class NewTabUIStartupTest : public UIPerfTest {
                     bool important) {
     std::string times;
     for (int i = 0; i < kNumCycles; ++i)
-      StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
+      base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
     PrintResultList("new_tab", "", label, times, "ms", important);
   }
 

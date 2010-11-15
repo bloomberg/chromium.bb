@@ -66,10 +66,10 @@ void EndHTML(std::string* out) {
 void DrawCommandButton(const std::string& title,
                        const std::string& command,
                        std::string* data) {
-  StringAppendF(data, "<input type=\"button\" value=\"%s\" "
-                "onclick=\"RemoveCommand('%s')\" />",
-                title.c_str(),
-                command.c_str());
+  base::StringAppendF(data, "<input type=\"button\" value=\"%s\" "
+                      "onclick=\"RemoveCommand('%s')\" />",
+                      title.c_str(),
+                      command.c_str());
 }
 
 void AddLiTag(const std::string& element_title,

@@ -348,7 +348,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
 
     std::string times;
     for (int i = 0; i < kNumCycles; ++i)
-      StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
+      base::StringAppendF(&times, "%.2f,", timings[i].InMillisecondsF());
 
     PrintResultList(graph, "", trace, times, "ms", important);
   }
@@ -1382,8 +1382,9 @@ void PrintPerfTestResults(const Monitor* monitor,
 
   for (int i = 0; i < num_cycles; ++i) {
     ASSERT_TRUE(monitor[i].is_valid());
-    StringAppendF(&times, "%.2f,",
-                  monitor[i].duration().InMillisecondsF());
+    base::StringAppendF(&times,
+                        "%.2f,",
+                        monitor[i].duration().InMillisecondsF());
   }
 
   PrintResultList(result_name, "", "t", times, "ms", false);
