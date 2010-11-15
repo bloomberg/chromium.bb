@@ -152,17 +152,20 @@ void GpuProcessHost::EstablishGpuChannel(int renderer_id,
   if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
     sent_requests_.push(ChannelRequest(filter));
   } else {
-    ReplyToRenderer(IPC::ChannelHandle(), GPUInfo(), filter);
+    SendEstablishChannelReply(IPC::ChannelHandle(), GPUInfo(), filter);
   }
 }
 
 void GpuProcessHost::Synchronize(IPC::Message* reply,
                                  ResourceMessageFilter* filter) {
-  queued_synchronization_replies_.push(SynchronizationRequest(reply, filter));
-  Send(new GpuMsg_Synchronize());
+  if (Send(new GpuMsg_Synchronize())) {
+    queued_synchronization_replies_.push(SynchronizationRequest(reply, filter));
+  } else {
+    SendSynchronizationReply(reply, filter);
+  }
 }
 
-GPUInfo GpuProcessHost::gpu_info() const {
+const GPUInfo& GpuProcessHost::gpu_info() const {
   return gpu_info_;
 }
 
@@ -203,7 +206,7 @@ void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle,
     const GPUInfo& gpu_info) {
   const ChannelRequest& request = sent_requests_.front();
-  ReplyToRenderer(channel_handle, gpu_info, request.filter);
+  SendEstablishChannelReply(channel_handle, gpu_info, request.filter);
   sent_requests_.pop();
   gpu_info_ = gpu_info;
   child_process_logging::SetGpuInfo(gpu_info);
@@ -212,7 +215,7 @@ void GpuProcessHost::OnChannelEstablished(
 void GpuProcessHost::OnSynchronizeReply() {
   const SynchronizationRequest& request =
       queued_synchronization_replies_.front();
-  request.filter->Send(request.reply);
+  SendSynchronizationReply(request.reply, request.filter);
   queued_synchronization_replies_.pop();
 }
 
@@ -344,7 +347,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 }
 #endif
 
-void GpuProcessHost::ReplyToRenderer(
+void GpuProcessHost::SendEstablishChannelReply(
     const IPC::ChannelHandle& channel,
     const GPUInfo& gpu_info,
     ResourceMessageFilter* filter) {
@@ -357,6 +360,13 @@ void GpuProcessHost::ReplyToRenderer(
   filter->Send(message);
 }
 
+// Sends the response for synchronization request to the renderer.
+void GpuProcessHost::SendSynchronizationReply(
+    IPC::Message* reply,
+    ResourceMessageFilter* filter) {
+  filter->Send(reply);
+}
+
 URLRequestContext* GpuProcessHost::GetRequestContext(
     uint32 request_id,
     const ViewHostMsg_Resource_Request& request_data) {
@@ -366,3 +376,9 @@ URLRequestContext* GpuProcessHost::GetRequestContext(
 bool GpuProcessHost::CanShutdown() {
   return true;
 }
+
+void GpuProcessHost::OnProcessCrashed() {
+  // TODO(alokp): Update gpu process crash rate.
+  BrowserChildProcessHost::OnProcessCrashed();
+}
+

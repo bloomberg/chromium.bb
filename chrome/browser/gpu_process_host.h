@@ -50,7 +50,8 @@ class GpuProcessHost : public BrowserChildProcessHost {
 
   // Return the stored gpu_info as this class the
   // browser's point of contact with the gpu
-  GPUInfo gpu_info() const;
+  const GPUInfo& gpu_info() const;
+
  private:
   // Used to queue pending channel requests.
   struct ChannelRequest {
@@ -99,9 +100,13 @@ class GpuProcessHost : public BrowserChildProcessHost {
                                           uint64 surface_id);
 #endif
 
-  void ReplyToRenderer(const IPC::ChannelHandle& channel,
-                       const GPUInfo& gpu_info,
-                       ResourceMessageFilter* filter);
+  // Sends the response for establish channel request to the renderer.
+  void SendEstablishChannelReply(const IPC::ChannelHandle& channel,
+                                 const GPUInfo& gpu_info,
+                                 ResourceMessageFilter* filter);
+  // Sends the response for synchronization request to the renderer.
+  void SendSynchronizationReply(IPC::Message* reply,
+                                ResourceMessageFilter* filter);
 
   // ResourceDispatcherHost::Receiver implementation:
   virtual URLRequestContext* GetRequestContext(
@@ -109,6 +114,7 @@ class GpuProcessHost : public BrowserChildProcessHost {
       const ViewHostMsg_Resource_Request& request_data);
 
   virtual bool CanShutdown();
+  virtual void OnProcessCrashed();
 
   bool initialized_;
   bool initialized_successfully_;
