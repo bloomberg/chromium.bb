@@ -1,0 +1,38 @@
+{
+  "name": {"message": "Google Calendar Checker (by Google)"},
+  "description": {"message": "Quickly see the time until your next meeting from any of your calendars. Click on the button to be taken to your calendar."},
+  "title": {"message": "Google Calendar Checker"},
+  "direction": {"message" : "ltr"},
+  "noTitle": {"message" : "(No Title)"},
+  "optionsTitle": {"message" : "Google Calendar Checker"},
+  "minutes": {
+    "message": "$minutes$m",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "hours": {
+    "message": "$hours$h",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      }
+    }
+  },
+  "days": {
+    "message": "$days$d",
+    "placeholders": {
+      "days": {
+        "content": "$1"
+      }
+    }
+  },
+  "multiCalendarText": {"message": "Multi Calendar Support"},
+  "extensionName": {"message": "Google Calendar Checker"},
+  "status_saved": {"message": "Settings Saved."},
+  "status_saving": {"message": "Saving...."},
+  "multiCalendarToolTip": {"message": "Please check the box to enable multiple calendar support"},
+  "imageTooltip": {"message": "Google Calendar"}
+}
