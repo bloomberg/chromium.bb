@@ -438,3 +438,57 @@ TEST(PassiveLogCollectorTest, HoldReferenceToDeletedSource) {
             GetDeadSources(log.url_request_tracker_).size());
 }
 
+// Regression test for http://crbug.com/58847
+TEST(PassiveLogCollectorTest, ReleaseDependencyToUnreferencedSource) {
+  PassiveLogCollector log;
+
+  // If these constants are weird, the test won't be testing the right thing.
+  EXPECT_LT(PassiveLogCollector::RequestTracker::kMaxGraveyardSize,
+            PassiveLogCollector::RequestTracker::kMaxNumSources);
+
+  // Add a "reference" to a non-existant source (sourceID=1706 does not exist).
+  scoped_refptr<net::NetLog::EventParameters> params =
+      new net::NetLogSourceParameter(
+          "source_dependency",
+          net::NetLog::Source(net::NetLog::SOURCE_SOCKET, 1263));
+  log.OnAddEntry(net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
+                 base::TimeTicks(),
+                 net::NetLog::Source(net::NetLog::SOURCE_URL_REQUEST, 1706),
+                 net::NetLog::PHASE_NONE,
+                 params);
+
+  // At this point source 1706 has noted 1263 as a dependency. However the
+  // reference count for 1263 was not adjusted since it doesn't actually exist.
+
+  // Move source 1706 to the graveyard.
+  log.OnAddEntry(net::NetLog::TYPE_REQUEST_ALIVE,
+                 base::TimeTicks(),
+                 net::NetLog::Source(net::NetLog::SOURCE_URL_REQUEST, 1706),
+                 net::NetLog::PHASE_END,
+                 NULL);
+
+  // Now create a source entry for 1263, such that it is unreferenced and
+  // waiting to be garbage collected.
+  log.OnAddEntry(net::NetLog::TYPE_SOCKET_ALIVE,
+                 base::TimeTicks(),
+                 net::NetLog::Source(net::NetLog::SOURCE_SOCKET, 1263),
+                 net::NetLog::PHASE_END, NULL);
+
+  // Add kMaxGraveyardSize  unreferenced URL_REQUESTS, so the circular buffer
+  // containing source 1706. After adding kMaxGraveyardSize - 1 the buffer
+  // will be full. Now when we add one more more source it will now evict the
+  // oldest item, which is 1706. In doing so, 1706 will try to release the
+  // reference it *thinks* it has on 1263. However 1263 has a reference count
+  // of 0 and is already in a graveyard.
+  for (size_t i = 0;
+       i < PassiveLogCollector::RequestTracker::kMaxGraveyardSize; ++i) {
+    log.OnAddEntry(net::NetLog::TYPE_REQUEST_ALIVE,
+                   base::TimeTicks(),
+                   net::NetLog::Source(net::NetLog::SOURCE_URL_REQUEST, i),
+                   net::NetLog::PHASE_END,
+                   NULL);
+  }
+
+  // To pass, this should simply not have DCHECK-ed above.
+}
+

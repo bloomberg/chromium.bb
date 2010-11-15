@@ -181,6 +181,9 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     // Adds |source_id| to the FIFO queue (graveyard) for deletion.
     void AddToDeletionQueue(uint32 source_id);
 
+    // Removes |source_id| from the |deletion_queue_| container.
+    void EraseFromDeletionQueue(uint32 source_id);
+
     // Adds/Releases a reference from the source with ID |source_id|.
     // Use |offset=-1| to do a release, and |offset=1| for an addref.
     void AdjustReferenceCountForSource(int offset, uint32 source_id);
