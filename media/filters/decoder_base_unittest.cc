@@ -67,6 +67,10 @@ class MockDecoderImpl : public media::DecoderBase<
 
   virtual ~MockDecoderImpl() {}
 
+  virtual media::FilterType filter_type() const {
+    return media::FILTER_VIDEO_DECODER;
+  }
+
   // DecoderBase Implementations.
   MOCK_METHOD3(DoInitialize,
                void(media::DemuxerStream* demuxer_stream,

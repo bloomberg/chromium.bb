@@ -43,12 +43,28 @@ class DemuxerStream;
 class FilterHost;
 class MediaFilter;
 
+// Identifies the type of filter implementation. Each filter has to be one of
+// the following types. This is used to identify filter object during
+// initialization of pipeline.
+enum FilterType {
+  FILTER_DATA_SOURCE,
+  FILTER_DEMUXER,
+  FILTER_AUDIO_DECODER,
+  FILTER_VIDEO_DECODER,
+  FILTER_AUDIO_RENDERER,
+  FILTER_VIDEO_RENDERER
+};
+
 // Used for completing asynchronous methods.
 typedef Callback0::Type FilterCallback;
 
 class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
  public:
   MediaFilter();
+
+  // Return the type of this filter. All implementor has to provide this
+  // method.
+  virtual FilterType filter_type() const = 0;
 
   // Return the major mime type for this filter.
   virtual const char* major_mime_type() const;
@@ -130,6 +146,9 @@ class DataSource : public MediaFilter {
 
   virtual bool IsUrlSupported(const std::string& url);
 
+  static FilterType static_filter_type() { return FILTER_DATA_SOURCE; }
+  virtual FilterType filter_type() const;
+
   // Initialize a DataSource for the given URL, executing the callback upon
   // completion.
   virtual void Initialize(const std::string& url, FilterCallback* callback) = 0;
@@ -154,6 +173,9 @@ class DataSource : public MediaFilter {
 
 class Demuxer : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_DEMUXER; }
+  virtual FilterType filter_type() const;
+
   virtual bool requires_message_loop() const;
   virtual const char* message_loop_name() const;
 
@@ -210,6 +232,9 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 
 class VideoDecoder : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_VIDEO_DECODER; }
+  virtual FilterType filter_type() const;
+
   virtual const char* major_mime_type() const;
   virtual bool requires_message_loop() const;
   virtual const char* message_loop_name() const;
@@ -255,6 +280,9 @@ class VideoDecoder : public MediaFilter {
 
 class AudioDecoder : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_AUDIO_DECODER; }
+  virtual FilterType filter_type() const;
+
   virtual const char* major_mime_type() const;
   virtual bool requires_message_loop() const;
   virtual const char* message_loop_name() const;
@@ -294,6 +322,9 @@ class AudioDecoder : public MediaFilter {
 
 class VideoRenderer : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_VIDEO_RENDERER; }
+  virtual FilterType filter_type() const;
+
   virtual const char* major_mime_type() const;
 
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
@@ -308,6 +339,9 @@ class VideoRenderer : public MediaFilter {
 
 class AudioRenderer : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_AUDIO_RENDERER; }
+  virtual FilterType filter_type() const;
+
   virtual const char* major_mime_type() const;
 
   // Initialize a AudioRenderer with the given AudioDecoder, executing the

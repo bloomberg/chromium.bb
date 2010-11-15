@@ -19,12 +19,7 @@ class MediaFilterCollection {
   MediaFilterCollection();
 
   // Adds a filter to the collection.
-  void AddDataSource(DataSource* filter);
-  void AddDemuxer(Demuxer* filter);
-  void AddVideoDecoder(VideoDecoder* filter);
-  void AddAudioDecoder(AudioDecoder* filter);
-  void AddVideoRenderer(VideoRenderer* filter);
-  void AddAudioRenderer(AudioRenderer* filter);
+  void AddFilter(MediaFilter* filter);
 
   // Is the collection empty?
   bool IsEmpty() const;
@@ -35,38 +30,16 @@ class MediaFilterCollection {
   // Selects a filter of the specified type from the collection.
   // If the required filter cannot be found, NULL is returned.
   // If a filter is returned it is removed from the collection.
-  void SelectDataSource(scoped_refptr<DataSource>* filter_out);
-  void SelectDemuxer(scoped_refptr<Demuxer>* filter_out);
-  void SelectVideoDecoder(scoped_refptr<VideoDecoder>* filter_out);
-  void SelectAudioDecoder(scoped_refptr<AudioDecoder>* filter_out);
-  void SelectVideoRenderer(scoped_refptr<VideoRenderer>* filter_out);
-  void SelectAudioRenderer(scoped_refptr<AudioRenderer>* filter_out);
+  template <class Filter>
+  void SelectFilter(scoped_refptr<Filter>* filter_out) {
+    scoped_refptr<MediaFilter> filter;
+    SelectFilter(Filter::static_filter_type(), &filter);
+    *filter_out = reinterpret_cast<Filter*>(filter.get());
+  }
 
  private:
-  // Identifies the type of filter implementation. Each filter has to be one of
-  // the following types. This is used to mark, identify, and support
-  // downcasting of different filter types stored in the filters_ list.
-  enum FilterType {
-    DATA_SOURCE,
-    DEMUXER,
-    AUDIO_DECODER,
-    VIDEO_DECODER,
-    AUDIO_RENDERER,
-    VIDEO_RENDERER
-  };
-
   // List of filters managed by this collection.
-  typedef std::pair<FilterType, scoped_refptr<MediaFilter> > FilterListElement;
-  typedef std::list<FilterListElement> FilterList;
-  FilterList filters_;
-
-  // Helper function that adds a filter to the filter list.
-  void AddFilter(FilterType filter_type, MediaFilter* filter);
-
-  // Helper function for SelectXXX() methods. It manages the
-  // downcasting and mapping between FilterType and Filter class.
-  template<FilterType filter_type, class Filter>
-  void SelectFilter(scoped_refptr<Filter>* filter_out);
+  std::list<scoped_refptr<MediaFilter> > filters_;
 
   // Helper function that searches the filters list for a specific
   // filter type.

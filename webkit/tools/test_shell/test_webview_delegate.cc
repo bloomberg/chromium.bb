@@ -743,7 +743,7 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
 
   scoped_refptr<webkit_glue::VideoRendererImpl> video_renderer(
       new webkit_glue::VideoRendererImpl(false));
-  collection->AddVideoRenderer(video_renderer);
+  collection->AddFilter(video_renderer);
 
   return new webkit_glue::WebMediaPlayerImpl(
       client, collection.release(), bridge_factory_simple,

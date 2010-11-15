@@ -2636,7 +2636,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     // Add the chrome specific audio renderer.
-    collection->AddAudioRenderer(new AudioRendererImpl(audio_message_filter()));
+    collection->AddFilter(new AudioRendererImpl(audio_message_filter()));
   }
 
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
@@ -2652,7 +2652,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     // lost.
     bool ret = context->makeContextCurrent();
     CHECK(ret) << "Failed to switch context";
-    collection->AddVideoDecoder(new IpcVideoDecoder(
+    collection->AddFilter(new IpcVideoDecoder(
         MessageLoop::current(), context->context()));
   }
 
@@ -2683,7 +2683,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
   scoped_refptr<webkit_glue::VideoRendererImpl> renderer(
       new webkit_glue::VideoRendererImpl(pts_logging));
-  collection->AddVideoRenderer(renderer);
+  collection->AddFilter(renderer);
   video_renderer = renderer;
 
   return new webkit_glue::WebMediaPlayerImpl(

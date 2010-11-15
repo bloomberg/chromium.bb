@@ -23,7 +23,7 @@ class MediaFilterCollectionTest : public ::testing::Test {
 TEST_F(MediaFilterCollectionTest, TestIsEmptyAndClear) {
   EXPECT_TRUE(collection_.IsEmpty());
 
-  collection_.AddDataSource(mock_filters_.data_source());
+  collection_.AddFilter(mock_filters_.data_source());
 
   EXPECT_FALSE(collection_.IsEmpty());
 
@@ -32,41 +32,41 @@ TEST_F(MediaFilterCollectionTest, TestIsEmptyAndClear) {
   EXPECT_TRUE(collection_.IsEmpty());
 }
 
-TEST_F(MediaFilterCollectionTest, SelectXXXMethods) {
+TEST_F(MediaFilterCollectionTest, SelectFilter) {
   scoped_refptr<AudioDecoder> audio_decoder;
   scoped_refptr<DataSource> data_source;
 
-  collection_.AddDataSource(mock_filters_.data_source());
+  collection_.AddFilter(mock_filters_.data_source());
   EXPECT_FALSE(collection_.IsEmpty());
 
   // Verify that the data source will not be returned if we
   // ask for a different type.
-  collection_.SelectAudioDecoder(&audio_decoder);
+  collection_.SelectFilter(&audio_decoder);
   EXPECT_FALSE(audio_decoder);
   EXPECT_FALSE(collection_.IsEmpty());
 
   // Verify that we can actually retrieve the data source
   // and that it is removed from the collection.
-  collection_.SelectDataSource(&data_source);
+  collection_.SelectFilter(&data_source);
   EXPECT_TRUE(data_source);
   EXPECT_TRUE(collection_.IsEmpty());
 
   // Add a data source and audio decoder.
-  collection_.AddDataSource(mock_filters_.data_source());
-  collection_.AddAudioDecoder(mock_filters_.audio_decoder());
+  collection_.AddFilter(mock_filters_.data_source());
+  collection_.AddFilter(mock_filters_.audio_decoder());
 
   // Verify that we can select the audio decoder.
-  collection_.SelectAudioDecoder(&audio_decoder);
+  collection_.SelectFilter(&audio_decoder);
   EXPECT_TRUE(audio_decoder);
   EXPECT_FALSE(collection_.IsEmpty());
 
   // Verify that we can't select it again since only one has been added.
-  collection_.SelectAudioDecoder(&audio_decoder);
+  collection_.SelectFilter(&audio_decoder);
   EXPECT_FALSE(audio_decoder);
 
   // Verify that we can select the data source and that doing so will
   // empty the collection again.
-  collection_.SelectDataSource(&data_source);
+  collection_.SelectFilter(&data_source);
   EXPECT_TRUE(collection_.IsEmpty());
 }
 
@@ -76,23 +76,23 @@ TEST_F(MediaFilterCollectionTest, MultipleFiltersOfSameType) {
 
   scoped_refptr<DataSource> data_source;
 
-  collection_.AddDataSource(data_source_a.get());
-  collection_.AddDataSource(data_source_b.get());
+  collection_.AddFilter(data_source_a.get());
+  collection_.AddFilter(data_source_b.get());
 
-  // Verify that first SelectDataSource() returns data_source_a.
-  collection_.SelectDataSource(&data_source);
+  // Verify that first SelectFilter() returns data_source_a.
+  collection_.SelectFilter(&data_source);
   EXPECT_TRUE(data_source);
   EXPECT_EQ(data_source, data_source_a);
   EXPECT_FALSE(collection_.IsEmpty());
 
-  // Verify that second SelectDataSource() returns data_source_b.
-  collection_.SelectDataSource(&data_source);
+  // Verify that second SelectFilter() returns data_source_b.
+  collection_.SelectFilter(&data_source);
   EXPECT_TRUE(data_source);
   EXPECT_EQ(data_source, data_source_b);
   EXPECT_TRUE(collection_.IsEmpty());
 
-  // Verify that third SelectDataSource() returns nothing.
-  collection_.SelectDataSource(&data_source);
+  // Verify that third SelectFilter returns nothing.
+  collection_.SelectFilter(&data_source);
   EXPECT_FALSE(data_source);
 }
 
