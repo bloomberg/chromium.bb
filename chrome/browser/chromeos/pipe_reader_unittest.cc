@@ -76,6 +76,7 @@ TEST_F(PipeReaderTest, SuccessfulMultiLineReadTest) {
   }
 }
 
+// http://crbug.com/63228
 #if defined(OS_CHROMEOS)
 #define MAYBE_SuccessfulMultiLineReadNoEndingNewlineTest FLAKY_SuccessfulMultiLineReadNoEndingNewlineTest
 #else
