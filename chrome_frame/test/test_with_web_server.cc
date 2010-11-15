@@ -1136,6 +1136,7 @@ TEST_F(ChromeFrameTestWithWebServer, FAILS_FullTabModeIE_RefreshMshtmlTest) {
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
   chrome_frame_test::MockWindowObserver win_observer_mock;
   win_observer_mock.WatchWindow("File Download", "");
+  win_observer_mock.WatchWindow("View Downloads*", "");
 
   // The content of our HTML test page.  This will be returned whenever
   // we reply to a GET request.

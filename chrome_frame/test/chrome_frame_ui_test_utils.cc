@@ -548,7 +548,8 @@ bool AccObjectMatcher::DoesMatch(AccObject* object) const {
   std::wstring name, role_text, value;
   if (name_.length()) {
     object->GetName(&name);
-    does_match = MatchPattern(name, name_);
+    does_match = MatchPattern(StringToUpperASCII(name),
+                              StringToUpperASCII(name_));
   }
   if (does_match && role_text_.length()) {
     object->GetRoleText(&role_text);

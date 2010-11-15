@@ -301,8 +301,8 @@ TEST_P(FullTabNavigationTest, RestrictedSite) {
     win_observer_mock.WatchWindow(kAlertDlgCaption, "");
 
     EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
-          testing::StrCaseEq(GetSimplePageUrl())), _, _, _, _, _))
-      .Times(1);
+        testing::HasSubstr(GetSimplePageUrl())), _, _, _, _, _))
+        .Times(testing::AtMost(2));
 
     EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
             testing::Field(&VARIANT::bstrVal, StrEq(GetSimplePageUrl()))))
