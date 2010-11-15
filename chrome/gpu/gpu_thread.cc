@@ -9,12 +9,17 @@
 
 #include "app/gfx/gl/gl_context.h"
 #include "base/command_line.h"
+#include "base/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_info_collector.h"
 #include "ipc/ipc_channel_handle.h"
+
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#endif
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
@@ -43,6 +48,18 @@ GpuThread::~GpuThread() {
 void GpuThread::Init(const base::Time& process_start_time) {
   gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
   child_process_logging::SetGpuInfo(gpu_info_);
+
+#if defined(OS_WIN)
+  // Asynchronously collect the DirectX diagnostics because this can take a
+  // couple of seconds.
+  if (!WorkerPool::PostTask(
+      FROM_HERE,
+      NewRunnableFunction(&GpuThread::CollectDxDiagnostics, this),
+      true)) {
+    // Flag GPU info as complete if the DirectX diagnostics cannot be collected.
+    gpu_info_.SetProgress(GPUInfo::kComplete);
+  }
+#endif
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
@@ -118,3 +135,26 @@ void GpuThread::OnHang() {
   for (;;)
     PlatformThread::Sleep(1000);
 }
+
+#if defined(OS_WIN)
+
+// Runs on a worker thread. The GpuThread never terminates voluntarily so it is
+// safe to assume that its message loop is valid.
+void GpuThread::CollectDxDiagnostics(GpuThread* thread) {
+  win_util::ScopedCOMInitializer com_initializer;
+
+  DxDiagNode node;
+  gpu_info_collector::GetDxDiagnostics(&node);
+
+  thread->message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableFunction(&GpuThread::SetDxDiagnostics, thread, node));
+}
+
+// Runs on the GPU thread.
+void GpuThread::SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node) {
+  thread->gpu_info_.SetDxDiagnostics(node);
+  thread->gpu_info_.SetProgress(GPUInfo::kComplete);
+}
+
+#endif

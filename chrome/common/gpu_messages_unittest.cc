@@ -13,6 +13,7 @@
 TEST(GPUIPCMessageTest, GPUInfo) {
   GPUInfo input;
   // Test variables taken from Lenovo T61
+  input.SetProgress(GPUInfo::kPartial);
   input.SetInitializationTime(base::TimeDelta::FromMilliseconds(100));
   input.SetGraphicsInfo(0x10de, 0x429, L"6.14.11.7715",
                         0xffff0300,
@@ -26,6 +27,7 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   GPUInfo output;
   void* iter = NULL;
   EXPECT_TRUE(IPC::ReadParam(&msg, &iter, &output));
+  EXPECT_EQ(input.progress(), output.progress());
   EXPECT_EQ(input.initialization_time().InMilliseconds(),
             output.initialization_time().InMilliseconds());
   EXPECT_EQ(input.vendor_id(), output.vendor_id());
@@ -38,5 +40,5 @@ TEST(GPUIPCMessageTest, GPUInfo) {
 
   std::string log_message;
   IPC::LogParam(output, &log_message);
-  EXPECT_STREQ("<GPUInfo> 100 10de 429 6.14.11.7715 1", log_message.c_str());
+  EXPECT_STREQ("<GPUInfo> 1 100 10de 429 6.14.11.7715 1", log_message.c_str());
 }

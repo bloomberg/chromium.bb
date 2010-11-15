@@ -163,6 +163,8 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
                             gl_version,
                             false);
 
+  gpu_info->SetProgress(GPUInfo::kComplete);
+
   return true;
 }
 

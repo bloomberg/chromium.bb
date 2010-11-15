@@ -12,6 +12,9 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   // on this platform in the future.
   // bool can_lose_context =
   //     gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+
+  gpu_info->SetProgress(GPUInfo::kComplete);
+
   return true;
 }
 

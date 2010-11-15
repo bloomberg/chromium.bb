@@ -38,6 +38,11 @@ class GpuThread : public ChildThread {
   void OnCrash();
   void OnHang();
 
+#if defined(OS_WIN)
+  static void CollectDxDiagnostics(GpuThread* thread);
+  static void SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node);
+#endif
+
   typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
 

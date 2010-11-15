@@ -5,15 +5,18 @@
 #include "chrome/common/gpu_info.h"
 
 GPUInfo::GPUInfo()
-    : initialized_(false), vendor_id_(0), device_id_(0), driver_version_(L""),
+    : progress_(kUninitialized),
+      vendor_id_(0),
+      device_id_(0),
+      driver_version_(L""),
       pixel_shader_version_(0),
       vertex_shader_version_(0),
       gl_version_(0),
       can_lose_context_(false) {
 }
 
-bool GPUInfo::initialized() const {
-  return initialized_;
+GPUInfo::Progress GPUInfo::progress() const {
+  return progress_;
 }
 
 base::TimeDelta GPUInfo::initialization_time() const {
@@ -68,7 +71,10 @@ void GPUInfo::SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
   vertex_shader_version_ = vertex_shader_version;
   gl_version_ = gl_version;
   can_lose_context_ = can_lose_context;
-  initialized_ = true;
+}
+
+void GPUInfo::SetProgress(Progress progress) {
+  progress_ = progress;
 }
 
 #if defined(OS_WIN)

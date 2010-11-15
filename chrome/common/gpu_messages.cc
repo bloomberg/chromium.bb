@@ -81,14 +81,15 @@ void ParamTraits<GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params> ::Log(
 #endif  // if defined(OS_MACOSX)
 
 void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
-  ParamTraits<base::TimeDelta> ::Write(m, p.initialization_time());
-  m->WriteUInt32(p.vendor_id());
-  m->WriteUInt32(p.device_id());
-  m->WriteWString(p.driver_version());
-  m->WriteUInt32(p.pixel_shader_version());
-  m->WriteUInt32(p.vertex_shader_version());
-  m->WriteUInt32(p.gl_version());
-  m->WriteBool(p.can_lose_context());
+  WriteParam(m, static_cast<int32>(p.progress()));
+  WriteParam(m, p.initialization_time());
+  WriteParam(m, p.vendor_id());
+  WriteParam(m, p.device_id());
+  WriteParam(m, p.driver_version());
+  WriteParam(m, p.pixel_shader_version());
+  WriteParam(m, p.vertex_shader_version());
+  WriteParam(m, p.gl_version());
+  WriteParam(m, p.can_lose_context());
 
 #if defined(OS_WIN)
   ParamTraits<DxDiagNode> ::Write(m, p.dx_diagnostics());
@@ -96,6 +97,7 @@ void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
+  int32 progress;
   base::TimeDelta initialization_time;
   uint32 vendor_id;
   uint32 device_id;
@@ -104,14 +106,16 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   uint32 vertex_shader_version;
   uint32 gl_version;
   bool can_lose_context;
-  bool ret = ParamTraits<base::TimeDelta> ::Read(m, iter, &initialization_time);
-  ret = ret && m->ReadUInt32(iter, &vendor_id);
-  ret = ret && m->ReadUInt32(iter, &device_id);
-  ret = ret && m->ReadWString(iter, &driver_version);
-  ret = ret && m->ReadUInt32(iter, &pixel_shader_version);
-  ret = ret && m->ReadUInt32(iter, &vertex_shader_version);
-  ret = ret && m->ReadUInt32(iter, &gl_version);
-  ret = ret && m->ReadBool(iter, &can_lose_context);
+  bool ret = ReadParam(m, iter, &progress);
+  ret = ret && ReadParam(m, iter, &initialization_time);
+  ret = ret && ReadParam(m, iter, &vendor_id);
+  ret = ret && ReadParam(m, iter, &device_id);
+  ret = ret && ReadParam(m, iter, &driver_version);
+  ret = ret && ReadParam(m, iter, &pixel_shader_version);
+  ret = ret && ReadParam(m, iter, &vertex_shader_version);
+  ret = ret && ReadParam(m, iter, &gl_version);
+  ret = ret && ReadParam(m, iter, &can_lose_context);
+  p->SetProgress(static_cast<GPUInfo::Progress>(progress));
   if (!ret)
     return false;
 
@@ -126,15 +130,18 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
 
 #if defined(OS_WIN)
   DxDiagNode dx_diagnostics;
-  ret = ret && ParamTraits<DxDiagNode> ::Read(m, iter, &dx_diagnostics);
+  if (!ReadParam(m, iter, &dx_diagnostics))
+    return false;
+
   p->SetDxDiagnostics(dx_diagnostics);
 #endif
 
-  return ret;
+  return true;
 }
 
 void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("<GPUInfo> %d %x %x %ls %d",
+  l->append(base::StringPrintf("<GPUInfo> %d %d %x %x %ls %d",
+                               p.progress(),
                                static_cast<int32>(
                                    p.initialization_time().InMilliseconds()),
                                p.vendor_id(),
@@ -144,21 +151,15 @@ void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
 }
 
 void ParamTraits<DxDiagNode> ::Write(Message* m, const param_type& p) {
-  ParamTraits<std::map<std::string, std::string> >::Write(m, p.values);
-  ParamTraits<std::map<std::string, DxDiagNode> >::Write(m, p.children);
+  WriteParam(m, p.values);
+  WriteParam(m, p.children);
 }
 
 bool ParamTraits<DxDiagNode> ::Read(const Message* m,
                                     void** iter,
                                     param_type* p) {
-  bool ret = ParamTraits<std::map<std::string, std::string> >::Read(
-      m,
-      iter,
-      &p->values);
-  ret = ret && ParamTraits<std::map<std::string, DxDiagNode> >::Read(
-      m,
-      iter,
-      &p->children);
+  bool ret = ReadParam(m, iter, &p->values);
+  ret = ret && ReadParam(m, iter, &p->children);
   return ret;
 }
 
@@ -168,22 +169,22 @@ void ParamTraits<DxDiagNode> ::Log(const param_type& p, std::string* l) {
 
 void ParamTraits<gpu::CommandBuffer::State> ::Write(Message* m,
                                                     const param_type& p) {
-  m->WriteInt(p.num_entries);
-  m->WriteInt(p.get_offset);
-  m->WriteInt(p.put_offset);
-  m->WriteInt(p.token);
-  m->WriteInt(p.error);
+  WriteParam(m, p.num_entries);
+  WriteParam(m, p.get_offset);
+  WriteParam(m, p.put_offset);
+  WriteParam(m, p.token);
+  WriteParam(m, static_cast<int32>(p.error));
 }
 
 bool ParamTraits<gpu::CommandBuffer::State> ::Read(const Message* m,
                                                    void** iter,
                                                    param_type* p) {
   int32 temp;
-  if (m->ReadInt(iter, &p->num_entries) &&
-      m->ReadInt(iter, &p->get_offset) &&
-      m->ReadInt(iter, &p->put_offset) &&
-      m->ReadInt(iter, &p->token) &&
-      m->ReadInt(iter, &temp)) {
+  if (ReadParam(m, iter, &p->num_entries) &&
+      ReadParam(m, iter, &p->get_offset) &&
+      ReadParam(m, iter, &p->put_offset) &&
+      ReadParam(m, iter, &p->token) &&
+      ReadParam(m, iter, &temp)) {
     p->error = static_cast<gpu::error::Error>(temp);
     return true;
   } else {
@@ -198,14 +199,14 @@ void ParamTraits<gpu::CommandBuffer::State> ::Log(const param_type& p,
 
 void ParamTraits<GPUCreateCommandBufferConfig> ::Write(
     Message* m, const param_type& p) {
-  m->WriteString(p.allowed_extensions);
-  ParamTraits<std::vector<int> > ::Write(m, p.attribs);
+  WriteParam(m, p.allowed_extensions);
+  WriteParam(m, p.attribs);
 }
 
 bool ParamTraits<GPUCreateCommandBufferConfig> ::Read(
     const Message* m, void** iter, param_type* p) {
-  if (!m->ReadString(iter, &p->allowed_extensions) ||
-      !ParamTraits<std::vector<int> > ::Read(m, iter, &p->attribs)) {
+  if (!ReadParam(m, iter, &p->allowed_extensions) ||
+      !ReadParam(m, iter, &p->attribs)) {
     return false;
   }
   return true;
