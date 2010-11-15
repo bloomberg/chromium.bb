@@ -81,12 +81,6 @@
         # For chrome_tab.h
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
-      'configurations': {
-        'Debug': {
-          'msvs_precompiled_source': '../../common/precompile.cc',
-          'msvs_precompiled_header': '../../common/precompile.h',
-        },
-      },
     },
   ]
 }

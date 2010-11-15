@@ -33,12 +33,6 @@
         # For chrome_tab.h
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
-      'configurations': {
-        'Debug': {
-          'msvs_precompiled_source': '../../common/precompile.cc',
-          'msvs_precompiled_header': '../../common/precompile.h',
-        },
-      },
     },
     {
       'target_name': 'ceee_ie',
@@ -85,12 +79,6 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'OutputFile': '$(OutDir)/servers/$(ProjectName).dll',
-        },
-      },
-      'configurations': {
-        'Debug': {
-          'msvs_precompiled_source': '../../common/precompile.cc',
-          'msvs_precompiled_header': '../../common/precompile.h',
         },
       },
     },

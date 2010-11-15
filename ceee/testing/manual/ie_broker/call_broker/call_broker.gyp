@@ -15,12 +15,6 @@
         'precompile.cc',
         'precompile.h',
       ],
-      'configurations': {
-        'Debug': {
-          'msvs_precompiled_header': 'precompile.h',
-          'msvs_precompiled_source': 'precompile.cc',
-        },
-      },
       'defines': [
         '_CONSOLE',
       ],

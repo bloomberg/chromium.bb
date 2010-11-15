@@ -119,12 +119,6 @@
           '../../../third_party/skia/include/config',
         ],
       },
-      'configurations': {
-        'Debug': {
-          'msvs_precompiled_source': 'precompile.cc',
-          'msvs_precompiled_header': 'precompile.h',
-        },
-      },
     },
   ]
 }

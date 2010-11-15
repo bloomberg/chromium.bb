@@ -74,8 +74,6 @@
               'AdditionalOptions': ['/Zm332', '/bigobj'],
             },
           },
-          'msvs_precompiled_source': 'testing/precompile.cc',
-          'msvs_precompiled_header': 'testing/precompile.h',
         },
       },
       'dependencies': [
@@ -124,8 +122,6 @@
               'AdditionalOptions': ['/Zm332'],
             },
           },
-          'msvs_precompiled_source': 'testing/precompile.cc',
-          'msvs_precompiled_header': 'testing/precompile.h',
         },
       },
       'dependencies': [

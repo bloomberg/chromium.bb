@@ -39,12 +39,6 @@
         'userscripts_librarian.h',
         'userscripts_docs.h',
       ],
-      'configurations': {
-        'Debug': {
-          'msvs_precompiled_source': '../../common/precompile.cc',
-          'msvs_precompiled_header': '../../common/precompile.h',
-        },
-      },
     },
     {
       'target_name': 'javascript_bindings',
