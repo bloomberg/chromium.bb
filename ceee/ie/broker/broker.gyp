@@ -11,9 +11,46 @@
   ],
   'targets': [
     {
+      'target_name': 'broker_rpc_idl',
+      'type': 'none',
+      'sources': [
+        'broker_rpc_lib.idl',
+      ],
+      'msvs_settings': {
+        'VCMIDLTool': {
+          'OutputDirectory': '<(SHARED_INTERMEDIATE_DIR)',
+          'DLLDataFileName': '$(InputName)_dlldata.c',
+          'AdditionalOptions': '/prefix all "BrokerRpcClient_" '
+                               'server "BrokerRpcServer_"'
+        },
+      },
+      # Add the output dir for those who depend on us.
+      'direct_dependent_settings': {
+        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+      },
+    },
+    {
+      'target_name': 'broker_rpc_lib',
+      'type': 'static_library',
+      'dependencies': [
+        'broker_rpc_idl',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/broker_rpc_lib_c.c',
+        '<(SHARED_INTERMEDIATE_DIR)/broker_rpc_lib_s.c',
+      ],
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'UsePrecompiledHeader': '0',
+          'ForcedIncludeFiles': '$(NOINHERIT)',
+        },
+      },
+    },
+    {
       'target_name': 'broker',
       'type': 'static_library',
       'dependencies': [
+        'broker_rpc_idl',
         '../common/common.gyp:ie_common',
         '../common/common.gyp:ie_common_settings',
         '../plugin/toolband/toolband.gyp:toolband_idl',
@@ -34,6 +71,12 @@
         'broker.cc',
         'broker.h',
         'broker_docs.h',
+        'broker_rpc_client.cc',
+        'broker_rpc_client.h',
+        'broker_rpc_server.cc',
+        'broker_rpc_server.h',
+        'broker_rpc_utils.cc',
+        'broker_rpc_utils.h',
         'chrome_postman.cc',
         'chrome_postman.h',
         'common_api_module.cc',
@@ -85,6 +128,7 @@
       ],
       'dependencies': [
         'broker',
+        'broker_rpc_lib',
         '../common/common.gyp:ie_common_settings',
         '../common/common.gyp:ie_guids',
         '../plugin/toolband/toolband.gyp:toolband_idl',
@@ -109,6 +153,7 @@
       'libraries': [
         'oleacc.lib',
         'iepmapi.lib',
+        'rpcrt4.lib',
       ],
     },
   ]

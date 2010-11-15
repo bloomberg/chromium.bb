@@ -29,6 +29,7 @@
         'broker/tab_api_module_unittest.cc',
         'broker/window_api_module_unittest.cc',
         'broker/window_events_funnel_unittest.cc',
+        'broker/broker_rpc_unittest.cc',
         'common/chrome_frame_host_unittest.cc',
         'common/crash_reporter_unittest.cc',
         'common/extension_manifest_unittest.cc',
@@ -82,6 +83,7 @@
         'common/common.gyp:ie_common_settings',
         'common/common.gyp:ie_guids',
         'broker/broker.gyp:broker',
+        'broker/broker.gyp:broker_rpc_lib',
         'plugin/bho/bho.gyp:bho',
         'plugin/scripting/scripting.gyp:javascript_bindings',
         'plugin/scripting/scripting.gyp:scripting',
@@ -98,6 +100,7 @@
       'libraries': [
         'oleacc.lib',
         'iepmapi.lib',
+        'rpcrt4.lib',
       ],
     },
     {

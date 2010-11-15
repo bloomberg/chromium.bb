@@ -1,0 +1,35 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+
+[ uuid (931C5D3F-A6D7-411B-98ED-789FC9291302),
+  // TODO(vitalybuka@google.com): decide if we need meaningful version.
+  version(1.1),
+  pointer_default(unique),
+]
+interface CeeeBroker {
+
+// Context handle to allow server maintain number of active clients.
+typedef [context_handle] void* BrokerContextHandle;
+
+// @name Implementation specific calls.
+// @{
+// Returns context handle for new client.
+BrokerContextHandle Connect( 
+    [in] handle_t binding_handle);
+
+// Release context handle.
+void Disconnect( 
+    [in] handle_t binding_handle,
+    [in, out] BrokerContextHandle* context);
+// @}
+
+// @name Remote calls.
+// @{
+// Fires event to broker.
+void FireEvent(
+    [in] handle_t binding_handle,
+    [in] BSTR event_name,
+    [in] BSTR event_args);
+// @}
+}

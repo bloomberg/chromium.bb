@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "ceee/ie/broker/broker.h"
+#include "ceee/ie/broker/broker_rpc_server.h"
 #include "ceee/ie/broker/chrome_postman.h"
 #include "ceee/ie/broker/executors_manager.h"
 #include "ceee/ie/broker/resource.h"
@@ -79,6 +80,7 @@ class CeeeBrokerModule : public CAtlExeModuleT<CeeeBrokerModule> {
   CComObjectStackEx<ChromePostman> chrome_postman_;
   CrashReporter crash_reporter_;
   base::AtExitManager at_exit_;
+  BrokerRpcServer rpc_server_;
 };
 
 CeeeBrokerModule module;
@@ -158,6 +160,10 @@ HRESULT CeeeBrokerModule::PreMessageLoop(int show) {
   // API invocation or Fire events before the postman is ready to handle them.
   chrome_postman_.Init();
   WindowEventsFunnel::Initialize();
+
+  if (!rpc_server_.Start())
+    return RPC_E_FAULT;
+
   return CAtlExeModuleT<CeeeBrokerModule>::PreMessageLoop(show);
 }
 

@@ -12,6 +12,7 @@
 #include "base/thread.h"
 #include "ceee/common/com_utils.h"
 #include "ceee/common/install_utils.h"
+#include "ceee/ie/broker/broker_rpc_client.h"
 #include "ceee/ie/common/ceee_module_util.h"
 #include "ceee/ie/plugin/bho/browser_helper_object.h"
 #include "ceee/ie/plugin/bho/executor.h"
@@ -66,6 +67,7 @@ class ToolbandModule : public CAtlDllModuleT<ToolbandModule> {
                          const std::string& event_args);
 
  private:
+  // TODO(vitalybuka@google.com): Fire events without this thread.
   class ComWorkerThread : public base::Thread {
    public:
     ComWorkerThread();
@@ -80,10 +82,7 @@ class ToolbandModule : public CAtlDllModuleT<ToolbandModule> {
     // worker thread can be used.
     void FireEventToBroker(BSTR event_name, BSTR event_args);
    protected:
-    CComPtr<ICeeeBroker> broker_;
-    static const int kMaxNumberOfRetries = 5;
-    static const int64 kRetryDelayMs = 10;
-    int current_number_of_retries_;
+    BrokerRpcClient broker_rpc_;
   };
 
   class FireEventTask : public Task {
@@ -94,13 +93,6 @@ class ToolbandModule : public CAtlDllModuleT<ToolbandModule> {
         : worker_thread_(worker_thread),
           event_name_(event_name.c_str()),
           event_args_(event_args.c_str()) {
-    }
-    FireEventTask(ComWorkerThread* worker_thread,
-                  const BSTR event_name,
-                  const BSTR event_args)
-        : worker_thread_(worker_thread),
-          event_name_(event_name),
-          event_args_(event_args) {
     }
     virtual void Run() {
       worker_thread_->FireEventToBroker(event_name_, event_args_);
@@ -291,42 +283,29 @@ void ToolbandModule::FireEventToBroker(const std::string& event_name,
 
 
 ToolbandModule::ComWorkerThread::ComWorkerThread()
-    : base::Thread("CEEE-COM Worker Thread"),
-      current_number_of_retries_(0) {
+    : base::Thread("CEEE-COM Worker Thread") {
 }
 
 void ToolbandModule::ComWorkerThread::Init() {
   ::CoInitializeEx(0, COINIT_MULTITHREADED);
+  // TODO(vitalybuka@google.com): Start broker without COM.
+  CComPtr<ICeeeBroker> broker_;
   HRESULT hr = broker_.CoCreateInstance(CLSID_CeeeBroker);
   DCHECK(SUCCEEDED(hr)) << "Failed to create broker. " << com::LogHr(hr);
-}
-
-void ToolbandModule::ComWorkerThread::CleanUp() {
-  broker_.Release();
+  broker_rpc_.Connect();
+  DCHECK(broker_rpc_.is_connected());
   ::CoUninitialize();
 }
 
+void ToolbandModule::ComWorkerThread::CleanUp() {
+  broker_rpc_.Disconnect();
+}
+
 void ToolbandModule::ComWorkerThread::FireEventToBroker(BSTR event_name,
-                                                       BSTR event_args) {
-  DCHECK(broker_ != NULL);
-  if (broker_ != NULL) {
-    HRESULT hr = broker_->FireEvent(event_name, event_args);
-    if (SUCCEEDED(hr)) {
-      current_number_of_retries_ = 0;
-      return;
-    }
-    // If the server is busy (which can happen if it is calling in as we try to
-    // to call out to it), then we should retry a few times a little later.
-    if (current_number_of_retries_ < kMaxNumberOfRetries && message_loop()) {
-      ++current_number_of_retries_;
-      LOG(WARNING) << "Retrying Broker FireEvent Failure. " << com::LogHr(hr);
-      message_loop()->PostDelayedTask(FROM_HERE,
-          new FireEventTask(this, event_name, event_args), kRetryDelayMs);
-    } else {
-      current_number_of_retries_ = 0;
-      DCHECK(SUCCEEDED(hr)) << "Broker FireEvent Failed. " << com::LogHr(hr);
-    }
-  }
+                                                        BSTR event_args) {
+  DCHECK(broker_rpc_.is_connected());
+  bool result = broker_rpc_.FireEvent(event_name, event_args);
+  DCHECK(result);
 }
 
 ToolbandModule module;

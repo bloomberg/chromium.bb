@@ -44,6 +44,7 @@
       'target_name': 'ceee_ie',
       'type': 'shared_library',
       'dependencies': [
+        '../../broker/broker.gyp:broker_rpc_lib',
         'ceee_ie_lib',
         'ie_toolband_common',
         'toolband_idl',
@@ -72,6 +73,7 @@
       'libraries': [
         'oleacc.lib',
         'iepmapi.lib',
+        'rpcrt4.lib',
       ],
       'include_dirs': [
         # Allows us to include .tlb and .h files generated

@@ -21,19 +21,6 @@ HRESULT CeeeBroker::FinalConstruct() {
   return S_OK;
 }
 
-void CeeeBroker::OnAddConnection(bool first_lock) {
-  if (first_lock)
-    ceee_module_util::LockModule();
-}
-
-void CeeeBroker::OnReleaseConnection(bool last_unlock,
-                                     bool last_unlock_releases) {
-  if (last_unlock)
-    ceee_module_util::UnlockModule();
-  IExternalConnectionImpl<CeeeBroker>::OnReleaseConnection(
-      last_unlock, last_unlock_releases);
-}
-
 STDMETHODIMP CeeeBroker::Execute(BSTR function, BSTR* response) {
   // This is DEPRECATED and we should use ChromePostman (see FireEvent).
   api_dispatcher_->HandleApiRequest(function, response);

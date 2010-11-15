@@ -27,14 +27,12 @@ class ATL_NO_VTABLE CeeeBroker
     : public CComObjectRootEx<CComMultiThreadModel>,
       public CComCoClass<CeeeBroker, &CLSID_CeeeBroker>,
       public ICeeeBroker,
-      public ICeeeBrokerRegistrar,
-      public IExternalConnectionImpl<CeeeBroker> {
+      public ICeeeBrokerRegistrar {
  public:
   DECLARE_REGISTRY_RESOURCEID(IDR_BROKER)
 
   DECLARE_NOT_AGGREGATABLE(CeeeBroker)
   BEGIN_COM_MAP(CeeeBroker)
-    COM_INTERFACE_ENTRY(IExternalConnection)
     COM_INTERFACE_ENTRY(ICeeeBrokerRegistrar)
     COM_INTERFACE_ENTRY(ICeeeBroker)
   END_COM_MAP()
@@ -56,10 +54,6 @@ class ATL_NO_VTABLE CeeeBroker
   STDMETHOD(UnregisterExecutor)(long thread_id);
   STDMETHOD(SetTabIdForHandle)(long tab_id, CeeeWindowHandle handle);
   // @}
-
-  // IExternalConnectionImpl overrides
-  void OnAddConnection(bool first_lock);
-  void OnReleaseConnection(bool last_unlock, bool last_unlock_releases);
 
  protected:
   // A pointer to single instance objects, or seams set for unittests.

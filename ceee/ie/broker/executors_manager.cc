@@ -87,11 +87,6 @@ HRESULT ExecutorsManager::RegisterTabExecutor(ThreadId thread_id,
     new_executor_info.thread_handle = thread_handle;
   }  // End of lock.
 
-  if (map_was_empty) {
-    // We go from empty to not empty,
-    // so lock the module to make sure we stay alive.
-    ceee_module_util::LockModule();
-  }
   return S_OK;
 }
 
@@ -147,13 +142,6 @@ HRESULT ExecutorsManager::RegisterWindowExecutor(ThreadId thread_id,
     new_executor_info.thread_handle = thread_handle;
   }  // End of lock.
 
-  if (map_was_empty) {
-    // We go from empty to not empty,
-    // so lock the module to make sure we stay alive.
-    ceee_module_util::LockModule();
-  }
-
-  // Update the list of handles that our thread is waiting on.
   BOOL success = ::SetEvent(update_threads_list_gate_);
   DCHECK(success);
   return S_OK;
@@ -266,11 +254,6 @@ HRESULT ExecutorsManager::RemoveExecutor(ThreadId thread_id) {
     map_is_empty = executors_.empty();
   }  // End of lock.
 
-  if (map_is_empty) {
-    // We go from not empty to empty,
-    // so unlock the module it can leave in peace.
-    ceee_module_util::UnlockModule();
-  }
   return S_OK;
 }
 
@@ -285,7 +268,6 @@ HRESULT ExecutorsManager::Terminate() {
   if (!executors_.empty()) {
     // TODO(mad@chromium.org): Can this happen???
     NOTREACHED();
-    ceee_module_util::UnlockModule();
   }
 
   executors_.clear();
