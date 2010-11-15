@@ -29,4 +29,7 @@ node = env.BrowserTester(
     'my_browser_test.out', url='test_runner.html',
     files=[env.File('test_runner.html')] + test_executables,
     browser='*firefox')
-env.AddNodeToTestSuite(node, ['browser_tests'], 'run_inbrowser_test_runner')
+# Disabling test on mac, see:
+#   http://code.google.com/p/nativeclient/issues/detail?id=1170
+if not env.Bit('mac'):
+  env.AddNodeToTestSuite(node, ['browser_tests'], 'run_inbrowser_test_runner')
