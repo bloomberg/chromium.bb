@@ -840,6 +840,7 @@ void EventSendingController::addTouchPoint(
   WebTouchPoint touch_point;
   touch_point.state = WebTouchPoint::StatePressed;
   touch_point.position = WebPoint(args[0].ToInt32(), args[1].ToInt32());
+  touch_point.screenPosition = touch_point.position;
   touch_point.id = touch_points.size();
   touch_points.push_back(touch_point);
 }
@@ -901,6 +902,7 @@ void EventSendingController::updateTouchPoint(
   WebTouchPoint* touch_point = &touch_points[index];
   touch_point->state = WebTouchPoint::StateMoved;
   touch_point->position = position;
+  touch_point->screenPosition = position;
 }
 
 void EventSendingController::cancelTouchPoint(
@@ -918,6 +920,8 @@ void EventSendingController::cancelTouchPoint(
 
 void EventSendingController::SendCurrentTouchEvent(
     const WebInputEvent::Type type) {
+  webview()->layout();
+
   if (static_cast<unsigned int>(WebTouchEvent::touchPointsLengthCap) <=
       touch_points.size()) {
     NOTREACHED() << "Too many touch points for event";
