@@ -912,14 +912,6 @@ UNSUPPORTED_VALGRIND_EXIT_STATUS = ['segfault',
                                     'untrusted_sigill',
                                     'untrusted_segfault']
 
-# (To avoid breakage in the native_client/supplement tree, which
-# resides on a different Subversion server.)
-def CommandTestAgainstGoldenOutput(env, name, *args, **kwargs):
-  print >>sys.stderr, (
-      "The CommandTestAgainstGoldenOutput(%s) function is deprecated; "
-      "use CommandTest() instead." % name)
-  return CommandTest(env, name, *args, **kwargs)
-
 def CommandTest(env, name, command, size='small',
                 direct_emulation=True, extra_deps=[], **extra):
   if not  name.endswith('.out') or name.startswith('$'):
@@ -1002,7 +994,6 @@ def CommandTest(env, name, command, size='small',
   return env.Command(name, deps, ' '.join(command))
 
 pre_base_env.AddMethod(CommandTest)
-pre_base_env.AddMethod(CommandTestAgainstGoldenOutput)
 
 # ----------------------------------------------------------
 if ARGUMENTS.get('pp', 0):
