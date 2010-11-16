@@ -9,7 +9,7 @@
 #include "remoting/protocol/client_control_sender.h"
 
 // TODO(hclam): Remove this header once MessageDispatcher is used.
-#include "remoting/base/multiple_array_input_stream.h"
+#include "remoting/base/compound_buffer.h"
 
 namespace remoting {
 namespace protocol {

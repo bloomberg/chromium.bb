@@ -9,6 +9,9 @@
 #include "remoting/protocol/buffered_socket_writer.h"
 
 namespace remoting {
+
+class CompoundBuffer;
+
 namespace protocol {
 
 class RtpWriter {
@@ -21,7 +24,7 @@ class RtpWriter {
   void Init(net::Socket* rtp_socket, net::Socket* rtcp_socket);
 
   // Sends next packet.
-  void SendPacket(const char* payload, int payload_size, uint32 timestamp);
+  void SendPacket(const CompoundBuffer& payload, uint32 timestamp);
 
   // Returns number of packets queued in the buffer.
   int GetPendingPackets();

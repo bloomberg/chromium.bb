@@ -7,8 +7,6 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
-// TODO(hclam): Remove this header once MessageDispatcher is used.
-#include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/video_reader.h"

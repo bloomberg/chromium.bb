@@ -8,7 +8,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
-#include "remoting/base/multiple_array_input_stream.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/proto/internal.pb.h"
 
 namespace remoting {

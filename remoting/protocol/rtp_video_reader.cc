@@ -27,9 +27,13 @@ void RtpVideoReader::Close() {
 void RtpVideoReader::OnRtpPacket(const RtpPacket& rtp_packet) {
   VideoPacket* packet = new VideoPacket();
 
-  packet->set_data(rtp_packet.payload, rtp_packet.payload_size);
+  packet->mutable_data()->resize(rtp_packet.payload().total_bytes());
+  rtp_packet.payload().CopyTo(
+      const_cast<char*>(packet->mutable_data()->data()),
+      packet->data().size());
+
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
-  packet->set_flags(rtp_packet.header.marker ? VideoPacket::LAST_PACKET : 0);
+  packet->set_flags(rtp_packet.header().marker ? VideoPacket::LAST_PACKET : 0);
 
   video_stub_->ProcessVideoPacket(packet, new DeleteTask<VideoPacket>(packet));
 }

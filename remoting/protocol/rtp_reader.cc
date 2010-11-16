@@ -26,14 +26,13 @@ void RtpReader::Init(net::Socket* socket,
 void RtpReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
   RtpPacket packet;
   int header_size = UnpackRtpHeader(reinterpret_cast<uint8*>(buffer->data()),
-                                    data_size, &packet.header);
+                                    data_size, packet.mutable_header());
   if (header_size < 0) {
     LOG(WARNING) << "Received invalid RTP packet.";
     return;
   }
-  packet.data = buffer;
-  packet.payload = buffer->data() + header_size;
-  packet.payload_size = data_size - header_size;
+  packet.mutable_payload()->Append(buffer, buffer->data() + header_size,
+                                   data_size - header_size);
 
   on_message_callback_->Run(packet);
 }

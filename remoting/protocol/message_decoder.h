@@ -10,8 +10,9 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "google/protobuf/message_lite.h"
-#include "remoting/base/multiple_array_input_stream.h"
+#include "net/base/io_buffer.h"
+#include "remoting/base/compound_buffer.h"
+#include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace net {
 class DrainableIOBuffer;
@@ -27,9 +28,9 @@ class ClientEventMessage;
 class HostControlMessage;
 class HostEventMessage;
 
-// MessageDecoder uses MultipleArrayInputStream to decode bytes into
-// protocol buffer messages. This can be used to decode bytes received from
-// the network.
+// MessageDecoder uses CompoundBuffer to decode bytes into protocol
+// buffer messages. This can be used to decode bytes received from the
+// network.
 //
 // It provides ParseMessages() which accepts an IOBuffer. If enough bytes
 // are collected to produce protocol buffer messages then the bytes will be
@@ -72,21 +73,21 @@ class MessageDecoder {
   // Parse one message from |buffer_list_|. Return true if sucessful.
   template <class MessageType>
   bool ParseOneMessage(MessageType** message) {
-    scoped_ptr<MultipleArrayInputStream> stream(CreateInputStreamFromData());
-    if (!stream.get())
+    scoped_ptr<CompoundBuffer> buffer(CreateCompoundBufferFromData());
+    if (!buffer.get())
       return false;
 
+    CompoundBufferInputStream stream(buffer.get());
     *message = new MessageType();
-    bool ret = (*message)->ParseFromZeroCopyStream(stream.get());
-    if (!ret) {
+    bool ret = (*message)->ParseFromZeroCopyStream(&stream);
+    if (!ret)
       delete *message;
-    }
     return ret;
   }
 
   void AddBuffer(scoped_refptr<net::IOBuffer> data, int data_size);
 
-  MultipleArrayInputStream* CreateInputStreamFromData();
+  CompoundBuffer* CreateCompoundBufferFromData();
 
   // Retrieves the read payload size of the current protocol buffer via |size|.
   // Returns false and leaves |size| unmodified, if we do not have enough data

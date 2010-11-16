@@ -8,8 +8,8 @@
 #ifndef REMOTING_PROTOCOL_UTIL_H_
 #define REMOTING_PROTOCOL_UTIL_H_
 
-#include "google/protobuf/message_lite.h"
 #include "net/base/io_buffer.h"
+#include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 class Task;
 

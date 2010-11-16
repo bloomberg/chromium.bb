@@ -132,6 +132,8 @@
       'sources': [
         'base/capture_data.cc',
         'base/capture_data.h',
+        'base/compound_buffer.cc',
+        'base/compound_buffer.h',
         'base/compressor.h',
         'base/compressor_zlib.cc',
         'base/compressor_zlib.h',
@@ -154,8 +156,6 @@
         'base/encoder_vp8.h',
         'base/encoder_zlib.cc',
         'base/encoder_zlib.h',
-        'base/multiple_array_input_stream.cc',
-        'base/multiple_array_input_stream.h',
         'base/tracer.cc',
         'base/tracer.h',
         'base/types.h',
@@ -448,6 +448,7 @@
       'sources': [
 # BUG57351        'base/codec_test.cc',
 # BUG57351        'base/codec_test.h',
+        'base/compound_buffer_unittest.cc',
         'base/compressor_zlib_unittest.cc',
 # BUG57351        'base/decoder_vp8_unittest.cc',
         'base/decompressor_zlib_unittest.cc',
@@ -456,7 +457,6 @@
 # BUG57351        'base/encoder_vp8_unittest.cc',
 # BUG57351        'base/encoder_zlib_unittest.cc',
         'base/mock_objects.h',
-        'base/multiple_array_input_stream_unittest.cc',
 # BUG57351        'client/chromoting_view_unittest.cc',
         'client/mock_objects.h',
         'host/access_verifier_unittest.cc',

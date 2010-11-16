@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "net/base/io_buffer.h"
-#include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/host_message_dispatcher.h"

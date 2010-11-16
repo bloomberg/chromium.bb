@@ -6,20 +6,26 @@
 #define REMOTING_PROTOCOL_RTP_READER_H_
 
 #include "base/scoped_ptr.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/rtp_utils.h"
 #include "remoting/protocol/socket_reader_base.h"
 
 namespace remoting {
 namespace protocol {
 
-struct RtpPacket {
+class RtpPacket {
+ public:
   RtpPacket();
   ~RtpPacket();
 
-  RtpHeader header;
-  scoped_refptr<net::IOBuffer> data;
-  char* payload;
-  int payload_size;
+  const RtpHeader& header() const { return header_; }
+  RtpHeader* mutable_header() { return &header_; }
+  const CompoundBuffer& payload() const { return payload_; }
+  CompoundBuffer* mutable_payload() { return &payload_; }
+
+ private:
+  RtpHeader header_;
+  CompoundBuffer payload_;
 };
 
 class RtpReader : public SocketReaderBase {

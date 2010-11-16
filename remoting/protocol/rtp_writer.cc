@@ -6,6 +6,7 @@
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/rtp_utils.h"
 
 namespace remoting {
@@ -33,8 +34,7 @@ void RtpWriter::Init(net::Socket* rtp_socket, net::Socket* rtcp_socket) {
   rtcp_socket_ = rtcp_socket;
 }
 
-void RtpWriter::SendPacket(const char* payload, int payload_size,
-                           uint32 timestamp) {
+void RtpWriter::SendPacket(const CompoundBuffer& payload, uint32 timestamp) {
   RtpHeader header;
   header.padding = false;
   header.extension = false;
@@ -50,15 +50,15 @@ void RtpWriter::SendPacket(const char* payload, int payload_size,
   // TODO(sergeyu): Add VP8 payload header.
 
   int position = 0;
-  while (position < payload_size) {
+  while (position < payload.total_bytes()) {
     // Allocate buffer.
-    int size = std::min(kMtu, payload_size - position);
+    int size = std::min(kMtu, payload.total_bytes() - position);
     int header_size = GetRtpHeaderSize(header.sources);
     int total_size = size + header_size;
     net::IOBufferWithSize* buffer = new net::IOBufferWithSize(total_size);
 
     // Set marker if this is the last frame.
-    header.marker = (position + size) == payload_size;
+    header.marker = (position + size) == payload.total_bytes();
 
     // TODO(sergeyu): Handle sequence number wrapping.
     header.sequence_number = last_packet_number_;
@@ -69,7 +69,9 @@ void RtpWriter::SendPacket(const char* payload, int payload_size,
                   header);
 
     // Copy data to the buffer.
-    memcpy(buffer->data() + header_size, payload + position, size);
+    CompoundBuffer chunk;
+    chunk.CopyFrom(payload, position, position + size);
+    chunk.CopyTo(buffer->data() + header_size, size);
 
     // Send it.
     buffered_rtp_writer_->Write(buffer);
@@ -77,7 +79,7 @@ void RtpWriter::SendPacket(const char* payload, int payload_size,
     position += size;
   }
 
-  DCHECK_EQ(position, payload_size);
+  DCHECK_EQ(position, payload.total_bytes());
 }
 
 int RtpWriter::GetPendingPackets() {

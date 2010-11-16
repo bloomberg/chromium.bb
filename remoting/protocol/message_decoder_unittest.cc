@@ -6,8 +6,6 @@
 
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
-#include "net/base/io_buffer.h"
-#include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
 #include "remoting/protocol/util.h"

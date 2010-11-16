@@ -4,9 +4,11 @@
 
 #include "remoting/protocol/rtp_video_writer.h"
 
+#include "net/base/io_buffer.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/proto/video.pb.h"
-#include "remoting/protocol/session.h"
 #include "remoting/protocol/rtp_writer.h"
+#include "remoting/protocol/session.h"
 
 namespace remoting {
 namespace protocol {
@@ -20,8 +22,10 @@ void RtpVideoWriter::Init(protocol::Session* session) {
 }
 
 void RtpVideoWriter::SendPacket(const VideoPacket& packet) {
-  rtp_writer_.SendPacket(packet.data().data(), packet.data().size(),
-                         packet.timestamp());
+  CompoundBuffer payload;
+  payload.AppendCopyOf(packet.data().data(), packet.data().size());
+
+  rtp_writer_.SendPacket(payload, packet.timestamp());
 }
 
 int RtpVideoWriter::GetPendingPackets() {

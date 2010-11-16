@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
-#include "remoting/base/multiple_array_input_stream.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/proto/internal.pb.h"
 #include "third_party/libjingle/source/talk/base/byteorder.h"
 
@@ -27,7 +27,7 @@ void MessageDecoder::AddBuffer(scoped_refptr<net::IOBuffer> data,
   available_bytes_ += data_size;
 }
 
-MultipleArrayInputStream* MessageDecoder::CreateInputStreamFromData() {
+CompoundBuffer* MessageDecoder::CreateCompoundBufferFromData() {
   // Determine the payload size. If we already know it then skip this part.
   // We may not have enough data to determine the payload size so use a
   // utility function to find out.
@@ -47,17 +47,15 @@ MultipleArrayInputStream* MessageDecoder::CreateInputStreamFromData() {
   // The following loop gather buffers in |buffer_list_| that sum up to
   // |next_payload_| bytes. These buffers are added to |stream|.
 
-  // Create a MultipleArrayInputStream for parsing.
-  // TODO(hclam): Avoid creating this object everytime.
-  MultipleArrayInputStream* stream = new MultipleArrayInputStream();
+  // Create a CompoundBuffer for parsing.
+  CompoundBuffer* result = new CompoundBuffer();
   while (next_payload_ > 0 && !buffer_list_.empty()) {
     scoped_refptr<net::DrainableIOBuffer> buffer = buffer_list_.front();
     int read_bytes = std::min(buffer->BytesRemaining(), next_payload_);
 
-    // This call creates a new instance of DrainableIOBuffer internally.
     // This will reference the same base pointer but maintain it's own
     // version of data pointer.
-    stream->AddBuffer(buffer, read_bytes);
+    result->Append(buffer, read_bytes);
 
     // Adjust counters.
     buffer->DidConsume(read_bytes);
@@ -70,7 +68,8 @@ MultipleArrayInputStream* MessageDecoder::CreateInputStreamFromData() {
   }
   DCHECK_EQ(0, next_payload_);
   DCHECK_LE(0, available_bytes_);
-  return stream;
+  result->Lock();
+  return result;
 }
 
 static int GetHeaderSize(const std::string& header) {
