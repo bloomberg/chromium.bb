@@ -619,6 +619,7 @@ void RenderWidgetHost::RendererExited() {
   in_flight_size_.SetSize(0, 0);
   current_size_.SetSize(0, 0);
   is_hidden_ = false;
+  is_gpu_rendering_active_ = false;
 
   if (view_) {
     view_->RenderViewGone();
