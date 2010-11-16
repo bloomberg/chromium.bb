@@ -218,10 +218,14 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
   min_size.Enlarge(2 * border_thickness,
                    NonClientTopBorderHeight(false, false) + border_thickness);
 
-  views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
+  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  if (delegate == NULL) {
+    LOG(INFO) << "delegate is NULL, returning safe default.";
+    return min_size;
+  }
   int min_titlebar_width = (2 * FrameBorderThickness(false)) +
       kIconLeftSpacing +
-      (d->ShouldShowWindowIcon() ? (IconSize() + kTitleLogoSpacing) : 0);
+      (delegate->ShouldShowWindowIcon() ? (IconSize() + kTitleLogoSpacing) : 0);
 #if !defined(OS_CHROMEOS)
   min_titlebar_width +=
       minimize_button_->GetMinimumSize().width() +
@@ -295,9 +299,14 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       point))
     return HTMINBUTTON;
 
+  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  if (delegate == NULL) {
+    LOG(INFO) << "delegate is NULL, returning safe default.";
+    return HTNOWHERE;
+  }
   int window_component = GetHTComponentForFrame(point, TopResizeHeight(),
       NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
-      frame_->GetWindow()->GetDelegate()->CanResize());
+      delegate->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -409,7 +418,12 @@ bool OpaqueBrowserFrameView::ShouldTabIconViewAnimate() const {
 }
 
 SkBitmap OpaqueBrowserFrameView::GetFavIconForTabIconView() {
-  return frame_->GetWindow()->GetDelegate()->GetWindowIcon();
+  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  if (delegate == NULL) {
+    LOG(INFO) << "delegate is NULL, returning safe default.";
+    return SkBitmap();
+  }
+  return delegate->GetWindowIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -437,7 +451,16 @@ int OpaqueBrowserFrameView::NonClientTopBorderHeight(
     bool restored,
     bool ignore_vertical_tabs) const {
   views::Window* window = frame_->GetWindow();
-  if (window->GetDelegate()->ShouldShowWindowTitle() ||
+  views::WindowDelegate* delegate = window->GetDelegate();
+  // |delegate| may be NULL if called from callback of InputMethodChanged
+  // while a window is being destroyed.
+  // See more discussion at http://crosbug.com/8958
+  if (!delegate) {
+    LOG(INFO) << "delegate is NULL";
+    return 0;
+  }
+
+  if (delegate->ShouldShowWindowTitle() ||
       (browser_view_->IsTabStripVisible() && !ignore_vertical_tabs &&
       browser_view_->UseVerticalTabs())) {
     return std::max(FrameBorderThickness(restored) + IconSize(),
@@ -477,8 +500,12 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
   int size = IconSize();
   int frame_thickness = FrameBorderThickness(false);
   int y;
-  views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
-  if (d->ShouldShowWindowIcon() || d->ShouldShowWindowTitle()) {
+  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  if (delegate == NULL) {
+    LOG(INFO) << "delegate is NULL, returning safe default.";
+    return gfx::Rect(0, 0, 0, 0);
+  }
+  if (delegate->ShouldShowWindowIcon() || delegate->ShouldShowWindowTitle()) {
     // Our frame border has a different "3D look" than Windows'.  Theirs has a
     // more complex gradient on the top that they push their icon/title below;
     // then the maximized window cuts this off and the icon/title are centered
@@ -671,9 +698,14 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 
 void OpaqueBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
-  views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
-  if (d->ShouldShowWindowTitle()) {
-    canvas->DrawStringInt(d->GetWindowTitle(), BrowserFrame::GetTitleFont(),
+  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  if (delegate == NULL) {
+    LOG(INFO) << "delegate is NULL";
+    return;
+  }
+  if (delegate->ShouldShowWindowTitle()) {
+    canvas->DrawStringInt(delegate->GetWindowTitle(),
+                          BrowserFrame::GetTitleFont(),
         SK_ColorWHITE, MirroredLeftPointForRect(title_bounds_),
         title_bounds_.y(), title_bounds_.width(), title_bounds_.height());
     /* TODO(pkasting):  If this window is active, we should also draw a drop
@@ -981,13 +1013,17 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
   // The window title is based on the calculated icon position, even when there
   // is no icon.
   gfx::Rect icon_bounds(IconBounds());
-  views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
-  if (d->ShouldShowWindowIcon())
+  views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
+  if (delegate == NULL) {
+    LOG(INFO) << "delegate is NULL";
+    return;
+  }
+  if (delegate->ShouldShowWindowIcon())
     window_icon_->SetBounds(icon_bounds);
 
   // Size the title, if visible.
-  if (d->ShouldShowWindowTitle()) {
-    int title_x = d->ShouldShowWindowIcon() ?
+  if (delegate->ShouldShowWindowTitle()) {
+    int title_x = delegate->ShouldShowWindowIcon() ?
         icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
     int title_height = BrowserFrame::GetTitleFont().GetHeight();
     // We bias the title position so that when the difference between the icon
