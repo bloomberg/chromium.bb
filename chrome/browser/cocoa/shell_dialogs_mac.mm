@@ -214,6 +214,11 @@ void SelectFileDialogImpl::SelectFile(
   type_map_[dialog] = type;
 
   SheetContext* context = new SheetContext;
+
+  // |context| should never be NULL, but we are seeing indications otherwise.
+  // |This CHECK is here to confirm if we are actually getting NULL
+  // ||context|s. http://crbug.com/58959
+  CHECK(context);
   context->type = type;
   context->owning_window = owning_window;
 
@@ -357,6 +362,11 @@ bool SelectFileDialogImpl::ShouldEnableFilename(NSSavePanel* dialog,
 - (void)endedPanel:(NSSavePanel*)panel
         withReturn:(int)returnCode
            context:(void *)context {
+  // |context| should never be NULL, but we are seeing indications otherwise.
+  // |This CHECK is here to confirm if we are actually getting NULL
+  // ||context|s. http://crbug.com/58959
+  CHECK(context);
+
   int index = 0;
   SelectFileDialogImpl::SheetContext* context_struct =
       (SelectFileDialogImpl::SheetContext*)context;
