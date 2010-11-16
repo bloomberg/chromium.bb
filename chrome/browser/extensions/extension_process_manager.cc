@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_process_manager.h"
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/browsing_instance.h"
 #if defined(OS_MACOSX)
@@ -16,6 +15,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"

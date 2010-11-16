@@ -4,11 +4,11 @@
 
 #include "chrome/browser/window_sizer.h"
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 
 ///////////////////////////////////////////////////////////////////////////////

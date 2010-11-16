@@ -6,13 +6,13 @@
 
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/debugger/debugger_remote_service.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/devtools_messages.h"
 
 DevToolsClientHostImpl::DevToolsClientHostImpl(

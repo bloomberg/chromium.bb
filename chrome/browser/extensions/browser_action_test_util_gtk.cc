@@ -6,11 +6,11 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/gtk/extension_view_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/ui/browser.h"
 
 namespace {
 

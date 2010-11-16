@@ -8,7 +8,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 

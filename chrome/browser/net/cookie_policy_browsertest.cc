@@ -4,9 +4,9 @@
 
 #include "base/task.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"

@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
 
 #include "base/values.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"

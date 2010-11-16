@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/ref_counted.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -12,6 +10,8 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 

@@ -7,11 +7,11 @@
 #include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/ui/browser.h"
 #if defined(OS_WIN)
 #include "chrome/browser/views/clear_browsing_data_view.h"
 #endif

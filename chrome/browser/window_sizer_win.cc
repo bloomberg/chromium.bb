@@ -4,9 +4,9 @@
 
 #include "chrome/browser/window_sizer.h"
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser.h"
 
 // How much horizontal and vertical offset there is between newly
 // opened windows.

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 
 // Fails and hoses bot, http://crbug.com/50060.
 // Flaky, http://crbug.com/42314.

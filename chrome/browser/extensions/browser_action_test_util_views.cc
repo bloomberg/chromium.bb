@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"

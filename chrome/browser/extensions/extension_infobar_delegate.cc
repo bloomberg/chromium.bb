@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 
-#include "chrome/browser/browser.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"

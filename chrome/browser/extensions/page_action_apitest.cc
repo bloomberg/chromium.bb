@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {

@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/app_modal_dialog.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {

@@ -4,7 +4,6 @@
 
 #include "app/menus/menu_model.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"

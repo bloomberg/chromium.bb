@@ -10,7 +10,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/browser_dialogs.h"
 #endif  // defined(TOOLKIT_GTK)

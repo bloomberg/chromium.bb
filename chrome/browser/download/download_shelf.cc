@@ -6,13 +6,13 @@
 
 #include "app/l10n_util.h"
 #include "base/file_util.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 

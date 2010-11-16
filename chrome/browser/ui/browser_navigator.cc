@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/browser_window.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/status_bubble.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 

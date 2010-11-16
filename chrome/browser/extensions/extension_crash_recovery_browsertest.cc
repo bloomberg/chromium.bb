@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/process_util.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/ui_test_utils.h"
 
 class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
