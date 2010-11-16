@@ -345,6 +345,12 @@ int main(int argc, const char* argv[]) {
   CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
+  (void)logging::InitLogging("courgette.log",
+                             logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
+                             logging::LOCK_LOG_FILE,
+                             logging::APPEND_TO_OLD_LOG_FILE);
+  logging::SetMinLogLevel(logging::LOG_VERBOSE);
+
   bool cmd_dis = command_line.HasSwitch("dis");
   bool cmd_asm = command_line.HasSwitch("asm");
   bool cmd_disadj = command_line.HasSwitch("disadj");
