@@ -281,6 +281,10 @@ cr.define('options.contentSettings', function() {
       select.classList.toggle('hidden');
 
       var doc = this.ownerDocument;
+      var area = doc.querySelector('div[contentType=' +
+          listItem.contentType + '][mode=' + listItem.mode + ']');
+      area.enableAddAndEditButtons(!editing);
+
       if (editing) {
         this.setAttribute('editing', '');
         cr.ui.limitInputWidth(input, this, 20);
@@ -456,6 +460,7 @@ cr.define('options.contentSettings', function() {
           emptyException.setting = '';
           self.exceptionsList.addException(emptyException);
         };
+        this.addRow = addRow;
 
         var editRow = cr.doc.createElement('button');
         editRow.textContent = templateData.editExceptionRow;
@@ -509,9 +514,23 @@ cr.define('options.contentSettings', function() {
      */
     updateButtonSensitivity: function() {
       var selectionSize = this.exceptionsList.selectedItems.length;
-      if (this.editRow)
-        this.editRow.disabled = selectionSize != 1;
+      if (this.addRow)
+        this.addRow.disabled = this.addAndEditButtonsDisabled;
+      if (this.editRow) {
+        this.editRow.disabled = selectionSize != 1 ||
+            this.addAndEditButtonsDisabled;
+      }
       this.removeRow.disabled = selectionSize == 0;
+    },
+
+    /**
+     * Manually toggle the enabled/disabled state for the add and edit buttons.
+     * They'll be disabled while another row is being edited.
+     * @param {boolean}
+     */
+    enableAddAndEditButtons: function(enable) {
+      this.addAndEditButtonsDisabled = !enable;
+      this.updateButtonSensitivity();
     },
 
     /**
