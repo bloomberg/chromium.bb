@@ -30,8 +30,9 @@ class NetworkMenuSourceDelegate : public chromeos::MenuSourceDelegate {
 
     localized_strings->SetString("reconnect", l10n_util::GetStringUTF16(
         IDS_NETWORK_RECONNECT_TITLE));
-    localized_strings->SetString("remeber_this_network",
-        l10n_util::GetStringUTF16(IDS_NETWORK_REMEMBER_THIS_NETWORK_TITLE));
+    localized_strings->SetString("auto_connect_this_network",
+        l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
     localized_strings->SetString("ssid_prompt",
         l10n_util::GetStringUTF16(IDS_NETWORK_SSID_HINT));
     localized_strings->SetString("pass_prompt",
@@ -149,14 +150,14 @@ bool NetworkMenuUI::ModelAction(const menus::MenuModel* model,
   values->GetString(2, &passphrase);  // Optional
   std::string ssid;
   values->GetString(3, &ssid);  // Optional
-  int remember = -1;  // -1 indicates not set
-  std::string remember_str;
-  if (values->GetString(4, &remember_str))  // Optional
-    base::StringToInt(remember_str, &remember);
+  int auto_connect = -1;  // -1 indicates default action (auto connect)
+  std::string auto_connect_str;
+  if (values->GetString(4, &auto_connect_str))  // Optional
+    base::StringToInt(auto_connect_str, &auto_connect);
 
   if (action == "connect" || action == "reconnect") {
     close_menu = network_menu->ConnectToNetworkAt(index, passphrase, ssid,
-                                                  remember);
+                                                  auto_connect);
   } else {
     LOG(WARNING) << "Unrecognized action: " << action
                  << " from: " << chrome::kChromeUINetworkMenu;

@@ -158,7 +158,7 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetPassProtected",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED));
-  localized_strings->SetString("inetRememberNetwork",
+  localized_strings->SetString("inetAutoConnectNetwork",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
   localized_strings->SetString("inetCertPkcs",
@@ -459,11 +459,11 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
 
 void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
   std::string service_path;
-  std::string remember;
+  std::string auto_connect_str;
 
   if (args->GetSize() < 2 ||
       !args->GetString(0, &service_path) ||
-      !args->GetString(1, &remember)) {
+      !args->GetString(1, &auto_connect_str)) {
     NOTREACHED();
     return;
   }
@@ -501,7 +501,7 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
     }
   }
 
-  bool auto_connect = remember == "true";
+  bool auto_connect = auto_connect_str == "true";
   if (auto_connect != network->auto_connect()) {
     network->set_auto_connect(auto_connect);
     changed = true;
