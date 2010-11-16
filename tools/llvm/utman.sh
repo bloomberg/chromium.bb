@@ -605,10 +605,9 @@ rebuild-pnacl-libs() {
   extrasdk-clean
   clean-pnacl
   newlib-bitcode
-  # NOTE: currently also builds some native code
-
-  extrasdk-make-install
   libstdcpp-bitcode
+  # NOTE: currently also builds some native code
+  extrasdk-make-install
   organize-native-code
 }
 
@@ -1344,6 +1343,14 @@ libstdcpp-bitcode-install() {
 
   spushd "${objdir}"
 
+  # install headers (=install-data)
+  # for good measure make sure we do not keep any old headers
+  rm -rf "${INSTALL_ROOT}/include/c++"
+  RunWithLog llvm-gcc.install_libstdcpp \
+    make \
+    "${STD_ENV_FOR_LIBSTDCPP[@]}" \
+    ${MAKE_OPTS} install-data
+  # install bitcode library
   cp "${objdir}/src/.libs/libstdc++.a" "${dest}"
 
   spopd
