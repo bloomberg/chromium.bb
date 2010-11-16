@@ -25,6 +25,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -689,6 +690,8 @@ void BrowserRenderProcessHost::InitSpeechInput() {
     enabled = false;
 #if defined(GOOGLE_CHROME_BUILD)
   } else if (!command_line.HasSwitch(switches::kEnableSpeechInput)) {
+    // We need to evaluate whether IO is OK here. http://crbug.com/63335.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     // Official Chrome builds don't have speech input enabled by default in the
     // beta and stable channels.
     std::string channel = platform_util::GetVersionStringModifier();
