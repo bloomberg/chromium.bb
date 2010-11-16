@@ -7,6 +7,7 @@
 #include <limits>
 #include <string>
 
+#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "grit/generated_resources.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
@@ -132,7 +134,7 @@ void AutoFillManager::FormSubmitted(const FormData& form) {
   // Grab a copy of the form data.
   upload_form_structure_.reset(new FormStructure(form));
 
-  if (!upload_form_structure_->IsAutoFillable())
+  if (!upload_form_structure_->IsAutoFillable(true))
     return;
 
   // Determine the possible field types and upload the form structure to the
@@ -148,8 +150,7 @@ void AutoFillManager::FormsSeen(const std::vector<FormData>& forms) {
   ParseForms(forms);
 }
 
-bool AutoFillManager::GetAutoFillSuggestions(int query_id,
-                                             bool field_autofilled,
+bool AutoFillManager::GetAutoFillSuggestions(bool field_autofilled,
                                              const FormField& field) {
   if (!IsAutoFillEnabled())
     return false;
@@ -172,7 +173,7 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
     form = *form_iter;
 
     // Don't send suggestions for forms that aren't auto-fillable.
-    if (!form->IsAutoFillable())
+    if (!form->IsAutoFillable(false))
       continue;
 
     for (std::vector<AutoFillField*>::const_iterator iter = form->begin();
@@ -214,6 +215,30 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   if (values.empty())
     return false;
 
+  // Don't provide AutoFill suggestions when AutoFill is disabled, but provide a
+  // warning to the user.
+  if (!form->IsAutoFillable(true)) {
+    values.assign(
+        1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
+    labels.assign(1, string16());
+    icons.assign(1, string16());
+    unique_ids.assign(1, -1);
+    host->AutoFillSuggestionsReturned(values, labels, icons, unique_ids);
+    return true;
+  }
+
+  // Don't provide credit card suggestions for non-HTTPS pages, but provide a
+  // warning to the user.
+  if (!FormIsHTTPS(form) && type.group() == AutoFillType::CREDIT_CARD) {
+    values.assign(
+        1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
+    labels.assign(1, string16());
+    icons.assign(1, string16());
+    unique_ids.assign(1, -1);
+    host->AutoFillSuggestionsReturned(values, labels, icons, unique_ids);
+    return true;
+  }
+
   // If the form is auto-filled and the renderer is querying for suggestions,
   // then the user is editing the value of a field.  In this case, mimick
   // autocomplete.  In particular, don't display labels, as that information is
@@ -231,8 +256,7 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
     }
   }
 
-  host->AutoFillSuggestionsReturned(
-      query_id, values, labels, icons, unique_ids);
+  host->AutoFillSuggestionsReturned(values, labels, icons, unique_ids);
   return true;
 }
 
@@ -525,10 +549,6 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
                                                std::vector<string16>* labels,
                                                std::vector<string16>* icons,
                                                std::vector<int>* unique_ids) {
-  // Don't return CC suggestions for non-HTTPS pages.
-  if (!FormIsHTTPS(form))
-    return;
-
   for (std::vector<CreditCard*>::const_iterator iter =
            personal_data_->credit_cards().begin();
        iter != personal_data_->credit_cards().end(); ++iter) {
@@ -599,22 +619,33 @@ void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
   }
 }
 
-void AutoFillManager::ParseForms(
-    const std::vector<webkit_glue::FormData>& forms) {
-  for (std::vector<FormData>::const_iterator iter =
-           forms.begin();
+void AutoFillManager::ParseForms(const std::vector<FormData>& forms) {
+  std::vector<FormStructure *> non_queryable_forms;
+  for (std::vector<FormData>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     scoped_ptr<FormStructure> form_structure(new FormStructure(*iter));
-    if (!form_structure->ShouldBeParsed())
+    if (!form_structure->ShouldBeParsed(false))
       continue;
 
     DeterminePossibleFieldTypes(form_structure.get());
-    form_structures_.push_back(form_structure.release());
+
+    // Set aside forms with method GET so that they are not included in the
+    // query to the server.
+    if (form_structure->ShouldBeParsed(true))
+      form_structures_.push_back(form_structure.release());
+    else
+      non_queryable_forms.push_back(form_structure.release());
   }
 
   // If none of the forms were parsed, no use querying the server.
   if (!form_structures_.empty() && !disable_download_manager_requests_)
     download_manager_.StartQueryRequest(form_structures_);
+
+  for (std::vector<FormStructure *>::const_iterator iter =
+           non_queryable_forms.begin();
+       iter != non_queryable_forms.end(); ++iter) {
+    form_structures_.push_back(*iter);
+  }
 }
 
 // When sending IDs (across processes) to the renderer we pack credit card and

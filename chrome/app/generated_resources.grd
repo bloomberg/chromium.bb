@@ -6683,6 +6683,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
         Clear form
       </message>
+      <message name="IDS_AUTOFILL_WARNING_FORM_DISABLED" desc="Warning text to show when autofill is disabled by the website for a given form.">
+        This webpage has disabled automatic filling for this form.
+      </message>
+      <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
+        Automatic credit card filling is disabled because this form does not use a secure connection.
+      </message>
       <if expr="os != 'darwin'">
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Options
@@ -7413,7 +7419,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK" desc="SafeBrowsing Malware HTML description, third line proceed link part.">
         proceed anyway
       </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION4" desc="SafeBrowsing Malware HTML description, first line for case of subresource malicious">        
+      <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION4" desc="SafeBrowsing Malware HTML description, first line for case of subresource malicious">
         <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains content from <ph name="ELEMENTS_HOST_NAME">&lt;strong&gt;$2<ex>www.evil.cn</ex>&lt;/strong&gt;</ph>, a site known to distribute malware. Your computer might catch a virus if you visit this site.
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION5" desc="SafeBrowsing Malware HTML description, detailed information, click button to span.">
