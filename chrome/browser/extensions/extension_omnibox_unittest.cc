@@ -9,6 +9,11 @@
 
 namespace {
 
+const int kNone = ACMatchClassification::NONE;
+const int kUrl = ACMatchClassification::URL;
+const int kMatch = ACMatchClassification::MATCH;
+const int kDim = ACMatchClassification::DIM;
+
 void AppendStyle(const std::string& type,
                  int offset, int length,
                  ListValue* styles) {
@@ -31,6 +36,7 @@ void CompareClassification(const ACMatchClassifications& expected,
 }  // namespace
 
 // Test output key: n = character with no styling, d = dim, m = match, u = url
+// u = 1, m = 2, d = 4. u+d = 5, etc.
 
 //   0123456789
 //    mmmm
@@ -42,16 +48,11 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
   AppendStyle("dim", 6, 3, &styles_value);
 
   ACMatchClassifications styles_expected;
-  styles_expected.push_back(
-      ACMatchClassification(0, ACMatchClassification::NONE));
-  styles_expected.push_back(
-      ACMatchClassification(1, ACMatchClassification::MATCH));
-  styles_expected.push_back(
-      ACMatchClassification(5, ACMatchClassification::NONE));
-  styles_expected.push_back(
-      ACMatchClassification(6, ACMatchClassification::DIM));
-  styles_expected.push_back(
-      ACMatchClassification(9, ACMatchClassification::NONE));
+  styles_expected.push_back(ACMatchClassification(0, kNone));
+  styles_expected.push_back(ACMatchClassification(1, kMatch));
+  styles_expected.push_back(ACMatchClassification(5, kNone));
+  styles_expected.push_back(ACMatchClassification(6, kDim));
+  styles_expected.push_back(ACMatchClassification(9, kNone));
 
   ExtensionOmniboxSuggestion suggestions;
   suggestions.description.resize(10);
@@ -67,13 +68,13 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
 }
 
 //   0123456789
-//   uuuuuu
+//   uuuuu
 // +          dd
 // +          mm
 // + mmmm
 // +  dd
-// = mddmunnnnm
-TEST(ExtensionOmniboxTest, DescriptionStylesOverlap) {
+// = 3773unnnn66
+TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
   ListValue styles_value;
   AppendStyle("url", 0, 5, &styles_value);
   AppendStyle("dim", 9, 2, &styles_value);
@@ -82,18 +83,12 @@ TEST(ExtensionOmniboxTest, DescriptionStylesOverlap) {
   AppendStyle("dim", 1, 2, &styles_value);
 
   ACMatchClassifications styles_expected;
-  styles_expected.push_back(
-      ACMatchClassification(0, ACMatchClassification::MATCH));
-  styles_expected.push_back(
-      ACMatchClassification(1, ACMatchClassification::DIM));
-  styles_expected.push_back(
-      ACMatchClassification(3, ACMatchClassification::MATCH));
-  styles_expected.push_back(
-      ACMatchClassification(4, ACMatchClassification::URL));
-  styles_expected.push_back(
-      ACMatchClassification(5, ACMatchClassification::NONE));
-  styles_expected.push_back(
-      ACMatchClassification(9, ACMatchClassification::MATCH));
+  styles_expected.push_back(ACMatchClassification(0, kUrl | kMatch));
+  styles_expected.push_back(ACMatchClassification(1, kUrl | kMatch | kDim));
+  styles_expected.push_back(ACMatchClassification(3, kUrl | kMatch));
+  styles_expected.push_back(ACMatchClassification(4, kUrl));
+  styles_expected.push_back(ACMatchClassification(5, kNone));
+  styles_expected.push_back(ACMatchClassification(9, kMatch | kDim));
 
   ExtensionOmniboxSuggestion suggestions;
   suggestions.description.resize(10);
@@ -118,8 +113,8 @@ TEST(ExtensionOmniboxTest, DescriptionStylesOverlap) {
 // + mmm
 // +   ddd
 // + ddd
-// = dddddnnnnn
-TEST(ExtensionOmniboxTest, DescriptionStylesOverlap2) {
+// = 77777nnnnn
+TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
   ListValue styles_value;
   AppendStyle("url", 0, 5, &styles_value);
   AppendStyle("match", 0, 5, &styles_value);
@@ -127,15 +122,9 @@ TEST(ExtensionOmniboxTest, DescriptionStylesOverlap2) {
   AppendStyle("dim", 2, 3, &styles_value);
   AppendStyle("dim", 0, 3, &styles_value);
 
-  // We don't merge adjacent identical styles, but the autocomplete system
-  // doesn't mind.
   ACMatchClassifications styles_expected;
-  styles_expected.push_back(
-      ACMatchClassification(0, ACMatchClassification::DIM));
-  styles_expected.push_back(
-      ACMatchClassification(3, ACMatchClassification::DIM));
-  styles_expected.push_back(
-      ACMatchClassification(5, ACMatchClassification::NONE));
+  styles_expected.push_back(ACMatchClassification(0, kUrl | kMatch | kDim));
+  styles_expected.push_back(ACMatchClassification(5, kNone));
 
   ExtensionOmniboxSuggestion suggestions;
   suggestions.description.resize(10);

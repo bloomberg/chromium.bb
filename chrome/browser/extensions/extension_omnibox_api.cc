@@ -126,11 +126,11 @@ ExtensionOmniboxSuggestion::~ExtensionOmniboxSuggestion() {}
 
 bool ExtensionOmniboxSuggestion::ReadStylesFromValue(
     const ListValue& styles_value) {
-  // Start with a NONE style covering the entire range. As we iterate over the
-  // styles, bisect or overwrite the running style list with each new style.
   description_styles.clear();
-  description_styles.push_back(
-      ACMatchClassification(0, ACMatchClassification::NONE));
+
+  // Step 1: Build a vector of styles, 1 per character of description text.
+  std::vector<int> styles;
+  styles.resize(description.length());  // sets all styles to 0
 
   for (size_t i = 0; i < styles_value.GetSize(); ++i) {
     DictionaryValue* style;
@@ -143,8 +143,11 @@ bool ExtensionOmniboxSuggestion::ReadStylesFromValue(
       return false;
     if (!style->GetInteger(kDescriptionStylesOffset, &offset))
       return false;
-    if (!style->GetInteger(kDescriptionStylesLength, &length))
-      return false;
+    if (!style->GetInteger(kDescriptionStylesLength, &length) || length < 0)
+      length = description.length();
+
+    if (offset < 0)
+      offset = std::max(0, static_cast<int>(description.length()) + offset);
 
     int type_class =
         (type == "url") ? ACMatchClassification::URL :
@@ -153,52 +156,18 @@ bool ExtensionOmniboxSuggestion::ReadStylesFromValue(
     if (type_class == -1)
       return false;
 
-    InsertNewStyle(type_class, offset, length);
+    for (int j = offset;
+         j < offset + length && j < static_cast<int>(styles.size()); ++j)
+      styles[j] |= type_class;
+  }
+
+  // Step 2: Convert the vector into continous runs of common styles.
+  for (size_t i = 0; i < styles.size(); ++i) {
+    if (i == 0 || styles[i] != styles[i-1])
+      description_styles.push_back(ACMatchClassification(i, styles[i]));
   }
 
   return true;
-}
-
-void ExtensionOmniboxSuggestion::InsertNewStyle(int type,
-                                                size_t offset,
-                                                size_t length) {
-  // Find the first and last existing styles that this new style overlaps. Those
-  // will have to be removed (if they completely overlap), or bisected.
-  size_t start = 0, end = 0;
-  while (end < description_styles.size()) {
-    if (start < description_styles.size() &&
-        description_styles[start].offset < offset)
-      ++start;
-    if (description_styles[end].offset <= offset + length) {
-      ++end;
-    } else {
-      break;
-    }
-  }
-
-  DCHECK_GT(end, 0u);
-  DCHECK(start == description_styles.size() ||
-         description_styles[start].offset >= offset);
-  DCHECK(end == description_styles.size() ||
-         description_styles[end].offset > offset + length);
-
-  // The last style in the overlapping range will come after our new style.
-  int last_style = description_styles[end - 1].style;
-
-  // Remove all overlapping styles.
-  if (start < end) {
-    description_styles.erase(description_styles.begin() + start,
-                             description_styles.begin() + end);
-  }
-
-  // Insert our new style.
-  description_styles.insert(description_styles.begin() + start,
-                            ACMatchClassification(offset, type));
-  if (offset + length < description.length()) {
-     description_styles.insert(description_styles.begin() + start + 1,
-                               ACMatchClassification(offset + length,
-                                                     last_style));
-  }
 }
 
 ExtensionOmniboxSuggestions::ExtensionOmniboxSuggestions() : request_id(0) {}

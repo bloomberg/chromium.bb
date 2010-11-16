@@ -3928,13 +3928,13 @@
           "descriptionStyles": {
             "type": "array",
             "optional": true,
-            "description": "An array of style objects, created using styleUrl, styleMatch, or styleDim. A style applies to the region of text specified by the style's starting offset and length. If there are any overlapping regions of text covered by multiple styles, the last-specified style will be applied to the overlapping region.",
+            "description": "An array of style objects, created using styleUrl, styleMatch, or styleDim. A style applies to the region of text specified by the style's starting offset and length. If there are any overlapping regions of text covered by multiple styles, they will be added together (e.g. 'match' + 'dim' will display a dimmed match). Not all style combinations will be visually distinct (e.g. 'url' + 'dim' may look identical to 'url').",
             "items": {
               "type": "object",
               "properties": {
                 "type": {"type": "string", "enum": ["url", "match", "dim"]},
                 "offset": {"type": "integer"},
-                "length": {"type": "integer"}
+                "length": {"type": "integer", "optional": true}
               }
             }
           }
@@ -3961,28 +3961,28 @@
       {
         "name": "styleUrl",
         "type": "function",
-        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename.",
+        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
         "parameters": [
            {"type": "integer", "name": "offset", "minimum": 0},
-           {"type": "integer", "name": "length", "minimum": 1}
+           {"type": "integer", "name": "length", "minimum": 0, "optional": true}
         ]
       },
       {
         "name": "styleMatch",
         "type": "function",
-        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching what the user typed.",
+        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching what the user typed. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
         "parameters": [
            {"type": "integer", "name": "offset", "minimum": 0},
-           {"type": "integer", "name": "length", "minimum": 1}
+           {"type": "integer", "name": "length", "minimum": 0, "optional": true}
         ]
       },
       {
         "name": "styleDim",
         "type": "function",
-        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of dim helper text.",
+        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of dim helper text. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
         "parameters": [
            {"type": "integer", "name": "offset", "minimum": 0},
-           {"type": "integer", "name": "length", "minimum": 1}
+           {"type": "integer", "name": "length", "minimum": 0, "optional": true}
         ]
       }
     ],

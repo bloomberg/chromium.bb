@@ -61,11 +61,6 @@ struct ExtensionOmniboxSuggestion {
 
   // Contains style ranges for the description.
   ACMatchClassifications description_styles;
-
- private:
-  // Helper function to add the given style to the running list of
-  // |description_styles|.
-  void InsertNewStyle(int type, size_t offset, size_t length);
 };
 
 struct ExtensionOmniboxSuggestions {

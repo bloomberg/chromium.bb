@@ -9,7 +9,7 @@ chrome.omnibox.onInputChanged.addListener(
     if (text != "suggestio")
       return;
 
-    var desc = 'Description with style: <match> [dim], none';  
+    var desc = 'Description with style: <match>, [dim], (url till end)';  
     suggest([
       {
         content: text + "n1",
@@ -17,6 +17,7 @@ chrome.omnibox.onInputChanged.addListener(
         descriptionStyles: [
           chrome.omnibox.styleMatch(desc.indexOf('<'), 6),
           chrome.omnibox.styleDim(desc.indexOf('['), 4),
+          chrome.omnibox.styleUrl(desc.indexOf('(')),
         ]
       },
       {content: text + "n2", description: "description2"},

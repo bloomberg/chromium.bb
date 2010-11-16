@@ -495,12 +495,12 @@ You can find samples of this API on the
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.omnibox.styleDim</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>offset</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>offset</span></var></span><span class="optional"><span>, </span><span>integer</span>
                       <var><span>length</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of dim helper text.</p>
+                <p>Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of dim helper text. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -574,7 +574,7 @@ You can find samples of this API on the
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="optional">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
@@ -677,12 +677,12 @@ You can find samples of this API on the
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.omnibox.styleMatch</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>offset</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>offset</span></var></span><span class="optional"><span>, </span><span>integer</span>
                       <var><span>length</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching what the user typed.</p>
+                <p>Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching what the user typed. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -756,7 +756,7 @@ You can find samples of this API on the
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="optional">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
@@ -859,12 +859,12 @@ You can find samples of this API on the
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.omnibox.styleUrl</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>offset</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>offset</span></var></span><span class="optional"><span>, </span><span>integer</span>
                       <var><span>length</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename.</p>
+                <p>Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -938,7 +938,7 @@ You can find samples of this API on the
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="optional">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
@@ -1602,7 +1602,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An array of style objects, created using styleUrl, styleMatch, or styleDim. A style applies to the region of text specified by the style's starting offset and length. If there are any overlapping regions of text covered by multiple styles, the last-specified style will be applied to the overlapping region.</dd>
+          <dd>An array of style objects, created using styleUrl, styleMatch, or styleDim. A style applies to the region of text specified by the style's starting offset and length. If there are any overlapping regions of text covered by multiple styles, they will be added together (e.g. 'match' + 'dim' will display a dimmed match). Not all style combinations will be visually distinct (e.g. 'url' + 'dim' may look identical to 'url').</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

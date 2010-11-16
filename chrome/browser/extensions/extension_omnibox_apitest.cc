@@ -135,29 +135,40 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
     EXPECT_EQ(L"keyword suggestion2", result.match_at(2).fill_into_edit);
     EXPECT_EQ(L"keyword suggestion3", result.match_at(3).fill_into_edit);
 
-    std::wstring description = L"Description with style: <match> [dim], none";
+    std::wstring description =
+        L"Description with style: <match>, [dim], (url till end)";
     EXPECT_EQ(description, result.match_at(1).contents);
-    ASSERT_EQ(5u, result.match_at(1).contents_class.size());
+    ASSERT_EQ(6u, result.match_at(1).contents_class.size());
+
     EXPECT_EQ(0u,
               result.match_at(1).contents_class[0].offset);
     EXPECT_EQ(ACMatchClassification::NONE,
               result.match_at(1).contents_class[0].style);
+
     EXPECT_EQ(description.find('<'),
               result.match_at(1).contents_class[1].offset);
     EXPECT_EQ(ACMatchClassification::MATCH,
               result.match_at(1).contents_class[1].style);
+
     EXPECT_EQ(description.find('>'),
               result.match_at(1).contents_class[2].offset);
     EXPECT_EQ(ACMatchClassification::NONE,
               result.match_at(1).contents_class[2].style);
+
     EXPECT_EQ(description.find('['),
               result.match_at(1).contents_class[3].offset);
     EXPECT_EQ(ACMatchClassification::DIM,
               result.match_at(1).contents_class[3].style);
+
     EXPECT_EQ(description.find(']'),
               result.match_at(1).contents_class[4].offset);
     EXPECT_EQ(ACMatchClassification::NONE,
               result.match_at(1).contents_class[4].style);
+
+    EXPECT_EQ(description.find('('),
+              result.match_at(1).contents_class[5].offset);
+    EXPECT_EQ(ACMatchClassification::URL,
+              result.match_at(1).contents_class[5].style);
 
     AutocompleteMatch match = result.match_at(4);
     EXPECT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, match.type);
