@@ -692,12 +692,8 @@ static std::string CanonPath(const GURL& url,
   return CanonPathWithString(url, path_string);
 }
 
-static Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
-                            const Time& current,
-                            const CookieOptions& options) {
-  if (options.force_session())
-    return Time();
-
+static Time CanonExpirationInternal(const CookieMonster::ParsedCookie& pc,
+                                    const Time& current) {
   // First, try the Max-Age attribute.
   uint64 max_age = 0;
   if (pc.HasMaxAge() &&
@@ -716,6 +712,21 @@ static Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
 
   // Invalid or no expiration, persistent cookie.
   return Time();
+}
+
+static Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
+                            const Time& current,
+                            const CookieOptions& options) {
+  Time expiration_time = CanonExpirationInternal(pc, current);
+
+  if (options.force_session()) {
+    // Only override the expiry  adte if it's in the future. If the expiry date
+    // is before the creation date, the cookie is supposed to be deleted.
+    if (expiration_time.is_null() || expiration_time > current)
+      return Time();
+  }
+
+  return expiration_time;
 }
 
 bool CookieMonster::HasCookieableScheme(const GURL& url) {

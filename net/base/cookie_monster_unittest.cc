@@ -2033,4 +2033,32 @@ TEST(CookieMonsterTest, GarbageCollectionTriggers) {
   }
 }
 
+// This test checks that setting a cookie forcing it to be a session only
+// cookie works as expected.
+TEST(CookieMonsterTest, ForceSessionOnly) {
+  GURL url_google(kUrlGoogle);
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL, NULL));
+  net::CookieOptions options;
+
+  // Set a persistent cookie, but force it to be a session cookie.
+  options.set_force_session();
+  ASSERT_TRUE(cm->SetCookieWithOptions(url_google,
+      std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-22 22:50:13 GMT",
+      options));
+
+  // Get the canonical cookie.
+  CookieMonster::CookieList cookie_list = cm->GetAllCookies();
+  ASSERT_EQ(1U, cookie_list.size());
+  ASSERT_FALSE(cookie_list[0].IsPersistent());
+
+  // Use a past expiry date to delete the cookie, but force it to session only.
+  ASSERT_TRUE(cm->SetCookieWithOptions(url_google,
+      std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-1977 22:50:13 GMT",
+      options));
+
+  // Check that the cookie was deleted.
+  cookie_list = cm->GetAllCookies();
+  ASSERT_EQ(0U, cookie_list.size());
+}
+
 }  // namespace
