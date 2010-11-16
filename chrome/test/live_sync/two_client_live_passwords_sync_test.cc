@@ -77,7 +77,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
   ASSERT_TRUE(ContainsSamePasswordForms(actual_zero, actual_one));
 }
 
+// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_SetPassphrase) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
   GetClient(0)->AwaitPassphraseAccepted();
