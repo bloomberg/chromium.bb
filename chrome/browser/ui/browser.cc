@@ -2984,10 +2984,6 @@ void Browser::BeforeUnloadFired(TabContents* tab,
   *proceed_to_fire_unload = true;
 }
 
-gfx::Rect Browser::GetRootWindowResizerRect() const {
-  return window_->GetRootWindowResizerRect();
-}
-
 void Browser::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                              gfx::NativeWindow parent_window) {
   window_->ShowHTMLDialog(delegate, parent_window);

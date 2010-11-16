@@ -10,6 +10,7 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
+#import "chrome/browser/cocoa/tab_contents_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
@@ -26,12 +27,10 @@ class TabStripModel;
 class TabContents;
 class ToolbarModel;
 
-// The interface for the tab strip controller's delegate. Currently, the
-// delegate is the BWC and is responsible for subviews layout and forwarding
-// these events to InfoBarContainerController.
-// Delegating TabStripModelObserverBridge's events (in lieu of subscrining
-// BWC and InfoBarContainerController to TabStripModelObserverBridge events)
-// is necessary to guarantee a proper order of subviews layout updates,
+// The interface for the tab strip controller's delegate.
+// Delegating TabStripModelObserverBridge's events (in lieu of directly
+// subscribing to TabStripModelObserverBridge events, as TabStripController
+// does) is necessary to guarantee a proper order of subviews layout updates,
 // otherwise it might trigger unnesessary content relayout, UI flickering etc.
 @protocol TabStripControllerDelegate
 
@@ -59,7 +58,8 @@ class ToolbarModel;
 @interface TabStripController :
   NSObject<TabControllerTarget,
            URLDropTargetController,
-           GTMWindowSheetControllerDelegate> {
+           GTMWindowSheetControllerDelegate,
+           TabContentsControllerDelegate> {
  @protected
   // YES if tabs are to be laid out vertically instead of horizontally.
   BOOL verticalLayout_;

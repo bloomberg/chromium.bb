@@ -104,10 +104,6 @@ WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
   return WebPreferences();
 }
 
-gfx::Rect RenderViewHostDelegate::GetRootWindowResizerRect() const {
-  return gfx::Rect();
-}
-
 bool RenderViewHostDelegate::IsExternalTabContainer() const {
   return false;
 }

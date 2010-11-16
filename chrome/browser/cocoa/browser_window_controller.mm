@@ -240,14 +240,15 @@
     // Create a sub-controller for the docked devTools and add its view to the
     // hierarchy.  This must happen before the sidebar controller is
     // instantiated.
-    devToolsController_.reset([[DevToolsController alloc] init]);
+    devToolsController_.reset(
+        [[DevToolsController alloc] initWithDelegate:self]);
     [[devToolsController_ view] setFrame:[[self tabContentArea] bounds]];
     [[self tabContentArea] addSubview:[devToolsController_ view]];
 
     // Create a sub-controller for the docked sidebar and add its view to the
     // hierarchy.  This must happen before the previewable contents controller
     // is instantiated.
-    sidebarController_.reset([[SidebarController alloc] init]);
+    sidebarController_.reset([[SidebarController alloc] initWithDelegate:self]);
     [[sidebarController_ view] setFrame:[[devToolsController_ view] bounds]];
     [[devToolsController_ view] addSubview:[sidebarController_ view]];
 
@@ -444,10 +445,12 @@
 
 - (void)updateDevToolsForContents:(TabContents*)contents {
   [devToolsController_ updateDevToolsForTabContents:contents];
+  [devToolsController_ ensureContentsVisible];
 }
 
 - (void)updateSidebarForContents:(TabContents*)contents {
   [sidebarController_ updateSidebarForTabContents:contents];
+  [sidebarController_ ensureContentsVisible];
 }
 
 // Called when the user wants to close a window or from the shutdown process.
@@ -1045,24 +1048,6 @@
   [toolbarController_ setStarredState:isStarred];
 }
 
-// Return the rect, in WebKit coordinates (flipped), of the window's grow box
-// in the coordinate system of the content area of the currently selected tab.
-// |windowGrowBox| needs to be in the window's coordinate system.
-- (NSRect)selectedTabGrowBoxRect {
-  NSWindow* window = [self window];
-  if (![window respondsToSelector:@selector(_growBoxRect)])
-    return NSZeroRect;
-
-  // Before we return a rect, we need to convert it from window coordinates
-  // to tab content area coordinates and flip the coordinate system.
-  NSRect growBoxRect =
-      [[self tabContentArea] convertRect:[window _growBoxRect] fromView:nil];
-  growBoxRect.origin.y =
-      [[self tabContentArea] frame].size.height - growBoxRect.size.height -
-      growBoxRect.origin.y;
-  return growBoxRect;
-}
-
 // Accept tabs from a BrowserWindowController with the same Profile.
 - (BOOL)canReceiveFrom:(TabWindowController*)source {
   if (![source isKindOfClass:[BrowserWindowController class]]) {
@@ -1352,6 +1337,44 @@
   return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];
 }
 
+// TabContentsControllerDelegate protocol.
+- (void)tabContentsViewFrameWillChange:(TabContentsController*)source
+                             frameRect:(NSRect)frameRect {
+  TabContents* contents = [source tabContents];
+  RenderWidgetHostView* render_widget_host_view = contents ?
+      contents->GetRenderWidgetHostView() : NULL;
+  if (!render_widget_host_view)
+    return;
+
+  gfx::Rect reserved_rect;
+
+  NSWindow* window = [self window];
+  if ([window respondsToSelector:@selector(_growBoxRect)]) {
+    NSView* view = [source view];
+    NSRect windowGrowBoxRect = [window _growBoxRect];
+    NSRect viewRect = [[view superview] convertRect:frameRect toView:nil];
+    NSRect growBoxRect = NSIntersectionRect(windowGrowBoxRect, viewRect);
+    if (!NSIsEmptyRect(growBoxRect)) {
+      // Before we return a rect, we need to convert it from window coordinates
+      // to content area coordinates and flip the coordinate system.
+      // Superview is used here because, first, it's a frame rect, so it is
+      // specified in the parent's coordinates and, second, view is not
+      // positioned yet.
+      growBoxRect = [[view superview] convertRect:growBoxRect fromView:nil];
+      growBoxRect.origin.y =
+          NSHeight(frameRect) - NSHeight(growBoxRect);
+      growBoxRect =
+          NSOffsetRect(growBoxRect, -frameRect.origin.x, -frameRect.origin.y);
+
+      reserved_rect =
+          gfx::Rect(growBoxRect.origin.x, growBoxRect.origin.y,
+                    growBoxRect.size.width, growBoxRect.size.height);
+    }
+  }
+
+  render_widget_host_view->set_reserved_contents_rect(reserved_rect);
+}
+
 // TabStripControllerDelegate protocol.
 - (void)onSelectTabWithContents:(TabContents*)contents {
   // Update various elements that are interested in knowing the current
@@ -1360,8 +1383,8 @@
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
 
-  [self updateSidebarForContents:contents];
-  [self updateDevToolsForContents:contents];
+  [sidebarController_ updateSidebarForTabContents:contents];
+  [devToolsController_ updateDevToolsForTabContents:contents];
 
   // Update the bookmark bar.
   // Must do it after sidebar and devtools update, otherwise bookmark bar might
@@ -1371,6 +1394,10 @@
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 
   [infoBarContainerController_ changeTabContents:contents];
+
+  // Update devTools and sidebar contents after size for all views is set.
+  [sidebarController_ ensureContentsVisible];
+  [devToolsController_ ensureContentsVisible];
 }
 
 - (void)onReplaceTabWithContents:(TabContents*)contents {

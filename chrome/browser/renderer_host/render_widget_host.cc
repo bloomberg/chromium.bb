@@ -255,26 +255,37 @@ void RenderWidgetHost::WasResized() {
     return;
   }
 
-  gfx::Rect view_bounds = view_->GetViewBounds();
-  gfx::Size new_size(view_bounds.width(), view_bounds.height());
+  gfx::Size new_size = view_->GetViewBounds().size();
+  gfx::Rect reserved_rect = view_->reserved_contents_rect();
 
   // Avoid asking the RenderWidget to resize to its current size, since it
-  // won't send us a PaintRect message in that case.
-  if (new_size == current_size_)
+  // won't send us a PaintRect message in that case, unless reserved area is
+  // changed, but even in this case PaintRect message won't be sent.
+  if (new_size == current_size_ && reserved_rect == current_reserved_rect_)
     return;
 
-  if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_)
+  if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_ &&
+      in_flight_reserved_rect_ == reserved_rect) {
     return;
+  }
 
-  // We don't expect to receive an ACK when the requested size is empty.
-  if (!new_size.IsEmpty())
-    resize_ack_pending_ = true;
+  // We don't expect to receive an ACK when the requested size is empty or
+  // only reserved area is changed.
+  resize_ack_pending_ = !new_size.IsEmpty() && new_size != current_size_;
 
-  if (!Send(new ViewMsg_Resize(routing_id_, new_size,
-                               GetRootWindowResizerRect())))
+  if (!Send(new ViewMsg_Resize(routing_id_, new_size, reserved_rect))) {
     resize_ack_pending_ = false;
-  else
-    in_flight_size_ = new_size;
+  } else {
+    if (resize_ack_pending_) {
+      in_flight_size_ = new_size;
+      in_flight_reserved_rect_ = reserved_rect;
+    } else {
+      // Message was sent successfully, but we do not expect to receive an ACK,
+      // so update current values right away.
+      current_size_ = new_size;
+      current_reserved_rect_ = reserved_rect;
+    }
+  }
 }
 
 void RenderWidgetHost::GotFocus() {
@@ -617,7 +628,9 @@ void RenderWidgetHost::RendererExited() {
   repaint_ack_pending_ = false;
 
   in_flight_size_.SetSize(0, 0);
+  in_flight_reserved_rect_.SetRect(0, 0, 0, 0);
   current_size_.SetSize(0, 0);
+  current_reserved_rect_.SetRect(0, 0, 0, 0);
   is_hidden_ = false;
   is_gpu_rendering_active_ = false;
 
@@ -674,10 +687,6 @@ void RenderWidgetHost::ImeConfirmComposition() {
 void RenderWidgetHost::ImeCancelComposition() {
   Send(new ViewMsg_ImeSetComposition(routing_id(), string16(),
             std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
-}
-
-gfx::Rect RenderWidgetHost::GetRootWindowResizerRect() const {
-  return gfx::Rect();
 }
 
 void RenderWidgetHost::SetActive(bool active) {
@@ -766,6 +775,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
+  current_reserved_rect_ = params.resizer_rect;
 
   bool is_resize_ack =
       ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.flags);
@@ -776,6 +786,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
     DCHECK(resize_ack_pending_);
     resize_ack_pending_ = false;
     in_flight_size_.SetSize(0, 0);
+    in_flight_reserved_rect_.SetRect(0, 0, 0, 0);
   }
 
   bool is_repaint_ack =
@@ -849,11 +860,9 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   // If we got a resize ack, then perhaps we have another resize to send?
   if (is_resize_ack && view_) {
-    gfx::Rect view_bounds = view_->GetViewBounds();
-    if (current_size_.width() != view_bounds.width() ||
-        current_size_.height() != view_bounds.height()) {
-      WasResized();
-    }
+    // WasResized checks the current size and sends the resize update only
+    // when something was actually changed.
+    WasResized();
   }
 
   if (painting_observer_)

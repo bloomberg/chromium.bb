@@ -41,10 +41,6 @@ bool TabContentsDelegate::CanReloadContents(TabContents* source) const {
   return true;
 }
 
-gfx::Rect TabContentsDelegate::GetRootWindowResizerRect() const {
-  return gfx::Rect();
-}
-
 void TabContentsDelegate::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                                          gfx::NativeWindow parent_window) {
 }

@@ -18,6 +18,7 @@
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bubble_controller.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
+#import "chrome/browser/cocoa/tab_contents_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
@@ -52,6 +53,7 @@ class TabContents;
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
+                      TabContentsControllerDelegate,
                       TabStripControllerDelegate> {
  @private
   // The ordering of these members is important as it determines the order in
@@ -169,10 +171,6 @@ class TabContents;
 
 // Sets whether or not the current page in the frontmost tab is bookmarked.
 - (void)setStarredState:(BOOL)isStarred;
-
-// Return the rect, in WebKit coordinates (flipped), of the window's grow box
-// in the coordinate system of the content area of the currently selected tab.
-- (NSRect)selectedTabGrowBoxRect;
 
 // Called to tell the selected tab to update its loading state.
 // |force| is set if the update is due to changing tabs, as opposed to

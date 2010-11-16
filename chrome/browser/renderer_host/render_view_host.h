@@ -445,7 +445,6 @@ class RenderViewHost : public RenderWidgetHost {
                                   const std::string& value);
   virtual void ForwardEditCommandsForNextKeyEvent(
       const EditCommands& edit_commands);
-  virtual gfx::Rect GetRootWindowResizerRect() const;
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int route_id,

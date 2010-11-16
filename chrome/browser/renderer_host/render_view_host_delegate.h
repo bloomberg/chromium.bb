@@ -822,10 +822,6 @@ class RenderViewHostDelegate {
   // Notification from the renderer that JS runs out of memory.
   virtual void OnJSOutOfMemory() {}
 
-  // Return the rect where to display the resize corner, if any, otherwise
-  // an empty rect.
-  virtual gfx::Rect GetRootWindowResizerRect() const;
-
   // Notification that the renderer has become unresponsive. The
   // delegate can use this notification to show a warning to the user.
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,

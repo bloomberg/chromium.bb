@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/tab_contents_controller.h"
 
 @class NSSplitView;
 @class NSView;
@@ -23,11 +24,11 @@ class TabContents;
   // A view hosting sidebar contents.
   scoped_nsobject<NSSplitView> splitView_;
 
-  // Currently displayed sidebar contents.
-  TabContents* sidebarContents_;  // weak.
+  // Manages currently displayed sidebar contents.
+  scoped_nsobject<TabContentsController> contentsController_;
 }
 
-- (id)init;
+- (id)initWithDelegate:(id<TabContentsControllerDelegate>)delegate;
 
 // This controller's view.
 - (NSSplitView*)view;
@@ -40,6 +41,10 @@ class TabContents;
 // should be shown or hidden and adjusts its width (|delegate_| handles
 // the actual resize).
 - (void)updateSidebarForTabContents:(TabContents*)contents;
+
+// Call when the sidebar view is properly sized and the render widget host view
+// should be put into the view hierarchy.
+- (void)ensureContentsVisible;
 
 @end
 

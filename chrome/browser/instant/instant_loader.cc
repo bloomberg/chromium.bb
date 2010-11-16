@@ -237,9 +237,6 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual bool IsApplication() const { return false; }
   virtual void ConvertContentsToApplication(TabContents* source) {}
   virtual bool CanReloadContents(TabContents* source) const { return true; }
-  virtual gfx::Rect GetRootWindowResizerRect() const {
-    return gfx::Rect();
-  }
   virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window) {}
   virtual void BeforeUnloadFired(TabContents* tab,

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
@@ -15,7 +17,8 @@
 
 TabContentsContainer::TabContentsContainer()
     : native_container_(NULL),
-      tab_contents_(NULL) {
+      tab_contents_(NULL),
+      reserved_area_delegate_(NULL) {
   SetID(VIEW_ID_TAB_CONTAINER);
 }
 
@@ -30,10 +33,14 @@ void TabContentsContainer::ChangeTabContents(TabContents* contents) {
     tab_contents_->WasHidden();
     RemoveObservers();
   }
+  TabContents* old_contents = tab_contents_;
   tab_contents_ = contents;
   // When detaching the last tab of the browser ChangeTabContents is invoked
   // with NULL. Don't attempt to do anything in that case.
   if (tab_contents_) {
+    RenderWidgetHostViewChanged(
+        old_contents ? old_contents->GetRenderWidgetHostView() : NULL,
+        tab_contents_->GetRenderWidgetHostView());
     native_container_->AttachContents(tab_contents_);
     AddObservers();
   }
@@ -70,6 +77,8 @@ void TabContentsContainer::Observe(NotificationType type,
 
 void TabContentsContainer::Layout() {
   if (native_container_) {
+    if (reserved_area_delegate_)
+      reserved_area_delegate_->UpdateReservedContentsRect(this);
     native_container_->GetView()->SetBounds(0, 0, width(), height());
     native_container_->GetView()->Layout();
   }
@@ -110,6 +119,10 @@ void TabContentsContainer::RemoveObservers() {
 
 void TabContentsContainer::RenderViewHostChanged(RenderViewHost* old_host,
                                                  RenderViewHost* new_host) {
+  if (new_host) {
+    RenderWidgetHostViewChanged(
+        old_host ? old_host->view() : NULL, new_host->view());
+  }
   native_container_->RenderViewHostChanged(old_host, new_host);
 }
 
@@ -118,4 +131,15 @@ void TabContentsContainer::TabContentsDestroyed(TabContents* contents) {
   // us to clean up our state in case this happens.
   DCHECK(contents == tab_contents_);
   ChangeTabContents(NULL);
+}
+
+void TabContentsContainer::RenderWidgetHostViewChanged(
+    RenderWidgetHostView* old_view, RenderWidgetHostView* new_view) {
+  // Carry over the reserved rect, if possible.
+  if (old_view && new_view) {
+    new_view->set_reserved_contents_rect(old_view->reserved_contents_rect());
+  } else {
+    if (reserved_area_delegate_)
+      reserved_area_delegate_->UpdateReservedContentsRect(this);
+  }
 }

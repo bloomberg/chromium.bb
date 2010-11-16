@@ -352,28 +352,33 @@ TEST_F(RenderWidgetHostTest, Resize) {
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
+  EXPECT_EQ(gfx::Size(), host_->current_size_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send a rect that has no area but has either width or height set.
+  // since we do not expect ACK, current_size_ should be updated right away.
   process_->sink().ClearMessages();
   view_->set_bounds(gfx::Rect(0, 0, 0, 30));
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 30), host_->in_flight_size_);
+  EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
+  EXPECT_EQ(gfx::Size(0, 30), host_->current_size_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Set the same size again. It should not be sent again.
   process_->sink().ClearMessages();
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 30), host_->in_flight_size_);
+  EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
+  EXPECT_EQ(gfx::Size(0, 30), host_->current_size_);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
 
   // A different size should be sent again, however.
   view_->set_bounds(gfx::Rect(0, 0, 0, 31));
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 31), host_->in_flight_size_);
+  EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
+  EXPECT_EQ(gfx::Size(0, 31), host_->current_size_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 }
 

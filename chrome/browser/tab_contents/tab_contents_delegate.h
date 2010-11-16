@@ -147,10 +147,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Reloading can be disabled e. g. for the DevTools window.
   virtual bool CanReloadContents(TabContents* source) const;
 
-  // Return the rect where to display the resize corner, if any, otherwise
-  // an empty rect.
-  virtual gfx::Rect GetRootWindowResizerRect() const;
-
   // Show a dialog with HTML content. |delegate| contains a pointer to the
   // delegate who knows how to display the dialog (which file URL and JSON
   // string input to use during initialization). |parent_window| is the window

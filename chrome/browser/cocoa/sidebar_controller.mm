@@ -36,14 +36,17 @@ const int kMinWebWidth = 50;
 
 @implementation SidebarController
 
-- (id)init {
+- (id)initWithDelegate:(id<TabContentsControllerDelegate>)delegate {
   if ((self = [super init])) {
     splitView_.reset([[NSSplitView alloc] initWithFrame:NSZeroRect]);
     [splitView_ setDividerStyle:NSSplitViewDividerStyleThin];
     [splitView_ setVertical:YES];
     [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
     [splitView_ setDelegate:self];
-    sidebarContents_ = NULL;
+
+    contentsController_.reset(
+        [[TabContentsController alloc] initWithContents:NULL
+                                               delegate:delegate]);
   }
   return self;
 }
@@ -73,11 +76,10 @@ const int kMinWebWidth = 50;
     if (activeSidebar)
       sidebarContents = activeSidebar->sidebar_contents();
   }
-  if (sidebarContents_ == sidebarContents)
-    return;
 
-  TabContents* oldSidebarContents = sidebarContents_;
-  sidebarContents_ = sidebarContents;
+  TabContents* oldSidebarContents = [contentsController_ tabContents];
+  if (oldSidebarContents == sidebarContents)
+    return;
 
   // Adjust sidebar view.
   [self showSidebarContents:sidebarContents];
@@ -87,16 +89,22 @@ const int kMinWebWidth = 50;
       oldSidebarContents, sidebarContents);
 }
 
+- (void)ensureContentsVisible {
+  [contentsController_ ensureContentsVisible];
+}
+
 - (void)showSidebarContents:(TabContents*)sidebarContents {
+  [contentsController_ ensureContentsSizeDoesNotChange];
+
   NSArray* subviews = [splitView_ subviews];
   if (sidebarContents) {
     DCHECK_GE([subviews count], 1u);
 
-    // |sidebarView| is a TabContentsViewCocoa object, whose ViewID was
+    // Native view is a TabContentsViewCocoa object, whose ViewID was
     // set to VIEW_ID_TAB_CONTAINER initially, so change it to
     // VIEW_ID_SIDE_BAR_CONTAINER here.
-    NSView* sidebarView = sidebarContents->GetNativeView();
-    view_id_util::SetID(sidebarView, VIEW_ID_SIDE_BAR_CONTAINER);
+    view_id_util::SetID(
+        sidebarContents->GetNativeView(), VIEW_ID_SIDE_BAR_CONTAINER);
 
     CGFloat sidebarWidth = 0;
     if ([subviews count] == 1) {
@@ -108,12 +116,10 @@ const int kMinWebWidth = 50;
         sidebarWidth =
             NSWidth([splitView_ frame]) * kDefaultSidebarWidthRatio;
       }
-      [splitView_ addSubview:sidebarView];
+      [splitView_ addSubview:[contentsController_ view]];
     } else {
       DCHECK_EQ([subviews count], 2u);
       sidebarWidth = NSWidth([[subviews objectAtIndex:1] frame]);
-      [splitView_ replaceSubview:[subviews objectAtIndex:1]
-                            with:sidebarView];
     }
 
     // Make sure |sidebarWidth| isn't too large or too small.
@@ -132,8 +138,11 @@ const int kMinWebWidth = 50;
       g_browser_process->local_state()->SetInteger(
           prefs::kExtensionSidebarWidth, sidebarWidth);
       [oldSidebarContentsView removeFromSuperview];
+      [splitView_ adjustSubviews];
     }
   }
+
+  [contentsController_ changeTabContents:sidebarContents];
 }
 
 - (void)resizeSidebarToNewWidth:(CGFloat)width {

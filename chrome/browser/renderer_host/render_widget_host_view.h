@@ -15,6 +15,7 @@
 
 #include "app/surface/transport_dib.h"
 #include "gfx/native_widget_types.h"
+#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
@@ -260,6 +261,13 @@ class RenderWidgetHostView {
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   }
 
+  gfx::Rect reserved_contents_rect() const {
+    return reserved_rect_;
+  }
+  void set_reserved_contents_rect(const gfx::Rect& reserved_rect) {
+    reserved_rect_ = reserved_rect;
+  }
+
  protected:
   // Interface class only, do not construct.
   RenderWidgetHostView() : popup_type_(WebKit::WebPopupTypeNone) {}
@@ -271,6 +279,10 @@ class RenderWidgetHostView {
   // A custom background to paint behind the web content. This will be tiled
   // horizontally. Can be null, in which case we fall back to painting white.
   SkBitmap background_;
+
+  // The current reserved area in view coordinates where contents should not be
+  // rendered to draw the resize corner, sidebar mini tabs etc.
+  gfx::Rect reserved_rect_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostView);

@@ -216,11 +216,6 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
   return false;
 }
 
-gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
-  NSRect tabRect = [controller_ selectedTabGrowBoxRect];
-  return gfx::Rect(NSRectToCGRect(tabRect));
-}
-
 void BrowserWindowCocoa::ConfirmAddSearchProvider(
     const TemplateURL* template_url,
     Profile* profile) {

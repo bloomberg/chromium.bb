@@ -31,6 +31,7 @@
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
@@ -261,6 +262,7 @@ class ResizeCorner : public views::View {
       gfx::Size ps = GetPreferredSize();
       // No need to handle Right to left text direction here,
       // our parent must take care of it for us...
+      // TODO(alekseys): fix it.
       SetBounds(parent_view->width() - ps.width(),
                 parent_view->height() - ps.height(), ps.width(), ps.height());
     }
@@ -1007,28 +1009,6 @@ bool BrowserView::IsToolbarVisible() const {
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
-gfx::Rect BrowserView::GetRootWindowResizerRect() const {
-  if (frame_->GetWindow()->IsMaximized() || frame_->GetWindow()->IsFullscreen())
-    return gfx::Rect();
-
-  // We don't specify a resize corner size if we have a bottom shelf either.
-  // This is because we take care of drawing the resize corner on top of that
-  // shelf, so we don't want others to do it for us in this case.
-  // Currently, the only visible bottom shelf is the download shelf.
-  // Other tests should be added here if we add more bottom shelves.
-  if (download_shelf_.get() && download_shelf_->IsShowing()) {
-    return gfx::Rect();
-  }
-
-  gfx::Rect client_rect = contents_split_->bounds();
-  gfx::Size resize_corner_size = ResizeCorner::GetSize();
-  int x = client_rect.width() - resize_corner_size.width();
-  if (base::i18n::IsRTL())
-    x = 0;
-  return gfx::Rect(x, client_rect.height() - resize_corner_size.height(),
-                   resize_corner_size.width(), resize_corner_size.height());
-}
-
 void BrowserView::DisableInactiveFrame() {
 #if defined(OS_WIN)
   frame_->GetWindow()->DisableInactiveRendering();
@@ -1367,8 +1347,10 @@ void BrowserView::PrepareForInstant() {
 }
 
 void BrowserView::ShowInstant(TabContents* preview_contents) {
-  if (!preview_container_)
+  if (!preview_container_) {
     preview_container_ = new TabContentsContainer();
+    preview_container_->set_reserved_area_delegate(this);
+  }
   contents_->SetPreview(preview_container_, preview_contents);
   preview_container_->ChangeTabContents(preview_contents);
 
@@ -1822,6 +1804,43 @@ void BrowserView::InfoBarSizeChanged(bool is_animating) {
   SelectedTabToolbarSizeChanged(is_animating);
 }
 
+void BrowserView::UpdateReservedContentsRect(
+    const TabContentsContainer* source) {
+  RenderWidgetHostView* render_widget_host_view =
+      source->tab_contents() ? source->tab_contents()->GetRenderWidgetHostView()
+                             : NULL;
+  if (!render_widget_host_view)
+    return;
+
+  gfx::Rect reserved_rect;
+
+  if (!frame_->GetWindow()->IsMaximized() &&
+      !frame_->GetWindow()->IsFullscreen()) {
+    gfx::Size resize_corner_size = ResizeCorner::GetSize();
+    if (!resize_corner_size.IsEmpty()) {
+      gfx::Point resize_corner_origin;
+      gfx::Rect bounds = GetLocalBounds(false);
+      resize_corner_origin.set_x(bounds.right() - resize_corner_size.width());
+      resize_corner_origin.set_y(bounds.bottom() - resize_corner_size.height());
+
+      View::ConvertPointToView(this, source, &resize_corner_origin);
+
+      gfx::Size container_size = source->size();
+
+      if (resize_corner_origin.x() < container_size.width() &&
+          resize_corner_origin.y() < container_size.height()) {
+        reserved_rect = gfx::Rect(resize_corner_origin, resize_corner_size);
+      }
+    }
+  }
+
+  // TODO(alekseys): for source == contents_container_, consult SidebarTabView
+  // for the current size to reserve. Something like this:
+  // reserved_rect = reserved_rect.Union(SidebarTabView::GetCurrentBounds());
+
+  render_widget_host_view->set_reserved_contents_rect(reserved_rect);
+}
+
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout;
 }
@@ -1885,6 +1904,7 @@ void BrowserView::Init() {
   AddChildView(infobar_container_);
 
   contents_container_ = new TabContentsContainer;
+  contents_container_->set_reserved_area_delegate(this);
   contents_ = new ContentsContainer(contents_container_);
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
@@ -1893,6 +1913,7 @@ void BrowserView::Init() {
   bool sidebar_allowed = SidebarManager::IsSidebarAllowed();
   if (sidebar_allowed) {
     sidebar_container_ = new TabContentsContainer;
+    sidebar_container_->set_reserved_area_delegate(this);
     sidebar_container_->SetID(VIEW_ID_SIDE_BAR_CONTAINER);
     sidebar_container_->SetVisible(false);
 
@@ -1908,6 +1929,7 @@ void BrowserView::Init() {
   }
 
   devtools_container_ = new TabContentsContainer;
+  devtools_container_->set_reserved_area_delegate(this);
   devtools_container_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
   devtools_container_->SetVisible(false);
 

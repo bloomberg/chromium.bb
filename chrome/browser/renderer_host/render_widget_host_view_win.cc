@@ -578,8 +578,6 @@ void RenderWidgetHostViewWin::UpdateCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostViewWin::UpdateCursorIfOverSelf() {
-  static HCURSOR kCursorResizeRight = LoadCursor(NULL, IDC_SIZENWSE);
-  static HCURSOR kCursorResizeLeft = LoadCursor(NULL, IDC_SIZENESW);
   static HCURSOR kCursorArrow = LoadCursor(NULL, IDC_ARROW);
   static HCURSOR kCursorAppStarting = LoadCursor(NULL, IDC_APPSTARTING);
   static HINSTANCE module_handle =
@@ -591,26 +589,19 @@ void RenderWidgetHostViewWin::UpdateCursorIfOverSelf() {
   if (WindowFromPoint(pt) == m_hWnd) {
     BOOL result = ::ScreenToClient(m_hWnd, &pt);
     DCHECK(result);
-    if (render_widget_host_->GetRootWindowResizerRect().Contains(pt.x, pt.y)) {
-      if (base::i18n::IsRTL())
-        SetCursor(kCursorResizeLeft);
-      else
-        SetCursor(kCursorResizeRight);
-    } else {
-      // We cannot pass in NULL as the module handle as this would only work for
-      // standard win32 cursors. We can also receive cursor types which are
-      // defined as webkit resources. We need to specify the module handle of
-      // chrome.dll while loading these cursors.
-      HCURSOR display_cursor = current_cursor_.GetCursor(module_handle);
+    // We cannot pass in NULL as the module handle as this would only work for
+    // standard win32 cursors. We can also receive cursor types which are
+    // defined as webkit resources. We need to specify the module handle of
+    // chrome.dll while loading these cursors.
+    HCURSOR display_cursor = current_cursor_.GetCursor(module_handle);
 
-      // If a page is in the loading state, we want to show the Arrow+Hourglass
-      // cursor only when the current cursor is the ARROW cursor. In all other
-      // cases we should continue to display the current cursor.
-      if (is_loading_ && display_cursor == kCursorArrow)
-        display_cursor = kCursorAppStarting;
+    // If a page is in the loading state, we want to show the Arrow+Hourglass
+    // cursor only when the current cursor is the ARROW cursor. In all other
+    // cases we should continue to display the current cursor.
+    if (is_loading_ && display_cursor == kCursorArrow)
+      display_cursor = kCursorAppStarting;
 
-      SetCursor(display_cursor);
-    }
+    SetCursor(display_cursor);
   }
 }
 
@@ -682,31 +673,6 @@ void RenderWidgetHostViewWin::Redraw() {
 
   LPARAM lparam = reinterpret_cast<LPARAM>(&invalid_screen_rect);
   EnumChildWindows(m_hWnd, EnumChildProc, lparam);
-}
-
-void RenderWidgetHostViewWin::DrawResizeCorner(const gfx::Rect& paint_rect,
-                                               HDC dc) {
-  gfx::Rect resize_corner_rect =
-      render_widget_host_->GetRootWindowResizerRect();
-  if (!paint_rect.Intersect(resize_corner_rect).IsEmpty()) {
-    SkBitmap* bitmap = ResourceBundle::GetSharedInstance().
-        GetBitmapNamed(IDR_TEXTAREA_RESIZER);
-    gfx::CanvasSkia canvas(bitmap->width(), bitmap->height(), false);
-    canvas.getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
-    int x = resize_corner_rect.x() + resize_corner_rect.width() -
-        bitmap->width();
-    canvas.save();
-    if (base::i18n::IsRTL()) {
-      canvas.TranslateInt(bitmap->width(), 0);
-      canvas.ScaleInt(-1, 1);
-      x = 0;
-    }
-    canvas.DrawBitmapInt(*bitmap, 0, 0);
-    canvas.getTopPlatformDevice().drawToHDC(dc, x,
-        resize_corner_rect.y() + resize_corner_rect.height() -
-        bitmap->height(), NULL);
-    canvas.restore();
-  }
 }
 
 void RenderWidgetHostViewWin::DidUpdateBackingStore(
@@ -925,7 +891,6 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
     for (DWORD i = 0; i < region_data->rdh.nCount; ++i) {
       gfx::Rect paint_rect = bitmap_rect.Intersect(gfx::Rect(region_rects[i]));
       if (!paint_rect.IsEmpty()) {
-        DrawResizeCorner(paint_rect, backing_store->hdc());
         if (visually_deemphasized_) {
           DrawDeemphasized(paint_rect, backing_store->hdc(), paint_dc.m_hDC);
         } else {
@@ -1253,21 +1218,6 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
   // call).  So the TabContents window would have to be specified to the
   // RenderViewHostHWND as there is no way to retrieve it from the HWND.
   if (!close_on_deactivate_) {  // Don't forward if the container is a popup.
-    if (message == WM_LBUTTONDOWN) {
-      // If we get clicked on, where the resize corner is drawn, we delegate the
-      // message to the root window, with the proper HTBOTTOMXXX wparam so that
-      // Windows can take care of the resizing for us.
-      if (render_widget_host_ &&
-          render_widget_host_->GetRootWindowResizerRect().
-              Contains(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam))) {
-        WPARAM wparam = HTBOTTOMRIGHT;
-        if (base::i18n::IsRTL())
-          wparam = HTBOTTOMLEFT;
-        HWND root_hwnd = ::GetAncestor(m_hWnd, GA_ROOT);
-        if (SendMessage(root_hwnd, WM_NCLBUTTONDOWN, wparam, lparam) == 0)
-          return 0;
-      }
-    }
     switch (message) {
       case WM_LBUTTONDOWN:
       case WM_MBUTTONDOWN:

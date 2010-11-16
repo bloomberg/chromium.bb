@@ -27,6 +27,8 @@
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/serialized_script_value.h"
 #include "chrome/common/window_container_type.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
 #include "media/audio/audio_parameters.h"
@@ -346,6 +348,10 @@ struct ViewHostMsg_UpdateRect_Params {
   // the renderer process.  This is necessary in case a resize operation is in
   // progress.
   gfx::Size view_size;
+
+  // The area of the RenderView reserved for resize corner when this message
+  // was generated.  Reported for the same reason as view_size is.
+  gfx::Rect resizer_rect;
 
   // New window locations for plugin child windows.
   std::vector<webkit_glue::WebPluginGeometry> plugin_window_moves;

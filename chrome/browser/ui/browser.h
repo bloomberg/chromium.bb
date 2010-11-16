@@ -728,7 +728,6 @@ class Browser : public TabHandlerDelegate,
   virtual bool IsApplication() const;
   virtual void ConvertContentsToApplication(TabContents* source);
   virtual bool ShouldDisplayURLField();
-  virtual gfx::Rect GetRootWindowResizerRect() const;
   virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window);
   virtual void BeforeUnloadFired(TabContents* source,

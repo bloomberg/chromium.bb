@@ -2939,12 +2939,6 @@ void TabContents::OnCrossSiteResponse(int new_render_process_host_id,
                                       new_request_id);
 }
 
-gfx::Rect TabContents::GetRootWindowResizerRect() const {
-  if (delegate())
-    return delegate()->GetRootWindowResizerRect();
-  return gfx::Rect();
-}
-
 void TabContents::RendererUnresponsive(RenderViewHost* rvh,
                                        bool is_during_unload) {
   if (is_during_unload) {

@@ -85,7 +85,6 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;
   virtual bool IsToolbarVisible() const;
-  virtual gfx::Rect GetRootWindowResizerRect() const;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);
   virtual void ToggleBookmarkBar();

@@ -20,6 +20,7 @@
 #include "chrome/browser/views/frame/browser_bubble_host.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
+#include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/unhandled_keyboard_event_handler.h"
@@ -52,7 +53,6 @@ class InfoBarContainer;
 class LocationBarView;
 class SideTabStrip;
 class StatusBubbleViews;
-class TabContentsContainer;
 class TabStripModel;
 class ToolbarView;
 class ZoomMenuModel;
@@ -82,7 +82,8 @@ class BrowserView : public BrowserBubbleHost,
                     public menus::SimpleMenuModel::Delegate,
                     public views::WindowDelegate,
                     public views::ClientView,
-                    public InfoBarContainer::Delegate {
+                    public InfoBarContainer::Delegate,
+                    public TabContentsContainer::ReservedAreaDelegate {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -272,7 +273,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;
   virtual bool IsToolbarVisible() const;
-  virtual gfx::Rect GetRootWindowResizerRect() const;
   virtual void DisableInactiveFrame();
   virtual void ConfirmSetDefaultSearchProvider(
       TabContents* tab_contents,
@@ -384,6 +384,9 @@ class BrowserView : public BrowserBubbleHost,
 
   // InfoBarContainer::Delegate overrides
   virtual void InfoBarSizeChanged(bool is_animating);
+
+  // TabContentsContainer::ReservedAreaDelegate overrides.
+  virtual void UpdateReservedContentsRect(const TabContentsContainer* source);
 
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that

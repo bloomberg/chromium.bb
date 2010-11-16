@@ -248,10 +248,6 @@ class RenderWidgetHostViewWin
   // asynchronously.
   void Redraw();
 
-  // Draw the resize corner bitmap on top of the given HDC, if it intersects the
-  // given paint rect.
-  void DrawResizeCorner(const gfx::Rect& paint_rect, HDC dc);
-
   // Draw our background over the given HDC in the given |rect|. The background
   // will be tiled such that it lines up with existing tiles starting from the
   // origin of |dc|.

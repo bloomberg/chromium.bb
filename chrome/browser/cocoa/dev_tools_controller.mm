@@ -36,14 +36,24 @@ const int kMinWebHeight = 50;
 
 @implementation DevToolsController
 
-- (id)init {
+- (id)initWithDelegate:(id<TabContentsControllerDelegate>)delegate {
   if ((self = [super init])) {
     splitView_.reset([[NSSplitView alloc] initWithFrame:NSZeroRect]);
     [splitView_ setDividerStyle:NSSplitViewDividerStyleThin];
     [splitView_ setVertical:NO];
     [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+    [splitView_ setDelegate:self];
+
+    contentsController_.reset(
+        [[TabContentsController alloc] initWithContents:NULL
+                                               delegate:delegate]);
   }
   return self;
+}
+
+- (void)dealloc {
+  [splitView_ setDelegate:nil];
+  [super dealloc];
 }
 
 - (NSView*)view {
@@ -62,7 +72,13 @@ const int kMinWebHeight = 50;
   [self showDevToolsContents:devToolsContents];
 }
 
+- (void)ensureContentsVisible {
+  [contentsController_ ensureContentsVisible];
+}
+
 - (void)showDevToolsContents:(TabContents*)devToolsContents {
+  [contentsController_ ensureContentsSizeDoesNotChange];
+
   NSArray* subviews = [splitView_ subviews];
   if (devToolsContents) {
     DCHECK_GE([subviews count], 1u);
@@ -70,8 +86,8 @@ const int kMinWebHeight = 50;
     // |devToolsView| is a TabContentsViewCocoa object, whose ViewID was
     // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
     // VIEW_ID_DEV_TOOLS_DOCKED here.
-    NSView* devToolsView = devToolsContents->GetNativeView();
-    view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
+    view_id_util::SetID(
+        devToolsContents->GetNativeView(), VIEW_ID_DEV_TOOLS_DOCKED);
 
     CGFloat splitOffset = 0;
     if ([subviews count] == 1) {
@@ -82,13 +98,11 @@ const int kMinWebHeight = 50;
         // Initial load, set to default value.
         splitOffset = kDefaultContentsSplitOffset;
       }
-      [splitView_ addSubview:devToolsView];
+      [splitView_ addSubview:[contentsController_ view]];
     } else {
       DCHECK_EQ([subviews count], 2u);
       // If devtools are already visible, keep the current size.
-      splitOffset = NSHeight([devToolsView frame]);
-      [splitView_ replaceSubview:[subviews objectAtIndex:1]
-                            with:devToolsView];
+      splitOffset = NSHeight([[subviews objectAtIndex:1] frame]);
     }
 
     // Make sure |splitOffset| isn't too large or too small.
@@ -107,8 +121,11 @@ const int kMinWebHeight = 50;
       g_browser_process->local_state()->SetInteger(
           prefs::kDevToolsSplitLocation, splitOffset);
       [oldDevToolsContentsView removeFromSuperview];
+      [splitView_ adjustSubviews];
     }
   }
+
+  [contentsController_ changeTabContents:devToolsContents];
 }
 
 - (void)resizeDevToolsToNewHeight:(CGFloat)height {
@@ -132,6 +149,16 @@ const int kMinWebHeight = 50;
   [splitView_ adjustSubviews];
 }
 
-
+// NSSplitViewDelegate protocol.
+- (BOOL)splitView:(NSSplitView *)splitView
+    shouldAdjustSizeOfSubview:(NSView *)subview {
+  // Return NO for the devTools view to indicate that it should not be resized
+  // automatically. It preserves the height set by the user and also keeps
+  // view height the same while changing tabs when one of the tabs shows infobar
+  // and others are not.
+  if ([[splitView_ subviews] indexOfObject:subview] == 1)
+    return NO;
+  return YES;
+}
 
 @end

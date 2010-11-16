@@ -103,7 +103,7 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
 // static
 WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   switch (render_widget->popup_type_) {
-    case WebKit::WebPopupTypeNone: // Nothing to create.
+    case WebKit::WebPopupTypeNone:  // Nothing to create.
       break;
     case WebKit::WebPopupTypeSelect:
     case WebKit::WebPopupTypeSuggestion:
@@ -232,15 +232,19 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
   if (!webwidget_)
     return;
 
+  // We shouldn't be asked to resize to our current size.
+  DCHECK(size_ != new_size || resizer_rect_ != resizer_rect);
+
   // Remember the rect where the resize corner will be drawn.
   resizer_rect_ = resizer_rect;
+
+  if (size_ == new_size)
+    return;
 
   // TODO(darin): We should not need to reset this here.
   SetHidden(false);
   needs_repainting_on_restore_ = false;
 
-  // We shouldn't be asked to resize to our current size.
-  DCHECK(size_ != new_size);
   size_ = new_size;
 
   // We should not be sent a Resize message if we have not ACK'd the previous
@@ -565,6 +569,7 @@ void RenderWidget::DoDeferredUpdate() {
     params.copy_rects.swap(copy_rects);  // TODO(darin): clip to bounds?
   }
   params.view_size = size_;
+  params.resizer_rect = resizer_rect_;
   params.plugin_window_moves.swap(plugin_window_moves_);
   params.flags = next_paint_flags_;
 
@@ -661,7 +666,7 @@ void RenderWidget::scheduleComposite() {
   // important for the accelerated compositing case. The option of simply
   // duplicating all that code is less desirable than "faking out" the
   // invalidation path using a magical damage rect.
-  didInvalidateRect(WebRect(0,0,1,1));
+  didInvalidateRect(WebRect(0, 0, 1, 1));
 }
 
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {

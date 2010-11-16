@@ -841,6 +841,7 @@ void ParamTraits<ViewHostMsg_UpdateRect_Params>::Write(
   WriteParam(m, p.scroll_rect);
   WriteParam(m, p.copy_rects);
   WriteParam(m, p.view_size);
+  WriteParam(m, p.resizer_rect);
   WriteParam(m, p.plugin_window_moves);
   WriteParam(m, p.flags);
 }
@@ -855,6 +856,7 @@ bool ParamTraits<ViewHostMsg_UpdateRect_Params>::Read(
       ReadParam(m, iter, &p->scroll_rect) &&
       ReadParam(m, iter, &p->copy_rects) &&
       ReadParam(m, iter, &p->view_size) &&
+      ReadParam(m, iter, &p->resizer_rect) &&
       ReadParam(m, iter, &p->plugin_window_moves) &&
       ReadParam(m, iter, &p->flags);
 }
@@ -875,6 +877,8 @@ void ParamTraits<ViewHostMsg_UpdateRect_Params>::Log(const param_type& p,
   LogParam(p.copy_rects, l);
   l->append(", ");
   LogParam(p.view_size, l);
+  l->append(", ");
+  LogParam(p.resizer_rect, l);
   l->append(", ");
   LogParam(p.plugin_window_moves, l);
   l->append(", ");

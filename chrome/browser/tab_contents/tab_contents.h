@@ -39,7 +39,6 @@
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/translate_errors.h"
 #include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "net/base/load_states.h"
 #include "webkit/glue/dom_operations.h"
 
@@ -999,7 +998,6 @@ class TabContents : public PageNavigator,
   virtual void OnJSOutOfMemory();
   virtual void OnCrossSiteResponse(int new_render_process_host_id,
                                    int new_request_id);
-  virtual gfx::Rect GetRootWindowResizerRect() const;
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,
                                     bool is_during_unload);
   virtual void RendererResponsive(RenderViewHost* render_view_host);
