@@ -3060,11 +3060,7 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 {
     const Cluster* pCluster = m_pSegment->GetFirst();
 
-    //If Segment::GetFirst returns NULL, then this must be a network
-    //download, and we haven't loaded any clusters yet.  In this case,
-    //returning NULL from Track::GetFirst means the same thing.
-
-    for (int i = 0; i < 100; ++i)  //arbitrary upper bound
+    for (int i = 0; ; )
     {
         if (pCluster == NULL)
         {
@@ -3086,7 +3082,13 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 
         pBlockEntry = pCluster->GetFirst();
 
-        while (pBlockEntry)
+        if (pBlockEntry == 0)  //empty cluster
+        {
+            pCluster = m_pSegment->GetNext(pCluster);
+            continue;
+        }
+
+        for (;;)
         {
             const Block* const pBlock = pBlockEntry->GetBlock();
             assert(pBlock);
@@ -3095,7 +3097,15 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
                 return 0;
 
             pBlockEntry = pCluster->GetNext(pBlockEntry);
+
+            if (pBlockEntry == 0)
+                break;
         }
+
+        ++i;
+
+        if (i >= 100)
+            break;
 
         pCluster = m_pSegment->GetNext(pCluster);
     }
