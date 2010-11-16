@@ -4,22 +4,21 @@
 <title i18n-content="title">
 </title>
 <style>
-html {
-  height: 100%;
-  background-color: #999;
-}
 body {
-  height: 100%;
-  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#BBB), to(#999));
   font-family: Helvetica, Arial, sans-serif;
   margin: 0;
+  background-color: #CCC;
+}
+html[high-color-depth] body {
+  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#CCC), to(#AAA));
+  background-attachment: fixed;
 }
 #cell {
-  border-top: 1px solid #999;
   padding: 40px;
 }
 #box {
   width: 80%;
+  min-width: 200px;
   max-width: 750px;
   background-color: white;
   color: black;
@@ -33,6 +32,9 @@ body {
 ul {
   margin: 0;
   padding-bottom: 0;
+}
+li {
+  padding-top: 2px;
 }
 h1 {
   font-size: 18pt;
@@ -72,8 +74,35 @@ a:visited {
   -webkit-margin-start: 3px;
   margin-top: 30px;
 }
+.failedUrl {
+  word-wrap: break-word;
+}
 </style>
 </head>
+
+<script>
+/**
+ * Sets the classes of elements to match their jscontent values.
+ * Elements without jscontent values are ignored.
+ *
+ * This allows styles to be applied to nested elements from
+ * within GRD files.  To work on these elements, this must be
+ * called after jscontent substitution.
+ */
+function setJsContentElementClasses() {
+  var elements = document.querySelectorAll('[jscontent]');
+  for (var i = 0; i < elements.length; ++i) {
+    elements[i].className = elements[i].getAttribute('jscontent');
+  }
+}
+
+document.addEventListener('DOMContentLoaded',
+                          setJsContentElementClasses,
+                          false);
+
+if (window.screen.colorDepth >= 24)
+  document.documentElement.setAttribute('high-color-depth', '');
+</script>
 
 <body id="t">
 <div id="cell">
