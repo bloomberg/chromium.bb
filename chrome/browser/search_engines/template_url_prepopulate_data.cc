@@ -2938,7 +2938,8 @@ int GetCurrentCountryID() {
   // The territory part must contain exactly two characters.
   if (end - begin == 2) {
     return CountryCharsToCountryIDWithUpdate(
-        ToUpperASCII(locale_str[begin]), ToUpperASCII(locale_str[begin + 1]));
+        base::ToUpperASCII(locale_str[begin]),
+        base::ToUpperASCII(locale_str[begin + 1]));
   }
 
   return kCountryIDUnknown;

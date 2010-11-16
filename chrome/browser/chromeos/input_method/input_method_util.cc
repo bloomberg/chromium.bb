@@ -376,7 +376,7 @@ std::string NormalizeLanguageCode(
     }
     // Upcase the country code part.
     for (size_t i = 3; i < copied_language_code.size(); ++i) {
-      copied_language_code[i] = ToUpperASCII(copied_language_code[i]);
+      copied_language_code[i] = base::ToUpperASCII(copied_language_code[i]);
     }
     return copied_language_code;
   }
