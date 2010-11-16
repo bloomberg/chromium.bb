@@ -1068,8 +1068,8 @@ each locale. -->
         <message name="IDS_SIGN_OUT" desc="The text label of the Sign Out menu item">
           Sign out
         </message>
-        <message name="IDS_EXIT_GUEST_MODE" desc="The text label of the Exit guest mode menu item">
-          Exit guest mode
+        <message name="IDS_EXIT_GUEST_MODE" desc="The text label of the Exit guest session menu item">
+          Exit guest session
         </message>
       </if>
 
