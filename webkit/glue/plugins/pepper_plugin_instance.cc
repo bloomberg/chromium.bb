@@ -437,7 +437,6 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
   if (graphics_2d) {
     if (!graphics_2d->BindToInstance(this))
       return false;  // Can't bind to more than one instance.
-    bound_graphics_ = graphics_2d;
 
     // See http://crbug.com/49403: this can be further optimized by keeping the
     // old device around and painting from it.
@@ -458,6 +457,7 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
       canvas.drawARGB(255, 255, 255, 255);
     }
 
+    bound_graphics_ = graphics_2d;
     // BindToInstance will have invalidated the plugin if necessary.
   } else if (graphics_3d) {
     if (!graphics_3d->BindToInstance(this))
