@@ -1054,3 +1054,9 @@
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
 }
+{
+   bug_63386
+   Heapcheck:Leak
+   ...
+   fun:PrintPreviewTabControllerTest_GetOrCreatePreviewTab_Test::TestBody
+}
