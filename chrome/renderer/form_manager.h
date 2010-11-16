@@ -36,9 +36,15 @@ class FormManager {
 
   // A bit field mask to extract data from WebFormControlElement.
   enum ExtractMask {
-    EXTRACT_NONE    = 0,
-    EXTRACT_VALUE   = 1 << 0,  // Extract value from WebFormControlElement.
-    EXTRACT_OPTIONS = 1 << 1,  // Extract options from WebFormControlElement.
+    EXTRACT_NONE        = 0,
+    EXTRACT_VALUE       = 1 << 0,  // Extract value from WebFormControlElement.
+    EXTRACT_OPTION_TEXT = 1 << 1,  // Extract option text from
+                                   // WebFormSelectElement. Only valid when
+                                   // |EXTRACT_VALUE| is set.
+                                   // This is used for form submission where
+                                   // human readable value is captured.
+    EXTRACT_OPTIONS     = 1 << 2,  // Extract options from
+                                   // WebFormControlElement.
   };
 
   FormManager();

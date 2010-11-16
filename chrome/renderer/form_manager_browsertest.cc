@@ -2878,4 +2878,104 @@ TEST_F(FormManagerTest, LabelForElementHidden) {
   EXPECT_EQ(string16(), form_manager.LabelForElement(firstname));
 }
 
+TEST_F(FormManagerTest, SelectOneAsText) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+           "  <SELECT id=\"country\">"
+           "    <OPTION value=\"AF\">Afghanistan</OPTION>"
+           "    <OPTION value=\"AL\">Albania</OPTION>"
+           "    <OPTION value=\"DZ\">Algeria</OPTION>"
+           "  </SELECT>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+
+  // Set the value of the select-one.
+  WebSelectElement select_element =
+      frame->document().getElementById("country").to<WebSelectElement>();
+  select_element.setValue(WebString::fromUTF8("AL"));
+
+  WebVector<WebFormElement> forms;
+  frame->forms(forms);
+  ASSERT_EQ(1U, forms.size());
+
+  FormData form;
+
+  // Extract the country select-one value as text.
+  EXPECT_TRUE(FormManager::WebFormElementToFormData(
+      forms[0], FormManager::REQUIRE_NONE,
+      static_cast<FormManager::ExtractMask>(FormManager::EXTRACT_VALUE |
+          FormManager::EXTRACT_OPTION_TEXT),
+          &form));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(4U, fields.size());
+  EXPECT_TRUE(fields[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("firstname"),
+                ASCIIToUTF16("John"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("lastname"),
+                ASCIIToUTF16("Smith"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("country"),
+                ASCIIToUTF16("Albania"),
+                ASCIIToUTF16("select-one"),
+                0)));
+  EXPECT_TRUE(fields[3].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("reply-send"),
+                string16(),
+                ASCIIToUTF16("submit"),
+                0)));
+
+  form.fields.clear();
+  // Extract the country select-one value as value.
+  EXPECT_TRUE(FormManager::WebFormElementToFormData(forms[0],
+                                                    FormManager::REQUIRE_NONE,
+                                                    FormManager::EXTRACT_VALUE,
+                                                    &form));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  ASSERT_EQ(4U, fields.size());
+  EXPECT_TRUE(fields[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("firstname"),
+                ASCIIToUTF16("John"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("lastname"),
+                ASCIIToUTF16("Smith"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("country"),
+                ASCIIToUTF16("AL"),
+                ASCIIToUTF16("select-one"),
+                0)));
+  EXPECT_TRUE(fields[3].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("reply-send"),
+                string16(),
+                ASCIIToUTF16("submit"),
+                0)));
+}
+
 }  // namespace

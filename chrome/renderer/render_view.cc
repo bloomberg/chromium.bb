@@ -2960,7 +2960,8 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
   if (FormManager::WebFormElementToFormData(
           form,
           FormManager::REQUIRE_AUTOCOMPLETE,
-          FormManager::EXTRACT_VALUE,
+          static_cast<FormManager::ExtractMask>(FormManager::EXTRACT_VALUE |
+              FormManager::EXTRACT_OPTION_TEXT),
           &form_data)) {
     Send(new ViewHostMsg_FormSubmitted(routing_id_, form_data));
   }

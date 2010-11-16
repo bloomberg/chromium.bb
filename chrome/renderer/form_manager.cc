@@ -330,6 +330,18 @@ void FormManager::WebFormControlElementToFormField(
     WebFormControlElement& e = const_cast<WebFormControlElement&>(element);
     WebSelectElement select_element = e.to<WebSelectElement>();
     value = select_element.value();
+
+    // Convert the |select_element| value to text if requested.
+    if (extract_mask & EXTRACT_OPTION_TEXT) {
+      WebVector<WebElement> list_items = select_element.listItems();
+      for (size_t i = 0; i < list_items.size(); ++i) {
+        if (list_items[i].hasTagName("option") &&
+            list_items[i].to<WebOptionElement>().value() == value) {
+          value = list_items[i].to<WebOptionElement>().text();
+          break;
+        }
+      }
+    }
   }
 
   // TODO(jhawkins): This is a temporary stop-gap measure designed to prevent
