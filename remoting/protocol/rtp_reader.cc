@@ -24,15 +24,25 @@ void RtpReader::Init(net::Socket* socket,
 }
 
 void RtpReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
-  RtpPacket packet;
+  RtpPacket* packet = new RtpPacket();
   int header_size = UnpackRtpHeader(reinterpret_cast<uint8*>(buffer->data()),
-                                    data_size, packet.mutable_header());
+                                    data_size, packet->mutable_header());
   if (header_size < 0) {
     LOG(WARNING) << "Received invalid RTP packet.";
     return;
   }
-  packet.mutable_payload()->Append(buffer, buffer->data() + header_size,
-                                   data_size - header_size);
+
+  int descriptor_size = UnpackVp8Descriptor(
+      reinterpret_cast<uint8*>(buffer->data()) + header_size,
+      data_size - header_size, packet->mutable_vp8_descriptor());
+  if (descriptor_size < 0) {
+    LOG(WARNING) << "Received RTP packet with an invalid VP8 descriptor.";
+    return;
+  }
+
+  packet->mutable_payload()->Append(
+      buffer, buffer->data() + header_size + descriptor_size,
+      data_size - header_size - descriptor_size);
 
   on_message_callback_->Run(packet);
 }

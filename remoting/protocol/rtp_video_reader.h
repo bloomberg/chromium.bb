@@ -23,9 +23,20 @@ class RtpVideoReader : public VideoReader {
   virtual void Close();
 
  private:
-  void OnRtpPacket(const RtpPacket& rtp_packet);
+  friend class RtpVideoReaderTest;
+
+  typedef std::deque<const RtpPacket*> PacketsQueue;
+
+  void OnRtpPacket(const RtpPacket* rtp_packet);
+  void CheckFullPacket(PacketsQueue::iterator pos);
+  void RebuildVideoPacket(PacketsQueue::iterator from,
+                          PacketsQueue::iterator to);
+  void ResetQueue();
 
   RtpReader rtp_reader_;
+
+  PacketsQueue packets_queue_;
+  uint32 last_sequence_number_;
 
   // The stub that processes all received packets.
   VideoStub* video_stub_;

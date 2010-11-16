@@ -19,25 +19,49 @@ namespace {
 const int kRtpBaseHeaderSize = 12;
 const uint8 kRtpVersionNumber = 2;
 const int kRtpMaxSources = 16;
+const int kBytesPerCSRC = 4;
 }  // namespace
 
-int GetRtpHeaderSize(int sources) {
-  DCHECK_GE(sources, 0);
-  DCHECK_LT(sources, kRtpMaxSources);
-  return kRtpBaseHeaderSize + sources * 4;
+static inline uint8 ExtractBits(uint8 byte, int bits_count, int shift) {
+  return (byte >> shift) & ((1 << bits_count) - 1);
 }
 
-void PackRtpHeader(uint8* buffer, int buffer_size,
-                   const RtpHeader& header) {
+// RTP Header format:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |V=2|P|X|  CC   |M|     PT      |       sequence number         |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                           timestamp                           |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |           synchronization source (SSRC) identifier            |
+// +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+// |            contributing source (CSRC) identifiers             |
+// |                             ....                              |
+// +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+//
+// On the diagram above order of bytes and order of bits within each
+// byte are big-endian. So bits 0 and 7 are the most and the least
+// significant bits in the first byte, bit 8 is the most significant
+// bit in the second byte, etc.
+
+int GetRtpHeaderSize(const RtpHeader& header) {
+  DCHECK_GE(header.sources, 0);
+  DCHECK_LT(header.sources, kRtpMaxSources);
+  return kRtpBaseHeaderSize + header.sources * kBytesPerCSRC;
+}
+
+void PackRtpHeader(const RtpHeader& header, uint8* buffer, int buffer_size) {
   DCHECK_LT(header.sources, kRtpMaxSources);
   DCHECK_LT(header.payload_type, 1 << 7);
-  CHECK_GT(buffer_size, GetRtpHeaderSize(header.sources));
+  CHECK_GE(buffer_size, GetRtpHeaderSize(header));
 
-  buffer[0] = (kRtpVersionNumber << 6) +
-      ((uint8)header.padding << 5) +
-      ((uint8)header.extension << 4) +
+  buffer[0] = (kRtpVersionNumber << 6) |
+      ((uint8)header.padding << 5) |
+      ((uint8)header.extension << 4) |
       header.sources;
-  buffer[1] = ((uint8)header.marker << 7) +
+  buffer[1] = ((uint8)header.marker << 7) |
       header.payload_type;
   SetBE16(buffer + 2, header.sequence_number);
   SetBE32(buffer + 4, header.timestamp);
@@ -46,10 +70,6 @@ void PackRtpHeader(uint8* buffer, int buffer_size,
   for (int i = 0; i < header.sources; i++) {
     SetBE32(buffer + i * 4 + 12, header.source_id[i]);
   }
-}
-
-static inline uint8 ExtractBits(uint8 byte, int bits_count, int shift) {
-  return (byte >> shift) & ((1 << bits_count) - 1);
 }
 
 int UnpackRtpHeader(const uint8* buffer, int buffer_size, RtpHeader* header) {
@@ -75,14 +95,147 @@ int UnpackRtpHeader(const uint8* buffer, int buffer_size, RtpHeader* header) {
 
   DCHECK_LT(header->sources, 16);
 
-  if (buffer_size < GetRtpHeaderSize(header->sources)) {
+  if (buffer_size < GetRtpHeaderSize(*header)) {
     return -1;
   }
   for (int i = 0; i < header->sources; i++) {
     header->source_id[i] = GetBE32(buffer + i * 4 + 12);
   }
 
-  return GetRtpHeaderSize(header->sources);
+  return GetRtpHeaderSize(*header);
+}
+
+// VP8 Payload Descriptor format:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// | RSV |I|N|FI |B|         PictureID (integer #bytes)            |
+// +-+-+-+-+-+-+-+-+                                               |
+// :                                                               :
+// |               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |               : (VP8 data or VP8 payload header; byte aligned)|
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// On the diagram above order of bytes and order of bits within each
+// byte are big-endian. So bits 0 and 7 are the most and the least
+// significant bits in the first byte, bit 8 is the most significant
+// bit in the second byte, etc.
+//
+// RSV: 3 bits
+// Bits reserved for future use. MUST be equal to zero and MUST be
+// ignored by the receiver.
+//
+// I: 1 bit
+// PictureID present. When set to one, a PictureID is provided after
+// the first byte of the payload descriptor. When set to zero, the
+// PictureID is omitted, and the one-byte payload descriptor is
+// immediately followed by the VP8 payload.
+//
+// N: 1 bit
+// Non-reference frame. When set to one, the frame can be discarded
+// without affecting any other future or past frames.
+//
+// FI: 2 bits
+// Fragmentation information field. This field contains information
+// about the fragmentation of VP8 payloads carried in the RTP
+// packet. The four different values are listed below.
+//
+// FI   Fragmentation status
+//   00 The RTP packet contains no fragmented VP8 partitions. The
+//      payload is one or several complete partitions.
+//   01 The RTP packet contains the first part of a fragmented
+//      partition. The fragment must be placed in its own RTP packet.
+//   10 The RTP packet contains a fragment that is neither the first nor
+//      the last part of a fragmented partition. The fragment must be
+//      placed in its own RTP packet.
+//   11 The RTP packet contains the last part of a fragmented
+//      partition. The fragment must be placed in its own RTP packet.
+//
+// B: 1 bit
+// Beginning VP8 frame. When set to 1 this signals that a new VP8
+// frame starts in this RTP packet.
+//
+// PictureID: Multiple of 8 bits
+// This is a running index of the frames. The field is present only if
+// the I bit is equal to one. The most significant bit of each byte is
+// an extension flag. The 7 following bits carry (parts of) the
+// PictureID. If the extension flag is one, the PictureID continues in
+// the next byte. If the extension flag is zero, the 7 remaining bits
+// are the last (and least significant) bits in the PictureID. The
+// sender may choose any number of bytes for the PictureID. The
+// PictureID SHALL start on a random number, and SHALL wrap after
+// reaching the maximum ID as chosen by the application
+
+int GetVp8DescriptorSize(const Vp8Descriptor& descriptor) {
+  if (descriptor.picture_id == kuint32max)
+    return 1;
+  int result = 2;
+  // We need 1 byte per each 7 bits in picture_id.
+  uint32 picture_id = descriptor.picture_id >> 7;
+  while (picture_id > 0) {
+    picture_id >>= 7;
+    ++result;
+  }
+  return result;
+}
+
+void PackVp8Descriptor(const Vp8Descriptor& descriptor, uint8* buffer,
+                       int buffer_size) {
+  CHECK_GT(buffer_size, 0);
+
+  buffer[0] =
+      ((uint8)(descriptor.picture_id != kuint32max) << 4) |
+      ((uint8)descriptor.non_reference_frame << 3) |
+      (descriptor.fragmentation_info << 1) |
+      ((uint8)descriptor.frame_beginning);
+
+  uint32 picture_id = descriptor.picture_id;
+  if (picture_id == kuint32max)
+    return;
+
+  int pos = 1;
+  while (picture_id > 0) {
+    CHECK_LT(pos, buffer_size);
+    buffer[pos] = picture_id & 0x7F;
+    picture_id >>= 7;
+
+    // Set the extension bit if neccessary.
+    if (picture_id > 0)
+      buffer[pos] |= 0x80;
+    ++pos;
+  }
+}
+
+int UnpackVp8Descriptor(const uint8* buffer, int buffer_size,
+                        Vp8Descriptor* descriptor) {
+  if (buffer_size <= 0)
+    return -1;
+
+  bool picture_id_present = ExtractBits(buffer[0], 1, 4) != 0;
+  descriptor->non_reference_frame = ExtractBits(buffer[0], 1, 3) != 0;
+  descriptor->fragmentation_info = ExtractBits(buffer[0], 2, 1);
+  descriptor->frame_beginning = ExtractBits(buffer[0], 1, 0) != 0;
+
+  // Return here if we don't need to decode PictureID.
+  if (!picture_id_present) {
+    descriptor->picture_id = kuint32max;
+    return 1;
+  }
+
+  // Decode PictureID.
+  bool extension = true;
+  int pos = 1;
+  descriptor->picture_id = 0;
+  while (extension) {
+    if (pos >= buffer_size)
+      return -1;
+
+    descriptor->picture_id |= buffer[pos] & 0x7F;
+    extension = (buffer[pos] & 0x80) != 0;
+    pos += 1;
+  }
+  return pos;
 }
 
 }  // namespace protocol

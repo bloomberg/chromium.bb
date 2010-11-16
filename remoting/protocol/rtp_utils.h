@@ -24,17 +24,42 @@ struct RtpHeader {
   uint32 source_id[15];
 };
 
+// Vp8Descriptor struct used to store values of the VP8 RTP descriptor
+// fields. Meaning of each field is documented in the RTP Payload
+// Format for VP8 spec: http://www.webmproject.org/code/specs/rtp/ .
+struct Vp8Descriptor {
+  enum FragmentationInfo {
+    NOT_FRAGMENTED = 0,
+    FIRST_FRAGMENT = 1,
+    MIDDLE_FRAGMENT = 2,
+    LAST_FRAGMENT = 3,
+  };
+
+  bool non_reference_frame;
+  uint8 fragmentation_info;
+  bool frame_beginning;
+
+  // PictureID is considered to be absent if |picture_id| is set to kuint32max.
+  uint32 picture_id;
+};
+
 // Returns size of RTP header for the specified number of sources.
-int GetRtpHeaderSize(int sources);
+int GetRtpHeaderSize(const RtpHeader& header);
 
 // Packs RTP header into the buffer.
-void PackRtpHeader(uint8* buffer, int buffer_size,
-                   const RtpHeader& header);
+void PackRtpHeader(const RtpHeader& header, uint8* buffer, int buffer_size);
 
 // Unpacks RTP header and stores unpacked values in |header|. If the header
 // is not valid returns -1, otherwise returns size of the header.
-int UnpackRtpHeader(const uint8* buffer, int buffer_size,
-                    RtpHeader* header);
+int UnpackRtpHeader(const uint8* buffer, int buffer_size, RtpHeader* header);
+
+int GetVp8DescriptorSize(const Vp8Descriptor& descriptor);
+
+void PackVp8Descriptor(const Vp8Descriptor& descriptor, uint8* buffer,
+                       int buffer_size);
+
+int UnpackVp8Descriptor(const uint8* buffer, int buffer_size,
+                        Vp8Descriptor* descriptor);
 
 }  // namespace protocol
 }  // namespace remoting

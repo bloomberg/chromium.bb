@@ -13,9 +13,8 @@ namespace remoting {
 namespace protocol {
 
 namespace {
-const int kMtu = 1200;
 const uint8 kRtpPayloadTypePrivate = 96;
-}
+}  // namespace
 
 RtpWriter::RtpWriter()
     : rtp_socket_(NULL),
@@ -34,11 +33,14 @@ void RtpWriter::Init(net::Socket* rtp_socket, net::Socket* rtcp_socket) {
   rtcp_socket_ = rtcp_socket;
 }
 
-void RtpWriter::SendPacket(const CompoundBuffer& payload, uint32 timestamp) {
+void RtpWriter::SendPacket(uint32 timestamp, bool marker,
+                           const Vp8Descriptor& vp8_descriptor,
+                           const CompoundBuffer& payload) {
   RtpHeader header;
   header.padding = false;
   header.extension = false;
   header.sources = 0;
+  header.marker = marker;
   header.payload_type = kRtpPayloadTypePrivate;
   header.timestamp = timestamp;
 
@@ -47,39 +49,32 @@ void RtpWriter::SendPacket(const CompoundBuffer& payload, uint32 timestamp) {
   // so SSRC isn't useful. Implement it in future if neccessary.
   header.sync_source_id = 0;
 
-  // TODO(sergeyu): Add VP8 payload header.
+  // TODO(sergeyu): Handle sequence number wrapping.
+  header.sequence_number = last_packet_number_;
+  ++last_packet_number_;
 
-  int position = 0;
-  while (position < payload.total_bytes()) {
-    // Allocate buffer.
-    int size = std::min(kMtu, payload.total_bytes() - position);
-    int header_size = GetRtpHeaderSize(header.sources);
-    int total_size = size + header_size;
-    net::IOBufferWithSize* buffer = new net::IOBufferWithSize(total_size);
+  int header_size = GetRtpHeaderSize(header);
+  int vp8_descriptor_size = GetVp8DescriptorSize(vp8_descriptor);
+  int payload_size = payload.total_bytes();
+  int total_size = header_size + vp8_descriptor_size + payload_size;
 
-    // Set marker if this is the last frame.
-    header.marker = (position + size) == payload.total_bytes();
+  net::IOBufferWithSize* buffer = new net::IOBufferWithSize(total_size);
 
-    // TODO(sergeyu): Handle sequence number wrapping.
-    header.sequence_number = last_packet_number_;
-    ++last_packet_number_;
+  // Pack header.
+  PackRtpHeader(header, reinterpret_cast<uint8*>(buffer->data()),
+                header_size);
 
-    // Generate header.
-    PackRtpHeader(reinterpret_cast<uint8*>(buffer->data()), buffer->size(),
-                  header);
+  // Pack VP8 descriptor.
+  PackVp8Descriptor(vp8_descriptor,
+                    reinterpret_cast<uint8*>(buffer->data()) + header_size,
+                    vp8_descriptor_size);
 
-    // Copy data to the buffer.
-    CompoundBuffer chunk;
-    chunk.CopyFrom(payload, position, position + size);
-    chunk.CopyTo(buffer->data() + header_size, size);
+  // Copy payload to the buffer.
+  payload.CopyTo(buffer->data() + header_size + vp8_descriptor_size,
+                 payload_size);
 
-    // Send it.
-    buffered_rtp_writer_->Write(buffer);
-
-    position += size;
-  }
-
-  DCHECK_EQ(position, payload.total_bytes());
+  // And write the packet.
+  buffered_rtp_writer_->Write(buffer);
 }
 
 int RtpWriter::GetPendingPackets() {

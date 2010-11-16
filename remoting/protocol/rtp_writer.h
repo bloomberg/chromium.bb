@@ -7,6 +7,7 @@
 
 #include "net/socket/socket.h"
 #include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/protocol/rtp_utils.h"
 
 namespace remoting {
 
@@ -23,8 +24,10 @@ class RtpWriter {
   // to.
   void Init(net::Socket* rtp_socket, net::Socket* rtcp_socket);
 
-  // Sends next packet.
-  void SendPacket(const CompoundBuffer& payload, uint32 timestamp);
+  // Sends next packet. The packet is mutated by
+  void SendPacket(uint32 timestamp, bool marker,
+                  const Vp8Descriptor& vp8_descriptor,
+                  const CompoundBuffer& payload);
 
   // Returns number of packets queued in the buffer.
   int GetPendingPackets();

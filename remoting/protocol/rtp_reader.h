@@ -20,12 +20,17 @@ class RtpPacket {
 
   const RtpHeader& header() const { return header_; }
   RtpHeader* mutable_header() { return &header_; }
+
+  const Vp8Descriptor& vp8_descriptor() const { return vp8_descriptor_; }
+  Vp8Descriptor* mutable_vp8_descriptor() { return &vp8_descriptor_; }
+
   const CompoundBuffer& payload() const { return payload_; }
   CompoundBuffer* mutable_payload() { return &payload_; }
 
  private:
   RtpHeader header_;
   CompoundBuffer payload_;
+  Vp8Descriptor vp8_descriptor_;
 };
 
 class RtpReader : public SocketReaderBase {
@@ -35,7 +40,7 @@ class RtpReader : public SocketReaderBase {
 
   // The OnMessageCallback is called whenever a new message is received.
   // Ownership of the message is passed the callback.
-  typedef Callback1<const RtpPacket&>::Type OnMessageCallback;
+  typedef Callback1<const RtpPacket*>::Type OnMessageCallback;
 
   // Initialize the reader and start reading. Must be called on the thread
   // |socket| belongs to. The callback will be called when a new message is
