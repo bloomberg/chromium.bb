@@ -272,8 +272,6 @@ class GrabWidget : public views::WidgetGtk {
 
   virtual void Show() {
     views::WidgetGtk::Show();
-    // Now steal all inputs.
-    TryGrabAllInputs();
   }
 
   void ClearGrab() {
@@ -568,14 +566,6 @@ void ScreenLocker::Init() {
   lock_window_ = lock_window;
   lock_window_->Init(NULL, init_bounds);
 
-  // Add the window to its own group so that its grab won't be stolen if
-  // gtk_grab_add() gets called on behalf on a non-screen-locker widget (e.g.
-  // a modal dialog) -- see http://crosbug.com/8999.
-  GtkWindowGroup* window_group = gtk_window_group_new();
-  gtk_window_group_add_window(window_group,
-                              GTK_WINDOW(lock_window_->GetNativeView()));
-  g_object_unref(window_group);
-
   g_signal_connect(lock_window_->GetNativeView(), "client-event",
                    G_CALLBACK(OnClientEventThunk), this);
 
@@ -589,13 +579,19 @@ void ScreenLocker::Init() {
     MessageLoopForUI::current()->AddObserver(input_event_observer_.get());
   }
 
-  lock_widget_ = new GrabWidget(this);
+  // Hang on to a cast version of the grab widget so we can call its
+  // TryGrabAllInputs() method later.  (Nobody else needs to use it, so moving
+  // its declaration to the header instead of keeping it in an anonymous
+  // namespace feels a bit ugly.)
+  GrabWidget* cast_lock_widget = new GrabWidget(this);
+  lock_widget_ = cast_lock_widget;
   lock_widget_->MakeTransparent();
   lock_widget_->InitWithWidget(lock_window_, gfx::Rect());
   if (screen_lock_view_) {
     lock_widget_->SetContentsView(
         new GrabWidgetRootView(screen_lock_view_));
   }
+  lock_widget_->Show();
 
   // Configuring the background url.
   std::string url_string =
@@ -616,9 +612,17 @@ void ScreenLocker::Init() {
   lock_window_->SetContentsView(background_view_);
   lock_window_->Show();
 
-  // Show lock_widget after the lock_window is shown so that
-  // we can grab inputs immediately.
-  lock_widget_->Show();
+  cast_lock_widget->TryGrabAllInputs();
+
+  // Add the window to its own group so that its grab won't be stolen if
+  // gtk_grab_add() gets called on behalf on a non-screen-locker widget (e.g.
+  // a modal dialog) -- see http://crosbug.com/8999.  We intentionally do this
+  // after calling TryGrabAllInputs(), as want to be in the default window group
+  // then so we can break any existing GTK grabs.
+  GtkWindowGroup* window_group = gtk_window_group_new();
+  gtk_window_group_add_window(window_group,
+                              GTK_WINDOW(lock_window_->GetNativeView()));
+  g_object_unref(window_group);
 
   // Don't let X draw default background, which was causing flash on
   // resume.
