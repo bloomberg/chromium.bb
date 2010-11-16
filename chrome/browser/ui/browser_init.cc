@@ -666,7 +666,7 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
   if (adjust_urls.empty())
     AddStartupURLs(&adjust_urls);
   else if (!command_line_.HasSwitch(switches::kOpenInNewWindow))
-    browser = BrowserList::GetLastActive();
+    browser = BrowserList::GetLastActiveWithProfile(profile_);
 
   OpenURLsInBrowser(browser, process_startup, adjust_urls);
 }

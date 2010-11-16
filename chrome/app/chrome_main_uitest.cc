@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/common/chrome_switches.h"
 #include "net/base/net_util.h"
 
 typedef UITest ChromeMainTest;
@@ -35,4 +37,65 @@ TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
 
   ASSERT_TRUE(automation()->IsURLDisplayed(net::FilePathToFileURL(test_file)));
 }
+
+TEST_F(ChromeMainTest, SecondLaunchWithIncognitoUrl) {
+  include_testing_id_ = false;
+  int num_normal_windows;
+  // We should start with one normal window.
+  ASSERT_TRUE(automation()->GetNormalBrowserWindowCount(&num_normal_windows));
+  ASSERT_EQ(1, num_normal_windows);
+
+  // Run with --incognito switch and an URL specified.
+  FilePath test_file = test_data_directory_.AppendASCII("empty.html");
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kIncognito);
+  command_line.AppendArgPath(test_file);
+  ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(command_line));
+
+  // There should be one normal and one incognito window now.
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
+  ASSERT_TRUE(automation()->GetNormalBrowserWindowCount(&num_normal_windows));
+  ASSERT_EQ(1, num_normal_windows);
+}
+
+TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
+  include_testing_id_ = false;
+  int num_normal_windows;
+  // We should start with one normal window.
+  ASSERT_TRUE(automation()->GetNormalBrowserWindowCount(&num_normal_windows));
+  ASSERT_EQ(1, num_normal_windows);
+
+  scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser_proxy.get());
+
+  // Create an off the record window.
+  ASSERT_TRUE(browser_proxy->RunCommand(IDC_NEW_INCOGNITO_WINDOW));
+  int window_count;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(2, window_count);
+  ASSERT_TRUE(automation()->GetNormalBrowserWindowCount(&num_normal_windows));
+  ASSERT_EQ(1, num_normal_windows);
+
+  // Close the first window.
+  ASSERT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
+  browser_proxy = NULL;
+
+  // There should only be the incognito window open now.
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  ASSERT_TRUE(automation()->GetNormalBrowserWindowCount(&num_normal_windows));
+  ASSERT_EQ(0, num_normal_windows);
+
+  // Run with just an URL specified, no --incognito switch.
+  FilePath test_file = test_data_directory_.AppendASCII("empty.html");
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendArgPath(test_file);
+  ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(command_line));
+
+  // There should be one normal and one incognito window now.
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
+  ASSERT_TRUE(automation()->GetNormalBrowserWindowCount(&num_normal_windows));
+  ASSERT_EQ(1, num_normal_windows);
+}
+
 #endif  // !OS_MACOSX
