@@ -4,30 +4,35 @@
 
 #include "chrome_frame/module_utils.h"
 
+#include <aclapi.h>
 #include <atlbase.h>
+#include <atlsecurity.h>
+#include <sddl.h>
+
 #include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/shared_memory.h"
+#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
+#include "chrome_frame/utils.h"
 
-const char kSharedMemoryName[] = "ChromeFrameVersionBeacon";
+const wchar_t kSharedMemoryName[] = L"ChromeFrameVersionBeacon_";
 const uint32 kSharedMemorySize = 128;
 const uint32 kSharedMemoryLockTimeoutMs = 1000;
 
 // static
 DllRedirector::DllRedirector() : first_module_handle_(NULL) {
-  // TODO(robertshield): Correctly construct the profile name here. Also allow
-  // for overrides to be taken from the environment.
-  shared_memory_.reset(new base::SharedMemory(ASCIIToWide(kSharedMemoryName)));
+  // TODO(robertshield): Allow for overrides to be taken from the environment.
+  std::wstring beacon_name(kSharedMemoryName);
+  beacon_name += GetHostProcessName(false);
+  shared_memory_.reset(new base::SharedMemory(beacon_name));
 }
 
 DllRedirector::DllRedirector(const char* shared_memory_name)
     : shared_memory_name_(shared_memory_name), first_module_handle_(NULL) {
-  // TODO(robertshield): Correctly construct the profile name here. Also allow
-  // for overrides to be taken from the environment.
   shared_memory_.reset(new base::SharedMemory(ASCIIToWide(shared_memory_name)));
 }
 
@@ -41,6 +46,73 @@ DllRedirector::~DllRedirector() {
   UnregisterAsFirstCFModule();
 }
 
+bool DllRedirector::BuildSecurityAttributesForLock(
+    CSecurityAttributes* sec_attr) {
+  DCHECK(sec_attr);
+  int32 major_version, minor_version, fix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
+                                               &minor_version,
+                                               &fix_version);
+  if (major_version < 6) {
+    // Don't bother with changing ACLs on pre-vista.
+    return false;
+  }
+
+  bool success = false;
+
+  // Fill out the rest of the security descriptor from the process token.
+  CAccessToken token;
+  if (token.GetProcessToken(TOKEN_QUERY)) {
+    CSecurityDesc security_desc;
+    // Set the SACL from an SDDL string that allows access to low-integrity
+    // processes. See http://msdn.microsoft.com/en-us/library/bb625958.aspx.
+    if (security_desc.FromString(L"S:(ML;;NW;;;LW)")) {
+      CSid sid_owner;
+      if (token.GetOwner(&sid_owner)) {
+        security_desc.SetOwner(sid_owner);
+      } else {
+        NOTREACHED() << "Could not get owner.";
+      }
+      CSid sid_group;
+      if (token.GetPrimaryGroup(&sid_group)) {
+        security_desc.SetGroup(sid_group);
+      } else {
+        NOTREACHED() << "Could not get group.";
+      }
+      CDacl dacl;
+      if (token.GetDefaultDacl(&dacl)) {
+        // Add an access control entry mask for the current user.
+        // This is what grants this user access from lower integrity levels.
+        CSid sid_user;
+        if (token.GetUser(&sid_user)) {
+          success = dacl.AddAllowedAce(sid_user, MUTEX_ALL_ACCESS);
+          security_desc.SetDacl(dacl);
+          sec_attr->Set(security_desc);
+        }
+      }
+    }
+  }
+
+  return success;
+}
+
+bool DllRedirector::SetFileMappingToReadOnly(base::SharedMemoryHandle mapping) {
+  bool success = false;
+
+  CAccessToken token;
+  if (token.GetProcessToken(TOKEN_QUERY)) {
+    CSid sid_user;
+    if (token.GetUser(&sid_user)) {
+      CDacl dacl;
+      dacl.AddAllowedAce(sid_user, STANDARD_RIGHTS_READ | FILE_MAP_READ);
+      success = AtlSetDacl(mapping, SE_KERNEL_OBJECT, dacl);
+    }
+  }
+
+  return success;
+}
+
+
 bool DllRedirector::RegisterAsFirstCFModule() {
   DCHECK(first_module_handle_ == NULL);
 
@@ -50,7 +122,14 @@ bool DllRedirector::RegisterAsFirstCFModule() {
   // We sadly can't use the autolock here since we want to have a timeout.
   // Be careful not to return while holding the lock. Also, attempt to do as
   // little as possible while under this lock.
-  bool lock_acquired = shared_memory_->Lock(kSharedMemoryLockTimeoutMs);
+
+  bool lock_acquired = false;
+  CSecurityAttributes sec_attr;
+  if (BuildSecurityAttributesForLock(&sec_attr)) {
+    lock_acquired = shared_memory_->Lock(kSharedMemoryLockTimeoutMs, &sec_attr);
+  } else {
+    lock_acquired = shared_memory_->Lock(kSharedMemoryLockTimeoutMs, NULL);
+  }
 
   if (!lock_acquired) {
     // We couldn't get the lock in a reasonable amount of time, so fall
@@ -66,7 +145,13 @@ bool DllRedirector::RegisterAsFirstCFModule() {
                                             false,  // open_existing
                                             kSharedMemorySize);
 
-  if (!result) {
+  if (result) {
+    // We created the beacon, now we need to mutate the security attributes
+    // on the shared memory to allow read-only access and let low-integrity
+    // processes open it.
+    bool acls_set = SetFileMappingToReadOnly(shared_memory_->handle());
+    DCHECK(acls_set);
+  } else {
     created_beacon = false;
 
     // We failed to create the shared memory segment, suggesting it may already
@@ -123,7 +208,7 @@ bool DllRedirector::RegisterAsFirstCFModule() {
 
 void DllRedirector::UnregisterAsFirstCFModule() {
   if (base::SharedMemory::IsHandleValid(shared_memory_->handle())) {
-    bool lock_acquired = shared_memory_->Lock(kSharedMemoryLockTimeoutMs);
+    bool lock_acquired = shared_memory_->Lock(kSharedMemoryLockTimeoutMs, NULL);
     if (lock_acquired) {
       // Free our handles. The last closed handle SHOULD result in it being
       // deleted.
@@ -139,9 +224,8 @@ LPFNGETCLASSOBJECT DllRedirector::GetDllGetClassObjectPtr() {
   LPFNGETCLASSOBJECT proc_ptr = reinterpret_cast<LPFNGETCLASSOBJECT>(
       GetProcAddress(first_module_handle, "DllGetClassObject"));
   if (!proc_ptr) {
-    DLOG(ERROR) << "DllRedirector: Could get address of DllGetClassObject "
-                   "from first loaded module, GLE: "
-                << GetLastError();
+    DPLOG(ERROR) << "DllRedirector: Could not get address of DllGetClassObject "
+                    "from first loaded module.";
     // Oh boink, the first module we loaded was somehow bogus, make ourselves
     // the first module again.
     first_module_handle = reinterpret_cast<HMODULE>(&__ImageBase);
@@ -192,8 +276,8 @@ HMODULE DllRedirector::LoadVersionedModule(Version* version) {
 
   HMODULE hmodule = LoadLibrary(module_path.value().c_str());
   if (hmodule == NULL) {
-    DLOG(ERROR) << "Could not load reported module version "
-                << version->GetString();
+    DPLOG(ERROR) << "Could not load reported module version "
+                 << version->GetString();
   }
 
   return hmodule;

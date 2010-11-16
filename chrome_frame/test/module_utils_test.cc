@@ -6,8 +6,10 @@
 
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
+#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "gtest/gtest.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -65,6 +67,21 @@ class MockDllRedirector2 : public MockDllRedirector {
 
   virtual Version* GetCurrentModuleVersion() {
     return Version::GetVersionFromString(kMockVersionString2);
+  }
+};
+
+class MockDllRedirectorNoPermissions : public MockDllRedirector {
+ public:
+  explicit MockDllRedirectorNoPermissions(const char* beacon_name)
+    : MockDllRedirector(beacon_name) {}
+
+  virtual bool BuildSecurityAttributesForLock(
+      ATL::CSecurityAttributes* sec_attr) {
+    return false;
+  }
+
+  virtual bool SetFileMappingToReadOnly(base::SharedMemoryHandle mapping) {
+    return true;
   }
 };
 
@@ -288,5 +305,99 @@ TEST_F(DllRedirectorTest, BadVersionNumber) {
 
   HMODULE first_module = first_redirector->GetFirstModule();
   EXPECT_EQ(reinterpret_cast<HMODULE>(&__ImageBase), first_module);
+}
+
+// TODO(robertshield): These tests rely on simulating access checks from a low
+// integrity process using impersonation. This may not be exactly identical to
+// actually having a separate low integrity process.
+TEST_F(DllRedirectorTest, LowIntegrityAccess) {
+  scoped_ptr<MockDllRedirector> first_redirector(
+      new MockDllRedirector(kTestVersionBeaconName));
+  EXPECT_TRUE(first_redirector->RegisterAsFirstCFModule());
+
+  // Ensure that we can acquire the mutex from medium integrity:
+  {
+    base::SharedMemory shared_memory(ASCIIToWide(kTestVersionBeaconName));
+    bool mutex_locked = shared_memory.Lock(kWaitTestTimeout, NULL);
+    EXPECT_TRUE(mutex_locked);
+
+    // Ensure that the shared memory is read-only:
+    EXPECT_FALSE(shared_memory.Open(kTestVersionBeaconName, false));
+    shared_memory.Close();
+    EXPECT_TRUE(shared_memory.Open(kTestVersionBeaconName, true));
+    shared_memory.Close();
+
+    if (mutex_locked)
+      shared_memory.Unlock();
+  }
+
+  int32 major_version, minor_version, fix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
+                                               &minor_version,
+                                               &fix_version);
+  if (major_version >= 6) {
+    // Now move to low integrity
+    chrome_frame_test::LowIntegrityToken low_integrity_token;
+    ASSERT_TRUE(low_integrity_token.Impersonate());
+
+    // Ensure that we can also acquire the mutex from low integrity.
+    base::SharedMemory shared_memory(ASCIIToWide(kTestVersionBeaconName));
+    bool mutex_locked = shared_memory.Lock(kWaitTestTimeout, NULL);
+    EXPECT_TRUE(mutex_locked);
+
+    // Ensure that the shared memory is read-only:
+    EXPECT_FALSE(shared_memory.Open(kTestVersionBeaconName, false));
+    shared_memory.Close();
+    EXPECT_TRUE(shared_memory.Open(kTestVersionBeaconName, true));
+    shared_memory.Close();
+
+    if (mutex_locked)
+      shared_memory.Unlock();
+  }
+}
+
+TEST_F(DllRedirectorTest, LowIntegrityAccessDenied) {
+  // Run this test with a mock DllRedirector that doesn't set permissions
+  // on the shared memory.
+  scoped_ptr<MockDllRedirectorNoPermissions> first_redirector(
+      new MockDllRedirectorNoPermissions(kTestVersionBeaconName));
+  EXPECT_TRUE(first_redirector->RegisterAsFirstCFModule());
+
+  // Ensure that we can acquire the mutex from medium integrity:
+  {
+    base::SharedMemory shared_memory(ASCIIToWide(kTestVersionBeaconName));
+    bool mutex_locked = shared_memory.Lock(kWaitTestTimeout, NULL);
+    EXPECT_TRUE(mutex_locked);
+
+    // We should be able to open the memory as read/write.
+    EXPECT_TRUE(shared_memory.Open(kTestVersionBeaconName, false));
+    shared_memory.Close();
+
+    if (mutex_locked)
+      shared_memory.Unlock();
+  }
+
+  int32 major_version, minor_version, fix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
+                                               &minor_version,
+                                               &fix_version);
+  if (major_version >= 6) {
+    // Now move to low integrity
+    chrome_frame_test::LowIntegrityToken low_integrity_token;
+    low_integrity_token.Impersonate();
+
+    // Ensure that we can't acquire the mutex without having set the
+    // Low Integrity ACE in the SACL.
+    base::SharedMemory shared_memory(ASCIIToWide(kTestVersionBeaconName));
+    bool mutex_locked = shared_memory.Lock(kWaitTestTimeout, NULL);
+    EXPECT_FALSE(mutex_locked);
+
+    // We shouldn't be able to open the memory.
+    EXPECT_FALSE(shared_memory.Open(kTestVersionBeaconName, false));
+    shared_memory.Close();
+
+    if (mutex_locked)
+      shared_memory.Unlock();
+  }
 }
 

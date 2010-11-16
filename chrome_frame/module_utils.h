@@ -14,6 +14,9 @@
 #include "base/singleton.h"
 
 // Forward
+namespace ATL {
+class CSecurityAttributes;
+}
 class Version;
 
 // A singleton class that provides a facility to register the version of the
@@ -66,6 +69,15 @@ class DllRedirector {
   // found version number. The Version class in base will have ensured that we
   // actually have a valid version and not e.g. ..\..\..\..\MyEvilFolder\.
   virtual HMODULE LoadVersionedModule(Version* version);
+
+  // Builds the necessary SECURITY_ATTRIBUTES to allow low integrity access
+  // to an object. Returns true on success, false otherwise.
+  virtual bool BuildSecurityAttributesForLock(
+      ATL::CSecurityAttributes* sec_attr);
+
+  // Attempts to change the permissions on the given file mapping to read only.
+  // Returns true on success, false otherwise.
+  virtual bool SetFileMappingToReadOnly(base::SharedMemoryHandle mapping);
 
   // Shared memory segment that contains the version beacon.
   scoped_ptr<base::SharedMemory> shared_memory_;
