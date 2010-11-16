@@ -11,9 +11,6 @@
 #include <cstring>
 #include <new>
 #include <climits>
-//#include <windows.h>
-//#include "odbgstream.hpp"
-//using std::endl;
 
 mkvparser::IMkvReader::~IMkvReader()
 {
@@ -111,7 +108,6 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
     return result;
 }
 
-
 long long mkvparser::GetUIntLength(
     IMkvReader* pReader,
     long long pos,
@@ -152,7 +148,6 @@ long long mkvparser::GetUIntLength(
 
     return 0;  //success
 }
-
 
 long long mkvparser::SyncReadUInt(
     IMkvReader* pReader,
@@ -878,7 +873,7 @@ long long Segment::CreateInstance(
 
         //TODO: if we liberalize the behavior of ReadUInt, we can
         //probably eliminate having to use GetUIntLength here.
-        const long long size = ReadUInt(pReader, pos, len);
+        long long size = ReadUInt(pReader, pos, len);
 
         if (size < 0)
             return size;
@@ -887,16 +882,24 @@ long long Segment::CreateInstance(
 
         //Pos now points to start of payload
 
-        if ((pos + size) > total)
-            return E_FILE_FORMAT_INVALID;
-
         if (id == 0x08538067)  //Segment ID
         {
+            //Handle "unknown size" for live streaming of webm files.
+            const long long unknown_size = (1LL << (7 * len)) - 1;
+
+            if (size == unknown_size)
+                size = total - pos;
+            else if ((pos + size) > total)
+                return E_FILE_FORMAT_INVALID;
+
             pSegment = new  Segment(pReader, pos, size);
             assert(pSegment);  //TODO
 
             return 0;    //success
         }
+
+        if ((pos + size) > total)
+            return E_FILE_FORMAT_INVALID;
 
         pos += size;  //consume payload
     }
