@@ -190,8 +190,33 @@ html[hide-menu=true] #mainview {
 }
 
 #mainview-content {
+  box-sizing: border-box;
+  min-height: 100%;
   padding: 0 24px;
+  position: relative;
   width: 600px;
+}
+
+#subpage-sheet-container {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 8px;
+  -webkit-padding-start: 60px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 748px;
+}
+
+#subpage-sheet {
+  -webkit-box-shadow: #666 0px 3px 5px;
+  background-color: white;
+  border: 1px solid #b8b8b8;
+  border-radius: 2px;
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 0px 20px;
+  width: 100%;
 }
 
 #managed-prefs-banner {
@@ -235,6 +260,10 @@ html[hide-menu=true] #mainview {
   margin: 0;
   padding-bottom: 4px;
   padding-top: 13px;
+}
+
+#subpage-sheet .page > h1 {
+  padding-top: 7px;
 }
 
 section {

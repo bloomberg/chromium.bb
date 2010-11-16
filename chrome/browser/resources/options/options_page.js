@@ -27,8 +27,7 @@ cr.define('options', function() {
   OptionsPage.registeredPages_ = {};
 
   /**
-   * Pages which are meant to have an entry in the nav, but
-   * not have a permanent entry.
+   * Pages which are nested under a main page.
    */
   OptionsPage.registeredSubPages_ = {};
 
@@ -38,13 +37,20 @@ cr.define('options', function() {
   OptionsPage.registeredOverlayPages_ = {};
 
   /**
-   * Shows a registered page.
+   * Shows a registered page. This handles both top-level pages and sub-pages.
    * @param {string} pageName Page name.
    */
   OptionsPage.showPageByName = function(pageName) {
     for (var name in OptionsPage.registeredPages_) {
       var page = OptionsPage.registeredPages_[name];
       page.visible = name == pageName;
+    }
+    for (var name in OptionsPage.registeredSubPages_) {
+      var pageInfo = OptionsPage.registeredSubPages_[name];
+      var match = name == pageName;
+      if (match)
+        pageInfo.parentPage.visible = true;
+      pageInfo.page.visible = match;
     }
   };
 
@@ -55,7 +61,11 @@ cr.define('options', function() {
    * @param {string} hash The value of the hash component of the URL.
    */
   OptionsPage.handleHashForPage = function(pageName, hash) {
-    OptionsPage.registeredPages_[pageName].handleHash(hash);
+    var page = OptionsPage.registeredPages_[pageName];
+    if (!page) {
+      page = OptionsPage.registeredSubPages_[pageName].page;
+    }
+    page.handleHash(hash);
   };
 
   /**
@@ -86,6 +96,22 @@ cr.define('options', function() {
   OptionsPage.clearOverlaysOnEsc_ = function(e) {
     if (e.keyCode == 27) { // Esc
       OptionsPage.clearOverlays();
+    }
+  };
+
+  /**
+   * Closes any currently-open subpage.
+   */
+  OptionsPage.closeSubPage = function() {
+    for (var name in OptionsPage.registeredSubPages_) {
+      var pageInfo = OptionsPage.registeredSubPages_[name];
+      if (pageInfo.page.visible) {
+        pageInfo.page.visible = false;
+        // Since the managed pref banner lives outside the overlay, and the
+        // parent is not changing visibility, update the banner explicitly.
+        var banner = $('managed-prefs-banner');
+        banner.style.display = pageInfo.parentPage.managed ? 'block' : 'none';
+      }
     }
   };
 
@@ -146,17 +172,12 @@ cr.define('options', function() {
    * Registers a new Sub tab page.
    * @param {OptionsPage} page Page to register.
    */
-  OptionsPage.registerSubPage = function(page) {
-    OptionsPage.registeredPages_[page.name] = page;
-    var pageNav = document.createElement('li');
-    pageNav.id = page.name + 'PageNav';
-    pageNav.className = 'navbar-item hidden';
-    pageNav.setAttribute('pageName', page.name);
-    pageNav.textContent = page.title;
-    var subpagesnav = $('subpagesnav');
-    subpagesnav.appendChild(pageNav);
-    page.tab = pageNav;
-    page.initializePage();
+  OptionsPage.registerSubPage = function(subPage, parentPage) {
+    OptionsPage.registeredSubPages_[subPage.name] = {
+        page: subPage, parentPage: parentPage };
+    subPage.tab = undefined;
+    subPage.isSubPageSheet = true;
+    subPage.initializePage();
   };
 
   /**
@@ -187,6 +208,14 @@ cr.define('options', function() {
    */
   OptionsPage.initialize = function() {
     chrome.send('coreOptionsInitialize');
+
+    // Set up the overlay sheet. Clicks on the visible part of the parent page
+    // should close the overlay, not fall through to the parent page.
+    $('subpage-sheet-container').onclick = function(event) {
+      if (!$('subpage-sheet').contains(event.target))
+        OptionsPage.closeSubPage();
+      event.stopPropagation();
+    }
   };
 
   OptionsPage.prototype = {
@@ -231,6 +260,9 @@ cr.define('options', function() {
           document.addEventListener('keydown',
                                     OptionsPage.clearOverlaysOnEsc_);
         } else {
+          if (this.isSubPageSheet)
+            $('subpage-sheet-container').classList.remove('hidden');
+
           var banner = $('managed-prefs-banner');
           banner.style.display = this.managed ? 'block' : 'none';
 
@@ -240,8 +272,6 @@ cr.define('options', function() {
         }
         if (this.tab) {
           this.tab.classList.add('navbar-item-selected');
-          if (this.tab.parentNode && this.tab.parentNode.id == 'subpagesnav')
-            this.tab.classList.remove('hidden');
         }
       } else {
         if (this.isOverlay) {
@@ -249,12 +279,12 @@ cr.define('options', function() {
           overlay.classList.add('hidden');
           document.removeEventListener('keydown',
                                        OptionsPage.clearOverlaysOnEsc_);
+        } else if (this.isSubPageSheet) {
+          $('subpage-sheet-container').classList.add('hidden');
         }
         this.pageDiv.style.display = 'none';
         if (this.tab) {
           this.tab.classList.remove('navbar-item-selected');
-          if (this.tab.parentNode && this.tab.parentNode.id == 'subpagesnav')
-            this.tab.classList.add('hidden');
         }
       }
 

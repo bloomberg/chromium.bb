@@ -162,23 +162,54 @@ function load() {
   localStrings = new LocalStrings();
 
   if (cr.isChromeOS) {
-    OptionsPage.registerSubPage(AboutPage.getInstance());
     OptionsPage.register(SystemOptions.getInstance());
+    OptionsPage.registerSubPage(AboutPage.getInstance(),
+                                SystemOptions.getInstance());
+    OptionsPage.registerSubPage(LanguageOptions.getInstance(),
+                                SystemOptions.getInstance());
+    OptionsPage.registerSubPage(
+        new OptionsPage('languageChewing',
+                        localStrings.getString('languageChewingPage'),
+                        'languageChewingPage'),
+        SystemOptions.getInstance());
+    OptionsPage.registerSubPage(
+        new OptionsPage('languageHangul',
+                        localStrings.getString('languageHangulPage'),
+                        'languageHangulPage'),
+        SystemOptions.getInstance());
+    OptionsPage.registerSubPage(
+        new OptionsPage('languageMozc',
+                        localStrings.getString('languageMozcPage'),
+                        'languageMozcPage'),
+        SystemOptions.getInstance());
+    OptionsPage.registerSubPage(
+        new OptionsPage('languagePinyin',
+                        localStrings.getString('languagePinyinPage'),
+                        'languagePinyinPage'),
+        SystemOptions.getInstance());
     OptionsPage.register(InternetOptions.getInstance());
   }
 
   OptionsPage.register(BrowserOptions.getInstance());
+  OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
+                              BrowserOptions.getInstance());
   OptionsPage.register(PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
+                              PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(PasswordsExceptions.getInstance(),
+                              PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(SyncOptions.getInstance(),
+                              PersonalOptions.getInstance());
   OptionsPage.register(AdvancedOptions.getInstance());
-  OptionsPage.registerSubPage(AutoFillOptions.getInstance());
-  OptionsPage.registerSubPage(ContentSettings.getInstance());
-  OptionsPage.registerSubPage(CookiesView.getInstance());
-  OptionsPage.registerSubPage(FontSettings.getInstance());
-  OptionsPage.registerSubPage(PasswordsExceptions.getInstance());
-  OptionsPage.registerSubPage(SearchEngineManager.getInstance());
-  OptionsPage.registerSubPage(SyncOptions.getInstance());
+  OptionsPage.registerSubPage(ContentSettings.getInstance(),
+                              AdvancedOptions.getInstance());
+  OptionsPage.registerSubPage(CookiesView.getInstance(),
+                              AdvancedOptions.getInstance());
+  OptionsPage.registerSubPage(FontSettings.getInstance(),
+                              AdvancedOptions.getInstance());
   if (!cr.isWindows && !cr.isMac) {
-    OptionsPage.registerSubPage(CertificateManager.getInstance());
+    OptionsPage.registerSubPage(CertificateManager.getInstance(),
+                                AdvancedOptions.getInstance());
     OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance());
     OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance());
     OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance());
@@ -199,24 +230,8 @@ function load() {
                                       localStrings.getString('labsPage'),
                                       'labsPage');
     OptionsPage.register(labsOptions);
-    OptionsPage.registerSubPage(LanguageOptions.getInstance());
-    OptionsPage.registerSubPage(new OptionsPage(
-        'languageChewing',
-        localStrings.getString('languageChewingPage'),
-        'languageChewingPage'));
-    OptionsPage.registerSubPage(new OptionsPage(
-        'languageHangul',
-        localStrings.getString('languageHangulPage'),
-        'languageHangulPage'));
-    OptionsPage.registerSubPage(new OptionsPage(
-        'languageMozc',
-        localStrings.getString('languageMozcPage'),
-        'languageMozcPage'));
-    OptionsPage.registerSubPage(new OptionsPage(
-        'languagePinyin',
-        localStrings.getString('languagePinyinPage'),
-        'languagePinyinPage'));
-    OptionsPage.registerSubPage(ProxyOptions.getInstance());
+    OptionsPage.registerSubPage(ProxyOptions.getInstance(),
+                                InternetOptions.getInstance());
     OptionsPage.registerOverlay(new OptionsPage(
         'detailsInternetPage',
         'detailsInternetPage',
@@ -305,9 +320,6 @@ window.onpopstate = function(e) {
      <h1 id="settings-title" i18n-content="title"></h1>
      <ul id="navbar">
      </ul>
-     <hr/>
-     <ul id="subpagesnav">
-     </ul>
   </div>
   <div id="mainview">
      <div class="hidden" id="managed-prefs-banner">
@@ -317,31 +329,37 @@ window.onpopstate = function(e) {
      </div>
      <div id="mainview-content">
        <if expr="pp_ifdef('chromeos')">
-         <include src="options/about_page.html">
          <include src="options/chromeos_system_options.html">
          <include src="options/chromeos_internet_options.html">
-         <include src="options/chromeos_language_options.html">
-         <include src="options/chromeos_language_chewing_options.html">
-         <include src="options/chromeos_language_hangul_options.html">
-         <include src="options/chromeos_language_mozc_options.html">
-         <include src="options/chromeos_language_pinyin_options.html">
          <include src="options/chromeos_labs.html">
          <include src="options/chromeos_accounts_options.html">
-         <include src="options/chromeos_proxy.html">
-       </if>
-       <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
-         <include src="options/certificate_manager.html">
        </if>
        <include src="options/advanced_options.html">
-       <include src="options/autofill_options.html">
        <include src="options/browser_options.html">
-       <include src="options/content_settings.html">
-       <include src="options/cookies_view.html">
-       <include src="options/font_settings.html">
-       <include src="options/passwords_exceptions.html">
        <include src="options/personal_options.html">
-       <include src="options/search_engine_manager.html">
-       <include src="options/sync_options.html">
+       <div id="subpage-sheet-container" class="hidden">
+         <div id="subpage-sheet">
+           <if expr="pp_ifdef('chromeos')">
+             <include src="options/about_page.html">
+             <include src="options/chromeos_language_options.html">
+             <include src="options/chromeos_language_chewing_options.html">
+             <include src="options/chromeos_language_hangul_options.html">
+             <include src="options/chromeos_language_mozc_options.html">
+             <include src="options/chromeos_language_pinyin_options.html">
+             <include src="options/chromeos_proxy.html">
+           </if>
+           <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+             <include src="options/certificate_manager.html">
+           </if>
+           <include src="options/autofill_options.html">
+           <include src="options/content_settings.html">
+           <include src="options/cookies_view.html">
+           <include src="options/font_settings.html">
+           <include src="options/passwords_exceptions.html">
+           <include src="options/search_engine_manager.html">
+           <include src="options/sync_options.html">
+         </div>
+       </div>
      </div>
   </div>
 </div>
