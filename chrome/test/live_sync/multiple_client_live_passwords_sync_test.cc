@@ -8,7 +8,12 @@
 
 using webkit_glue::PasswordForm;
 
+// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(MultipleClientLivePasswordsSyncTest, FAILS_Sanity) {
+#else
 IN_PROC_BROWSER_TEST_F(MultipleClientLivePasswordsSyncTest, Sanity) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   for (int i = 0; i < num_clients(); ++i) {
