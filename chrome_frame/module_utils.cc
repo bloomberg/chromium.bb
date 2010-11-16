@@ -148,9 +148,10 @@ bool DllRedirector::RegisterAsFirstCFModule() {
   if (result) {
     // We created the beacon, now we need to mutate the security attributes
     // on the shared memory to allow read-only access and let low-integrity
-    // processes open it.
-    bool acls_set = SetFileMappingToReadOnly(shared_memory_->handle());
-    DCHECK(acls_set);
+    // processes open it. This will fail on FAT32 file systems.
+    if (!SetFileMappingToReadOnly(shared_memory_->handle())) {
+      DLOG(ERROR) << "Failed to set file mapping permissions.";
+    }
   } else {
     created_beacon = false;
 
