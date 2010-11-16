@@ -3963,7 +3963,7 @@
         "type": "function",
         "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
         "parameters": [
-           {"type": "integer", "name": "offset", "minimum": 0},
+           {"type": "integer", "name": "offset"},
            {"type": "integer", "name": "length", "minimum": 0, "optional": true}
         ]
       },
@@ -3972,7 +3972,7 @@
         "type": "function",
         "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching what the user typed. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
         "parameters": [
-           {"type": "integer", "name": "offset", "minimum": 0},
+           {"type": "integer", "name": "offset"},
            {"type": "integer", "name": "length", "minimum": 0, "optional": true}
         ]
       },
@@ -3981,7 +3981,7 @@
         "type": "function",
         "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of dim helper text. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
         "parameters": [
-           {"type": "integer", "name": "offset", "minimum": 0},
+           {"type": "integer", "name": "offset"},
            {"type": "integer", "name": "length", "minimum": 0, "optional": true}
         ]
       }
