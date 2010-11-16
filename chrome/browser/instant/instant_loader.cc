@@ -30,6 +30,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
@@ -390,6 +391,8 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
 }
 
 InstantLoader::~InstantLoader() {
+  registrar_.RemoveAll();
+
   // Delete the TabContents before the delegate as the TabContents holds a
   // reference to the delegate.
   preview_contents_.reset(NULL);
@@ -428,6 +431,20 @@ void InstantLoader::Update(TabContents* tab_contents,
     gfx::Rect tab_bounds;
     tab_contents->view()->GetContainerBounds(&tab_bounds);
     preview_contents_->view()->SizeContents(tab_bounds.size());
+
+#if defined(OS_MACOSX)
+    // If |preview_contents_| does not currently have a RWHV, we will call
+    // SetTakesFocusOnlyOnMouseDown() as a result of the
+    // RENDER_VIEW_HOST_CHANGED notification.
+    if (preview_contents_->GetRenderWidgetHostView()) {
+      preview_contents_->GetRenderWidgetHostView()->
+          SetTakesFocusOnlyOnMouseDown(true);
+    }
+    registrar_.Add(
+        this,
+        NotificationType::RENDER_VIEW_HOST_CHANGED,
+        Source<NavigationController>(&preview_contents_->controller()));
+#endif
 
     preview_contents_->ShowContents();
     created_preview_contents = true;
@@ -537,6 +554,10 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type) {
 #if defined(OS_MACOSX)
       preview_contents_->GetRenderWidgetHostView()->
           SetTakesFocusOnlyOnMouseDown(false);
+      registrar_.Remove(
+          this,
+          NotificationType::RENDER_VIEW_HOST_CHANGED,
+          Source<NavigationController>(&preview_contents_->controller()));
 #endif
     }
     preview_contents_->set_delegate(NULL);
@@ -604,14 +625,24 @@ void InstantLoader::PreviewPainted() {
 void InstantLoader::ShowPreview() {
   if (!ready_) {
     ready_ = true;
-#if defined(OS_MACOSX)
-    if (preview_contents_->GetRenderWidgetHostView()) {
-      preview_contents_->GetRenderWidgetHostView()->
-          SetTakesFocusOnlyOnMouseDown(true);
-    }
-#endif
     delegate_->ShowInstantLoader(this);
   }
+}
+
+void InstantLoader::Observe(NotificationType type,
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+#if defined(OS_MACOSX)
+  if (type.value == NotificationType::RENDER_VIEW_HOST_CHANGED) {
+      if (preview_contents_->GetRenderWidgetHostView()) {
+        preview_contents_->GetRenderWidgetHostView()->
+            SetTakesFocusOnlyOnMouseDown(true);
+      }
+      return;
+  }
+#endif
+
+  NOTREACHED() << "Got a notification we didn't register for.";
 }
 
 void InstantLoader::PageFinishedLoading() {

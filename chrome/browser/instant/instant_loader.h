@@ -12,6 +12,8 @@
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
@@ -31,10 +33,10 @@ class TemplateURL;
 //
 // If the TemplateURLID supplied to the constructor is zero, then the url is
 // loaded as is.
-class InstantLoader {
+class InstantLoader : public NotificationObserver {
  public:
   InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id);
-  ~InstantLoader();
+  virtual ~InstantLoader();
 
   // Invoked to load a URL. |tab_contents| is the TabContents the preview is
   // going to be shown on top of and potentially replace.
@@ -66,6 +68,10 @@ class InstantLoader {
   // Resets the template_url_id_ to zero and shows this loader. This is only
   // intended to be invoked from InstantLoaderDoesntSupportInstant.
   void ClearTemplateURLID();
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // The preview TabContents; may be null.
   TabContents* preview_contents() const { return preview_contents_.get(); }
@@ -163,6 +169,9 @@ class InstantLoader {
 
   // Timer used to update the bounds of the omnibox.
   base::OneShotTimer<InstantLoader> update_bounds_timer_;
+
+  // Used to get notifications about renderers coming and going.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };
