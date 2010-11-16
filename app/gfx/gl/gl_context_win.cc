@@ -333,7 +333,7 @@ std::string BaseWinGLContext::GetExtensions() {
     }
   }
 
-  return GetExtensions();
+  return GLContext::GetExtensions();
 }
 
 bool NativeViewGLContext::Initialize(bool multisampled) {
