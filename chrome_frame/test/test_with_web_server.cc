@@ -1240,9 +1240,11 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
   };
 
   EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+      .Times(testing::AtMost(1))
       .WillOnce(chrome_frame_test::DoCloseWindow());
 
   EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+      .Times(testing::AtMost(1))
       .WillOnce(QUIT_LOOP(loop_));
 
   SimpleWebServerTest server(46664);
