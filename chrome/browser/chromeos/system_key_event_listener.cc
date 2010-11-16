@@ -84,18 +84,21 @@ GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
   if (xevent->type == KeyPress) {
     int32 keycode = xevent->xkey.keycode;
     if (keycode) {
-      if ((keycode == listener->key_f8_) ||
-          (keycode == listener->key_volume_mute_)) {
-        listener->OnVolumeMute();
-        return GDK_FILTER_REMOVE;
-      } else if ((keycode == listener->key_f9_) ||
-                  keycode == listener->key_volume_down_) {
-        listener->OnVolumeDown();
-        return GDK_FILTER_REMOVE;
-      } else if ((keycode == listener->key_f10_) ||
-                 (keycode == listener->key_volume_up_)) {
-         listener->OnVolumeUp();
-         return GDK_FILTER_REMOVE;
+      // Only doing non-Alt/Shift/Ctrl modified keys
+      if (!(xevent->xkey.state & (Mod1Mask | ShiftMask | ControlMask))) {
+        if ((keycode == listener->key_f8_) ||
+            (keycode == listener->key_volume_mute_)) {
+          listener->OnVolumeMute();
+          return GDK_FILTER_REMOVE;
+        } else if ((keycode == listener->key_f9_) ||
+                    keycode == listener->key_volume_down_) {
+          listener->OnVolumeDown();
+          return GDK_FILTER_REMOVE;
+        } else if ((keycode == listener->key_f10_) ||
+                   (keycode == listener->key_volume_up_)) {
+          listener->OnVolumeUp();
+          return GDK_FILTER_REMOVE;
+        }
       }
     }
   }
