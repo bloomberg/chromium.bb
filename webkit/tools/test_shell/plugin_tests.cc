@@ -127,7 +127,7 @@ TEST_F(PluginTest, Refresh) {
 // don't crash.
 TEST_F(PluginTest, DeleteFrameDuringEvent) {
   FilePath test_html = data_dir_;
-  test_html = test_html.AppendASCII("plugins");
+  test_html = test_html.AppendASCII(TEST_PLUGIN_DIRECTORY);
   test_html = test_html.AppendASCII("delete_frame.html");
   test_shell_->LoadFile(test_html);
   test_shell_->WaitTestFinished();
@@ -138,6 +138,17 @@ TEST_F(PluginTest, DeleteFrameDuringEvent) {
   input.y = 50;
   input.type = WebKit::WebInputEvent::MouseUp;
   test_shell_->webView()->handleInputEvent(input);
+
+  // No crash means we passed.
+}
+
+// Tests that a forced reload of the plugin will not crash.
+TEST_F(PluginTest, ForceReload) {
+  FilePath test_html = data_dir_;
+  test_html = test_html.AppendASCII(TEST_PLUGIN_DIRECTORY);
+  test_html = test_html.AppendASCII("force_reload.html");
+  test_shell_->LoadFile(test_html);
+  test_shell_->WaitTestFinished();
 
   // No crash means we passed.
 }
@@ -157,7 +168,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
 // Tests that hiding/showing the parent frame hides/shows the plugin.
 TEST_F(PluginTest, PluginVisibilty) {
   FilePath test_html = data_dir_;
-  test_html = test_html.AppendASCII("plugins");
+  test_html = test_html.AppendASCII(TEST_PLUGIN_DIRECTORY);
   test_html = test_html.AppendASCII("plugin_visibility.html");
   test_shell_->LoadFile(test_html);
   test_shell_->WaitTestFinished();

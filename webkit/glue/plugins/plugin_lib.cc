@@ -235,25 +235,41 @@ bool PluginLib::Load() {
 // This class implements delayed NP_Shutdown and FreeLibrary on the plugin dll.
 class FreePluginLibraryTask : public Task {
  public:
-  FreePluginLibraryTask(base::NativeLibrary library,
+  FreePluginLibraryTask(const FilePath& path,
+                        base::NativeLibrary library,
                         NP_ShutdownFunc shutdown_func)
-      : library_(library),
+      : path_(path),
+        library_(library),
         NP_Shutdown_(shutdown_func) {
   }
 
   ~FreePluginLibraryTask() {}
 
   void Run() {
-    if (NP_Shutdown_)
-      NP_Shutdown_();
+    if (NP_Shutdown_) {
+      // Don't call NP_Shutdown if the library has been reloaded since this task
+      // was posted.
+      bool reloaded = false;
+      if (g_loaded_libs) {
+        for (size_t i = 0; i < g_loaded_libs->size(); ++i) {
+          if ((*g_loaded_libs)[i]->plugin_info().path == path_)
+            reloaded = true;
+        }
+      }
+      if (!reloaded)
+        NP_Shutdown_();
+    }
 
     if (library_) {
+      // Always call base::UnloadNativeLibrary so that the system reference
+      // count is decremented.
       base::UnloadNativeLibrary(library_);
       library_ = NULL;
     }
   }
 
  private:
+  FilePath path_;
   base::NativeLibrary library_;
   NP_ShutdownFunc NP_Shutdown_;
   DISALLOW_COPY_AND_ASSIGN(FreePluginLibraryTask);
@@ -277,7 +293,8 @@ void PluginLib::Unload() {
 
     if (defer_unload) {
       FreePluginLibraryTask* free_library_task =
-          new FreePluginLibraryTask(skip_unload_ ? NULL : library_,
+          new FreePluginLibraryTask(web_plugin_info_.path,
+                                    skip_unload_ ? NULL : library_,
                                     entry_points_.np_shutdown);
       LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Scheduling delayed unload for plugin "
