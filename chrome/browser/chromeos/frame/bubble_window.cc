@@ -25,8 +25,22 @@ BubbleWindow::BubbleWindow(views::WindowDelegate* window_delegate)
 void BubbleWindow::Init(GtkWindow* parent, const gfx::Rect& bounds) {
   views::WindowGtk::Init(parent, bounds);
 
+  // Turn on double buffering so that the hosted GtkWidgets does not
+  // flash as in http://crosbug.com/9065.
+  EnableDoubleBuffer(true);
+
   GdkColor background_color = gfx::SkColorToGdkColor(kBackgroundColor);
   gtk_widget_modify_bg(GetNativeView(), GTK_STATE_NORMAL, &background_color);
+
+  // A work-around for http://crosbug.com/8538. All GdkWidnow of top-level
+  // GtkWindow should participate _NET_WM_SYNC_REQUEST protocol and window
+  // manager should only show the window after getting notified. And we
+  // should only notify window manager after at least one paint is done.
+  // TODO(xiyuan): Figure out the right fix.
+  gtk_widget_realize(GetNativeView());
+  gdk_window_set_back_pixmap(GetNativeView()->window, NULL, FALSE);
+  gtk_widget_realize(window_contents());
+  gdk_window_set_back_pixmap(window_contents()->window, NULL, FALSE);
 }
 
 views::Window* BubbleWindow::Create(
