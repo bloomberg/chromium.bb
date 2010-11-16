@@ -397,11 +397,6 @@
                 '../sandbox/sandbox.gyp:sandbox',
               ],
             }],
-            ['linux_sandbox_path != ""', {
-              'defines': [
-                'LINUX_SANDBOX_PATH="<(linux_sandbox_path)"',
-              ],
-            }],
           ],
         }],
         ['OS != "mac"', {
