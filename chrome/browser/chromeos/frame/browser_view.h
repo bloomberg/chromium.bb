@@ -10,6 +10,7 @@
 
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "views/controls/menu/menu_wrapper.h"
 
 class AccessibleToolbarView;
 class TabStripModel;
@@ -40,6 +41,7 @@ class StatusAreaButton;
 // and adds the system context menu to the remaining arae of the titlebar.
 class BrowserView : public ::BrowserView,
                     public views::ContextMenuController,
+                    public views::MenuListener,
                     public StatusAreaHost {
  public:
   explicit BrowserView(Browser* browser);
@@ -52,11 +54,17 @@ class BrowserView : public ::BrowserView,
   virtual views::LayoutManager* CreateLayoutManager() const;
   virtual void ChildPreferredSizeChanged(View* child);
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
+  virtual void Cut();
+  virtual void Copy();
+  virtual void Paste();
 
   // views::ContextMenuController overrides.
   virtual void ShowContextMenu(views::View* source,
                                const gfx::Point& p,
                                bool is_mouse_gesture);
+
+  // views::MenuListener implementation.
+  virtual void OnMenuOpened();
 
   // StatusAreaHost overrides.
   virtual Profile* GetProfile() const;
@@ -67,6 +75,10 @@ class BrowserView : public ::BrowserView,
   virtual void OpenButtonOptions(const views::View* button_view);
   virtual bool IsBrowserMode() const;
   virtual bool IsScreenLockerMode() const;
+
+  gfx::NativeView saved_focused_widget() const {
+    return saved_focused_widget_;
+  }
 
  protected:
   virtual void GetAccessiblePanes(
@@ -81,6 +93,10 @@ class BrowserView : public ::BrowserView,
   // System menus.
   scoped_ptr<menus::SimpleMenuModel> system_menu_contents_;
   scoped_ptr<views::Menu2> system_menu_menu_;
+
+  // Focused native widget before wench menu shows up. We need this to properly
+  // perform cut, copy and paste. See http://crosbug.com/8496
+  gfx::NativeView saved_focused_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

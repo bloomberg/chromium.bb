@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/browser_view_layout.h"
@@ -208,10 +209,13 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 
 BrowserView::BrowserView(Browser* browser)
     : ::BrowserView(browser),
-      status_area_(NULL) {
+      status_area_(NULL),
+      saved_focused_widget_(NULL) {
 }
 
 BrowserView::~BrowserView() {
+  if (toolbar())
+    toolbar()->RemoveMenuListener(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -231,6 +235,9 @@ void BrowserView::Init() {
   // NonClientFrameView.
   BrowserFrameGtk* gtk_frame = static_cast<BrowserFrameGtk*>(frame());
   gtk_frame->GetNonClientView()->SetContextMenuController(this);
+
+  // Listen to wrench menu opens.
+  toolbar()->AddMenuListener(this);
 
   // Make sure the window is set to the right type.
   std::vector<int> params;
@@ -285,6 +292,18 @@ bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   return ::BrowserView::GetSavedWindowBounds(bounds);
 }
 
+void BrowserView::Cut() {
+  gtk_util::DoCut(this);
+}
+
+void BrowserView::Copy() {
+  gtk_util::DoCopy(this);
+}
+
+void BrowserView::Paste() {
+  gtk_util::DoPaste(this);
+}
+
 // views::ContextMenuController overrides.
 void BrowserView::ShowContextMenu(views::View* source,
                                   const gfx::Point& p,
@@ -298,6 +317,11 @@ void BrowserView::ShowContextMenu(views::View* source,
   int hit_test = NonClientHitTest(point_in_parent_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE)
     system_menu_menu_->RunMenuAt(p, views::Menu2::ALIGN_TOPLEFT);
+}
+
+void BrowserView::OnMenuOpened() {
+  // Save the focused widget before wrench menu opens.
+  saved_focused_widget_ = gtk_window_get_focus(GetNativeHandle());
 }
 
 // StatusAreaHost overrides.

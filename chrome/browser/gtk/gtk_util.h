@@ -21,6 +21,7 @@ typedef struct _cairo cairo_t;
 typedef struct _GdkColor GdkColor;
 typedef struct _GtkWidget GtkWidget;
 
+class BrowserWindow;
 class GtkThemeProvider;
 class GURL;
 class Profile;
@@ -373,6 +374,11 @@ WebKit::WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action);
 // window manager bugs. You should always call it after creating a dialog with
 // gtk_message_dialog_new.
 void ApplyMessageDialogQuirks(GtkWidget* dialog);
+
+// Performs Cut/Copy/Paste operation on the |window|.
+void DoCut(BrowserWindow* window);
+void DoCopy(BrowserWindow* window);
+void DoPaste(BrowserWindow* window);
 
 }  // namespace gtk_util
 
