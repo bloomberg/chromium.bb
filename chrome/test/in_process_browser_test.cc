@@ -139,53 +139,15 @@ void InProcessBrowserTest::SetUp() {
   // Allow subclasses the opportunity to make changes to the command line before
   // running any tests.
   SetUpCommandLine(command_line);
+  // Add command line arguments that are used by all InProcessBrowserTests.
+  PrepareTestCommandLine(command_line);
 
-#if defined(OS_WIN)
-  // Hide windows on show.
-  if (!command_line->HasSwitch(kUnitTestShowWindows) && !show_window_)
-    BrowserView::SetShowState(SW_HIDE);
-#endif
-
-  if (dom_automation_enabled_)
-    command_line->AppendSwitch(switches::kDomAutomationController);
-
-  // This is a Browser test.
-  command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
-
-  // Single-process mode is not set in BrowserMain so it needs to be processed
-  // explicitly.
+  // Save the single process mode state before it was reset in this test. This
+  // state will be recovered in TearDown(). Single-process mode is not set in
+  // BrowserMain so it needs to be processed explicitly.
   original_single_process_ = RenderProcessHost::run_renderer_in_process();
   if (command_line->HasSwitch(switches::kSingleProcess))
     RenderProcessHost::set_run_renderer_in_process(true);
-
-#if defined(OS_WIN)
-  // The Windows sandbox requires that the browser and child processes are the
-  // same binary.  So we launch browser_process.exe which loads chrome.dll
-  command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
-                                 command_line->GetProgram());
-#else
-  // Explicitly set the path of the binary used for child processes, otherwise
-  // they'll try to use browser_tests which doesn't contain ChromeMain.
-  FilePath subprocess_path;
-  PathService::Get(base::FILE_EXE, &subprocess_path);
-#if defined(OS_MACOSX)
-  // Recreate the real environment, run the helper within the app bundle.
-  subprocess_path = subprocess_path.DirName().DirName();
-  DCHECK_EQ(subprocess_path.BaseName().value(), "Contents");
-  subprocess_path =
-      subprocess_path.Append("Versions").Append(chrome::kChromeVersion);
-  subprocess_path =
-      subprocess_path.Append(chrome::kHelperProcessExecutablePath);
-#endif
-  command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
-                                 subprocess_path);
-#endif
-
-  // If ncecessary, disable TabCloseableStateWatcher.
-  if (!tab_closeable_state_watcher_enabled_)
-    command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
-
-  test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
 
 #if defined(OS_CHROMEOS)
   chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
@@ -218,6 +180,51 @@ void InProcessBrowserTest::SetUp() {
 
   BrowserMain(params);
   TearDownInProcessBrowserTestFixture();
+}
+
+void InProcessBrowserTest::PrepareTestCommandLine(
+    CommandLine* command_line) {
+  // Propagate commandline settings from test_launcher_utils.
+  test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
+
+#if defined(OS_WIN)
+  // Hide windows on show.
+  if (!command_line->HasSwitch(kUnitTestShowWindows) && !show_window_)
+    BrowserView::SetShowState(SW_HIDE);
+#endif
+
+  if (dom_automation_enabled_)
+    command_line->AppendSwitch(switches::kDomAutomationController);
+
+  // This is a Browser test.
+  command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
+
+#if defined(OS_WIN)
+  // The Windows sandbox requires that the browser and child processes are the
+  // same binary.  So we launch browser_process.exe which loads chrome.dll
+  command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
+                                 command_line->GetProgram());
+#else
+  // Explicitly set the path of the binary used for child processes, otherwise
+  // they'll try to use browser_tests which doesn't contain ChromeMain.
+  FilePath subprocess_path;
+  PathService::Get(base::FILE_EXE, &subprocess_path);
+#if defined(OS_MACOSX)
+  // Recreate the real environment, run the helper within the app bundle.
+  subprocess_path = subprocess_path.DirName().DirName();
+  DCHECK_EQ(subprocess_path.BaseName().value(), "Contents");
+  subprocess_path =
+      subprocess_path.Append("Versions").Append(chrome::kChromeVersion);
+  subprocess_path =
+      subprocess_path.Append(chrome::kHelperProcessExecutablePath);
+#endif
+  command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
+                                 subprocess_path);
+#endif
+
+  // If ncecessary, disable TabCloseableStateWatcher.
+  if (!tab_closeable_state_watcher_enabled_)
+    command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {

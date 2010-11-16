@@ -661,12 +661,9 @@ FilePath UITestBase::ComputeTypicalUserDataSource(ProfileType profile_type) {
   return source_history_file;
 }
 
-bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
-                                     bool wait,
-                                     base::ProcessHandle* process) {
-  FilePath command = browser_directory_.Append(
-      FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath));
-  CommandLine command_line(command);
+void UITestBase::PrepareTestCommandline(CommandLine* command_line) {
+  // Propagate commandline settings from test_launcher_utils.
+  test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
 
   // Add any explicit command line flags passed to the process.
   CommandLine::StringType extra_chrome_flags =
@@ -677,85 +674,94 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
     std::vector<CommandLine::StringType> flags;
     base::SplitString(extra_chrome_flags, ' ', &flags);
     for (size_t i = 0; i < flags.size(); ++i)
-      command_line.AppendArgNative(flags[i]);
+      command_line->AppendArgNative(flags[i]);
   }
 
   // No default browser check, it would create an info-bar (if we are not the
   // default browser) that could conflicts with some tests expectations.
-  command_line.AppendSwitch(switches::kNoDefaultBrowserCheck);
+  command_line->AppendSwitch(switches::kNoDefaultBrowserCheck);
 
   // This is a UI test.
-  command_line.AppendSwitchASCII(switches::kTestType, kUITestType);
+  command_line->AppendSwitchASCII(switches::kTestType, kUITestType);
 
   // Tell the browser to use a temporary directory just for this test.
-  command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir());
+  command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir());
 
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)
-    command_line.AppendSwitch(switches::kEnableFileCookies);
+    command_line->AppendSwitch(switches::kEnableFileCookies);
 
   if (dom_automation_enabled_)
-    command_line.AppendSwitch(switches::kDomAutomationController);
+    command_line->AppendSwitch(switches::kDomAutomationController);
 
   if (include_testing_id_) {
-    command_line.AppendSwitchASCII(switches::kTestingChannelID,
+    command_line->AppendSwitchASCII(switches::kTestingChannelID,
                                    server_->channel_id());
   }
 
   if (!show_error_dialogs_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableErrorDialogs)) {
-    command_line.AppendSwitch(switches::kNoErrorDialogs);
+    command_line->AppendSwitch(switches::kNoErrorDialogs);
   }
   if (in_process_renderer_)
-    command_line.AppendSwitch(switches::kSingleProcess);
+    command_line->AppendSwitch(switches::kSingleProcess);
   if (no_sandbox_)
-    command_line.AppendSwitch(switches::kNoSandbox);
+    command_line->AppendSwitch(switches::kNoSandbox);
   if (full_memory_dump_)
-    command_line.AppendSwitch(switches::kFullMemoryCrashReport);
+    command_line->AppendSwitch(switches::kFullMemoryCrashReport);
   if (safe_plugins_)
-    command_line.AppendSwitch(switches::kSafePlugins);
+    command_line->AppendSwitch(switches::kSafePlugins);
   if (enable_dcheck_)
-    command_line.AppendSwitch(switches::kEnableDCHECK);
+    command_line->AppendSwitch(switches::kEnableDCHECK);
   if (silent_dump_on_dcheck_)
-    command_line.AppendSwitch(switches::kSilentDumpOnDCHECK);
+    command_line->AppendSwitch(switches::kSilentDumpOnDCHECK);
   if (disable_breakpad_)
-    command_line.AppendSwitch(switches::kDisableBreakpad);
+    command_line->AppendSwitch(switches::kDisableBreakpad);
   if (!homepage_.empty())
-    command_line.AppendSwitchASCII(switches::kHomePage, homepage_);
+    command_line->AppendSwitchASCII(switches::kHomePage, homepage_);
 
   if (!js_flags_.empty())
-    command_line.AppendSwitchASCII(switches::kJavaScriptFlags, js_flags_);
+    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, js_flags_);
   if (!log_level_.empty())
-    command_line.AppendSwitchASCII(switches::kLoggingLevel, log_level_);
+    command_line->AppendSwitchASCII(switches::kLoggingLevel, log_level_);
 
-  command_line.AppendSwitch(switches::kMetricsRecordingOnly);
+  command_line->AppendSwitch(switches::kMetricsRecordingOnly);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableErrorDialogs))
-    command_line.AppendSwitch(switches::kEnableLogging);
+    command_line->AppendSwitch(switches::kEnableLogging);
 
   if (dump_histograms_on_exit_)
-    command_line.AppendSwitch(switches::kDumpHistogramsOnExit);
+    command_line->AppendSwitch(switches::kDumpHistogramsOnExit);
 
 #ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-  command_line.AppendSwitch(switches::kDebugOnStart);
+  command_line->AppendSwitch(switches::kDebugOnStart);
 #endif
 
   if (!ui_test_name_.empty())
-    command_line.AppendSwitchASCII(switches::kTestName, ui_test_name_);
+    command_line->AppendSwitchASCII(switches::kTestName, ui_test_name_);
 
   // The tests assume that file:// URIs can freely access other file:// URIs.
-  command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
+  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
 
   // Disable TabCloseableStateWatcher for tests.
-  command_line.AppendSwitch(switches::kDisableTabCloseableStateWatcher);
+  command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
 
   // Allow file:// access on ChromeOS.
-  command_line.AppendSwitch(switches::kAllowFileAccess);
+  command_line->AppendSwitch(switches::kAllowFileAccess);
+}
 
-  test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
+bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
+                                     bool wait,
+                                     base::ProcessHandle* process) {
+  FilePath command = browser_directory_.Append(
+      FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath));
 
+  CommandLine command_line(command);
+
+  // Add command line arguments that should be applied to all UI tests.
+  PrepareTestCommandline(&command_line);
   DebugFlags::ProcessDebugFlags(
       &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
   command_line.AppendArguments(arguments, false);
@@ -1191,4 +1197,3 @@ bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
   ADD_FAILURE() << "Timeout reached in " << __FUNCTION__;
   return false;
 }
-

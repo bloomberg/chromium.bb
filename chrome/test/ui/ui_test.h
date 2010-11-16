@@ -423,6 +423,10 @@ class UITestBase {
                            bool wait,
                            base::ProcessHandle* process);
 
+  // Prepare command line that will be used to launch the child browser process
+  // with an UI test.
+  void PrepareTestCommandline(CommandLine* arguments);
+
   // We want to have a current history database when we start the browser so
   // things like the NTP will have thumbnails.  This method updates the dates
   // in the history to be more recent.

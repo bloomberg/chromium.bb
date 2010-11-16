@@ -149,6 +149,10 @@ class InProcessBrowserTest : public testing::Test {
   // Quits all open browsers and waits until there are no more browsers.
   void QuitBrowsers();
 
+  // Prepare command line that will be used to launch the child browser process
+  // with an in-process test.
+  void PrepareTestCommandLine(CommandLine* command_line);
+
   // Browser created from CreateBrowser.
   Browser* browser_;
 
