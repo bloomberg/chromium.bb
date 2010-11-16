@@ -40,16 +40,6 @@ class SimpleResourceLoader {
   // |language_tags|.
   static void GetPreferredLanguages(std::vector<std::wstring>* language_tags);
 
-  // Retrieves the thread/process/user/system preferred languages on Vista+,
-  // adding them and their fallbacks to |language_tags|.  Returns |false| if the
-  // platform does not support such (i.e., XP).
-  static bool GetThreadPreferredUILanguages(
-      std::vector<std::wstring>* language_tags);
-
-  // Retrieves the system language and the region using ICU (used on XP).
-  static void GetICUSystemLanguage(std::wstring* language,
-                                   std::wstring* region);
-
   // Populates |locales_path| with the path to the "Locales" directory.
   static void DetermineLocalesDirectory(FilePath* locales_path);
 

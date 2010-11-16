@@ -88,6 +88,7 @@
             'installer/util/helper_unittest.cc',
             'installer/util/installer_util_unittests.rc',
             'installer/util/installer_util_unittests_resource.h',
+            'installer/util/language_selector_unittest.cc',
             'installer/util/lzma_util_unittest.cc',
             'installer/util/master_preferences_unittest.cc',
             'installer/util/move_tree_work_item_unittest.cc',

@@ -4,19 +4,19 @@
 
 #include "chrome_frame/simple_resource_loader.h"
 
-#include <algorithm>
-
 #include <atlbase.h>
+
+#include <algorithm>
 
 #include "base/base_paths.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/i18n/file_util_icu.h"
 #include "base/i18n/rtl.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/i18n.h"
 #include "base/win/windows_version.h"
 
 #include "chrome_frame/policy_settings.h"
@@ -61,6 +61,25 @@ bool PushBackIfAbsent(
   return false;
 }
 
+// Returns true if the collection is modified.
+bool PushBackWithFallbackIfAbsent(
+    const std::wstring& language,
+    std::vector<std::wstring>* collection) {
+  bool modified = false;
+
+  if (!language.empty()) {
+    // Try adding the language itself.
+    modified = PushBackIfAbsent(language, collection);
+
+    // Now try adding its fallback, if it has one.
+    std::wstring::size_type dash_pos = language.find(L'-');
+    if (0 < dash_pos && language.size() - 1 > dash_pos)
+      modified |= PushBackIfAbsent(language.substr(0, dash_pos), collection);
+  }
+
+  return modified;
+}
+
 }  // namespace
 
 SimpleResourceLoader::SimpleResourceLoader()
@@ -69,19 +88,8 @@ SimpleResourceLoader::SimpleResourceLoader()
   std::vector<std::wstring> language_tags;
 
   // First, try the locale dictated by policy and its fallback.
-  std::wstring application_locale =
-      Singleton<PolicySettings>()->ApplicationLocale();
-  if (!application_locale.empty()) {
-    language_tags.push_back(application_locale);
-    std::wstring::size_type dash = application_locale.find(L'-');
-    if (std::wstring::npos != dash) {
-      if (0 != dash) {
-        language_tags.push_back(application_locale.substr(0, dash));
-      } else {
-        NOTREACHED() << "Group Policy application locale begins with a dash.";
-      }
-    }
-  }
+  PushBackWithFallbackIfAbsent(Singleton<PolicySettings>()->ApplicationLocale(),
+                               &language_tags);
 
   // Next, try the thread, process, user, system languages.
   GetPreferredLanguages(&language_tags);
@@ -109,84 +117,20 @@ SimpleResourceLoader::~SimpleResourceLoader() {
 // static
 void SimpleResourceLoader::GetPreferredLanguages(
     std::vector<std::wstring>* language_tags) {
+  DCHECK(language_tags);
   // The full set of preferred languages and their fallbacks are given priority.
-  GetThreadPreferredUILanguages(language_tags);
-
-  // The above gives us nothing pre-Vista, so use ICU to get the system
-  // language and add it and its fallback to the end of the list if not present.
-  std::wstring language;
-  std::wstring region;
-
-  GetICUSystemLanguage(&language, &region);
-  if (!region.empty()) {
-    std::wstring combined;
-    combined.reserve(language.size() + 1 + region.size());
-    combined.assign(language).append(L"-").append(region);
-    PushBackIfAbsent(combined, language_tags);
-  }
-  PushBackIfAbsent(language, language_tags);
-}
-
-// static
-bool SimpleResourceLoader::GetThreadPreferredUILanguages(
-    std::vector<std::wstring>* language_tags) {
-  typedef BOOL (WINAPI* GetThreadPreferredUILanguages_Fn)(
-      DWORD, PULONG, PZZWSTR, PULONG);
-  HMODULE kernel32 = GetModuleHandle(L"kernel32.dll");
-  DCHECK(kernel32) << "Failed finding kernel32.dll!";
-  GetThreadPreferredUILanguages_Fn get_thread_preferred_ui_languages =
-      reinterpret_cast<GetThreadPreferredUILanguages_Fn>(
-          GetProcAddress(kernel32, "GetThreadPreferredUILanguages"));
-  bool have_mui = (NULL != get_thread_preferred_ui_languages);
-  if (have_mui) {
-    const DWORD kNameAndFallbackFlags =
-        MUI_LANGUAGE_NAME | MUI_MERGE_SYSTEM_FALLBACK | MUI_MERGE_USER_FALLBACK;
-    ULONG language_count = 0;
-    ULONG buffer_length = 0;
-
-    if (get_thread_preferred_ui_languages(
-            kNameAndFallbackFlags,
-            &language_count,
-            NULL,
-            &buffer_length) && 0 != buffer_length) {
-      std::vector<wchar_t> language_names(buffer_length);
-
-      if (get_thread_preferred_ui_languages(
-              kNameAndFallbackFlags,
-              &language_count,
-              &language_names[0],
-              &buffer_length)) {
-        std::vector<wchar_t>::const_iterator scan = language_names.begin();
-        std::wstring language(&*scan);
-        while (!language.empty()) {
-          language_tags->push_back(language);
-          scan += language.size() + 1;
-          language.assign(&*scan);
-        }
-      }
+  std::vector<std::wstring> languages;
+  if (base::win::i18n::GetThreadPreferredUILanguageList(&languages)) {
+    for (std::vector<std::wstring>::const_iterator scan = languages.begin(),
+             end = languages.end(); scan != end; ++scan) {
+      PushBackIfAbsent(*scan, language_tags);
     }
   }
-  return have_mui;
-}
 
-// static
-void SimpleResourceLoader::GetICUSystemLanguage(std::wstring* language,
-                                                std::wstring* region) {
-  DCHECK(language);
-  DCHECK(region);
-
-  std::string icu_language, icu_region;
-  base::i18n::GetLanguageAndRegionFromOS(&icu_language, &icu_region);
-  if (!icu_language.empty()) {
-    *language = ASCIIToWide(icu_language);
-  } else {
-    language->clear();
-  }
-  if (!icu_region.empty()) {
-    *region = ASCIIToWide(icu_region);
-  } else {
-    region->clear();
-  }
+  // Use the base i18n routines (i.e., ICU) as a last, best hope for something
+  // meaningful for the user.
+  PushBackWithFallbackIfAbsent(ASCIIToWide(base::i18n::GetConfiguredLocale()),
+                               language_tags);
 }
 
 // static

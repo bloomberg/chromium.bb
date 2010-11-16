@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
+#include "app/l10n_util_win.h"
 #include "app/win_util.h"
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/views/uninstall_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -217,6 +219,13 @@ class BrowserMainPartsWin : public BrowserMainParts {
 
   virtual void PreMainMessageLoopStart() {
     OleInitialize(NULL);
+
+    // If we're running tests (ui_task is non-null), then the ResourceBundle
+    // has already been initialized.
+    if (!parameters().ui_task) {
+      // Override the configured locale with the user's preferred UI language.
+      l10n_util::OverrideLocaleWithUILanguageList();
+    }
   }
 
  private:

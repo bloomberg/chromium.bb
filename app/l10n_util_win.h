@@ -7,6 +7,8 @@
 #pragma once
 
 #include <windows.h>
+#include <string>
+#include <vector>
 
 namespace l10n_util {
 
@@ -46,6 +48,15 @@ void AdjustUIFont(LOGFONT* logfont);
 // UI in the current UI langauge, its family and size are replaced with those
 // stored in the per-locale resource.
 void AdjustUIFontForWindow(HWND hwnd);
+
+// Allow processes to override the configured locale with the user's Windows UI
+// languages.  This function should generally be called once early in
+// Application startup.
+void OverrideLocaleWithUILanguageList();
+
+// Retrieve the locale override, or an empty vector if the locale has not been
+// or failed to be overridden.
+const std::vector<std::string>& GetLocaleOverrides();
 
 }  // namespace l10n_util
 

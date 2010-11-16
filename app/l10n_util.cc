@@ -8,7 +8,9 @@
 #include <glib/gutils.h>
 #endif
 
+#include <algorithm>
 #include <cstdlib>
+#include <iterator>
 
 #include "app/app_paths.h"
 #include "app/l10n_util_collator.h"
@@ -30,6 +32,8 @@
 
 #if defined(OS_MACOSX)
 #include "app/l10n_util_mac.h"
+#elif defined(OS_WIN)
+#include "app/l10n_util_win.h"
 #endif
 
 namespace {
@@ -325,6 +329,10 @@ void AdjustParagraphDirectionality(string16* paragraph) {
 #endif
 }
 
+std::string GetCanonicalLocale(const std::string& locale) {
+  return base::i18n::GetCanonicalLocale(locale.c_str());
+}
+
 }  // namespace
 
 namespace l10n_util {
@@ -369,8 +377,16 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   if (!pref_locale.empty())
     candidates.push_back(pref_locale);
 
-  // Next, try the system locale.
-  candidates.push_back(base::i18n::GetConfiguredLocale());
+  // Next, try the overridden locale.
+  const std::vector<std::string>& languages = l10n_util::GetLocaleOverrides();
+  if (!languages.empty()) {
+    candidates.reserve(candidates.size() + languages.size());
+    std::transform(languages.begin(), languages.end(),
+                   std::back_inserter(candidates), &GetCanonicalLocale);
+  } else {
+    // If no override was set, defer to ICU
+    candidates.push_back(base::i18n::GetConfiguredLocale());
+  }
 
 #elif defined(OS_CHROMEOS)
 

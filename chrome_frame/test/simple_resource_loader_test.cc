@@ -56,29 +56,6 @@ TEST(SimpleResourceLoaderTest, LoadLocaleDll) {
   EXPECT_TRUE(file_path.BaseName() == FilePath(L"en-US.dll"));
 }
 
-TEST(SimpleResourceLoaderTest, GetThreadPreferredUILanguages) {
-  std::vector<std::wstring> language_tags;
-
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    EXPECT_TRUE(
-      SimpleResourceLoader::GetThreadPreferredUILanguages(&language_tags));
-    // Did we find at least one language?
-    EXPECT_NE(static_cast<std::vector<std::wstring>::size_type>(0),
-              language_tags.size());
-  } else {
-    EXPECT_FALSE(
-      SimpleResourceLoader::GetThreadPreferredUILanguages(&language_tags));
-  }
-}
-
-TEST(SimpleResourceLoaderTest, GetICUSystemLanguage) {
-  std::wstring language;
-  std::wstring region;
-
-  SimpleResourceLoader::GetICUSystemLanguage(&language, &region);
-  EXPECT_NE(static_cast<std::wstring::size_type>(0), language.size());
-}
-
 TEST(SimpleResourceLoaderTest, InstanceTest) {
   SimpleResourceLoader* loader = SimpleResourceLoader::instance();
 

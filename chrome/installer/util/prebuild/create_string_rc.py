@@ -175,6 +175,7 @@ def WriteHeaderFile(translated_strings, out_filename):
   """Writes a .h file with resource ids.  This file can be included by the
   executable to refer to identifiers."""
   lines = []
+  do_languages_lines = ['#define DO_LANGUAGES']
 
   # Write the values for how the languages ids are offset.
   seen_languages = set()
@@ -183,7 +184,9 @@ def WriteHeaderFile(translated_strings, out_filename):
     lang = translation_struct.language
     if lang not in seen_languages:
       seen_languages.add(lang)
-      lines.append(u'#define IDS_L10N_OFFSET_%s %s' % (lang, offset_id))
+      lines.append('#define IDS_L10N_OFFSET_%s %s' % (lang, offset_id))
+      do_languages_lines.append('  HANDLE_LANGUAGE(%s, IDS_L10N_OFFSET_%s)'
+                                % (lang.replace('_', '-').lower(), lang))
       offset_id += 1
     else:
       break
@@ -191,19 +194,22 @@ def WriteHeaderFile(translated_strings, out_filename):
   # Write the resource ids themselves.
   resource_id = kFirstResourceID
   for translation_struct in translated_strings:
-    lines.append(u'#define %s %s' % (translation_struct.resource_id_str,
-                                     resource_id))
+    lines.append('#define %s %s' % (translation_struct.resource_id_str,
+                                    resource_id))
     resource_id += 1
 
   # Write out base ID values.
   for string_id in kStringIds:
-    lines.append(u'#define %s_BASE %s_%s' % (string_id,
-                                             string_id,
-                                             translated_strings[0].language))
+    lines.append('#define %s_BASE %s_%s' % (string_id,
+                                            string_id,
+                                            translated_strings[0].language))
 
   outfile = open(out_filename + '.h', 'wb')
   outfile.write('\n'.join(lines))
-  outfile.write('\n')  # .rc files must end in a new line
+  outfile.write('\n#ifndef RC_INVOKED\n')
+  outfile.write(' \\\n'.join(do_languages_lines))
+  # .rc files must end in a new line
+  outfile.write('\n#endif  // ndef RC_INVOKED\n')
   outfile.close()
 
 def main(argv):

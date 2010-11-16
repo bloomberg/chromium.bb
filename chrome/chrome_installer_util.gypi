@@ -35,6 +35,8 @@
           'installer/util/install_util.h',
           'installer/util/l10n_string_util.cc',
           'installer/util/l10n_string_util.h',
+          'installer/util/language_selector.cc',
+          'installer/util/language_selector.h',
           'installer/util/master_preferences_constants.cc',
           'installer/util/master_preferences_constants.h',
           'installer/util/move_tree_work_item.cc',
