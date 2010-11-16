@@ -141,6 +141,10 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
+  virtual printing::PrintPreviewTabController* print_preview_tab_controller() {
+    return NULL;
+  }
+
   virtual const std::string& GetApplicationLocale() {
     return app_locale_;
   }

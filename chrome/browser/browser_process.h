@@ -41,6 +41,7 @@ class WaitableEvent;
 
 namespace printing {
 class PrintJobManager;
+class PrintPreviewTabController;
 }
 
 class IOThread;
@@ -116,6 +117,8 @@ class BrowserProcess {
   virtual bool IsShuttingDown() = 0;
 
   virtual printing::PrintJobManager* print_job_manager() = 0;
+  virtual printing::PrintPreviewTabController*
+      print_preview_tab_controller() = 0;
 
   virtual GoogleURLTracker* google_url_tracker() = 0;
   virtual IntranetRedirectDetector* intranet_redirect_detector() = 0;

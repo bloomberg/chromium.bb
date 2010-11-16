@@ -24,6 +24,7 @@
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -2216,9 +2217,26 @@ void RenderViewHost::OnMsgShowPopup(
 }
 #endif
 
+TabContents* RenderViewHost::GetOrCreatePrintPreviewTab() {
+  TabContents* initiator_tab = delegate_ ? delegate_->GetAsTabContents() : NULL;
+  if (initiator_tab) {
+    // Get/Create preview tab for initiator tab.
+    printing::PrintPreviewTabController* tab_controller =
+        printing::PrintPreviewTabController::GetInstance();
+    if (tab_controller)
+      return tab_controller->GetOrCreatePreviewTab(
+        initiator_tab, delegate_->GetBrowserWindowID());
+  }
+  return NULL;
+}
+
 #if defined(OS_MACOSX) || defined(OS_WIN)
 void RenderViewHost::OnPageReadyForPreview(
     const ViewHostMsg_DidPrintPage_Params& params) {
+  // Get/Create print preview tab.
+  TabContents* print_preview_tab = GetOrCreatePrintPreviewTab();
+  DCHECK(print_preview_tab);
+
   // TODO(kmadhusu): Function definition needs to be changed.
   // 'params' contains the metafile handle for preview.
 
@@ -2227,6 +2245,10 @@ void RenderViewHost::OnPageReadyForPreview(
 }
 #else
 void RenderViewHost::OnPagesReadyForPreview(int fd_in_browser) {
+  // Get/Create print preview tab.
+  TabContents* print_preview_tab = GetOrCreatePrintPreviewTab();
+  DCHECK(print_preview_tab);
+
   // TODO(kmadhusu): Function definition needs to be changed.
   // fd_in_browser should be the file descriptor of the metafile.
 

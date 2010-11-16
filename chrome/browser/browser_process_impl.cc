@@ -41,6 +41,7 @@
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -434,6 +435,14 @@ printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
   return print_job_manager_.get();
 }
 
+printing::PrintPreviewTabController*
+    BrowserProcessImpl::print_preview_tab_controller() {
+  DCHECK(CalledOnValidThread());
+  if (!print_preview_tab_controller_.get())
+    CreatePrintPreviewTabController();
+  return print_preview_tab_controller_.get();
+}
+
 GoogleURLTracker* BrowserProcessImpl::google_url_tracker() {
   DCHECK(CalledOnValidThread());
   if (!google_url_tracker_.get())
@@ -697,6 +706,11 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
 void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
   DCHECK(tab_closeable_state_watcher_.get() == NULL);
   tab_closeable_state_watcher_.reset(TabCloseableStateWatcher::Create());
+}
+
+void BrowserProcessImpl::CreatePrintPreviewTabController() {
+  DCHECK(print_preview_tab_controller_.get() == NULL);
+  print_preview_tab_controller_ = new printing::PrintPreviewTabController();
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits

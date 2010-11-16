@@ -2469,6 +2469,8 @@
         'browser/printing/print_job_worker.cc',
         'browser/printing/print_job_worker.h',
         'browser/printing/print_job_worker_owner.h',
+        'browser/printing/print_preview_tab_controller.cc',
+        'browser/printing/print_preview_tab_controller.h',
         'browser/printing/print_view_manager.cc',
         'browser/printing/print_view_manager.h',
         'browser/printing/printer_query.cc',

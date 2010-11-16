@@ -734,6 +734,9 @@ class RenderViewHost : public RenderWidgetHost {
  private:
   friend class TestRenderViewHost;
 
+  // Get/Create print preview tab.
+  TabContents* GetOrCreatePrintPreviewTab();
+
   // The SiteInstance associated with this RenderViewHost.  All pages drawn
   // in this RenderViewHost are part of this SiteInstance.  Should not change
   // over time.

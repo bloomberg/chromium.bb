@@ -62,6 +62,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   virtual unsigned int ReleaseModule();
   virtual bool IsShuttingDown();
   virtual printing::PrintJobManager* print_job_manager();
+  virtual printing::PrintPreviewTabController* print_preview_tab_controller();
   virtual GoogleURLTracker* google_url_tracker();
   virtual IntranetRedirectDetector* intranet_redirect_detector();
   virtual const std::string& GetApplicationLocale();
@@ -110,6 +111,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateNotificationUIManager();
   void CreateStatusTrayManager();
   void CreateTabCloseableStateWatcher();
+  void CreatePrintPreviewTabController();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabledForChildProcesses(bool enabled);
@@ -157,6 +159,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   bool created_sidebar_manager_;
   scoped_refptr<SidebarManager> sidebar_manager_;
+
+  scoped_refptr<printing::PrintPreviewTabController>
+      print_preview_tab_controller_;
 
   scoped_ptr<Clipboard> clipboard_;
 

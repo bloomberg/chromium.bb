@@ -59,6 +59,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -1351,8 +1352,14 @@ void TabContents::EmailPageLocation() {
 }
 
 void TabContents::PrintPreview() {
-  // We don't show the print preview yet, only the print dialog.
-  PrintNow();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrintPreview)) {
+    if (showing_interstitial_page())
+      return;
+    render_view_host()->PrintPreview();
+  } else {
+    PrintNow();
+  }
 }
 
 bool TabContents::PrintNow() {
