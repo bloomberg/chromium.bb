@@ -141,7 +141,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
       2 * extension_installed_bubble::kInnerVerticalMargin +
       [controller getExtensionInstalledMsgFrame].size.height +
       [controller getExtensionInstalledInfoMsgFrame].size.height +
-      [controller getPageActionInfoMsgFrame].size.height;
+      [controller getExtraInfoMsgFrame].size.height;
   EXPECT_EQ(height, correctHeight);
 
   [controller setMessageFrames:height];
@@ -149,7 +149,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
   // Bottom message should be kOuterVerticalMargin pixels above window edge.
   EXPECT_EQ(msg3Frame.origin.y,
       extension_installed_bubble::kOuterVerticalMargin);
-  NSRect msg2Frame = [controller getPageActionInfoMsgFrame];
+  NSRect msg2Frame = [controller getExtraInfoMsgFrame];
   // Pageaction message should be kInnerVerticalMargin pixels above bottom msg.
   EXPECT_EQ(msg2Frame.origin.y,
             msg3Frame.origin.y + msg3Frame.size.height +

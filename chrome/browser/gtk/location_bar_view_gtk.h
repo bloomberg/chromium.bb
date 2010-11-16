@@ -61,6 +61,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Returns the widget the page info bubble should point to.
   GtkWidget* location_icon_widget() const { return location_icon_image_; }
 
+  // Returns the widget the extension installed bubble should point to.
+  GtkWidget* location_entry_widget() const { return entry_box_; }
+
   // Returns the current TabContents.
   TabContents* GetTabContents() const;
 

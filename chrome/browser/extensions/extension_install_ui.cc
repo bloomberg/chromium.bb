@@ -155,6 +155,7 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension) {
   // Note that browser actions don't appear in incognito mode initially,
   // so fall back to the generic case.
   if ((extension->browser_action() && !browser->profile()->IsOffTheRecord()) ||
+      !extension->omnibox_keyword().empty() ||
       (extension->page_action() &&
       !extension->page_action()->default_icon_path().empty())) {
     ExtensionInstalledBubbleCocoa::ShowExtensionInstalledBubble(

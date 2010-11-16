@@ -99,6 +99,16 @@ class InstalledBubbleContent : public views::View,
       AddChildView(info_);
     }
 
+    if (type_ == ExtensionInstalledBubble::OMNIBOX_KEYWORD) {
+      info_ = new views::Label(l10n_util::GetStringF(
+          IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
+          UTF8ToWide(extension->omnibox_keyword())));
+      info_->SetFont(font);
+      info_->SetMultiLine(true);
+      info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      AddChildView(info_);
+    }
+
     manage_ = new views::Label(
         l10n_util::GetString(IDS_EXTENSION_INSTALLED_MANAGE_INFO));
     manage_->SetFont(font);
@@ -141,7 +151,8 @@ class InstalledBubbleContent : public views::View,
     int height = kVertOuterMargin;
     height += heading_->GetHeightForWidth(kRightColumnWidth);
     height += kVertInnerMargin;
-    if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
+    if (type_ == ExtensionInstalledBubble::PAGE_ACTION ||
+        type_ == ExtensionInstalledBubble::OMNIBOX_KEYWORD) {
       height += info_->GetHeightForWidth(kRightColumnWidth);
       height += kVertInnerMargin;
     }
@@ -166,7 +177,8 @@ class InstalledBubbleContent : public views::View,
     y += heading_->height();
     y += kVertInnerMargin;
 
-    if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
+    if (type_ == ExtensionInstalledBubble::PAGE_ACTION ||
+        type_ == ExtensionInstalledBubble::OMNIBOX_KEYWORD) {
       info_->SizeToFit(kRightColumnWidth);
       info_->SetX(x);
       info_->SetY(y);
@@ -218,7 +230,9 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       animation_wait_retries_(0) {
   AddRef();  // Balanced in InfoBubbleClosing.
 
-  if (extension_->browser_action()) {
+  if (!extension_->omnibox_keyword().empty()) {
+    type_ = OMNIBOX_KEYWORD;
+  } else if (extension_->browser_action()) {
     type_ = BROWSER_ACTION;
   } else if (extension->page_action() &&
              !extension->page_action()->default_icon_path().empty()) {
@@ -292,6 +306,10 @@ void ExtensionInstalledBubble::ShowInternal() {
     reference_view = location_bar_view->GetPageActionView(
         extension_->page_action());
     DCHECK(reference_view);
+  } else if (type_ == OMNIBOX_KEYWORD) {
+    LocationBarView* location_bar_view = browser_view->GetLocationBarView();
+    reference_view = location_bar_view;
+    DCHECK(reference_view);
   }
 
   // Default case.
@@ -301,14 +319,21 @@ void ExtensionInstalledBubble::ShowInternal() {
   gfx::Point origin;
   views::View::ConvertPointToScreen(reference_view, &origin);
   gfx::Rect bounds = reference_view->bounds();
-  bounds.set_x(origin.x());
-  bounds.set_y(origin.y());
+  bounds.set_origin(origin);
+  BubbleBorder::ArrowLocation arrow_location = BubbleBorder::TOP_RIGHT;
 
-  bubble_content_ = new InstalledBubbleContent(extension_, type_,
-      &icon_);
+  // For omnibox keyword bubbles, move the arrow to point to the left edge
+  // of the omnibox, just to the right of the icon.
+  if (type_ == OMNIBOX_KEYWORD) {
+    bounds.set_origin(
+        browser_view->GetLocationBarView()->GetLocationEntryOrigin());
+    bounds.set_width(0);
+    arrow_location = BubbleBorder::TOP_LEFT;
+  }
+
+  bubble_content_ = new InstalledBubbleContent(extension_, type_, &icon_);
   InfoBubble* info_bubble =
-      InfoBubble::Show(browser_view->GetWidget(), bounds,
-                       BubbleBorder::TOP_RIGHT,
+      InfoBubble::Show(browser_view->GetWidget(), bounds, arrow_location,
                        bubble_content_, this);
   bubble_content_->set_info_bubble(info_bubble);
 }

@@ -33,8 +33,9 @@ const int kInnerVerticalMargin = 10;
 // We use a different kind of notification for each of these extension types.
 typedef enum {
   kBrowserAction,
-  kPageAction,
-  kGeneric
+  kGeneric,
+  kOmniboxKeyword,
+  kPageAction
 } ExtensionType;
 
 }
@@ -68,7 +69,8 @@ typedef enum {
   IBOutlet HoverCloseButton* closeButton_;
   IBOutlet NSImageView* iconImage_;
   IBOutlet NSTextField* extensionInstalledMsg_;
-  IBOutlet NSTextField* pageActionInfoMsg_;  // Only shown for page actions.
+  // Only shown for page actions and omnibox keywords.
+  IBOutlet NSTextField* extraInfoMsg_;
   IBOutlet NSTextField* extensionInstalledInfoMsg_;
 }
 
@@ -102,7 +104,7 @@ typedef enum {
 - (int)calculateWindowHeight;
 - (void)setMessageFrames:(int)newWindowHeight;
 - (NSRect)getExtensionInstalledMsgFrame;
-- (NSRect)getPageActionInfoMsgFrame;
+- (NSRect)getExtraInfoMsgFrame;
 - (NSRect)getExtensionInstalledInfoMsgFrame;
 
 @end  // ExtensionInstalledBubbleController(ExposedForTesting)

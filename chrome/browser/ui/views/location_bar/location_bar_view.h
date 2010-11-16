@@ -149,6 +149,10 @@ class LocationBarView : public LocationBar,
   // Shows the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_bookmarked);
 
+  // Returns the screen coordinates of the location entry (where the URL text
+  // appears, not where the icons are shown).
+  gfx::Point GetLocationEntryOrigin() const;
+
   // Invoked from SuggestedTextView when the suggested text should be committed.
   void OnCommitSuggestedText();
 

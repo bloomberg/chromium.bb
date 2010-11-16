@@ -20,6 +20,7 @@ class SkBitmap;
 // Provides feedback to the user upon successful installation of an
 // extension. Depending on the type of extension, the InfoBubble will
 // point to:
+//    OMNIBOX_KEYWORD-> The omnibox.
 //    BROWSER_ACTION -> The browserAction icon in the toolbar.
 //    PAGE_ACTION    -> A preview of the pageAction icon in the location
 //                      bar which is shown while the InfoBubble is shown.
@@ -34,6 +35,7 @@ class ExtensionInstalledBubble
  public:
   // The behavior and content of this InfoBubble comes in these varieties:
   enum BubbleType {
+    OMNIBOX_KEYWORD,
     BROWSER_ACTION,
     PAGE_ACTION,
     GENERIC
