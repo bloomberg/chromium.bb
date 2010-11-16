@@ -56,4 +56,4 @@ LayoutPluginTester.NPObjectSetException
 
 # Fails on valgrind
 # http://crbug.com/61601
-GPUUITest.UITestLaunchedWithOSMesa
+GPUUITest.UITestCanLaunchWithOSMesa
