@@ -128,6 +128,9 @@ TEST(GlobalKeyboardShortcuts, KeyCharacterForEvent) {
   // cmd-'z' / cmd-shift-';' on dvorak-qwerty
   ASSERT_EQ('z', KeyCharacterForEvent(
       KeyEvent(true,  true,  false, false, @"z", @":")));
+  // cmd-shift-'[' in an RTL context.
+  ASSERT_EQ('{', KeyCharacterForEvent(
+      KeyEvent(true,  true,  false, false, @"{", @"}")));
   // Test if getting dead-key events return 0 and do not hang.
   ASSERT_EQ(0,   KeyCharacterForEvent(
       KeyEvent(false, false, false, false, @"",  @"")));

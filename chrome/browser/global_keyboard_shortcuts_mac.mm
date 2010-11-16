@@ -152,8 +152,20 @@ int CommandForBrowserKeyboardShortcut(
 }
 
 unichar KeyCharacterForEvent(NSEvent* event) {
-  const NSString* eventString = [event charactersIgnoringModifiers];
-  const NSString* characters = [event characters];
+  NSString* eventString = [event charactersIgnoringModifiers];
+  NSString* characters = [event characters];
+
+  // Character pairs that undergo BiDi mirrored.
+  // There are actually many more such pairs, but these are the ones that
+  // are likely to show up in keyboard shortcuts.
+  const struct {
+    unichar a;
+    unichar b;
+  } kMirroredBiDiChars[] = {
+    {'{', '}'},
+    {'[', ']'},
+    {'(', ')'},
+  };
 
   if ([eventString length] != 1)
     return 0;
@@ -161,13 +173,30 @@ unichar KeyCharacterForEvent(NSEvent* event) {
   if ([characters length] != 1)
     return [eventString characterAtIndex:0];
 
+  unichar noModifiersChar = [eventString characterAtIndex:0];
+  unichar rawChar = [characters characterAtIndex:0];
   // When both |characters| and |charactersIgnoringModifiers| are ascii,
   // return the first character of |characters|, if...
-  if (isascii([eventString characterAtIndex:0]) &&
-      isascii([characters characterAtIndex:0])) {
+  if (isascii(noModifiersChar) && isascii(rawChar)) {
     // |characters| is an alphabet (mainly for dvorak-qwerty layout), or
-    if (isalpha([characters characterAtIndex:0]))
-      return [characters characterAtIndex:0];
+    if (isalpha(rawChar))
+      return rawChar;
+
+    // http://crbug.com/42517
+    // In RTL keyboard layouts, Cocoa mirrors characters in the string
+    // returned by [event charactersIgnoringModifiers].  In this case, return
+    // the raw (unmirrored) char.
+    // FIXME: If there is a need to add any more characters to the
+    // kMirroredBiDiChars table, then it's probably better to use ICU's
+    // u_charMirror() function to perform this test.
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kMirroredBiDiChars); ++i) {
+      const unichar& a = kMirroredBiDiChars[i].a;
+      const unichar& b = kMirroredBiDiChars[i].b;
+      if ((rawChar == a && noModifiersChar == b) ||
+          (rawChar == b && noModifiersChar == a))
+          return rawChar;
+    }
+
     // opt/alt modifier is set (e.g. on german layout we want '{' for opt-8).
     if ([event modifierFlags] & NSAlternateKeyMask)
       return [characters characterAtIndex:0];
