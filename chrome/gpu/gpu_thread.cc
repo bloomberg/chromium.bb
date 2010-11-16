@@ -21,25 +21,7 @@
 #include "app/win_util.h"
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
-#include "app/x11_util.h"
-#include "gfx/gtk_util.h"
-#endif
-
 GpuThread::GpuThread() {
-#if defined(OS_LINUX)
-  {
-    // The X11 port of the command buffer code assumes it can access the X
-    // display via the macro GDK_DISPLAY(), which implies that Gtk has been
-    // initialized. This code was taken from PluginThread. TODO(kbr):
-    // rethink whether initializing Gtk is really necessary or whether we
-    // should just send a raw display connection down to the GPUProcessor.
-    g_thread_init(NULL);
-    gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
-    x11_util::SetDefaultX11ErrorHandlers();
-  }
-#endif
 }
 
 GpuThread::~GpuThread() {

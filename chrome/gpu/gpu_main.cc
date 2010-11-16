@@ -32,8 +32,8 @@
 #if defined(USE_X11)
 #include "app/x11_util.h"
 #include "app/x11_util_internal.h"
+#include "gfx/gtk_util.h"
 #endif
-
 
 namespace {
 
@@ -87,21 +87,30 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(USE_X11)
+  // The X11 port of the command buffer code assumes it can access the X
+  // display via the macro GDK_DISPLAY(), which implies that Gtk has been
+  // initialized. This code was taken from PluginThread. TODO(kbr):
+  // rethink whether initializing Gtk is really necessary or whether we
+  // should just send a raw display connection down to the GPUProcessor.
+  g_thread_init(NULL);
+  gfx::GtkInitFromCommandLine(command_line);
   SetGpuX11ErrorHandlers();
 #endif
 
-  // On Linux the GpuThread constructor performs certain
-  // initialization that is required before accessing the default X
-  // display.
-  GpuProcess gpu_process;
-  GpuThread* gpu_thread = new GpuThread;
-  gpu_process.set_main_thread(gpu_thread);
-
-  // Load the GL implementation and locate the bindings before starting as
-  // this can take a lot of time and the GPU watchdog might terminate the GPU
-  // process.
+  // Load the GL implementation and locate the bindings before starting the GPU
+  // watchdog because this can take a lot of time and the GPU watchdog might
+  // terminate the GPU process.
   if (!gfx::GLContext::InitializeOneOff())
     return EXIT_FAILURE;
+
+  // Do this soon before running the message loop so accurate
+  // initialization time is recorded in the GPU info. Don't do it before
+  // starting the watchdog thread since it can take a significant amount of
+  // time to collect GPU information in GpuThread::Init.
+  GpuProcess gpu_process;
+  GpuThread* gpu_thread = new GpuThread;
+  gpu_thread->Init(start_time);
+  gpu_process.set_main_thread(gpu_thread);
 
   // Only enable this experimental feaure for a subset of users.
   scoped_refptr<base::FieldTrial> watchdog_trial(
@@ -115,8 +124,6 @@ int GpuMain(const MainFunctionParams& parameters) {
       break;
     }
   }
-
-  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   // In addition to disabling the watchdog if the command line switch is
   // present, disable it in two other cases. OSMesa is expected to run very
@@ -134,16 +141,14 @@ int GpuMain(const MainFunctionParams& parameters) {
   enable_watchdog = false;
 #endif
 
+  // Start the GPU watchdog only after anything that is expected to be time
+  // consuming has completed, otherwise the process is liable to be aborted.
   scoped_refptr<GpuWatchdogThread> watchdog_thread;
   if (enable_watchdog) {
     watchdog_thread = new GpuWatchdogThread(MessageLoop::current(),
                                             watchdog_timeout * 1000);
     watchdog_thread->Start();
   }
-
-  // Do this immediately before running the message loop so the correct
-  // initialization time is recorded in the GPU info.
-  gpu_thread->Init(start_time);
 
   main_message_loop.Run();
 
