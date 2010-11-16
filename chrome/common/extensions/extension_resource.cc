@@ -8,10 +8,6 @@
 #include "base/logging.h"
 #include "base/thread_restrictions.h"
 
-PlatformThreadId ExtensionResource::file_thread_id_ = 0;
-
-bool ExtensionResource::check_for_file_thread_ = false;
-
 ExtensionResource::ExtensionResource() {
 }
 
@@ -23,7 +19,7 @@ ExtensionResource::ExtensionResource(const std::string& extension_id,
       relative_path_(relative_path) {
 }
 
-const FilePath& ExtensionResource::GetFilePathOnAnyThreadHack() const {
+const FilePath& ExtensionResource::GetFilePath() const {
   if (extension_root_.empty() || relative_path_.empty()) {
     DCHECK(full_resource_path_.empty());
     return full_resource_path_;
@@ -34,24 +30,13 @@ const FilePath& ExtensionResource::GetFilePathOnAnyThreadHack() const {
     return full_resource_path_;
 
   full_resource_path_ =
-      GetFilePathOnAnyThreadHack(extension_root_, relative_path_);
+      GetFilePath(extension_root_, relative_path_);
   return full_resource_path_;
 }
 
-const FilePath& ExtensionResource::GetFilePath() const {
-  ExtensionResource::CheckFileAccessFromFileThread();
-  return GetFilePathOnAnyThreadHack();
-}
-
 // static
-FilePath ExtensionResource::GetFilePathOnAnyThreadHack(
+FilePath ExtensionResource::GetFilePath(
     const FilePath& extension_root, const FilePath& relative_path) {
-  // This function is a hack, and causes us to block the IO thread.
-  // Fixing
-  //   http://code.google.com/p/chromium/issues/detail?id=59849
-  // would also fix this.  Suppress the error for now.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
   // We need to resolve the parent references in the extension_root
   // path on its own because IsParent doesn't like parent references.
   FilePath clean_extension_root(extension_root);
@@ -74,19 +59,6 @@ FilePath ExtensionResource::GetFilePathOnAnyThreadHack(
   }
 
   return FilePath();
-}
-
-// static
-FilePath ExtensionResource::GetFilePath(
-    const FilePath& extension_root, const FilePath& relative_path) {
-  CheckFileAccessFromFileThread();
-  return GetFilePathOnAnyThreadHack(extension_root, relative_path);
-}
-
-// static
-void ExtensionResource::CheckFileAccessFromFileThread() {
-  DCHECK(!check_for_file_thread_ ||
-         file_thread_id_ == PlatformThread::CurrentId());
 }
 
 // Unit-testing helpers.

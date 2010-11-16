@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -190,8 +191,14 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
   ExtensionResource resource(extension_id, directory_path,
       extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 
-  return new URLRequestFileJob(request,
-                               resource.GetFilePathOnAnyThreadHack());
+  FilePath resource_file_path;
+  {
+    // Getting the file path will touch the file system.  Fixing
+    // crbug.com/59849 would also fix this.  Suppress the error for now.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    resource_file_path = resource.GetFilePath();
+  }
+  return new URLRequestFileJob(request, resource_file_path);
 }
 
 // Factory registered with URLRequest to create URLRequestJobs for

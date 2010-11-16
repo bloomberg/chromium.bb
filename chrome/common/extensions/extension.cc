@@ -1141,8 +1141,6 @@ void Extension::DecodeIcon(const Extension* extension,
 void Extension::DecodeIconFromPath(const FilePath& icon_path,
                                    Icons icon_size,
                                    scoped_ptr<SkBitmap>* result) {
-  ExtensionResource::CheckFileAccessFromFileThread();
-
   if (icon_path.empty())
     return;
 

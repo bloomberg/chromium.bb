@@ -747,7 +747,6 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   InitializeInstalledExtensionsService(pref_path, source_install_dir);
 
   service_->Init();
-  loop_.RunAllPending();
 
   // On Chrome OS, we disallow extensions with plugins.  "good1" has plugins,
   // so we need to edit it out here.

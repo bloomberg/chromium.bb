@@ -35,25 +35,6 @@ class ExtensionResource {
   static FilePath GetFilePath(const FilePath& extension_root,
                               const FilePath& relative_path);
 
-  // Gets the file path on any thread. Unlike GetFilePath(), these can be called
-  // from any thread without DCHECKing.
-  //
-  // In the browser process, calling this method is almost always wrong. Use
-  // GetFilePath() on the file thread instead.
-  const FilePath& GetFilePathOnAnyThreadHack() const;
-  static FilePath GetFilePathOnAnyThreadHack(const FilePath& extension_root,
-                                             const FilePath& relative_path);
-
-  // Setter for the proper thread to run file tasks on.
-  static void set_file_thread_id(PlatformThreadId thread_id) {
-    file_thread_id_ = thread_id;
-    check_for_file_thread_ = true;
-  }
-
-  // Checks whether we are running on the file thread and DCHECKs if not. Relies
-  // on set_file_thread_id being called first, otherwise, it will not DCHECK.
-  static void CheckFileAccessFromFileThread();
-
   // Getters
   const std::string& extension_id() const { return extension_id_; }
   const FilePath& extension_root() const { return extension_root_; }
@@ -77,15 +58,6 @@ class ExtensionResource {
 
   // Full path to extension resource. Starts empty.
   mutable FilePath full_resource_path_;
-
-  // The thread id for the file thread. If set, GetFilePath() and related
-  // methods will DCHECK that they are on this thread when called.
-  static PlatformThreadId file_thread_id_;
-
-  // Whether to check for file thread. See |file_thread_id_|. If set,
-  // GetFilePath() and related methods will DCHECK that they are on this thread
-  // when called.
-  static bool check_for_file_thread_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_RESOURCE_H_
