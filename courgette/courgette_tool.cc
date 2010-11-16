@@ -8,6 +8,7 @@
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
@@ -344,6 +345,12 @@ int main(int argc, const char* argv[]) {
   base::AtExitManager at_exit_manager;
   CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  (void)logging::InitLogging(FILE_PATH_LITERAL("courgette.log"),
+                             logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
+                             logging::LOCK_LOG_FILE,
+                             logging::APPEND_TO_OLD_LOG_FILE);
+  logging::SetMinLogLevel(logging::LOG_VERBOSE);
 
   bool cmd_dis = command_line.HasSwitch("dis");
   bool cmd_asm = command_line.HasSwitch("asm");
