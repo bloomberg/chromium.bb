@@ -145,7 +145,6 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
       }
       info->ip_address = wifi->ip_address();
       info->remembered = wifi->favorite();
-      info->auto_connect = info->remembered ? wifi->auto_connect() : true;
     } else {
       res = false;  // Network not found, hide entry.
     }
@@ -201,7 +200,7 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
 bool NetworkMenu::ConnectToNetworkAt(int index,
                                      const std::string& passphrase,
                                      const std::string& ssid,
-                                     int auto_connect) const {
+                                     int remember) const {
   int flags = menu_items_[index].flags;
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   if (flags & FLAG_WIFI) {
@@ -209,8 +208,8 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
         menu_items_[index].wireless_path);
     if (wifi) {
       // Connect or reconnect.
-      if (auto_connect >= 0)
-        wifi->set_auto_connect(auto_connect ? true : false);
+      if (remember >= 0)
+        wifi->set_favorite(remember ? true : false);
       if (cros->wifi_network() &&
           wifi->service_path() == cros->wifi_network()->service_path()) {
         // Show the config settings for the active network.
@@ -280,11 +279,10 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
   } else if (flags & FLAG_OTHER_NETWORK) {
     bool connected = false;
     if (MenuUI::IsEnabled()) {
-      // default is true
-      bool auto_connect_bool = auto_connect == 0 ? false : true;
+      bool favorite = remember == 0 ? false : true;  // default is true
       connected = cros->ConnectToWifiNetwork(
           passphrase.empty() ? SECURITY_NONE : SECURITY_UNKNOWN,
-          ssid, passphrase, std::string(), std::string(), auto_connect_bool);
+          ssid, passphrase, std::string(), std::string(), favorite);
     }
     if (!connected) {
       ShowOther();

@@ -52,8 +52,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
                     public menus::MenuModel {
  public:
   struct NetworkInfo {
-    NetworkInfo() :
-        need_passphrase(false), remembered(true), auto_connect(true) {}
+    NetworkInfo() : need_passphrase(false), remembered(true) {}
     // "ethernet" | "wifi" | "cellular" | "other".
     std::string network_type;
     // "connected" | "connecting" | "disconnected" | "error".
@@ -68,8 +67,6 @@ class NetworkMenu : public views::ViewMenuDelegate,
     bool need_passphrase;
     // true if the network is currently remembered.
     bool remembered;
-    // true if the network is auto connect (meaningful for Wifi only).
-    bool auto_connect;
   };
 
   NetworkMenu();

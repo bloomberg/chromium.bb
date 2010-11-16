@@ -132,9 +132,7 @@ class WirelessNetwork : public Network {
   bool favorite() const { return favorite_; }
 
   void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
-  // We don't have a setter for |favorite_| because to unfavorite a network is
-  // equivalent to forget a network, so we call forget network on cros for
-  // that.  See ForgetWifiNetwork().
+  void set_favorite(bool favorite) { favorite_ = favorite; }
 
   // Network overrides.
   virtual void Clear();
