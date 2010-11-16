@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_PROVIDER_USER_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_PROVIDER_USER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_USER_CROS_SETTINGS_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_USER_CROS_SETTINGS_PROVIDER_H_
 #pragma once
 
 #include <string>
@@ -73,4 +73,4 @@ class UserCrosSettingsProvider : public CrosSettingsProvider,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_PROVIDER_USER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_USER_CROS_SETTINGS_PROVIDER_H_

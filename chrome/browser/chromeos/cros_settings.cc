@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
-#include "chrome/browser/chromeos/cros_settings_provider_user.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/notification_service.h"
 
 namespace chromeos {
@@ -39,6 +39,15 @@ void CrosSettings::FireObservers(const char* path) {
   }
 }
 
+void CrosSettings::Set(const std::string& path, Value* in_value) {
+  DCHECK(CalledOnValidThread());
+  CrosSettingsProvider* provider;
+  provider = GetProvider(path);
+  if (provider) {
+    provider->Set(path, in_value);
+  }
+}
+
 void CrosSettings::SetBoolean(const std::string& path, bool in_value) {
   DCHECK(CalledOnValidThread());
   Set(path, Value::CreateBooleanValue(in_value));
@@ -58,16 +67,6 @@ void CrosSettings::SetString(const std::string& path,
                              const std::string& in_value) {
   DCHECK(CalledOnValidThread());
   Set(path, Value::CreateStringValue(in_value));
-}
-
-bool CrosSettings::GetBoolean(const std::string& path,
-                              bool* bool_value) const {
-  DCHECK(CalledOnValidThread());
-  Value* value;
-  if (!Get(path, &value))
-    return false;
-
-  return value->GetAsBoolean(bool_value);
 }
 
 bool CrosSettings::AddSettingsProvider(CrosSettingsProvider* provider) {
@@ -147,15 +146,6 @@ CrosSettingsProvider* CrosSettings::GetProvider(
   return NULL;
 }
 
-void CrosSettings::Set(const std::string& path, Value* in_value) {
-  DCHECK(CalledOnValidThread());
-  CrosSettingsProvider* provider;
-  provider = GetProvider(path);
-  if (provider) {
-    provider->Set(path, in_value);
-  }
-}
-
 bool CrosSettings::Get(const std::string& path, Value** out_value) const {
   DCHECK(CalledOnValidThread());
   CrosSettingsProvider* provider;
@@ -164,6 +154,16 @@ bool CrosSettings::Get(const std::string& path, Value** out_value) const {
     return provider->Get(path, out_value);
   }
   return false;
+}
+
+bool CrosSettings::GetBoolean(const std::string& path,
+                              bool* bool_value) const {
+  DCHECK(CalledOnValidThread());
+  Value* value;
+  if (!Get(path, &value))
+    return false;
+
+  return value->GetAsBoolean(bool_value);
 }
 
 bool CrosSettings::GetInteger(const std::string& path,
@@ -200,7 +200,7 @@ CrosSettings::CrosSettings() {
 }
 
 CrosSettings::~CrosSettings() {
-  DCHECK(!providers_.size());
+  DCHECK(providers_.empty());
 }
 
 }  // namespace chromeos

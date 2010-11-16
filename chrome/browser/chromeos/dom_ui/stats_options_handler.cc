@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
-#include "chrome/browser/chromeos/cros_settings_provider_stats.h"
+#include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/metrics/user_metrics.h"
 
 namespace chromeos {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros_settings_provider_proxy.h"
+#include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
@@ -26,11 +26,11 @@ static const char kProxySocks[]          = "cros.proxy.socks";
 static const char kProxySocksPort[]      = "cros.proxy.socksport";
 static const char kProxyIgnoreList[]     = "cros.proxy.ignorelist";
 
-//------------------ CrosSettingsProviderProxy: public methods -----------------
+//------------------ ProxyCrosSettingsProvider: public methods -----------------
 
-CrosSettingsProviderProxy::CrosSettingsProviderProxy() { }
+ProxyCrosSettingsProvider::ProxyCrosSettingsProvider() { }
 
-void CrosSettingsProviderProxy::DoSet(const std::string& path,
+void ProxyCrosSettingsProvider::DoSet(const std::string& path,
                                       Value* in_value) {
   if (!in_value) {
     return;
@@ -204,7 +204,7 @@ void CrosSettingsProviderProxy::DoSet(const std::string& path,
   }
 }
 
-bool CrosSettingsProviderProxy::Get(const std::string& path,
+bool ProxyCrosSettingsProvider::Get(const std::string& path,
                                     Value** out_value) const {
   bool found = false;
   bool managed = false;
@@ -278,14 +278,14 @@ bool CrosSettingsProviderProxy::Get(const std::string& path,
   }
 }
 
-bool CrosSettingsProviderProxy::HandlesSetting(const std::string& path) {
+bool ProxyCrosSettingsProvider::HandlesSetting(const std::string& path) {
   return ::StartsWithASCII(path, "cros.proxy", true);
 }
 
-//----------------- CrosSettingsProviderProxy: private methods -----------------
+//----------------- ProxyCrosSettingsProvider: private methods -----------------
 
 chromeos::ProxyConfigServiceImpl*
-    CrosSettingsProviderProxy::GetConfigService() const {
+    ProxyCrosSettingsProvider::GetConfigService() const {
   Browser* browser = BrowserList::GetLastActive();
   // browser is NULL at OOBE/login stage.
   Profile* profile = browser ?
@@ -294,7 +294,7 @@ chromeos::ProxyConfigServiceImpl*
   return profile->GetChromeOSProxyConfigServiceImpl();
 }
 
-void CrosSettingsProviderProxy::AppendPortIfValid(
+void ProxyCrosSettingsProvider::AppendPortIfValid(
     const char* port_cache_key,
     std::string* server_uri) {
   std::string port;
@@ -304,7 +304,7 @@ void CrosSettingsProviderProxy::AppendPortIfValid(
   }
 }
 
-void CrosSettingsProviderProxy::FormServerUriIfValid(
+void ProxyCrosSettingsProvider::FormServerUriIfValid(
     const char* host_cache_key,
     const std::string& port_num, std::string* server_uri) {
   if (cache_.GetString(host_cache_key, server_uri) && !server_uri->empty() &&
@@ -312,21 +312,21 @@ void CrosSettingsProviderProxy::FormServerUriIfValid(
     *server_uri += ":" + port_num;
 }
 
-Value* CrosSettingsProviderProxy::CreateServerHostValue(
+Value* ProxyCrosSettingsProvider::CreateServerHostValue(
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const {
   return proxy.server.is_valid() ?
          Value::CreateStringValue(proxy.server.host_port_pair().host()) :
          NULL;
 }
 
-Value* CrosSettingsProviderProxy::CreateServerPortValue(
+Value* ProxyCrosSettingsProvider::CreateServerPortValue(
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const {
   return proxy.server.is_valid() ?
          Value::CreateIntegerValue(proxy.server.host_port_pair().port()) :
          NULL;
 }
 
-void CrosSettingsProviderProxy::SetCache(const std::string& key,
+void ProxyCrosSettingsProvider::SetCache(const std::string& key,
     const Value* value) {
   cache_.Set(key, value->DeepCopy());
 }

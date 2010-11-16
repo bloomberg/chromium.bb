@@ -9,8 +9,8 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "grit/generated_resources.h"
 

@@ -61,13 +61,13 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/apply_services_customization.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #endif
 
 namespace browser {

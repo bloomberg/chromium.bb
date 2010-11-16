@@ -9,8 +9,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 

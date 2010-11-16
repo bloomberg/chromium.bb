@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_PROVIDER_PROXY_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_PROVIDER_PROXY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_PROXY_CROS_SETTINGS_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_PROXY_CROS_SETTINGS_PROVIDER_H_
 #pragma once
 
 #include "base/singleton.h"
@@ -13,9 +13,9 @@
 
 namespace chromeos {
 
-class CrosSettingsProviderProxy : public CrosSettingsProvider {
+class ProxyCrosSettingsProvider : public CrosSettingsProvider {
  public:
-  CrosSettingsProviderProxy();
+  ProxyCrosSettingsProvider();
   // CrosSettingsProvider implementation.
   virtual bool Get(const std::string& path, Value** out_value) const;
   virtual bool HandlesSetting(const std::string& path);
@@ -42,9 +42,9 @@ class CrosSettingsProviderProxy : public CrosSettingsProvider {
   // A cache to keep whatever user typed.
   DictionaryValue cache_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrosSettingsProviderProxy);
+  DISALLOW_COPY_AND_ASSIGN(ProxyCrosSettingsProvider);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_PROVIDER_PROXY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_PROXY_CROS_SETTINGS_PROVIDER_H_

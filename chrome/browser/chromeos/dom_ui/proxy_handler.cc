@@ -12,7 +12,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros_settings_provider_proxy.h"
+#include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -23,7 +23,7 @@
 namespace chromeos {
 
 ProxyHandler::ProxyHandler()
-    : CrosOptionsPageUIHandler(new CrosSettingsProviderProxy())  {
+    : CrosOptionsPageUIHandler(new ProxyCrosSettingsProvider())  {
 }
 
 ProxyHandler::~ProxyHandler() {

@@ -11,7 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros_settings_provider_user.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/existing_user_view.h"
 #include "chrome/browser/chromeos/login/guest_user_view.h"
 #include "chrome/browser/chromeos/login/helper.h"

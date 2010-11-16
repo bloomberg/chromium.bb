@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros_settings_provider_user.h"
+#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
