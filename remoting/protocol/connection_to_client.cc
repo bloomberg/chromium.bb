@@ -7,6 +7,7 @@
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"
 #include "remoting/protocol/client_control_sender.h"
+#include "remoting/protocol/host_message_dispatcher.h"
 
 // TODO(hclam): Remove this header once MessageDispatcher is used.
 #include "remoting/base/compound_buffer.h"
@@ -19,9 +20,13 @@ namespace protocol {
 static const size_t kAverageUpdateStream = 10;
 
 ConnectionToClient::ConnectionToClient(MessageLoop* message_loop,
-                                       EventHandler* handler)
+                                       EventHandler* handler,
+                                       HostStub* host_stub,
+                                       InputStub* input_stub)
     : loop_(message_loop),
-      handler_(handler) {
+      handler_(handler),
+      host_stub_(host_stub),
+      input_stub_(input_stub) {
   DCHECK(loop_);
   DCHECK(handler_);
 }
@@ -74,21 +79,15 @@ void ConnectionToClient::OnSessionStateChange(
     protocol::Session::State state) {
   if (state == protocol::Session::CONNECTED) {
     client_stub_.reset(new ClientControlSender(session_->control_channel()));
-    event_reader_.Init<ChromotingClientMessage>(
-        session_->event_channel(),
-        NewCallback(this, &ConnectionToClient::OnMessageReceived));
     video_writer_.reset(VideoWriter::Create(session_->config()));
     video_writer_->Init(session_);
+
+    dispatcher_.reset(new HostMessageDispatcher());
+    dispatcher_->Initialize(session_.get(), host_stub_, input_stub_);
   }
 
   loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &ConnectionToClient::StateChangeTask, state));
-}
-
-void ConnectionToClient::OnMessageReceived(ChromotingClientMessage* message) {
-  loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ConnectionToClient::MessageReceivedTask,
-                        message));
 }
 
 void ConnectionToClient::StateChangeTask(protocol::Session::State state) {
@@ -112,12 +111,6 @@ void ConnectionToClient::StateChangeTask(protocol::Session::State state) {
       // We shouldn't receive other states.
       NOTREACHED();
   }
-}
-
-void ConnectionToClient::MessageReceivedTask(ChromotingClientMessage* message) {
-  DCHECK_EQ(loop_, MessageLoop::current());
-  DCHECK(handler_);
-  handler_->HandleMessage(this, message);
 }
 
 // OnClosed() is used as a callback for protocol::Session::Close().

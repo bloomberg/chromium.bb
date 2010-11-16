@@ -5,27 +5,41 @@
 #ifndef REMOTING_HOST_EVENT_EXECUTOR_LINUX_H_
 #define REMOTING_HOST_EVENT_EXECUTOR_LINUX_H_
 
+#include <vector>
+
+#include "base/task.h"
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "remoting/host/event_executor.h"
+#include "remoting/protocol/input_stub.h"
+
+class MessageLoop;
 
 namespace remoting {
 
+class Capturer;
+class ChromotingClientMessage;
 class EventExecutorLinuxPimpl;
 
 // A class to generate events on Linux.
-class EventExecutorLinux : public EventExecutor {
+class EventExecutorLinux : public protocol::InputStub {
  public:
-  EventExecutorLinux(Capturer* capturer);
+  EventExecutorLinux(MessageLoop* message_loop,
+                     Capturer* capturer);
   virtual ~EventExecutorLinux();
 
-  virtual void HandleInputEvent(ChromotingClientMessage* message);
+  virtual void InjectKeyEvent(const KeyEvent* event, Task* done);
+  virtual void InjectMouseEvent(const MouseEvent* event, Task* done);
 
  private:
+  MessageLoop* message_loop_;
+  Capturer* capturer_;
   scoped_ptr<EventExecutorLinuxPimpl> pimpl_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorLinux);
 };
 
 }  // namespace remoting
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::EventExecutorLinux);
 
 #endif  // REMOTING_HOST_EVENT_EXECUTOR_LINUX_H_

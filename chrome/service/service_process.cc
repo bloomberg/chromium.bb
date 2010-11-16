@@ -286,24 +286,27 @@ bool ServiceProcess::StartChromotingHost() {
   // Create capturer and executor. The ownership will be transfered
   // to the chromoting host.
   scoped_ptr<remoting::Capturer> capturer;
-  scoped_ptr<remoting::EventExecutor> executor;
+  scoped_ptr<remoting::protocol::InputStub> input_stub;
 
 #if defined(OS_WIN)
   capturer.reset(new remoting::CapturerGdi());
-  executor.reset(new remoting::EventExecutorWin(capturer.get()));
+  input_stub.reset(new remoting::EventExecutorWin(
+      chromoting_context_->capture_message_loop(), capturer.get()));
 #elif defined(OS_LINUX)
   capturer.reset(new remoting::CapturerLinux());
-  executor.reset(new remoting::EventExecutorLinux(capturer.get()));
+  input_stub.reset(new remoting::EventExecutorLinux(
+      chromoting_context_->capture_message_loop(), capturer.get()));
 #elif defined(OS_MACOSX)
   capturer.reset(new remoting::CapturerMac());
-  executor.reset(new remoting::EventExecutorMac(capturer.get()));
+  input_stub.reset(new remoting::EventExecutorMac(
+      chromoting_context_->capture_message_loop(), capturer.get()));
 #endif
 
   // Create a chromoting host object.
   chromoting_host_ = new remoting::ChromotingHost(chromoting_context_.get(),
                                                   chromoting_config_,
                                                   capturer.release(),
-                                                  executor.release());
+                                                  input_stub.release());
 
   // Then start the chromoting host.
   // When ChromotingHost is shutdown because of failure or a request that

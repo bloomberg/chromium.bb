@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -77,13 +78,24 @@ void HostMessageDispatcher::OnControlMessageReceived(ControlMessage* message) {
       new RefCountedMessage<ControlMessage>(message);
   if (message->has_suggest_resolution()) {
     host_stub_->SuggestResolution(
-        message->suggest_resolution(), NewDeleteTask(ref_msg));
+        &message->suggest_resolution(), NewDeleteTask(ref_msg));
   }
 }
 
 void HostMessageDispatcher::OnEventMessageReceived(
     EventMessage* message) {
-  // TODO(hclam): Implement.
+  scoped_refptr<RefCountedMessage<EventMessage> > ref_msg =
+      new RefCountedMessage<EventMessage>(message);
+  for (int i = 0; i < message->event_size(); ++i) {
+    if (message->event(i).has_key()) {
+      input_stub_->InjectKeyEvent(
+          &message->event(i).key(), NewDeleteTask(ref_msg));
+    }
+    if (message->event(i).has_mouse()) {
+      input_stub_->InjectMouseEvent(
+          &message->event(i).mouse(), NewDeleteTask(ref_msg));
+    }
+  }
 }
 
 }  // namespace protocol

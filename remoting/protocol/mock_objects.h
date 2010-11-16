@@ -7,6 +7,8 @@
 
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/input_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {
@@ -42,6 +44,28 @@ class MockConnectionToClientEventHandler :
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClientEventHandler);
+};
+
+class MockInputStub : public InputStub {
+ public:
+  MockInputStub() {}
+
+  MOCK_METHOD2(InjectKeyEvent, void(const KeyEvent* event, Task* done));
+  MOCK_METHOD2(InjectMouseEvent, void(const MouseEvent* event, Task* done));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockInputStub);
+};
+
+class MockHostStub : public HostStub {
+ public:
+  MockHostStub() {}
+
+  MOCK_METHOD2(SuggestResolution, void(const SuggestResolutionRequest* msg,
+                                       Task* done));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockHostStub);
 };
 
 }  // namespace protocol

@@ -197,7 +197,6 @@
         'host/differ.cc',
         'host/differ_block.h',
         'host/differ_block.cc',
-        'host/event_executor.h',
         'host/session_manager.cc',
         'host/session_manager.h',
         'host/heartbeat_sender.cc',

@@ -6,8 +6,6 @@
 #define REMOTING_HOST_MOCK_OBJECTS_H_
 
 #include "remoting/host/capturer.h"
-#include "remoting/host/event_executor.h"
-#include "remoting/proto/internal.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {
@@ -28,16 +26,6 @@ class MockCapturer : public Capturer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCapturer);
-};
-
-class MockEventExecutor : public EventExecutor {
- public:
-   MockEventExecutor(Capturer* capturer) : EventExecutor(capturer) {}
-
-  MOCK_METHOD1(HandleInputEvent, void(ChromotingClientMessage* messages));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);
 };
 
 }  // namespace remoting

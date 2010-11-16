@@ -71,20 +71,26 @@ int main(int argc, char** argv) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   base::AtExitManager exit_manager;
-
   base::EnsureNSPRInit();
 
+  // Allocate a chromoting context and starts it.
+  remoting::ChromotingHostContext context;
+  context.Start();
+
   scoped_ptr<remoting::Capturer> capturer;
-  scoped_ptr<remoting::EventExecutor> event_handler;
+  scoped_ptr<remoting::protocol::InputStub> input_stub;
 #if defined(OS_WIN)
   capturer.reset(new remoting::CapturerGdi());
-  event_handler.reset(new remoting::EventExecutorWin(capturer.get()));
+  input_stub.reset(new remoting::EventExecutorWin(
+      context.capture_message_loop(), capturer.get()));
 #elif defined(OS_LINUX)
   capturer.reset(new remoting::CapturerLinux());
-  event_handler.reset(new remoting::EventExecutorLinux(capturer.get()));
+  input_stub.reset(new remoting::EventExecutorLinux(
+      context.capture_message_loop(), capturer.get()));
 #elif defined(OS_MACOSX)
   capturer.reset(new remoting::CapturerMac());
-  event_handler.reset(new remoting::EventExecutorMac(capturer.get()));
+  input_stub.reset(new remoting::EventExecutorMac(
+      context.capture_message_loop(), capturer.get()));
 #endif
 
   // Check the argument to see if we should use a fake capturer.
@@ -117,12 +123,9 @@ int main(int argc, char** argv) {
 
   if (!config->Read()) {
     LOG(ERROR) << "Failed to read configuration file " << config_path.value();
+    context.Stop();
     return 1;
   }
-
-  // Allocate a chromoting context and starts it.
-  remoting::ChromotingHostContext context;
-  context.Start();
 
   FilePath module_path;
   PathService::Get(base::DIR_MODULE, &module_path);
@@ -134,7 +137,7 @@ int main(int argc, char** argv) {
       new remoting::ChromotingHost(&context,
                                    config,
                                    capturer.release(),
-                                   event_handler.release()));
+                                   input_stub.release()));
 
   // Let the chromoting host run until the shutdown task is executed.
   MessageLoop message_loop(MessageLoop::TYPE_UI);

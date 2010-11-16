@@ -27,7 +27,8 @@ class ConnectionToClientTest : public testing::Test {
     session_->set_message_loop(&message_loop_);
 
     // Allocate a ClientConnection object with the mock objects.
-    viewer_ = new ConnectionToClient(&message_loop_, &handler_);
+    viewer_ = new ConnectionToClient(&message_loop_, &handler_,
+                                     &host_stub_, &input_stub_);
     viewer_->Init(session_);
     EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
     session_->state_change_callback()->Run(
@@ -37,6 +38,8 @@ class ConnectionToClientTest : public testing::Test {
 
   MessageLoop message_loop_;
   MockConnectionToClientEventHandler handler_;
+  MockHostStub host_stub_;
+  MockInputStub input_stub_;
   scoped_refptr<ConnectionToClient> viewer_;
 
   scoped_refptr<protocol::FakeSession> session_;

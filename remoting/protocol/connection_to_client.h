@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/stream_writer.h"
 #include "remoting/protocol/video_writer.h"
@@ -20,6 +19,9 @@ namespace remoting {
 namespace protocol {
 
 class ClientStub;
+class HostStub;
+class InputStub;
+class HostMessageDispatcher;
 
 // This class represents a remote viewer connected to the chromoting host
 // through a libjingle connection. A viewer object is responsible for sending
@@ -27,18 +29,11 @@ class ClientStub;
 // responsible for receiving and parsing data from the remote viewer and
 // delegating events to the event handler.
 class ConnectionToClient :
-  public base::RefCountedThreadSafe<ConnectionToClient> {
+    public base::RefCountedThreadSafe<ConnectionToClient> {
  public:
   class EventHandler {
    public:
     virtual ~EventHandler() {}
-
-    // Handles an event received by the ConnectionToClient. Receiver will own
-    // the ClientMessages in ClientMessageList and needs to delete them.
-    // Note that the sender of messages will not reference messages
-    // again so it is okay to clear |messages| in this method.
-    virtual void HandleMessage(ConnectionToClient* connection,
-                               ChromotingClientMessage* message) = 0;
 
     // Called when the network connection is opened.
     virtual void OnConnectionOpened(ConnectionToClient* connection) = 0;
@@ -55,7 +50,9 @@ class ConnectionToClient :
   // a libjingle channel, these events are delegated to |handler|.
   // It is guranteed that |handler| is called only on the |message_loop|.
   ConnectionToClient(MessageLoop* message_loop,
-                   EventHandler* handler);
+                     EventHandler* handler,
+                     HostStub* host_stub,
+                     InputStub* input_stub);
 
   virtual ~ConnectionToClient();
 
@@ -90,21 +87,14 @@ class ConnectionToClient :
   // Callback for protocol Session.
   void OnSessionStateChange(protocol::Session::State state);
 
-  // Callback for MessageReader.
-  void OnMessageReceived(ChromotingClientMessage* message);
-
   // Process a libjingle state change event on the |loop_|.
   void StateChangeTask(protocol::Session::State state);
-
-  // Process a data buffer received from libjingle.
-  void MessageReceivedTask(ChromotingClientMessage* message);
 
   void OnClosed();
 
   // The libjingle channel used to send and receive data from the remote client.
   scoped_refptr<protocol::Session> session_;
 
-  MessageReader event_reader_;
   scoped_ptr<VideoWriter> video_writer_;
 
   // ClientStub for sending messages to the client.
@@ -115,6 +105,15 @@ class ConnectionToClient :
 
   // Event handler for handling events sent from this object.
   EventHandler* handler_;
+
+  // HostStub for receiving control events from the client.
+  HostStub* host_stub_;
+
+  // InputStub for receiving input events from the client.
+  InputStub* input_stub_;
+
+  // Dispatcher for submitting messages to stubs.
+  scoped_ptr<HostMessageDispatcher> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionToClient);
 };

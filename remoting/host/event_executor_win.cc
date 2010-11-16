@@ -5,43 +5,64 @@
 #include "remoting/host/event_executor_win.h"
 
 #include <windows.h>
+
 #include "app/keyboard_codes.h"
+#include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "remoting/host/capturer.h"
-// TODO(hclam): Should not include internal.pb.h here.
-#include "remoting/proto/internal.pb.h"
+#include "remoting/proto/event.pb.h"
 
 namespace remoting {
 
-EventExecutorWin::EventExecutorWin(Capturer* capturer)
-  : EventExecutor(capturer) {
+EventExecutorWin::EventExecutorWin(
+    MessageLoop* message_loop, Capturer* capturer)
+    : message_loop_(message_loop), capturer_(capturer) {
 }
 
 EventExecutorWin::~EventExecutorWin() {
 }
 
-void EventExecutorWin::HandleInputEvent(ChromotingClientMessage* msg) {
-  if (msg->has_mouse_set_position_event()) {
-    HandleMouseSetPosition(msg);
-  } else if (msg->has_mouse_move_event()) {
-    HandleMouseMove(msg);
-  } else if (msg->has_mouse_wheel_event()) {
-    HandleMouseWheel(msg);
-  } else if (msg->has_mouse_down_event()) {
-    HandleMouseButtonDown(msg);
-  } else if (msg->has_mouse_up_event()) {
-    HandleMouseButtonUp(msg);
-  } else if (msg->has_key_event()) {
-    HandleKey(msg);
+void EventExecutorWin::InjectKeyEvent(const KeyEvent* event, Task* done) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &EventExecutorWin::InjectKeyEvent,
+                          event, done));
+    return;
   }
-  delete msg;
+  HandleKey(*event);
+  done->Run();
+  delete done;
 }
 
-void EventExecutorWin::HandleMouseSetPosition(ChromotingClientMessage* msg) {
-  int x = msg->mouse_set_position_event().x();
-  int y = msg->mouse_set_position_event().y();
-  int width = msg->mouse_set_position_event().width();
-  int height = msg->mouse_set_position_event().height();
+void EventExecutorWin::InjectMouseEvent(const MouseEvent* event,
+                                        Task* done) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &EventExecutorWin::InjectMouseEvent,
+                          event, done));
+    return;
+  }
+  if (event->has_set_position()) {
+    HandleMouseSetPosition(event->set_position());
+  } else if (event->has_wheel()) {
+    HandleMouseWheel(event->wheel());
+  } else if (event->has_down()) {
+    HandleMouseButtonDown(event->down());
+  } else if (event->has_up()) {
+    HandleMouseButtonUp(event->up());
+  }
+  done->Run();
+  delete done;
+}
+
+void EventExecutorWin::HandleMouseSetPosition(
+    const MouseSetPositionEvent& event) {
+  int x = event.x();
+  int y = event.y();
+  int width = event.width();
+  int height = event.height();
 
   // Get width and height from the capturer if they are missing from the
   // message.
@@ -62,23 +83,14 @@ void EventExecutorWin::HandleMouseSetPosition(ChromotingClientMessage* msg) {
   SendInput(1, &input, sizeof(INPUT));
 }
 
-void EventExecutorWin::HandleMouseMove(ChromotingClientMessage* msg) {
-  INPUT input;
-  input.type = INPUT_MOUSE;
-  input.mi.time = 0;
-  input.mi.dx = msg->mouse_move_event().offset_x();
-  input.mi.dy = msg->mouse_move_event().offset_y();
-  input.mi.dwFlags = MOUSEEVENTF_MOVE;
-  SendInput(1, &input, sizeof(INPUT));
-}
-
-void EventExecutorWin::HandleMouseWheel(ChromotingClientMessage* msg) {
+void EventExecutorWin::HandleMouseWheel(
+    const MouseWheelEvent& event) {
   INPUT input;
   input.type = INPUT_MOUSE;
   input.mi.time = 0;
 
-  int dx = msg->mouse_wheel_event().offset_x();
-  int dy = msg->mouse_wheel_event().offset_y();
+  int dx = event.offset_x();
+  int dy = event.offset_y();
 
   if (dx != 0) {
     input.mi.mouseData = dx;
@@ -92,14 +104,14 @@ void EventExecutorWin::HandleMouseWheel(ChromotingClientMessage* msg) {
   }
 }
 
-void EventExecutorWin::HandleMouseButtonDown(ChromotingClientMessage* msg) {
+void EventExecutorWin::HandleMouseButtonDown(const MouseDownEvent& event) {
   INPUT input;
   input.type = INPUT_MOUSE;
   input.mi.time = 0;
   input.mi.dx = 0;
   input.mi.dy = 0;
 
-  MouseButton button = msg->mouse_down_event().button();
+  MouseButton button = event.button();
   if (button == MouseButtonLeft) {
     input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
   } else if (button == MouseButtonMiddle) {
@@ -113,14 +125,14 @@ void EventExecutorWin::HandleMouseButtonDown(ChromotingClientMessage* msg) {
   SendInput(1, &input, sizeof(INPUT));
 }
 
-void EventExecutorWin::HandleMouseButtonUp(ChromotingClientMessage* msg) {
+void EventExecutorWin::HandleMouseButtonUp(const MouseUpEvent& event) {
   INPUT input;
   input.type = INPUT_MOUSE;
   input.mi.time = 0;
   input.mi.dx = 0;
   input.mi.dy = 0;
 
-  MouseButton button = msg->mouse_down_event().button();
+  MouseButton button = event.button();
   if (button == MouseButtonLeft) {
     input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
   } else if (button == MouseButtonMiddle) {
@@ -134,9 +146,9 @@ void EventExecutorWin::HandleMouseButtonUp(ChromotingClientMessage* msg) {
   SendInput(1, &input, sizeof(INPUT));
 }
 
-void EventExecutorWin::HandleKey(ChromotingClientMessage* msg) {
-  int key = msg->key_event().key();
-  bool down = msg->key_event().pressed();
+void EventExecutorWin::HandleKey(const KeyEvent& event) {
+  int key = event.key();
+  bool down = event.pressed();
 
   // Calculate scan code from virtual key.
   HKL hkl = GetKeyboardLayout(0);

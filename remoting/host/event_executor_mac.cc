@@ -4,20 +4,29 @@
 
 #include "remoting/host/event_executor_mac.h"
 
-#include "remoting/proto/internal.pb.h"
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "remoting/protocol/message_decoder.h"
 
 namespace remoting {
 
-EventExecutorMac::EventExecutorMac(Capturer* capturer)
-  : EventExecutor(capturer) {
+EventExecutorMac::EventExecutorMac(
+    MessageLoop* message_loop, Capturer* capturer)
+    : message_loop_(message_loop),
+      capturer_(capturer) {
 }
 
 EventExecutorMac::~EventExecutorMac() {
 }
 
-void EventExecutorMac::HandleInputEvent(ChromotingClientMessage* message) {
-  delete message;
+void EventExecutorMac::InjectKeyEvent(const KeyEvent* event, Task* done) {
+  done->Run();
+  delete done;
+}
+
+void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
+  done->Run();
+  delete done;
 }
 
 }  // namespace remoting

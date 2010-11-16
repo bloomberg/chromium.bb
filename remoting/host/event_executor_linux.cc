@@ -9,6 +9,8 @@
 #include <X11/extensions/XTest.h>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "remoting/proto/internal.pb.h"
 
 namespace remoting {
@@ -200,8 +202,8 @@ class EventExecutorLinuxPimpl {
   ~EventExecutorLinuxPimpl();
 
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
-
-  void HandleInputEvent(ChromotingClientMessage* message);
+  void HandleMouse(const MouseEvent* message);
+  void HandleKey(const KeyEvent* key_event);
 
  private:
   void HandleMouseSetPosition(const MouseSetPositionEvent& position_event);
@@ -209,7 +211,6 @@ class EventExecutorLinuxPimpl {
   void HandleMouseWheel(const MouseWheelEvent& wheel_event);
   void HandleMouseButtonDown(const MouseDownEvent& mouse_down_event);
   void HandleMouseButtonUp(const MouseUpEvent& mouse_up_event);
-  void HandleKey(const KeyEvent& key_event);
   void DeinitXlib();
 
   // Reference to containing class so we can access friend functions.
@@ -226,19 +227,6 @@ class EventExecutorLinuxPimpl {
   int test_event_base_;
   int test_error_base_;
 };
-
-EventExecutorLinux::EventExecutorLinux(Capturer* capturer)
-  : EventExecutor(capturer),
-    pimpl_(new EventExecutorLinuxPimpl(this)) {
-  CHECK(pimpl_->Init());
-}
-
-EventExecutorLinux::~EventExecutorLinux() {
-}
-
-void EventExecutorLinux::HandleInputEvent(ChromotingClientMessage* message) {
-  pimpl_->HandleInputEvent(message);
-}
 
 EventExecutorLinuxPimpl::EventExecutorLinuxPimpl(EventExecutorLinux* executor)
     : executor_(executor),
@@ -302,22 +290,17 @@ bool EventExecutorLinuxPimpl::Init() {
   return true;
 }
 
-void EventExecutorLinuxPimpl::HandleInputEvent(
-    ChromotingClientMessage* message) {
-  if (message->has_mouse_set_position_event()) {
-    HandleMouseSetPosition(message->mouse_set_position_event());
-  } else if (message->has_mouse_move_event()) {
-    HandleMouseMove(message->mouse_move_event());
-  } else if (message->has_mouse_wheel_event()) {
-    HandleMouseWheel(message->mouse_wheel_event());
-  } else if (message->has_mouse_down_event()) {
-    HandleMouseButtonDown(message->mouse_down_event());
-  } else if (message->has_mouse_up_event()) {
-    HandleMouseButtonUp(message->mouse_up_event());
-  } else if (message->has_key_event()) {
-    HandleKey(message->key_event());
+void EventExecutorLinuxPimpl::HandleMouse(
+    const MouseEvent* mouse_event) {
+  if (mouse_event->has_set_position()) {
+    HandleMouseSetPosition(mouse_event->set_position());
+  } else if (mouse_event->has_wheel()) {
+    HandleMouseWheel(mouse_event->wheel());
+  } else if (mouse_event->has_down()) {
+    HandleMouseButtonDown(mouse_event->down());
+  } else if (mouse_event->has_up()) {
+    HandleMouseButtonUp(mouse_event->up());
   }
-  delete message;
 }
 
 void EventExecutorLinuxPimpl::HandleMouseSetPosition(
@@ -376,12 +359,12 @@ void EventExecutorLinuxPimpl::HandleMouseButtonUp(
   XTestFakeButtonEvent(display_, button_number, False, CurrentTime);
 }
 
-void EventExecutorLinuxPimpl::HandleKey(const KeyEvent& key_event) {
+void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
   // TODO(ajwong): This will only work for QWERTY keyboards.
-  int keysym = ChromotocolKeycodeToX11Keysym(key_event.key());
+  int keysym = ChromotocolKeycodeToX11Keysym(key_event->key());
 
   if (keysym == -1) {
-    LOG(WARNING) << "Ignoring unknown key: " << key_event.key();
+    LOG(WARNING) << "Ignoring unknown key: " << key_event->key();
     return;
   }
 
@@ -389,14 +372,14 @@ void EventExecutorLinuxPimpl::HandleKey(const KeyEvent& key_event) {
   int keycode = XKeysymToKeycode(display_, keysym);
   if (keycode == 0) {
     LOG(WARNING) << "Ignoring undefined keysym: " << keysym
-                 << " for key: " << key_event.key();
+                 << " for key: " << key_event->key();
     return;
   }
 
-  VLOG(3) << "Got pepper key: " << key_event.key()
+  VLOG(3) << "Got pepper key: " << key_event->key()
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
-  XTestFakeKeyEvent(display_, keycode, key_event.pressed(), CurrentTime);
+  XTestFakeKeyEvent(display_, keycode, key_event->pressed(), CurrentTime);
 }
 
 void EventExecutorLinuxPimpl::DeinitXlib() {
@@ -414,6 +397,44 @@ void EventExecutorLinuxPimpl::DeinitXlib() {
     }
     display_ = NULL;
   }
+}
+
+EventExecutorLinux::EventExecutorLinux(
+    MessageLoop* message_loop, Capturer* capturer)
+    : message_loop_(message_loop),
+      capturer_(capturer),
+      pimpl_(new EventExecutorLinuxPimpl(this)) {
+  CHECK(pimpl_->Init());
+}
+
+EventExecutorLinux::~EventExecutorLinux() {
+}
+
+void EventExecutorLinux::InjectKeyEvent(const KeyEvent* event, Task* done) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &EventExecutorLinux::InjectKeyEvent,
+                          event, done));
+    return;
+  }
+  pimpl_->HandleKey(event);
+  done->Run();
+  delete done;
+}
+
+void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
+                                          Task* done) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &EventExecutorLinux::InjectMouseEvent,
+                          event, done));
+    return;
+  }
+  pimpl_->HandleMouse(event);
+  done->Run();
+  delete done;
 }
 
 }  // namespace remoting

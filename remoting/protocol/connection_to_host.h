@@ -10,7 +10,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/message_decoder.h"
 
 namespace remoting {
 namespace protocol {

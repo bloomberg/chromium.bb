@@ -14,7 +14,6 @@
 #include "remoting/base/encoder_zlib.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/capturer.h"
-#include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
 #include "remoting/protocol/session_config.h"
@@ -28,11 +27,11 @@ namespace remoting {
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                MutableHostConfig* config,
                                Capturer* capturer,
-                               EventExecutor* executor)
+                               protocol::InputStub* input_stub)
     : context_(context),
       config_(config),
       capturer_(capturer),
-      executor_(executor),
+      input_stub_(input_stub),
       state_(kInitial) {
 }
 
@@ -180,16 +179,6 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
 
 ////////////////////////////////////////////////////////////////////////////
 // protocol::ConnectionToClient::EventHandler implementations
-void ChromotingHost::HandleMessage(ConnectionToClient* connection,
-                                   ChromotingClientMessage* message) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
-
-  // Delegate the messages to EventExecutor and delete the unhandled
-  // messages.
-  DCHECK(executor_.get());
-  executor_->HandleInputEvent(message);
-}
-
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
@@ -283,7 +272,8 @@ void ChromotingHost::OnNewClientSession(
 
   // If we accept the connected then create a client object and set the
   // callback.
-  connection_ = new ConnectionToClient(context_->main_message_loop(), this);
+  connection_ = new ConnectionToClient(context_->main_message_loop(),
+                                       this, NULL, input_stub_.get());
   connection_->Init(session);
 }
 

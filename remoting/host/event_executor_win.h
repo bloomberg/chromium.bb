@@ -7,29 +7,46 @@
 
 #include <vector>
 
-#include "remoting/host/event_executor.h"
+#include "base/task.h"
+#include "base/basictypes.h"
+#include "base/scoped_ptr.h"
+#include "remoting/protocol/input_stub.h"
+
+class MessageLoop;
 
 namespace remoting {
 
+class Capturer;
+class KeyEvent;
+class MouseDownEvent;
+class MouseSetPositionEvent;
+class MouseUpEvent;
+class MouseWheelEvent;
+
 // A class to generate events on Windows.
-class EventExecutorWin : public EventExecutor {
+class EventExecutorWin : public protocol::InputStub {
  public:
-  EventExecutorWin(Capturer* capturer);
+  EventExecutorWin(MessageLoop* message_loop, Capturer* capturer);
   virtual ~EventExecutorWin();
 
-  virtual void HandleInputEvent(ChromotingClientMessage* message);
+  virtual void InjectKeyEvent(const KeyEvent* event, Task* done);
+  virtual void InjectMouseEvent(const MouseEvent* event, Task* done);
 
  private:
-  void HandleMouseSetPosition(ChromotingClientMessage* msg);
-  void HandleMouseMove(ChromotingClientMessage* msg);
-  void HandleMouseWheel(ChromotingClientMessage* msg);
-  void HandleMouseButtonDown(ChromotingClientMessage* msg);
-  void HandleMouseButtonUp(ChromotingClientMessage* msg);
-  void HandleKey(ChromotingClientMessage* msg);
+  void HandleMouseSetPosition(const MouseSetPositionEvent& event);
+  void HandleMouseWheel(const MouseWheelEvent& event);
+  void HandleMouseButtonDown(const MouseDownEvent& event);
+  void HandleMouseButtonUp(const MouseUpEvent& event);
+  void HandleKey(const KeyEvent& event);
+
+  MessageLoop* message_loop_;
+  Capturer* capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);
 };
 
 }  // namespace remoting
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::EventExecutorWin);
 
 #endif  // REMOTING_HOST_EVENT_EXECUTOR_WIN_H_

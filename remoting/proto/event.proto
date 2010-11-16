@@ -69,16 +69,16 @@ message MouseUpEvent {
 // Defines a mouse event message on the event channel. 
 message MouseEvent {
   // Mouse position information.
-  optional int32 mouse_x = 1;
-  optional int32 mouse_y = 2;
+  optional MouseSetPositionEvent set_position = 1;
 
   // Mouse wheel information.
-  optional int32 wheel_offset_x = 3;
-  optional int32 wheel_offset_y = 4;
+  optional MouseWheelEvent wheel = 2;
 
-  // Mouse button information.
-  optional MouseButton button = 5;
-  optional bool button_down = 6;
+  // Mouse down event.
+  optional MouseDownEvent down = 3;
+
+  // Mouse up event.
+  optional MouseUpEvent up = 4;
 }
 
 // Defines an event message on the event channel.

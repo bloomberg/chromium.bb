@@ -6,7 +6,6 @@
 #define REMOTING_PROTOCOL_HOST_MESSAGE_DISPATCHER_H_
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 
@@ -32,8 +31,7 @@ class Session;
 //
 // Object of this class is owned by ChromotingHost to dispatch messages
 // to itself.
-class HostMessageDispatcher :
-      public base::RefCountedThreadSafe<HostMessageDispatcher> {
+class HostMessageDispatcher {
  public:
   // Construct a message dispatcher.
   HostMessageDispatcher();

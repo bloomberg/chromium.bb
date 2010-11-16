@@ -11,10 +11,10 @@
 #include "remoting/base/encoder.h"
 #include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
-#include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
 
@@ -30,7 +30,6 @@ class SessionConfig;
 class Capturer;
 class ChromotingHostContext;
 class Encoder;
-class EventExecutor;
 class MutableHostConfig;
 class SessionManager;
 
@@ -46,7 +45,7 @@ class SessionManager;
 //    a ConnectionToClient object that wraps around linjingle for transport.
 //    Also create a SessionManager with appropriate Encoder and Capturer and
 //    add the ConnectionToClient to this SessionManager for transporting the
-//    screen captures. A EventExecutor is created and registered with the
+//    screen captures. An InputStub is created and registered with the
 //    ConnectionToClient to receive mouse / keyboard events from the remote
 //    client.
 //    This is also the right time to create multiple threads to host
@@ -64,7 +63,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public JingleClient::Callback {
  public:
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
-                 Capturer* capturer, EventExecutor* executor);
+                 Capturer* capturer, protocol::InputStub* input_stub);
   virtual ~ChromotingHost();
 
   // Asynchronously start the host process.
@@ -89,8 +88,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   ////////////////////////////////////////////////////////////////////////////
   // protocol::ConnectionToClient::EventHandler implementations
-  virtual void HandleMessage(protocol::ConnectionToClient* client,
-                             ChromotingClientMessage* message);
   virtual void OnConnectionOpened(protocol::ConnectionToClient* client);
   virtual void OnConnectionClosed(protocol::ConnectionToClient* client);
   virtual void OnConnectionFailed(protocol::ConnectionToClient* client);
@@ -133,8 +130,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // constructed this is set to NULL.
   scoped_ptr<Encoder> encoder_;
 
-  // EventExecutor executes input events received from the client.
-  scoped_ptr<EventExecutor> executor_;
+  // InputStub in the host executes input events received from the client.
+  scoped_ptr<protocol::InputStub> input_stub_;
 
   // The libjingle client. This is used to connect to the talk network to
   // receive connection requests from chromoting client.

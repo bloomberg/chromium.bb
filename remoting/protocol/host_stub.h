@@ -24,7 +24,7 @@ class HostStub {
   virtual ~HostStub() {};
 
   virtual void SuggestResolution(
-      const SuggestResolutionRequest& msg, Task* done) = 0;
+      const SuggestResolutionRequest* msg, Task* done) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStub);
