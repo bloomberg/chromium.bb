@@ -1098,4 +1098,17 @@ const char kProxyPacUrl[] = "proxy.pac_url";
 // expected syntax see net::ProxyBypassRules::ParseFromString().
 const char kProxyBypassList[] = "proxy.bypass_list";
 
+// Preferences that are exclusivly used to store managed values for default
+// content settings.
+const char kManagedDefaultCookiesSetting[] =
+    "profile.managed_default_content_settings.cookies";
+const char kManagedDefaultImagesSetting[] =
+    "profile.managed_default_content_settings.images";
+const char kManagedDefaultJavaScriptSetting[] =
+    "profile.managed_default_content_settings.javascript";
+const char kManagedDefaultPluginsSetting[] =
+    "profile.managed_default_content_settings.plugins";
+const char kManagedDefaultPopupsSetting[] =
+    "profile.managed_default_content_settings.popups";
+
 }  // namespace prefs

@@ -234,6 +234,9 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void ResetToDefaults();
 
+  // Returns true if the default setting for the |content_type| is managed.
+  bool IsDefaultContentSettingManaged(ContentSettingsType content_type) const;
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -269,6 +272,19 @@ class HostContentSettingsMap
   // true and the preference is missing, the local copy will be cleared as well.
   void ReadDefaultSettings(bool overwrite);
 
+  // Reads managed default content settings from the preference service |prefs|.
+  // |settings| is set to the respective content setting for managed settings,
+  // and to CONTENT_SETTING_DEFAULT for other settings.
+  void ReadManagedDefaultSettings(const PrefService* prefs,
+                                  ContentSettings* settings);
+
+  // Updates the managed setting of the default-content-settings-type |type|.
+  // The updated setting is read from the preference service |prefs| and written
+  // to |settings|.
+  void UpdateManagedDefaultSetting(ContentSettingsType type,
+                                   const PrefService* prefs,
+                                   ContentSettings* settings);
+
   // Reads the host exceptions from the prefereces service. If |overwrite| is
   // true and the preference is missing, the local copy will be cleared as well.
   void ReadExceptions(bool overwrite);
@@ -300,6 +316,7 @@ class HostContentSettingsMap
 
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;
+  ContentSettings managed_default_content_settings_;
   HostContentSettings host_content_settings_;
 
   // Differences to the preference-stored host content settings for

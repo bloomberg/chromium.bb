@@ -57,6 +57,11 @@ const char kJavascriptEnabled[] = "JavascriptEnabled";
 const char kSavingBrowserHistoryDisabled[] = "SavingBrowserHistoryDisabled";
 const char kDeveloperToolsDisabled[] = "DeveloperToolsDisabled";
 const char kBlockThirdPartyCookies[] = "BlockThirdPartyCookies";
+const char kDefaultCookiesSetting[] = "DefaultCookiesSetting";
+const char kDefaultImagesSetting[] = "DefaultImagesSetting";
+const char kDefaultJavaScriptSetting[] = "DefaultJavaScriptSetting";
+const char kDefaultPluginsSetting[] = "DefaultPluginsSetting";
+const char kDefaultPopupsSetting[] = "DefaultPopupsSetting";
 const char kAuthSchemes[] = "AuthSchemes";
 const char kDisableAuthNegotiateCnameLookup[] =
     "DisableAuthNegotiateCnameLookup";

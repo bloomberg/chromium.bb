@@ -14,6 +14,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/static_cookie_policy.h"
@@ -49,6 +50,7 @@ class StubSettingsObserver : public NotificationObserver {
     last_pattern = settings_details.ptr()->pattern();
     last_update_all = settings_details.ptr()->update_all();
     last_update_all_types = settings_details.ptr()->update_all_types();
+    last_type = settings_details.ptr()->type();
     // This checks that calling a Get function from an observer doesn't
     // deadlock.
     last_notifier->GetContentSettings(GURL("http://random-hostname.com/"));
@@ -59,6 +61,7 @@ class StubSettingsObserver : public NotificationObserver {
   bool last_update_all;
   bool last_update_all_types;
   int counter;
+  ContentSettingsType last_type;
 
  private:
   NotificationRegistrar registrar_;
@@ -746,6 +749,239 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
   EXPECT_STREQ("{\"[*.]example.com\":{\"per_plugin\":{\"otherplugin\":2}}}",
                prefs_as_json.c_str());
+}
+
+// If a default-content-setting is managed, the managed value should be used
+// instead of the default value.
+TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+
+  // Set managed-default-content-setting through the coresponding preferences.
+  prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+
+  // Remove managed-default-content-settings-preferences.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultJavaScriptSetting);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+
+  // Set preference to manage the default-content-setting for Plugins.
+  prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  // Remove the preference to manage the default-content-setting for Plugins.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultPluginsSetting);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_PLUGINS));
+}
+
+TEST_F(HostContentSettingsMapTest,
+       GetNonDefaultContentSettingsIfTypeManaged) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  // Set pattern for JavaScript setting.
+  HostContentSettingsMap::Pattern pattern("[*.]example.com");
+  host_content_settings_map->SetContentSetting(pattern,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, "", CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+
+  GURL host("http://example.com/");
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+
+  // Set managed-default-content-setting for content-settings-type JavaScript.
+  prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+}
+
+// Managed default content setting should have higher priority
+// than user defined patterns.
+TEST_F(HostContentSettingsMapTest,
+       ManagedDefaultContentSettingIgnoreUserPattern) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  // Block all JavaScript.
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+
+  // Set an exception to allow "[*.]example.com"
+  HostContentSettingsMap::Pattern pattern("[*.]example.com");
+  host_content_settings_map->SetContentSetting(pattern,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, "", CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  GURL host("http://example.com/");
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+
+  // Set managed-default-content-settings-preferences.
+  prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+
+  // Remove managed-default-content-settings-preferences.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultJavaScriptSetting);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+}
+
+// If a default-content-setting is set to managed setting, the user defined
+// setting should be preserved.
+TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  // Set user defined default-content-setting for Cookies.
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_COOKIES));
+
+  // Set preference to manage the default-content-setting for Cookies.
+  prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_COOKIES));
+
+  // Remove the preference to manage the default-content-setting for Cookies.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultCookiesSetting);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_COOKIES));
+ }
+
+// When a default-content-setting is set to a managed setting a
+// CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
+// if the managed setting is removed.
+TEST_F(HostContentSettingsMapTest, ObserveManagedSettingsChange) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  StubSettingsObserver observer;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  // TODO(markusheintz): I think it would be better to send notifications only
+  // for a specific content-settings-type.
+
+  // Set the managed default-content-setting.
+  prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
+  EXPECT_EQ(HostContentSettingsMap::Pattern(), observer.last_pattern);
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
+  EXPECT_TRUE(observer.last_update_all);
+  EXPECT_TRUE(observer.last_update_all_types);
+  EXPECT_EQ(1, observer.counter);
+
+  // Remove the managed default-content-setting.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
+  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
+  EXPECT_EQ(HostContentSettingsMap::Pattern(), observer.last_pattern);
+  EXPECT_TRUE(observer.last_update_all);
+  EXPECT_TRUE(observer.last_update_all_types);
+  EXPECT_EQ(2, observer.counter);
+}
+
+// When a default-content-setting is set to a managed setting a
+// CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
+// if the managed setting is removed. In this test-case the actual managed
+// setting is the same. Just the managed status of the default-content-setting
+// changes.
+TEST_F(HostContentSettingsMapTest, ObserveManagedSettingsNoChange) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  StubSettingsObserver observer;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  // TODO(markusheintz): I think it would be better to send notifications only
+  // for a specific content-settings-type.
+
+  // Set the managed default-content-setting. In this case the actual setting
+  // does not change.
+  prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
+  EXPECT_EQ(HostContentSettingsMap::Pattern(), observer.last_pattern);
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
+  EXPECT_TRUE(observer.last_update_all);
+  EXPECT_TRUE(observer.last_update_all_types);
+  EXPECT_EQ(1, observer.counter);
+
+  // Remove the managed default-content-setting.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
+  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
+  EXPECT_EQ(HostContentSettingsMap::Pattern(), observer.last_pattern);
+  EXPECT_TRUE(observer.last_update_all);
+  EXPECT_TRUE(observer.last_update_all_types);
+  EXPECT_EQ(2, observer.counter);
+}
+
+// If a setting for a default-content-setting-type is set while the type is
+// managed, then the new setting should be preserved and used after the
+// default-content-setting-type is not managed anymore.
+TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_PLUGINS));
+
+  prefs->RemoveManagedPref(prefs::kManagedDefaultPluginsSetting);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_PLUGINS));
 }
 
 }  // namespace

@@ -403,6 +403,12 @@ extern const char kProxyServer[];
 extern const char kProxyPacUrl[];
 extern const char kProxyBypassList[];
 
+extern const char kManagedDefaultCookiesSetting[];
+extern const char kManagedDefaultImagesSetting[];
+extern const char kManagedDefaultJavaScriptSetting[];
+extern const char kManagedDefaultPluginsSetting[];
+extern const char kManagedDefaultPopupsSetting[];
+
 #if defined(OS_CHROMEOS)
 extern const char kSignedSettingsTempStorage[];
 #endif
