@@ -110,9 +110,9 @@ class DeviceTokenFetcher
   static void WriteDeviceTokenToDisk(const FilePath& path,
                                      const std::string& token);
 
-  // Returns the device ID used to register the device with the device
+  // Generates a new device ID used to register the device with the device
   // management server and generate the device token.
-  static std::string GetDeviceID();
+  static std::string GenerateNewDeviceID();
 
   FilePath token_path_;
   DeviceManagementBackend* backend_;  // weak

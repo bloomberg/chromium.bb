@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
+#include "chrome/browser/guid.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -14,12 +15,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-
-namespace {
-
-static const char kPlaceholderDeviceID[] = "placeholder_device_id";
-
-}  // namespace
 
 namespace policy {
 
@@ -133,7 +128,7 @@ void DeviceTokenFetcher::SendServerRequestIfPossible() {
     em::DeviceRegisterRequest register_request;
     SetState(kStateRequestingDeviceTokenFromServer);
     backend_->ProcessRegisterRequest(auth_token_,
-                                     GetDeviceID(),
+                                     GenerateNewDeviceID(),
                                      register_request,
                                      this);
   }
@@ -186,9 +181,8 @@ void DeviceTokenFetcher::WriteDeviceTokenToDisk(
 }
 
 // static
-std::string DeviceTokenFetcher::GetDeviceID() {
-  // TODO(danno): fetch a real device_id
-  return kPlaceholderDeviceID;
+std::string DeviceTokenFetcher::GenerateNewDeviceID() {
+  return guid::GenerateGUID();
 }
 
 }
