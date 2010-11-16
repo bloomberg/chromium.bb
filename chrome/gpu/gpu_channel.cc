@@ -35,6 +35,8 @@ GpuChannel::GpuChannel(int renderer_id)
 
 GpuChannel::~GpuChannel() {
 #if defined(OS_POSIX)
+  IPC::RemoveAndCloseChannelSocket(GetChannelName());
+
   // If we still have the renderer FD, close it.
   if (renderer_fd_ != -1) {
     close(renderer_fd_);
