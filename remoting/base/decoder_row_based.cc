@@ -120,13 +120,18 @@ Decoder::DecodeResult DecoderRowBased::DecodePacket(
     }
   }
 
-  if (state_ == kDone && row_y_ < clip_.height()) {
-    state_ = kError;
-    LOG(WARNING) << "Received LAST_PACKET, but didn't get enough data.";
-    return DECODE_ERROR;
-  }
+  if (state_ == kDone) {
+    if (row_y_ < clip_.height()) {
+      state_ = kError;
+      LOG(WARNING) << "Received LAST_PACKET, but didn't get enough data.";
+      return DECODE_ERROR;
+    }
 
-  return state_ == kDone ? DECODE_DONE : DECODE_IN_PROGRESS;
+    decompressor_->Reset();
+    return DECODE_DONE;
+  } else {
+    return DECODE_IN_PROGRESS;
+  }
 }
 
 void DecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
