@@ -94,6 +94,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_map_sub");
   AddExtensionString("GL_CHROMIUM_copy_texture_to_parent_texture");
   AddExtensionString("GL_CHROMIUM_resource_safe");
+  AddExtensionString("GL_CHROMIUM_resize");
   AddExtensionString("GL_CHROMIUM_strict_attribs");
 
   // Only turn this feature on if it is requested. Not by default.

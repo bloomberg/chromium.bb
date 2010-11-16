@@ -1171,6 +1171,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DoCopyTextureToParentTexture(GLuint client_texture_id,
                                     GLuint parent_client_texture_id);
 
+  void DoResizeCHROMIUM(GLuint width, GLuint height);
+
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
@@ -2501,6 +2503,11 @@ void GLES2DecoderImpl::DoCopyTextureToParentTexture(
                      height,
                      0);  // border
   }
+}
+
+void GLES2DecoderImpl::DoResizeCHROMIUM(GLuint width, GLuint height) {
+  gfx::Size size(width, height);
+  context_->SetSize(size);
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {

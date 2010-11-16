@@ -881,5 +881,9 @@ void CopyTextureToParentTexture(
   helper_->CopyTextureToParentTexture(client_child_id, client_parent_id);
 }
 
+void ResizeCHROMIUM(GLuint width, GLuint height) {
+  helper_->ResizeCHROMIUM(width, height);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

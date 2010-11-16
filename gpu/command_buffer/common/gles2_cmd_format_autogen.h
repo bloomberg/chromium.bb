@@ -8793,6 +8793,44 @@ COMPILE_ASSERT(offsetof(CopyTextureToParentTexture, client_child_id) == 4,
 COMPILE_ASSERT(offsetof(CopyTextureToParentTexture, client_parent_id) == 8,
                OffsetOf_CopyTextureToParentTexture_client_parent_id_not_8);
 
+struct ResizeCHROMIUM {
+  typedef ResizeCHROMIUM ValueType;
+  static const CommandId kCmdId = kResizeCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _width, GLuint _height) {
+    SetHeader();
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd, GLuint _width, GLuint _height) {
+    static_cast<ValueType*>(cmd)->Init(_width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 width;
+  uint32 height;
+};
+
+COMPILE_ASSERT(sizeof(ResizeCHROMIUM) == 12,
+               Sizeof_ResizeCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(ResizeCHROMIUM, header) == 0,
+               OffsetOf_ResizeCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(ResizeCHROMIUM, width) == 4,
+               OffsetOf_ResizeCHROMIUM_width_not_4);
+COMPILE_ASSERT(offsetof(ResizeCHROMIUM, height) == 8,
+               OffsetOf_ResizeCHROMIUM_height_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

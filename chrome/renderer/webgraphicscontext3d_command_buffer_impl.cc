@@ -229,6 +229,8 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
   if (web_view_) {
 #if defined(OS_MACOSX)
     ggl::ResizeOnscreenContext(context_, gfx::Size(width, height));
+#else
+    glResizeCHROMIUM(width, height);
 #endif
   } else {
     ggl::ResizeOffscreenContext(context_, gfx::Size(width, height));

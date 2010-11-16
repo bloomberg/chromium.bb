@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -395,6 +395,8 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_CommandBufferEnable_kCmdId_mismatch);
   COMPILE_ASSERT(CopyTextureToParentTexture::kCmdId == 447,
                  GLES2_CopyTextureToParentTexture_kCmdId_mismatch);
+  COMPILE_ASSERT(ResizeCHROMIUM::kCmdId == 448,
+                 GLES2_ResizeCHROMIUM_kCmdId_mismatch);
 }
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_

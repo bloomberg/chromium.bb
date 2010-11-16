@@ -2670,5 +2670,13 @@ error::Error GLES2DecoderImpl::HandleCopyTextureToParentTexture(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
+    uint32 immediate_data_size, const gles2::ResizeCHROMIUM& c) {
+  GLuint width = static_cast<GLuint>(c.width);
+  GLuint height = static_cast<GLuint>(c.height);
+  DoResizeCHROMIUM(width, height);
+  return error::kNoError;
+}
+
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

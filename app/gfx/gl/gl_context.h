@@ -36,6 +36,11 @@ class GLContext {
   // contexts.
   virtual bool SwapBuffers() = 0;
 
+  // Set the size of the back buffer.
+  // FIXME(backer): Currently a NOP. Once we have an implementation for each
+  //     backend we can switch it to pure virtual.
+  virtual void SetSize(gfx::Size) {}
+
   // Get the size of the back buffer.
   virtual gfx::Size GetSize() = 0;
 

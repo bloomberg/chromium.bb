@@ -8,8 +8,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
-// TODO(gman): GetUniformLocationBucket
-
 
 TEST_F(GLES2DecoderTest2, GetVertexAttribfvValidArgs) {
   SpecializedSetup<GetVertexAttribfv, 0>(true);
@@ -1612,5 +1610,6 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 // TODO(gman): CommandBufferEnable
 
 // TODO(gman): CopyTextureToParentTexture
+// TODO(gman): ResizeCHROMIUM
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

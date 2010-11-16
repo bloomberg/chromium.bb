@@ -3465,5 +3465,20 @@ TEST(GLES2FormatTest, CopyTextureToParentTexture) {
   EXPECT_EQ(static_cast<GLuint>(12), cmd.client_parent_id);
 }
 
+TEST(GLES2FormatTest, ResizeCHROMIUM) {
+  ResizeCHROMIUM cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11),
+      static_cast<GLuint>(12));
+  EXPECT_EQ(static_cast<uint32>(ResizeCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.width);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.height);
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

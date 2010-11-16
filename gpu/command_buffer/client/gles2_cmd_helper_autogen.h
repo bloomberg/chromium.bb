@@ -1193,5 +1193,10 @@
     c.Init(client_child_id, client_parent_id);
   }
 
+  void ResizeCHROMIUM(GLuint width, GLuint height) {
+    gles2::ResizeCHROMIUM& c = GetCmdSpace<gles2::ResizeCHROMIUM>();
+    c.Init(width, height);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

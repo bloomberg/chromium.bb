@@ -909,6 +909,19 @@ typedef void* (GL_APIENTRYP PFNGLCOPYTEXTURETOPARENTTEXTURE) (GLuint id, GLuint 
 #endif
 #endif
 
+/* GL_CHROMIUM_resize */
+#ifndef GL_CHROMIUM_resize
+#define GL_CHROMIUM_resize 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glResizeCHROMIUM GLES2_GET_FUN(ResizeCHROMIUM)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height);
+#endif
+#else
+typedef void (GL_APIENTRYP PFNGLRESIZECHROMIUM) (GLuint width, GLuint height);
+#endif
+#endif
+
 
 #ifdef __cplusplus
 }

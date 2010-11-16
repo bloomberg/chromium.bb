@@ -208,6 +208,7 @@ GL_APICALL void         GL_APIENTRY glUnmapBufferSubData (const void* mem);
 GL_APICALL void*        GL_APIENTRY glMapTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
 GL_APICALL void         GL_APIENTRY glUnmapTexSubImage2D (const void* mem);
 GL_APICALL void         GL_APIENTRY glCopyTextureToParentTexture (GLidBindTexture client_child_id, GLidBindTexture client_parent_id);
+GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -408,6 +409,7 @@ _CMD_ID_TABLE = {
   'RenderbufferStorageMultisampleEXT':                         445,
   'BlitFramebufferEXT':                                        446,
   'CopyTextureToParentTexture':                                447,
+  'ResizeCHROMIUM':                                                448,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1539,6 +1541,10 @@ _FUNCTION_INFO = {
   },
   'CopyTextureToParentTexture': {
       'decoder_func': 'DoCopyTextureToParentTexture',
+      'unit_test': False
+  },
+  'ResizeCHROMIUM': {
+      'decoder_func': 'DoResizeCHROMIUM',
       'unit_test': False
   },
 }

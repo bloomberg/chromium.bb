@@ -837,6 +837,10 @@ void GLES2CopyTextureToParentTexture(
   gles2::GetGLContext()->CopyTextureToParentTexture(
       client_child_id, client_parent_id);
 }
+void GLES2ResizeCHROMIUM(GLuint width, GLuint height) {
+  GPU_CLIENT_LOG("ResizeCHROMIUM" << "(" << width << ", " << height << ")");
+  gles2::GetGLContext()->ResizeCHROMIUM(width, height);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 
