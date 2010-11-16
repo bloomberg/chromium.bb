@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -31,15 +32,14 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -640,16 +640,10 @@ void FilebrowseHandler::EnqueueMediaFile(const ListValue* args) {
 
 void FilebrowseHandler::HandleIsAdvancedEnabled(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  Browser* browser = BrowserList::GetLastActive();
-  bool is_enabled = false;
-  bool mp_enabled = false;
-  if (browser) {
-    Profile* profile = browser->profile();
-    PrefService* pref_service = profile->GetPrefs();
-    is_enabled = pref_service->GetBoolean(
-        prefs::kLabsAdvancedFilesystemEnabled);
-    mp_enabled = pref_service->GetBoolean(prefs::kLabsMediaplayerEnabled);
-  }
+  bool is_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAdvancedFileSystem);
+  bool mp_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMediaPlayer);
   DictionaryValue info_value;
   info_value.SetBoolean("enabled", is_enabled);
   info_value.SetBoolean("mpEnabled", mp_enabled);
@@ -1163,14 +1157,8 @@ Browser* FileBrowseUI::GetPopupForPath(const std::string& path,
                                        Profile* profile) {
   std::string current_path = path;
   if (current_path.empty()) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser == NULL) {
-      return NULL;
-    }
-    Profile* profile = browser->profile();
-    PrefService* pref_service = profile->GetPrefs();
-    bool is_enabled = pref_service->GetBoolean(
-        prefs::kLabsAdvancedFilesystemEnabled);
+    bool is_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableAdvancedFileSystem);
     if (!is_enabled) {
       FilePath default_download_path;
       if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,

@@ -52,6 +52,11 @@ class AboutFlagsTest : public ::testing::Test {
  protected:
   AboutFlagsTest() {
     prefs_.RegisterListPref(prefs::kEnabledLabsExperiments);
+#if defined(OS_CHROMEOS)
+    prefs_.RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
+    prefs_.RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
+    prefs_.RegisterBooleanPref(prefs::kUseVerticalTabs, false);
+#endif
     testing::ClearState();
   }
 

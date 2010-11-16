@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
 TabMenuModel::TabMenuModel(menus::SimpleMenuModel::Delegate* delegate,
@@ -17,7 +18,7 @@ TabMenuModel::TabMenuModel(menus::SimpleMenuModel::Delegate* delegate,
 
 // static
 bool TabMenuModel::AreVerticalTabsEnabled() {
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVerticalTabs);
 #else

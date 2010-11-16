@@ -446,8 +446,6 @@
         'browser/chromeos/dom_ui/internet_options_handler.h',
         'browser/chromeos/dom_ui/keyboard_overlay_ui.cc',
         'browser/chromeos/dom_ui/keyboard_overlay_ui.h',
-        'browser/chromeos/dom_ui/labs_handler.cc',
-        'browser/chromeos/dom_ui/labs_handler.h',
         'browser/chromeos/dom_ui/language_chewing_options_handler.cc',
         'browser/chromeos/dom_ui/language_chewing_options_handler.h',
         'browser/chromeos/dom_ui/language_customize_modifier_keys_handler.cc',

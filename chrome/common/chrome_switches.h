@@ -349,6 +349,8 @@ extern const char kScreenSaverUrl[];
 extern const char kCompressSystemFeedback[];
 extern const char kForceStubLibcros[];
 extern const char kEnableDOMUIMenu[];
+extern const char kEnableMediaPlayer[];
+extern const char kEnableAdvancedFileSystem[];
 #endif
 
 #if defined(OS_LINUX)

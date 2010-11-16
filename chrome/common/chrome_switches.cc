@@ -1228,11 +1228,16 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 
 // Forces usage of libcros stub implementation. For testing purposes, this
 // switch separates chrome code from the rest of ChromeOS.
-const char kForceStubLibcros[]        = "force-stub-libcros";
+const char kForceStubLibcros[]              = "force-stub-libcros";
 
 // Enables DOMUI menu.
-const char kEnableDOMUIMenu[]              = "enable-domui-menu";
+const char kEnableDOMUIMenu[]               = "enable-domui-menu";
 
+// Enables Media Player.
+const char kEnableMediaPlayer[]             = "enable-media-player";
+
+// Enables Advanced File System.
+const char kEnableAdvancedFileSystem[]      = "enable-advanced-fs";
 #endif
 
 #if defined(OS_LINUX)

@@ -3993,6 +3993,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
         Swipe down with three fingers on your trackpad to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
       </message>
+      <message name="IDS_FLAGS_MEDIA_PLAYER_NAME" desc="Name of the 'Media Player' lab.">
+        Media Player
+      </message>
+      <message name="IDS_FLAGS_MEDIA_PLAYER_DESCRIPTION" desc="Description of the 'Media Player' lab.">
+        Enable Media Player.
+      </message>
+      <message name="IDS_FLAGS_ADVANCED_FS_NAME" desc="Name of the 'Advanced File System' lab.">
+        Advanced File System
+      </message>
+      <message name="IDS_FLAGS_ADVANCED_FS_DESCRIPTION" desc="Description of the 'Advanced File System' lab.">
+        Enable Advanced File System, including USB and SD card support.
+      </message>
       <message name="IDS_FLAGS_SIDE_TABS_NAME" desc="Name of the 'Left Tabs' lab.">
         Side Tabs
       </message>
@@ -6410,9 +6422,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_OPTIONS_INTERNET_TAB_LABEL" desc="The title of the Internet tab">
           Internet
-        </message>
-        <message name="IDS_OPTIONS_LABS_TAB_LABEL" desc="The title of the LABS tab">
-          Labs
         </message>
         <message name="IDS_OPTIONS_ACCOUNTS_TAB_LABEL" desc="The title of the Accounts tab">
           Users
@@ -9130,15 +9139,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_IP_CONFIG">
         Advanced Options
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_MEDIAPLAYER">
-        Media Player
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADVANCEDFS">
-        Enable Advanced File System, including USB and SD card support
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_SIDE_TABS">
-        Side tabs
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
         Time zone:
       </message>
@@ -9150,15 +9150,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad touch sensitivity.">
         Sensitivity:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_MEDIAPLAYER_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to turn on the mediaplayer">
-        Enable Media Player
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_ADVANCEDFS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for the filesystem.">
-        Advanced Filesystem including USB/SD card support.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_SIDE_TABS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to turn on side tabs.">
-        Show tabs on the left side.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for accessbility.">
         Enable accessibility features
