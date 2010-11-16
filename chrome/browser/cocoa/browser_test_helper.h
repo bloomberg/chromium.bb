@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_
 #pragma once
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/testing_profile.h"
 
 // Base class which contains a valid Browser*.  Lots of boilerplate to

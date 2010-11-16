@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 
 #include "base/message_loop.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/test/ui_test_utils.h"
 

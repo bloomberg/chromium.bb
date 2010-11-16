@@ -9,7 +9,6 @@
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/flags_ui.h"
@@ -49,6 +48,7 @@
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/upgrade_detector.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port

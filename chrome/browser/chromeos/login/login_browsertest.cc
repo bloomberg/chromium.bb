@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/time.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_input_method_library.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/chromeos/cros/mock_system_library.h"
 #include "chrome/browser/chromeos/cros/mock_touchpad_library.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"

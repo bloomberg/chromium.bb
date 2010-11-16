@@ -8,7 +8,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/profile.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 

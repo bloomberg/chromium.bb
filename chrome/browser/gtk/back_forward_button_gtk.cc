@@ -10,11 +10,11 @@
 #include "base/message_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/back_forward_menu_model.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
