@@ -73,7 +73,8 @@ bool IsSSN(const string16& text) {
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
     TabContents* tab_contents) : tab_contents_(tab_contents),
-                                 pending_query_handle_(0) {
+                                 pending_query_handle_(0),
+                                 query_id_(0) {
   DCHECK(tab_contents);
 
   profile_ = tab_contents_->profile();
@@ -93,17 +94,17 @@ void AutocompleteHistoryManager::FormSubmitted(const FormData& form) {
   StoreFormEntriesInWebDatabase(form);
 }
 
-void AutocompleteHistoryManager::GetAutocompleteSuggestions(
-    const string16& name, const string16& prefix) {
-  if (!*autofill_enabled_) {
-    SendSuggestions(NULL);
-    return;
-  }
+bool AutocompleteHistoryManager::GetAutocompleteSuggestions(
+    int query_id, const string16& name, const string16& prefix) {
+  if (!*autofill_enabled_)
+    return false;
 
   CancelPendingQuery();
 
+  query_id_ = query_id;
   pending_query_handle_ = web_data_service_->GetFormValuesForElementName(
       name, prefix, kMaxAutocompleteMenuItems, this);
+  return true;
 }
 
 void AutocompleteHistoryManager::RemoveAutocompleteEntry(
@@ -129,7 +130,8 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
     Profile* profile, WebDataService* wds) : tab_contents_(NULL),
                                              profile_(profile),
                                              web_data_service_(wds),
-                                             pending_query_handle_(0) {
+                                             pending_query_handle_(0),
+                                             query_id_(0) {
   autofill_enabled_.Init(
       prefs::kAutoFillEnabled, profile_->GetPrefs(), NULL);
 }
@@ -185,8 +187,10 @@ void AutocompleteHistoryManager::SendSuggestions(const WDTypedResult* result) {
     DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
     const WDResult<std::vector<string16> >* autofill_result =
         static_cast<const WDResult<std::vector<string16> >*>(result);
-    host->AutocompleteSuggestionsReturned(autofill_result->GetValue());
+    host->AutocompleteSuggestionsReturned(
+        query_id_, autofill_result->GetValue());
   } else {
-    host->AutocompleteSuggestionsReturned(std::vector<string16>());
+    host->AutocompleteSuggestionsReturned(
+        query_id_, std::vector<string16>());
   }
 }

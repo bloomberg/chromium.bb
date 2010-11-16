@@ -32,10 +32,8 @@ class AutoFillHelper : public PageClickListener {
   explicit AutoFillHelper(RenderView* render_view);
 
   // Queries the browser for Autocomplete and AutoFill suggestions for the given
-  // |node|.  If |autofill_disabled| is true, the query is guaranteed to return
-  // no results, but might return a descriptive warning message.
-  void QueryAutoFillSuggestions(const WebKit::WebNode& node,
-                                bool autofill_disabled);
+  // |node|.
+  void QueryAutoFillSuggestions(const WebKit::WebNode& node);
 
   // Removes the Autocomplete suggestion |value| for the field named |name|.
   void RemoveAutocompleteSuggestion(const WebKit::WebString& name,
@@ -109,14 +107,9 @@ class AutoFillHelper : public PageClickListener {
   // when |element| contains no text.
   // |requires_caret_at_end| specifies whether suggestions should be shown when
   // the caret is not after the last character in |element|.
-  // |display_warning_if_disabled| specifies whether a warning should be
-  // displayed to the user if AutoFill has suggestions available, but cannot
-  // fill them because it is disabled (e.g. when trying to fill a credit card
-  // form on a non-secure website).
   void ShowSuggestions(const WebKit::WebInputElement& element,
                        bool autofill_on_empty_values,
-                       bool requires_caret_at_end,
-                       bool display_warning_if_disabled);
+                       bool requires_caret_at_end);
 
   // Queries the AutoFillManager for form data for the form containing |node|.
   // |value| is the current text in the field, and |unique_id| is the selected
@@ -140,9 +133,6 @@ class AutoFillHelper : public PageClickListener {
 
   // The node corresponding to the last request sent for form field AutoFill.
   WebKit::WebNode autofill_query_node_;
-
-  // Whether autofill is disabled for |autofill_query_node_| by the website.
-  bool autofill_disabled_;
 
   // The action to take when receiving AutoFill data from the AutoFillManager.
   AutoFillAction autofill_action_;

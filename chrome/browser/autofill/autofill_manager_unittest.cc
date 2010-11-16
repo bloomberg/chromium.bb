@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
@@ -24,7 +23,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
-#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
@@ -59,14 +57,6 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void AddProfile(AutoFillProfile* profile) {
     web_profiles_->push_back(profile);
-  }
-
-  void ClearAutoFillProfiles() {
-    web_profiles_.reset();
-  }
-
-  void ClearCreditCards() {
-    credit_cards_.reset();
   }
 
  private:
@@ -120,8 +110,7 @@ class TestAutoFillManager : public AutoFillManager {
  public:
   TestAutoFillManager(TabContents* tab_contents,
                       TestPersonalDataManager* personal_manager)
-      : AutoFillManager(tab_contents, NULL),
-        autofill_enabled_(true) {
+      : AutoFillManager(tab_contents, NULL) {
     test_personal_data_ = personal_manager;
     set_personal_data_manager(personal_manager);
     // Download manager requests are disabled for purposes of this unit-test.
@@ -129,11 +118,7 @@ class TestAutoFillManager : public AutoFillManager {
     set_disable_download_manager_requests(true);
   }
 
-  virtual bool IsAutoFillEnabled() const { return autofill_enabled_; }
-
-  void set_autofill_enabled(bool autofill_enabled) {
-    autofill_enabled_ = autofill_enabled;
-  }
+  virtual bool IsAutoFillEnabled() const { return true; }
 
   AutoFillProfile* GetLabeledProfile(const char* label) {
     return test_personal_data_->GetLabeledProfile(label);
@@ -145,7 +130,6 @@ class TestAutoFillManager : public AutoFillManager {
 
  private:
   TestPersonalDataManager* test_personal_data_;
-  bool autofill_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutoFillManager);
 };
@@ -309,12 +293,11 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "First Name", "firstname", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -355,12 +338,11 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "First Name", "firstname", "E", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -412,109 +394,8 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsUnknownFields) {
 
   autofill_test::CreateTestFormField(
       "Username", "username", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
   EXPECT_FALSE(
-      autofill_manager_->GetAutoFillSuggestions(false, field));
-}
-
-// Test that we return no suggestions when autofill is disabled.
-TEST_F(AutoFillManagerTest, GetProfileSuggestionsAutofillDisabledByUser) {
-  FormData form;
-  CreateTestAddressFormData(&form);
-
-  // Set up our FormStructures.
-  std::vector<FormData> forms;
-  forms.push_back(form);
-  autofill_manager_->FormsSeen(forms);
-
-  // Disable AutoFill.
-  autofill_manager_->set_autofill_enabled(false);
-
-  // The page ID sent to the AutoFillManager from the RenderView, used to send
-  // an IPC message back to the renderer.
-  const int kPageID = 1;
-
-  webkit_glue::FormField field;
-  autofill_test::CreateTestFormField(
-      "First Name", "firstname", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(false, field));
-}
-
-// Test that we return a warning explaining that autofill suggestions are
-// unavailable when the form method is GET rather than POST.
-TEST_F(AutoFillManagerTest, GetProfileSuggestionsMethodGet) {
-  FormData form;
-  CreateTestAddressFormData(&form);
-  form.method = ASCIIToUTF16("GET");
-
-  // Set up our FormStructures.
-  std::vector<FormData> forms;
-  forms.push_back(form);
-  autofill_manager_->FormsSeen(forms);
-
-  // The page ID sent to the AutoFillManager from the RenderView, used to send
-  // an IPC message back to the renderer.
-  const int kPageID = 1;
-
-  webkit_glue::FormField field;
-  autofill_test::CreateTestFormField(
-      "First Name", "firstname", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
-
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
-  EXPECT_EQ(kPageID, page_id);
-  ASSERT_EQ(1U, values.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED),
-            values[0]);
-  ASSERT_EQ(1U, labels.size());
-  EXPECT_EQ(string16(), labels[0]);
-  ASSERT_EQ(1U, icons.size());
-  EXPECT_EQ(string16(), icons[0]);
-
-  // Now add some Autocomplete suggestions. We should return the autocomplete
-  // suggestions and the warning; these will be culled by the renderer.
-  process()->sink().ClearMessages();
-  const int kPageID2 = 2;
-  rvh()->ResetAutoFillState(kPageID2);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
-
-  std::vector<string16> suggestions;
-  suggestions.push_back(ASCIIToUTF16("Jay"));
-  suggestions.push_back(ASCIIToUTF16("Jason"));
-  rvh()->AutocompleteSuggestionsReturned(suggestions);
-
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
-  EXPECT_EQ(kPageID2, page_id);
-  ASSERT_EQ(3U, values.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED),
-            values[0]);
-  EXPECT_EQ(ASCIIToUTF16("Jay"), values[1]);
-  EXPECT_EQ(ASCIIToUTF16("Jason"), values[2]);
-  ASSERT_EQ(3U, labels.size());
-  EXPECT_EQ(string16(), labels[0]);
-  EXPECT_EQ(string16(), labels[1]);
-  EXPECT_EQ(string16(), labels[2]);
-  ASSERT_EQ(3U, icons.size());
-  EXPECT_EQ(string16(), icons[0]);
-  EXPECT_EQ(string16(), icons[1]);
-  EXPECT_EQ(string16(), icons[2]);
-
-  // Now clear the test profiles and try again -- we shouldn't return a warning.
-  test_personal_data_->ClearAutoFillProfiles();
-  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(false, field));
+      autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 }
 
 // Test that we return all credit card profile suggestions when all form fields
@@ -535,12 +416,11 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "Card Number", "cardnumber", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -579,12 +459,11 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "Card Number", "cardnumber", "4", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -620,12 +499,11 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "Name on Card", "nameoncard", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -646,8 +524,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   EXPECT_EQ(ASCIIToUTF16("masterCardCC"), icons[1]);
 }
 
-// Test that we return a warning explaining that credit card profile suggestions
-// are unavailable when the form is not https.
+// Test that we return no credit card profile suggestions when the form is not
+// https.
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   FormData form;
   CreateTestCreditCardFormData(&form, false);
@@ -664,61 +542,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "Card Number", "cardnumber", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
-
-  // Test that we sent the right message to the renderer.
-  int page_id = 0;
-  std::vector<string16> values;
-  std::vector<string16> labels;
-  std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
-  EXPECT_EQ(kPageID, page_id);
-  ASSERT_EQ(1U, values.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-            values[0]);
-  ASSERT_EQ(1U, labels.size());
-  EXPECT_EQ(string16(), labels[0]);
-  ASSERT_EQ(1U, icons.size());
-  EXPECT_EQ(string16(), icons[0]);
-
-  // Now add some Autocomplete suggestions. We should show the autocomplete
-  // suggestions and the warning.
-  process()->sink().ClearMessages();
-  const int kPageID2 = 2;
-  rvh()->ResetAutoFillState(kPageID2);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
-
-  std::vector<string16> suggestions;
-  suggestions.push_back(ASCIIToUTF16("Jay"));
-  suggestions.push_back(ASCIIToUTF16("Jason"));
-  rvh()->AutocompleteSuggestionsReturned(suggestions);
-
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
-  EXPECT_EQ(kPageID2, page_id);
-  ASSERT_EQ(3U, values.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-            values[0]);
-  EXPECT_EQ(ASCIIToUTF16("Jay"), values[1]);
-  EXPECT_EQ(ASCIIToUTF16("Jason"), values[2]);
-  ASSERT_EQ(3U, labels.size());
-  EXPECT_EQ(string16(), labels[0]);
-  EXPECT_EQ(string16(), labels[1]);
-  EXPECT_EQ(string16(), labels[2]);
-  ASSERT_EQ(3U, icons.size());
-  EXPECT_EQ(string16(), icons[0]);
-  EXPECT_EQ(string16(), icons[1]);
-  EXPECT_EQ(string16(), icons[2]);
-
-  // Clear the test credit cards and try again -- we shouldn't return a warning.
-  test_personal_data_->ClearCreditCards();
-  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_FALSE(
+      autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 }
 
 // Test that we return profile and credit card suggestions for combined forms.
@@ -739,12 +564,11 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestions) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "First Name", "firstname", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right address suggestions to the renderer.
   int page_id = 0;
@@ -769,12 +593,11 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestions) {
   process()->sink().ClearMessages();
   autofill_test::CreateTestFormField(
       "Card Number", "cardnumber", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the credit card suggestions to the renderer.
   page_id = 0;
@@ -793,9 +616,7 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestions) {
 }
 
 // Test that for non-https forms with both address and credit card fields, we
-// only return address suggestions. Instead of credit card suggestions, we
-// should return a warning explaining that credit card profile suggestions are
-// unavailable when the form is not https.
+// only return address suggestions.
 TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   FormData form;
   CreateTestAddressFormData(&form);
@@ -813,12 +634,11 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "First Name", "firstname", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right address suggestions to the renderer.
   int page_id = 0;
@@ -840,31 +660,10 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
 
-  process()->sink().ClearMessages();
   autofill_test::CreateTestFormField(
       "Card Number", "cardnumber", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
-
-  // No suggestions provided, so send an empty vector as the results.
-  // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
-
-  // Test that we sent the right message to the renderer.
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
-  EXPECT_EQ(kPageID, page_id);
-  ASSERT_EQ(1U, values.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-            values[0]);
-  ASSERT_EQ(1U, labels.size());
-  EXPECT_EQ(string16(), labels[0]);
-  ASSERT_EQ(1U, icons.size());
-  EXPECT_EQ(string16(), icons[0]);
-
-  // Clear the test credit cards and try again -- we shouldn't return a warning.
-  test_personal_data_->ClearCreditCards();
-  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_FALSE(
+      autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 }
 
 // Test that we correctly combine autofill and autocomplete suggestions.
@@ -884,15 +683,14 @@ TEST_F(AutoFillManagerTest, GetCombinedAutoFillAndAutocompleteSuggestions) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "First Name", "firstname", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(false, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Add some Autocomplete suggestions.
   // This triggers the combined message send.
   std::vector<string16> suggestions;
   suggestions.push_back(ASCIIToUTF16("Jay"));
   suggestions.push_back(ASCIIToUTF16("Jason"));
-  rvh()->AutocompleteSuggestionsReturned(suggestions);
+  rvh()->AutocompleteSuggestionsReturned(kPageID, suggestions);
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -937,12 +735,11 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsFieldIsAutoFilled) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "First Name", "firstname", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(true, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, true, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -981,15 +778,14 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "Some Field", "somefield", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(true, field));
+  EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(kPageID, true, field));
 
   // Add some Autocomplete suggestions.
   // This triggers the combined message send.
   std::vector<string16> suggestions;
   suggestions.push_back(ASCIIToUTF16("one"));
   suggestions.push_back(ASCIIToUTF16("two"));
-  rvh()->AutocompleteSuggestionsReturned(suggestions);
+  rvh()->AutocompleteSuggestionsReturned(kPageID, suggestions);
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -1034,12 +830,11 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
       "First Name", "firstname", "", "text", &field);
-  rvh()->ResetAutoFillState(kPageID);
-  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(true, field));
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, true, field));
 
   // No suggestions provided, so send an empty vector as the results.
   // This triggers the combined message send.
-  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;

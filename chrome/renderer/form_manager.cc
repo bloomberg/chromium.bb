@@ -489,14 +489,14 @@ void FormManager::ExtractForms(const WebFrame* frame) {
   frame->forms(web_forms);
 
   for (size_t i = 0; i < web_forms.size(); ++i) {
-    FormElement* form_element = new FormElement;
-    form_element->form_element = web_forms[i];
+    FormElement* form_elements = new FormElement;
+    form_elements->form_element = web_forms[i];
 
     WebVector<WebFormControlElement> control_elements;
-    form_element->form_element.getFormControlElements(control_elements);
+    form_elements->form_element.getFormControlElements(control_elements);
     for (size_t j = 0; j < control_elements.size(); ++j) {
       WebFormControlElement element = control_elements[j];
-      form_element->control_elements.push_back(element);
+      form_elements->control_elements.push_back(element);
 
       // Save original values of "select-one" inputs so we can restore them
       // when |ClearFormWithNode()| is invoked.
@@ -504,13 +504,13 @@ void FormManager::ExtractForms(const WebFrame* frame) {
         WebFormControlElement& e = const_cast<WebFormControlElement&>(element);
         WebSelectElement select_element = e.to<WebSelectElement>();
         string16 value = select_element.value();
-        form_element->control_values.push_back(value);
+        form_elements->control_values.push_back(value);
       } else {
-        form_element->control_values.push_back(string16());
+        form_elements->control_values.push_back(string16());
       }
     }
 
-    form_elements_.push_back(form_element);
+    form_elements_.push_back(form_elements);
   }
 }
 

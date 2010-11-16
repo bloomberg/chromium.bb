@@ -54,12 +54,10 @@ AutoFillHelper::AutoFillHelper(RenderView* render_view)
       suggestions_options_index_(-1) {
 }
 
-void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node,
-                                              bool autofill_disabled) {
+void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node) {
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
   autofill_query_node_ = node;
-  autofill_disabled_ = autofill_disabled;
 
   const WebFormControlElement& element = node.toConst<WebFormControlElement>();
   webkit_glue::FormField field;
@@ -110,22 +108,6 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
   std::vector<int> ids(unique_ids);
   int separator_index = -1;
 
-  if (autofill_disabled_) {
-    // If autofill is disabled and we had suggestions, show a warning instead.
-    v.assign(1,
-             l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
-    l.assign(1, string16());
-    i.assign(1, string16());
-    ids.assign(1, -1);
-  } else if (ids[0] < 0 && ids.size() > 1) {
-    // If we received a warning instead of suggestions from autofill but regular
-    // suggestions from autocomplete, don't show the autofill warning.
-    v.erase(v.begin());
-    l.erase(l.begin());
-    i.erase(i.begin());
-    ids.erase(ids.begin());
-  }
-
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
   if (form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
@@ -134,14 +116,14 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
     i.push_back(string16());
     ids.push_back(0);
     suggestions_clear_index_ = v.size() - 1;
-    separator_index = v.size() - 1;
+    separator_index = values.size();
   }
 
   // Only include "AutoFill Options" special menu item if we have AutoFill
   // items, identified by |unique_ids| having at least one valid value.
   bool show_options = false;
   for (size_t i = 0; i < ids.size(); ++i) {
-    if (ids[i] > 0) {
+    if (ids[i] != 0) {
       show_options = true;
       break;
     }
@@ -244,29 +226,33 @@ void AutoFillHelper::FrameDetached(WebFrame* frame) {
 }
 
 void AutoFillHelper::TextDidChangeInTextField(const WebInputElement& element) {
-  ShowSuggestions(element, false, true, false);
+  ShowSuggestions(element, false, true);
 }
 
 bool AutoFillHelper::InputElementClicked(const WebInputElement& element,
                                          bool was_focused,
                                          bool is_focused) {
   if (was_focused)
-    ShowSuggestions(element, true, false, true);
+    ShowSuggestions(element, true, false);
   return false;
 }
 
-void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
-                                     bool autofill_on_empty_values,
-                                     bool requires_caret_at_end,
-                                     bool display_warning_if_disabled) {
-  bool autofill_disabled = !element.isEnabledFormControl() ||
-      !element.isText() || element.isPasswordField() ||
-      !element.autoComplete() || element.isReadOnly();
-  if (autofill_disabled && !display_warning_if_disabled)
-    return;
 
-  // If the field has no name, then we won't have values.
-  if (element.nameForAutofill().isEmpty())
+void AutoFillHelper::ShowSuggestions(
+    const WebInputElement& const_element,
+    bool autofill_on_empty_values,
+    bool requires_caret_at_end) {
+  // We need to call non-const methods.
+  WebInputElement element(const_element);
+  if (!element.isEnabledFormControl() ||
+      !element.isText() ||
+      element.isPasswordField() ||
+      !element.autoComplete() || element.isReadOnly()) {
+    return;
+  }
+
+  WebString name = element.nameForAutofill();
+  if (name.isEmpty())  // If the field has no name, then we won't have values.
     return;
 
   // Don't attempt to autofill with values that are too large.
@@ -279,10 +265,11 @@ void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
 
   if (requires_caret_at_end &&
       (element.selectionStart() != element.selectionEnd() ||
-       element.selectionEnd() != static_cast<int>(value.length())))
+       element.selectionEnd() != static_cast<int>(value.length()))) {
     return;
+  }
 
-  QueryAutoFillSuggestions(element, autofill_disabled);
+  QueryAutoFillSuggestions(element);
 }
 
 void AutoFillHelper::QueryAutoFillFormData(const WebNode& node,

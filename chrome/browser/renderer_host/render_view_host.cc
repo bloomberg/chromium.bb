@@ -1690,27 +1690,33 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
 }
 
 void RenderViewHost::OnQueryFormFieldAutoFill(
-    int query_id, bool field_autofilled, const webkit_glue::FormField& field) {
-  ResetAutoFillState(query_id);
-
-  // We first query the autofill delegate for suggestions. We keep track of the
-  // results it gives us, which we will later combine with the autocomplete
-  // suggestions.
+    int query_id, bool form_autofilled, const webkit_glue::FormField& field) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
-  if (autofill_delegate) {
-    autofill_delegate->GetAutoFillSuggestions(field_autofilled, field);
+  // We first save the AutoFill delegate's suggestions. Then we fetch the
+  // Autocomplete delegate's suggestions and send the combined results back to
+  // the render view.
+  if (autofill_delegate &&
+      autofill_delegate->GetAutoFillSuggestions(query_id,
+                                                form_autofilled,
+                                                field)) {
+  } else {
+    // No suggestions provided, so supply an empty vector as the results.
+    AutoFillSuggestionsReturned(query_id,
+                                std::vector<string16>(),
+                                std::vector<string16>(),
+                                std::vector<string16>(),
+                                std::vector<int>());
   }
 
-  // Now query the Autocomplete delegate for suggestions. These will be combined
-  // with the saved autofill suggestions in |AutocompleteSuggestionsReturned()|.
   RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
       delegate_->GetAutocompleteDelegate();
-  if (autocomplete_delegate) {
-      autocomplete_delegate->GetAutocompleteSuggestions(field.name(),
-                                                        field.value());
+  if (autocomplete_delegate &&
+      autocomplete_delegate->GetAutocompleteSuggestions(
+          query_id, field.name(), field.value())) {
   } else {
-    AutocompleteSuggestionsReturned(std::vector<string16>());
+    // No suggestions provided, so send an empty vector as the results.
+    AutocompleteSuggestionsReturned(query_id, std::vector<string16>());
   }
 }
 
@@ -1764,33 +1770,24 @@ void RenderViewHost::OnDidFillAutoFillFormData() {
       NotificationService::NoDetails());
 }
 
-void RenderViewHost::ResetAutoFillState(int query_id) {
-  autofill_query_id_ = query_id;
-
-  autofill_values_.clear();
-  autofill_labels_.clear();
-  autofill_icons_.clear();
-  autofill_unique_ids_.clear();
-}
-
 void RenderViewHost::AutoFillSuggestionsReturned(
-    const std::vector<string16>& values,
+    int query_id,
+    const std::vector<string16>& names,
     const std::vector<string16>& labels,
     const std::vector<string16>& icons,
     const std::vector<int>& unique_ids) {
-  autofill_values_.assign(values.begin(), values.end());
+  autofill_values_.assign(names.begin(), names.end());
   autofill_labels_.assign(labels.begin(), labels.end());
   autofill_icons_.assign(icons.begin(), icons.end());
   autofill_unique_ids_.assign(unique_ids.begin(), unique_ids.end());
 }
 
 void RenderViewHost::AutocompleteSuggestionsReturned(
-    const std::vector<string16>& suggestions) {
+    int query_id, const std::vector<string16>& suggestions) {
   // Combine AutoFill and Autocomplete values into values and labels.
   for (size_t i = 0; i < suggestions.size(); ++i) {
     bool unique = true;
     for (size_t j = 0; j < autofill_values_.size(); ++j) {
-      // TODO(isherman): Why just when the label is empty?
       // If the AutoFill label is empty, we need to make sure we don't add a
       // duplicate value.
       if (autofill_labels_[j].empty() &&
@@ -1809,7 +1806,7 @@ void RenderViewHost::AutocompleteSuggestionsReturned(
   }
 
   Send(new ViewMsg_AutoFillSuggestionsReturned(routing_id(),
-                                               autofill_query_id_,
+                                               query_id,
                                                autofill_values_,
                                                autofill_labels_,
                                                autofill_icons_,

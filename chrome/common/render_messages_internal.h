@@ -2083,7 +2083,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Queries the browser for AutoFill suggestions for a form input field.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_QueryFormFieldAutoFill,
                       int /* id of this message */,
-                      bool /* field autofilled */,
+                      bool /* form_autofilled */,
                       webkit_glue::FormField /* the form field */)
 
   // Sent when the popup with AutoFill suggestions for a form is shown.

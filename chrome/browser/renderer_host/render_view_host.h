@@ -411,18 +411,18 @@ class RenderViewHost : public RenderWidgetHost {
   // set to false when creating a renderer-initiated window via window.open.
   void AllowScriptToClose(bool visible);
 
-  // Resets the stored AutoFill state.
-  void ResetAutoFillState(int query_id);
-
   // Called by the AutoFillManager when the list of suggestions is ready.
-  void AutoFillSuggestionsReturned(const std::vector<string16>& values,
-                                   const std::vector<string16>& labels,
-                                   const std::vector<string16>& icons,
-                                   const std::vector<int>& unique_ids);
+  void AutoFillSuggestionsReturned(
+      int query_id,
+      const std::vector<string16>& values,
+      const std::vector<string16>& labels,
+      const std::vector<string16>& icons,
+      const std::vector<int>& unique_ids);
 
   // Called by the AutocompleteHistoryManager when the list of suggestions is
   // ready.
   void AutocompleteSuggestionsReturned(
+      int query_id,
       const std::vector<string16>& suggestions);
 
   // Called by the AutoFillManager when the FormData has been filled out.
@@ -802,14 +802,12 @@ class RenderViewHost : public RenderWidgetHost {
   // what process type we use.
   bool is_extension_process_;
 
-  // TODO(isherman): Consider splitting these off into a helper class.
   // AutoFill and Autocomplete suggestions.  We accumulate these separately and
   // send them back to the renderer together.
   std::vector<string16> autofill_values_;
   std::vector<string16> autofill_labels_;
   std::vector<string16> autofill_icons_;
   std::vector<int> autofill_unique_ids_;
-  int autofill_query_id_;
 
   // Whether the accessibility tree should be saved, for unit testing.
   bool save_accessibility_tree_for_testing_;

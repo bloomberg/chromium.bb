@@ -28,7 +28,8 @@ class AutocompleteHistoryManager
 
   // RenderViewHostDelegate::Autocomplete implementation.
   virtual void FormSubmitted(const webkit_glue::FormData& form);
-  virtual void GetAutocompleteSuggestions(const string16& name,
+  virtual bool GetAutocompleteSuggestions(int query_id,
+                                          const string16& name,
                                           const string16& prefix);
   virtual void RemoveAutocompleteEntry(const string16& name,
                                        const string16& value);
@@ -58,6 +59,7 @@ class AutocompleteHistoryManager
   // is queried on another thread, we record the query handle until we
   // get called back.
   WebDataService::Handle pending_query_handle_;
+  int query_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteHistoryManager);
 };
