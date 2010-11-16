@@ -541,7 +541,7 @@ void BackgroundModeManager::RemoveStatusTrayIcon() {
 }
 
 void BackgroundModeManager::ExecuteApplication(int item) {
-  DCHECK(item > 0 && item < static_cast<int>(applications_.size()));
+  DCHECK(item >= 0 && item < static_cast<int>(applications_.size()));
   Browser* browser = BrowserList::GetLastActive();
   if (!browser) {
     Browser::OpenEmptyWindow(profile_);
