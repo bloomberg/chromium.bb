@@ -44,7 +44,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource_id) {
 }
 
 PP_Bool SetProperty(PP_Resource request_id,
-                    PP_URLRequestProperty_Dev property,
+                    PP_URLRequestProperty property,
                     struct PP_Var value) {
   DebugPrintf("URLRequestInfo::SetProperty: request_id=%"NACL_PRId64
               " property=%d value.type=%d\n", request_id, property, value.type);
@@ -125,8 +125,8 @@ PP_Bool AppendFileToBody(PP_Resource request_id,
 }  // namespace
 
 
-const PPB_URLRequestInfo_Dev* URLRequestInfo::GetInterface() {
-  static const PPB_URLRequestInfo_Dev url_request_info_interface = {
+const PPB_URLRequestInfo* URLRequestInfo::GetInterface() {
+  static const PPB_URLRequestInfo url_request_info_interface = {
     Create,
     IsURLRequestInfo,
     SetProperty,

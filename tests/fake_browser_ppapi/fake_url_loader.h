@@ -11,7 +11,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/tests/fake_browser_ppapi/fake_resource.h"
-#include "ppapi/c/dev/ppb_url_loader_dev.h"
+#include "ppapi/c/ppb_url_loader.h"
 
 namespace fake_browser_ppapi {
 
@@ -19,7 +19,7 @@ namespace fake_browser_ppapi {
 extern std::string g_nacl_ppapi_url_path;
 extern std::string g_nacl_ppapi_local_path;
 
-// Implements the PPB_URLLoader_Dev interface.
+// Implements the PPB_URLLoader interface.
 class URLLoader : public Resource {
  public:
   explicit URLLoader(PP_Instance instance_id)
@@ -33,7 +33,7 @@ class URLLoader : public Resource {
   void set_response(URLResponseInfo* response) { response_ = response; }
 
   // Return an interface pointer usable by PPAPI.
-  static const PPB_URLLoader_Dev* GetInterface();
+  static const PPB_URLLoader* GetInterface();
 
  private:
   PP_Instance instance_id_;
