@@ -16,6 +16,10 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 
+// {93BCE0BF-3FAF-43b1-9E28-BEB6FAB5ECE7}
+static const GUID kSetupTraceProvider = { 0x93bce0bf, 0x3faf, 0x43b1,
+    { 0x9e, 0x28, 0xbe, 0xb6, 0xfa, 0xb5, 0xec, 0xe7 } };
+
 namespace installer {
 
 // This should be true for the period between the end of
@@ -44,6 +48,9 @@ void InitInstallerLogging(const installer_util::MasterPreferences& prefs) {
   } else {
     logging::SetMinLogLevel(logging::LOG_ERROR);
   }
+
+  // Enable ETW logging.
+  logging::LogEventProvider::Initialize(kSetupTraceProvider);
 
   installer_logging_ = true;
 }
