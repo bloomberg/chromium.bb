@@ -19,7 +19,6 @@ mkvparser::IMkvReader::~IMkvReader()
 {
 }
 
-
 void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision)
 {
     major = 1;
@@ -27,7 +26,6 @@ void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision)
     build = 0;
     revision = 7;
 }
-
 
 long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
 {
@@ -235,6 +233,7 @@ long long mkvparser::UnserializeUInt(
 
         if (hr < 0)
             return hr;
+
         result <<= 8;
         result |= b;
 
@@ -366,7 +365,6 @@ bool mkvparser::Match(
     long long& pos,
     unsigned long id_,
     long long& val)
-
 {
     assert(pReader);
     assert(pos >= 0);
@@ -2984,13 +2982,12 @@ Track::~Track()
 Track::Info::Info():
     type(-1),
     number(-1),
-    uid(-1),
+    uid(ULLONG_MAX),
     nameAsUTF8(NULL),
     codecId(NULL),
     codecPrivate(NULL),
     codecPrivateSize(0),
     codecNameAsUTF8(NULL)
-    //lacing(false)
 {
 }
 
@@ -3025,6 +3022,11 @@ long long Track::GetType() const
 long long Track::GetNumber() const
 {
     return m_info.number;
+}
+
+unsigned long long Track::GetUid() const
+{
+    return m_info.uid;
 }
 
 const char* Track::GetNameAsUTF8() const
@@ -3530,8 +3532,8 @@ void Tracks::ParseTrackEntry(
 #endif
         if (Match(pReader, pos, 0x57, i.number))
             assert(i.number > 0);
-        else if (Match(pReader, pos, 0x33C5, i.uid))
-            ;
+        //else if (Match(pReader, pos, 0x33C5, i.uid))
+        //    ;
         else if (Match(pReader, pos, 0x03, i.type))
             ;
         else if (Match(pReader, pos, 0x136E, i.nameAsUTF8))
@@ -3551,6 +3553,9 @@ void Tracks::ParseTrackEntry(
         else
         {
             long len;
+
+            const long long idpos = pos;
+            idpos;
 
             const long long id = ReadUInt(pReader, pos, len);
             assert(id >= 0);  //TODO: handle error case
@@ -3577,6 +3582,27 @@ void Tracks::ParseTrackEntry(
             {
                 audioSettings.start = start;
                 audioSettings.size = size;
+            }
+            else if (id == 0x33C5)  //Track UID
+            {
+                assert(size <= 8);
+
+                i.uid = 0;
+                long long pos_ = start;
+                const long long pos_end = start + size;
+
+                while (pos_ != pos_end)
+                {
+                    unsigned char b;
+
+                    const long status = pReader->Read(pos_, 1, &b);
+                    assert(status == 0);
+
+                    i.uid <<= 8;
+                    i.uid |= b;
+
+                    ++pos_;
+                }
             }
         }
     }

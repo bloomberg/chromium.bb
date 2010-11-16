@@ -148,14 +148,14 @@ int main(int argc, char* argv[])
         if (pTrack == NULL)
             continue;
 
-        const long long trackType_ = pTrack->GetType();
-        unsigned long trackType = static_cast<unsigned long>(trackType_);
-
-        unsigned long trackNumber = pTrack->GetNumber();
+        const long long trackType = pTrack->GetType();
+        const long long trackNumber = pTrack->GetNumber();
+        const unsigned long long trackUid = pTrack->GetUid();
         const wchar_t* const pTrackName = utf8towcs(pTrack->GetNameAsUTF8());
 
         printf("\t\tTrack Type\t\t: %ld\n", trackType);
         printf("\t\tTrack Number\t\t: %ld\n", trackNumber);
+        printf("\t\tTrack Uid\t\t: %lld\n", trackUid);
 
         if (pTrackName == NULL)
             printf("\t\tTrack Name\t\t: NULL\n");
@@ -235,8 +235,9 @@ int main(int argc, char* argv[])
         while ((pBlockEntry != NULL) && !pBlockEntry->EOS())
         {
             const Block* const pBlock  = pBlockEntry->GetBlock();
-            const unsigned long trackNum = pBlock->GetTrackNumber();
-            const Track* const pTrack = pTracks->GetTrackByNumber(trackNum);
+            const long long trackNum = pBlock->GetTrackNumber();
+            const unsigned long tn = static_cast<unsigned long>(trackNum);
+            const Track* const pTrack = pTracks->GetTrackByNumber(tn);
             const long long trackType = pTrack->GetType();
             const int frameCount = pBlock->GetFrameCount();
             const long long time_ns = pBlock->GetTime(pCluster);
@@ -250,7 +251,7 @@ int main(int argc, char* argv[])
             {
                 const Block::Frame& theFrame = pBlock->GetFrame(i);
                 const long size = theFrame.len;
-                const long offset = theFrame.pos;
+                const long long offset = theFrame.pos;
                 printf("\t\t\t %15ld,%15lx\n", size, offset);
             }
 

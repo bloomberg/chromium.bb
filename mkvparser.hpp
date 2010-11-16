@@ -37,7 +37,7 @@ short Unserialize2SInt(IMkvReader*, long long);
 signed char Unserialize1SInt(IMkvReader*, long long);
 bool Match(IMkvReader*, long long&, unsigned long, long long&);
 bool Match(IMkvReader*, long long&, unsigned long, char*&);
-bool Match(IMkvReader*, long long&, unsigned long,unsigned char*&, size_t&);
+bool Match(IMkvReader*, long long&, unsigned long, unsigned char*&, size_t&);
 bool Match(IMkvReader*, long long&, unsigned long, double&);
 bool Match(IMkvReader*, long long&, unsigned long, short&);
 
@@ -209,6 +209,7 @@ public:
 
     long long GetType() const;
     long long GetNumber() const;
+    unsigned long long GetUid() const;
     const char* GetNameAsUTF8() const;
     const char* GetCodecNameAsUTF8() const;
     const char* GetCodecId() const;
@@ -227,7 +228,7 @@ public:
     {
         long long type;
         long long number;
-        long long uid;
+        unsigned long long uid;
         char* nameAsUTF8;
         char* codecId;
         unsigned char* codecPrivate;
