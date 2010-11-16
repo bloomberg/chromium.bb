@@ -15,6 +15,7 @@
         'sources': [
           'imc_buffer.c',
           'invoke.c',
+          'module_init_fini.c',
           'nacl_srpc.c',
           'nacl_srpc.h',
           'nacl_srpc_internal.h',

@@ -1,0 +1,19 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+######################################################################
+# Simple RPC message fragmentation tests
+######################################################################
+srpc_message_nexe = env.ComponentProgram('srpc_message.nexe', 'srpc_message.c',
+                                         EXTRA_LIBS=['srpc', 'm', 'pthread'])
+
+node = env.CommandSelLdrTestNacl(
+    'srpc_message_test.out',
+    loader='sel_ldr',
+    command=[srpc_message_nexe],
+    exit_status='0'
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_message_test')

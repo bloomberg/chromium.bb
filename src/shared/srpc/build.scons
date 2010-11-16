@@ -12,6 +12,7 @@ trusted_untrusted_shared = [
     'invoke.c',
     'module_init_fini.c',
     'nacl_srpc.c',
+    'nacl_srpc_message.c',
     'rpc_serialize.c',
     'rpc_service.c',
     'rpc_server_loop.c',

@@ -99,6 +99,12 @@ extern int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer,
 extern NaClSrpcImcDescType __NaClSrpcImcReadDesc(NaClSrpcImcBuffer* buffer);
 extern int __NaClSrpcImcWriteDesc(NaClSrpcImcDescType desc,
                                   NaClSrpcImcBuffer* buffer);
+/*
+ * Maximum sendmsg buffer size.
+ */
+extern nacl_abi_size_t kNaClSrpcMaxImcSendmsgSize;
+
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_SHARED_SRPC_NACL_SRPC_INTERNAL_H_ */

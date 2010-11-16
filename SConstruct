@@ -1608,6 +1608,7 @@ nacl_env.Append(
     'tests/signal_handler/nacl.scons',
     'tests/srpc/nacl.scons',
     'tests/srpc_hw/nacl.scons',
+    'tests/srpc_message/nacl.scons',
     'tests/srpc_without_pthread/nacl.scons',
     'tests/stack_alignment/nacl.scons',
     'tests/stubout_mode/nacl.scons',
