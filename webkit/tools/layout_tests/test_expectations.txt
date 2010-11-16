@@ -5,7 +5,4 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-BUG62760 WIN : inspector/styles-source-lines-inline.html = TIMEOUT PASS
-
-BUG63225 WIN : fast/forms/submit-form-attributes.html = CRASH
-BUG63225 MAC : fast/forms/submit-form-attributes.html = CRASH
+BUGWK45209 WIN : inspector/styles-source-lines-inline.html = TIMEOUT PASS
