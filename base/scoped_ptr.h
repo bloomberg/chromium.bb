@@ -42,8 +42,8 @@
 // scoped_array, scoped_ptr_malloc.
 
 #include <assert.h>
+#include <stddef.h>
 #include <stdlib.h>
-#include <cstddef>
 
 #include "base/compiler_specific.h"
 
@@ -193,7 +193,7 @@ class scoped_array {
 
   // Get one element of the current object.
   // Will assert() if there is no current object, or index i is negative.
-  C& operator[](std::ptrdiff_t i) const {
+  C& operator[](ptrdiff_t i) const {
     assert(i >= 0);
     assert(array_ != NULL);
     return array_[i];
