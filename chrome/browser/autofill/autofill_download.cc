@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/autofill_download.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -235,7 +236,7 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
     }
 
     LOG(WARNING) << "AutoFillDownloadManager: " << type_of_request
-                 << " request has failed with response" << response_code;
+                 << " request has failed with response " << response_code;
     if (observer_) {
       observer_->OnHeuristicsRequestError(it->second.form_signatures[0],
                                           it->second.request_type,
@@ -266,4 +267,3 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
   delete it->first;
   url_fetchers_.erase(it);
 }
-
