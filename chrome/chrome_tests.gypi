@@ -1570,6 +1570,7 @@
         'common/json_schema_validator_unittest.cc',
         'common/json_value_serializer_unittest.cc',
         'common/mru_cache_unittest.cc',
+        'common/multi_process_lock_unittest.cc',
         'common/net/gaia/gaia_auth_fetcher_unittest.cc',
         'common/net/gaia/gaia_auth_fetcher_unittest.h',
         'common/net/gaia/gaia_authenticator_unittest.cc',
