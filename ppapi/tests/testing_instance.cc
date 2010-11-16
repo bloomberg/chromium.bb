@@ -18,11 +18,21 @@ TestCaseFactory* TestCaseFactory::head_ = NULL;
 TestingInstance::TestingInstance(PP_Instance instance)
     : pp::Instance(instance),
       current_case_(NULL),
-      executed_tests_(false) {
+      executed_tests_(false),
+      nacl_mode_(false) {
   callback_factory_.Initialize(this);
 }
 
-bool TestingInstance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
+bool TestingInstance::Init(uint32_t argc,
+                           const char* argn[],
+                           const char* argv[]) {
+  for (uint32_t i = 0; i < argc; i++) {
+    if (strcmp(argn[i], "mode") == 0) {
+      if (strcmp(argv[i], "nacl") == 0)
+        nacl_mode_ = true;
+      break;
+    }
+  }
   // Create the proper test case from the argument.
   for (uint32_t i = 0; i < argc; i++) {
     if (strcmp(argn[i], "testcase") == 0) {
@@ -128,8 +138,10 @@ void TestingInstance::LogAvailableTests() {
   std::string html;
   html.append("Available test cases: <dl>");
   for (size_t i = 0; i < test_cases.size(); ++i) {
-    html.append("<dd><a href='?");
+    html.append("<dd><a href='?testcase=");
     html.append(test_cases[i]);
+    if (nacl_mode_)
+       html.append("&mode=nacl");
     html.append("'>");
     html.append(test_cases[i]);
     html.append("</a></dd>");

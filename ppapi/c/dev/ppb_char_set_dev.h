@@ -29,7 +29,7 @@ enum PP_CharSet_ConversionError {
   // it will use the unicode "substitution character" U+FFFD. When converting
   // to another character set, the character will be charset-specific. For
   // many languages this will be the representation of the '?' character.
-  PP_CHARSET_CONVERSIONERROR_SUBSTITUTE,
+  PP_CHARSET_CONVERSIONERROR_SUBSTITUTE
 };
 
 struct PPB_CharSet_Dev {

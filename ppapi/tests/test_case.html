@@ -48,21 +48,44 @@ function RunAll() {
   LoadNext(0);
 }
 
-onload = function() {
-  var mimeType = "application/x-ppapi-tests";
-  if (mimeType in navigator.mimeTypes) {
-    var testcase = location.search.substring(1);
-    document.title = 'Test ' + testcase;
+function ExtractSearchParameter(name) {
+  var nameIndex = location.search.indexOf(name + "=");
+  if (nameIndex != -1) {
+    var value = location.search.substring(nameIndex + name.length + 1);
+    var endIndex = value.indexOf("&");
+    if (endIndex != -1)
+      value = value.substring(0, endIndex);
+    return value;
+  }
+  return "";
+}
 
-    var obj = document.createElement("OBJECT");
+onload = function() {
+  var testcase = ExtractSearchParameter("testcase");
+  var mode = ExtractSearchParameter("mode");
+  document.title = 'Test ' + testcase;
+  var obj;
+  if (mode == "nacl") {
+    var nexes = "ARM: ppapi_tests_arm.nexe \nx86-32: ppapi_tests.nexe \nx86-64: ppapi_tests_x86_64.";
+    obj = document.createElement("OBJECT");
+    obj.setAttribute("type", "application/x-ppapi-nacl-srpc");
+    obj.setAttribute("nexes", nexes);
+    obj.setAttribute("mode", mode);
+  } else {
+    var mimeType = "application/x-ppapi-tests";
+    if (mimeType in navigator.mimeTypes) {
+      obj = document.createElement("OBJECT");
+      obj.setAttribute("type", mimeType);
+    } else {
+      document.getElementById("console").innerHTML =
+          '<span class="fail">FAIL</span>: ' +
+          '<span class="err_msg">Test plug-in is not registered.</span>';
+    }
+  }
+  if (obj) {
     obj.setAttribute("id", "plugin");
-    obj.setAttribute("type", mimeType);
     obj.setAttribute("testcase", testcase);
     document.getElementById("container").appendChild(obj);
-  } else {
-    document.getElementById("console").innerHTML =
-        '<span class="fail">FAIL</span>: ' +
-        '<span class="err_msg">Test plug-in is not registered.</span>';
   }
 }
 </script>

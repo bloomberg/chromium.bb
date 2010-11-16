@@ -1,0 +1,21 @@
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+ppapi_tests_nexe = env.ComponentProgram('ppapi_tests.nexe',
+                                        Glob('*.cc'),
+                                        EXTRA_LIBS=['ppruntime',
+                                                    'ppapi_cpp',
+                                                    'pthread',
+                                                    'srpc'])
+# Note that the html is required to run this program.
+# To run, load page with mode=nacl search string:
+# http://localhost:5103/scons-out/nacl-x86-32/staging/test_case.html?mode=nacl
+env.Publish('ppapi_tests.nexe', 'run',
+            ['test_case.html',
+             'test_image_data',
+             'test_page.css',
+	     'test_url_loader_data'])
+

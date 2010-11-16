@@ -70,6 +70,9 @@ class TestingInstance : public pp::Instance {
 
   // Collects all errors to send the the browser. Empty indicates no error yet.
   std::string errors_;
+
+  // True if running in Native Client.
+  bool nacl_mode_;
 };
 
 #endif  // PPAPI_TEST_TESTING_INSTANCE_H_
