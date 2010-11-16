@@ -17,7 +17,7 @@
 #include "base/time.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/browser.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "chrome/test/automation/browser_proxy.h"

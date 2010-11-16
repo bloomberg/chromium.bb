@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/browser.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 

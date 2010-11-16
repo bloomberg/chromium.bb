@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chrome/browser/browser.h"
+#include "chrome/browser/ui/browser.h"
 
 // Stores a list of all Browser objects.
 class BrowserList {

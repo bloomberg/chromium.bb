@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/automation/ui_controls.h"
+#include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "views/focus/focus_manager.h"
 

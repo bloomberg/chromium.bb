@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "base/time.h"
-#include "chrome/browser/browser.h"  // TODO(beng): this dependency is awful.
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
+#include "chrome/browser/ui/browser.h"  // TODO(beng): this dependency is awful.
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_drag_win.h"

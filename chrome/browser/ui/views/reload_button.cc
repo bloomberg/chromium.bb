@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"

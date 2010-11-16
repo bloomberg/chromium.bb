@@ -7,9 +7,9 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser.h"
 
 // Used to pad the default new window size.  On Windows, this is also used for
 // positioning new windows (each window is offset from the previous one).

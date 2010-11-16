@@ -4,8 +4,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/serialized_script_value.h"
@@ -13,9 +13,9 @@
 #include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/web_io_operators.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 
 using WebKit::WebSerializedScriptValue;
 

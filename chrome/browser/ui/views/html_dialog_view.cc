@@ -5,8 +5,8 @@
 #include "chrome/browser/views/html_dialog_view.h"
 
 #include "app/keyboard_codes.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/window.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "views/widget/root_view.h"

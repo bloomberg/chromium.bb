@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_action.h"

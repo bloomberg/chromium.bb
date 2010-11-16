@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"

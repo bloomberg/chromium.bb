@@ -5,12 +5,12 @@
 #include "chrome/browser/views/instant_confirm_view.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

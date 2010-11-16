@@ -4,8 +4,8 @@
 
 #include "base/metrics/nacl_histogram.h"
 #include "chrome/browser/tabs/default_tab_handler.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultTabHandler, public:

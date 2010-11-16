@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
-#include "chrome/browser/browser.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
