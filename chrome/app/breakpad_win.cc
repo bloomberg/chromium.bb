@@ -97,10 +97,16 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
   std::wstring version, product;
   if (version_info.get()) {
     // Get the information from the file.
-    product = version_info->product_short_name();
     version = version_info->product_version();
     if (!version_info->is_official_build())
       version.append(L"-devel");
+
+    const CommandLine& command = *CommandLine::ForCurrentProcess();
+    if (command.HasSwitch(switches::kChromeFrame)) {
+      product = L"ChromeFrame";
+    } else {
+      product = version_info->product_short_name();
+    }
   } else {
     // No version info found. Make up the values.
      product = L"Chrome";
