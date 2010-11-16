@@ -34,7 +34,8 @@ bool LanguagesMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 bool LanguagesMenuModel::GetAcceleratorForCommandId(
-    int command_id, menus::Accelerator* accelerator) {
+    int command_id,
+    menus::Accelerator* accelerator) {
   return false;
 }
 

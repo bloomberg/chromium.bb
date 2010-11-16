@@ -19,7 +19,8 @@
 #include "grit/theme_resources.h"
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
-    TabContents* tab_contents, const Extension* new_theme,
+    TabContents* tab_contents,
+    const Extension* new_theme,
     const std::string& previous_theme_id)
     : ConfirmInfoBarDelegate(tab_contents),
       profile_(tab_contents->profile()),
@@ -51,8 +52,7 @@ string16 ThemeInstalledInfoBarDelegate::GetMessageText() const {
 SkBitmap* ThemeInstalledInfoBarDelegate::GetIcon() const {
   // TODO(aa): Reply with the theme's icon, but this requires reading it
   // asynchronously from disk.
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_INFOBAR_THEME);
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_INFOBAR_THEME);
 }
 
 ThemeInstalledInfoBarDelegate*
@@ -66,15 +66,11 @@ int ThemeInstalledInfoBarDelegate::GetButtons() const {
 
 string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
-  switch (button) {
-    case BUTTON_CANCEL: {
-      return l10n_util::GetStringUTF16(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
-    }
-    default:
-      // The InfoBar will create a default OK button and make it invisible.
-      // TODO(mirandac): remove the default OK button from ConfirmInfoBar.
-      return string16();
-  }
+  // The InfoBar will create a default OK button and make it invisible.
+  // TODO(mirandac): remove the default OK button from ConfirmInfoBar.
+  return (button == BUTTON_CANCEL) ?
+      l10n_util::GetStringUTF16(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON) :
+      string16();
 }
 
 bool ThemeInstalledInfoBarDelegate::Cancel() {
@@ -98,19 +94,12 @@ void ThemeInstalledInfoBarDelegate::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::BROWSER_THEME_CHANGED: {
-      // If the new theme is different from what this info bar is associated
-      // with, close this info bar since it is no longer relevant.
-      const Extension* extension = Details<const Extension>(details).ptr();
-      if (!extension || theme_id_ != extension->id())
-        tab_contents_->RemoveInfoBar(this);
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(NotificationType::BROWSER_THEME_CHANGED, type.value);
+  // If the new theme is different from what this info bar is associated
+  // with, close this info bar since it is no longer relevant.
+  const Extension* extension = Details<const Extension>(details).ptr();
+  if (!extension || theme_id_ != extension->id())
+    tab_contents_->RemoveInfoBar(this);
 }
 
 bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) {
