@@ -34,7 +34,7 @@
   position: relative;
 }
 
-.network-password > input, select {
+.network-password > input, .network-password > select {
   width: 200px;
 }
 
