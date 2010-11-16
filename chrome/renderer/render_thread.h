@@ -306,6 +306,8 @@ class RenderThread : public RenderThreadBase,
 
   void OnGetAccessibilityTree();
 
+  void OnSetSpeechInputEnabled(bool enabled);
+
   // Gather usage statistics from the in-memory cache and inform our host.
   // These functions should be call periodically so that the host can make
   // decisions about how to allocation resources using current information.
@@ -370,6 +372,10 @@ class RenderThread : public RenderThreadBase,
 
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;
+
+  // True if this renderer has speech input enabled, set once during thread
+  // initialization.
+  bool is_speech_input_enabled_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThread> idle_timer_;

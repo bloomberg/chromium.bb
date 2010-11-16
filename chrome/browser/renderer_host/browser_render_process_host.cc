@@ -36,6 +36,7 @@
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
@@ -680,6 +681,24 @@ void BrowserRenderProcessHost::InitExtensions() {
   Send(new ViewMsg_Extension_SetFunctionNames(function_names));
 }
 
+void BrowserRenderProcessHost::InitSpeechInput() {
+  bool enabled = true;
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableSpeechInput)) {
+    enabled = false;
+#if defined(GOOGLE_CHROME_BUILD)
+  } else if (!command_line.HasSwitch(switches::kEnableSpeechInput)) {
+    // Official Chrome builds don't have speech input enabled by default in the
+    // beta and stable channels.
+    std::string channel = platform_util::GetVersionStringModifier();
+    enabled = (!channel.empty() && channel != "beta");
+#endif
+  }
+
+  Send(new ViewMsg_SpeechInput_SetFeatureEnabled(enabled));
+}
+
 void BrowserRenderProcessHost::SendUserScriptsUpdate(
     base::SharedMemory *shared_memory) {
   // Process is being started asynchronously.  We'll end up calling
@@ -1051,6 +1070,7 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
+  InitSpeechInput();
   InitVisitedLinks();
   InitUserScripts();
   InitExtensions();

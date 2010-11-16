@@ -215,9 +215,6 @@ class RenderViewZoomer : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
 
-bool IsSpeechInputEnabled(const CommandLine& command_line) {
-  return !command_line.HasSwitch(switches::kDisableSpeechInput);
-}
 }  // namespace
 
 // When we run plugins in process, we actually run them on the render thread,
@@ -248,6 +245,7 @@ void RenderThread::Init() {
   is_extension_process_ = type_str == switches::kExtensionProcess ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   is_incognito_process_ = false;
+  is_speech_input_enabled_ = false;
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
   plugin_refresh_allowed_ = true;
@@ -626,7 +624,14 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnSpellCheckEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(ViewMsg_GpuChannelEstablished, OnGpuChannelEstablished)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPhishingModel, OnSetPhishingModel)
+    IPC_MESSAGE_HANDLER(ViewMsg_SpeechInput_SetFeatureEnabled,
+                        OnSetSpeechInputEnabled)
   IPC_END_MESSAGE_MAP()
+}
+
+void RenderThread::OnSetSpeechInputEnabled(bool enabled) {
+  DCHECK(!webkit_client_.get());
+  is_speech_input_enabled_ = enabled;
 }
 
 void RenderThread::OnSetNextPageID(int32 next_page_id) {
@@ -925,7 +930,7 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableDeviceOrientation(
       !command_line.HasSwitch(switches::kDisableDeviceOrientation));
 
-  WebRuntimeFeatures::enableSpeechInput(IsSpeechInputEnabled(command_line));
+  WebRuntimeFeatures::enableSpeechInput(is_speech_input_enabled_);
 
   WebRuntimeFeatures::enableFileSystem(
       !command_line.HasSwitch(switches::kDisableFileSystem));
