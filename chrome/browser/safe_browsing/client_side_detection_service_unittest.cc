@@ -145,7 +145,14 @@ TEST_F(ClientSideDetectionServiceTest, TestFetchingModel) {
   EXPECT_EQ(GetModelFile(), base::kInvalidPlatformFileValue);
 }
 
-TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
+#if defined(OS_MACOSX)
+// Sometimes crashes on Mac 10.5 bot: http://crbug.com/63358
+#define MAYBE_SendClientReportPhishingRequest \
+        DISABLED_SendClientReportPhishingRequest
+#else
+#define MAYBE_SendClientReportPhishingRequest SendClientReportPhishingRequest
+#endif
+TEST_F(ClientSideDetectionServiceTest, MAYBE_SendClientReportPhishingRequest) {
   SetModelFetchResponse("bogus model", true /* success */);
   ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
