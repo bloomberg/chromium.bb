@@ -54,8 +54,8 @@ class AccountCreationTabContents : public WizardWebPageViewTabContents,
   virtual void FormsSeen(const std::vector<FormData>& forms) {
   }
 
-  virtual bool GetAutoFillSuggestions(
-      int query_id, bool form_autofilled, const webkit_glue::FormField& field) {
+  virtual bool GetAutoFillSuggestions(bool field_autofilled,
+                                      const webkit_glue::FormField& field) {
     return false;
   }
 

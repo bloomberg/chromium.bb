@@ -61,21 +61,14 @@ class FormStructure {
   // the form name, and the form field names in a 64-bit hash.
   std::string FormSignature() const;
 
-  // Runs a quick heuristic to rule out pages but obviously not auto-fillable,
-  // like google/yahoo/msn search, etc.
-  bool IsAutoFillable() const;
+  // Runs a quick heuristic to rule out forms that are obviously not
+  // auto-fillable, like google/yahoo/msn search, etc. The requirement that the
+  // form's method be POST is only applied if |require_method_post| is true.
+  bool IsAutoFillable(bool require_method_post) const;
 
   // Returns true if at least one of the form fields relevant for AutoFill
   // is not empty.
   bool HasAutoFillableValues() const;
-
-  // Returns true if at least one of the form fields is a billing field, which
-  // includes billing address fields and credit card fields.
-  bool HasBillingFields() const;
-
-  // Returns true if at least one of the form fields is a non-billing field,
-  // which includes billing address fields and credit card fields.
-  bool HasNonBillingFields() const;
 
   // Resets |autofill_count_| and counts the number of auto-fillable fields.
   // This is used when we receive server data for form fields.  At that time,
@@ -84,7 +77,9 @@ class FormStructure {
   void UpdateAutoFillCount();
 
   // Returns true if this form matches the structural requirements for AutoFill.
-  bool ShouldBeParsed() const;
+  // The requirement that the form's method be POST is only applied if
+  // |require_method_post| is true.
+  bool ShouldBeParsed(bool require_method_post) const;
 
   // Sets the possible types for the field at |index|.
   void set_possible_types(int index, const FieldTypeSet& types);

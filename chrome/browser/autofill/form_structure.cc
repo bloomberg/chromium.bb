@@ -107,7 +107,7 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
                                         std::string* encoded_xml) const {
   DCHECK(encoded_xml);
   encoded_xml->clear();
-  bool auto_fillable = IsAutoFillable();
+  bool auto_fillable = IsAutoFillable(false);
   DCHECK(auto_fillable);  // Caller should've checked for search pages.
   if (!auto_fillable)
     return false;
@@ -232,8 +232,6 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
 
     form->UpdateAutoFillCount();
   }
-
-  return;
 }
 
 std::string FormStructure::FormSignature() const {
@@ -247,11 +245,11 @@ std::string FormStructure::FormSignature() const {
   return Hash64Bit(form_string);
 }
 
-bool FormStructure::IsAutoFillable() const {
+bool FormStructure::IsAutoFillable(bool require_method_post) const {
   if (autofill_count() < kRequiredFillableFields)
     return false;
 
-  return ShouldBeParsed();
+  return ShouldBeParsed(require_method_post);
 }
 
 bool FormStructure::HasAutoFillableValues() const {
@@ -268,46 +266,6 @@ bool FormStructure::HasAutoFillableValues() const {
   return false;
 }
 
-// TODO(jhawkins): Cache this result.
-bool FormStructure::HasBillingFields() const {
-  for (std::vector<AutoFillField*>::const_iterator iter = begin();
-       iter != end(); ++iter) {
-    if (!*iter)
-      return false;
-
-    AutoFillField* field = *iter;
-    if (!field)
-      continue;
-
-    AutoFillType type(field->type());
-    if (type.group() == AutoFillType::ADDRESS_BILLING ||
-        type.group() == AutoFillType::CREDIT_CARD)
-      return true;
-  }
-
-  return false;
-}
-
-// TODO(jhawkins): Cache this result.
-bool FormStructure::HasNonBillingFields() const {
-  for (std::vector<AutoFillField*>::const_iterator iter = begin();
-       iter != end(); ++iter) {
-    if (!*iter)
-      return false;
-
-    AutoFillField* field = *iter;
-    if (!field)
-      continue;
-
-    AutoFillType type(field->type());
-    if (type.group() != AutoFillType::ADDRESS_BILLING &&
-        type.group() != AutoFillType::CREDIT_CARD)
-      return true;
-  }
-
-  return false;
-}
-
 void FormStructure::UpdateAutoFillCount() {
   autofill_count_ = 0;
   for (std::vector<AutoFillField*>::const_iterator iter = begin();
@@ -318,7 +276,7 @@ void FormStructure::UpdateAutoFillCount() {
   }
 }
 
-bool FormStructure::ShouldBeParsed() const {
+bool FormStructure::ShouldBeParsed(bool require_method_post) const {
   if (field_count() < kRequiredFillableFields)
     return false;
 
@@ -328,10 +286,7 @@ bool FormStructure::ShouldBeParsed() const {
   if (target_url_.path() == "/search")
     return false;
 
-  if (method_ == GET)
-    return false;
-
-  return true;
+  return !require_method_post || (method_ == POST);
 }
 
 void FormStructure::set_possible_types(int index, const FieldTypeSet& types) {

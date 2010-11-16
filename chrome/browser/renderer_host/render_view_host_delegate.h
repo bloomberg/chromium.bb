@@ -521,10 +521,7 @@ class RenderViewHostDelegate {
     // query. When the database thread is finished, the AutocompleteHistory
     // manager retrieves the calling RenderViewHost and then passes the vector
     // of suggestions to RenderViewHost::AutocompleteSuggestionsReturned.
-    // Returns true to indicate that FormFieldHistorySuggestionsReturned will be
-    // called.
-    virtual bool GetAutocompleteSuggestions(int query_id,
-                                            const string16& field_name,
+    virtual void GetAutocompleteSuggestions(const string16& field_name,
                                             const string16& user_text) = 0;
 
     // Called when the user has indicated that she wants to remove the specified
@@ -549,13 +546,13 @@ class RenderViewHostDelegate {
     virtual void FormsSeen(const std::vector<webkit_glue::FormData>& forms) = 0;
 
     // Called to retrieve a list of AutoFill suggestions from the web database
-    // given the name of the field and what the user has already typed in the
-    // field. |form_autofilled| is true if the form containing |field| has any
-    // auto-filled fields. Returns true to indicate that
-    // RenderViewHost::AutoFillSuggestionsReturned has been called.
+    // given the name of the field, whether it is auto-filled, and what the user
+    // has already typed in it. If there is a warning to be returned to the
+    // user, it is stored into |values|, with corresponding unique id -1.
+    // Returns true to indicate that RenderViewHost::AutoFillSuggestionsReturned
+    // has been called.
     virtual bool GetAutoFillSuggestions(
-        int query_id,
-        bool form_autofilled,
+        bool field_autofilled,
         const webkit_glue::FormField& field) = 0;
 
     // Called to fill the FormData object with AutoFill profile information that

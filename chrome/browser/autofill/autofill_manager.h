@@ -50,8 +50,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // RenderViewHostDelegate::AutoFill implementation:
   virtual void FormSubmitted(const webkit_glue::FormData& form);
   virtual void FormsSeen(const std::vector<webkit_glue::FormData>& forms);
-  virtual bool GetAutoFillSuggestions(int query_id,
-                                      bool field_autofilled,
+  virtual bool GetAutoFillSuggestions(bool field_autofilled,
                                       const webkit_glue::FormField& field);
   virtual bool FillAutoFillFormData(int query_id,
                                     const webkit_glue::FormData& form,
