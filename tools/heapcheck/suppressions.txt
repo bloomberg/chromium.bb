@@ -943,6 +943,7 @@
    Heapcheck:Leak
    fun:cricket::Transport::OnRemoteCandidate
    fun:cricket::Transport::OnRemoteCandidates
+   ...
    fun:cricket::Session::OnTransportInfoMessage
    fun:cricket::Session::OnIncomingMessage
    fun:cricket::SessionManager::OnIncomingMessage
