@@ -6,13 +6,13 @@ body {
 
 #settings-title {
   -webkit-padding-end: 24px;
-  padding-top: 16px;
-  padding-bottom: 34px;
-  text-align: end;
+  color: #53637d;
   font-size: 200%;
   font-weight: normal;
-  color: #53627d;
   margin: 0;
+  padding-bottom: 14px;
+  padding-top: 13px;
+  text-align: end;
 }
 
 #main-content {
@@ -56,18 +56,18 @@ html[dir='rtl'] #close-overlay {
 }
 
 .action-area {
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
   padding: 12px;
   position: absolute;
   right: 0px;
   bottom: 0px;
   display: -webkit-box;
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
 }
 
 .button-strip {
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
+  display: -webkit-box;
 }
 
 html[toolkit=views] .button-strip {
@@ -75,18 +75,18 @@ html[toolkit=views] .button-strip {
 }
 
 .button-strip > button {
-  display: block;
   -webkit-margin-start: 4px;
+  display: block;
 }
 
 .overlay > div {
+  -webkit-box-shadow: 3px 3px 3px #666;
   background: white;
   border-radius: 5px;
   padding: 15px;
   border: 1px solid #666;
   padding-bottom: 50px;
   position: relative;
-  -webkit-box-shadow: 3px 3px 3px #666;
 }
 
 #navbar {
@@ -108,12 +108,12 @@ html[toolkit=views] .button-strip {
                                to(#d3d7db));
   bottom: 0;
   cursor: pointer;
+  display: none;
   left: 0;
   position: fixed;
   top: 0;
   width: 250px;
   z-index: 2;
-  display: none;
 }
 
 html[dir='rtl'] #navbar-container {
@@ -152,21 +152,21 @@ html[hide-menu=false] #navbar-container {
 }
 
 .navbar-item, .navbar-item2 {
-  padding: 7px 0;
-  -webkit-padding-end: 24px;
-  text-align: end;
-  display: block;
   color: #426dc9;
-  outline:none;
-  font-size:105%;
+  display: block;
+  font-size: 105%;
+  outline: none;
+  padding: 7px 0;
+  text-align: end;
+  -webkit-padding-end: 24px;
 }
 
 .navbar-item-selected {
   background: #bbcee9;
-  border-top: 1px solid #8faad9;
   border-bottom: 1px solid #8faad9;
-  font-weight: bold;
+  border-top: 1px solid #8faad9;
   color: black;
+  font-weight: bold;
 }
 
 .navbar-item-normal {
@@ -190,8 +190,8 @@ html[hide-menu=true] #mainview {
 }
 
 #mainview-content {
-  width: 600px;
   padding: 0 24px;
+  width: 600px;
 }
 
 #managed-prefs-banner {
@@ -215,11 +215,11 @@ html[hide-menu=true] #mainview {
   background-image: url("chrome://theme/IDR_WARNING");
   background-repeat: no-repeat;
   background-position:center;
-  padding: 5px;
-  width: 24px;
-  height: 21px;
   display: inline-block;
+  padding: 5px;
+  height: 21px;
   vertical-align: middle;
+  width: 24px;
 }
 
 #managed-prefs-text {
@@ -228,21 +228,20 @@ html[hide-menu=true] #mainview {
 
 .page > h1 {
   -webkit-padding-end: 24px;
-  padding-top: 16px;
-  padding-bottom: 10px;
   border-bottom: 1px solid #eeeeee;
-  -webkit-padding-start: 0;
+  color: #53637d;
   font-size: 200%;
-  color: #54637f;
+  font-weight: normal;
   margin: 0;
+  padding-bottom: 4px;
+  padding-top: 13px;
 }
 
 section {
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
   border-bottom: 1px solid #eeeeee;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  display: -webkit-box;
+  margin-top: 17px;
   padding-bottom: 20px;
 }
 
@@ -251,13 +250,11 @@ section:last-child {
 }
 
 section > h3 {
-  width: 140px;
-  font-weight: normal;
-  -webkit-padding-start: 0;
-  vertical-align: middle;
-  margin: 0;
-  font-size: 100%;
+  font-size: 105%;
   font-weight: bold;
+  margin: 0;
+  vertical-align: middle;
+  width: 140px;
 }
 
 section > div:only-of-type {
@@ -278,7 +275,7 @@ section > div:only-of-type {
  */
 section > div:only-of-type label {
   display: block;
-  margin: 3px 0;
+  margin: 5px 0;
 }
 
 .hidden {
@@ -344,10 +341,11 @@ html[dir=rtl].option-name {
 }
 
 .favicon-cell {
+  -webkit-padding-start: 20px;
   background-position: left;
   background-repeat: no-repeat;
-  -webkit-padding-start: 20px;
 }
+
 html[dir=rtl] .favicon-cell {
   background-position: right;
 }
