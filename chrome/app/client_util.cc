@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "base/version.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -37,6 +38,7 @@ bool ReadRegistryStr(HKEY key, const wchar_t* name, std::wstring* value) {
   if (type != REG_SZ)
     return false;
   value->assign(reinterpret_cast<wchar_t*>(out));
+
   return true;
 }
 
@@ -90,7 +92,7 @@ bool EnvQueryStr(const wchar_t* key_name, std::wstring* value) {
 
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
-// value not being null to dermine if this path contains a valid dll.
+// value not being null to determine if this path contains a valid dll.
 HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
@@ -193,31 +195,64 @@ MainDllLoader::~MainDllLoader() {
 #endif
 }
 
-// Loading chrome is an interesting afair. First we try loading from the current
-// directory to support run-what-you-compile and other development scenarios.
-// If that fails then we look at the 'CHROME_VERSION' env variable to determine
-// if we should stick with an older dll version even if a new one is available
-// to support upgrade-in-place scenarios, and if that fails we finally we look
-// at the registry which should point us to the latest version.
-HMODULE MainDllLoader::Load(std::wstring* version, std::wstring* file) {
+// Loading chrome is an interesting affair. First we try loading from the
+// current directory to support run-what-you-compile and other development
+// scenarios.
+// If that fails then we look at the --chrome-version command line flag followed
+// by the 'CHROME_VERSION' env variable to determine if we should stick with an
+// older dll version even if a new one is available to support upgrade-in-place
+// scenarios.
+// If that fails then finally we look at the registry which should point us
+// to the latest version. This is the expected path for the first chrome.exe
+// browser instance in an installed build.
+HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
   std::wstring dir(GetExecutablePath());
-  *file = dir;
-  HMODULE dll = LoadChromeWithDirectory(file);
+  *out_file = dir;
+  HMODULE dll = LoadChromeWithDirectory(out_file);
   if (dll)
     return dll;
 
-  if (!EnvQueryStr(
-          BrowserDistribution::GetDistribution()->GetEnvVersionKey().c_str(),
-          version)) {
-    std::wstring reg_path(GetRegistryPath());
-    // Look into the registry to find the latest version.
-    if (!GetVersion(dir.c_str(), reg_path.c_str(), version))
+  std::wstring version_env_string;
+  scoped_ptr<Version> version;
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  if (cmd_line.HasSwitch(switches::kChromeVersion)) {
+    version_env_string = cmd_line.GetSwitchValueNative(
+        switches::kChromeVersion);
+    version.reset(Version::GetVersionFromString(version_env_string));
+
+    if (!version.get()) {
+      // If a bogus command line flag was given, then abort.
+      LOG(ERROR) << "Invalid version string received on command line: "
+                 << version_env_string;
       return NULL;
+    }
   }
 
-  *file = dir;
-  file->append(*version).append(L"\\");
-  return LoadChromeWithDirectory(file);
+  if (!version.get()) {
+    if (EnvQueryStr(
+            BrowserDistribution::GetDistribution()->GetEnvVersionKey().c_str(),
+            &version_env_string)) {
+      version.reset(Version::GetVersionFromString(version_env_string));
+    }
+  }
+
+  if (!version.get()) {
+    std::wstring reg_path(GetRegistryPath());
+    // Look into the registry to find the latest version. We don't validate
+    // this by building a Version object to avoid harming normal case startup
+    // time.
+    version_env_string.clear();
+    GetVersion(dir.c_str(), reg_path.c_str(), &version_env_string);
+  }
+
+  if (version.get() || !version_env_string.empty()) {
+    *out_file = dir;
+    *out_version = version_env_string;
+    out_file->append(*out_version).append(L"\\");
+    return LoadChromeWithDirectory(out_file);
+  } else {
+    return NULL;
+  }
 }
 
 // Launching is a matter of loading the right dll, setting the CHROME_VERSION
@@ -237,7 +272,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
       WideToUTF8(version));
 
   InitCrashReporterWithDllPath(file);
-  OnBeforeLaunch(version);
+  OnBeforeLaunch();
 
   DLL_MAIN entry_point =
       reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
@@ -272,7 +307,7 @@ class ChromeDllLoader : public MainDllLoader {
     return key;
   }
 
-  virtual void OnBeforeLaunch(const std::wstring& version) {
+  virtual void OnBeforeLaunch() {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     RecordDidRun(dist->GetAppGuid().c_str());
   }

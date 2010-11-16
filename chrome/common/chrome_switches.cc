@@ -101,6 +101,10 @@ const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 // as a dependent process of the Chrome Frame plugin.
 const char kChromeFrame[]                   = "chrome-frame";
 
+// Tells chrome to load the specified version of chrome.dll on Windows. If
+// this version cannot be loaded, Chrome will exit.
+const char kChromeVersion[]                 = "chrome-version";
+
 // The unique id to be used for this cloud print proxy instance.
 const char kCloudPrintProxyId[]             = "cloud-print-proxy-id";
 

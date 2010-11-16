@@ -41,14 +41,14 @@ class MainDllLoader {
 
   // Called after chrome.dll has been loaded but before the entry point
   // is invoked. Derived classes can implement custom actions here.
-  virtual void OnBeforeLaunch(const std::wstring& version) {}
+  virtual void OnBeforeLaunch() {}
 
   // Called after the chrome.dll entry point returns and before terminating
   // this process. The return value will be used as the process return code.
   virtual int OnBeforeExit(int return_code) { return return_code; }
 
  protected:
-  HMODULE Load(std::wstring* version, std::wstring* file);
+  HMODULE Load(std::wstring* out_version, std::wstring* out_file);
 
  private:
   // Chrome.dll handle.
