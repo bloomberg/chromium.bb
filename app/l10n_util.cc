@@ -329,8 +329,7 @@ void AdjustParagraphDirectionality(string16* paragraph) {
 #endif
 }
 
-#if defined(OS_WIN) || \
-    (!defined(OS_CHROMEOS) && defined(OS_POSIX) && defined(TOOLKIT_USES_GTK))
+#if defined(OS_WIN)
 std::string GetCanonicalLocale(const std::string& locale) {
   return base::i18n::GetCanonicalLocale(locale.c_str());
 }
