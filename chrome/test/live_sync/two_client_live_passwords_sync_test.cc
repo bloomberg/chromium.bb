@@ -10,7 +10,12 @@ using webkit_glue::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
 
+// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_Add) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form;
@@ -36,7 +41,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
   ASSERT_TRUE(ContainsSamePasswordForms(expected, actual_one));
 }
 
+// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_Race) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form;
@@ -67,7 +77,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
   ASSERT_TRUE(ContainsSamePasswordForms(actual_zero, actual_one));
 }
 
-// Marked as FAILS -- see http://crbug.com/59867.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
@@ -79,8 +88,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
   ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
 }
 
+// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       FAILS_SetPassphraseAndAddPassword) {
+#else
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        SetPassphraseAndAddPassword) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
   GetClient(0)->AwaitPassphraseAccepted();

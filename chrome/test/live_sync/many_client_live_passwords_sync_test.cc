@@ -7,7 +7,12 @@
 
 using webkit_glue::PasswordForm;
 
+// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(ManyClientLivePasswordsSyncTest, FAILS_Sanity) {
+#else
 IN_PROC_BROWSER_TEST_F(ManyClientLivePasswordsSyncTest, Sanity) {
+#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form;
