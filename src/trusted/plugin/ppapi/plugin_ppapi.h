@@ -26,7 +26,7 @@ class BrowserPpp;
 
 namespace pp {
 class Rect;
-class URLLoader;
+class URLLoader_Dev;
 }
 
 namespace plugin {
@@ -54,7 +54,7 @@ class PluginPpapi : public pp::Instance, public Plugin {
   virtual bool HandleInputEvent(const PP_InputEvent& event);
 
   // Handles gaining or losing focus.
-  virtual bool HandleDocumentLoad(const pp::URLLoader& url_loader);
+  virtual bool HandleDocumentLoad(const pp::URLLoader_Dev& url_loader);
 
   // Returns a scriptable reference to this plugin element.
   // Called by JavaScript document.getElementById(plugin_id).

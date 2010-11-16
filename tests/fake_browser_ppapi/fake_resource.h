@@ -8,7 +8,7 @@
 #define NATIVE_CLIENT_TESTS_FAKE_BROWSER_PPAPI_RESOURCE_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/c/dev/ppb_url_response_info_dev.h"
 
 namespace fake_browser_ppapi {
 

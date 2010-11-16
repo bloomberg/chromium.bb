@@ -34,7 +34,7 @@ PP_Bool IsURLResponseInfo(PP_Resource resource_id) {
 }
 
 PP_Var GetProperty(PP_Resource response_id,
-                   PP_URLResponseProperty property) {
+                   PP_URLResponseProperty_Dev property) {
   DebugPrintf("URLRequestInfo::GetProperty: response_id=%"NACL_PRId64"\n",
               response_id);
   URLResponseInfo* response = GetResource(response_id)->AsURLResponseInfo();
@@ -55,8 +55,8 @@ PP_Var GetProperty(PP_Resource response_id,
   return PP_MakeUndefined();
 }
 
-PP_Resource GetBodyAsFileRef(PP_Resource response_id) {
-  DebugPrintf("URLRequestInfo::GetBodyAsFileRef: response_id=%"NACL_PRId64"\n",
+PP_Resource GetBody(PP_Resource response_id) {
+  DebugPrintf("URLRequestInfo::GetBody: response_id=%"NACL_PRId64"\n",
               response_id);
   URLResponseInfo* response = GetResource(response_id)->AsURLResponseInfo();
   if (response == NULL)
@@ -69,11 +69,11 @@ PP_Resource GetBodyAsFileRef(PP_Resource response_id) {
 }  // namespace
 
 
-const PPB_URLResponseInfo* URLResponseInfo::GetInterface() {
-  static const PPB_URLResponseInfo url_response_info_interface = {
+const PPB_URLResponseInfo_Dev* URLResponseInfo::GetInterface() {
+  static const PPB_URLResponseInfo_Dev url_response_info_interface = {
     IsURLResponseInfo,
     GetProperty,
-    GetBodyAsFileRef
+    GetBody
   };
   return &url_response_info_interface;
 }

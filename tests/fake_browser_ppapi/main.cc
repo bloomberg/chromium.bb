@@ -47,13 +47,13 @@ const void* FakeGetInterface(const char* interface_name) {
     return ppapi_proxy::PluginInstance::GetInterface();
   } else if (std::strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
     return host->var_interface();
-  } else if (std::strcmp(interface_name, PPB_URLLOADER_INTERFACE) == 0) {
+  } else if (std::strcmp(interface_name, PPB_URLLOADER_DEV_INTERFACE) == 0) {
     return fake_browser_ppapi::URLLoader::GetInterface();
   } else if (std::strcmp(interface_name,
-                         PPB_URLREQUESTINFO_INTERFACE) == 0) {
+                         PPB_URLREQUESTINFO_DEV_INTERFACE) == 0) {
     return fake_browser_ppapi::URLRequestInfo::GetInterface();
   } else if (std::strcmp(interface_name,
-                         PPB_URLRESPONSEINFO_INTERFACE) == 0) {
+                         PPB_URLRESPONSEINFO_DEV_INTERFACE) == 0) {
     return fake_browser_ppapi::URLResponseInfo::GetInterface();
   } else if (std::strcmp(interface_name, PPB_FILEIO_DEV_INTERFACE) == 0) {
     return fake_browser_ppapi::FileIO::GetInterface();

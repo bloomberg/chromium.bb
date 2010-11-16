@@ -12,7 +12,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
 #include "native_client/tests/fake_browser_ppapi/fake_resource.h"
-#include "ppapi/c/ppb_url_request_info.h"
+#include "ppapi/c/dev/ppb_url_request_info_dev.h"
 
 namespace fake_browser_ppapi {
 
@@ -38,7 +38,7 @@ class URLRequestInfo : public Resource {
   bool stream_to_file() { return stream_to_file_; }
 
   // Return an interface pointer usable by PPAPI.
-  static const PPB_URLRequestInfo* GetInterface();
+  static const PPB_URLRequestInfo_Dev* GetInterface();
 
  private:
   PP_Module module_id_;

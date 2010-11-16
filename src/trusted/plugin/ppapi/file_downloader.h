@@ -9,7 +9,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/file_io_dev.h"
-#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/dev/url_loader_dev.h"
 #include "ppapi/cpp/instance.h"
 
 namespace plugin {
@@ -69,7 +69,7 @@ class FileDownloader {
   nacl::string url_;
   pp::CompletionCallback file_open_notify_callback_;
   pp::FileIO_Dev file_reader_;
-  pp::URLLoader url_loader_;
+  pp::URLLoader_Dev url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
 };
 }  // namespace plugin;

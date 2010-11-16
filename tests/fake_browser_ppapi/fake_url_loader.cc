@@ -177,8 +177,8 @@ void Close(PP_Resource loader_id) {
 }  // namespace
 
 
-const PPB_URLLoader* URLLoader::GetInterface() {
-  static const PPB_URLLoader url_loader_interface = {
+const PPB_URLLoader_Dev* URLLoader::GetInterface() {
+  static const PPB_URLLoader_Dev url_loader_interface = {
     Create,
     IsURLLoader,
     Open,

@@ -13,7 +13,7 @@
 #include "native_client/tests/fake_browser_ppapi/fake_resource.h"
 
 #include "ppapi/c/pp_module.h"
-#include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/c/dev/ppb_url_response_info_dev.h"
 
 namespace fake_browser_ppapi {
 
@@ -39,7 +39,7 @@ class URLResponseInfo : public Resource {
   FileRef* body_as_file_ref() const { return body_as_file_ref_; }
 
   // Return an interface pointer usable by PPAPI.
-  static const PPB_URLResponseInfo* GetInterface();
+  static const PPB_URLResponseInfo_Dev* GetInterface();
 
  private:
   PP_Module module_id_;
