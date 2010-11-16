@@ -111,7 +111,10 @@ void LiveExtensionsSyncTestBase::InstallAllPendingExtensions(
   // TODO(akalin): Mock out the servers that the extensions
   // auto-update mechanism talk to so as to more closely match what
   // actually happens.
-  const PendingExtensionMap& pending_extensions =
+
+  // We make a copy here since InstallExtension() removes the
+  // extension from the extensions service's copy.
+  PendingExtensionMap pending_extensions =
       profile->GetExtensionsService()->pending_extensions();
   for (PendingExtensionMap::const_iterator it = pending_extensions.begin();
        it != pending_extensions.end(); ++it) {
