@@ -411,6 +411,9 @@ cr.define('options.internet', function() {
     },
 
     handleLogin_: function(e) {
+      // The user has clicked on the Login button. It's now safe to
+      // unclock UI updates.
+      InternetOptions.unlockUpdates();
       var el = e.target;
       var parent = el.parentNode;
       el.disabled = true;
@@ -420,6 +423,8 @@ cr.define('options.internet', function() {
     },
 
     handleOtherLogin_: function(e) {
+      // See comments in handleLogin_().
+      InternetOptions.unlockUpdates();
       var el = e.target;
       var parent = el.parentNode.parentNode;
       el.disabled = true;
