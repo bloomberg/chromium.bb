@@ -58,7 +58,8 @@ def main(argv):
   parser = optparse.OptionParser()
   parser.add_option(
       '-b', '--base-url', dest='base_url',
-      default='http://build.chromium.org/buildbot/nacl_archive/nacl/toolchain',
+      default=('http://commondatastorage.googleapis.com/'
+               'nativeclient-archive2/toolchain'),
       help='base url to download from')
   parser.add_option(
       '--x86-version', dest='x86_version',
