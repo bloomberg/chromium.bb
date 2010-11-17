@@ -303,7 +303,6 @@
         'common/service_messages.cc',
         'common/service_messages.h',
         'common/service_messages_internal.h',
-        'common/service_process_type.h',
         'common/service_process_util.cc',
         'common/service_process_util.h',
         'common/service_process_util_posix.cc',
