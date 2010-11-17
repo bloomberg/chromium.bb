@@ -107,8 +107,10 @@ AutomationProxy::AutomationProxy(int command_execution_timeout_ms,
   // least it is legal... ;-)
   DCHECK_GE(command_execution_timeout_ms, 0);
   listener_thread_id_ = PlatformThread::CurrentId();
+  InitializeChannelID();
   InitializeHandleTracker();
   InitializeThread();
+  InitializeChannel();
 }
 
 AutomationProxy::~AutomationProxy() {
@@ -120,7 +122,7 @@ AutomationProxy::~AutomationProxy() {
   tracker_.reset();
 }
 
-std::string AutomationProxy::GenerateChannelID() {
+void AutomationProxy::InitializeChannelID() {
   // The channel counter keeps us out of trouble if we create and destroy
   // several AutomationProxies sequentially over the course of a test run.
   // (Creating the channel sometimes failed before when running a lot of
@@ -131,7 +133,7 @@ std::string AutomationProxy::GenerateChannelID() {
   std::ostringstream buf;
   buf << "ChromeTestingInterface:" << base::GetCurrentProcId() <<
          "." << ++channel_counter;
-  return buf.str();
+  channel_id_ = buf.str();
 }
 
 void AutomationProxy::InitializeThread() {
@@ -144,8 +146,7 @@ void AutomationProxy::InitializeThread() {
   thread_.swap(thread);
 }
 
-void AutomationProxy::InitializeChannel(const std::string& channel_id,
-                                        bool use_named_interface) {
+void AutomationProxy::InitializeChannel() {
   DCHECK(shutdown_event_.get() != NULL);
 
   // TODO(iyengar)
@@ -153,9 +154,8 @@ void AutomationProxy::InitializeChannel(const std::string& channel_id,
   // provider, where we use the shutdown event provided by the chrome browser
   // process.
   channel_.reset(new IPC::SyncChannel(
-    channel_id,
-    use_named_interface ? IPC::Channel::MODE_SERVER
-                        : IPC::Channel::MODE_NAMED_CLIENT,
+    channel_id_,
+    IPC::Channel::MODE_SERVER,
     this,  // we are the listener
     new AutomationMessageFilter(this),
     thread_->message_loop(),

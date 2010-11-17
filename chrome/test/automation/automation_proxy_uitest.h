@@ -112,10 +112,10 @@ class ExternalTabUITestMockClient : public AutomationProxy {
 class ExternalTabUITest : public UITest {
  public:
   ExternalTabUITest() : UITest(MessageLoop::TYPE_UI) {}
-  // Override UITest's CreateProxyLauncher to provide the unit test
+  // Override UITest's CreateAutomationProxy to provide the unit test
   // with our special implementation of AutomationProxy.
-  // This function is called from within UITest::SetUp().
-  virtual ProxyLauncher* CreateProxyLauncher();
+  // This function is called from within UITest::LaunchBrowserAndServer.
+  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
  protected:
   // Filtered Inet will override automation callbacks for network resources.
   virtual bool ShouldFilterInet() {
