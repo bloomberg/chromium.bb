@@ -131,6 +131,7 @@ HRESULT ContentScriptManager::GetOrCreateScriptHost(
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to initialize script host " << com::LogHr(hr);
       script_host_.Release();
+      native_api_.Release();
       return hr;
     }
 
