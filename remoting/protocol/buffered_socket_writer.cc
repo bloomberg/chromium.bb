@@ -23,7 +23,7 @@ BufferedSocketWriterBase::BufferedSocketWriterBase()
 BufferedSocketWriterBase::~BufferedSocketWriterBase() { }
 
 void BufferedSocketWriterBase::Init(net::Socket* socket,
-                                WriteFailedCallback* callback) {
+                                    WriteFailedCallback* callback) {
   AutoLock auto_lock(lock_);
   message_loop_ = MessageLoop::current();
   socket_ = socket;

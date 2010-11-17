@@ -70,6 +70,62 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
+FakeUdpSocket::FakeUdpSocket()
+    : read_pending_(false),
+      input_pos_(0) {
+}
+
+FakeUdpSocket::~FakeUdpSocket() {
+}
+
+void FakeUdpSocket::AppendInputPacket(char* data, int data_size) {
+  input_packets_.push_back(std::string());
+  input_packets_.back().assign(data, data + data_size);
+
+  // Complete pending read if any.
+  if (read_pending_) {
+    read_pending_ = false;
+    int result = std::min(data_size, read_buffer_size_);
+    memcpy(read_buffer_->data(), data, result);
+    input_pos_ = input_packets_.size();
+    read_callback_->Run(result);
+    read_buffer_ = NULL;
+  }
+}
+
+int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
+                        net::CompletionCallback* callback) {
+  if (input_pos_ < static_cast<int>(input_packets_.size())) {
+    int result = std::min(
+        buf_len, static_cast<int>(input_packets_[input_pos_].size()));
+    memcpy(buf->data(), &(*input_packets_[input_pos_].begin()), result);
+    ++input_pos_;
+    return result;
+  } else {
+    read_pending_ = true;
+    read_buffer_ = buf;
+    read_buffer_size_ = buf_len;
+    read_callback_ = callback;
+    return net::ERR_IO_PENDING;
+  }
+}
+
+int FakeUdpSocket::Write(net::IOBuffer* buf, int buf_len,
+                         net::CompletionCallback* callback) {
+  written_packets_.push_back(std::string());
+  written_packets_.back().assign(buf->data(), buf->data() + buf_len);
+  return buf_len;
+}
+
+bool FakeUdpSocket::SetReceiveBufferSize(int32 size) {
+  NOTIMPLEMENTED();
+  return false;
+}
+bool FakeUdpSocket::SetSendBufferSize(int32 size) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 FakeSession::FakeSession()
     : candidate_config_(CandidateSessionConfig::CreateDefault()),
       config_(SessionConfig::CreateDefault()),
@@ -96,11 +152,11 @@ FakeSocket* FakeSession::video_channel() {
   return &video_channel_;
 }
 
-FakeSocket* FakeSession::video_rtp_channel() {
+FakeUdpSocket* FakeSession::video_rtp_channel() {
   return &video_rtp_channel_;
 }
 
-FakeSocket* FakeSession::video_rtcp_channel() {
+FakeUdpSocket* FakeSession::video_rtcp_channel() {
   return &video_rtcp_channel_;
 }
 

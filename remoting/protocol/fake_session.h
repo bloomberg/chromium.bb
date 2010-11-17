@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_FAKE_SESSION_H_
 #define REMOTING_PROTOCOL_FAKE_SESSION_H_
 
+#include <string>
 #include <vector>
 
 #include "base/scoped_ptr.h"
@@ -26,7 +27,7 @@ class FakeSocket : public net::Socket {
   FakeSocket();
   virtual ~FakeSocket();
 
-  const std::vector<char>& written_data() { return written_data_; }
+  const std::string& written_data() { return written_data_; }
 
   void AppendInputData(char* data, int data_size);
   int input_pos() { return input_pos_; }
@@ -46,8 +47,43 @@ class FakeSocket : public net::Socket {
   int read_buffer_size_;
   net::CompletionCallback* read_callback_;
 
-  std::vector<char> written_data_;
-  std::vector<char> input_data_;
+  std::string written_data_;
+  std::string input_data_;
+  int input_pos_;
+};
+
+// FakeUdpSocket is similar to FakeSocket but behaves as UDP socket. All written
+// packets are stored separetely in written_packets(). AppendInputPacket() adds
+// one packet that will be returned by Read().
+class FakeUdpSocket : public net::Socket {
+ public:
+  FakeUdpSocket();
+  virtual ~FakeUdpSocket();
+
+  const std::vector<std::string>& written_packets() {
+    return written_packets_;
+  }
+
+  void AppendInputPacket(char* data, int data_size);
+  int input_pos() { return input_pos_; }
+
+  // net::Socket interface.
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   net::CompletionCallback* callback);
+  virtual int Write(net::IOBuffer* buf, int buf_len,
+                    net::CompletionCallback* callback);
+
+  virtual bool SetReceiveBufferSize(int32 size);
+  virtual bool SetSendBufferSize(int32 size);
+
+ private:
+  bool read_pending_;
+  scoped_refptr<net::IOBuffer> read_buffer_;
+  int read_buffer_size_;
+  net::CompletionCallback* read_callback_;
+
+  std::vector<std::string> written_packets_;
+  std::vector<std::string> input_packets_;
   int input_pos_;
 };
 
@@ -72,8 +108,8 @@ class FakeSession : public Session {
   virtual FakeSocket* event_channel();
   virtual FakeSocket* video_channel();
 
-  virtual FakeSocket* video_rtp_channel();
-  virtual FakeSocket* video_rtcp_channel();
+  virtual FakeUdpSocket* video_rtp_channel();
+  virtual FakeUdpSocket* video_rtcp_channel();
 
   virtual const std::string& jid();
 
@@ -92,8 +128,8 @@ class FakeSession : public Session {
   FakeSocket control_channel_;
   FakeSocket event_channel_;
   FakeSocket video_channel_;
-  FakeSocket video_rtp_channel_;
-  FakeSocket video_rtcp_channel_;
+  FakeUdpSocket video_rtp_channel_;
+  FakeUdpSocket video_rtcp_channel_;
   std::string jid_;
   bool closed_;
 };

@@ -25,7 +25,23 @@ class RtpVideoReader : public VideoReader {
  private:
   friend class RtpVideoReaderTest;
 
-  typedef std::deque<const RtpPacket*> PacketsQueue;
+  // Following struct is used to store pending packets in |packets_queue_|.
+  // Each entry may be in three different states:
+  //  |received| == false, |packet| == NULL - packet with the corresponding
+  //    sequence number hasn't been received.
+  //  |received| == true, |packet| != NULL - packet with the corresponding
+  //    sequence number has been received, but hasn't been processed, still
+  //    waiting for other fragments.
+  //  |received| == true, |packet| == NULL - packet with the corresponding
+  //    sequence number has been received and processed. Ignore any additional
+  //    packet with the same sequence number.
+  struct PacketsQueueEntry {
+    PacketsQueueEntry();
+    bool received;
+    const RtpPacket* packet;
+  };
+
+  typedef std::deque<PacketsQueueEntry> PacketsQueue;
 
   void OnRtpPacket(const RtpPacket* rtp_packet);
   void CheckFullPacket(PacketsQueue::iterator pos);
@@ -36,7 +52,7 @@ class RtpVideoReader : public VideoReader {
   RtpReader rtp_reader_;
 
   PacketsQueue packets_queue_;
-  uint32 last_sequence_number_;
+  uint16 last_sequence_number_;
 
   // The stub that processes all received packets.
   VideoStub* video_stub_;
