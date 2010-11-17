@@ -35,11 +35,15 @@ int HandleRpcException(unsigned int rpc_exception_code) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
+static void LogRpcException(const char* str, unsigned int exception_code) {
+  LOG(ERROR) << str << com::LogWe(exception_code);
+}
+
 void BrokerRpcClient::LockContext() {
   RpcTryExcept {
     context_ = BrokerRpcClient_Connect(binding_handle_);
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
-    LOG(ERROR) << "RPC error in LockContext: " << RpcExceptionCode();
+    LogRpcException("RPC error in LockContext", RpcExceptionCode());
   } RpcEndExcept
 }
 
@@ -47,7 +51,7 @@ void BrokerRpcClient::ReleaseContext() {
   RpcTryExcept {
     BrokerRpcClient_Disconnect(binding_handle_, &context_);
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
-    LOG(ERROR) << "RPC error in ReleaseContext: " << RpcExceptionCode();
+    LogRpcException("RPC error in ReleaseContext", RpcExceptionCode());
   } RpcEndExcept
 }
 
@@ -110,7 +114,7 @@ bool BrokerRpcClient::FireEvent(BSTR event_name, BSTR event_args) {
     BrokerRpcClient_FireEvent(binding_handle_, event_name, event_args);
     return true;
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
-    LOG(ERROR) << "RPC error in FireEvent: " << RpcExceptionCode();
+    LogRpcException("RPC error in FireEvent", RpcExceptionCode());
   } RpcEndExcept
   return false;
 }
