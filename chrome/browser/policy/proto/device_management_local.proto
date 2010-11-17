@@ -18,9 +18,3 @@ message CachedDevicePolicyResponse {
   optional uint64 timestamp = 2;
 }
 
-// Encapsulates a device ID and the associated device token.
-message DeviceCredentials {
-  optional string device_id = 1;
-  optional string device_token = 2;
-}
-

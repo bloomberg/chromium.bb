@@ -9,7 +9,6 @@
 #include "base/singleton.h"
 #include "chrome/browser/guid.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_details.h"
@@ -18,8 +17,6 @@
 #include "chrome/common/notification_type.h"
 
 namespace policy {
-
-namespace em = enterprise_management;
 
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementBackend* backend,
@@ -67,8 +64,7 @@ void DeviceTokenFetcher::HandleRegisterResponse(
         FROM_HERE,
         NewRunnableFunction(&WriteDeviceTokenToDisk,
                             token_path_,
-                            device_token_,
-                            device_id_));
+                            device_token_));
     SetState(kStateHasDeviceToken);
   } else {
     NOTREACHED();
@@ -97,23 +93,19 @@ void DeviceTokenFetcher::StartFetching() {
 
 void DeviceTokenFetcher::AttemptTokenLoadFromDisk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  FetcherState new_state = kStateFailure;
   if (file_util::PathExists(token_path_)) {
-    std::string data;
-    em::DeviceCredentials device_credentials;
-    if (file_util::ReadFileToString(token_path_, &data) &&
-        device_credentials.ParseFromArray(data.c_str(), data.size())) {
-      device_token_ = device_credentials.device_token();
-      device_id_ = device_credentials.device_id();
-      if (!device_token_.empty() && !device_id_.empty()) {
-        BrowserThread::PostTask(
-            BrowserThread::UI,
-            FROM_HERE,
-            NewRunnableMethod(this,
-                              &DeviceTokenFetcher::SetState,
-                              kStateHasDeviceToken));
-        return;
-      }
+    std::string device_token;
+    if (file_util::ReadFileToString(token_path_, &device_token_)) {
+      new_state = kStateHasDeviceToken;
     }
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &DeviceTokenFetcher::SetState,
+                          new_state));
+    return;
   }
 
   BrowserThread::PostTask(
@@ -136,7 +128,7 @@ void DeviceTokenFetcher::SendServerRequestIfPossible() {
     em::DeviceRegisterRequest register_request;
     SetState(kStateRequestingDeviceTokenFromServer);
     backend_->ProcessRegisterRequest(auth_token_,
-                                     GetDeviceID(),
+                                     GenerateNewDeviceID(),
                                      register_request,
                                      this);
   }
@@ -151,15 +143,6 @@ std::string DeviceTokenFetcher::GetDeviceToken() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   device_token_load_complete_event_.Wait();
   return device_token_;
-}
-
-std::string DeviceTokenFetcher::GetDeviceID() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // As long as access to this is only allowed from the UI thread, no explicit
-  // locking is necessary to prevent the ID from being generated twice.
-  if (device_id_.empty())
-    device_id_ = GenerateNewDeviceID();
-  return device_id_;
 }
 
 void DeviceTokenFetcher::SetState(FetcherState state) {
@@ -191,14 +174,10 @@ bool DeviceTokenFetcher::IsTokenValid() const {
 // static
 void DeviceTokenFetcher::WriteDeviceTokenToDisk(
     const FilePath& path,
-    const std::string& device_token,
-    const std::string& device_id) {
-  em::DeviceCredentials device_credentials;
-  device_credentials.set_device_token(device_token);
-  device_credentials.set_device_id(device_id);
-  std::string data;
-  DCHECK(device_credentials.SerializeToString(&data));
-  file_util::WriteFile(path, data.c_str(), data.length());
+    const std::string& device_token) {
+  file_util::WriteFile(path,
+                       device_token.c_str(),
+                       device_token.length());
 }
 
 // static

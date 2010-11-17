@@ -85,25 +85,6 @@ TEST_F(DeviceTokenFetcherTest, IsPending) {
   ASSERT_FALSE(fetcher_->IsTokenPending());
 }
 
-TEST_F(DeviceTokenFetcherTest, StoreAndLoad) {
-  backend_->AllShouldSucceed();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
-  SimulateSuccessfulLoginAndRunPending();
-  ASSERT_FALSE(fetcher_->IsTokenPending());
-  std::string device_token = fetcher_->GetDeviceToken();
-  std::string device_id = fetcher_->GetDeviceID();
-  ASSERT_NE("", device_id);
-
-  FilePath token_path;
-  GetDeviceTokenPath(fetcher_, &token_path);
-  scoped_refptr<DeviceTokenFetcher> fetcher2(
-      new DeviceTokenFetcher(backend_.get(), token_path));
-  fetcher2->StartFetching();
-  loop_.RunAllPending();
-  ASSERT_EQ(device_id, fetcher2->GetDeviceID());
-  ASSERT_EQ(device_token, fetcher2->GetDeviceToken());
-}
-
 TEST_F(DeviceTokenFetcherTest, SimpleFetchSingleLogin) {
   backend_->AllShouldSucceed();
   EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
