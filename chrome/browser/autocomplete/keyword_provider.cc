@@ -304,7 +304,11 @@ void KeywordProvider::FillInURLAndContents(
   int message_id = element->IsExtensionKeyword() ?
       IDS_EXTENSION_KEYWORD_COMMAND : IDS_KEYWORD_SEARCH;
   if (remaining_input.empty()) {
-    if (element->url()->SupportsReplacement()) {
+    // Allow extension keyword providers to accept empty string input. This is
+    // useful to allow extensions to do something in the case where no input is
+    // entered.
+    if (element->url()->SupportsReplacement() &&
+        !element->IsExtensionKeyword()) {
       // No query input; return a generic, no-destination placeholder.
       match->contents.assign(l10n_util::GetStringF(message_id,
           element->AdjustedShortNameForLocaleDirection(),
