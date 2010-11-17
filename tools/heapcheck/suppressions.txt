@@ -1055,8 +1055,14 @@
    fun:testing::Test::Run
 }
 {
-   bug_63386
+   bug_63386_a
    Heapcheck:Leak
    ...
    fun:PrintPreviewTabControllerTest_GetOrCreatePreviewTab_Test::TestBody
+}
+{
+   bug_63386_b
+   Heapcheck:Leak
+   ...
+   fun:PrintPreviewTabControllerTest_MultiplePreviewTabs_Test::TestBody
 }
