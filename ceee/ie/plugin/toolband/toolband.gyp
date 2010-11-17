@@ -20,8 +20,6 @@
         '../../../../ceee/common/common.gyp:ceee_common',
       ],
       'sources': [
-        '../../common/precompile.cc',
-        '../../common/precompile.h',
         'tool_band.cc',
         'tool_band.h',
       ],
@@ -52,8 +50,6 @@
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
       ],
       'sources': [
-        '../../common/precompile.cc',
-        '../../common/precompile.h',
         'resource.h',
         'tool_band.rgs',
         'toolband.def',

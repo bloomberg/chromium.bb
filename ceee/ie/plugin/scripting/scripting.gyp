@@ -31,8 +31,6 @@
         'content_script_manager.rc',
         'content_script_native_api.cc',
         'content_script_native_api.h',
-        '../../common/precompile.cc',
-        '../../common/precompile.h',
         'script_host.cc',
         'script_host.h',
         'userscripts_librarian.cc',

@@ -89,8 +89,6 @@
         'executors_manager_docs.h',
         'infobar_api_module.cc',
         'infobar_api_module.h',
-        '../common/precompile.cc',
-        '../common/precompile.h',
         'tab_api_module.cc',
         'tab_api_module.h',
         'webnavigation_api_module.cc',

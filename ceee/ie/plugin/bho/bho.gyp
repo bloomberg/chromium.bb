@@ -53,8 +53,6 @@
         'infobar_manager.h',
         'infobar_window.cc',
         'infobar_window.h',
-        '../../common/precompile.cc',
-        '../../common/precompile.h',
         'tab_events_funnel.cc',
         'tab_events_funnel.h',
         'tab_window_manager.cc',

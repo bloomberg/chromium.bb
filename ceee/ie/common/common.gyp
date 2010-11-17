@@ -74,8 +74,6 @@
         'ie_util.cc',
         'ie_util.h',
         'mock_ie_tab_interfaces.h',
-        'precompile.cc',
-        'precompile.h',
         'ceee_module_util.cc',
         'ceee_module_util.h',
 

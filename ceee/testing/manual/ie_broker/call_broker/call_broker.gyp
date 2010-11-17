@@ -12,8 +12,6 @@
       'type': 'executable',
       'sources': [
         'call_broker.cc',
-        'precompile.cc',
-        'precompile.h',
       ],
       'defines': [
         '_CONSOLE',
