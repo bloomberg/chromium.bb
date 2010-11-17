@@ -58,6 +58,7 @@ static const char kHttpsProtocol[] = "https://";
 static const char kLocalFileUrlProtocol[] = "file://";
 
 static std::string GetURL(NPP instance) {
+  std::string url;
   // get URL for the loading page - first approach from
   // http://developer.mozilla.org/en/docs/Getting_the_page_URL_in_NPAPI_plugin
   // Get the window object.
@@ -70,40 +71,60 @@ static std::string GetURL(NPP instance) {
                              &window_obj);
   if (NPERR_NO_ERROR != err) {
     LOG(ERROR) << "getvalue failed (err = " << err << ")";
-    return "";
+    goto exit0;
   }
-  // Create a "location" identifier.
-  NPIdentifier identifier = NPN_GetStringIdentifier("location");
-  // Declare a local variant value.
-  NPVariant variant_value;
-  // Get the location property from the window object
-  // (which is another object).
-  bool success = NPN_GetProperty(instance, window_obj, identifier,
-                                 &variant_value);
-  if (!success) {
-    LOG(ERROR) << "getproperty failed";
-    return "";
-  }
-  // Get a pointer to the "location" object.
-  NPObject *location_obj = variant_value.value.objectValue;
-  // Create a "href" identifier.
-  identifier = NPN_GetStringIdentifier("href");
-  // Get the location property from the location object.
-  success = NPN_GetProperty(instance, location_obj, identifier,
-                            &variant_value);
-  if (!success) {
-    LOG(ERROR) << "getproperty failed";
-    return "";
-  }
-  // let's just grab the NPUTF8 from the variant and make a std::string
-  // from it.
-  std::string url(static_cast<const char *>(
-                      variant_value.value.stringValue.UTF8Characters),
-                  static_cast<size_t>(
-                      variant_value.value.stringValue.UTF8Length));
+  {
+    // Create a "location" identifier.
+    NPIdentifier identifier = NPN_GetStringIdentifier("location");
+    // Declare a local variant value for the location.
+    NPVariant location_variant_value;
+    // Get the location property from the window object
+    // (which is another object).
+    bool success = NPN_GetProperty(instance, window_obj, identifier,
+                                   &location_variant_value);
+    if (!success) {
+      LOG(ERROR) << "getproperty failed (location)";
+      goto exit0;
+    }
+    if (!NPVARIANT_IS_OBJECT(location_variant_value)) {
+      LOG(ERROR) << "location property has wrong type: "
+                 << location_variant_value.type;
+      goto exit1;
+    }
+    {
+      // Get a pointer to the "location" object.
+      NPObject *location_obj = location_variant_value.value.objectValue;
+      // Create a "href" identifier.
+      identifier = NPN_GetStringIdentifier("href");
+      // Declare a local variant value for the href.
+      NPVariant href_variant_value;
+      // Get the location property from the location object.
+      success = NPN_GetProperty(instance, location_obj, identifier,
+                                &href_variant_value);
+      if (!success) {
+        LOG(ERROR) << "getproperty failed (href)";
+        goto exit1;
+      }
+      if (!NPVARIANT_IS_STRING(href_variant_value)) {
+        LOG(ERROR) << "href property has wrong type: "
+                   << href_variant_value.type;
+        goto exit2;
+      }
+      // let's just grab the NPUTF8 from the variant and make a std::string
+      // from it.
+      url = std::string(
+          static_cast<const char *>(
+              href_variant_value.value.stringValue.UTF8Characters),
+          static_cast<size_t>(
+              href_variant_value.value.stringValue.UTF8Length));
 
-  NPN_ReleaseVariantValue(&variant_value);
-
+     exit2:
+      NPN_ReleaseVariantValue(&href_variant_value);
+    }
+   exit1:
+    NPN_ReleaseVariantValue(&location_variant_value);
+  }
+ exit0:
   return url;
 }
 
@@ -159,7 +180,11 @@ static bool IsDomainWhitelisted(const std::string &in_url) {
 
 bool IsDomainAuthorized(NPP instance) {
 #ifdef O3D_PLUGIN_DOMAIN_WHITELIST
-  return IsDomainWhitelisted(GetURL(instance));
+  bool authorized = IsDomainWhitelisted(GetURL(instance));
+  if (!authorized) {
+    LOG(ERROR) << "Unauthorized domain";
+  }
+  return authorized;
 #else
   // No whitelist; allow usage on any website. (This is the default.)
   return true;
