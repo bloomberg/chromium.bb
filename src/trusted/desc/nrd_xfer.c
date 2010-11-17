@@ -148,7 +148,6 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
   struct NaClDesc           **kern_desc;
   NaClHandle                kern_handle[NACL_ABI_IMC_DESC_MAX];
   size_t                    user_bytes;
-  size_t                    tmp_sum;
   size_t                    sys_bytes;
   size_t                    sys_handles;
   size_t                    desc_bytes;
@@ -216,12 +215,10 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
    */
   user_bytes = 0;
   for (i = 0; i < nitmhp->iov_length; ++i) {
-    tmp_sum = user_bytes + kern_iov[i+1].length;
-    /* unsigned addition -- check for integer oveflow */
-    if (tmp_sum < user_bytes) {
+    if (user_bytes > SIZE_T_MAX - kern_iov[i+1].length) {
       return -NACL_ABI_EINVAL;
     }
-    user_bytes = tmp_sum;
+    user_bytes += kern_iov[i+1].length;
   }
   if (user_bytes > NACL_ABI_IMC_USER_BYTES_MAX) {
     return -NACL_ABI_EINVAL;
@@ -315,7 +312,24 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     hdr = (struct NaClInternalHeader *) hdr_buf;
     memset(hdr, 0, sizeof(*hdr));  /* Initilize the struct's padding bytes. */
     hdr->h.xfer_protocol_version = NACL_HANDLE_TRANSFER_PROTOCOL;
-    hdr->h.descriptor_data_bytes = nacl_abi_size_t_saturate(sys_bytes);
+    if (sys_bytes > UINT32_MAX) {
+      /*
+       * We really want:
+       * sys_bytes > numeric_limits<typeof(hdr->h.descriptor_data_bytes)>:max()
+       * in case the type changes.
+       *
+       * This should never occur in practice, since
+       * NACL_ABI_IMC_DESC_MAX * NACL_PATH_MAX is far smaller than
+       * UINT32_MAX.  Furthermore, NACL_ABI_IMC_DESC_MAX *
+       * NACL_PATH_MAX + user_bytes <= NACL_ABI_IMC_DESC_MAX *
+       * NACL_PATH_MAX + NACL_ABI_IMC_USER_BYTES_MAX == max_xfer (so
+       * max_xfer is upper bound on data transferred), and max_xfer <=
+       * INT32_MAX = NACL_ABI_SSIZE_MAX <= SSIZE_T_MAX holds.
+       */
+      retval = -NACL_ABI_EOVERFLOW;
+      goto cleanup;
+    }
+    hdr->h.descriptor_data_bytes = (uint32_t) sys_bytes;
 
     xfer_state.next_byte = (char *) (hdr + 1);
     xfer_state.byte_buffer_end = xfer_state.next_byte + sys_bytes;
@@ -405,7 +419,6 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
   ssize_t                   retval;
   char                      *recv_buf;
   size_t                    user_bytes;
-  size_t                    tmp_sum;
   NaClHandle                kern_handle[NACL_ABI_IMC_DESC_MAX];
   struct NaClIOVec          recv_iov;
   struct NaClMessageHeader  recv_hdr;
@@ -445,13 +458,11 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
 
   user_bytes = 0;
   for (i = 0; i < nitmhp->iov_length; ++i) {
-    tmp_sum = user_bytes + nitmhp->iov[i].length;
-    /* Check for unsigned addition overflow */
-    if (tmp_sum < user_bytes) {
+    if (user_bytes > SIZE_T_MAX - nitmhp->iov[i].length) {
       NaClLog(4, "integer overflow in iov length summation\n");
       return -NACL_ABI_EINVAL;
     }
-    user_bytes = tmp_sum;
+    user_bytes += nitmhp->iov[i].length;
   }
   /*
    * if user_bytes > NACL_ABI_IMC_USER_BYTES_MAX,
@@ -548,6 +559,11 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
     NaClLog(4, ("protocol version mismatch:"
                 " got %x, but can only handle %x\n"),
             intern_hdr.h.xfer_protocol_version, NACL_HANDLE_TRANSFER_PROTOCOL);
+    /*
+     * The returned value should be a special version mismatch error
+     * code that, along with the recv_buf, permit retrying with later
+     * decoders.
+     */
     retval = -NACL_ABI_EIO;
     goto cleanup;
   }
