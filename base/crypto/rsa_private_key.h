@@ -8,7 +8,10 @@
 
 #include "build/build_config.h"
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+// Forward declaration for openssl/*.h
+typedef struct evp_pkey_st EVP_PKEY;
+#elif defined(USE_NSS)
 // Forward declaration.
 struct SECKEYPrivateKeyStr;
 struct SECKEYPublicKeyStr;
@@ -216,7 +219,7 @@ class RSAPrivateKey {
   // Exports the public key to an X509 SubjectPublicKeyInfo block.
   bool ExportPublicKey(std::vector<uint8>* output);
 
-private:
+ private:
 #if defined(USE_NSS)
   FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FindFromPublicKey);
   FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FailedFindFromPublicKey);
@@ -238,7 +241,9 @@ private:
   static RSAPrivateKey* CreateFromPrivateKeyInfoWithParams(
       const std::vector<uint8>& input, bool permanent, bool sensitive);
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+  EVP_PKEY* key_;
+#elif defined(USE_NSS)
   SECKEYPrivateKeyStr* key_;
   SECKEYPublicKeyStr* public_key_;
 #elif defined(OS_WIN)
