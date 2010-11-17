@@ -5,7 +5,7 @@ vars = {
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "72187",
-  "skia_revision": "625",
+  "skia_revision": "621",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "40423",
   "nacl_revision": "3664",
