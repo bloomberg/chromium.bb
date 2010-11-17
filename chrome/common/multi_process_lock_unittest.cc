@@ -134,7 +134,7 @@ MULTIPROCESS_TEST_MAIN(MultiProcessLockTryFailMain) {
 #if defined(OS_MACOSX)
   // OS X sends out a log if a lock fails.
   // Hopefully this will keep people from panicking about it when they
-  // are perusing thge build logs.
+  // are perusing the build logs.
   LOG(INFO) << "Following error log "
             << "\"CFMessagePort: bootstrap_register(): failed 1100 (0x44c) "
             << "'Permission denied'\" is expected";

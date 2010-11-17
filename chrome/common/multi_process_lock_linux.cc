@@ -43,7 +43,15 @@ class MultiProcessLockLinux : public MultiProcessLock {
         == MULTI_PROCESS_LOCK_NAME_MAX_LEN + 2, sun_path_size_changed);
 
     memset(&address, 0, sizeof(address));
-    strcpy(&address.sun_path[1], name_.c_str());
+    int print_length = snprintf(&address.sun_path[1],
+                                MULTI_PROCESS_LOCK_NAME_MAX_LEN + 1,
+                                "%s", name_.c_str());
+
+    if (print_length < 0 ||
+        print_length > static_cast<int>(MULTI_PROCESS_LOCK_NAME_MAX_LEN)) {
+      PLOG(ERROR) << "Couldn't create sun_path - " << name_;
+      return false;
+    }
 
     // Must set the first character of the path to something non-zero
     // before we call SUN_LEN which depends on strcpy working.
@@ -70,7 +78,9 @@ class MultiProcessLockLinux : public MultiProcessLock {
       PLOG(ERROR) << "Couldn't bind socket - "
                   << &(address.sun_path[1])
                   << " Length: " << length;
-      HANDLE_EINTR(close(socket_fd));
+      if (HANDLE_EINTR(close(socket_fd)) < 0) {
+        PLOG(ERROR) << "close";
+      }
       return false;
     }
   }
@@ -80,7 +90,9 @@ class MultiProcessLockLinux : public MultiProcessLock {
       DLOG(ERROR) << "Over-unlocked MultiProcessLock - " << name_;
       return;
     }
-    HANDLE_EINTR(close(fd_));
+    if (HANDLE_EINTR(close(fd_)) < 0) {
+      PLOG(ERROR) << "close";
+    }
     fd_ = -1;
   }
 
