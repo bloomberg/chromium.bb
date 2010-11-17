@@ -1774,7 +1774,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     }
   }
 
-  if (source.HasKey(keys::kOmniboxKeyword)) {
+  if (source.HasKey(keys::kOmnibox)) {
     if (!source.GetString(keys::kOmniboxKeyword,
                           &omnibox_keyword_) ||
         omnibox_keyword_.empty()) {

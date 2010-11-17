@@ -4,5 +4,5 @@
   "version": "1.0",
   "permissions": [ "experimental" ],
   "background_page": "background.html",
-  "omnibox_keyword": "omnix"
+  "omnibox": { "keyword" : "omnix" }
 }

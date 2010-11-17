@@ -11,6 +11,6 @@
     "16" : "icon-16.png",
     "128" : "icon-128.png"
   },
-  "omnibox_keyword" : "crdoc",
+  "omnibox": { "keyword" : "crdoc" },
   "background_page" : "background.html"
 }

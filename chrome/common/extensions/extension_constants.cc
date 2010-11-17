@@ -33,7 +33,8 @@ const char* kLaunchWidth = "app.launch.width";
 const char* kMatches = "matches";
 const char* kMinimumChromeVersion = "minimum_chrome_version";
 const char* kName = "name";
-const char* kOmniboxKeyword = "omnibox_keyword";
+const char* kOmnibox = "omnibox";
+const char* kOmniboxKeyword = "omnibox.keyword";
 const char* kOptionsPage = "options_page";
 const char* kPageAction = "page_action";
 const char* kPageActionDefaultIcon = "default_icon";
@@ -167,7 +168,7 @@ const char* kInvalidMinimumChromeVersion =
 const char* kInvalidName =
     "Required value 'name' is missing or invalid.";
 const char* kInvalidOmniboxKeyword =
-    "Invalid value for 'omnibox_keyword'.";
+    "Invalid value for 'omnibox.keyword'.";
 const char* kInvalidOptionsPage =
     "Invalid value for 'options_page'.";
 const char* kInvalidOptionsPageExpectUrlInPackage =

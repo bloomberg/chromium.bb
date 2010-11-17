@@ -38,6 +38,7 @@ namespace extension_manifest_keys {
   extern const char* kMatches;
   extern const char* kMinimumChromeVersion;
   extern const char* kName;
+  extern const char* kOmnibox;
   extern const char* kOmniboxKeyword;
   extern const char* kOptionsPage;
   extern const char* kPageAction;

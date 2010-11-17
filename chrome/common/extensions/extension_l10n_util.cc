@@ -107,6 +107,10 @@ bool LocalizeManifest(const ExtensionMessageBundle& messages,
   if (!LocalizeManifestValue(key, messages, manifest, error))
     return false;
 
+  // Initialize omnibox.keyword.
+  if (!LocalizeManifestValue(keys::kOmniboxKeyword, messages, manifest, error))
+    return false;
+
   // Add current locale key to the manifest, so we can overwrite prefs
   // with new manifest when chrome locale changes.
   manifest->SetString(keys::kCurrentLocale, CurrentLocaleOrDefault());
