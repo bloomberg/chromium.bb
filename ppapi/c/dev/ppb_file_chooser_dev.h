@@ -35,6 +35,13 @@ struct PPB_FileChooser_Dev {
   // associated with a particular instance, so that it may be positioned on the
   // screen relative to the tab containing the instance.  Returns 0 if passed
   // an invalid instance.
+  //
+  // A PPB_FileChooser_Dev instance can be used to select a single file
+  // (PP_FILECHOOSERMODE_OPEN) or multiple files
+  // (PP_FILECHOOSERMODE_OPENMULTIPLE). Unlike the HTML5 <input type="file">
+  // tag, a PPB_FileChooser_Dev instance cannot be used to select a directory.
+  // In order to get the list of files in a directory, the
+  // PPB_DirectoryReader_Dev interface must be used.
   PP_Resource (*Create)(PP_Instance instance,
                         const struct PP_FileChooserOptions_Dev* options);
 

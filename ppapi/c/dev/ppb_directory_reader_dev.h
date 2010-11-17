@@ -31,7 +31,7 @@ struct PPB_DirectoryReader_Dev {
   // DirectoryReader.
   PP_Bool (*IsDirectoryReader)(PP_Resource resource);
 
-  // Reads the next entry in the directory.  Return PP_OK and sets
+  // Reads the next entry in the directory.  Returns PP_OK and sets
   // entry->file_ref to 0 to indicate reaching the end of the directory.  If
   // entry->file_ref is non-zero when passed to GetNextEntry, it will be
   // released before the next file_ref is stored.
@@ -40,8 +40,9 @@ struct PPB_DirectoryReader_Dev {
   //
   //   PP_Resource reader = reader_funcs->Create(dir_ref);
   //   PP_DirectoryEntry entry = {0};
-  //   while (reader_funcs->GetNextEntry(reader, &entry,
-  //                                     PP_BlockUntilComplete()) == PP_OK) {
+  //   while ((reader_funcs->GetNextEntry(reader, &entry,
+  //                                      PP_BlockUntilComplete()) == PP_OK) &&
+  //          entry->file_ref) {
   //     ProcessDirectoryEntry(entry);
   //   }
   //   core_funcs->ReleaseResource(reader);
