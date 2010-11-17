@@ -804,13 +804,15 @@ void InternetOptionsHandler::RefreshCellularPlanCallback(
 
 ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
     const SkBitmap& icon, const std::string& name, bool connecting,
-    bool connected, chromeos::ConnectionType connection_type, bool remembered,
-    chromeos::ActivationState activation_state, bool restricted_ip) {
-
+    bool connected, bool connectable, chromeos::ConnectionType connection_type,
+    bool remembered, chromeos::ActivationState activation_state,
+    bool restricted_ip) {
   ListValue* network = new ListValue();
 
   int connection_state = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  if (connecting)
+  if (!connectable)
+    connection_state = IDS_STATUSBAR_NETWORK_DEVICE_NOT_CONFIGURED;
+  else if (connecting)
     connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
   else if (connected)
     connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
@@ -847,6 +849,8 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
                     static_cast<int>(activation_state)));
   // restricted
   network->Append(Value::CreateBooleanValue(restricted_ip));
+  // connectable
+  network->Append(Value::CreateBooleanValue(connectable));
   return network;
 }
 
@@ -873,6 +877,7 @@ ListValue* InternetOptionsHandler::GetWiredList() {
           l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
           ethernet_network->connecting(),
           ethernet_network->connected(),
+          ethernet_network->connectable(),
           chromeos::TYPE_ETHERNET,
           false,
           chromeos::ACTIVATION_STATE_UNKNOWN,
@@ -903,6 +908,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
+        (*it)->connectable(),
         chromeos::TYPE_WIFI,
         false,
         chromeos::ACTIVATION_STATE_UNKNOWN,
@@ -923,6 +929,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
+        (*it)->connectable(),
         chromeos::TYPE_CELLULAR,
         false,
         (*it)->activation_state(),
@@ -937,6 +944,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
         false,
         false,
+        true,
         chromeos::TYPE_WIFI,
         false,
         chromeos::ACTIVATION_STATE_UNKNOWN,
@@ -967,6 +975,7 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
         (*it)->name(),
         (*it)->connecting(),
         (*it)->connected(),
+        true,
         chromeos::TYPE_WIFI,
         true,
         chromeos::ACTIVATION_STATE_UNKNOWN,

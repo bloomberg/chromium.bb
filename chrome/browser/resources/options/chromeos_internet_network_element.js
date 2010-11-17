@@ -57,7 +57,7 @@ cr.define('options.internet', function() {
           while (item && !item.data) {
             item = item.parentNode;
           }
-          if (item.connecting)
+          if (item.connecting || !item.connectable)
             return;
 
           if (item) {
@@ -106,7 +106,8 @@ cr.define('options.internet', function() {
       iconURL: network[6],
       remembered: network[7],
       activation_state: network[8],
-      restricted: network[9]
+      restricted: network[9],
+      connectable: network[10]
     };
     NetworkItem.decorate(el);
     return el;
@@ -148,6 +149,7 @@ cr.define('options.internet', function() {
     decorate: function() {
       this.className = 'network-item';
       this.connected = this.data.connected;
+      this.connectable = this.data.connectable;
       this.other = this.data.servicePath == '?';
       this.id = this.data.servicePath;
       // textDiv holds icon, name and status text.
@@ -470,6 +472,12 @@ cr.define('options.internet', function() {
    * @type {boolean}
    */
   cr.defineProperty(NetworkItem, 'other', cr.PropertyKind.BOOL_ATTR);
+
+  /**
+   * Whether the underlying network is connectable.
+   * @type {boolean}
+   */
+  cr.defineProperty(NetworkItem, 'connectable', cr.PropertyKind.BOOL_ATTR);
 
   return {
     NetworkElement: NetworkElement

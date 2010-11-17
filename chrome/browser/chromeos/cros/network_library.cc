@@ -35,6 +35,7 @@ namespace {
 // straight out of libcros:chromeos_network.cc. Fix this by moving
 // all handling of properties into libcros.
 // Network service properties we are interested in monitoring
+static const char* kConnectableProperty = "Connectable";
 static const char* kIsActiveProperty = "IsActive";
 static const char* kStateProperty = "State";
 static const char* kSignalStrengthProperty = "Strength";
@@ -219,14 +220,18 @@ Network::Network(const Network& network) {
   type_ = network.type();
   state_ = network.state();
   error_ = network.error();
+  connectable_ = network.connectable();
+  is_active_ = network.is_active();
 }
 
 void Network::Clear() {
-  state_ = STATE_UNKNOWN;
-  error_ = ERROR_UNKNOWN;
   service_path_.clear();
   device_path_.clear();
   ip_address_.clear();
+  type_ = TYPE_UNKNOWN;
+  state_ = STATE_UNKNOWN;
+  error_ = ERROR_UNKNOWN;
+  connectable_ = true;
   is_active_ = false;
 }
 
@@ -236,6 +241,7 @@ Network::Network(const ServiceInfo* service) {
   error_ = service->error;
   service_path_ = SafeString(service->service_path);
   device_path_ = SafeString(service->device_path);
+  connectable_ = service->connectable;
   is_active_ = service->is_active;
   ip_address_.clear();
   // If connected, get ip config.
@@ -1424,7 +1430,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     wifi3->set_name("Fake Wifi 3");
     wifi3->set_strength(50);
     wifi3->set_connected(false);
-    wifi3->set_encryption(SECURITY_WEP);
+    wifi3->set_encryption(SECURITY_8021X);
+    wifi3->set_connectable(false);
     wifi_networks_.push_back(wifi3);
 
     wifi_ = wifi2;
@@ -1641,7 +1648,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       }
       network = wireless;
     }
-    if (strcmp(key, kIsActiveProperty) == 0) {
+    if (strcmp(key, kConnectableProperty) == 0) {
+      if (value->GetAsBoolean(&boolval))
+        network->set_connectable(boolval);
+    } else if (strcmp(key, kIsActiveProperty) == 0) {
       if (value->GetAsBoolean(&boolval))
         network->set_active(boolval);
     } else if (strcmp(key, kStateProperty) == 0) {

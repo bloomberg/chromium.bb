@@ -49,6 +49,9 @@ class Network {
       state_ == STATE_IDLE; }
   ConnectionError error() const { return error_; }
   ConnectionState state() const { return state_; }
+  // Is this network connectable. Some networks are not yet ready to be
+  // connected. For example, an 8021X network without certificates.
+  bool connectable() const { return connectable_; }
   // Is this the active network, i.e, the one through which
   // network traffic is being routed? A network can be connected,
   // but not be carrying traffic.
@@ -68,6 +71,7 @@ class Network {
       : type_(TYPE_UNKNOWN),
         state_(STATE_UNKNOWN),
         error_(ERROR_UNKNOWN),
+        connectable_(true),
         is_active_(false) {}
   explicit Network(const Network& network);
   explicit Network(const ServiceInfo* service);
@@ -79,6 +83,7 @@ class Network {
   ConnectionType type_;
   ConnectionState state_;
   ConnectionError error_;
+  bool connectable_;
   bool is_active_;
 
  private:
@@ -89,6 +94,7 @@ class Network {
   void set_connected(bool connected) { state_ = (connected ?
       STATE_READY : STATE_IDLE); }
   void set_state(ConnectionState state) { state_ = state; }
+  void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_active(bool is_active) { is_active_ = is_active; }
 
   friend class NetworkLibraryImpl;

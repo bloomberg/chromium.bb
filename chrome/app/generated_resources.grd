@@ -10148,6 +10148,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED" desc="The network device status disconnected.">
         Disconnected
       </message>
+      <message name="IDS_STATUSBAR_NETWORK_DEVICE_NOT_CONFIGURED" desc="The network device status not configured.">
+        Not configured
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLED" desc="The network device status disabled.">
         Off
       </message>

@@ -568,6 +568,8 @@ void NetworkMenu::InitMenuItems() {
       SkBitmap badge = wifi_networks[i]->encrypted() ?
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : SkBitmap();
       int flag = FLAG_WIFI;
+      if (!wifi_networks[i]->connectable())
+        flag |= FLAG_DISABLED;
       if (active_wifi
           && wifi_networks[i]->service_path() == active_wifi->service_path())
         flag |= FLAG_ASSOCIATED;
@@ -626,6 +628,8 @@ void NetworkMenu::InitMenuItems() {
                                              true);
       SkBitmap badge = BadgeForNetworkTechnology(cell_networks[i]);
       int flag = FLAG_CELLULAR;
+      if (!cell_networks[i]->connectable())
+        flag |= FLAG_DISABLED;
       bool isActive = active_cellular &&
           cell_networks[i]->service_path() == active_cellular->service_path() &&
           (cell_networks[i]->connecting() || cell_networks[i]->connected());
