@@ -20,6 +20,7 @@ namespace {
 const wchar_t* kAllowedSwitches[] = {
   L"automation-channel",
   L"chrome-frame",
+  L"chrome-version",
   L"disable-renderer-accessibility",
   L"enable-experimental-extension-apis",
   L"force-renderer-accessibility",

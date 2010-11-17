@@ -45,6 +45,15 @@ static const wchar_t kUmaSendIntervalValue[] = L"UmaSendInterval";
 // threads.
 Lock g_ChromeFrameHistogramLock;
 
+namespace {
+std::wstring GetCurrentModuleVersion() {
+  scoped_ptr<FileVersionInfo> module_version_info(
+      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+  DCHECK(module_version_info.get() != NULL);
+  return module_version_info->file_version();
+}
+}
+
 class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:
@@ -304,6 +313,10 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   DVLOG(1) << "Profile path: " << params->profile_path().value();
   command_line->AppendSwitchPath(switches::kUserDataDir,
                                  params->profile_path());
+
+  // Ensure that Chrome is running the specified version of chrome.dll.
+  command_line->AppendSwitchNative(switches::kChromeVersion,
+                                   GetCurrentModuleVersion());
 
   if (!params->language().empty())
     command_line->AppendSwitchNative(switches::kLang, params->language());
@@ -1301,14 +1314,7 @@ void ChromeFrameAutomationClient::SendContextMenuCommandToChromeFrame(
 }
 
 std::wstring ChromeFrameAutomationClient::GetVersion() const {
-  static FileVersionInfo* version_info =
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule();
-
-  std::wstring version;
-  if (version_info)
-    version = version_info->product_version();
-
-  return version;
+  return GetCurrentModuleVersion();
 }
 
 void ChromeFrameAutomationClient::Print(HDC print_dc,
