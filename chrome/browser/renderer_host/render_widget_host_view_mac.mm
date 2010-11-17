@@ -1781,7 +1781,12 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 - (id)accessibilityAttributeValue:(NSString *)attribute {
   BrowserAccessibilityManager* manager =
       renderWidgetHostView_->browser_accessibility_manager_.get();
-  if ([attribute isEqualToString:NSAccessibilityChildrenAttribute] &&
+
+  // Contents specifies document view of RenderWidgetHostViewCocoa provided by
+  // BrowserAccessibilityManager. Children includes all subviews in addition to
+  // contents. Currently we do not have subviews besides the document view.
+  if (([attribute isEqualToString:NSAccessibilityChildrenAttribute] ||
+          [attribute isEqualToString:NSAccessibilityContentsAttribute]) &&
       manager) {
     return [NSArray arrayWithObjects:manager->
         GetRoot()->toBrowserAccessibilityCocoa(), nil];
@@ -1789,6 +1794,13 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     return NSAccessibilityScrollAreaRole;
   }
   id ret = [super accessibilityAttributeValue:attribute];
+  return ret;
+}
+
+- (NSArray*)accessibilityAttributeNames {
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  [ret addObject:NSAccessibilityContentsAttribute];
+  [ret addObjectsFromArray:[super accessibilityAttributeNames]];
   return ret;
 }
 
