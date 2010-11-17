@@ -4,6 +4,7 @@
 
 #include "chrome/common/multi_process_lock.h"
 
+#include <stdio.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
