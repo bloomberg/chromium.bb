@@ -260,14 +260,13 @@ if env['TARGET_ARCHITECTURE'] != 'arm':
 # We build a shared library with this build script to allow easier build
 # testing. This library can also be loaded into Chrome using --no-sandbox
 # --register-pepper-plugins="path/to/library;application/x-ppapi-nacl-srpc".
-# In the future, this plugin will be integrated with Chrome via gyp.
 #
-# The PPAPI plugin uses specific code from the ppapi/ subdirectory and will
-# soon require a library for proxying PPAPI to NaCl modules.
+# The .gyp files include rules used to link the plugin statically into Chrome.
+# (This is still work in progress as of mid-Nov 2010.)
 #
-# Note that url loading is not yet supported, so one must set
-# $NACL_PPAPI_LOCAL_ORIGIN=/path/to/client/native_client
-# to load files from a location at the local host.
+# The PPAPI plugin uses code from
+#   trusted/plugin/ppapi/ - for implementing NaCl as a trusted PPAPI plugin
+#   shared/ppapi_proxy/ - for proxying PPAPI to NaCl modules
 ppapi_inputs = [
     'ppapi/array_ppapi.cc',
     'ppapi/browser_interface_ppapi.cc',
