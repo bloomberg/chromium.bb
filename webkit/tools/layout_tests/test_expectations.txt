@@ -4,3 +4,10 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// Due to WebKit r72141 (needs rebaseline upstream?).
+BUG_LEVIN : fast/compact/001.html = IMAGE+TEXT
+BUG_LEVIN : fast/css/negative-leading.html = IMAGE+TEXT
+BUG_LEVIN : fast/forms/linebox-overflow-in-textarea-padding.html = IMAGE+TEXT
+BUG_LEVIN : fast/parser/style-script-head-test.html = TEXT
+BUG_LEVIN : http/tests/misc/acid3.html = IMAGE+TEXT
