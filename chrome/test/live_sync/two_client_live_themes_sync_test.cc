@@ -43,12 +43,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomTheme) {
   ASSERT_EQ(GetTheme(0), GetCustomTheme(verifier()));
 }
 
-// TODO(sync): Remove FAILS_ annotation after http://crbug.com/63285 is fixed.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_NativeTheme) {
-#else
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
-#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetTheme(GetProfile(0), GetTheme(0));
@@ -70,12 +65,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(UsingNativeTheme(verifier()));
 }
 
-// TODO(sync): Remove FAILS_ annotation after http://crbug.com/63285 is fixed.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_DefaultTheme) {
-#else
 IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
-#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetTheme(GetProfile(0), GetTheme(0));

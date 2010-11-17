@@ -196,8 +196,6 @@ BrowserThemeProvider::BrowserThemeProvider()
 
 BrowserThemeProvider::~BrowserThemeProvider() {
   FreePlatformCaches();
-
-  RemoveUnusedThemes();
 }
 
 void BrowserThemeProvider::Init(Profile* profile) {

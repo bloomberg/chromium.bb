@@ -205,6 +205,9 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Returns the set of IDR_* resources that should be tinted.
   static const std::set<int>& GetTintableToolbarButtons();
 
+  // Remove preference values for themes that are no longer in use.
+  void RemoveUnusedThemes();
+
   // Save the images to be written to disk, mapping file path to id.
   typedef std::map<FilePath, int> ImagesDiskCache;
 
@@ -246,9 +249,6 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Implementation of SetTheme() (and the fallback from LoadThemePrefs() in
   // case we don't have a theme pack).
   void BuildFromExtension(const Extension* extension);
-
-  // Remove preference values for themes that are no longer in use.
-  void RemoveUnusedThemes();
 
 #if defined(TOOLKIT_USES_GTK)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.

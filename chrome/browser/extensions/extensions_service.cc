@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
@@ -1462,6 +1463,13 @@ void ExtensionsService::GarbageCollectExtensions() {
       NewRunnableFunction(
           &extension_file_util::GarbageCollectExtensions, install_directory_,
           extension_paths));
+
+  // Also garbage-collect themes.  We check |profile_| to be
+  // defensive; in the future, we may call GarbageCollectExtensions()
+  // from somewhere other than Init() (e.g., in a timer).
+  if (profile_) {
+    profile_->GetThemeProvider()->RemoveUnusedThemes();
+  }
 }
 
 void ExtensionsService::OnLoadedInstalledExtensions() {
