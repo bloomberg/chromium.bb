@@ -295,11 +295,6 @@ nacl_glibc_skiplist = [
     # This uses a canned binary that is compiled w/ newlib.  A
     # glibc version might be useful.
     'run_fuzz_nullptr_test',
-    # These tests use sel_universal but that does not support the
-    # options we need (-s and -a).
-    'run_srpc_bad_service_test',
-    'run_srpc_basic_test',
-    'run_srpc_sysv_shm_test',
     # This tests the absence of "-s" but that is no good because
     # we currently force that option on.
     'run_stubout_mode_test',
@@ -958,9 +953,7 @@ def CommandSelLdrTestNacl(env, name, command,
     # TODO(mseaborn): Remove the need for the -s (stub out) option.
     sel_ldr_flags += ['-s']
 
-  # We use "-f" because sel_universal requires it, but otherwise we
-  # could use "['--'] + command" instead.
-  command = [sel_ldr] + sel_ldr_flags + ['-f', command[0], '--'] + command[1:]
+  command = [sel_ldr] + sel_ldr_flags + ['--'] + command
 
   # NOTE(robertm): log handling is a little magical
   # We do not pass these via flags because those are not usable for sel_ldr

@@ -4,14 +4,16 @@
  * be found in the LICENSE file.
  */
 
-/*
- * Second generation sel_universal implemented in C++ and with
- * (limited) multimedia support
- */
+// Second generation sel_universal implemented in C++ and with
+// (limited) multimedia support
 
-// NOTE: we need to include this so that it can "hijack" main
+#ifdef NACL_SEL_UNIVERSAL_INCLUDE_SDL
+  // NOTE: we need to include this so that it can "hijack" main
 #include <SDL.h>
+#endif
 
+#include <stdio.h>
+#include <string>
 #include <vector>
 
 #include "native_client/src/include/nacl_string.h"
@@ -22,25 +24,24 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 using std::vector;
+using std::string;
 
-
+#ifdef NACL_SEL_UNIVERSAL_INCLUDE_SDL
 // TODO(robertm): move this into its own header at some point
-extern void IntializeMultimediaHandler(NaClSrpcChannel* channel,
+extern void InitializeMultimediaHandler(NaClSrpcChannel* channel,
                                        int width,
                                        int height,
                                        const char* title);
+#endif
+
 static const char* kUsage =
   "Usage:\n"
   "\n"
-  "sel_universal_new [option*] -f nexe_file [-- sel_ldr_arg*] [-- nexe_arg*]\n"
+  "sel_universal [-f nacl_file] [sel_ldr_arg*] [-- [nacl_file] module_arg*]\n"
   "\n"
-  "where option may be\n"
-  "-f nacl_module        nacl module to execute\n"
-  "-v                    increase verbosity (can be repeated)\n"
-  "\n"
+  "Exactly one nacl_file argument is required.\n"
   "After startup the user is prompted for interactive commands.\n"
   "For sample commands have a look at: tests/srpc/srpc_basic_test.stdin\n";
-
 
 static NaClSrpcError Interpreter(NaClSrpcService* service,
                                  NaClSrpcChannel* channel,
@@ -52,99 +53,106 @@ static NaClSrpcError Interpreter(NaClSrpcService* service,
   return NaClSrpcInvokeV(channel, rpc_number, ins, outs);
 }
 
-
-/* NOTE: this used to be stack allocated inside main which cause
- * problems on ARM (probably a tool chain bug).
- * NaClSrpcChannel is pretty big (> 256kB)
- */
+// NOTE: this used to be stack allocated inside main which cause
+// problems on ARM (probably a tool chain bug).
+// NaClSrpcChannel is pretty big (> 256kB)
 struct NaClSrpcChannel command_channel;
 struct NaClSrpcChannel channel;
 
-int main(int  argc, char *argv[]) {
+// When given argc and argv this function (a) extracts the nacl_file argument,
+// (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
+// app_argv with nexe module args. Also see kUsage above for details.
+// It will call exit with codes 0 (help message) and 1 (incorrect args).
+static nacl::string ProcessArguments(int argc,
+                                     char* argv[],
+                                     vector<nacl::string>* const sel_ldr_argv,
+                                     vector<nacl::string>* const app_argv) {
+  int i;
+
+  if (argc == 1) {
+    printf("%s", kUsage);
+    exit(0);
+  }
+
+  // Extract '-f nacl_file' from args and transfer the rest to sel_ldr_argv
   nacl::string app_name;
-  int pass_debug = 0;
-  int width = 640;
-  int height = 480;
-  /* Descriptor transfer requires the following. */
-  NaClNrdAllModulesInit();
-
-  /* command line parsing */
-  while (1) {
-    const int opt = getopt(argc, argv, "df:v");
-    if (opt == -1) break;
-
-    switch (opt) {
-      case 'd':
-        pass_debug = 1;
-        break;
-      case 'f':
-        app_name = optarg;
-        break;
-      case 'v':
-        NaClLogIncrVerbosity();
-        break;
-      default:
-        fputs(kUsage, stderr);
-        return -1;
+  for (i = 1; i < argc; i++) {
+    // Check if the argument has the form -f nacl_file
+    if (string(argv[i]) == "-f" && i + 1 < argc) {
+      app_name = argv[i + 1];
+      ++i;
+    } else if (string(argv[i]) == "--help") {
+      printf("%s", kUsage);
+      exit(0);
+    } else if (string(argv[i]) == "--") {
+      // Done processing sel_ldr args. If no '-f nacl_file' was given earlier,
+      // the first argument after '--' is the nacl_file.
+      if (app_name == "" && i + 1 < argc) {
+        app_name = argv[i + 1];
+        i++;
+      }
+      break;
+    } else {
+      sel_ldr_argv->push_back(argv[i]);
     }
+  }
+  // Postcondition: i is the index of the first nexe module argument (if any)
+  // Postcondition: sel_ldr_argv contains the arguments to sel_ldr
+
+  // Initialize the arguments to the nexe module
+  for (int j = i; j < argc; j++) {
+    app_argv->push_back(argv[j]);
   }
 
   if (app_name == "") {
-    NaClLog(LOG_FATAL, "-f nacl_file must be specified\n");
-    return 1;
+    fprintf(stderr,
+            "sel_universal: '-f nacl_file' or '-- nacl_file' required\n");
+    exit(1);
   }
 
+  return app_name;
+}
+
+
+int main(int  argc, char* argv[]) {
+  // Get the arguments to sed_ldr and the nexe module
   vector<nacl::string> sel_ldr_argv;
   vector<nacl::string> app_argv;
+  nacl::string app_name =
+    ProcessArguments(argc, argv, &sel_ldr_argv, &app_argv);
 
-  int i;
-  /* remaining sel_universal arguments come first. */
-  for (i = 0; i < argc; ++i) {
-    if (nacl::string("--") == argv[i]) break;
-  }
-
+  // Add '-X 5' to sel_ldr arguments to create communication socket
   sel_ldr_argv.push_back("-X");
   sel_ldr_argv.push_back("5");
-  if (pass_debug) {
-    sel_ldr_argv.push_back("-d");
-  }
-  /* sel_ldr arguments come next. */
-  for (++i; i < argc; ++i) {
-    if (nacl::string("--") == argv[i]) break;
 
-    sel_ldr_argv.push_back(argv[i]);
-  }
+  // Descriptor transfer requires the following
+  NaClNrdAllModulesInit();
 
-  /* app args are last. */
-  for (++i; i < argc; ++i) {
-    app_argv.push_back(argv[i]);
-  }
-
-  /*
-   * Start sel_ldr with the given application and arguments.
-   */
+  // Start sel_ldr with the given application and arguments.
   nacl::SelLdrLauncher launcher;
   if (!launcher.StartFromCommandLine(app_name, 5, sel_ldr_argv, app_argv)) {
-    NaClLog(LOG_FATAL, "Launch failed\n");
+    NaClLog(LOG_FATAL, "sel_universal: Failed to launch sel_ldr\n");
   }
 
-  /*
-   * Open the communication channels to the service runtime.
-   */
+  // Open the communication channels to the service runtime.
   if (!launcher.OpenSrpcChannels(&command_channel, &channel)) {
-    NaClLog(LOG_FATAL, "Open channel failed\n");
+    fprintf(stderr, "sel_universal: Open channel failed\n");
+    exit(1);
   }
 
-  IntializeMultimediaHandler(&channel, width, height, "NaCl Module");
+#ifdef NACL_SEL_UNIVERSAL_INCLUDE_SDL
+  int width = 640;
+  int height = 480;
+  InitializeMultimediaHandler(&channel, width, height, "NaCl Module");
+#endif
 
   NaClSrpcCommandLoop(channel.client,
                       &channel,
                       Interpreter,
                       launcher.socket_address());
 
-  /*
-   * Close the connections to sel_ldr.
-   */
+
+  // Close the connections to sel_ldr.
   NaClSrpcDtor(&command_channel);
   NaClSrpcDtor(&channel);
 

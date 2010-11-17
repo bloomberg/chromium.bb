@@ -21,22 +21,32 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
 #       on mac (nonnacl_util_c)
 
 env.ComponentProgram('sel_universal',
-                     ['sel_universal.c',
-                      ],
-                     EXTRA_LIBS=['nonnacl_util_c',
-                                 'nonnacl_srpc',
-                                 'nrd_xfer',
-                                 'nacl_base',
-                                 'platform',
-                                 'gio',
-                                 'google_nacl_imc_c',
-                                 ],
-                     FRAMEWORKS=['Cocoa'],
-                     )
+                    ['sel_universal_new.cc',
+                     ],
+                    EXTRA_LIBS=['nonnacl_util_c',
+                                'nonnacl_srpc',
+                                'nrd_xfer',
+                                'nacl_base',
+                                'platform',
+                                'gio',
+                                'google_nacl_imc_c',
+                                ],
+                    FRAMEWORKS=['Cocoa'],
+                    )
+
+######################################################################
+# TODO: factor SDL support out of sel_universal itself
+# Exiting here and thus disabling the experimental SDL build of
+# sel_universal. SCons doesn't like building several executables
+# from the same .o file (sel_universal.o) and fixing this
+# may not be worth since we want to refactor SDL support anyway.
+# (see http://www.scons.org/doc/1.1.0/HTML/scons-user/x1392.html#AEN1510)
+######################################################################
+Return()
 
 ######################################################################
 # NOTE: below is a somewhat experimental section for
-#       a multimedia enabled sel_universal_new
+#       a multimedia enabled sel_universal
 #       currently only video output is working which is enough to
 #       make earth.nexe work
 #
@@ -132,6 +142,7 @@ def MakeExtraSdlLibs(env):
 sdl_env = MakeSdlEnv(env)
 
 sdl_env.ComponentLibrary('multimedia_sdl', ['multimedia_sdl.cc'])
+sdl_env.Append(CPPDEFINES=['NACL_SEL_UNIVERSAL_INCLUDE_SDL'])
 
 # work around a cast warning in multimedia_handler.cc
 sdl_env.Append(CCFLAGS=['-fno-strict-aliasing'])
@@ -139,7 +150,7 @@ sdl_env.Append(CCFLAGS=['-fno-strict-aliasing'])
 #       anything containing SDL static
 sdl_env.FilterOut(LINKFLAGS=['-static'])
 extra_libs = MakeExtraSdlLibs(sdl_env)
-node = sdl_env.ComponentProgram('sel_universal_new',
+node = sdl_env.ComponentProgram('sel_universal_sdl',
                                 ['sel_universal_new.cc',
                                  'multimedia_handler.cc'
                                  ],

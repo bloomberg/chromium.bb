@@ -140,12 +140,12 @@ static void SendVideoMemAndUpChannel(NaClSrpcChannel* channel,
 // * sets up a service for copy this video_memory into the framebuffer
 // * finally it calls the client rpc "nacl_multimedia_bridge" to communicate
 //   the shared memory area and the new service to the client
-void IntializeMultimediaHandler(NaClSrpcChannel* channel,
+void InitializeMultimediaHandler(NaClSrpcChannel* channel,
                                 int width,
                                 int height,
                                 const char* title) {
   DescWrapperFactory* factory = new DescWrapperFactory();
-  NaClLog(1, "IntializeMultimediaHandler\n");
+  NaClLog(1, "InitializeMultimediaHandler\n");
   g_mm = MakeMultimediaSDL(width, height, title);
 
   // NOTE: these are really NaClDescXferableDataDesc. Code was mimicked after
@@ -167,7 +167,7 @@ void IntializeMultimediaHandler(NaClSrpcChannel* channel,
   size_t mapped_size;
   shm->Map(reinterpret_cast<void**>(&g_video_share), &mapped_size);
 
-  NaClLog(1, "intializing the shared area at %p\n",
+  NaClLog(1, "initializing the shared area at %p\n",
           static_cast<void*>(g_video_share));
   g_video_share->u.h.revision = 0x101;
   g_video_share->u.h.video_width = width;

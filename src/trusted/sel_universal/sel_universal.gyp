@@ -37,7 +37,7 @@
       'target_name': 'sel_universal',
       'type': 'executable',
       'sources': [
-        'sel_universal.c',
+        'sel_universal_new.cc',
       ],
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
@@ -68,7 +68,7 @@
             'win_target': 'x64',
           },
           'sources': [
-            'sel_universal.c',
+            'sel_universal_new.cc',
           ],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
