@@ -28,17 +28,6 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/json_host_config.h"
-
-#if defined(OS_WIN)
-#include "remoting/host/capturer_gdi.h"
-#include "remoting/host/event_executor_win.h"
-#elif defined(OS_LINUX)
-#include "remoting/host/capturer_linux.h"
-#include "remoting/host/event_executor_linux.h"
-#elif defined(OS_MACOSX)
-#include "remoting/host/capturer_mac.h"
-#include "remoting/host/event_executor_mac.h"
-#endif
 #endif  // defined(ENABLED_REMOTING)
 
 ServiceProcess* g_service_process = NULL;
@@ -283,33 +272,9 @@ bool ServiceProcess::StartChromotingHost() {
   chromoting_context_.reset(new remoting::ChromotingHostContext());
   chromoting_context_->Start();
 
-  // Create capturer and executor. The ownership will be transfered
-  // to the chromoting host.
-  scoped_ptr<remoting::Capturer> capturer;
-  scoped_ptr<remoting::protocol::InputStub> input_stub;
-
-#if defined(OS_WIN)
-  capturer.reset(new remoting::CapturerGdi(
-      chromoting_context_->capture_message_loop()));
-  input_stub.reset(new remoting::EventExecutorWin(
-      chromoting_context_->capture_message_loop(), capturer.get()));
-#elif defined(OS_LINUX)
-  capturer.reset(new remoting::CapturerLinux(
-      chromoting_context_->capture_message_loop()));
-  input_stub.reset(new remoting::EventExecutorLinux(
-      chromoting_context_->capture_message_loop(), capturer.get()));
-#elif defined(OS_MACOSX)
-  capturer.reset(new remoting::CapturerMac(
-      chromoting_context_->capture_message_loop()));
-  input_stub.reset(new remoting::EventExecutorMac(
-      chromoting_context_->capture_message_loop(), capturer.get()));
-#endif
-
   // Create a chromoting host object.
   chromoting_host_ = new remoting::ChromotingHost(chromoting_context_.get(),
-                                                  chromoting_config_,
-                                                  capturer.release(),
-                                                  input_stub.release());
+                                                  chromoting_config_);
 
   // Then start the chromoting host.
   // When ChromotingHost is shutdown because of failure or a request that

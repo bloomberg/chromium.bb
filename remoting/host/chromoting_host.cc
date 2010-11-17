@@ -8,12 +8,21 @@
 #include "base/task.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
+#if defined(OS_WIN)
+#include "remoting/host/capturer_gdi.h"
+#include "remoting/host/event_executor_win.h"
+#elif defined(OS_LINUX)
+#include "remoting/host/capturer_linux.h"
+#include "remoting/host/event_executor_linux.h"
+#elif defined(OS_MACOSX)
+#include "remoting/host/capturer_mac.h"
+#include "remoting/host/event_executor_mac.h"
+#endif
 #include "remoting/base/encoder.h"
 #include "remoting/base/encoder_verbatim.h"
 #include "remoting/base/encoder_vp8.h"
 #include "remoting/base/encoder_zlib.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/capturer.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_stub_fake.h"
 #include "remoting/host/session_manager.h"
@@ -28,13 +37,44 @@ using remoting::protocol::ConnectionToClient;
 namespace remoting {
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
-                               MutableHostConfig* config,
-                               Capturer* capturer,
-                               protocol::InputStub* input_stub)
+                               MutableHostConfig* config)
+    : context_(context),
+      config_(config),
+#if defined(OS_WIN)
+      capturer_(new remoting::CapturerGdi(
+          context->capture_message_loop())),
+      input_stub_(new remoting::EventExecutorWin(
+          context->capture_message_loop(), capturer_.get())),
+#elif defined(OS_LINUX)
+      capturer_(new remoting::CapturerLinux(
+          context->capture_message_loop())),
+      input_stub_(new remoting::EventExecutorLinux(
+          context->capture_message_loop(), capturer_.get())),
+#elif defined(OS_MACOSX)
+      capturer_(new remoting::CapturerMac(
+          context->capture_message_loop())),
+      input_stub_(new remoting::EventExecutorMac(
+          context->capture_message_loop(), capturer_.get())),
+#endif
+      host_stub_(new HostStubFake()),
+      state_(kInitial) {
+}
+
+ChromotingHost::ChromotingHost(ChromotingHostContext* context,
+                               MutableHostConfig* config, Capturer* capturer)
     : context_(context),
       config_(config),
       capturer_(capturer),
-      input_stub_(input_stub),
+#if defined(OS_WIN)
+      input_stub_(new remoting::EventExecutorWin(
+          context->capture_message_loop(), capturer)),
+#elif defined(OS_LINUX)
+      input_stub_(new remoting::EventExecutorLinux(
+          context->capture_message_loop(), capturer)),
+#elif defined(OS_MACOSX)
+      input_stub_(new remoting::EventExecutorMac(
+          context->capture_message_loop(), capturer)),
+#endif
       host_stub_(new HostStubFake()),
       state_(kInitial) {
 }

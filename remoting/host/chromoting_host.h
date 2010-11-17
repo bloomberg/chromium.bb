@@ -63,8 +63,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public protocol::ConnectionToClient::EventHandler,
                        public JingleClient::Callback {
  public:
+  ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config);
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
-                 Capturer* capturer, protocol::InputStub* input_stub);
+                 Capturer* capturer);
   virtual ~ChromotingHost();
 
   // Asynchronously start the host process.
