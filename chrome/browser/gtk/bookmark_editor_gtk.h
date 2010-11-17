@@ -9,6 +9,7 @@
 #include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
 #include "base/gtest_prod_util.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -16,24 +17,19 @@
 class GURL;
 
 typedef union  _GdkEvent GdkEvent;
+typedef struct _GdkEventButton GdkEventButton;
 typedef struct _GtkTreeIter GtkTreeIter;
 typedef struct _GtkTreeSelection GtkTreeSelection;
 typedef struct _GtkTreeStore GtkTreeStore;
 typedef struct _GtkWidget GtkWidget;
 
+namespace gfx {
+class Point;
+}  // namespace gfx
+
 // GTK version of the bookmark editor dialog.
 class BookmarkEditorGtk : public BookmarkEditor,
                           public BookmarkModelObserver {
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeParent);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeParentAndURL);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeURLToExistingURL);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, EditTitleKeepsPosition);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, EditURLKeepsPosition);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ModelsMatch);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, MoveToNewParent);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, NewURL);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeURLNoTree);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeTitleNoTree);
  public:
   BookmarkEditorGtk(GtkWindow* window,
                     Profile* profile,
@@ -47,6 +43,20 @@ class BookmarkEditorGtk : public BookmarkEditor,
   void Close();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeParent);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeParentAndURL);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeURLToExistingURL);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, EditTitleKeepsPosition);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, EditURLKeepsPosition);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ModelsMatch);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, MoveToNewParent);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, NewURL);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeURLNoTree);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkEditorGtkTest, ChangeTitleNoTree);
+
+  class ContextMenuController;
+  friend class ContextMenuController;
+
   void Init(GtkWindow* parent_window);
 
   // BookmarkModel observer methods. Any structural change results in
@@ -104,6 +114,13 @@ class BookmarkEditorGtk : public BookmarkEditor,
 
   CHROMEGTK_CALLBACK_0(BookmarkEditorGtk, void, OnNewFolderClicked);
 
+  CHROMEGTK_CALLBACK_1(BookmarkEditorGtk, gboolean, OnTreeViewButtonPressEvent,
+                       GdkEventButton*);
+
+  void ShowContextMenu(const gfx::Point& point);
+
+  void NewFolder();
+
   // Profile the entry is from.
   Profile* profile_;
 
@@ -140,6 +157,9 @@ class BookmarkEditorGtk : public BookmarkEditor,
 
   // Is the tree shown?
   bool show_tree_;
+
+  // The context menu controller.
+  scoped_ptr<ContextMenuController> menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditorGtk);
 };

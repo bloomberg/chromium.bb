@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
+#include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -21,10 +22,17 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "gfx/gtk_util.h"
+#include "gfx/point.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "views/controls/menu/menu_2.h"
+#else
+#include "chrome/browser/gtk/menu_gtk.h"
+#endif
 
 namespace {
 
@@ -36,6 +44,143 @@ static const int kTreeWidth = 300;
 static const int kTreeHeight = 150;
 
 }  // namespace
+
+class BookmarkEditorGtk::ContextMenuController
+    : public menus::SimpleMenuModel::Delegate {
+ public:
+  explicit ContextMenuController(BookmarkEditorGtk* editor)
+      : editor_(editor),
+        running_menu_for_root_(false) {
+    menu_model_.reset(new menus::SimpleMenuModel(this));
+    menu_model_->AddItemWithStringId(COMMAND_EDIT, IDS_EDIT);
+    menu_model_->AddItemWithStringId(
+        COMMAND_NEW_FOLDER,
+        IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
+#if defined(TOOLKIT_VIEWS)
+    menu_.reset(new views::Menu2(menu_model_.get()));
+#else
+    menu_.reset(new MenuGtk(NULL, menu_model_.get()));
+#endif
+  }
+  virtual ~ContextMenuController() {}
+
+  void RunMenu(const gfx::Point& point) {
+    const BookmarkNode* selected_node = GetSelectedNode();
+    if (selected_node)
+      running_menu_for_root_ = selected_node->GetParent()->IsRoot();
+#if defined(TOOLKIT_VIEWS)
+    menu_->RunContextMenuAt(point);
+#else
+    menu_->PopupAsContextAt(gtk_get_current_event_time(), point);
+#endif
+  }
+
+  void Cancel() {
+    editor_ = NULL;
+#if defined(TOOLKIT_VIEWS)
+    menu_->CancelMenu();
+#else
+    menu_->Cancel();
+#endif
+  }
+
+ private:
+  enum ContextMenuCommand {
+    COMMAND_EDIT,
+    COMMAND_NEW_FOLDER
+  };
+
+  // Overridden from menus::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdEnabled(int command_id) const {
+    return !(command_id == COMMAND_EDIT && running_menu_for_root_) &&
+        (editor_ != NULL);
+  }
+
+  virtual bool IsCommandIdChecked(int command_id) const {
+    return false;
+  }
+
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator) {
+    return false;
+  }
+
+  virtual void ExecuteCommand(int command_id) {
+    if (!editor_)
+      return;
+
+    switch (command_id) {
+      case COMMAND_EDIT: {
+        GtkTreeIter iter;
+        if (!gtk_tree_selection_get_selected(editor_->tree_selection_,
+                                             NULL,
+                                             &iter)) {
+          return;
+        }
+
+        GtkTreePath* path = gtk_tree_model_get_path(
+            GTK_TREE_MODEL(editor_->tree_store_), &iter);
+        gtk_tree_view_expand_to_path(GTK_TREE_VIEW(editor_->tree_view_), path);
+
+        // Make the folder name editable.
+        gtk_tree_view_set_cursor(GTK_TREE_VIEW(editor_->tree_view_), path,
+            gtk_tree_view_get_column(GTK_TREE_VIEW(editor_->tree_view_), 0),
+            TRUE);
+
+        gtk_tree_path_free(path);
+        break;
+      }
+      case COMMAND_NEW_FOLDER:
+        editor_->NewFolder();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  int64 GetRowIdAt(GtkTreeModel* model, GtkTreeIter* iter) {
+    GValue value = { 0, };
+    gtk_tree_model_get_value(model, iter, bookmark_utils::ITEM_ID, &value);
+    int64 id = g_value_get_int64(&value);
+    g_value_unset(&value);
+    return id;
+  }
+
+  const BookmarkNode* GetNodeAt(GtkTreeModel* model, GtkTreeIter* iter) {
+    int64 id = GetRowIdAt(model, iter);
+    return (id > 0) ? editor_->bb_model_->GetNodeByID(id) : NULL;
+  }
+
+  const BookmarkNode* GetSelectedNode() {
+    GtkTreeModel* model;
+    GtkTreeIter iter;
+    if (!gtk_tree_selection_get_selected(editor_->tree_selection_,
+                                         &model,
+                                         &iter)) {
+      return NULL;
+    }
+
+    return GetNodeAt(model, &iter);
+  }
+
+  // The model and view for the right click context menu.
+  scoped_ptr<menus::SimpleMenuModel> menu_model_;
+#if defined(TOOLKIT_VIEWS)
+  scoped_ptr<views::Menu2> menu_;
+#else
+  scoped_ptr<MenuGtk> menu_;
+#endif
+
+  // The context menu was brought up for. Set to NULL when the menu is canceled.
+  BookmarkEditorGtk* editor_;
+
+  // If true, we're running the menu for the bookmark bar or other bookmarks
+  // nodes.
+  bool running_menu_for_root_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuController);
+};
 
 // static
 void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
@@ -181,6 +326,8 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
     tree_view_ = bookmark_utils::MakeTreeViewForStore(tree_store_);
     gtk_widget_set_size_request(tree_view_, kTreeWidth, kTreeHeight);
     tree_selection_ = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree_view_));
+    g_signal_connect(tree_view_, "button-press-event",
+                     G_CALLBACK(OnTreeViewButtonPressEventThunk), this);
 
     GtkTreePath* path = NULL;
     if (selected_id) {
@@ -396,6 +543,27 @@ void BookmarkEditorGtk::OnEntryChanged(GtkWidget* entry) {
 }
 
 void BookmarkEditorGtk::OnNewFolderClicked(GtkWidget* button) {
+  NewFolder();
+}
+
+gboolean BookmarkEditorGtk::OnTreeViewButtonPressEvent(GtkWidget* widget,
+                                                       GdkEventButton* event) {
+  if (event->button == 3) {
+    gfx::Point pt(event->x_root, event->y_root);
+    ShowContextMenu(pt);
+  }
+
+  return FALSE;
+}
+
+void BookmarkEditorGtk::ShowContextMenu(const gfx::Point& point) {
+  if (!menu_controller_.get())
+    menu_controller_.reset(new ContextMenuController(this));
+
+  menu_controller_->RunMenu(point);
+}
+
+void BookmarkEditorGtk::NewFolder() {
   GtkTreeIter iter;
   if (!gtk_tree_selection_get_selected(tree_selection_,
                                        NULL,
