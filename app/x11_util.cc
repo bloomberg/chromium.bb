@@ -56,7 +56,7 @@ CachedPictFormats* get_cached_pict_formats() {
 const size_t kMaxCacheSize = 5;
 
 int DefaultX11ErrorHandler(Display* d, XErrorEvent* e) {
-  LOG(FATAL) << GetErrorEventDescription(d, e);
+  LOG(ERROR) << GetErrorEventDescription(d, e);
   return 0;
 }
 

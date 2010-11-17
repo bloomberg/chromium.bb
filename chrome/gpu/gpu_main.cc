@@ -30,8 +30,6 @@
 #endif
 
 #if defined(USE_X11)
-#include "app/x11_util.h"
-#include "app/x11_util_internal.h"
 #include "gfx/gtk_util.h"
 #endif
 
@@ -44,19 +42,7 @@ const int kFieldTrialSize = 1;
 const int kMinGpuTimeout = 5;
 const int kMaxGpuTimeout = 20;
 
-#if defined(USE_X11)
-int GpuX11ErrorHandler(Display* d, XErrorEvent* error) {
-  LOG(ERROR) << x11_util::GetErrorEventDescription(d, error);
-  return 0;
-}
-
-void SetGpuX11ErrorHandlers() {
-  // Set up the error handlers so that only general errors aren't fatal.
-  x11_util::SetX11ErrorHandlers(GpuX11ErrorHandler, NULL);
-}
-#endif
-
-}
+}  // namespace
 
 // Main function for starting the Gpu process.
 int GpuMain(const MainFunctionParams& parameters) {
@@ -94,7 +80,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   // should just send a raw display connection down to the GPUProcessor.
   g_thread_init(NULL);
   gfx::GtkInitFromCommandLine(command_line);
-  SetGpuX11ErrorHandlers();
 #endif
 
   // Load the GL implementation and locate the bindings before starting the GPU
