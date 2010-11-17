@@ -1,26 +1,30 @@
 // Copyright 2010 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can
 // be found in the LICENSE file.
+
 #include "native_client/tests/ppapi_geturl/module.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ppapi/c/pp_errors.h>
-#include <ppapi/c/ppb_instance.h>
-#include <ppapi/c/dev/ppp_class_deprecated.h>
+
 #include "native_client/tests/ppapi_geturl/scriptable_object.h"
+
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/dev/ppp_class_deprecated.h"
 
 namespace {
 PPP_Instance instance_interface;
 Module* singeton_ = NULL;
 }
 
-bool Instance_DidCreate(PP_Instance pp_instance,
+PP_Bool Instance_DidCreate(PP_Instance pp_instance,
                         uint32_t argc,
                         const char* argn[],
                         const char* argv[]) {
   printf("--- Instance_DidCreate\n");
-  return true;
+  return PP_TRUE;
 }
 
 void Instance_DidDestroy(PP_Instance instance) {
@@ -33,20 +37,20 @@ void Instance_DidChangeView(PP_Instance pp_instance,
   printf("--- Instance_DidChangeView\n");
 }
 
-void Instance_DidChangeFocus(PP_Instance pp_instance, bool has_focus) {
+void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {
   printf("--- Instance_DidChangeFocus\n");
 }
 
-bool Instance_HandleInputEvent(PP_Instance pp_instance,
+PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
                                const PP_InputEvent* event) {
   printf("--- Instance_HandleInputEvent\n");
-  return false;
+  return PP_FALSE;
 }
 
-bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
+PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
                                  PP_Resource pp_url_loader) {
   printf("--- Instance_HandleDocumentLoad\n");
-  return false;
+  return PP_FALSE;
 }
 
 PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
@@ -63,13 +67,6 @@ PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
           obj);
     }
   }
-  return v;
-}
-
-PP_Var Instance_GetSelectedText(PP_Instance pp_instance,
-                                bool html) {
-  printf("--- Instance_GetSelectedText\n");
-  PP_Var v = PP_MakeUndefined();
   return v;
 }
 
@@ -102,7 +99,6 @@ Module::Module(PP_Module module_id, PPB_GetInterface get_browser_interface)
   instance_interface.HandleInputEvent = Instance_HandleInputEvent;
   instance_interface.HandleDocumentLoad = Instance_HandleDocumentLoad;
   instance_interface.GetInstanceObject = Instance_GetInstanceObject;
-  instance_interface.GetSelectedText = Instance_GetSelectedText;
   core_interface_ =
       reinterpret_cast<const PPB_Core*>(
           GetBrowserInterface(PPB_CORE_INTERFACE));
@@ -235,7 +231,7 @@ void Module::ReportResult(PP_Instance pp_instance,
   PP_Var args[3];
   args[0] = Module::StrToVar(fname);
   args[1] = Module::StrToVar(text);
-  args[2] = PP_MakeBool(success);
+  args[2] = PP_MakeBool(success ? PP_TRUE : PP_FALSE);
 
   ppb_var_interface->Call(window_var,
                           method_name_var,
@@ -249,4 +245,3 @@ void Module::ReportResult(PP_Instance pp_instance,
   ppb_var_interface->Release(exception_var);
   ppb_var_interface->Release(window_var);
 }
-

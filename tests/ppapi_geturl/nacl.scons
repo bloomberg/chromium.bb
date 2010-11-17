@@ -2,6 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This is a C PPAPI-based version of ../npapi_geturl.
+#
+# ppapi_geturl.html - test driver that loads the nexe and scripts it
+# ppapi_geturl_success.html - to be url-loaded and displayed w/n driver html
+#
+# ppapi_geturl.cc - implementation of PPP interface
+# module.h/cc - implementation of PPP_Instance interface
+# scriptable_object.h/cc - implementation of the scripting interface
+# url_load_request.h/cc - url loading helper
+
+
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
@@ -21,22 +32,3 @@ env.Publish('ppapi_geturl.nexe', 'run',
             ['ppapi_geturl.html',
              'ppapi_geturl_success.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
-
-
-# TODO(robertm): this may work already but needs to be tested
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
-
-# Run the example tests under Selenium.
-BROWSER_TESTS = ['browser_tests']
-node = env.BrowserTester(
-    'ppapi_geturl_browser_test.out',
-     url='ppapi_geturl.html',
-     files=[ppapi_geturl_nexe,
-            env.File('ppapi_geturl.html'),
-            env.File('ppapi_geturl_success.html'),
-            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-            ],
-     browser='*firefox',
-     )
-env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_ppapi_geturl_browser_test')
