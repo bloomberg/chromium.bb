@@ -3,6 +3,7 @@
 <script>
 var firstWindowId;
 var secondWindowId;
+var thirdWindowId;
 var testTabId;
 
 chrome.test.runTests([
@@ -72,22 +73,22 @@ chrome.test.runTests([
   function setupTwoWindows() {
     createWindow(["about:blank", "chrome://newtab/", pageUrl("a")], {},
                 pass(function(winId, tabIds) {
-      firstWindowId = winId;
+      secondWindowId = winId;
       testTabId = tabIds[2];
 
       createWindow(["chrome://newtab/", pageUrl("b")], {},
                            pass(function(winId, tabIds) {
-        secondWindowId = winId;
+        thirdWindowId = winId;
       }));
     }));
   },
 
   function getAllInWindow() {
-    chrome.tabs.getAllInWindow(firstWindowId,
+    chrome.tabs.getAllInWindow(secondWindowId,
                                pass(function(tabs) {
       assertEq(3, tabs.length);
       for (var i = 0; i < tabs.length; i++) {
-        assertEq(firstWindowId, tabs[i].windowId);
+        assertEq(secondWindowId, tabs[i].windowId);
         assertEq(i, tabs[i].index);
 
         // The first tab should be selected
@@ -98,11 +99,11 @@ chrome.test.runTests([
       assertEq(pageUrl("a"), tabs[2].url);
     }));
 
-    chrome.tabs.getAllInWindow(secondWindowId,
+    chrome.tabs.getAllInWindow(thirdWindowId,
                                pass(function(tabs) {
       assertEq(2, tabs.length);
       for (var i = 0; i < tabs.length; i++) {
-        assertEq(secondWindowId, tabs[i].windowId);
+        assertEq(thirdWindowId, tabs[i].windowId);
         assertEq(i, tabs[i].index);
       }
       assertEq("chrome://newtab/", tabs[0].url);
@@ -110,16 +111,12 @@ chrome.test.runTests([
     }));
   },
 
-  /*
-  :: sigh :: This test used to be disabled for unrelated reasons, but while it
-  was, the underlying functionality was broken. crbug.com/60795
   function getAllInWindowNullArg() {
     chrome.tabs.getAllInWindow(null, pass(function(tabs) {
-      assertEq(2, tabs.length);
-      assertEq(secondWindowId, tabs[0].windowId);
+      assertEq(5, tabs.length);
+      assertEq(firstWindowId, tabs[0].windowId);
     }));
   },
-  */
 
   function update() {
     chrome.tabs.get(testTabId, pass(function(tab) {
@@ -137,7 +134,7 @@ chrome.test.runTests([
   },
 
   function updateSelect() {
-    chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
+    chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
       assertEq(true, tabs[0].selected);
       assertEq(false, tabs[1].selected);
       assertEq(false, tabs[2].selected);
@@ -146,7 +143,7 @@ chrome.test.runTests([
                          pass(function(tab1){
         // Check update of tab[1].
         chrome.test.assertEq(true, tab1.selected);
-        chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
+        chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
           assertEq(true, tabs[1].selected);
           assertEq(false, tabs[2].selected);
           // Select tab[2].
@@ -155,7 +152,7 @@ chrome.test.runTests([
                              pass(function(tab2){
             // Check update of tab[2].
             chrome.test.assertEq(true, tab2.selected);
-            chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
+            chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
               assertEq(false, tabs[1].selected);
               assertEq(true, tabs[2].selected);
             }));

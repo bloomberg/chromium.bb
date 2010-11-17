@@ -195,6 +195,12 @@ class TabContentsIterator {
     return cur_ == NULL;
   }
 
+  // Returns the Browser instance associated with the current TabContents.
+  // Valid as long as !Done()
+  Browser* browser() const {
+    return *browser_iterator_;
+  }
+
   // Returns the current TabContents, valid as long as !Done()
   TabContents* operator->() const {
     return cur_;

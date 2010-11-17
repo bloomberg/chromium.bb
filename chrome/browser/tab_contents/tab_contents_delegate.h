@@ -30,7 +30,6 @@ class HistoryAddPageArgs;
 
 struct ContextMenuParams;
 class DownloadItem;
-class ExtensionFunctionDispatcher;
 class GURL;
 class HtmlDialogUIDelegate;
 struct NativeWebKeyboardEvent;
@@ -184,12 +183,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // this to disable inactive rendering for the frame in the window the select
   // is opened within if necessary.
   virtual void RenderWidgetShowing();
-
-  // This is used when the contents is an extension that needs to route
-  // api calls through to the Browser process.
-  virtual ExtensionFunctionDispatcher* CreateExtensionFunctionDispatcher(
-      RenderViewHost* render_view_host,
-      const std::string& extension_id);
 
   // This is called when WebKit tells us that it is done tabbing through
   // controls on the page. Provides a way for TabContentsDelegates to handle

@@ -249,11 +249,6 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void SetFocusToLocationBar(bool select_all) {}
   virtual bool ShouldFocusPageAfterCrash() { return false; }
   virtual void RenderWidgetShowing() {}
-  virtual ExtensionFunctionDispatcher* CreateExtensionFunctionDispatcher(
-      RenderViewHost* render_view_host,
-      const std::string& extension_id) {
-    return NULL;
-  }
   virtual bool TakeFocus(bool reverse) { return false; }
   virtual void LostCapture() {
     CommitFromMouseReleaseIfNecessary();

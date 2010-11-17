@@ -185,9 +185,14 @@ void ExtensionDOMUI::ProcessDOMUIMessage(
 }
 
 Browser* ExtensionDOMUI::GetBrowser() const {
-  // TODO(beng): This is an improper direct dependency on Browser. Route this
-  // through some sort of delegate.
-  return BrowserList::FindBrowserWithProfile(DOMUI::GetProfile());
+  TabContents* contents = tab_contents();
+  TabContentsIterator tab_iterator;
+  for (; !tab_iterator.done(); ++tab_iterator) {
+    if (contents == *tab_iterator)
+      return tab_iterator.browser();
+  }
+
+  return NULL;
 }
 
 TabContents* ExtensionDOMUI::associated_tab_contents() const {
