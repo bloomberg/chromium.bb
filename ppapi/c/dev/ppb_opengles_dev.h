@@ -242,6 +242,8 @@ struct PPB_OpenGLES_Dev {
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
       GLsizei height, GLenum format, GLenum type, GLenum access);
   void (*UnmapTexSubImage2D)(const void* mem);
+  void (*CopyTextureToParentTexture)(
+      GLuint client_child_id, GLuint client_parent_id);
 };
 
 #endif  // PPAPI_C_DEV_PPB_OPENGLES_DEV_H_

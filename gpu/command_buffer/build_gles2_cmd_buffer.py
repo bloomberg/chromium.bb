@@ -5165,23 +5165,23 @@ class GLGenerator(object):
         filename,
         "// This interface is used to access common and lite profile OpenGL ES "
         "2.0\n// functions.\n",
-        2)
+        3)
 
-    file.Write("#include \"../GLES2/khrplatform.h\"\n\n")
+    file.Write("#include \"ppapi/GLES2/khrplatform.h\"\n\n")
 
-    file.Write("#define PPB_OPENGLES_INTERFACE \"PPB_OpenGLES;2.0\"\n\n")
+    file.Write("#define PPB_OPENGLES_DEV_INTERFACE \"PPB_OpenGLES(Dev);2.0\"\n\n")
 
     for (k, v) in _GL_TYPES.iteritems():
       file.Write("typedef %s %s;\n" % (v, k))
 
-    file.Write("\ntypedef struct _ppb_OpenGLES {\n")
+    file.Write("\nstruct PPB_OpenGLES_Dev {\n")
     for func in self.original_functions:
       if func.name[-3:] == "EXT":
         continue
       file.Write("  %s (*%s)(%s);\n" %
                  (func.return_type, func.name,
                   func.MakeTypedOriginalArgString("")))
-    file.Write("} PPB_OpenGLES;\n\n")
+    file.Write("};\n\n")
 
     file.Close()
 
@@ -5195,7 +5195,7 @@ class GLGenerator(object):
     file.Write("#include \"webkit/glue/plugins/pepper_graphics_3d.h\"\n\n")
 
     file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"")
-    file.Write("\n#include \"third_party/ppapi/c/ppb_opengles.h\"\n\n")
+    file.Write("\n#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n\n")
 
     file.Write("namespace pepper {\n\n")
     file.Write("namespace {\n\n")
@@ -5214,7 +5214,7 @@ class GLGenerator(object):
                   func.MakeOriginalArgString("")))
       file.Write("}\n")
 
-    file.Write("\nconst PPB_OpenGLES ppb_opengles = {\n")
+    file.Write("\nconst struct PPB_OpenGLES_Dev ppb_opengles = {\n")
 
     file.Write("  &")
     file.Write(",\n  &".join(
@@ -5225,7 +5225,7 @@ class GLGenerator(object):
     file.Write("}  // namespace\n")
 
     file.Write("""
-const PPB_OpenGLES* Graphics3D::GetOpenGLESInterface() {
+const PPB_OpenGLES_Dev* Graphics3D::GetOpenGLESInterface() {
   return &ppb_opengles;
 }
 
@@ -5248,7 +5248,7 @@ def main(argv):
       help="generate a docs friendly version of the command formats.")
   parser.add_option(
       "--alternate-mode", type="choice",
-      choices=("ppapi", "chrome_ppapi", "ppapi_gles2"),
+      choices=("ppapi", "chrome_ppapi"),
       help="generate files for other projects. \"ppapi\" must be run from the "
       "directory containing the ppapi directory, and will generate ppapi "
       "bindings. \"chrome_ppapi\" must be run from chrome src directory and "
@@ -5263,7 +5263,7 @@ def main(argv):
   gen.ParseGLH("common/GLES2/gl2.h")
 
   if options.alternate_mode == "ppapi":
-    gen.WritePepperGLES2Interface("ppapi/c/ppb_opengles.h")
+    gen.WritePepperGLES2Interface("ppapi/c/dev/ppb_opengles_dev.h")
 
   elif options.alternate_mode == "chrome_ppapi":
     gen.WritePepperGLES2Implementation(

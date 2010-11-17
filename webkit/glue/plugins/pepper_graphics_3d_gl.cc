@@ -550,8 +550,13 @@ void* MapTexSubImage2D(
 void UnmapTexSubImage2D(const void* mem) {
   Graphics3D::GetCurrent()->impl()->UnmapTexSubImage2D(mem);
 }
+void CopyTextureToParentTexture(
+    GLuint client_child_id, GLuint client_parent_id) {
+  Graphics3D::GetCurrent()->impl()->CopyTextureToParentTexture(
+      client_child_id, client_parent_id);
+}
 
-const PPB_OpenGLES_Dev ppb_opengles = {
+const struct PPB_OpenGLES_Dev ppb_opengles = {
   &ActiveTexture,
   &AttachShader,
   &BindAttribLocation,
@@ -703,7 +708,8 @@ const PPB_OpenGLES_Dev ppb_opengles = {
   &MapBufferSubData,
   &UnmapBufferSubData,
   &MapTexSubImage2D,
-  &UnmapTexSubImage2D
+  &UnmapTexSubImage2D,
+  &CopyTextureToParentTexture
 };
 
 }  // namespace
