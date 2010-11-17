@@ -568,9 +568,10 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
   CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
       image_name, widget);
   if (event->area.y < surface->Height()) {
-    surface->SetSource(cr,
-        0,
-        UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
+    int offset = (IsMaximized() || (!UseCustomFrame())) ?
+                 -kCustomFrameBackgroundVerticalOffset : 0;
+    surface->SetSource(cr, 0, offset);
+
     // The frame background isn't tiled vertically.
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr, event->area.x, event->area.y,
