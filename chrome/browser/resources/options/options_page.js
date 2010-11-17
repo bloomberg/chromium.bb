@@ -109,8 +109,7 @@ cr.define('options', function() {
         pageInfo.page.visible = false;
         // Since the managed pref banner lives outside the overlay, and the
         // parent is not changing visibility, update the banner explicitly.
-        var banner = $('managed-prefs-banner');
-        banner.style.display = pageInfo.parentPage.managed ? 'block' : 'none';
+        pageInfo.parentPage.updateManagedBannerVisibility();
       }
     }
   };
@@ -138,7 +137,7 @@ cr.define('options', function() {
     tab.classList.add('active-tab');
     $(tab.getAttribute('tab-contents')).classList.add('active-tab-contents');
     this.activeNavTab = tab;
-  }
+  };
 
   /**
    * Registers new options page.
@@ -232,7 +231,18 @@ cr.define('options', function() {
     setManagedBannerVisibility: function(visible) {
       this.managed = visible;
       if (this.visible) {
-        $('managed-prefs-banner').style.display = visible ? 'block' : 'none';
+        this.updateManagedBannerVisibility();
+      }
+    },
+
+    /**
+     * Updates managed banner visibility state.
+     */
+    updateManagedBannerVisibility: function() {
+      if (this.managed) {
+        $('managed-prefs-banner').classList.remove('hidden');
+      } else {
+        $('managed-prefs-banner').classList.add('hidden');
       }
     },
 
@@ -253,36 +263,32 @@ cr.define('options', function() {
         return;
 
       if (visible) {
-        this.pageDiv.style.display = 'block';
+        this.pageDiv.classList.remove('hidden');
         if (this.isOverlay) {
-          var overlay = $('overlay');
-          overlay.classList.remove('hidden');
+          $('overlay').classList.remove('hidden');
           document.addEventListener('keydown',
                                     OptionsPage.clearOverlaysOnEsc_);
         } else {
           if (this.isSubPageSheet)
             $('subpage-sheet-container').classList.remove('hidden');
 
-          var banner = $('managed-prefs-banner');
-          banner.style.display = this.managed ? 'block' : 'none';
+          this.updateManagedBannerVisibility();
 
           // Recent webkit change no longer allows url change from "chrome://".
-          window.history.pushState({pageName: this.name},
-                                   this.title);
+          window.history.pushState({pageName: this.name}, this.title);
         }
         if (this.tab) {
           this.tab.classList.add('navbar-item-selected');
         }
       } else {
+        this.pageDiv.classList.add('hidden');
         if (this.isOverlay) {
-          var overlay = $('overlay');
-          overlay.classList.add('hidden');
+          $('overlay').classList.add('hidden');
           document.removeEventListener('keydown',
                                        OptionsPage.clearOverlaysOnEsc_);
         } else if (this.isSubPageSheet) {
           $('subpage-sheet-container').classList.add('hidden');
         }
-        this.pageDiv.style.display = 'none';
         if (this.tab) {
           this.tab.classList.remove('navbar-item-selected');
         }
