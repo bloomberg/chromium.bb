@@ -1,0 +1,35 @@
+body {
+  margin: 10px 8px;
+}
+html[dir="ltr"] .icon {
+  float: right;
+  margin: 0 6px 0 3px;
+  -webkit-transform: scale(-1, 1);
+}
+html[dir="rtl"] .icon {
+  float: left;
+  margin: 0 3px 0 6px;
+}
+.content {
+  border-radius: 5px 5px;
+  background-color: #eee;
+  color: black;
+  padding: 10px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 66px;
+}
+.extensionsmessage {
+  color: black;
+  padding: 10px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 5px;
+}
+.extensionicon {
+  float: left;
+  margin: 10px 5px 0 0px;
+  width: 30px;
+}

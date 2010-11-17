@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
 #include "base/string16.h"
@@ -59,6 +60,10 @@ const char kLearnMoreIncognitoUrl[] =
 #else
     "http://www.google.com/support/chrome/bin/answer.py?answer=95464";
 #endif
+
+// The URL for the Learn More page shown on guest session new tab.
+const char kLearnMoreGuestSessionUrl[] =
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
 
 // The URL for bookmark sync service help.
 const char kSyncServiceHelpUrl[] =
@@ -200,9 +205,20 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   DictionaryValue localized_strings;
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  int new_tab_message_ids = IDS_NEW_TAB_OTR_MESSAGE;
+  int new_tab_html_idr = IDR_INCOGNITO_TAB_HTML;
+  const char* new_tab_link = kLearnMoreIncognitoUrl;
+  // TODO(altimofeev): consider implementation without 'if def' usage.
+#if defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+    new_tab_message_ids = IDS_NEW_TAB_GUEST_SESSION_MESSAGE;
+    new_tab_html_idr = IDR_GUEST_SESSION_TAB_HTML;
+    new_tab_link = kLearnMoreGuestSessionUrl;
+  }
+#endif
   localized_strings.SetString("content",
-      l10n_util::GetStringFUTF16(IDS_NEW_TAB_OTR_MESSAGE,
-                                 GetUrlWithLang(GURL(kLearnMoreIncognitoUrl))));
+      l10n_util::GetStringFUTF16(new_tab_message_ids,
+                                 GetUrlWithLang(GURL(new_tab_link))));
   localized_strings.SetString("extensionsmessage",
       l10n_util::GetStringFUTF16(IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
@@ -216,7 +232,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 
   static const base::StringPiece incognito_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_INCOGNITO_TAB_HTML));
+          new_tab_html_idr));
 
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       incognito_tab_html, &localized_strings);
