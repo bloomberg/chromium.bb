@@ -35,36 +35,21 @@
 
 #include "plugin/cross/main.h"
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/logging.h"
-#include "base/scoped_ptr.h"
-
 #import <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>
 #include <OpenGL/OpenGL.h>
 #include <AGL/agl.h>
 #include <AGL/aglRenderers.h>
 
+#include "base/logging.h"
 #include "core/cross/event.h"
-#include "statsreport/metrics.h"
+#include "core/mac/display_window_mac.h"
 #include "plugin/cross/config.h"
-#include "plugin/cross/plugin_logging.h"
 #include "plugin/cross/plugin_metrics.h"
-#include "plugin/cross/o3d_glue.h"
-#include "plugin/cross/out_of_memory.h"
-#include "plugin/cross/whitelist.h"
 #include "plugin/mac/plugin_mac.h"
 #include "plugin/mac/graphics_utils_mac.h"
 #include "plugin/mac/fullscreen_window_mac.h"
 #import "plugin/mac/o3d_layer.h"
-
-
-#if !defined(O3D_INTERNAL_PLUGIN)
-o3d::PluginLogging* g_logger = NULL;
-bool g_logging_initialized = false;
-#endif
 
 using glue::_o3d::PluginObject;
 using glue::StreamManager;
@@ -75,18 +60,11 @@ using o3d::FullscreenWindowMac;
 using o3d::Renderer;
 
 namespace {
-// We would normally make this a stack variable in main(), but in a
-// plugin, that's not possible, so we make it a global. When the DLL is loaded
-// this it gets constructed and when it is unlooaded it is destructed. Note
-// that this cannot be done in NP_Initialize and NP_Shutdown because those
-// calls do not necessarily signify the DLL being loaded and unloaded. If the
-// DLL is not unloaded then the values of global variables are preserved.
-base::AtExitManager g_at_exit_manager;
 
 #define CFTIMER
 // #define DEFERRED_DRAW_ON_NULLEVENTS
 
-  
+
 // Helper that extracts the O3DLayer obj c object from the PluginObject
 // and coerces it to the right type.  The code can't live in the PluginObject
 // since it's c++ code and doesn't know about objective c types, and it saves
@@ -477,37 +455,6 @@ enum nsPluginEventType {
   nsPluginEventType_Idle = 0
 };
 
-NPError InitializePlugin() {
-#if !defined(O3D_INTERNAL_PLUGIN)
-  if (!o3d::SetupOutOfMemoryHandler())
-    return NPERR_MODULE_LOAD_FAILED_ERROR;
-
-  o3d::InitializeBreakpad();
-
-#ifdef CFTIMER
-  o3d::gRenderTimer.Start();
-#endif  // CFTIMER
-
-  // Turn on the logging.
-  CommandLine::Init(0, NULL);
-
-  FilePath log;
-  file_util::GetTempDir(&log);
-  log = log.Append("debug.log");
-
-  InitLogging(log.value().c_str(),
-              logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
-              logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE);
-
-  DLOG(INFO) << "NP_Initialize";
-
-  o3d::SetupOutOfMemoryHandler();
-#endif  // O3D_INTERNAL_PLUGIN
-
-  return NPERR_NO_ERROR;
-}
-
 // When to prefer Core Animation. Safari's support in 10.5 was too
 // buggy to attempt to use.
 static bool PreferCoreAnimation() {
@@ -637,18 +584,11 @@ namespace o3d {
 extern "C" {
 #endif
 
-NPError OSCALL NP_Initialize(NPNetscapeFuncs* browserFuncs) {
-  HANDLE_CRASHES;
-  NPError retval = InitializeNPNApi(browserFuncs);
-  if (retval != NPERR_NO_ERROR) return retval;
-  return InitializePlugin();
-}
-
 #if !defined(O3D_INTERNAL_PLUGIN)
 
 // Wrapper that discards the return value to match the expected type of
 // NPP_ShutdownProcPtr.
-void NPP_ShutdownWrapper() {
+static void NPP_ShutdownWrapper() {
   NP_Shutdown();
 }
 
@@ -669,22 +609,32 @@ int main(NPNetscapeFuncs* browserFuncs,
 
 #endif  // O3D_INTERNAL_PLUGIN
 
-NPError OSCALL NP_Shutdown(void) {
+}  // namespace o3d / extern "C"
+
+namespace o3d {
+
+NPError PlatformPreNPInitialize() {
 #if !defined(O3D_INTERNAL_PLUGIN)
-  HANDLE_CRASHES;
-  DLOG(INFO) << "NP_Shutdown";
+  o3d::InitializeBreakpad();
 
-  if (g_logger) {
-    // Do a last sweep to aggregate metrics before we shut down
-    g_logger->ProcessMetrics(true, false, false);
-    delete g_logger;
-    g_logger = NULL;
-    g_logging_initialized = false;
-    stats_report::g_global_metrics.Uninitialize();
-  }
+#ifdef CFTIMER
+  o3d::gRenderTimer.Start();
+#endif  // CFTIMER
+#endif  // O3D_INTERNAL_PLUGIN
 
-  CommandLine::Reset();
+  return NPERR_NO_ERROR;
+}
 
+NPError PlatformPostNPInitialize() {
+  return NPERR_NO_ERROR;
+}
+
+NPError PlatformPreNPShutdown() {
+  return NPERR_NO_ERROR;
+}
+
+NPError PlatformPostNPShutdown() {
+#if !defined(O3D_INTERNAL_PLUGIN)
 #ifdef CFTIMER
   o3d::gRenderTimer.Stop();
 #endif
@@ -695,15 +645,9 @@ NPError OSCALL NP_Shutdown(void) {
   return NPERR_NO_ERROR;
 }
 
-}  // namespace o3d / extern "C"
-
-
-
-namespace o3d {
-
-NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-
+NPError PlatformNPPGetValue(PluginObject *obj,
+                            NPPVariable variable,
+                            void *value) {
   switch (variable) {
     case NPPVpluginCoreAnimationLayer:
       if (!ObjO3DLayer(obj)) {
@@ -942,67 +886,34 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event,
   return handled;
 }
 
-NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
-                char* argn[], char* argv[], NPSavedData* saved) {
-  HANDLE_CRASHES;
-
-  NPError err = NPERR_NO_ERROR;
-
-#if !defined(O3D_INTERNAL_PLUGIN)
-  if (!g_logging_initialized) {
-    o3d::GetUserAgentMetrics(instance);
-    GetUserConfigMetrics();
-    // Create usage stats logs object
-    g_logger = o3d::PluginLogging::InitializeUsageStatsLogging();
-    g_logging_initialized = true;
-  }
-#endif  // O3D_INTERNAL_PLUGIN
-
-  if (!IsDomainAuthorized(instance)) {
-    return NPERR_INVALID_URL;
-  }
-
-  PluginObject* pluginObject = glue::_o3d::PluginObject::Create(
-      instance);
-  instance->pdata = pluginObject;
-  glue::_o3d::InitializeGlue(instance);
-  pluginObject->Init(argc, argn, argv);
-
-  err = Mac_SetBestEventAndDrawingModel(instance,
-                                        static_cast<PluginObject*>(
-                                            instance->pdata));
+NPError PlatformNPPNew(NPP instance, PluginObject *obj) {
+  NPError err = Mac_SetBestEventAndDrawingModel(instance, obj);
   if (err != NPERR_NO_ERROR)
     return err;
 #ifdef CFTIMER
-  if (pluginObject->drawing_model_ == NPDrawingModelCoreAnimation) {
+  if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
     o3d::gRenderTimer.AddInstance(instance);
   }
 #endif
   return NPERR_NO_ERROR;
 }
 
-NPError NPP_Destroy(NPP instance, NPSavedData** save) {
-  HANDLE_CRASHES;
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-  if (obj) {
+NPError PlatformNPPDestroy(NPP instance, PluginObject *obj) {
 #if defined(CFTIMER)
-    o3d::gRenderTimer.RemoveInstance(instance);
+  o3d::gRenderTimer.RemoveInstance(instance);
 #endif
 
-    // TODO(maf) / TODO(kbr): are we leaking AGL / CGL contexts?
+  // TODO(maf) / TODO(kbr): are we leaking AGL / CGL contexts?
 
-    if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
-      O3DLayer* layer = ObjO3DLayer(obj);
-      if (layer) {
-        // Prevent the layer from rendering any more.
-        [layer setPluginObject:NULL];
-      }
+  if (obj->drawing_model_ == NPDrawingModelCoreAnimation) {
+    O3DLayer* layer = ObjO3DLayer(obj);
+    if (layer) {
+      // Prevent the layer from rendering any more.
+      [layer setPluginObject:NULL];
     }
-
-    obj->TearDown();
-    NPN_ReleaseObject(obj);
-    instance->pdata = NULL;
   }
+
+  obj->TearDown();
 
   return NPERR_NO_ERROR;
 }
@@ -1011,9 +922,9 @@ bool CheckForAGLError() {
   return aglGetError() != AGL_NO_ERROR;
 }
 
-NPError NPP_SetWindow(NPP instance, NPWindow* window) {
-  HANDLE_CRASHES;
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
+NPError PlatformNPPSetWindow(NPP instance,
+                             PluginObject *obj,
+                             NPWindow* window) {
   WindowRef new_window = NULL;
 
   assert(window != NULL);
@@ -1341,13 +1252,9 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   return NPERR_NO_ERROR;
 }
 
-// Called when the browser has finished attempting to stream data to
-// a file as requested. If fname == NULL the attempt was not successful.
-void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* fname) {
-  HANDLE_CRASHES;
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
-  StreamManager* stream_manager = obj->stream_manager();
-
+void PlatformNPPStreamAsFile(StreamManager *stream_manager,
+                             NPStream *stream,
+                             const char *fname) {
   // Some browsers give us an absolute HFS path in fname, some give us an
   // absolute Posix path, so convert to Posix if needed.
   if ((!fname) || (fname[0] == '/') || !fname[0]) {
@@ -1361,9 +1268,7 @@ void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* fname) {
   }
 }
 
-int16 NPP_HandleEvent(NPP instance, void* event) {
-  HANDLE_CRASHES;
-  PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
+int16 PlatformNPPHandleEvent(NPP instance, PluginObject *obj, void *event) {
   if (obj->event_model_ == NPEventModelCarbon) {
     EventRecord* theEvent = static_cast<EventRecord*>(event);
     return HandleMacEvent(theEvent, instance) ? 1 : 0;

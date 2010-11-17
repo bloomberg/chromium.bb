@@ -32,21 +32,50 @@
 
 #include "plugin/cross/main.h"
 
+#include "base/at_exit.h"
+#include "base/command_line.h"
+#include "base/file_util.h"
+#include "plugin/cross/config.h"
+#include "plugin/cross/out_of_memory.h"
+#include "plugin/cross/whitelist.h"
+#ifdef OS_WIN
+#include "breakpad/win/bluescreen_detector.h"
+#endif
+
 using glue::_o3d::PluginObject;
 using glue::StreamManager;
 
 #if !defined(O3D_INTERNAL_PLUGIN)
 
-int BreakpadEnabler::scope_count_ = 0;
+#ifdef OS_WIN
+#define O3D_DEBUG_LOG_FILENAME L"debug.log"
+#else
+#define O3D_DEBUG_LOG_FILENAME "debug.log"
+#endif
 
-// Used for breakpad crash handling
-ExceptionManager *g_exception_manager = NULL;
+#if defined(OS_WIN) || defined(OS_MACOSX)
+o3d::PluginLogging *g_logger = NULL;
+static bool g_logging_initialized = false;
+#ifdef OS_WIN
+static o3d::BluescreenDetector *g_bluescreen_detector = NULL;
+#endif  // OS_WIN
+#endif  // OS_WIN || OS_MACOSX
+
+// We would normally make this a stack variable in main(), but in a
+// plugin, that's not possible, so we make it a global. When the DLL is loaded
+// this it gets constructed and when it is unlooaded it is destructed. Note
+// that this cannot be done in NP_Initialize and NP_Shutdown because those
+// calls do not necessarily signify the DLL being loaded and unloaded. If the
+// DLL is not unloaded then the values of global variables are preserved.
+static base::AtExitManager g_at_exit_manager;
+
+int BreakpadEnabler::scope_count_ = 0;
 
 #endif  // O3D_INTERNAL_PLUGIN
 
 namespace o3d {
 
-NPError NP_GetValue(void *instance, NPPVariable variable, void *value) {
+NPError NP_GetValue(NPPVariable variable, void *value) {
   switch (variable) {
     case NPPVpluginNameString:
       *static_cast<char **>(value) = const_cast<char*>(O3D_PLUGIN_NAME);
@@ -61,10 +90,27 @@ NPError NP_GetValue(void *instance, NPPVariable variable, void *value) {
   return NPERR_NO_ERROR;
 }
 
-NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
-                      NPBool seekable, uint16 *stype) {
+int16 NPP_HandleEvent(NPP instance, void *event) {
   HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return 0;
+  }
+
+  return PlatformNPPHandleEvent(instance, obj, event);
+}
+
+NPError NPP_NewStream(NPP instance,
+                      NPMIMEType type,
+                      NPStream *stream,
+                      NPBool seekable,
+                      uint16 *stype) {
+  HANDLE_CRASHES;
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return NPERR_INVALID_PARAM;
+  }
+
   StreamManager *stream_manager = obj->stream_manager();
   if (stream_manager->NewStream(stream, stype)) {
     return NPERR_NO_ERROR;
@@ -76,7 +122,11 @@ NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
 
 NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
   HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return NPERR_NO_ERROR;
+  }
+
   StreamManager *stream_manager = obj->stream_manager();
   if (stream_manager->DestroyStream(stream, reason)) {
     return NPERR_NO_ERROR;
@@ -88,7 +138,11 @@ NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
 
 int32 NPP_WriteReady(NPP instance, NPStream *stream) {
   HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return 0;
+  }
+
   StreamManager *stream_manager = obj->stream_manager();
   return stream_manager->WriteReady(stream);
 }
@@ -96,7 +150,11 @@ int32 NPP_WriteReady(NPP instance, NPStream *stream) {
 int32 NPP_Write(NPP instance, NPStream *stream, int32 offset, int32 len,
                 void *buffer) {
   HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return 0;
+  }
+
   StreamManager *stream_manager = obj->stream_manager();
   return stream_manager->Write(stream, offset, len, buffer);
 }
@@ -108,20 +166,25 @@ void NPP_Print(NPP instance, NPPrint *platformPrint) {
 void NPP_URLNotify(NPP instance, const char *url, NPReason reason,
                    void *notifyData) {
   HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
-  // Make sure the plugin hasn't been destroyed already.
-  if (obj) {
-    StreamManager *stream_manager = obj->stream_manager();
-    stream_manager->URLNotify(url, reason, notifyData);
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return;
   }
+
+  StreamManager *stream_manager = obj->stream_manager();
+  stream_manager->URLNotify(url, reason, notifyData);
 }
 
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   HANDLE_CRASHES;
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return NPERR_INVALID_PARAM;
+  }
+
   switch (variable) {
     case NPPVpluginScriptableNPObject: {
       void **v = static_cast<void **>(value);
-      PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
       // Return value is expected to be retained
       GLUE_PROFILE_START(instance, "retainobject");
       NPN_RetainObject(obj);
@@ -130,19 +193,98 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
       break;
     }
     default: {
-      NPError ret = PlatformNPPGetValue(instance, variable, value);
+      NPError ret = PlatformNPPGetValue(obj, variable, value);
       if (ret == NPERR_INVALID_PARAM)
-        ret = o3d::NP_GetValue(instance, variable, value);
+        ret = o3d::NP_GetValue(variable, value);
       return ret;
     }
   }
   return NPERR_NO_ERROR;
 }
 
+NPError NPP_New(NPMIMEType pluginType,
+                NPP instance,
+                uint16 mode,
+                int16 argc,
+                char *argn[],
+                char *argv[],
+                NPSavedData *saved) {
+  HANDLE_CRASHES;
+
+#if !defined(O3D_INTERNAL_PLUGIN) && (defined(OS_WIN) || defined(OS_MACOSX))
+  // TODO(tschmelcher): Support this on Linux?
+  if (!g_logging_initialized) {
+    // Get user config metrics. These won't be stored though unless the user
+    // opts-in for usagestats logging
+    GetUserAgentMetrics(instance);
+    GetUserConfigMetrics();
+    // Create usage stats logs object
+    g_logger = o3d::PluginLogging::InitializeUsageStatsLogging();
+#ifdef OS_WIN
+    if (g_logger) {
+      // Setup blue-screen detection
+      g_bluescreen_detector = new o3d::BluescreenDetector();
+      g_bluescreen_detector->Start();
+    }
+#endif
+    g_logging_initialized = true;
+  }
+#endif
+
+  if (!IsDomainAuthorized(instance)) {
+    return NPERR_INVALID_URL;
+  }
+
+  PluginObject *obj = glue::_o3d::PluginObject::Create(instance);
+  instance->pdata = obj;
+  glue::_o3d::InitializeGlue(instance);
+  obj->Init(argc, argn, argv);
+  return PlatformNPPNew(instance, obj);
+}
+
+NPError NPP_Destroy(NPP instance, NPSavedData **save) {
+  HANDLE_CRASHES;
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return NPERR_NO_ERROR;
+  }
+
+  NPError err = PlatformNPPDestroy(instance, obj);
+
+  NPN_ReleaseObject(obj);
+  instance->pdata = NULL;
+
+  return err;
+}
+
 NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
   HANDLE_CRASHES;
   return NPERR_GENERIC_ERROR;
 }
+
+NPError NPP_SetWindow(NPP instance, NPWindow* window) {
+  HANDLE_CRASHES;
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return NPERR_NO_ERROR;
+  }
+
+  return PlatformNPPSetWindow(instance, obj, window);
+}
+
+// Called when the browser has finished attempting to stream data to
+// a file as requested. If fname == NULL the attempt was not successful.
+void NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
+  HANDLE_CRASHES;
+  PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
+  if (!obj) {
+    return;
+  }
+
+  StreamManager *stream_manager = obj->stream_manager();
+  PlatformNPPStreamAsFile(stream_manager, stream, fname);
+}
+
 }  // namespace o3d
 
 #if defined(O3D_INTERNAL_PLUGIN)
@@ -150,6 +292,88 @@ namespace o3d {
 #else
 extern "C" {
 #endif
+
+NPError EXPORT_SYMBOL OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs
+#ifdef OS_LINUX
+                                           ,
+                                           NPPluginFuncs *pluginFuncs
+#endif
+                                           ) {
+  HANDLE_CRASHES;
+  NPError err = InitializeNPNApi(browserFuncs);
+  if (err != NPERR_NO_ERROR) {
+    return err;
+  }
+
+#ifdef OS_LINUX
+  NP_GetEntryPoints(pluginFuncs);
+#endif  // OS_LINUX
+
+#if !defined(O3D_INTERNAL_PLUGIN)
+  if (!o3d::SetupOutOfMemoryHandler())
+    return NPERR_MODULE_LOAD_FAILED_ERROR;
+#endif  // O3D_INTERNAL_PLUGIN
+
+  err = o3d::PlatformPreNPInitialize();
+  if (err != NPERR_NO_ERROR) {
+    return err;
+  }
+
+#if !defined(O3D_INTERNAL_PLUGIN)
+  // Turn on the logging.
+  CommandLine::Init(0, NULL);
+
+  FilePath log;
+  file_util::GetTempDir(&log);
+  log.Append(O3D_DEBUG_LOG_FILENAME);
+
+  InitLogging(log.value().c_str(),
+              logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
+              logging::DONT_LOCK_LOG_FILE,
+              logging::APPEND_TO_OLD_LOG_FILE);
+#endif  // O3D_INTERNAL_PLUGIN
+
+  DLOG(INFO) << "NP_Initialize";
+
+  return o3d::PlatformPostNPInitialize();
+}
+
+NPError EXPORT_SYMBOL OSCALL NP_Shutdown(void) {
+  HANDLE_CRASHES;
+  DLOG(INFO) << "NP_Shutdown";
+
+  NPError err = o3d::PlatformPreNPShutdown();
+  if (err != NPERR_NO_ERROR) {
+    return err;
+  }
+
+#if !defined(O3D_INTERNAL_PLUGIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  if (g_logger) {
+    // Do a last sweep to aggregate metrics before we shut down
+    g_logger->ProcessMetrics(true, false, false);
+    delete g_logger;
+    g_logger = NULL;
+    g_logging_initialized = false;
+    stats_report::g_global_metrics.Uninitialize();
+  }
+#endif  // OS_WIN || OS_MACOSX
+
+  CommandLine::Reset();
+
+#ifdef OS_WIN
+  // Strictly speaking, on windows, it's not really necessary to call
+  // Stop(), but we do so for completeness
+  if (g_bluescreen_detector) {
+    g_bluescreen_detector->Stop();
+    delete g_bluescreen_detector;
+    g_bluescreen_detector = NULL;
+  }
+#endif  // OS_WIN
+#endif  // O3D_INTERNAL_PLUGIN
+
+  return o3d::PlatformPostNPShutdown();
+}
 
 NPError EXPORT_SYMBOL OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   HANDLE_CRASHES;
@@ -182,7 +406,7 @@ char* NP_GetMIMEDescription(void) {
 extern "C" {
 NPError EXPORT_SYMBOL NP_GetValue(void *instance, NPPVariable variable,
                                   void *value) {
-  return o3d::NP_GetValue(instance, variable, value);
+  return o3d::NP_GetValue(variable, value);
 }
 }
 #endif

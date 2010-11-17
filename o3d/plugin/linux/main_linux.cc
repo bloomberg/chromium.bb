@@ -33,20 +33,20 @@
 // This file implements the platform specific parts of the plugin for
 // the Linux platform.
 
+#include "plugin/cross/main.h"
+
 #include <X11/keysym.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkkeysyms.h>
-#include "base/at_exit.h"
-#include "base/command_line.h"
-#include "base/file_util.h"
+
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "base/third_party/nspr/prtypes.h"
-#include "o3d/breakpad/linux/breakpad.h"
-#include "plugin/cross/main.h"
-#include "plugin/cross/out_of_memory.h"
-#include "plugin/cross/whitelist.h"
+#include "core/cross/event.h"
+#include "core/linux/display_window_linux.h"
 #include "plugin/linux/envvars.h"
+#if !defined(O3D_INTERNAL_PLUGIN)
+#include "breakpad/linux/breakpad.h"
+#endif
 
 using glue::_o3d::PluginObject;
 using glue::StreamManager;
@@ -54,20 +54,15 @@ using o3d::DisplayWindowLinux;
 using o3d::Event;
 
 namespace {
-// We would normally make this a stack variable in main(), but in a
-// plugin, that's not possible, so we make it a global. When the DLL is loaded
-// this it gets constructed and when it is unlooaded it is destructed. Note
-// that this cannot be done in NP_Initialize and NP_Shutdown because those
-// calls do not necessarily signify the DLL being loaded and unloaded. If the
-// DLL is not unloaded then the values of global variables are preserved.
-base::AtExitManager g_at_exit_manager;
 
 bool g_xembed_support = false;
 
+#if !defined(O3D_INTERNAL_PLUGIN)
 o3d::Breakpad g_breakpad;
+#endif
 
 #ifdef O3D_PLUGIN_ENV_VARS_FILE
-static const char *kEnvVarsFilePath = O3D_PLUGIN_ENV_VARS_FILE;
+static const char kEnvVarsFilePath[] = O3D_PLUGIN_ENV_VARS_FILE;
 #endif
 
 static void DrawPlugin(PluginObject *obj) {
@@ -625,27 +620,20 @@ static gboolean GtkTimeoutCallback(gpointer user_data) {
   return TRUE;
 }
 
-NPError InitializePlugin() {
-  if (!o3d::SetupOutOfMemoryHandler())
-    return NPERR_MODULE_LOAD_FAILED_ERROR;
+}  // end anonymous namespace
 
+namespace o3d {
+
+NPError PlatformPreNPInitialize() {
+#if !defined(O3D_INTERNAL_PLUGIN)
   // Setup breakpad
   g_breakpad.Initialize();
   g_breakpad.set_version(O3D_PLUGIN_VERSION);
+#endif
+  return NPERR_NO_ERROR;
+}
 
-  CommandLine::Init(0, NULL);
-
-  FilePath log;
-  file_util::GetTempDir(&log);
-  log = log.Append("debug.log");
-
-  InitLogging(log.value().c_str(),
-              logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
-              logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE);
-
-  DLOG(INFO) << "NP_Initialize";
-
+NPError PlatformPostNPInitialize() {
 #ifdef O3D_PLUGIN_ENV_VARS_FILE
   // Before doing anything more, we first load our environment variables file.
   // This file is a newline-delimited list of any system-specific environment
@@ -680,38 +668,21 @@ NPError InitializePlugin() {
   return NPERR_NO_ERROR;
 }
 
-}  // end anonymous namespace
-
-#if defined(O3D_INTERNAL_PLUGIN)
-namespace o3d {
-#else
-extern "C" {
-#endif
-
-NPError EXPORT_SYMBOL OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs,
-                                           NPPluginFuncs *pluginFuncs) {
-  NPError retval = InitializeNPNApi(browserFuncs);
-  if (retval != NPERR_NO_ERROR) return retval;
-  NP_GetEntryPoints(pluginFuncs);
-  return InitializePlugin();
+NPError PlatformPreNPShutdown() {
+  return NPERR_NO_ERROR;
 }
 
-NPError EXPORT_SYMBOL OSCALL NP_Shutdown(void) {
-  HANDLE_CRASHES;
-  DLOG(INFO) << "NP_Shutdown";
-
-  CommandLine::Reset();
-
+NPError PlatformPostNPShutdown() {
+#if !defined(O3D_INTERNAL_PLUGIN)
   g_breakpad.Shutdown();
+#endif
 
   return NPERR_NO_ERROR;
 }
 
-}  // namespace o3d / extern "C"
-
-namespace o3d {
-
-NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
+NPError PlatformNPPGetValue(PluginObject *obj,
+                            NPPVariable variable,
+                            void *value) {
   switch (variable) {
     case NPPVpluginNeedsXEmbed:
       *static_cast<NPBool *>(value) = g_xembed_support;
@@ -722,73 +693,53 @@ NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
   return NPERR_NO_ERROR;
 }
 
-NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
-                char *argn[], char *argv[], NPSavedData *saved) {
-  HANDLE_CRASHES;
-
-  if (!IsDomainAuthorized(instance)) {
-    return NPERR_INVALID_URL;
-  }
-
-  PluginObject* pluginObject = glue::_o3d::PluginObject::Create(
-      instance);
-  instance->pdata = pluginObject;
-  glue::_o3d::InitializeGlue(instance);
-  pluginObject->Init(argc, argn, argv);
-
-  // Get the metrics for the system setup
-  GetUserConfigMetrics();
+NPError PlatformNPPNew(NPP instance, PluginObject *obj) {
   return NPERR_NO_ERROR;
 }
 
-NPError NPP_Destroy(NPP instance, NPSavedData **save) {
-  HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
-  if (obj) {
-    obj->TearDown();
+NPError PlatformNPPDestroy(NPP instance, PluginObject *obj) {
+  // TODO(tschmelcher): Do we really have to do this before the other teardown
+  // below? If not then we can factor out the platform-specific TearDown()
+  // calls into NPP_Destroy() in main.cc.
+  obj->TearDown();
 
-    if (obj->xt_widget_) {
-      // NOTE: This crashes. Not sure why, possibly the widget has
-      // already been destroyed, but we haven't received a SetWindow(NULL).
-      // XtRemoveEventHandler(obj->xt_widget_, ExposureMask, False,
-      //                     LinuxExposeHandler, obj);
-      obj->xt_widget_ = NULL;
-    }
-    if (obj->xt_interval_) {
-      XtRemoveTimeOut(obj->xt_interval_);
-      obj->xt_interval_ = 0;
-    }
-    if (obj->timeout_id_) {
-      g_source_remove(obj->timeout_id_);
-      obj->timeout_id_ = 0;
-    }
-    if (obj->gtk_container_) {
-      gtk_widget_destroy(obj->gtk_container_);
-      obj->gtk_container_ = NULL;
-    }
-    if (obj->gtk_fullscreen_container_) {
-      gtk_widget_destroy(obj->gtk_fullscreen_container_);
-      obj->gtk_fullscreen_container_ = NULL;
-    }
-    if (obj->gdk_display_) {
-      gdk_display_close(obj->gdk_display_);
-      obj->gdk_display_ = NULL;
-    }
-    obj->gtk_event_source_ = NULL;
-    obj->event_handler_id_ = 0;
-    obj->window_ = 0;
-    obj->drawable_ = 0;
-
-    NPN_ReleaseObject(obj);
-    instance->pdata = NULL;
+  if (obj->xt_widget_) {
+    // NOTE: This crashes. Not sure why, possibly the widget has
+    // already been destroyed, but we haven't received a SetWindow(NULL).
+    // XtRemoveEventHandler(obj->xt_widget_, ExposureMask, False,
+    //                     LinuxExposeHandler, obj);
+    obj->xt_widget_ = NULL;
   }
+  if (obj->xt_interval_) {
+    XtRemoveTimeOut(obj->xt_interval_);
+    obj->xt_interval_ = 0;
+  }
+  if (obj->timeout_id_) {
+    g_source_remove(obj->timeout_id_);
+    obj->timeout_id_ = 0;
+  }
+  if (obj->gtk_container_) {
+    gtk_widget_destroy(obj->gtk_container_);
+    obj->gtk_container_ = NULL;
+  }
+  if (obj->gtk_fullscreen_container_) {
+    gtk_widget_destroy(obj->gtk_fullscreen_container_);
+    obj->gtk_fullscreen_container_ = NULL;
+  }
+  if (obj->gdk_display_) {
+    gdk_display_close(obj->gdk_display_);
+    obj->gdk_display_ = NULL;
+  }
+  obj->gtk_event_source_ = NULL;
+  obj->event_handler_id_ = 0;
+  obj->window_ = 0;
+  obj->drawable_ = 0;
   return NPERR_NO_ERROR;
 }
 
-NPError NPP_SetWindow(NPP instance, NPWindow *window) {
-  HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
-
+NPError PlatformNPPSetWindow(NPP instance,
+                             PluginObject *obj,
+                             NPWindow *window) {
   NPSetWindowCallbackStruct *cb_struct =
       static_cast<NPSetWindowCallbackStruct *>(window->ws_info);
   Window xwindow = reinterpret_cast<Window>(window->window);
@@ -854,22 +805,19 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
   return NPERR_NO_ERROR;
 }
 
-// Called when the browser has finished attempting to stream data to
-// a file as requested. If fname == NULL the attempt was not successful.
-void NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
-  HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
-  StreamManager *stream_manager = obj->stream_manager();
-
+void PlatformNPPStreamAsFile(StreamManager *stream_manager,
+                             NPStream *stream,
+                             const char *fname) {
   stream_manager->SetStreamFile(stream, fname);
 }
 
-int16 NPP_HandleEvent(NPP instance, void *event) {
-  HANDLE_CRASHES;
+int16 PlatformNPPHandleEvent(NPP instance, PluginObject *obj, void *event) {
   return 0;
 }
+
 }  // namespace o3d
 
+// TODO(tschmelcher): This stuff does not belong in this file.
 namespace glue {
 namespace _o3d {
 

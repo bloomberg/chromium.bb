@@ -37,26 +37,15 @@
 #ifndef O3D_PLUGIN_CROSS_MAIN_H_
 #define O3D_PLUGIN_CROSS_MAIN_H_
 
-#include "core/cross/renderer_platform.h"
-
 #include <npfunctions.h>
-#include <stdio.h>
 
-#include <fstream>
-#include <iostream>
-
-#include "core/cross/renderer.h"
 #include "plugin/cross/o3d_glue.h"
-#include "plugin/cross/config.h"
+#include "plugin/cross/plugin_logging.h"
 #include "plugin/cross/stream_manager.h"
 #include "third_party/nixysa/static_glue/npapi/common.h"
 #include "third_party/nixysa/static_glue/npapi/npn_api.h"
 
-#if !defined(O3D_INTERNAL_PLUGIN)
-#include "breakpad/win/exception_handler_win32.h"
-#endif  // O3D_INTERNAL_PLUGIN
-
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(O3D_INTERNAL_PLUGIN)
 #define EXPORT_SYMBOL __attribute__((visibility ("default")))
 #else
 #define EXPORT_SYMBOL
@@ -66,7 +55,9 @@
 #define HANDLE_CRASHES void(0)
 #else  // O3D_INTERNAL_PLUGIN
 
-extern ExceptionManager *g_exception_manager;
+#if defined(OS_WIN) || defined(OS_MACOSX)
+extern o3d::PluginLogging *g_logger;
+#endif
 
 // BreakpadEnabler is a simple class to keep track of whether or not
 // we're executing code that we want to handle crashes for
@@ -75,7 +66,7 @@ extern ExceptionManager *g_exception_manager;
 // Create a stack-based instance at the start of each function
 // where crash handling is desired.
 
-#define HANDLE_CRASHES   BreakpadEnabler enabler
+#define HANDLE_CRASHES BreakpadEnabler enabler
 
 class BreakpadEnabler {
  public:
@@ -90,7 +81,7 @@ class BreakpadEnabler {
   static bool IsEnabled() { return scope_count_ > 0; }
 
  private:
-  static int  scope_count_;
+  static int scope_count_;
 };
 
 #endif  // O3D_INTERNAL_PLUGIN
@@ -100,13 +91,21 @@ namespace o3d {
 #else
 extern "C" {
 #endif
-  NPError OSCALL NP_Shutdown(void);
-  NPError OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
+  NPError EXPORT_SYMBOL OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs
+#ifdef OS_LINUX
+                                             ,
+                                             NPPluginFuncs *pluginFuncs
+#endif
+                                             );
+
+  NPError EXPORT_SYMBOL OSCALL NP_Shutdown(void);
+  NPError EXPORT_SYMBOL OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
 }
 
 namespace o3d {
 
-void WriteLogString(const char* text, int length);
+// Plugin entry points, implemented in main.cc.
+
 NPError NPP_Destroy(NPP instance, NPSavedData **save);
 NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason);
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value);
@@ -125,7 +124,6 @@ NPError NPP_NewStream(NPP instance,
                       NPBool seekable,
                       uint16 *stype);
 
-NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value);
 NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value);
 NPError NPP_SetWindow(NPP instance, NPWindow *window);
 
@@ -145,6 +143,29 @@ void NPP_URLNotify(NPP instance,
                    const char *url,
                    NPReason reason,
                    void *notifyData);
+
+// Platform-specific helpers, implemented in main_<platform>.(cc|mm)
+
+NPError PlatformPreNPInitialize();
+NPError PlatformPostNPInitialize();
+NPError PlatformPreNPShutdown();
+NPError PlatformPostNPShutdown();
+
+NPError PlatformNPPDestroy(NPP instance, glue::_o3d::PluginObject *obj);
+NPError PlatformNPPGetValue(glue::_o3d::PluginObject *obj,
+                            NPPVariable variable,
+                            void *value);
+int16 PlatformNPPHandleEvent(NPP instance,
+                             glue::_o3d::PluginObject *obj,
+                             void *event);
+NPError PlatformNPPNew(NPP instance, glue::_o3d::PluginObject *obj);
+NPError PlatformNPPSetWindow(NPP instance,
+                             glue::_o3d::PluginObject *obj,
+                             NPWindow *window);
+void PlatformNPPStreamAsFile(glue::StreamManager *stream_manager,
+                             NPStream *stream,
+                             const char *fname);
+
 };  // namespace o3d
 
 #endif  // O3D_PLUGIN_CROSS_MAIN_H_

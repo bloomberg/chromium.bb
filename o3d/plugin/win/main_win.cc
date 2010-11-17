@@ -39,19 +39,14 @@
 #include <windowsx.h>
 #include <shellapi.h>
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/logging.h"
-#include "base/ref_counted.h"
 #include "core/cross/display_mode.h"
 #include "core/cross/event.h"
-#include "plugin/cross/plugin_logging.h"
-#include "plugin/cross/out_of_memory.h"
-#include "plugin/cross/whitelist.h"
-#include "statsreport/metrics.h"
+#include "core/win/display_window_win.h"
 #include "v8/include/v8.h"
-#include "breakpad/win/bluescreen_detector.h"
+#if !defined(O3D_INTERNAL_PLUGIN)
+#include "breakpad/win/exception_handler_win32.h"
+#endif
 
 using glue::_o3d::PluginObject;
 using glue::StreamManager;
@@ -64,10 +59,8 @@ HINSTANCE g_module_instance;
 }  // namespace anonymous
 
 #if !defined(O3D_INTERNAL_PLUGIN)
-
-o3d::PluginLogging* g_logger = NULL;
-bool g_logging_initialized = false;
-o3d::BluescreenDetector *g_bluescreen_detector = NULL;
+// Used for breakpad crash handling
+static ExceptionManager *g_exception_manager = NULL;
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
                                DWORD reason,
@@ -93,14 +86,6 @@ namespace {
 const wchar_t* const kO3DWindowClassName = L"O3DWindowClass";
 
 void CleanupAllWindows(PluginObject *obj);
-
-// We would normally make this a stack variable in main(), but in a
-// plugin, that's not possible, so we make it a global. When the DLL is loaded
-// this it gets constructed and when it is unlooaded it is destructed. Note
-// that this cannot be done in NP_Initialize and NP_Shutdown because those
-// calls do not necessarily signify the DLL being loaded and unloaded. If the
-// DLL is not unloaded then the values of global variables are preserved.
-base::AtExitManager g_at_exit_manager;
 
 static int HandleKeyboardEvent(PluginObject *obj,
                                HWND hWnd,
@@ -481,8 +466,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
       }
 
 #if !defined(O3D_INTERNAL_PLUGIN)
-      // TODO: Only logging for windows until we figure out the proper
-      //            mac way
       if (g_logger) g_logger->UpdateLogging();
 #endif
 
@@ -653,38 +636,6 @@ void UnregisterO3DWindowClass() {
   UnregisterClass(kO3DWindowClassName, g_module_instance);
 }
 
-NPError InitializePlugin() {
-#if !defined(O3D_INTERNAL_PLUGIN)
-  if (!o3d::SetupOutOfMemoryHandler())
-    return NPERR_MODULE_LOAD_FAILED_ERROR;
-
-  // Setup crash handler
-  if (!g_exception_manager) {
-    g_exception_manager = new ExceptionManager(false);
-    g_exception_manager->StartMonitoring();
-  }
-
-  // Turn on the logging.
-  CommandLine::Init(0, NULL);
-
-  FilePath log;
-  file_util::GetTempDir(&log);
-  log.Append(L"debug.log");
-
-  InitLogging(log.value().c_str(),
-              logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
-              logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE);
-#endif  // O3D_INTERNAL_PLUGIN
-
-  DLOG(INFO) << "NP_Initialize";
-
-  if (!RegisterO3DWindowClass())
-    return NPERR_MODULE_LOAD_FAILED_ERROR;
-
-  return NPERR_NO_ERROR;
-}
-
 void CleanupAllWindows(PluginObject *obj) {
   if (obj->GetContentHWnd()) {
     ::KillTimer(obj->GetContentHWnd(), 0);
@@ -752,123 +703,67 @@ bool GetScreenRect(HWND hwnd,
 
 }  // namespace anonymous
 
-#if defined(O3D_INTERNAL_PLUGIN)
 namespace o3d {
-#else
-extern "C" {
-#endif
 
-NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs) {
-  HANDLE_CRASHES;
-
-  NPError retval = InitializeNPNApi(browserFuncs);
-  if (retval != NPERR_NO_ERROR) return retval;
-  return InitializePlugin();
+NPError PlatformPreNPInitialize() {
+#if !defined(O3D_INTERNAL_PLUGIN)
+  // Setup crash handler
+  if (!g_exception_manager) {
+    g_exception_manager = new ExceptionManager(false);
+    g_exception_manager->StartMonitoring();
+  }
+#endif  // O3D_INTERNAL_PLUGIN
+  return NPERR_NO_ERROR;
 }
 
-NPError OSCALL NP_Shutdown(void) {
-  HANDLE_CRASHES;
-  DLOG(INFO) << "NP_Shutdown";
+NPError PlatformPostNPInitialize() {
+  if (!RegisterO3DWindowClass())
+    return NPERR_MODULE_LOAD_FAILED_ERROR;
 
+  return NPERR_NO_ERROR;
+}
+
+NPError PlatformPreNPShutdown() {
+  // TODO(tschmelcher): Is there a reason we need to do this before the main
+  // shutdown tasks? If not, we can axe the PlatformPreNPShutdown() function.
   UnregisterO3DWindowClass();
+  return NPERR_NO_ERROR;
+}
 
+NPError PlatformPostNPShutdown() {
 #if !defined(O3D_INTERNAL_PLUGIN)
-
-  if (g_logger) {
-    // Do a last sweep to aggregate metrics before we shut down
-    g_logger->ProcessMetrics(true, false, false);
-    delete g_logger;
-    g_logger = NULL;
-    g_logging_initialized = false;
-    stats_report::g_global_metrics.Uninitialize();
-  }
-
-  CommandLine::Reset();
-
   // TODO : This is commented out until we can determine if
   // it's safe to shutdown breakpad at this stage (Gears, for
   // example, never deletes...)
   // Shutdown breakpad
   // delete g_exception_manager;
-
-  // Strictly speaking, on windows, it's not really necessary to call
-  // Stop(), but we do so for completeness
-  if (g_bluescreen_detector) {
-    g_bluescreen_detector->Stop();
-    delete g_bluescreen_detector;
-    g_bluescreen_detector = NULL;
-  }
-
-#endif  // O3D_INTERNAL_PLUGIN
-
-  return NPERR_NO_ERROR;
-}
-}  // extern "C" / namespace o3d
-
-namespace o3d {
-
-NPError NPP_New(NPMIMEType pluginType,
-                NPP instance,
-                uint16 mode,
-                int16 argc,
-                char *argn[],
-                char *argv[],
-                NPSavedData *saved) {
-  HANDLE_CRASHES;
-
-#if !defined(O3D_INTERNAL_PLUGIN)
-  if (!g_logging_initialized) {
-    // Get user config metrics. These won't be stored though unless the user
-    // opts-in for usagestats logging
-    GetUserAgentMetrics(instance);
-    GetUserConfigMetrics();
-    // Create usage stats logs object
-    g_logger = o3d::PluginLogging::InitializeUsageStatsLogging();
-    if (g_logger) {
-      // Setup blue-screen detection
-      g_bluescreen_detector = new o3d::BluescreenDetector();
-      g_bluescreen_detector->Start();
-    }
-    g_logging_initialized = true;
-  }
 #endif
 
-  if (!IsDomainAuthorized(instance)) {
-    return NPERR_INVALID_URL;
-  }
-
-  PluginObject* pluginObject = glue::_o3d::PluginObject::Create(
-      instance);
-  instance->pdata = pluginObject;
-  glue::_o3d::InitializeGlue(instance);
-  pluginObject->Init(argc, argn, argv);
   return NPERR_NO_ERROR;
 }
 
-NPError NPP_Destroy(NPP instance, NPSavedData **save) {
-  HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
-  if (obj) {
-    if (obj->GetHWnd()) {
-      CleanupAllWindows(obj);
-    }
-
-    obj->TearDown();
-    NPN_ReleaseObject(obj);
-    instance->pdata = NULL;
-  }
-
+NPError PlatformNPPNew(NPP instance, PluginObject *obj) {
   return NPERR_NO_ERROR;
 }
 
-NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
+NPError PlatformNPPDestroy(NPP instance, PluginObject *obj) {
+  if (obj->GetHWnd()) {
+    CleanupAllWindows(obj);
+  }
+
+  obj->TearDown();
+  return NPERR_NO_ERROR;
+}
+
+NPError PlatformNPPGetValue(PluginObject *obj,
+                            NPPVariable variable,
+                            void *value) {
   return NPERR_INVALID_PARAM;
 }
 
-NPError NPP_SetWindow(NPP instance, NPWindow *window) {
-  HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
-
+NPError PlatformNPPSetWindow(NPP instance,
+                             PluginObject *obj,
+                             NPWindow *window) {
   HWND hWnd = static_cast<HWND>(window->window);
   if (!hWnd) {
     // Chrome calls us this way before NPP_Destroy.
@@ -948,22 +843,19 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
   return NPERR_NO_ERROR;
 }
 
-// Called when the browser has finished attempting to stream data to
-// a file as requested. If fname == NULL the attempt was not successful.
-void NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
-  HANDLE_CRASHES;
-  PluginObject *obj = static_cast<PluginObject*>(instance->pdata);
-  StreamManager *stream_manager = obj->stream_manager();
-
+void PlatformNPPStreamAsFile(StreamManager *stream_manager,
+                             NPStream *stream,
+                             const char *fname) {
   stream_manager->SetStreamFile(stream, fname);
 }
 
-int16 NPP_HandleEvent(NPP instance, void *event) {
-  HANDLE_CRASHES;
+int16 PlatformNPPHandleEvent(NPP instance, PluginObject *obj, void *event) {
   return 0;
 }
+
 }  // namespace o3d
 
+// TODO(tschmelcher): This stuff does not belong in this file.
 namespace glue {
 namespace _o3d {
 bool PluginObject::GetDisplayMode(int mode_id, o3d::DisplayMode *mode) {
