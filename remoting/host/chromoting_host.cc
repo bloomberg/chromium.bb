@@ -15,10 +15,13 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/host_config.h"
+#include "remoting/host/host_stub_fake.h"
 #include "remoting/host/session_manager.h"
-#include "remoting/protocol/session_config.h"
-#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/session_config.h"
 
 using remoting::protocol::ConnectionToClient;
 
@@ -32,6 +35,7 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       config_(config),
       capturer_(capturer),
       input_stub_(input_stub),
+      host_stub_(new HostStubFake()),
       state_(kInitial) {
 }
 
@@ -273,7 +277,8 @@ void ChromotingHost::OnNewClientSession(
   // If we accept the connected then create a client object and set the
   // callback.
   connection_ = new ConnectionToClient(context_->main_message_loop(),
-                                       this, NULL, input_stub_.get());
+                                       this, host_stub_.get(),
+                                       input_stub_.get());
   connection_->Init(session);
 }
 

@@ -14,7 +14,6 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
 
@@ -24,6 +23,8 @@ namespace remoting {
 
 namespace protocol {
 class ConnectionToClient;
+class HostStub;
+class InputStub;
 class SessionConfig;
 }  // namespace protocol
 
@@ -132,6 +133,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // InputStub in the host executes input events received from the client.
   scoped_ptr<protocol::InputStub> input_stub_;
+
+  // HostStub in the host executes control events received from the client.
+  scoped_ptr<protocol::HostStub> host_stub_;
 
   // The libjingle client. This is used to connect to the talk network to
   // receive connection requests from chromoting client.
