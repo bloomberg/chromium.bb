@@ -3306,4 +3306,19 @@
    ...
    fun:_ZN56PrintPreviewTabControllerTest_GetOrCreatePreviewTab_Test8TestBodyEv
 }
+{
+   bug_63428
+   Memcheck:Cond
+   fun:NSIntersectionRect
+   fun:-[BrowserWindowController tabContentsViewFrameWillChange:frameRect:]
+   fun:-[TabStripController tabContentsViewFrameWillChange:frameRect:]
+   fun:-[TabContentsController tabContentsViewFrameWillChange:]
+   fun:-[ResizeNotificationView setFrame:]
+   fun:-[TabStripController swapInTabAtIndex:]
+   fun:-[TabStripController selectTabWithContents:previousContents:atIndex:userGesture:]
+   fun:_ZN27TabStripModelObserverBridge13TabSelectedAtEP11TabContentsS1_ib
+   fun:_ZN13TabStripModel26ChangeSelectedContentsFromEP11TabContentsib
+   fun:_ZN13TabStripModel19InsertTabContentsAtEiP11TabContentsi
+   fun:_ZN13TabStripModel14AddTabContentsEP11TabContentsiji
+}
 
