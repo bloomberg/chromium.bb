@@ -174,12 +174,13 @@ HRESULT ContentScriptManager::InitializeScriptHost(
   if (FAILED(hr))
     return hr;
 
-  // Register the window object and manually make its members global.
+  // Register the window object and initialize the global namespace of the
+  // script host.
   CComPtr<IHTMLWindow2> window;
   hr = document->get_parentWindow(&window);
   if (FAILED(hr))
     return hr;
-  hr = script_host->RegisterScriptObject(L"window", window, false);
+  hr = script_host->RegisterScriptObject(L"unsafeWindow", window, false);
   if (FAILED(hr))
     return hr;
   hr = InvokeNamedFunction(script_host, L"ceee.initGlobals_", NULL, 0);

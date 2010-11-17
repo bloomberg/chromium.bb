@@ -243,7 +243,7 @@ class ContentScriptManagerTest: public testing::Test {
 
     // Register the window object and initialize its globals.
     EXPECT_CALL(*script_host_,
-        RegisterScriptObject(StrEq(L"window"), _, false))
+        RegisterScriptObject(StrEq(L"unsafeWindow"), _, false))
             .WillOnce(Return(S_OK));
     EXPECT_CALL(*script_host_, RunExpression(StrEq(L"ceee.initGlobals_"), _))
         .WillOnce(DoAll(

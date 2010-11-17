@@ -114,56 +114,66 @@ ceee.endInit_ = function (nativenativeContentScriptApi, extensionId) {
 };
 
 ceee.initGlobals_ = function() {
-  // We expose a subset of the Window interface defined at
+  // The window object of the page is exposed in its entirety to the script
+  // host via the 'unsafeWindow' variable similar to how greasemonkey scripts
+  // implement access to it. We expose a 'safe' window object as 'window' that
+  // only has access to a subset of the actual window's native properties.
+
+  // Create the window variable and assign it to 'this' which is the context
+  // of the global scope. Doing this will make variables defined in the global
+  // scope or defined as properties of window be one and the same.
+  window = this;
+
+  // Now expose a subset of the Window interface defined at
   // http://www.w3.org/TR/html5/browsers.html#the-window-object
-  // to the global namespace. We purposely skip all event handler
-  // attributes (e.g. onclick).
+  // to the global namespace and to the 'safe' window object. We purposely skip
+  // all event handler attributes (e.g. onclick).
 
   // Browsing context.
-  self = window.self;
-  document = window.document;
-  name = window.name;
-  location = window.location;
-  history = window.history;
-  undoManager = window.undoManager;
-  locationbar = window.locationbar;
-  menubar = window.menubar;
-  scrollbars = window.scrollbars;
-  statusbar = window.statusbar;
-  toolbar = window.toolbar;
-  close = window.close;
-  stop = window.stop;
-  focus = window.focus;
-  blur = window.blur;
+  self = unsafeWindow.self;
+  document = unsafeWindow.document;
+  name = unsafeWindow.name;
+  location = unsafeWindow.location;
+  history = unsafeWindow.history;
+  undoManager = unsafeWindow.undoManager;
+  locationbar = unsafeWindow.locationbar;
+  menubar = unsafeWindow.menubar;
+  scrollbars = unsafeWindow.scrollbars;
+  statusbar = unsafeWindow.statusbar;
+  toolbar = unsafeWindow.toolbar;
+  close = unsafeWindow.close;
+  stop = unsafeWindow.stop;
+  focus = unsafeWindow.focus;
+  blur = unsafeWindow.blur;
 
   // Other browsing contexts.
-  frames = window.frames;
-  length = window.length;
-  top = window.top;
-  opener = window.opener;
-  parent = window.parent;
-  frameElement = window.frameElement;
-  open = window.open;
+  frames = unsafeWindow.frames;
+  length = unsafeWindow.length;
+  top = unsafeWindow.top;
+  opener = unsafeWindow.opener;
+  parent = unsafeWindow.parent;
+  frameElement = unsafeWindow.frameElement;
+  open = unsafeWindow.open;
 
   // User agent.
-  navigator = window.navigator;
-  applicationCache = window.applicationCache;
+  navigator = unsafeWindow.navigator;
+  applicationCache = unsafeWindow.applicationCache;
 
   // User prompts.
-  alert = window.alert;
-  confirm = window.confirm;
-  prompt = window.prompt;
-  print = window.print;
-  showModalDialog = window.showModalDialog;
+  alert = unsafeWindow.alert;
+  confirm = unsafeWindow.confirm;
+  prompt = unsafeWindow.prompt;
+  print = unsafeWindow.print;
+  showModalDialog = unsafeWindow.showModalDialog;
 
   // EventTarget interface.
-  addEventListener = window.addEventListener;
-  removeEventListener = window.removeEventListener;
-  dispatchEvent = window.dispatchEvent;
+  addEventListener = unsafeWindow.addEventListener;
+  removeEventListener = unsafeWindow.removeEventListener;
+  dispatchEvent = unsafeWindow.dispatchEvent;
 
   // Old IE event model.
-  attachEvent = window.attachEvent;
-  detachEvent = window.detachEvent;
+  attachEvent = unsafeWindow.attachEvent;
+  detachEvent = unsafeWindow.detachEvent;
 };
 
 console.log = console.log || function (msg) {
