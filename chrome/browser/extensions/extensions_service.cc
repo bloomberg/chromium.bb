@@ -1392,8 +1392,10 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   scoped_refptr<const Extension> extension(
       GetExtensionByIdInternal(extension_id, true, true));
 
-  // Callers should not send us nonexistent extensions.
-  CHECK(extension.get());
+  // This method can be called via PostTask, so the extension may have been
+  // unloaded by the time this runs.
+  if (!extension)
+    return;
 
   // Keep information about the extension so that we can reload it later
   // even if it's not permanently installed.
