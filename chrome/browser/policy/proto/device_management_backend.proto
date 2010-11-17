@@ -17,7 +17,7 @@ message GenericValue {
     VALUE_TYPE_DOUBLE = 4;
     VALUE_TYPE_BYTES = 5;
     VALUE_TYPE_BOOL_ARRAY = 6;
-    VALUE_TYPE_INT64_ARRAY_ = 7;
+    VALUE_TYPE_INT64_ARRAY = 7;
     VALUE_TYPE_STRING_ARRAY = 8;
     VALUE_TYPE_DOUBLE_ARRAY = 9;
   }
@@ -146,6 +146,8 @@ message DeviceManagementResponse {
     DEVICE_MANAGEMENT_TOKEN_INVALID  = 3;
     // Returned when device registration is pending approval (if required).
     ACTIVATION_PENDING = 4;
+    // Returned when the policy is not found.
+    POLICY_NOT_FOUND  = 5;
   }
 
   // Error code for this request.

@@ -178,7 +178,7 @@ Value* DeviceManagementPolicyCache::DecodeValue(const em::GenericValue& value) {
         list->Append(Value::CreateBooleanValue(*i));
       return list;
     }
-    case em::GenericValue::VALUE_TYPE_INT64_ARRAY_: {
+    case em::GenericValue::VALUE_TYPE_INT64_ARRAY: {
       ListValue* list = new ListValue;
       RepeatedField<google::protobuf::int64>::const_iterator i;
       for (i = value.int64_array().begin();

@@ -275,7 +275,7 @@ TEST_F(DeviceManagementPolicyCacheDecodeTest, BoolArray) {
 }
 
 TEST_F(DeviceManagementPolicyCacheDecodeTest, Int64Array) {
-  value_.set_value_type(em::GenericValue::VALUE_TYPE_INT64_ARRAY_);
+  value_.set_value_type(em::GenericValue::VALUE_TYPE_INT64_ARRAY);
   value_.add_int64_array(42);
   value_.add_int64_array(17);
   ListValue* list = new ListValue;
