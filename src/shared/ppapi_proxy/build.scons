@@ -121,5 +121,7 @@ env.DualLibrary('ppapi_browser',
 
 env.DualLibrary('ppapi_plugin',
                 ['plugin_instance.cc',
+                 'plugin_resource.cc',
+                 'plugin_resource_tracker.cc',
                  'plugin_var.cc',
                  common_obj])

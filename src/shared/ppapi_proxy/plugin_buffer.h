@@ -8,16 +8,18 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_BUFFER_H_
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 
 namespace ppapi_proxy {
 
 // Implements the plugin (i.e., .nexe) side of the PPB_Buffer interface.
-class PluginBuffer {
+class PluginBuffer : public PluginResource {
  public:
   static const PPB_Buffer_Dev* GetInterface();
 
  private:
+  IMPLEMENT_RESOURCE(PluginBuffer);
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginBuffer);
 };
 

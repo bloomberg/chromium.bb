@@ -8,16 +8,18 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GRAPHICS_3D_H_
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 
 namespace ppapi_proxy {
 
 // Implements the plugin (i.e., .nexe) side of the PPB_Graphics3D interface.
-class PluginGraphics3D {
+class PluginGraphics3D : public PluginResource {
  public:
   static const PPB_Graphics3D_Dev* GetInterface();
 
  private:
+  IMPLEMENT_RESOURCE(PluginGraphics3D);
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginGraphics3D);
 };
 

@@ -32,9 +32,9 @@ uint32_t RecommendSampleFrameCount(uint32_t request_sample_frame_count) {
   return 0;
 }
 
-PP_Bool IsAudioConfig(PP_Resource config) {
-  UNREFERENCED_PARAMETER(config);
-  return PP_FALSE;
+PP_Bool IsAudioConfig(PP_Resource resource) {
+  return PluginResource::GetAs<PluginAudioConfig>(resource).get()
+      ? PP_TRUE : PP_FALSE;
 }
 
 PP_AudioSampleRate_Dev GetSampleRate(PP_Resource config) {

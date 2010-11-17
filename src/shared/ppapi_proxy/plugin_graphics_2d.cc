@@ -54,17 +54,8 @@ PP_Resource Create(PP_Module module,
 }
 
 PP_Bool IsGraphics2D(PP_Resource resource) {
-  int32_t result;
-  NaClSrpcError retval =
-      PpbGraphics2DRpcClient::PPB_Graphics2D_IsGraphics2D(
-          GetMainSrpcChannel(),
-          static_cast<int64_t>(resource),
-          &result);
-  if (retval == NACL_SRPC_RESULT_OK) {
-    return result ? PP_TRUE : PP_FALSE;
-  } else {
-    return PP_FALSE;
-  }
+  return PluginResource::GetAs<PluginGraphics2D>(resource).get()
+      ? PP_TRUE : PP_FALSE;
 }
 
 PP_Bool Describe(PP_Resource graphics_2d,

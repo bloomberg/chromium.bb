@@ -11,6 +11,7 @@
 #include "native_client/src/include/portability.h"
 #include "gen/native_client/src/shared/ppapi_proxy/ppb_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_resource_tracker.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -28,57 +29,23 @@ __thread bool is_main_thread = false;
 bool main_thread_marked = false;
 #endif  // __native_client__
 
-std::map<PP_Resource, uint32_t>* local_ref_count;
-
-// Increment the reference count for a specified resource.  This is done with
-// a plugin-side cache, maintained by this helper function.  Only the first time
-// a resource has an AddRef call requires an RPC to the browser.
+// Increment the reference count for a specified resource.  This only takes
+// care of the plugin's reference count - the Resource should obtain the
+// browser reference when it stores the browser's Resource id. When the
+// Resource's reference count goes to zero, the destructor should make sure
+// the browser reference is returned.
 void AddRefResource(PP_Resource resource) {
   DebugPrintf("PluginCore::AddRefResource: resource=%"NACL_PRIu64"\n",
               resource);
-  if (local_ref_count == NULL) {
-    local_ref_count = new std::map<PP_Resource, uint32_t>;
-  }
-  if (local_ref_count->find(resource) == local_ref_count->end()) {
-    // The first time we create a local ref count object we need to increment
-    // the reference count in the browser.
-    NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
-    (void) PpbCoreRpcClient::PPB_Core_AddRefResource(channel, resource);
-    // And add a local (cached) reference count object.
-    (*local_ref_count)[resource] = 1;
-    return;
-  } else {
-    // Otherwise, just update the local reference count.
-    (*local_ref_count)[resource] = (*local_ref_count)[resource] + 1;
-  }
+  if (ppapi_proxy::PluginResourceTracker::Get()->AddRefResource(resource))
+    DebugPrintf("Warning: AddRefResource()ing a nonexistent resource");
 }
 
 void ReleaseResource(PP_Resource resource) {
   DebugPrintf("PluginCore::ReleaseResource: resource=%"NACL_PRIu64"\n",
               resource);
-  if (local_ref_count == NULL ||
-      local_ref_count->find(resource) == local_ref_count->end()) {
-    // ERROR: How can we decrement if there is no local (cached) reference
-    // count for the specified resource?
-    return;
-  }
-  if ((*local_ref_count)[resource] > 1) {
-    // Just update the local (cached) reference count.
-    (*local_ref_count)[resource] = (*local_ref_count)[resource] - 1;
-    return;
-  } else {
-    // When the local reference count goes to zero we decrement the reference
-    // count in the browser.
-    NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
-    (void) PpbCoreRpcClient::PPB_Core_ReleaseResource(channel, resource);
-    // Then remove the local reference count for the resource.
-    local_ref_count->erase(resource);
-    if (local_ref_count->size() == 0) {
-      // There are no locally reference counted objects, free the map.
-      delete local_ref_count;
-      local_ref_count = NULL;
-    }
-  }
+  if (ppapi_proxy::PluginResourceTracker::Get()->UnrefResource(resource))
+    DebugPrintf("Warning: ReleaseRefResource()ing a nonexistent resource");
 }
 
 void* MemAlloc(size_t num_bytes) {

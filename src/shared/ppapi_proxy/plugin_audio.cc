@@ -29,9 +29,9 @@ PP_Resource Create(PP_Instance instance,
   return kInvalidResourceId;
 }
 
-PP_Bool IsAudio(PP_Resource audio) {
-  UNREFERENCED_PARAMETER(audio);
-  return PP_FALSE;
+PP_Bool IsAudio(PP_Resource resource) {
+  return PluginResource::GetAs<PluginAudio>(resource).get()
+      ? PP_TRUE : PP_FALSE;
 }
 
 PP_Resource GetCurrentConfig(PP_Resource audio) {

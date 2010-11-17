@@ -19,8 +19,8 @@ namespace ppapi_proxy {
 
 namespace {
 PP_Bool IsGraphics3D(PP_Resource resource) {
-  UNREFERENCED_PARAMETER(resource);
-  return PP_FALSE;
+  return PluginResource::GetAs<PluginGraphics3D>(resource).get()
+      ? PP_TRUE : PP_FALSE;
 }
 
 PP_Bool GetConfigs(int32_t* configs,

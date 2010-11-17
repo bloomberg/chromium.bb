@@ -71,17 +71,8 @@ PP_Resource Create(PP_Module module,
 }
 
 PP_Bool IsImageData(PP_Resource resource) {
-  int32_t result;
-  NaClSrpcError retval =
-      PpbImageDataRpcClient::PPB_ImageData_IsImageData(
-          GetMainSrpcChannel(),
-          static_cast<int64_t>(resource),
-          &result);
-  if (retval == NACL_SRPC_RESULT_OK) {
-    return (result ? PP_TRUE : PP_FALSE);
-  } else {
-    return PP_FALSE;
-  }
+  return PluginResource::GetAs<PluginImageData>(resource).get()
+      ? PP_TRUE : PP_FALSE;
 }
 
 PP_Bool Describe(PP_Resource resource,

@@ -8,12 +8,13 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_AUDIO_CONFIG_H_
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "ppapi/c/dev/ppb_audio_config_dev.h"
 
 namespace ppapi_proxy {
 
 // Implements the plugin (i.e., .nexe) side of the PPB_AudioConfig interface.
-class PluginAudioConfig {
+class PluginAudioConfig : public PluginResource {
  public:
   static const PPB_AudioConfig_Dev* GetInterface();
 

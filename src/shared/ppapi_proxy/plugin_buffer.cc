@@ -25,8 +25,8 @@ PP_Resource Create(PP_Module module, int32_t size_in_bytes) {
 }
 
 PP_Bool IsBuffer(PP_Resource resource) {
-  UNREFERENCED_PARAMETER(resource);
-  return PP_FALSE;
+  return PluginResource::GetAs<PluginBuffer>(resource).get()
+      ? PP_TRUE : PP_FALSE;
 }
 
 PP_Bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
