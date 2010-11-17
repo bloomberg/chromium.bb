@@ -16,6 +16,21 @@ class PDFTest(pyauto.PyUITest):
   This test runs only on Google Chrome build, not on Chromium.
   """
 
+  def _PerformPDFAction(self, action, tab_index=0, windex=0):
+    """Perform an action on a PDF tab.
+
+    Args:
+      action: one of "fitToHeight", "fitToWidth", "ZoomIn", "ZoomOut"
+      tab_index: tab index  Defaults to 0
+      windex: window index.  Defaults to 0
+    """
+    assert action in ('fitToHeight', 'fitToWidth', 'ZoomIn', 'ZoomOut')
+    js = 'document.getElementsByName("plugin")[0].%s()' % action
+    # Add an empty string so that there's something to return back
+    # (or else it hangs)
+    return self.GetDOMValue('%s + ""' % js, 0, tab_index)
+
+
   def testPDFRunner(self):
     """Navigate to pdf files and verify that browser doesn't crash"""
     # bail out if not a branded build
@@ -27,6 +42,10 @@ class PDFTest(pyauto.PyUITest):
     for pdf_file in pdf_files:
       url = self.GetFileURLForPath(os.path.join(pdf_files_path, pdf_file))
       self.AppendTab(pyauto.GURL(url))
+    for tab_index in range(1, len(pdf_files) + 1):
+      self.ActivateTab(tab_index)
+      self._PerformPDFAction('fitToHeight', tab_index=tab_index)
+      self._PerformPDFAction('fitToWidth', tab_index=tab_index)
     # Assert that there is at least 1 browser window.
     self.assertTrue(self.GetBrowserWindowCount(),
                     'Browser crashed, no window is open')
