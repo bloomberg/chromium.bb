@@ -12,7 +12,7 @@ namespace remoting {
 
 class MockCapturer : public Capturer {
  public:
-  MockCapturer() {}
+  MockCapturer() : Capturer(NULL) {}
 
   MOCK_METHOD0(ScreenConfigurationChanged, void());
   MOCK_METHOD1(InvalidateRects, void(const InvalidRects& inval_rects));

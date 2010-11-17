@@ -15,7 +15,7 @@ namespace remoting {
 // A class to perform capturing for mac.
 class CapturerMac : public Capturer {
  public:
-  CapturerMac();
+  explicit CapturerMac(MessageLoop* message_loop);
   virtual ~CapturerMac();
 
   virtual void ScreenConfigurationChanged();

@@ -14,7 +14,7 @@ class CapturerLinuxPimpl;
 // A class to perform capturing for Linux.
 class CapturerLinux : public Capturer {
  public:
-  CapturerLinux();
+  explicit CapturerLinux(MessageLoop* message_loop);
   virtual ~CapturerLinux();
 
   virtual void ScreenConfigurationChanged();

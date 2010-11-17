@@ -24,8 +24,9 @@ COMPILE_ASSERT((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
 
 static const int kBytesPerPixel = 4;  // 32 bit RGB is 4 bytes per pixel.
 
-CapturerFake::CapturerFake()
-    : box_pos_x_(0),
+CapturerFake::CapturerFake(MessageLoop* message_loop)
+    : Capturer(message_loop),
+      box_pos_x_(0),
       box_pos_y_(0),
       box_speed_x_(kSpeed),
       box_speed_y_(kSpeed) {

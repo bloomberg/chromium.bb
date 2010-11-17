@@ -16,7 +16,7 @@ namespace remoting {
 // remoting/host/capturer.h.
 class CapturerFake : public Capturer {
  public:
-  CapturerFake();
+  explicit CapturerFake(MessageLoop* message_loop);
   virtual ~CapturerFake();
 
   virtual void ScreenConfigurationChanged();

@@ -14,8 +14,9 @@ static const int kPixelsPerMeter = 3780;
 // 32 bit RGBA is 4 bytes per pixel.
 static const int kBytesPerPixel = 4;
 
-CapturerGdi::CapturerGdi()
-    : desktop_dc_(NULL),
+CapturerGdi::CapturerGdi(MessageLoop* message_loop)
+    : Capturer(message_loop),
+      desktop_dc_(NULL),
       memory_dc_(NULL),
       capture_fullscreen_(true) {
   memset(target_bitmap_, 0, sizeof(target_bitmap_));

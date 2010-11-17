@@ -12,7 +12,8 @@ static const int kWidth = 32;
 static const int kHeight = 20;
 static const int kBytesPerPixel = 1;
 
-CapturerFakeAscii::CapturerFakeAscii() {
+CapturerFakeAscii::CapturerFakeAscii(MessageLoop* message_loop)
+    : Capturer(message_loop) {
 }
 
 CapturerFakeAscii::~CapturerFakeAscii() {

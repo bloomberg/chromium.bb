@@ -84,8 +84,9 @@ class CapturerLinuxPimpl {
   bool capture_fullscreen_;
 };
 
-CapturerLinux::CapturerLinux()
-    : pimpl_(new CapturerLinuxPimpl(this)) {
+CapturerLinux::CapturerLinux(MessageLoop* message_loop)
+    : Capturer(message_loop),
+      pimpl_(new CapturerLinuxPimpl(this)) {
   // TODO(ajwong): This should be moved into an Init() method on Capturer
   // itself.  Then we can remove the CHECK.
   CHECK(pimpl_->Init());

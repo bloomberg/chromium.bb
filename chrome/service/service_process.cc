@@ -289,15 +289,18 @@ bool ServiceProcess::StartChromotingHost() {
   scoped_ptr<remoting::protocol::InputStub> input_stub;
 
 #if defined(OS_WIN)
-  capturer.reset(new remoting::CapturerGdi());
+  capturer.reset(new remoting::CapturerGdi(
+      chromoting_context_->capture_message_loop()));
   input_stub.reset(new remoting::EventExecutorWin(
       chromoting_context_->capture_message_loop(), capturer.get()));
 #elif defined(OS_LINUX)
-  capturer.reset(new remoting::CapturerLinux());
+  capturer.reset(new remoting::CapturerLinux(
+      chromoting_context_->capture_message_loop()));
   input_stub.reset(new remoting::EventExecutorLinux(
       chromoting_context_->capture_message_loop(), capturer.get()));
 #elif defined(OS_MACOSX)
-  capturer.reset(new remoting::CapturerMac());
+  capturer.reset(new remoting::CapturerMac(
+      chromoting_context_->capture_message_loop()));
   input_stub.reset(new remoting::EventExecutorMac(
       chromoting_context_->capture_message_loop(), capturer.get()));
 #endif

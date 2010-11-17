@@ -10,12 +10,13 @@
 
 namespace remoting {
 
-Capturer::Capturer()
+Capturer::Capturer(MessageLoop* message_loop)
     : width_(0),
       height_(0),
       pixel_format_(media::VideoFrame::INVALID),
       bytes_per_row_(0),
-      current_buffer_(0) {
+      current_buffer_(0),
+      message_loop_(message_loop) {
 }
 
 Capturer::~Capturer() {

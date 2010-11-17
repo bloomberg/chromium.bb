@@ -12,6 +12,8 @@
 #include "remoting/base/capture_data.h"
 #include "remoting/base/types.h"
 
+class MessageLoop;
+
 namespace remoting {
 
 // A class to perform the task of capturing the image of a window.
@@ -42,7 +44,7 @@ class Capturer {
   // CaptureCompletedCallback is called when the capturer has completed.
   typedef Callback1<scoped_refptr<CaptureData> >::Type CaptureCompletedCallback;
 
-  Capturer();
+  explicit Capturer(MessageLoop* message_loop);
   virtual ~Capturer();
 
   // Called when the screen configuration is changed.
@@ -121,6 +123,9 @@ class Capturer {
 
   // The current buffer with valid data for reading.
   int current_buffer_;
+
+  // Message loop that operations should run on.
+  MessageLoop* message_loop_;
 
  private:
   // Rects that have been manually invalidated (through InvalidateRect).

@@ -20,7 +20,7 @@ class Differ;
 // remoting/host/capturer.h.
 class CapturerGdi : public Capturer {
  public:
-  CapturerGdi();
+  explicit CapturerGdi(MessageLoop* message_loop);
   virtual ~CapturerGdi();
 
   virtual void ScreenConfigurationChanged();

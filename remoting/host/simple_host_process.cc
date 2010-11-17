@@ -80,15 +80,18 @@ int main(int argc, char** argv) {
   scoped_ptr<remoting::Capturer> capturer;
   scoped_ptr<remoting::protocol::InputStub> input_stub;
 #if defined(OS_WIN)
-  capturer.reset(new remoting::CapturerGdi());
+  capturer.reset(new remoting::CapturerGdi(
+      context.capture_message_loop()));
   input_stub.reset(new remoting::EventExecutorWin(
       context.capture_message_loop(), capturer.get()));
 #elif defined(OS_LINUX)
-  capturer.reset(new remoting::CapturerLinux());
+  capturer.reset(new remoting::CapturerLinux(
+      context.capture_message_loop()));
   input_stub.reset(new remoting::EventExecutorLinux(
       context.capture_message_loop(), capturer.get()));
 #elif defined(OS_MACOSX)
-  capturer.reset(new remoting::CapturerMac());
+  capturer.reset(new remoting::CapturerMac(
+      context.capture_message_loop()));
   input_stub.reset(new remoting::EventExecutorMac(
       context.capture_message_loop(), capturer.get()));
 #endif
@@ -111,7 +114,7 @@ int main(int argc, char** argv) {
   if (fake) {
     // Inject a fake capturer.
     LOG(INFO) << "Using a fake capturer.";
-    capturer.reset(new remoting::CapturerFake());
+    capturer.reset(new remoting::CapturerFake(context.capture_message_loop()));
   }
 
   base::Thread file_io_thread("FileIO");

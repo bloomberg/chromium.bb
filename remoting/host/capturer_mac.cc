@@ -10,7 +10,9 @@
 
 namespace remoting {
 
-CapturerMac::CapturerMac() : cgl_context_(NULL) {
+CapturerMac::CapturerMac(MessageLoop* message_loop)
+    : Capturer(message_loop),
+      cgl_context_(NULL) {
   // TODO(dmaclach): move this initialization out into session_manager,
   // or at least have session_manager call into here to initialize it.
   CGError err =
