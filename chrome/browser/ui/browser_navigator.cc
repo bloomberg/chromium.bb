@@ -203,17 +203,27 @@ void NormalizeDisposition(browser::NavigateParams* params) {
     params->disposition = NEW_FOREGROUND_TAB;
   }
 
-  // Disposition trumps add types. ADD_SELECTED is a default, so we need to
-  // remove it if disposition implies the tab is going to open in the
-  // background.
-  if (params->disposition == NEW_BACKGROUND_TAB)
-    params->tabstrip_add_types &= ~TabStripModel::ADD_SELECTED;
+  switch (params->disposition) {
+    case NEW_BACKGROUND_TAB:
+      // Disposition trumps add types. ADD_SELECTED is a default, so we need to
+      // remove it if disposition implies the tab is going to open in the
+      // background.
+      params->tabstrip_add_types &= ~TabStripModel::ADD_SELECTED;
+      break;
 
-  // Code that wants to open a new window typically expects it to be shown
-  // automatically.
-  if (params->disposition == NEW_WINDOW || params->disposition == NEW_POPUP) {
-    params->show_window = true;
-    params->tabstrip_add_types |= TabStripModel::ADD_SELECTED;
+    case NEW_WINDOW:
+    case NEW_POPUP:
+      // Code that wants to open a new window typically expects it to be shown
+      // automatically.
+      params->show_window = true;
+      // Fall-through.
+    case NEW_FOREGROUND_TAB:
+    case SINGLETON_TAB:
+      params->tabstrip_add_types |= TabStripModel::ADD_SELECTED;
+      break;
+
+    default:
+      break;
   }
 }
 
@@ -304,12 +314,19 @@ NavigateParams::~NavigateParams() {
 }
 
 void Navigate(NavigateParams* params) {
+  Browser* browser = params->browser;
   AdjustNavigateParamsForURL(params);
 
   params->browser = GetBrowserForDisposition(params);
   if (!params->browser)
     return;
   // Navigate() must not return early after this point.
+
+  if (browser != params->browser &&
+      params->browser->tabstrip_model()->empty()) {
+    // A new window has been created. So it needs to be displayed.
+    params->show_window = true;
+  }
 
   // Make sure the Browser is shown if params call for it.
   ScopedBrowserDisplayer displayer(params);
