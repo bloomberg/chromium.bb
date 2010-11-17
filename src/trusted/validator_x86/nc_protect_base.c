@@ -4,7 +4,8 @@
  */
 
 /* nc_protect_base.h - For 64-bit mode, verifies that no instruction
- * changes the value of the base register.
+ * changes the value of the base register, that the invariant between
+ * RSP and RBP is maintained, and that segment registers are not set.
  */
 #include <assert.h>
 
@@ -25,24 +26,38 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-/* Defines locals used by the NaClBaseRegisterValidator. */
-typedef struct NaClBaseRegisterLocals {
-  /* Points to previous instruction that contains an
-   * assignment to register ESP, or NULL if the previous
-   * instruction doesn't set ESP. This is done so that
-   * for such instructions we can check if the next instruction
-   * uses the value of ESP to update RSP (if not, we need to
-   * report that ESP is incorrectly assigned).
+/* Defines locals used by the NaClBaseRegisterValidator to
+ * record registers set in the current instruction, that are
+ * a problem if not used correctly in the next instruction.
+ */
+typedef struct NaClRegisterLocals {
+  /* Points to an instruction that contains an assignment to register ESP,
+   * or NULL if the instruction doesn't set ESP. This is done so that we
+   * can check if the next instruction uses the value of ESP to update RSP
+   * (if not, we need to report that ESP is incorrectly assigned).
    */
   NaClInstState* esp_set_inst;
-  /* Points to the previous instruction that contains an
-   * assignment to register EBP, or NULL if the previous
-   * instruction doesn't set EBP. This is done so that
-   * for such instructions we can check if the next instruciton
-   * uses the value of EBP to update RBP (if not, we need ot
-   * report that EBP is incorrectly assigned).
+  /* Points to the instruction that contains an assignment to register EBP,
+   * or NULL if the instruction doesn't set EBP. This is done so that we
+   * can check if the next instruciton uses the value of EBP to update RBP
+   * (if not, we need to report that EBP is incorrectly assigned).
    */
   NaClInstState* ebp_set_inst;
+} NaClRegisterLocals;
+
+/* Ths size of the circular buffer, used to keep track of registers
+ * assigned in the previous instruction, that must be correctly used
+ * in the current instruction, or reported as an error.
+ */
+#define NACL_REGISTER_LOCALS_BUFFER_SIZE 2
+
+/* A circular buffer of two elements, used to  keep track of the
+ * current/previous instruction.
+ */
+typedef struct NaClBaseRegisterLocals {
+  NaClRegisterLocals buffer[NACL_REGISTER_LOCALS_BUFFER_SIZE];
+  int previous_index;
+  int current_index;
 } NaClBaseRegisterLocals;
 
 static void NaClReportIllegalChangeToRsp(NaClValidatorState* state,
@@ -61,24 +76,38 @@ static void NaClReportIllegalChangeToRsp(NaClValidatorState* state,
  */
 static void NaClMaybeReportPreviousBad(NaClValidatorState* state,
                                        NaClBaseRegisterLocals* locals) {
-  if (NULL != locals->esp_set_inst) {
+  NaClInstState* prev_esp_set_inst =
+      locals->buffer[locals->previous_index].esp_set_inst;
+  NaClInstState* prev_ebp_set_inst =
+      locals->buffer[locals->previous_index].ebp_set_inst;
+
+  /* First check if previous register references are not followed
+   * by acceptable instructions.
+   */
+  if (NULL != prev_esp_set_inst) {
     NaClValidatorInstMessage(LOG_ERROR,
                              state,
-                             locals->esp_set_inst,
+                             prev_esp_set_inst,
                              "Illegal assignment to ESP\n");
-    locals->esp_set_inst = NULL;
+    locals->buffer[locals->previous_index].esp_set_inst = NULL;
   }
-  if (NULL != locals->ebp_set_inst) {
+  if (NULL != prev_ebp_set_inst) {
     NaClValidatorInstMessage(LOG_ERROR,
                              state,
-                             locals->ebp_set_inst,
+                             prev_ebp_set_inst,
                              "Illegal assignment to EBP\n");
-    locals->ebp_set_inst = NULL;
+    locals->buffer[locals->previous_index].ebp_set_inst = NULL;
   }
+
+  /* Now advance the register recording by one instruction. */
+  locals->previous_index = locals->current_index;
+  locals->current_index = ((locals->current_index + 1)
+                           % NACL_REGISTER_LOCALS_BUFFER_SIZE);
 }
 
 NaClBaseRegisterLocals* NaClBaseRegisterMemoryCreate(
     NaClValidatorState* state) {
+  int i;
   NaClBaseRegisterLocals* locals = (NaClBaseRegisterLocals*)
       malloc(sizeof(NaClBaseRegisterLocals));
   if (NULL == locals) {
@@ -86,8 +115,12 @@ NaClBaseRegisterLocals* NaClBaseRegisterMemoryCreate(
         LOG_FATAL, state,
         "Out of memory, can't allocate NaClBaseRegisterLocals\n");
   }
-  locals->esp_set_inst = NULL;
-  locals->ebp_set_inst = NULL;
+  for (i = 0; i < NACL_REGISTER_LOCALS_BUFFER_SIZE; ++i) {
+    locals->buffer[i].esp_set_inst = NULL;
+    locals->buffer[i].ebp_set_inst = NULL;
+  }
+  locals->previous_index = 0;
+  locals->current_index = 1;
   return locals;
 }
 
@@ -193,12 +226,263 @@ static Bool NaClAcceptRegMoveLea32To64(struct NaClValidatorState* state,
   return FALSE;
 }
 
+/* Check if assignments to stack register RSP is legal.
+ *
+ * Parameters are:
+ *   state - The state of the validator.
+ *   iter  - The instruction iterator (defining the current instruction).
+ *   locals- Pointer to the instructions defining propagated registers.
+ *   i     - The index of the node (in the expression tree) that
+ *           assigns the RSP register.
+ */
+static void NaClCheckRspAssignments(struct NaClValidatorState* state,
+                                    NaClInstIter* iter,
+                                    NaClBaseRegisterLocals* locals,
+                                    uint32_t i) {
+  /*
+   * Only allow one of:
+   * (1) mov %rsp, %rbp
+   *
+   *     Note: maintains RSP/RBP invariant, since RBP was already
+   *     meeting the invariant.
+   * (2) %esp = zero extend 32-bit value
+   *     OP %rsp, %rbase
+   *
+   *     where OP in { or , add }.
+   * (3) An instruction that updates the stack a (small) bounded amount,
+   *     and then does a memory access. This includes Push, Pop, Call,
+   *
+   *     Note that entering a function corresponds to the pattern:
+   *        push %rpb
+   *        mov %rbp, %rsp
+   * (4) Allow stack updates of the form:
+   *        OP %esp, C
+   *        add %rsp, %rbase
+   *     where OP is a operator in { add , sub },
+   *     and C is a 32-bit constant.
+   * (5) Allow "and $rsp, 0xXX" where 0xXX is an immediate 8 bit
+   *     value that is negative. Used to realign the stack pointer.
+   * (6) %esp = zero extend 32-bit value.
+   *     lea %rsp, [%rsp+%rbase*1]
+   *
+   *     Same as (6), except that we use instructions prior to the
+   *     pattern to do the add/subtract. Then let the result be
+   *     (zero-extended) moved into ESP, and use the lea to fill
+   *     in the top 32 bits of %rsp.
+   *
+   *     Note: We require the scale to be 1, and rbase be in
+   *     the index position.
+   *
+   * Note: Cases 2, 4, 5, and 6 are maintaining the invariant that
+   * the top half of RSP is the same as RBASE, and the lower half
+   * of RBASE is zero. Case (2) does this by seting the bottom 32
+   * bits with the first instruction (zeroing out the top 32 bits),
+   * and then copies (via or or add) the top 32 bits of RBASE into RSP
+   * (since the bottom 32 bits of RBASE are zero).
+   * Case (4) maintains this by first clearing the top half
+   * of RSP, and then setting the top half to match RBASE. Case (5)
+   * maintains the variant because the constant is small
+   * (-1 to -128) to that the invariant for $RSP (top half
+   * is unchanged). Case 6 uses the addition in the address calculation
+   * of lea to fill in the top 32 bits.
+   */
+  NaClInstState* inst_state = state->cur_inst_state;
+  NaClInst* inst = state->cur_inst;
+  NaClMnemonic inst_name = inst->name;
+  NaClExpVector* vector = state->cur_inst_vector;
+  switch (inst_name) {
+    case InstPush:
+    case InstPop:
+      /* Legal if index corresponds to the first (stack) argument.
+       * Note: Since the vector contains a list of operand exrpessions,
+       * the first operand reference is always at index zero, and its
+       * first child (where the stack register is defined) is at index 1.
+       */
+      if (i == 1) return;
+      break;
+    case InstCall:
+      /* Legal if index corresponds to the second (stack) argument.
+       * Note: The first operand is an operand reference to the instruction
+       * register. It consists of an operand reference at index zero,
+       * and its first child (where the instruction registers is defined)
+       * is at index 1. The node at index 2 is the operand reference to
+       * the stack register, and its first child (where the stack register is
+       * defined) is at index 3;
+       */
+      if (i == 3) return;
+      break;
+    case InstOr:
+    case InstAdd:
+      {
+        /* case 2/4 (depending on instruction name). */
+        if (NaClIsBinarySetUsingRegisters(
+                inst, inst_name, vector, RegRSP,
+                state->base_register) &&
+            NaClInstIterHasLookbackState(iter, 1)) {
+          NaClInstState* prev_inst =
+              NaClInstIterGetLookbackState(iter, 1);
+          if (NaClAssignsRegisterWithZeroExtends(prev_inst, RegESP)
+              || (inst_name == InstAdd &&
+                  NaClIsAddOrSubBoundedConstFromEsp(prev_inst))) {
+            /* Found that the assignment to ESP in previous instruction
+             * is legal, so long as the two instructions are atomic.
+             */
+            DEBUG(printf("nc protect esp for zero extend, or or/add "
+                         "constant\n"));
+            NaClMarkInstructionJumpIllegal(state, inst_state);
+            locals->buffer[locals->previous_index].esp_set_inst = NULL;
+            return;
+          }
+        }
+      }
+      break;
+    case InstLea:
+      if (NaClAcceptRegMoveLea32To64(state, iter, inst, RegRSP)) {
+        /* case 6. Found that the assignment to ESP in the previous
+         * instruction is legal, so long as the two instrucitons
+         * are atomic.
+         */
+        DEBUG(printf("nc protect esp for lea\n"));
+        NaClMarkInstructionJumpIllegal(state, inst_state);
+        locals->buffer[locals->previous_index].esp_set_inst = NULL;
+        return;
+      }
+      break;
+    case InstAnd:
+      /* See if case 5: and $rsp, 0xXX */
+      if (NaClInstStateLength(inst_state) == 4 &&
+          NaClInstStateByte(inst_state, 0) == 0x48 &&
+          NaClInstStateByte(inst_state, 1) == 0x83 &&
+          NaClInstStateByte(inst_state, 2) == 0xe4 &&
+          /* negative byte test: check if leftmost bit set. */
+          (NaClInstStateByte(inst_state, 3) & 0x80)) {
+        return;
+      }
+      /* Intentionally fall to the next case. */
+    default:
+      if (NaClIsMovUsingRegisters(inst, vector,
+                                  RegRSP, RegRBP)) {
+        /* case (1) -- see above, matching
+         *    mov %rsp, %rbp
+         */
+        return;
+      }
+      break;
+  }
+  /* If reached, assume that not a special case. */
+  NaClReportIllegalChangeToRsp(state, inst_state);
+}
+
+/* Check if assignments to rbp resister is legal.
+ *
+ * Parameters are:
+ *   state - The state of the validator.
+ *   iter  - The instruction iterator (defining the current instruction).
+ *   locals- Pointer to the instructions defining propagated registers.
+ *   i     - The index of the node (in the expression tree) that
+ *           assigns the RSP register.
+ */
+static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
+                                    NaClInstIter* iter,
+                                    NaClBaseRegisterLocals* locals,
+                                    uint32_t i) {
+  /* (1) mov %rbp, %rsp
+   *
+   *     Note: maintains RSP/RBP invariant, since RSP was already
+   *     meeting the invariant.
+   *
+   * (2) %ebp = zero extend 32-bit value.
+   *     add %rbp, %rbase
+   *
+   *     Typical use in the exit from a fucntion, restoring RBP.
+   *     The ... in the MOV is gotten from a stack pop in such
+   *     cases. However, for long jumps etc., the value may
+   *     be gotten from memory, or even a register.
+   *
+   * (3) %ebp = zero extend 32-bit value.
+   *     lea %rbp, [%rbp+%rbase*1]
+   *
+   *     Same as (2), except that we use instructions prior to the
+   *     pattern to do the add/subtract. Then let the result be
+   *     (zero-extended) moved into EBP, and use the lea to fill
+   *     in the top 32 bits of %RSP.
+   *
+   *     Note: We require the scale to be 1, and rbase be in
+   *     the index position.
+   */
+  NaClInstState* inst_state = state->cur_inst_state;
+  NaClInst* inst = state->cur_inst;
+  NaClMnemonic inst_name = inst->name;
+  NaClExpVector* vector = state->cur_inst_vector;
+  switch (inst_name) {
+    case InstAdd:
+      if (NaClInstIterHasLookbackState(iter, 1)) {
+        NaClInstState* prev_state =
+            NaClInstIterGetLookbackState(iter, 1);
+        if (NaClIsBinarySetUsingRegisters(
+                inst, InstAdd, vector,
+                RegRBP, state->base_register) &&
+            NaClAssignsRegisterWithZeroExtends(
+                prev_state, RegEBP)) {
+          /* case 2. */
+          NaClMarkInstructionJumpIllegal(state, inst_state);
+          locals->buffer[locals->previous_index].ebp_set_inst = NULL;
+          return;
+        }
+      }
+      break;
+    case InstLea:
+      if (NaClAcceptRegMoveLea32To64(state, iter, inst, RegRBP)) {
+        /* case 3 */
+        locals->buffer[locals->previous_index].ebp_set_inst = NULL;
+        return;
+      }
+      break;
+    default:
+      if (NaClIsMovUsingRegisters(inst, vector, RegRBP, RegRSP)) {
+        /* case 1 */
+        return;
+      }
+      break;
+  }
+  /* If reached, not valid. */
+  NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
+                           "Illegal change to register RBP\n");
+}
+
+/* Reports error if the register name is a subregister of Rsp/Rbp/base register,
+ * under assumption that it is illegal to change the value of such registers.
+ */
+static void NaClCheckSubregChangeOfRspRbpOrBase(
+    struct NaClValidatorState* state,
+    NaClOpKind reg_name) {
+  NaClInstState* inst_state = state->cur_inst_state;
+  if (NaClIs64Subreg(inst_state, reg_name, state->base_register)) {
+    NaClValidatorInstMessage(
+        LOG_ERROR, state, inst_state,
+        "Changing %s changes the value of register %s\n",
+        NaClOpKindName(reg_name),
+        NaClOpKindName(state->base_register));
+  } else if (NaClIs64Subreg(inst_state, reg_name, RegRSP)) {
+    NaClValidatorInstMessage(
+        LOG_ERROR, state, inst_state,
+        "Changing %s changes the value of register %s\n",
+        NaClOpKindName(reg_name),
+        NaClOpKindName(RegRSP));
+  } else if (NaClIs64Subreg(inst_state, reg_name, RegRBP)) {
+    NaClValidatorInstMessage(
+        LOG_ERROR, state, inst_state,
+        "Changing %s changes the value of register %s\n",
+        NaClOpKindName(reg_name),
+        NaClOpKindName(RegRBP));
+  }
+}
+
 void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                                struct NaClInstIter* iter,
                                NaClBaseRegisterLocals* locals) {
   uint32_t i;
   NaClInstState* inst_state = state->cur_inst_state;
-  NaClInst* inst = state->cur_inst;
   NaClExpVector* vector = state->cur_inst_vector;
 
   DEBUG(NaClValidatorInstMessage(
@@ -213,7 +497,7 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
 
         /* If reached, found an assignment to a register.
          * Check if its one that we care about (i.e.
-         * the base register (RBASE), RSP, or RBP).
+         * the base register (RBASE), RSP, RBP, or segment register).
          */
         if (reg_name == state->base_register) {
           NaClValidatorInstMessage(
@@ -221,259 +505,38 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
               "Illegal to change the value of register %s\n",
               NaClOpKindName(state->base_register));
         } else {
-          NaClMnemonic inst_name = inst->name;
           switch (reg_name) {
             case RegRSP:
-              /* Only allow one of:
-               * (1) mov %rsp, %rbp
-               *
-               *     Note: maintains RSP/RBP invariant, since RBP was already
-               *     meeting the invariant.
-               * (2) %esp = zero extend 32-bit value
-               *     or %rsp, %rbase
-               * (3) One of the following instructions:
-               *     Push or Call.
-               *     Pop and the operand is the implicit stack update.
-               *
-               *     Note that entering a function corresponds to the pattern:
-               *        push %rpb
-               *        mov %rbp, %rsp
-               * (4) Allow stack updates of the form:
-               *        OP %esp, C
-               *        add %rsp, %rbase
-               *     where OP is in { add , sub }, and C is a constant.
-               * (5) Allow "and $rsp, 0xXX" where 0xXX is an immediate 8 bit
-               *     value that is negative. Used to realign the stack pointer.
-               * (6) mov %esp, ...
-               *     add %rsp, %rbase
-               *
-               *     Note: The code here allows any operation that zero extends
-               *     ebp, not just a move. The rationale is that the MOV does
-               *     a zero extend of RSP, and is the only property that is
-               *     needed to maintain the invariant on ESP.
-               *
-               * (7) mov %esp, ...
-               *     lea %rsp, [%rsp+%rbase*1]
-               *
-               *     Same as (6), except that we use instructions prior to the
-               *     pattern to do the add/subtract. Then let the result be
-               *     (zero-extended) moved into ESP, and use the lea to fill
-               *     in the top 32 bits of %rsp.
-               *
-               *     Note: We require the scale to be 1, and rbase be in
-               *     the index position.
-               *
-               *     Note: The code here allows any operation that zero extends
-               *     ebp, not just a move. The rationale is that the MOV does
-               *     a zero extend of ESP, and is the only property that is
-               *     needed to maintain the invariant on RSP.
-               *
-               * Note: Cases 2, 4, 5, and 6 are maintaining the invariant that
-               * the top half of RSP is the same as RBASE, and the lower half
-               * of RBASE is zero. Case (2) does this by seting the bottom 32
-               * bits with the first instruction (zeroing out the top 32 bits),
-               * and then copies (via or) the top 32 bits of RBASE into RSP
-               * (since the bottom 32 bits of RBASE are zero).
-               * Case (4) maintains this by first clearing the top half
-               * of RSP, and then setting the top half to match RBASE. Case (5)
-               * maintains the variant because the constant is small
-               * (-1 to -128) to that the invariant for $RSP (top half
-               * is unchanged). Case (6) is simular to case 2 (by filling
-               * the lower 32 bits and zero extending), followed by an add to
-               * set the top 32 bits.
-               */
-              switch (inst_name) {
-                case InstPush:
-                case InstCall:
-                  /* case 3 (simple). */
-                  NaClMaybeReportPreviousBad(state, locals);
-                  return;
-                case InstPop: {
-                    /* case (3) pop -- see above */
-                    int reg_operand_index;
-                    NaClExp* reg_operand;
-                    reg_operand_index = NaClGetExpParentIndex(vector, i);
-                    reg_operand = &vector->node[reg_operand_index];
-                    if (OperandReference == reg_operand->kind &&
-                        (inst->operands[reg_operand->value].flags &
-                         NACL_OPFLAG(OpImplicit))) {
-                      NaClMaybeReportPreviousBad(state, locals);
-                      /* Continue to process arguments, to see if pop sets
-                       * an illegal register.
-                       */
-                      continue;
-                    }
-                  }
-                  break;
-                case InstOr:
-                case InstAdd: {
-                    /* case 2/4/6 (depending on instruction name). */
-                    if (NaClIsBinarySetUsingRegisters(
-                            inst, inst_name, vector, RegRSP,
-                            state->base_register) &&
-                        NaClInstIterHasLookbackState(iter, 1)) {
-                      NaClInstState* prev_inst =
-                          NaClInstIterGetLookbackState(iter, 1);
-                      if (NaClAssignsRegisterWithZeroExtends(prev_inst, RegESP)
-                          || (inst_name == InstAdd &&
-                              NaClIsAddOrSubBoundedConstFromEsp(prev_inst))) {
-                        DEBUG(printf("nc protect base for or/add/or\n"));
-                        NaClMarkInstructionJumpIllegal(state, inst_state);
-                        locals->esp_set_inst = NULL;
-                        NaClMaybeReportPreviousBad(state, locals);
-                        return;
-                      }
-                    }
-                  }
-                  break;
-                case InstLea:
-                  if (NaClAcceptRegMoveLea32To64(state, iter, inst, RegRSP)) {
-                    /* case 7 */
-                    locals->esp_set_inst = NULL;
-                    NaClMaybeReportPreviousBad(state, locals);
-                    return;
-                  }
-                  break;
-                case InstAnd:
-                  /* See if case 5: and $rsp, 0xXX */
-                  if (NaClInstStateLength(inst_state) == 4 &&
-                      NaClInstStateByte(inst_state, 0) == 0x48 &&
-                      NaClInstStateByte(inst_state, 1) == 0x83 &&
-                      NaClInstStateByte(inst_state, 2) == 0xe4 &&
-                      /* negative byte test: check if leftmost bit set. */
-                      (NaClInstStateByte(inst_state, 3) & 0x80)) {
-                    NaClMaybeReportPreviousBad(state, locals);
-                    return;
-                  }
-                  /* Intentionally fall to the next case. */
-                default:
-                  if (NaClIsMovUsingRegisters(inst, vector,
-                                                 RegRSP, RegRBP)) {
-                    /* case (1) -- see above, matching
-                     *    mov %rsp, %rbp
-                     */
-                    NaClMaybeReportPreviousBad(state, locals);
-                    return;
-                  }
-                  break;
-              }
-              /* If reached, assume that not a special case. */
-              NaClReportIllegalChangeToRsp(state, inst_state);
-              NaClMaybeReportPreviousBad(state, locals);
+              NaClCheckRspAssignments(state, iter, locals, i);
               break;
             case RegRBP:
-              /* (1) mov %rbp, %rsp
-               *
-               *     Note: maintains RSP/RBP invariant, since RSP was already
-               *     meeting the invariant.
-               *
-               * (2) mov %ebp, ...
-               *     add %rbp, %rbase
-               *
-               *     Typical use in the exit from a fucntion, restoring RBP.
-               *     The ... in the MOV is gotten from a stack pop in such
-               *     cases. However, for long jumps etc., the value may
-               *     be gotten from memory, or even a register.
-               *
-               *     Note: The code here allows any operation that zero extends
-               *     EBP, not just a move. The rationale is that the MOV does
-               *     a zero extend of RBP, and is the only property that is
-               *     needed to maintain the invarinat on RBP.
-               *
-               * (3) mov %ebp
-               *     lea %rbp, [%rbp+%rbase*1]
-               *
-               *     Same as (2), except that we use instructions prior to the
-               *     pattern to do the add/subtract. Then let the result be
-               *     (zero-extended) moved into EBP, and use the lea to fill
-               *     in the top 32 bits of %RSP.
-               *
-               *     Note: We require the scale to be 1, and rbase be in
-               *     the index position.
-               *
-               *     Note: The code here allows any operation that zero extends
-               *     EBP, not just a move. The rationale is that the MOV does
-               *     a zero extend of EBP, and is the only property that is
-               *     needed to maintain the invariant on RBP.
-
-               */
-              switch (inst_name) {
-                case InstAdd:
-                  if (NaClInstIterHasLookbackState(iter, 1)) {
-                    NaClInstState* prev_state =
-                        NaClInstIterGetLookbackState(iter, 1);
-                    if (NaClIsBinarySetUsingRegisters(
-                            inst, InstAdd, vector,
-                            RegRBP, state->base_register) &&
-                        NaClAssignsRegisterWithZeroExtends(
-                            prev_state, RegEBP)) {
-                      /* case 2. */
-                      NaClMarkInstructionJumpIllegal(state, inst_state);
-                      locals->ebp_set_inst = NULL;
-                      NaClMaybeReportPreviousBad(state, locals);
-                      return;
-                    }
-                  }
-                  break;
-                case InstLea:
-                  if (NaClAcceptRegMoveLea32To64(state, iter, inst, RegRBP)) {
-                    /* case 3 */
-                    locals->ebp_set_inst = NULL;
-                    NaClMaybeReportPreviousBad(state, locals);
-                    return;
-                  }
-                  break;
-                default:
-                  if (NaClIsMovUsingRegisters(inst, vector, RegRBP, RegRSP)) {
-                    /* case 1 */
-                    NaClMaybeReportPreviousBad(state, locals);
-                    return;
-                  }
-                  break;
-              }
-              /* If reached, not valid. */
-              NaClValidatorInstMessage(
-                  LOG_ERROR, state, inst_state,
-                  "Illegal change to register RBP\n");
-              NaClMaybeReportPreviousBad(state, locals);
+              NaClCheckRbpAssignments(state, iter, locals, i);
               break;
             case RegESP:
               /* Record that we must recheck this after we have
                * moved to the next instruction.
                */
-              NaClMaybeReportPreviousBad(state, locals);
-              locals->esp_set_inst = inst_state;
-              return;
+              locals->buffer[locals->current_index].esp_set_inst = inst_state;
+              break;
             case RegEBP:
               /* Record that we must recheck this after we have
                * moved to the next instruction.
                */
-              NaClMaybeReportPreviousBad(state, locals);
-              locals->ebp_set_inst = inst_state;
-              return;
+              locals->buffer[locals->current_index].ebp_set_inst = inst_state;
+              break;
+            case RegCS:
+            case RegDS:
+            case RegSS:
+            case RegES:
+            case RegFS:
+            case RegGS:
+              NaClValidatorInstMessage(
+                  LOG_ERROR, state, inst_state,
+                  "Illegal assignment to segment register %s\n",
+                  NaClOpKindName(reg_name));
+              break;
             default:
-              /* Don't allow any subregister assignments of the
-               * base register (R15), RSP, or RBP.
-               */
-              if (NaClIs64Subreg(inst_state, reg_name, state->base_register)) {
-                NaClValidatorInstMessage(
-                    LOG_ERROR, state, inst_state,
-                    "Changing %s changes the value of register %s\n",
-                    NaClOpKindName(reg_name),
-                    NaClOpKindName(state->base_register));
-              } else if (NaClIs64Subreg(inst_state, reg_name, RegRSP)) {
-                NaClValidatorInstMessage(
-                    LOG_ERROR, state, inst_state,
-                    "Changing %s changes the value of register %s\n",
-                    NaClOpKindName(reg_name),
-                    NaClOpKindName(RegRSP));
-              } else if (NaClIs64Subreg(inst_state, reg_name, RegRBP)) {
-                NaClValidatorInstMessage(
-                    LOG_ERROR, state, inst_state,
-                    "Changing %s changes the value of register %s\n",
-                    NaClOpKindName(reg_name),
-                    NaClOpKindName(RegRBP));
-              }
+              NaClCheckSubregChangeOfRspRbpOrBase(state, reg_name);
               break;
           }
         }
