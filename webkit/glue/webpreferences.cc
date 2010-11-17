@@ -29,7 +29,7 @@ WebPreferences::WebPreferences()
       fantasy_font_family(),  // Not sure what to use on Windows.
       default_font_size(16),
       default_fixed_font_size(13),
-      minimum_font_size(1),
+      minimum_font_size(0),
       minimum_logical_font_size(6),
       default_encoding("ISO-8859-1"),
       javascript_enabled(true),

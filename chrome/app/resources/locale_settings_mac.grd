@@ -167,7 +167,7 @@
 
       <!-- The default value for |WebPreference::minimum_font_size| -->
       <message name="IDS_MINIMUM_FONT_SIZE" use_name_for_id="true">
-        1
+        0
       </message>
 
       <!-- The default value for |WebPreference::minimum_logical_font_size|. -->

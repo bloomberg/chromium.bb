@@ -497,7 +497,7 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->default_encoding = "ISO-8859-1";
         web_prefs_->default_font_size = 16;
         web_prefs_->default_fixed_font_size = 13;
-        web_prefs_->minimum_font_size = 1;
+        web_prefs_->minimum_font_size = 0;
         web_prefs_->minimum_logical_font_size = 9;
         web_prefs_->javascript_can_open_windows_automatically = true;
         web_prefs_->dom_paste_enabled = true;
