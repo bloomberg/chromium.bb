@@ -19,6 +19,7 @@
 #include "ceee/ie/common/ie_util.h"
 #include "ceee/ie/common/mock_ie_tab_interfaces.h"
 #include "ceee/ie/plugin/bho/executor.h"
+#include "ceee/ie/plugin/bho/infobar_manager.h"
 #include "ceee/ie/testing/mock_broker_and_friends.h"
 #include "ceee/ie/testing/mock_frame_event_handler_host.h"
 #include "ceee/common/initializing_coclass.h"
@@ -78,6 +79,15 @@ class TestingMockExecutorCreatorTeardown
   }
 
   MOCK_METHOD1_WITH_CALLTYPE(__stdcall, Teardown, HRESULT(long));
+};
+
+class MockInfobarManager : public infobar_api::InfobarManager {
+ public:
+  MockInfobarManager() : InfobarManager(kGoodWindow) {}
+  MOCK_METHOD4(Show, HRESULT(infobar_api::InfobarType, int,
+                             const std::wstring&, bool));
+  MOCK_METHOD1(Hide, HRESULT(infobar_api::InfobarType));
+  MOCK_METHOD0(HideAll, void());
 };
 
 TEST(ExecutorCreator, ProperTearDownOnDestruction) {
@@ -314,6 +324,14 @@ class TestingExecutor
   }
   void set_id(HWND hwnd) {
     hwnd_ = hwnd;
+  }
+  void InitializeInfobarManager(MockInfobarManager** manager) {
+    ASSERT_TRUE(manager != NULL);
+    *manager = new MockInfobarManager();
+    infobar_manager_.reset(*manager);
+  }
+  void TerminateInfobarManager() {
+    infobar_manager_.reset(NULL);
   }
   static BOOL MockEnumChildWindows(HWND, WNDENUMPROC, LPARAM p) {
     std::vector<HWND>* tab_windows = reinterpret_cast<std::vector<HWND>*>(p);
@@ -1083,6 +1101,54 @@ TEST_F(ExecutorTests, RegisterCookieStore) {
   EXPECT_EQ(S_OK, executor_->CookieStoreIsRegistered());
 }
 
-// TODO(vadimb@google.com): Add unit tests for infobar APIs.
+TEST_F(ExecutorTests, ShowInfobar) {
+  testing::LogDisabler no_dchecks;
+  CComBSTR url(L"/infobar/test.html");
+  CComBSTR empty_url(L"");
+  CComBSTR extension_id(L"abcdefjh");
+
+  // Calling when manager has not been initialized.
+  EXPECT_HRESULT_FAILED(executor_->ShowInfobar(url, NULL));
+
+  // Initializing the manager and calling it with different parameters.
+  MockInfobarManager* manager;
+  executor_->InitializeInfobarManager(&manager);
+
+  EXPECT_CALL(*manager, Show(infobar_api::TOP_INFOBAR, _,
+                             std::wstring(url.m_str), true)).
+      WillOnce(Return(S_OK));
+  EXPECT_CALL(mock_window_utils_, GetTopLevelParent(_)).
+      WillRepeatedly(Return(kGoodWindow));
+  CeeeWindowHandle window_handle;
+
+  EXPECT_HRESULT_SUCCEEDED(executor_->ShowInfobar(url, &window_handle));
+  EXPECT_EQ(reinterpret_cast<CeeeWindowHandle>(kGoodWindow), window_handle);
+
+  EXPECT_CALL(*manager, HideAll()).Times(1);
+  EXPECT_HRESULT_SUCCEEDED(executor_->ShowInfobar(empty_url, &window_handle));
+  EXPECT_EQ(0, window_handle);
+
+  EXPECT_CALL(*manager, Show(infobar_api::TOP_INFOBAR, _,
+                             std::wstring(url.m_str), true)).
+      WillOnce(Return(E_FAIL));
+  EXPECT_HRESULT_FAILED(executor_->ShowInfobar(url, &window_handle));
+  EXPECT_EQ(0, window_handle);
+
+  EXPECT_CALL(*manager, HideAll()).Times(1);
+  EXPECT_HRESULT_SUCCEEDED(executor_->OnTopFrameBeforeNavigate(url));
+
+  EXPECT_HRESULT_SUCCEEDED(executor_->SetExtensionId(extension_id));
+  std::wstring full_url(L"chrome-extension://");
+  full_url += extension_id.m_str;
+  full_url += url.m_str;
+  EXPECT_CALL(*manager, Show(infobar_api::TOP_INFOBAR, _, full_url, true)).
+      WillOnce(Return(S_OK));
+  EXPECT_HRESULT_SUCCEEDED(executor_->ShowInfobar(url, &window_handle));
+
+  // Have to destroy the manager before LogDisabler from this test goes out of
+  // scope.
+  EXPECT_CALL(user32_, IsWindow(NULL)).WillRepeatedly(Return(FALSE));
+  executor_->TerminateInfobarManager();
+}
 
 }  // namespace

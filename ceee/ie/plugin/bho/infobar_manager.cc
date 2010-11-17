@@ -31,7 +31,9 @@ namespace infobar_api {
 // WM_NCCALCSIZE to resize its client area. It also handles WM_SIZE and WM_MOVE
 // messages to make infobars consistent with IE content window's size and
 // position.
-class InfobarManager::ContainerWindow : public CWindowImpl<ContainerWindow> {
+class InfobarManager::ContainerWindow
+    : public InfobarManager::ContainerWindowInterface,
+      public CWindowImpl<ContainerWindow> {
  public:
   ContainerWindow(HWND container, InfobarManager* manager)
       : infobar_manager_(manager) {
@@ -44,8 +46,16 @@ class InfobarManager::ContainerWindow : public CWindowImpl<ContainerWindow> {
       UnsubclassWindow();
   }
 
-  bool destroyed() const {
+  virtual bool IsDestroyed() const {
     return destroyed_;
+  }
+
+  virtual HWND GetWindowHandle() const {
+    return IsWindow() ? m_hWnd : NULL;
+  }
+
+  virtual bool PostWindowsMessage(UINT msg, WPARAM wparam, LPARAM lparam) {
+    return PostMessage(msg, wparam, lparam) != 0;
   }
 
   BEGIN_MSG_MAP_EX(ContainerWindow)
@@ -135,17 +145,11 @@ class InfobarManager::ContainerWindow : public CWindowImpl<ContainerWindow> {
 
 InfobarManager::InfobarManager(HWND tab_window)
     : tab_window_(tab_window) {
-  for (int index = 0; index < END_OF_INFOBAR_TYPE; ++index) {
-    // Note that when InfobarManager is being initialized the IE has not created
-    // the tab. Therefore we cannot find the container window here and have to
-    // pass interface for a function that finds windows to be called later.
-    infobars_[index].reset(
-        InfobarWindow::CreateInfobar(static_cast<InfobarType>(index), this));
-  }
 }
 
 HRESULT InfobarManager::Show(InfobarType type, int max_height,
                              const std::wstring& url, bool slide) {
+  LazyInitialize(type);
   if (type < FIRST_INFOBAR_TYPE || type >= END_OF_INFOBAR_TYPE ||
       infobars_[type] == NULL) {
     return E_INVALIDARG;
@@ -155,8 +159,7 @@ HRESULT InfobarManager::Show(InfobarType type, int max_height,
   infobars_[type]->Navigate(url);
   // Create the window if not created.
   if (!infobars_[type]->IsWindow()) {
-    infobars_[type]->Create(tab_window_, NULL, NULL,
-                            WS_CHILD | WS_CLIPCHILDREN);
+    infobars_[type]->InternalCreate(tab_window_, WS_CHILD | WS_CLIPCHILDREN);
   }
   if (!infobars_[type]->IsWindow())
     return E_UNEXPECTED;
@@ -166,10 +169,12 @@ HRESULT InfobarManager::Show(InfobarType type, int max_height,
 }
 
 HRESULT InfobarManager::Hide(InfobarType type) {
-  if (type < FIRST_INFOBAR_TYPE || type >= END_OF_INFOBAR_TYPE ||
-      infobars_[type] == NULL) {
+  if (type < FIRST_INFOBAR_TYPE || type >= END_OF_INFOBAR_TYPE)
     return E_INVALIDARG;
-  }
+  // No lazy initialization here - if the infobar has not been created just
+  // return;
+  if (infobars_[type] == NULL)
+    return E_UNEXPECTED;
   // There is a choice either to hide or to destroy the infobar window.
   // This implementation destroys the infobar to save resources and stop all
   // scripts that possibly still run in the window. If we want to just hide the
@@ -208,7 +213,7 @@ static BOOL CALLBACK FindContentParentWindowsProc(HWND hwnd, LPARAM lparam) {
 }
 
 HWND InfobarManager::GetContainerWindow() {
-  if (container_window_ != NULL && container_window_->destroyed())
+  if (container_window_ != NULL && container_window_->IsDestroyed())
     container_window_.reset(NULL);
 
   if (container_window_ == NULL) {
@@ -221,12 +226,13 @@ HWND InfobarManager::GetContainerWindow() {
       DCHECK(content_parent_window);
       if (content_parent_window != NULL) {
         container_window_.reset(
-            new ContainerWindow(content_parent_window, this));
+            CreateContainerWindow(content_parent_window, this));
       }
     }
   }
-  DCHECK(container_window_ != NULL && container_window_->IsWindow());
-  return container_window_->m_hWnd;
+  DCHECK(container_window_ != NULL &&
+         container_window_->GetWindowHandle() != NULL);
+  return container_window_->GetWindowHandle();
 }
 
 void InfobarManager::OnWindowClose(InfobarType type) {
@@ -234,8 +240,8 @@ void InfobarManager::OnWindowClose(InfobarType type) {
   // infobar window right away as it may result on deleting the object that
   // started this callback. So instead we post ourtselves the message.
   if (container_window_ != NULL)
-    container_window_->PostMessage(TM_DELAYED_CLOSE_INFOBAR,
-                                   static_cast<WPARAM>(type), 0);
+    container_window_->PostWindowsMessage(TM_DELAYED_CLOSE_INFOBAR,
+                                          static_cast<WPARAM>(type), 0);
 }
 
 void InfobarManager::OnContainerWindowNcCalcSize(RECT* rect) {
@@ -265,6 +271,25 @@ void InfobarManager::OnContainerWindowDestroy() {
     if (infobars_[index] != NULL)
       infobars_[index]->Reset();
   }
+}
+
+void InfobarManager::LazyInitialize(InfobarType type) {
+  DCHECK(type >= FIRST_INFOBAR_TYPE && type < END_OF_INFOBAR_TYPE);
+  if (type < FIRST_INFOBAR_TYPE || type >= END_OF_INFOBAR_TYPE)
+    return;
+
+  if (infobars_[type] != NULL)
+    return;
+
+  // Note that when InfobarManager is being initialized the IE has not created
+  // the tab. Therefore we cannot find the container window here and have to
+  // pass interface for a function that finds windows to be called later.
+  infobars_[type].reset(InfobarWindow::CreateInfobar(type, this));
+}
+
+InfobarManager::ContainerWindowInterface* InfobarManager::CreateContainerWindow(
+    HWND container, InfobarManager* manager) {
+  return new ContainerWindow(container, manager);
 }
 
 }  // namespace infobar_api

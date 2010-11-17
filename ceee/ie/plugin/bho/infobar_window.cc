@@ -41,7 +41,8 @@ InfobarWindow::InfobarWindow(InfobarType type, Delegate* delegate)
       show_(false),
       target_height_(1),
       current_height_(1),
-      sliding_infobar_(false) {
+      sliding_infobar_(false),
+      timer_id_(0) {
   DCHECK(delegate);
 }
 
@@ -165,7 +166,7 @@ void InfobarWindow::StartUpdatingLayout(bool show, int max_height, bool slide) {
     current_height_ = target_height_;
 
     if (sliding_infobar_) {
-      KillTimer(kInfobarSlidingTimerId);
+      KillTimer(timer_id_);
       sliding_infobar_ = false;
     }
   } else {
@@ -174,7 +175,9 @@ void InfobarWindow::StartUpdatingLayout(bool show, int max_height, bool slide) {
     current_height_ = CalculateNextHeight();
 
     if (!sliding_infobar_) {
-      SetTimer(kInfobarSlidingTimerId, kInfobarSlidingTimerIntervalMs, NULL);
+      // Set timer and store its id (it could be different from the passed one).
+      timer_id_ = SetTimer(kInfobarSlidingTimerId,
+                           kInfobarSlidingTimerIntervalMs, NULL);
       sliding_infobar_ = true;
     }
   }
@@ -258,12 +261,12 @@ HRESULT InfobarWindow::GetContentSize(SIZE* size) {
 }
 
 LRESULT InfobarWindow::OnTimer(UINT_PTR nIDEvent) {
-  DCHECK(nIDEvent == kInfobarSlidingTimerId);
+  DCHECK(nIDEvent == timer_id_);
   if (show_ && sliding_infobar_ && current_height_ != target_height_) {
     current_height_ = CalculateNextHeight();
     UpdateLayout();
   } else if (sliding_infobar_) {
-    KillTimer(kInfobarSlidingTimerId);
+    KillTimer(timer_id_);
     sliding_infobar_ = false;
   }
 

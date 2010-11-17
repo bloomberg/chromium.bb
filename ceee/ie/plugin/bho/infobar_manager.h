@@ -24,12 +24,12 @@ class InfobarManager : public InfobarWindow::Delegate,
 
   // Shows the infobar of the specified type and navigates it to the specified
   // URL.
-  HRESULT Show(InfobarType type, int max_height, const std::wstring& url,
-               bool slide);
+  virtual HRESULT Show(InfobarType type, int max_height,
+                       const std::wstring& url, bool slide);
   // Hides the infobar of the specified type.
-  HRESULT Hide(InfobarType type);
+  virtual HRESULT Hide(InfobarType type);
   // Hides all infobars.
-  void HideAll();
+  virtual void HideAll();
 
   // Implementation of InfobarWindow::Delegate.
   // Finds the handle of the container window.
@@ -37,14 +37,28 @@ class InfobarManager : public InfobarWindow::Delegate,
   // Informs about window.close() event.
   virtual void OnWindowClose(InfobarType type);
 
- private:
+ protected:
   class ContainerWindow;
+  class ContainerWindowInterface {
+   public:
+    virtual ~ContainerWindowInterface() {}
+    virtual bool IsDestroyed() const = 0;
+    virtual HWND GetWindowHandle() const = 0;
+    virtual bool PostWindowsMessage(UINT msg, WPARAM wparam, LPARAM lparam) = 0;
+  };
+
+  // Lazy initialization of InfobarWindow object.
+  void LazyInitialize(InfobarType type);
+
+  // Creates container window. Separated for the unit testing.
+  virtual ContainerWindowInterface* CreateContainerWindow(
+      HWND container, InfobarManager* manager);
 
   // The HWND of the tab window the infobars are associated with.
   HWND tab_window_;
 
   // Parent window for IE content window.
-  scoped_ptr<ContainerWindow> container_window_;
+  scoped_ptr<ContainerWindowInterface> container_window_;
 
   // Infobar windows.
   scoped_ptr<InfobarWindow> infobars_[END_OF_INFOBAR_TYPE];

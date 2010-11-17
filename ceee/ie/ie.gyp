@@ -43,6 +43,8 @@
         'plugin/bho/extension_port_manager.cc',
         'plugin/bho/frame_event_handler_unittest.cc',
         'plugin/bho/infobar_events_funnel_unittest.cc',
+        'plugin/bho/infobar_manager_unittest.cc',
+        'plugin/bho/infobar_window_unittest.cc',
         'plugin/bho/tab_events_funnel_unittest.cc',
         'plugin/bho/tool_band_visibility_unittest.cc',
         'plugin/bho/webnavigation_events_funnel_unittest.cc',

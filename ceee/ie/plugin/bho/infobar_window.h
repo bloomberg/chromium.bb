@@ -55,13 +55,13 @@ class InfobarWindow : public InfobarBrowserWindow::Delegate,
   // max_height if the content is too high; no limit if max_height is set to
   // 0).
   // slide indicates whether to show sliding effect.
-  HRESULT Show(int max_height, bool slide);
+  virtual HRESULT Show(int max_height, bool slide);
 
   // Hides the infobar.
-  HRESULT Hide();
+  virtual HRESULT Hide();
 
   // Navigates the HTML view of the infobar.
-  HRESULT Navigate(const std::wstring& url);
+  virtual HRESULT Navigate(const std::wstring& url);
 
   // Reserves space for the infobar when IE window recalculates its size.
   void ReserveSpace(RECT* rect);
@@ -71,7 +71,11 @@ class InfobarWindow : public InfobarBrowserWindow::Delegate,
   void UpdatePosition();
 
   // Destroys the browser window.
-  void Reset();
+  virtual void Reset();
+
+  virtual HWND InternalCreate(HWND parent_window, DWORD style) {
+    return Create(parent_window, NULL, NULL, style);
+  }
 
  private:
   BEGIN_MSG_MAP(InfobarWindow)
@@ -102,6 +106,9 @@ class InfobarWindow : public InfobarBrowserWindow::Delegate,
 
   // Indicates whether the infobar is sliding.
   bool sliding_infobar_;
+
+  // Timer id when sliding the infobar.
+  UINT_PTR timer_id_;
 
   // The Chrome Frame host handling a Chrome Frame instance for us.
   CComPtr<IInfobarBrowserWindow> chrome_frame_host_;
