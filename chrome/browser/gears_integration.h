@@ -18,9 +18,7 @@
 class CPCommandInterface;
 class GURL;
 class SkBitmap;
-namespace webkit_glue {
 struct WebApplicationInfo;
-}
 
 // We use this in place of GearsShortcutData so we can keep browser-specific
 // data on the structure.
@@ -40,12 +38,11 @@ void GearsSettingsPressed(gfx::NativeWindow parent_wnd);
 typedef Callback2<const GearsShortcutData2&, bool>::Type
     GearsCreateShortcutCallback;
 
-void GearsCreateShortcut(
-    const webkit_glue::WebApplicationInfo& app_info,
-    const string16& fallback_name,
-    const GURL& fallback_url,
-    const SkBitmap& fallback_icon,
-    GearsCreateShortcutCallback* callback);
+void GearsCreateShortcut(const WebApplicationInfo& app_info,
+                         const string16& fallback_name,
+                         const GURL& fallback_url,
+                         const SkBitmap& fallback_icon,
+                         GearsCreateShortcutCallback* callback);
 
 // Call into Gears to query the list of shortcuts.  Results will be returned
 // asynchronously via the callback.  The callback's arguments will be NULL

@@ -1591,6 +1591,7 @@
         'common/switch_utils_unittest.cc',
         'common/thumbnail_score_unittest.cc',
         'common/time_format_unittest.cc',
+        'common/web_apps_unittest.cc',
         'common/worker_thread_ticker_unittest.cc',
         'common/zip_unittest.cc',
         'gpu/gpu_idirect3d9_mock_win.h',

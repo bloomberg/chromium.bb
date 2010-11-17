@@ -15,10 +15,10 @@
 #include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/gears_api.h"
+#include "chrome/common/web_apps.h"
 #include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/glue/dom_operations.h"
 
 // The following 2 helpers are borrowed from the Gears codebase.
 
@@ -139,7 +139,7 @@ class CreateShortcutCommand : public CPCommandInterface {
   CreateShortcutCommand(
       const std::string& name, const std::string& orig_name,
       const std::string& url, const std::string& description,
-      const std::vector<webkit_glue::WebApplicationInfo::IconInfo> &icons,
+      const std::vector<WebApplicationInfo::IconInfo> &icons,
       const SkBitmap& fallback_icon,
       GearsCreateShortcutCallback* callback)
       : name_(name), url_(url), description_(description),
@@ -157,7 +157,7 @@ class CreateShortcutCommand : public CPCommandInterface {
     bool has_icon = false;
 
     for (size_t i = 0; i < icons.size(); ++i) {
-      const webkit_glue::WebApplicationInfo::IconInfo& icon = icons[i];
+      const WebApplicationInfo::IconInfo& icon = icons[i];
       if (icon.width == 16 && icon.height == 16) {
         has_icon = true;
         InitIcon(SIZE_16x16, icon.url, 16, 16);
@@ -232,7 +232,7 @@ class CreateShortcutCommand : public CPCommandInterface {
 DISABLE_RUNNABLE_METHOD_REFCOUNT(CreateShortcutCommand);
 
 void GearsCreateShortcut(
-    const webkit_glue::WebApplicationInfo& app_info,
+    const WebApplicationInfo& app_info,
     const string16& fallback_name,
     const GURL& fallback_url,
     const SkBitmap& fallback_icon,

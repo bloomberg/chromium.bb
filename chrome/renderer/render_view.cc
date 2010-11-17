@@ -42,6 +42,7 @@
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/web_apps.h"
 #include "chrome/common/window_container_type.h"
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/audio_message_filter.h"
@@ -3913,9 +3914,12 @@ SkBitmap RenderView::ImageFromDataUrl(const GURL& url) const {
 }
 
 void RenderView::OnGetApplicationInfo(int page_id) {
-  webkit_glue::WebApplicationInfo app_info;
-  if (page_id == page_id_)
-    webkit_glue::GetApplicationInfo(webview(), &app_info);
+  WebApplicationInfo app_info;
+  if (page_id == page_id_) {
+    string16 error;
+    web_apps::ParseWebAppFromWebDocument(webview()->mainFrame(), &app_info,
+                                         &error);
+  }
 
   // Prune out any data URLs in the set of icons.  The browser process expects
   // any icon with a data URL to have originated from a favicon.  We don't want

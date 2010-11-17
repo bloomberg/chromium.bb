@@ -9,6 +9,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/geoposition.h"
 #include "chrome/common/thumbnail_score.h"
+#include "chrome/common/web_apps.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"
@@ -18,7 +19,6 @@
 #ifndef EXCLUDE_SKIA_DEPENDENCIES
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif
-#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/password_form.h"
 
 namespace IPC {
@@ -227,8 +227,8 @@ void ParamTraits<ContentSettings>::Log(
   l->append("<ContentSettings>");
 }
 
-void ParamTraits<webkit_glue::WebApplicationInfo>::Write(
-    Message* m, const webkit_glue::WebApplicationInfo& p) {
+void ParamTraits<WebApplicationInfo>::Write(Message* m,
+                                            const WebApplicationInfo& p) {
   WriteParam(m, p.title);
   WriteParam(m, p.description);
   WriteParam(m, p.app_url);
@@ -240,8 +240,8 @@ void ParamTraits<webkit_glue::WebApplicationInfo>::Write(
   }
 }
 
-bool ParamTraits<webkit_glue::WebApplicationInfo>::Read(
-    const Message* m, void** iter, webkit_glue::WebApplicationInfo* r) {
+bool ParamTraits<WebApplicationInfo>::Read(
+    const Message* m, void** iter, WebApplicationInfo* r) {
   size_t icon_count;
   bool result =
     ReadParam(m, iter, &r->title) &&
@@ -263,8 +263,8 @@ bool ParamTraits<webkit_glue::WebApplicationInfo>::Read(
   return true;
 }
 
-void ParamTraits<webkit_glue::WebApplicationInfo>::Log(
-    const webkit_glue::WebApplicationInfo& p, std::string* l) {
+void ParamTraits<WebApplicationInfo>::Log(const WebApplicationInfo& p,
+                                          std::string* l) {
   l->append("<WebApplicationInfo>");
 }
 

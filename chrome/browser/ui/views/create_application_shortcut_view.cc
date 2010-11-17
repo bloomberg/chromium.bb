@@ -236,8 +236,7 @@ void CreateApplicationShortcutView::Init() {
   // Prepare data
   web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
 
-  const webkit_glue::WebApplicationInfo& app_info =
-      tab_contents_->web_app_info();
+  const WebApplicationInfo& app_info = tab_contents_->web_app_info();
   if (!app_info.icons.empty()) {
     web_app::GetIconsInfo(app_info, &unprocessed_icons_);
     FetchIcon();
