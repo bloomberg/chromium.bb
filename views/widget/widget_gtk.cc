@@ -962,7 +962,8 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   if (transparent_ && type_ == TYPE_CHILD) {
     // Clear the background before drawing any view and native components.
     DrawTransparentBackground(widget, event);
-    if (!CompositePainter::IsComposited(widget_)) {
+    if (!CompositePainter::IsComposited(widget_) &&
+        gdk_screen_is_composited(gdk_screen_get_default())) {
       // Let the parent draw the content only after something is drawn on
       // the widget.
       CompositePainter::SetComposited(widget_);
