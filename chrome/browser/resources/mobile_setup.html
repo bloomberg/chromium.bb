@@ -109,12 +109,14 @@ iframe {
 <body onload="mobile.MobileSetup.loadPage();"
   i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <iframe class="hidden" id="paymentForm" frameborder="0"></iframe>
-  <div id="systemStatus" class="startup hidden">
-    <div><h3 id="statusHeader"></h3></div>
-    <div id="errorMessage"></div>
-    <canvas id="canvas" width="56" height="56"></canvas>
-    <div id="splitter"></div>
-    <div id="activationLogo" class="logo"></div>
+  <div id="systemStatus" class="overlay hidden">
+    <div class="startup">
+      <div><h3 id="statusHeader"></h3></div>
+      <div id="errorMessage"></div>
+      <canvas id="canvas" width="56" height="56"></canvas>
+      <div id="splitter"></div>
+      <div id="activationLogo" class="logo"></div>
+    </div>
   </div>
   <div id="finalMessage" class="overlay hidden">
     <div class="box">
@@ -124,9 +126,6 @@ iframe {
       </div>
       <div id="finalLogo" class="logo"></div>
     </div>
-  </div>
-  <div class="testing-only">
-    <button id="cheat">Fake activation!</button>
   </div>
 </body>
 </html>

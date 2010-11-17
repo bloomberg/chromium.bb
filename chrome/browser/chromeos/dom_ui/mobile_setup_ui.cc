@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -44,7 +45,6 @@ namespace {
 
 // Host page JS API function names.
 const char kJsApiStartActivation[] = "startActivation";
-const char kJsApiCloseTab[] = "closeTab";
 const char kJsApiSetTransactionStatus[] = "setTransactionStatus";
 
 const wchar_t kJsDeviceStatusChangedHandler[] =
@@ -182,7 +182,6 @@ class MobileSetupHandler
   };
 
   // Handlers for JS DOMUI messages.
-  void HandleCloseTab(const ListValue* args);
   void HandleSetTransactionStatus(const ListValue* args);
   void HandleStartActivation(const ListValue* args);
   void SetTransactionStatus(const std::string& status);
@@ -196,6 +195,10 @@ class MobileSetupHandler
   // Check the current cellular network for error conditions.
   bool GotActivationError(const chromeos::CellularNetwork* network,
                           std::string* error);
+  // Sends status updates to DOMUI page.
+  void UpdatePage(chromeos::CellularNetwork* network,
+                  const std::string& error_description);
+  // Changes internal state.
   void ChangeState(chromeos::CellularNetwork* network,
                    PlanActivationState new_state,
                    const std::string& error_description);
@@ -239,6 +242,7 @@ class MobileSetupHandler
   bool reenable_cert_check_;
   bool transaction_complete_signalled_;
   bool activation_status_test_;
+  bool evaluating_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
 
@@ -352,7 +356,8 @@ MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
       reenable_ethernet_(false),
       reenable_cert_check_(false),
       transaction_complete_signalled_(false),
-      activation_status_test_(false) {
+      activation_status_test_(false),
+      evaluating_(false) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
@@ -376,8 +381,6 @@ void MobileSetupHandler::Init(TabContents* contents) {
 void MobileSetupHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(kJsApiStartActivation,
       NewCallback(this, &MobileSetupHandler::HandleStartActivation));
-  dom_ui_->RegisterMessageCallback(kJsApiCloseTab,
-      NewCallback(this, &MobileSetupHandler::HandleCloseTab));
   dom_ui_->RegisterMessageCallback(kJsApiSetTransactionStatus,
       NewCallback(this, &MobileSetupHandler::HandleSetTransactionStatus));
 }
@@ -403,19 +406,11 @@ void MobileSetupHandler::OnNetworkChanged(chromeos::NetworkLibrary* cros,
           const_cast<chromeos::Network*>(network)));
 }
 
-void MobileSetupHandler::HandleCloseTab(const ListValue* args) {
-  if (!dom_ui_)
-    return;
-  Browser* browser = BrowserList::FindBrowserWithFeature(
-      dom_ui_->GetProfile(), Browser::FEATURE_TABSTRIP);
-  if (browser)
-    browser->CloseTabContents(tab_contents_);
-}
-
 void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(task.get(), &TaskProxy::HandleStartActivation));
+  UMA_HISTOGRAM_COUNTS("Cellular.MobileSetupStart", 1);
 }
 
 void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
@@ -454,6 +449,7 @@ void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
   // again.
   if (LowerCaseEqualsASCII(status, "ok") &&
       state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
+    UMA_HISTOGRAM_COUNTS("Cellular.PaymentReceived", 1);
     if (transaction_complete_signalled_) {
       LOG(WARNING) << "Transaction completion signaled more than once!?";
       return;
@@ -469,6 +465,8 @@ void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
     } else {
       EvaluateCellularNetwork(network);
     }
+  } else {
+    UMA_HISTOGRAM_COUNTS("Cellular.PaymentFailed", 1);
   }
 }
 
@@ -483,6 +481,12 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     return;
   }
 
+  // Prevent this method from being called if it is already on the stack.
+  // This might happen on some state transitions (ie. connect, disconnect).
+  if (evaluating_)
+    return;
+  evaluating_ = true;
+
   LOG(INFO) << "Cellular:\n  service=" << network->GetStateString().c_str()
           << "\n  ui=" << GetStateDescription(state_)
           << "\n  activation=" << network->GetActivationStateString().c_str()
@@ -495,7 +499,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         case chromeos::ACTIVATION_STATE_ACTIVATED: {
           if (network->failed_or_disconnected()) {
             new_state = PLAN_ACTIVATION_RECONNECTING;
-          } else if (network->connection_state() == chromeos::STATE_READY) {
+          } else if (network->connected()) {
             if (network->restricted_pool()) {
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
             } else {
@@ -516,13 +520,16 @@ void MobileSetupHandler::EvaluateCellularNetwork(
                   DisconnectFromWirelessNetwork(network);
               // Disconnect will force networks to be reevaluated, so
               // we don't want to continue processing on this path anymore.
+              evaluating_ = false;
               return;
             }
           } else {
-            if (network->connected())
-              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-            else
+            if (network->connected()) {
+              if (network->restricted_pool())
+                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+            } else {
               new_state = PLAN_ACTIVATION_RECONNECTING;
+            }
             break;
           }
           break;
@@ -538,14 +545,13 @@ void MobileSetupHandler::EvaluateCellularNetwork(
                 DisconnectFromWirelessNetwork(network);
             // Disconnect will force networks to be reevaluated, so
             // we don't want to continue processing on this path anymore.
+            evaluating_ = false;
             return;
           }
           break;
         }
-        default: {
-          new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
+        default:
           break;
-        }
       }
       break;
     }
@@ -554,7 +560,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         case chromeos::ACTIVATION_STATE_ACTIVATED:
           if (network->failed_or_disconnected()) {
             new_state = PLAN_ACTIVATION_RECONNECTING;
-          } else if (network->connection_state() == chromeos::STATE_READY) {
+          } else if (network->connected()) {
             if (network->restricted_pool()) {
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
             } else {
@@ -563,10 +569,12 @@ void MobileSetupHandler::EvaluateCellularNetwork(
           }
           break;
         case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
-          if (network->connected())
-            new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-          else
+          if (network->connected()) {
+            if (network->restricted_pool())
+              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+          } else {
             new_state = PLAN_ACTIVATION_RECONNECTING;
+          }
           break;
         case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
           // Wait in this state until activation state changes.
@@ -582,12 +590,17 @@ void MobileSetupHandler::EvaluateCellularNetwork(
       // Wait until the service shows up and gets activated.
       switch (network->activation_state()) {
         case chromeos::ACTIVATION_STATE_ACTIVATED:
-          if (network->connection_state() == chromeos::STATE_READY) {
+          if (network->connected()) {
             if (network->restricted_pool()) {
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
             } else {
               new_state = PLAN_ACTIVATION_DONE;
             }
+          } else if (network->failed()) {
+            chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+                ConnectToCellularNetwork(network);
+            evaluating_ = false;
+            return;
           }
           break;
         case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
@@ -619,7 +632,8 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     if ((network->activation_state() ==
             chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED ||
         network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATING) &&
-        network->error() == chromeos::ERROR_UNKNOWN &&
+        (network->error() == chromeos::ERROR_UNKNOWN ||
+            network->error() == chromeos::ERROR_OTASP_FAILED)&&
         (state_ == PLAN_ACTIVATION_INITIATING_ACTIVATION ||
             state_ == PLAN_ACTIVATION_RECONNECTING) &&
         activation_status_test_ &&
@@ -630,6 +644,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     }
   }
   ChangeState(network, new_state, error_description);
+  evaluating_ = false;
 }
 
 // Debugging helper function, will take it out at the end.
@@ -672,6 +687,17 @@ void MobileSetupHandler::CompleteActivation(
   ReEnableOtherConnections();
 }
 
+void MobileSetupHandler::UpdatePage(chromeos::CellularNetwork* network,
+                                    const std::string& error_description) {
+  DictionaryValue device_dict;
+  if (network)
+    GetDeviceInfo(network, &device_dict);
+  device_dict.SetInteger("state", state_);
+  if (error_description.length())
+    device_dict.SetString("error", error_description);
+  dom_ui_->CallJavascriptFunction(
+      kJsDeviceStatusChangedHandler, device_dict);
+}
 
 void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
                                      PlanActivationState new_state,
@@ -684,16 +710,9 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
           GetStateDescription(new_state);
   first_time = false;
   state_ = new_state;
-  DictionaryValue device_dict;
 
   // Signal to JS layer that the state is changing.
-  if (network)
-    GetDeviceInfo(network, &device_dict);
-  device_dict.SetInteger("state", new_state);
-  if (error_description.length())
-    device_dict.SetString("error", error_description);
-  dom_ui_->CallJavascriptFunction(
-      kJsDeviceStatusChangedHandler, device_dict);
+  UpdatePage(network, error_description);
 
   // Decide what to do with network object as a result of the new state.
   switch (new_state) {
@@ -702,8 +721,11 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
       DCHECK(network);
       LOG(INFO) << "Activating service " << network->service_path().c_str();
-      if (!network->StartActivation())
-        new_state = PLAN_ACTIVATION_ERROR;
+      UMA_HISTOGRAM_COUNTS("Cellular.ActivationTry", 1);
+      if (!network->StartActivation()) {
+        UMA_HISTOGRAM_COUNTS("Cellular.ActivationFailure", 1);
+        ChangeState(network, PLAN_ACTIVATION_ERROR, std::string());
+      }
       break;
     case PLAN_ACTIVATION_RECONNECTING: {
       DCHECK(network);
@@ -722,9 +744,11 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
     case PLAN_ACTIVATION_DONE:
       DCHECK(network);
       CompleteActivation(network);
+      UMA_HISTOGRAM_COUNTS("Cellular.MobileSetupSucceeded", 1);
       break;
     case PLAN_ACTIVATION_ERROR: {
       CompleteActivation(NULL);
+      UMA_HISTOGRAM_COUNTS("Cellular.PlanFailed", 1);
       break;
     }
     default:
