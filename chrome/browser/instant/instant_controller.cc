@@ -252,8 +252,10 @@ void InstantController::OnAutocompleteLostFocus(
 
   RenderWidgetHostView* rwhv =
       GetPreviewContents()->GetRenderWidgetHostView();
-  if (!view_gaining_focus || !rwhv)
-    return DestroyPreviewContents();
+  if (!view_gaining_focus || !rwhv) {
+    DestroyPreviewContents();
+    return;
+  }
 
   gfx::NativeView tab_view = GetPreviewContents()->GetNativeView();
   // Focus is going to the renderer.
@@ -262,17 +264,20 @@ void InstantController::OnAutocompleteLostFocus(
     if (!IsMouseDownFromActivate()) {
       // If the mouse is not down, focus is not going to the renderer. Someone
       // else moved focus and we shouldn't commit.
-      return DestroyPreviewContents();
+      DestroyPreviewContents();
+      return;
     }
 
     if (IsShowingInstant()) {
       // We're showing instant results. As instant results may shift when
       // committing we commit on the mouse up. This way a slow click still
       // works fine.
-      return SetCommitOnMouseUp();
+      SetCommitOnMouseUp();
+      return;
     }
 
-    return CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+    CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+    return;
   }
 
   // Walk up the view hierarchy. If the view gaining focus is a subview of the
@@ -286,10 +291,12 @@ void InstantController::OnAutocompleteLostFocus(
         platform_util::GetParent(view_gaining_focus_ancestor);
   }
 
-  if (view_gaining_focus_ancestor)
-    return CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+  if (view_gaining_focus_ancestor) {
+    CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+    return;
+  }
 
-  return DestroyPreviewContents();
+  DestroyPreviewContents();
 }
 
 TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
