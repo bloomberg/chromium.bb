@@ -54,6 +54,7 @@ class ScopedVector {
   }
 
   void reset() { STLDeleteElements(&v); }
+  void reserve(size_t capacity) { v.reserve(capacity); }
   void resize(size_t new_size) { v.resize(new_size); }
 
   // Lets the ScopedVector take ownership of |x|.

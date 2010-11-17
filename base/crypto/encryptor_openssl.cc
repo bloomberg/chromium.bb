@@ -44,7 +44,8 @@ class ScopedCipherCTX {
 
 }  // namespace
 
-Encryptor::Encryptor() {
+Encryptor::Encryptor()
+    : key_(NULL) {
 }
 
 Encryptor::~Encryptor() {
@@ -54,6 +55,7 @@ bool Encryptor::Init(SymmetricKey* key, Mode mode, const std::string& iv) {
   DCHECK(key);
   DCHECK_EQ(CBC, mode);
 
+  EnsureOpenSSLInit();
   if (iv.size() != AES_BLOCK_SIZE)
     return false;
 
@@ -77,6 +79,7 @@ bool Encryptor::Decrypt(const std::string& ciphertext, std::string* plaintext) {
 bool Encryptor::Crypt(bool do_encrypt,
                       const std::string& input,
                       std::string* output) {
+  DCHECK(key_);  // Must call Init() before En/De-crypt.
   // Work on the result in a local variable, and then only transfer it to
   // |output| on success to ensure no partial data is returned.
   std::string result;

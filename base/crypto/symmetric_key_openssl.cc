@@ -30,6 +30,7 @@ SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
   if (key_size_in_bits == 0)
     return NULL;
 
+  EnsureOpenSSLInit();
   scoped_ptr<SymmetricKey> key(new SymmetricKey);
   uint8* key_data =
       reinterpret_cast<uint8*>(WriteInto(&key->key_, key_size_in_bytes + 1));
@@ -53,6 +54,7 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   int key_size_in_bytes = key_size_in_bits / 8;
   DCHECK_EQ(static_cast<int>(key_size_in_bits), key_size_in_bytes * 8);
 
+  EnsureOpenSSLInit();
   scoped_ptr<SymmetricKey> key(new SymmetricKey);
   uint8* key_data =
       reinterpret_cast<uint8*>(WriteInto(&key->key_, key_size_in_bytes + 1));

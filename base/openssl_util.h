@@ -11,6 +11,20 @@
 
 namespace base {
 
+// A helper class that takes care of destroying OpenSSL objects when it goes out
+// of scope.
+template <typename T, void (*destructor)(T*)>
+class ScopedOpenSSL {
+ public:
+  explicit ScopedOpenSSL(T* ptr_) : ptr_(ptr_) { }
+  ~ScopedOpenSSL() { if (ptr_) (*destructor)(ptr_); }
+
+  T* get() const { return ptr_; }
+
+ private:
+  T* ptr_;
+};
+
 // Provides a buffer of at least MIN_SIZE bytes, for use when calling OpenSSL's
 // SHA256, HMAC, etc functions, adapting the buffer sizing rules to meet those
 // of the our base wrapper APIs.
@@ -50,6 +64,12 @@ class ScopedOpenSSLSafeSizeBuffer {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedOpenSSLSafeSizeBuffer);
 };
+
+// Initialize OpenSSL if it isn't already initialized. This must be called
+// before any other OpenSSL functions.
+// This function is thread-safe, and OpenSSL will only ever be initialized once.
+// OpenSSL will be properly shut down on program exit.
+void EnsureOpenSSLInit();
 
 // Drains the OpenSSL ERR_get_error stack. On a debug build the error codes
 // are send to VLOG(1), on a release build they are disregarded.
