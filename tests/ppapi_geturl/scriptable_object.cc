@@ -3,15 +3,10 @@
 // be found in the LICENSE file.
 
 #include "native_client/tests/ppapi_geturl/scriptable_object.h"
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <nacl/nacl_inttypes.h>
-#include <ppapi/c/dev/ppb_url_loader_dev.h>
-#include <ppapi/c/dev/ppb_url_request_info_dev.h>
-#include <ppapi/c/pp_completion_callback.h>
-#include <ppapi/c/pp_errors.h>
+
 #include "native_client/tests/ppapi_geturl/module.h"
 #include "native_client/tests/ppapi_geturl/url_load_request.h"
 
@@ -146,4 +141,3 @@ bool ScriptableObject::LoadUrl(std::string url,
   }
   return true;
 }
-

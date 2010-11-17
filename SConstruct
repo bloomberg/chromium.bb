@@ -1645,7 +1645,7 @@ nacl_env.Append(
     'tests/nullptr/nacl.scons',
     'tests/pepper_plugin/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
-    #'tests/ppapi_geturl/nacl.scons',
+    'tests/ppapi_geturl/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',
     # uncomment this test once issue
     # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
