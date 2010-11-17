@@ -12,9 +12,11 @@ Import('env')
 # TODO(mseaborn): To fix this, either switch these tests to
 # dynamically link against libc, or make use of ld.so optional.
 if env.Bit('nacl_glibc'):
-  TEST_SUITES = []
+  TEST_SUITES = ['broken_tests']
+  TEST_SUITES_BARE = ['broken_tests']
 else:
-  TEST_SUITES = ['small_tests']
+  TEST_SUITES = ['small_tests', 'sel_ldr_tests']
+  TEST_SUITES_BARE = ['small_tests', 'sel_ldr_tests', 'barebones_tests']
 
 LINK_FLAGS_MULTILIB = ['-nostdlib']
 
@@ -74,7 +76,7 @@ for basename in ['addr_modes',
       command=[env.File(nexe)],
       exit_status='55',)
   env.AddNodeToTestSuite(node,
-                         TEST_SUITES + ['barebones_tests', 'sel_ldr_tests'],
+                         TEST_SUITES_BARE,
                          test)
 
 
@@ -87,5 +89,5 @@ if env['BUILD_ARCHITECTURE'] == 'arm' and not ARGUMENTS.get('bitcode'):
       command=[env.File(nexe)],
       exit_status='55',)
   env.AddNodeToTestSuite(node,
-                         TEST_SUITES + ['sel_ldr_tests'],
+                         TEST_SUITES,
                          'run_gold-barebones_hello_world_test')

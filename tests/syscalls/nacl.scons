@@ -127,7 +127,8 @@ node = env.CommandSelLdrTestNacl(
 #TODO(dmichael):  Add this back to small_tests or to
 # medium_tests when the error conditions are fixed, c.f.:
 # http://code.google.com/p/nativeclient/issues/detail?id=848
-env.AddNodeToTestSuite(node, ['sel_ldr_tests'], 'run_semaphore_tests')
+# Also add it back to 'sel_ldr_tests' when it is fixed
+env.AddNodeToTestSuite(node, ['broken_tests'], 'run_semaphore_tests')
 
 env.ComponentProgram('mem_test.nexe',
                      ['mem_test.cc'],

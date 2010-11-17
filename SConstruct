@@ -266,10 +266,6 @@ pre_base_env.AddMethod(EnsureRequiredBuildWarnings)
 
 # ----------------------------------------------------------
 # Generic Test Wrapper
-# all test suites know so far
-TEST_SUITES = {'all_tests': None}
-
-
 
 # ----------------------------------------------------------
 # Add list of Flaky or Bad tests to skip per platform.  A
@@ -319,9 +315,78 @@ nacl_glibc_skiplist = [
     ]
 
 
-# ----------------------------------------------------------
-# Generic Test Wrapper
-# all test suites know so far
+# If a test is not in one of these suites, it will probally not be run on a
+# regular basis.  These are the suites that will be run by the try bot or that
+# a large number of users may run by hand.
+MAJOR_TEST_SUITES = set([
+  'small_tests',
+  'medium_tests',
+  'large_tests',
+  'small_tests_arm_hw_only',
+  'large_tests_arm_hw_only',
+  'browser_tests',
+  'huge_tests',
+
+  # Adding a test to broken_tests means the test will not be run unless
+  # explicitly requested by name. Broken tests cannot belong to any other test
+  # suite and are not added to all_tests
+  'broken_tests',
+])
+
+# These are the test suites we know exist, but aren't run on a regular basis.
+# These test suites are essentially shortcuts that run a specific subset of the
+# test cases.
+ACCEPTABLE_TEST_SUITES = set([
+  'validator_tests',
+  'validator_modeling',
+  'sel_ldr_tests',
+  'sel_ldr_sled_tests',
+  'barebones_tests',
+  'tsan_bot_tests',
+  'toolchain_tests',
+  ])
+
+# The major test suites are also acceptable names.  Suite names are checked
+# against this set in order to catch typos.
+ACCEPTABLE_TEST_SUITES.update(MAJOR_TEST_SUITES)
+
+
+def ValidateTestSuiteNames(suite_name, node_name):
+  if node_name is None:
+    node_name = '<unknown>'
+
+  # Prevent a silent failiure - strings are iterable!
+  if not isinstance(suite_name, (list, tuple)):
+    raise Exception, ("Test suites for %s should be specified as a list, " +
+      "not as a %s: %s") % (node_name, type(suite_name).__name__,
+      repr(suite_name))
+
+  if not suite_name:
+    raise Exception, ("No test suites are specified for %s. Put the test in " +
+      "'broken_tests' if there's a known issue and you don't want it to " +
+      "run.") % node_name
+
+  if 'broken_tests' in suite_name and len(suite_name) != 1:
+    raise Exception, ("'broken_tests' is a special test suite - if you're " +
+      "adding a test to it, that test (%s) should not be in any other " +
+      "suite.") % node_name
+
+  # Make sure each test is in at least one test suite we know will run
+  # 'broken_tests' is where you put tests you deliberately do not want to run
+  major_suites = set(suite_name).intersection(MAJOR_TEST_SUITES)
+  if not major_suites:
+    raise Exception, ("None of the test suites %s for %s are run on a " +
+    "regular basis.") % (repr(suite_name), node_name)
+
+  # Make sure a wierd test suite hasn't been inadvertantly specified
+  for s in suite_name:
+    if s not in ACCEPTABLE_TEST_SUITES:
+      raise Exception, ("\"%s\" is not a known test suite. Either this is " +
+      "a typo for %s, or it should be added to ACCEPTABLE_TEST_SUITES in " +
+      "SConstruct.") % (s, node_name)
+
+def IsBrokenTest(suite_name):
+  return len(suite_name) == 1 and 'broken_tests' == suite_name[0]
 
 def AddNodeToTestSuite(env, node, suite_name, node_name=None):
   build = env['BUILD_TYPE']
@@ -356,12 +421,15 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
     print '*** SKIPPING ', platform, ':', node_name
     return
 
+  ValidateTestSuiteNames(suite_name, node_name)
+
   AlwaysBuild(node)
-  env.Alias('all_tests', node)
+  if not IsBrokenTest(suite_name):
+    env.Alias('all_tests', node)
+
   for s in suite_name:
-    if s not in TEST_SUITES:
-      TEST_SUITES[s] = None
     env.Alias(s, node)
+
   if node_name:
     env.ComponentTestOutput(node_name, node)
 
@@ -372,7 +440,7 @@ pre_base_env.AddMethod(AddNodeToTestSuite)
 # NOTE: work around for scons non-determinism in the following two lines
 Alias('sel_ldr_sled_tests', [])
 
-Alias('small_tests', [ 'sel_ldr_sled_tests' ])
+Alias('small_tests', [])
 Alias('medium_tests', [])
 Alias('large_tests', [])
 Alias('browser_tests', [])
@@ -1698,9 +1766,7 @@ if (nacl_env['BUILD_SUBARCH'] == '32' and
     nacl_env['BUILD_ARCHITECTURE'] == 'x86'):
   nacl_env.Append(
       BUILD_SCONSCRIPTS = [
-      # This test assumes we have a compiler, which is not yet fully
-      # true for 64-bit.
-      'tools/tests/nacl.scons',
+        'tools/tests/nacl.scons',
       ])
 
 # ----------------------------------------------------------

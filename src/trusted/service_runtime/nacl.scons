@@ -187,4 +187,6 @@ if (env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']
           base_name + '.out',
           command=[env.File(nexe_name)],
           exit_status=expected_exit_status)
-      env.AddNodeToTestSuite(node, ['sel_ldr_sled_tests'], 'run_' + base_name)
+      env.AddNodeToTestSuite(node,
+                              ['small_tests', 'sel_ldr_sled_tests'],
+                              'run_' + base_name)

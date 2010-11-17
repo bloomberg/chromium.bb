@@ -25,7 +25,7 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   # TODO(mseaborn): Re-enable when the ARM Buildbot slave has been
   # upgraded to a newer kernel.
   # test_suites = ['small_tests_arm_hw_only']
-  test_suites = []
+  test_suites = ['broken_tests']
 else:
   test_suites = ['small_tests']
 
