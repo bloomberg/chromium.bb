@@ -4009,8 +4009,12 @@ void Browser::CloseFrame() {
 void Browser::TabDetachedAtImpl(TabContents* contents, int index,
                                 DetachType type) {
   if (type == DETACH_TYPE_DETACH) {
-    // Save what the user's currently typed.
-    window_->GetLocationBar()->SaveStateToContents(contents);
+    // Save the current location bar state, but only if the tab being detached
+    // is the selected tab.  Because saving state can conditionally revert the
+    // location bar, saving the current tab's location bar state to a
+    // non-selected tab can corrupt both tabs.
+    if (contents == GetSelectedTabContents())
+      window_->GetLocationBar()->SaveStateToContents(contents);
 
     if (!tab_handler_->GetTabStripModel()->closing_all())
       SyncHistoryWithTabs(0);
