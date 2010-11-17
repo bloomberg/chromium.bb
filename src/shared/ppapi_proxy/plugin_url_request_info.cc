@@ -13,7 +13,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/c/dev/ppb_url_request_info_dev.h"
+#include "ppapi/c/ppb_url_request_info.h"
 
 namespace ppapi_proxy {
 
@@ -29,7 +29,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 }
 
 PP_Bool SetProperty(PP_Resource request,
-                 PP_URLRequestProperty_Dev property,
+                    PP_URLRequestProperty property,
                  struct PP_Var value) {
   UNREFERENCED_PARAMETER(request);
   UNREFERENCED_PARAMETER(property);
@@ -58,8 +58,8 @@ PP_Bool AppendFileToBody(PP_Resource request,
 }
 }  // namespace
 
-const PPB_URLRequestInfo_Dev* PluginURLRequestInfo::GetInterface() {
-  static const PPB_URLRequestInfo_Dev intf = {
+const PPB_URLRequestInfo* PluginURLRequestInfo::GetInterface() {
+  static const PPB_URLRequestInfo intf = {
     Create,
     IsURLRequestInfo,
     SetProperty,

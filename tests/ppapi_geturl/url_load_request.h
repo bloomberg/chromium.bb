@@ -4,8 +4,8 @@
 #ifndef TESTS_PPAPI_GETURL_URL_LOAD_REQUEST_H_
 #define TESTS_PPAPI_GETURL_URL_LOAD_REQUEST_H_
 
-#include <ppapi/c/dev/ppb_url_loader_dev.h>
-#include <ppapi/c/dev/ppb_url_request_info_dev.h>
+#include <ppapi/c/ppb_url_loader.h>
+#include <ppapi/c/ppb_url_request_info.h>
 #include <ppapi/c/pp_instance.h>
 #include <ppapi/c/pp_resource.h>
 #include <ppapi/c/pp_stdint.h>
@@ -30,8 +30,8 @@ class UrlLoadRequest {
   PP_Instance instance_;
   PP_Resource url_request_;
   PP_Resource loader_;
-  const PPB_URLRequestInfo_Dev* req_info_interface_;
-  const PPB_URLLoader_Dev* loader_interface_;
+  const PPB_URLRequestInfo* req_info_interface_;
+  const PPB_URLLoader* loader_interface_;
   char buffer_[1024];
   std::string url_response_body_;
 };

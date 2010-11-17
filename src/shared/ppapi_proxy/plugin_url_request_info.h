@@ -8,14 +8,14 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_URL_REQUEST_INFO_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "ppapi/c/dev/ppb_url_request_info_dev.h"
+#include "ppapi/c/ppb_url_request_info.h"
 
 namespace ppapi_proxy {
 
 // Implements the plugin (i.e., .nexe) side of the PPB_URLRequestInfo interface.
 class PluginURLRequestInfo {
  public:
-  static const PPB_URLRequestInfo_Dev* GetInterface();
+  static const PPB_URLRequestInfo* GetInterface();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginURLRequestInfo);

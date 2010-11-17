@@ -24,6 +24,7 @@
 // and will insert lines to #include each of those files.
 
 // From ppapi.gyp:ppapi_cpp_objects:cpp/[^/]*\.h
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/graphics_2d.h"
@@ -38,4 +39,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/size.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/url_response_info.h"
 #include "ppapi/cpp/var.h"

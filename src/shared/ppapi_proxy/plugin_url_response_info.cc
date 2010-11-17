@@ -14,7 +14,7 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/dev/ppb_url_response_info_dev.h"
+#include "ppapi/c/ppb_url_response_info.h"
 
 namespace ppapi_proxy {
 
@@ -25,23 +25,23 @@ PP_Bool IsURLResponseInfo(PP_Resource resource) {
 }
 
 PP_Var GetProperty(PP_Resource response,
-                   PP_URLResponseProperty_Dev property) {
+                   PP_URLResponseProperty property) {
   UNREFERENCED_PARAMETER(response);
   UNREFERENCED_PARAMETER(property);
   return PP_MakeUndefined();
 }
 
-PP_Resource GetBody(PP_Resource response) {
+PP_Resource GetBodyAsFileRef(PP_Resource response) {
   UNREFERENCED_PARAMETER(response);
   return kInvalidResourceId;
 }
 }  // namespace
 
-const PPB_URLResponseInfo_Dev* PluginURLResponseInfo::GetInterface() {
-  static const PPB_URLResponseInfo_Dev intf = {
+const PPB_URLResponseInfo* PluginURLResponseInfo::GetInterface() {
+  static const PPB_URLResponseInfo intf = {
     IsURLResponseInfo,
     GetProperty,
-    GetBody,
+    GetBodyAsFileRef,
   };
   return &intf;
 }

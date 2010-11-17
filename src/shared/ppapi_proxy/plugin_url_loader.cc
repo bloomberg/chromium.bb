@@ -15,7 +15,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/dev/ppb_url_loader_dev.h"
+#include "ppapi/c/ppb_url_loader.h"
 
 namespace ppapi_proxy {
 
@@ -92,8 +92,8 @@ void Close(PP_Resource loader) {
 }
 }  // namespace
 
-const PPB_URLLoader_Dev* PluginURLLoader::GetInterface() {
-  static const PPB_URLLoader_Dev intf = {
+const PPB_URLLoader* PluginURLLoader::GetInterface() {
+  static const PPB_URLLoader intf = {
     Create,
     IsURLLoader,
     Open,

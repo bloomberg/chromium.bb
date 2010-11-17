@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
-#include "ppapi/cpp/dev/url_request_info_dev.h"
-#include "ppapi/cpp/dev/url_response_info_dev.h"
+#include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/url_response_info.h"
 
 namespace plugin {
 
@@ -38,11 +38,11 @@ bool FileDownloader::Open(const nacl::string& url,
   // Reset the url loader and file reader.
   // Note that we have the only refernce to the underlying objects, so
   // this will implicitly close any pending IO and destroy them.
-  url_loader_ = pp::URLLoader_Dev(*instance_);
+  url_loader_ = pp::URLLoader(*instance_);
   file_reader_ = pp::FileIO_Dev();
 
   // Prepare the url request.
-  pp::URLRequestInfo_Dev url_request;
+  pp::URLRequestInfo url_request;
   url_request.SetURL(url_);
   url_request.SetStreamToFile(true);
 
@@ -71,7 +71,7 @@ void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   }
 
   // Process the response, validating the headers to confirm successful loading.
-  pp::URLResponseInfo_Dev url_response(url_loader_.GetResponseInfo());
+  pp::URLResponseInfo url_response(url_loader_.GetResponseInfo());
   if (url_response.is_null()) {
     PLUGIN_PRINTF((
         "FileDownloader::URLLoadStartNotify (url_response=NULL)\n"));
@@ -109,7 +109,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
     return;
   }
 
-  pp::URLResponseInfo_Dev url_response(url_loader_.GetResponseInfo());
+  pp::URLResponseInfo url_response(url_loader_.GetResponseInfo());
   // Validated on load.
   CHECK(url_response.GetStatusCode() == NACL_HTTP_STATUS_OK);
 
@@ -124,7 +124,7 @@ void FileDownloader::URLLoadFinishNotify(int32_t pp_error) {
   url_ = full_url.AsString();
 
   // The file is now fully downloaded.
-  pp::FileRef_Dev file(url_response.GetBody());
+  pp::FileRef_Dev file(url_response.GetBodyAsFileRef());
   if (file.is_null()) {
     PLUGIN_PRINTF(("FileDownloader::URLLoadFinishNotify (file=NULL)\n"));
     file_open_notify_callback_.Run(pp_error);

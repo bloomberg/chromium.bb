@@ -201,7 +201,7 @@ bool PluginPpapi::HandleInputEvent(const PP_InputEvent& event) {
 }
 
 
-bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader_Dev& url_loader) {
+bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader& url_loader) {
   PLUGIN_PRINTF(("PluginPpapi::HandleDocumentLoad (this=%p)\n",
                  static_cast<void*>(this)));
   if (ppapi_proxy_ == NULL) {
