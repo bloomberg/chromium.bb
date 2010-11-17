@@ -7,7 +7,6 @@
 #pragma once
 
 #include "app/gtk_signal.h"
-#include "app/slide_animation.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/infobar_arrow_model.h"

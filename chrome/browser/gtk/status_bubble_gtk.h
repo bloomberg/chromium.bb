@@ -10,8 +10,8 @@
 
 #include <string>
 
+#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
-#include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
@@ -23,6 +23,7 @@
 
 class GtkThemeProvider;
 class Profile;
+class SlideAnimation;
 
 // GTK implementation of StatusBubble. Unlike Windows, our status bubble
 // doesn't have the nice leave-the-window effect since we can't rely on the

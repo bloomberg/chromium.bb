@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/task.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"

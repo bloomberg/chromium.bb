@@ -9,9 +9,8 @@
 #include <gtk/gtk.h>
 #include <map>
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
-#include "app/slide_animation.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -29,6 +28,7 @@ class Size;
 
 class CustomDrawButton;
 class GtkThemeProvider;
+class SlideAnimation;
 class TabContents;
 class ThemeProvider;
 class ThrobAnimation;

@@ -4,6 +4,7 @@
 
 #include "app/animation.h"
 
+#include "app/animation_delegate.h"
 #include "app/tween.h"
 #include "gfx/rect.h"
 

@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_INFO_BUBBLE_H_
 #pragma once
 
-#include "app/slide_animation.h"
+#include "app/animation_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/accelerator.h"
 #include "views/view.h"
 #include "chrome/browser/views/bubble_border.h"
+
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)
@@ -26,10 +27,8 @@
 // InfoBubble insets the contents for you, so the contents typically shouldn't
 // have any additional margins.
 
-#if defined(OS_WIN)
-class BorderWidget;
-#endif
 class InfoBubble;
+class SlideAnimation;
 
 namespace views {
 class Widget;
@@ -38,6 +37,10 @@ class Widget;
 namespace gfx {
 class Path;
 }
+
+#if defined(OS_WIN)
+class BorderWidget;
+#endif
 
 // This is used to paint the border of the InfoBubble.  Windows uses this via
 // BorderWidget (see below), while others can use it directly in the bubble.
@@ -233,7 +236,7 @@ class InfoBubble
 #if defined(OS_CHROMEOS)
   explicit InfoBubble(views::WidgetGtk::Type type);
 #endif
-  virtual ~InfoBubble() {}
+  virtual ~InfoBubble();
 
   // Creates the InfoBubble.
   virtual void Init(views::Widget* parent,

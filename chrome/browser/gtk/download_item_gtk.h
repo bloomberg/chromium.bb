@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"

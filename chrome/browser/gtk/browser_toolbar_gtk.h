@@ -10,6 +10,7 @@
 #include <string>
 
 #include "app/active_window_watcher_x.h"
+#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
 #include "app/menus/accelerator.h"

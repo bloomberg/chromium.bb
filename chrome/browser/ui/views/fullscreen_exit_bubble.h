@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_H__
 #pragma once
 
-#include "app/slide_animation.h"
+#include "app/animation_delegate.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/command_updater.h"
@@ -17,6 +17,8 @@ namespace views {
 class WidgetGtk;
 }
 #endif
+
+class SlideAnimation;
 
 // FullscreenExitBubble is responsible for showing a bubble atop the screen in
 // fullscreen mode, telling users how to exit and providing a click target.

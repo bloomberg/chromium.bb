@@ -6,7 +6,7 @@
 #define VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
 #pragma once
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "views/controls/button/button.h"
 
 class ThrobAnimation;

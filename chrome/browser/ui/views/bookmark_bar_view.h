@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "app/slide_animation.h"
+#include "app/animation_delegate.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -22,6 +22,7 @@
 class Browser;
 class PageNavigator;
 class PrefService;
+class SlideAnimation;
 
 namespace views {
 class CustomButton;
@@ -108,9 +109,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // DetachableToolbarView methods:
   virtual bool IsDetached() const;
   virtual bool IsOnTop() const;
-  virtual double GetAnimationValue() const {
-    return size_animation_->GetCurrentValue();
-  }
+  virtual double GetAnimationValue() const;
   virtual int GetToolbarOverlap() const {
     return GetToolbarOverlap(false);
   }
@@ -178,7 +177,7 @@ class BookmarkBarView : public DetachableToolbarView,
   int GetToolbarOverlap(bool return_max) const;
 
   // Whether or not we are animating.
-  bool is_animating() { return size_animation_->is_animating(); }
+  bool is_animating();
 
   // SlideAnimationDelegate implementation.
   void AnimationProgressed(const Animation* animation);

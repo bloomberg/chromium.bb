@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "app/slide_animation.h"
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"

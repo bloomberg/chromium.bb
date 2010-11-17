@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_DROPDOWN_BAR_HOST_H_
 #pragma once
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "gfx/native_widget_types.h"

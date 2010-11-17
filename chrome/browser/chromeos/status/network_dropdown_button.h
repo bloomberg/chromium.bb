@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_DROPDOWN_BUTTON_H_
 #pragma once
 
+#include "app/animation_delegate.h"
 #include "app/throb_animation.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/status/network_menu.h"

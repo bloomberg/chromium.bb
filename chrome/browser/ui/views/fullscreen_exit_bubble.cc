@@ -7,6 +7,7 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/slide_animation.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"

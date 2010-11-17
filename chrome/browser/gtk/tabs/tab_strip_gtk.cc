@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "app/animation_delegate.h"
 #include "app/gtk_dnd_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"

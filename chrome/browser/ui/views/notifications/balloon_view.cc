@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/slide_animation.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/notifications/balloon.h"

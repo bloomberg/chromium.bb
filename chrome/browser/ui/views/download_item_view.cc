@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/slide_animation.h"
 #include "app/text_elider.h"
 #include "base/callback.h"
 #include "base/file_path.h"

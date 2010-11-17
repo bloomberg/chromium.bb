@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_SUGGESTED_TEXT_VIEW_H_
 #pragma once
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "views/controls/label.h"
 
 class LocationBarView;

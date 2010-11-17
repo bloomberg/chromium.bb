@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_CONTAINER_H_
 #pragma once
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "base/scoped_ptr.h"
 #include "views/view.h"
 

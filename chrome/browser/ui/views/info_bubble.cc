@@ -5,6 +5,7 @@
 #include "chrome/browser/views/info_bubble.h"
 
 #include "app/keyboard_codes.h"
+#include "app/slide_animation.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
@@ -331,6 +332,9 @@ InfoBubble::InfoBubble(views::WidgetGtk::Type type)
       contents_(NULL) {
 }
 #endif
+
+InfoBubble::~InfoBubble() {
+}
 
 void InfoBubble::Init(views::Widget* parent,
                       const gfx::Rect& position_relative_to,

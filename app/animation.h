@@ -14,29 +14,7 @@ namespace gfx {
 class Rect;
 }
 
-class Animation;
-
-// AnimationDelegate
-//
-//  Implement this interface when you want to receive notifications about the
-//  state of an animation.
-class AnimationDelegate {
- public:
-  // Called when an animation has completed.
-  virtual void AnimationEnded(const Animation* animation) {
-  }
-
-  // Called when an animation has progressed.
-  virtual void AnimationProgressed(const Animation* animation) {
-  }
-
-  // Called when an animation has been canceled.
-  virtual void AnimationCanceled(const Animation* animation) {
-  }
-
- protected:
-  virtual ~AnimationDelegate() {}
-};
+class AnimationDelegate;
 
 // Base class used in implementing animations. You only need use this class if
 // you're implementing a new animation type, otherwise you'll likely want one of

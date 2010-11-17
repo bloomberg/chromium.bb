@@ -10,8 +10,8 @@
 
 #include <vector>
 
+#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
-#include "app/slide_animation.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
@@ -34,6 +34,7 @@ class GtkThemeProvider;
 class MenuGtk;
 class PageNavigator;
 class Profile;
+class SlideAnimation;
 class TabstripOriginProvider;
 
 class BookmarkBarGtk : public AnimationDelegate,

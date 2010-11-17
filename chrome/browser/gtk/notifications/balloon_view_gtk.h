@@ -8,7 +8,7 @@
 #define CHROME_BROWSER_GTK_NOTIFICATIONS_BALLOON_VIEW_GTK_H_
 #pragma once
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"

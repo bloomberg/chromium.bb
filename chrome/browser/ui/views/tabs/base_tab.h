@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_BASE_TAB_H_
 #pragma once
 
-#include "app/animation.h"
+#include "app/animation_container.h"
+#include "app/animation_delegate.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/views/tabs/tab_renderer_data.h"

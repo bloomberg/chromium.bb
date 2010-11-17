@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/slide_animation.h"
 #include "base/logging.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"

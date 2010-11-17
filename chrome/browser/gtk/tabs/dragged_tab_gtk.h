@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/animation_delegate.h"
 #include "app/slide_animation.h"
 #include "base/callback.h"
 #include "base/scoped_ptr.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/app_launched_animation.h"
 
 #include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "app/slide_animation.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/extension.h"

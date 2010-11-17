@@ -4,6 +4,8 @@
 
 #include "app/multi_animation.h"
 
+#include "app/animation_delegate.h"
+
 // Default interval, in ms.
 static const int kDefaultInterval = 20;
 

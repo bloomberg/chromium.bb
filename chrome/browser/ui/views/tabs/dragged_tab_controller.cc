@@ -8,6 +8,7 @@
 #include <set>
 
 #include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "app/slide_animation.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"

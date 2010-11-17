@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
 #pragma once
 
+#include "app/animation_delegate.h"
 #include "app/slide_animation.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"

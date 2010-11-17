@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "app/animation_delegate.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
 #include "views/view.h"

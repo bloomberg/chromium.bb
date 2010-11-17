@@ -17,7 +17,7 @@
 
 #include <gtk/gtk.h>
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 

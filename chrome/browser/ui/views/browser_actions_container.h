@@ -10,7 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "app/slide_animation.h"
+#include "app/animation_delegate.h"
+#include "app/tween.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -34,6 +35,7 @@ class ExtensionAction;
 class ExtensionPopup;
 class PrefService;
 class Profile;
+class SlideAnimation;
 
 namespace gfx {
 class CanvasSkia;

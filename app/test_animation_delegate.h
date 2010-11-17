@@ -6,7 +6,7 @@
 #define APP_TEST_ANIMATION_DELEGATE_H_
 #pragma once
 
-#include "app/animation.h"
+#include "app/animation_delegate.h"
 #include "base/message_loop.h"
 
 // Trivial AnimationDelegate implementation. AnimationEnded/Canceled quit the

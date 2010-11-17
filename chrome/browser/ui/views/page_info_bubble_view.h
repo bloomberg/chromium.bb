@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_BUBBLE_VIEW_H_
 #pragma once
 
+#include "app/animation_delegate.h"
+#include "app/slide_animation.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "views/controls/link.h"

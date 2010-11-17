@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
 #include "app/menus/simple_menu_model.h"

@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/animation_delegate.h"
 #include "app/slide_animation.h"
 #include "third_party/skia/include/core/SkPaint.h"
 

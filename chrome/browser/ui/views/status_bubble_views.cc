@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "app/animation_delegate.h"
 #include "app/linear_animation.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"

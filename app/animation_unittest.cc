@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/animation_delegate.h"
 #include "app/linear_animation.h"
 #include "app/test_animation_delegate.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
-#include "testing/gtest/include/gtest/gtest.h"
 
 class AnimationTest: public testing::Test {
  private:

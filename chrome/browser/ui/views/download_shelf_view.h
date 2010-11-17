@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_SHELF_VIEW_H_
 #pragma once
 
-#include "app/slide_animation.h"
+#include "app/animation_delegate.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/views/accessible_pane_view.h"
 #include "views/controls/button/button.h"
@@ -21,9 +21,9 @@ class ImageView;
 class BaseDownloadItemModel;
 class Browser;
 class BrowserView;
-
 class DownloadAnimation;
 class DownloadItemView;
+class SlideAnimation;
 
 // DownloadShelfView is a view that contains individual views for each download,
 // as well as a close button and a link to show all downloads.

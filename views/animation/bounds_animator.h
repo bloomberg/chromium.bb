@@ -8,8 +8,8 @@
 
 #include <map>
 
-#include "app/animation.h"
 #include "app/animation_container.h"
+#include "app/animation_delegate.h"
 #include "gfx/rect.h"
 
 class SlideAnimation;

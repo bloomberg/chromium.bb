@@ -19,7 +19,7 @@
 
 #include <string>
 
-#include "app/slide_animation.h"
+#include "app/animation_delegate.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -41,6 +41,7 @@ class BaseDownloadItemModel;
 class DownloadShelfView;
 class SkBitmap;
 class DownloadShelfContextMenuWin;
+class SlideAnimation;
 
 class DownloadItemView : public views::ButtonListener,
                          public views::View,

@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
+#include "app/slide_animation.h"
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
@@ -748,6 +749,10 @@ bool BookmarkBarView::IsOnTop() const {
   return true;
 }
 
+double BookmarkBarView::GetAnimationValue() const {
+  return size_animation_->GetCurrentValue();
+}
+
 bool BookmarkBarView::IsAlwaysShown() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
@@ -770,6 +775,10 @@ int BookmarkBarView::GetToolbarOverlap(bool return_max) const {
   // attached and detached states.
   return static_cast<int>(static_cast<double>(kToolbarOverlap) *
       size_animation_->GetCurrentValue());
+}
+
+bool BookmarkBarView::is_animating() {
+  return size_animation_->is_animating();
 }
 
 void BookmarkBarView::AnimationProgressed(const Animation* animation) {
