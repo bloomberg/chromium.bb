@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -16,9 +17,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "gfx/codec/png_codec.h"
+
+extern base::hash_map<std::string, int> g_test_timeout_overrides;
 
 namespace {
 
@@ -26,29 +30,49 @@ namespace {
 // than the test pdf document.
 static const int kBrowserWidth = 1000;
 static const int kBrowserHeight = 600;
+static const int kLoadingTestTimeoutMs = 60000;
+
+// The loading test is really a collection of tests, each one being a different
+// PDF file.  But it would be busy work to add a different test for each file.
+// Since we run them all in one test, we want a bigger timeout.
+class IncreaseLoadingTimeout {
+ public:
+  IncreaseLoadingTimeout() {
+    g_test_timeout_overrides["PDFBrowserTest.Loading"] = kLoadingTestTimeoutMs;
+  }
+};
+
+IncreaseLoadingTimeout g_increase_loading_timeout;
 
 class PDFBrowserTest : public InProcessBrowserTest,
                        public NotificationObserver {
  public:
   PDFBrowserTest()
-      : have_plugin_(false),
-        snapshot_different_(true),
-        next_dummy_search_value_(0) {
+      : snapshot_different_(true),
+        next_dummy_search_value_(0),
+        load_stop_notification_count_(0) {
+    EnableDOMAutomation();
   }
 
  protected:
-  bool have_plugin() const { return have_plugin_; }
+  int load_stop_notification_count() const {
+    return load_stop_notification_count_;
+  }
 
   virtual void SetUp() {
     FilePath pdf_path;
     PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-    have_plugin_ = file_util::PathExists(pdf_path);
     InProcessBrowserTest::SetUp();
+  }
+
+  FilePath GetPDFTestDir() {
+    return FilePath(FilePath::kCurrentDirectory).AppendASCII("plugin").
+        AppendASCII("pdf");
   }
 
   void Load() {
     GURL url(ui_test_utils::GetTestUrl(
-        FilePath(FilePath::kCurrentDirectory),
+        GetPDFTestDir(),
         FilePath(FILE_PATH_LITERAL("pdf_browsertest.pdf"))));
     ui_test_utils::NavigateToURL(browser(), url);
     gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
@@ -105,7 +129,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     if (type == NotificationType::TAB_SNAPSHOT_TAKEN) {
       MessageLoopForUI::current()->Quit();
       FilePath reference = ui_test_utils::GetTestFilePath(
-          FilePath(FilePath::kCurrentDirectory),
+          GetPDFTestDir(),
           FilePath().AppendASCII(expected_filename_));
       base::PlatformFileInfo info;
       ASSERT_TRUE(file_util::GetFileInfo(reference, &info));
@@ -165,13 +189,11 @@ class PDFBrowserTest : public InProcessBrowserTest,
               reinterpret_cast<char*>(&png_data[0]), png_data.size());
         }
       }
+    } else if (type == NotificationType::LOAD_STOP) {
+      load_stop_notification_count_++;
     }
   }
 
-  // True if we found the pdf plugin.  Needed since only official builders have
-  // the pdf plugin, so for the rest, and for other devs, we don't want the test
-  // to fail.
-  bool have_plugin_;
   // True if the snapshot differed from the expected value.
   bool snapshot_different_;
   // Internal variable used to synchronize to the renderer.
@@ -180,6 +202,8 @@ class PDFBrowserTest : public InProcessBrowserTest,
   std::string expected_filename_;
   // If the snapshot is different, holds the location where it's saved.
   FilePath snapshot_filename_;
+  // How many times we've seen NotificationType::LOAD_STOP.
+  int load_stop_notification_count_;
 };
 
 #if defined(OS_MACOSX)
@@ -192,8 +216,6 @@ class PDFBrowserTest : public InProcessBrowserTest,
 // Tests basic PDF rendering.  This can be broken depending on bad merges with
 // the vendor, so it's important that we have basic sanity checking.
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
-  if (!have_plugin())
-    return;
 
   ASSERT_NO_FATAL_FAILURE(Load());
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
@@ -209,9 +231,6 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
 
 // Tests that scrolling works.
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
-  if (!have_plugin())
-    return;
-
   ASSERT_NO_FATAL_FAILURE(Load());
 
   // We use wheel mouse event since that's the only one we can easily push to
@@ -235,9 +254,6 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
-  if (!have_plugin())
-    return;
-
   ASSERT_NO_FATAL_FAILURE(Load());
   // Verifies that find in page works.
   ASSERT_EQ(3, ui_test_utils::FindInPage(
@@ -259,6 +275,57 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   std::string text;
   clipboard.ReadAsciiText(Clipboard::BUFFER_STANDARD, &text);
   ASSERT_EQ("adipiscing", text);
+}
+
+// Tests that loading async pdfs works correctly (i.e. document fully loads).
+// This also loads all documents that used to crash, to ensure we don't have
+// regressions.
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Loading) {
+  ASSERT_TRUE(test_server()->Start());
+
+  NavigationController* controller =
+      &(browser()->GetSelectedTabContents()->controller());
+  NotificationRegistrar registrar;
+  registrar.Add(this,
+                NotificationType::LOAD_STOP,
+                Source<NavigationController>(controller));
+  std::string base_url = std::string("files/plugin/pdf/");
+
+  file_util::FileEnumerator file_enumerator(
+      ui_test_utils::GetTestFilePath(GetPDFTestDir(), FilePath()),
+      false,
+      file_util::FileEnumerator::FILES,
+      FILE_PATH_LITERAL("*.pdf"));
+  for (FilePath file_path = file_enumerator.Next();
+       !file_path.empty();
+       file_path = file_enumerator.Next()) {
+    std::string filename = WideToASCII(file_path.BaseName().ToWStringHack());
+    LOG(WARNING) << "PDFBrowserTest.Loading: " << filename;
+
+    GURL url = test_server()->GetURL(base_url + filename);
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    while (true) {
+      int last_count = load_stop_notification_count();
+      // We might get extraneous NotificationType::LOAD_STOP notifications when
+      // doing async loading.  This happens when the first loader is cancelled
+      // and before creating a byte-range request loader.
+      bool complete = false;
+      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+          browser()->GetSelectedTabContents()->render_view_host(),
+          std::wstring(),
+          L"window.domAutomationController.send(plugin.documentLoadComplete())",
+          &complete));
+      if (complete)
+        break;
+
+      // Check if the LOAD_STOP notification could have come while we run a
+      // nested message loop for the JS call.
+      if (last_count != load_stop_notification_count())
+        continue;
+      ui_test_utils::WaitForLoadStop(controller);
+    }
+  }
 }
 
 }  // namespace

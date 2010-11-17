@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/hash_tables.h"
 #include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -36,6 +37,12 @@
 typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
 #endif  // defined(OS_WIN)
 
+// Allows a specific test to increase its timeout.  This should be used very
+// sparingly, i.e. when a "test" is a really a collection of sub tests and it's
+// not possible to break them up.  An example is PDFBrowserTest.Loading, which
+// loads all the files it can find in a directory.
+base::hash_map<std::string, int> g_test_timeout_overrides;
+
 namespace {
 
 const char kGTestFilterFlag[] = "gtest_filter";
@@ -57,7 +64,7 @@ const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
 
 // How long we wait for the subprocess to exit (with a success/failure code).
 // See http://crbug.com/43862 for some discussion of the value.
-const int64 kDefaultTestTimeoutMs = 20000;
+const int kDefaultTestTimeoutMs = 20000;
 
 // The default output file for XML output.
 static const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
@@ -300,6 +307,8 @@ int RunTest(const std::string& test_name) {
 #endif
 
   int test_terminate_timeout_ms = kDefaultTestTimeoutMs;
+  if (g_test_timeout_overrides.count(test_name))
+    test_terminate_timeout_ms = g_test_timeout_overrides[test_name];
   if (cmd_line->HasSwitch(kTestTerminateTimeoutFlag)) {
     std::string timeout_str =
         cmd_line->GetSwitchValueASCII(kTestTerminateTimeoutFlag);
