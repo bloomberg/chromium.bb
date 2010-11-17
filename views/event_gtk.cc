@@ -23,6 +23,8 @@ KeyEvent::KeyEvent(GdkEventKey* event)
 // static
 int Event::GetFlagsFromGdkState(int state) {
   int flags = 0;
+  if (state & GDK_LOCK_MASK)
+    flags |= Event::EF_CAPS_LOCK_DOWN;
   if (state & GDK_CONTROL_MASK)
     flags |= Event::EF_CONTROL_DOWN;
   if (state & GDK_SHIFT_MASK)

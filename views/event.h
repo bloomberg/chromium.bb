@@ -61,13 +61,14 @@ class Event {
   // file, this header is used on non-views platforms (e.g. OSX).  For
   // example, these EventFlags are used by the automation provider for
   // all platforms.
-  enum EventFlags { EF_SHIFT_DOWN         = 1 << 0,
-                    EF_CONTROL_DOWN       = 1 << 1,
-                    EF_ALT_DOWN           = 1 << 2,
-                    EF_LEFT_BUTTON_DOWN   = 1 << 3,
-                    EF_MIDDLE_BUTTON_DOWN = 1 << 4,
-                    EF_RIGHT_BUTTON_DOWN  = 1 << 5,
-                    EF_COMMAND_DOWN       = 1 << 6,  // Only useful on OSX
+  enum EventFlags { EF_CAPS_LOCK_DOWN     = 1 << 0,
+                    EF_SHIFT_DOWN         = 1 << 1,
+                    EF_CONTROL_DOWN       = 1 << 2,
+                    EF_ALT_DOWN           = 1 << 3,
+                    EF_LEFT_BUTTON_DOWN   = 1 << 4,
+                    EF_MIDDLE_BUTTON_DOWN = 1 << 5,
+                    EF_RIGHT_BUTTON_DOWN  = 1 << 6,
+                    EF_COMMAND_DOWN       = 1 << 7,  // Only useful on OSX
   };
 
   // Return the event type
@@ -97,6 +98,10 @@ class Event {
   // Return whether the control modifier is down
   bool IsControlDown() const {
     return (flags_ & EF_CONTROL_DOWN) != 0;
+  }
+
+  bool IsCapsLockDown() const {
+    return (flags_ & EF_CAPS_LOCK_DOWN) != 0;
   }
 
   // Return whether the alt modifier is down
