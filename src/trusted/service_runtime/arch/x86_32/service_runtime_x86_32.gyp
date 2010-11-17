@@ -47,6 +47,23 @@
         'springboard.S',
         'tramp_32.S',
       ],
+      'conditions': [
+        ['OS=="mac"', {
+          'sources' : [
+            '../../osx/nacl_signal_32.c',
+          ] },
+        ],
+        ['OS=="linux"', {
+          'sources' : [
+            '../../linux/nacl_signal_32.c',
+          ] },
+        ],
+        ['OS=="win"', {
+          'sources' : [
+            '../../win/nacl_signal_32.c',
+          ] },
+        ],
+      ],
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_gen',
       ],

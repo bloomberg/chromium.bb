@@ -47,6 +47,7 @@ import test_lib
 
 GlobalReportStream = [sys.stdout]
 GlobalSettings = {}
+GlobalSigType = 'normal'
 
 # Hook print to we can print to both stdout and a file
 def Print(message):
@@ -220,19 +221,29 @@ status_map = {
         },
     }
 
+def GetSigType(sig):
+  if (type(sig)==type('string')):
+    if (sig[:8]=='trusted_'):
+      return 'trusted'
+
+    if (sig[:10]=='untrusted_'):
+      return 'untrusted'
+
+  return 'normal'
+
 
 def MassageExitStatus(v):
-  platform = sys.platform
-  if (platform=='win32') and (GlobalSettings['subarch'] == '64'):
-    platform = 'win64'
-
+  global GlobalPlatform
   if v in status_map:
-    return status_map[v][platform]
+    return status_map[v][GlobalPlatform]
   else:
     return int(v)
 
 
 def ProcessOptions(argv):
+  global GlobalPlatform
+  global GlobalSigType
+
   """Process command line options and return the unprocessed left overs."""
   ResetGlobalSettings()
   try:
@@ -246,20 +257,55 @@ def ProcessOptions(argv):
     option = o[2:]
     assert option in GlobalSettings
     if option == 'exit_status':
-      GlobalSettings[option] = MassageExitStatus(a)
+      GlobalSettings[option] = a
     elif type(GlobalSettings[option]) == int:
       GlobalSettings[option] = int(a)
     else:
       GlobalSettings[option] = a
+
+  if (sys.platform == 'win32') and (GlobalSettings['subarch'] == '64'):
+    GlobalPlatform = 'win64'
+  else:
+    GlobalPlatform = sys.platform
+
+  GlobalSigType = GetSigType(GlobalSettings['exit_status'])
+  # In win32, we can't catch a signal, so it always appears as a 'normal' exit
+  if GlobalPlatform == 'win32' and GlobalSigType == 'untrusted':
+    GlobalSigType = 'normal'
   # return the unprocessed options, i.e. the command
   return args
 
 
-# on linux return codes are 8 bit. So -n = 256 + (-n) (eg: 243 = -11)
+# Parse output for signal type and number
+def ExitStatusInfo(stderr):
+  sigNum = 0
+  sigType = 'normal'
+
+  lines = stderr.splitlines()
+  if len(lines) > 0:
+    words = lines[-1].split()
+    if len(words) > 4:
+      if words[0] == '**' and words[1] == 'Signal':
+        sigNum = -int(words[2])
+        sigType= words[4]
+
+  return sigNum, sigType
+
+
+# On linux return codes are 8 bit. So -n = 256 + (-n) (eg: 243 = -11)
 # python does not understand this 8 bit wraparound.
 # Thus, we convert the desired val and returned val if negative to postive
 # before comparing.
-def ExitStatusIsOK(expected, actual):
+def ExitStatusIsOK(expected, actual, stderr):
+  global GlobalSigType
+
+  sigNum, sigType = ExitStatusInfo(stderr)
+
+  # If scanning the output reveals an exit status of a type unexpected
+  if GlobalSigType != sigType:
+    return False
+
+  # If the expected value is a list
   if isinstance(expected, list):
     for e in expected:
       a = actual
@@ -273,10 +319,14 @@ def ExitStatusIsOK(expected, actual):
     if expected < 0:
       expected = expected % 256
       actual = actual % 256
-    return expected == actual
+
+    val = expected == actual
+    return val
 
 
 def main(argv):
+  global GlobalSigType
+  global GlobalPlatform
   global GlobalReportStream
   command = ProcessOptions(argv)
 
@@ -321,12 +371,17 @@ def main(argv):
       command, stdin_data)
   total_time = time.time() - start_time
 
-  if not ExitStatusIsOK(GlobalSettings['exit_status'], exit_status) or failed:
+  req_status = GlobalSettings['exit_status']
+  req_status = MassageExitStatus(req_status)
+  exitOk = ExitStatusIsOK(req_status, exit_status, stderr)
+  if not exitOk or failed:
     if failed:
-      Print('command failed')
+      Print('Command failed')
     else:
+      sigNum, sigType = ExitStatusInfo(stderr)
       val = MassageExitStatus(GlobalSettings['exit_status'])
-      Print('command returned status %d, expecting %d' % (exit_status, val))
+      Print('\nERROR: Command returned %s %s, expecting %s %s for %s' %
+         (sigType, str(exit_status), GlobalSigType, str(val), GlobalPlatform))
     Banner('Stdout')
     Print(stdout)
     Banner('Stderr')

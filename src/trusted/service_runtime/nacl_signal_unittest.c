@@ -12,6 +12,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
@@ -167,8 +168,7 @@ void Attempt(const char *str, void (WINAPI *start_fn)(void *), int sig) {
   exit(-1);
 }
 
-enum NaClSignalResult Handler(int untrusted, int signal_number, void *ctx) {
-  UNREFERENCED_PARAMETER(untrusted);
+enum NaClSignalResult Handler(int signal_number, void *ctx) {
   UNREFERENCED_PARAMETER(ctx);
 
   g_SigFound = signal_number;
@@ -182,7 +182,8 @@ enum NaClSignalResult Handler(int untrusted, int signal_number, void *ctx) {
 
 #define ATTEMPT(x,sig) Attempt(#x,x,sig)
 int main(int argc, const char *argv[]) {
-  int handlerId;
+  int none1, none2;
+  int sigHandler;
   UNREFERENCED_PARAMETER(argc);
   UNREFERENCED_PARAMETER(argv);
 
@@ -192,13 +193,13 @@ int main(int argc, const char *argv[]) {
   NaClSignalHandlerInit();
 
   /* Add this one first, we should never call it */
-  NaClSignalHandlerAdd(NaClSignalHandleNone);
-  NaClSignalHandlerAdd(Handler);
+  none1 = NaClSignalHandlerAdd(NaClSignalHandleNone);
+  sigHandler = NaClSignalHandlerAdd(Handler);
 
   /* Add and remove it to make sure we can. */
-  handlerId = NaClSignalHandlerAdd(NaClSignalHandleNone);
-  if (0 == NaClSignalHandlerRemove(handlerId)) {
-    printf("Failed to unload handler.\n");
+  none2 = NaClSignalHandlerAdd(NaClSignalHandleNone);
+  if (0 == NaClSignalHandlerRemove(none2)) {
+    printf("Failed to unload 'none2' handler.\n");
     exit(-1);
   }
 
@@ -215,8 +216,27 @@ int main(int argc, const char *argv[]) {
   ATTEMPT(ReadWriteUnmapped, 11);
   ATTEMPT(DivZero, 8);
 
-  NaClSignalHandlerFini();
-  NaClTimeFini();
-  NaClLogModuleInit();
+  if (0 == NaClSignalHandlerRemove(sigHandler)) {
+    printf("Failed to unload 'sigHandler' handler.\n");
+    exit(-1);
+  }
+  if (0 == NaClSignalHandlerRemove(none1)) {
+    printf("Failed to unload 'none1' handler.\n");
+    exit(-1);
+  }
+
+  /* All handlers are unloaded, now using default to trigger an exit. */
+  ReadWriteUnmapped(NULL);
+
+  printf("Should never reach here.\n");
+  exit(-1);
+
+  /* Correct shutdown order would have been:
+   * NaClSignalHandlerFini();
+   * NaClTimeFini();
+   * NaClLogModuleInit();
+   */
+
+  /* Unreachable, but added to prevent warning. */
   return 0;
 }

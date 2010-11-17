@@ -48,18 +48,6 @@ void NaClSignalStackRegister(void *stack) {
 void NaClSignalStackUnregister(void) {
 }
 
-enum PosixSignals {
-  SIGINT  = 2,
-  SIGQUIT = 3,
-  SIGILL  = 4,
-  SIGTRACE= 5,
-  SIGBUS  = 7,
-  SIGFPE  = 8,
-  SIGKILL = 9,
-  SIGSEGV = 11,
-  SIGSTKFLT = 16,
-};
-
 static int ExceptionToSignal(int ex) {
   switch (ex) {
     /* Data access violations are typically SIGSEGV in Posix */
@@ -109,10 +97,8 @@ static int ExceptionToSignal(int ex) {
   return SIGSEGV;
 }
 
-
 static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
   int sig = ExceptionToSignal(ep->ExceptionRecord->ExceptionCode);
-  int untrusted = 0;
 
   /*
    * We ignore exceptions which may be handle by the language's normal
@@ -127,23 +113,14 @@ static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
       return EXCEPTION_CONTINUE_SEARCH;
   }
 
-  if (NULL != g_SignalNAP) {
-#if NACL_BUILD_SUBARCH == 64
-    untrusted = NaClIsUserAddr(g_SignalNAP, ep->ContextRecord->Rip);
-#else
-    untrusted = NaClGetGlobalCs() != ep->ContextRecord->SegCs;
-#endif
-  }
-
   /* If we have handled the exception and are ready to return, do so */
-  if (NaClSignalHandlerFind(untrusted, sig, ep) == NACL_SIGNAL_RETURN) {
+  if (NaClSignalHandlerFind(sig, ep) == NACL_SIGNAL_RETURN) {
       return EXCEPTION_CONTINUE_EXECUTION;
   }
 
   /* Otherwise we let the OS handle it. */
   return EXCEPTION_CONTINUE_SEARCH;
 }
-
 
 void NaClSignalHandlerInitPlatform(void) {
   /* Add this exception handler to the front of the list */
