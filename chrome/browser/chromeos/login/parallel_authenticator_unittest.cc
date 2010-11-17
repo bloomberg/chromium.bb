@@ -535,7 +535,10 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
 
   // Set up mock cryptohome library to respond successfully to a key migration.
   mock_library_->SetUp(true, 0);
-  EXPECT_CALL(*mock_library_, AsyncMigrateKey(username_, _, _, _))
+  EXPECT_CALL(*mock_library_, AsyncMigrateKey(username_,
+                                              state_->ascii_hash,
+                                              _,
+                                              _))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, GetSystemSalt())

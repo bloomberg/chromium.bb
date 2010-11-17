@@ -82,6 +82,7 @@ class MountGuestAttempt : public CryptohomeOp {
 
 class MigrateAttempt : public CryptohomeOp {
  public:
+  // TODO(cmasone): get rid of passing_old_hash arg, as it's always true.
   MigrateAttempt(AuthAttemptState* current_attempt,
                  AuthAttemptStateResolver* callback,
                  bool passing_old_hash,

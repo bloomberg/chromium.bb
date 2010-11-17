@@ -357,8 +357,8 @@ void ParallelAuthenticator::Resolve() {
       key_migrator_ =
           CryptohomeOp::CreateMigrateAttempt(reauth_state_.get(),
                                              this,
-                                             false,
-                                             reauth_state_->ascii_hash);
+                                             true,
+                                             current_state_->ascii_hash);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(key_migrator_.get(), &CryptohomeOp::Initiate));
