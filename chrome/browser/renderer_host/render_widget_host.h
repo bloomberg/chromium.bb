@@ -44,7 +44,6 @@ class RenderWidgetHostView;
 class RenderWidgetHostPaintingObserver;
 class TransportDIB;
 class WebCursor;
-struct ViewHostMsg_ShowPopup_Params;
 struct ViewHostMsg_UpdateRect_Params;
 
 // This class manages the browser side of a browser<->renderer HWND connection.

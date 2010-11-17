@@ -43,6 +43,7 @@ struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewHostMsg_ShowNotification_Params;
+struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct WebApplicationInfo;
 struct WebDropData;

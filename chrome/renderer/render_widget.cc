@@ -114,22 +114,11 @@ WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   return NULL;
 }
 
-void RenderWidget::ConfigureAsExternalPopupMenu(const WebPopupMenuInfo& info) {
-  popup_params_.reset(new ViewHostMsg_ShowPopup_Params);
-  popup_params_->item_height = info.itemHeight;
-  popup_params_->item_font_size = info.itemFontSize;
-  popup_params_->selected_item = info.selectedIndex;
-  for (size_t i = 0; i < info.items.size(); ++i)
-    popup_params_->popup_items.push_back(WebMenuItem(info.items[i]));
-  popup_params_->right_aligned = info.rightAligned;
-}
-
 void RenderWidget::Init(int32 opener_id) {
   DoInit(opener_id,
          RenderWidget::CreateWebWidget(this),
          new ViewHostMsg_CreateWidget(opener_id, popup_type_, &routing_id_));
 }
-
 
 void RenderWidget::DoInit(int32 opener_id,
                           WebWidget* web_widget,
@@ -692,20 +681,15 @@ void RenderWidget::show(WebNavigationPolicy) {
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
   DCHECK(opener_id_ != MSG_ROUTING_NONE);
 
-  if (!did_show_) {
-    did_show_ = true;
-    // NOTE: initial_pos_ may still have its default values at this point, but
-    // that's okay.  It'll be ignored if as_popup is false, or the browser
-    // process will impose a default position otherwise.
-    if (popup_params_.get()) {
-      popup_params_->bounds = initial_pos_;
-      Send(new ViewHostMsg_ShowPopup(routing_id_, *popup_params_));
-      popup_params_.reset();
-    } else {
-      Send(new ViewHostMsg_ShowWidget(opener_id_, routing_id_, initial_pos_));
-    }
-    SetPendingWindowRect(initial_pos_);
-  }
+  if (did_show_)
+    return;
+
+  did_show_ = true;
+  // NOTE: initial_pos_ may still have its default values at this point, but
+  // that's okay.  It'll be ignored if as_popup is false, or the browser
+  // process will impose a default position otherwise.
+  Send(new ViewHostMsg_ShowWidget(opener_id_, routing_id_, initial_pos_));
+  SetPendingWindowRect(initial_pos_);
 }
 
 void RenderWidget::didFocus() {

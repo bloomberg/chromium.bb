@@ -27,7 +27,6 @@
 #include "webkit/glue/webcursor.h"
 
 class RenderThreadBase;
-struct ViewHostMsg_ShowPopup_Params;
 
 namespace gfx {
 class Point;
@@ -67,10 +66,6 @@ class RenderWidget : public IPC::Channel::Listener,
 
   // Creates a WebWidget based on the popup type.
   static WebKit::WebWidget* CreateWebWidget(RenderWidget* render_widget);
-
-  // Called after Create to configure a RenderWidget to be rendered by the host
-  // as a popup menu with the given data.
-  void ConfigureAsExternalPopupMenu(const WebKit::WebPopupMenuInfo& info);
 
   // The routing ID assigned by the RenderProcess. Will be MSG_ROUTING_NONE if
   // not yet assigned a view ID, in which case, the process MUST NOT send
@@ -351,8 +346,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // we track the pending size temporarily.
   int pending_window_rect_count_;
   WebKit::WebRect pending_window_rect_;
-
-  scoped_ptr<ViewHostMsg_ShowPopup_Params> popup_params_;
 
   scoped_ptr<IPC::Message> pending_input_event_ack_;
 

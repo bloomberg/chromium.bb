@@ -513,6 +513,12 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       accessibility_ack_pending_(false),
       session_storage_namespace_id_(session_storage_namespace_id),
       decrement_shared_popup_at_destruction_(false) {
+#if defined(OS_MACOSX)
+  // On Mac, the select popups are rendered by the browser.
+  // Note that we don't do this in RenderMain otherwise this would not be called
+  // in single-process mode.
+  WebKit::WebView::setUseExternalPopupMenus(true);
+#endif
   password_autocomplete_manager_.reset(new PasswordAutocompleteManager(this));
   autofill_helper_.reset(new AutoFillHelper(this));
   page_click_tracker_.reset(new PageClickTracker(this));
@@ -1888,11 +1894,11 @@ WebWidget* RenderView::createPopupMenu(WebKit::WebPopupType popup_type) {
 }
 
 WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
-  RenderWidget* widget = RenderWidget::Create(routing_id_,
-                                              render_thread_,
-                                              WebKit::WebPopupTypeSelect);
-  widget->ConfigureAsExternalPopupMenu(info);
-  return widget->webwidget();
+  // TODO(jcivelli): Remove this deprecated method when its been removed from
+  //                 the WebViewClient interface. It's been replaced by
+  //                 createExternalPopupMenu.
+  NOTREACHED();
+  return NULL;
 }
 
 WebExternalPopupMenu* RenderView::createExternalPopupMenu(
