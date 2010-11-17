@@ -30,8 +30,7 @@ namespace safe_browsing {
 class ClientSideDetectionServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    file_thread_.reset(new BrowserThread(BrowserThread::FILE));
-    file_thread_->Start();
+    file_thread_.reset(new BrowserThread(BrowserThread::FILE, &msg_loop_));
 
     factory_.reset(new FakeURLFetcherFactory());
     URLFetcher::set_factory(factory_.get());
@@ -40,8 +39,8 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    csd_service_.reset();
     msg_loop_.RunAllPending();
+    csd_service_.reset();
     URLFetcher::set_factory(NULL);
     file_thread_.reset();
     browser_thread_.reset();
@@ -91,6 +90,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
  protected:
   scoped_ptr<ClientSideDetectionService> csd_service_;
   scoped_ptr<FakeURLFetcherFactory> factory_;
+  MessageLoop msg_loop_;
 
  private:
   void GetModelFileDone(base::PlatformFile model_file) {
@@ -104,7 +104,6 @@ class ClientSideDetectionServiceTest : public testing::Test {
     msg_loop_.Quit();
   }
 
-  MessageLoop msg_loop_;
   scoped_ptr<BrowserThread> browser_thread_;
   base::PlatformFile model_file_;
   scoped_ptr<BrowserThread> file_thread_;
@@ -145,14 +144,22 @@ TEST_F(ClientSideDetectionServiceTest, TestFetchingModel) {
   EXPECT_EQ(GetModelFile(), base::kInvalidPlatformFileValue);
 }
 
-#if defined(OS_MACOSX)
-// Sometimes crashes on Mac 10.5 bot: http://crbug.com/63358
-#define MAYBE_SendClientReportPhishingRequest \
-        DISABLED_SendClientReportPhishingRequest
-#else
-#define MAYBE_SendClientReportPhishingRequest SendClientReportPhishingRequest
-#endif
-TEST_F(ClientSideDetectionServiceTest, MAYBE_SendClientReportPhishingRequest) {
+TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
+  SetModelFetchResponse("bogus model", true /* success */);
+  ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  csd_service_.reset(ClientSideDetectionService::Create(
+      tmp_dir.path().AppendASCII("model"), NULL));
+  EXPECT_TRUE(csd_service_.get() != NULL);
+  // We delete the client-side detection service class even though the callbacks
+  // haven't run yet.
+  csd_service_.reset();
+  // Waiting for the callbacks to run should not crash even if the service
+  // object is gone.
+  msg_loop_.RunAllPending();
+}
+
+TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   SetModelFetchResponse("bogus model", true /* success */);
   ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());

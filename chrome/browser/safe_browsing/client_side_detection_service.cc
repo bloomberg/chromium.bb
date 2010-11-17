@@ -40,6 +40,7 @@ ClientSideDetectionService::ClientSideDetectionService(
       model_file_(base::kInvalidPlatformFileValue),
       model_fetcher_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       request_context_getter_(request_context_getter) {
 }
 
@@ -61,8 +62,9 @@ ClientSideDetectionService* ClientSideDetectionService::Create(
       new ClientSideDetectionService(model_path, request_context_getter));
   // We try to open the model file right away and start fetching it if
   // it does not already exist on disk.
-  base::FileUtilProxy::CreateOrOpenCallback* cb = NewCallback(
-      service.get(), &ClientSideDetectionService::OpenModelFileDone);
+  base::FileUtilProxy::CreateOrOpenCallback* cb =
+      service.get()->callback_factory_.NewCallback(
+          &ClientSideDetectionService::OpenModelFileDone);
   if (!base::FileUtilProxy::CreateOrOpen(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           model_path,
@@ -158,8 +160,8 @@ void ClientSideDetectionService::CreateModelFileDone(
     base::PassPlatformFile file,
     bool created) {
   model_file_ = file.ReleaseValue();
-  base::FileUtilProxy::ReadWriteCallback* cb = NewCallback(
-      this, &ClientSideDetectionService::WriteModelFileDone);
+  base::FileUtilProxy::ReadWriteCallback* cb = callback_factory_.NewCallback(
+      &ClientSideDetectionService::WriteModelFileDone);
   if (!created ||
       base::PLATFORM_FILE_OK != error_code ||
       !base::FileUtilProxy::Write(
@@ -278,8 +280,9 @@ void ClientSideDetectionService::HandleModelResponse(
     // temporary model string. TODO(noelutz): don't store the model to disk if
     // it's invalid.
     tmp_model_string_.reset(new std::string(data));
-    base::FileUtilProxy::CreateOrOpenCallback* cb = NewCallback(
-        this, &ClientSideDetectionService::CreateModelFileDone);
+    base::FileUtilProxy::CreateOrOpenCallback* cb =
+        callback_factory_.NewCallback(
+            &ClientSideDetectionService::CreateModelFileDone);
     if (!base::FileUtilProxy::CreateOrOpen(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
             model_path_,

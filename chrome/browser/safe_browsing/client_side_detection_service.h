@@ -26,6 +26,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
+#include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/safe_browsing/csd.pb.h"
@@ -181,6 +182,12 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // Used to asynchronously call the callbacks for GetModelFile and
   // SendClientReportPhishingRequest.
   ScopedRunnableMethodFactory<ClientSideDetectionService> method_factory_;
+
+  // The client-side detection service object (this) might go away before some
+  // of the callbacks are done (e.g., asynchronous file operations).  The
+  // callback factory will revoke all pending callbacks if this goes away to
+  // avoid a crash.
+  base::ScopedCallbackFactory<ClientSideDetectionService> callback_factory_;
 
   // The context we use to issue network requests.
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
