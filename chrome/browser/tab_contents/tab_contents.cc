@@ -1177,9 +1177,8 @@ bool TabContents::ShouldShowBookmarkBar() {
   // is so the bookmarks bar disappears at the same time the page does.
   if (controller_.GetLastCommittedEntry()) {
     // Not the first load, always use the committed DOM UI.
-    if (render_manager_.dom_ui())
-      return render_manager_.dom_ui()->force_bookmark_bar_visible();
-    return false;  // Default.
+    return (render_manager_.dom_ui() == NULL) ?
+        false : render_manager_.dom_ui()->force_bookmark_bar_visible();
   }
 
   // When it's the first load, we know either the pending one or the committed
@@ -1187,9 +1186,8 @@ bool TabContents::ShouldShowBookmarkBar() {
   // of them will be valid, so we can just check both.
   if (render_manager_.pending_dom_ui())
     return render_manager_.pending_dom_ui()->force_bookmark_bar_visible();
-  if (render_manager_.dom_ui())
-    return render_manager_.dom_ui()->force_bookmark_bar_visible();
-  return false;  // Default.
+  return (render_manager_.dom_ui() == NULL) ?
+      false : render_manager_.dom_ui()->force_bookmark_bar_visible();
 }
 
 void TabContents::ToolbarSizeChanged(bool is_animating) {
@@ -1216,18 +1214,17 @@ void TabContents::OnStartDownload(DownloadItem* download) {
 }
 
 void TabContents::WillClose(ConstrainedWindow* window) {
-  ConstrainedWindowList::iterator it =
-      find(child_windows_.begin(), child_windows_.end(), window);
-  bool removed_topmost_window = it == child_windows_.begin();
-  if (it != child_windows_.end())
-    child_windows_.erase(it);
-  if (child_windows_.size() > 0) {
-    if (removed_topmost_window) {
-      child_windows_[0]->ShowConstrainedWindow();
-    }
-    BlockTabContent(true);
-  } else {
+  ConstrainedWindowList::iterator i(
+      std::find(child_windows_.begin(), child_windows_.end(), window));
+  bool removed_topmost_window = i == child_windows_.begin();
+  if (i != child_windows_.end())
+    child_windows_.erase(i);
+  if (child_windows_.empty()) {
     BlockTabContent(false);
+  } else {
+    if (removed_topmost_window)
+      child_windows_[0]->ShowConstrainedWindow();
+    BlockTabContent(true);
   }
 }
 
