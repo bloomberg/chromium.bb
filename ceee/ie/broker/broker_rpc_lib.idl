@@ -1,8 +1,8 @@
 import "oaidl.idl";
 import "ocidl.idl";
 
-
-[ uuid (931C5D3F-A6D7-411B-98ED-789FC9291302),
+[ 
+  uuid (931C5D3F-A6D7-411B-98ED-789FC9291302),
   // TODO(vitalybuka@google.com): decide if we need meaningful version.
   version(1.1),
   pointer_default(unique),
@@ -33,3 +33,14 @@ void FireEvent(
     [in] BSTR event_args);
 // @}
 }
+
+// This dummy library statement enforces the creation of a history_indexer.tlb.
+// This is necessary since MSVC assumes a .idl always creates a .tlb. Otherwise,
+// this .idl is always recompiled, giving many engs a headache.
+[
+  uuid(B696C552-D640-4756-BE75-B86BE2AEB6C7),
+  helpstring("Dummy library")
+]
+library broker_rcp_lib
+{
+};
