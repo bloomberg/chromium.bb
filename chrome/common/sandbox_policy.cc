@@ -329,6 +329,24 @@ bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
 
   cmd_line->AppendSwitchASCII("flash-broker",
                               base::Int64ToString(::GetProcessId(process)));
+
+  // The flash broker, unders some circumstances can linger beyond the lifetime
+  // of the flash player, so we put it in a job object, when the browser
+  // terminates the job object is destroyed (by the OS) and the flash broker
+  // is terminated.
+  HANDLE job = ::CreateJobObjectW(NULL, NULL);
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_limits = {0};
+  job_limits.BasicLimitInformation.LimitFlags =
+      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+  if (::SetInformationJobObject(job, JobObjectExtendedLimitInformation,
+                                &job_limits, sizeof(job_limits))) {
+    ::AssignProcessToJobObject(job, process);
+    // Yes, we are leaking the object here. Read comment above.
+  } else {
+    ::CloseHandle(job);
+    return false;
+  }
+
   ::CloseHandle(process);
   return true;
 }
