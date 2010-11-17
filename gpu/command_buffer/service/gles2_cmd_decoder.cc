@@ -1763,6 +1763,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     LOG(ERROR) << "GPUProcessor::InitializeCommon failed because group "
                << "failed to initialize.";
     Destroy();
+    return false;
   }
 
   CHECK_GL_ERROR();
