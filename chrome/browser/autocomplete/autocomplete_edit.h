@@ -307,7 +307,7 @@ class AutocompleteEditModel : public NotificationObserver {
   //     a different match, or the inline autocomplete text.  We distinguish by
   //     checking if |destination_for_temporary_text_change| is NULL.
   //   |destination_for_temporary_text_change| is NULL (if temporary text should
-  //     not change) or the pre-change desitnation URL (if temporary text should
+  //     not change) or the pre-change destination URL (if temporary text should
   //     change) so we can save it off to restore later.
   //   |keyword| is the keyword to show a hint for if |is_keyword_hint| is true,
   //     or the currently selected keyword if |is_keyword_hint| is false (see

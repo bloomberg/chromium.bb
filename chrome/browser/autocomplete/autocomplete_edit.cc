@@ -615,10 +615,10 @@ void AutocompleteEditModel::OnPopupDataChanged(
       return;
   }
 
-  // If the above changes didn't warrant a text update but we did change keyword
-  // state, we have yet to notify the controller about it.
-  if (keyword_state_changed)
-    controller_->OnChanged();
+  // All other code paths that return invoke OnChanged. We need to invoke
+  // OnChanged in case the destination url changed (as could happen when control
+  // is toggled).
+  controller_->OnChanged();
 }
 
 bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
