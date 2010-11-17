@@ -56,7 +56,6 @@ BUG_ANTONM : editing/selection/extend-selection-bidi.html = IMAGE+TEXT
 BUG_ANTONM : fast/blockflow/vertical-font-fallback.html = IMAGE+TEXT
 BUG_ANTONM : fast/css/beforeSelectorOnCodeElement.html = IMAGE+TEXT
 BUG_ANTONM : fast/css/font-face-opentype.html = IMAGE+TEXT
-BUG_ANTONM : fast/css/line-height-determined-by-primary-font.html = IMAGE+TEXT
 BUG_ANTONM : fast/css/rtl-ordering.html = IMAGE+TEXT
 BUG_ANTONM : fast/css/text-overflow-ellipsis-bidi.html = IMAGE+TEXT
 BUG_ANTONM : fast/css/text-overflow-ellipsis-strict.html = IMAGE+TEXT
