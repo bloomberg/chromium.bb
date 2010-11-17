@@ -40,6 +40,7 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
     bool user_only) {
   using policy::ConfigurationPolicyPrefStore;
   ConfigurationPolicyPrefStore* managed = NULL;
+  ConfigurationPolicyPrefStore* device_management = NULL;
   ExtensionPrefStore* extension = NULL;
   CommandLinePrefStore* command_line = NULL;
   ConfigurationPolicyPrefStore* recommended = NULL;
@@ -50,14 +51,17 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
   DefaultPrefStore* default_store = new DefaultPrefStore();
 
   if (!user_only) {
-    managed = ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore();
+    managed =
+        ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore();
+    device_management =
+        ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore();
     extension = new ExtensionPrefStore(profile, PrefNotifier::EXTENSION_STORE);
     command_line = new CommandLinePrefStore(CommandLine::ForCurrentProcess());
     recommended =
         ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
   }
-  return new PrefValueStore(managed, extension, command_line, user,
-                            recommended, default_store);
+  return new PrefValueStore(managed, device_management, extension,
+                            command_line, user, recommended, default_store);
 }
 
 PrefValueStore::~PrefValueStore() {}
@@ -191,8 +195,12 @@ bool PrefValueStore::RemoveUserPrefValue(const char* name) {
   return false;
 }
 
-bool PrefValueStore::PrefValueInManagedStore(const char* name) const {
-  return PrefValueInStore(name, PrefNotifier::MANAGED_STORE);
+bool PrefValueStore::PrefValueInManagedPlatformStore(const char* name) const {
+  return PrefValueInStore(name, PrefNotifier::MANAGED_PLATFORM_STORE);
+}
+
+bool PrefValueStore::PrefValueInDeviceManagementStore(const char* name) const {
+  return PrefValueInStore(name, PrefNotifier::DEVICE_MANAGEMENT_STORE);
 }
 
 bool PrefValueStore::PrefValueInExtensionStore(const char* name) const {
@@ -287,56 +295,32 @@ bool PrefValueStore::GetValueFromStore(
   return false;
 }
 
-void PrefValueStore::RefreshPolicyPrefsCompletion(
-    PrefStore* new_managed_pref_store,
-    PrefStore* new_recommended_pref_store,
-    AfterRefreshCallback* callback_pointer) {
-  scoped_ptr<AfterRefreshCallback> callback(callback_pointer);
-  DictionaryValue* managed_prefs_before(
-      pref_stores_[PrefNotifier::MANAGED_STORE]->prefs());
-  DictionaryValue* managed_prefs_after(new_managed_pref_store->prefs());
-  DictionaryValue* recommended_prefs_before(
-      pref_stores_[PrefNotifier::RECOMMENDED_STORE]->prefs());
-  DictionaryValue* recommended_prefs_after(new_recommended_pref_store->prefs());
-
-  std::vector<std::string> changed_managed_paths;
-  managed_prefs_before->GetDifferingPaths(managed_prefs_after,
-                                          &changed_managed_paths);
-
-  std::vector<std::string> changed_recommended_paths;
-  recommended_prefs_before->GetDifferingPaths(recommended_prefs_after,
-                                              &changed_recommended_paths);
-
-  std::vector<std::string> changed_paths(changed_managed_paths.size() +
-                                         changed_recommended_paths.size());
-  std::vector<std::string>::iterator last_insert =
-      std::merge(changed_managed_paths.begin(),
-                 changed_managed_paths.end(),
-                 changed_recommended_paths.begin(),
-                 changed_recommended_paths.end(),
-                 changed_paths.begin());
-  changed_paths.resize(last_insert - changed_paths.begin());
-
-  pref_stores_[PrefNotifier::MANAGED_STORE].reset(new_managed_pref_store);
-  pref_stores_[PrefNotifier::RECOMMENDED_STORE].reset(
-      new_recommended_pref_store);
-  callback->Run(changed_paths);
-}
-
 void PrefValueStore::RefreshPolicyPrefsOnFileThread(
     BrowserThread::ID calling_thread_id,
-    PrefStore* new_managed_pref_store,
+    PrefStore* new_managed_platform_pref_store,
+    PrefStore* new_device_management_pref_store,
     PrefStore* new_recommended_pref_store,
     AfterRefreshCallback* callback_pointer) {
   scoped_ptr<AfterRefreshCallback> callback(callback_pointer);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<PrefStore> managed_pref_store(new_managed_pref_store);
+  scoped_ptr<PrefStore> managed_platform_pref_store(
+      new_managed_platform_pref_store);
+  scoped_ptr<PrefStore> device_management_pref_store(
+      new_device_management_pref_store);
   scoped_ptr<PrefStore> recommended_pref_store(new_recommended_pref_store);
 
-  PrefStore::PrefReadError read_error = new_managed_pref_store->ReadPrefs();
+  PrefStore::PrefReadError read_error =
+      new_managed_platform_pref_store->ReadPrefs();
   if (read_error != PrefStore::PREF_READ_ERROR_NONE) {
     LOG(ERROR) << "refresh of managed policy failed: PrefReadError = "
                << read_error;
+    return;
+  }
+
+  read_error = new_device_management_pref_store->ReadPrefs();
+  if (read_error != PrefStore::PREF_READ_ERROR_NONE) {
+    LOG(ERROR) << "refresh of device management policy failed: "
+               << "PrefReadError = " << read_error;
     return;
   }
 
@@ -351,9 +335,84 @@ void PrefValueStore::RefreshPolicyPrefsOnFileThread(
       calling_thread_id, FROM_HERE,
       NewRunnableMethod(this,
                         &PrefValueStore::RefreshPolicyPrefsCompletion,
-                        managed_pref_store.release(),
+                        managed_platform_pref_store.release(),
+                        device_management_pref_store.release(),
                         recommended_pref_store.release(),
                         callback.release()));
+}
+
+void PrefValueStore::RefreshPolicyPrefsCompletion(
+    PrefStore* new_managed_platform_pref_store,
+    PrefStore* new_device_management_pref_store,
+    PrefStore* new_recommended_pref_store,
+    AfterRefreshCallback* callback_pointer) {
+  scoped_ptr<AfterRefreshCallback> callback(callback_pointer);
+
+  // Determine the paths of all the changed preferences values in the three
+  // policy-related stores (managed platform, device management and
+  // recommended).
+  DictionaryValue* managed_platform_prefs_before(
+      pref_stores_[PrefNotifier::MANAGED_PLATFORM_STORE]->prefs());
+  DictionaryValue* managed_platform_prefs_after(
+      new_managed_platform_pref_store->prefs());
+  DictionaryValue* device_management_prefs_before(
+      pref_stores_[PrefNotifier::DEVICE_MANAGEMENT_STORE]->prefs());
+  DictionaryValue* device_management_prefs_after(
+      new_device_management_pref_store->prefs());
+  DictionaryValue* recommended_prefs_before(
+      pref_stores_[PrefNotifier::RECOMMENDED_STORE]->prefs());
+  DictionaryValue* recommended_prefs_after(new_recommended_pref_store->prefs());
+
+  std::vector<std::string> changed_managed_platform_paths;
+  managed_platform_prefs_before->GetDifferingPaths(managed_platform_prefs_after,
+                                          &changed_managed_platform_paths);
+
+  std::vector<std::string> changed_device_management_paths;
+  device_management_prefs_before->GetDifferingPaths(
+      device_management_prefs_after,
+      &changed_device_management_paths);
+
+  std::vector<std::string> changed_recommended_paths;
+  recommended_prefs_before->GetDifferingPaths(recommended_prefs_after,
+                                              &changed_recommended_paths);
+
+  // Merge all three vectors of changed value paths together, filtering
+  // duplicates in a post-processing step.
+  std::vector<std::string> all_changed_managed_platform_paths(
+      changed_managed_platform_paths.size() +
+      changed_device_management_paths.size());
+
+  std::vector<std::string>::iterator last_insert =
+      std::merge(changed_managed_platform_paths.begin(),
+                 changed_managed_platform_paths.end(),
+                 changed_device_management_paths.begin(),
+                 changed_device_management_paths.end(),
+                 all_changed_managed_platform_paths.begin());
+  all_changed_managed_platform_paths.resize(
+      last_insert - all_changed_managed_platform_paths.begin());
+
+  std::vector<std::string> changed_paths(
+      all_changed_managed_platform_paths.size() +
+      changed_recommended_paths.size());
+  last_insert = std::merge(all_changed_managed_platform_paths.begin(),
+                           all_changed_managed_platform_paths.end(),
+                           changed_recommended_paths.begin(),
+                           changed_recommended_paths.end(),
+                           changed_paths.begin());
+  changed_paths.resize(last_insert - changed_paths.begin());
+
+  last_insert = unique(changed_paths.begin(), changed_paths.end());
+  changed_paths.resize(last_insert - changed_paths.begin());
+
+  // Replace the old stores with the new and send notification of the changed
+  // preferences.
+  pref_stores_[PrefNotifier::MANAGED_PLATFORM_STORE].reset(
+      new_managed_platform_pref_store);
+  pref_stores_[PrefNotifier::DEVICE_MANAGEMENT_STORE].reset(
+      new_device_management_pref_store);
+  pref_stores_[PrefNotifier::RECOMMENDED_STORE].reset(
+      new_recommended_pref_store);
+  callback->Run(changed_paths);
 }
 
 void PrefValueStore::RefreshPolicyPrefs(
@@ -366,8 +425,10 @@ void PrefValueStore::RefreshPolicyPrefs(
   // created and the refreshed policy read into them. The new stores
   // are swapped with the old from a Task on the UI thread after the
   // load is complete.
-  PrefStore* new_managed_pref_store(
-      ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore());
+  PrefStore* new_managed_platform_pref_store(
+      ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore());
+  PrefStore* new_device_management_pref_store(
+      ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore());
   PrefStore* new_recommended_pref_store(
       ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore());
   BrowserThread::ID current_thread_id;
@@ -377,7 +438,8 @@ void PrefValueStore::RefreshPolicyPrefs(
       NewRunnableMethod(this,
                         &PrefValueStore::RefreshPolicyPrefsOnFileThread,
                         current_thread_id,
-                        new_managed_pref_store,
+                        new_managed_platform_pref_store,
+                        new_device_management_pref_store,
                         new_recommended_pref_store,
                         callback));
 }
@@ -388,7 +450,8 @@ bool PrefValueStore::HasPolicyConflictingUserProxySettings() {
   ConfigurationPolicyPrefStore::GetProxyPreferenceSet(&proxy_prefs);
   ConfigurationPolicyPrefStore::ProxyPreferenceSet::const_iterator i;
   for (i = proxy_prefs.begin(); i != proxy_prefs.end(); ++i) {
-    if (PrefValueInManagedStore(*i) &&
+    if ((PrefValueInManagedPlatformStore(*i) ||
+         PrefValueInDeviceManagementStore(*i)) &&
         PrefValueInStoreRange(*i,
                               PrefNotifier::COMMAND_LINE_STORE,
                               PrefNotifier::USER_STORE))
@@ -397,7 +460,8 @@ bool PrefValueStore::HasPolicyConflictingUserProxySettings() {
   return false;
 }
 
-PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
+PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
+                               PrefStore* device_management_prefs,
                                PrefStore* extension_prefs,
                                PrefStore* command_line_prefs,
                                PrefStore* user_prefs,
@@ -406,7 +470,10 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
   // NULL default pref store is usually bad, but may be OK for some unit tests.
   if (!default_prefs)
     LOG(WARNING) << "default pref store is null";
-  pref_stores_[PrefNotifier::MANAGED_STORE].reset(managed_prefs);
+  pref_stores_[PrefNotifier::MANAGED_PLATFORM_STORE].reset(
+      managed_platform_prefs);
+  pref_stores_[PrefNotifier::DEVICE_MANAGEMENT_STORE].reset(
+      device_management_prefs);
   pref_stores_[PrefNotifier::EXTENSION_STORE].reset(extension_prefs);
   pref_stores_[PrefNotifier::COMMAND_LINE_STORE].reset(command_line_prefs);
   pref_stores_[PrefNotifier::USER_STORE].reset(user_prefs);

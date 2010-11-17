@@ -31,28 +31,36 @@
 
 namespace policy {
 
-// Manages the lifecycle of the shared platform-specific policy providers
-// for managed and recommended policy. Instantiated as a Singleton.
+// Manages the lifecycle of the shared platform-specific policy providers for
+// managed platform, device management and recommended policy. Instantiated as a
+// Singleton.
 class ConfigurationPolicyProviderKeeper {
  public:
   ConfigurationPolicyProviderKeeper()
-      : managed_provider_(CreateManagedProvider()),
+      : managed_platform_provider_(CreateManagedPlatformProvider()),
+        device_management_provider_(CreateDeviceManagementProvider()),
         recommended_provider_(CreateRecommendedProvider()) {}
   virtual ~ConfigurationPolicyProviderKeeper() {}
 
-  ConfigurationPolicyProvider* managed_provider() const {
-    return managed_provider_.get();
+  ConfigurationPolicyProvider* managed_platform_provider() const {
+    return managed_platform_provider_.get();
   }
 
-  ConfigurationPolicyProvider* recommended_provider() const {
+  ConfigurationPolicyProvider* device_management_provider() const {
+    return device_management_provider_.get();
+  }
+
+ConfigurationPolicyProvider* recommended_provider() const {
     return recommended_provider_.get();
   }
 
  private:
-  scoped_ptr<ConfigurationPolicyProvider> managed_provider_;
+  scoped_ptr<ConfigurationPolicyProvider> managed_platform_provider_;
+  scoped_ptr<ConfigurationPolicyProvider> device_management_provider_;
   scoped_ptr<ConfigurationPolicyProvider> recommended_provider_;
 
-  static ConfigurationPolicyProvider* CreateManagedProvider();
+  static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
+  static ConfigurationPolicyProvider* CreateDeviceManagementProvider();
   static ConfigurationPolicyProvider* CreateRecommendedProvider();
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderKeeper);
@@ -60,18 +68,21 @@ class ConfigurationPolicyProviderKeeper {
 
 
 ConfigurationPolicyProvider*
-    ConfigurationPolicyProviderKeeper::CreateManagedProvider() {
+    ConfigurationPolicyProviderKeeper::CreateDeviceManagementProvider() {
   const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-#ifndef NDEBUG
-  // TODO(danno): This is a temporary solution only, the PrefValueStore needs to
-  // be changed to support two managed PrefStores, the local managed store and
-  // the device management policy store.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDeviceManagementUrl)) {
     return new DeviceManagementPolicyProvider(policy_list);
+  } else {
+    return new DummyConfigurationPolicyProvider(policy_list);
   }
-#endif
+}
+
+ConfigurationPolicyProvider*
+    ConfigurationPolicyProviderKeeper::CreateManagedPlatformProvider() {
+  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
 #if defined(OS_WIN)
   return new ConfigurationPolicyProviderWin(policy_list);
 #elif defined(OS_MACOSX)
@@ -355,10 +366,19 @@ void ConfigurationPolicyPrefStore::Apply(ConfigurationPolicyType policy,
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore() {
+ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore() {
   ConfigurationPolicyProviderKeeper* keeper =
       Singleton<ConfigurationPolicyProviderKeeper>::get();
-  return new ConfigurationPolicyPrefStore(keeper->managed_provider());
+  return new ConfigurationPolicyPrefStore(keeper->managed_platform_provider());
+}
+
+// static
+ConfigurationPolicyPrefStore*
+ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore() {
+  ConfigurationPolicyProviderKeeper* keeper =
+      Singleton<ConfigurationPolicyProviderKeeper>::get();
+  return new ConfigurationPolicyPrefStore(
+      keeper->device_management_provider());
 }
 
 // static

@@ -10,13 +10,15 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
 TestingPrefService::TestingPrefValueStore::TestingPrefValueStore(
-    PrefStore* managed_prefs,
+    PrefStore* managed_platform_prefs,
+    PrefStore* device_management_prefs,
     PrefStore* extension_prefs,
     PrefStore* command_line_prefs,
     PrefStore* user_prefs,
     PrefStore* recommended_prefs,
     PrefStore* default_prefs)
-    : PrefValueStore(managed_prefs, extension_prefs, command_line_prefs,
+    : PrefValueStore(managed_platform_prefs, device_management_prefs,
+                     extension_prefs, command_line_prefs,
                      user_prefs, recommended_prefs, default_prefs) {
 }
 
@@ -24,7 +26,8 @@ TestingPrefService::TestingPrefValueStore::TestingPrefValueStore(
 // which they want, and expand usage of this class to more unit tests.
 TestingPrefService::TestingPrefService()
     : PrefService(new TestingPrefValueStore(
-        managed_prefs_ = new DummyPrefStore(),
+        managed_platform_prefs_ = new DummyPrefStore(),
+        device_management_prefs_ = new DummyPrefStore(),
         NULL,
         NULL,
         user_prefs_ = new DummyPrefStore(),
@@ -33,10 +36,14 @@ TestingPrefService::TestingPrefService()
 }
 
 TestingPrefService::TestingPrefService(
-    policy::ConfigurationPolicyProvider* provider,
+    policy::ConfigurationPolicyProvider* managed_platform_provider,
+    policy::ConfigurationPolicyProvider* device_management_provider,
     CommandLine* command_line)
     : PrefService(new TestingPrefValueStore(
-        managed_prefs_ = CreateManagedPrefStore(provider),
+        managed_platform_prefs_ = CreatePolicyPrefStoreFromProvider(
+            managed_platform_provider),
+        device_management_prefs_ =
+            CreatePolicyPrefStoreFromProvider(device_management_provider),
         NULL,
         CreateCommandLinePrefStore(command_line),
         user_prefs_ = new DummyPrefStore(),
@@ -44,7 +51,7 @@ TestingPrefService::TestingPrefService(
         default_prefs_ = new DummyPrefStore())) {
 }
 
-PrefStore* TestingPrefService::CreateManagedPrefStore(
+PrefStore* TestingPrefService::CreatePolicyPrefStoreFromProvider(
     policy::ConfigurationPolicyProvider* provider) {
   if (provider)
     return new policy::ConfigurationPolicyPrefStore(provider);
@@ -59,25 +66,25 @@ PrefStore* TestingPrefService::CreateCommandLinePrefStore(
 }
 
 const Value* TestingPrefService::GetManagedPref(const char* path) {
-  return GetPref(managed_prefs_, path);
+  return GetPref(managed_platform_prefs_, path);
 }
 
 void TestingPrefService::SetManagedPref(const char* path, Value* value) {
-  SetPref(managed_prefs_, path, value);
+  SetPref(managed_platform_prefs_, path, value);
 }
 
 void TestingPrefService::RemoveManagedPref(const char* path) {
-  RemovePref(managed_prefs_, path);
+  RemovePref(managed_platform_prefs_, path);
 }
 
 void TestingPrefService::SetManagedPrefWithoutNotification(const char* path,
                                                            Value* value) {
-  managed_prefs_->prefs()->Set(path, value);
+  managed_platform_prefs_->prefs()->Set(path, value);
 }
 
 void TestingPrefService::RemoveManagedPrefWithoutNotification(
     const char* path) {
-  managed_prefs_->prefs()->Remove(path, NULL);
+  managed_platform_prefs_->prefs()->Remove(path, NULL);
 }
 
 const Value* TestingPrefService::GetUserPref(const char* path) {

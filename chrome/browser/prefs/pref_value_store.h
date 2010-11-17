@@ -95,10 +95,10 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   virtual bool PrefHasChanged(const char* path,
                               PrefNotifier::PrefStoreType new_store);
 
-  // Returns true if the PrefValueStore is read-only.
-  // Because the managed and recommended PrefStores are always read-only, the
-  // PrefValueStore as a whole is read-only if the PrefStore containing the user
-  // preferences is read-only.
+  // Returns true if the PrefValueStore is read-only.  Because the managed
+  // platform, device management and recommended PrefStores are always
+  // read-only, the PrefValueStore as a whole is read-only if the PrefStore
+  // containing the user preferences is read-only.
   bool ReadOnly();
 
   // Alters the user-defined value of a preference. Even if the preference is
@@ -122,7 +122,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // These methods return true if a preference with the given name is in the
   // indicated pref store, even if that value is currently being overridden by
   // a higher-priority source.
-  bool PrefValueInManagedStore(const char* name) const;
+  bool PrefValueInManagedPlatformStore(const char* name) const;
+  bool PrefValueInDeviceManagementStore(const char* name) const;
   bool PrefValueInExtensionStore(const char* name) const;
   bool PrefValueInUserStore(const char* name) const;
 
@@ -158,12 +159,12 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // lifecycle is managed in another thread.
   typedef Callback1<std::vector<std::string> >::Type AfterRefreshCallback;
 
-  // Called as a result of a notification of policy change. Triggers a
-  // reload of managed preferences from policy from a Task on the FILE
-  // thread. The Task will take ownership of the |callback|. |callback| is
-  // called with the set of preferences changed by the policy refresh.
-  // |callback| is called on the caller's thread as a Task after
-  // RefreshPolicyPrefs has returned.
+  // Called as a result of a notification of policy change. Triggers a reload of
+  // managed platform, device management and recommended preferences from policy
+  // from a Task on the FILE thread. The Task will take ownership of the
+  // |callback|. |callback| is called with the set of preferences changed by the
+  // policy refresh. |callback| is called on the caller's thread as a Task
+  // after RefreshPolicyPrefs has returned.
   void RefreshPolicyPrefs(AfterRefreshCallback* callback);
 
   // Returns true if there are proxy preferences in user-modifiable
@@ -173,7 +174,10 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
 
       protected:
   // In decreasing order of precedence:
-  //   |managed_prefs| contains all managed (policy) preference values.
+  //   |managed_platform_prefs| contains all managed platform (non-cloud policy)
+  //        preference values.
+  //   |device_management_prefs| contains all device management (cloud policy)
+  //        preference values.
   //   |extension_prefs| contains preference values set by extensions.
   //   |command_line_prefs| contains preference values set by command-line
   //        switches.
@@ -185,7 +189,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // This constructor should only be used internally, or by subclasses in
   // testing. The usual way to create a PrefValueStore is by creating a
   // PrefService.
-  PrefValueStore(PrefStore* managed_prefs,
+  PrefValueStore(PrefStore* managed_platform_prefs,
+                 PrefStore* device_management_prefs,
                  PrefStore* extension_prefs,
                  PrefStore* command_line_prefs,
                  PrefStore* user_prefs,
@@ -218,7 +223,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // that initiated the policy refresh. RefreshPolicyPrefsCompletion takes
   // ownership of the |callback| object.
   void RefreshPolicyPrefsCompletion(
-      PrefStore* new_managed_pref_store,
+      PrefStore* new_managed_platform_pref_store,
+      PrefStore* new_device_management_pref_store,
       PrefStore* new_recommended_pref_store,
       AfterRefreshCallback* callback);
 
@@ -226,7 +232,8 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // RefreshPolicyPrefsOnFileThread takes ownership of the |callback| object.
   void RefreshPolicyPrefsOnFileThread(
       BrowserThread::ID calling_thread_id,
-      PrefStore* new_managed_pref_store,
+      PrefStore* new_managed_platform_pref_store,
+      PrefStore* new_device_management_pref_store,
       PrefStore* new_recommended_pref_store,
       AfterRefreshCallback* callback);
 

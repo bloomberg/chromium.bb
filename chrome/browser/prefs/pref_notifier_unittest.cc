@@ -61,7 +61,8 @@ class MockPrefNotifier : public PrefNotifier {
 class MockPrefValueStore : public PrefValueStore {
  public:
   MockPrefValueStore()
-      : PrefValueStore(NULL, NULL, NULL, NULL, NULL, new DefaultPrefStore()) {}
+      : PrefValueStore(NULL, NULL, NULL, NULL, NULL, NULL,
+                       new DefaultPrefStore()) {}
 
   virtual ~MockPrefValueStore() {}
 

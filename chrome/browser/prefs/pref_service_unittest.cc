@@ -191,7 +191,7 @@ TEST(PrefServiceTest, Observers) {
 TEST(PrefServiceTest, ProxyFromCommandLineNotPolicy) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
-  TestingPrefService prefs(NULL, &command_line);
+  TestingPrefService prefs(NULL, NULL, &command_line);
   browser::RegisterUserPrefs(&prefs);
   EXPECT_TRUE(prefs.GetBoolean(prefs::kProxyAutoDetect));
   const PrefService::Preference* pref =
@@ -219,7 +219,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
-  TestingPrefService prefs(NULL, &command_line);
+  TestingPrefService prefs(NULL, NULL, &command_line);
   browser::RegisterUserPrefs(&prefs);
   EXPECT_FALSE(prefs.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs.GetBoolean(prefs::kNoProxyServer));
@@ -230,7 +230,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
   // Try a second time time with the managed PrefStore in place, the
   // manual proxy policy should have removed all traces of the command
   // line and replaced them with the policy versions.
-  TestingPrefService prefs2(provider.get(), &command_line);
+  TestingPrefService prefs2(provider.get(), NULL, &command_line);
   browser::RegisterUserPrefs(&prefs2);
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kNoProxyServer));
@@ -252,7 +252,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
-  TestingPrefService prefs(NULL, &command_line);
+  TestingPrefService prefs(NULL, NULL, &command_line);
   browser::RegisterUserPrefs(&prefs);
   EXPECT_FALSE(prefs.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs.GetBoolean(prefs::kNoProxyServer));
@@ -264,7 +264,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
   // no proxy policy should have removed all traces of the command
   // line proxy settings, even though they were not the specific one
   // set in policy.
-  TestingPrefService prefs2(provider.get(), &command_line);
+  TestingPrefService prefs2(provider.get(), NULL, &command_line);
   browser::RegisterUserPrefs(&prefs2);
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kNoProxyServer));
@@ -284,7 +284,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
-  TestingPrefService prefs(NULL, &command_line);
+  TestingPrefService prefs(NULL, NULL, &command_line);
   browser::RegisterUserPrefs(&prefs);
   EXPECT_FALSE(prefs.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_TRUE(prefs.GetBoolean(prefs::kNoProxyServer));
@@ -295,7 +295,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
   // Try a second time time with the managed PrefStore in place, the
   // auto-detect should be overridden. The default pref store must be
   // in place with the appropriate default value for this to work.
-  TestingPrefService prefs2(provider.get(), &command_line);
+  TestingPrefService prefs2(provider.get(), NULL, &command_line);
   browser::RegisterUserPrefs(&prefs2);
   EXPECT_TRUE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kNoProxyServer));
@@ -315,7 +315,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
 
   // First verify that the auto-detect is set if there is no managed
   // PrefStore.
-  TestingPrefService prefs(NULL, &command_line);
+  TestingPrefService prefs(NULL, NULL, &command_line);
   browser::RegisterUserPrefs(&prefs);
   EXPECT_TRUE(prefs.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs.GetBoolean(prefs::kNoProxyServer));
@@ -326,7 +326,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
   // Try a second time time with the managed PrefStore in place, the
   // auto-detect should be overridden. The default pref store must be
   // in place with the appropriate default value for this to work.
-  TestingPrefService prefs2(provider.get(), &command_line);
+  TestingPrefService prefs2(provider.get(), NULL, &command_line);
   browser::RegisterUserPrefs(&prefs2);
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_TRUE(prefs2.GetBoolean(prefs::kNoProxyServer));

@@ -36,19 +36,26 @@ const char kDefaultPref[] = "default.pref";
 }
 
 // Potentially expected values of all preferences used in this test program.
-namespace enforced_pref {
+namespace managed_platform_pref {
 const std::string kHomepageValue = "http://www.topeka.com";
+}
+
+namespace device_management_pref {
+const std::string kSearchProviderNameValue = "Chromium";
+const char kHomepageValue[] = "http://www.wandering-around.org";
 }
 
 namespace extension_pref {
 const char kCurrentThemeIDValue[] = "set by extension";
 const char kHomepageValue[] = "http://www.chromium.org";
+const std::string kSearchProviderNameValue = "AreYouFeelingALittleLucky";
 }
 
 namespace command_line_pref {
 const char kApplicationLocaleValue[] = "hi-MOM";
 const char kCurrentThemeIDValue[] = "zyxwvut";
 const char kHomepageValue[] = "http://www.ferretcentral.org";
+const std::string kSearchProviderNameValue = "AreYouFeelingPrettyLucky";
 }
 
 // The "user" namespace is defined globally in an ARM system header, so we need
@@ -59,6 +66,7 @@ const bool kDeleteCacheValue = true;
 const char kCurrentThemeIDValue[] = "abcdefg";
 const char kHomepageValue[] = "http://www.google.com";
 const char kApplicationLocaleValue[] = "is-WRONG";
+const std::string kSearchProviderNameValue = "AreYouFeelingVeryLucky";
 }
 
 namespace recommended_pref {
@@ -69,22 +77,29 @@ const bool kRecommendedPrefValue = true;
 namespace default_pref {
 const int kDefaultValue = 7;
 const char kHomepageValue[] = "default homepage";
+const std::string kSearchProviderNameValue = "AreYouFeelingExtraLucky";
 }
 
 class PrefValueStoreTest : public testing::Test {
  protected:
   virtual void SetUp() {
     // Create dummy user preferences.
-    enforced_prefs_= CreateEnforcedPrefs();
+    managed_platform_prefs_= CreateManagedPlatformPrefs();
+    device_management_prefs_ = CreateDeviceManagementPrefs();
     extension_prefs_ = CreateExtensionPrefs();
     command_line_prefs_ = CreateCommandLinePrefs();
     user_prefs_ = CreateUserPrefs();
     recommended_prefs_ = CreateRecommendedPrefs();
     default_prefs_ = CreateDefaultPrefs();
 
+    std::sort(expected_differing_paths_.begin(),
+              expected_differing_paths_.end());
+
     // Create |DummyPrefStore|s.
-    enforced_pref_store_ = new DummyPrefStore();
-    enforced_pref_store_->set_prefs(enforced_prefs_);
+    managed_platform_pref_store_ = new DummyPrefStore();
+    managed_platform_pref_store_->set_prefs(managed_platform_prefs_);
+    device_management_pref_store_ = new DummyPrefStore();
+    device_management_pref_store_->set_prefs(device_management_prefs_);
     extension_pref_store_ = new DummyPrefStore();
     extension_pref_store_->set_prefs(extension_prefs_);
     command_line_pref_store_ = new DummyPrefStore();
@@ -99,7 +114,8 @@ class PrefValueStoreTest : public testing::Test {
 
     // Create a new pref-value-store.
     pref_value_store_ = new TestingPrefService::TestingPrefValueStore(
-        enforced_pref_store_,
+        managed_platform_pref_store_,
+        device_management_pref_store_,
         extension_pref_store_,
         command_line_pref_store_,
         user_pref_store_,
@@ -111,6 +127,9 @@ class PrefValueStoreTest : public testing::Test {
                                               Value::TYPE_STRING);
     pref_value_store_->RegisterPreferenceType(prefs::kCurrentThemeID,
                                               Value::TYPE_STRING);
+    pref_value_store_->RegisterPreferenceType(
+        prefs::kDefaultSearchProviderName,
+        Value::TYPE_STRING);
     pref_value_store_->RegisterPreferenceType(prefs::kDeleteCache,
                                               Value::TYPE_BOOLEAN);
     pref_value_store_->RegisterPreferenceType(prefs::kHomePage,
@@ -143,15 +162,31 @@ class PrefValueStoreTest : public testing::Test {
         user_pref::kCurrentThemeIDValue);
     user_prefs->SetString(prefs::kApplicationLocale,
         user_pref::kApplicationLocaleValue);
+    user_prefs->SetString(prefs::kDefaultSearchProviderName,
+        user_pref::kSearchProviderNameValue);
     user_prefs->SetString(prefs::kHomePage, user_pref::kHomepageValue);
     return user_prefs;
   }
 
-  DictionaryValue* CreateEnforcedPrefs() {
-    DictionaryValue* enforced_prefs = new DictionaryValue();
-    enforced_prefs->SetString(prefs::kHomePage, enforced_pref::kHomepageValue);
+  DictionaryValue* CreateManagedPlatformPrefs() {
+    DictionaryValue* managed_platform_prefs = new DictionaryValue();
+    managed_platform_prefs->SetString(
+        prefs::kHomePage,
+        managed_platform_pref::kHomepageValue);
     expected_differing_paths_.push_back(prefs::kHomePage);
-    return enforced_prefs;
+    return managed_platform_prefs;
+  }
+
+  DictionaryValue* CreateDeviceManagementPrefs() {
+    DictionaryValue* device_management_prefs = new DictionaryValue();
+    device_management_prefs->SetString(
+        prefs::kDefaultSearchProviderName,
+        device_management_pref::kSearchProviderNameValue);
+    expected_differing_paths_.push_back("default_search_provider");
+    expected_differing_paths_.push_back(prefs::kDefaultSearchProviderName);
+    device_management_prefs->SetString(prefs::kHomePage,
+                                       device_management_pref::kHomepageValue);
+    return device_management_prefs;
   }
 
   DictionaryValue* CreateExtensionPrefs() {
@@ -160,6 +195,8 @@ class PrefValueStoreTest : public testing::Test {
         extension_pref::kCurrentThemeIDValue);
     extension_prefs->SetString(prefs::kHomePage,
         extension_pref::kHomepageValue);
+    extension_prefs->SetString(prefs::kDefaultSearchProviderName,
+                               extension_pref::kSearchProviderNameValue);
     return extension_prefs;
   }
 
@@ -171,6 +208,9 @@ class PrefValueStoreTest : public testing::Test {
         command_line_pref::kApplicationLocaleValue);
     command_line_prefs->SetString(prefs::kHomePage,
         command_line_pref::kHomepageValue);
+    command_line_prefs->SetString(
+        prefs::kDefaultSearchProviderName,
+        command_line_pref::kSearchProviderNameValue);
     return command_line_prefs;
   }
 
@@ -225,7 +265,8 @@ class PrefValueStoreTest : public testing::Test {
   scoped_refptr<TestingPrefService::TestingPrefValueStore> pref_value_store_;
 
   // |PrefStore|s are owned by the |PrefValueStore|.
-  DummyPrefStore* enforced_pref_store_;
+  DummyPrefStore* managed_platform_pref_store_;
+  DummyPrefStore* device_management_pref_store_;
   DummyPrefStore* extension_pref_store_;
   DummyPrefStore* command_line_pref_store_;
   DummyPrefStore* user_pref_store_;
@@ -239,7 +280,8 @@ class PrefValueStoreTest : public testing::Test {
   std::vector<std::string> expected_differing_paths_;
 
   // Preferences are owned by the individual |DummyPrefStores|.
-  DictionaryValue* enforced_prefs_;
+  DictionaryValue* managed_platform_prefs_;
+  DictionaryValue* device_management_prefs_;
   DictionaryValue* extension_prefs_;
   DictionaryValue* command_line_prefs_;
   DictionaryValue* user_prefs_;
@@ -252,7 +294,7 @@ class PrefValueStoreTest : public testing::Test {
 };
 
 TEST_F(PrefValueStoreTest, IsReadOnly) {
-  enforced_pref_store_->set_read_only(true);
+  managed_platform_pref_store_->set_read_only(true);
   extension_pref_store_->set_read_only(true);
   command_line_pref_store_->set_read_only(true);
   user_pref_store_->set_read_only(true);
@@ -267,13 +309,21 @@ TEST_F(PrefValueStoreTest, IsReadOnly) {
 TEST_F(PrefValueStoreTest, GetValue) {
   Value* value;
 
-  // Test getting an enforced value overwriting a user-defined and
+  // Test getting a managed platform value overwriting a user-defined and
   // extension-defined value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, &value));
   std::string actual_str_value;
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
-  EXPECT_EQ(enforced_pref::kHomepageValue, actual_str_value);
+  EXPECT_EQ(managed_platform_pref::kHomepageValue, actual_str_value);
+
+  // Test getting a managed platform value overwriting a user-defined value.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDefaultSearchProviderName,
+                                          &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(device_management_pref::kSearchProviderNameValue,
+            actual_str_value);
 
   // Test getting an extension value overwriting a user-defined and
   // command-line-defined value.
@@ -341,7 +391,8 @@ TEST_F(PrefValueStoreTest, GetValueChangedType) {
   EXPECT_EQ(recommended_pref::kStabilityLaunchCountValue, actual_int_value);
 
   // Check falling back multiple times, to a default string.
-  enforced_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
+  managed_platform_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
+  device_management_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
   extension_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
   command_line_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
   user_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
@@ -359,8 +410,13 @@ TEST_F(PrefValueStoreTest, GetValueChangedType) {
 }
 
 TEST_F(PrefValueStoreTest, HasPrefPath) {
-  // Enforced preference
+  // Managed Platform preference
   EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
+  // Device management preference
+  EXPECT_TRUE(pref_value_store_->HasPrefPath(
+      prefs::kDefaultSearchProviderName));
+  // Extension preference
+  EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
   // User preference
   EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kDeleteCache));
   // Recommended preference
@@ -373,10 +429,11 @@ TEST_F(PrefValueStoreTest, HasPrefPath) {
 
 TEST_F(PrefValueStoreTest, PrefHasChanged) {
   // Setup.
-  const char managed_pref_path[] = "managed_pref";
-  pref_value_store_->RegisterPreferenceType(managed_pref_path,
+  const char managed_platform_pref_path[] = "managed_platform_pref";
+  pref_value_store_->RegisterPreferenceType(managed_platform_pref_path,
                                             Value::TYPE_STRING);
-  enforced_pref_store_->prefs()->SetString(managed_pref_path, "managed value");
+  managed_platform_pref_store_->prefs()->SetString(managed_platform_pref_path,
+                                                   "managed value");
   const char user_pref_path[] = "user_pref";
   pref_value_store_->RegisterPreferenceType(user_pref_path, Value::TYPE_STRING);
   user_pref_store_->prefs()->SetString(user_pref_path, "user value");
@@ -386,9 +443,9 @@ TEST_F(PrefValueStoreTest, PrefHasChanged) {
   default_pref_store_->prefs()->SetString(default_pref_path, "default value");
 
   // Check pref controlled by highest-priority store.
-  EXPECT_TRUE(pref_value_store_->PrefHasChanged(managed_pref_path,
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(managed_platform_pref_path,
       static_cast<PrefNotifier::PrefStoreType>(0)));
-  EXPECT_FALSE(pref_value_store_->PrefHasChanged(managed_pref_path,
+  EXPECT_FALSE(pref_value_store_->PrefHasChanged(managed_platform_pref_path,
       PrefNotifier::USER_STORE));
 
   // Check pref controlled by user store.
@@ -425,8 +482,9 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   Value* new_value = NULL;
   Value* actual_value = NULL;
 
-  // Test that enforced values can not be set.
-  ASSERT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomePage));
+  // Test that managed platform values can not be set.
+  ASSERT_TRUE(pref_value_store_->PrefValueInManagedPlatformStore(
+      prefs::kHomePage));
   // The Ownership is tranfered to |PrefValueStore|.
   new_value = Value::CreateStringValue("http://www.youtube.com");
   pref_value_store_->SetUserPrefValue(prefs::kHomePage, new_value);
@@ -434,10 +492,10 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, &actual_value));
   std::string value_str;
   actual_value->GetAsString(&value_str);
-  ASSERT_EQ(enforced_pref::kHomepageValue, value_str);
+  ASSERT_EQ(managed_platform_pref::kHomepageValue, value_str);
 
   // User preferences values can be set
-  ASSERT_FALSE(pref_value_store_->PrefValueInManagedStore(
+  ASSERT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kStabilityLaunchCount));
   actual_value = NULL;
   pref_value_store_->GetValue(prefs::kStabilityLaunchCount, &actual_value);
@@ -474,47 +532,63 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   ASSERT_TRUE(expected_list_value->Equals(actual_value));
 }
 
-TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
-  // Test an enforced preference.
+TEST_F(PrefValueStoreTest, PrefValueInManagedPlatformStore) {
+  // Test a managed platform preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
-  EXPECT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomePage));
+  EXPECT_TRUE(pref_value_store_->PrefValueInManagedPlatformStore(
+      prefs::kHomePage));
+
+  // Test a device management preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(
+      prefs::kDefaultSearchProviderName));
+  EXPECT_TRUE(pref_value_store_->PrefValueInDeviceManagementStore(
+      prefs::kDefaultSearchProviderName));
 
   // Test an extension preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kCurrentThemeID));
 
   // Test a command-line preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kApplicationLocale));
 
   // Test a user preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kRecommendedPref));
 
   // Test a preference from the default pref store.
   ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kDefaultPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
       prefs::kDefaultPref));
 
   // Test a preference for which the PrefValueStore does not contain a value.
   ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(prefs::kMissingPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
+      prefs::kMissingPref));
 }
 
 TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
-  // Test an enforced preference.
+  // Test a managed platform preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(prefs::kHomePage));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kHomePage));
+
+  // Test a device management preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(
+      prefs::kDefaultSearchProviderName));
+  EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kDefaultSearchProviderName));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kDefaultSearchProviderName));
 
   // Test an extension preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
@@ -567,15 +641,23 @@ TEST_F(PrefValueStoreTest, DetectProxyConfigurationConflict) {
   // Create conflicting proxy settings in the managed and command-line
   // preference stores.
   command_line_prefs_->SetBoolean(prefs::kProxyAutoDetect, false);
-  enforced_prefs_->SetBoolean(prefs::kProxyAutoDetect, true);
+  managed_platform_prefs_->SetBoolean(prefs::kProxyAutoDetect, true);
   ASSERT_TRUE(pref_value_store_->HasPolicyConflictingUserProxySettings());
 }
 
 TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
-  // Test an enforced preference.
+  // Test a managed platform preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(prefs::kHomePage));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kHomePage));
+
+  // Test a device management preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(
+      prefs::kDefaultSearchProviderName));
+  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
+      prefs::kDefaultSearchProviderName));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kDefaultSearchProviderName));
 
   // Test an extension preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
@@ -617,9 +699,15 @@ TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
 }
 
 TEST_F(PrefValueStoreTest, PrefValueFromDefaultStore) {
-  // Test an enforced preference.
+  // Test a managed platform preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(prefs::kHomePage));
+
+  // Test a device management preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(
+      prefs::kDefaultSearchProviderName));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kDefaultSearchProviderName));
 
   // Test an extension preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
@@ -653,10 +741,11 @@ TEST_F(PrefValueStoreTest, PrefValueFromDefaultStore) {
 }
 
 TEST_F(PrefValueStoreTest, TestPolicyRefresh) {
-  // pref_value_store_ is initialized by PrefValueStoreTest to have values
-  // in both it's managed and recommended store. By replacing them with
-  // dummy stores, all of the paths of the prefs originally managed and
-  // recommended stores should change.
+  // pref_value_store_ is initialized by PrefValueStoreTest to have values in
+  // the managed platform, device management and recommended stores. By
+  // replacing them with dummy stores, all of the paths of the prefs originally
+  // in the managed platform, device management and recommended stores should
+  // change.
   MockPolicyRefreshCallback callback;
   EXPECT_CALL(callback, DoCallback(_)).Times(0);
   BrowserThread::PostTask(
@@ -672,23 +761,24 @@ TEST_F(PrefValueStoreTest, TestPolicyRefresh) {
 }
 
 TEST_F(PrefValueStoreTest, TestRefreshPolicyPrefsCompletion) {
-  // Test changed preferences in managed store and removed
-  // preferences in the recommended store. In addition
-  // to "homepage", the other prefs that are set by default in
-  // the test class are removed by the DummyStore
-  scoped_ptr<DummyPrefStore> new_managed_store(new DummyPrefStore());
+  // Test changed preferences in the managed platform store and removed
+  // preferences in the recommended store. In addition to "homepage", the other
+  // prefs that are set by default in the test class are removed by the
+  // DummyStore.
+  scoped_ptr<DummyPrefStore> new_managed_platform_store(new DummyPrefStore());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString("homepage", "some other changed homepage");
-  new_managed_store->set_prefs(dict);
+  new_managed_platform_store->set_prefs(dict);
   MockPolicyRefreshCallback callback;
   EXPECT_CALL(callback, DoCallback(expected_differing_paths_)).Times(1);
   pref_value_store_->RefreshPolicyPrefsCompletion(
-      new_managed_store.release(),
+      new_managed_platform_store.release(),
+      new DummyPrefStore(),
       new DummyPrefStore(),
       NewCallback(&callback,
                   &MockPolicyRefreshCallback::DoCallback));
 
-  // Test properties that have been removed from the managed store.
+  // Test properties that have been removed from the managed platform store.
   // Homepage is still set in managed prefs.
   expected_differing_paths_.clear();
   expected_differing_paths_.push_back(std::string("homepage"));
@@ -697,7 +787,25 @@ TEST_F(PrefValueStoreTest, TestRefreshPolicyPrefsCompletion) {
   pref_value_store_->RefreshPolicyPrefsCompletion(
       new DummyPrefStore(),
       new DummyPrefStore(),
+      new DummyPrefStore(),
       NewCallback(&callback2,
+                  &MockPolicyRefreshCallback::DoCallback));
+
+  // Test properties that are added to the device management store.
+  expected_differing_paths_.clear();
+  expected_differing_paths_.push_back(std::string("homepage"));
+  scoped_ptr<DummyPrefStore> new_device_management_store(
+      new DummyPrefStore());
+  dict = new DictionaryValue();
+  dict->SetString("homepage", "some other changed homepage");
+  new_device_management_store->set_prefs(dict);
+  MockPolicyRefreshCallback callback3;
+  EXPECT_CALL(callback3, DoCallback(expected_differing_paths_)).Times(1);
+  pref_value_store_->RefreshPolicyPrefsCompletion(
+      new DummyPrefStore(),
+      new_device_management_store.release(),
+      new DummyPrefStore(),
+      NewCallback(&callback3,
                   &MockPolicyRefreshCallback::DoCallback));
 
   // Test properties that are added to the recommended store.
@@ -707,29 +815,31 @@ TEST_F(PrefValueStoreTest, TestRefreshPolicyPrefsCompletion) {
   new_recommended_store->set_prefs(dict);
   expected_differing_paths_.clear();
   expected_differing_paths_.push_back(std::string("homepage"));
-  MockPolicyRefreshCallback callback3;
-  EXPECT_CALL(callback3, DoCallback(expected_differing_paths_)).Times(1);
+  MockPolicyRefreshCallback callback4;
+  EXPECT_CALL(callback4, DoCallback(expected_differing_paths_)).Times(1);
   pref_value_store_->RefreshPolicyPrefsCompletion(
       new DummyPrefStore(),
+      new DummyPrefStore(),
       new_recommended_store.release(),
-      NewCallback(&callback3,
+      NewCallback(&callback4,
                   &MockPolicyRefreshCallback::DoCallback));
 
   // Test adding a multi-key path.
-  new_managed_store.reset(new DummyPrefStore());
+  new_managed_platform_store.reset(new DummyPrefStore());
   dict = new DictionaryValue();
   dict->SetString("segment1.segment2", "value");
-  new_managed_store->set_prefs(dict);
+  new_managed_platform_store->set_prefs(dict);
   expected_differing_paths_.clear();
   expected_differing_paths_.push_back(std::string("homepage"));
   expected_differing_paths_.push_back(std::string("segment1"));
   expected_differing_paths_.push_back(std::string("segment1.segment2"));
-  MockPolicyRefreshCallback callback4;
-  EXPECT_CALL(callback4, DoCallback(expected_differing_paths_)).Times(1);
+  MockPolicyRefreshCallback callback5;
+  EXPECT_CALL(callback5, DoCallback(expected_differing_paths_)).Times(1);
   pref_value_store_->RefreshPolicyPrefsCompletion(
-      new_managed_store.release(),
+      new_managed_platform_store.release(),
       new DummyPrefStore(),
-      NewCallback(&callback4,
+      new DummyPrefStore(),
+      NewCallback(&callback5,
                   &MockPolicyRefreshCallback::DoCallback));
 }
 

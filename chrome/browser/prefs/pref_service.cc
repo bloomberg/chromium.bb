@@ -602,8 +602,10 @@ const Value* PrefService::Preference::GetValue() const {
 }
 
 bool PrefService::Preference::IsManaged() const {
-  return pref_service_->pref_value_store_->
-      PrefValueInManagedStore(name_.c_str());
+  PrefValueStore* pref_value_store =
+      pref_service_->pref_value_store_;
+  return pref_value_store->PrefValueInManagedPlatformStore(name_.c_str()) ||
+      pref_value_store->PrefValueInDeviceManagementStore(name_.c_str());
 }
 
 bool PrefService::Preference::HasExtensionSetting() const {

@@ -162,6 +162,7 @@ TEST(ChromeURLRequestContextTest, CreateProxyConfigTest) {
     CommandLine command_line(tests[i].command_line);
     // Only configuration-policy and default prefs are needed.
     PrefService prefs(new TestingPrefService::TestingPrefValueStore(
+        new policy::ConfigurationPolicyPrefStore(NULL),
         new policy::ConfigurationPolicyPrefStore(NULL), NULL,
         new CommandLinePrefStore(&command_line), NULL, NULL,
         new DefaultPrefStore()));

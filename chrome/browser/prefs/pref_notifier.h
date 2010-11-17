@@ -27,7 +27,11 @@ class PrefNotifier : public NonThreadSafe,
                      public NotificationObserver {
  public:
   // PrefStores must be listed here in order from highest to lowest priority.
-  //   MANAGED contains all managed (policy) preference values.
+  //   MANAGED_PLATFORM contains all managed preference values that are
+  //       provided by a platform-specific policy mechanism (e.g. Windows
+  //       Group Policy).
+  //   DEVICE_MANAGEMENT contains all managed preference values supplied
+  //       by the device management server (cloud policy).
   //   EXTENSION contains preference values set by extensions.
   //   COMMAND_LINE contains preference values set by command-line switches.
   //   USER contains all user-set preference values.
@@ -39,7 +43,8 @@ class PrefNotifier : public NonThreadSafe,
     // INVALID_STORE is not associated with an actual PrefStore but used as
     // an invalid marker, e.g. as a return value.
     INVALID_STORE = -1,
-    MANAGED_STORE = 0,
+    MANAGED_PLATFORM_STORE = 0,
+    DEVICE_MANAGEMENT_STORE,
     EXTENSION_STORE,
     COMMAND_LINE_STORE,
     USER_STORE,

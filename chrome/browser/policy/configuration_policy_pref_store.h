@@ -38,8 +38,12 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // ConfigurationPolicyStore methods:
   virtual void Apply(ConfigurationPolicyType setting, Value* value);
 
-  // Creates a ConfigurationPolicyPrefStore that reads managed policy.
-  static ConfigurationPolicyPrefStore* CreateManagedPolicyPrefStore();
+  // Creates a ConfigurationPolicyPrefStore that reads managed platform policy.
+  static ConfigurationPolicyPrefStore* CreateManagedPlatformPolicyPrefStore();
+
+  // Creates a ConfigurationPolicyPrefStore that supplies policy from
+  // the device management server.
+  static ConfigurationPolicyPrefStore* CreateDeviceManagementPolicyPrefStore();
 
   // Creates a ConfigurationPolicyPrefStore that reads recommended policy.
   static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();

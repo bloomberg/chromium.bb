@@ -343,7 +343,7 @@ TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
   // only an ExtensionPrefStore. Likewise, the PrefService takes ownership of
   // the PrefValueStore and PrefNotifier.
   PrefValueStore* value_store = new TestingPrefService::TestingPrefValueStore(
-      NULL, eps, NULL, NULL, NULL, dps);
+      NULL, NULL, eps, NULL, NULL, NULL, dps);
   scoped_ptr<MockPrefService> pref_service(new MockPrefService(value_store));
   MockPrefNotifier* pref_notifier = new MockPrefNotifier(pref_service.get(),
       value_store);
