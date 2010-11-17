@@ -27,6 +27,23 @@ Dir('tests/ppapi_tests').addRepository(Dir('#/../ppapi/tests'))
 # REPORT
 # ----------------------------------------------------------
 def PrintFinalReport():
+  if ARGUMENTS.get('target_stats', 0):
+    print
+    print '*' * 70
+    print 'COMMAND EXECUTION REPORT'
+    print '*' * 70
+    print
+    for k in sorted(CMD_COUNTER.keys()):
+      print "%4d %s" % (CMD_COUNTER[k], k)
+
+    print
+    print '*' * 70
+    print 'ENVIRONMENT USAGE REPORT'
+    print '*' * 70
+    print
+    for k in sorted(ENV_COUNTER.keys()):
+      print "%4d  %s" % (ENV_COUNTER[k], k)
+
   failures = GetBuildFailures()
   if not failures:
     return
@@ -100,6 +117,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'platform',
     # enable pretty printing
     'pp',
+    # track how often each (target) command is run and print summary "at exit"
+    'target_stats',
     # Run tests under this tool (e.g. valgrind, tsan, strace, etc).
     # If the tool has options, pass them after comma: 'tool,--opt1,--opt2'.
     # NB: no way to use tools the names or the args of
@@ -996,22 +1015,50 @@ def CommandTest(env, name, command, size='small',
 pre_base_env.AddMethod(CommandTest)
 
 # ----------------------------------------------------------
+def GetPrintableCommandName(cmd):
+  """Look at the first few elements of cmd to derive a suitable command name."""
+  cmd_tokens = cmd.split()
+  if "python" in cmd_tokens[0]:
+    cmd_name = cmd_tokens[1]
+  else:
+    cmd_name = cmd_tokens[0].split('(')[0]
+
+  # undo some pretty printing damage done by hammer
+  cmd_name = cmd_name.replace('________','')
+  # use file name part of a path
+  return cmd_name.split('/')[-1]
+
+
+def GetPrintableEnvironmentName(env):
+  # use file name part of a obj root path as env name
+  return env.subst('${TARGET_ROOT}').split('/')[-1]
+
+
+CMD_COUNTER = {}
+ENV_COUNTER = {}
+if ARGUMENTS.get('target_stats', 0):
+  def CommandStats(cmd, targets, source, env):
+    cmd_name = GetPrintableCommandName(cmd)
+    CMD_COUNTER[cmd_name] = CMD_COUNTER.get(cmd_name, 0) + 1
+    env_name = GetPrintableEnvironmentName(env)
+    ENV_COUNTER[env_name] = ENV_COUNTER.get(env_name, 0) + 1
+  # Abuse standard scons's hook for command pretty printing (c.f.
+  # http://www.scons.org/doc/HTML/scons-man.html) to gather stats
+  # about how often each command is executed during this scons invocation.
+  pre_base_env.Append(PRINT_CMD_LINE_FUNC=CommandStats)
+
+
 if ARGUMENTS.get('pp', 0):
   def CommandPrettyPrinter(cmd, targets, source, env):
     if not targets:
       return
-    prefix = env.subst('$SOURCE_ROOT') + '/'
     target =  targets[0]
-    cmd_tokens = cmd.split()
-    if "python" in cmd_tokens[0]:
-      cmd_name = cmd_tokens[1]
-    else:
-      cmd_name = cmd_tokens[0].split('(')[0]
-    if cmd_name.startswith(prefix):
-      cmd_name = cmd_name[len(prefix):]
-    env_name = env.subst('${BUILD_TYPE}${BUILD_SUBTYPE}')
+    cmd_name = GetPrintableCommandName(cmd)
+    env_name = GetPrintableEnvironmentName(env)
     print '[%s] [%s] %s' % (cmd_name, env_name, target.get_path())
-  pre_base_env.Append(PRINT_CMD_LINE_FUNC = CommandPrettyPrinter)
+  # Use standard scons's hooks for command pretty printing, c.f.
+  # http://www.scons.org/doc/HTML/scons-man.html
+  pre_base_env.Append(PRINT_CMD_LINE_FUNC=CommandPrettyPrinter)
 
 # ----------------------------------------------------------
 # for generation of a promiscuous sel_ldr
