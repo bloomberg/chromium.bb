@@ -345,7 +345,7 @@ class RootView : public View,
   GestureManager* gesture_manager_;
 
   // The view currently handling touch events.
-  View *touch_pressed_handler_;
+  View* touch_pressed_handler_;
 #endif
 
 #ifndef NDEBUG
