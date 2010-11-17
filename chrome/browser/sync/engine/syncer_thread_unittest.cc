@@ -839,7 +839,8 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
   ServerConnectionEvent e = {ServerConnectionEvent::STATUS_CHANGED,
                              HttpResponse::SERVER_CONNECTION_OK,
                              true};
-  connection()->channel()->NotifyListeners(e);
+  FOR_EACH_OBSERVER(ServerConnectionEventListener, connection()->listeners_,
+                    OnServerConnectionEvent(e));
 
   interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(10));
   EXPECT_FALSE(interceptor.times_sync_occured().empty());

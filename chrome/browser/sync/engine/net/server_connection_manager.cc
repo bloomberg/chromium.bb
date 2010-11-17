@@ -143,22 +143,22 @@ ServerConnectionManager::ServerConnectionManager(
       proto_sync_path_(kSyncServerSyncPath),
       get_time_path_(kSyncServerGetTimePath),
       error_count_(0),
-      channel_(new Channel(shutdown_event)),
       server_status_(HttpResponse::NONE),
       server_reachable_(false),
-      reset_count_(0),
-      terminate_all_io_(false) {
+      reset_count_(0) {
 }
 
 ServerConnectionManager::~ServerConnectionManager() {
-  delete channel_;
+  FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
+                    OnServerConnectionEvent(shutdown_event));
 }
 
 void ServerConnectionManager::NotifyStatusChanged() {
   ServerConnectionEvent event = { ServerConnectionEvent::STATUS_CHANGED,
                                   server_status_,
                                   server_reachable_ };
-  channel_->NotifyListeners(event);
+  FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
+                    OnServerConnectionEvent(event));
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(
@@ -251,13 +251,6 @@ bool ServerConnectionManager::CheckServerReachable() {
     NotifyStatusChanged();
   }
   return server_is_reachable;
-}
-
-void ServerConnectionManager::kill() {
-  {
-    AutoLock lock(terminate_all_io_mutex_);
-    terminate_all_io_ = true;
-  }
 }
 
 void ServerConnectionManager::ResetConnection() {

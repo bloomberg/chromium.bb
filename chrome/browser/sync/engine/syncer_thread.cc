@@ -77,11 +77,39 @@ void SyncerThread::NudgeSyncer(
   NudgeSyncImpl(milliseconds_from_now, source, model_types);
 }
 
+// Sets |*connected| to false if it is currently true but |code| suggests that
+// the current network configuration and/or auth state cannot be used to make
+// forward progress, and user intervention (e.g changing server URL or auth
+// credentials) is likely necessary.  If |*connected| is false, set it to true
+// if |code| suggests that we just recently made healthy contact with the
+// server.
+static inline void CheckConnected(bool* connected,
+                                  HttpResponse::ServerConnectionCode code,
+                                  ConditionVariable* condvar) {
+  if (*connected) {
+    // Note, be careful when adding cases here because if the SyncerThread
+    // thinks there is no valid connection as determined by this method, it
+    // will drop out of *all* forward progress sync loops (it won't poll and it
+    // will queue up Talk notifications but not actually call SyncShare) until
+    // some external action causes a ServerConnectionManager to broadcast that
+    // a valid connection has been re-established.
+    if (HttpResponse::CONNECTION_UNAVAILABLE == code ||
+        HttpResponse::SYNC_AUTH_ERROR == code) {
+      *connected = false;
+      condvar->Broadcast();
+    }
+  } else {
+    if (HttpResponse::SERVER_CONNECTION_OK == code) {
+      *connected = true;
+      condvar->Broadcast();
+    }
+  }
+}
+
 SyncerThread::SyncerThread(sessions::SyncSessionContext* context)
     : thread_main_started_(false, false),
       thread_("SyncEngine_SyncerThread"),
       vault_field_changed_(&lock_),
-      conn_mgr_hookup_(NULL),
       syncer_short_poll_interval_seconds_(kDefaultShortPollIntervalSeconds),
       syncer_long_poll_interval_seconds_(kDefaultLongPollIntervalSeconds),
       syncer_polling_interval_(kDefaultShortPollIntervalSeconds),
@@ -90,12 +118,17 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context)
       disable_idle_detection_(false) {
   DCHECK(context);
 
-  if (context->connection_manager())
-    WatchConnectionManager(context->connection_manager());
+  if (context->connection_manager()) {
+    context->connection_manager()->AddListener(this);
+    CheckConnected(&vault_.connected_,
+                   context->connection_manager()->server_status(),
+                   &vault_field_changed_);
+  }
 }
 
 SyncerThread::~SyncerThread() {
-  conn_mgr_hookup_.reset();
+  if (session_context_->connection_manager())
+    session_context_->connection_manager()->RemoveListener(this);
   delete vault_.syncer_;
   CHECK(!thread_.IsRunning());
 }
@@ -603,48 +636,14 @@ void SyncerThread::CreateSyncer(const std::string& dirname) {
   vault_field_changed_.Broadcast();
 }
 
-// Sets |*connected| to false if it is currently true but |code| suggests that
-// the current network configuration and/or auth state cannot be used to make
-// forward progress, and user intervention (e.g changing server URL or auth
-// credentials) is likely necessary.  If |*connected| is false, set it to true
-// if |code| suggests that we just recently made healthy contact with the
-// server.
-static inline void CheckConnected(bool* connected,
-                                  HttpResponse::ServerConnectionCode code,
-                                  ConditionVariable* condvar) {
-  if (*connected) {
-    // Note, be careful when adding cases here because if the SyncerThread
-    // thinks there is no valid connection as determined by this method, it
-    // will drop out of *all* forward progress sync loops (it won't poll and it
-    // will queue up Talk notifications but not actually call SyncShare) until
-    // some external action causes a ServerConnectionManager to broadcast that
-    // a valid connection has been re-established.
-    if (HttpResponse::CONNECTION_UNAVAILABLE == code ||
-        HttpResponse::SYNC_AUTH_ERROR == code) {
-      *connected = false;
-      condvar->Broadcast();
-    }
-  } else {
-    if (HttpResponse::SERVER_CONNECTION_OK == code) {
-      *connected = true;
-      condvar->Broadcast();
-    }
-  }
-}
-
-void SyncerThread::WatchConnectionManager(ServerConnectionManager* conn_mgr) {
-  conn_mgr_hookup_.reset(NewEventListenerHookup(conn_mgr->channel(), this,
-                         &SyncerThread::HandleServerConnectionEvent));
-  CheckConnected(&vault_.connected_, conn_mgr->server_status(),
-                 &vault_field_changed_);
-}
-
-void SyncerThread::HandleServerConnectionEvent(
-    const ServerConnectionEvent& event) {
+void SyncerThread::OnServerConnectionEvent(const ServerConnectionEvent& event) {
   if (ServerConnectionEvent::STATUS_CHANGED == event.what_happened) {
     AutoLock lock(lock_);
     CheckConnected(&vault_.connected_, event.connection_code,
                    &vault_field_changed_);
+  } else {
+    DCHECK_EQ(ServerConnectionEvent::SHUTDOWN, event.what_happened);
+    session_context_->connection_manager()->RemoveListener(this);
   }
 }
 

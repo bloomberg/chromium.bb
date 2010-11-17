@@ -67,6 +67,7 @@ using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::ServerConnectionEvent;
+using browser_sync::ServerConnectionEventListener;
 using browser_sync::SyncEngineEvent;
 using browser_sync::SyncEngineEventListener;
 using browser_sync::Syncer;
@@ -932,7 +933,8 @@ class SyncManager::SyncInternal
       public TalkMediator::Delegate,
       public sync_notifier::StateWriter,
       public browser_sync::ChannelEventHandler<syncable::DirectoryChangeEvent>,
-      public SyncEngineEventListener {
+      public SyncEngineEventListener,
+      public ServerConnectionEventListener {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
@@ -1002,7 +1004,7 @@ class SyncManager::SyncInternal
       const syncable::DirectoryChangeEvent& event);
 
   // Listens for notifications from the ServerConnectionManager
-  void HandleServerConnectionEvent(const ServerConnectionEvent& event);
+  virtual void OnServerConnectionEvent(const ServerConnectionEvent& event);
 
   // Open the directory named with username_for_share
   bool OpenDirectory();
@@ -1232,9 +1234,6 @@ class SyncManager::SyncInternal
   scoped_ptr<browser_sync::ChannelHookup<syncable::DirectoryChangeEvent> >
       dir_change_hookup_;
 
-  // Event listener hookup for the ServerConnectionManager.
-  scoped_ptr<EventListenerHookup> connection_manager_hookup_;
-
   // The sync dir_manager to which we belong.
   SyncManager* const sync_manager_;
 
@@ -1371,9 +1370,7 @@ bool SyncManager::SyncInternal::Init(
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, user_agent, post_factory));
 
-  connection_manager_hookup_.reset(
-      NewEventListenerHookup(connection_manager()->channel(), this,
-          &SyncManager::SyncInternal::HandleServerConnectionEvent));
+  connection_manager_->AddListener(this);
 
   net::NetworkChangeNotifier::AddObserver(this);
   // TODO(akalin): CheckServerReachable() can block, which may cause jank if we
@@ -1744,7 +1741,7 @@ void SyncManager::SyncInternal::Shutdown() {
 
   net::NetworkChangeNotifier::RemoveObserver(this);
 
-  connection_manager_hookup_.reset();
+  connection_manager_->RemoveListener(this);
 
   if (dir_manager()) {
     dir_manager()->FinalSaveChangesForAll();
@@ -1824,7 +1821,7 @@ void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
   }
 }
 
-void SyncManager::SyncInternal::HandleServerConnectionEvent(
+void SyncManager::SyncInternal::OnServerConnectionEvent(
     const ServerConnectionEvent& event) {
   allstatus_.HandleServerConnectionEvent(event);
   if (event.what_happened == ServerConnectionEvent::STATUS_CHANGED) {
@@ -1840,6 +1837,9 @@ void SyncManager::SyncInternal::HandleServerConnectionEvent(
         observer_->OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS));
       }
     }
+  } else {
+    DCHECK_EQ(ServerConnectionEvent::SHUTDOWN, event.what_happened);
+    connection_manager_->RemoveListener(this);
   }
 }
 

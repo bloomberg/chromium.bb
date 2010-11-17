@@ -541,7 +541,8 @@ void MockConnectionManager::SetServerReachable() {
     browser_sync::ServerConnectionEvent::STATUS_CHANGED,
     server_status_,
     server_reachable_ };
-  channel_->NotifyListeners(event);
+  FOR_EACH_OBSERVER(browser_sync::ServerConnectionEventListener, listeners_,
+                    OnServerConnectionEvent(event));
 }
 
 void MockConnectionManager::SetServerNotReachable() {
@@ -551,5 +552,6 @@ void MockConnectionManager::SetServerNotReachable() {
     browser_sync::ServerConnectionEvent::STATUS_CHANGED,
     server_status_,
     server_reachable_ };
-  channel_->NotifyListeners(event);
+  FOR_EACH_OBSERVER(browser_sync::ServerConnectionEventListener, listeners_,
+                    OnServerConnectionEvent(event));
 }
