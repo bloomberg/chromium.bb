@@ -80,6 +80,7 @@ class BookmarkEditorView : public BookmarkEditor,
   virtual bool IsDialogButtonEnabled(
       MessageBoxFlags::DialogButton button) const;
   virtual bool IsModal() const;
+  virtual bool CanResize() const;
   virtual std::wstring GetWindowTitle() const;
   virtual bool Accept();
   virtual bool AreAcceleratorsEnabled(MessageBoxFlags::DialogButton button);

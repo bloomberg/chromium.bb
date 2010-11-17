@@ -101,6 +101,10 @@ bool BookmarkEditorView::IsModal() const {
   return true;
 }
 
+bool BookmarkEditorView::CanResize() const {
+  return true;
+}
+
 std::wstring BookmarkEditorView::GetWindowTitle() const {
   return l10n_util::GetString(IDS_BOOMARK_EDITOR_TITLE);
 }
