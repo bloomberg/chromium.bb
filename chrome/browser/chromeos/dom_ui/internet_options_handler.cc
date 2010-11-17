@@ -483,10 +483,7 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
     if (network->encrypted() &&
         network->encryption() == chromeos::SECURITY_8021X) {
       std::string ident;
-      std::string certpath;
-
-      if (!args->GetString(2, &ident) ||
-          !args->GetString(3, &certpath)) {
+      if (!args->GetString(2, &ident)) {
         NOTREACHED();
         return;
       }
@@ -494,9 +491,16 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
         network->set_identity(ident);
         changed = true;
       }
-      if (certpath != network->cert_path()) {
-        network->set_cert_path(certpath);
-        changed = true;
+      if (!is_certificate_in_pkcs11(network->cert_path())) {
+        std::string certpath;
+        if (!args->GetString(3, &certpath)) {
+          NOTREACHED();
+          return;
+        }
+        if (certpath != network->cert_path()) {
+          network->set_cert_path(certpath);
+          changed = true;
+        }
       }
     }
   }

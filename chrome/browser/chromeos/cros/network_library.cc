@@ -1431,7 +1431,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     wifi3->set_strength(50);
     wifi3->set_connected(false);
     wifi3->set_encryption(SECURITY_8021X);
-    wifi3->set_connectable(false);
+    wifi3->set_identity("nobody@google.com");
+    wifi3->set_cert_path("SETTINGS:key_id=3,cert_id=3,pin=111111");
     wifi_networks_.push_back(wifi3);
 
     wifi_ = wifi2;

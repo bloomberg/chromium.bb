@@ -98,10 +98,10 @@ cr.define('options', function() {
   InternetOptions.loginFromDetails = function () {
     var data = $('inetAddress').data;
     var servicePath = data.servicePath;
-    if (data.certinpkcs) {
+    if (data.certInPkcs) {
       chrome.send('loginToCertNetwork',[String(servicePath),
                                         String(data.certPath),
-                                        String(data.ident)]);
+                                        String($('inetIdentPkcs').value)]);
     } else {
       chrome.send('loginToCertNetwork',[String(servicePath),
                                         String($('inetCert').value),
@@ -118,9 +118,13 @@ cr.define('options', function() {
       newinfo.push(data.servicePath);
       newinfo.push($('autoConnectNetwork').checked ? "true" : "false");
       if (data.encrypted && data.certNeeded) {
-        newinfo.push($('inetIdent').value);
-        newinfo.push($('inetCert').value);
-        newinfo.push($('inetCertPass').value);
+        if (data.certInPkcs) {
+          newinfo.push($('inetIdentPkcs').value);
+        } else {
+          newinfo.push($('inetIdent').value);
+          newinfo.push($('inetCert').value);
+          newinfo.push($('inetCertPass').value);
+        }
       }
       chrome.send('setDetails', newinfo);
     }
@@ -239,7 +243,6 @@ cr.define('options', function() {
     } else {
       // This is most likely a transient state due to device still connecting.
       address.textContent = '?';
-      address.data = null;
       $('inetSubnetAddress').textContent = '?';
       $('inetGateway').textContent = '?';
       $('inetDns').textContent = '?';
