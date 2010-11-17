@@ -29,6 +29,7 @@
 #include "chrome/test/automation/autocomplete_edit_proxy.h"
 #include "chrome/test/automation/automation_proxy_uitest.h"
 #include "chrome/test/automation/browser_proxy.h"
+#include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui_test_utils.h"
@@ -46,6 +47,22 @@ using ui_test_utils::TimedMessageLoopRunner;
 using testing::CreateFunctor;
 using testing::StrEq;
 using testing::_;
+
+// Replace the default automation proxy with our mock client.
+class ExternalTabUITestMockLauncher : public ProxyLauncher {
+ public:
+  AutomationProxy* CreateAutomationProxy(int execution_timeout) const {
+    return new ExternalTabUITestMockClient(execution_timeout);
+  }
+
+  void InitializeConnection(UITestBase* ui_test_base) const {
+    ui_test_base->LaunchBrowserAndServer();
+  }
+
+  std::string PrefixedChannelID() const {
+    return "";
+  }
+};
 
 class AutomationProxyTest : public UITest {
  protected:
@@ -841,9 +858,8 @@ template <typename T> T** ReceivePointer(scoped_refptr<T>& p) {  // NOLINT
   return reinterpret_cast<T**>(&p);
 }
 
-AutomationProxy* ExternalTabUITest::CreateAutomationProxy(int exec_timeout) {
-  mock_ = new ExternalTabUITestMockClient(exec_timeout);
-  return mock_;
+ProxyLauncher* ExternalTabUITest::CreateProxyLauncher() {
+  return new ExternalTabUITestMockLauncher();
 }
 
 // Create with specifying a url

@@ -262,8 +262,10 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   // destruction notification.
 
   // At same time we must destroy/stop the thread from another thread.
+  std::string channel_id = AutomationProxy::GenerateChannelID();
   ChromeFrameAutomationProxyImpl* proxy =
       new ChromeFrameAutomationProxyImpl(this, params->launch_timeout());
+  proxy->InitializeChannel(channel_id, false);
 
   // Ensure that the automation proxy actually respects our choice on whether
   // or not to check the version.
@@ -273,7 +275,7 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   scoped_ptr<CommandLine> command_line(
       chrome_launcher::CreateLaunchCommandLine());
   command_line->AppendSwitchASCII(switches::kAutomationClientChannelID,
-                                  proxy->channel_id());
+                                  channel_id);
 
   // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
   // and registry keys that Chrome looks in via the BrowserDistribution

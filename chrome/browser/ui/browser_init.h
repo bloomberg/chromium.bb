@@ -53,7 +53,7 @@ class BrowserInit {
   }
 
   template <class AutomationProviderClass>
-  static void CreateAutomationProvider(const std::string& channel_id,
+  static bool CreateAutomationProvider(const std::string& channel_id,
                                        Profile* profile,
                                        size_t expected_tabs);
 

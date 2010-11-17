@@ -134,7 +134,7 @@ DictionaryValue* InitialLoadObserver::GetTimingInformation() const {
 
 void InitialLoadObserver::ConditionMet() {
   registrar_.RemoveAll();
-  automation_->Send(new AutomationMsg_InitialLoadsComplete(0));
+  automation_->OnInitialLoadsComplete();
 }
 
 NewTabUILoadObserver::NewTabUILoadObserver(AutomationProvider* automation)
