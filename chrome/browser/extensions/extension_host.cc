@@ -157,14 +157,6 @@ ExtensionHost::~ExtensionHost() {
       Details<ExtensionHost>(this));
   ProcessCreationQueue::get()->Remove(this);
   render_view_host_->Shutdown();  // deletes render_view_host
-
-  if (recently_deleted()->size() >= 20)
-    recently_deleted()->pop_front();
-  recently_deleted()->push_back(this);
-}
-
-ExtensionHost::HostPointerList* ExtensionHost::recently_deleted() {
-  return Singleton<HostPointerList>::get();
 }
 
 void ExtensionHost::CreateView(Browser* browser) {

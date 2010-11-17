@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_HOST_H_
 #pragma once
 
-#include <list>
 #include <string>
 #include <vector>
 
@@ -47,9 +46,6 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Enable DOM automation in created render view hosts.
   static void EnableDOMAutomation() { enable_dom_automation_ = true; }
-
-  typedef std::list<ExtensionHost*> HostPointerList;
-  static HostPointerList* recently_deleted();
 
   ExtensionHost(const Extension* extension, SiteInstance* site_instance,
                 const GURL& url, ViewType::Type host_type);
