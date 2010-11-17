@@ -47,8 +47,6 @@ void PersonalOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString("sync_disabled_info",
-      l10n_util::GetStringUTF16(IDS_SYNC_IS_DISABLED_INFO));
   localized_strings->SetString("sync_section",
       l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
   localized_strings->SetString("sync_not_setup_info",
@@ -264,6 +262,8 @@ void PersonalOptionsHandler::Initialize() {
   if (sync_service) {
     sync_service->AddObserver(this);
     OnStateChanged();
+  } else {
+    dom_ui_->CallJavascriptFunction(L"options.PersonalOptions.hideSyncSection");
   }
 }
 
