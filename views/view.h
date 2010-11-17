@@ -40,7 +40,6 @@ class Border;
 class FocusManager;
 class FocusTraversable;
 class LayoutManager;
-class RestoreFocusTask;
 class RootView;
 class ScrollView;
 class Widget;
