@@ -226,6 +226,8 @@ class SSLClientSocketSnapStartTest : public PlatformTest {
     EXPECT_EQ(8, rv);
     EXPECT_TRUE(memcmp(reply_buffer->data(), "goodbye!", 8) == 0);
 
+    next_proto_status_ = sock->GetNextProto(&next_proto_);
+
     sock->Disconnect();
   }
 
@@ -266,6 +268,8 @@ class SSLClientSocketSnapStartTest : public PlatformTest {
   int client_;
   SSLConfig ssl_config_;
   CapturingNetLog log_;
+  SSLClientSocket::NextProtoStatus next_proto_status_;
+  std::string next_proto_;
 };
 
 TEST_F(SSLClientSocketSnapStartTest, Basic) {
@@ -315,6 +319,47 @@ TEST_F(SSLClientSocketSnapStartTest, SnapStartResumeRecovery) {
   EXPECT_FALSE(DidMerge());
   PerformConnection();
   EXPECT_EQ(SSL_SNAP_START_RESUME_RECOVERY, SnapStartEventType());
+  EXPECT_TRUE(DidMerge());
+}
+
+TEST_F(SSLClientSocketSnapStartTest, SnapStartWithNPN) {
+  ssl_config_.next_protos.assign("\003foo\003bar");
+  StartSnapStartServer("snap-start", "npn", NULL);
+  PerformConnection();
+  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, next_proto_status_);
+  EXPECT_EQ("foo", next_proto_);
+  EXPECT_EQ(SSL_SNAP_START_NONE, SnapStartEventType());
+  EXPECT_FALSE(DidMerge());
+  SSLClientSocketNSS::ClearSessionCache();
+  PerformConnection();
+  EXPECT_EQ(SSL_SNAP_START_FULL, SnapStartEventType());
+  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, next_proto_status_);
+  EXPECT_EQ("foo", next_proto_);
+  EXPECT_TRUE(DidMerge());
+}
+
+TEST_F(SSLClientSocketSnapStartTest, SnapStartWithNPNMispredict) {
+  // This tests that we recover in the event of a misprediction.
+  ssl_config_.next_protos.assign("\003foo\003baz");
+  StartSnapStartServer("snap-start", "npn-mispredict", NULL);
+  PerformConnection();
+  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, next_proto_status_);
+  EXPECT_EQ("foo", next_proto_);
+  EXPECT_EQ(SSL_SNAP_START_NONE, SnapStartEventType());
+  EXPECT_FALSE(DidMerge());
+
+  SSLClientSocketNSS::ClearSessionCache();
+  PerformConnection();
+  EXPECT_EQ(SSL_SNAP_START_RECOVERY, SnapStartEventType());
+  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, next_proto_status_);
+  EXPECT_EQ("baz", next_proto_);
+  EXPECT_TRUE(DidMerge());
+
+  SSLClientSocketNSS::ClearSessionCache();
+  PerformConnection();
+  EXPECT_EQ(SSL_SNAP_START_FULL, SnapStartEventType());
+  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, next_proto_status_);
+  EXPECT_EQ("baz", next_proto_);
   EXPECT_TRUE(DidMerge());
 }
 
