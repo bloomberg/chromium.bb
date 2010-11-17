@@ -18,6 +18,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
+using WebKit::WebSecurityOrigin;
+
 const FilePath::CharType DOMStorageContext::kLocalStorageDirectory[] =
     FILE_PATH_LITERAL("Local Storage");
 
@@ -169,8 +171,8 @@ void DOMStorageContext::DeleteDataModifiedSince(
       file_util::FileEnumerator::FILES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
-    WebKit::WebSecurityOrigin web_security_origin =
-        WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+    WebSecurityOrigin web_security_origin =
+        WebSecurityOrigin::createFromDatabaseIdentifier(
             webkit_glue::FilePathToWebString(path.BaseName()));
     if (EqualsASCII(web_security_origin.protocol(), url_scheme_to_be_skipped))
       continue;
@@ -270,12 +272,13 @@ void DOMStorageContext::ClearLocalState(const FilePath& profile_path,
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == kLocalStorageExtension) {
-      WebKit::WebSecurityOrigin web_security_origin =
-          WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+      WebSecurityOrigin web_security_origin =
+          WebSecurityOrigin::createFromDatabaseIdentifier(
               webkit_glue::FilePathToWebString(file_path.BaseName()));
       if (!EqualsASCII(web_security_origin.protocol(),
-                       url_scheme_to_be_skipped))
+                       url_scheme_to_be_skipped)) {
         file_util::Delete(file_path, false);
+      }
     }
   }
 }
