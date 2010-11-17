@@ -5741,7 +5741,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           <ph name="END_BOLD">&lt;/strong&gt;</ph>
-          and uncheck any proxies that have been selected.
+          and deselect any proxies that have been selected.
         </message>
       </if>
       <if expr="os == 'linux2'">
@@ -5759,7 +5759,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
           Wrench menu &gt; Options &gt; Under the Hood &gt; Change proxy settings &gt; LAN Settings
           <ph name="END_BOLD">&lt;/strong&gt;</ph>
-          and uncheck &quot;Use a proxy server for your LAN.&quot;
+          and deselect &quot;Use a proxy server for your LAN.&quot;
         </message>
       </if>
 
@@ -5780,22 +5780,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="URL">$1<ex>http://some-unreliable-site.com/</ex></ph> failed to load
       </message>
       <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
-        This webpage is not available.
+        This webpage is not available
       </message>
       <message name="IDS_ERRORPAGES_HEADING_NETWORK_ACCESS_DENIED" desc="Heading of the error page when we're not being allowed to access the network.">
-        Unable to access the network.
+        Unable to access the network
       </message>
       <message name="IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED" desc="Heading in the error page when the proxy server connection failed.">
-        Unable to connect to the proxy server.
+        Unable to connect to the proxy server
       </message>
       <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
-        Unable to connect to the internet.
+        Unable to connect to the Internet
       </message>
       <message name="IDS_ERRORPAGES_HEADING_NOT_FOUND" desc="Heading in the error page when the server returns a 404 or 410.">
-        This webpage is not found.
+        This webpage is not found
       </message>
       <message name="IDS_ERRORPAGES_HEADING_TOO_MANY_REDIRECTS" desc="Heading in the error page when there are too many URL redirects.">
-        This webpage has a redirect loop.
+        This webpage has a redirect loop
       </message>
       <message name="IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Heading of the error page when the server has a weak Diffie-Hellman public key. Diffie-Hellman is a technical term and the conjuction of two names so may be best left untranslated. 'key' here is used as the technical name for a large number with certain mathematical properties that allow it to be used to encrypt and decrypt data. 'weak' here means that the number is too small to resist an exhaustive attempt to find certain mathematical structures in it, the secrecy of which is critical.">
         Server has a weak ephemeral Diffie-Hellman public key
@@ -5827,11 +5827,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        can’t display the webpage because your computer isn’t connected to the internet.
+        can’t display the webpage because your computer isn’t connected to the Internet.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Template for the summary of the error page when the network connection failed, on platforms with instructions.">
         <ph name="ERROR_DESCRIPTION_TEXT">
-          $1<ex>Google Chrome can’t display the webpage because your computer isn’t connected to the internet.</ex>
+          $1<ex>Google Chrome can’t display the webpage because your computer isn’t connected to the Internet.</ex>
         </ph>
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
         You can try to diagnose the problem by taking the following steps:
@@ -5937,8 +5937,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED" desc="The error message displayed when the proxy server connection failed.">
         Proxy server connection failed.
       </message>
-      <message name="IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED" desc="The error message displayed when we have no internet access.">
-        The internet connection has been lost.
+      <message name="IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED" desc="The error message displayed when we have no Internet access.">
+        The Internet connection has been lost.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_FILE_NOT_FOUND" desc="The error message displayed when a local file can not be found.">
         The file or directory could not be found.
@@ -5951,7 +5951,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_ERRORPAGES_HEADING_ACCESS_DENIED" desc="Heading in the error page when a server returns a 403.  Also suitable for similar error codes.">
-        Access to the webpage was denied.
+        Access to the webpage was denied
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_FORBIDDEN" desc="Summary in the error page when a server returns a 403.">
         You are not authorized to access the webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.  You may need to log in.
@@ -5968,7 +5968,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_ERRORPAGES_HEADING_HTTP_SERVER_ERROR" desc="Heading in the error page for 5xx errors.">
-        Server error.
+        Server error
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_INTERNAL_SERVER_ERROR" desc="Summary in the error page when the server returns a 500.">
@@ -6012,7 +6012,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_ERRORPAGES_HEADING_SSL_PROTOCOL_ERROR" desc="Heading in the error page for SSL protocol errors.">
-        SSL connection error.
+        SSL connection error
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_SSL_PROTOCOL_ERROR" desc="Summary in the error page for SSL protocol errors.">
         Unable to make a secure connection to the server. This may be a problem with the server, or it may be requiring a client authentication certificate that you don't have.
@@ -6025,7 +6025,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_ERRORPAGES_HEADING_BAD_SSL_CLIENT_AUTH_CERT" desc="Heading in the error page for SSL client certificate authentication failure.">
-        Certificate-based authentication failed.
+        Certificate-based authentication failed
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_BAD_SSL_CLIENT_AUTH_CERT" desc="Summary in the error page for SSL client certificate authentication failure.">
         This server requires a certificate for authentication, and didn't accept the one sent by the
@@ -9172,10 +9172,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_ACTIVATE" desc="In the settings tab, the text on the button to activate a cellular network.">
         Activate
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BUY_PLAN" desc="In settings internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_BUY_PLAN" desc="In settings Internet options, the title for buy cellular data plan button.">
         Buy plan
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL" desc="In settings internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL" desc="In settings Internet options, the title for buy cellular data plan button.">
         No data plan
       </message>
       <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
@@ -9208,145 +9208,145 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
         Require password to wake from sleep
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for buy cellular data plan button.">
         Wi-Fi
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN" desc="In settings internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN" desc="In settings Internet options, the title for buy cellular data plan button.">
         Plan
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION" desc="In settings internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION" desc="In settings Internet options, the title for buy cellular data plan button.">
         Connection
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE" desc="In settings internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE" desc="In settings Internet options, the title for buy cellular data plan button.">
         Device
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK" desc="In settings internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK" desc="In settings Internet options, the title for buy cellular data plan button.">
         Network
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings internet options, the label for the network id.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings Internet options, the label for the network id.">
         SSID:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY" desc="In settings internet options, the user identity for authentication.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY" desc="In settings Internet options, the user identity for authentication.">
         Identity:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings internet options, the x509 certificate to use.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings Internet options, the x509 certificate to use.">
         Certificate:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON" desc="In settings internet options, the prompt on the certificate-selection button.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON" desc="In settings Internet options, the prompt on the certificate-selection button.">
         Select certificate file
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY" desc="In settings internet options, the label for the security.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY" desc="In settings Internet options, the label for the security.">
         Security:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD" desc="In settings internet options, the password protecting the certificate private key.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD" desc="In settings Internet options, the password protecting the certificate private key.">
         Private key password:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE" desc="In settings internet options, the label for the passphrase.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE" desc="In settings Internet options, the label for the passphrase.">
         Password:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE" desc="In settings internet options, the label for the bad passphrase.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE" desc="In settings Internet options, the label for the bad passphrase.">
         Incorrect password.
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED" desc="In settings internet options, the message in network details page for password protected networks.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED" desc="In settings Internet options, the message in network details page for password protected networks.">
         Access to this network is protected with a WEP key.
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY" desc="In settings internet options, the label for the bad WEP key.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY" desc="In settings Internet options, the label for the bad WEP key.">
         Password format is incorrect.
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings internet options, the label for the auto-connect checkbox.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings Internet options, the label for the auto-connect checkbox.">
         Automatically connect to this network
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USAGE" desc="In settings internet options, the tab header for mobile plan usage tab.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USAGE" desc="In settings Internet options, the tab header for mobile plan usage tab.">
         Usage
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings internet options, the title for buy cellular data plan button.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings Internet options, the title for buy cellular data plan button.">
         Buy data plan...
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_MORE_INFO" desc="In settings internet options, the title for button for getting more information about the current cellular data plan.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_MORE_INFO" desc="In settings Internet options, the title for button for getting more information about the current cellular data plan.">
         More info...
       </message>
-        <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN" desc="In settings internet options, the message displayed while cellular data plan information is being loaded.">
+        <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN" desc="In settings Internet options, the message displayed while cellular data plan information is being loaded.">
         Loading cellular data plan information, please wait...
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING" desc="In settings internet options, the label for mobile plan remaining data info.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING" desc="In settings Internet options, the label for mobile plan remaining data info.">
         Data remaining:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED" desc="In settings internet options, the label of data info for mobile unlimited data plan.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED" desc="In settings Internet options, the label of data info for mobile unlimited data plan.">
         Unlimited
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES" desc="In settings internet options, the label for mobile plan expiration time info.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES" desc="In settings Internet options, the label for mobile plan expiration time info.">
         Expires:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION" desc="In settings internet options, the label for show mobile plan data notification checkbox.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION" desc="In settings Internet options, the label for show mobile plan data notification checkbox.">
         Show notifications when data is low or nearing expiration
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA" desc="In settings internet options, the label that tells user free data received.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA" desc="In settings Internet options, the label that tells user free data received.">
         You received <ph name="DATA_AMOUNT">$1<ex>100MB</ex></ph> free usage on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA" desc="In settings internet options, the label that shows user has purchased a mobile data plan.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA" desc="In settings Internet options, the label that shows user has purchased a mobile data plan.">
         You purchased <ph name="DATA_AMOUNT">$1<ex>3GB</ex></ph> of data on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA" desc="In settings internet options, the label that shows user has purchased an unliminted mobile data plan.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA" desc="In settings Internet options, the label that shows user has purchased an unliminted mobile data plan.">
         You purchased unlimited data on <ph name="DATE">$1<ex>January 1, 2011</ex></ph>
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT" desc="In settings internet options, the text for customer support hyper link.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT" desc="In settings Internet options, the text for customer support hyper link.">
         Customer support
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings internet options, the label for the button login.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings Internet options, the label for the button login.">
         Login
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONFIGURE" desc="In settings internet options, the label for to configure the type of connection.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONFIGURE" desc="In settings Internet options, the label for to configure the type of connection.">
         Configure:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings internet options, the label for connection status.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings Internet options, the label for connection status.">
         Connection Status:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings internet options, the label for IP address.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings Internet options, the label for IP address.">
         Address:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK" desc="In settings internet options, the label for subnet mask.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK" desc="In settings Internet options, the label for subnet mask.">
         Subnet mask:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_GATEWAY" desc="In settings internet options, the label for gateway.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_GATEWAY" desc="In settings Internet options, the label for gateway.">
         Gateway:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings internet options, the label dns server.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings Internet options, the label dns server.">
         DNS server:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS" desc="In settings internet options, the label hardware address.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS" desc="In settings Internet options, the label hardware address.">
         Hardware address:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
         Installed
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT" desc="In settings internet options, a string specifying the specific security.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT" desc="In settings Internet options, a string specifying the specific security.">
         Security: <ph name="security">$1<ex>None</ex></ph>
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE" desc="In settings internet options, a string specifying security none.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE" desc="In settings Internet options, a string specifying security none.">
         None
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP" desc="In settings internet options, a string specifying security WEP.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP" desc="In settings Internet options, a string specifying security WEP.">
         WEP
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA" desc="In settings internet options, a string specifying security WPA.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA" desc="In settings Internet options, a string specifying security WPA.">
         WPA
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN" desc="In settings internet options, a string specifying security RSN.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN" desc="In settings Internet options, a string specifying security RSN.">
         RSN
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
         Password
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
         SSID
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
         Show password
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE" desc="In settings internet options, Title of the overlay when the user is connected.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE" desc="In settings Internet options, Title of the overlay when the user is connected.">
         Connection Details
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings internet options, Title of the overlay when the user is not connected and can.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings Internet options, Title of the overlay when the user is not connected and can.">
         Connect to network
       </message>
       <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
@@ -9402,7 +9402,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         PRL version:
       </message>
 
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE" desc="In settings internet options, Title of the section which houses the enable/disable buttons.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE" desc="In settings Internet options, Title of the section which houses the enable/disable buttons.">
         General
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE" desc="In settings system options, the label for the customize button for languages and input">
@@ -10230,7 +10230,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Proxy Configuration
       </message>
       <message name="IDS_PROXY_DIRECT_CONNECTION" desc="Radio used to tell it to just connect directly, not use a proxy.">
-        Direct internet connection
+        Direct Internet connection
       </message>
       <message name="IDS_PROXY_MANUAL_CONFIG" desc="Radio used to tell it to configure manually.">
         Manual proxy configuration
