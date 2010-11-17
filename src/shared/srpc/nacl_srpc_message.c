@@ -447,7 +447,7 @@ static void ConsumeFragment(NaClSrpcMessageHeader* header,
    * Update the header and iov vector to reflect which entries are already
    * satisfied.
    */
-  while (fragment_size->byte_count > 0) {
+  while ((header->iov_length > 0) && (fragment_size->byte_count > 0)) {
     size_t bytes_for_this_entry;
     bytes_for_this_entry =
         size_min(header->iov[0].length, fragment_size->byte_count);
@@ -462,10 +462,6 @@ static void ConsumeFragment(NaClSrpcMessageHeader* header,
     /* This iov entry was satisfied. Remove it from the vector. */
     header->iov++;
     header->iov_length--;
-    if (0 == header->iov_length) {
-      /* There are no more iov entries to process. */
-      break;
-    }
   }
   if (fragment_size->byte_count > 0) {
     header->flags |= NACL_ABI_RECVMSG_DATA_TRUNCATED;
@@ -649,8 +645,6 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
   /* SRPC_DESC_MAX <= NACL_ABI_SIZE_T_MAX, so the cast is safe. */
   header_copy.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = (nacl_abi_size_t)
       size_min(SRPC_DESC_MAX, header->NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH);
-  printf("desc length %d\n",
-         (int) header_copy.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH);
   header_copy.iov[0].base = &total_size;
   header_copy.iov[0].length = sizeof total_size;
   header_copy.iov[1].base = &fragment_size;
