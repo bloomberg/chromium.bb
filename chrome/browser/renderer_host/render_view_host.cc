@@ -45,12 +45,12 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/web_apps.h"
 #include "gfx/native_widget_types.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "webkit/glue/context_menu.h"
-#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form_dom_manager.h"
@@ -62,7 +62,6 @@ using webkit_glue::FormData;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::PasswordFormFillData;
-using webkit_glue::WebApplicationInfo;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;

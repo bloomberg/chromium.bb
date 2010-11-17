@@ -40,6 +40,7 @@ class DictionaryValue;
 class ListValue;
 struct ThumbnailScore;
 class URLRequestStatus;
+struct WebApplicationInfo;
 class WebCursor;
 
 namespace gfx {
@@ -58,7 +59,6 @@ struct PageRange;
 
 namespace webkit_glue {
 struct PasswordForm;
-struct WebApplicationInfo;
 }  // namespace webkit_glue
 
 namespace IPC {
@@ -231,8 +231,8 @@ struct ParamTraits<WebCursor> {
 
 
 template <>
-struct ParamTraits<webkit_glue::WebApplicationInfo> {
-  typedef webkit_glue::WebApplicationInfo param_type;
+struct ParamTraits<WebApplicationInfo> {
+  typedef WebApplicationInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

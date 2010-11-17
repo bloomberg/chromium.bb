@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
-#include "webkit/glue/dom_operations.h"
+#include "chrome/common/web_apps.h"
 
 class FilePath;
 class Profile;
@@ -47,8 +47,8 @@ FilePath GetDataDir(const FilePath& profile_path);
 #if defined(TOOLKIT_VIEWS)
 // Extracts icons info from web app data. Take only square shaped icons and
 // sort them from smallest to largest.
-typedef std::vector<webkit_glue::WebApplicationInfo::IconInfo> IconInfoList;
-void GetIconsInfo(const webkit_glue::WebApplicationInfo& app_info,
+typedef std::vector<WebApplicationInfo::IconInfo> IconInfoList;
+void GetIconsInfo(const WebApplicationInfo& app_info,
                   IconInfoList* icons);
 #endif
 

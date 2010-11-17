@@ -44,6 +44,7 @@ struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewHostMsg_ShowNotification_Params;
 struct ViewMsg_Navigate_Params;
+struct WebApplicationInfo;
 struct WebDropData;
 struct WebPreferences;
 struct UserMetricsAction;
@@ -58,7 +59,6 @@ class FormField;
 struct PasswordForm;
 struct PasswordFormFillData;
 struct WebAccessibility;
-struct WebApplicationInfo;
 }  // namespace webkit_glue
 
 namespace WebKit {
@@ -667,8 +667,7 @@ class RenderViewHost : public RenderWidgetHost {
                                     const std::string& data,
                                     int32 status);
 
-  void OnDidGetApplicationInfo(int32 page_id,
-                               const webkit_glue::WebApplicationInfo& info);
+  void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
   void OnMsgShouldCloseACK(bool proceed);
   void OnQueryFormFieldAutoFill(int request_id,
                                 bool form_autofilled,

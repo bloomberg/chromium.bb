@@ -28,6 +28,7 @@ namespace history {
 class HistoryAddPageArgs;
 }
 
+struct ContextMenuParams;
 class DownloadItem;
 class ExtensionFunctionDispatcher;
 class GURL;
@@ -38,7 +39,6 @@ class RenderViewHost;
 class TabContents;
 class TemplateURL;
 class TemplateURLModel;
-struct ContextMenuParams;
 
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
@@ -277,7 +277,7 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type);
 
-  // Notification when web app info data is available
+  // Notification that a user's request to install an application has completed.
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id);
 
