@@ -175,7 +175,7 @@ RenderProcessImpl::RenderProcessImpl()
     RegisterInternalNaClPlugin(funcs);
 #if defined(OS_LINUX)
     nacl::SetCreateMemoryObjectFunc(
-        renderer_sandbox_support::MakeSharedMemorySegmentViaIPCExecutable);
+        renderer_sandbox_support::MakeSharedMemorySegmentViaIPC);
 #endif
   }
 #endif

@@ -78,7 +78,7 @@ void getRenderStyleForStrike(const char* family, int sizeAndStyle,
   }
 }
 
-int MakeSharedMemorySegmentViaIPC(size_t length) {
+int MakeSharedMemorySegmentViaIPC(size_t length, bool executable) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT);
   request.WriteUInt32(length);
@@ -90,10 +90,6 @@ int MakeSharedMemorySegmentViaIPC(size_t length) {
   if (result == -1)
     return -1;
   return result_fd;
-}
-
-int MakeSharedMemorySegmentViaIPCExecutable(size_t length, bool executable) {
-  return MakeSharedMemorySegmentViaIPC(length);
 }
 
 int MatchFontWithFallback(const std::string& face, bool bold,

@@ -84,7 +84,7 @@ void NaClThread::OnControlMessageReceived(const IPC::Message& msg) {
 void NaClThread::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
 #if defined(OS_LINUX)
   nacl::SetCreateMemoryObjectFunc(
-      renderer_sandbox_support::MakeSharedMemorySegmentViaIPCExecutable);
+      renderer_sandbox_support::MakeSharedMemorySegmentViaIPC);
 #elif defined(OS_MACOSX)
   nacl::SetCreateMemoryObjectFunc(CreateMemoryObject);
   CHECK(handles.size() >= 1);
