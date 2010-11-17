@@ -343,15 +343,26 @@ class ChangeInfo(object):
 
   def CloseIssue(self):
     """Closes the Rietveld issue for this changelist."""
-    data = [("description", self.description),]
+    # Newer versions of Rietveld require us to pass an XSRF token to POST, so
+    # we fetch it from the server.
+    xsrf_token = self.SendToRietveld(
+        '/xsrf_token',
+        extra_headers={'X-Requesting-XSRF-Token': '1'})
+
+    # You cannot close an issue with a GET.
+    # We pass an empty string for the data so it is a POST rather than a GET.
+    data = [("description", self.description),
+            ("xsrf_token", xsrf_token)]
     ctype, body = upload.EncodeMultipartFormData(data, [])
-    self.SendToRietveld('/%d/close' % self.issue, body, ctype)
+    self.SendToRietveld('/%d/close' % self.issue, payload=body,
+        content_type=ctype)
 
   def UpdateRietveldDescription(self):
     """Sets the description for an issue on Rietveld."""
     data = [("description", self.description),]
     ctype, body = upload.EncodeMultipartFormData(data, [])
-    self.SendToRietveld('/%d/description' % self.issue, body, ctype)
+    self.SendToRietveld('/%d/description' % self.issue, payload=body,
+        content_type=ctype)
 
   def GetIssueDescription(self):
     """Returns the issue description from Rietveld."""
@@ -364,8 +375,7 @@ class ChangeInfo(object):
       self.SendToRietveld('/lint/issue%s_%s' % (self.issue, self.patchset),
           timeout=1)
 
-  def SendToRietveld(self, request_path, payload=None,
-                    content_type="application/octet-stream", timeout=None):
+  def SendToRietveld(self, request_path, timeout=None, **kwargs):
     """Send a POST/GET to Rietveld.  Returns the response body."""
     if not self.rietveld:
       ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
@@ -379,7 +389,7 @@ class ChangeInfo(object):
                                       GetUserCredentials,
                                       save_cookies=True)
     try:
-      return rpc_server.Send(request_path, payload, content_type, timeout)
+      return rpc_server.Send(request_path, timeout=timeout, **kwargs)
     except urllib2.URLError:
       if timeout is None:
         ErrorExit('Error accessing url %s' % request_path)
