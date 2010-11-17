@@ -13,7 +13,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
@@ -49,6 +48,11 @@ class RouteOnUIThreadTask : public Task {
 // initialized, the IO thread.
 static GpuProcessHost* sole_instance_ = NULL;
 
+void RouteOnUIThread(const IPC::Message& message) {
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          new RouteOnUIThreadTask(message));
+}
 }  // anonymous namespace
 
 GpuProcessHost::GpuProcessHost()
@@ -123,12 +127,16 @@ bool GpuProcessHost::Init() {
 
 // static
 GpuProcessHost* GpuProcessHost::Get() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   if (sole_instance_ == NULL)
     sole_instance_ = new GpuProcessHost();
   return sole_instance_;
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
+  DCHECK(CalledOnValidThread());
+
   if (!EnsureInitialized())
     return false;
 
@@ -136,19 +144,18 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
 }
 
 void GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
-  if (message.routing_id() == MSG_ROUTING_CONTROL) {
+  DCHECK(CalledOnValidThread());
+
+  if (message.routing_id() == MSG_ROUTING_CONTROL)
     OnControlMessageReceived(message);
-  } else {
-    // Need to transfer this message to the UI thread and the
-    // GpuProcessHostUIShim for dispatching via its message router.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            new RouteOnUIThreadTask(message));
-  }
+  else
+    RouteOnUIThread(message);
 }
 
 void GpuProcessHost::EstablishGpuChannel(int renderer_id,
                                          ResourceMessageFilter* filter) {
+  DCHECK(CalledOnValidThread());
+
   if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
     sent_requests_.push(ChannelRequest(filter));
   } else {
@@ -158,15 +165,13 @@ void GpuProcessHost::EstablishGpuChannel(int renderer_id,
 
 void GpuProcessHost::Synchronize(IPC::Message* reply,
                                  ResourceMessageFilter* filter) {
+  DCHECK(CalledOnValidThread());
+
   if (Send(new GpuMsg_Synchronize())) {
     queued_synchronization_replies_.push(SynchronizationRequest(reply, filter));
   } else {
     SendSynchronizationReply(reply, filter);
   }
-}
-
-const GPUInfo& GpuProcessHost::gpu_info() const {
-  return gpu_info_;
 }
 
 GpuProcessHost::ChannelRequest::ChannelRequest(ResourceMessageFilter* filter)
@@ -185,11 +190,11 @@ GpuProcessHost::SynchronizationRequest::SynchronizationRequest(
 GpuProcessHost::SynchronizationRequest::~SynchronizationRequest() {}
 
 void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
+  DCHECK(CalledOnValidThread());
+
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
-                        OnGraphicsInfoCollected)
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_GetViewXID, OnGetViewXID)
 #elif defined(OS_MACOSX)
@@ -198,7 +203,10 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
 #endif
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    // If the IO thread does not handle the message then automatically route it
+    // to the UI thread. The UI thread will report an error if it does not
+    // handle it.
+    IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
 }
 
@@ -208,8 +216,6 @@ void GpuProcessHost::OnChannelEstablished(
   const ChannelRequest& request = sent_requests_.front();
   SendEstablishChannelReply(channel_handle, gpu_info, request.filter);
   sent_requests_.pop();
-  gpu_info_ = gpu_info;
-  child_process_logging::SetGpuInfo(gpu_info);
 }
 
 void GpuProcessHost::OnSynchronizeReply() {
@@ -217,10 +223,6 @@ void GpuProcessHost::OnSynchronizeReply() {
       queued_synchronization_replies_.front();
   SendSynchronizationReply(request.reply, request.filter);
   queued_synchronization_replies_.pop();
-}
-
-void GpuProcessHost::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
-  gpu_info_ = gpu_info;
 }
 
 #if defined(OS_LINUX)

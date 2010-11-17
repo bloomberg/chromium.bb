@@ -9,9 +9,9 @@
 #include <queue>
 
 #include "base/basictypes.h"
+#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_child_process_host.h"
-#include "chrome/common/gpu_info.h"
 #include "gfx/native_widget_types.h"
 
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
@@ -23,14 +23,10 @@ struct ChannelHandle;
 class Message;
 }
 
-class GpuProcessHost : public BrowserChildProcessHost {
+class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
  public:
   // Getter for the singleton. This will return NULL on failure.
   static GpuProcessHost* Get();
-
-  // Shutdown routine, which should only be called upon process
-  // termination.
-  static void Shutdown();
 
   virtual bool Send(IPC::Message* msg);
 
@@ -47,10 +43,6 @@ class GpuProcessHost : public BrowserChildProcessHost {
   // in.
   void Synchronize(IPC::Message* reply,
                    ResourceMessageFilter* filter);
-
-  // Return the stored gpu_info as this class the
-  // browser's point of contact with the gpu
-  const GPUInfo& gpu_info() const;
 
  private:
   // Used to queue pending channel requests.
@@ -88,7 +80,6 @@ class GpuProcessHost : public BrowserChildProcessHost {
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle,
                             const GPUInfo& gpu_info);
   void OnSynchronizeReply();
-  void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
 #if defined(OS_LINUX)
   void OnGetViewXID(gfx::NativeViewId id, IPC::Message* reply_msg);
 #elif defined(OS_MACOSX)
@@ -118,9 +109,6 @@ class GpuProcessHost : public BrowserChildProcessHost {
 
   bool initialized_;
   bool initialized_successfully_;
-
-  // GPUInfo class used for collecting gpu stats
-  GPUInfo gpu_info_;
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.

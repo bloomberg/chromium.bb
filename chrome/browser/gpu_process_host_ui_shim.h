@@ -11,13 +11,16 @@
 // portion of this class, the GpuProcessHost, is responsible for
 // shuttling messages between the browser and GPU processes.
 
+#include "base/non_thread_safe.h"
 #include "base/singleton.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/common/message_router.h"
 #include "ipc/ipc_channel.h"
 #include "gfx/native_widget_types.h"
 
 class GpuProcessHostUIShim : public IPC::Channel::Sender,
-                             public IPC::Channel::Listener {
+                             public IPC::Channel::Listener,
+                             public NonThreadSafe {
  public:
   // Getter for the singleton. This will return NULL on failure.
   static GpuProcessHostUIShim* Get();
@@ -48,13 +51,23 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   // Useful for testing.
   void SendAboutGpuHang();
 
+  // Return all known information about the GPU.
+  const GPUInfo& gpu_info() const;
+
  private:
   friend struct DefaultSingletonTraits<GpuProcessHostUIShim>;
 
   GpuProcessHostUIShim();
   virtual ~GpuProcessHostUIShim();
 
+  // Message handlers.
+  void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
+
+  void OnControlMessageReceived(const IPC::Message& message);
+
   int last_routing_id_;
+
+  GPUInfo gpu_info_;
 
   MessageRouter router_;
 };

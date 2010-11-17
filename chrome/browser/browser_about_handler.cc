@@ -758,7 +758,7 @@ void DxDiagNodeToHTML(std::string* output, const DxDiagNode& node) {
 }
 
 std::string AboutGpu() {
-  GPUInfo gpu_info = GpuProcessHost::Get()->gpu_info();
+  const GPUInfo& gpu_info = GpuProcessHostUIShim::Get()->gpu_info();
 
   std::string html;
 
