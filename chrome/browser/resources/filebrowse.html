@@ -1778,7 +1778,7 @@ function createNewList(title, results, main, path) {
     if (inFullMode) {
       divTitle.style['text-align'] = 'center';
     }
-    divTitle.innerHTML = title;
+    divTitle.innerText = title;
     if (inFullMode && (path.length != 0)) {
       var popOutButton = document.createElement('div');
       popOutButton.innerHTML = '&prod;';
