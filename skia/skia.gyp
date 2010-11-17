@@ -270,6 +270,7 @@
         '../third_party/skia/src/core/SkRegion.cpp',
         '../third_party/skia/src/core/SkRegionPriv.h',
         '../third_party/skia/src/core/SkRegion_path.cpp',
+        '../third_party/skia/src/core/SkScalar.cpp',
         '../third_party/skia/src/core/SkScalerContext.cpp',
         '../third_party/skia/src/core/SkScan.cpp',
         '../third_party/skia/src/core/SkScanPriv.h',
@@ -385,6 +386,7 @@
         '../third_party/skia/src/ports/sk_predefined_gamma.h',
 
         '../third_party/skia/src/include/utils/mac/SkCGUtils.h',
+        '../third_party/skia/src/include/utils/SkTextFormatParams.h',
         '../third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp',
 
         '../third_party/skia/include/core/Sk64.h',
