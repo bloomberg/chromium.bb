@@ -425,7 +425,11 @@ void WrenchMenuModel::Build() {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(GetIndexOfCommandId(IDC_UPGRADE_DIALOG),
-          *rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE));
+          *rb.GetBitmapNamed(IDR_UPDATE_MENU));
+#if defined(OS_WIN)
+  SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
+          *rb.GetBitmapNamed(IDR_CONFLICT_MENU));
+#endif
 
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
   if (browser_defaults::kShowExitMenuItem) {

@@ -182,7 +182,7 @@ void ToolbarView::Init(Profile* profile) {
 
   // Catch the case where the window is created after we detect a new version.
   if (IsUpgradeRecommended() || ShouldShowIncompatibilityWarning())
-    ShowNotificationDot();
+    UpdateAppMenuBadge();
 
   LoadImages();
 
@@ -322,9 +322,6 @@ cleanup:
   if (destroyed_flag)
     return;
   destroyed_flag_ = NULL;
-
-  // Stop pulsating the notification dot on the app menu (if active).
-  notification_dot_pulse_timer_.Stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,16 +341,6 @@ void ToolbarView::OnInputInProgress(bool in_progress) {
 
   model_->set_input_in_progress(in_progress);
   location_bar_->Update(NULL);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, AnimationDelegate implementation:
-
-void ToolbarView::AnimationProgressed(const Animation* animation) {
-  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
-  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
-  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
-  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -407,11 +394,11 @@ void ToolbarView::Observe(NotificationType type,
       SchedulePaint();
     }
   } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
-    ShowNotificationDot();
+    UpdateAppMenuBadge();
   } else if (type == NotificationType::MODULE_INCOMPATIBILITY_DETECTED) {
     bool confirmed_bad = *Details<bool>(details).ptr();
     if (confirmed_bad)
-      ShowNotificationDot();
+      UpdateAppMenuBadge();
   }
 }
 
@@ -648,21 +635,11 @@ void ToolbarView::LoadImages() {
   app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
 }
 
-void ToolbarView::ShowNotificationDot() {
-  notification_dot_animation_.reset(new SlideAnimation(this));
-  notification_dot_animation_->SetSlideDuration(kPulseDuration);
-
-  // Then start the recurring timer for pulsating it.
-  notification_dot_pulse_timer_.Stop();
-  notification_dot_pulse_timer_.Start(
-      base::TimeDelta::FromMilliseconds(kPulsateEveryMs),
-      this, &ToolbarView::PulsateNotificationDot);
-}
-
-void ToolbarView::PulsateNotificationDot() {
-  // Start the pulsating animation.
-  notification_dot_animation_->Reset(0.0);
-  notification_dot_animation_->Show();
+void ToolbarView::UpdateAppMenuBadge() {
+  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
+  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
+  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
+  SchedulePaint();
 }
 
 SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
@@ -686,56 +663,26 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
       new gfx::CanvasSkia(icon.width(), icon.height(), false));
   canvas->DrawBitmapInt(icon, 0, 0);
 
-  SkBitmap badge;
-  static bool has_faded_in = false;
-  if (!has_faded_in) {
-    SkBitmap* dot = NULL;
-    if (ShouldShowIncompatibilityWarning()) {
+  SkBitmap* badge = NULL;
+  // Only one badge can be active at any given time. The Upgrade notification
+  // is deemed most important, then the DLL conflict badge.
+  if (IsUpgradeRecommended()) {
+    badge = tp->GetBitmapNamed(IDR_UPDATE_BADGE);
+  } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
-      dot = tp->GetBitmapNamed(IDR_INCOMPATIBILITY_DOT_INACTIVE);
+    badge = tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
 #else
-      NOTREACHED();
+    NOTREACHED();
 #endif
-    } else {
-      dot = tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE);
-    }
-    SkBitmap transparent;
-    transparent.setConfig(dot->getConfig(), dot->width(), dot->height());
-    transparent.allocPixels();
-    transparent.eraseARGB(0, 0, 0, 0);
-    badge = SkBitmapOperations::CreateBlendedBitmap(
-        *dot, transparent,
-        1.0 - notification_dot_animation_->GetCurrentValue());
-    if (notification_dot_animation_->GetCurrentValue() == 1.0)
-      has_faded_in = true;
   } else {
-    // Convert animation values that start from 0.0 and incrementally go
-    // up to 1.0 into values that start in 0.0, go to 1.0 and then back
-    // to 0.0 (to create a pulsing effect).
-    double value =
-        1.0 - abs(2.0 * notification_dot_animation_->GetCurrentValue() - 1.0);
-
-    // Add the badge to it.
-    if (ShouldShowIncompatibilityWarning()) {
-#if defined(OS_WIN)
-      badge = SkBitmapOperations::CreateBlendedBitmap(
-          *tp->GetBitmapNamed(IDR_INCOMPATIBILITY_DOT_INACTIVE),
-          *tp->GetBitmapNamed(IDR_INCOMPATIBILITY_DOT_ACTIVE),
-          value);
-#else
-      NOTREACHED();
-#endif
-    } else {
-      badge = SkBitmapOperations::CreateBlendedBitmap(
-          *tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE),
-          *tp->GetBitmapNamed(IDR_UPGRADE_DOT_ACTIVE),
-          value);
-    }
+    NOTREACHED();
   }
 
-  static const int kBadgeLeftSpacing = 8;
-  static const int kBadgeTopSpacing = 18;
-  canvas->DrawBitmapInt(badge, kBadgeLeftSpacing, kBadgeTopSpacing);
+  static const int kBadgeRightMargin = 2;
+  static const int kBadgeTopMargin = 2;
+  canvas->DrawBitmapInt(*badge,
+                        icon.width() - badge->width() - kBadgeRightMargin,
+                        kBadgeTopMargin);
 
   return canvas->ExtractBitmap();
 }

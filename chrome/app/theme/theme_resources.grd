@@ -24,6 +24,8 @@
       <include name="IDR_ACCESSED_COOKIES" file="accessed_cookies.png" type="BINDATA" />
       <include name="IDR_APP_DEFAULT_ICON" file="app_default_icon.png" type="BINDATA" />
       <include name="IDR_APP_DROPARROW" file="app_droparrow.png" type="BINDATA" />
+      <include name="IDR_BACKGROUND_BADGE" file="background_badge.png" type="BINDATA" />
+      <include name="IDR_BACKGROUND_MENU" file="background_menu.png" type="BINDATA" />
       <include name="IDR_BACK" file="back.png" type="BINDATA" />
       <include name="IDR_BACK_D" file="back_d.png" type="BINDATA" />
       <include name="IDR_BACK_H" file="back_h.png" type="BINDATA" />
@@ -77,7 +79,8 @@
       <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
       <include name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" type="BINDATA" />
       <if expr="os.find('win') != -1">
-        <include name="IDR_CONFLICTS" file="conflicts.png" type="BINDATA" />
+        <include name="IDR_CONFLICT_BADGE" file="conflict_badge.png" type="BINDATA" />
+        <include name="IDR_CONFLICT_MENU" file="conflict_menu.png" type="BINDATA" />
       </if>
       <include name="IDR_CONSTRAINED_BOTTOM_CENTER_V" file="constrained_bottom_center_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_BOTTOM_LEFT_CORNER_V" file="constrained_bottom_left_corner_v.png" type="BINDATA" />
@@ -426,7 +429,9 @@
       <include name="IDR_TOOLS_H" file="tools_h.png" type="BINDATA" />
       <include name="IDR_TOOLS_P" file="tools_p.png" type="BINDATA" />
       <include name="IDR_UPDATE_AVAILABLE" file="update_available.png" type="BINDATA" />
+      <include name="IDR_UPDATE_BADGE" file="update_badge.png" type="BINDATA" />
       <include name="IDR_UPDATE_FAIL" file="update_fail.png" type="BINDATA" />
+      <include name="IDR_UPDATE_MENU" file="update_menu.png" type="BINDATA" />
       <include name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" type="BINDATA" />
       <include name="IDR_UPGRADE_DOT_ACTIVE" file="upgrade_dot_active.png" type="BINDATA" />
       <include name="IDR_UPGRADE_DOT_INACTIVE" file="upgrade_dot_inactive.png" type="BINDATA" />

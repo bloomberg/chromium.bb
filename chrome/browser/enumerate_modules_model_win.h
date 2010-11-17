@@ -112,7 +112,7 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
                             const BlacklistEntry& blacklisted);
 
   explicit ModuleEnumerator(EnumerateModulesModel* observer);
-  virtual ~ModuleEnumerator();
+  ~ModuleEnumerator();
 
   // Start scanning the loaded module list (if a scan is not already in
   // progress). This function does not block while reading the module list, but

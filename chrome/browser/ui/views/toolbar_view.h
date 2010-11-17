@@ -39,7 +39,6 @@ class ToolbarView : public AccessiblePaneView,
                     public views::ViewMenuDelegate,
                     public menus::AcceleratorProvider,
                     public LocationBarView::Delegate,
-                    public AnimationDelegate,
                     public NotificationObserver,
                     public CommandUpdater::CommandObserver,
                     public views::ButtonListener {
@@ -101,9 +100,6 @@ class ToolbarView : public AccessiblePaneView,
   virtual InstantController* GetInstant();
   virtual void OnInputInProgress(bool in_progress);
 
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
-
   // Overridden from CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
 
@@ -161,15 +157,11 @@ class ToolbarView : public AccessiblePaneView,
     return display_mode_ == DISPLAYMODE_NORMAL;
   }
 
-  // Starts the recurring timer that periodically asks the notification dot
-  // to pulsate.
-  void ShowNotificationDot();
+  // Updates the badge on the app menu (Wrench).
+  void UpdateAppMenuBadge();
 
-  // Show the reminder, tempting the user to take a look.
-  void PulsateNotificationDot();
-
-  // Gets a canvas with the icon for the app menu. It will possibly contain
-  // an overlaid badge if an update is recommended.
+  // Gets a bitmap with the icon for the app menu and any overlaid notification
+  // badge.
   SkBitmap GetAppMenuIcon(views::CustomButton::ButtonState state);
 
   scoped_ptr<BackForwardMenuModel> back_menu_model_;
@@ -212,13 +204,6 @@ class ToolbarView : public AccessiblePaneView,
 
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;
-
-  // The animation that makes the notification dot pulse.
-  scoped_ptr<SlideAnimation> notification_dot_animation_;
-
-  // We periodically restart the animation after it has been showed
-  // once, to create a pulsating effect.
-  base::RepeatingTimer<ToolbarView> notification_dot_pulse_timer_;
 
   // Used to post tasks to switch to the next/previous menu.
   ScopedRunnableMethodFactory<ToolbarView> method_factory_;
