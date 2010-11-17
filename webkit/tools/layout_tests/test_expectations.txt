@@ -12,3 +12,5 @@ BUG_LEVIN : fast/forms/linebox-overflow-in-textarea-padding.html = IMAGE+TEXT IM
 BUG_LEVIN : fast/parser/style-script-head-test.html = TEXT
 BUG_LEVIN : http/tests/misc/acid3.html = IMAGE+TEXT TIMEOUT
 
+// To be removed when WebKit r72198 is in.
+BUG_ANTONM : fast/css/line-height-determined-by-primary-font.html = IMAGE+TEXT
