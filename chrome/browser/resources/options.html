@@ -226,24 +226,8 @@ function load() {
 
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());
-    OptionsPage.registerSubPage(LanguageOptions.getInstance());
-    OptionsPage.registerSubPage(new OptionsPage(
-        'languageChewing',
-        localStrings.getString('languageChewingPage'),
-        'languageChewingPage'));
-    OptionsPage.registerSubPage(new OptionsPage(
-        'languageHangul',
-        localStrings.getString('languageHangulPage'),
-        'languageHangulPage'));
-    OptionsPage.registerSubPage(new OptionsPage(
-        'languageMozc',
-        localStrings.getString('languageMozcPage'),
-        'languageMozcPage'));
-    OptionsPage.registerSubPage(new OptionsPage(
-        'languagePinyin',
-        localStrings.getString('languagePinyinPage'),
-        'languagePinyinPage'));
-    OptionsPage.registerSubPage(ProxyOptions.getInstance());
+    OptionsPage.registerSubPage(ProxyOptions.getInstance(),
+                                InternetOptions.getInstance());
     OptionsPage.registerOverlay(new OptionsPage(
         'detailsInternetPage',
         'detailsInternetPage',
@@ -343,11 +327,6 @@ window.onpopstate = function(e) {
        <if expr="pp_ifdef('chromeos')">
          <include src="options/chromeos_system_options.html">
          <include src="options/chromeos_internet_options.html">
-         <include src="options/chromeos_language_options.html">
-         <include src="options/chromeos_language_chewing_options.html">
-         <include src="options/chromeos_language_hangul_options.html">
-         <include src="options/chromeos_language_mozc_options.html">
-         <include src="options/chromeos_language_pinyin_options.html">
          <include src="options/chromeos_accounts_options.html">
        </if>
        <include src="options/advanced_options.html">
