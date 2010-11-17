@@ -473,7 +473,7 @@ public:
     const BlockEntry* GetFirst() const;
     const BlockEntry* GetLast() const;
     const BlockEntry* GetNext(const BlockEntry*) const;
-    const BlockEntry* GetEntry(const Track*) const;
+    const BlockEntry* GetEntry(const Track*, long long ns = -1) const;
     const BlockEntry* GetEntry(
         const CuePoint&,
         const CuePoint::TrackPosition&) const;

@@ -2762,22 +2762,10 @@ const BlockEntry* Segment::Seek(
     assert(pCluster->GetTime() <= time_ns);
 
     {
-        const BlockEntry* const pBlockEntry = pCluster->GetEntry(pTrack);
+        const BlockEntry* const pBE = pCluster->GetEntry(pTrack, time_ns);
 
-        if ((pBlockEntry != 0) && !pBlockEntry->EOS())  //found a keyframe
-        {
-            const Block* const pBlock = pBlockEntry->GetBlock();
-            assert(pBlock);
-
-            //NOTE: this isn't necessarily the keyframe we want,
-            //since there might another keyframe on this same
-            //cluster with a greater timecode, that is still
-            //less than the requested time.  For now we
-            //simply return the first keyframe we find.
-
-            if (pBlock->GetTime(pCluster) <= time_ns)
-                return pBlockEntry;
-        }
+        if ((pBE != 0) && !pBE->EOS())  //found a keyframe
+            return pBE;
     }
 
     const VideoTrack* const pVideo = static_cast<const VideoTrack*>(pTrack);
@@ -4105,7 +4093,9 @@ const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
 }
 
 
-const BlockEntry* Cluster::GetEntry(const Track* pTrack) const
+const BlockEntry* Cluster::GetEntry(
+    const Track* pTrack,
+    long long time_ns) const
 {
     assert(pTrack);
 
@@ -4115,7 +4105,9 @@ const BlockEntry* Cluster::GetEntry(const Track* pTrack) const
     LoadBlockEntries();
 
     if ((m_entries == NULL) || (m_entriesCount == 0))
-        return NULL;
+        return NULL;  //return EOS here?
+
+    const BlockEntry* pResult = pTrack->GetEOS();
 
     BlockEntry** i = m_entries;
     assert(i);
@@ -4135,10 +4127,27 @@ const BlockEntry* Cluster::GetEntry(const Track* pTrack) const
             continue;
 
         if (pTrack->VetEntry(pEntry))
-            return pEntry;
+        {
+            if (time_ns < 0)  //just want first candidate block
+                return pEntry;
+
+            const long long ns = pBlock->GetTime(this);
+
+            if (ns > time_ns)
+                break;
+
+            pResult = pEntry;
+        }
+        else if (time_ns >= 0)
+        {
+            const long long ns = pBlock->GetTime(this);
+
+            if (ns > time_ns)
+                break;
+        }
     }
 
-    return pTrack->GetEOS();  //no satisfactory block found
+    return pResult;
 }
 
 
