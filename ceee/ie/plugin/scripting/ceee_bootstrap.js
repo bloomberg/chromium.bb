@@ -152,7 +152,14 @@ ceee.initGlobals_ = function() {
   top = unsafeWindow.top;
   opener = unsafeWindow.opener;
   parent = unsafeWindow.parent;
-  frameElement = unsafeWindow.frameElement;
+  try {
+    // IE will throw an Access Denied error if the parent browsing context does
+    // not have the same effective script origin as the entry script. See:
+    // http://www.w3.org/TR/html5/browsers.html#dom-frameelement
+    // TODO(ericdingle@chromium.org): See if we can wrap this attribute with a
+    // getter so that we can mimic IE's behavior when it is accessed.
+    frameElement = unsafeWindow.frameElement;
+  } catch (e) {}
   open = unsafeWindow.open;
 
   // User agent.
