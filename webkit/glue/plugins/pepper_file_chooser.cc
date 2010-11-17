@@ -38,6 +38,10 @@ PP_Resource Create(PP_Instance instance_id,
   if (!instance)
     return 0;
 
+  if ((options->mode != PP_FILECHOOSERMODE_OPEN) &&
+      (options->mode != PP_FILECHOOSERMODE_OPENMULTIPLE))
+    return 0;
+
   FileChooser* chooser = new FileChooser(instance, options);
   return chooser->GetReference();
 }
