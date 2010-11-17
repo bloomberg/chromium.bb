@@ -150,13 +150,14 @@ struct PP_InputEvent_Wheel {
   PP_Bool scroll_by_page;
 };
 
-/* Ensure the elements of the struct (especially the time_stamp) are aligned on
-   8-byte boundaries, since some compilers align doubles on 8-byte boundaries
-   for 32-bit x86, and some align on 4-byte boundaries. */
-#pragma pack(push, 8)
 struct PP_InputEvent {
   /** Identifies the type of the event. */
   PP_InputEvent_Type type;
+
+  /* Ensure the time_stamp is aligned on an 8-byte boundary relative to the
+     start of the struct. Some compilers align doubles on 8-byte boundaries
+     for 32-bit x86, and some align on 4-byte boundaries. */
+  int32_t padding;
 
   /**
    * When this event was generated. This is not relative to any particular
@@ -178,10 +179,7 @@ struct PP_InputEvent {
     char padding[64];
   } u;
 };
-#pragma pack(pop)
-/* TODO(dmichael):  Figure out why the input event is not 80 bytes wide on Mac.
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent, 80);
- */
 
 /**
  * @}
