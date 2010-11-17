@@ -24,6 +24,9 @@ ppapi_geturl_nexe = env.ComponentProgram('ppapi_geturl.nexe',
                                           'url_load_request.cc',
                                           ],
                                          EXTRA_LIBS=['ppruntime',
+                                                     'google_nacl_imc',
+                                                     'google_nacl_platform',
+                                                     'gio',
                                                      'pthread',
                                                      'srpc'])
 
