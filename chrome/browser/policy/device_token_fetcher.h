@@ -61,6 +61,10 @@ class DeviceTokenFetcher
   // case that the token could not be fetched, an empty string is returned.
   std::string GetDeviceToken();
 
+  // Returns the device ID for this device. If no such ID has been set yet, a
+  // new ID is generated and returned.
+  std::string GetDeviceID();
+
   // True if the fetcher has a valid AuthToken for the device management server.
   bool HasAuthToken() const { return !auth_token_.empty(); }
 
@@ -108,7 +112,8 @@ class DeviceTokenFetcher
   // Saves the device management token to disk once it has been retrieved from
   // the server. Must be called on the FILE thread.
   static void WriteDeviceTokenToDisk(const FilePath& path,
-                                     const std::string& token);
+                                     const std::string& token,
+                                     const std::string& device_id);
 
   // Generates a new device ID used to register the device with the device
   // management server and generate the device token.
@@ -118,6 +123,7 @@ class DeviceTokenFetcher
   DeviceManagementBackend* backend_;  // weak
   FetcherState state_;
   std::string device_token_;
+  std::string device_id_;
 
   // Contains the AuthToken for the device management server. Empty if the
   // AuthToken hasn't been issued yet or that was an error getting the
