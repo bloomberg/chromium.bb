@@ -6,6 +6,8 @@
 
 #include "ceee/ie/broker/broker_rpc_utils.h"
 
+#include <algorithm>
+
 #include "base/win_util.h"
 #include "ceee/common/process_utils_win.h"
 
@@ -25,6 +27,8 @@ std::wstring GetRpcEndPointAddress() {
   win_util::GetUserSidString(&sid);
   end_point += sid;
   end_point += L"-B4630D08-4621-41A1-A8D0-F1E98DA460D6";
+  // XP does not accept endpoints longer than 52.
+  end_point.resize(std::min(52u, end_point.size()));
   return end_point;
 }
 
