@@ -266,8 +266,18 @@ const PPB_FileRef_Dev* FileRef::GetInterface() {
 }
 
 std::string FileRef::GetName() const {
-  if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
-    return std::string();
+  if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL) {
+    FilePath::StringType path = system_path_.value();
+    size_t pos = path.rfind(FilePath::kSeparators[0]);
+    DCHECK(pos != FilePath::StringType::npos);
+#if defined(OS_WIN)
+    return WideToUTF8(path.substr(pos + 1));
+#elif defined(OS_POSIX)
+    return path.substr(pos + 1);
+#else
+#error "Unsupported platform."
+#endif
+  }
 
   if (virtual_path_.size() == 1 && virtual_path_[0] == '/')
     return virtual_path_;

@@ -139,8 +139,8 @@ std::string TestFileRef::TestGetName() {
 
   pp::FileRef_Dev file_ref_ext(response_info.GetBodyAsFileRef());
   name = file_ref_ext.GetName().AsString();
-  if (name != "")
-    return ReportMismatch("FileRef::GetName", name, "<empty string>");
+  if (name == "")
+    return ReportMismatch("FileRef::GetName", name, "<a temp file>");
 
   return "";
 }
