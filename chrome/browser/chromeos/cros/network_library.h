@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/platform_thread.h"
 #include "base/singleton.h"
@@ -138,7 +139,9 @@ class WirelessNetwork : public Network {
   bool favorite() const { return favorite_; }
 
   void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
-  void set_favorite(bool favorite) { favorite_ = favorite; }
+  // We don't have a setter for |favorite_| because to unfavorite a network is
+  // equivalent to forget a network, so we call forget network on cros for
+  // that.  See ForgetWifiNetwork().
 
   // Network overrides.
   virtual void Clear();
@@ -158,6 +161,9 @@ class WirelessNetwork : public Network {
   bool favorite_;
 
  private:
+  // ChangeAutoConnectSaveTest accesses |favorite_|.
+  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
+
   void set_name(const std::string& name) { name_ = name; }
   void set_strength(int strength) { strength_ = strength; }
 

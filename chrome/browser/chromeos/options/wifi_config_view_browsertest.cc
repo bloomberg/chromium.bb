@@ -41,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, NoChangeSaveTest) {
 IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, ChangeAutoConnectSaveTest) {
   EXPECT_CALL(*mock_network_library_, SaveWifiNetwork(_)).Times(1);
   scoped_ptr<WifiNetwork> remembered_network(new WifiNetwork());
-  remembered_network->set_favorite(true);
+  remembered_network->favorite_ = true;
   WifiConfigView* view = new WifiConfigView(NULL, remembered_network.get());
   ASSERT_TRUE(view->autoconnect_checkbox_ != NULL);
   view->autoconnect_checkbox_->SetChecked(

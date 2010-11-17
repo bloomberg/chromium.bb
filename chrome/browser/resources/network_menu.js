@@ -31,13 +31,13 @@ const NetworkOther = 'other';
 /**
  * Sends "connect" using the 'action' DOMUI message.
  */
-function sendConnect(index, passphrase, identity, remember) {
+function sendConnect(index, passphrase, identity, auto_connect) {
   chrome.send('action',
       ['connect',
        String(index),
        passphrase,
        identity,
-       remember ? '1' : '0']);
+       auto_connect ? '1' : '0']);
 }
 
 var networkMenuItemProto = (function() {
@@ -62,7 +62,7 @@ NetworkMenuItem.prototype = {
 
   ssidEdit: null,
   passwordEdit: null,
-  rememberCheckbox: null,
+  autoConnectCheckbox: null,
 
   /**
    * The label element.
@@ -135,19 +135,18 @@ NetworkMenuItem.prototype = {
         sendConnect(index,
             this.passwordEdit.value,
             this.ssidEdit.value,
-            this.rememberCheckbox.checked);
+            this.autoConnectCheckbox.checked);
       }
     } else if (this.passwordEdit) {
       if (this.passwordEdit.value) {
         sendConnect(index,
-            this.passwordEdit.value, '', this.rememberCheckbox.checked);
+            this.passwordEdit.value, '', this.autoConnectCheckbox.checked);
       }
     } else {
       if (this.attrs.remembered) {
-        sendConnect(index, this.attrs.passphrase, '',
-                    this.rememberCheckbox.checked);
+        sendConnect(index, this.attrs.passphrase, '', this.attrs.auto_connect);
       } else {
-        sendConnect(index, '', '', this.rememberCheckbox.checked);
+        sendConnect(index, '', '', this.autoConnectCheckbox.checked);
       }
     }
   },
@@ -230,22 +229,23 @@ NetworkMenuItem.prototype = {
   },
 
   /**
-   * Add remember this network check box to action area.
+   * Add auto-connect this network check box to action area.
    * @private
    */
-  addRememberCheckbox_: function() {
-    this.rememberCheckbox = this.ownerDocument.createElement('input');
-    this.rememberCheckbox.type = 'checkbox';
-    this.rememberCheckbox.checked = this.attrs.remembered;
+  addAutoConnectCheckbox_: function() {
+    this.autoConnectCheckbox = this.ownerDocument.createElement('input');
+    this.autoConnectCheckbox.type = 'checkbox';
+    this.autoConnectCheckbox.checked = this.attrs.auto_connect;
 
-    var rememberSpan = this.ownerDocument.createElement('span');
-    rememberSpan.textContent = localStrings.getString('remeber_this_network');
+    var autoConnectSpan = this.ownerDocument.createElement('span');
+    autoConnectSpan.textContent =
+        localStrings.getString('auto_connect_this_network');
 
-    var rememberLabel = this.ownerDocument.createElement('label');
-    rememberLabel.appendChild(this.rememberCheckbox);
-    rememberLabel.appendChild(rememberSpan);
+    var autoConnectLabel = this.ownerDocument.createElement('label');
+    autoConnectLabel.appendChild(this.autoConnectCheckbox);
+    autoConnectLabel.appendChild(autoConnectSpan);
 
-    this.action_.appendChild(rememberLabel);
+    this.action_.appendChild(autoConnectLabel);
   },
 
   /**
@@ -266,7 +266,7 @@ NetworkMenuItem.prototype = {
     if (attrs.network_type == NetworkOther) {
       this.addSsidEdit_();
       this.addPasswordEdit_();
-      this.addRememberCheckbox_();
+      this.addAutoConnectCheckbox_();
     } else if (attrs.status && attrs.status != 'unknown') {
       if (attrs.status == StatusConnected) {
         this.setStatus_(attrs.ip_address);
@@ -293,7 +293,7 @@ NetworkMenuItem.prototype = {
         this.addPasswordEdit_();
       }
 
-      this.addRememberCheckbox_();
+      this.addAutoConnectCheckbox_();
     }
     //////// End NetworkMenuItem specifi code
 
@@ -346,10 +346,10 @@ NetworkMenu.prototype = {
   /** @inheritDoc */
   onClick_: function(event, item) {
     // If item is a NetworkMenuItem, it must have at least one of the following.
-    if (item.rememberCheckbox || item.ssidEdit || item.passwordEdit) {
+    if (item.autoConnectCheckbox || item.ssidEdit || item.passwordEdit) {
       // Ignore clicks other than on the NetworkMenuItem itself.
-      if (event.target == item.rememberCheckbox ||
-          event.target == item.rememberCheckbox.nextElementSibling ||
+      if (event.target == item.autoConnectCheckbox ||
+          event.target == item.autoConnectCheckbox.nextElementSibling ||
           event.target == item.ssidEdit ||
           event.target == item.passwordEdit) {
         return;

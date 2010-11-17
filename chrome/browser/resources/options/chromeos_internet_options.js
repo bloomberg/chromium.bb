@@ -116,7 +116,7 @@ cr.define('options', function() {
     if (data.type == 2) {
       var newinfo = [];
       newinfo.push(data.servicePath);
-      newinfo.push($('rememberNetwork').checked ? "true" : "false");
+      newinfo.push($('autoConnectNetwork').checked ? "true" : "false");
       if (data.encrypted && data.certNeeded) {
         newinfo.push($('inetIdent').value);
         newinfo.push($('inetCert').value);
@@ -258,10 +258,10 @@ cr.define('options', function() {
       page.removeAttribute('cellular');
       page.removeAttribute('gsm');
       $('inetSsid').textContent = data.ssid;
-      $('rememberNetwork').checked = data.autoConnect;
+      $('autoConnectNetwork').checked = data.autoConnect;
       if (!AccountsOptions.currentUserIsOwner()) {
         // Disable this for guest non-Owners.
-        $('rememberNetwork').disabled = true;
+        $('autoConnectNetwork').disabled = true;
       }
       page.removeAttribute('password');
       page.removeAttribute('cert');
