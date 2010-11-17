@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+e// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ gfx::Size ScreenLockView::GetPreferredSize() {
 }
 
 void ScreenLockView::Layout() {
-  int username_height = username_->GetPreferredSize().height();
+  int username_height = login::kSelectedLabelHeight;
   main_->SetBounds(0, 0, width(), height());
   username_->SetBounds(
       kBorderSize,
@@ -111,8 +111,7 @@ void ScreenLockView::Init() {
   std::wstring text = UTF8ToWide(user.GetDisplayName());
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& font =
-      rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD);
+  const gfx::Font& font = rb.GetFont(ResourceBundle::MediumBoldFont);
 
   // Layouts image, textfield and button components.
   GridLayout* layout = new GridLayout(main_);
@@ -141,6 +140,7 @@ void ScreenLockView::Init() {
 
   UsernameView* username = new UsernameView(text);
   username_ = username;
+  username->SetColor(login::kTextColor);
   username->SetFont(font);
   AddChildView(username);
 }

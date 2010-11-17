@@ -85,6 +85,10 @@ const int kWizardScreenHeight = 450;
 const int kScreenCornerRadius = 10;
 const int kUserCornerRadius = 5;
 
+// Username label height in different states.
+const int kSelectedLabelHeight = 25;
+const int kUnselectedLabelHeight = 20;
+
 class WideButton : public views::NativeButton {
  public:
   WideButton(views::ButtonListener* listener, const std::wstring& text)

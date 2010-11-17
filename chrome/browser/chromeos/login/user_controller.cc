@@ -49,10 +49,6 @@ const int kUserNameGap = 4;
 // case to make border window size close to existing users.
 const int kControlsHeight = 28;
 
-// Username label height in different states.
-const int kSelectedLabelHeight = 25;
-const int kUnselectedLabelHeight = 20;
-
 // Delta for the unselected username font.
 const int kUnselectedUsernameFontDelta = 1;
 
@@ -477,7 +473,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
     width = 0;
   }
   int height = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
-      kSelectedLabelHeight : kUnselectedLabelHeight;
+      login::kSelectedLabelHeight : login::kUnselectedLabelHeight;
   WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
   ConfigureLoginWindow(window,
                        index,
