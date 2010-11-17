@@ -107,14 +107,14 @@ class PrefsTest(pyauto.PyUITest):
     shutil.rmtree(new_dl_dir, ignore_errors=True)  # cleanup
 
   def testToolbarButtonsPref(self):
-    """Verify toolbar buttons prefs.."""
+    """Verify toolbar buttons prefs."""
     # Assert defaults first
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
     self.SetPrefs(pyauto.kShowHomeButton, True)
     self.RestartBrowser(clear_profile=False)
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
 
-  def testDnsPrefectchingEnabledPref(self):
+  def testDnsPrefetchingEnabledPref(self):
     """Verify DNS prefetching pref."""
     # Assert default
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kDnsPrefetchingEnabled))
@@ -159,6 +159,20 @@ class PrefsTest(pyauto.PyUITest):
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+
+  def testUnderTheHoodPref(self):
+    """Verify the security preferences for Under the Hood.
+    The setting is enabled by default."""
+    pref_list = [pyauto.kDnsPrefetchingEnabled, pyauto.kSafeBrowsingEnabled,
+                 pyauto.kAlternateErrorPagesEnabled,
+                 pyauto.kSearchSuggestEnabled, pyauto.kShowOmniboxSearchHint]
+    for pref in pref_list:
+      # Verify the default value
+      self.assertEqual(self.GetPrefsInfo().Prefs(pref), True)
+      self.SetPrefs(pref, False)
+    self.RestartBrowser(clear_profile=False)
+    for pref in pref_list:
+      self.assertEqual(self.GetPrefsInfo().Prefs(pref), False)
 
 
 if __name__ == '__main__':
