@@ -11,6 +11,7 @@
 #include <string>
 
 #include "app/gtk_signal.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/prefs/pref_member.h"
 
@@ -29,6 +30,9 @@ class CookieFilterPageGtk : public OptionsPageBase {
   }
 
  private:
+  // Updates the UI state.
+  virtual void UpdateUiState();
+
   // Overridden from OptionsPageBase
   virtual void NotifyPrefChanged(const std::string* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);
@@ -54,12 +58,18 @@ class CookieFilterPageGtk : public OptionsPageBase {
   // The parent GtkTable widget
   GtkWidget* page_;
 
-  // Whether we're currently setting values (and thus should ignore "toggled"
-  // events).
-  bool initializing_;
+  // If state of the UI is not changed by a user-action we need to ignore
+  // "toggled" events.
+  bool ignore_toggle_;
 
   // Clear locally stored site data on exit pref.
   BooleanPrefMember clear_site_data_on_exit_;
+
+  // Block third-party-cookies.
+  BooleanPrefMember block_third_party_cookies_;
+
+  // Managed default-cookies-setting.
+  IntegerPrefMember managed_default_cookies_setting_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieFilterPageGtk);
 };

@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/options/cookie_filter_page_gtk.h"
 
 #include "app/l10n_util.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
@@ -34,32 +35,40 @@ GtkWidget* WrapInHBox(GtkWidget* widget) {
 
 CookieFilterPageGtk::CookieFilterPageGtk(Profile* profile)
     : OptionsPageBase(profile),
-      initializing_(true) {
+      ignore_toggle_(false) {
+  // The pref members must be initialized first since the pref values are read
+  // afterwards when we initialize the cookie storing group.
+  clear_site_data_on_exit_.Init(prefs::kClearSiteDataOnExit,
+                                profile->GetPrefs(), this);
+
+  block_third_party_cookies_.Init(prefs::kBlockThirdPartyCookies,
+                                  profile->GetPrefs(), this);
+
+  managed_default_cookies_setting_.Init(prefs::kManagedDefaultCookiesSetting,
+                                        profile->GetPrefs(), this);
+
   GtkWidget* title_label = gtk_util::CreateBoldLabel(
       l10n_util::GetStringUTF8(IDS_MODIFY_COOKIE_STORING_LABEL));
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(page_), title_label, FALSE, FALSE, 0);
   gtk_container_add(GTK_CONTAINER(page_), InitCookieStoringGroup());
-
-  clear_site_data_on_exit_.Init(prefs::kClearSiteDataOnExit,
-                                profile->GetPrefs(), NULL);
-
-  // Load initial values
-  NotifyPrefChanged(NULL);
 }
 
 CookieFilterPageGtk::~CookieFilterPageGtk() {
 }
 
 void CookieFilterPageGtk::NotifyPrefChanged(const std::string* pref_name) {
-  initializing_ = true;
+  AutoReset<bool> toggle_guard(&ignore_toggle_, true);
 
   if (!pref_name || *pref_name == prefs::kClearSiteDataOnExit) {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(clear_on_close_check_),
-                                 clear_site_data_on_exit_.GetValue());
+    UpdateUiState();
   }
-
-  initializing_ = false;
+  if (!pref_name || *pref_name == prefs::kManagedDefaultCookiesSetting) {
+    UpdateUiState();
+  }
+  if (!pref_name || *pref_name == prefs::kBlockThirdPartyCookies) {
+    UpdateUiState();
+  }
 }
 
 void CookieFilterPageGtk::HighlightGroup(OptionsGroup highlight_group) {
@@ -82,34 +91,15 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
                    G_CALLBACK(OnCookiesAllowToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), block_radio_, FALSE, FALSE, 0);
 
-  // Set up the current value for the button.
-  const HostContentSettingsMap* settings_map =
-      profile()->GetHostContentSettingsMap();
-  ContentSetting default_setting =
-      settings_map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
-  // Now that these have been added to the view hierarchy, it's safe to call
-  // SetChecked() on them.
-  GtkWidget* radio_button = NULL;
-  if (default_setting == CONTENT_SETTING_ALLOW) {
-    radio_button = allow_radio_;
-  } else {
-    DCHECK(default_setting == CONTENT_SETTING_BLOCK);
-    radio_button = block_radio_;
-  }
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio_button), TRUE);
-
-  // Exception button.
-  GtkWidget* exceptions_button = gtk_button_new_with_label(
+  exceptions_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COOKIES_EXCEPTIONS_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(exceptions_button), "clicked",
+  g_signal_connect(G_OBJECT(exceptions_button_), "clicked",
                    G_CALLBACK(OnExceptionsClickedThunk), this);
-  gtk_box_pack_start(GTK_BOX(vbox), WrapInHBox(exceptions_button),
+  gtk_box_pack_start(GTK_BOX(vbox), WrapInHBox(exceptions_button_),
                      FALSE, FALSE, 0);
 
   block_3rdparty_check_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX).c_str());
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(block_3rdparty_check_),
-                               settings_map->BlockThirdPartyCookies());
   g_signal_connect(G_OBJECT(block_3rdparty_check_), "toggled",
                    G_CALLBACK(OnBlockThirdPartyToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), block_3rdparty_check_, FALSE, FALSE, 0);
@@ -134,11 +124,47 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   gtk_box_pack_start(GTK_BOX(vbox), WrapInHBox(flash_settings_link),
                      FALSE, FALSE, 0);
 
+  ignore_toggle_ = true;
+  UpdateUiState();
+  ignore_toggle_ = false;
+
   return vbox;
 };
 
+void CookieFilterPageGtk::UpdateUiState() {
+  // Get default_setting.
+  ContentSetting default_setting;
+  default_setting = profile()->GetHostContentSettingsMap()->
+      GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
+
+  // Set UI state.
+  if (default_setting == CONTENT_SETTING_ALLOW) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(allow_radio_), TRUE);
+  } else {
+    DCHECK(default_setting == CONTENT_SETTING_BLOCK);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(block_radio_), TRUE);
+  }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(clear_on_close_check_),
+                               clear_site_data_on_exit_.GetValue());
+  gtk_toggle_button_set_active(
+      GTK_TOGGLE_BUTTON(block_3rdparty_check_),
+      block_third_party_cookies_.GetValue());
+
+  // Disable the UI if the default content setting is managed.
+  gtk_widget_set_sensitive(block_3rdparty_check_,
+                           !block_third_party_cookies_.IsManaged());
+  bool sensitive = true;
+  if (profile()->GetHostContentSettingsMap()->IsDefaultContentSettingManaged(
+      CONTENT_SETTINGS_TYPE_COOKIES)) {
+    sensitive = false;
+  }
+  gtk_widget_set_sensitive(allow_radio_, sensitive);
+  gtk_widget_set_sensitive(block_radio_, sensitive);
+  gtk_widget_set_sensitive(exceptions_button_, sensitive);
+}
+
 void CookieFilterPageGtk::OnCookiesAllowToggled(GtkWidget* toggle_button) {
-  if (initializing_)
+  if (ignore_toggle_)
     return;
 
   if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button))) {
@@ -170,7 +196,7 @@ void CookieFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
 }
 
 void CookieFilterPageGtk::OnBlockThirdPartyToggled(GtkWidget* toggle_button) {
-  if (initializing_)
+  if (ignore_toggle_)
     return;
 
   HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
@@ -179,7 +205,7 @@ void CookieFilterPageGtk::OnBlockThirdPartyToggled(GtkWidget* toggle_button) {
 }
 
 void CookieFilterPageGtk::OnClearOnCloseToggled(GtkWidget* toggle_button) {
-  if (initializing_)
+  if (ignore_toggle_)
     return;
 
   clear_site_data_on_exit_.SetValue(

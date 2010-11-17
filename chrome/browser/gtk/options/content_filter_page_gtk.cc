@@ -8,9 +8,9 @@
 #include "base/command_line.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
-#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/plugin_exceptions_table_model.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -21,7 +21,6 @@
 #include "chrome/browser/show_options_url.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -30,7 +29,8 @@ ContentFilterPageGtk::ContentFilterPageGtk(Profile* profile,
                                            ContentSettingsType content_type)
     : OptionsPageBase(profile),
       content_type_(content_type),
-      ask_radio_(NULL) {
+      ask_radio_(NULL),
+      ignore_toggle_(false) {
   static const int kTitleIDs[] = {
     0,  // This dialog isn't used for cookies.
     IDS_IMAGES_SETTING_LABEL,
@@ -113,31 +113,12 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
       l10n_util::GetStringUTF8(kBlockIDs[content_type_]).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), block_radio_, FALSE, FALSE, 0);
 
-  ContentSetting default_setting;
-  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    default_setting = profile()->GetGeolocationContentSettingsMap()->
-        GetDefaultContentSetting();
-  } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    default_setting = profile()->GetDesktopNotificationService()->
-        GetDefaultContentSetting();
-  } else {
-    default_setting = profile()->GetHostContentSettingsMap()->
-        GetDefaultContentSetting(content_type_);
-  }
-  // Now that these have been added to the view hierarchy, it's safe to call
-  // SetChecked() on them.
-  if (default_setting == CONTENT_SETTING_ALLOW) {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(allow_radio_), TRUE);
-  } else if (default_setting == CONTENT_SETTING_ASK) {
-    DCHECK(ask_radio_);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ask_radio_), TRUE);
-  } else {
-    DCHECK(default_setting == CONTENT_SETTING_BLOCK);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(block_radio_), TRUE);
-  }
+  exceptions_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_COOKIES_EXCEPTIONS_BUTTON).c_str());
+  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), exceptions_button_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-  // Now that we've set the default value, we can connect to the radio button's
-  // toggled signal.
   g_signal_connect(G_OBJECT(allow_radio_), "toggled",
                    G_CALLBACK(OnAllowToggledThunk), this);
   if (ask_radio_) {
@@ -147,14 +128,8 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
   g_signal_connect(G_OBJECT(block_radio_), "toggled",
                    G_CALLBACK(OnAllowToggledThunk), this);
 
-  GtkWidget* exceptions_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_COOKIES_EXCEPTIONS_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(exceptions_button), "clicked",
+  g_signal_connect(G_OBJECT(exceptions_button_), "clicked",
                    G_CALLBACK(OnExceptionsClickedThunk), this);
-
-  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), exceptions_button, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
   // Add the "Disable individual plug-ins..." link on the plug-ins page.
   if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS) {
@@ -168,18 +143,75 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
   }
 
+  // Now that the buttons have been added to the view hierarchy, it's safe to
+  // call SetChecked() on them. So Update the Buttons.
+  ignore_toggle_ = true;
+  UpdateButtonsState();
+  ignore_toggle_ = false;
+
+  // Register for CONTENT_SETTINGS_CHANGED notifications to update the UI
+  // aften content settings change.
+  registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
+
   return vbox;
 }
 
+void ContentFilterPageGtk::UpdateButtonsState() {
+  // Get default_setting.
+  ContentSetting default_setting;
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    default_setting = profile()->GetGeolocationContentSettingsMap()->
+        GetDefaultContentSetting();
+  } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    default_setting = profile()->GetDesktopNotificationService()->
+        GetDefaultContentSetting();
+  } else {
+    default_setting = profile()->GetHostContentSettingsMap()->
+        GetDefaultContentSetting(content_type_);
+  }
+  // Set UI state.
+  if (default_setting == CONTENT_SETTING_ALLOW) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(allow_radio_), TRUE);
+  } else if (default_setting == CONTENT_SETTING_ASK) {
+    DCHECK(ask_radio_);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ask_radio_), TRUE);
+  } else {
+    DCHECK(default_setting == CONTENT_SETTING_BLOCK);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(block_radio_), TRUE);
+  }
+
+  // Disable the UI if the default content setting is managed.
+  bool sensitive = !profile()->GetHostContentSettingsMap()->
+      IsDefaultContentSettingManaged(content_type_);
+  gtk_widget_set_sensitive(allow_radio_, sensitive);
+  gtk_widget_set_sensitive(block_radio_, sensitive);
+  if (ask_radio_)
+    gtk_widget_set_sensitive(ask_radio_, sensitive);
+  gtk_widget_set_sensitive(exceptions_button_, sensitive);
+}
+
 void ContentFilterPageGtk::OnAllowToggled(GtkWidget* toggle_button) {
+  if (ignore_toggle_)
+    return;
+
+  if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button))) {
+    // When selecting a radio button, we get two signals (one for the old radio
+    // being toggled off, one for the new one being toggled on.)  Ignore the
+    // signal for toggling off the old button.
+    return;
+  }
+
   DCHECK((toggle_button == allow_radio_) ||
          (toggle_button == ask_radio_) ||
          (toggle_button == block_radio_));
+
   ContentSetting default_setting =
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(allow_radio_)) ?
           CONTENT_SETTING_ALLOW :
           gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(block_radio_)) ?
               CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK;
+
   DCHECK(ask_radio_ || default_setting != CONTENT_SETTING_ASK);
   if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     profile()->GetGeolocationContentSettingsMap()->SetDefaultContentSetting(
@@ -235,4 +267,26 @@ void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
 
 void ContentFilterPageGtk::OnPluginsPageLinkClicked(GtkWidget* button) {
   browser::ShowOptionsURL(profile(), GURL(chrome::kChromeUIPluginsURL));
+}
+
+void ContentFilterPageGtk::Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+
+  if (type == NotificationType::CONTENT_SETTINGS_CHANGED) {
+    NotifyContentSettingsChanged(
+        Details<HostContentSettingsMap::ContentSettingsDetails>(details).ptr());
+  } else {
+    OptionsPageBase::Observe(type, source, details);
+  }
+}
+
+void ContentFilterPageGtk::NotifyContentSettingsChanged(
+    const HostContentSettingsMap::ContentSettingsDetails *details) {
+  if (details->type() == CONTENT_SETTINGS_TYPE_DEFAULT ||
+      details->type() == content_type_) {
+    ignore_toggle_ = true;
+    UpdateButtonsState();
+    ignore_toggle_ = false;
+  }
 }

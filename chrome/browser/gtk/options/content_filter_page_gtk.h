@@ -10,7 +10,10 @@
 
 #include "app/gtk_signal.h"
 #include "chrome/browser/options_page_base.h"
+#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/notification_registrar.h"
 
 // A page in the content settings window. Used for everything but the Cookies
 // page (which has a much more complex dialog). A |content_type| is passed into
@@ -24,7 +27,19 @@ class ContentFilterPageGtk : public OptionsPageBase {
     return page_;
   }
 
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
+  // This method is called during initialization to set the initial state of the
+  // buttons and called after a default content setting change (either value
+  // change or "is managed" state).
+  virtual void UpdateButtonsState();
+
+  virtual void NotifyContentSettingsChanged(
+      const HostContentSettingsMap::ContentSettingsDetails *details);
+
   // Builds the content of the dialog.
   GtkWidget* InitGroup();
 
@@ -40,6 +55,14 @@ class ContentFilterPageGtk : public OptionsPageBase {
   GtkWidget* allow_radio_;
   GtkWidget* ask_radio_;
   GtkWidget* block_radio_;
+
+  GtkWidget* exceptions_button_;
+
+  NotificationRegistrar registrar_;
+
+  // If state of the UI is not changed by a user-action we need to ignore
+  // "toggled" events.
+  bool ignore_toggle_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentFilterPageGtk);
 };
