@@ -16,7 +16,6 @@
 #include <queue>
 
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -204,6 +203,8 @@ bool SyncerThread::RequestResume() {
     if (vault_.pause_requested_) {
       // If pause was requested we have not yet paused.  In this case,
       // the resume cancels the pause request.
+      vault_.pause_requested_ = false;
+      vault_field_changed_.Broadcast();
       Notify(SyncEngineEvent::SYNCER_THREAD_RESUMED);
       VLOG(1) << "Pending pause canceled by resume.";
     } else {

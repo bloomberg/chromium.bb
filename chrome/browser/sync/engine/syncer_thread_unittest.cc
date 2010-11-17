@@ -697,11 +697,7 @@ TEST_F(SyncerThreadWithSyncerTest, Nudge) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-
-
-// Disabled (Bug 62880).
-// TODO(zea): Fix RequestPause/RequestResume and get this working.
-TEST_F(SyncerThreadWithSyncerTest, DISABLED_NudgeWithDataTypes) {
+TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypes) {
   SyncShareIntercept interceptor;
   connection()->SetMidCommitObserver(&interceptor);
   // We don't want a poll to happen during this test (except the first one).
@@ -711,17 +707,22 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_NudgeWithDataTypes) {
   syncer_thread()->CreateSyncer(metadb()->name());
   const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
   interceptor.WaitForSyncShare(1, poll_interval + poll_interval);
-
   EXPECT_EQ(static_cast<unsigned int>(1),
             interceptor.times_sync_occured().size());
+
   // The SyncerThread should be waiting for the poll now.  Nudge it to sync
   // immediately (5ms).
   syncable::ModelTypeBitSet model_types;
   model_types[syncable::BOOKMARKS] = true;
+
+  // Paused so we can verify the nudge types safely.
+  syncer_thread()->RequestPause();
   syncer_thread()->NudgeSyncerWithDataTypes(5,
       SyncerThread::kUnknown,
       model_types);
   EXPECT_EQ(model_types, syncer_thread()->vault_.pending_nudge_types_);
+  syncer_thread()->RequestResume();
+
   interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(1));
   EXPECT_EQ(static_cast<unsigned int>(2),
       interceptor.times_sync_occured().size());
@@ -846,11 +847,7 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-// TODO(skrul): The "Pause" and "PauseWhenNotConnected" tests are
-// marked DISABLED because they sometimes fail on the Windows buildbots.
-// I have been unable to reproduce this hang after extensive testing
-// on a local Windows machine.
-TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
+TEST_F(SyncerThreadWithSyncerTest, Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
@@ -955,10 +952,7 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-// TODO(skrul): See TODO comment on the "Pause" test above for an
-// explanation of the usage of DISABLED here.
-// TODO(pinkerton): disabled due to hanging on test bots http://crbug.com/39070
-TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
+TEST_F(SyncerThreadWithSyncerTest, PauseWhenNotConnected) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent event(false, false);
   ListenerMock listener;
