@@ -3186,9 +3186,6 @@
    fun:nssCertificate_BuildChain
    fun:NSSCertificate_BuildChain
    fun:CERT_FindCertIssuer
-   fun:ocsp_CreateCertID
-   fun:CERT_CreateOCSPCertID
-   fun:PKIX_PL_OcspCertID_Create
 }
 {
    bug_61424

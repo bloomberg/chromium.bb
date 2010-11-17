@@ -111,3 +111,6 @@ OptionsUITest.FLAKY_CommandAgainGoesBackToOptionsTab
 
 # Times out, see http://crbug.com/50297
 DOMStorageTest.RootLayoutTests
+
+# Hangs, see http://crbug.com/63514
+ErrorPageTest.Page404_GoBack
