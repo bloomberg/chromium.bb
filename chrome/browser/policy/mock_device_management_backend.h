@@ -46,6 +46,7 @@ class MockDeviceManagementBackend
 
   void AllShouldSucceed();
   void AllShouldFail();
+  void UnmanagedDevice();
 
   void SimulateSuccessfulRegisterRequest(
       const std::string& auth_token,
@@ -68,6 +69,12 @@ class MockDeviceManagementBackend
       const std::string& device_management_token,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate);
+
+  void SimulateUnmanagedRegisterRequest(
+      const std::string& auth_token,
+      const std::string& device_id,
+      const em::DeviceRegisterRequest& request,
+      DeviceRegisterResponseDelegate* delegate);
 
   void AddBooleanPolicy(const char* policy_name, bool value);
 

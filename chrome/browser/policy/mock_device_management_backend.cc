@@ -59,6 +59,13 @@ void MockDeviceManagementBackend::AllShouldFail() {
           &MockDeviceManagementBackend::SimulateFailedPolicyRequest));
 }
 
+void MockDeviceManagementBackend::UnmanagedDevice() {
+  ON_CALL(*this, ProcessRegisterRequest(_, _, _, _)).
+      WillByDefault(Invoke(
+          this,
+          &MockDeviceManagementBackend::SimulateUnmanagedRegisterRequest));
+}
+
 void MockDeviceManagementBackend::AddBooleanPolicy(const char* policy_name,
                                                    bool value) {
   em::GenericSetting* policy_value = policy_setting_->mutable_policy_value();
@@ -101,6 +108,14 @@ void MockDeviceManagementBackend::SimulateFailedPolicyRequest(
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
   delegate->OnError(kErrorRequestFailed);
+}
+
+void MockDeviceManagementBackend::SimulateUnmanagedRegisterRequest(
+    const std::string& auth_token,
+    const std::string& device_id,
+    const em::DeviceRegisterRequest& request,
+    DeviceRegisterResponseDelegate* delegate) {
+  delegate->OnError(kErrorServiceManagementNotSupported);
 }
 
 }  // namespace

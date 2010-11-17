@@ -67,6 +67,10 @@ class DeviceTokenFetcherTest : public testing::Test {
     fetcher->GetDeviceTokenPath(path);
   }
 
+  const std::string& device_id(const DeviceTokenFetcher* fetcher) {
+    return fetcher->device_id_;
+  }
+
   MessageLoop loop_;
   scoped_ptr<MockDeviceManagementBackend> backend_;
   ScopedTempDir temp_user_data_dir_;
@@ -164,6 +168,18 @@ TEST_F(DeviceTokenFetcherTest, FailedServerRequest) {
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token(fetcher_->GetDeviceToken());
   EXPECT_EQ("", token);
+}
+
+TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
+  backend_->UnmanagedDevice();
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  SimulateSuccessfulLoginAndRunPending();
+  ASSERT_FALSE(fetcher_->IsTokenPending());
+  ASSERT_EQ("", fetcher_->GetDeviceToken());
+  ASSERT_EQ("", device_id(fetcher_));
+  FilePath token_path;
+  GetDeviceTokenPath(fetcher_, &token_path);
+  ASSERT_FALSE(file_util::PathExists(token_path));
 }
 
 }  // namespace policy

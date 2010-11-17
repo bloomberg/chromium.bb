@@ -78,6 +78,13 @@ void DeviceTokenFetcher::HandleRegisterResponse(
 
 void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // For privacy reasons, delete all identifying data when this device is not
+  // managed.
+  if (code == DeviceManagementBackend::kErrorServiceManagementNotSupported) {
+    device_token_ = std::string();
+    device_id_ = std::string();
+    file_util::Delete(token_path_, false);
+  }
   SetState(kStateFailure);
 }
 
@@ -207,4 +214,4 @@ std::string DeviceTokenFetcher::GenerateNewDeviceID() {
   return guid::GenerateGUID();
 }
 
-}
+}  // namespace policy
