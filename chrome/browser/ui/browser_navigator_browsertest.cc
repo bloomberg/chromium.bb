@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_window.h"
+#include "base/command_line.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "ipc/ipc_message.h"
@@ -56,6 +58,11 @@ class BrowserNavigatorTest : public InProcessBrowserTest {
     EXPECT_EQ(1, browser()->tab_count());
     EXPECT_EQ(1u, BrowserList::size());
     EXPECT_EQ(old_url, browser()->GetSelectedTabContents()->GetURL());
+  }
+
+  // TODO(jhawkins): Remove once tabbed options are enabled by default.
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kEnableTabbedOptions);
   }
 };
 
@@ -463,5 +470,98 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewWindow) {
   EXPECT_EQ(1, p.browser->tab_count());
 }
 
+// This test verifies that constructing params with disposition = SINGLETON_TAB
+// and |ignore_paths| = true opens a new tab navigated to the specified URL if no
+// previous tab with that URL (minus the path) exists.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_SingletonTabNew_IgnorePath) {
+  GURL url("http://www.google.com/");
+  browser()->AddSelectedTabWithURL(url, PageTransition::LINK);
+
+  // We should have one browser with 2 tabs, the 2nd selected.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->selected_index());
+
+  // Navigate to a new singleton tab with a sub-page.
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = SINGLETON_TAB;
+  p.url = GURL("chrome://settings/advanced");
+  p.show_window = true;
+  p.ignore_path = true;
+  browser::Navigate(&p);
+
+  // The last tab should now be selected and navigated to the sub-page of the
+  // URL.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(2, browser()->selected_index());
+  EXPECT_EQ(GURL("chrome://settings/advanced"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
+// This test verifies that constructing params with disposition = SINGLETON_TAB
+// and |ignore_paths| = true opens an existing tab with the matching URL (minus
+// the path) which is navigated to the specified URL.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_SingletonTabExisting_IgnorePath) {
+  GURL singleton_url1("chrome://settings");
+  GURL url("http://www.google.com/");
+  browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(url, PageTransition::LINK);
+
+  // We should have one browser with 3 tabs, the 3rd selected.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(2, browser()->selected_index());
+
+  // Navigate to singleton_url1.
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = SINGLETON_TAB;
+  p.url = GURL("chrome://settings/advanced");
+  p.show_window = true;
+  p.ignore_path = true;
+  browser::Navigate(&p);
+
+  // The middle tab should now be selected and navigated to the sub-page of the
+  // URL.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(GURL("chrome://settings/advanced"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
+// This test verifies that constructing params with disposition = SINGLETON_TAB
+// and |ignore_paths| = true opens an existing tab with the matching URL (minus
+// the path) which is navigated to the specified URL.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_SingletonTabExistingSubPath_IgnorePath) {
+  GURL singleton_url1("chrome://settings/advanced");
+  GURL url("http://www.google.com/");
+  browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(url, PageTransition::LINK);
+
+  // We should have one browser with 3 tabs, the 3rd selected.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(2, browser()->selected_index());
+
+  // Navigate to singleton_url1.
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = SINGLETON_TAB;
+  p.url = GURL("chrome://settings/personal");
+  p.show_window = true;
+  p.ignore_path = true;
+  browser::Navigate(&p);
+
+  // The middle tab should now be selected and navigated to the sub-page of the
+  // URL.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(GURL("chrome://settings/personal"),
+            browser()->GetSelectedTabContents()->GetURL());
+}
 
 }  // namespace

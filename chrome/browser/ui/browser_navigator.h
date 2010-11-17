@@ -119,6 +119,10 @@ struct NavigateParams {
   // automatically.
   bool show_window;
 
+  // True if the paths of the target content's URL and |url| should be ignored
+  // when locating a singleton tab.
+  bool ignore_path;
+
   // [in]  Specifies a Browser object where the navigation could occur or the
   //       tab could be added. Navigate() is not obliged to use this Browser if
   //       it is not compatible with the operation being performed. If NULL,

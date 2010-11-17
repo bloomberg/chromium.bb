@@ -148,7 +148,7 @@ void ShowHtmlBugReportView(views::Window* parent, Browser* browser) {
       "#" + base::IntToString(browser->selected_index());
 
   RefreshLastScreenshot(parent);
-  browser->ShowSingletonTab(GURL(bug_report_url));
+  browser->ShowSingletonTab(GURL(bug_report_url), false);
 }
 
 }  // namespace browser

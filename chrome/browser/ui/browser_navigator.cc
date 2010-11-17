@@ -53,20 +53,17 @@ Browser* GetOrCreateBrowser(Profile* profile) {
   return browser ? browser : Browser::Create(profile);
 }
 
-// Returns true if two URLs are equal ignoring their ref (hash fragment).
-bool CompareURLsIgnoreRef(const GURL& url, const GURL& other) {
+// Returns true if two URLs are equal after taking |replacements| into account.
+bool CompareURLsWithReplacements(
+    const GURL& url,
+    const GURL& other,
+    const url_canon::Replacements<char>& replacements) {
   if (url == other)
     return true;
-  // If neither has a ref than there is no point in stripping the refs and
-  // the URLs are different since the comparison failed in the previous if
-  // statement.
-  if (!url.has_ref() && !other.has_ref())
-    return false;
-  url_canon::Replacements<char> replacements;
-  replacements.ClearRef();
-  GURL url_no_ref = url.ReplaceComponents(replacements);
-  GURL other_no_ref = other.ReplaceComponents(replacements);
-  return url_no_ref == other_no_ref;
+
+  GURL url_replaced = url.ReplaceComponents(replacements);
+  GURL other_replaced = other.ReplaceComponents(replacements);
+  return url_replaced == other_replaced;
 }
 
 // Returns the index of an existing singleton tab in |params->browser| matching
@@ -86,12 +83,20 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
 
   for (int i = 0; i < params->browser->tab_count(); ++i) {
     TabContents* tab = params->browser->GetTabContentsAt(i);
-    if (CompareURLsIgnoreRef(tab->GetURL(), params->url) ||
-        CompareURLsIgnoreRef(tab->GetURL(), rewritten_url)) {
+
+    url_canon::Replacements<char> replacements;
+    replacements.ClearRef();
+    if (params->ignore_path)
+      replacements.ClearPath();
+
+    if (CompareURLsWithReplacements(tab->GetURL(), params->url, replacements) ||
+        CompareURLsWithReplacements(tab->GetURL(), rewritten_url,
+                                    replacements)) {
       params->target_contents = tab;
       return i;
     }
   }
+
   return -1;
 }
 
@@ -400,6 +405,15 @@ void Navigate(NavigateParams* params) {
     // The navigation occurred in some other tab.
     int singleton_index = GetIndexOfSingletonTab(params);
     if (params->disposition == SINGLETON_TAB && singleton_index >= 0) {
+      TabContents* target = params->browser->GetTabContentsAt(singleton_index);
+
+      // Load the URL if the target contents URL doesn't match. This can happen
+      // if the URL path is ignored when locating the singleton tab.
+      if (target->GetURL() != params->url) {
+        target->controller().LoadURL(
+            params->url, params->referrer, params->transition);
+      }
+
       // The navigation should re-select an existing tab in the target Browser.
       params->browser->SelectTabContentsAt(singleton_index, user_initiated);
     } else {

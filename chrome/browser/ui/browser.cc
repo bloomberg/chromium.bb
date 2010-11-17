@@ -1037,10 +1037,11 @@ bool Browser::NavigateToIndexWithDisposition(int index,
   return true;
 }
 
-void Browser::ShowSingletonTab(const GURL& url) {
+void Browser::ShowSingletonTab(const GURL& url, bool ignore_path) {
   browser::NavigateParams params(this, url, PageTransition::AUTO_BOOKMARK);
   params.disposition = SINGLETON_TAB;
   params.show_window = true;
+  params.ignore_path = ignore_path;
   browser::Navigate(&params);
 }
 
@@ -1721,27 +1722,27 @@ void Browser::ShowAppMenu() {
 
 void Browser::ShowBookmarkManagerTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL));
+  ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL), false);
 }
 
 void Browser::ShowHistoryTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowHistory"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL));
+  ShowSingletonTab(GURL(chrome::kChromeUIHistoryURL), false);
 }
 
 void Browser::ShowDownloadsTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowDownloads"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIDownloadsURL));
+  ShowSingletonTab(GURL(chrome::kChromeUIDownloadsURL), false);
 }
 
 void Browser::ShowExtensionsTab() {
   UserMetrics::RecordAction(UserMetricsAction("ShowExtensions"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIExtensionsURL));
+  ShowSingletonTab(GURL(chrome::kChromeUIExtensionsURL), false);
 }
 
 void Browser::ShowAboutConflictsTab() {
   UserMetrics::RecordAction(UserMetricsAction("AboutConflicts"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIConflictsURL));
+  ShowSingletonTab(GURL(chrome::kChromeUIConflictsURL), false);
 }
 
 void Browser::ShowBrokenPageTab(TabContents* contents) {
@@ -1756,33 +1757,12 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
   subst.push_back(page_url);
   std::string report_page_url =
       ReplaceStringPlaceholders(kBrokenPageUrl, subst, NULL);
-  ShowSingletonTab(GURL(report_page_url));
+  ShowSingletonTab(GURL(report_page_url), false);
 }
 
 void Browser::ShowOptionsTab(const std::string& sub_page) {
   GURL url(chrome::kChromeUISettingsURL + sub_page);
-
-  // See if there is already an options tab open that we can use.
-  TabStripModel* model = tab_handler_->GetTabStripModel();
-  for (int i = 0; i < model->count(); i++) {
-    TabContents* tc = model->GetTabContentsAt(i);
-    const GURL& tab_url = tc->GetURL();
-
-    if (tab_url.scheme() == url.scheme() && tab_url.host() == url.host()) {
-      // We found an existing options tab, load the URL in this tab.  (Note:
-      // this may cause us to unnecessarily reload the same page.  We can't
-      // really detect that unless the options page is permitted to change the
-      // URL in the address bar, but security policy doesn't allow that.
-      browser::NavigateParams params(this, url, PageTransition::GENERATED);
-      params.source_contents = tc;
-      browser::Navigate(&params);
-      model->SelectTabContentsAt(i, false);
-      return;
-    }
-  }
-
-  // No options tab found, so create a new one.
-  AddSelectedTabWithURL(url, PageTransition::AUTO_BOOKMARK);
+  ShowSingletonTab(url, true);
 }
 
 void Browser::OpenClearBrowsingDataDialog() {
@@ -1848,7 +1828,7 @@ void Browser::OpenRemotingSetupDialog() {
 void Browser::OpenAboutChromeDialog() {
   UserMetrics::RecordAction(UserMetricsAction("AboutChrome"), profile_);
 #if defined(OS_CHROMEOS)
-  ShowSingletonTab(GURL(chrome::kChromeUIAboutURL));
+  ShowSingletonTab(GURL(chrome::kChromeUIAboutURL), false);
 #else
   window_->ShowAboutChromeDialog();
 #endif
