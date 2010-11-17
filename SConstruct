@@ -1589,9 +1589,6 @@ nacl_env.Append(
     'tests/noop/nacl.scons',
     'tests/npapi_bridge/nacl.scons',
     'tests/npapi_geturl/nacl.scons',
-    # uncomment this test once issue
-    # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
-    # 'tests/ppapi_tests/nacl.scons',
     'tests/npapi_hw/nacl.scons',
     'tests/npapi_pi/nacl.scons',
     'tests/npapi_runtime/nacl.scons',
@@ -1603,6 +1600,9 @@ nacl_env.Append(
     'tests/pnacl_abi/nacl.scons',
     #'tests/ppapi_geturl/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',
+    # uncomment this test once issue
+    # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
+    # 'tests/ppapi_tests/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/signal_handler/nacl.scons',
