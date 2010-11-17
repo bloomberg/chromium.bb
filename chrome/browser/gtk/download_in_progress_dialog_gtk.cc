@@ -9,11 +9,11 @@
 #include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string16.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 

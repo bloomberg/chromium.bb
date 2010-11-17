@@ -4,9 +4,9 @@
 
 #include "base/process_util.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/test/in_process_browser_test.h"

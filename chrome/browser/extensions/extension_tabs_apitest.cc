@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 
 // Possible race in ChromeURLDataManager. http://crbug.com/59198

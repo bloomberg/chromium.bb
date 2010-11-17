@@ -5,8 +5,6 @@
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
@@ -14,6 +12,8 @@
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

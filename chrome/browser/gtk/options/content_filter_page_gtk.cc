@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/browser/show_options_url.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

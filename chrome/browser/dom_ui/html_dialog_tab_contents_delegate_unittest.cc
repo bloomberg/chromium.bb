@@ -8,10 +8,10 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/test_browser_window.h"

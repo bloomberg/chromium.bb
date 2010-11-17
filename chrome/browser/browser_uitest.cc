@@ -11,8 +11,8 @@
 #include "base/test/test_file_util.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -278,7 +278,7 @@ public:
   void SetUp() {
     PathService::Get(base::DIR_TEMP, &tmp_profile_);
     tmp_profile_ = tmp_profile_.AppendASCII("tmp_profile");
-    tmp_profile_ = tmp_profile_.Append(L"Test Chrome Géraldine");
+    tmp_profile_ = tmp_profile_.Append(L"Test Chrome Gï¿½raldine");
 
     // Create a fresh, empty copy of this directory.
     file_util::Delete(tmp_profile_, true);

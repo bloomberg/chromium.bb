@@ -4,9 +4,9 @@
 
 #include "chrome/browser/show_options_url.h"
 
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 
 namespace browser {
 
