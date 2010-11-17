@@ -2059,8 +2059,9 @@ void TabContents::OnCrashedWorker() {
       NULL, true));
 }
 
-void TabContents::OnDidGetApplicationInfo(int32 page_id,
-                                          const WebApplicationInfo& info) {
+void TabContents::OnDidGetApplicationInfo(
+    int32 page_id,
+    const webkit_glue::WebApplicationInfo& info) {
   web_app_info_ = info;
 
   if (delegate())

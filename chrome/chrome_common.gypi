@@ -327,8 +327,6 @@
         'common/view_types.h',
         'common/visitedlink_common.cc',
         'common/visitedlink_common.h',
-        'common/web_apps.cc',
-        'common/web_apps.h',
         'common/web_database_observer_impl.cc',
         'common/web_database_observer_impl.h',
         'common/webkit_param_traits.cc',
@@ -551,10 +549,8 @@
             # We usually get these skia directories by adding a dependency on
             # skia, bu we don't need it for NaCl's 64-bit Windows support. The
             # directories are required for resolving the includes in any case.
-            '../third_party/skia/include/config',
             '../third_party/skia/include/core',
             '../skia/config',
-            '../skia/config/win',
           ],
           'defines': [
             'EXCLUDE_SKIA_DEPENDENCIES',

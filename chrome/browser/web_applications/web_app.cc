@@ -32,7 +32,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/web_apps.h"
+#include "webkit/glue/dom_operations.h"
 
 #if defined(OS_LINUX)
 #include "base/environment.h"
@@ -114,8 +114,9 @@ FilePath GetWebAppDataDirectory(const FilePath& root_dir,
 
 #if defined(TOOLKIT_VIEWS)
 // Predicator for sorting images from largest to smallest.
-bool IconPrecedes(const WebApplicationInfo::IconInfo& left,
-                  const WebApplicationInfo::IconInfo& right) {
+bool IconPrecedes(
+    const webkit_glue::WebApplicationInfo::IconInfo& left,
+    const webkit_glue::WebApplicationInfo::IconInfo& right) {
   return left.width < right.width;
 }
 #endif
@@ -722,7 +723,7 @@ FilePath GetDataDir(const FilePath& profile_path) {
 }
 
 #if defined(TOOLKIT_VIEWS)
-void GetIconsInfo(const WebApplicationInfo& app_info,
+void GetIconsInfo(const webkit_glue::WebApplicationInfo& app_info,
                   IconInfoList* icons) {
   DCHECK(icons);
 
@@ -742,7 +743,8 @@ void GetShortcutInfoForTab(TabContents* tab_contents,
                            ShellIntegration::ShortcutInfo* info) {
   DCHECK(info);  // Must provide a valid info.
 
-  const WebApplicationInfo& app_info = tab_contents->web_app_info();
+  const webkit_glue::WebApplicationInfo& app_info =
+      tab_contents->web_app_info();
 
   info->url = app_info.app_url.is_empty() ? tab_contents->GetURL() :
                                             app_info.app_url;

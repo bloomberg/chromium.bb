@@ -38,9 +38,9 @@
 #include "chrome/common/property_bag.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/translate_errors.h"
-#include "chrome/common/web_apps.h"
 #include "gfx/native_widget_types.h"
 #include "net/base/load_states.h"
+#include "webkit/glue/dom_operations.h"
 
 namespace gfx {
 class Rect;
@@ -285,7 +285,7 @@ class TabContents : public PageNavigator,
     encoding_.clear();
   }
 
-  const WebApplicationInfo& web_app_info() const {
+  const webkit_glue::WebApplicationInfo& web_app_info() const {
     return web_app_info_;
   }
 
@@ -868,8 +868,9 @@ class TabContents : public PageNavigator,
   virtual void OnMissingPluginStatus(int status);
   virtual void OnCrashedPlugin(const FilePath& plugin_path);
   virtual void OnCrashedWorker();
-  virtual void OnDidGetApplicationInfo(int32 page_id,
-                                       const WebApplicationInfo& info);
+  virtual void OnDidGetApplicationInfo(
+      int32 page_id,
+      const webkit_glue::WebApplicationInfo& info);
   virtual void OnDisabledOutdatedPlugin(const string16& name,
                                         const GURL& update_url);
   virtual void OnPageContents(const GURL& url,
@@ -1114,7 +1115,7 @@ class TabContents : public PageNavigator,
   FavIconHelper fav_icon_helper_;
 
   // Cached web app info data.
-  WebApplicationInfo web_app_info_;
+  webkit_glue::WebApplicationInfo web_app_info_;
 
   // Cached web app icon.
   SkBitmap app_icon_;

@@ -7,7 +7,8 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAnimationController.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
@@ -236,6 +237,139 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
   }
 
   return true;
+}
+
+// Sizes a single size (the width or height) from a 'sizes' attribute. A size
+// matches must match the following regex: [1-9][0-9]*.
+static int ParseSingleIconSize(const string16& text) {
+  // Size must not start with 0, and be between 0 and 9.
+  if (text.empty() || !(text[0] >= L'1' && text[0] <= L'9'))
+    return 0;
+  // Make sure all chars are from 0-9.
+  for (size_t i = 1; i < text.length(); ++i) {
+    if (!(text[i] >= L'0' && text[i] <= L'9'))
+      return 0;
+  }
+  int output;
+  if (!base::StringToInt(text, &output))
+    return 0;
+  return output;
+}
+
+// Parses an icon size. An icon size must match the following regex:
+// [1-9][0-9]*x[1-9][0-9]*.
+// If the input couldn't be parsed, a size with a width/height < 0 is returned.
+static gfx::Size ParseIconSize(const string16& text) {
+  std::vector<string16> sizes;
+  base::SplitStringDontTrim(text, L'x', &sizes);
+  if (sizes.size() != 2)
+    return gfx::Size();
+
+  return gfx::Size(ParseSingleIconSize(sizes[0]),
+                   ParseSingleIconSize(sizes[1]));
+}
+
+WebApplicationInfo::WebApplicationInfo() {}
+
+WebApplicationInfo::~WebApplicationInfo() {}
+
+bool ParseIconSizes(const string16& text,
+                    std::vector<gfx::Size>* sizes,
+                    bool* is_any) {
+  *is_any = false;
+  std::vector<string16> size_strings;
+  base::SplitStringAlongWhitespace(text, &size_strings);
+  for (size_t i = 0; i < size_strings.size(); ++i) {
+    if (EqualsASCII(size_strings[i], "any")) {
+      *is_any = true;
+    } else {
+      gfx::Size size = ParseIconSize(size_strings[i]);
+      if (size.width() <= 0 || size.height() <= 0)
+        return false;  // Bogus size.
+      sizes->push_back(size);
+    }
+  }
+  if (*is_any && !sizes->empty()) {
+    // If is_any is true, it must occur by itself.
+    return false;
+  }
+  return (*is_any || !sizes->empty());
+}
+
+static void AddInstallIcon(const WebElement& link,
+                           std::vector<WebApplicationInfo::IconInfo>* icons) {
+  WebString href = link.getAttribute("href");
+  if (href.isNull() || href.isEmpty())
+    return;
+
+  // Get complete url.
+  GURL url = link.document().completeURL(href);
+  if (!url.is_valid())
+    return;
+
+  if (!link.hasAttribute("sizes"))
+    return;
+
+  bool is_any = false;
+  std::vector<gfx::Size> icon_sizes;
+  if (!ParseIconSizes(link.getAttribute("sizes"), &icon_sizes, &is_any) ||
+      is_any ||
+      icon_sizes.size() != 1) {
+    return;
+  }
+  WebApplicationInfo::IconInfo icon_info;
+  icon_info.width = icon_sizes[0].width();
+  icon_info.height = icon_sizes[0].height();
+  icon_info.url = url;
+  icons->push_back(icon_info);
+}
+
+void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info) {
+  WebFrame* main_frame = view->mainFrame();
+  if (!main_frame)
+    return;
+
+  WebDocument doc = main_frame->document();
+  if (doc.isNull())
+    return;
+
+  WebElement head = main_frame->document().head();
+  if (head.isNull())
+    return;
+
+  WebNodeList children = head.childNodes();
+  for (unsigned i = 0; i < children.length(); ++i) {
+    WebNode child = children.item(i);
+    if (!child.isElementNode())
+      continue;
+    WebElement elem = child.to<WebElement>();
+
+    if (elem.hasTagName("link")) {
+      std::string rel = elem.getAttribute("rel").utf8();
+      // "rel" attribute may use either "icon" or "shortcut icon".
+      // see also
+      //   <http://en.wikipedia.org/wiki/Favicon>
+      //   <http://dev.w3.org/html5/spec/Overview.html#rel-icon>
+      if (LowerCaseEqualsASCII(rel, "icon") ||
+          LowerCaseEqualsASCII(rel, "shortcut icon"))
+        AddInstallIcon(elem, &app_info->icons);
+    } else if (elem.hasTagName("meta") && elem.hasAttribute("name")) {
+      std::string name = elem.getAttribute("name").utf8();
+      WebString content = elem.getAttribute("content");
+      if (name == "application-name") {
+        app_info->title = content;
+      } else if (name == "description") {
+        app_info->description = content;
+      } else if (name == "application-url") {
+        std::string url = content.utf8();
+        GURL main_url = main_frame->url();
+        app_info->app_url = main_url.is_valid() ?
+            main_url.Resolve(url) : GURL(url);
+        if (!app_info->app_url.is_valid())
+          app_info->app_url = GURL();
+      }
+    }
+  }
 }
 
 bool PauseAnimationAtTimeOnElementWithId(WebView* view,

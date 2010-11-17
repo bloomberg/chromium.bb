@@ -1903,7 +1903,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DidGetApplicationInfo,
                       int32 /* page_id */,
-                      WebApplicationInfo)
+                      webkit_glue::WebApplicationInfo)
 
   // Provides the result from running OnMsgShouldClose.  |proceed| matches the
   // return value of the the frame's shouldClose method (which includes the

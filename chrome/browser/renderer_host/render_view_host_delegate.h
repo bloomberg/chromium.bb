@@ -50,7 +50,6 @@ struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
-struct WebApplicationInfo;
 struct WebDropData;
 struct WebMenuItem;
 class WebKeyboardEvent;
@@ -74,6 +73,7 @@ namespace webkit_glue {
 struct FormData;
 class FormField;
 struct PasswordForm;
+struct WebApplicationInfo;
 }
 
 //
@@ -280,11 +280,10 @@ class RenderViewHostDelegate {
     virtual void OnDisabledOutdatedPlugin(const string16& name,
                                           const GURL& update_url) = 0;
 
-    // Notification that a user's request to install an application has
-    // completed.
+    // Notification that a request for install info has completed.
     virtual void OnDidGetApplicationInfo(
         int32 page_id,
-        const WebApplicationInfo& app_info) = 0;
+        const webkit_glue::WebApplicationInfo& app_info) = 0;
 
     // Notification that the contents of the page has been loaded.
     virtual void OnPageContents(const GURL& url,
