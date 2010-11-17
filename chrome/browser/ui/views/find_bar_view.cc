@@ -26,6 +26,7 @@
 #include "views/background.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
+#include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
 // The amount of whitespace to have before the find button.
@@ -223,6 +224,23 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
 }
 
 void FindBarView::SetFocusAndSelection(bool select_all) {
+#if defined(OS_CHROMEOS)
+  // TODO(altimofeev): this workaround is needed only when the FindBar was
+  // opened from the wrench menu (it also works in the accelerator case, but it
+  // is not really needed).
+
+  // Restore focus to allow the find bar's external focus tracker to save the
+  // view that should be activated later (the tracker is created after the
+  // wrench menu has received the focus).
+  find_text_->GetFocusManager()->RestoreFocusedView();
+  find_text_->RequestFocus();
+  // Storing is needed here because the view that has focus before the wrench
+  // menu activation will get focus just after the wrench menu is closed.
+  // The FindBar has it's own focus tracker, so it will focus the correct view
+  // on close.
+  find_text_->GetFocusManager()->StoreFocusedView();
+  // Request focus again since the call to StoreFocusedView unfocuses the view.
+#endif
   find_text_->RequestFocus();
   if (select_all && !find_text_->text().empty())
     find_text_->SelectAll();
