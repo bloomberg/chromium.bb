@@ -1352,24 +1352,27 @@
   NSWindow* window = [self window];
   if ([window respondsToSelector:@selector(_growBoxRect)]) {
     NSView* view = [source view];
-    NSRect windowGrowBoxRect = [window _growBoxRect];
-    NSRect viewRect = [[view superview] convertRect:frameRect toView:nil];
-    NSRect growBoxRect = NSIntersectionRect(windowGrowBoxRect, viewRect);
-    if (!NSIsEmptyRect(growBoxRect)) {
-      // Before we return a rect, we need to convert it from window coordinates
-      // to content area coordinates and flip the coordinate system.
-      // Superview is used here because, first, it's a frame rect, so it is
-      // specified in the parent's coordinates and, second, view is not
-      // positioned yet.
-      growBoxRect = [[view superview] convertRect:growBoxRect fromView:nil];
-      growBoxRect.origin.y =
-          NSHeight(frameRect) - NSHeight(growBoxRect);
-      growBoxRect =
-          NSOffsetRect(growBoxRect, -frameRect.origin.x, -frameRect.origin.y);
+    if (view && [view superview]) {
+      NSRect windowGrowBoxRect = [window _growBoxRect];
+      NSRect viewRect = [[view superview] convertRect:frameRect toView:nil];
+      NSRect growBoxRect = NSIntersectionRect(windowGrowBoxRect, viewRect);
+      if (!NSIsEmptyRect(growBoxRect)) {
+        // Before we return a rect, we need to convert it from window
+        // coordinates to content area coordinates and flip the coordinate
+        // system.
+        // Superview is used here because, first, it's a frame rect, so it is
+        // specified in the parent's coordinates and, second, view is not
+        // positioned yet.
+        growBoxRect = [[view superview] convertRect:growBoxRect fromView:nil];
+        growBoxRect.origin.y =
+            NSHeight(frameRect) - NSHeight(growBoxRect);
+        growBoxRect =
+            NSOffsetRect(growBoxRect, -frameRect.origin.x, -frameRect.origin.y);
 
-      reserved_rect =
-          gfx::Rect(growBoxRect.origin.x, growBoxRect.origin.y,
-                    growBoxRect.size.width, growBoxRect.size.height);
+        reserved_rect =
+            gfx::Rect(growBoxRect.origin.x, growBoxRect.origin.y,
+                      growBoxRect.size.width, growBoxRect.size.height);
+      }
     }
   }
 
