@@ -981,13 +981,15 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 #if defined(USE_LINUX_BREAKPAD)
 bool IsMetricsReportingEnabled(const PrefService* local_state) {
   // Check whether we should initialize the crash reporter. It may be disabled
-  // through configuration policy or user preference. The kHeadless environment
-  // variable overrides the decision, but only if the crash service is under
-  // control of the user. The CHROME_HEADLESS environment variable is used by QA
-  // testing infrastructure to switch on generation of crash reports.
+  // through configuration policy or user preference.
+  // The kHeadless environment variable overrides the decision, but only if the
+  // crash service is under control of the user. It is used by QA testing
+  // infrastructure to switch on generation of crash reports.
 #if defined(OS_CHROMEOS)
   bool breakpad_enabled =
       chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
+  if (!breakpad_enabled)
+    breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
 #else
   const PrefService::Preference* metrics_reporting_enabled =
       local_state->FindPreference(prefs::kMetricsReportingEnabled);
