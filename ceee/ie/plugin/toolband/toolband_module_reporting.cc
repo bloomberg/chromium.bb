@@ -8,7 +8,10 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/stringize_macros.h"
 #include "ceee/ie/common/ceee_module_util.h"
+
+#include "version.h"  // NOLINT
 
 // Well known SID for the system principal.
 const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
@@ -16,9 +19,8 @@ const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 // Returns the custom info structure based on the dll in parameter and the
 // process type.
 google_breakpad::CustomClientInfo* GetCustomInfo() {
-  // TODO(jeffbailey@google.com): Put in a real version.
-  // (bb3143594).
-  static google_breakpad::CustomInfoEntry ver_entry(L"ver", L"Ver.Goes.Here");
+  static google_breakpad::CustomInfoEntry ver_entry(
+      L"ver", TO_L_STRING(CHROME_VERSION_STRING));
   static google_breakpad::CustomInfoEntry prod_entry(L"prod", L"CEEE_IE");
   static google_breakpad::CustomInfoEntry plat_entry(L"plat", L"Win32");
   static google_breakpad::CustomInfoEntry type_entry(L"ptype", L"ie_plugin");

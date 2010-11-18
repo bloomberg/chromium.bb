@@ -86,10 +86,15 @@
             'crash_reporting.gyp:crash_report',
         '../../../../base/base.gyp:base',
         '../../../../breakpad/breakpad.gyp:breakpad_handler',
+        '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
       ],
       'sources': [
         'toolband_module_reporting.cc',
         'toolband_module_reporting.h',
+      ],
+      'include_dirs': [
+        # For version.h
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
     },
     {

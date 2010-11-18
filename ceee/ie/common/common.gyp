@@ -56,6 +56,7 @@
         '../../../ceee/common/common.gyp:initializing_coclass',
         '../../../ceee/common/common.gyp:ceee_common',
         '../../../ceee/testing/utils/test_utils.gyp:test_utils',
+        '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
         '../plugin/toolband/toolband.gyp:toolband_idl',
       ],
@@ -106,7 +107,7 @@
         '../../../chrome/common/extensions/user_script.h',
       ],
       'include_dirs': [
-        # For chrome_tab.h
+        # For chrome_tab.h and version.h
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'direct_dependent_settings': {
