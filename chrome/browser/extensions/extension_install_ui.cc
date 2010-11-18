@@ -128,10 +128,15 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension) {
     return;
   }
 
-  // GetLastActiveWithProfile will fail on the build bots. This needs to be
-  // implemented differently if any test is created which depends on
-  // ExtensionInstalledBubble showing.
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  // Note that browser actions don't appear in incognito mode initially,
+  // so be sure to use a normal browser window.
+  Profile* profile = profile_;
+  if (extension->browser_action())
+    profile = profile->GetOriginalProfile();
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
+  if (browser->tab_count() == 0)
+    browser->AddBlankTab(true);
+  browser->window()->Show();
 
   if (extension->GetFullLaunchURL().is_valid()) {
     std::string hash_params = "app-id=";
@@ -146,30 +151,21 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension) {
   }
 
 #if defined(TOOLKIT_VIEWS)
-  if (!browser)
-    return;
-
   ExtensionInstalledBubble::Show(extension, browser, icon_);
 #elif defined(OS_MACOSX)
-  DCHECK(browser);
-  // Note that browser actions don't appear in incognito mode initially,
-  // so fall back to the generic case.
-  if ((extension->browser_action() && !browser->profile()->IsOffTheRecord()) ||
-      !extension->omnibox_keyword().empty() ||
+  if ((extension->browser_action()) || !extension->omnibox_keyword().empty() ||
       (extension->page_action() &&
       !extension->page_action()->default_icon_path().empty())) {
     ExtensionInstalledBubbleCocoa::ShowExtensionInstalledBubble(
         browser->window()->GetNativeHandle(),
         extension, browser, icon_);
-  }  else {
+  } else {
     // If the extension is of type GENERIC, meaning it doesn't have a UI
     // surface to display for this window, launch infobar instead of popup
     // bubble, because we have no guaranteed wrench menu button to point to.
     ShowGenericExtensionInstalledInfoBar(extension);
   }
 #elif defined(TOOLKIT_GTK)
-  if (!browser)
-    return;
   ExtensionInstalledBubbleGtk::Show(extension, browser, icon_);
 #endif  // TOOLKIT_VIEWS
 }
