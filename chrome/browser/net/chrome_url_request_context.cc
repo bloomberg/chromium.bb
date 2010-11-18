@@ -33,6 +33,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket/dns_cert_provenance_checker.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -223,6 +224,47 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
 };
 
 // ----------------------------------------------------------------------------
+// Implementation of DnsCertProvenanceChecker
+// ----------------------------------------------------------------------------
+
+// WARNING: do not use this with anything other than the main
+// ChromeURLRequestContext. Eventually we'll want to have the other contexts
+// point to the main ChromeURLRequestContext, which then causes lifetime
+// ordering issues wrt ChromeURLRequestContexts, since we're using a raw
+// pointer, and we'll get shutdown ordering problems.
+
+class ChromeDnsCertProvenanceChecker :
+    public net::DnsCertProvenanceChecker,
+    public net::DnsCertProvenanceChecker::Delegate {
+ public:
+  ChromeDnsCertProvenanceChecker(
+      net::DnsRRResolver* dnsrr_resolver,
+      ChromeURLRequestContext* url_req_context)
+      : dnsrr_resolver_(dnsrr_resolver),
+        url_req_context_(url_req_context) {
+  }
+
+  // DnsCertProvenanceChecker interface
+  virtual void DoAsyncVerification(
+      const std::string& hostname,
+      const std::vector<base::StringPiece>& der_certs) {
+    net::DnsCertProvenanceChecker::DoAsyncLookup(hostname, der_certs,
+                                                 dnsrr_resolver_, this);
+  }
+
+  // DnsCertProvenanceChecker::Delegate interface
+  virtual void OnDnsCertLookupFailed(
+      const std::string& hostname,
+      const std::vector<std::string>& der_certs) {
+    // Currently unimplemented.
+  }
+
+ private:
+  net::DnsRRResolver* const dnsrr_resolver_;
+  ChromeURLRequestContext* const url_req_context_;
+};
+
+// ----------------------------------------------------------------------------
 // Helper factories
 // ----------------------------------------------------------------------------
 
@@ -264,6 +306,10 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   context->set_dnsrr_resolver(io_thread_globals->dnsrr_resolver.get());
   context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
+  context->set_dns_cert_checker(
+      new ChromeDnsCertProvenanceChecker(
+          io_thread_globals->dnsrr_resolver.get(),
+          context));
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -280,6 +326,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver(),
                          context->dnsrr_resolver(),
+                         context->dns_cert_checker(),
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
@@ -406,6 +453,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver(),
                          context->dnsrr_resolver(),
+                         NULL /* dns_cert_checker */,
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
@@ -498,6 +546,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
     // new set of network stack.
     cache = new net::HttpCache(main_context->host_resolver(),
                                main_context->dnsrr_resolver(),
+                               NULL /* dns_cert_checker */,
                                main_context->proxy_service(),
                                main_context->ssl_config_service(),
                                main_context->http_auth_handler_factory(),

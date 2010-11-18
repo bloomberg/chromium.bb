@@ -74,7 +74,7 @@ void TestShellRequestContext::Init(
       cache_path, 0, SimpleResourceLoaderBridge::GetCacheThread());
 
   net::HttpCache* cache =
-      new net::HttpCache(host_resolver_, NULL, proxy_service_,
+      new net::HttpCache(host_resolver_, NULL, NULL, proxy_service_,
                          ssl_config_service_, http_auth_handler_factory_, NULL,
                          NULL, backend);
 

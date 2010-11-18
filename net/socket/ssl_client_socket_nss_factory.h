@@ -10,7 +10,7 @@
 
 namespace net {
 
-class DnsRRResolver;
+class DnsCertProvenanceChecker;
 class SSLHostInfo;
 
 // Creates SSLClientSocketNSS objects.
@@ -19,7 +19,7 @@ SSLClientSocket* SSLClientSocketNSSFactory(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     SSLHostInfo* ssl_host_info,
-    DnsRRResolver* dnsrr_resolver);
+    DnsCertProvenanceChecker* dns_cert_checker);
 
 }  // namespace net
 
