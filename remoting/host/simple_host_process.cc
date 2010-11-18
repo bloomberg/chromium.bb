@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
   if (fake) {
     host = new remoting::ChromotingHost(
         &context, config,
-        new remoting::CapturerFake(context.capture_message_loop()));
+        new remoting::CapturerFake(context.main_message_loop()));
   } else {
     host = new remoting::ChromotingHost(&context, config);
   }

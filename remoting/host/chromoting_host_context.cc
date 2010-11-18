@@ -13,7 +13,6 @@ namespace remoting {
 
 ChromotingHostContext::ChromotingHostContext()
     : main_thread_("ChromotingMainThread"),
-      capture_thread_("ChromotingCaptureThread"),
       encode_thread_("ChromotingEncodeThread") {
 }
 
@@ -23,7 +22,6 @@ ChromotingHostContext::~ChromotingHostContext() {
 void ChromotingHostContext::Start() {
   // Start all the threads.
   main_thread_.Start();
-  capture_thread_.Start();
   encode_thread_.Start();
   jingle_thread_.Start();
 }
@@ -32,7 +30,6 @@ void ChromotingHostContext::Stop() {
   // Stop all the threads.
   jingle_thread_.Stop();
   encode_thread_.Stop();
-  capture_thread_.Stop();
   main_thread_.Stop();
 }
 
@@ -44,12 +41,12 @@ MessageLoop* ChromotingHostContext::main_message_loop() {
   return main_thread_.message_loop();
 }
 
-MessageLoop* ChromotingHostContext::capture_message_loop() {
-  return capture_thread_.message_loop();
-}
-
 MessageLoop* ChromotingHostContext::encode_message_loop() {
   return encode_thread_.message_loop();
+}
+
+MessageLoop* ChromotingHostContext::network_message_loop() {
+  return jingle_thread_.message_loop();
 }
 
 }  // namespace remoting

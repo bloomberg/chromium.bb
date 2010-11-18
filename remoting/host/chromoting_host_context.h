@@ -31,8 +31,8 @@ class ChromotingHostContext {
 
   // TODO(hclam): Change these all to MessageLoopProxy.
   virtual MessageLoop* main_message_loop();
-  virtual MessageLoop* capture_message_loop();
   virtual MessageLoop* encode_message_loop();
+  virtual MessageLoop* network_message_loop();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
@@ -42,9 +42,6 @@ class ChromotingHostContext {
 
   // A thread that hosts ChromotingHost and performs rate control.
   base::Thread main_thread_;
-
-  // A thread that hosts all capture operations.
-  base::Thread capture_thread_;
 
   // A thread that hosts all encode operations.
   base::Thread encode_thread_;

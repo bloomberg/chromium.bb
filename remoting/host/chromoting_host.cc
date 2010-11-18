@@ -42,19 +42,19 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       config_(config),
 #if defined(OS_WIN)
       capturer_(new remoting::CapturerGdi(
-          context->capture_message_loop())),
+          context->main_message_loop())),
       input_stub_(new remoting::EventExecutorWin(
-          context->capture_message_loop(), capturer_.get())),
+          context->main_message_loop(), capturer_.get())),
 #elif defined(OS_LINUX)
       capturer_(new remoting::CapturerLinux(
-          context->capture_message_loop())),
+          context->main_message_loop())),
       input_stub_(new remoting::EventExecutorLinux(
-          context->capture_message_loop(), capturer_.get())),
+          context->main_message_loop(), capturer_.get())),
 #elif defined(OS_MACOSX)
       capturer_(new remoting::CapturerMac(
-          context->capture_message_loop())),
+          context->main_message_loop())),
       input_stub_(new remoting::EventExecutorMac(
-          context->capture_message_loop(), capturer_.get())),
+          context->main_message_loop(), capturer_.get())),
 #endif
       host_stub_(new HostStubFake()),
       state_(kInitial) {
@@ -67,13 +67,13 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
       capturer_(capturer),
 #if defined(OS_WIN)
       input_stub_(new remoting::EventExecutorWin(
-          context->capture_message_loop(), capturer)),
+          context->main_message_loop(), capturer)),
 #elif defined(OS_LINUX)
       input_stub_(new remoting::EventExecutorLinux(
-          context->capture_message_loop(), capturer)),
+          context->main_message_loop(), capturer)),
 #elif defined(OS_MACOSX)
       input_stub_(new remoting::EventExecutorMac(
-          context->capture_message_loop(), capturer)),
+          context->main_message_loop(), capturer)),
 #endif
       host_stub_(new HostStubFake()),
       state_(kInitial) {
@@ -191,9 +191,9 @@ void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
 
     Encoder* encoder = CreateEncoder(connection->session()->config());
 
-    session_ = new SessionManager(context_->capture_message_loop(),
+    session_ = new SessionManager(context_->main_message_loop(),
                                   context_->encode_message_loop(),
-                                  context_->main_message_loop(),
+                                  context_->network_message_loop(),
                                   capturer_.release(),
                                   encoder);
   }
