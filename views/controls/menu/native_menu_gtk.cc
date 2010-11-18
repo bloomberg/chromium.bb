@@ -124,7 +124,7 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
                        G_CALLBACK(OnMenuMoveCurrentThunk), this);
 
   // Block until menu is no longer shown by running a nested message loop.
-  nested_dispatcher_ = new NestedDispatcherGtk(this, false);
+  nested_dispatcher_ = new NestedDispatcherGtk(this, true);
   bool deleted = nested_dispatcher_->RunAndSelfDestruct();
   if (deleted) {
     // The menu was destryed while menu is shown, so return immediately.
