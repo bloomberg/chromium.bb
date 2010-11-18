@@ -130,9 +130,9 @@ class CameraImageView : public views::ImageView {
       gfx::Size message_size = message_->GetPreferredSize();
       int message_y = size.height() - kVerticalMargin - message_size.height();
       message_->SetBounds(kHorizontalMargin,
-                        message_y,
-                        message_size.width(),
-                        message_size.height());
+                          message_y,
+                          message_size.width(),
+                          message_size.height());
     }
   }
 
@@ -208,7 +208,7 @@ void UserImageView::InitLayout() {
   // The title is left-top aligned.
   views::ColumnSet* column_set = layout->AddColumnSet(kTitleRow);
   column_set->AddPaddingColumn(0, kHorizontalMargin);
-  column_set->AddColumn(views::GridLayout::LEADING,
+  column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::LEADING,
                         1,
                         views::GridLayout::USE_PREF, 0, 0);
