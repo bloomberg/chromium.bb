@@ -88,6 +88,49 @@ void CompoundBuffer::PrependCopyOf(const char* data, int size) {
   Prepend(buffer, size);
 }
 
+void CompoundBuffer::CropFront(int bytes) {
+  CHECK(!locked_);
+
+  if (total_bytes_ <= bytes) {
+    Clear();
+    return;
+  }
+
+  total_bytes_ -= bytes;
+  while (chunks_.size() > 0 && chunks_.front().size <= bytes) {
+    bytes -= chunks_.front().size;
+    chunks_.pop_front();
+  }
+  if (chunks_.size() > 0 && bytes > 0) {
+    chunks_.front().start += bytes;
+    chunks_.front().size -= bytes;
+    DCHECK_GT(chunks_.front().size, 0);
+    bytes = 0;
+  }
+  DCHECK_EQ(bytes, 0);
+}
+
+void CompoundBuffer::CropBack(int bytes) {
+  CHECK(!locked_);
+
+  if (total_bytes_ <= bytes) {
+    Clear();
+    return;
+  }
+
+  total_bytes_ -= bytes;
+  while (chunks_.size() > 0 && chunks_.back().size <= bytes) {
+    bytes -= chunks_.back().size;
+    chunks_.pop_back();
+  }
+  if (chunks_.size() > 0 && bytes > 0) {
+    chunks_.back().size -= bytes;
+    DCHECK_GT(chunks_.back().size, 0);
+    bytes = 0;
+  }
+  DCHECK_EQ(bytes, 0);
+}
+
 void CompoundBuffer::Lock() {
   locked_ = true;
 }

@@ -14,11 +14,6 @@
 #include "remoting/base/compound_buffer.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
-namespace net {
-class DrainableIOBuffer;
-class IOBuffer;
-}  // namespace net
-
 namespace remoting {
 
 class ChromotingClientMessage;
@@ -66,18 +61,14 @@ class MessageDecoder {
   }
 
   private:
-  // TODO(sergeyu): It might be more efficient to memcopy data to one big buffer
-  // instead of storing chunks in dqueue.
-  typedef std::deque<scoped_refptr<net::DrainableIOBuffer> > BufferList;
-
   // Parse one message from |buffer_list_|. Return true if sucessful.
   template <class MessageType>
   bool ParseOneMessage(MessageType** message) {
-    scoped_ptr<CompoundBuffer> buffer(CreateCompoundBufferFromData());
-    if (!buffer.get())
+    CompoundBuffer buffer;
+    if (!GetNextMessageData(&buffer))
       return false;
 
-    CompoundBufferInputStream stream(buffer.get());
+    CompoundBufferInputStream stream(&buffer);
     *message = new MessageType();
     bool ret = (*message)->ParseFromZeroCopyStream(&stream);
     if (!ret)
@@ -87,17 +78,14 @@ class MessageDecoder {
 
   void AddBuffer(scoped_refptr<net::IOBuffer> data, int data_size);
 
-  CompoundBuffer* CreateCompoundBufferFromData();
+  bool GetNextMessageData(CompoundBuffer* message_buffer);
 
   // Retrieves the read payload size of the current protocol buffer via |size|.
   // Returns false and leaves |size| unmodified, if we do not have enough data
   // to retrieve the current size.
   bool GetPayloadSize(int* size);
 
-  BufferList buffer_list_;
-
-  // The number of bytes in |buffer_list_| not consumed.
-  int available_bytes_;
+  CompoundBuffer buffer_;
 
   // |next_payload_| stores the size of the next payload if known.
   // |next_payload_known_| is true if the size of the next payload is known.

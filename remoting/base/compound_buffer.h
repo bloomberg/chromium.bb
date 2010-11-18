@@ -52,6 +52,10 @@ class CompoundBuffer {
   void AppendCopyOf(const char* data, int data_size);
   void PrependCopyOf(const char* data, int data_size);
 
+  // Drop |bytes| bytes from the beginning or the end of the buffer.
+  void CropFront(int bytes);
+  void CropBack(int bytes);
+
   // Current size of the buffer.
   int total_bytes() const { return total_bytes_; }
 

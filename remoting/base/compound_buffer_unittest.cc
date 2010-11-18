@@ -24,6 +24,9 @@ const int kChunkSizes1[] = {1, 10, 20, -1};
 // Chunk sizes used to test CopyFrom().
 const int kCopySizes0[] = {10, 3, -1};
 const int kCopySizes1[] = {20, -1};
+
+const int kCropSizes[] = {1, -1};
+
 }  // namespace
 
 class CompoundBufferTest : public testing::Test {
@@ -50,6 +53,22 @@ class CompoundBufferTest : public testing::Test {
     CompoundBuffer copy;
     copy.CopyFrom(target_, pos, pos + size);
     EXPECT_TRUE(CompareData(copy, data_->data() + pos, size));
+  }
+
+  void TestCropFront(int pos, int size) {
+    CompoundBuffer cropped;
+    cropped.CopyFrom(target_, 0, target_.total_bytes());
+    cropped.CropFront(pos);
+    EXPECT_TRUE(CompareData(cropped, data_->data() + pos,
+                            target_.total_bytes() - pos));
+  }
+
+  void TestCropBack(int pos, int size) {
+    CompoundBuffer cropped;
+    cropped.CopyFrom(target_, 0, target_.total_bytes());
+    cropped.CropBack(pos);
+    EXPECT_TRUE(CompareData(cropped, data_->data(),
+                            target_.total_bytes() - pos));
   }
 
  protected:
@@ -208,6 +227,24 @@ TEST_F(CompoundBufferTest, PrependCopyOf) {
       static_cast<CompoundBufferTest*>(this),
       &CompoundBufferTest::PrependCopyOf));
   EXPECT_TRUE(CompareData(target_, data_->data(), kDataSize));
+}
+
+TEST_F(CompoundBufferTest, CropFront) {
+  target_.Clear();
+  IterateOverPieces(kChunkSizes1, NewCallback(
+      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Append));
+  IterateOverPieces(kCropSizes, NewCallback(
+        static_cast<CompoundBufferTest*>(this),
+      &CompoundBufferTest::TestCropFront));
+}
+
+TEST_F(CompoundBufferTest, CropBack) {
+  target_.Clear();
+  IterateOverPieces(kChunkSizes1, NewCallback(
+      static_cast<CompoundBufferTest*>(this), &CompoundBufferTest::Append));
+  IterateOverPieces(kCropSizes, NewCallback(
+      static_cast<CompoundBufferTest*>(this),
+      &CompoundBufferTest::TestCropBack));
 }
 
 TEST_F(CompoundBufferTest, CopyFrom) {
