@@ -176,6 +176,13 @@
   obj:*ipc_tests
 }
 
+{
+  bug_63590
+  ThreadSanitizer:Race
+  fun:*ObserverListBase*Iterator*
+  fun:*browser_sync*SyncerThreadWithSyncerTest_AuthInvalid_Test*
+}
+
 # TODO(timurrrr): bug item
 {
   Data race on bool in AssertReporter [test-only]
