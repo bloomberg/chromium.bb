@@ -91,12 +91,12 @@ int WebCursor::GetCursorType() const {
     case WebCursorInfo::TypeWestResize:
       return GDK_LEFT_SIDE;
     case WebCursorInfo::TypeNorthSouthResize:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_SB_V_DOUBLE_ARROW;
     case WebCursorInfo::TypeEastWestResize:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_SB_H_DOUBLE_ARROW;
     case WebCursorInfo::TypeNorthEastSouthWestResize:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeNorthWestSouthEastResize:
+      // There isn't really a useful cursor available for these.
       NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeColumnResize:
       return GDK_SB_H_DOUBLE_ARROW;  // TODO(evanm): is this correct?
