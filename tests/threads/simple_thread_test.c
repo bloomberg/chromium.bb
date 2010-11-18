@@ -9,6 +9,7 @@
  */
 
 #include <pthread.h>
+#include <sched.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -95,6 +96,8 @@ void CounterWait(int id, int round) {
       break;
     }
     CriticalSectionLeave();
+    /* Give another thread a chance to do its work. */
+    sched_yield();
   }
 }
 
@@ -103,6 +106,8 @@ void CounterAdvance(int id, int round) {
   CriticalSectionEnter();
   GlobalCounter = round * kNumThreads + id + 1;
   CriticalSectionLeave();
+  /* Give another thread a chance to do its work. */
+  sched_yield();
 }
 
 
