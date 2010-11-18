@@ -981,14 +981,15 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
   if (!windowed_handle())
     return;
 
-  surface_->StartDrawing();
-
   [renderer_ beginFrameAtTime:CACurrentMediaTime() timeStamp:NULL];
   if (CGRectIsEmpty([renderer_ updateBounds])) {
     // If nothing has changed, we are done.
     [renderer_ endFrame];
     return;
   }
+
+  surface_->StartDrawing();
+
   CGRect layerRect = [layer_ bounds];
   [renderer_ addUpdateRect:layerRect];
   [renderer_ render];
