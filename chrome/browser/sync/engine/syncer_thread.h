@@ -25,9 +25,11 @@
 #include "chrome/browser/sync/engine/idle_query_linux.h"
 #endif
 #include "chrome/browser/sync/engine/syncer_types.h"
-#include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/common/deprecated/event_sys-inl.h"
+
+class EventListenerHookup;
 
 namespace browser_sync {
 
@@ -38,8 +40,7 @@ class URLFactory;
 struct ServerConnectionEvent;
 
 class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
-                     public sessions::SyncSession::Delegate,
-                     public ServerConnectionEventListener {
+                     public sessions::SyncSession::Delegate {
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculateSyncWaitTime);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculatePollingWaitTime);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Polling);
@@ -101,6 +102,8 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   explicit SyncerThread(sessions::SyncSessionContext* context);
   virtual ~SyncerThread();
+
+  virtual void WatchConnectionManager(ServerConnectionManager* conn_mgr);
 
   // Starts a syncer thread.
   // Returns true if it creates a thread or if there's currently a thread
@@ -236,8 +239,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
       const base::TimeDelta& new_interval);
   virtual void OnShouldStopSyncingPermanently();
 
-  // ServerConnectionEventListener implementation.
-  virtual void OnServerConnectionEvent(const ServerConnectionEvent& event);
+  void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
   void SyncMain(Syncer* syncer);
 
@@ -293,6 +295,8 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   void RequestSyncerExitAndSetThreadStopConditions();
 
   void Notify(SyncEngineEvent::EventCause cause);
+
+  scoped_ptr<EventListenerHookup> conn_mgr_hookup_;
 
   // Modifiable versions of kDefaultLongPollIntervalSeconds which can be
   // updated by the server.
