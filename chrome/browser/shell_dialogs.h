@@ -45,6 +45,7 @@ class SelectFileDialog
       public BaseShellDialog {
  public:
   enum Type {
+    SELECT_NONE,
     SELECT_FOLDER,
     SELECT_SAVEAS_FILE,
     SELECT_OPEN_FILE,

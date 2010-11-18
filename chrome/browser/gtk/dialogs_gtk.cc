@@ -172,6 +172,7 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
     : listener_(listener),
       file_type_index_(0),
+      type_(SELECT_NONE),
       preview_(NULL) {
   if (!last_saved_path_) {
     last_saved_path_ = new FilePath();

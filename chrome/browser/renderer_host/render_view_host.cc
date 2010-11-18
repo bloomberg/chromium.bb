@@ -133,6 +133,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       sudden_termination_allowed_(false),
       session_storage_namespace_(session_storage),
       is_extension_process_(false),
+      autofill_query_id_(0),
       save_accessibility_tree_for_testing_(false) {
   if (!session_storage_namespace_) {
     session_storage_namespace_ =
