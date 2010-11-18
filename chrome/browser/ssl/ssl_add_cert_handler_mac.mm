@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
 

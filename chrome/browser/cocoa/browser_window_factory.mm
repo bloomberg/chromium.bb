@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 
 // Create the controller for the Browser, which handles loading the browser
 // window from the nib. The controller takes ownership of |browser|.

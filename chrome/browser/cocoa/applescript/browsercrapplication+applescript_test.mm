@@ -4,11 +4,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/applescript/browsercrapplication+applescript.h"
 #import "chrome/browser/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/cocoa/applescript/window_applescript.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

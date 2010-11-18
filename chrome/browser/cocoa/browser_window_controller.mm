@@ -15,8 +15,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_editor_controller.h"
@@ -57,6 +55,8 @@
 #include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"

@@ -4,11 +4,11 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"

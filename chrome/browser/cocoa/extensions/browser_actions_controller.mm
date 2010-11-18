@@ -9,7 +9,6 @@
 
 #include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/cocoa/extensions/chevron_menu_button.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

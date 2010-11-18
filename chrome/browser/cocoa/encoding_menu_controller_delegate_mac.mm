@@ -9,9 +9,9 @@
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 
 namespace {
 

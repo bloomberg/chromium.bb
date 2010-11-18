@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/extension_view_mac.h"
 #import "chrome/browser/cocoa/info_bubble_window.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 

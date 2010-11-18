@@ -8,12 +8,12 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/view_id_util.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 
 namespace {

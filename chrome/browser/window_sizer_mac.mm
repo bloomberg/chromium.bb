@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
-
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/window_sizer.h"
+
 
 // How much horizontal and vertical offset there is between newly
 // opened windows.

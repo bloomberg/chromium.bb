@@ -6,8 +6,8 @@
 
 #import "extension_installed_bubble_bridge.h"
 
-#include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/extension_installed_bubble_controller.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 
 void ExtensionInstalledBubbleCocoa::ShowExtensionInstalledBubble(

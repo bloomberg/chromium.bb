@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/string16.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
+#include "chrome/browser/ui/browser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface FakeBookmarkMenuController : BookmarkMenuCocoaController {
