@@ -94,6 +94,8 @@ bool NetworkConfigView::IsDialogButtonEnabled(
 bool NetworkConfigView::Cancel() {
   if (delegate_)
     delegate_->OnDialogCancelled();
+  if (flags_ & FLAG_WIFI)
+    wificonfig_view_->Cancel();
   return true;
 }
 

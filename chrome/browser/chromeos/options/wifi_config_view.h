@@ -54,11 +54,14 @@ class WifiConfigView : public views::View,
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
-  // Login to network.
+  // Login to network. Returns false if the dialog should remain open.
   virtual bool Login();
 
   // Save network information.
   virtual bool Save();
+
+  // Cancel the dialog.
+  virtual void Cancel();
 
   // Get the typed in ssid.
   const std::string GetSSID() const;

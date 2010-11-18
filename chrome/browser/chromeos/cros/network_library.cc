@@ -1019,7 +1019,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       WifiNetwork* wifi = GetWirelessNetworkByPath(
           wifi_networks_, network->service_path());
       if (wifi) {
-        wifi->set_passphrase(password);
+        // Note: don't save the passphrase here, it might be incorrect.
         wifi->set_identity(identity);
         wifi->set_cert_path(certpath);
         wifi->set_connecting(true);
@@ -1121,7 +1121,17 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // Update the cellular network with libcros.
     if (!EnsureCrosLoaded() || !network)
       return;
+    CellularNetwork* cellular =
+        GetWirelessNetworkByPath(cellular_networks_,
+                                 network->service_path());
+    if (!cellular) {
+      LOG(WARNING) << "Save to unknown network: " << cellular->service_path();
+      return;
+    }
 
+    // Immediately update properties in the cached structure.
+    cellular->set_auto_connect(network->auto_connect());
+    // Update libcros.
     SetAutoConnect(network->service_path().c_str(), network->auto_connect());
   }
 
@@ -1130,18 +1140,34 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // Update the wifi network with libcros.
     if (!EnsureCrosLoaded() || !network)
       return;
-    SetPassphrase(
-        network->service_path().c_str(), network->passphrase().c_str());
-    SetIdentity(network->service_path().c_str(),
-        network->identity().c_str());
-    SetCertPath(network->service_path().c_str(),
-        network->cert_path().c_str());
-    SetAutoConnect(network->service_path().c_str(), network->auto_connect());
+    WifiNetwork* wifi = GetWirelessNetworkByPath(wifi_networks_,
+                                                 network->service_path());
+    if (!wifi) {
+      LOG(WARNING) << "Save to unknown network: " << wifi->service_path();
+      return;
+    }
+    // Immediately update properties in the cached structure.
+    wifi->set_passphrase(network->passphrase());
+    wifi->set_identity(network->identity());
+    wifi->set_cert_path(network->cert_path());
+    wifi->set_auto_connect(network->auto_connect());
+    // Update libcros.
+    const char* service_path = network->service_path().c_str();
+    SetPassphrase(service_path, network->passphrase().c_str());
+    SetIdentity(service_path, network->identity().c_str());
+    SetCertPath(service_path, network->cert_path().c_str());
+    SetAutoConnect(service_path, network->auto_connect());
   }
 
   virtual void ForgetWifiNetwork(const std::string& service_path) {
     if (!EnsureCrosLoaded())
       return;
+    // NOTE: service paths for remembered wifi networks do not match the
+    // service paths in wifi_networks_; calling a libcros funtion that
+    // operates on the wifi_networks_ list with this service_path will
+    // trigger a crash because the DBUS path does not exist.
+    // TODO(stevenjb): modify libcros to warn and fail instead of crash.
+    // https://crosbug.com/9295
     if (DeleteRememberedService(service_path.c_str())) {
       // Update local cache and notify listeners.
       for (WifiNetworkVector::iterator iter =

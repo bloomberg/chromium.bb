@@ -227,9 +227,13 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
           ShowWifi(wifi, true);
           return true;
         } else {
-          if (MenuUI::IsEnabled() || !wifi->passphrase_required()) {
+          // If a passphrase is provided use it, otherwise use the saved one.
+          std::string pass =
+              !passphrase.empty() ? passphrase : wifi->passphrase();
+          if (MenuUI::IsEnabled() ||
+              (!pass.empty() && !wifi->passphrase_required())) {
             connected = cros->ConnectToWifiNetwork(
-                wifi, passphrase, std::string(), std::string());
+                wifi, pass, std::string(), std::string());
           }
         }
       } else {

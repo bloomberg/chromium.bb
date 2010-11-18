@@ -191,6 +191,7 @@ bool WifiConfigView::Login() {
   if (identity_textfield_ != NULL) {
     identity_string = UTF16ToUTF8(identity_textfield_->text());
   }
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   bool connected = false;
   if (other_network_) {
     ConnectionSecurity sec = SECURITY_UNKNOWN;
@@ -203,15 +204,24 @@ bool WifiConfigView::Login() {
       sec = SECURITY_WPA;
     else if (index == INDEX_RSN)
       sec = SECURITY_RSN;
-    connected =  CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
+    connected =  cros->ConnectToWifiNetwork(
         sec, GetSSID(), GetPassphrase(),
         identity_string, certificate_path_,
         autoconnect_checkbox_ ? autoconnect_checkbox_->checked() : true);
+    // TODO(stevenjb): Modify libcros to set an error code and return 'false'
+    // only on an invalid password or other UI failure.
   } else {
     Save();
-    connected = CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
+    connected = cros->ConnectToWifiNetwork(
         wifi_.get(), GetPassphrase(),
         identity_string, certificate_path_);
+    if (!connected) {
+      // Assume this failed due to an invalid password.
+      // TODO(stevenjb): Modify libcros to set an error code and return 'false'
+      // only on an invalid password or other recoverable failure.
+      wifi_->set_passphrase(std::string());
+      cros->SaveWifiNetwork(wifi_.get());
+    }
   }
   return connected;
 }
@@ -230,8 +240,7 @@ bool WifiConfigView::Save() {
     }
 
     if (passphrase_textfield_) {
-      const std::string& passphrase =
-          UTF16ToUTF8(passphrase_textfield_->text());
+      std::string passphrase = UTF16ToUTF8(passphrase_textfield_->text());
       if (passphrase != wifi_->passphrase()) {
         wifi_->set_passphrase(passphrase);
         changed = true;
@@ -242,6 +251,15 @@ bool WifiConfigView::Save() {
       CrosLibrary::Get()->GetNetworkLibrary()->SaveWifiNetwork(wifi_.get());
   }
   return true;
+}
+
+void WifiConfigView::Cancel() {
+  // If we have a bad passphrase error, clear the passphrase.
+  if (wifi_->error() == ERROR_BAD_PASSPHRASE ||
+      wifi_->error() == ERROR_BAD_WEPKEY) {
+    wifi_->set_passphrase(std::string());
+    CrosLibrary::Get()->GetNetworkLibrary()->SaveWifiNetwork(wifi_.get());
+  }
 }
 
 const std::string WifiConfigView::GetSSID() const {
