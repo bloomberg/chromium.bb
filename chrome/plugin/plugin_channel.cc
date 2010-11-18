@@ -16,6 +16,7 @@
 #include "chrome/plugin/plugin_thread.h"
 #include "chrome/plugin/webplugin_delegate_stub.h"
 #include "chrome/plugin/webplugin_proxy.h"
+#include "webkit/glue/plugins/plugin_instance.h"
 
 #if defined(OS_POSIX)
 #include "base/eintr_wrapper.h"
@@ -211,6 +212,7 @@ void PluginChannel::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PluginMsg_DestroyInstance,
                                     OnDestroyInstance)
     IPC_MESSAGE_HANDLER(PluginMsg_GenerateRouteID, OnGenerateRouteID)
+    IPC_MESSAGE_HANDLER(PluginMsg_ClearSiteData, OnClearSiteData)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -254,6 +256,35 @@ void PluginChannel::OnGenerateRouteID(int* route_id) {
 int PluginChannel::GenerateRouteID() {
   static int last_id = 0;
   return ++last_id;
+}
+
+void PluginChannel::OnClearSiteData(uint64 flags,
+                                    const std::string& domain,
+                                    base::Time begin_time) {
+  bool success = false;
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  FilePath path = command_line->GetSwitchValuePath(switches::kPluginPath);
+  scoped_refptr<NPAPI::PluginLib> plugin_lib(
+      NPAPI::PluginLib::CreatePluginLib(path));
+  if (plugin_lib.get()) {
+    NPError err = plugin_lib->NP_Initialize();
+    if (err == NPERR_NO_ERROR) {
+      scoped_refptr<NPAPI::PluginInstance> instance(
+          plugin_lib->CreateInstance(std::string()));
+
+      const char* domain_str = domain.empty() ? NULL : domain.c_str();
+      uint64 max_age;
+      if (begin_time > base::Time()) {
+        base::TimeDelta delta = base::Time::Now() - begin_time;
+        max_age = delta.InSeconds();
+      } else {
+        max_age = kuint64max;
+      }
+      err = instance->NPP_ClearSiteData(flags, domain_str, max_age);
+      success = (err == NPERR_NO_ERROR);
+    }
+  }
+  Send(new PluginHostMsg_ClearSiteDataResult(success));
 }
 
 base::WaitableEvent* PluginChannel::GetModalDialogEvent(

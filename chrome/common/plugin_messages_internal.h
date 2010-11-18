@@ -308,6 +308,11 @@ IPC_BEGIN_MESSAGES(Plugin)
                       gfx::PluginWindowHandle /* window */)
 #endif
 
+  IPC_MESSAGE_CONTROL3(PluginMsg_ClearSiteData,
+                       uint64, /* flags */
+                       std::string, /* domain */
+                       base::Time /* begin_time */)
+
 IPC_END_MESSAGES(Plugin)
 
 
@@ -462,6 +467,9 @@ IPC_BEGIN_MESSAGES(PluginHost)
                       gfx::PluginWindowHandle /* window */,
                       uint64 /* surface_id */)
 #endif
+
+  IPC_MESSAGE_CONTROL1(PluginHostMsg_ClearSiteDataResult,
+                       bool /* success */)
 
 IPC_END_MESSAGES(PluginHost)
 

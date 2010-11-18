@@ -76,6 +76,9 @@ class PluginChannel : public PluginChannelBase {
   void OnCreateInstance(const std::string& mime_type, int* instance_id);
   void OnDestroyInstance(int instance_id, IPC::Message* reply_msg);
   void OnGenerateRouteID(int* route_id);
+  void OnClearSiteData(uint64 flags,
+                       const std::string& domain,
+                       base::Time begin_time);
 
 #if defined(OS_POSIX)
   // Close the plugin process' copy of the renderer's side of the plugin

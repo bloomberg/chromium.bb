@@ -199,11 +199,6 @@ PluginProcessHost* PluginService::FindPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (plugin_path.value().empty()) {
-    NOTREACHED() << "should only be called if we have a plugin to load";
-    return NULL;
-  }
-
   for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
        !iter.Done(); ++iter) {
     PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
@@ -218,26 +213,25 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  PluginProcessHost *plugin_host = FindPluginProcess(plugin_path);
+  PluginProcessHost* plugin_host = FindPluginProcess(plugin_path);
   if (plugin_host)
     return plugin_host;
 
   WebPluginInfo info;
   if (!NPAPI::PluginList::Singleton()->GetPluginInfoByPath(
-          plugin_path, &info)) {
-    DCHECK(false);
+      plugin_path, &info)) {
+    NOTREACHED();
     return NULL;
   }
 
   // This plugin isn't loaded by any plugin process, so create a new process.
-  plugin_host = new PluginProcessHost();
-  if (!plugin_host->Init(info, ui_locale_)) {
-    DCHECK(false);  // Init is not expected to fail
-    delete plugin_host;
+  scoped_ptr<PluginProcessHost> new_host(new PluginProcessHost());
+  if (!new_host->Init(info, ui_locale_)) {
+    NOTREACHED();  // Init is not expected to fail
     return NULL;
   }
 
-  return plugin_host;
+  return new_host.release();
 }
 
 void PluginService::OpenChannelToPlugin(

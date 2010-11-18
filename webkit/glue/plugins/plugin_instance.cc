@@ -342,6 +342,14 @@ bool PluginInstance::NPP_Print(NPPrint* platform_print) {
   return false;
 }
 
+NPError PluginInstance::NPP_ClearSiteData(uint64 flags,
+                                          const char* domain,
+                                          uint64 max_age) {
+  DCHECK(npp_functions_ != 0);
+  // TODO(bauerb): Call NPAPI function when it is defined in the header.
+  return NPERR_NO_ERROR;
+}
+
 void PluginInstance::SendJavaScriptStream(const GURL& url,
                                           const std::string& result,
                                           bool success,
