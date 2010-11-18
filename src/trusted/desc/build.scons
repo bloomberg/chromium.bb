@@ -131,7 +131,7 @@ crt = env.Replicate('.', '$VC80_DIR/vc/redist/Debug_NonRedist/'
 crt += env.Replicate('.', '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
 
 # TODO: add comment
-if env.get('TARGET_PLATFORM') == 'WINDOWS':
+if env.Bit('windows'):
   env.Append(LIBS = [ 'ws2_32', 'advapi32' ])
 
 env.EnsureRequiredBuildWarnings()

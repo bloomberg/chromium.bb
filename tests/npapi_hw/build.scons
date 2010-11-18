@@ -31,11 +31,11 @@
 Import('env')
 
 
-if env['TARGET_PLATFORM'] == 'LINUX':
+if env.Bit('linux'):
     env.Append(CPPDEFINES=['XP_UNIX'])
 
 
-if env['TARGET_PLATFORM'] == 'MAC':
+if env.Bit('mac'):
     env.Append(
         CPPDEFINES = [
             'XP_MACOSX',
@@ -47,7 +47,7 @@ if env['TARGET_PLATFORM'] == 'MAC':
     )
 
 
-if env['TARGET_PLATFORM'] == 'WINDOWS':
+if env.Bit('windows'):
     env.Append(
         CCFLAGS = [
             '/EHsc',

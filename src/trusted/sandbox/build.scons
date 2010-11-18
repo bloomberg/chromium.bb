@@ -37,7 +37,7 @@ env.FilterOut(CCFLAGS=['-Wextra'])
 if env['BUILD_SUBARCH'] == '64':
     Return()
 
-if env['TARGET_PLATFORM'] == 'LINUX' and env['BUILD_ARCHITECTURE'] == 'x86':
+if env.Bit('linux') and env['BUILD_ARCHITECTURE'] == 'x86':
     # ----------------------------------------------------------
     #
     # ----------------------------------------------------------

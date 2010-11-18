@@ -40,7 +40,7 @@ sdk_image = env.Harvest(
 env.AlwaysBuild( sdk_image )
 env.Alias('sdk_image', sdk_image)
 
-if env['TARGET_PLATFORM'] == 'WINDOWS':
+if env.Bit('windows'):
   env.Append(WIXFLAGS = '-dSRC_ROOT=' + env['STAGING_DIR'])
 
   env.Append(WIXLIBS = ['$WIX_PATH/WixUI.wixlib'])

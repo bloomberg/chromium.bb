@@ -31,29 +31,29 @@
 
 Import('env')
 
-if env['TARGET_PLATFORM'] == 'WINDOWS':
+if env.Bit('windows'):
     env.Append(CCFLAGS=['/EHsc'])
 
-if env['TARGET_PLATFORM'] == 'LINUX':
+if env.Bit('linux'):
     env.Append(LIBS=['rt'])
 
 nacl_imc_inputs = [
     'nacl_imc_common.cc',
 ]
 
-if env['TARGET_PLATFORM'] == 'WINDOWS':
+if env.Bit('windows'):
   nacl_imc_inputs += [
     'win/nacl_imc.cc',
     'win/nacl_shm.cc',
   ]
 
-if env['TARGET_PLATFORM'] == 'LINUX':
+if env.Bit('linux'):
   nacl_imc_inputs += [
     'nacl_imc_unistd.cc',
     'linux/nacl_imc.cc',
   ]
 
-if env['TARGET_PLATFORM'] == 'MAC':
+if env.Bit('mac'):
   nacl_imc_inputs += [
     'nacl_imc_unistd.cc',
     'osx/nacl_imc.cc',
