@@ -705,13 +705,17 @@ templates and will be translated for each locale. -->
              desc="Caption text of the field 'mac/linux preference name' in the summary chart of a policy in the generated documentation">
       Mac/Linux preference name:
     </message>
-    <message name="IDS_POLICY_DOC_SUPPORTED_ON_PLATFORMS"
-             desc="Caption text of the list of 'platforms where this policy is supported' in the summary chart of a policy in the generated documentation">
-      Supported on platforms:
+    <message name="IDS_POLICY_DOC_SUPPORTED_ON"
+             desc="Caption text of the list of 'products, platforms and versions where this policy is supported' in the summary chart of a policy in the generated documentation">
+      Supported on:
     </message>
-    <message name="IDS_POLICY_DOC_SUPPORTED_IN_PRODUCTS"
-             desc="Caption text of the list of 'products where this policy is supported' in the summary chart of a policy in the generated documentation">
-      Supported in products:
+    <message name="IDS_POLICY_DOC_SINCE_VERSION"
+             desc="Text in the summary chart of a policy that specifies the version number in which the policy was introduced.">
+      since version <ph name="SINCE_VERSION">$6<ex>8</ex></ph>
+    </message>
+    <message name="IDS_POLICY_DOC_UNTIL_VERSION"
+             desc="Text in the summary chart of a policy that specifies the version number after which the policy was dropped.">
+      until version <ph name="UNTIL_VERSION">$6<ex>10</ex></ph>
     </message>
     <message name="IDS_POLICY_DOC_SUPPORTED_FEATURES"
              desc="Caption text of the list of 'policy features that this policy supports' in the summary chart of a policy in the generated documentation">

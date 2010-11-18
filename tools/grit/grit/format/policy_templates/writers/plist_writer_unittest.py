@@ -88,7 +88,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'policies': [{
               'name': 'MainPolicy',
               'type': 'main',
-              'annotations': {'platforms': ['mac']},
+              'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
@@ -137,7 +137,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'policies': [{
               'name': 'StringPolicy',
               'type': 'string',
-              'annotations': {'platforms': ['mac']},
+              'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
@@ -190,7 +190,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
                 {'name': 'ProxyServerDisabled', 'value': '0'},
                 {'name': 'ProxyServerAutoDetect', 'value': '1'},
               ],
-              'annotations': {'platforms': ['mac']},
+              'supported_on': ['chrome.mac:8-'],
             }],
           },
         ],
@@ -247,7 +247,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'policies': [{
               'name': 'NonMacPolicy',
               'type': 'string',
-              'annotations': {'platforms': ['win', 'linux']},
+              'supported_on': ['chrome.linux:8-', 'chrome.win:7-'],
             }],
           },
         ],

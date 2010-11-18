@@ -14,7 +14,7 @@ def GetWriter(config, messages):
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return DocWriter(['mac', 'linux', 'win'], config, messages)
+  return DocWriter(['*'], config, messages)
 
 
 class DocWriter(xml_formatted_writer.XMLFormattedWriter):
@@ -286,6 +286,32 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._AddStyledElement(dl, 'dt', ['dt'], {}, term)
     return self._AddStyledElement(dl, 'dd', definition_style, {}, definition)
 
+  def _AddSupportedOnList(self, parent, supported_on_list):
+    '''Creates a HTML list containing the platforms, products and versions
+    that are specified in the list of supported_on.
+
+    Args:
+      parent: The DOM node for which the list will be added.
+      supported_on_list: The list of supported products, as a list of
+        dictionaries.
+    '''
+    ul = self._AddStyledElement(parent, 'ul', ['ul'])
+    for supported_on in supported_on_list:
+      text = []
+      product = supported_on['product']
+      platforms = supported_on['platforms']
+      text.append(self._PRODUCT_MAP[product])
+      text.append('(%s)' %
+                  self._MapListToString(self._PLATFORM_MAP, platforms))
+      if supported_on['since_version']:
+        since_version = self._GetLocalizedMessage('since_version')
+        text.append(since_version.replace('$6', supported_on['since_version']))
+      if supported_on['until_version']:
+        until_version = self._GetLocalizedMessage('until_version')
+        text.append(until_version.replace('$6', supported_on['until_version']))
+      # Add the list element:
+      self.AddElement(ul, 'li', {}, ' '.join(text))
+
   def _AddPolicyDetails(self, parent, policy):
     '''Adds the list of attributes of a policy to the HTML DOM node parent.
     It will have the form:
@@ -315,14 +341,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         'mac_linux_pref_name',
         policy['name'],
         ['.monospace'])
-    self._AddPolicyAttribute(
-        dl,
-        'supported_on_platforms',
-        self._MapListToString(self._PLATFORM_MAP, annotations['platforms']))
-    self._AddPolicyAttribute(
-        dl,
-        'supported_in_products',
-        self._MapListToString(self._PRODUCT_MAP, annotations['products']))
+    dd = self._AddPolicyAttribute(dl, 'supported_on')
+    self._AddSupportedOnList(dd, policy['supported_on'])
     dd = self._AddPolicyAttribute(dl, 'supported_features')
     self._AddFeatures(dd, policy)
     dd = self._AddPolicyAttribute(dl, 'description')
@@ -491,6 +511,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       '.pre': 'white-space: pre;',
       'div.note': 'border: 2px solid black; padding: 5px; margin: 5px;',
       'div.group_desc': 'margin-top: 20px; margin-bottom: 20px;',
+      'ul': 'padding-left: 0px; margin-left: 0px;'
     }
 
     # A simple regexp to search for URLs. It is enough for now.

@@ -58,13 +58,28 @@
 #
 # Annotations:
 #   Each policy has metadata under the key 'annotations'.
-#   These values are only used for the generated documentation, except for
-#   'platforms', that is also used for filtering policies. It is a list
-#   enumerating the platforms on which Chrome supports the given policy.
-#   In a given template, only those policies are included that are compatible
-#   with the target OS of that template.
-#     Windows: ADM,ADMX,ADML
-#     Mac: plist,plist_strings
+#   These values are only used for the generated documentation.
+#
+# Products and versions:
+#   Each policy has the list of products and version numbers where it is
+#   supported under the key 'supported_on'. Each item of this list has the
+#   form of 'product:since_version-until_version', which means that support
+#   for the policy in 'product' was introduced in 'since_version' and removed
+#   after 'until_version'. Product names may contain a suffix specifying a
+#   platform name, e.g.: 'chrome.win' is read as 'Chrome on Windows'. Version
+#   numbers can be any string that does not contain ':' or '-' characters.
+#
+# Currently supported product names:
+#     'chrome_frame', 'chrome_os'
+#     'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
+#     For example if 'chrome.*:5-10' is specified for a policy, then it should
+#     be read as:
+#     'chrome.linux:5-10,chrome.mac:5-10,chrome.win:5-10'
+#   The product name also affects in which templates will the policy be included.
+#     chrome.*, chrome.win, chrome_frame -> ADM,ADMX,ADML,doc
+#     chrome.*, chrome.linux -> JSON,doc
+#     chrome.*, chrome.mac -> plist, plist_strings,doc
+#     everything else -> doc
 #
   'policy_definitions': [
     {
@@ -74,9 +89,8 @@
         {
           'name':  'HomepageLocation',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': 'http://chromium.org',
           }
@@ -84,9 +98,8 @@
         {
           'name': 'HomepageIsNewTabPage',
           'type': 'main',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': True,
           }
@@ -96,9 +109,8 @@
     {
       'name': 'ApplicationLocaleValue',
       'type': 'string',
+      'supported_on': ['chrome.win:8-'],
       'annotations': {
-        'platforms': ['win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 0},
         'example_value': 'en',
       },
@@ -106,9 +118,8 @@
     {
       'name': 'AlternateErrorPagesEnabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       },
@@ -116,9 +127,8 @@
     {
       'name': 'SearchSuggestEnabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
@@ -126,9 +136,8 @@
     {
       'name': 'DnsPrefetchingEnabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
@@ -136,9 +145,8 @@
     {
       'name': 'DisableSpdy',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
@@ -146,9 +154,8 @@
     {
       'name': 'JavascriptEnabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 0},
         'example_value': True,
       }
@@ -156,9 +163,8 @@
     {
       'name': 'SavingBrowserHistoryDisabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
@@ -166,9 +172,8 @@
     {
       'name': 'PrintingEnabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
@@ -176,9 +181,8 @@
     {
       'name': 'SafeBrowsingEnabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 0},
         'example_value': True,
       }
@@ -186,9 +190,8 @@
     {
       'name': 'MetricsReportingEnabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 0},
         'example_value': True,
         'problem_href':
@@ -202,9 +205,8 @@
       'policies': [{
         'name': 'PasswordManagerEnabled',
         'type': 'main',
+        'supported_on': ['chrome.*:8-'],
         'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
           'example_value': True,
         }
@@ -212,9 +214,8 @@
       {
         'name': 'PasswordManagerAllowShowPasswords',
         'type': 'main',
+        'supported_on': ['chrome.*:8-'],
         'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
           'example_value': False,
         }
@@ -223,9 +224,8 @@
     {
       'name': 'AutoFillEnabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': False,
       }
@@ -233,9 +233,8 @@
     {
       'name': 'DisabledPlugins',
       'type': 'list',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
       }
@@ -243,9 +242,8 @@
     {
       'name': 'SyncDisabled',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
@@ -263,9 +261,8 @@
             {'name': 'ProxyServerManual', 'value': '2'},
             {'name': 'ProxyServerUseSystem', 'value': '3'},
           ],
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': 2,
           }
@@ -273,9 +270,8 @@
         {
           'name': 'ProxyServer',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': '123.123.123.123:8080',
           }
@@ -283,9 +279,8 @@
         {
           'name': 'ProxyPacUrl',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': 'http://internal.site/example.pac'
           }
@@ -293,9 +288,8 @@
         {
           'name': 'ProxyBypassList',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value':
               'http://www.example1.com,'
@@ -311,9 +305,8 @@
         {
           'name': 'AuthSchemes',
           'type': 'string',
+          'supported_on': ['chrome.*:9-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': 'basic,digest,ntlm,negotiate',
           }
@@ -321,9 +314,8 @@
         {
           'name': 'DisableAuthNegotiateCnameLookup',
           'type': 'main',
+          'supported_on': ['chrome.*:9-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': False,
           }
@@ -331,9 +323,8 @@
         {
           'name': 'EnableAuthNegotiatePort',
           'type': 'main',
+          'supported_on': ['chrome.*:9-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': False,
           }
@@ -341,9 +332,8 @@
         {
           'name': 'AuthServerWhitelist',
           'type': 'string',
+          'supported_on': ['chrome.*:9-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': '*example.com,foobar.com,*baz',
           }
@@ -351,9 +341,8 @@
         {
           'name': 'AuthNegotiateDelegateWhitelist',
           'type': 'string',
+          'supported_on': ['chrome.*:9-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': 'foobar.example.com',
           }
@@ -361,9 +350,8 @@
         {
           'name': 'GSSAPILibraryName',
           'type': 'string',
+          'supported_on': ['chrome.linux:9-', 'chrome.mac:9-'],
           'annotations': {
-            'platforms': ['linux', 'mac'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 0},
             'example_value': 'libgssapi_krb5.so.2',
           }
@@ -376,9 +364,8 @@
       'policies': [{
         'name': 'ExtensionInstallBlacklist',
         'type': 'list',
+        'supported_on': ['chrome.*:8-'],
         'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['extension_id1', 'extension_id2']
         }
@@ -386,33 +373,30 @@
       {
         'name': 'ExtensionInstallWhitelist',
         'type': 'list',
+        'supported_on': ['chrome.*:8-'],
         'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['extension_id1', 'extension_id2']
         }
       },
       {
-	'name': 'ExtensionInstallForcelist',
-	'type': 'list',
-	'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
+        'name': 'ExtensionInstallForcelist',
+        'type': 'list',
+        'supported_on': ['chrome.*:9-'],
+        'annotations': {
           'features': {'dynamic_refresh': 0},
           'example_value': [
             'lcncmkcnkcdbbanbjakcencbaoegdjlp;'
             'https://clients2.google.com/service/update2/crx'
-	  ]
-	}
+          ]
+        }
       }]
     },
     {
       'name': 'ShowHomeButton',
       'type': 'main',
+      'supported_on': ['chrome.*:8-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-        'products': ['chrome'],
         'features': {'dynamic_refresh': 1},
         'example_value': True
       }
@@ -420,11 +404,10 @@
     {
       'name': 'DeveloperToolsDisabled',
       'type': 'main',
+      'supported_on': ['chrome.*:9-'],
       'annotations': {
-        'platforms': ['linux', 'mac', 'win'],
-	'products': ['chrome'],
-	'features': {'dynamic_refresh': 1},
-	'example_value': False,
+        'features': {'dynamic_refresh': 1},
+        'example_value': False,
       }
     },
     {
@@ -438,18 +421,16 @@
           {'name': 'RestoreOnStartupIsLastSession', 'value': '1'},
           {'name': 'RestoreOnStartupIsURLs', 'value': '4'},
         ],
+        'supported_on': ['chrome.*:8-'],
         'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
           'example_value': 4,
         }
       },{
         'name': 'RestoreOnStartupURLs',
         'type': 'list',
+        'supported_on': ['chrome.*:8-'],
         'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['http://example.com', 'http://chromium.org'],
         }
@@ -462,9 +443,8 @@
         {
           'name': 'DefaultSearchProviderEnabled',
           'type': 'main',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': True,
           }
@@ -472,9 +452,8 @@
         {
           'name': 'DefaultSearchProviderName',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': 'My Intranet Search',
           }
@@ -482,9 +461,8 @@
         {
           'name': 'DefaultSearchProviderKeyword',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': 'mis',
           }
@@ -492,9 +470,8 @@
         {
           'name': 'DefaultSearchProviderSearchURL',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': 'http://search.my.company/search?q={searchTerms}',
           }
@@ -502,9 +479,8 @@
         {
           'name': 'DefaultSearchProviderSuggestURL',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': 'http://search.my.company/suggest?q={searchTerms}',
           }
@@ -512,9 +488,8 @@
         {
           'name': 'DefaultSearchProviderIconURL',
           'type': 'string',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': 'http://search.my.company/favicon.ico',
           }
@@ -522,9 +497,8 @@
         {
           'name': 'DefaultSearchProviderEncodings',
           'type': 'list',
+          'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'platforms': ['linux', 'mac', 'win'],
-            'products': ['chrome'],
             'features': {'dynamic_refresh': 1},
             'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1']
           }
@@ -541,27 +515,24 @@
             {'name': 'RenderInHost', 'value': '0'},
             {'name': 'RenderInChromeFrame', 'value': '1'},
         ],
+        'supported_on': ['chrome_frame:8-'],
         'annotations': {
-          'platforms': ['win'],
-          'products': ['chrome_frame'],
           'features': {'dynamic_refresh': 0},
           'example_value': 1,
         }
       }, {
         'name': 'RenderInChromeFrameList',
         'type': 'list',
+        'supported_on': ['chrome_frame:8-'],
         'annotations': {
-          'platforms': ['win'],
-          'products': ['chrome_frame'],
           'features': {'dynamic_refresh': 0},
           'example_value': ['http://www.example.com', 'http://www.example.edu'],
         }
       }, {
         'name': 'RenderInHostList',
         'type': 'list',
+        'supported_on': ['chrome_frame:8-'],
         'annotations': {
-          'platforms': ['win'],
-          'products': ['chrome_frame'],
           'features': {'dynamic_refresh': 0},
           'example_value': ['http://www.example.com', 'http://www.example.edu'],
         }
@@ -573,9 +544,8 @@
       'policies': [{
         'name': 'ChromeFrameContentTypes',
         'type': 'list',
+        'supported_on': ['chrome_frame:8-'],
         'annotations': {
-          'platforms': ['win'],
-          'products': ['chrome_frame'],
           'features': {'dynamic_refresh': 0},
           'example_value': ['text/xml', 'application/xml'],
         }
@@ -584,9 +554,8 @@
     {
       'name': 'ChromeOsLockOnIdleSuspend',
       'type': 'main',
+      'supported_on': ['chrome_os:0.9.79.0-'],
       'annotations': {
-        'platforms': ['chrome_os'],
-        'products': ['chrome_os'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }

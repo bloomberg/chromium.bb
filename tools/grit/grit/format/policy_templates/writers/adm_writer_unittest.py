@@ -69,7 +69,7 @@ chromium="Chromium"'''
           {
             'name': 'MainPolicy',
             'type': 'main',
-            'annotations': {'platforms': ['win']}
+            'supported_on': ['chrome.win:8-']
           },
         ],
         'placeholders': [],
@@ -115,7 +115,7 @@ MainPolicy_Explain="Description of main."'''
           {
             'name': 'StringPolicy',
             'type': 'string',
-            'annotations': {'platforms': ['win']}
+            'supported_on': ['chrome.win:8-']
           },
         ],
         'placeholders': [],
@@ -166,7 +166,7 @@ StringPolicy_Part="Caption of policy."
               {'name': 'ProxyServerDisabled', 'value': '0'},
               {'name': 'ProxyServerAutoDetect', 'value': '1'},
             ],
-            'annotations': {'platforms': ['win']}
+            'supported_on': ['chrome.win:8-']
           },
         ],
         'placeholders': [],
@@ -223,7 +223,7 @@ ProxyServerAutoDetect_DropDown="Option2"
           {
             'name': 'ListPolicy',
             'type': 'list',
-            'annotations': {'platforms': ['win']}
+            'supported_on': ['chrome.win:8-']
           },
         ],
         'placeholders': [],
@@ -276,7 +276,7 @@ ListPolicy_Part="Value caption of list policy."
             'policies': [{
               'name': 'NonWinPolicy',
               'type': 'list',
-              'annotations': {'platforms': ['linux', 'mac']}
+              'supported_on': ['chrome.linux:8-', 'chrome.mac:8-']
             }],
           },
         ],
@@ -314,11 +314,11 @@ chromium="Chromium"
             'policies': [{
               'name': 'Policy1',
               'type': 'list',
-              'annotations': {'platforms': ['win']}
+              'supported_on': ['chrome.win:8-']
             },{
               'name': 'Policy2',
               'type': 'string',
-              'annotations': {'platforms': ['win']}
+              'supported_on': ['chrome.win:8-']
             }],
           },
         ],

@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 
+import itertools
+
+
 class TemplateWriter(object):
   '''Abstract base class for writing policy templates in various formats.
   The methods of this class will be called by PolicyTemplateGenerator.
@@ -32,6 +35,9 @@ class TemplateWriter(object):
 
   def IsPolicySupported(self, policy):
     '''Checks if the given policy is supported by the writer.
+    In other words, the set of platforms supported by the writer
+    has a common subset with the set of platforms that support
+    the policy.
 
     Args:
       policy: The dictionary of the policy.
@@ -39,9 +45,13 @@ class TemplateWriter(object):
     Returns:
       True if the writer chooses to include 'policy' in its output.
     '''
-    for platform in self.platforms:
-      if platform in policy['annotations']['platforms']:
-        return True
+    if '*' in self.platforms:
+      # Currently chrome_os is only catched here.
+      return True
+    for supported_on in policy['supported_on']:
+      for supported_on_platform in supported_on['platforms']:
+        if supported_on_platform in self.platforms:
+          return True
     return False
 
   def _GetPoliciesForWriter(self, group):

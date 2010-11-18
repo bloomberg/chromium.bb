@@ -264,14 +264,14 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
   def testPlatform(self):
     # Test that the writer correctly chooses policies of platform Windows.
     self.assertTrue(self.writer.IsPolicySupported({
-      'annotations': {
-        'platforms': ['win', 'zzz', 'aaa']
-      }
+      'supported_on': [
+        {'platforms': ['win', 'zzz']}, {'platforms': ['aaa']}
+      ]
     }))
     self.assertFalse(self.writer.IsPolicySupported({
-      'annotations': {
-        'platforms': ['mac', 'linux', 'aaa']
-      }
+      'supported_on': [
+        {'platforms': ['mac', 'linux']}, {'platforms': ['aaa']}
+      ]
     }))
 
 

@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 
+import copy
+
+
 def GetPolicySortingKey(policy):
   '''Extracts a sorting key from a policy. These keys can be used for
   list.sort() methods to sort policies.
@@ -42,10 +45,10 @@ class PolicyTemplateGenerator:
         content.
     '''
     # List of all the policies:
-    self._policy_definitions = policy_definitions
+    self._policy_definitions = copy.deepcopy(policy_definitions)
     # Localized messages to be inserted to the policy_definitions structure:
     self._messages = messages
-    self._AddMessagesToPolicyList(self._policy_definitions)
+    self._ProcessPolicyList(self._policy_definitions)
     self._SortPolicies(self._policy_definitions)
 
   def _SortPolicies(self, policy_list):
@@ -58,6 +61,56 @@ class PolicyTemplateGenerator:
         be sorted.
     '''
     policy_list.sort(key=GetPolicySortingKey)
+
+  def _ProcessSupportedOn(self, supported_on):
+    '''Parses and converts the string items of the list of supported platforms
+    into dictionaries.
+
+    Args:
+      supported_on: The list of supported platforms. E.g.:
+        ['chrome.win:8-10', 'chrome_frame:10-']
+
+    Returns:
+      supported_on: The list with its items converted to dictionaries. E.g.:
+      [{
+        'product': 'chrome',
+        'platform': 'win',
+        'since_version': '8',
+        'until_version': '10'
+      }, {
+        'product': 'chrome_frame',
+        'platform': 'win',
+        'since_version': '10',
+        'until_version': ''
+      }]
+    '''
+    result = []
+    for supported_on_item in supported_on:
+      product_platform_part, version_part = supported_on_item.split(':')
+      if '.' in product_platform_part:
+        product, platform = product_platform_part.split('.')
+        if platform == '*':
+          # e.g.: 'chrome.*:8-10'
+          platforms = ['linux', 'mac', 'win']
+        else:
+          # e.g.: 'chrome.win:-10'
+          platforms = [platform]
+      else:
+        # e.g.: 'chrome_frame:7-'
+        product = product_platform_part
+        platform = {
+          'chrome_os': 'chrome_os',
+          'chrome_frame': 'win'
+        }[product]
+        platforms = [platform]
+      since_version, until_version = version_part.split('-')
+      result.append({
+        'product': product,
+        'platforms': platforms,
+        'since_version': since_version,
+        'until_version': until_version
+      })
+    return result
 
   def _AddMessageToItem(self, item_name, item, message_name, default=None):
     '''Adds a localized message string to an item of the policy data structure
@@ -85,8 +138,9 @@ class PolicyTemplateGenerator:
       raise Exception('No localized message for %s (missing %s).' %
                       (item_name, long_message_name))
 
-  def _AddMessagesToPolicy(self, policy):
+  def _ProcessPolicy(self, policy):
     '''Adds localized message strings to a policy or group.
+     Also breaks up the content of 'supported_on' attribute into a list.
 
     Args:
       policy: The data structure of the policy or group, that will get message
@@ -99,23 +153,26 @@ class PolicyTemplateGenerator:
       # 'label', that defaults to 'caption'.
       self._AddMessageToItem(
           policy['name'], policy, 'label', policy['caption'])
+      policy['supported_on'] = self._ProcessSupportedOn(
+          policy['supported_on'])
     if policy['type'] == 'group':
-      self._AddMessagesToPolicyList(policy['policies'])
+      self._ProcessPolicyList(policy['policies'])
     elif policy['type'] == 'enum':
       # Iterate through all the items of an enum-type policy, and add captions.
       for item in policy['items']:
         self._AddMessageToItem('ENUM_' + item['name'], item, 'caption')
 
-  def _AddMessagesToPolicyList(self, policy_list):
+  def _ProcessPolicyList(self, policy_list):
     '''Adds localized message strings to each item in a list of policies and
-    groups.
+    groups. Also breaks up the content of 'supported_on' attributes into lists
+    of dictionaries.
 
     Args:
       policy_list: A list of policies and groups. Message strings will be added
         for each item and to their child items, recursively.
     '''
     for policy in policy_list:
-      self._AddMessagesToPolicy(policy)
+      self._ProcessPolicy(policy)
 
   def GetTemplateText(self, template_writer):
     '''Generates the text of the template from the arguments given

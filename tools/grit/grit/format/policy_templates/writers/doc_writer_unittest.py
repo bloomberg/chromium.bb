@@ -283,13 +283,18 @@ MockKey\\PolicyName\\1 = &quot;Bar&quot;</dd><dt>Linux:</dt><dd style="style_.mo
       'name': 'TestPolicyName',
       'caption': 'TestPolicyCaption',
       'desc': 'TestPolicyDesc',
-      'annotations': {
+      'supported_on': [{
+        'product': 'chrome',
         'platforms': ['win'],
-        'products': ['chrome'],
+        'since_version': '8',
+        'until_version': '',
+      }],
+      'annotations': {
         'features': {'dynamic_refresh': 0},
         'example_value': False
       }
     }
+    self.writer.messages.msg_dict['since_version'] = '...$6...'
     self.writer._AddPolicyDetails(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -299,8 +304,12 @@ MockKey\\PolicyName\\1 = &quot;Bar&quot;</dd><dt>Linux:</dt><dd style="style_.mo
       '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
       '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
         '<dd style="style_.monospace;">TestPolicyName</dd>'
-      '<dt style="style_dt;">_test_supported_on_platforms</dt><dd>Windows</dd>'
-      '<dt style="style_dt;">_test_supported_in_products</dt><dd>Chrome</dd>'
+      '<dt style="style_dt;">_test_supported_on</dt>'
+      '<dd>'
+        '<ul style="style_ul;">'
+          '<li>Chrome (Windows) ...8...</li>'
+        '</ul>'
+      '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
         '<dd>Dynamic Policy Refresh: _test_not_supported</dd>'
       '<dt style="style_dt;">_test_description</dt><dd>TestPolicyDesc</dd>'
@@ -363,13 +372,18 @@ MockKey\\PolicyName\\1 = &quot;Bar&quot;</dd><dt>Linux:</dt><dd style="style_.mo
       'caption': 'PolicyCaption',
       'desc': 'PolicyDesc',
       'type': 'string',
-      'annotations': {
+      'supported_on': [{
+        'product': 'chrome',
         'platforms': ['win'],
-        'products': ['chrome'],
+        'since_version': '7',
+        'until_version': '',
+      }],
+      'annotations': {
         'features': {'dynamic_refresh': 0},
         'example_value': False
       }
     }
+    self.writer.messages.msg_dict['since_version'] = '..$6..'
     self.writer._AddPolicySection(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -384,10 +398,12 @@ MockKey\\PolicyName\\1 = &quot;Bar&quot;</dd><dt>Linux:</dt><dd style="style_.mo
             '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
             '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
             '<dd style="style_.monospace;">PolicyName</dd>'
-            '<dt style="style_dt;">_test_supported_on_platforms</dt>'
-            '<dd>Windows</dd>'
-            '<dt style="style_dt;">_test_supported_in_products</dt>'
-            '<dd>Chrome</dd>'
+            '<dt style="style_dt;">_test_supported_on</dt>'
+            '<dd>'
+              '<ul style="style_ul;">'
+                '<li>Chrome (Windows) ..7..</li>'
+              '</ul>'
+            '</dd>'
             '<dt style="style_dt;">_test_supported_features</dt>'
             '<dd>Dynamic Policy Refresh: _test_not_supported</dd>'
             '<dt style="style_dt;">_test_description</dt>'

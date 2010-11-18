@@ -97,15 +97,15 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     policies_mock = [
       {
         'name': 'Group1', 'type': 'group',
-        'policies': [{'name': 'TAG1', 'type': 'mock'}]
+        'policies': [{'name': 'TAG1', 'type': 'mock', 'supported_on': []}]
       },
       {
         'name': 'Group2', 'type': 'group',
-        'policies': [{'name': 'TAG2', 'type': 'mock'}]
+        'policies': [{'name': 'TAG2', 'type': 'mock', 'supported_on': []}]
       },
       {
         'name': 'Group3', 'type': 'group',
-        'policies': [{'name': 'TAG3', 'type': 'mock'}]
+        'policies': [{'name': 'TAG3', 'type': 'mock', 'supported_on': []}]
       },
     ]
     class LocalMockWriter(mock_writer.MockWriter):
@@ -150,15 +150,15 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         'name': 'Group1',
         'type': 'group',
         'policies': [
-          {'name': 'Group1Policy1', 'type': 'string'},
-          {'name': 'Group1Policy2', 'type': 'string'},
+          {'name': 'Group1Policy1', 'type': 'string', 'supported_on': []},
+          {'name': 'Group1Policy2', 'type': 'string', 'supported_on': []},
         ]
       },
       {
         'name': 'Group2',
         'type': 'group',
         'policies': [
-          {'name': 'Group2Policy3', 'type': 'string'},
+          {'name': 'Group2Policy3', 'type': 'string', 'supported_on': []},
         ]
       }
     ]
@@ -194,8 +194,8 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         'name': 'Group1',
         'type': 'group',
         'policies': [
-          {'name': 'Policy1', 'type': 'string'},
-          {'name': 'Policy2', 'type': 'string'}
+          {'name': 'Policy1', 'type': 'string', 'supported_on': []},
+          {'name': 'Policy2', 'type': 'string', 'supported_on': []}
         ]
       }
     ]
@@ -225,6 +225,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     policy_defs_mock = [{
       'name': 'Policy1',
       'type': 'enum',
+      'supported_on': [],
       'items': [
         {'name': 'item1', 'value': '0'},
         {'name': 'item2', 'value': '1'},
@@ -248,12 +249,12 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         {
           'name': 'Group1Policy1',
           'type': 'string',
-          'annotations': {'platforms': ['aaa', 'bbb', 'ccc']}
+          'supported_on': ['chrome.aaa:8-', 'chrome.bbb:8-', 'chrome.ccc:8-']
         },
         {
           'name': 'Group1Policy2',
           'type': 'string',
-          'annotations': {'platforms': ['ddd']}
+          'supported_on': ['chrome.ddd:8-']
         },
       ]
     },{
@@ -263,13 +264,13 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         {
           'name': 'Group2Policy3',
           'type': 'string',
-          'annotations': {'platforms': ['eee']}
+          'supported_on': ['chrome.eee:8-']
         },
       ]
     },{
       'name': 'SinglePolicy',
       'type': 'int',
-      'annotations': {'platforms': ['eee']}
+      'supported_on': ['chrome.eee:8-']
     }]
     # This writer accumulates the list of policies it is asked to write.
     # This list is stored in the result_list member variable and can
@@ -308,42 +309,42 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testSorting(self):
     # Tests that policies are sorted correctly.
     policy_defs = [
-      {'name': 'zp', 'type': 'string', 'caption': 'a1'},
+      {'name': 'zp', 'type': 'string', 'caption': 'a1', 'supported_on': []},
       {
         'type': 'group',
         'caption': 'z_group1_caption',
         'name': 'group1',
         'policies': [
-          {'name': 'z0', 'type': 'string'},
-          {'name': 'a0', 'type': 'string'}
+          {'name': 'z0', 'type': 'string', 'supported_on': []},
+          {'name': 'a0', 'type': 'string', 'supported_on': []}
         ]
       },
       {
         'type': 'group',
         'caption': 'b_group2_caption',
         'name': 'group2',
-        'policies': [{'name': 'q', 'type': 'string'}],
+        'policies': [{'name': 'q', 'type': 'string', 'supported_on': []}],
       },
-      {'name': 'ap', 'type': 'string', 'caption': 'a2'}
+      {'name': 'ap', 'type': 'string', 'caption': 'a2', 'supported_on': []}
     ]
     sorted_policy_defs = [
       {
         'type': 'group',
         'caption': 'b_group2_caption',
         'name': 'group2',
-        'policies': [{'name': 'q', 'type': 'string'}],
+        'policies': [{'name': 'q', 'type': 'string', 'supported_on': []}],
       },
       {
         'type': 'group',
         'caption': 'z_group1_caption',
         'name': 'group1',
         'policies': [
-          {'name': 'z0', 'type': 'string'},
-          {'name': 'a0', 'type': 'string'}
+          {'name': 'z0', 'type': 'string', 'supported_on': []},
+          {'name': 'a0', 'type': 'string', 'supported_on': []}
         ]
       },
-      {'name': 'ap', 'type': 'string', 'caption': 'a2'},
-      {'name': 'zp', 'type': 'string', 'caption': 'a1'},
+      {'name': 'ap', 'type': 'string', 'caption': 'a2', 'supported_on': []},
+      {'name': 'zp', 'type': 'string', 'caption': 'a1', 'supported_on': []},
     ]
     ptg = policy_template_generator.PolicyTemplateGenerator([], [])
     ptg._SortPolicies(policy_defs)
@@ -354,8 +355,8 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testSortingInvoked(self):
     # Tests that policy-sorting happens before passing policies to the writer.
     policy_defs = [
-      {'name': 'zp', 'type': 'string'},
-      {'name': 'ap', 'type': 'string'}
+      {'name': 'zp', 'type': 'string', 'supported_on': []},
+      {'name': 'ap', 'type': 'string', 'supported_on': []}
     ]
     class LocalMockWriter(mock_writer.MockWriter):
       def __init__(self):
