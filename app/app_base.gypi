@@ -98,6 +98,8 @@
         'active_window_watcher_x.h',
         'animation_container.cc',
         'animation_container.h',
+        'animation_container_element.h',
+        'animation_container_observer.h',
         'animation.cc',
         'animation.h',
         'bidi_line_iterator.cc',

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/animation_container.h"
+#include "app/animation_container_observer.h"
 #include "app/linear_animation.h"
 #include "app/test_animation_delegate.h"
 #include "base/scoped_ptr.h"
@@ -13,7 +14,7 @@ using testing::AtLeast;
 
 namespace {
 
-class MockObserver : public AnimationContainer::Observer {
+class MockObserver : public AnimationContainerObserver {
  public:
   MockObserver() {}
 

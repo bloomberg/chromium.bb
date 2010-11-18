@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "app/animation_container.h"
 #include "app/animation_delegate.h"
 
 using base::Time;

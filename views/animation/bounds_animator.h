@@ -8,10 +8,12 @@
 
 #include <map>
 
-#include "app/animation_container.h"
+#include "app/animation_container_observer.h"
 #include "app/animation_delegate.h"
+#include "base/ref_counted.h"
 #include "gfx/rect.h"
 
+class AnimationContainer;
 class SlideAnimation;
 
 namespace views {
@@ -36,7 +38,7 @@ class BoundsAnimatorObserver {
 // by way of SetAnimationDelegate. Additionally you can attach an observer to
 // the BoundsAnimator that is notified when all animations are complete.
 class BoundsAnimator : public AnimationDelegate,
-                       public AnimationContainer::Observer {
+                       public AnimationContainerObserver {
  public:
   // If |delete_when_done| is set to true in |SetAnimationDelegate| the
   // |AnimationDelegate| must subclass this class.
@@ -147,7 +149,7 @@ class BoundsAnimator : public AnimationDelegate,
   virtual void AnimationEnded(const Animation* animation);
   virtual void AnimationCanceled(const Animation* animation);
 
-  // AnimationContainer::Observer overrides.
+  // AnimationContainerObserver overrides.
   virtual void AnimationContainerProgressed(AnimationContainer* container);
   virtual void AnimationContainerEmpty(AnimationContainer* container);
 

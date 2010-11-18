@@ -8,6 +8,7 @@
 
 #include "app/throb_animation.h"
 #include "app/resource_bundle.h"
+#include "base/logging.h"
 #include "gfx/canvas_skia.h"
 #include "views/controls/button/button.h"
 #include "views/event.h"

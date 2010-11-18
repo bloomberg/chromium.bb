@@ -4,6 +4,7 @@
 
 #include "views/animation/bounds_animator.h"
 
+#include "app/animation_container.h"
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "views/view.h"

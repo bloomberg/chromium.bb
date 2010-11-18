@@ -6,7 +6,7 @@
 #define APP_ANIMATION_H_
 #pragma once
 
-#include "app/animation_container.h"
+#include "app/animation_container_element.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
 
@@ -14,6 +14,7 @@ namespace gfx {
 class Rect;
 }
 
+class AnimationContainer;
 class AnimationDelegate;
 
 // Base class used in implementing animations. You only need use this class if
@@ -22,7 +23,7 @@ class AnimationDelegate;
 //
 // To subclass override Step, which is invoked as the animation progresses and
 // GetCurrentValue() to return the value appropriate to the animation.
-class Animation : public AnimationContainer::Element {
+class Animation : public AnimationContainerElement {
  public:
   explicit Animation(base::TimeDelta timer_interval);
   virtual ~Animation();

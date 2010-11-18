@@ -4,6 +4,9 @@
 
 #include "app/animation_container.h"
 
+#include "app/animation_container_element.h"
+#include "app/animation_container_observer.h"
+
 using base::TimeDelta;
 using base::TimeTicks;
 
@@ -18,7 +21,7 @@ AnimationContainer::~AnimationContainer() {
   DCHECK(elements_.empty());
 }
 
-void AnimationContainer::Start(Element* element) {
+void AnimationContainer::Start(AnimationContainerElement* element) {
   DCHECK(elements_.count(element) == 0);  // Start should only be invoked if the
                                           // element isn't running.
 
@@ -33,7 +36,7 @@ void AnimationContainer::Start(Element* element) {
   elements_.insert(element);
 }
 
-void AnimationContainer::Stop(Element* element) {
+void AnimationContainer::Stop(AnimationContainerElement* element) {
   DCHECK(elements_.count(element) > 0);  // The element must be running.
 
   elements_.erase(element);

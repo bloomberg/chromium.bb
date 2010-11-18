@@ -9,6 +9,7 @@
 #include "app/animation_delegate.h"
 #include "app/slide_animation.h"
 #include "base/singleton.h"
+#include "base/timer.h"
 #include "chrome/browser/views/info_bubble.h"
 
 namespace chromeos {
