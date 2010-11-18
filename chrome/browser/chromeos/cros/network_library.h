@@ -570,6 +570,8 @@ class NetworkLibrary {
   virtual bool wifi_enabled() const = 0;
   virtual bool cellular_enabled() const = 0;
 
+  virtual bool wifi_scanning() const = 0;
+
   virtual const Network* active_network() const = 0;
 
   virtual bool offline_mode() const = 0;

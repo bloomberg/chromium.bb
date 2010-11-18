@@ -489,8 +489,10 @@ void NetworkMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   cros->RequestWifiScan();
 
-  // Menu contents are built in UpdateMenu, which is called
-  // when NetworkChagned is called.
+  // Build initial menu items. They will be updated when UpdateMenu is
+  // called from NetworkChanged.
+  InitMenuItems();
+  network_menu_->Rebuild();
 
   // Restore menu width, if it was set up.
   // NOTE: width isn't checked for correctness here since all width-related
@@ -684,6 +686,13 @@ void NetworkMenu::InitMenuItems() {
     menu_items_.push_back(MenuItem());  // Separator
 
     if (wifi_available) {
+      // Add 'Scanning...'
+      if (cros->wifi_scanning()) {
+        label = l10n_util::GetStringUTF16(IDS_STATUSBAR_WIFI_SCANNING_MESSAGE);
+        menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+            SkBitmap(), std::string(), FLAG_DISABLED));
+      }
+
       int id = wifi_enabled ? IDS_STATUSBAR_NETWORK_DEVICE_DISABLE :
                               IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
       label = l10n_util::GetStringFUTF16(id,

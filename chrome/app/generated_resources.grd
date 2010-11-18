@@ -10184,6 +10184,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
         No networks are available
       </message>
+      <message name="IDS_STATUSBAR_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
+        Searching for Wi-Fi networks...
+      </message>
       <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
         Open date and time options...
       </message>

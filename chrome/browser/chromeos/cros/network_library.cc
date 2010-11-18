@@ -795,6 +795,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         available_devices_(0),
         enabled_devices_(0),
         connected_devices_(0),
+        wifi_scanning_(false),
         offline_mode_(false),
         update_task_(NULL) {
     if (EnsureCrosLoaded()) {
@@ -971,7 +972,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void RequestWifiScan() {
-    if (EnsureCrosLoaded()) {
+    if (EnsureCrosLoaded() && wifi_enabled()) {
+      wifi_scanning_ = true;  // Cleared in UpdateNetworkManagerStatus.
       RequestScan(TYPE_WIFI);
     }
   }
@@ -1176,6 +1178,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return enabled_devices_ & (1 << TYPE_CELLULAR);
   }
 
+  virtual bool wifi_scanning() const {
+    return wifi_scanning_;
+  }
+
   virtual bool offline_mode() const { return offline_mode_; }
 
   virtual const Network* active_network() const {
@@ -1210,6 +1216,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void EnableWifiNetworkDevice(bool enable) {
+    wifi_scanning_ = enable;  // Cleared in UpdateNetworkManagerStatus.
     EnableNetworkDeviceType(TYPE_WIFI, enable);
   }
 
@@ -1371,13 +1378,15 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  static void ParseSystem(SystemInfo* system,
-      EthernetNetwork** ethernet,
-      WifiNetworkVector* wifi_networks,
-      CellularNetworkVector* cellular_networks,
-      WifiNetworkVector* remembered_wifi_networks) {
+  void ParseSystem(SystemInfo* system) {
+    std::string prev_cellular_service_path = cellular_ ?
+        cellular_->service_path() : std::string();
+    bool prev_cellular_connected = cellular_ ?
+        cellular_->connected() : false;
+
+    ClearNetworks();
+
     DVLOG(1) << "ParseSystem:";
-    DCHECK(!(*ethernet));
     for (int i = 0; i < system->service_size; i++) {
       const ServiceInfo* service = system->GetServiceInfo(i);
       DVLOG(1) << "  (" << service->type << ") " << service->name
@@ -1396,18 +1405,18 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       // Once a connected ethernet service is found, disregard other ethernet
       // services that are also found
       if (service->type == TYPE_ETHERNET)
-        (*ethernet) = new EthernetNetwork(service);
+        ethernet_ = new EthernetNetwork(service);
       else if (service->type == TYPE_WIFI) {
-        wifi_networks->push_back(new WifiNetwork(service));
+        wifi_networks_.push_back(new WifiNetwork(service));
       } else if (service->type == TYPE_CELLULAR) {
-        cellular_networks->push_back(new CellularNetwork(service));
+        cellular_networks_.push_back(new CellularNetwork(service));
       }
     }
 
     // Create placeholder network for ethernet even if the service is not
     // detected at this moment.
-    if (!(*ethernet))
-      (*ethernet) = new EthernetNetwork();
+    if (!ethernet_)
+      ethernet_ = new EthernetNetwork();
 
     DVLOG(1) << "Remembered networks:";
     for (int i = 0; i < system->remembered_service_size; i++) {
@@ -1424,10 +1433,49 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                  << " fav=" << service->favorite
                  << " auto=" << service->auto_connect;
         if (service->type == TYPE_WIFI) {
-          remembered_wifi_networks->push_back(new WifiNetwork(service));
+          remembered_wifi_networks_.push_back(new WifiNetwork(service));
         }
       }
     }
+
+    // Find the active wifi network (if any).
+    wifi_ = NULL;
+    for (size_t i = 0; i < wifi_networks_.size(); i++) {
+      if (wifi_networks_[i]->connecting_or_connected()) {
+        wifi_ = wifi_networks_[i];
+        break;  // There is only one connected or connecting wifi network.
+      }
+    }
+
+    // Find the active cellular network (if any).
+    cellular_ = NULL;
+    for (size_t i = 0; i < cellular_networks_.size(); i++) {
+      if (cellular_networks_[i]->connecting_or_connected()) {
+        cellular_ = cellular_networks_[i];
+        // If new cellular, then request update of the data plan list.
+        if ((cellular_networks_[i]->service_path() !=
+                 prev_cellular_service_path) ||
+            (!prev_cellular_connected && cellular_networks_[i]->connected())) {
+          RefreshCellularDataPlans(cellular_);
+        }
+        break;  // There is only one connected or connecting cellular network.
+      }
+    }
+
+    wifi_scanning_ = false;
+    // TODO(stevenjb): Enable this code once crosbug.com/9326 is fixed.
+    // for (int i = 0; i < system->device_size; i++) {
+    //   const DeviceInfo* device = system->GetDeviceInfo(i);
+    //   if (device->type == TYPE_WIFI) {
+    //     if (device->scanning)
+    //       wifi_scanning_ = true;
+    //   }
+    // }
+
+    available_devices_ = system->available_technologies;
+    enabled_devices_ = system->enabled_technologies;
+    connected_devices_ = system->connected_technologies;
+    offline_mode_ = system->offline_mode;
   }
 
   void Init() {
@@ -1493,6 +1541,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     available_devices_ = devices;
     enabled_devices_ = devices;
     connected_devices_ = devices;
+    wifi_scanning_ = false;
     offline_mode_ = false;
   }
 
@@ -1585,41 +1634,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (!system)
       return;
 
-    std::string prev_cellular_service_path = cellular_ ?
-        cellular_->service_path() : std::string();
-    bool prev_cellular_connected = cellular_ ?
-        cellular_->connected() : false;
-
-    ClearNetworks();
-
-    ParseSystem(system, &ethernet_, &wifi_networks_, &cellular_networks_,
-                &remembered_wifi_networks_);
-
-    wifi_ = NULL;
-    for (size_t i = 0; i < wifi_networks_.size(); i++) {
-      if (wifi_networks_[i]->connecting_or_connected()) {
-        wifi_ = wifi_networks_[i];
-        break;  // There is only one connected or connecting wifi network.
-      }
-    }
-    cellular_ = NULL;
-    for (size_t i = 0; i < cellular_networks_.size(); i++) {
-      if (cellular_networks_[i]->connecting_or_connected()) {
-        cellular_ = cellular_networks_[i];
-        // If new cellular, then request update of the data plan list.
-        if ((cellular_networks_[i]->service_path() !=
-                 prev_cellular_service_path) ||
-            (!prev_cellular_connected && cellular_networks_[i]->connected())) {
-          RefreshCellularDataPlans(cellular_);
-        }
-        break;  // There is only one connected or connecting cellular network.
-      }
-    }
-
-    available_devices_ = system->available_technologies;
-    enabled_devices_ = system->enabled_technologies;
-    connected_devices_ = system->connected_technologies;
-    offline_mode_ = system->offline_mode;
+    ParseSystem(system);
 
     NotifyNetworkManagerChanged();
     FreeSystemInfo(system);
@@ -1762,6 +1777,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // The current connected network devices. Bitwise flag of ConnectionTypes.
   int connected_devices_;
 
+  // True if we are currently scanning for wifi networks.
+  bool wifi_scanning_;
+
+  // Currently not implemented. TODO: implement or eliminate.
   bool offline_mode_;
 
   // Delayed task to retrieve the network information.
@@ -1860,6 +1879,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual bool ethernet_enabled() const { return true; }
   virtual bool wifi_enabled() const { return false; }
   virtual bool cellular_enabled() const { return false; }
+  virtual bool wifi_scanning() const { return false; }
   virtual const Network* active_network() const { return NULL; }
   virtual bool offline_mode() const { return false; }
   virtual void EnableEthernetNetworkDevice(bool enable) {}
