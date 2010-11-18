@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
+#include "base/thread_restrictions.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -423,6 +424,10 @@ void NetworkSection::NotifyPrefChanged(const std::string* pref_name) {
 // static
 void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
                                                   NetworkSection* section) {
+  // Changing proxy settings searches the disk for the proxy configuration
+  // binary.  Temporarily allow IO for now, see http://crbug.com/63690
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   section->UserMetricsRecordAction(UserMetricsAction("Options_ChangeProxies"),
                                    NULL);
 
