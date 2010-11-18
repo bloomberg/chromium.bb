@@ -3712,7 +3712,7 @@ each locale. -->
         This icon will be visible when the extension can act on the current page.
       </message>
       <message name="IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO" desc="Text displayed in the InfoBubble which explains that this extension has an keyword that can be used with the omnibox.">
-        To use this extension, type "<ph name="EXTENSION_KEYWORD">$1<ex>search</ex></ph>", then SPACE, then your search string.
+        To use this extension, type "<ph name="EXTENSION_KEYWORD">$1<ex>search</ex></ph>", then TAB, then your command or search.
       </message>
 
       <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons">
@@ -4405,7 +4405,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Search <ph name="SITE_NAME">$1<ex>google.com</ex></ph>:
       </message>
       <message name="IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected an extension keyword">
-        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>:
+        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>
       </message>
       <!-- TODO(tc): This doesn't handle singular/plural properly. It needs to be reworded. -->
       <message name="IDS_OMNIBOX_RECENT_HISTORY" desc="Text shown in the omnibox that shows how many recent matches there are and allows the user to navigate to destinations->history with the selected text.">
