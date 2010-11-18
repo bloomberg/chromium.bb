@@ -33,6 +33,11 @@ class IndexedDBContext {
   // Get the file name of the indexed db file for the given origin.
   FilePath GetIndexedDBFilePath(const string16& origin_id) const;
 
+  // Deletes all idb files except for those on the url scheme
+  // |url_scheme_to_be_skipped|.
+  static void ClearLocalState(const FilePath& profile_path,
+                              const char* url_scheme_to_be_skipped);
+
  private:
   scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
 

@@ -4,8 +4,11 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/ref_counted.h"
+#include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/in_process_webkit/indexed_db_context.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -67,4 +70,32 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
+}
+
+// In proc browser test is needed here because ClearLocalState indirectly calls
+// WebKit's isMainThread through WebSecurityOrigin->SecurityOrigin.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
+  // Create test files.
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath indexeddb_dir = temp_dir.path().Append(
+      IndexedDBContext::kIndexedDBDirectory);
+  ASSERT_TRUE(file_util::CreateDirectory(indexeddb_dir));
+
+  FilePath::StringType file_name_1(FILE_PATH_LITERAL("http_www.google.com_0"));
+  file_name_1.append(IndexedDBContext::kIndexedDBExtension);
+  FilePath::StringType file_name_2(FILE_PATH_LITERAL("https_www.google.com_0"));
+  file_name_2.append(IndexedDBContext::kIndexedDBExtension);
+  FilePath temp_file_path_1 = indexeddb_dir.Append(file_name_1);
+  FilePath temp_file_path_2 = indexeddb_dir.Append(file_name_2);
+
+  ASSERT_EQ(1, file_util::WriteFile(temp_file_path_1, ".", 1));
+  ASSERT_EQ(1, file_util::WriteFile(temp_file_path_2, "o", 1));
+
+  IndexedDBContext::ClearLocalState(temp_dir.path(), "https");
+
+  // Because we specified https for scheme to be skipped the second file
+  // should survive and the first go into vanity.
+  ASSERT_FALSE(file_util::PathExists(temp_file_path_1));
+  ASSERT_TRUE(file_util::PathExists(temp_file_path_2));
 }

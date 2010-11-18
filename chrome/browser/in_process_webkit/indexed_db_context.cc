@@ -4,17 +4,21 @@
 
 #include "chrome/browser/in_process_webkit/indexed_db_context.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBFactory;
+using WebKit::WebSecurityOrigin;
 
 const FilePath::CharType IndexedDBContext::kIndexedDBDirectory[] =
     FILE_PATH_LITERAL("IndexedDB");
@@ -42,4 +46,23 @@ FilePath IndexedDBContext::GetIndexedDBFilePath(
       kIndexedDBDirectory);
   FilePath::StringType id = webkit_glue::WebStringToFilePathString(origin_id);
   return storage_dir.Append(id.append(kIndexedDBExtension));
+}
+
+// static
+void IndexedDBContext::ClearLocalState(const FilePath& profile_path,
+                                       const char* url_scheme_to_be_skipped) {
+  file_util::FileEnumerator file_enumerator(profile_path.Append(
+      kIndexedDBDirectory), false, file_util::FileEnumerator::FILES);
+  // TODO(pastarmovj): We might need to consider exchanging this loop for
+  // something more efficient in the future.
+  for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
+       file_path = file_enumerator.Next()) {
+    if (file_path.Extension() != IndexedDBContext::kIndexedDBExtension)
+      continue;
+    WebSecurityOrigin origin =
+        WebSecurityOrigin::createFromDatabaseIdentifier(
+            webkit_glue::FilePathToWebString(file_path.BaseName()));
+    if (!EqualsASCII(origin.protocol(), url_scheme_to_be_skipped))
+      file_util::Delete(file_path, false);
+  }
 }
