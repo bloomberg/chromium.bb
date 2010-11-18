@@ -339,6 +339,7 @@ ACCEPTABLE_TEST_SUITES = set([
   'barebones_tests',
   'tsan_bot_tests',
   'toolchain_tests',
+  'pnacl_abi_tests',
   ])
 
 # The major test suites are also acceptable names.  Suite names are checked
