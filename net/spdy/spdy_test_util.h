@@ -358,7 +358,6 @@ class SpdySessionDependencies {
       SpdySessionDependencies* session_deps) {
     return new HttpNetworkSession(session_deps->host_resolver.get(),
                                   NULL /* dnsrr_resolver */,
-                                  NULL /* dns_cert_checker */,
                                   NULL /* ssl_host_info_factory */,
                                   session_deps->proxy_service,
                                   session_deps->socket_factory.get(),
@@ -372,7 +371,6 @@ class SpdySessionDependencies {
       SpdySessionDependencies* session_deps) {
     return new HttpNetworkSession(session_deps->host_resolver.get(),
                                   NULL /* dnsrr_resolver */,
-                                  NULL /* dns_cert_checker */,
                                   NULL /* ssl_host_info_factory */,
                                   session_deps->proxy_service,
                                   session_deps->
@@ -397,7 +395,6 @@ class SpdyURLRequestContext : public URLRequestContext {
         new HttpNetworkLayer(&socket_factory_,
                              host_resolver_,
                              NULL /* dnsrr_resolver */,
-                             NULL /* dns_cert_checker */,
                              NULL /* ssl_host_info_factory */,
                              proxy_service_,
                              ssl_config_service_,

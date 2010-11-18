@@ -33,7 +33,6 @@ class PrefService;
 class Profile;
 
 namespace net {
-class DnsCertProvenanceChecker;
 class NetworkDelegate;
 class ProxyConfig;
 }
@@ -130,9 +129,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   }
   void set_dnsrr_resolver(net::DnsRRResolver* dnsrr_resolver) {
     dnsrr_resolver_ = dnsrr_resolver;
-  }
-  void set_dns_cert_checker(net::DnsCertProvenanceChecker* ctx) {
-    dns_cert_checker_.reset(ctx);
   }
   void set_http_transaction_factory(net::HttpTransactionFactory* factory) {
     http_transaction_factory_ = factory;

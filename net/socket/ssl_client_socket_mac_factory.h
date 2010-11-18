@@ -10,7 +10,7 @@
 
 namespace net {
 
-class DnsCertProvenanceChecker;
+class DnsRRResolver;
 class SSLHostInfo;
 
 // Creates SSLClientSocketMac objects.
@@ -19,7 +19,7 @@ SSLClientSocket* SSLClientSocketMacFactory(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     SSLHostInfo* ssl_host_info,
-    DnsCertProvenanceChecker* dns_cert_checker);
+    DnsRRResolver* dnsrr_resolver);
 
 }  // namespace net
 

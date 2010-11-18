@@ -71,7 +71,6 @@ DeviceManagementBackendRequestContext::DeviceManagementBackendRequestContext(
   http_transaction_factory_ =
       net::HttpNetworkLayer::CreateFactory(host_resolver_,
                                            io_globals->dnsrr_resolver.get(),
-                                           NULL /* dns_cert_checker */,
                                            NULL /* ssl_host_info_factory */,
                                            proxy_service_,
                                            ssl_config_service_,
