@@ -1299,12 +1299,22 @@ void ChromeActiveDocument::SetWindowDimensions() {
   DVLOG(1) << "this:" << this << "\ndimensions: width:" << dimensions_.width()
            << " height:" << dimensions_.height();
   if (!dimensions_.IsEmpty()) {
+    web_browser2->put_MenuBar(VARIANT_FALSE);
+    web_browser2->put_ToolBar(VARIANT_FALSE);
+
+    int width = dimensions_.width();
+    int height = dimensions_.height();
+    // Compute the size of the browser window given the desired size of the
+    // content area. As per MSDN, the WebBrowser object returns an error from
+    // this method. As a result the code below is best effort.
+    if (SUCCEEDED(web_browser2->ClientToWindow(&width, &height))) {
+      dimensions_.set_width(width);
+      dimensions_.set_height(height);
+    }
     web_browser2->put_Width(dimensions_.width());
     web_browser2->put_Height(dimensions_.height());
     web_browser2->put_Left(dimensions_.x());
     web_browser2->put_Top(dimensions_.y());
-    web_browser2->put_MenuBar(VARIANT_FALSE);
-    web_browser2->put_ToolBar(VARIANT_FALSE);
 
     dimensions_.set_height(0);
     dimensions_.set_width(0);
