@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 
@@ -30,12 +31,14 @@ namespace events = extension_event_names;
 namespace {
 
 const char kAppLaunchUrlKey[] = "appLaunchUrl";
+const char kDescriptionKey[] = "description";
 const char kEnabledKey[] = "enabled";
 const char kIconsKey[] = "icons";
 const char kIdKey[] = "id";
 const char kIsAppKey[] = "isApp";
 const char kNameKey[] = "name";
 const char kOptionsUrlKey[] = "optionsUrl";
+const char kPermissionsKey[] = "permissions";
 const char kSizeKey[] = "size";
 const char kUrlKey[] = "url";
 const char kVersionKey[] = "version";
@@ -56,8 +59,8 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   info->SetString(kNameKey, extension.name());
   info->SetBoolean(kEnabledKey, enabled);
   info->SetString(kVersionKey, extension.VersionString());
-  if (!extension.options_url().is_empty())
-    info->SetString(kOptionsUrlKey,
+  info->SetString(kDescriptionKey, extension.description());
+  info->SetString(kOptionsUrlKey,
                     extension.options_url().possibly_invalid_spec());
   if (extension.is_app())
     info->SetString(kAppLaunchUrlKey,
@@ -76,6 +79,33 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
     }
     info->Set("icons", icon_list);
   }
+
+  const std::set<std::string> perms = extension.api_permissions();
+  ListValue* permission_list = new ListValue();
+  if (!perms.empty()) {
+    std::set<std::string>::const_iterator perms_iter;
+    for (perms_iter = perms.begin(); perms_iter != perms.end(); ++perms_iter) {
+      StringValue* permission_name = new StringValue(*perms_iter);
+      permission_list->Append(permission_name);
+    }
+  }
+  info->Set("permissions", permission_list);
+
+  ListValue* host_permission_list = new ListValue();
+  if (!extension.is_hosted_app()) {
+    // Skip host permissions for hosted apps.
+    const URLPatternList host_perms = extension.host_permissions();
+    if (!host_perms.empty()) {
+      std::vector<URLPattern>::const_iterator host_perms_iter;
+      for (host_perms_iter = host_perms.begin();
+           host_perms_iter != host_perms.end();
+           ++host_perms_iter) {
+        StringValue* name = new StringValue(host_perms_iter->GetAsString());
+        host_permission_list->Append(name);
+      }
+    }
+  }
+  info->Set("hostPermissions", host_permission_list);
 
   return info;
 }

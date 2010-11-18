@@ -4062,6 +4062,10 @@
             "description": "The name of this extension or app.",
             "type": "string"
           },
+          "description": {
+            "description": "The description of this extension or app.",
+            "type": "string"
+          },
           "version": {
             "description": "The <a href='manifest.html#version'>version</a> of this extension or app.",
             "type": "string"
@@ -4081,8 +4085,7 @@
           },
           "optionsUrl": {
             "description": "The url for the item's options page, if it has one.",
-            "type": "string",
-            "optional": true
+            "type": "string"
           },
           "icons": {
             "description": "A list of icon information. Note that this just reflects what was declared in the manifest, and the actual image at that url may be larger or smaller than what was declared, so you might consider using explicit width and height attributes on img tags referencing these images. See the <a href='manifest.html#icons'>manifest documentation on icons</a> for more details.",
@@ -4090,6 +4093,20 @@
             "optional": true,
             "items": {
               "$ref": "IconInfo"
+            }
+          },
+          "permissions": {
+            "description": "Returns a list of API based permissions.",
+            "type": "array",
+            "items" : {
+              "type": "string"
+            }
+          },
+          "hostPermissions": {
+            "description": "Returns a list of host based permissions.",
+            "type": "array",
+            "items" : {
+              "type": "string"
             }
           }
         }

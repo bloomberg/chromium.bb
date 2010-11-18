@@ -12,9 +12,11 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
   virtual void InstallExtensions() {
     FilePath basedir = test_data_dir_.AppendASCII("management");
 
-    // Load 2 enabled items.
+    // Load 4 enabled items.
     ASSERT_TRUE(LoadExtension(basedir.AppendASCII("enabled_extension")));
     ASSERT_TRUE(LoadExtension(basedir.AppendASCII("enabled_app")));
+    ASSERT_TRUE(LoadExtension(basedir.AppendASCII("description")));
+    ASSERT_TRUE(LoadExtension(basedir.AppendASCII("permissions")));
 
     // Load 2 disabled items.
     ExtensionsService* service = browser()->profile()->GetExtensionsService();

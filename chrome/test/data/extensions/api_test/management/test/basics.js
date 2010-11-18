@@ -15,13 +15,40 @@ function checkIcon(item, size, path) {
   fail("didn't find icon of size " + size + " at path " + path);
 }
 
+function checkPermission(item, perm) {
+  var permissions = item.permissions;
+  console.log("permissions for " + item.name);
+  for (var i = 0; i < permissions.length; i++) {
+    var permission = permissions[i];
+    console.log(" " + permission);
+    if (permission == perm) {
+      assertEq(perm, permission);
+      return;
+    }
+  }
+  fail("didn't find permission " + perm);
+}
+
+function checkHostPermission(item, perm) {
+  var permissions = item.hostPermissions;
+  for (var i = 0; i < permissions.length; i++) {
+    var permission = permissions[i];
+    if (permission == perm) {
+      assertEq(perm, permission);
+      return;
+    }
+  }
+  fail("didn't find permission " + perm);
+}
+
 var tests = [
   function simple() {
     chrome.management.getAll(callback(function(items) {
-      chrome.test.assertEq(5, items.length);
+      chrome.test.assertEq(7, items.length);
 
       checkItemInList(items, "Extension Management API Test", true, false);
-
+      checkItemInList(items, "description", true, false,
+                { "description": "a short description" });
       checkItemInList(items, "enabled_app", true, true,
                 {"appLaunchUrl": "http://www.google.com/"});
       checkItemInList(items, "disabled_app", false, true);
@@ -39,8 +66,17 @@ var tests = [
       // Check that we can retrieve this extension by ID.
       chrome.management.get(extension.id, callback(function(same_extension) {
         checkItem(same_extension, extension.name, extension.enabled,
-                  extension.isApp, extension.additional_properties)
+                  extension.isApp, extension.additional_properties);
       }));
+
+      // Check that we have a permission defined.
+      var testExtension = getItemNamed(items, "Extension Management API Test");
+      checkPermission(testExtension, "management");
+
+      var permExtension = getItemNamed(items, "permissions");
+      checkPermission(permExtension, "unlimitedStorage");
+      checkPermission(permExtension, "notifications");
+      checkHostPermission(permExtension, "http://*/*");
     }));
   },
 
