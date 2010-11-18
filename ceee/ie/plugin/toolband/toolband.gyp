@@ -18,6 +18,7 @@
         '../../common/common.gyp:ie_common_settings',
         '../../../../base/base.gyp:base',
         '../../../../ceee/common/common.gyp:ceee_common',
+        '../../../../ceee/common/common.gyp:initializing_coclass',
       ],
       'sources': [
         'tool_band.cc',
