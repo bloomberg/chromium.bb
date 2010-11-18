@@ -21,7 +21,7 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }
 
 // TODO(mac-port): Any code needed to initialize a process for purposes of
-// running a renderer needs to also be reflected in chrome_dll_main.cc for
+// running a renderer needs to also be reflected in chrome_main.cc for
 // --single-process support.
 void RendererMainPlatformDelegate::PlatformInitialize() {
   // Initialize NSApplication using the custom subclass. Without this call,

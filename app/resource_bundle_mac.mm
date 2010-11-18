@@ -17,7 +17,7 @@ namespace {
 FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
   NSString *resource_path;
   // Some of the helper processes need to be able to fetch resources
-  // (chrome_dll_main.cc SubprocessNeedsResourceBundle()). Fetch the same locale
+  // (chrome_main.cc: SubprocessNeedsResourceBundle()). Fetch the same locale
   // as the already-running browser instead of using what NSBundle might pick
   // based on values at helper launch time.
   if ([mac_locale length]) {

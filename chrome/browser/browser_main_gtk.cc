@@ -66,7 +66,7 @@ void BrowserMainPartsGtk::PreEarlyInitialization() {
 
 void BrowserMainPartsGtk::SetupSandbox() {
   // TODO(evanm): move this into SandboxWrapper; I'm just trying to move this
-  // code en masse out of chrome_dll_main for now.
+  // code en masse out of chrome_main for now.
   const char* sandbox_binary = NULL;
   struct stat st;
 

@@ -192,7 +192,7 @@
             # On Linux, link the dependencies (libraries) that make up actual
             # Chromium functionality directly into the executable.
             '<@(chromium_dependencies)',
-            # Needed for chrome_dll_main.cc initialization of libraries.
+            # Needed for chrome_main.cc initialization of libraries.
             '../build/linux/system.gyp:dbus-glib',
             '../build/linux/system.gyp:gtk',
             'packed_resources',
@@ -200,7 +200,7 @@
             'installer_util',
           ],
           'sources': [
-            'app/chrome_dll_main.cc',
+            'app/chrome_main.cc',
             'app/chrome_dll_resource.h',
           ],
           'copies': [

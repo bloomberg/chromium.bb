@@ -91,8 +91,8 @@
               'sources': [
                 'app/chrome_command_ids.h',
                 'app/chrome_dll.rc',
-                'app/chrome_dll_main.cc',
                 'app/chrome_dll_resource.h',
+                'app/chrome_main.cc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
 
                 '../webkit/glue/resources/aliasb.cur',
@@ -171,9 +171,9 @@
               },
               'sources': [
                 'app/chrome_command_ids.h',
-                'app/chrome_dll_app_mode_mac.mm',
-                'app/chrome_dll_main.cc',
                 'app/chrome_dll_resource.h',
+                'app/chrome_main_app_mode_mac.mm',
+                'app/chrome_main.cc',
               ],
               'include_dirs': [
                 '<(grit_out_dir)',
@@ -568,8 +568,8 @@
           ],
           'sources': [
             'app/chrome_command_ids.h',
-            'app/chrome_dll_main.cc',
             'app/chrome_dll_resource.h',
+            'app/chrome_main.cc',
             'browser/renderer_host/render_process_host_dummy.cc',
             'common/googleurl_dummy.cc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',

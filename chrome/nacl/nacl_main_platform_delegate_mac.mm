@@ -25,7 +25,7 @@ NaClMainPlatformDelegate::~NaClMainPlatformDelegate() {
 // TODO(jvoung): see if this old comment (from renderer_main_platform...)
 // is relevant to the nacl loader.
 // TODO(mac-port): Any code needed to initialize a process for purposes of
-// running a NaClLoader needs to also be reflected in chrome_dll_main.cc for
+// running a NaClLoader needs to also be reflected in chrome_main.cc for
 // --single-process support.
 void NaClMainPlatformDelegate::PlatformInitialize() {
 }
