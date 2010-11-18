@@ -1064,8 +1064,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
 
-  // Helper for DeleteSharedIds commands.
-  void DoDeleteSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
+  // Helper for DeleteSharedIdsCHROMIUM commands.
+  void DoDeleteSharedIdsCHROMIUM(
+      GLuint namespace_id, GLsizei n, const GLuint* ids);
 
   // Wrapper for glDetachShader
   void DoDetachShader(GLuint client_program_id, GLint client_shader_id);
@@ -1098,8 +1099,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
 
-  // Helper for GenSharedIds commands.
-  void DoGenSharedIds(
+  // Helper for GenSharedIdsCHROMIUM commands.
+  void DoGenSharedIdsCHROMIUM(
       GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
 
   // Wrapper for DoGetBooleanv.
@@ -1116,7 +1117,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DoGetIntegerv(GLenum pname, GLint* params);
 
   // Gets the max value in a range in a buffer.
-  GLuint DoGetMaxValueInBuffer(
+  GLuint DoGetMaxValueInBufferCHROMIUM(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
 
   // Wrapper for glGetProgramiv.
@@ -1145,8 +1146,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
 
-  // Helper for RegisterSharedIds.
-  void DoRegisterSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
+  // Helper for RegisterSharedIdsCHROMIUM.
+  void DoRegisterSharedIdsCHROMIUM(
+      GLuint namespace_id, GLsizei n, const GLuint* ids);
 
   // Wrapper for glRenderbufferStorage.
   void DoRenderbufferStorage(
@@ -1195,7 +1197,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glValidateProgram.
   void DoValidateProgram(GLuint program_client_id);
 
-  void DoCopyTextureToParentTexture(GLuint client_texture_id,
+  void DoCopyTextureToParentTextureCHROMIUM(GLuint client_texture_id,
                                     GLuint parent_client_texture_id);
 
   void DoResizeCHROMIUM(GLuint width, GLuint height);
@@ -2518,7 +2520,7 @@ void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   pending_offscreen_size_ = size;
 }
 
-void GLES2DecoderImpl::DoCopyTextureToParentTexture(
+void GLES2DecoderImpl::DoCopyTextureToParentTextureCHROMIUM(
     GLuint client_texture_id,
     GLuint parent_client_texture_id) {
   if (parent_) {
@@ -3143,7 +3145,7 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoDeleteSharedIds(
+void GLES2DecoderImpl::DoDeleteSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
   IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
   for (GLsizei ii = 0; ii < n; ++ii) {
@@ -3151,8 +3153,8 @@ void GLES2DecoderImpl::DoDeleteSharedIds(
   }
 }
 
-error::Error GLES2DecoderImpl::HandleDeleteSharedIds(
-    uint32 immediate_data_size, const gles2::DeleteSharedIds& c) {
+error::Error GLES2DecoderImpl::HandleDeleteSharedIdsCHROMIUM(
+    uint32 immediate_data_size, const gles2::DeleteSharedIdsCHROMIUM& c) {
   GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32 data_size;
@@ -3162,17 +3164,17 @@ error::Error GLES2DecoderImpl::HandleDeleteSharedIds(
   const GLuint* ids = GetSharedMemoryAs<const GLuint*>(
       c.ids_shm_id, c.ids_shm_offset, data_size);
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "DeleteSharedIds: n < 0");
+    SetGLError(GL_INVALID_VALUE, "DeleteSharedIdsCHROMIUM: n < 0");
     return error::kNoError;
   }
   if (ids == NULL) {
     return error::kOutOfBounds;
   }
-  DoDeleteSharedIds(namespace_id, n, ids);
+  DoDeleteSharedIdsCHROMIUM(namespace_id, n, ids);
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoGenSharedIds(
+void GLES2DecoderImpl::DoGenSharedIdsCHROMIUM(
     GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
   IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
   if (id_offset == 0) {
@@ -3187,8 +3189,8 @@ void GLES2DecoderImpl::DoGenSharedIds(
   }
 }
 
-error::Error GLES2DecoderImpl::HandleGenSharedIds(
-    uint32 immediate_data_size, const gles2::GenSharedIds& c) {
+error::Error GLES2DecoderImpl::HandleGenSharedIdsCHROMIUM(
+    uint32 immediate_data_size, const gles2::GenSharedIdsCHROMIUM& c) {
   GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
   GLuint id_offset = static_cast<GLuint>(c.id_offset);
   GLsizei n = static_cast<GLsizei>(c.n);
@@ -3199,17 +3201,17 @@ error::Error GLES2DecoderImpl::HandleGenSharedIds(
   GLuint* ids = GetSharedMemoryAs<GLuint*>(
       c.ids_shm_id, c.ids_shm_offset, data_size);
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "GenSharedIds: n < 0");
+    SetGLError(GL_INVALID_VALUE, "GenSharedIdsCHROMIUM: n < 0");
     return error::kNoError;
   }
   if (ids == NULL) {
     return error::kOutOfBounds;
   }
-  DoGenSharedIds(namespace_id, id_offset, n, ids);
+  DoGenSharedIdsCHROMIUM(namespace_id, id_offset, n, ids);
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoRegisterSharedIds(
+void GLES2DecoderImpl::DoRegisterSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
   IdAllocator* id_allocator = group_->GetIdAllocator(namespace_id);
   for (GLsizei ii = 0; ii < n; ++ii) {
@@ -3219,14 +3221,15 @@ void GLES2DecoderImpl::DoRegisterSharedIds(
       }
       SetGLError(
           GL_INVALID_VALUE,
-          "RegisterSharedIds: attempt to register id that already exists");
+          "RegisterSharedIdsCHROMIUM: attempt to register "
+          "id that already exists");
       return;
     }
   }
 }
 
-error::Error GLES2DecoderImpl::HandleRegisterSharedIds(
-    uint32 immediate_data_size, const gles2::RegisterSharedIds& c) {
+error::Error GLES2DecoderImpl::HandleRegisterSharedIdsCHROMIUM(
+    uint32 immediate_data_size, const gles2::RegisterSharedIdsCHROMIUM& c) {
   GLuint namespace_id = static_cast<GLuint>(c.namespace_id);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32 data_size;
@@ -3236,13 +3239,13 @@ error::Error GLES2DecoderImpl::HandleRegisterSharedIds(
   GLuint* ids = GetSharedMemoryAs<GLuint*>(
       c.ids_shm_id, c.ids_shm_offset, data_size);
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "RegisterSharedIds: n < 0");
+    SetGLError(GL_INVALID_VALUE, "RegisterSharedIdsCHROMIUM: n < 0");
     return error::kNoError;
   }
   if (ids == NULL) {
     return error::kOutOfBounds;
   }
-  DoRegisterSharedIds(namespace_id, n, ids);
+  DoRegisterSharedIdsCHROMIUM(namespace_id, n, ids);
   return error::kNoError;
 }
 
@@ -4163,19 +4166,20 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
   return error::kNoError;
 }
 
-GLuint GLES2DecoderImpl::DoGetMaxValueInBuffer(
+GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
     GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
   GLuint max_vertex_accessed = 0;
   BufferManager::BufferInfo* info = GetBufferInfo(buffer_id);
   if (!info) {
     // TODO(gman): Should this be a GL error or a command buffer error?
     SetGLError(GL_INVALID_VALUE,
-               "GetMaxValueInBuffer: unknown buffer");
+               "GetMaxValueInBufferCHROMIUM: unknown buffer");
   } else {
     if (!info->GetMaxValueForRange(offset, count, type, &max_vertex_accessed)) {
       // TODO(gman): Should this be a GL error or a command buffer error?
-      SetGLError(GL_INVALID_OPERATION,
-                 "GetMaxValueInBuffer: range out of bounds for buffer");
+      SetGLError(
+          GL_INVALID_OPERATION,
+          "GetMaxValueInBufferCHROMIUM: range out of bounds for buffer");
     }
   }
   return max_vertex_accessed;
@@ -5875,10 +5879,10 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleCommandBufferEnable(
-    uint32 immediate_data_size, const gles2::CommandBufferEnable& c) {
+error::Error GLES2DecoderImpl::HandleCommandBufferEnableCHROMIUM(
+    uint32 immediate_data_size, const gles2::CommandBufferEnableCHROMIUM& c) {
   Bucket* bucket = GetBucket(c.bucket_id);
-  typedef gles2::CommandBufferEnable::Result Result;
+  typedef gles2::CommandBufferEnableCHROMIUM::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result));
   if (!result) {

@@ -8486,9 +8486,9 @@ COMPILE_ASSERT(sizeof(SwapBuffers) == 4,
 COMPILE_ASSERT(offsetof(SwapBuffers, header) == 0,
                OffsetOf_SwapBuffers_header_not_0);
 
-struct GetMaxValueInBuffer {
-  typedef GetMaxValueInBuffer ValueType;
-  static const CommandId kCmdId = kGetMaxValueInBuffer;
+struct GetMaxValueInBufferCHROMIUM {
+  typedef GetMaxValueInBufferCHROMIUM ValueType;
+  static const CommandId kCmdId = kGetMaxValueInBufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   typedef GLuint Result;
@@ -8532,26 +8532,26 @@ struct GetMaxValueInBuffer {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetMaxValueInBuffer) == 28,
-               Sizeof_GetMaxValueInBuffer_is_not_28);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, header) == 0,
-               OffsetOf_GetMaxValueInBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, buffer_id) == 4,
-               OffsetOf_GetMaxValueInBuffer_buffer_id_not_4);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, count) == 8,
-               OffsetOf_GetMaxValueInBuffer_count_not_8);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, type) == 12,
-               OffsetOf_GetMaxValueInBuffer_type_not_12);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, offset) == 16,
-               OffsetOf_GetMaxValueInBuffer_offset_not_16);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, result_shm_id) == 20,
-               OffsetOf_GetMaxValueInBuffer_result_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetMaxValueInBuffer, result_shm_offset) == 24,
-               OffsetOf_GetMaxValueInBuffer_result_shm_offset_not_24);
+COMPILE_ASSERT(sizeof(GetMaxValueInBufferCHROMIUM) == 28,
+               Sizeof_GetMaxValueInBufferCHROMIUM_is_not_28);
+COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, header) == 0,
+               OffsetOf_GetMaxValueInBufferCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, buffer_id) == 4,
+               OffsetOf_GetMaxValueInBufferCHROMIUM_buffer_id_not_4);
+COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, count) == 8,
+               OffsetOf_GetMaxValueInBufferCHROMIUM_count_not_8);
+COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, type) == 12,
+               OffsetOf_GetMaxValueInBufferCHROMIUM_type_not_12);
+COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, offset) == 16,
+               OffsetOf_GetMaxValueInBufferCHROMIUM_offset_not_16);
+COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, result_shm_id) == 20,
+               OffsetOf_GetMaxValueInBufferCHROMIUM_result_shm_id_not_20);
+COMPILE_ASSERT(offsetof(GetMaxValueInBufferCHROMIUM, result_shm_offset) == 24,
+               OffsetOf_GetMaxValueInBufferCHROMIUM_result_shm_offset_not_24);
 
-struct GenSharedIds {
-  typedef GenSharedIds ValueType;
-  static const CommandId kCmdId = kGenSharedIds;
+struct GenSharedIdsCHROMIUM {
+  typedef GenSharedIdsCHROMIUM ValueType;
+  static const CommandId kCmdId = kGenSharedIdsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   static uint32 ComputeSize() {
@@ -8590,24 +8590,24 @@ struct GenSharedIds {
   uint32 ids_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GenSharedIds) == 24,
-               Sizeof_GenSharedIds_is_not_24);
-COMPILE_ASSERT(offsetof(GenSharedIds, header) == 0,
-               OffsetOf_GenSharedIds_header_not_0);
-COMPILE_ASSERT(offsetof(GenSharedIds, namespace_id) == 4,
-               OffsetOf_GenSharedIds_namespace_id_not_4);
-COMPILE_ASSERT(offsetof(GenSharedIds, id_offset) == 8,
-               OffsetOf_GenSharedIds_id_offset_not_8);
-COMPILE_ASSERT(offsetof(GenSharedIds, n) == 12,
-               OffsetOf_GenSharedIds_n_not_12);
-COMPILE_ASSERT(offsetof(GenSharedIds, ids_shm_id) == 16,
-               OffsetOf_GenSharedIds_ids_shm_id_not_16);
-COMPILE_ASSERT(offsetof(GenSharedIds, ids_shm_offset) == 20,
-               OffsetOf_GenSharedIds_ids_shm_offset_not_20);
+COMPILE_ASSERT(sizeof(GenSharedIdsCHROMIUM) == 24,
+               Sizeof_GenSharedIdsCHROMIUM_is_not_24);
+COMPILE_ASSERT(offsetof(GenSharedIdsCHROMIUM, header) == 0,
+               OffsetOf_GenSharedIdsCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(GenSharedIdsCHROMIUM, namespace_id) == 4,
+               OffsetOf_GenSharedIdsCHROMIUM_namespace_id_not_4);
+COMPILE_ASSERT(offsetof(GenSharedIdsCHROMIUM, id_offset) == 8,
+               OffsetOf_GenSharedIdsCHROMIUM_id_offset_not_8);
+COMPILE_ASSERT(offsetof(GenSharedIdsCHROMIUM, n) == 12,
+               OffsetOf_GenSharedIdsCHROMIUM_n_not_12);
+COMPILE_ASSERT(offsetof(GenSharedIdsCHROMIUM, ids_shm_id) == 16,
+               OffsetOf_GenSharedIdsCHROMIUM_ids_shm_id_not_16);
+COMPILE_ASSERT(offsetof(GenSharedIdsCHROMIUM, ids_shm_offset) == 20,
+               OffsetOf_GenSharedIdsCHROMIUM_ids_shm_offset_not_20);
 
-struct DeleteSharedIds {
-  typedef DeleteSharedIds ValueType;
-  static const CommandId kCmdId = kDeleteSharedIds;
+struct DeleteSharedIdsCHROMIUM {
+  typedef DeleteSharedIdsCHROMIUM ValueType;
+  static const CommandId kCmdId = kDeleteSharedIdsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   static uint32 ComputeSize() {
@@ -8643,22 +8643,22 @@ struct DeleteSharedIds {
   uint32 ids_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(DeleteSharedIds) == 20,
-               Sizeof_DeleteSharedIds_is_not_20);
-COMPILE_ASSERT(offsetof(DeleteSharedIds, header) == 0,
-               OffsetOf_DeleteSharedIds_header_not_0);
-COMPILE_ASSERT(offsetof(DeleteSharedIds, namespace_id) == 4,
-               OffsetOf_DeleteSharedIds_namespace_id_not_4);
-COMPILE_ASSERT(offsetof(DeleteSharedIds, n) == 8,
-               OffsetOf_DeleteSharedIds_n_not_8);
-COMPILE_ASSERT(offsetof(DeleteSharedIds, ids_shm_id) == 12,
-               OffsetOf_DeleteSharedIds_ids_shm_id_not_12);
-COMPILE_ASSERT(offsetof(DeleteSharedIds, ids_shm_offset) == 16,
-               OffsetOf_DeleteSharedIds_ids_shm_offset_not_16);
+COMPILE_ASSERT(sizeof(DeleteSharedIdsCHROMIUM) == 20,
+               Sizeof_DeleteSharedIdsCHROMIUM_is_not_20);
+COMPILE_ASSERT(offsetof(DeleteSharedIdsCHROMIUM, header) == 0,
+               OffsetOf_DeleteSharedIdsCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(DeleteSharedIdsCHROMIUM, namespace_id) == 4,
+               OffsetOf_DeleteSharedIdsCHROMIUM_namespace_id_not_4);
+COMPILE_ASSERT(offsetof(DeleteSharedIdsCHROMIUM, n) == 8,
+               OffsetOf_DeleteSharedIdsCHROMIUM_n_not_8);
+COMPILE_ASSERT(offsetof(DeleteSharedIdsCHROMIUM, ids_shm_id) == 12,
+               OffsetOf_DeleteSharedIdsCHROMIUM_ids_shm_id_not_12);
+COMPILE_ASSERT(offsetof(DeleteSharedIdsCHROMIUM, ids_shm_offset) == 16,
+               OffsetOf_DeleteSharedIdsCHROMIUM_ids_shm_offset_not_16);
 
-struct RegisterSharedIds {
-  typedef RegisterSharedIds ValueType;
-  static const CommandId kCmdId = kRegisterSharedIds;
+struct RegisterSharedIdsCHROMIUM {
+  typedef RegisterSharedIdsCHROMIUM ValueType;
+  static const CommandId kCmdId = kRegisterSharedIdsCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   static uint32 ComputeSize() {
@@ -8694,22 +8694,22 @@ struct RegisterSharedIds {
   uint32 ids_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(RegisterSharedIds) == 20,
-               Sizeof_RegisterSharedIds_is_not_20);
-COMPILE_ASSERT(offsetof(RegisterSharedIds, header) == 0,
-               OffsetOf_RegisterSharedIds_header_not_0);
-COMPILE_ASSERT(offsetof(RegisterSharedIds, namespace_id) == 4,
-               OffsetOf_RegisterSharedIds_namespace_id_not_4);
-COMPILE_ASSERT(offsetof(RegisterSharedIds, n) == 8,
-               OffsetOf_RegisterSharedIds_n_not_8);
-COMPILE_ASSERT(offsetof(RegisterSharedIds, ids_shm_id) == 12,
-               OffsetOf_RegisterSharedIds_ids_shm_id_not_12);
-COMPILE_ASSERT(offsetof(RegisterSharedIds, ids_shm_offset) == 16,
-               OffsetOf_RegisterSharedIds_ids_shm_offset_not_16);
+COMPILE_ASSERT(sizeof(RegisterSharedIdsCHROMIUM) == 20,
+               Sizeof_RegisterSharedIdsCHROMIUM_is_not_20);
+COMPILE_ASSERT(offsetof(RegisterSharedIdsCHROMIUM, header) == 0,
+               OffsetOf_RegisterSharedIdsCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(RegisterSharedIdsCHROMIUM, namespace_id) == 4,
+               OffsetOf_RegisterSharedIdsCHROMIUM_namespace_id_not_4);
+COMPILE_ASSERT(offsetof(RegisterSharedIdsCHROMIUM, n) == 8,
+               OffsetOf_RegisterSharedIdsCHROMIUM_n_not_8);
+COMPILE_ASSERT(offsetof(RegisterSharedIdsCHROMIUM, ids_shm_id) == 12,
+               OffsetOf_RegisterSharedIdsCHROMIUM_ids_shm_id_not_12);
+COMPILE_ASSERT(offsetof(RegisterSharedIdsCHROMIUM, ids_shm_offset) == 16,
+               OffsetOf_RegisterSharedIdsCHROMIUM_ids_shm_offset_not_16);
 
-struct CommandBufferEnable {
-  typedef CommandBufferEnable ValueType;
-  static const CommandId kCmdId = kCommandBufferEnable;
+struct CommandBufferEnableCHROMIUM {
+  typedef CommandBufferEnableCHROMIUM ValueType;
+  static const CommandId kCmdId = kCommandBufferEnableCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   typedef GLint Result;
@@ -8744,20 +8744,20 @@ struct CommandBufferEnable {
   uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(CommandBufferEnable) == 16,
-               Sizeof_CommandBufferEnable_is_not_16);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, header) == 0,
-               OffsetOf_CommandBufferEnable_header_not_0);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, bucket_id) == 4,
-               OffsetOf_CommandBufferEnable_bucket_id_not_4);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, result_shm_id) == 8,
-               OffsetOf_CommandBufferEnable_result_shm_id_not_8);
-COMPILE_ASSERT(offsetof(CommandBufferEnable, result_shm_offset) == 12,
-               OffsetOf_CommandBufferEnable_result_shm_offset_not_12);
+COMPILE_ASSERT(sizeof(CommandBufferEnableCHROMIUM) == 16,
+               Sizeof_CommandBufferEnableCHROMIUM_is_not_16);
+COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, header) == 0,
+               OffsetOf_CommandBufferEnableCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, bucket_id) == 4,
+               OffsetOf_CommandBufferEnableCHROMIUM_bucket_id_not_4);
+COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, result_shm_id) == 8,
+               OffsetOf_CommandBufferEnableCHROMIUM_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(CommandBufferEnableCHROMIUM, result_shm_offset) == 12,
+               OffsetOf_CommandBufferEnableCHROMIUM_result_shm_offset_not_12);
 
-struct CopyTextureToParentTexture {
-  typedef CopyTextureToParentTexture ValueType;
-  static const CommandId kCmdId = kCopyTextureToParentTexture;
+struct CopyTextureToParentTextureCHROMIUM {
+  typedef CopyTextureToParentTextureCHROMIUM ValueType;
+  static const CommandId kCmdId = kCopyTextureToParentTextureCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   static uint32 ComputeSize() {
@@ -8784,14 +8784,16 @@ struct CopyTextureToParentTexture {
   uint32 client_parent_id;
 };
 
-COMPILE_ASSERT(sizeof(CopyTextureToParentTexture) == 12,
-               Sizeof_CopyTextureToParentTexture_is_not_12);
-COMPILE_ASSERT(offsetof(CopyTextureToParentTexture, header) == 0,
-               OffsetOf_CopyTextureToParentTexture_header_not_0);
-COMPILE_ASSERT(offsetof(CopyTextureToParentTexture, client_child_id) == 4,
-               OffsetOf_CopyTextureToParentTexture_client_child_id_not_4);
-COMPILE_ASSERT(offsetof(CopyTextureToParentTexture, client_parent_id) == 8,
-               OffsetOf_CopyTextureToParentTexture_client_parent_id_not_8);
+COMPILE_ASSERT(sizeof(CopyTextureToParentTextureCHROMIUM) == 12,
+               Sizeof_CopyTextureToParentTextureCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(CopyTextureToParentTextureCHROMIUM, header) == 0,
+               OffsetOf_CopyTextureToParentTextureCHROMIUM_header_not_0);
+COMPILE_ASSERT(
+    offsetof(CopyTextureToParentTextureCHROMIUM, client_child_id) == 4,
+               OffsetOf_CopyTextureToParentTextureCHROMIUM_client_child_id_not_4);  // NOLINT
+COMPILE_ASSERT(
+    offsetof(CopyTextureToParentTextureCHROMIUM, client_parent_id) == 8,
+               OffsetOf_CopyTextureToParentTextureCHROMIUM_client_parent_id_not_8);  // NOLINT
 
 struct ResizeCHROMIUM {
   typedef ResizeCHROMIUM ValueType;

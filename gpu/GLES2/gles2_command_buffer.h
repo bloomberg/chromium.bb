@@ -8,7 +8,7 @@
 #ifndef GPU_GLES2_GLES2_COMMAND_BUFFER_H_
 #define GPU_GLES2_GLES2_COMMAND_BUFFER_H_
 
-// constants for CommandBufferEnable command.
+// constants for CommandBufferEnableCHROMIUM command.
 #define PEPPER3D_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS \
     "pepper3d_allow_buffers_on_multiple_targets"
 #define PEPPER3D_SUPPORT_FIXED_ATTRIBS \

@@ -383,18 +383,18 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_RenderbufferStorageMultisampleEXT_kCmdId_mismatch);
   COMPILE_ASSERT(SwapBuffers::kCmdId == 431,
                  GLES2_SwapBuffers_kCmdId_mismatch);
-  COMPILE_ASSERT(GetMaxValueInBuffer::kCmdId == 438,
-                 GLES2_GetMaxValueInBuffer_kCmdId_mismatch);
-  COMPILE_ASSERT(GenSharedIds::kCmdId == 439,
-                 GLES2_GenSharedIds_kCmdId_mismatch);
-  COMPILE_ASSERT(DeleteSharedIds::kCmdId == 440,
-                 GLES2_DeleteSharedIds_kCmdId_mismatch);
-  COMPILE_ASSERT(RegisterSharedIds::kCmdId == 441,
-                 GLES2_RegisterSharedIds_kCmdId_mismatch);
-  COMPILE_ASSERT(CommandBufferEnable::kCmdId == 442,
-                 GLES2_CommandBufferEnable_kCmdId_mismatch);
-  COMPILE_ASSERT(CopyTextureToParentTexture::kCmdId == 447,
-                 GLES2_CopyTextureToParentTexture_kCmdId_mismatch);
+  COMPILE_ASSERT(GetMaxValueInBufferCHROMIUM::kCmdId == 438,
+                 GLES2_GetMaxValueInBufferCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(GenSharedIdsCHROMIUM::kCmdId == 439,
+                 GLES2_GenSharedIdsCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(DeleteSharedIdsCHROMIUM::kCmdId == 440,
+                 GLES2_DeleteSharedIdsCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(RegisterSharedIdsCHROMIUM::kCmdId == 441,
+                 GLES2_RegisterSharedIdsCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(CommandBufferEnableCHROMIUM::kCmdId == 442,
+                 GLES2_CommandBufferEnableCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(CopyTextureToParentTextureCHROMIUM::kCmdId == 447,
+                 GLES2_CopyTextureToParentTextureCHROMIUM_kCmdId_mismatch);
   COMPILE_ASSERT(ResizeCHROMIUM::kCmdId == 448,
                  GLES2_ResizeCHROMIUM_kCmdId_mismatch);
 }

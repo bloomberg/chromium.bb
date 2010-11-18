@@ -3351,8 +3351,8 @@ TEST(GLES2FormatTest, SwapBuffers) {
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
 }
 
-TEST(GLES2FormatTest, GetMaxValueInBuffer) {
-  GetMaxValueInBuffer cmd = { { 0 } };
+TEST(GLES2FormatTest, GetMaxValueInBufferCHROMIUM) {
+  GetMaxValueInBufferCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
@@ -3361,7 +3361,7 @@ TEST(GLES2FormatTest, GetMaxValueInBuffer) {
       static_cast<GLuint>(14),
       static_cast<uint32>(15),
       static_cast<uint32>(16));
-  EXPECT_EQ(static_cast<uint32>(GetMaxValueInBuffer::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(GetMaxValueInBufferCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
@@ -3374,8 +3374,8 @@ TEST(GLES2FormatTest, GetMaxValueInBuffer) {
   EXPECT_EQ(static_cast<uint32>(16), cmd.result_shm_offset);
 }
 
-TEST(GLES2FormatTest, GenSharedIds) {
-  GenSharedIds cmd = { { 0 } };
+TEST(GLES2FormatTest, GenSharedIdsCHROMIUM) {
+  GenSharedIdsCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
@@ -3383,7 +3383,7 @@ TEST(GLES2FormatTest, GenSharedIds) {
       static_cast<GLsizei>(13),
       static_cast<uint32>(14),
       static_cast<uint32>(15));
-  EXPECT_EQ(static_cast<uint32>(GenSharedIds::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(GenSharedIdsCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
@@ -3395,15 +3395,15 @@ TEST(GLES2FormatTest, GenSharedIds) {
   EXPECT_EQ(static_cast<uint32>(15), cmd.ids_shm_offset);
 }
 
-TEST(GLES2FormatTest, DeleteSharedIds) {
-  DeleteSharedIds cmd = { { 0 } };
+TEST(GLES2FormatTest, DeleteSharedIdsCHROMIUM) {
+  DeleteSharedIdsCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
       static_cast<GLsizei>(12),
       static_cast<uint32>(13),
       static_cast<uint32>(14));
-  EXPECT_EQ(static_cast<uint32>(DeleteSharedIds::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(DeleteSharedIdsCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
@@ -3414,15 +3414,15 @@ TEST(GLES2FormatTest, DeleteSharedIds) {
   EXPECT_EQ(static_cast<uint32>(14), cmd.ids_shm_offset);
 }
 
-TEST(GLES2FormatTest, RegisterSharedIds) {
-  RegisterSharedIds cmd = { { 0 } };
+TEST(GLES2FormatTest, RegisterSharedIdsCHROMIUM) {
+  RegisterSharedIdsCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
       static_cast<GLsizei>(12),
       static_cast<uint32>(13),
       static_cast<uint32>(14));
-  EXPECT_EQ(static_cast<uint32>(RegisterSharedIds::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(RegisterSharedIdsCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
@@ -3433,14 +3433,14 @@ TEST(GLES2FormatTest, RegisterSharedIds) {
   EXPECT_EQ(static_cast<uint32>(14), cmd.ids_shm_offset);
 }
 
-TEST(GLES2FormatTest, CommandBufferEnable) {
-  CommandBufferEnable cmd = { { 0 } };
+TEST(GLES2FormatTest, CommandBufferEnableCHROMIUM) {
+  CommandBufferEnableCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
       static_cast<uint32>(12),
       static_cast<uint32>(13));
-  EXPECT_EQ(static_cast<uint32>(CommandBufferEnable::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(CommandBufferEnableCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
@@ -3450,13 +3450,13 @@ TEST(GLES2FormatTest, CommandBufferEnable) {
   EXPECT_EQ(static_cast<uint32>(13), cmd.result_shm_offset);
 }
 
-TEST(GLES2FormatTest, CopyTextureToParentTexture) {
-  CopyTextureToParentTexture cmd = { { 0 } };
+TEST(GLES2FormatTest, CopyTextureToParentTextureCHROMIUM) {
+  CopyTextureToParentTextureCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
       static_cast<GLuint>(12));
-  EXPECT_EQ(static_cast<uint32>(CopyTextureToParentTexture::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(CopyTextureToParentTextureCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),

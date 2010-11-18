@@ -190,16 +190,16 @@
   OP(ShaderSourceBucket)                                       /* 435 */ \
   OP(ShaderBinary)                                             /* 436 */ \
   OP(ReleaseShaderCompiler)                                    /* 437 */ \
-  OP(GetMaxValueInBuffer)                                      /* 438 */ \
-  OP(GenSharedIds)                                             /* 439 */ \
-  OP(DeleteSharedIds)                                          /* 440 */ \
-  OP(RegisterSharedIds)                                        /* 441 */ \
-  OP(CommandBufferEnable)                                      /* 442 */ \
+  OP(GetMaxValueInBufferCHROMIUM)                              /* 438 */ \
+  OP(GenSharedIdsCHROMIUM)                                     /* 439 */ \
+  OP(DeleteSharedIdsCHROMIUM)                                  /* 440 */ \
+  OP(RegisterSharedIdsCHROMIUM)                                /* 441 */ \
+  OP(CommandBufferEnableCHROMIUM)                              /* 442 */ \
   OP(CompressedTexImage2DBucket)                               /* 443 */ \
   OP(CompressedTexSubImage2DBucket)                            /* 444 */ \
   OP(RenderbufferStorageMultisampleEXT)                        /* 445 */ \
   OP(BlitFramebufferEXT)                                       /* 446 */ \
-  OP(CopyTextureToParentTexture)                               /* 447 */ \
+  OP(CopyTextureToParentTextureCHROMIUM)                       /* 447 */ \
   OP(ResizeCHROMIUM)                                           /* 448 */ \
 
 enum CommandId {

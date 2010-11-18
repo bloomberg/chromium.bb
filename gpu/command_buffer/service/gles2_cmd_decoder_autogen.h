@@ -2638,35 +2638,38 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleGetMaxValueInBuffer(
-    uint32 immediate_data_size, const gles2::GetMaxValueInBuffer& c) {
+error::Error GLES2DecoderImpl::HandleGetMaxValueInBufferCHROMIUM(
+    uint32 immediate_data_size, const gles2::GetMaxValueInBufferCHROMIUM& c) {
   GLuint buffer_id = c.buffer_id;
   GLsizei count = static_cast<GLsizei>(c.count);
   GLenum type = static_cast<GLenum>(c.type);
   GLuint offset = static_cast<GLuint>(c.offset);
-  typedef GetMaxValueInBuffer::Result Result;
+  typedef GetMaxValueInBufferCHROMIUM::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!result_dst) {
     return error::kOutOfBounds;
   }
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGetMaxValueInBuffer: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glGetMaxValueInBufferCHROMIUM: count < 0");
     return error::kNoError;
   }
   if (!validators_->get_max_index_type.IsValid(type)) {
-    SetGLError(GL_INVALID_ENUM, "glGetMaxValueInBuffer: type GL_INVALID_ENUM");
+    SetGLError(
+        GL_INVALID_ENUM,
+        "glGetMaxValueInBufferCHROMIUM: type GL_INVALID_ENUM");
     return error::kNoError;
   }
-  *result_dst = DoGetMaxValueInBuffer(buffer_id, count, type, offset);
+  *result_dst = DoGetMaxValueInBufferCHROMIUM(buffer_id, count, type, offset);
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleCopyTextureToParentTexture(
-    uint32 immediate_data_size, const gles2::CopyTextureToParentTexture& c) {
+error::Error GLES2DecoderImpl::HandleCopyTextureToParentTextureCHROMIUM(
+    uint32 immediate_data_size,
+    const gles2::CopyTextureToParentTextureCHROMIUM& c) {
   GLuint client_child_id = c.client_child_id;
   GLuint client_parent_id = c.client_parent_id;
-  DoCopyTextureToParentTexture(client_child_id, client_parent_id);
+  DoCopyTextureToParentTextureCHROMIUM(client_child_id, client_parent_id);
   return error::kNoError;
 }
 

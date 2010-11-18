@@ -228,20 +228,6 @@ struct PPB_OpenGLES_Dev {
       GLsizei stride, const void* ptr);
   void (*Viewport)(GLint x, GLint y, GLsizei width, GLsizei height);
   void (*SwapBuffers)();
-  GLuint (*GetMaxValueInBuffer)(
-      GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
-  void (*GenSharedIds)(
-      GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
-  void (*DeleteSharedIds)(GLuint namespace_id, GLsizei n, const GLuint* ids);
-  void (*RegisterSharedIds)(GLuint namespace_id, GLsizei n, const GLuint* ids);
-  GLboolean (*CommandBufferEnable)(const char* feature);
-  void* (*MapBufferSubData)(
-      GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
-  void (*UnmapBufferSubData)(const void* mem);
-  void* (*MapTexSubImage2D)(
-      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-      GLsizei height, GLenum format, GLenum type, GLenum access);
-  void (*UnmapTexSubImage2D)(const void* mem);
   void (*CopyTextureToParentTexture)(
       GLuint client_child_id, GLuint client_parent_id);
 };

@@ -198,16 +198,16 @@ GL_APICALL void         GL_APIENTRY glBlitFramebufferEXT (GLint srcX0, GLint src
 GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleEXT (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
-GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBuffer (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);
-GL_APICALL void         GL_APIENTRY glGenSharedIds (GLuint namespace_id, GLuint id_offset, GLsizeiNotNegative n, GLuint* ids);
-GL_APICALL void         GL_APIENTRY glDeleteSharedIds (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
-GL_APICALL void         GL_APIENTRY glRegisterSharedIds (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
-GL_APICALL GLboolean    GL_APIENTRY glCommandBufferEnable (const char* feature);
-GL_APICALL void*        GL_APIENTRY glMapBufferSubData (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
-GL_APICALL void         GL_APIENTRY glUnmapBufferSubData (const void* mem);
-GL_APICALL void*        GL_APIENTRY glMapTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
-GL_APICALL void         GL_APIENTRY glUnmapTexSubImage2D (const void* mem);
-GL_APICALL void         GL_APIENTRY glCopyTextureToParentTexture (GLidBindTexture client_child_id, GLidBindTexture client_parent_id);
+GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);
+GL_APICALL void         GL_APIENTRY glGenSharedIdsCHROMIUM (GLuint namespace_id, GLuint id_offset, GLsizeiNotNegative n, GLuint* ids);
+GL_APICALL void         GL_APIENTRY glDeleteSharedIdsCHROMIUM (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
+GL_APICALL void         GL_APIENTRY glRegisterSharedIdsCHROMIUM (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
+GL_APICALL GLboolean    GL_APIENTRY glCommandBufferEnableCHROMIUM (const char* feature);
+GL_APICALL void*        GL_APIENTRY glMapBufferSubDataCHROMIUM (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+GL_APICALL void         GL_APIENTRY glUnmapBufferSubDataCHROMIUM (const void* mem);
+GL_APICALL void*        GL_APIENTRY glMapTexSubImage2DCHROMIUM (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
+GL_APICALL void         GL_APIENTRY glUnmapTexSubImage2DCHROMIUM (const void* mem);
+GL_APICALL void         GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLidBindTexture client_child_id, GLidBindTexture client_parent_id);
 GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height);
 """
 
@@ -399,17 +399,17 @@ _CMD_ID_TABLE = {
   'ShaderSourceBucket':                                        435,
   'ShaderBinary':                                              436,
   'ReleaseShaderCompiler':                                     437,
-  'GetMaxValueInBuffer':                                       438,
-  'GenSharedIds':                                              439,
-  'DeleteSharedIds':                                           440,
-  'RegisterSharedIds':                                         441,
-  'CommandBufferEnable':                                       442,
+  'GetMaxValueInBufferCHROMIUM':                               438,
+  'GenSharedIdsCHROMIUM':                                      439,
+  'DeleteSharedIdsCHROMIUM':                                   440,
+  'RegisterSharedIdsCHROMIUM':                                 441,
+  'CommandBufferEnableCHROMIUM':                               442,
   'CompressedTexImage2DBucket':                                443,
   'CompressedTexSubImage2DBucket':                             444,
   'RenderbufferStorageMultisampleEXT':                         445,
   'BlitFramebufferEXT':                                        446,
-  'CopyTextureToParentTexture':                                447,
-  'ResizeCHROMIUM':                                                448,
+  'CopyTextureToParentTextureCHROMIUM':                        447,
+  'ResizeCHROMIUM':                                            448,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1070,6 +1070,7 @@ _FUNCTION_INFO = {
   'BlitFramebufferEXT': {
     'decoder_func': 'DoBlitFramebufferEXT',
     'unit_test': False,
+    'extension': True,
   },
   'BufferData': {'type': 'Manual', 'immediate': True},
   'BufferSubData': {'type': 'Data', 'decoder_func': 'DoBufferSubData'},
@@ -1086,13 +1087,15 @@ _FUNCTION_INFO = {
   },
   'ColorMask': {'decoder_func': 'DoColorMask'},
   'ClearStencil': {'decoder_func': 'DoClearStencil'},
-  'CommandBufferEnable': {
+  'CommandBufferEnableCHROMIUM': {
     'type': 'Custom',
     'immediate': False,
-    'decoder_func': 'DoCommandBufferEnable',
+    'decoder_func': 'DoCommandBufferEnableCHROMIUM',
     'expectation': False,
     'cmd_args': 'GLuint bucket_id, GLint* result',
     'result': ['GLint'],
+    'extension': True,
+    'chromium': True,
   },
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {
@@ -1129,12 +1132,14 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glDeleteRenderbuffersEXT',
   },
   'DeleteShader': {'type': 'Delete', 'decoder_func': 'DoDeleteShader'},
-  'DeleteSharedIds': {
+  'DeleteSharedIdsCHROMIUM': {
     'type': 'Custom',
-    'decoder_func': 'DoDeleteSharedIds',
+    'decoder_func': 'DoDeleteSharedIdsCHROMIUM',
     'impl_func': False,
     'expectation': False,
     'immediate': False,
+    'extension': True,
+    'chromium': True,
   },
   'DeleteTextures': {'type': 'DELn'},
   'DepthRangef': {'decoder_func': 'glDepthRange'},
@@ -1181,12 +1186,14 @@ _FUNCTION_INFO = {
   'GenFramebuffers': {'type': 'GENn', 'gl_test_func': 'glGenFramebuffersEXT'},
   'GenRenderbuffers': {'type': 'GENn', 'gl_test_func': 'glGenRenderbuffersEXT'},
   'GenTextures': {'type': 'GENn', 'gl_test_func': 'glGenTextures'},
-  'GenSharedIds': {
+  'GenSharedIdsCHROMIUM': {
     'type': 'Custom',
-    'decoder_func': 'DoGenSharedIds',
+    'decoder_func': 'DoGenSharedIdsCHROMIUM',
     'impl_func': False,
     'expectation': False,
     'immediate': False,
+    'extension': True,
+    'chromium': True,
   },
   'GetActiveAttrib': {
     'type': 'Custom',
@@ -1257,11 +1264,13 @@ _FUNCTION_INFO = {
     'result': ['SizedResult<GLint>'],
     'decoder_func': 'DoGetIntegerv',
   },
-  'GetMaxValueInBuffer': {
+  'GetMaxValueInBufferCHROMIUM': {
     'type': 'Is',
-    'decoder_func': 'DoGetMaxValueInBuffer',
+    'decoder_func': 'DoGetMaxValueInBufferCHROMIUM',
     'result': ['GLuint'],
     'unit_test': False,
+    'extension': True,
+    'chromium': True,
   },
   'GetProgramiv': {
     'type': 'GETn',
@@ -1384,8 +1393,16 @@ _FUNCTION_INFO = {
     'expectation': False,
   },
   'LinkProgram': {'decoder_func': 'DoLinkProgram'},
-  'MapBufferSubData': {'gen_cmd': False},
-  'MapTexSubImage2D': {'gen_cmd': False},
+  'MapBufferSubDataCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+  },
+  'MapTexSubImage2DCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+  },
   'PixelStorei': {'type': 'Manual'},
   'RenderbufferStorage': {
     'decoder_func': 'DoRenderbufferStorage',
@@ -1397,6 +1414,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glRenderbufferStorageMultisampleEXT',
     'expectation': False,
     'unit_test': False,
+    'extension': True,
   },
   'ReadPixels': {
     'cmd_comment':
@@ -1412,12 +1430,14 @@ _FUNCTION_INFO = {
         'uint32 result_shm_id, uint32 result_shm_offset',
     'result': ['uint32'],
   },
-  'RegisterSharedIds': {
+  'RegisterSharedIdsCHROMIUM': {
     'type': 'Custom',
-    'decoder_func': 'DoRegisterSharedIds',
+    'decoder_func': 'DoRegisterSharedIdsCHROMIUM',
     'impl_func': False,
     'expectation': False,
     'immediate': False,
+    'extension': True,
+    'chromium': True,
   },
   'ReleaseShaderCompiler': {
     'decoder_func': 'DoReleaseShaderCompiler',
@@ -1502,8 +1522,16 @@ _FUNCTION_INFO = {
   'UniformMatrix2fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 4},
   'UniformMatrix3fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 9},
   'UniformMatrix4fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 16},
-  'UnmapBufferSubData': {'gen_cmd': False},
-  'UnmapTexSubImage2D': {'gen_cmd': False},
+  'UnmapBufferSubDataCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    },
+  'UnmapTexSubImage2DCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+  },
   'UseProgram': {'decoder_func': 'DoUseProgram', 'unit_test': False},
   'ValidateProgram': {'decoder_func': 'DoValidateProgram'},
   'VertexAttrib1f': {'decoder_func': 'DoVertexAttrib1f'},
@@ -1539,13 +1567,17 @@ _FUNCTION_INFO = {
       'cmd_args': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
                   'GLsizei stride, GLuint offset',
   },
-  'CopyTextureToParentTexture': {
-      'decoder_func': 'DoCopyTextureToParentTexture',
-      'unit_test': False
+  'CopyTextureToParentTextureCHROMIUM': {
+      'decoder_func': 'DoCopyTextureToParentTextureCHROMIUM',
+      'unit_test': False,
+      'extension': True,
+      'chromium': True,
   },
   'ResizeCHROMIUM': {
       'decoder_func': 'DoResizeCHROMIUM',
-      'unit_test': False
+      'unit_test': False,
+      'extension': True,
+      'chromium': True,
   },
 }
 
@@ -5176,7 +5208,7 @@ class GLGenerator(object):
 
     file.Write("\nstruct PPB_OpenGLES_Dev {\n")
     for func in self.original_functions:
-      if func.name[-3:] == "EXT":
+      if func.GetInfo('extension'):
         continue
       file.Write("  %s (*%s)(%s);\n" %
                  (func.return_type, func.name,
@@ -5201,7 +5233,7 @@ class GLGenerator(object):
     file.Write("namespace {\n\n")
 
     for func in self.original_functions:
-      if func.name[-3:] == "EXT":
+      if func.GetInfo('extension'):
         continue
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.name,
@@ -5218,7 +5250,7 @@ class GLGenerator(object):
 
     file.Write("  &")
     file.Write(",\n  &".join(
-      f.name for f in self.original_functions if f.name[-3:] != "EXT"))
+      f.name for f in self.original_functions if not f.GetInfo('extension')))
     file.Write("\n")
 
     file.Write("};\n\n")

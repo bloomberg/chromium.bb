@@ -845,40 +845,43 @@ void RenderbufferStorageMultisampleEXT(
 
 void SwapBuffers();
 
-GLuint GetMaxValueInBuffer(
+GLuint GetMaxValueInBufferCHROMIUM(
     GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
-  typedef GetMaxValueInBuffer::Result Result;
+  typedef GetMaxValueInBufferCHROMIUM::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->GetMaxValueInBuffer(
+  helper_->GetMaxValueInBufferCHROMIUM(
       buffer_id, count, type, offset, result_shm_id(), result_shm_offset());
   WaitForCmd();
   return *result;
 }
 
-void GenSharedIds(
+void GenSharedIdsCHROMIUM(
     GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids);
 
-void DeleteSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
+void DeleteSharedIdsCHROMIUM(
+    GLuint namespace_id, GLsizei n, const GLuint* ids);
 
-void RegisterSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
+void RegisterSharedIdsCHROMIUM(
+    GLuint namespace_id, GLsizei n, const GLuint* ids);
 
-GLboolean CommandBufferEnable(const char* feature);
+GLboolean CommandBufferEnableCHROMIUM(const char* feature);
 
-void* MapBufferSubData(
+void* MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
 
-void UnmapBufferSubData(const void* mem);
+void UnmapBufferSubDataCHROMIUM(const void* mem);
 
-void* MapTexSubImage2D(
+void* MapTexSubImage2DCHROMIUM(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLenum type, GLenum access);
 
-void UnmapTexSubImage2D(const void* mem);
+void UnmapTexSubImage2DCHROMIUM(const void* mem);
 
-void CopyTextureToParentTexture(
+void CopyTextureToParentTextureCHROMIUM(
     GLuint client_child_id, GLuint client_parent_id) {
-  helper_->CopyTextureToParentTexture(client_child_id, client_parent_id);
+  helper_->CopyTextureToParentTextureCHROMIUM(
+      client_child_id, client_parent_id);
 }
 
 void ResizeCHROMIUM(GLuint width, GLuint height) {

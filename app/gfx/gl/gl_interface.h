@@ -406,7 +406,7 @@ class GLInterface {
 
   virtual void SwapBuffers() = 0;
 
-  virtual GLuint GetMaxValueInBuffer(
+  virtual GLuint GetMaxValueInBufferCHROMIUM(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) = 0;
 
  private:

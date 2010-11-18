@@ -879,33 +879,33 @@ typedef void (GL_APIENTRY PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXT) (GLenum target
 #define GL_WRITE_ONLY 0x88B9
 #endif
 #ifdef GL_GLEXT_PROTOTYPES
-#define glMapBufferSubData GLES2_GET_FUN(MapBufferSubData)
-#define glUnmapBufferSubData GLES2_GET_FUN(UnmapBufferSubData)
-#define glMapTexSubImage2D GLES2_GET_FUN(MapTexSubImage2D)
-#define glUnmapTexSubImage2D GLES2_GET_FUN(UnmapTexSubImage2D)
+#define glMapBufferSubDataCHROMIUM GLES2_GET_FUN(MapBufferSubDataCHROMIUM)
+#define glUnmapBufferSubDataCHROMIUM GLES2_GET_FUN(UnmapBufferSubDataCHROMIUM)
+#define glMapTexSubImage2DCHROMIUM GLES2_GET_FUN(MapTexSubImage2DCHROMIUM)
+#define glUnmapTexSubImage2DCHROMIUM GLES2_GET_FUN(UnmapTexSubImage2DCHROMIUM)
 #if !defined(GLES2_USE_CPP_BINDINGS)
-GL_APICALL void* GL_APIENTRY glMapBufferSubData (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
-GL_APICALL void  GL_APIENTRY glUnmapBufferSubData (const void* mem);
-GL_APICALL void* GL_APIENTRY glMapTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
-GL_APICALL void  GL_APIENTRY glUnmapTexSubImage2D (const void* mem);
+GL_APICALL void* GL_APIENTRY glMapBufferSubDataCHROMIUM (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+GL_APICALL void  GL_APIENTRY glUnmapBufferSubDataCHROMIUM (const void* mem);
+GL_APICALL void* GL_APIENTRY glMapTexSubImage2DCHROMIUM (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
+GL_APICALL void  GL_APIENTRY glUnmapTexSubImage2DCHROMIUM (const void* mem);
 #endif
 #endif
-typedef void* (GL_APIENTRYP PFNGLMAPBUFFERSUBDATA) (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
-typedef void  (GL_APIENTRYP PFNGLUNMAPBUFFERSUBDATA) (const void* mem);
-typedef void* (GL_APIENTRYP PFNGLMAPTEXSUBIMAGE2D) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
-typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2D) (const void* mem);
+typedef void* (GL_APIENTRYP PFNGLMAPBUFFERSUBDATACHROMIUM) (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+typedef void  (GL_APIENTRYP PFNGLUNMAPBUFFERSUBDATACHROMIUM) (const void* mem);
+typedef void* (GL_APIENTRYP PFNGLMAPTEXSUBIMAGE2DCHROMIUM) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
+typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2DCHROMIUM) (const void* mem);
 #endif
 
 /* GL_CHROMIUM_copy_texture_to_parent_texture */
 #ifndef GL_CHROMIUM_copy_texture_to_parent_texture
 #define GL_CHROMIUM_copy_texture_to_parent_texture 1
 #ifdef GL_GLEXT_PROTOTYPES
-#define glCopyTextureToParentTexture GLES2_GET_FUN(CopyTextureToParentTexture)
+#define glCopyTextureToParentTextureCHROMIUM GLES2_GET_FUN(CopyTextureToParentTextureCHROMIUM)
 #if !defined(GLES2_USE_CPP_BINDINGS)
-GL_APICALL void* GL_APIENTRY glCopyTextureToParentTexture (GLuint id, GLuint id2);
+GL_APICALL void* GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLuint id, GLuint id2);
 #endif
 #else
-typedef void* (GL_APIENTRYP PFNGLCOPYTEXTURETOPARENTTEXTURE) (GLuint id, GLuint id2);
+typedef void* (GL_APIENTRYP PFNGLCOPYTEXTURETOPARENTTEXTURECHROMIUM) (GLuint id, GLuint id2);
 #endif
 #endif
 

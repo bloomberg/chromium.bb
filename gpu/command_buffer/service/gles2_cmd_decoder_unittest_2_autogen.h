@@ -1600,16 +1600,16 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 // TODO(gman): BlitFramebufferEXT
 // TODO(gman): RenderbufferStorageMultisampleEXT
 // TODO(gman): SwapBuffers
-// TODO(gman): GetMaxValueInBuffer
-// TODO(gman): GenSharedIds
+// TODO(gman): GetMaxValueInBufferCHROMIUM
+// TODO(gman): GenSharedIdsCHROMIUM
 
-// TODO(gman): DeleteSharedIds
+// TODO(gman): DeleteSharedIdsCHROMIUM
 
-// TODO(gman): RegisterSharedIds
+// TODO(gman): RegisterSharedIdsCHROMIUM
 
-// TODO(gman): CommandBufferEnable
+// TODO(gman): CommandBufferEnableCHROMIUM
 
-// TODO(gman): CopyTextureToParentTexture
+// TODO(gman): CopyTextureToParentTextureCHROMIUM
 // TODO(gman): ResizeCHROMIUM
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

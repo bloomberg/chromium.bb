@@ -72,11 +72,11 @@ class SharedIdHandler : public IdHandlerInterface {
   virtual ~SharedIdHandler() { }
 
   virtual void MakeIds(GLuint id_offset, GLsizei n, GLuint* ids) {
-    gles2_->GenSharedIds(id_namespace_, id_offset, n, ids);
+    gles2_->GenSharedIdsCHROMIUM(id_namespace_, id_offset, n, ids);
   }
 
   virtual void FreeIds(GLsizei n, const GLuint* ids) {
-    gles2_->DeleteSharedIds(id_namespace_, n, ids);
+    gles2_->DeleteSharedIdsCHROMIUM(id_namespace_, n, ids);
   }
 
   virtual bool MarkAsUsedForBind(GLuint) {  // NOLINT
@@ -611,7 +611,7 @@ void GLES2Implementation::DrawElements(
     // changes the contents of any of the buffers. The service will still
     // validate the indices. We just need to know how much to copy across.
     if (have_client_side) {
-      num_elements = GetMaxValueInBuffer(
+      num_elements = GetMaxValueInBufferCHROMIUM(
           bound_element_array_buffer_id_, count, type, ToGLuint(indices)) + 1;
     }
   }
@@ -655,10 +655,10 @@ void GLES2Implementation::SwapBuffers() {
   Flush();
 }
 
-void GLES2Implementation::GenSharedIds(
+void GLES2Implementation::GenSharedIdsCHROMIUM(
   GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
   GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
-  helper_->GenSharedIds(namespace_id, id_offset, n,
+  helper_->GenSharedIdsCHROMIUM(namespace_id, id_offset, n,
                         transfer_buffer_id_,
                         transfer_buffer_.GetOffset(id_buffer));
   WaitForCmd();
@@ -666,22 +666,22 @@ void GLES2Implementation::GenSharedIds(
   transfer_buffer_.FreePendingToken(id_buffer, helper_->InsertToken());
 }
 
-void GLES2Implementation::DeleteSharedIds(
+void GLES2Implementation::DeleteSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
   GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
   memcpy(id_buffer, ids, sizeof(*ids) * n);
-  helper_->DeleteSharedIds(namespace_id, n,
+  helper_->DeleteSharedIdsCHROMIUM(namespace_id, n,
                            transfer_buffer_id_,
                            transfer_buffer_.GetOffset(id_buffer));
   WaitForCmd();
   transfer_buffer_.FreePendingToken(id_buffer, helper_->InsertToken());
 }
 
-void GLES2Implementation::RegisterSharedIds(
+void GLES2Implementation::RegisterSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
   GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
   memcpy(id_buffer, ids, sizeof(*ids) * n);
-  helper_->RegisterSharedIds(namespace_id, n,
+  helper_->RegisterSharedIdsCHROMIUM(namespace_id, n,
                              transfer_buffer_id_,
                              transfer_buffer_.GetOffset(id_buffer));
   WaitForCmd();
@@ -1463,12 +1463,13 @@ void GLES2Implementation::GetVertexAttribiv(
   result->CopyResult(params);
 }
 
-GLboolean GLES2Implementation::CommandBufferEnable(const char* feature) {
-  typedef CommandBufferEnable::Result Result;
+GLboolean GLES2Implementation::CommandBufferEnableCHROMIUM(
+    const char* feature) {
+  typedef CommandBufferEnableCHROMIUM::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
   SetBucketAsCString(kResultBucketId, feature);
-  helper_->CommandBufferEnable(
+  helper_->CommandBufferEnableCHROMIUM(
       kResultBucketId, result_shm_id(), result_shm_offset());
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);
@@ -1477,23 +1478,23 @@ GLboolean GLES2Implementation::CommandBufferEnable(const char* feature) {
 
 #endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
 
-void* GLES2Implementation::MapBufferSubData(
+void* GLES2Implementation::MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {
   // NOTE: target is NOT checked because the service will check it
   // and we don't know what targets are valid.
   if (access != GL_WRITE_ONLY) {
-    SetGLError(GL_INVALID_ENUM, "MapBufferSubData: bad access mode");
+    SetGLError(GL_INVALID_ENUM, "MapBufferSubDataCHROMIUM: bad access mode");
     return NULL;
   }
   if (offset < 0 || size < 0) {
-    SetGLError(GL_INVALID_VALUE, "MapBufferSubData: bad range");
+    SetGLError(GL_INVALID_VALUE, "MapBufferSubDataCHROMIUM: bad range");
     return NULL;
   }
   int32 shm_id;
   unsigned int shm_offset;
   void* mem = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
   if (!mem) {
-    SetGLError(GL_OUT_OF_MEMORY, "MapBufferSubData: out of memory");
+    SetGLError(GL_OUT_OF_MEMORY, "MapBufferSubDataCHROMIUM: out of memory");
     return NULL;
   }
 
@@ -1505,10 +1506,11 @@ void* GLES2Implementation::MapBufferSubData(
   return mem;
 }
 
-void GLES2Implementation::UnmapBufferSubData(const void* mem) {
+void GLES2Implementation::UnmapBufferSubDataCHROMIUM(const void* mem) {
   MappedBufferMap::iterator it = mapped_buffers_.find(mem);
   if (it == mapped_buffers_.end()) {
-    SetGLError(GL_INVALID_VALUE, "UnmapBufferSubData: buffer not mapped");
+    SetGLError(
+        GL_INVALID_VALUE, "UnmapBufferSubDataCHROMIUM: buffer not mapped");
     return;
   }
   const MappedBuffer& mb = it->second;
@@ -1518,7 +1520,7 @@ void GLES2Implementation::UnmapBufferSubData(const void* mem) {
   mapped_buffers_.erase(it);
 }
 
-void* GLES2Implementation::MapTexSubImage2D(
+void* GLES2Implementation::MapTexSubImage2DCHROMIUM(
      GLenum target,
      GLint level,
      GLint xoffset,
@@ -1529,26 +1531,27 @@ void* GLES2Implementation::MapTexSubImage2D(
      GLenum type,
      GLenum access) {
   if (access != GL_WRITE_ONLY) {
-    SetGLError(GL_INVALID_ENUM, "MapTexSubImage2D: bad access mode");
+    SetGLError(GL_INVALID_ENUM, "MapTexSubImage2DCHROMIUM: bad access mode");
     return NULL;
   }
   // NOTE: target is NOT checked because the service will check it
   // and we don't know what targets are valid.
   if (level < 0 || xoffset < 0 || yoffset < 0 || width < 0 || height < 0) {
-    SetGLError(GL_INVALID_VALUE, "MapTexSubImage2D: bad dimensions");
+    SetGLError(GL_INVALID_VALUE, "MapTexSubImage2DCHROMIUM: bad dimensions");
     return NULL;
   }
   uint32 size;
   if (!GLES2Util::ComputeImageDataSize(
       width, height, format, type, unpack_alignment_, &size)) {
-    SetGLError(GL_INVALID_VALUE, "MapTexSubImage2D: image size too large");
+    SetGLError(
+        GL_INVALID_VALUE, "MapTexSubImage2DCHROMIUM: image size too large");
     return NULL;
   }
   int32 shm_id;
   unsigned int shm_offset;
   void* mem = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
   if (!mem) {
-    SetGLError(GL_OUT_OF_MEMORY, "MapTexSubImage2D: out of memory");
+    SetGLError(GL_OUT_OF_MEMORY, "MapTexSubImage2DCHROMIUM: out of memory");
     return NULL;
   }
 
@@ -1561,10 +1564,11 @@ void* GLES2Implementation::MapTexSubImage2D(
   return mem;
 }
 
-void GLES2Implementation::UnmapTexSubImage2D(const void* mem) {
+void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   MappedTextureMap::iterator it = mapped_textures_.find(mem);
   if (it == mapped_textures_.end()) {
-    SetGLError(GL_INVALID_VALUE, "UnmapTexSubImage2D: texture not mapped");
+    SetGLError(
+        GL_INVALID_VALUE, "UnmapTexSubImage2DCHROMIUM: texture not mapped");
     return;
   }
   const MappedTexture& mt = it->second;

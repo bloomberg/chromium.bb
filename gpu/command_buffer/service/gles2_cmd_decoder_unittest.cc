@@ -2123,13 +2123,13 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformLocationBucketInvalidArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBuffer) {
+TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBufferCHROMIUM) {
   SetupIndexBuffer();
-  GetMaxValueInBuffer::Result* result =
-      static_cast<GetMaxValueInBuffer::Result*>(shared_memory_address_);
+  GetMaxValueInBufferCHROMIUM::Result* result =
+      static_cast<GetMaxValueInBufferCHROMIUM::Result*>(shared_memory_address_);
   *result = 0;
 
-  GetMaxValueInBuffer cmd;
+  GetMaxValueInBufferCHROMIUM cmd;
   cmd.Init(client_element_buffer_id_, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -2179,9 +2179,9 @@ TEST_F(GLES2DecoderWithShaderTest, GetMaxValueInBuffer) {
 }
 
 TEST_F(GLES2DecoderTest, SharedIds) {
-  GenSharedIds gen_cmd;
-  RegisterSharedIds reg_cmd;
-  DeleteSharedIds del_cmd;
+  GenSharedIdsCHROMIUM gen_cmd;
+  RegisterSharedIdsCHROMIUM reg_cmd;
+  DeleteSharedIdsCHROMIUM del_cmd;
 
   const GLuint kNamespaceId = id_namespaces::kTextures;
   const GLuint kExpectedId1 = 1;
@@ -2249,9 +2249,9 @@ TEST_F(GLES2DecoderTest, SharedIds) {
   EXPECT_EQ(kOffset + 1, ids[1]);
 }
 
-TEST_F(GLES2DecoderTest, GenSharedIdsBadArgs) {
+TEST_F(GLES2DecoderTest, GenSharedIdsCHROMIUMBadArgs) {
   const GLuint kNamespaceId = id_namespaces::kTextures;
-  GenSharedIds cmd;
+  GenSharedIdsCHROMIUM cmd;
   cmd.Init(kNamespaceId, 0, -1, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   cmd.Init(kNamespaceId, 0, 1, kInvalidSharedMemoryId, kSharedMemoryOffset);
@@ -2260,9 +2260,9 @@ TEST_F(GLES2DecoderTest, GenSharedIdsBadArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, RegisterSharedIdsBadArgs) {
+TEST_F(GLES2DecoderTest, RegisterSharedIdsCHROMIUMBadArgs) {
   const GLuint kNamespaceId = id_namespaces::kTextures;
-  RegisterSharedIds cmd;
+  RegisterSharedIdsCHROMIUM cmd;
   cmd.Init(kNamespaceId, -1, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   cmd.Init(kNamespaceId, 1, kInvalidSharedMemoryId, kSharedMemoryOffset);
@@ -2271,10 +2271,10 @@ TEST_F(GLES2DecoderTest, RegisterSharedIdsBadArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, RegisterSharedIdsDuplicateIds) {
+TEST_F(GLES2DecoderTest, RegisterSharedIdsCHROMIUMDuplicateIds) {
   const GLuint kNamespaceId = id_namespaces::kTextures;
   const GLuint kRegisterId = 3;
-  RegisterSharedIds cmd;
+  RegisterSharedIdsCHROMIUM cmd;
   GLuint* ids = GetSharedMemoryAs<GLuint*>();
   ids[0] = kRegisterId;
   cmd.Init(kNamespaceId, 1, kSharedMemoryId, kSharedMemoryOffset);
@@ -2284,9 +2284,9 @@ TEST_F(GLES2DecoderTest, RegisterSharedIdsDuplicateIds) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, DeleteSharedIdsBadArgs) {
+TEST_F(GLES2DecoderTest, DeleteSharedIdsCHROMIUMBadArgs) {
   const GLuint kNamespaceId = id_namespaces::kTextures;
-  DeleteSharedIds cmd;
+  DeleteSharedIdsCHROMIUM cmd;
   cmd.Init(kNamespaceId, -1, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   cmd.Init(kNamespaceId, 1, kInvalidSharedMemoryId, kSharedMemoryOffset);

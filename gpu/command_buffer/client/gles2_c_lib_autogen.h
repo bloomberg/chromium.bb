@@ -768,73 +768,76 @@ void GLES2SwapBuffers() {
   GPU_CLIENT_LOG("SwapBuffers" << "(" << ")");
   gles2::GetGLContext()->SwapBuffers();
 }
-GLuint GLES2GetMaxValueInBuffer(
+GLuint GLES2GetMaxValueInBufferCHROMIUM(
     GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
   GPU_CLIENT_LOG(
-      "GetMaxValueInBuffer" << "(" << buffer_id << ", " << count << ", " << type << ", " << offset << ")");  // NOLINT
+      "GetMaxValueInBufferCHROMIUM" << "(" << buffer_id << ", " << count << ", " << type << ", " << offset << ")");  // NOLINT
   GLuint result =
-      gles2::GetGLContext()->GetMaxValueInBuffer(
+      gles2::GetGLContext()->GetMaxValueInBufferCHROMIUM(
           buffer_id, count, type, offset);
   GPU_CLIENT_LOG("return:" << result)
   return result;
 }
-void GLES2GenSharedIds(
+void GLES2GenSharedIdsCHROMIUM(
     GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
   GPU_CLIENT_LOG(
-      "GenSharedIds" << "(" << namespace_id << ", " << id_offset << ", " << n << ", " << ids << ")");  // NOLINT
-  gles2::GetGLContext()->GenSharedIds(namespace_id, id_offset, n, ids);
+      "GenSharedIdsCHROMIUM" << "(" << namespace_id << ", " << id_offset << ", " << n << ", " << ids << ")");  // NOLINT
+  gles2::GetGLContext()->GenSharedIdsCHROMIUM(namespace_id, id_offset, n, ids);
 }
-void GLES2DeleteSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids) {
-  GPU_CLIENT_LOG(
-      "DeleteSharedIds" << "(" << namespace_id << ", " << n << ", " << ids << ")");  // NOLINT
-  gles2::GetGLContext()->DeleteSharedIds(namespace_id, n, ids);
-}
-void GLES2RegisterSharedIds(
+void GLES2DeleteSharedIdsCHROMIUM(
     GLuint namespace_id, GLsizei n, const GLuint* ids) {
   GPU_CLIENT_LOG(
-      "RegisterSharedIds" << "(" << namespace_id << ", " << n << ", " << ids << ")");  // NOLINT
-  gles2::GetGLContext()->RegisterSharedIds(namespace_id, n, ids);
+      "DeleteSharedIdsCHROMIUM" << "(" << namespace_id << ", " << n << ", " << ids << ")");  // NOLINT
+  gles2::GetGLContext()->DeleteSharedIdsCHROMIUM(namespace_id, n, ids);
 }
-GLboolean GLES2CommandBufferEnable(const char* feature) {
-  GPU_CLIENT_LOG("CommandBufferEnable" << "(" << feature << ")");
-  GLboolean result = gles2::GetGLContext()->CommandBufferEnable(feature);
+void GLES2RegisterSharedIdsCHROMIUM(
+    GLuint namespace_id, GLsizei n, const GLuint* ids) {
+  GPU_CLIENT_LOG(
+      "RegisterSharedIdsCHROMIUM" << "(" << namespace_id << ", " << n << ", " << ids << ")");  // NOLINT
+  gles2::GetGLContext()->RegisterSharedIdsCHROMIUM(namespace_id, n, ids);
+}
+GLboolean GLES2CommandBufferEnableCHROMIUM(const char* feature) {
+  GPU_CLIENT_LOG("CommandBufferEnableCHROMIUM" << "(" << feature << ")");
+  GLboolean result =
+      gles2::GetGLContext()->CommandBufferEnableCHROMIUM(feature);
   GPU_CLIENT_LOG("return:" << result)
   return result;
 }
-void* GLES2MapBufferSubData(
+void* GLES2MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {
   GPU_CLIENT_LOG(
-      "MapBufferSubData" << "(" << target << ", " << offset << ", " << size << ", " << access << ")");  // NOLINT
+      "MapBufferSubDataCHROMIUM" << "(" << target << ", " << offset << ", " << size << ", " << access << ")");  // NOLINT
   void* result =
-      gles2::GetGLContext()->MapBufferSubData(target, offset, size, access);
+      gles2::GetGLContext()->MapBufferSubDataCHROMIUM(
+          target, offset, size, access);
   GPU_CLIENT_LOG("return:" << result)
   return result;
 }
-void GLES2UnmapBufferSubData(const void* mem) {
-  GPU_CLIENT_LOG("UnmapBufferSubData" << "(" << mem << ")");
-  gles2::GetGLContext()->UnmapBufferSubData(mem);
+void GLES2UnmapBufferSubDataCHROMIUM(const void* mem) {
+  GPU_CLIENT_LOG("UnmapBufferSubDataCHROMIUM" << "(" << mem << ")");
+  gles2::GetGLContext()->UnmapBufferSubDataCHROMIUM(mem);
 }
-void* GLES2MapTexSubImage2D(
+void* GLES2MapTexSubImage2DCHROMIUM(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLenum type, GLenum access) {
   GPU_CLIENT_LOG(
-      "MapTexSubImage2D" << "(" << target << ", " << level << ", " << xoffset << ", " << yoffset << ", " << width << ", " << height << ", " << format << ", " << type << ", " << access << ")");  // NOLINT
+      "MapTexSubImage2DCHROMIUM" << "(" << target << ", " << level << ", " << xoffset << ", " << yoffset << ", " << width << ", " << height << ", " << format << ", " << type << ", " << access << ")");  // NOLINT
   void* result =
-      gles2::GetGLContext()->MapTexSubImage2D(
+      gles2::GetGLContext()->MapTexSubImage2DCHROMIUM(
           target, level, xoffset, yoffset, width, height, format, type,
           access);
   GPU_CLIENT_LOG("return:" << result)
   return result;
 }
-void GLES2UnmapTexSubImage2D(const void* mem) {
-  GPU_CLIENT_LOG("UnmapTexSubImage2D" << "(" << mem << ")");
-  gles2::GetGLContext()->UnmapTexSubImage2D(mem);
+void GLES2UnmapTexSubImage2DCHROMIUM(const void* mem) {
+  GPU_CLIENT_LOG("UnmapTexSubImage2DCHROMIUM" << "(" << mem << ")");
+  gles2::GetGLContext()->UnmapTexSubImage2DCHROMIUM(mem);
 }
-void GLES2CopyTextureToParentTexture(
+void GLES2CopyTextureToParentTextureCHROMIUM(
     GLuint client_child_id, GLuint client_parent_id) {
   GPU_CLIENT_LOG(
-      "CopyTextureToParentTexture" << "(" << client_child_id << ", " << client_parent_id << ")");  // NOLINT
-  gles2::GetGLContext()->CopyTextureToParentTexture(
+      "CopyTextureToParentTextureCHROMIUM" << "(" << client_child_id << ", " << client_parent_id << ")");  // NOLINT
+  gles2::GetGLContext()->CopyTextureToParentTextureCHROMIUM(
       client_child_id, client_parent_id);
 }
 void GLES2ResizeCHROMIUM(GLuint width, GLuint height) {

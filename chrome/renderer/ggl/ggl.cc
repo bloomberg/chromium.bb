@@ -407,7 +407,8 @@ void Context::SetError(Error error) {
 
 // TODO(gman): Remove This
 void Context::DisableShaderTranslation() {
-  gles2_implementation_->CommandBufferEnable(PEPPER3D_SKIP_GLSL_TRANSLATION);
+  gles2_implementation_->CommandBufferEnableCHROMIUM(
+      PEPPER3D_SKIP_GLSL_TRANSLATION);
 }
 
 void Context::OnSwapBuffers() {

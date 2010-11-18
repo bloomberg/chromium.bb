@@ -5,8 +5,8 @@
 // This file implements mock GL Interface for unit testing. It has to mock
 // Desktop GL, not GLES2 as it is used to test the service side code.
 
-#ifndef APP_GFX_GL_GL_MOCK_H_
-#define APP_GFX_GL_GL_MOCK_H_
+#ifndef GPU_COMMAND_BUFFER_COMMON_GL_MOCK_H_
+#define GPU_COMMAND_BUFFER_COMMON_GL_MOCK_H_
 #pragma once
 
 #include "app/gfx/gl/gl_interface.h"
@@ -406,10 +406,11 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD0(SwapBuffers, void());
 
-  MOCK_METHOD4(GetMaxValueInBuffer, GLuint(
+  MOCK_METHOD4(GetMaxValueInBufferCHROMIUM, GLuint(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset));
 };
 
 }  // namespace gfx
 
-#endif  // APP_GFX_GL_GL_MOCK_H_
+#endif  // GPU_COMMAND_BUFFER_COMMON_GL_MOCK_H_
+

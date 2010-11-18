@@ -514,47 +514,6 @@ void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
 void SwapBuffers() {
   Graphics3D::GetCurrent()->impl()->SwapBuffers();
 }
-GLuint GetMaxValueInBuffer(
-    GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
-  return Graphics3D::GetCurrent()->impl()->GetMaxValueInBuffer(
-      buffer_id, count, type, offset);
-}
-void GenSharedIds(
-    GLuint namespace_id, GLuint id_offset, GLsizei n, GLuint* ids) {
-  Graphics3D::GetCurrent()->impl()->GenSharedIds(
-      namespace_id, id_offset, n, ids);
-}
-void DeleteSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids) {
-  Graphics3D::GetCurrent()->impl()->DeleteSharedIds(namespace_id, n, ids);
-}
-void RegisterSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids) {
-  Graphics3D::GetCurrent()->impl()->RegisterSharedIds(namespace_id, n, ids);
-}
-GLboolean CommandBufferEnable(const char* feature) {
-  return Graphics3D::GetCurrent()->impl()->CommandBufferEnable(feature);
-}
-void* MapBufferSubData(
-    GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {
-  return Graphics3D::GetCurrent()->impl()->MapBufferSubData(
-      target, offset, size, access);
-}
-void UnmapBufferSubData(const void* mem) {
-  Graphics3D::GetCurrent()->impl()->UnmapBufferSubData(mem);
-}
-void* MapTexSubImage2D(
-    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-    GLsizei height, GLenum format, GLenum type, GLenum access) {
-  return Graphics3D::GetCurrent()->impl()->MapTexSubImage2D(
-      target, level, xoffset, yoffset, width, height, format, type, access);
-}
-void UnmapTexSubImage2D(const void* mem) {
-  Graphics3D::GetCurrent()->impl()->UnmapTexSubImage2D(mem);
-}
-void CopyTextureToParentTexture(
-    GLuint client_child_id, GLuint client_parent_id) {
-  Graphics3D::GetCurrent()->impl()->CopyTextureToParentTexture(
-      client_child_id, client_parent_id);
-}
 
 const struct PPB_OpenGLES_Dev ppb_opengles = {
   &ActiveTexture,
@@ -699,17 +658,7 @@ const struct PPB_OpenGLES_Dev ppb_opengles = {
   &VertexAttrib4fv,
   &VertexAttribPointer,
   &Viewport,
-  &SwapBuffers,
-  &GetMaxValueInBuffer,
-  &GenSharedIds,
-  &DeleteSharedIds,
-  &RegisterSharedIds,
-  &CommandBufferEnable,
-  &MapBufferSubData,
-  &UnmapBufferSubData,
-  &MapTexSubImage2D,
-  &UnmapTexSubImage2D,
-  &CopyTextureToParentTexture
+  &SwapBuffers
 };
 
 }  // namespace

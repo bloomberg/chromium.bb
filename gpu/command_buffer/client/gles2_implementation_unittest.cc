@@ -422,7 +422,7 @@ TEST_F(GLES2ImplementationTest,
     EnableVertexAttribArray enable1;
     EnableVertexAttribArray enable2;
     BindBuffer bind_to_index;
-    GetMaxValueInBuffer get_max;
+    GetMaxValueInBufferCHROMIUM get_max;
     BindBuffer bind_to_emu;
     BufferData set_size;
     BufferSubData copy_data1;
@@ -695,7 +695,7 @@ TEST_F(GLES2ImplementationTest, ReadPixels2Reads) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, MapUnMapBufferSubData) {
+TEST_F(GLES2ImplementationTest, MapUnmapBufferSubDataCHROMIUM) {
   struct Cmds {
     BufferSubData buf;
     cmd::SetToken set_token;
@@ -711,13 +711,14 @@ TEST_F(GLES2ImplementationTest, MapUnMapBufferSubData) {
     kTarget, kOffset, kSize, kTransferBufferId, offset);
   expected.set_token.Init(token++);
 
-  void* mem = gl_->MapBufferSubData(kTarget, kOffset, kSize, GL_WRITE_ONLY);
+  void* mem = gl_->MapBufferSubDataCHROMIUM(
+      kTarget, kOffset, kSize, GL_WRITE_ONLY);
   ASSERT_TRUE(mem != NULL);
-  gl_->UnmapBufferSubData(mem);
+  gl_->UnmapBufferSubDataCHROMIUM(mem);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, MapUnMapBufferSubDataBadArgs) {
+TEST_F(GLES2ImplementationTest, MapUnmapBufferSubDataCHROMIUMBadArgs) {
   const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
   const GLintptr kOffset = 15;
   const GLsizeiptr kSize = 16;
@@ -731,21 +732,21 @@ TEST_F(GLES2ImplementationTest, MapUnMapBufferSubDataBadArgs) {
       .RetiresOnSaturation();
 
   void* mem;
-  mem = gl_->MapBufferSubData(kTarget, -1, kSize, GL_WRITE_ONLY);
+  mem = gl_->MapBufferSubDataCHROMIUM(kTarget, -1, kSize, GL_WRITE_ONLY);
   ASSERT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  mem = gl_->MapBufferSubData(kTarget, kOffset, -1, GL_WRITE_ONLY);
+  mem = gl_->MapBufferSubDataCHROMIUM(kTarget, kOffset, -1, GL_WRITE_ONLY);
   ASSERT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  mem = gl_->MapBufferSubData(kTarget, kOffset, kSize, GL_READ_ONLY);
+  mem = gl_->MapBufferSubDataCHROMIUM(kTarget, kOffset, kSize, GL_READ_ONLY);
   ASSERT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), gl_->GetError());
   const char* kPtr = "something";
-  gl_->UnmapBufferSubData(kPtr);
+  gl_->UnmapBufferSubDataCHROMIUM(kPtr);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
 }
 
-TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2D) {
+TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUM) {
   struct Cmds {
     TexSubImage2D tex;
     cmd::SetToken set_token;
@@ -766,7 +767,7 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2D) {
       kType, kTransferBufferId, offset);
   expected.set_token.Init(token++);
 
-  void* mem = gl_->MapTexSubImage2D(
+  void* mem = gl_->MapTexSubImage2DCHROMIUM(
       GL_TEXTURE_2D,
       kLevel,
       kXOffset,
@@ -777,11 +778,11 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2D) {
       kType,
       GL_WRITE_ONLY);
   ASSERT_TRUE(mem != NULL);
-  gl_->UnmapTexSubImage2D(mem);
+  gl_->UnmapTexSubImage2DCHROMIUM(mem);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
+TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUMBadArgs) {
   const GLint kLevel = 1;
   const GLint kXOffset = 2;
   const GLint kYOffset = 3;
@@ -802,7 +803,7 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
       .RetiresOnSaturation();
 
   void* mem;
-  mem = gl_->MapTexSubImage2D(
+  mem = gl_->MapTexSubImage2DCHROMIUM(
     GL_TEXTURE_2D,
     -1,
     kXOffset,
@@ -814,7 +815,7 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
     GL_WRITE_ONLY);
   EXPECT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  mem = gl_->MapTexSubImage2D(
+  mem = gl_->MapTexSubImage2DCHROMIUM(
     GL_TEXTURE_2D,
     kLevel,
     -1,
@@ -826,7 +827,7 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
     GL_WRITE_ONLY);
   EXPECT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  mem = gl_->MapTexSubImage2D(
+  mem = gl_->MapTexSubImage2DCHROMIUM(
     GL_TEXTURE_2D,
     kLevel,
     kXOffset,
@@ -838,7 +839,7 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
     GL_WRITE_ONLY);
   EXPECT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  mem = gl_->MapTexSubImage2D(
+  mem = gl_->MapTexSubImage2DCHROMIUM(
     GL_TEXTURE_2D,
     kLevel,
     kXOffset,
@@ -850,7 +851,7 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
     GL_WRITE_ONLY);
   EXPECT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  mem = gl_->MapTexSubImage2D(
+  mem = gl_->MapTexSubImage2DCHROMIUM(
     GL_TEXTURE_2D,
     kLevel,
     kXOffset,
@@ -862,7 +863,7 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
     GL_WRITE_ONLY);
   EXPECT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  mem = gl_->MapTexSubImage2D(
+  mem = gl_->MapTexSubImage2DCHROMIUM(
     GL_TEXTURE_2D,
     kLevel,
     kXOffset,
@@ -875,7 +876,7 @@ TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
   EXPECT_TRUE(mem == NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), gl_->GetError());
   const char* kPtr = "something";
-  gl_->UnmapTexSubImage2D(kPtr);
+  gl_->UnmapTexSubImage2DCHROMIUM(kPtr);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
 }
 

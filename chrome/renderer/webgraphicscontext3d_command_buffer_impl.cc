@@ -334,12 +334,12 @@ void* WebGraphicsContext3DCommandBufferImpl::mapBufferSubDataCHROMIUM(
     int offset,
     int size,
     unsigned access) {
-  return glMapBufferSubData(target, offset, size, access);
+  return glMapBufferSubDataCHROMIUM(target, offset, size, access);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::unmapBufferSubDataCHROMIUM(
     const void* mem) {
-  return glUnmapBufferSubData(mem);
+  return glUnmapBufferSubDataCHROMIUM(mem);
 }
 
 void* WebGraphicsContext3DCommandBufferImpl::mapTexSubImage2DCHROMIUM(
@@ -352,13 +352,13 @@ void* WebGraphicsContext3DCommandBufferImpl::mapTexSubImage2DCHROMIUM(
     unsigned format,
     unsigned type,
     unsigned access) {
-  return glMapTexSubImage2D(
+  return glMapTexSubImage2DCHROMIUM(
       target, level, xoffset, yoffset, width, height, format, type, access);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
     const void* mem) {
-  glUnmapTexSubImage2D(mem);
+  glUnmapTexSubImage2DCHROMIUM(mem);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
@@ -1005,7 +1005,7 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(unsigned texture) {
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToCompositor(
     unsigned texture, unsigned parentTexture) {
   makeContextCurrent();
-  glCopyTextureToParentTexture(texture, parentTexture);
+  glCopyTextureToParentTextureCHROMIUM(texture, parentTexture);
   glFlush();
 }
 
