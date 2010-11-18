@@ -2054,8 +2054,10 @@ void RenderViewHost::SearchBoxResize(const gfx::Rect& search_box_bounds) {
   Send(new ViewMsg_SearchBoxResize(routing_id(), search_box_bounds));
 }
 
-void RenderViewHost::DetermineIfPageSupportsInstant(const string16& value) {
-  Send(new ViewMsg_DetermineIfPageSupportsInstant(routing_id(), value));
+void RenderViewHost::DetermineIfPageSupportsInstant(const string16& value,
+                                                    bool verbatim) {
+  Send(new ViewMsg_DetermineIfPageSupportsInstant(routing_id(), value,
+                                                  verbatim));
 }
 
 void RenderViewHost::OnExtensionPostMessage(

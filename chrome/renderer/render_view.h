@@ -840,7 +840,7 @@ class RenderView : public RenderWidget,
   void OnSearchBoxSubmit(const string16& value, bool verbatim);
   void OnSearchBoxCancel();
   void OnSearchBoxResize(const gfx::Rect& bounds);
-  void OnDetermineIfPageSupportsInstant(const string16& value);
+  void OnDetermineIfPageSupportsInstant(const string16& value, bool verbatim);
   void OnEnableViewSourceMode();
   void OnExecuteCode(const ViewMsg_ExecuteCode_Params& params);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);

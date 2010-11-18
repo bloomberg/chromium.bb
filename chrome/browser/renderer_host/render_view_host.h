@@ -511,7 +511,8 @@ class RenderViewHost : public RenderWidgetHost {
                        bool verbatim);
   void SearchBoxCancel();
   void SearchBoxResize(const gfx::Rect& search_box_bounds);
-  void DetermineIfPageSupportsInstant(const string16& value);
+  void DetermineIfPageSupportsInstant(const string16& value,
+                                      bool verbatim);
 
 #if defined(UNIT_TEST)
   // These functions shouldn't be necessary outside of testing.

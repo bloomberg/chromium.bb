@@ -317,6 +317,7 @@ void LocationBarViewMac::OnChanged() {
       instant->Update(browser_->GetSelectedTabContentsWrapper(),
                       edit_view_->model()->CurrentMatch(),
                       WideToUTF16(edit_view_->GetText()),
+                      false, // TODO: make this real
                       &suggested_text);
     } else {
       if (instant->is_active())

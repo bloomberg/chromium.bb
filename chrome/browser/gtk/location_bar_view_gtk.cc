@@ -539,6 +539,7 @@ void LocationBarViewGtk::OnChanged() {
       instant->Update(browser_->GetSelectedTabContentsWrapper(),
                       location_entry_->model()->CurrentMatch(),
                       WideToUTF16(location_entry_->GetText()),
+                      false, // TODO: make this real
                       &suggested_text);
     } else {
       instant->DestroyPreviewContents();

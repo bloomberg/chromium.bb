@@ -853,6 +853,7 @@ void LocationBarView::OnChanged() {
       instant->Update(GetTabContentsWrapper(),
                       location_entry_->model()->CurrentMatch(),
                       WideToUTF16(location_entry_->GetText()),
+                      false, // TODO: make this real
                       &suggested_text);
     } else {
       instant->DestroyPreviewContents();

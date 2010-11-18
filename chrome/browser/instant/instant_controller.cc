@@ -159,6 +159,7 @@ void InstantController::Disable(Profile* profile) {
 void InstantController::Update(TabContentsWrapper* tab_contents,
                                const AutocompleteMatch& match,
                                const string16& user_text,
+                               bool verbatim,
                                string16* suggested_text) {
   if (tab_contents != tab_contents_)
     DestroyPreviewContents();
@@ -169,16 +170,24 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
   commit_on_mouse_up_ = false;
   last_transition_type_ = match.transition;
 
-  if (loader_manager_.get() && loader_manager_->active_loader()->url() == url)
-    return;
+  const TemplateURL* template_url = GetTemplateURL(match);
+  TemplateURLID template_url_id = template_url ? template_url->id() : 0;
+  // Verbatim only makes sense if the search engines supports instant.
+  bool real_verbatim = template_url_id ? verbatim : false;
+
+  if (loader_manager_.get()) {
+    InstantLoader* active_loader = loader_manager_->active_loader();
+    if (active_loader->url() == url &&
+        active_loader->template_url_id() == template_url_id &&
+        (!template_url_id || active_loader->verbatim() == real_verbatim)) {
+      return;
+    }
+  }
 
   if (url.is_empty() || !url.is_valid() || !ShouldShowPreviewFor(match)) {
     DestroyPreviewContents();
     return;
   }
-
-  const TemplateURL* template_url = GetTemplateURL(match);
-  TemplateURLID template_url_id = template_url ? template_url->id() : 0;
 
   if (!loader_manager_.get())
     loader_manager_.reset(new InstantLoaderManager(this));
@@ -188,7 +197,7 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
 
   if (ShouldUpdateNow(template_url_id, match.destination_url)) {
     UpdateLoader(template_url, match.destination_url, match.transition,
-                 user_text, suggested_text);
+                 user_text, real_verbatim, suggested_text);
   } else {
     ScheduleUpdate(match.destination_url);
   }
@@ -394,7 +403,7 @@ void InstantController::InstantLoaderDoesntSupportInstant(
     if (needs_reload) {
       string16 suggested_text;
       loader->Update(tab_contents_, 0, url_to_load, last_transition_type_,
-                     loader->user_text(), &suggested_text);
+                     loader->user_text(), false, &suggested_text);
     }
   } else {
     loader_manager_->DestroyLoader(loader);
@@ -444,7 +453,7 @@ void InstantController::ProcessScheduledUpdate() {
   // We only delay loading of sites that don't support instant, so we can ignore
   // suggested_text here.
   string16 suggested_text;
-  UpdateLoader(NULL, scheduled_url_, last_transition_type_, string16(),
+  UpdateLoader(NULL, scheduled_url_, last_transition_type_, string16(), false,
                &suggested_text);
 }
 
@@ -452,6 +461,7 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      const GURL& url,
                                      PageTransition::Type transition_type,
                                      const string16& user_text,
+                                     bool verbatim,
                                      string16* suggested_text) {
   update_timer_.Stop();
 
@@ -463,7 +473,7 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
 
   new_loader->SetOmniboxBounds(omnibox_bounds_);
   new_loader->Update(tab_contents_, template_url, url, transition_type,
-                     user_text, suggested_text);
+                     user_text, verbatim, suggested_text);
   if (old_loader != new_loader && new_loader->ready())
     delegate_->ShowInstant(new_loader->preview_contents());
 }

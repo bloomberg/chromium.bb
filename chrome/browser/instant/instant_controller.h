@@ -77,10 +77,14 @@ class InstantController : public InstantLoaderDelegate {
   // Invoked as the user types in the omnibox with the url to navigate to.  If
   // the url is empty and there is a preview TabContents it is destroyed. If url
   // is non-empty and the preview TabContents has not been created it is
-  // created.
+  // created. If |verbatim| is true search results are shown for |user_text|
+  // rather than the best guess as to what the search thought the user meant.
+  // |verbatim| only matters if the AutocompleteMatch is for a search engine
+  // that supports instant.
   void Update(TabContentsWrapper* tab_contents,
               const AutocompleteMatch& match,
               const string16& user_text,
+              bool verbatim,
               string16* suggested_text);
 
   // Sets the bounds of the omnibox (in screen coordinates). The bounds are
@@ -172,6 +176,7 @@ class InstantController : public InstantLoaderDelegate {
                     const GURL& url,
                     PageTransition::Type transition_type,
                     const string16& user_text,
+                    bool verbatim,
                     string16* suggested_text);
 
   // Returns true if we should show preview for |match|.

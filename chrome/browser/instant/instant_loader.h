@@ -46,6 +46,7 @@ class InstantLoader : public NotificationObserver {
               const GURL& url,
               PageTransition::Type transition_type,
               const string16& user_text,
+              bool verbatim,
               string16* suggested_text);
 
   // Sets the bounds of the omnibox (in screen coordinates). The bounds are
@@ -83,6 +84,8 @@ class InstantLoader : public NotificationObserver {
   bool ready() const { return ready_; }
 
   const GURL& url() const { return url_; }
+
+  bool verbatim() const { return verbatim_; }
 
   // Are we showing instant results?
   bool is_showing_instant() const { return template_url_id_ != 0; }
@@ -175,6 +178,9 @@ class InstantLoader : public NotificationObserver {
 
   // Used to get notifications about renderers coming and going.
   NotificationRegistrar registrar_;
+
+  // Last value of verbatim passed to |Update|.
+  bool verbatim_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };

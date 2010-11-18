@@ -48,9 +48,12 @@ const int kUpdateBoundsDelayMS = 500;
 // instant after it has loaded.
 class InstantLoader::FrameLoadObserver : public NotificationObserver {
  public:
-  FrameLoadObserver(TabContents* tab_contents, const string16& text)
+  FrameLoadObserver(TabContents* tab_contents,
+                    const string16& text,
+                    bool verbatim)
       : tab_contents_(tab_contents),
         text_(text),
+        verbatim_(verbatim),
         unique_id_(tab_contents_->controller().pending_entry()->unique_id()) {
     registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                    Source<TabContents>(tab_contents_));
@@ -58,6 +61,9 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
 
   // Sets the text to send to the page.
   void set_text(const string16& text) { text_ = text; }
+
+  // Sets whether verbatim results are obtained rather than predictive.
+  void set_verbatim(bool verbatim) { verbatim_ = verbatim; }
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -73,7 +79,7 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
           return;
         }
         tab_contents_->render_view_host()->DetermineIfPageSupportsInstant(
-            text_);
+            text_, verbatim_);
         break;
       }
       default:
@@ -88,6 +94,9 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
 
   // Text to send down to the page.
   string16 text_;
+
+  // Whether verbatim results are obtained.
+  bool verbatim_;
 
   // unique_id of the NavigationEntry we're waiting on.
   const int unique_id_;
@@ -396,8 +405,9 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
                            const GURL& url,
                            PageTransition::Type transition_type,
                            const string16& user_text,
+                           bool verbatim,
                            string16* suggested_text) {
-  if (url_ == url)
+  if (url_ == url && verbatim == verbatim_)
     return;
 
   DCHECK(!url.is_empty() && url.is_valid());
@@ -405,6 +415,7 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
   last_transition_type_ = transition_type;
   url_ = url;
   user_text_ = user_text;
+  verbatim_ = verbatim;
 
   bool created_preview_contents;
   if (preview_contents_.get() == NULL) {
@@ -453,16 +464,18 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
       if (is_waiting_for_load()) {
         // The page hasn't loaded yet. We'll send the script down when it does.
         frame_load_observer_->set_text(user_text_);
+        frame_load_observer_->set_verbatim(verbatim);
         preview_tab_contents_delegate_->set_user_typed_before_load();
         return;
       }
       preview_contents_->render_view_host()->SearchBoxChange(
-          user_text_, false, 0, 0);
+          user_text_, verbatim, 0, 0);
 
       string16 complete_suggested_text_lower = l10n_util::ToLower(
           complete_suggested_text_);
       string16 user_text_lower = l10n_util::ToLower(user_text_);
-      if (complete_suggested_text_lower.size() > user_text_lower.size() &&
+      if (!verbatim &&
+          complete_suggested_text_lower.size() > user_text_lower.size() &&
           !complete_suggested_text_lower.compare(0, user_text_lower.size(),
                                                  user_text_lower)) {
         *suggested_text = complete_suggested_text_.substr(user_text_.size());
@@ -487,7 +500,7 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
           instant_url, GURL(), transition_type);
       frame_load_observer_.reset(
           new FrameLoadObserver(preview_contents()->tab_contents(),
-                                user_text_));
+                                user_text_, verbatim));
     }
   } else {
     DCHECK(template_url_id_ == 0);
@@ -592,6 +605,11 @@ void InstantLoader::SetCompleteSuggestedText(
 
   if (complete_suggested_text == complete_suggested_text_)
     return;
+
+  if (verbatim_) {
+    // Don't show suggest results for verbatim queries.
+    return;
+  }
 
   string16 user_text_lower = l10n_util::ToLower(user_text_);
   string16 complete_suggested_text_lower = l10n_util::ToLower(

@@ -833,8 +833,9 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED0(ViewMsg_SearchBoxCancel)
   IPC_MESSAGE_ROUTED1(ViewMsg_SearchBoxResize,
                       gfx::Rect /*search_box_bounds*/)
-  IPC_MESSAGE_ROUTED1(ViewMsg_DetermineIfPageSupportsInstant,
-                      string16 /*value*/)
+  IPC_MESSAGE_ROUTED2(ViewMsg_DetermineIfPageSupportsInstant,
+                      string16 /*value*/,
+                      bool /* verbatim */)
 
   // Used to tell the renderer not to add scrollbars with height and
   // width below a threshold.

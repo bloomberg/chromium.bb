@@ -4628,8 +4628,10 @@ void RenderView::OnSearchBoxResize(const gfx::Rect& bounds) {
   extensions_v8::SearchBoxExtension::DispatchResize(webview()->mainFrame());
 }
 
-void RenderView::OnDetermineIfPageSupportsInstant(const string16& value) {
+void RenderView::OnDetermineIfPageSupportsInstant(const string16& value,
+                                                  bool verbatim) {
   search_box_.value = value;
+  search_box_.verbatim = verbatim;
   bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
       webview()->mainFrame());
   Send(new ViewHostMsg_InstantSupportDetermined(routing_id_, page_id_, result));
