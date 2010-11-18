@@ -82,8 +82,10 @@ gdb_test = env.CommandGdbTestNacl(
 
 # Currently gdb only works on Linux
 if env.Bit('host_linux'):
+  # TODO(ncbray) enable this test (medium_tests) or completely remove it.
+  # http://code.google.com/p/nativeclient/issues/detail?id=1180
   env.AddNodeToTestSuite(['hello_world_gdb.nexe', gdb_test],
-                         ['medium_tests'], 'gdb_minimal_test')
+                         ['broken_tests'], 'gdb_minimal_test')
 
 
 # TODO(mseaborn): explain this magic
