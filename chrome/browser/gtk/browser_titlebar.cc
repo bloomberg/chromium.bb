@@ -468,8 +468,10 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
   }
 
   // Now show the correct widgets in the two hierarchies.
-  gtk_widget_show_all(titlebar_left_buttons_vbox_);
-  gtk_widget_show_all(titlebar_right_buttons_vbox_);
+  if (using_custom_frame_) {
+    gtk_widget_show_all(titlebar_left_buttons_vbox_);
+    gtk_widget_show_all(titlebar_right_buttons_vbox_);
+  }
   UpdateMaximizeRestoreVisibility();
 }
 
@@ -522,9 +524,9 @@ void BrowserTitlebar::UpdateCustomFrame(bool use_custom_frame) {
   using_custom_frame_ = use_custom_frame;
   if (use_custom_frame) {
     if (titlebar_left_buttons_vbox_)
-      gtk_widget_show(titlebar_left_buttons_vbox_);
+      gtk_widget_show_all(titlebar_left_buttons_vbox_);
     if (titlebar_right_buttons_vbox_)
-      gtk_widget_show(titlebar_right_buttons_vbox_);
+      gtk_widget_show_all(titlebar_right_buttons_vbox_);
   } else {
     if (titlebar_left_buttons_vbox_)
       gtk_widget_hide(titlebar_left_buttons_vbox_);
