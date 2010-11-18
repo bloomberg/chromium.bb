@@ -990,10 +990,16 @@ TEST_TIME_THRESHOLD = {
 TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/command_tester.py'
 
 # Valgrind handles SIGSEGV in a way our testing tools do not expect.
-UNSUPPORTED_VALGRIND_EXIT_STATUS = ['segfault',
+UNSUPPORTED_VALGRIND_EXIT_STATUS = ['sigill' ,
+                                    'segfault',
                                     'sigsegv_or_equivalent',
-                                    'untrusted_sigill',
-                                    'untrusted_segfault']
+                                    'untrusted_sigill' ,
+                                    'untrusted_segfault',
+                                    'untrusted_sigsegv_or_equivalent',
+                                    'trusted_sigill' ,
+                                    'trusted_segfault',
+                                    'trusted_sigsegv_or_equivalent'];
+
 
 def CommandTest(env, name, command, size='small',
                 direct_emulation=True, extra_deps=[], **extra):
