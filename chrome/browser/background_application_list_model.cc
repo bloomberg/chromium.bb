@@ -239,9 +239,7 @@ void BackgroundApplicationListModel::Observe(
     Update();
     return;
   }
-  ExtensionsService* service = profile_->GetExtensionsService();
-  if (!service || !service->is_ready())
-    return;
+
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED:
       OnExtensionLoaded(Details<Extension>(details).ptr());
@@ -286,7 +284,6 @@ void BackgroundApplicationListModel::RemoveObserver(Observer* observer) {
 // each observer.
 void BackgroundApplicationListModel::Update() {
   ExtensionsService* service = profile_->GetExtensionsService();
-  DCHECK(service->is_ready());
 
   // Discover current background applications, compare with previous list, which
   // is consistently sorted, and notify observers if they differ.

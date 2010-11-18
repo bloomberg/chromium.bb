@@ -90,9 +90,6 @@ void ExtensionToolbarModel::Observe(NotificationType type,
     return;
   }
 
-  if (!service_->is_ready())
-    return;
-
   const Extension* extension = Details<const Extension>(details).ptr();
   if (type == NotificationType::EXTENSION_LOADED) {
     AddExtension(extension);
@@ -151,8 +148,6 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
 // 2. Create a vector of extensions that did not have a pref value.
 // 3. Remove holes from the sorted vector and append the unsorted vector.
 void ExtensionToolbarModel::InitializeExtensionList() {
-  DCHECK(service_->is_ready());
-
   std::vector<std::string> pref_order = service_->extension_prefs()->
       GetToolbarOrder();
   // Items that have a pref for their position.

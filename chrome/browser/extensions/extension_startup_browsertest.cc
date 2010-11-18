@@ -84,9 +84,6 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   void WaitForServicesToStart(int num_expected_extensions,
                               bool expect_extensions_enabled) {
     ExtensionsService* service = browser()->profile()->GetExtensionsService();
-    if (!service->is_ready())
-      ui_test_utils::WaitForNotification(NotificationType::EXTENSIONS_READY);
-    ASSERT_TRUE(service->is_ready());
 
     // Count the number of non-component extensions.
     int found_extensions = 0;

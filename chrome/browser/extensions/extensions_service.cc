@@ -538,7 +538,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
       install_directory_(install_directory),
       extensions_enabled_(true),
       show_extensions_prompts_(true),
-      ready_(false),
+      init_done_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(toolbar_model_(this)),
       default_apps_(profile->GetPrefs()),
       event_routers_initialized_(false) {
@@ -608,7 +608,7 @@ void ExtensionsService::InitEventRouters() {
 void ExtensionsService::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(!ready_);
+  DCHECK(!init_done_);  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
 
   // Hack: we need to ensure the ResourceDispatcherHost is ready before we load
@@ -623,6 +623,8 @@ void ExtensionsService::Init() {
 
   // TODO(erikkay) this should probably be deferred as well.
   GarbageCollectExtensions();
+
+  init_done_ = true;
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
@@ -1473,7 +1475,6 @@ void ExtensionsService::GarbageCollectExtensions() {
 }
 
 void ExtensionsService::OnLoadedInstalledExtensions() {
-  ready_ = true;
   if (updater_.get()) {
     updater_->Start();
   }

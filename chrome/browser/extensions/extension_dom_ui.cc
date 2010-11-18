@@ -243,13 +243,6 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
     return false;
 
   ExtensionsService* service = profile->GetExtensionsService();
-  if (!service->is_ready()) {
-    // TODO(erikkay) So far, it looks like extensions load before the new tab
-    // page.  I don't know if we have anything that enforces this, so add this
-    // check for safety.
-    NOTREACHED() << "Chrome URL override requested before extensions loaded";
-    return false;
-  }
 
   size_t i = 0;
   while (i < url_list->GetSize()) {

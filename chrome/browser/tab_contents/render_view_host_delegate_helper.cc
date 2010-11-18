@@ -39,10 +39,7 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     const string16& frame_name) {
   ExtensionsService* extensions_service = profile->GetExtensionsService();
 
-  if (!opener_url.is_valid() ||
-      frame_name.empty() ||
-      !extensions_service ||
-      !extensions_service->is_ready())
+  if (!opener_url.is_valid() || frame_name.empty())
     return NULL;
 
   const Extension* extension =
