@@ -300,6 +300,12 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Loading) {
        !file_path.empty();
        file_path = file_enumerator.Next()) {
     std::string filename = WideToASCII(file_path.BaseName().ToWStringHack());
+
+#if defined(OS_MACOSX)
+    if (filename == "sample.pdf")
+      continue;  // Crashes on Mac.  http://crbug.com/63549
+#endif
+
     LOG(WARNING) << "PDFBrowserTest.Loading: " << filename;
 
     GURL url = test_server()->GetURL(base_url + filename);
