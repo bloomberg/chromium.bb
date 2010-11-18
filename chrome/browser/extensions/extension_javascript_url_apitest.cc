@@ -5,7 +5,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/base/mock_host_resolver.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, JavaScriptURLPermissions) {
+// Disabled, http://crbug.com/63589.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_JavaScriptURLPermissions) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
