@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/singleton.h"
 #include "base/values.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -30,9 +31,29 @@ const char kMediaPlayerExperimentName[] = "media-player";
 const char kAdvancedFileSystemExperimentName[] = "advanced-file-system";
 const char kVerticalTabsExperimentName[] = "vertical-tabs";
 
+// RECORDING USER METRICS FOR FLAGS:
+// -----------------------------------------------------------------------------
+// The first line of the experiment is the internal name. If you'd like to
+// gather statistics about the usage of your flag, you should append a marker
+// comment to the end of the feature name, like so:
+//   "my-special-feature",  // FLAGS:RECORD_UMA
+//
+// After doing that, run //chrome/tools/extract_actions.py (see instructions at
+// the top of that file for details) to update the chromeactions.txt file, which
+// will enable UMA to record your feature flag.
+//
+// After your feature has shipped under a flag, you can locate the metrics
+// under the action name AboutFlags_internal-action-name. Actions are recorded
+// once per startup, so you should divide this number by AboutFlags_StartupTick
+// to get a sense of usage. Note that this will not be the same as number of
+// users with a given feature enabled because users can quit and relaunch
+// the application multiple times over a given time interval.
+// TODO(rsesek): See if there's a way to count per-user, rather than
+// per-startup.
+
 const Experiment kExperiments[] = {
   {
-    "expose-for-tabs",  // Do not change; see above.
+    "expose-for-tabs",  // FLAGS:RECORD_UMA
     IDS_FLAGS_TABPOSE_NAME,
     IDS_FLAGS_TABPOSE_DESCRIPTION,
     kOsMac,
@@ -68,21 +89,21 @@ const Experiment kExperiments[] = {
 #endif
   },
   {
-    kVerticalTabsExperimentName,
+    "vertical-tabs",  // FLAGS:RECORD_UMA
     IDS_FLAGS_SIDE_TABS_NAME,
     IDS_FLAGS_SIDE_TABS_DESCRIPTION,
     kOsWin | kOsCrOS,
     switches::kEnableVerticalTabs
   },
   {
-    "tabbed-options",  // Do not change; see above.
+    "tabbed-options",  // FLAGS:RECORD_UMA
     IDS_FLAGS_TABBED_OPTIONS_NAME,
     IDS_FLAGS_TABBED_OPTIONS_DESCRIPTION,
     kOsWin | kOsLinux | kOsMac,  // Enabled by default on CrOS.
     switches::kEnableTabbedOptions
   },
   {
-    "remoting",  // Do not change; see above.
+    "remoting",  // FLAGS:RECORD_UMA
     IDS_FLAGS_REMOTING_NAME,
 #if defined(OS_WIN)
     // Windows only supports host functionality at the moment.
@@ -98,42 +119,42 @@ const Experiment kExperiments[] = {
     switches::kEnableRemoting
   },
   {
-    "disable-outdated-plugins",  // Do not change; see above.
+    "disable-outdated-plugins",  // FLAGS:RECORD_UMA
     IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_NAME,
     IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION,
     kOsAll,
     switches::kDisableOutdatedPlugins
   },
   {
-    "xss-auditor",  // Do not change; see above.
+    "xss-auditor",  // FLAGS:RECORD_UMA
     IDS_FLAGS_XSS_AUDITOR_NAME,
     IDS_FLAGS_XSS_AUDITOR_DESCRIPTION,
     kOsAll,
     switches::kEnableXSSAuditor
   },
   {
-    "background-webapps", // Do not change; see above
+    "background-webapps",  // FLAGS:RECORD_UMA
     IDS_FLAGS_BACKGROUND_WEBAPPS_NAME,
     IDS_FLAGS_BACKGROUND_WEBAPPS_DESCRIPTION,
     kOsAll,
     switches::kEnableBackgroundMode
   },
   {
-    "conflicting-modules-check", // Do not change; see above.
+    "conflicting-modules-check",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CONFLICTS_CHECK_NAME,
     IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION,
     kOsWin,
     switches::kConflictingModulesCheck
   },
   {
-    "cloud-print-proxy", // Do not change; see above.
+    "cloud-print-proxy",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CLOUD_PRINT_PROXY_NAME,
     IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION,
     kOsWin,
     switches::kEnableCloudPrintProxy
   },
   {
-    "match-preview",  // Do not change; see above.
+    "match-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PREDICTIVE_INSTANT_NAME,
     IDS_FLAGS_PREDICTIVE_INSTANT_DESCRIPTION,
     kOsMac,
@@ -142,14 +163,14 @@ const Experiment kExperiments[] = {
   // FIXME(scheib): Add Flags entry for accelerated Compositing,
   // or pull it and the strings in generated_resources.grd by Dec 2010
   // {
-  //   "gpu-compositing", // Do not change; see above
+  //   "gpu-compositing",
   //   IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
   //   IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
   //   kOsAll,
   //   switches::kDisableAcceleratedCompositing
   // },
   {
-    "gpu-canvas-2d", // Do not change; see above
+    "gpu-canvas-2d",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME,
     IDS_FLAGS_ACCELERATED_CANVAS_2D_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
@@ -158,63 +179,63 @@ const Experiment kExperiments[] = {
   // FIXME(scheib): Add Flags entry for WebGL,
   // or pull it and the strings in generated_resources.grd by Dec 2010
   // {
-  //   "webgl", // Do not change; see above
+  //   "webgl",
   //   IDS_FLAGS_WEBGL_NAME,
   //   IDS_FLAGS_WEBGL_DESCRIPTION,
   //   kOsAll,
   //   switches::kDisableExperimentalWebGL
   // }
   {
-    "print-preview",  // Do not change; see above
+    "print-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRINT_PREVIEW_NAME,
     IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION,
     kOsAll,
     switches::kEnablePrintPreview
   },
   {
-    "enable-nacl",   // Do not change; see above.
+    "enable-nacl",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_NACL_NAME,
     IDS_FLAGS_ENABLE_NACL_DESCRIPTION,
     kOsAll,
     switches::kEnableNaCl
   },
   {
-    "dns-server",
+    "dns-server",  // FLAGS:RECORD_UMA
     IDS_FLAGS_DNS_SERVER_NAME,
     IDS_FLAGS_DNS_SERVER_DESCRIPTION,
     kOsLinux,
     switches::kDnsServer
   },
   {
-    "page-prerender",
+    "page-prerender",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PAGE_PRERENDER_NAME,
     IDS_FLAGS_PAGE_PRERENDER_DESCRIPTION,
     kOsAll,
     switches::kEnablePagePrerender
   },
   {
-    "confirm-to-quit",   // Do not change; see above.
+    "confirm-to-quit",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CONFIRM_TO_QUIT_NAME,
     IDS_FLAGS_CONFIRM_TO_QUIT_DESCRIPTION,
     kOsMac,
     switches::kEnableConfirmToQuit
   },
   {
-    "snap-start",   // Do not change; see above.
+    "snap-start",  // FLAGS:RECORD_UMA
     IDS_FLAGS_SNAP_START_NAME,
     IDS_FLAGS_SNAP_START_DESCRIPTION,
     kOsAll,
     switches::kEnableSnapStart
   },
   {
-    "extension-apis",   // Do not change; see above.
+    "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION,
     kOsAll,
     switches::kEnableExperimentalExtensionApis
   },
   {
-    "click-to-play",   // Do not change; see above.
+    "click-to-play",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CLICK_TO_PLAY_NAME,
     IDS_FLAGS_CLICK_TO_PLAY_DESCRIPTION,
     kOsAll,
@@ -414,6 +435,21 @@ int GetCurrentPlatform() {
 #else
 #error Unknown platform
 #endif
+}
+
+void RecordUMAStatistics(const PrefService* prefs) {
+  std::set<std::string> flags;
+  GetEnabledFlags(prefs, &flags);
+  for (std::set<std::string>::iterator it = flags.begin(); it != flags.end();
+       ++it) {
+    std::string action("AboutFlags_");
+    action += *it;
+    UserMetrics::RecordComputedAction(action);
+  }
+  // Since flag metrics are recorded every startup, add a tick so that the
+  // stats can be made meaningful.
+  if (flags.size())
+    UserMetrics::RecordAction(UserMetricsAction("AboutFlags_StartupTick"));
 }
 
 //////////////////////////////////////////////////////////////////////////////

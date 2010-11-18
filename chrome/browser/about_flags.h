@@ -69,6 +69,10 @@ void RemoveFlagsSwitches(
 // This is exposed only for testing.
 int GetCurrentPlatform();
 
+// Sends UMA stats about experimental flag usage. This should be called once per
+// startup.
+void RecordUMAStatistics(const PrefService* prefs);
+
 namespace testing {
 // Clears internal global state, for unit tests.
 void ClearState();

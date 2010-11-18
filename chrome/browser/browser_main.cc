@@ -33,6 +33,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_main_win.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/browser_process.h"
@@ -1515,6 +1516,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   HandleTestParameters(parsed_command_line);
   RecordBreakpadStatusUMA(metrics);
+  about_flags::RecordUMAStatistics(user_prefs);
 
   // Stat the directory with the inspector's files so that we can know if we
   // should display the entry in the context menu or not.
