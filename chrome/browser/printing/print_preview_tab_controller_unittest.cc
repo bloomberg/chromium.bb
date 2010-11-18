@@ -26,8 +26,8 @@ TEST_F(PrintPreviewTabControllerTest, GetOrCreatePreviewTab) {
   // Create a reference to initiator tab contents.
   TabContents* initiator_tab = browser()->GetSelectedTabContents();
 
-  printing::PrintPreviewTabController* tab_controller =
-      new printing::PrintPreviewTabController();
+  scoped_refptr<printing::PrintPreviewTabController>
+      tab_controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
@@ -73,8 +73,8 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
   ASSERT_TRUE(tab_contents_2);
   EXPECT_EQ(2, browser()->tab_count());
 
-  printing::PrintPreviewTabController* tab_controller =
-      new printing::PrintPreviewTabController();
+  scoped_refptr<printing::PrintPreviewTabController>
+      tab_controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(tab_controller);
 
   // Create preview tab for |tab_contents_1|

@@ -3290,20 +3290,6 @@
    fun:_ZN7WebCore15ElementInternal22setAttributeNSCallbackERKN2v89ArgumentsE
 }
 {
-   bug_66386_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN54PrintPreviewTabControllerTest_MultiplePreviewTabs_Test8TestBodyEv
-}
-{
-   bug_66386_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN56PrintPreviewTabControllerTest_GetOrCreatePreviewTab_Test8TestBodyEv
-}
-{
    bug_63428
    Memcheck:Cond
    fun:NSIntersectionRect
