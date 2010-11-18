@@ -11,6 +11,8 @@
 // constants for CommandBufferEnable command.
 #define PEPPER3D_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS \
     "pepper3d_allow_buffers_on_multiple_targets"
+#define PEPPER3D_SUPPORT_FIXED_ATTRIBS \
+    "pepper3d_support_fixed_attribs"
 // TODO(gman): remove this
 #define PEPPER3D_SKIP_GLSL_TRANSLATION \
     "pepper3d_skip_glsl_translation"

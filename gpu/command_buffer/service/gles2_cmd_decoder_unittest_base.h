@@ -49,6 +49,7 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLint kMaxVertexUniformVectors = 128;
 
   static const GLuint kServiceAttrib0BufferId = 801;
+  static const GLuint kServiceFixedAttribBufferId = 802;
 
   static const GLuint kServiceBufferId = 301;
   static const GLuint kServiceFramebufferId = 302;

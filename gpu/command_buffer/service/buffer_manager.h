@@ -49,6 +49,9 @@ class BufferManager {
     bool GetMaxValueForRange(GLuint offset, GLsizei count, GLenum type,
                              GLuint* max_value);
 
+    // Returns a pointer to shadowed data.
+    const void* GetRange(GLintptr offset, GLsizeiptr size) const;
+
     bool IsDeleted() {
       return service_id_ == 0;
     }

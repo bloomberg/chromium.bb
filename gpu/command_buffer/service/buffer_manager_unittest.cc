@@ -101,6 +101,24 @@ TEST_F(BufferManagerTest, SetRange) {
   EXPECT_FALSE(info->SetRange(0, sizeof(data) + 1, data));
 }
 
+TEST_F(BufferManagerTest, GetRange) {
+  const GLuint kClientBufferId = 1;
+  const GLuint kServiceBufferId = 11;
+  const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  manager_.CreateBufferInfo(kClientBufferId, kServiceBufferId);
+  BufferManager::BufferInfo* info = manager_.GetBufferInfo(kClientBufferId);
+  ASSERT_TRUE(info != NULL);
+  manager_.SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
+  manager_.SetSize(info, sizeof(data));
+  const char* buf = static_cast<const char*>(info->GetRange(0, sizeof(data)));
+  ASSERT_TRUE(buf != NULL);
+  const char* buf1 =
+      static_cast<const char*>(info->GetRange(1, sizeof(data) - 1));
+  EXPECT_EQ(buf + 1, buf1);
+  EXPECT_TRUE(info->GetRange(sizeof(data), 1) == NULL);
+  EXPECT_TRUE(info->GetRange(0, sizeof(data) + 1) == NULL);
+}
+
 TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;

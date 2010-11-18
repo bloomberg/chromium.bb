@@ -448,28 +448,6 @@ class VertexAttribManager {
       return gl_stride_;
     }
 
-    void SetInfo(
-        BufferManager::BufferInfo* buffer,
-        GLint size,
-        GLenum type,
-        GLboolean normalized,
-        GLsizei gl_stride,
-        GLsizei real_stride,
-        GLsizei offset) {
-      DCHECK_GT(real_stride, 0);
-      buffer_ = buffer;
-      size_ = size;
-      type_ = type;
-      normalized_ = normalized;
-      gl_stride_ = gl_stride;
-      real_stride_ = real_stride;
-      offset_ = offset;
-    }
-
-    void ClearBuffer() {
-      buffer_ = NULL;
-    }
-
     bool enabled() const {
       return enabled_;
     }
@@ -502,6 +480,24 @@ class VertexAttribManager {
 
       it_ = new_list->insert(new_list->end(), this);
       list_ = new_list;
+    }
+
+    void SetInfo(
+        BufferManager::BufferInfo* buffer,
+        GLint size,
+        GLenum type,
+        GLboolean normalized,
+        GLsizei gl_stride,
+        GLsizei real_stride,
+        GLsizei offset) {
+      DCHECK_GT(real_stride, 0);
+      buffer_ = buffer;
+      size_ = size;
+      type_ = type;
+      normalized_ = normalized;
+      gl_stride_ = gl_stride;
+      real_stride_ = real_stride;
+      offset_ = offset;
     }
 
     // The index of this attrib.
@@ -545,12 +541,17 @@ class VertexAttribManager {
   typedef std::list<VertexAttribInfo*> VertexAttribInfoList;
 
   VertexAttribManager()
-      : max_vertex_attribs_(0) {
+      : max_vertex_attribs_(0),
+        num_fixed_attribs_(0) {
   }
 
   void Initialize(uint32 num_vertex_attribs);
 
   bool Enable(GLuint index, bool enable);
+
+  bool HaveFixedAttribs() const {
+    return num_fixed_attribs_ != 0;
+  }
 
   const VertexAttribInfoList& GetEnabledVertexAttribInfos() const {
     return enabled_vertex_attribs_;
@@ -563,8 +564,34 @@ class VertexAttribManager {
     return NULL;
   }
 
+  void SetAttribInfo(
+      GLuint index,
+      BufferManager::BufferInfo* buffer,
+      GLint size,
+      GLenum type,
+      GLboolean normalized,
+      GLsizei gl_stride,
+      GLsizei real_stride,
+      GLsizei offset) {
+    VertexAttribInfo* info = GetVertexAttribInfo(index);
+    if (info) {
+      if (info->type() == GL_FIXED) {
+        --num_fixed_attribs_;
+      }
+      if (type == GL_FIXED) {
+        ++num_fixed_attribs_;
+      }
+      info->SetInfo(
+          buffer, size, type, normalized, gl_stride, real_stride, offset);
+    }
+  }
+
+
  private:
   uint32 max_vertex_attribs_;
+
+  // number of attribs using type GL_FIXED.
+  int num_fixed_attribs_;
 
   // Info for each vertex attribute saved so we can check at glDrawXXX time
   // if it is safe to draw.
@@ -1204,6 +1231,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool SetBlackTextureForNonRenderableTextures();
   void RestoreStateForNonRenderableTextures();
 
+  // Returns true if GL_FIXED attribs were simulated.
+  bool SimulateFixedAttribs(GLuint max_vertex_accessed, bool* simulated);
+  void RestoreStateForSimulatedFixedAttribs();
+
   // Gets the buffer id for a given target.
   BufferManager::BufferInfo* GetBufferInfoForTarget(GLenum target) {
     DCHECK(target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER);
@@ -1327,6 +1358,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // The size of attrib 0.
   GLsizei attrib_0_size_;
+
+  // The buffer used to simulate GL_FIXED attribs.
+  GLuint fixed_attrib_buffer_id_;
+
+  // The size of fiixed attrib buffer.
+  GLsizei fixed_attrib_buffer_size_;
 
   // Current active texture by 0 - n index.
   // In other words, if we call glActiveTexture(GL_TEXTURE2) this value would
@@ -1695,6 +1732,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       unpack_alignment_(4),
       attrib_0_buffer_id_(0),
       attrib_0_size_(0),
+      fixed_attrib_buffer_id_(0),
+      fixed_attrib_buffer_size_(0),
       active_texture_unit_(0),
       clear_red_(0),
       clear_green_(0),
@@ -1777,6 +1816,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   glBindBuffer(GL_ARRAY_BUFFER, attrib_0_buffer_id_);
   glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, NULL);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glGenBuffersARB(1, &fixed_attrib_buffer_id_);
 
   texture_units_.reset(
       new TextureUnit[group_->max_texture_units()]);
@@ -2404,6 +2444,9 @@ void GLES2DecoderImpl::Destroy() {
   if (have_context) {
     if (attrib_0_buffer_id_) {
       glDeleteBuffersARB(1, &attrib_0_buffer_id_);
+    }
+    if (fixed_attrib_buffer_id_) {
+      glDeleteBuffersARB(1, &fixed_attrib_buffer_id_);
     }
 
     // Remove the saved frame buffer mapping from the parent decoder. The
@@ -3216,12 +3259,19 @@ void GLES2DecoderImpl::DoDrawArrays(
     return;
   }
 
-  if (IsDrawValid(first + count - 1)) {
-    bool simulated_attrib_0 = SimulateAttrib0(first + count - 1);
-    bool textures_set = SetBlackTextureForNonRenderableTextures();
-    glDrawArrays(mode, first, count);
-    if (textures_set) {
-      RestoreStateForNonRenderableTextures();
+  GLuint max_vertex_accessed = first + count - 1;
+  if (IsDrawValid(max_vertex_accessed)) {
+    bool simulated_attrib_0 = SimulateAttrib0(max_vertex_accessed);
+    bool simulated_fixed_attribs = false;
+    if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs)) {
+      bool textures_set = SetBlackTextureForNonRenderableTextures();
+      glDrawArrays(mode, first, count);
+      if (textures_set) {
+        RestoreStateForNonRenderableTextures();
+      }
+      if (simulated_fixed_attribs) {
+        RestoreStateForSimulatedFixedAttribs();
+      }
     }
     if (simulated_attrib_0) {
       RestoreStateForSimulatedAttrib0();
@@ -3877,7 +3927,7 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
   const VertexAttribManager::VertexAttribInfoList& infos =
       vertex_attrib_manager_.GetEnabledVertexAttribInfos();
   for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
-           infos.begin(); it != infos.end(); ++it) {
+       infos.begin(); it != infos.end(); ++it) {
     const VertexAttribManager::VertexAttribInfo* info = *it;
     const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
         current_program_->GetAttribInfoByLocation(info->index());
@@ -3958,6 +4008,98 @@ void GLES2DecoderImpl::RestoreStateForSimulatedAttrib0() {
                bound_array_buffer_ ? bound_array_buffer_->service_id() : 0);
 }
 
+bool GLES2DecoderImpl::SimulateFixedAttribs(
+    GLuint max_vertex_accessed, bool* simulated) {
+  DCHECK(simulated);
+  *simulated = false;
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+    return true;
+
+  if (!vertex_attrib_manager_.HaveFixedAttribs()) {
+    return true;
+  }
+
+  // NOTE: we could be smart and try to check if a buffer is used
+  // twice in 2 different attribs, find the overlapping parts and therefore
+  // duplicate the minimum amount of data but this whole code path is not meant
+  // to be used normally. It's just here to pass that OpenGL ES 2.0 conformance
+  // tests so we just add to the buffer attrib used.
+
+  // Compute the number of elements needed.
+  int num_vertices = max_vertex_accessed + 1;
+  int elements_needed = 0;
+  const VertexAttribManager::VertexAttribInfoList& infos =
+      vertex_attrib_manager_.GetEnabledVertexAttribInfos();
+  for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
+       infos.begin(); it != infos.end(); ++it) {
+    const VertexAttribManager::VertexAttribInfo* info = *it;
+    const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
+        current_program_->GetAttribInfoByLocation(info->index());
+    if (attrib_info &&
+        info->CanAccess(max_vertex_accessed) &&
+        info->type() == GL_FIXED) {
+      int elements_used = 0;
+      if (!SafeMultiply(
+          static_cast<int>(num_vertices),
+          info->size(), &elements_used) ||
+          !SafeAdd(elements_needed, elements_used, &elements_needed)) {
+        SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: simulating GL_FIXED attribs");
+        return false;
+      }
+    }
+  }
+
+  const int kSizeOfFloat = sizeof(float);  // NOLINT
+  int size_needed = 0;
+  if (!SafeMultiply(elements_needed, kSizeOfFloat, &size_needed)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: simulating GL_FIXED attribs");
+    return false;
+  }
+
+
+  glBindBuffer(GL_ARRAY_BUFFER, fixed_attrib_buffer_id_);
+  if (size_needed > fixed_attrib_buffer_size_) {
+    glBufferData(GL_ARRAY_BUFFER, size_needed, NULL, GL_DYNAMIC_DRAW);
+  }
+
+  // Copy the elements and convert to float
+  GLintptr offset = 0;
+  for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
+           infos.begin(); it != infos.end(); ++it) {
+    const VertexAttribManager::VertexAttribInfo* info = *it;
+    const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
+        current_program_->GetAttribInfoByLocation(info->index());
+    if (attrib_info &&
+        info->CanAccess(max_vertex_accessed) &&
+        info->type() == GL_FIXED) {
+      int num_elements = info->size() * kSizeOfFloat;
+      int size = num_elements * num_vertices;
+      scoped_array<float> data(new float[size]);
+      const int32* src = reinterpret_cast<const int32 *>(
+          info->buffer()->GetRange(info->offset(), size));
+      const int32* end = src + num_elements;
+      float* dst = data.get();
+      while (src != end) {
+        *dst++ = static_cast<float>(*src++) / 65536.0f;
+      }
+      glBufferSubData(GL_ARRAY_BUFFER, offset, size, data.get());
+      glVertexAttribPointer(
+          info->index(), info->size(), GL_FLOAT, false, 0,
+          reinterpret_cast<GLvoid*>(offset));
+      offset += size;
+    }
+  }
+  *simulated = true;
+  return true;
+}
+
+void GLES2DecoderImpl::RestoreStateForSimulatedFixedAttribs() {
+  // There's no need to call glVertexAttribPointer because we shadow all the
+  // settings and passing GL_FIXED to it will not work.
+  glBindBuffer(GL_ARRAY_BUFFER,
+               bound_array_buffer_ ? bound_array_buffer_->service_id() : 0);
+}
+
 error::Error GLES2DecoderImpl::HandleDrawElements(
     uint32 immediate_data_size, const gles2::DrawElements& c) {
   if (!bound_element_array_buffer_ ||
@@ -4002,11 +4144,17 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
 
   if (IsDrawValid(max_vertex_accessed)) {
     bool simulated_attrib_0 = SimulateAttrib0(max_vertex_accessed);
-    bool textures_set = SetBlackTextureForNonRenderableTextures();
-    const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
-    glDrawElements(mode, count, type, indices);
-    if (textures_set) {
-      RestoreStateForNonRenderableTextures();
+    bool simulated_fixed_attribs = false;
+    if (SimulateFixedAttribs(max_vertex_accessed, &simulated_fixed_attribs)) {
+      bool textures_set = SetBlackTextureForNonRenderableTextures();
+      const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
+      glDrawElements(mode, count, type, indices);
+      if (textures_set) {
+        RestoreStateForNonRenderableTextures();
+      }
+      if (simulated_fixed_attribs) {
+        RestoreStateForSimulatedFixedAttribs();
+      }
     }
     if (simulated_attrib_0) {
       RestoreStateForSimulatedAttrib0();
@@ -4540,7 +4688,8 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
                "glVertexAttribPointer: stride not valid for type");
     return error::kNoError;
   }
-  vertex_attrib_manager_.GetVertexAttribInfo(indx)->SetInfo(
+  vertex_attrib_manager_.SetAttribInfo(
+      indx,
       bound_array_buffer_,
       size,
       type,
@@ -4548,7 +4697,9 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
       stride,
       stride != 0 ? stride : component_size * size,
       offset);
-  glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
+  if (type != GL_FIXED) {
+    glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
+  }
   return error::kNoError;
 }
 
@@ -5745,6 +5896,18 @@ error::Error GLES2DecoderImpl::HandleCommandBufferEnable(
   // TODO(gman): make this some kind of table to function pointer thingy.
   if (feature_str.compare(PEPPER3D_ALLOW_BUFFERS_ON_MULTIPLE_TARGETS) == 0) {
     buffer_manager()->set_allow_buffers_on_multiple_targets(true);
+  } else if (feature_str.compare(PEPPER3D_SUPPORT_FIXED_ATTRIBS) == 0) {
+    buffer_manager()->set_allow_buffers_on_multiple_targets(true);
+    // TODO(gman): decide how to remove the need for this const_cast.
+    // I could make validators_ non const but that seems bad as this is the only
+    // place it is needed. I could make some special friend class of validators
+    // just to allow this to set them. That seems silly. I could refactor this
+    // code to use the extension mechanism or the initialization attributes to
+    // turn this feature on. Given that the only real point of this is to make
+    // the conformance tests pass and given that there is lots of real work that
+    // needs to be done it seems like refactoring for one to one of those
+    // methods is a very low priority.
+    const_cast<Validators*>(validators_)->vertex_attrib_type.AddValue(GL_FIXED);
   } else if (feature_str.compare(PEPPER3D_SKIP_GLSL_TRANSLATION) == 0) {
     use_shader_translator_ = false;
   } else {

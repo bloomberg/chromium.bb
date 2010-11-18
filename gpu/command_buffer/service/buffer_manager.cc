@@ -79,8 +79,7 @@ void BufferManager::BufferInfo::SetSize(GLsizeiptr size, bool shadow) {
 bool BufferManager::BufferInfo::SetRange(
     GLintptr offset, GLsizeiptr size, const GLvoid * data) {
   DCHECK(!IsDeleted());
-  if (offset + size < offset ||
-        offset + size > size_) {
+  if (offset + size < offset || offset + size > size_) {
     return false;
   }
   if (shadowed_) {
@@ -88,6 +87,14 @@ bool BufferManager::BufferInfo::SetRange(
     ClearCache();
   }
   return true;
+}
+
+const void* BufferManager::BufferInfo::GetRange(
+    GLintptr offset, GLsizeiptr size) const {
+  if (!shadowed_ || (offset + size < offset || offset + size > size_)) {
+    return NULL;
+  }
+  return shadow_.get() + offset;
 }
 
 void BufferManager::BufferInfo::ClearCache() {

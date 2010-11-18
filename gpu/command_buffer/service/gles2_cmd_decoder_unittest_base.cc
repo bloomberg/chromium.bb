@@ -50,12 +50,15 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)
       .RetiresOnSaturation();
-  static GLuint attrib_ids[] = {
+  static GLuint attrib_0_id[] = {
     kServiceAttrib0BufferId,
   };
-  EXPECT_CALL(*gl_, GenBuffersARB(arraysize(attrib_ids), _))
-      .WillOnce(SetArrayArgument<1>(attrib_ids,
-                                    attrib_ids + arraysize(attrib_ids)))
+  static GLuint fixed_attrib_buffer_id[] = {
+    kServiceFixedAttribBufferId,
+  };
+  EXPECT_CALL(*gl_, GenBuffersARB(arraysize(attrib_0_id), _))
+      .WillOnce(SetArrayArgument<1>(attrib_0_id,
+                                    attrib_0_id + arraysize(attrib_0_id)))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kServiceAttrib0BufferId))
       .Times(1)
@@ -65,6 +68,11 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
       .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GenBuffersARB(arraysize(fixed_attrib_buffer_id), _))
+      .WillOnce(SetArrayArgument<1>(
+          fixed_attrib_buffer_id,
+          fixed_attrib_buffer_id + arraysize(fixed_attrib_buffer_id)))
       .RetiresOnSaturation();
 
   for (GLint tt = 0; tt < TestHelper::kNumTextureUnits; ++tt) {
@@ -146,7 +154,7 @@ void GLES2DecoderTestBase::TearDown() {
   // All Tests should have read all their GLErrors before getting here.
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, _))
-      .Times(1)
+      .Times(2)
       .RetiresOnSaturation();
   decoder_->Destroy();
   decoder_.reset();
@@ -394,6 +402,7 @@ const GLint GLES2DecoderTestBase::kMaxVaryingVectors;
 const GLint GLES2DecoderTestBase::kMaxVertexUniformVectors;
 
 const GLuint GLES2DecoderTestBase::kServiceAttrib0BufferId;
+const GLuint GLES2DecoderTestBase::kServiceFixedAttribBufferId;
 
 const GLuint GLES2DecoderTestBase::kServiceBufferId;
 const GLuint GLES2DecoderTestBase::kServiceFramebufferId;

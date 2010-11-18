@@ -444,6 +444,8 @@ size_t GLES2Util::GetGLTypeSizeForTexturesAndBuffers(uint32 type) {
       return sizeof(GLuint);  // NOLINT
     case GL_FLOAT:
       return sizeof(GLfloat);  // NOLINT
+    case GL_FIXED:
+      return sizeof(GLfixed);  // NOLINT
     default:
       return 0;
   }
