@@ -9,10 +9,20 @@ Import('env')
 if not env.Bit('nacl_glibc'):
   Return()
 
-test_stat_nexe = env.ComponentProgram('test_stat.nexe', 'test_stat.c')
+env.ComponentProgram('test_stat.nexe', 'test_stat.c')
 
 test_stat = env.CommandSelLdrTestNacl(
     'test_stat.out',
      command=[env.File('test_stat.nexe'), env.File('test_stat_data')])
 
 env.AddNodeToTestSuite(test_stat, ['small_tests'], 'run_stat_test')
+
+env.ComponentProgram('test_dir.nexe', 'test_dir.c')
+
+test_dir_nexe = env.File('test_dir.nexe')
+
+test_dir = env.CommandSelLdrTestNacl(
+    'test_dir.out',
+    command=[test_dir_nexe, test_dir_nexe.path.rstrip('test_dir.nexe')])
+
+env.AddNodeToTestSuite(test_dir, ['small_tests'], 'run_dir_test')

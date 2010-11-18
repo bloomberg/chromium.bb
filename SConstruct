@@ -286,6 +286,8 @@ bad_build_lists['dbg-win-64'] = ['run_srpc_basic_test',
 # TODO(mseaborn): Enable more of these tests!
 nacl_glibc_skiplist = [
     # Some tests using multi-threading pass, but the following do not.
+    # glibc now does not have dir methods which call nacl syscalls.
+    'run_dir_test',
     # This test assumes it can allocate address ranges from the
     # dynamic code area itself.  However, this does not work when
     # ld.so assumes it can do the same.  To fix this, ld.so will need
