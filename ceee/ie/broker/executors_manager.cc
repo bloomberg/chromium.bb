@@ -294,13 +294,13 @@ void ExecutorsManager::SetTabIdForHandle(long tab_id, HWND handle) {
 void ExecutorsManager::DeleteTabHandle(HWND handle) {
   AutoLock lock(lock_);
   HandleMap::iterator handle_it = handle_map_.find(handle);
-  if(handle_map_.end() != handle_it) {
+  if(handle_map_.end() == handle_it) {
     DCHECK(false);
     return;
   }
 
   TabIdMap::iterator tab_id_it = tab_id_map_.find(handle_it->second);
-  if(tab_id_map_.end() != tab_id_it) {
+  if(tab_id_map_.end() == tab_id_it) {
     DCHECK(false);
     return;
   }
