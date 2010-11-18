@@ -4,6 +4,8 @@
 
 #include "chrome/browser/speech/speech_recognition_request.h"
 
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
@@ -12,6 +14,7 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -125,12 +128,21 @@ bool SpeechRecognitionRequest::Send(const std::string& language,
   DCHECK(!url_fetcher_.get());
 
   std::vector<std::string> parts;
-  if (!language.empty()) {
-    parts.push_back("lang=" + EscapeQueryParamValue(language, true));
-  } else {
-    std::string app_locale = l10n_util::GetApplicationLocale("");
-    parts.push_back("lang=" + EscapeQueryParamValue(app_locale, true));
+
+  std::string lang_param = language;
+  if (lang_param.empty() && url_context_) {
+    // If no language is provided then we use the first from the accepted
+    // language list. If this list is empty then it defaults to "en-US".
+    // Example of the contents of this list: "es,en-GB;q=0.8", ""
+    URLRequestContext* request_context = url_context_->GetURLRequestContext();
+    DCHECK(request_context);
+    std::string accepted_language_list = request_context->accept_language();
+    size_t separator = accepted_language_list.find_first_of(",;");
+    lang_param = accepted_language_list.substr(0, separator);
   }
+  if (lang_param.empty())
+    lang_param = "en-US";
+  parts.push_back("lang=" + EscapeQueryParamValue(lang_param, true));
 
   if (!grammar.empty())
     parts.push_back("grammar=" + EscapeQueryParamValue(grammar, true));
