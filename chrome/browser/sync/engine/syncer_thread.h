@@ -46,6 +46,8 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Polling);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Nudge);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, NudgeWithDataTypes);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest,
+                           NudgeWithDataTypesCoalesced);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Throttling);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, AuthInvalid);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Pause);
@@ -271,7 +273,9 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // Returns true if it determines a nudge actually occurred.
   bool UpdateNudgeSource(bool was_throttled, bool continue_sync_cycle,
                          bool* initial_sync);
-  void SetUpdatesSource(bool nudged, NudgeSource nudge_source,
+  void SetUpdatesSource(bool nudged,
+                        NudgeSource nudge_source,
+                        const syncable::ModelTypeBitSet& nudge_types,
                         bool* initial_sync);
 
   int UserIdleTime();

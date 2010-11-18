@@ -332,6 +332,7 @@ void SyncerThread::ThreadMainLoop() {
 
     // Handle a nudge, caused by either a notification or a local bookmark
     // event.  This will also update the source of the following SyncMain call.
+    syncable::ModelTypeBitSet last_nudge_types(vault_.pending_nudge_types_);
     bool nudged = UpdateNudgeSource(throttled, continue_sync_cycle,
                                     &initial_sync_for_thread);
 
@@ -342,17 +343,13 @@ void SyncerThread::ThreadMainLoop() {
     // nudges.
     base::TimeTicks now = TimeTicks::Now();
     for (size_t i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < vault_.pending_nudge_types_.size();
+         i < last_nudge_types.size();
          ++i) {
-      if (vault_.pending_nudge_types_[i]) {
+      if (last_nudge_types[i]) {
         syncable::PostTimeToTypeHistogram(syncable::ModelType(i),
                                           now - last_sync_time);
       }
     }
-
-    // Now that the nudge has been handled, we can reset our tracking of the
-    // datatypes triggering a nudge.
-    vault_.pending_nudge_types_.reset();
 
     last_sync_time = now;
 
@@ -540,27 +537,30 @@ bool SyncerThread::UpdateNudgeSource(bool was_throttled,
                                      bool* initial_sync) {
   bool nudged = false;
   NudgeSource nudge_source = kUnknown;
+  syncable::ModelTypeBitSet model_types;
   // Has the previous sync cycle completed?
   if (continue_sync_cycle)
     nudge_source = kContinuation;
   // Update the nudge source if a new nudge has come through during the
   // previous sync cycle.
   if (!vault_.pending_nudge_time_.is_null()) {
-    if (!was_throttled && !nudged) {
+    if (!was_throttled) {
       nudge_source = vault_.pending_nudge_source_;
+      model_types = vault_.pending_nudge_types_;
       nudged = true;
     }
     VLOG(1) << "Clearing pending nudge from " << vault_.pending_nudge_source_
             << " at tick " << vault_.pending_nudge_time_.ToInternalValue();
     vault_.pending_nudge_source_ = kUnknown;
+    vault_.pending_nudge_types_.reset();
     vault_.pending_nudge_time_ = base::TimeTicks();
   }
-  SetUpdatesSource(nudged, nudge_source, initial_sync);
+  SetUpdatesSource(nudged, nudge_source, model_types, initial_sync);
   return nudged;
 }
 
 void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
-                                    bool* initial_sync) {
+    const syncable::ModelTypeBitSet& nudge_types, bool* initial_sync) {
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source =
       sync_pb::GetUpdatesCallerInfo::UNKNOWN;
   if (*initial_sync) {
@@ -588,8 +588,7 @@ void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
         break;
     }
   }
-  vault_.syncer_->set_updates_source(
-      updates_source, vault_.pending_nudge_types_);
+  vault_.syncer_->set_updates_source(updates_source, nudge_types);
 }
 
 void SyncerThread::CreateSyncer(const std::string& dirname) {
@@ -704,6 +703,12 @@ void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
     return;
   }
 
+  // Union the current bitset with any from nudges that may have already
+  // posted (coalesce the nudge datatype information).
+  // TODO(tim): It seems weird to do this if the sources don't match up (e.g.
+  // if pending_source is kLocal and |source| is kClearPrivateData).
+  vault_.pending_nudge_types_ |= model_types;
+
   const TimeTicks nudge_time = TimeTicks::Now() +
       TimeDelta::FromMilliseconds(milliseconds_from_now);
   if (nudge_time <= vault_.pending_nudge_time_) {
@@ -712,12 +717,9 @@ void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
     return;
   }
 
-  // Union the current bitset with any from nudges that may have already
-  // posted (coalesce the nudge datatype information).
-  vault_.pending_nudge_types_ |= model_types;
-
   VLOG(1) << "Replacing pending nudge for source " << source
           << " at " << nudge_time.ToInternalValue();
+
   vault_.pending_nudge_source_ = source;
   vault_.pending_nudge_time_ = nudge_time;
   vault_field_changed_.Broadcast();
