@@ -195,11 +195,13 @@ void MessagePortDispatcher::PostMessageTo(
       sent_ports[i]->route_id = new_routing_ids[i];
     }
 
-    // Now send the message to the entangled port.
-    IPC::Message* ipc_msg = new WorkerProcessMsg_Message(
-        entangled_port.route_id, message, sent_message_port_ids,
-        new_routing_ids);
-    entangled_port.sender->Send(ipc_msg);
+    if (entangled_port.sender) {
+      // Now send the message to the entangled port.
+      IPC::Message* ipc_msg = new WorkerProcessMsg_Message(
+          entangled_port.route_id, message, sent_message_port_ids,
+          new_routing_ids);
+      entangled_port.sender->Send(ipc_msg);
+    }
   }
 }
 
@@ -210,9 +212,11 @@ void MessagePortDispatcher::OnQueueMessages(int message_port_id) {
   }
 
   MessagePort& port = message_ports_[message_port_id];
-  port.sender->Send(new WorkerProcessMsg_MessagesQueued(port.route_id));
-  port.queue_messages = true;
-  port.sender = NULL;
+  if (port.sender) {
+    port.sender->Send(new WorkerProcessMsg_MessagesQueued(port.route_id));
+    port.queue_messages = true;
+    port.sender = NULL;
+  }
 }
 
 void MessagePortDispatcher::OnSendQueuedMessages(
