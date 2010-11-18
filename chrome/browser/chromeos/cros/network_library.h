@@ -98,6 +98,9 @@ class Network {
   void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_active(bool is_active) { is_active_ = is_active; }
 
+  // Initialize the IP address field
+  void InitIPAddress();
+
   friend class NetworkLibraryImpl;
 };
 

@@ -73,22 +73,7 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
 void NetworkMenuButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    // Add an observer for the active network, if any
     const Network* network = cros->active_network();
-    if (active_network_.empty() || network == NULL ||
-        active_network_ != network->service_path()) {
-      if (!active_network_.empty()) {
-        cros->RemoveNetworkObserver(active_network_, this);
-      }
-      if (network != NULL) {
-        cros->AddNetworkObserver(network->service_path(), this);
-      }
-    }
-    if (network)
-      active_network_ = network->service_path();
-    else
-      active_network_ = "";
-
     if (cros->wifi_connecting() || cros->cellular_connecting()) {
       // Start the connecting animation if not running.
       if (!animation_connecting_.is_animating()) {
@@ -125,6 +110,7 @@ void NetworkMenuButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
         IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
   }
 
+  RefreshNetworkObserver(cros);
   SchedulePaint();
   UpdateMenu();
 }
@@ -145,6 +131,7 @@ void NetworkMenuButton::OnNetworkChanged(NetworkLibrary* cros,
         IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
   }
 
+  RefreshNetworkObserver(cros);
   SchedulePaint();
   UpdateMenu();
 }
@@ -220,6 +207,20 @@ void NetworkMenuButton::SetNetworkBadge(NetworkLibrary* cros,
     SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
   } else {
     SetBadge(SkBitmap());
+  }
+}
+
+void NetworkMenuButton::RefreshNetworkObserver(NetworkLibrary* cros) {
+  const Network* network = cros->active_network();
+  std::string new_network = network ? network->service_path() : std::string();
+  if (active_network_ != new_network) {
+    if (!active_network_.empty()) {
+      cros->RemoveNetworkObserver(active_network_, this);
+    }
+    if (!new_network.empty()) {
+      cros->AddNetworkObserver(new_network, this);
+    }
+    active_network_ = new_network;
   }
 }
 
