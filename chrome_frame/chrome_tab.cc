@@ -301,32 +301,45 @@ HRESULT RefreshElevationPolicy() {
 // The idea here is to try this out on chrome frame dev channel
 // and see if it produces a significant drift in startup numbers.
 HRESULT SetupRunOnce() {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    return S_OK;
+  HRESULT result = E_FAIL;
 
   std::wstring channel_name;
-  if (!GoogleUpdateSettings::GetChromeChannel(true, &channel_name) ||
-      (0 != lstrcmpiW(L"dev", channel_name.c_str()))) {
-    return S_OK;
-  }
+  if (base::win::GetVersion() < base::win::VERSION_VISTA &&
+      GoogleUpdateSettings::GetChromeChannel(true, &channel_name)) {
+    std::transform(channel_name.begin(), channel_name.end(),
+                   channel_name.begin(), tolower);
+    // Use this only for the dev channel and CEEE channels.
+    if (channel_name.find(L"dev") != std::wstring::npos ||
+        channel_name.find(L"ceee") != std::wstring::npos) {
 
-  HKEY hive = HKEY_CURRENT_USER;
-  if (IsSystemProcess()) {
-    // For system installs, our updates will be running as SYSTEM which
-    // makes writing to a RunOnce key under HKCU not so terribly useful.
-    hive = HKEY_LOCAL_MACHINE;
-  }
+      HKEY hive = HKEY_CURRENT_USER;
+      if (IsSystemProcess()) {
+        // For system installs, our updates will be running as SYSTEM which
+        // makes writing to a RunOnce key under HKCU not so terribly useful.
+        hive = HKEY_LOCAL_MACHINE;
+      }
 
-  RegKey run_once;
-  if (run_once.Create(hive, kRunOnce, KEY_READ | KEY_WRITE)) {
-    CommandLine run_once_command(chrome_launcher::GetChromeExecutablePath());
-    run_once_command.AppendSwitchASCII(switches::kAutomationClientChannelID,
+      RegKey run_once;
+      if (run_once.Create(hive, kRunOnce, KEY_READ | KEY_WRITE)) {
+        CommandLine run_once_cmd(chrome_launcher::GetChromeExecutablePath());
+        run_once_cmd.AppendSwitchASCII(switches::kAutomationClientChannelID,
                                        "0");
-    run_once_command.AppendSwitch(switches::kChromeFrame);
-    run_once.WriteValue(L"A", run_once_command.command_line_string().c_str());
+        run_once_cmd.AppendSwitch(switches::kChromeFrame);
+        if (run_once.WriteValue(L"A",
+                                run_once_cmd.command_line_string().c_str())) {
+          result = S_OK;
+        }
+      }
+    } else {
+      result = S_FALSE;
+    }
+  } else {
+    // We're on a non-XP version of Windows or on a stable channel. Nothing
+    // needs doing.
+    result = S_FALSE;
   }
 
-  return S_OK;
+  return result;
 }
 
 // Helper method called for user-level installs where we don't have admin
