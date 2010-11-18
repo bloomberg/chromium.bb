@@ -6,10 +6,14 @@
 
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 
-#include <string>
+#include <stdio.h>
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
+#include "native_client/src/include/nacl_string.h"
+#include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
@@ -22,12 +26,22 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 
+// TODO(sehr,polina): we should have a Failure helper class that can log errors
+// to the JavaScript console, and it should be used in addition to
+// PLUGIN_PRINTF in the event of a failure.
+
 namespace {
 const char* const kSrcAttribute = "src";  // The "src" attr of the <embed> tag.
 // The "nacl" attribute of the <embed> tag.  The value is expected to be either
 // a URL or URI pointing to the manifest file (which is expeceted to contain
 // JSON matching ISAs with .nexe URLs).
 const char* const kNaclManifestAttribute = "nacl";
+// This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
+// Note that the resulting string object has to have at least one byte extra
+// for the null termination character.
+const ssize_t kNaclManifestMaxFileBytesPlusNull = 1024;
+const ssize_t kNaclManifestMaxFileBytesNoNull =
+    kNaclManifestMaxFileBytesPlusNull - 1;
 // The "nexes" attr of the <embed> tag, and the key used to find the dicitonary
 // of nexe URLs in the manifest file.
 const char* const kNexesAttribute = "nexes";
@@ -240,7 +254,7 @@ pp::Var PluginPpapi::GetInstanceObject() {
             ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
     if (instance_interface == NULL) {
       pp::Var* handle_var = handle->var();
-      // TODO(sehr): report an error here.
+      PLUGIN_PRINTF(("PluginPpapi::GetInstanceObject failed\n"));
       return *handle_var;  // make a copy
     }
     // Yuck.  This feels like another low-level interface usage.
@@ -306,7 +320,7 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
                                      module->get_browser_interface(),
                                      pp_instance());
   if (init_retval != PP_OK) {
-    // TODO(sehr): we should report an error here and shut down the proxy.
+      PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
     // For now we will leak the proxy, but no longer be allowed to access it.
     ppapi_proxy_ = NULL;
     return;
@@ -315,8 +329,9 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
       reinterpret_cast<const PPP_Instance*>(
           ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
   if (instance_interface == NULL) {
-    // TODO(sehr): we should report an error here and shut down the proxy.
-    // For now we will leak the proxy, but no longer be allowed to access it.
+      PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
+    // TODO(sehr): Shut down the proxy.  For now we will leak the proxy, but
+    // no longer be allowed to access it.
     ppapi_proxy_ = NULL;
     return;
   }
@@ -325,7 +340,7 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
                                      argc(),
                                      const_cast<const char**>(argn()),
                                      const_cast<const char**>(argv()))) {
-    // TODO(sehr): we should report an error here.
+    PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
     return;
   }
 }
@@ -342,9 +357,45 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(
       ("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"NACL_PRId32")\n",
        file_desc));
-  // TODO(dspringer): Grab the JSON from file_desc and call
-  // SelectNexeURLFromManifest().  On success, call SetSrcPropertyImpl().
-  NACL_UNIMPLEMENTED();
+  // Duplicate the file descriptor in order to create a FILE stream with it
+  // that can later be closed without closing the original descriptor.  The
+  // browser will take care of the original descriptor.
+  int dup_file_desc = DUP(file_desc);
+  FILE* json_file = fdopen(dup_file_desc, "rb");
+  PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen "
+                 "(dup_file_desc=%"NACL_PRId32", json_file=%p)\n",
+                 dup_file_desc, reinterpret_cast<void*>(json_file)));
+  if (json_file == NULL) {
+    CLOSE(dup_file_desc);
+    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed\n"));
+    return;
+  }
+  nacl::scoped_array<char> json_buffer(
+      new char[kNaclManifestMaxFileBytesPlusNull]);
+  size_t read_byte_count = fread(json_buffer.get(),
+                                 sizeof(char),
+                                 kNaclManifestMaxFileBytesNoNull,
+                                 json_file);
+  bool read_error = (ferror(json_file) != 0);
+  bool file_too_large = (feof(json_file) == 0);
+  // Once the bytes are read, the FILE is no longer needed, so close it.  This
+  // allows for early returns without leaking the |json_file| FILE object.
+  fclose(json_file);
+  if (read_error || (file_too_large == 0)) {
+    // No need to close |file_desc|, that is handled by |url_downloader_|.
+    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed\n"));
+    return;
+  }
+  json_buffer[read_byte_count] = '\0';  // Force null termination.
+  nacl::string nexe_url;
+  if (SelectNexeURLFromManifest(json_buffer.get(), &nexe_url)) {
+    // Success, load the .nexe by setting the "src" attribute.
+    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (nexe_url=%s)\n",
+                   nexe_url.c_str()));
+    SetSrcPropertyImpl(nexe_url);
+    return;
+  }
+  PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed\n"));
 }
 
 
