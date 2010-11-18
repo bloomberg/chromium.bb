@@ -658,8 +658,4 @@ base::StringPiece GetDataResource(int resource_id) {
   return TestShell::NetResourceProvider(resource_id);
 }
 
-void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
-  NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
-}
-
 }  // namespace webkit_glue

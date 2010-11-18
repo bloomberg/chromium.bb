@@ -46,6 +46,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/glue_serialize.h"
+#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
@@ -878,5 +880,38 @@ bool GetFontTable(int fd, uint32_t table, uint8_t* output,
   return false;
 }
 #endif
+
+void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
+  NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
+  // Don't load the upstream TestNetscapePlugIn, we're not ready for it yet.
+  const FilePath::StringType kPluginBlackList[] = {
+    FILE_PATH_LITERAL("npTestNetscapePlugIn.dll"),
+    FILE_PATH_LITERAL("TestNetscapePlugIn"),
+    FILE_PATH_LITERAL("libTestNetscapePlugIn.so"),
+  };
+  for (int i = plugins->size() - 1; i >= 0; --i) {
+    WebPluginInfo plugin_info = plugins->at(i);
+    for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
+      if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
+#if !defined(OS_MACOSX)
+        NPAPI::PluginList::Singleton()->DisablePlugin(plugin_info.path);
+        plugins->erase(plugins->begin() + i);
+#else
+        // On OSX, the upstream plugin and the copy in
+        // webkit/tools/npapi_layout_test_plugin both have the same name.  The
+        // upsteram copy is in {Debug,Release}/plugins and the
+        // webkit/tools/npapi_layout_test_plugin copy is in
+        // TestShell.app/Contents/PlugIns.  We ignore the copy in
+        // {Debug,Release}/plugins.
+        std::string plugin_path = plugin_info.path.value();
+        if (plugin_path.find("TestShell.app") == std::string::npos) {
+          NPAPI::PluginList::Singleton()->DisablePlugin(plugin_info.path);
+          plugins->erase(plugins->begin() + i);
+        }
+#endif
+      }
+    }
+  }
+}
 
 }  // namespace webkit_glue

@@ -808,10 +808,6 @@ HCURSOR LoadCursor(int cursor_id) {
   return NULL;
 }
 
-void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
-  NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
-}
-
 bool EnsureFontLoaded(HFONT font) {
   return true;
 }

@@ -730,10 +730,6 @@ base::StringPiece GetDataResource(int resource_id) {
   return base::StringPiece();
 }
 
-void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
-  NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
-}
-
 bool DownloadUrl(const std::string& url, NSWindow* caller_window) {
   return false;
 }
