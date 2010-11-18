@@ -76,9 +76,6 @@ class OmniboxApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 

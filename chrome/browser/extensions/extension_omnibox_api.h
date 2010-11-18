@@ -42,7 +42,7 @@ class ExtensionOmniboxEventRouter {
 class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.omnibox.sendSuggestions");
+  DECLARE_EXTENSION_FUNCTION_NAME("omnibox.sendSuggestions");
 };
 
 struct ExtensionOmniboxSuggestion {

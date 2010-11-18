@@ -1,7 +1,7 @@
 <script>
 var currentRequest = null;
 
-chrome.experimental.omnibox.onInputChanged.addListener(
+chrome.omnibox.onInputChanged.addListener(
   function(text, suggest) {
     if (text == '') {
       return;
@@ -28,7 +28,7 @@ chrome.experimental.omnibox.onInputChanged.addListener(
         description = description.replace(/<\/?.+?>/g, '');
         description = file + ': ' + description; 
         descriptionStyles = [
-            chrome.experimental.omnibox.styleUrl(0, file.length),
+            chrome.omnibox.styleUrl(0, file.length),
         ]
 
         // Highlight all occurrences of the match text.
@@ -38,7 +38,7 @@ chrome.experimental.omnibox.onInputChanged.addListener(
           if (index < 0) break;
           if (index > file.length) {
             descriptionStyles.push(
-                chrome.experimental.omnibox.styleMatch(index, text.length)
+                chrome.omnibox.styleMatch(index, text.length)
             );
           }
         }
@@ -90,7 +90,7 @@ function navigate(url) {
   });
 }
 
-chrome.experimental.omnibox.onInputEntered.addListener(
+chrome.omnibox.onInputEntered.addListener(
   function(text) {
     if (text.indexOf('@') > 0) {
       var chunks = text.split('@');

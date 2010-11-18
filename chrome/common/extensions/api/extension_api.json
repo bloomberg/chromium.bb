@@ -3908,7 +3908,7 @@
     ]
   },
   {
-    "namespace": "experimental.omnibox",
+    "namespace": "omnibox",
     "types": [
       {
         "id": "SuggestResult",

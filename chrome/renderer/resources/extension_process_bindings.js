@@ -286,10 +286,10 @@ var chrome = chrome || {};
   }
 
   function setupOmniboxEvents(extensionId) {
-    chrome.experimental.omnibox.onInputChanged.dispatch =
+    chrome.omnibox.onInputChanged.dispatch =
         function(text, requestId) {
       var suggestCallback = function(suggestions) {
-        chrome.experimental.omnibox.sendSuggestions(requestId, suggestions);
+        chrome.omnibox.sendSuggestions(requestId, suggestions);
       };
       chrome.Event.prototype.dispatch.apply(this, [text, suggestCallback]);
     };
@@ -690,16 +690,14 @@ var chrome = chrome || {};
       return newArgs;
     };
 
-    apiFunctions["experimental.omnibox.styleUrl"].handleRequest =
-        function(offset, length) {
+    apiFunctions["omnibox.styleUrl"].handleRequest = function(offset, length) {
       return {type: "url", offset: offset, length: length};
     };
-    apiFunctions["experimental.omnibox.styleMatch"].handleRequest =
+    apiFunctions["omnibox.styleMatch"].handleRequest =
         function(offset, length) {
       return {type: "match", offset: offset, length: length};
     };
-    apiFunctions["experimental.omnibox.styleDim"].handleRequest =
-        function(offset, length) {
+    apiFunctions["omnibox.styleDim"].handleRequest = function(offset, length) {
       return {type: "dim", offset: offset, length: length};
     };
 

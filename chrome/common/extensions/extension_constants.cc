@@ -264,9 +264,6 @@ const char* kMissingFile =
     "At least one js or css file is required for 'content_scripts[*]'.";
 const char* kMultipleOverrides =
     "An extension cannot override more than one page.";
-const char* kOmniboxExperimental =
-    "You must request the 'experimental' permission in order to use the"
-    " omnibox API.";
 const char* kOneUISurfaceOnly =
     "Only one of 'browser_action', 'page_action', and 'app' can be specified.";
 const char* kReservedMessageFound =

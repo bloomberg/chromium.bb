@@ -12,10 +12,10 @@
 #include "chrome/common/notification_service.h"
 
 namespace events {
-const char kOnInputStarted[] = "experimental.omnibox.onInputStarted";
-const char kOnInputChanged[] = "experimental.omnibox.onInputChanged";
-const char kOnInputEntered[] = "experimental.omnibox.onInputEntered";
-const char kOnInputCancelled[] = "experimental.omnibox.onInputCancelled";
+const char kOnInputStarted[] = "omnibox.onInputStarted";
+const char kOnInputChanged[] = "omnibox.onInputChanged";
+const char kOnInputEntered[] = "omnibox.onInputEntered";
+const char kOnInputCancelled[] = "omnibox.onInputCancelled";
 };  // namespace events
 
 namespace {

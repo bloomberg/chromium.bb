@@ -102,6 +102,7 @@ const char kBrowserActionsModuleName[] = "browserActions";
 const char kDevToolsModuleName[] = "devtools";
 const char kExtensionModuleName[] = "extension";
 const char kI18NModuleName[] = "i18n";
+const char kOmniboxModuleName[] = "omnibox";
 const char kPageActionModuleName[] = "pageAction";
 const char kPageActionsModuleName[] = "pageActions";
 const char kTestModuleName[] = "test";
@@ -114,6 +115,7 @@ const char* kNonPermissionModuleNames[] = {
   kDevToolsModuleName,
   kExtensionModuleName,
   kI18NModuleName,
+  kOmniboxModuleName,
   kPageActionModuleName,
   kPageActionsModuleName,
   kTestModuleName
@@ -1775,14 +1777,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   if (source.HasKey(keys::kOmnibox)) {
-    if (!source.GetString(keys::kOmniboxKeyword,
-                          &omnibox_keyword_) ||
+    if (!source.GetString(keys::kOmniboxKeyword, &omnibox_keyword_) ||
         omnibox_keyword_.empty()) {
       *error = errors::kInvalidOmniboxKeyword;
-      return false;
-    }
-    if (!HasApiPermission(Extension::kExperimentalPermission)) {
-      *error = errors::kOmniboxExperimental;
       return false;
     }
   }

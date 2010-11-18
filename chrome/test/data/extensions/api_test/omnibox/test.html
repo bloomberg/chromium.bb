@@ -1,8 +1,4 @@
 <script>
-if (!chrome.omnibox) {
-  chrome.omnibox = chrome.experimental.omnibox;
-}
-
 chrome.omnibox.onInputChanged.addListener(
   function(text, suggest) {
     chrome.test.log("onInputChanged: " + text);

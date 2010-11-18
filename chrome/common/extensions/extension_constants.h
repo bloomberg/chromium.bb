@@ -177,7 +177,6 @@ namespace extension_manifest_errors {
   extern const char* kManifestUnreadable;
   extern const char* kMissingFile;
   extern const char* kMultipleOverrides;
-  extern const char* kOmniboxExperimental;
   extern const char* kOneUISurfaceOnly;
   extern const char* kReservedMessageFound;
   extern const char* kThemesCannotContainExtensions;

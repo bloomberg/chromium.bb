@@ -301,9 +301,9 @@
         this.SEPARATOR = ' - ';
         this.corpus_ = corpus;
         this.tabManager_ = tabManager;
-        chrome.experimental.omnibox.onInputChanged.addListener(
+        chrome.omnibox.onInputChanged.addListener(
             this.onChanged_.bind(this));
-        chrome.experimental.omnibox.onInputEntered.addListener(
+        chrome.omnibox.onInputEntered.addListener(
             this.onEntered_.bind(this));
       };
 
@@ -319,8 +319,8 @@
         var name = match['name'];
         var lastIndex = 0;
         for (var i = 0; i < ranges.length; i++) {
-          styles.push(chrome.experimental.omnibox.styleMatch(ranges[i][0]));
-          styles.push(chrome.experimental.omnibox.styleNone(ranges[i][1]));
+          styles.push(chrome.omnibox.styleMatch(ranges[i][0]));
+          styles.push(chrome.omnibox.styleNone(ranges[i][1]));
           lastIndex = ranges[i][1];
         }
 
@@ -401,9 +401,9 @@
        */
       OmniboxManager.prototype.pushStyle_ = function(styles, type, desc, text) {
         desc += this.SEPARATOR;
-        styles.push(chrome.experimental.omnibox['style' + type](desc.length));
+        styles.push(chrome.omnibox['style' + type](desc.length));
         desc += text;
-        styles.push(chrome.experimental.omnibox.styleNone(desc.length));
+        styles.push(chrome.omnibox.styleNone(desc.length));
         return desc;
       };
 
