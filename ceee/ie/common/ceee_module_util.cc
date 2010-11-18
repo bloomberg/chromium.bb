@@ -10,16 +10,12 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/stringize_macros.h"
 #include "base/win/registry.h"
 #include "ceee/common/process_utils_win.h"
 #include "chrome/installer/util/google_update_constants.h"
 
 #include "version.h"  // NOLINT
-
-// TODO(joi@chromium.org): would be nice to move these (and non-L counterparts)
-// to e.g. base/string_util.h
-#define LSTRINGIZE2(x) L ## #x
-#define LSTRINGIZE(x) LSTRINGIZE2(x)
 
 namespace {
 
@@ -196,7 +192,7 @@ bool NeedToInstallExtension() {
         base::win::RegKey hkcu(HKEY_CURRENT_USER, kRegistryPath, KEY_READ);
         success = hkcu.ReadValue(
             kRegistryValueCrxInstalledByVersion, &version_string);
-        return !success || version_string != LSTRINGIZE(CHROME_VERSION_STRING);
+        return !success || version_string != TO_L_STRING(CHROME_VERSION_STRING);
       }
     }
 
@@ -224,7 +220,7 @@ void SetInstalledExtensionPath(const FilePath& path) {
   DCHECK(write_result);
 
   write_result = key.WriteValue(kRegistryValueCrxInstalledByVersion,
-                                LSTRINGIZE(CHROME_VERSION_STRING));
+                                TO_L_STRING(CHROME_VERSION_STRING));
 }
 
 bool IsCrxOrEmpty(const std::wstring& path) {
