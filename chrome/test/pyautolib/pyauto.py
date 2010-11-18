@@ -808,6 +808,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     executable path, pid info about the renderer/plugin/extension processes,
     window dimensions. (See sample below)
 
+    For notification pid info, see 'GetActiveNotifications'.
+
     Returns:
       a dictionary
 
@@ -1540,15 +1542,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       a list containing info about each active notification, with the
       first item in the list being the notification on the bottom of the
       notification stack. The 'content_url' key can refer to a URL or a data
-      URI.
+      URI. The 'pid' key-value pair may be omitted or invalid if the
+      notification is closing.
 
     SAMPLE:
     [ { u'content_url': u'data:text/html;charset=utf-8,%3C!DOCTYPE%l%3E%0Atm...'
         u'display_source': 'www.corp.google.com',
-        u'origin_url': 'http://www.corp.google.com/'},
+        u'origin_url': 'http://www.corp.google.com/',
+        u'pid': 8505},
       { u'content_url': 'http://www.gmail.com/special_notification.html',
         u'display_source': 'www.gmail.com',
-        u'origin_url': 'http://www.gmail.com/'}]
+        u'origin_url': 'http://www.gmail.com/',
+        u'pid': 9291}]
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.

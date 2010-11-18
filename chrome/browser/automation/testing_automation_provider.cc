@@ -11,6 +11,7 @@
 #include "base/json/string_escape.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "base/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -43,6 +44,11 @@
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/native_app_modal_dialog.h"
+#include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_host.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -62,10 +68,6 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/notifications/balloon_collection.h"
-#include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/automation_messages.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -2337,6 +2339,7 @@ void TestingAutomationProvider::GetBrowserInfo(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;  // needed for PathService
   DictionaryValue* properties = new DictionaryValue;
   properties->SetString("ChromeVersion", chrome::kChromeVersion);
   properties->SetString("BrowserProcessExecutableName",
@@ -4247,6 +4250,11 @@ void TestingAutomationProvider::GetActiveNotifications(
     balloon->SetString("content_url", notification.content_url().spec());
     balloon->SetString("origin_url", notification.origin_url().spec());
     balloon->SetString("display_source", notification.display_source());
+    BalloonView* view = (*iter)->view();
+    if (view && view->GetHost() && view->GetHost()->render_view_host()) {
+      balloon->SetInteger("pid", base::GetProcId(
+          view->GetHost()->render_view_host()->process()->GetHandle()));
+    }
     list->Append(balloon);
   }
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
