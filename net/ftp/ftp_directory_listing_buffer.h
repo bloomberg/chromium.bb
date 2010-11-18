@@ -51,13 +51,20 @@ class FtpDirectoryListingBuffer {
  private:
   typedef std::set<FtpDirectoryListingParser*> ParserSet;
 
-  // Converts the string |from| to detected encoding and stores it in |to|.
-  // Returns true on success.
-  bool ConvertToDetectedEncoding(const std::string& from, string16* to);
+  // Decodes the raw buffer using specified |encoding|. On success
+  // clears the raw buffer and appends data to |converted_buffer_|.
+  // Returns network error code.
+  int DecodeBufferUsingEncoding(const std::string& encoding);
 
-  // Tries to extract full lines from the raw buffer, converting them to the
-  // detected encoding. Returns network error code.
-  int ExtractFullLinesFromBuffer();
+  // Converts the raw buffer to UTF-16. Returns network error code.
+  int ConvertBufferToUTF16();
+
+  // Extracts lines from the converted buffer, and puts them in |lines_|.
+  void ExtractFullLinesFromBuffer();
+
+  // Consumes the raw buffer (i.e. does the character set conversion
+  // and line splitting). Returns network error code.
+  int ConsumeBuffer();
 
   // Tries to parse full lines stored in |lines_|. Returns network error code.
   int ParseLines();
@@ -66,11 +73,14 @@ class FtpDirectoryListingBuffer {
   // parsers. Returns network error code.
   int OnEndOfInput();
 
-  // Detected encoding of the response (empty if unknown or ASCII).
+  // Detected encoding of the response (empty if unknown).
   std::string encoding_;
 
-  // Buffer to keep not-yet-split data.
+  // Buffer to keep data before character set conversion.
   std::string buffer_;
+
+  // Buffer to keep data before line splitting.
+  string16 converted_buffer_;
 
   // CRLF-delimited lines, without the CRLF, not yet consumed by parser.
   std::deque<string16> lines_;

@@ -37,7 +37,7 @@ int FtpDirectoryListingBuffer::ConsumeData(const char* data, int data_length) {
   buffer_.append(data, data_length);
 
   if (!encoding_.empty() || buffer_.length() > 1024) {
-    int rv = ExtractFullLinesFromBuffer();
+    int rv = ConsumeBuffer();
     if (rv != OK)
       return rv;
   }
@@ -46,11 +46,12 @@ int FtpDirectoryListingBuffer::ConsumeData(const char* data, int data_length) {
 }
 
 int FtpDirectoryListingBuffer::ProcessRemainingData() {
-  int rv = ExtractFullLinesFromBuffer();
+  int rv = ConsumeBuffer();
   if (rv != OK)
     return rv;
 
-  if (!buffer_.empty())
+  DCHECK(buffer_.empty());
+  if (!converted_buffer_.empty())
     return ERR_INVALID_RESPONSE;
 
   rv = ParseLines();
@@ -77,38 +78,62 @@ FtpServerType FtpDirectoryListingBuffer::GetServerType() const {
   return (current_parser_ ? current_parser_->GetServerType() : SERVER_UNKNOWN);
 }
 
-bool FtpDirectoryListingBuffer::ConvertToDetectedEncoding(
-    const std::string& from, string16* to) {
-  std::string encoding(encoding_.empty() ? "ascii" : encoding_);
-  return base::CodepageToUTF16(from, encoding.c_str(),
-                               base::OnStringConversionError::FAIL, to);
+int FtpDirectoryListingBuffer::DecodeBufferUsingEncoding(
+    const std::string& encoding) {
+  string16 converted;
+  if (!base::CodepageToUTF16(buffer_,
+                             encoding.c_str(),
+                             base::OnStringConversionError::FAIL,
+                             &converted))
+    return ERR_ENCODING_CONVERSION_FAILED;
+
+  buffer_.clear();
+  converted_buffer_ += converted;
+  return OK;
 }
 
-int FtpDirectoryListingBuffer::ExtractFullLinesFromBuffer() {
+int FtpDirectoryListingBuffer::ConvertBufferToUTF16() {
   if (encoding_.empty()) {
-    if (!base::DetectEncoding(buffer_, &encoding_))
+    std::vector<std::string> encodings;
+    if (!base::DetectAllEncodings(buffer_, &encodings))
       return ERR_ENCODING_DETECTION_FAILED;
+
+    // Use first encoding that can be used to decode the buffer.
+    for (size_t i = 0; i < encodings.size(); i++) {
+      if (DecodeBufferUsingEncoding(encodings[i]) == OK) {
+        encoding_ = encodings[i];
+        return OK;
+      }
+    }
+
+    return ERR_ENCODING_DETECTION_FAILED;
   }
 
+  return DecodeBufferUsingEncoding(encoding_);
+}
+
+void FtpDirectoryListingBuffer::ExtractFullLinesFromBuffer() {
   int cut_pos = 0;
   // TODO(phajdan.jr): This code accepts all endlines matching \r*\n. Should it
   // be more strict, or enforce consistent line endings?
-  for (size_t i = 0; i < buffer_.length(); ++i) {
-    if (buffer_[i] != '\n')
+  for (size_t i = 0; i < converted_buffer_.length(); ++i) {
+    if (converted_buffer_[i] != '\n')
       continue;
     int line_length = i - cut_pos;
-    if (i >= 1 && buffer_[i - 1] == '\r')
+    if (i >= 1 && converted_buffer_[i - 1] == '\r')
       line_length--;
-    std::string line(buffer_.substr(cut_pos, line_length));
+    lines_.push_back(converted_buffer_.substr(cut_pos, line_length));
     cut_pos = i + 1;
-    string16 line_converted;
-    if (!ConvertToDetectedEncoding(line, &line_converted)) {
-      buffer_.erase(0, cut_pos);
-      return ERR_ENCODING_CONVERSION_FAILED;
-    }
-    lines_.push_back(line_converted);
   }
-  buffer_.erase(0, cut_pos);
+  converted_buffer_.erase(0, cut_pos);
+}
+
+int FtpDirectoryListingBuffer::ConsumeBuffer() {
+  int rv = ConvertBufferToUTF16();
+  if (rv != OK)
+    return rv;
+
+  ExtractFullLinesFromBuffer();
   return OK;
 }
 

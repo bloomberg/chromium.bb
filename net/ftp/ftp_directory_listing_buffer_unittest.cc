@@ -42,6 +42,9 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
     "dir-listing-ls-17",
     "dir-listing-ls-18",
     "dir-listing-ls-19",
+    "dir-listing-ls-20",  // TODO(phajdan.jr): should use windows-1251 encoding.
+    "dir-listing-ls-21",  // TODO(phajdan.jr): should use windows-1251 encoding.
+    "dir-listing-ls-22",  // TODO(phajdan.jr): should use windows-1251 encoding.
     "dir-listing-mlsd-1",
     "dir-listing-mlsd-2",
     "dir-listing-netware-1",
