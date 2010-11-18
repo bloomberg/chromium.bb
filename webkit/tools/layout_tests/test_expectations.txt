@@ -4,12 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-BUG61655 : security/block-test-no-port.html = TEXT
-
-BUG_ANTONM WIN : editing/selection/5354455-1.html = FAIL
-
-// Temporary, I remeber seeing a single change dealing with context menus, will
-// clarify when found.
-BUGTOBEFOUND WIN : fast/events/context-no-deselect.html = PASS CRASH
-BUGTOBEFOUND WIN : fast/events/right-click-focus.html = PASS CRASH
