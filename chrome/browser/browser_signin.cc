@@ -277,6 +277,7 @@ void BrowserSignin::Cancel() {
   if (delegate_) {
     delegate_->OnLoginFailure(GoogleServiceAuthError(
         GoogleServiceAuthError::REQUEST_CANCELED));
+    GetProfileSyncService()->OnUserCancelledDialog();
   }
   OnLoginFinished();
 }
@@ -322,7 +323,7 @@ void BrowserSignin::UnregisterAuthNotifications() {
 
 void BrowserSignin::ShowSigninTabModal(TabContents* tab_contents) {
 //  TODO(johnnyg): Need a linux views implementation for ConstrainedHtmlDialog.
-#if defined(OS_WIN) || !defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || !defined(TOOLKIT_VIEWS)
   html_dialog_ui_delegate_ = CreateHtmlDialogUI();
   ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile_,
                                                  html_dialog_ui_delegate_,

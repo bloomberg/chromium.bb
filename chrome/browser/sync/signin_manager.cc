@@ -49,9 +49,12 @@ void SigninManager::StartSignIn(const std::string& username,
                                 const std::string& login_token,
                                 const std::string& login_captcha) {
   DCHECK(username_.empty());
+#if !defined(OS_CHROMEOS)
   // The Sign out should clear the token service credentials.
+  // Note: In CHROMEOS we might have valid credentials but still need to
+  // set up 2-factor authentication.
   DCHECK(!profile_->GetTokenService()->AreCredentialsValid());
-
+#endif
   username_.assign(username);
   password_.assign(password);
 

@@ -123,7 +123,7 @@ bool ProfileSyncService::AreCredentialsAvailable() {
   }
 
   // CrOS user is always logged in. Chrome uses signin_ to check logged in.
-  if (!cros_user_.empty() || !signin_.GetUsername().empty()) {
+  if (!cros_user_.empty() || !signin_->GetUsername().empty()) {
     // TODO(chron): Verify CrOS unit test behavior.
     if (profile()->GetTokenService() &&
         profile()->GetTokenService()->HasTokenForService(
@@ -136,7 +136,7 @@ bool ProfileSyncService::AreCredentialsAvailable() {
 
 void ProfileSyncService::LoadMigratedCredentials(const std::string& username,
                                                  const std::string& token) {
-  signin_.SetUsername(username);
+  signin_->SetUsername(username);
   profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
   profile()->GetTokenService()->OnIssueAuthTokenSuccess(
       GaiaConstants::kSyncService, token);
@@ -165,7 +165,9 @@ void ProfileSyncService::Initialize() {
   // for the TokenService.
   if (cros_user_.empty()) {
     // Will load tokens from DB and broadcast Token events after.
-    signin_.Initialize(profile_);
+    // Note: We rely on signin_ != NULL unless !cros_user_.empty().
+    signin_.reset(new SigninManager());
+    signin_->Initialize(profile_);
   }
 
   if (!HasSyncSetupCompleted()) {
@@ -381,7 +383,7 @@ void ProfileSyncService::ClearPreferences() {
 
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
-  credentials.email = !cros_user_.empty() ? cros_user_ : signin_.GetUsername();
+  credentials.email = !cros_user_.empty() ? cros_user_ : signin_->GetUsername();
   DCHECK(!credentials.email.empty());
   TokenService* service = profile_->GetTokenService();
   credentials.sync_token = service->GetTokenForService(
@@ -506,8 +508,8 @@ void ProfileSyncService::DisableForUser() {
   ClearPreferences();
   Shutdown(true);
 
-  if (cros_user_.empty()) {
-    signin_.SignOut();
+  if (signin_.get()) {
+    signin_->SignOut();
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -797,20 +799,21 @@ void ProfileSyncService::OnUserSubmittedAuth(
 
   auth_start_time_ = base::TimeTicks::Now();
 
-  // TODO(chron): Mechanism for ChromeOS auth renewal?
-  // (maybe just run the dialog anyway?)
-  // or send it to the CrOS login somehow?
-  if (!cros_user_.empty()) {
-    LOG(WARNING) << "No mechanism on ChromeOS yet. See http://crbug.com/50292";
+  if (!signin_.get()) {
+    // In ChromeOS we sign in during login, so we do not instantiate signin_.
+    // If this function gets called, we need to re-authenticate (e.g. for
+    // two factor signin), so instantiante signin_ here.
+    signin_.reset(new SigninManager());
+    signin_->Initialize(profile_);
   }
 
   if (!access_code.empty()) {
-    signin_.ProvideSecondFactorAccessCode(access_code);
+    signin_->ProvideSecondFactorAccessCode(access_code);
     return;
   }
 
-  if (!signin_.GetUsername().empty()) {
-    signin_.SignOut();
+  if (!signin_->GetUsername().empty()) {
+    signin_->SignOut();
   }
 
   // The user has submitted credentials, which indicates they don't
@@ -819,10 +822,10 @@ void ProfileSyncService::OnUserSubmittedAuth(
   prefs->SetBoolean(prefs::kSyncSuppressStart, false);
   prefs->ScheduleSavePersistentPrefs();
 
-  signin_.StartSignIn(username,
-                      password,
-                      last_auth_error_.captcha().token,
-                      captcha);
+  signin_->StartSignIn(username,
+                       password,
+                       last_auth_error_.captcha().token,
+                       captcha);
 }
 
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
@@ -1099,7 +1102,7 @@ void ProfileSyncService::Observe(NotificationType type,
       // If not in Chrome OS, and we have a username without tokens,
       // the user will need to signin again, so sign out.
       if (cros_user_.empty() &&
-          !signin_.GetUsername().empty() &&
+          !signin_->GetUsername().empty() &&
           !AreCredentialsAvailable()) {
         DisableForUser();
       }

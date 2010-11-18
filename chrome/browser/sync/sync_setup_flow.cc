@@ -12,9 +12,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
 #if defined(OS_MACOSX)
 #include "chrome/browser/cocoa/html_dialog_window_controller_cppsafe.h"
 #endif
@@ -398,14 +395,11 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
     args->SetInteger("error", error.state());
     args->SetBoolean("editable_user", true);
   } else {
-    string16 user(service->GetAuthenticatedUsername());
-#if defined(OS_CHROMEOS)
-    if (user.empty()) {
-      std::string email =
-          chromeos::UserManager::Get()->logged_in_user().email();
-      user = UTF8ToUTF16(email);
-    }
-#endif
+    string16 user;
+    if (!service->cros_user().empty())
+      user = UTF8ToUTF16(service->cros_user());
+    else
+      user = service->GetAuthenticatedUsername();
     args->SetString("user", user);
     args->SetInteger("error", 0);
     args->SetBoolean("editable_user", user.empty());

@@ -9,6 +9,8 @@
 #include <vector>
 #include <X11/extensions/XTest.h>
 #include <X11/keysym.h>
+// Evil hack to undo X11 evil #define. See crosbug.com/
+#undef Status
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -37,6 +39,8 @@
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -764,6 +768,15 @@ void ScreenLocker::OnLoginSuccess(
     base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
     VLOG(1) << "Authentication success time: " << delta.InSecondsF();
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
+  }
+
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (profile) {
+    ProfileSyncService* service = profile->GetProfileSyncService(username);
+    if (service && !service->HasSyncSetupCompleted()) {
+      // If sync has failed somehow, try setting the sync passphrase here.
+      service->SetPassphrase(password, false);
+    }
   }
 
   if (CrosLibrary::Get()->EnsureLoaded())

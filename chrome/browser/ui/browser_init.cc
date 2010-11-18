@@ -871,7 +871,12 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
             ChildProcessSecurityPolicy::GetInstance();
         if (policy->IsWebSafeScheme(url.scheme()) ||
             url.SchemeIs(chrome::kFileScheme) ||
-            !url.spec().compare(chrome::kAboutBlankURL)) {
+#if defined(OS_CHROMEOS)
+            // In ChromeOS, allow a settings page to be specified on the
+            // command line. See ExistingUserController::OnLoginSuccess.
+            (url.spec().find(chrome::kChromeUISettingsURL) == 0) ||
+#endif
+            (url.spec().compare(chrome::kAboutBlankURL) == 0)) {
           urls.push_back(url);
         }
       }

@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/profile_manager.h"
 #include "chrome/browser/views/window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -55,6 +56,9 @@ const size_t kNotSelected = -1;
 // Offset of cursor in first position from edit left side. It's used to position
 // info bubble arrow to cursor.
 const int kCursorOffset = 5;
+
+// Url for setting up sync authentication.
+const char kSettingsSyncLoginUrl[] = "chrome://settings/personal";
 
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {
@@ -486,9 +490,16 @@ void ExistingUserController::OnLoginSuccess(
   login_performer_->set_delegate(NULL);
   LoginPerformer* performer = login_performer_.release();
   performer = NULL;
+  bool known_user = UserManager::Get()->IsKnownUser(username);
+  if (credentials.two_factor && !known_user && !start_url_.is_valid()) {
+    // If we have a two factor error and and this is a new user and we are not
+    // already directing the user to a start url (e.g. a help page),
+    // direct them to the personal settings page.
+    // TODO(stevenjb): direct the user to a lightweight sync login page.
+    start_url_ = GURL(kSettingsSyncLoginUrl);
+  }
   AppendStartUrlToCmdline();
-  if (selected_view_index_ + 1 == controllers_.size() &&
-      !UserManager::Get()->IsKnownUser(username)) {
+  if (selected_view_index_ + 1 == controllers_.size() && !known_user) {
     // For new user login don't launch browser until we pass image screen.
     LoginUtils::Get()->EnableBrowserLaunch(false);
     LoginUtils::Get()->CompleteLogin(username, password, credentials);

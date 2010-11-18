@@ -15,7 +15,7 @@ class GoogleServiceAuthError;
 class GaiaAuthConsumer {
  public:
   struct ClientLoginResult {
-    inline ClientLoginResult() {}
+    inline ClientLoginResult() : two_factor(false) {}
     inline ClientLoginResult(const std::string& new_sid,
                              const std::string& new_lsid,
                              const std::string& new_token,
@@ -23,13 +23,15 @@ class GaiaAuthConsumer {
         : sid(new_sid),
           lsid(new_lsid),
           token(new_token),
-          data(new_data) {}
+          data(new_data),
+          two_factor(false) {}
 
     inline bool operator==(const ClientLoginResult &b) const {
       return sid == b.sid &&
              lsid == b.lsid &&
              token == b.token &&
-             data == b.data;
+             data == b.data &&
+             two_factor == b.two_factor;
     }
 
     std::string sid;
@@ -37,6 +39,7 @@ class GaiaAuthConsumer {
     std::string token;
     // TODO(chron): Remove the data field later. Don't use it if possible.
     std::string data;  // Full contents of ClientLogin return.
+    bool two_factor;  // set to true if there was a TWO_FACTOR "failure".
   };
 
   virtual ~GaiaAuthConsumer() {}

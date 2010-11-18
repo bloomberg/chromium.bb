@@ -241,7 +241,9 @@ void GoogleAuthenticator::OnClientLoginFailure(
 
   if (error.state() == GoogleServiceAuthError::TWO_FACTOR) {
     LOG(WARNING) << "Two factor authenticated. Sync will not work.";
-    OnClientLoginSuccess(GaiaAuthConsumer::ClientLoginResult());
+    GaiaAuthConsumer::ClientLoginResult result;
+    result.two_factor = true;
+    OnClientLoginSuccess(result);
     return;
   }
 

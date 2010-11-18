@@ -14,6 +14,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -25,6 +28,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "grit/browser_resources.h"
@@ -268,9 +272,18 @@ void PersonalOptionsHandler::Initialize() {
 }
 
 void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
+#if defined(OS_CHROMEOS)
+  std::string email = chromeos::UserManager::Get()->logged_in_user().email();
+  string16 message = l10n_util::GetStringFUTF16(
+      IDS_SYNC_LOGIN_INTRODUCTION,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  dom_ui_->GetProfile()->GetBrowserSignin()->RequestSignin(
+      dom_ui_->tab_contents(), UTF8ToUTF16(email), message, this);
+#else
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
   service->ShowLoginDialog(NULL);
   ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
+#endif
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
@@ -284,3 +297,12 @@ void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
   dom_ui_->GetProfile()->SetNativeTheme();
 }
 #endif
+
+void PersonalOptionsHandler::OnLoginSuccess() {
+  OnStateChanged();
+}
+
+void PersonalOptionsHandler::OnLoginFailure(
+    const GoogleServiceAuthError& error) {
+  OnStateChanged();
+}
