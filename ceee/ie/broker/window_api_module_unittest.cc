@@ -8,6 +8,7 @@
 // incompatibility with atlwin.h.
 #include "ceee/testing/utils/mock_win32.h"  // NOLINT
 
+#include <iepmapi.h>
 #include <set>
 
 #include "base/scoped_ptr.h"
@@ -589,8 +590,10 @@ TEST_F(WindowApiTests, GetLastFocusedWindowStraightline) {
 MOCK_STATIC_CLASS_BEGIN(MockIeWindowCreation)
   MOCK_STATIC_INIT_BEGIN(MockIeWindowCreation)
     MOCK_STATIC_INIT(CoCreateInstance);
+    MOCK_STATIC_INIT(IEIsProtectedModeURL);
   MOCK_STATIC_INIT_END()
 
+  MOCK_STATIC1(HRESULT, CALLBACK, IEIsProtectedModeURL, LPCWSTR);
   MOCK_STATIC5(HRESULT, CALLBACK, CoCreateInstance, REFCLSID, LPUNKNOWN,
                DWORD, REFIID, LPVOID*);
 MOCK_STATIC_CLASS_END(MockIeWindowCreation)
@@ -629,6 +632,9 @@ TEST_F(WindowApiTests, CreateWindowErrorHandling) {
   invocation.AllocateNewResult(kRequestId);
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
   MockIeWindowCreation mock_ie_create;
+  // TODO(mad@chromium.org): Test behavior with protected on too.
+  EXPECT_CALL(mock_ie_create, IEIsProtectedModeURL(_)).
+      WillRepeatedly(Return(S_FALSE));
   EXPECT_CALL(mock_ie_create, CoCreateInstance(_, _, _, _, _)).
       WillOnce(Return(REGDB_E_CLASSNOTREG));
   invocation.Execute(args_list, kRequestId);
@@ -704,6 +710,9 @@ TEST_F(WindowApiTests, CreateWindowStraightline) {
   DCHECK(browser != NULL);
   CComPtr<IWebBrowser2> browser_keeper = browser;
   MockIeWindowCreation mock_ie_create;
+  // TODO(mad@chromium.org): Test behavior with protected on too.
+  EXPECT_CALL(mock_ie_create, IEIsProtectedModeURL(_)).
+      WillRepeatedly(Return(S_FALSE));
   EXPECT_CALL(mock_ie_create, CoCreateInstance(_, _, _, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<4>(browser_keeper.p),
                      AddRef(browser_keeper.p), Return(S_OK)));
