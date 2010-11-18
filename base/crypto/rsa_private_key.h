@@ -204,7 +204,9 @@ class RSAPrivateKey {
 
   ~RSAPrivateKey();
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+  EVP_PKEY* key() { return key_; }
+#elif defined(USE_NSS)
   SECKEYPrivateKeyStr* key() { return key_; }
 #elif defined(OS_WIN)
   HCRYPTPROV provider() { return provider_; }

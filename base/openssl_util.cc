@@ -67,13 +67,15 @@ void EnsureOpenSSLInit() {
   (void)Singleton<OpenSSLInitSingleton>::get();
 }
 
-void ClearOpenSSLERRStack() {
+void ClearOpenSSLERRStack(const tracked_objects::Location& location) {
   if (logging::DEBUG_MODE && VLOG_IS_ON(1)) {
     int error_num = ERR_get_error();
     if (error_num == 0)
       return;
 
-    DVLOG(1) << "OpenSSL ERR_get_error stack:";
+    std::string message;
+    location.Write(true, true, &message);
+    DVLOG(1) << "OpenSSL ERR_get_error stack from " << message;
     char buf[140];
     do {
       ERR_error_string_n(error_num, buf, arraysize(buf));

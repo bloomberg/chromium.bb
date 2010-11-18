@@ -83,7 +83,10 @@ class SignatureVerifier {
 
   std::vector<uint8> signature_;
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+  struct VerifyContext;
+  VerifyContext* verify_context_;
+#elif defined(USE_NSS)
   VFYContext* vfy_context_;
 #elif defined(OS_MACOSX)
   std::vector<uint8> public_key_info_;

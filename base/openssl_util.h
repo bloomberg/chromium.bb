@@ -16,10 +16,17 @@ namespace base {
 template <typename T, void (*destructor)(T*)>
 class ScopedOpenSSL {
  public:
-  explicit ScopedOpenSSL(T* ptr_) : ptr_(ptr_) { }
+  ScopedOpenSSL() : ptr_(NULL) { }
+  explicit ScopedOpenSSL(T* ptr) : ptr_(ptr) { }
   ~ScopedOpenSSL() { if (ptr_) (*destructor)(ptr_); }
 
   T* get() const { return ptr_; }
+  void reset(T* ptr) {
+    if (ptr != ptr_) {
+      if (ptr_) (*destructor)(ptr_);
+      ptr_ = ptr;
+    }
+  }
 
  private:
   T* ptr_;
@@ -72,8 +79,30 @@ class ScopedOpenSSLSafeSizeBuffer {
 void EnsureOpenSSLInit();
 
 // Drains the OpenSSL ERR_get_error stack. On a debug build the error codes
-// are send to VLOG(1), on a release build they are disregarded.
-void ClearOpenSSLERRStack();
+// are send to VLOG(1), on a release build they are disregarded. In most
+// cases you should pass FROM_HERE as the |location|.
+void ClearOpenSSLERRStack(const tracked_objects::Location& location);
+
+// Place an instance of this class on the call stack to automatically clear
+// the OpenSSL error stack on function exit.
+class OpenSSLErrStackTracer {
+ public:
+  // Pass FROM_HERE as |location|, to help track the source of OpenSSL error
+  // messages. Note any diagnostic emitted will be tagged with the location of
+  // the constructor call as it's not possible to trace a destructor's callsite.
+  explicit OpenSSLErrStackTracer(const tracked_objects::Location& location)
+      : location_(location) {
+    EnsureOpenSSLInit();
+  }
+  ~OpenSSLErrStackTracer() {
+    ClearOpenSSLERRStack(location_);
+  }
+
+ private:
+  const tracked_objects::Location location_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(OpenSSLErrStackTracer);
+};
 
 }  // namespace base
 

@@ -8,7 +8,10 @@
 
 #include "build/build_config.h"
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+// Forward declaration for openssl/*.h
+typedef struct env_md_ctx_st EVP_MD_CTX;
+#elif defined(USE_NSS)
 // Forward declaration.
 struct SGNContextStr;
 #elif defined(OS_MACOSX)
@@ -48,7 +51,9 @@ class SignatureCreator {
 
   RSAPrivateKey* key_;
 
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+  EVP_MD_CTX* sign_context_;
+#elif defined(USE_NSS)
   SGNContextStr* sign_context_;
 #elif defined(OS_MACOSX)
   CSSM_CC_HANDLE sig_handle_;

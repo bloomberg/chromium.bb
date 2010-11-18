@@ -30,18 +30,13 @@ SymmetricKey* SymmetricKey::GenerateRandomKey(Algorithm algorithm,
   if (key_size_in_bits == 0)
     return NULL;
 
-  EnsureOpenSSLInit();
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
   scoped_ptr<SymmetricKey> key(new SymmetricKey);
   uint8* key_data =
       reinterpret_cast<uint8*>(WriteInto(&key->key_, key_size_in_bytes + 1));
 
-  int res = RAND_bytes(key_data, key_size_in_bytes);
-  if (res != 1) {
-    DLOG(ERROR) << "RAND_bytes failed. res = " << res;
-    ClearOpenSSLERRStack();
-    return NULL;
-  }
-  return key.release();
+  int rv = RAND_bytes(key_data, key_size_in_bytes);
+  return rv == 1 ? key.release() : NULL;
 }
 
 // static
@@ -54,20 +49,15 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   int key_size_in_bytes = key_size_in_bits / 8;
   DCHECK_EQ(static_cast<int>(key_size_in_bits), key_size_in_bytes * 8);
 
-  EnsureOpenSSLInit();
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
   scoped_ptr<SymmetricKey> key(new SymmetricKey);
   uint8* key_data =
       reinterpret_cast<uint8*>(WriteInto(&key->key_, key_size_in_bytes + 1));
-  int res = PKCS5_PBKDF2_HMAC_SHA1(password.data(), password.length(),
-                                   reinterpret_cast<const uint8*>(salt.data()),
-                                   salt.length(), iterations,
-                                   key_size_in_bytes, key_data);
-  if (res != 1) {
-    DLOG(ERROR) << "HMAC SHA1 failed. res = " << res;
-    ClearOpenSSLERRStack();
-    return NULL;
-  }
-  return key.release();
+  int rv = PKCS5_PBKDF2_HMAC_SHA1(password.data(), password.length(),
+                                  reinterpret_cast<const uint8*>(salt.data()),
+                                  salt.length(), iterations,
+                                  key_size_in_bytes, key_data);
+  return rv == 1 ? key.release() : NULL;
 }
 
 // static

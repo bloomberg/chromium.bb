@@ -29,10 +29,10 @@ bool ExportKey(EVP_PKEY* key,
   if (!key)
     return false;
 
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
   ScopedOpenSSL<BIO, BIO_free_all> bio(BIO_new(BIO_s_mem()));
 
   int res = export_fn(bio.get(), key);
-  ClearOpenSSLERRStack();
   if (!res)
     return false;
 
@@ -49,11 +49,9 @@ bool ExportKey(EVP_PKEY* key,
 
 // static
 RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
-  EnsureOpenSSLInit();
-
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
   ScopedOpenSSL<RSA, RSA_free> rsa_key(RSA_generate_key(num_bits, 65537L,
                                                         NULL, NULL));
-  ClearOpenSSLERRStack();
   if (!rsa_key.get())
     return NULL;
 
@@ -74,7 +72,7 @@ RSAPrivateKey* RSAPrivateKey::CreateSensitive(uint16 num_bits) {
 // static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     const std::vector<uint8>& input) {
-  EnsureOpenSSLInit();
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   // BIO_new_mem_buf is not const aware, but it does not modify the buffer.
   char* data = reinterpret_cast<char*>(const_cast<uint8*>(input.data()));
@@ -87,13 +85,11 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   // Info structure returned.
   ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free> p8inf(
       d2i_PKCS8_PRIV_KEY_INFO_bio(bio.get(), NULL));
-  ClearOpenSSLERRStack();
   if (!p8inf.get())
     return NULL;
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
   result->key_ = EVP_PKCS82PKEY(p8inf.get());
-  ClearOpenSSLERRStack();
   if (!result->key_)
     return NULL;
 

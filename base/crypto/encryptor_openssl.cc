@@ -34,7 +34,7 @@ class ScopedCipherCTX {
   }
   ~ScopedCipherCTX() {
     EVP_CIPHER_CTX_cleanup(&ctx_);
-    ClearOpenSSLERRStack();
+    ClearOpenSSLERRStack(FROM_HERE);
   }
   EVP_CIPHER_CTX* get() { return &ctx_; }
 
