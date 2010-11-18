@@ -310,8 +310,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
   localized_strings.SetString("applaunchtyperegular",
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_REGULAR));
-  localized_strings.SetString("applaunchtypewindow",
-      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
   localized_strings.SetString("applaunchtypefullscreen",
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
   localized_strings.SetString("web_store_title",

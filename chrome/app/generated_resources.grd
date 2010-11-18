@@ -7394,10 +7394,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Text for the button that opens the app in a regular tab.">
         Open as regular tab
       </message>
-      <message name="IDS_APP_CONTEXT_MENU_OPEN_WINDOW"
-               desc="Text for the button that opens the app in an app window.">
-        Open as window
-      </message>
       <message name="IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN"
                desc="Text for the button that opens the app full screen.">
         Open full screen

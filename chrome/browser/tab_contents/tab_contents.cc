@@ -598,10 +598,12 @@ void TabContents::SetExtensionAppById(const std::string& extension_app_id) {
     return;
 
   ExtensionsService* extension_service = profile()->GetExtensionsService();
-  const Extension* extension =
-      extension_service->GetExtensionById(extension_app_id, false);
-  if (extension)
-    SetExtensionApp(extension);
+  if (extension_service && extension_service->is_ready()) {
+    const Extension* extension =
+        extension_service->GetExtensionById(extension_app_id, false);
+    if (extension)
+      SetExtensionApp(extension);
+  }
 }
 
 SkBitmap* TabContents::GetExtensionAppIcon() {

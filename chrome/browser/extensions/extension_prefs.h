@@ -35,8 +35,7 @@ class ExtensionPrefs {
   enum LaunchType {
     LAUNCH_PINNED,
     LAUNCH_REGULAR,
-    LAUNCH_FULLSCREEN,
-    LAUNCH_WINDOW
+    LAUNCH_FULLSCREEN
   };
 
   explicit ExtensionPrefs(PrefService* prefs, const FilePath& root_dir_);

@@ -190,14 +190,6 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   bool showLauncher =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppLauncher);
   dictionary->SetBoolean("showLauncher", showLauncher);
-
-#if defined(OS_MACOSX)
-  // App windows are not yet implemented on mac.
-  bool disable_app_window_launch = true;
-#else
-  bool disable_app_window_launch = false;
-#endif
-  dictionary->SetBoolean("disableAppWindowLaunch", disable_app_window_launch);
 }
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
@@ -256,18 +248,8 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     old_contents = browser->GetSelectedTabContents();
 
   AnimateAppIcon(extension, rect);
-
-  extension_misc::LaunchContainer launch_container =
-      extension->launch_container();
-  ExtensionPrefs::LaunchType prefs_launch_type =
-      extensions_service_->extension_prefs()->GetLaunchType(extension_id);
-
-  // If the user chose to open in a window, change the container type.
-  if (prefs_launch_type == ExtensionPrefs::LAUNCH_WINDOW)
-    launch_container = extension_misc::LAUNCH_WINDOW;
-
   TabContents* new_contents = Browser::OpenApplication(
-      profile, extension, launch_container, old_contents);
+      profile, extension, extension->launch_container(), old_contents);
 
   if (new_contents != old_contents && browser->tab_count() > 1)
     browser->CloseTabContents(old_contents);
@@ -328,7 +310,7 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
   extensions_service_->default_apps()->SetPromoHidden();
 }
 
-// static
+//static
 void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
   if (!promo_active) return;
 
@@ -337,7 +319,7 @@ void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
                             extension_misc::PROMO_BUCKET_BOUNDARY);
 }
 
-// static
+//static
 void AppLauncherHandler::RecordAppLaunch(bool promo_active) {
   // TODO(jstritar): record app launches that occur when the promo is not
   // active using a different histogram.

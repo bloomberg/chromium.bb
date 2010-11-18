@@ -573,42 +573,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CloseWithAppMenuOpen) {
                                    new RunCloseWithAppMenuTask(browser()));
 }
 
-#if !defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
-  ASSERT_TRUE(test_server()->Start());
-
-  // Load an app
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
-  const Extension* extension_app = GetExtension();
-
-  // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  TabContents* app_window = Browser::OpenApplication(
-      browser()->profile(), extension_app, extension_misc::LAUNCH_WINDOW, NULL);
-  ASSERT_TRUE(app_window);
-
-  // Apps launched in a window from the NTP do not have extension_app set in
-  // tab contents.
-  EXPECT_FALSE(app_window->extension_app());
-  EXPECT_EQ(extension_app->GetFullLaunchURL(), app_window->GetURL());
-
-  // The launch should have created a new browser.
-  ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
-
-  // Find the new browser.
-  Browser* new_browser = NULL;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end() && !new_browser; ++i) {
-    if (*i != browser())
-      new_browser = *i;
-  }
-  ASSERT_TRUE(new_browser);
-  ASSERT_TRUE(new_browser != browser());
-
-  EXPECT_EQ(Browser::TYPE_APP, new_browser->type());
-}
-#endif  // !defined(OS_MACOSX)
-
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.
 // It originally lived in browser_unittest.cc, but has been moved here to make
 // room for real browser unit tests.

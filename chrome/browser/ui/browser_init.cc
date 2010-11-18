@@ -605,9 +605,14 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   if (!IsAppLaunch(&url_string, &app_id))
     return false;
 
-  // This can fail if the app_id is invalid.  It can also fail if the
-  // extension is external, and has not yet been installed.
-  // TODO(skerner): Do something reasonable here. Pop up a warning panel?
+  // http://crbug.com/37548
+  // TODO(rafaelw): There are two legitimate cases where the extensions
+  // service could not be ready at this point which need to be handled:
+  // 1) The locale has changed and the manifests stored in the preferences
+  //    need to be relocalized.
+  // 2) An externally installed extension will be found and installed.
+  // Note that this can also fail if the app_id is simply invalid.
+  // TODO(rafaelw): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
   if (!app_id.empty())
     return Browser::OpenApplication(profile, app_id, NULL) != NULL;

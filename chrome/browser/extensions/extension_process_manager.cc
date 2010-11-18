@@ -279,15 +279,18 @@ void ExtensionProcessManager::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::EXTENSIONS_READY: {
+    case NotificationType::EXTENSIONS_READY:
       CreateBackgroundHosts(this,
           Source<Profile>(source).ptr()->GetExtensionsService()->extensions());
       break;
-    }
 
     case NotificationType::EXTENSION_LOADED: {
-      const Extension* extension = Details<const Extension>(details).ptr();
-      ::CreateBackgroundHost(this, extension);
+      ExtensionsService* service =
+          Source<Profile>(source).ptr()->GetExtensionsService();
+      if (service->is_ready()) {
+        const Extension* extension = Details<const Extension>(details).ptr();
+        ::CreateBackgroundHost(this, extension);
+      }
       break;
     }
 
@@ -451,7 +454,8 @@ void IncognitoExtensionProcessManager::Observe(
       if (browser->profile() == browsing_instance_->profile()) {
         ExtensionsService* service =
             browsing_instance_->profile()->GetExtensionsService();
-        CreateBackgroundHosts(this, service->extensions());
+        if (service && service->is_ready())
+          CreateBackgroundHosts(this, service->extensions());
       }
       break;
     }

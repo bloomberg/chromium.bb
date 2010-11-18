@@ -452,22 +452,12 @@ void ExtensionPrefs::SetAllowFileAccess(const std::string& extension_id,
 ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
     const std::string& extension_id) {
   int value;
-  if (ReadExtensionPrefInteger(extension_id, kPrefLaunchType, &value) &&
-     (value == LAUNCH_PINNED ||
+  if (ReadExtensionPrefInteger(extension_id, kPrefLaunchType, &value) && (
+      value == LAUNCH_PINNED ||
       value == LAUNCH_REGULAR ||
-      value == LAUNCH_FULLSCREEN ||
-      value == LAUNCH_WINDOW)) {
-
-#if defined(OS_MACOSX)
-    // App windows are not yet supported on mac.  Pref sync could make
-    // the launch type LAUNCH_WINDOW, even if there is no UI to set it
-    // on mac.
-    if (value == LAUNCH_WINDOW)
-      return LAUNCH_REGULAR;
-#endif
+      value == LAUNCH_FULLSCREEN)) {
     return static_cast<LaunchType>(value);
   }
-
   return LAUNCH_REGULAR;
 }
 

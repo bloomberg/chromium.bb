@@ -381,6 +381,9 @@ class ExtensionsService
 
   ExtensionPrefs* extension_prefs() { return extension_prefs_.get(); }
 
+  // Whether the extension service is ready.
+  bool is_ready() { return ready_; }
+
   // Note that this may return NULL if autoupdate is not turned on.
   ExtensionUpdater* updater() { return updater_.get(); }
 
@@ -505,8 +508,8 @@ class ExtensionsService
   // Used by dispatchers to limit API quota for individual extensions.
   ExtensionsQuotaService quota_service_;
 
-  // Record that Init() has been called.
-  bool init_done_;
+  // Is the service ready to go?
+  bool ready_;
 
   // Our extension updater, if updates are turned on.
   scoped_refptr<ExtensionUpdater> updater_;

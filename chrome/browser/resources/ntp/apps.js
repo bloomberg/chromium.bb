@@ -21,10 +21,6 @@ function getAppsCallback(data) {
   var appsPromoPing = PING_WEBSTORE_LAUNCH_PREFIX + '+' + data.showPromo;
   var webStoreEntry;
 
-  // Hide the app window menu option on platforms that do not support it.
-  $('apps-launch-type-window-menu-item').style.display =
-      (data.disableAppWindowLaunch ? 'none' : 'inline');
-
   appsMiniview.textContent = '';
   appsSectionContent.textContent = '';
 
@@ -154,11 +150,10 @@ var apps = (function() {
   var LaunchType = {
     LAUNCH_PINNED: 0,
     LAUNCH_REGULAR: 1,
-    LAUNCH_FULLSCREEN: 2,
-    LAUNCH_WINDOW: 3
+    LAUNCH_FULLSCREEN: 2
   };
 
-  // Keep in sync with LaunchContainer in extension_constants.h
+  // Keep in sync with LaunchContainer in extension.h
   var LaunchContainer = {
     LAUNCH_WINDOW: 0,
     LAUNCH_PANEL: 1,
@@ -189,8 +184,7 @@ var apps = (function() {
         // Update the commands related to the launch type.
         var launchTypeIds = ['apps-launch-type-pinned',
                              'apps-launch-type-regular',
-                             'apps-launch-type-fullscreen',
-                             'apps-launch-type-window'];
+                             'apps-launch-type-fullscreen'];
         launchTypeIds.forEach(function(id) {
           var command = $(id);
           command.disabled = isPanel;
@@ -221,7 +215,6 @@ var apps = (function() {
       case 'apps-launch-type-pinned':
       case 'apps-launch-type-regular':
       case 'apps-launch-type-fullscreen':
-      case 'apps-launch-type-window':
         chrome.send('setLaunchType',
             [currentApp['id'], e.command.getAttribute('launch-type')]);
         break;

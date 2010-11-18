@@ -498,6 +498,8 @@ TabContents* Browser::OpenApplication(Profile* profile,
                                       const std::string& app_id,
                                       TabContents* existing_tab) {
   ExtensionsService* extensions_service = profile->GetExtensionsService();
+  if (!extensions_service->is_ready())
+    return NULL;
 
   // If the extension with |app_id| could't be found, most likely because it
   // was uninstalled.
@@ -520,11 +522,9 @@ TabContents* Browser::OpenApplication(
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
 
+  // The app is not yet open.  Load it.
   switch (container) {
     case extension_misc::LAUNCH_WINDOW:
-      tab = Browser::OpenApplicationWindow(profile,
-                                           extension->GetFullLaunchURL());
-      break;
     case extension_misc::LAUNCH_PANEL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
                                            GURL());
@@ -588,7 +588,7 @@ TabContents* Browser::OpenApplicationWindow(
 }
 
 // static
-TabContents* Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
+TabContents* Browser::OpenApplicationWindow(Profile* profile, GURL& url) {
   return OpenApplicationWindow(profile, NULL, extension_misc::LAUNCH_WINDOW,
                                url);
 }
