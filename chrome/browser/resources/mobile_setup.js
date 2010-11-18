@@ -46,6 +46,9 @@ cr.define('mobile', function() {
       window.addEventListener('message', function(e) {
           self.onMessageReceived_(e);
       });
+      $('closeButton').addEventListener('click', function(e) {
+          $('finalMessage').classList.add('hidden');
+      });
       $(frame_name).addEventListener('load', function(e) {
         // Flip the visibility of the payment page only after the frame is
         // fully loaded.

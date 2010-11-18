@@ -69,6 +69,11 @@ const char kCellularConfigPath[] =
 const char kVersionField[] = "version";
 const char kErrorsField[] = "errors";
 
+// Number of times we will retry to reconnect if connection fails.
+const int kMaxConnectionRetry = 10;
+// Connection timeout in seconds.
+const int kConnectionTimeoutSeconds = 30;
+
 chromeos::CellularNetwork* GetCellularNetwork() {
   chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
       GetNetworkLibrary();
@@ -190,6 +195,10 @@ class MobileSetupHandler
   // Sends message to host registration page with system/user info data.
   void SendDeviceInfo();
 
+  // Connects to cellular network, resets connection timer.
+  void ConnectToNetwork(chromeos::CellularNetwork* network);
+  // Reports connection timeout.
+  bool ConnectionTimeout();
   // Verify the state of cellular network and modify internal state.
   void EvaluateCellularNetwork(chromeos::CellularNetwork* network);
   // Check the current cellular network for error conditions.
@@ -243,6 +252,10 @@ class MobileSetupHandler
   bool transaction_complete_signalled_;
   bool activation_status_test_;
   bool evaluating_;
+  // Connection retry counter.
+  int connection_retry_count_;
+  // Connection start time.
+  base::Time connection_start_time_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
 
@@ -328,6 +341,8 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                     l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_HEADER));
   strings.SetString("completed_text",
                     l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_TEXT));
+  strings.SetString("close_button",
+                    l10n_util::GetStringUTF16(IDS_CLOSE));
   SetFontAndTextDirection(&strings);
 
   static const base::StringPiece html(
@@ -357,7 +372,8 @@ MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
       reenable_cert_check_(false),
       transaction_complete_signalled_(false),
       activation_status_test_(false),
-      evaluating_(false) {
+      evaluating_(false),
+      connection_retry_count_(0) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
@@ -468,6 +484,19 @@ void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
   } else {
     UMA_HISTOGRAM_COUNTS("Cellular.PaymentFailed", 1);
   }
+}
+
+
+void MobileSetupHandler::ConnectToNetwork(chromeos::CellularNetwork* network) {
+  connection_retry_count_++;
+  connection_start_time_ = base::Time::Now();
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+      ConnectToCellularNetwork(network);
+}
+
+bool MobileSetupHandler::ConnectionTimeout() {
+  return (base::Time::Now() -
+            connection_start_time_).InSeconds() > kConnectionTimeoutSeconds;
 }
 
 void MobileSetupHandler::EvaluateCellularNetwork(
@@ -587,30 +616,35 @@ void MobileSetupHandler::EvaluateCellularNetwork(
       break;
     }
     case PLAN_ACTIVATION_RECONNECTING: {
-      // Wait until the service shows up and gets activated.
-      switch (network->activation_state()) {
-        case chromeos::ACTIVATION_STATE_ACTIVATED:
-          if (network->connected()) {
-            if (network->restricted_pool()) {
-              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-            } else {
-              new_state = PLAN_ACTIVATION_DONE;
-            }
-          } else if (network->failed()) {
-            chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-                ConnectToCellularNetwork(network);
-            evaluating_ = false;
-            return;
-          }
-          break;
-        case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
-          if (network->connected()) {
+      if (network->connected()) {
+        // Wait until the service shows up and gets activated.
+        switch (network->activation_state()) {
+          case chromeos::ACTIVATION_STATE_ACTIVATED:
             if (network->restricted_pool())
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-          }
-          break;
-        default:
-          break;
+            else
+              new_state = PLAN_ACTIVATION_DONE;
+            break;
+          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+            if (network->restricted_pool())
+              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+            break;
+          default:
+            break;
+        }
+      } else if (network->failed() || ConnectionTimeout()) {
+        // Try to reconnect again if reconnect failed, or if for some
+        // reasons we are still not connected after 30 seconds.
+        if (connection_retry_count_ < kMaxConnectionRetry) {
+          UMA_HISTOGRAM_COUNTS("Cellular.ConnectionRetry", 1);
+          ConnectToNetwork(network);
+          evaluating_ = false;
+          return;
+        } else {
+          // We simply can't connect anymore after all these tries.
+          UMA_HISTOGRAM_COUNTS("Cellular.ConnectionFailed", 1);
+          new_state = PLAN_ACTIVATION_ERROR;
+        }
       }
       break;
     }
@@ -625,7 +659,8 @@ void MobileSetupHandler::EvaluateCellularNetwork(
   }
 
   std::string error_description;
-  if (GotActivationError(network, &error_description)) {
+  if (new_state != PLAN_ACTIVATION_ERROR &&
+      GotActivationError(network, &error_description)) {
     // Check for this special case when we try to do activate partially
     // activated device. If that attempt failed, try to disconnect to clear the
     // state and reconnect again.
@@ -728,11 +763,10 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
       }
       break;
     case PLAN_ACTIVATION_RECONNECTING: {
-      DCHECK(network);
-      if (network) {
-        chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-            ConnectToCellularNetwork(network);
-      }
+      // Reset connection metrics and try to connect.
+      connection_retry_count_ = 0;
+      connection_start_time_ = base::Time::Now();
+      ConnectToNetwork(network);
       break;
     }
     case PLAN_ACTIVATION_PAGE_LOADING:
