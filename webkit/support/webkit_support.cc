@@ -464,7 +464,7 @@ std::string MakeURLErrorDescription(const WebKit::WebURLError& error) {
     domain = "NSURLErrorDomain";
     switch (error.reason) {
     case net::ERR_ABORTED:
-      code = -999;
+      code = -999;  // NSURLErrorCancelled
       break;
     case net::ERR_UNSAFE_PORT:
       // Our unsafe port checking happens at the network stack level, but we
@@ -474,7 +474,8 @@ std::string MakeURLErrorDescription(const WebKit::WebURLError& error) {
       break;
     case net::ERR_ADDRESS_INVALID:
     case net::ERR_ADDRESS_UNREACHABLE:
-      code = -1004;
+    case net::ERR_NETWORK_ACCESS_DENIED:
+      code = -1004;  // NSURLErrorCannotConnectToHost
       break;
     }
   } else

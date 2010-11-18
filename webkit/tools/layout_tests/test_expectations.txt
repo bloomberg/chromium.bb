@@ -4,3 +4,5 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+BUG61655 : security/block-test-no-port.html = TEXT
