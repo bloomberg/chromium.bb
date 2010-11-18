@@ -491,7 +491,7 @@ public:
 private:
     mutable long long m_timecode;
     mutable BlockEntry** m_entries;
-    mutable size_t m_entriesCount;
+    mutable long m_entries_count;
 
     void Load() const;
     void LoadBlockEntries() const;

@@ -3790,7 +3790,7 @@ Cluster::Cluster() :
     m_size(0),
     m_timecode(0),
     m_entries(NULL),
-    m_entriesCount(0)
+    m_entries_count(0)  //means "no entries"
 {
 }
 
@@ -3805,15 +3805,18 @@ Cluster::Cluster(
     m_size(-1),
     m_timecode(-1),
     m_entries(NULL),
-    m_entriesCount(0)
+    m_entries_count(-1)  //means "has not been parsed yet"
 {
 }
 
 
 Cluster::~Cluster()
 {
+    if (m_entries_count <= 0)
+        return;
+
     BlockEntry** i = m_entries;
-    BlockEntry** const j = m_entries + m_entriesCount;
+    BlockEntry** const j = m_entries + m_entries_count;
 
     while (i != j)
     {
@@ -3838,10 +3841,13 @@ void Cluster::LoadBlockEntries() const
     if (m_entries)
         return;
 
+    if (m_entries_count == 0)  //already parsed, and no entries found
+        return;
+
     assert(m_pSegment);
     assert(m_pos);
     assert(m_size);
-    assert(m_entriesCount == 0);
+    assert(m_entries_count < 0);
 
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
@@ -3879,7 +3885,7 @@ void Cluster::LoadBlockEntries() const
     //First count the number of entries
 
     long long idx = pos;  //points to start of payload
-    m_entriesCount = 0;
+    m_entries_count = 0;
 
     while (idx < stop)
     {
@@ -3907,9 +3913,9 @@ void Cluster::LoadBlockEntries() const
             idx += len;  //consume size
 
             if (id == 0x20)  //BlockGroup ID
-                ++m_entriesCount;
+                ++m_entries_count;
             else if (id == 0x23)  //SimpleBlock ID
-                ++m_entriesCount;
+                ++m_entries_count;
 
             idx += size;  //consume payload
             assert(idx <= stop);
@@ -3919,11 +3925,11 @@ void Cluster::LoadBlockEntries() const
     assert(idx == stop);
     assert(m_timecode >= 0);
 
-    if (m_entriesCount == 0)  //TODO: handle empty clusters
+    if (m_entries_count == 0)
         return;
 
-    m_entries = new BlockEntry*[m_entriesCount];
-    size_t index = 0;
+    m_entries = new BlockEntry*[m_entries_count];
+    long index = 0;
 
     while (pos < stop)
     {
@@ -3956,7 +3962,7 @@ void Cluster::LoadBlockEntries() const
 
     assert(pos == stop);
     assert(timecode >= 0);
-    assert(index == m_entriesCount);
+    assert(index == m_entries_count);
 }
 
 
@@ -4015,9 +4021,9 @@ long long Cluster::GetLastTime() const
 
 void Cluster::ParseBlockGroup(long long st, long long sz, size_t idx) const
 {
-    assert(m_entries);
-    assert(m_entriesCount);
-    assert(idx < m_entriesCount);
+    assert(m_entries != NULL);
+    assert(m_entries_count > 0);
+    assert(idx < size_t(m_entries_count));
 
     Cluster* const this_ = const_cast<Cluster*>(this);
 
@@ -4031,9 +4037,9 @@ void Cluster::ParseBlockGroup(long long st, long long sz, size_t idx) const
 
 void Cluster::ParseSimpleBlock(long long st, long long sz, size_t idx) const
 {
-    assert(m_entries);
-    assert(m_entriesCount);
-    assert(idx < m_entriesCount);
+    assert(m_entries != NULL);
+    assert(m_entries_count > 0);
+    assert(idx < size_t(m_entries_count));
 
     Cluster* const this_ = const_cast<Cluster*>(this);
 
@@ -4048,7 +4054,7 @@ const BlockEntry* Cluster::GetFirst() const
 {
     LoadBlockEntries();
 
-    if ((m_entries == NULL) || (m_entriesCount == 0))
+    if ((m_entries == NULL) || (m_entries_count <= 0))
         return NULL;
 
     const BlockEntry* const pFirst = m_entries[0];
@@ -4062,10 +4068,10 @@ const BlockEntry* Cluster::GetLast() const
 {
     LoadBlockEntries();
 
-    if ((m_entries == NULL) || (m_entriesCount == 0))
+    if ((m_entries == NULL) || (m_entries_count <= 0))
         return NULL;
 
-    const size_t idx = m_entriesCount - 1;
+    const long idx = m_entries_count - 1;
 
     const BlockEntry* const pLast = m_entries[idx];
     assert(pLast);
@@ -4077,16 +4083,16 @@ const BlockEntry* Cluster::GetLast() const
 const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
 {
     assert(pEntry);
-    assert(m_entries);
-    assert(m_entriesCount);
+    assert(m_entries != NULL);
+    assert(m_entries_count > 0);
 
     size_t idx = pEntry->GetIndex();
-    assert(idx < m_entriesCount);
+    assert(idx < size_t(m_entries_count));
     assert(m_entries[idx] == pEntry);
 
     ++idx;
 
-    if (idx >= m_entriesCount)
+    if (idx >= size_t(m_entries_count))
       return NULL;
 
     return m_entries[idx];
@@ -4099,12 +4105,12 @@ const BlockEntry* Cluster::GetEntry(
 {
     assert(pTrack);
 
-    if (m_pSegment == NULL)  //EOS
+    if (m_pSegment == NULL)  //this is the special EOS cluster
         return pTrack->GetEOS();
 
     LoadBlockEntries();
 
-    if ((m_entries == NULL) || (m_entriesCount == 0))
+    if ((m_entries == NULL) || (m_entries_count <= 0))
         return NULL;  //return EOS here?
 
     const BlockEntry* pResult = pTrack->GetEOS();
@@ -4112,7 +4118,7 @@ const BlockEntry* Cluster::GetEntry(
     BlockEntry** i = m_entries;
     assert(i);
 
-    BlockEntry** const j = i + m_entriesCount;
+    BlockEntry** const j = i + m_entries_count;
 
     while (i != j)
     {
@@ -4163,7 +4169,7 @@ Cluster::GetEntry(
     if (m_entries == NULL)
         return NULL;
 
-    const long long count = m_entriesCount;
+    const long long count = m_entries_count;
 
     if (count <= 0)
         return NULL;
@@ -4253,7 +4259,10 @@ const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack) const
 
     LoadBlockEntries();
 
-    BlockEntry** i = m_entries + m_entriesCount;
+    if ((m_entries == NULL) || (m_entries_count <= 0))
+        return pTrack->GetEOS();
+
+    BlockEntry** i = m_entries + m_entries_count;
     BlockEntry** const j = m_entries;
 
     while (i != j)
