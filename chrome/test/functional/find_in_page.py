@@ -87,10 +87,12 @@ class FindMatchTests(pyauto.PyUITest):
     # search in History page
     self.AppendTab(pyauto.GURL('chrome://history'))
     # the contents in the history page load asynchronously after tab loads
+    search_query = os.path.join('chrome', 'test', 'data')
     self.WaitUntil(
-        lambda: self.FindInPage('data', tab_index=1)['match_count'],
+        lambda: self.FindInPage(search_query, tab_index=1)['match_count'],
         expect_retval=1)
-    self.assertEqual(1, self.FindInPage('data', tab_index=1)['match_count'])
+    self.assertEqual(
+        1, self.FindInPage(search_query, tab_index=1)['match_count'])
     # search in Downloads page
     test_utils.DownloadFileFromDownloadsDataDir(self, zip_file)
     self.AppendTab(pyauto.GURL('chrome://downloads'))
