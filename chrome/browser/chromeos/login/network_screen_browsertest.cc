@@ -64,7 +64,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     // Status bar expectations are defined with RetiresOnSaturation() so
     // these mocks will be active once status bar is initialized.
     EXPECT_CALL(*mock_network_library_, active_network())
-        .Times(1)
+        .Times(AnyNumber())
         .WillRepeatedly((Return((const Network*)(NULL))))
         .RetiresOnSaturation();
     EXPECT_CALL(*mock_network_library_, ethernet_connected())
