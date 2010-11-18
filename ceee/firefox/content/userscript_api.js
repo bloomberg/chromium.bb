@@ -651,9 +651,6 @@ UserScriptManager.prototype.loadUserScripts = function(manifest) {
         pathPattern: new RegExp(pathPattern)
       };
       patterns.push(pattern);
-
-      ceee.logInfo('loadUserScripts: url=' + spec +
-                   ' pattern=' + CEEE_json.encode(pattern));
     }
 
     script.patterns = patterns;

@@ -168,10 +168,11 @@ CfHelper.prototype.create = function(parent, idValue, onCfReady, onCfMessage) {
                         '--enable-experimental-extension-apis');
   // TODO(joi@chromium.org) Remove this once the "*" default is removed from CF.
   this.cf_.setAttribute('chrome_functions_automated', '');
+  this.cf_.style.visibility = 'hidden';
 
   // Add ChromeFrame to the DOM.  This *must* be done before setting the
   // event listeners or things will just silently fail.
-  parent.insertBefore(this.cf_, parent.firstChild);
+  parent.appendChild(this.cf_);
 
   // Setup all event handlers.
   this.cf_.onprivatemessage = onCfMessage;
@@ -192,7 +193,9 @@ CfHelper.prototype.create = function(parent, idValue, onCfReady, onCfMessage) {
 
   var impl = this;
   this.cf_.addEventListener('readystatechanged',
-      function() {impl.onReadyStateChange_(onCfReady);}, false);
+      function() {impl.onReadyStateChange_();}, false);
+  this.cf_.addEventListener('load',
+      function() {impl.onCFContentLoad_(onCfReady);}, false);
 
   return this.cf_;
 };
@@ -230,13 +233,14 @@ var READY_STATE_COMPLETED = 4;
 
 /**
  * Handle 'embed' element ready state events.
- * @param {!function()} onCfReady A callback for ChromeFrame becomes ready.
  * @private
  */
-CfHelper.prototype.onReadyStateChange_ = function(onCfReady) {
+CfHelper.prototype.onReadyStateChange_ = function() {
   this.ceee_.logInfo('CfHelper.readystatechange: state=' +
       this.cf_.readystate);
-  if (this.cf_.readystate == READY_STATE_COMPLETED) {
+  if (this.cf_.readystate == READY_STATE_UNINITIALIZED) {
+    this.cf_.style.visibility = 'hidden';
+  } else if (this.cf_.readystate == READY_STATE_COMPLETED) {
     // Do this before we even load the extension at the other end so
     // that extension automation is set up before any background pages
     // in the extension load.
@@ -249,7 +253,6 @@ CfHelper.prototype.onReadyStateChange_ = function(onCfReady) {
     //if (!loadExtensions) {
     //  this.isReady_ = true;
     //  this.postPendingMessages_();
-    //  onCfReady();
     //  return;
     //}
     var lastInstallPath =
@@ -270,14 +273,14 @@ CfHelper.prototype.onReadyStateChange_ = function(onCfReady) {
       // Install and save the path and file time.
       this.cf_.installExtension(extensionPath, function(res) {
         impl.cf_.getEnabledExtensions(function(extensionDirs) {
-          impl.onGetEnabledExtensionsComplete_(extensionDirs, onCfReady);
+          impl.onGetEnabledExtensionsComplete_(extensionDirs);
         });
       });
     } else {
       // We are not installing a CRX file.  Before deciding what we should do,
       // we need to find out what extension may already be installed.
       this.cf_.getEnabledExtensions(function(extensionDirs) {
-        impl.onGetEnabledExtensionsComplete_(extensionDirs, onCfReady);
+        impl.onGetEnabledExtensionsComplete_(extensionDirs);
       });
     }
   }
@@ -287,11 +290,9 @@ CfHelper.prototype.onReadyStateChange_ = function(onCfReady) {
  * Process response from 'getEnabledExtensions'.
  * @param {string} extensionDirs tab-separate list of extension dirs. Only first
  *     entry is handled.
- * @param {function()} onCfReady A callback for ChromeFrame becomes ready.
  * @private
  */
-CfHelper.prototype.onGetEnabledExtensionsComplete_ = function (extensionDirs,
-                                                               onCfReady) {
+CfHelper.prototype.onGetEnabledExtensionsComplete_ = function(extensionDirs) {
   this.ceee_.logInfo('OnGetEnabledExtensions: ' + extensionDirs);
 
   var extensions = extensionDirs.split('\t');
@@ -306,24 +307,24 @@ CfHelper.prototype.onGetEnabledExtensionsComplete_ = function (extensionDirs,
           this.LAST_INSTALL_TIME,
           extensionFile.lastModifiedTime.toString());
     }
-    this.onLoadExtension_(extensions[0], onCfReady);
+    this.onLoadExtension_(extensions[0]);
   } else if (extensionFile && !this.ceee_.isCrx(extensionFile.path)) {
     this.ceee_.logInfo('Loading exploded path:' + extensionFile.path);
     this.cf_.loadExtension(extensionFile.path, function() {
-      impl.onLoadExtension_(extensionFile.path, onCfReady);
+      impl.onLoadExtension_(extensionFile.path);
     });
   } else if (!this.alreadyTriedInstalling_ && extensionFile) {
     this.ceee_.logInfo('Attempting to do first-time .crx install.');
     this.alreadyTriedInstalling_ = true;
     this.cf_.installExtension(extensionFile.path, function(res) {
       impl.cf_.getEnabledExtensions(function(extensionDirs) {
-        impl.onGetEnabledExtensionsComplete_(extensionDirs, onCfReady);
+        impl.onGetEnabledExtensionsComplete_(extensionDirs);
       });
     });
   } else {
     // Remove the toolbar entirely. The direct parent is the toolbaritem
     // (check overlay.xul for more information), so we to remove our parentNode.
-    var toolbar = this.parent_.parentNode.parentNode;
+    var toolbar = this.parent_.parentNode;
     toolbar.parentNode.removeChild(toolbar);
     this.ceee_.logInfo('No extension installed.');
   }
@@ -332,10 +333,9 @@ CfHelper.prototype.onGetEnabledExtensionsComplete_ = function (extensionDirs,
 /**
  * Process response from 'loadExtension' call.
  * @param {string} baseDir Extension home dir.
- * @param {!function()} onCfReady A callback for ChromeFrame becomes ready.
  * @private
  */
-CfHelper.prototype.onLoadExtension_ = function (baseDir, onCfReady) {
+CfHelper.prototype.onLoadExtension_ = function (baseDir) {
   var extensions = [baseDir];
   this.ceee_.logInfo('OnLoadExtension: ' + baseDir);
   this.ceee_.initExtensions(extensions);
@@ -349,19 +349,22 @@ CfHelper.prototype.onLoadExtension_ = function (baseDir, onCfReady) {
   } else {
     // Remove the toolbar entirely. The direct parent is the toolbaritem
     // (check overlay.xul for more information), so we to remove our parentNode.
-    var toolbar = this.parent_.parentNode.parentNode;
+    var toolbar = this.parent_.parentNode;
     toolbar.parentNode.removeChild(toolbar);
     this.ceee_.logInfo('No extension URL');
   }
+};
 
+/**
+ * Called once the content of the ChromeFrame is loaded and ready.
+ * @param {!function()} onCfReady A callback for ChromeFrame becomes ready.
+ * @private
+ */
+CfHelper.prototype.onCFContentLoad_ = function(onCfReady) {
+  this.cf_.style.visibility = 'visible';
   this.isReady_ = true;
   this.postPendingMessages_();
   onCfReady();
-  var parent = this.parent_;
-  setTimeout(function(){
-    parent.selectedIndex = 0;
-    parent.removeChild(parent.lastChild);
-  }, 0);
 };
 
 // Make the constructor visible outside this anonymous block.

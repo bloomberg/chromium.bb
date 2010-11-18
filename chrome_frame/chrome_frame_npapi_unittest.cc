@@ -68,9 +68,6 @@ class MockNPAPI: public ChromeFrameNPAPI {
     ChromeFrameNPAPI::OnAutomationServerReady();
   }
 
-  // Neuter this (or it dchecks during testing).
-  void SetReadyState(READYSTATE new_state) {}
-
   ChromeFrameAutomationClient* CreateAutomationClient() {
     return mock_automation_client_;
   }
@@ -100,13 +97,88 @@ MATCHER_P4(LaunchParamEq, version_check, extra, incognito, widget,
          arg->incognito() == incognito,
          arg->widget_mode() == widget;
 }
+
+
+static const NPIdentifier kOnPrivateMessageId =
+    reinterpret_cast<NPIdentifier>(0x100);
+static const NPIdentifier kPostPrivateMessageId =
+    reinterpret_cast<NPIdentifier>(0x100);
 }
+
+class MockNetscapeFuncs {
+ public:
+  MockNetscapeFuncs() {
+    CHECK(NULL == current_);
+    current_ = this;
+  }
+
+  ~MockNetscapeFuncs() {
+    CHECK(this == current_);
+    current_ = NULL;
+  }
+
+  MOCK_METHOD3(GetValue, NPError(NPP, NPNVariable, void *));
+  MOCK_METHOD3(GetStringIdentifiers, void(const NPUTF8 **,
+                                          int32_t,
+                                          NPIdentifier *));  // NOLINT
+  MOCK_METHOD1(RetainObject, NPObject*(NPObject*));  // NOLINT
+  MOCK_METHOD1(ReleaseObject, void(NPObject*));  // NOLINT
+
+
+  void GetPrivilegedStringIdentifiers(const NPUTF8 **names,
+                                      int32_t name_count,
+                                      NPIdentifier *identifiers) {
+    for (int32_t i = 0; i < name_count; ++i) {
+      if (0 == strcmp(names[i], "onprivatemessage")) {
+        identifiers[i] = kOnPrivateMessageId;
+      } else if (0 == strcmp(names[i], "postPrivateMessage")) {
+        identifiers[i] = kPostPrivateMessageId;
+      } else {
+        identifiers[i] = 0;
+      }
+    }
+  }
+
+  static const NPNetscapeFuncs* netscape_funcs() {
+    return &netscape_funcs_;
+  }
+
+ private:
+  static NPError MockGetValue(NPP instance,
+                              NPNVariable variable,
+                              void *ret_value) {
+    DCHECK(current_);
+    return current_->GetValue(instance, variable, ret_value);
+  }
+
+  static void MockGetStringIdentifiers(const NPUTF8 **names,
+                                       int32_t name_count,
+                                       NPIdentifier *identifiers) {
+    DCHECK(current_);
+    return current_->GetStringIdentifiers(names, name_count, identifiers);
+  }
+
+  static NPObject* MockRetainObject(NPObject* obj) {
+    DCHECK(current_);
+    return current_->RetainObject(obj);
+  }
+
+  static void MockReleaseObject(NPObject* obj) {
+    DCHECK(current_);
+    current_->ReleaseObject(obj);
+  }
+
+  static MockNetscapeFuncs* current_;
+  static NPNetscapeFuncs netscape_funcs_;
+};
 
 // Test fixture to allow testing the privileged NPAPI APIs
 class TestNPAPIPrivilegedApi: public ::testing::Test {
  public:
   virtual void SetUp() {
     memset(&instance, 0, sizeof(instance));
+    npapi::InitializeBrowserFunctions(
+        const_cast<NPNetscapeFuncs*>(mock_funcs.netscape_funcs()));
 
     // Gets owned & destroyed by mock_api (in the
     // ChromeFramePlugin<T>::Uninitialize() function).
@@ -119,6 +191,11 @@ class TestNPAPIPrivilegedApi: public ::testing::Test {
   }
 
   virtual void TearDown() {
+    // Make sure to uninitialize the mock NPAPI before we uninitialize the
+    // browser function, otherwise we will get a DCHECK in the NPAPI dtor
+    // when it tries to perform the uninitialize there.
+    mock_api.Uninitialize();
+    npapi::UninitializeBrowserFunctions();
   }
 
   void SetupPrivilegeTest(bool is_incognito,
@@ -154,6 +231,7 @@ class TestNPAPIPrivilegedApi: public ::testing::Test {
   }
 
  public:
+  MockNetscapeFuncs mock_funcs;
   MockNPAPI mock_api;
   MockAutomationClient* mock_automation;
   MockProxyService* mock_proxy;
@@ -264,79 +342,6 @@ TEST_F(TestNPAPIPrivilegedApi, PrivilegedAllowsArgsAndProfile) {
 
 namespace {
 
-static const NPIdentifier kOnPrivateMessageId =
-    reinterpret_cast<NPIdentifier>(0x100);
-static const NPIdentifier kPostPrivateMessageId =
-    reinterpret_cast<NPIdentifier>(0x100);
-
-
-class MockNetscapeFuncs {
- public:
-  MockNetscapeFuncs() {
-    CHECK(NULL == current_);
-    current_ = this;
-  }
-
-  ~MockNetscapeFuncs() {
-    CHECK(this == current_);
-    current_ = NULL;
-  }
-
-  MOCK_METHOD3(GetValue, NPError(NPP, NPNVariable, void *));
-  MOCK_METHOD3(GetStringIdentifiers, void(const NPUTF8 **,
-                                          int32_t,
-                                          NPIdentifier *));  // NOLINT
-  MOCK_METHOD1(RetainObject, NPObject*(NPObject*));  // NOLINT
-  MOCK_METHOD1(ReleaseObject, void(NPObject*));  // NOLINT
-
-
-  void GetPrivilegedStringIdentifiers(const NPUTF8 **names,
-                                      int32_t name_count,
-                                      NPIdentifier *identifiers) {
-    for (int32_t i = 0; i < name_count; ++i) {
-      if (0 == strcmp(names[i], "onprivatemessage")) {
-        identifiers[i] = kOnPrivateMessageId;
-      } else if (0 == strcmp(names[i], "postPrivateMessage")) {
-        identifiers[i] = kPostPrivateMessageId;
-      } else {
-        identifiers[i] = 0;
-      }
-    }
-  }
-
-  static const NPNetscapeFuncs* netscape_funcs() {
-    return &netscape_funcs_;
-  }
-
- private:
-  static NPError MockGetValue(NPP instance,
-                              NPNVariable variable,
-                              void *ret_value) {
-    DCHECK(current_);
-    return current_->GetValue(instance, variable, ret_value);
-  }
-
-  static void MockGetStringIdentifiers(const NPUTF8 **names,
-                                       int32_t name_count,
-                                       NPIdentifier *identifiers) {
-    DCHECK(current_);
-    return current_->GetStringIdentifiers(names, name_count, identifiers);
-  }
-
-  static NPObject* MockRetainObject(NPObject* obj) {
-    DCHECK(current_);
-    return current_->RetainObject(obj);
-  }
-
-  static void MockReleaseObject(NPObject* obj) {
-    DCHECK(current_);
-    current_->ReleaseObject(obj);
-  }
-
-  static MockNetscapeFuncs* current_;
-  static NPNetscapeFuncs netscape_funcs_;
-};
-
 MockNetscapeFuncs* MockNetscapeFuncs::current_ = NULL;
 NPNetscapeFuncs MockNetscapeFuncs::netscape_funcs_ = {
   0,   // size
@@ -394,8 +399,6 @@ class TestNPAPIPrivilegedProperty: public TestNPAPIPrivilegedApi {
  public:
   virtual void SetUp() {
     TestNPAPIPrivilegedApi::SetUp();
-    npapi::InitializeBrowserFunctions(
-        const_cast<NPNetscapeFuncs*>(mock_funcs.netscape_funcs()));
 
     // Expect calls to release and retain objects.
     EXPECT_CALL(mock_funcs, RetainObject(kMockNPObject))
@@ -417,12 +420,8 @@ class TestNPAPIPrivilegedProperty: public TestNPAPIPrivilegedApi {
   }
 
   virtual void TearDown() {
-    npapi::UninitializeBrowserFunctions();
     TestNPAPIPrivilegedApi::TearDown();
   }
-
- public:
-  MockNetscapeFuncs mock_funcs;
 };
 
 
