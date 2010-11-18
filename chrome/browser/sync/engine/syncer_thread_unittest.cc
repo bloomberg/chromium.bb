@@ -893,7 +893,9 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-TEST_F(SyncerThreadWithSyncerTest, Pause) {
+// TODO(zea): Disabled, along with PauseWhenNotConnected, due to stalling on
+// windows, preventing further sync unit tests from running. See crbug/39070.
+TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
@@ -998,7 +1000,8 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-TEST_F(SyncerThreadWithSyncerTest, PauseWhenNotConnected) {
+// See TODO comment on the "Pause" test above.
+TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent event(false, false);
   ListenerMock listener;
