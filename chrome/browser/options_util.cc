@@ -62,6 +62,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kPasswordManagerEnabled,
     prefs::kRestoreOnStartup,
     prefs::kSafeBrowsingEnabled,
+    prefs::kSafeBrowsingReportingEnabled,
     prefs::kSearchSuggestEnabled,
     prefs::kShowHomeButton,
     prefs::kSpellCheckDictionary,

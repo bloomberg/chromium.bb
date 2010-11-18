@@ -78,6 +78,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSearchSuggestEnabled, true);
   prefs->RegisterBooleanPref(prefs::kSessionExitedCleanly, true);
   prefs->RegisterBooleanPref(prefs::kSafeBrowsingEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kSafeBrowsingReportingEnabled, false);
   // TODO(estade): IDS_SPELLCHECK_DICTIONARY should be an ASCII string.
   prefs->RegisterLocalizedStringPref(prefs::kSpellCheckDictionary,
       IDS_SPELLCHECK_DICTIONARY);

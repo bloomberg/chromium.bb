@@ -119,6 +119,10 @@ const char kFormAutofillEnabled[] = "profile.form_autofill_enabled";
 // Boolean that is true when SafeBrowsing is enabled.
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 
+// Boolean that is true when SafeBrowsing Malware Report is enabled.
+const char kSafeBrowsingReportingEnabled[] =
+    "safebrowsing.reporting_enabled";
+
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
