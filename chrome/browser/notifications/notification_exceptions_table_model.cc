@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/table_model_observer.h"
+#include "base/auto_reset.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_helper.h"
@@ -24,15 +25,11 @@ struct NotificationExceptionsTableModel::Entry {
 NotificationExceptionsTableModel::NotificationExceptionsTableModel(
     DesktopNotificationService* service)
     : service_(service),
+      updates_disabled_(false),
       observer_(NULL) {
-  std::vector<GURL> allowed(service_->GetAllowedOrigins());
-  std::vector<GURL> blocked(service_->GetBlockedOrigins());
-  entries_.reserve(allowed.size() + blocked.size());
-  for (size_t i = 0; i < allowed.size(); ++i)
-    entries_.push_back(Entry(allowed[i], CONTENT_SETTING_ALLOW));
-  for (size_t i = 0; i < blocked.size(); ++i)
-    entries_.push_back(Entry(blocked[i], CONTENT_SETTING_BLOCK));
-  sort(entries_.begin(), entries_.end());
+  registrar_.Add(this, NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
+  LoadEntries();
 }
 
 NotificationExceptionsTableModel::~NotificationExceptionsTableModel() {}
@@ -43,6 +40,7 @@ bool NotificationExceptionsTableModel::CanRemoveRows(
 }
 
 void NotificationExceptionsTableModel::RemoveRows(const Rows& rows) {
+  AutoReset<bool> tmp(&updates_disabled_, true);
   // This is O(n^2) in rows.size(). Since n is small, that's ok.
   for (Rows::const_reverse_iterator i(rows.rbegin()); i != rows.rend(); ++i) {
     size_t row = *i;
@@ -60,11 +58,11 @@ void NotificationExceptionsTableModel::RemoveRows(const Rows& rows) {
 }
 
 void NotificationExceptionsTableModel::RemoveAll() {
-  int old_row_count = RowCount();
+  AutoReset<bool> tmp(&updates_disabled_, true);
   entries_.clear();
   service_->ResetAllOrigins();
   if (observer_)
-    observer_->OnItemsRemoved(0, old_row_count);
+    observer_->OnModelChanged();
 }
 
 int NotificationExceptionsTableModel::RowCount() {
@@ -96,6 +94,31 @@ std::wstring NotificationExceptionsTableModel::GetText(int row,
 void NotificationExceptionsTableModel::SetObserver(
     TableModelObserver* observer) {
   observer_ = observer;
+}
+
+void NotificationExceptionsTableModel::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (!updates_disabled_) {
+    DCHECK(type == NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED);
+    entries_.clear();
+    LoadEntries();
+
+    if (observer_)
+      observer_->OnModelChanged();
+  }
+}
+
+void NotificationExceptionsTableModel::LoadEntries() {
+  std::vector<GURL> allowed(service_->GetAllowedOrigins());
+  std::vector<GURL> blocked(service_->GetBlockedOrigins());
+  entries_.reserve(allowed.size() + blocked.size());
+  for (size_t i = 0; i < allowed.size(); ++i)
+    entries_.push_back(Entry(allowed[i], CONTENT_SETTING_ALLOW));
+  for (size_t i = 0; i < blocked.size(); ++i)
+    entries_.push_back(Entry(blocked[i], CONTENT_SETTING_BLOCK));
+  std::sort(entries_.begin(), entries_.end());
 }
 
 NotificationExceptionsTableModel::Entry::Entry(

@@ -132,6 +132,9 @@ class DesktopNotificationService : public NotificationObserver {
   // itself when dealing with extensions.
   string16 DisplayNameForOrigin(const GURL& origin);
 
+  // Notifies the observers when permissions settings change.
+  void NotifySettingsChange();
+
   // The profile which owns this object.
   Profile* profile_;
 

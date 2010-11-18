@@ -282,6 +282,8 @@ void DesktopNotificationService::GrantPermission(const GURL& origin) {
       NewRunnableMethod(
           prefs_cache_.get(), &NotificationsPrefsCache::CacheAllowedOrigin,
           origin));
+
+  NotifySettingsChange();
 }
 
 void DesktopNotificationService::DenyPermission(const GURL& origin) {
@@ -294,6 +296,8 @@ void DesktopNotificationService::DenyPermission(const GURL& origin) {
       NewRunnableMethod(
           prefs_cache_.get(), &NotificationsPrefsCache::CacheDeniedOrigin,
           origin));
+
+  NotifySettingsChange();
 }
 
 void DesktopNotificationService::Observe(NotificationType type,
@@ -304,10 +308,7 @@ void DesktopNotificationService::Observe(NotificationType type,
   const std::string& name = *Details<std::string>(details).ptr();
 
   if (name == prefs::kDesktopNotificationAllowedOrigins) {
-    NotificationService::current()->Notify(
-        NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
-        Source<DesktopNotificationService>(this),
-        NotificationService::NoDetails());
+    NotifySettingsChange();
 
     std::vector<GURL> allowed_origins(GetAllowedOrigins());
     // Schedule a cache update on the IO thread.
@@ -318,10 +319,7 @@ void DesktopNotificationService::Observe(NotificationType type,
             &NotificationsPrefsCache::SetCacheAllowedOrigins,
             allowed_origins));
   } else if (name == prefs::kDesktopNotificationDeniedOrigins) {
-    NotificationService::current()->Notify(
-        NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
-        Source<DesktopNotificationService>(this),
-        NotificationService::NoDetails());
+    NotifySettingsChange();
 
     std::vector<GURL> denied_origins(GetBlockedOrigins());
     // Schedule a cache update on the IO thread.
@@ -606,4 +604,11 @@ string16 DesktopNotificationService::DisplayNameForOrigin(
     }
   }
   return UTF8ToUTF16(origin.host());
+}
+
+void DesktopNotificationService::NotifySettingsChange() {
+  NotificationService::current()->Notify(
+      NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+      Source<DesktopNotificationService>(this),
+      NotificationService::NoDetails());
 }
