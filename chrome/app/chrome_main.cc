@@ -2,34 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <algorithm>
-#include <atlbase.h>
-#include <atlapp.h>
-#include <malloc.h>
-#include <new.h>
-#elif defined(OS_POSIX)
-#include <locale.h>
-#include <signal.h>
-#endif
-
-#if defined(USE_X11)
-#include <gdk/gdk.h>
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <stdlib.h>
-#include <string.h>
-#endif
-
 #include "app/app_paths.h"
 #include "app/app_switches.h"
 #include "app/resource_bundle.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/debug_util.h"
 #include "base/debug/debugger.h"
+#include "base/debug_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
@@ -40,10 +19,11 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_descriptors.h"
@@ -56,8 +36,14 @@
 #include "chrome/common/url_constants.h"
 #include "ipc/ipc_switches.h"
 
-#if defined(USE_X11)
-#include "app/x11_util.h"
+#if defined(OS_WIN)
+#include <algorithm>
+#include <atlbase.h>
+#include <atlapp.h>
+#include <malloc.h>
+#include <new.h>
+#include "sandbox/src/sandbox.h"
+#include "tools/memory_watcher/memory_watcher.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -72,20 +58,26 @@
 #endif
 
 #if defined(OS_POSIX)
+#include <locale.h>
+#include <signal.h>
 #include "base/global_descriptors_posix.h"
-#endif
-
-#if defined(OS_WIN)
-#include "sandbox/src/sandbox.h"
-#include "tools/memory_watcher/memory_watcher.h"
-#endif
-
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#endif
+
+#if defined(USE_X11)
+#include <gdk/gdk.h>
+#include <glib.h>
+#include <gtk/gtk.h>
+#include <stdlib.h>
+#include <string.h>
+#include "app/x11_util.h"
+#endif
+
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #endif
 
 extern int BrowserMain(const MainFunctionParams&);
