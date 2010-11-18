@@ -177,10 +177,22 @@
 }
 
 {
-  bug_63590
+  bug_63590_a
   ThreadSanitizer:Race
   fun:*ObserverListBase*Iterator*
   fun:*browser_sync*SyncerThreadWithSyncerTest_AuthInvalid_Test*
+}
+
+{
+  bug_63590_b
+  ThreadSanitizer:Race
+  fun:*ObserverListBase*Iterator*
+  fun:*browser_sync*ServerConnectionManager*NotifyStatusChanged*
+  fun:*browser_sync*ScopedServerStatusWatcher*
+  fun:*browser_sync*SyncerProtoUtil*PostAndProcessHeaders*
+  fun:*browser_sync*SyncerProtoUtil*PostClientToServerMessage*
+  fun:*browser_sync*DownloadUpdatesCommand*ExecuteImpl*
+  fun:*browser_sync*SyncerCommand*Execute*
 }
 
 # TODO(timurrrr): bug item
