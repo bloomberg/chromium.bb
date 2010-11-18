@@ -142,6 +142,7 @@ class TextButton : public CustomButton {
   void SetDisabledColor(SkColor color);
   void SetHighlightColor(SkColor color);
   void SetHoverColor(SkColor color);
+  void SetTextHaloColor(SkColor color);
   void SetNormalHasBorder(bool normal_has_border);
   // Sets whether or not to show the hot and pushed states for the button icon
   // (if present) in addition to the normal state.  Defaults to true.
@@ -206,6 +207,10 @@ class TextButton : public CustomButton {
   SkColor color_disabled_;
   SkColor color_highlight_;
   SkColor color_hover_;
+
+  // An optional halo around text.
+  SkColor text_halo_color_;
+  bool has_text_halo_;
 
   // An icon displayed with the text.
   SkBitmap icon_;

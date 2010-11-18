@@ -88,20 +88,6 @@ static void UpdateCairoFontOptions() {
     g_free(rgba_style);
 }
 
-}  // namespace
-
-namespace gfx {
-
-CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
-    : skia::PlatformCanvas(width, height, is_opaque) {
-}
-
-CanvasSkia::CanvasSkia() : skia::PlatformCanvas() {
-}
-
-CanvasSkia::~CanvasSkia() {
-}
-
 // Pass a width > 0 to force wrapping and elliding.
 static void SetupPangoLayout(PangoLayout* layout,
                              const std::wstring& text,
@@ -122,21 +108,21 @@ static void SetupPangoLayout(PangoLayout* layout,
   if (width > 0)
     pango_layout_set_width(layout, width * PANGO_SCALE);
 
-  if (flags & Canvas::NO_ELLIPSIS) {
+  if (flags & gfx::Canvas::NO_ELLIPSIS) {
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_NONE);
   } else {
     pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
   }
 
-  if (flags & Canvas::TEXT_ALIGN_CENTER) {
+  if (flags & gfx::Canvas::TEXT_ALIGN_CENTER) {
     pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-  } else if (flags & Canvas::TEXT_ALIGN_RIGHT) {
+  } else if (flags & gfx::Canvas::TEXT_ALIGN_RIGHT) {
     pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
   }
 
-  if (flags & Canvas::MULTI_LINE) {
+  if (flags & gfx::Canvas::MULTI_LINE) {
     pango_layout_set_wrap(layout,
-        (flags & Canvas::CHARACTER_BREAK) ?
+        (flags & gfx::Canvas::CHARACTER_BREAK) ?
             PANGO_WRAP_WORD_CHAR : PANGO_WRAP_WORD);
   }
 
@@ -170,6 +156,156 @@ static void SetupPangoLayout(PangoLayout* layout,
   } else {
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   }
+}
+
+// A class to encapsulate string drawing params and operations.
+class DrawStringContext {
+ public:
+  DrawStringContext(gfx::CanvasSkia* canvas,
+                    const std::wstring& text,
+                    const gfx::Font& font,
+                    const gfx::Rect& bounds,
+                    const gfx::Rect& clip,
+                    int flags);
+  ~DrawStringContext();
+
+  void Draw(const SkColor& text_color);
+  void DrawWithHalo(const SkColor& text_color,
+                          const SkColor& halo_color);
+
+ private:
+  const gfx::Rect& bounds_;
+  int flags_;
+  const gfx::Font& font_;
+
+  gfx::CanvasSkia* canvas_;
+  cairo_t* cr_;
+  PangoLayout* layout_;
+
+  int text_x_;
+  int text_y_;
+  int text_width_;
+  int text_height_;
+
+  DISALLOW_COPY_AND_ASSIGN(DrawStringContext);
+};
+
+DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
+                                     const std::wstring& text,
+                                     const gfx::Font& font,
+                                     const gfx::Rect& bounds,
+                                     const gfx::Rect& clip,
+                                     int flags)
+    : bounds_(bounds),
+      flags_(flags),
+      font_(font),
+      canvas_(canvas),
+      cr_(NULL),
+      layout_(NULL),
+      text_x_(bounds.x()),
+      text_y_(bounds.y()),
+      text_width_(0),
+      text_height_(0) {
+  DCHECK(!bounds_.IsEmpty());
+
+  cr_ = canvas_->beginPlatformPaint();
+  layout_ = pango_cairo_create_layout(cr_);
+
+  SetupPangoLayout(layout_, text, font, bounds_.width(), flags_);
+
+  pango_layout_set_height(layout_, bounds_.height() * PANGO_SCALE);
+
+  cairo_save(cr_);
+
+  cairo_rectangle(cr_, clip.x(), clip.y(), clip.width(), clip.height());
+  cairo_clip(cr_);
+
+  pango_layout_get_pixel_size(layout_, &text_width_, &text_height_);
+
+  if (flags_ & gfx::Canvas::TEXT_VALIGN_TOP) {
+    // Cairo should draw from the top left corner already.
+  } else if (flags_ & gfx::Canvas::TEXT_VALIGN_BOTTOM) {
+    text_y_ += (bounds.height() - text_height_);
+  } else {
+    // Vertically centered.
+    text_y_ += ((bounds.height() - text_height_) / 2);
+  }
+}
+
+DrawStringContext::~DrawStringContext() {
+  if (font_.GetStyle() & gfx::Font::UNDERLINED) {
+    gfx::PlatformFontGtk* platform_font =
+        static_cast<gfx::PlatformFontGtk*>(font_.platform_font());
+    double underline_y =
+        static_cast<double>(text_y_) + text_height_ +
+        platform_font->underline_position();
+    cairo_set_line_width(cr_, platform_font->underline_thickness());
+    cairo_move_to(cr_, text_x_, underline_y);
+    cairo_line_to(cr_, text_x_ + text_width_, underline_y);
+    cairo_stroke(cr_);
+  }
+  cairo_restore(cr_);
+
+  g_object_unref(layout_);
+  // NOTE: beginPlatformPaint returned its surface, we shouldn't destroy it.
+}
+
+void DrawStringContext::Draw(const SkColor& text_color) {
+  cairo_set_source_rgba(cr_,
+                        SkColorGetR(text_color) / 255.0,
+                        SkColorGetG(text_color) / 255.0,
+                        SkColorGetB(text_color) / 255.0,
+                        SkColorGetA(text_color) / 255.0);
+  cairo_move_to(cr_, text_x_, text_y_);
+  pango_cairo_show_layout(cr_, layout_);
+}
+
+void DrawStringContext::DrawWithHalo(const SkColor& text_color,
+                                     const SkColor& halo_color) {
+  gfx::CanvasSkia text_canvas(bounds_.width() + 2, bounds_.height() + 2, false);
+  text_canvas.FillRectInt(static_cast<SkColor>(0),
+      0, 0, bounds_.width() + 2, bounds_.height() + 2);
+
+  cairo_t* text_cr = text_canvas.beginPlatformPaint();
+
+  cairo_move_to(text_cr, 1, 1);
+  pango_cairo_layout_path(text_cr, layout_);
+
+  cairo_set_source_rgba(text_cr,
+                        SkColorGetR(halo_color) / 255.0,
+                        SkColorGetG(halo_color) / 255.0,
+                        SkColorGetB(halo_color) / 255.0,
+                        SkColorGetA(halo_color) / 255.0);
+  cairo_set_line_width(text_cr, 2.0);
+  cairo_stroke_preserve(text_cr);
+
+  cairo_set_operator(text_cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_rgba(text_cr,
+                        SkColorGetR(text_color) / 255.0,
+                        SkColorGetG(text_color) / 255.0,
+                        SkColorGetB(text_color) / 255.0,
+                        SkColorGetA(text_color) / 255.0);
+  cairo_fill(text_cr);
+
+  text_canvas.endPlatformPaint();
+
+  const SkBitmap& text_bitmap = const_cast<SkBitmap&>(
+      text_canvas.getTopPlatformDevice().accessBitmap(false));
+  canvas_->DrawBitmapInt(text_bitmap, text_x_ - 1, text_y_ - 1);
+}
+
+}  // namespace
+
+namespace gfx {
+
+CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
+    : skia::PlatformCanvas(width, height, is_opaque) {
+}
+
+CanvasSkia::CanvasSkia() : skia::PlatformCanvas() {
+}
+
+CanvasSkia::~CanvasSkia() {
 }
 
 // static
@@ -208,6 +344,21 @@ void CanvasSkia::SizeStringInt(const std::wstring& text,
   cairo_surface_destroy(surface);
 }
 
+void CanvasSkia::DrawStringWithHalo(const std::wstring& text,
+                                    const gfx::Font& font,
+                                    const SkColor& text_color,
+                                    const SkColor& halo_color,
+                                    int x, int y, int w, int h,
+                                    int flags) {
+  if (w <= 0 || h <= 0)
+    return;
+
+  gfx::Rect bounds(x, y, w, h);
+  gfx::Rect clip(x - 1, y - 1, w + 2, h + 2);  // Bigger clip for halo
+  DrawStringContext context(this, text, font, bounds, clip,flags);
+  context.DrawWithHalo(text_color, halo_color);
+}
+
 void CanvasSkia::DrawStringInt(const std::wstring& text,
                                const gfx::Font& font,
                                const SkColor& color,
@@ -216,51 +367,9 @@ void CanvasSkia::DrawStringInt(const std::wstring& text,
   if (w <= 0 || h <= 0)
     return;
 
-  cairo_t* cr = beginPlatformPaint();
-  PangoLayout* layout = pango_cairo_create_layout(cr);
-
-  SetupPangoLayout(layout, text, font, w, flags);
-
-  pango_layout_set_height(layout, h * PANGO_SCALE);
-
-  cairo_save(cr);
-  cairo_set_source_rgba(cr,
-                        SkColorGetR(color) / 255.0,
-                        SkColorGetG(color) / 255.0,
-                        SkColorGetB(color) / 255.0,
-                        SkColorGetA(color) / 255.0);
-
-  int width, height;
-  pango_layout_get_pixel_size(layout, &width, &height);
-
-  cairo_rectangle(cr, x, y, w, h);
-  cairo_clip(cr);
-
-  if (flags & Canvas::TEXT_VALIGN_TOP) {
-    // Cairo should draw from the top left corner already.
-  } else if (flags & Canvas::TEXT_VALIGN_BOTTOM) {
-    y += (h - height);
-  } else {
-    // Vertically centered.
-    y += ((h - height) / 2);
-  }
-
-  cairo_move_to(cr, x, y);
-  pango_cairo_show_layout(cr, layout);
-  if (font.GetStyle() & gfx::Font::UNDERLINED) {
-    gfx::PlatformFontGtk* platform_font =
-        static_cast<gfx::PlatformFontGtk*>(font.platform_font());
-    double underline_y =
-        static_cast<double>(y) + height + platform_font->underline_position();
-    cairo_set_line_width(cr, platform_font->underline_thickness());
-    cairo_move_to(cr, x, underline_y);
-    cairo_line_to(cr, x + width, underline_y);
-    cairo_stroke(cr);
-  }
-  cairo_restore(cr);
-
-  g_object_unref(layout);
-  // NOTE: beginPlatformPaint returned its surface, we shouldn't destroy it.
+  gfx::Rect bounds(x, y, w, h);
+  DrawStringContext context(this, text, font, bounds, bounds, flags);
+  context.Draw(color);
 }
 
 void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {

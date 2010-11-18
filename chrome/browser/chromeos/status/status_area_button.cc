@@ -22,6 +22,9 @@ StatusAreaButton::StatusAreaButton(views::ViewMenuDelegate* menu_delegate)
 
   // Use an offset that is top aligned with toolbar.
   set_menu_offset(0, 2);
+
+  // Use a black halo for status text.
+  SetTextHaloColor(SK_ColorBLACK);
 }
 
 void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {

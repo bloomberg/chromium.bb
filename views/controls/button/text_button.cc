@@ -190,6 +190,8 @@ TextButton::TextButton(ButtonListener* listener, const std::wstring& text)
       color_disabled_(kDisabledColor),
       color_highlight_(kHighlightColor),
       color_hover_(kHoverColor),
+      text_halo_color_(0),
+      has_text_halo_(false),
       has_hover_icon_(false),
       has_pushed_icon_(false),
       max_width_(0),
@@ -246,6 +248,11 @@ void TextButton::SetHighlightColor(SkColor color) {
 
 void TextButton::SetHoverColor(SkColor color) {
   color_hover_ = color;
+}
+
+void TextButton::SetTextHaloColor(SkColor color) {
+  text_halo_color_ = color;
+  has_text_halo_ = true;
 }
 
 void TextButton::ClearMaxTextSize() {
@@ -360,6 +367,11 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
                             text_bounds.height(),
                             draw_string_flags);
 #endif
+    } else if (has_text_halo_) {
+      canvas->AsCanvasSkia()->DrawStringWithHalo(
+          text_, font_, text_color, text_halo_color_, text_bounds.x(),
+          text_bounds.y(), text_bounds.width(), text_bounds.height(),
+          draw_string_flags);
     } else {
       canvas->DrawStringInt(text_,
                             font_,
@@ -391,6 +403,13 @@ void TextButton::UpdateTextSize() {
   gfx::CanvasSkia::SizeStringInt(
       text_, font_, &width, &height,
       gfx::Canvas::NO_ELLIPSIS | PrefixTypeToCanvasType(prefix_type_));
+
+  // Add 2 extra pixels to width and height when text halo is used.
+  if (has_text_halo_) {
+    width += 2;
+    height += 2;
+  }
+
   text_size_.SetSize(width, font_.GetHeight());
   max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
                          std::max(max_text_size_.height(),
