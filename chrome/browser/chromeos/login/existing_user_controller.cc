@@ -161,7 +161,7 @@ void ExistingUserController::Init() {
         background_bounds_,
         GURL(url_string),
         &background_view_);
-    background_view_->EnableShutdownButton();
+    background_view_->EnableShutdownButton(true);
 
     if (!WizardController::IsDeviceRegistered()) {
       background_view_->SetOobeProgressBarVisible(true);

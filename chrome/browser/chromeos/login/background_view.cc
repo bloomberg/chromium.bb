@@ -121,11 +121,19 @@ void BackgroundView::Init(const GURL& background_url) {
   }
 }
 
-void BackgroundView::EnableShutdownButton() {
-  DCHECK(!shutdown_button_);
-  shutdown_button_ = new ShutdownButton();
-  shutdown_button_->Init();
-  AddChildView(shutdown_button_);
+void BackgroundView::EnableShutdownButton(bool enable) {
+  if (enable) {
+    if (shutdown_button_)
+      return;
+    shutdown_button_ = new ShutdownButton();
+    shutdown_button_->Init();
+    AddChildView(shutdown_button_);
+  } else {
+    if (!shutdown_button_)
+      return;
+    delete shutdown_button_;
+    shutdown_button_ = NULL;
+  }
 }
 
 // static
