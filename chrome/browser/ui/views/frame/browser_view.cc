@@ -37,6 +37,7 @@
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/browser.h"
@@ -670,6 +671,10 @@ TabContents* BrowserView::GetSelectedTabContents() const {
   return browser_->GetSelectedTabContents();
 }
 
+TabContentsWrapper* BrowserView::GetSelectedTabContentsWrapper() const {
+  return browser_->GetSelectedTabContentsWrapper();
+}
+
 SkBitmap BrowserView::GetOTRAvatarIcon() {
   static SkBitmap* otr_avatar_ = new SkBitmap();
 
@@ -774,10 +779,10 @@ StatusBubble* BrowserView::GetStatusBubble() {
 void BrowserView::SelectedTabToolbarSizeChanged(bool is_animating) {
   if (is_animating) {
     contents_container_->SetFastResize(true);
-    UpdateUIForContents(browser_->GetSelectedTabContents());
+    UpdateUIForContents(browser_->GetSelectedTabContentsWrapper());
     contents_container_->SetFastResize(false);
   } else {
-    UpdateUIForContents(browser_->GetSelectedTabContents());
+    UpdateUIForContents(browser_->GetSelectedTabContentsWrapper());
     // When transitioning from animating to not animating we need to make sure
     // the contents_container_ gets layed out. If we don't do this and the
     // bounds haven't changed contents_container_ won't get a Layout out and
@@ -798,7 +803,7 @@ void BrowserView::ShelfVisibilityChanged() {
 }
 
 void BrowserView::UpdateDevTools() {
-  UpdateDevToolsForContents(GetSelectedTabContents());
+  UpdateDevToolsForContents(GetSelectedTabContentsWrapper());
   Layout();
 }
 
@@ -885,9 +890,9 @@ void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
       is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD, force);
 }
 
-void BrowserView::UpdateToolbar(TabContents* contents,
+void BrowserView::UpdateToolbar(TabContentsWrapper* contents,
                                 bool should_restore_state) {
-  toolbar_->Update(contents, should_restore_state);
+  toolbar_->Update(contents->tab_contents(), should_restore_state);
 }
 
 void BrowserView::FocusToolbar() {
@@ -1422,7 +1427,7 @@ void BrowserView::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::PREF_CHANGED:
       if (*Details<std::string>(details).ptr() == prefs::kShowBookmarkBar &&
-          MaybeShowBookmarkBar(browser_->GetSelectedTabContents())) {
+          MaybeShowBookmarkBar(browser_->GetSelectedTabContentsWrapper())) {
         Layout();
       }
       break;
@@ -1443,7 +1448,7 @@ void BrowserView::Observe(NotificationType type,
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, TabStripModelObserver implementation:
 
-void BrowserView::TabDetachedAt(TabContents* contents, int index) {
+void BrowserView::TabDetachedAt(TabContentsWrapper* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
   // browser_->GetSelectedTabContents() will return NULL or something else.
@@ -1458,16 +1463,16 @@ void BrowserView::TabDetachedAt(TabContents* contents, int index) {
   }
 }
 
-void BrowserView::TabDeselectedAt(TabContents* contents, int index) {
+void BrowserView::TabDeselectedAt(TabContentsWrapper* contents, int index) {
   // We do not store the focus when closing the tab to work-around bug 4633.
   // Some reports seem to show that the focus manager and/or focused view can
   // be garbage at that point, it is not clear why.
-  if (!contents->is_being_destroyed())
+  if (!contents->tab_contents()->is_being_destroyed())
     contents->view()->StoreFocus();
 }
 
-void BrowserView::TabSelectedAt(TabContents* old_contents,
-                                TabContents* new_contents,
+void BrowserView::TabSelectedAt(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
                                 int index,
                                 bool user_gesture) {
   DCHECK(old_contents != new_contents);
@@ -1475,8 +1480,8 @@ void BrowserView::TabSelectedAt(TabContents* old_contents,
   ProcessTabSelected(new_contents, true);
 }
 
-void BrowserView::TabReplacedAt(TabContents* old_contents,
-                                TabContents* new_contents,
+void BrowserView::TabReplacedAt(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
                                 int index) {
   if (index != browser_->tabstrip_model()->selected_index())
     return;
@@ -2014,7 +2019,7 @@ void BrowserView::LayoutStatusBubble() {
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
 
-bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
+bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
   views::View* new_bookmark_bar_view = NULL;
   if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)
       && contents) {
@@ -2028,7 +2033,7 @@ bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
     } else {
       bookmark_bar_view_->SetProfile(contents->profile());
     }
-    bookmark_bar_view_->SetPageNavigator(contents);
+    bookmark_bar_view_->SetPageNavigator(contents->tab_contents());
     bookmark_bar_view_->
         SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_BOOKMARKS));
     new_bookmark_bar_view = bookmark_bar_view_.get();
@@ -2036,7 +2041,7 @@ bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
   return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);
 }
 
-bool BrowserView::MaybeShowInfoBar(TabContents* contents) {
+bool BrowserView::MaybeShowInfoBar(TabContentsWrapper* contents) {
   // TODO(beng): Remove this function once the interface between
   //             InfoBarContainer, DownloadShelfView and TabContents and this
   //             view is sorted out.
@@ -2044,11 +2049,11 @@ bool BrowserView::MaybeShowInfoBar(TabContents* contents) {
 }
 
 void BrowserView::UpdateSidebar() {
-  UpdateSidebarForContents(GetSelectedTabContents());
+  UpdateSidebarForContents(GetSelectedTabContentsWrapper());
   Layout();
 }
 
-void BrowserView::UpdateSidebarForContents(TabContents* tab_contents) {
+void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
   if (!sidebar_container_)
     return;  // Happens when sidebar is not allowed.
   if (!SidebarManager::GetInstance())
@@ -2057,7 +2062,7 @@ void BrowserView::UpdateSidebarForContents(TabContents* tab_contents) {
   TabContents* sidebar_contents = NULL;
   if (tab_contents) {
     SidebarContainer* client_host = SidebarManager::GetInstance()->
-        GetActiveSidebarContainerFor(tab_contents);
+        GetActiveSidebarContainerFor(tab_contents->tab_contents());
     if (client_host)
       sidebar_contents = client_host->sidebar_contents();
   }
@@ -2104,7 +2109,8 @@ void BrowserView::UpdateSidebarForContents(TabContents* tab_contents) {
   }
 }
 
-void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
+void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
+  TabContents* tab_contents = wrapper ? wrapper->tab_contents() : NULL;
   TabContents* devtools_contents =
       DevToolsWindow::GetDevToolsContents(tab_contents);
 
@@ -2150,7 +2156,7 @@ void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
   }
 }
 
-void BrowserView::UpdateUIForContents(TabContents* contents) {
+void BrowserView::UpdateUIForContents(TabContentsWrapper* contents) {
   bool needs_layout = MaybeShowBookmarkBar(contents);
   needs_layout |= MaybeShowInfoBar(contents);
   if (needs_layout)
@@ -2460,7 +2466,7 @@ void BrowserView::InitHangMonitor() {
 #endif
 }
 
-void BrowserView::ProcessTabSelected(TabContents* new_contents,
+void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
                                      bool change_tab_contents) {
   // Update various elements that are interested in knowing the current
   // TabContents.
@@ -2470,10 +2476,10 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents,
   // avoid an unnecessary resize and re-layout of a TabContents.
   if (change_tab_contents)
     contents_container_->ChangeTabContents(NULL);
-  infobar_container_->ChangeTabContents(new_contents);
+  infobar_container_->ChangeTabContents(new_contents->tab_contents());
   UpdateUIForContents(new_contents);
   if (change_tab_contents)
-    contents_container_->ChangeTabContents(new_contents);
+    contents_container_->ChangeTabContents(new_contents->tab_contents());
   UpdateSidebarForContents(new_contents);
 
   UpdateDevToolsForContents(new_contents);
@@ -2481,7 +2487,7 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents,
   //             am striving for parity now rather than cleanliness. This is
   //             required to make features like Duplicate Tab, Undo Close Tab,
   //             etc not result in sad tab.
-  new_contents->DidBecomeSelected();
+  new_contents->tab_contents()->DidBecomeSelected();
   if (BrowserList::GetLastActive() == browser_ &&
       !browser_->tabstrip_model()->closing_all() && GetWindow()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur

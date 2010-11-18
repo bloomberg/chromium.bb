@@ -475,7 +475,8 @@ void DraggedTabController::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-  DCHECK(Source<TabContents>(source).ptr() == dragged_contents_);
+  DCHECK(Source<TabContents>(source).ptr() ==
+         dragged_contents_->tab_contents());
   EndDragImpl(TAB_DESTROYED);
 }
 
@@ -577,11 +578,12 @@ void DraggedTabController::UpdateDockInfo(const gfx::Point& screen_point) {
   }
 }
 
-void DraggedTabController::SetDraggedContents(TabContents* new_contents) {
+void DraggedTabController::SetDraggedContents(
+    TabContentsWrapper* new_contents) {
   if (dragged_contents_) {
     registrar_.Remove(this,
                       NotificationType::TAB_CONTENTS_DESTROYED,
-                      Source<TabContents>(dragged_contents_));
+                      Source<TabContents>(dragged_contents_->tab_contents()));
     if (original_delegate_)
       dragged_contents_->set_delegate(original_delegate_);
   }
@@ -590,7 +592,7 @@ void DraggedTabController::SetDraggedContents(TabContents* new_contents) {
   if (dragged_contents_) {
     registrar_.Add(this,
                    NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(dragged_contents_));
+                   Source<TabContents>(dragged_contents_->tab_contents()));
 
     // We need to be the delegate so we receive messages about stuff,
     // otherwise our dragged_contents() may be replaced and subsequently
@@ -833,7 +835,7 @@ void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
     original_delegate_ = NULL;
 
     // Return the TabContents' to normalcy.
-    dragged_contents_->set_capturing_contents(false);
+    dragged_contents_->tab_contents()->set_capturing_contents(false);
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
     // user moves the tab immediately after attaching it.
@@ -872,7 +874,7 @@ void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
 void DraggedTabController::Detach() {
   // Prevent the TabContents' HWND from being hidden by any of the model
   // operations performed during the drag.
-  dragged_contents_->set_capturing_contents(true);
+  dragged_contents_->tab_contents()->set_capturing_contents(true);
 
   // Update the Model.
   TabRendererData tab_data = attached_tab_->data();
@@ -893,8 +895,8 @@ void DraggedTabController::Detach() {
   // Set up the photo booth to start capturing the contents of the dragged
   // TabContents.
   if (!photobooth_.get()) {
-    photobooth_.reset(
-        NativeViewPhotobooth::Create(dragged_contents_->GetNativeView()));
+    photobooth_.reset(NativeViewPhotobooth::Create(
+        dragged_contents_->tab_contents()->GetNativeView()));
   }
 
   // Create the dragged view.
@@ -1228,7 +1230,7 @@ void DraggedTabController::CompleteDrag() {
 void DraggedTabController::EnsureDraggedView(const TabRendererData& data) {
   if (!view_.get()) {
     gfx::Rect tab_bounds;
-    dragged_contents_->GetContainerBounds(&tab_bounds);
+    dragged_contents_->tab_contents()->GetContainerBounds(&tab_bounds);
     BaseTab* renderer = source_tabstrip_->CreateTabForDragging();
     renderer->SetData(data);
     // DraggedTabView takes ownership of renderer.

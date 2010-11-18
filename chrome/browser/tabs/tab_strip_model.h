@@ -17,6 +17,7 @@
 class NavigationController;
 class Profile;
 class TabContents;
+class TabContentsWrapper;
 class TabStripModelDelegate;
 class TabStripModelOrderController;
 
@@ -159,7 +160,7 @@ class TabStripModel : public NotificationObserver {
 
   // Adds the specified TabContents in the default location. Tabs opened in the
   // foreground inherit the group of the previously selected tab.
-  void AppendTabContents(TabContents* contents, bool foreground);
+  void AppendTabContents(TabContentsWrapper* contents, bool foreground);
 
   // Adds the specified TabContents at the specified location. |add_types| is a
   // bitmask of AddTypes; see it for details.
@@ -172,7 +173,7 @@ class TabStripModel : public NotificationObserver {
   // constraint that all mini-tabs occur before non-mini-tabs.
   // See also AddTabContents.
   void InsertTabContentsAt(int index,
-                           TabContents* contents,
+                           TabContentsWrapper* contents,
                            int add_types);
 
   // Closes the TabContents at the specified index. This causes the TabContents
@@ -190,18 +191,19 @@ class TabStripModel : public NotificationObserver {
   //
   // The old NavigationController is deallocated and this object takes
   // ownership of the passed in controller.
+  // XXXPINK This API is weird and wrong. Remove it or change it or rename it?
   void ReplaceNavigationControllerAt(int index,
-                                     NavigationController* controller);
+                                     TabContentsWrapper* contents);
 
   // Replaces the tab contents at |index| with |new_contents|. This deletes the
   // TabContents currently at |index|.
-  void ReplaceTabContentsAt(int index, TabContents* new_contents);
+  void ReplaceTabContentsAt(int index, TabContentsWrapper* new_contents);
 
   // Detaches the TabContents at the specified index from this strip. The
   // TabContents is not destroyed, just removed from display. The caller is
   // responsible for doing something with it (e.g. stuffing it into another
   // strip).
-  TabContents* DetachTabContentsAt(int index);
+  TabContentsWrapper* DetachTabContentsAt(int index);
 
   // Select the TabContents at the specified index. |user_gesture| is true if
   // the user actually clicked on the tab or navigated to it using a keyboard
@@ -220,16 +222,25 @@ class TabStripModel : public NotificationObserver {
   void MoveTabContentsAt(int index, int to_position, bool select_after_move);
 
   // Returns the currently selected TabContents, or NULL if there is none.
-  TabContents* GetSelectedTabContents() const;
+  TabContentsWrapper* GetSelectedTabContents() const;
 
-  // Returns the TabContents at the specified index, or NULL if there is none.
-  TabContents* GetTabContentsAt(int index) const;
+  // Returns the TabContentsWrapper at the specified index, or NULL if there is
+  // none.
+  TabContentsWrapper* GetTabContentsAt(int index) const;
 
-  // Returns the index of the specified TabContents, or TabContents::kNoTab if
-  // the TabContents is not in this TabStripModel.
-  int GetIndexOfTabContents(const TabContents* contents) const;
+  // Returns the index of the specified TabContents wrapper, or
+  // TabStripModel::kNoTab if the TabContents is not in this TabStripModel.
+  int GetIndexOfTabContents(const TabContentsWrapper* contents) const;
 
-  // Returns the index of the specified NavigationController, or -1 if it is
+  // Returns the index of the specified TabContents wrapper given its raw
+  // TabContents, or TabStripModel::kNoTab if the TabContents is not in this
+  // TabStripModel.  Note: This is only needed in rare cases where the wrapper
+  // is not already present (such as implementing TabContentsDelegate methods,
+  // which don't know about the wrapper.  Returns NULL if |contents| is not
+  // associated with any wrapper in the model.
+  int GetWrapperIndex(const TabContents* contents) const;
+
+  // Returns the index of the specified NavigationController, or kNoTab if it is
   // not in this TabStripModel.
   int GetIndexOfController(const NavigationController* controller) const;
 
@@ -278,7 +289,8 @@ class TabStripModel : public NotificationObserver {
   // TabContents. Depending on the tab, and the transition type of the
   // navigation, the TabStripModel may adjust its selection and grouping
   // behavior.
-  void TabNavigating(TabContents* contents, PageTransition::Type transition);
+  void TabNavigating(TabContentsWrapper* contents,
+                     PageTransition::Type transition);
 
   // Forget all Opener relationships that are stored (but _not_ group
   // relationships!) This is to reduce unpredictable tab switching behavior
@@ -292,11 +304,11 @@ class TabStripModel : public NotificationObserver {
   // moved to a new logical context by the user (e.g. by typing a new URL or
   // selecting a bookmark). This also forgets the opener, which is considered
   // a weaker relationship than group.
-  void ForgetGroup(TabContents* contents);
+  void ForgetGroup(TabContentsWrapper* contents);
 
   // Returns true if the group/opener relationships present for |contents|
   // should be reset when _any_ selection change occurs in the model.
-  bool ShouldResetGroupOnSelect(TabContents* contents) const;
+  bool ShouldResetGroupOnSelect(TabContentsWrapper* contents) const;
 
   // Changes the blocked state of the tab at |index|.
   void SetTabBlocked(int index, bool blocked);
@@ -338,7 +350,7 @@ class TabStripModel : public NotificationObserver {
   // specified insertion index, transition, etc. |add_types| is a bitmask of
   // AddTypes; see it for details. This method ends up calling into
   // InsertTabContentsAt to do the actual inertion.
-  void AddTabContents(TabContents* contents,
+  void AddTabContents(TabContentsWrapper* contents,
                       int index,
                       PageTransition::Type transition,
                       int add_types);
@@ -408,7 +420,7 @@ class TabStripModel : public NotificationObserver {
   // forgotten for the New Tab page opened as a result of a New Tab gesture
   // (e.g. Ctrl+T, etc) since the user may open a tab transiently to look up
   // something related to their current activity.
-  bool IsNewTabAtEndOfTabStrip(TabContents* contents) const;
+  bool IsNewTabAtEndOfTabStrip(TabContentsWrapper* contents) const;
 
   // Closes the TabContents at the specified indices. This causes the
   // TabContents to be destroyed, but it may not happen immediately.  If the
@@ -428,18 +440,18 @@ class TabStripModel : public NotificationObserver {
   // The boolean parameter create_historical_tab controls whether to
   // record these tabs and their history for reopening recently closed
   // tabs.
-  void InternalCloseTab(TabContents* contents,
+  void InternalCloseTab(TabContentsWrapper* contents,
                         int index,
                         bool create_historical_tabs);
 
-  TabContents* GetContentsAt(int index) const;
+  TabContentsWrapper* GetContentsAt(int index) const;
 
   // The actual implementation of SelectTabContentsAt. Takes the previously
   // selected contents in |old_contents|, which may actually not be in
   // |contents_| anymore because it may have been removed by a call to say
   // DetachTabContentsAt...
   void ChangeSelectedContentsFrom(
-      TabContents* old_contents, int to_index, bool user_gesture);
+      TabContentsWrapper* old_contents, int to_index, bool user_gesture);
 
   // Returns the number of New Tab tabs in the TabStripModel.
   int GetNewTabCount() const;
@@ -470,7 +482,7 @@ class TabStripModel : public NotificationObserver {
   // the TabContents is in the current TabStripModel, unless otherwise
   // specified in code.
   struct TabContentsData {
-    explicit TabContentsData(TabContents* a_contents)
+    explicit TabContentsData(TabContentsWrapper* a_contents)
         : contents(a_contents),
           reset_group_on_select(false),
           pinned(false),
@@ -491,7 +503,7 @@ class TabStripModel : public NotificationObserver {
       opener = NULL;
     }
 
-    TabContents* contents;
+    TabContentsWrapper* contents;
     // We use NavigationControllers here since they more closely model the
     // "identity" of a Tab, TabContents can change depending on the URL loaded
     // in the Tab.

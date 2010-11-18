@@ -4,7 +4,7 @@
 
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController, public:
@@ -21,7 +21,7 @@ TabStripModelOrderController::~TabStripModelOrderController() {
 }
 
 int TabStripModelOrderController::DetermineInsertionIndex(
-    TabContents* new_contents,
+    TabContentsWrapper* new_contents,
     PageTransition::Type transition,
     bool foreground) {
   int tab_count = tabstrip_->count();
@@ -104,10 +104,11 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
   return selected_index;
 }
 
-void TabStripModelOrderController::TabSelectedAt(TabContents* old_contents,
-                                                 TabContents* new_contents,
-                                                 int index,
-                                                 bool user_gesture) {
+void TabStripModelOrderController::TabSelectedAt(
+    TabContentsWrapper* old_contents,
+    TabContentsWrapper* new_contents,
+    int index,
+    bool user_gesture) {
   NavigationController* old_opener = NULL;
   if (old_contents) {
     int index = tabstrip_->GetIndexOfTabContents(old_contents);

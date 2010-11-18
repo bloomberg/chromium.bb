@@ -26,6 +26,7 @@ class InstantLoaderManager;
 class PrefService;
 class Profile;
 class TabContents;
+class TabContentsWrapper;
 class TemplateURL;
 
 // InstantController maintains a TabContents that is intended to give a preview
@@ -77,7 +78,7 @@ class InstantController : public InstantLoaderDelegate {
   // the url is empty and there is a preview TabContents it is destroyed. If url
   // is non-empty and the preview TabContents has not been created it is
   // created.
-  void Update(TabContents* tab_contents,
+  void Update(TabContentsWrapper* tab_contents,
               const AutocompleteMatch& match,
               const string16& user_text,
               string16* suggested_text);
@@ -120,17 +121,17 @@ class InstantController : public InstantLoaderDelegate {
   // not notify the delegate.
   // WARNING: be sure and invoke CompleteRelease after adding the returned
   // TabContents to a tabstrip.
-  TabContents* ReleasePreviewContents(InstantCommitType type);
+  TabContentsWrapper* ReleasePreviewContents(InstantCommitType type);
 
   // Does cleanup after the preview contents has been added to the tabstrip.
   // Invoke this if you explicitly invoke ReleasePreviewContents.
   void CompleteRelease(TabContents* tab);
 
   // TabContents the match is being shown for.
-  TabContents* tab_contents() const { return tab_contents_; }
+  TabContentsWrapper* tab_contents() const { return tab_contents_; }
 
   // The preview TabContents; may be null.
-  TabContents* GetPreviewContents();
+  TabContentsWrapper* GetPreviewContents();
 
   // Returns true if the preview TabContents is active. In some situations this
   // may return false yet preview_contents() returns non-NULL.
@@ -193,7 +194,7 @@ class InstantController : public InstantLoaderDelegate {
   InstantDelegate* delegate_;
 
   // The TabContents last passed to |Update|.
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
 
   // Has notification been sent out that the preview TabContents is ready to be
   // shown?

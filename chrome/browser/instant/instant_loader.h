@@ -21,6 +21,7 @@
 class InstantLoaderDelegate;
 class InstantLoaderManagerTest;
 class TabContents;
+class TabContentsWrapper;
 class TemplateURL;
 
 // InstantLoader does the loading of a particular URL for InstantController.
@@ -40,7 +41,7 @@ class InstantLoader : public NotificationObserver {
 
   // Invoked to load a URL. |tab_contents| is the TabContents the preview is
   // going to be shown on top of and potentially replace.
-  void Update(TabContents* tab_contents,
+  void Update(TabContentsWrapper* tab_contents,
               const TemplateURL* template_url,
               const GURL& url,
               PageTransition::Type transition_type,
@@ -59,7 +60,7 @@ class InstantLoader : public NotificationObserver {
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
   // not notify the delegate.
-  TabContents* ReleasePreviewContents(InstantCommitType type);
+  TabContentsWrapper* ReleasePreviewContents(InstantCommitType type);
 
   // Calls through to method of same name on delegate.
   bool ShouldCommitInstantOnMouseUp();
@@ -74,7 +75,9 @@ class InstantLoader : public NotificationObserver {
                        const NotificationDetails& details);
 
   // The preview TabContents; may be null.
-  TabContents* preview_contents() const { return preview_contents_.get(); }
+  TabContentsWrapper* preview_contents() const {
+    return preview_contents_.get();
+  }
 
   // Returns true if the preview TabContents is ready to be shown.
   bool ready() const { return ready_; }
@@ -145,7 +148,7 @@ class InstantLoader : public NotificationObserver {
   scoped_ptr<TabContentsDelegateImpl> preview_tab_contents_delegate_;
 
   // The preview TabContents; may be null.
-  scoped_ptr<TabContents> preview_contents_;
+  scoped_ptr<TabContentsWrapper> preview_contents_;
 
   // Is the preview_contents ready to be shown?
   bool ready_;

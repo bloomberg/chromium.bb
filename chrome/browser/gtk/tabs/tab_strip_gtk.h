@@ -99,24 +99,24 @@ class TabStripGtk : public TabStripModelObserver,
 
  protected:
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
                              bool foreground);
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* contents,
                              int index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);
-  virtual void TabChangedAt(TabContents* contents, int index,
+  virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabChangeType change_type);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index);
-  virtual void TabMiniStateChanged(TabContents* contents, int index);
-  virtual void TabBlockedStateChanged(TabContents* contents,
+  virtual void TabMiniStateChanged(TabContentsWrapper* contents, int index);
+  virtual void TabBlockedStateChanged(TabContentsWrapper* contents,
                                       int index);
 
   // TabGtk::TabDelegate implementation:

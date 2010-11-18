@@ -102,7 +102,8 @@ class NewTabObserver : public TabStripModelObserver {
   }
 
  private:
-  virtual void TabInsertedAt(TabContents* contents, int index,
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
+                             int index,
                              bool foreground) {
     MessageLoopForUI::current()->Quit();
   }

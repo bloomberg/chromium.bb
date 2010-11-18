@@ -36,11 +36,11 @@ class PropertyAccessorBase;
 //
 //   void doit(SomeObjectThatImplementsPropertyBag* object) {
 //     PropertyAccessor<int>* accessor = my_accessor();
-//     int* property = accessor.GetProperty(object);
+//     int* property = accessor->GetProperty(object);
 //     if (property)
 //       ... use property ...
 //
-//     accessor.SetProperty(object, 22);
+//     accessor->SetProperty(object, 22);
 //   }
 class PropertyBag {
  public:

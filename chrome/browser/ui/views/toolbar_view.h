@@ -96,7 +96,7 @@ class ToolbarView : public AccessiblePaneView,
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // Overridden from LocationBarView::Delegate:
-  virtual TabContents* GetTabContents();
+  virtual TabContentsWrapper* GetTabContentsWrapper();
   virtual InstantController* GetInstant();
   virtual void OnInputInProgress(bool in_progress);
 

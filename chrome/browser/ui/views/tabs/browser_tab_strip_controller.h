@@ -19,7 +19,7 @@ class Browser;
 struct TabRendererData;
 
 // An implementation of TabStripController that sources data from the
-// TabContentses in a TabStripModel.
+// TabContentsWrappers in a TabStripModel.
 class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver,
                                   public NotificationObserver {
@@ -57,26 +57,29 @@ class BrowserTabStripController : public TabStripController,
   virtual void CreateNewTab();
 
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int model_index,
                              bool foreground);
-  virtual void TabDetachedAt(TabContents* contents, int model_index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int model_index);
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* contents,
                              int model_index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(TabContentsWrapper* contents,
                         int from_model_index,
                         int to_model_index);
-  virtual void TabChangedAt(TabContents* contents,
+  virtual void TabChangedAt(TabContentsWrapper* contents,
                             int model_index,
                             TabChangeType change_type);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int model_index);
-  virtual void TabPinnedStateChanged(TabContents* contents, int model_index);
-  virtual void TabMiniStateChanged(TabContents* contents, int model_index);
-  virtual void TabBlockedStateChanged(TabContents* contents, int model_index);
+  virtual void TabPinnedStateChanged(TabContentsWrapper* contents,
+                                     int model_index);
+  virtual void TabMiniStateChanged(TabContentsWrapper* contents,
+                                   int model_index);
+  virtual void TabBlockedStateChanged(TabContentsWrapper* contents,
+                                      int model_index);
 
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type, const NotificationSource& source,
@@ -86,7 +89,7 @@ class BrowserTabStripController : public TabStripController,
   class TabContextMenuContents;
 
   // Invokes tabstrip_->SetTabData.
-  void SetTabDataAt(TabContents* contents, int model_index);
+  void SetTabDataAt(TabContentsWrapper* contents, int model_index);
 
   // Sets the TabRendererData from the TabStripModel.
   void SetTabRendererDataFromModel(TabContents* contents,

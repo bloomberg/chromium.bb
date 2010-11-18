@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -36,26 +37,26 @@ namespace {
 // Stub model delegate
 class TestTabStripDelegate : public TabStripModelDelegate {
  public:
-  virtual TabContents* AddBlankTab(bool foreground) {
+  virtual TabContentsWrapper* AddBlankTab(bool foreground) {
     return NULL;
   }
-  virtual TabContents* AddBlankTabAt(int index, bool foreground) {
+  virtual TabContentsWrapper* AddBlankTabAt(int index, bool foreground) {
     return NULL;
   }
-  virtual Browser* CreateNewStripWithContents(TabContents* contents,
+  virtual Browser* CreateNewStripWithContents(TabContentsWrapper* contents,
                                               const gfx::Rect& window_bounds,
                                               const DockInfo& dock_info,
                                               bool maximize) {
     return NULL;
   }
-  virtual void ContinueDraggingDetachedTab(TabContents* contents,
-                                         const gfx::Rect& window_bounds,
-                                         const gfx::Rect& tab_bounds) {
+  virtual void ContinueDraggingDetachedTab(TabContentsWrapper* contents,
+                                           const gfx::Rect& window_bounds,
+                                           const gfx::Rect& tab_bounds) {
   }
   virtual int GetDragActions() const {
     return 0;
   }
-  virtual TabContents* CreateTabContentsForURL(
+  virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
       const GURL& referrer,
       Profile* profile,
@@ -67,8 +68,8 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   virtual bool CanDuplicateContentsAt(int index) { return true; }
   virtual void DuplicateContentsAt(int index) { }
   virtual void CloseFrameAfterDragSession() { }
-  virtual void CreateHistoricalTab(TabContents* contents) { }
-  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) {
+  virtual void CreateHistoricalTab(TabContentsWrapper* contents) { }
+  virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents) {
     return true;
   }
   virtual bool CanRestoreTab() {
@@ -152,9 +153,9 @@ TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_TRUE(model_->empty());
   SiteInstance* instance =
       SiteInstance::CreateSiteInstance(browser_helper_.profile());
-  TabContents* tab_contents =
-      new TabContents(browser_helper_.profile(), instance, MSG_ROUTING_NONE,
-                      NULL, NULL);
+  TabContentsWrapper* tab_contents =
+      Browser::TabContentsFactory(browser_helper_.profile(), instance,
+          MSG_ROUTING_NONE, NULL, NULL);
   model_->AppendTabContents(tab_contents, true);
   EXPECT_EQ(model_->count(), 1);
 }

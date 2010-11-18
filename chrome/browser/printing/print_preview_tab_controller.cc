@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -97,19 +98,19 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
                                  PageTransition::LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = current_browser->tabstrip_model()->
-      GetIndexOfTabContents(initiator_tab) + 1;
+      GetWrapperIndex(initiator_tab) + 1;
   browser::Navigate(&params);
-  TabContents* preview_tab = params.target_contents;
-  preview_tab->Activate();
+  TabContentsWrapper* preview_tab = params.target_contents;
+  preview_tab->tab_contents()->Activate();
 
   // Add an entry to the map.
-  preview_tab_map_[preview_tab] = initiator_tab;
+  preview_tab_map_[preview_tab->tab_contents()] = initiator_tab;
   waiting_for_new_preview_page_ = true;
 
   AddObservers(initiator_tab);
-  AddObservers(preview_tab);
+  AddObservers(preview_tab->tab_contents());
 
-  return preview_tab;
+  return preview_tab->tab_contents();
 }
 
 void PrintPreviewTabController::Observe(NotificationType type,

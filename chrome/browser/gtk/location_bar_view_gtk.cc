@@ -536,7 +536,7 @@ void LocationBarViewGtk::OnChanged() {
   if (update_instant_ && instant && GetTabContents()) {
     if (location_entry_->model()->user_input_in_progress() &&
         location_entry_->model()->popup_model()->IsOpen()) {
-      instant->Update(GetTabContents(),
+      instant->Update(browser_->GetSelectedTabContentsWrapper(),
                       location_entry_->model()->CurrentMatch(),
                       WideToUTF16(location_entry_->GetText()),
                       &suggested_text);

@@ -16,6 +16,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
@@ -173,7 +174,7 @@ void ExtensionMessageService::OpenChannelToTab(
   if (!source)
     return;
 
-  TabContents* contents = NULL;
+  TabContentsWrapper* contents = NULL;
   MessagePort receiver;
   if (ExtensionTabUtil::GetTabById(tab_id, source->profile(), true,
                                    NULL, NULL, &contents, NULL)) {

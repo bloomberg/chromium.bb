@@ -19,6 +19,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -71,22 +72,22 @@ class BrowserListener : public TabStripModelObserver {
   ~BrowserListener();
 
   // Begin TabStripModelObserver methods
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
                              bool foreground);
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            TabContentsWrapper* contents,
                             int index) {}
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);
-  virtual void TabChangedAt(TabContents* contents, int index,
+  virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabStripModelObserver::TabChangeType change_type);
   virtual void TabStripEmpty();
-  virtual void TabDeselectedAt(TabContents* contents, int index) {}
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabDeselectedAt(TabContentsWrapper* contents, int index) {}
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
   // End TabStripModelObserver methods
@@ -127,7 +128,7 @@ class BrowserListener : public TabStripModelObserver {
 
   // Returns the tab contents from the tab model for this child at index.
   TabContents* GetTabContentsAt(int index) const  {
-    return browser_->tabstrip_model()->GetTabContentsAt(index);
+    return browser_->tabstrip_model()->GetTabContentsAt(index)->tab_contents();
   }
  private:
   // Calculate the size of a cell based on the browser window's size.
@@ -203,7 +204,7 @@ BrowserListener::~BrowserListener() {
   browser_->tabstrip_model()->RemoveObserver(this);
 }
 
-void BrowserListener::TabInsertedAt(TabContents* contents,
+void BrowserListener::TabInsertedAt(TabContentsWrapper* contents,
                                     int index,
                                     bool foreground) {
   InsertSnapshot(index);
@@ -211,13 +212,13 @@ void BrowserListener::TabInsertedAt(TabContents* contents,
   UpdateSelectedIndex(browser_->selected_index());
 }
 
-void BrowserListener::TabDetachedAt(TabContents* contents, int index) {
+void BrowserListener::TabDetachedAt(TabContentsWrapper* contents, int index) {
   ClearSnapshot(index);
   UpdateSelectedIndex(browser_->selected_index());
   RenumberSnapshots(index);
 }
 
-void BrowserListener::TabMoved(TabContents* contents,
+void BrowserListener::TabMoved(TabContentsWrapper* contents,
                                int from_index,
                                int to_index) {
   // Need to reorder tab in the snapshots list, and reset the window
@@ -232,13 +233,14 @@ void BrowserListener::TabMoved(TabContents* contents,
 }
 
 void BrowserListener::TabChangedAt(
-    TabContents* contents,
+    TabContentsWrapper* contents,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
   if (change_type != TabStripModelObserver::LOADING_ONLY) {
-    snapshots_[index].title->SetTitle(contents->GetTitle());
-    snapshots_[index].title->SetUrl(contents->GetURL());
-    snapshots_[index].fav_icon->SetFavIcon(contents->GetFavIcon());
+    snapshots_[index].title->SetTitle(contents->tab_contents()->GetTitle());
+    snapshots_[index].title->SetUrl(contents->tab_contents()->GetURL());
+    snapshots_[index].fav_icon->SetFavIcon(
+        contents->tab_contents()->GetFavIcon());
     if (change_type != TabStripModelObserver::TITLE_NOT_LOADING)
       ReloadSnapshot(index);
   }
@@ -248,8 +250,8 @@ void BrowserListener::TabStripEmpty() {
   snapshots_.clear();
 }
 
-void BrowserListener::TabSelectedAt(TabContents* old_contents,
-                                    TabContents* new_contents,
+void BrowserListener::TabSelectedAt(TabContentsWrapper* old_contents,
+                                    TabContentsWrapper* new_contents,
                                     int index,
                                     bool user_gesture) {
   UpdateSelectedIndex(index);

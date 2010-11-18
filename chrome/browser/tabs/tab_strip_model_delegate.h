@@ -14,6 +14,7 @@ class GURL;
 class Profile;
 class SiteInstance;
 class TabContents;
+class TabContentsWrapper;
 namespace gfx {
 class Rect;
 }
@@ -38,8 +39,8 @@ class TabStripModelDelegate {
   };
 
   // Adds what the delegate considers to be a blank tab to the model.
-  virtual TabContents* AddBlankTab(bool foreground) = 0;
-  virtual TabContents* AddBlankTabAt(int index, bool foreground) = 0;
+  virtual TabContentsWrapper* AddBlankTab(bool foreground) = 0;
+  virtual TabContentsWrapper* AddBlankTabAt(int index, bool foreground) = 0;
 
   // Asks for a new TabStripModel to be created and the given tab contents to
   // be added to it. Its size and position are reflected in |window_bounds|.
@@ -47,7 +48,7 @@ class TabStripModelDelegate {
   // be docked as identified by |dock_info|. Returns the Browser object
   // representing the newly created window and tab strip. This does not
   // show the window, it's up to the caller to do so.
-  virtual Browser* CreateNewStripWithContents(TabContents* contents,
+  virtual Browser* CreateNewStripWithContents(TabContentsWrapper* contents,
                                               const gfx::Rect& window_bounds,
                                               const DockInfo& dock_info,
                                               bool maximize) = 0;
@@ -58,7 +59,7 @@ class TabStripModelDelegate {
   // screen coordinates, used to place the new window, and |tab_bounds| are the
   // bounds of the dragged Tab view in the source window, in screen coordinates,
   // used to place the new Tab in the new window.
-  virtual void ContinueDraggingDetachedTab(TabContents* contents,
+  virtual void ContinueDraggingDetachedTab(TabContentsWrapper* contents,
                                            const gfx::Rect& window_bounds,
                                            const gfx::Rect& tab_bounds) = 0;
 
@@ -70,7 +71,7 @@ class TabStripModelDelegate {
   // exist for it to be constructed (e.g. a parent HWND).
   // If |defer_load| is true, the navigation controller doesn't load the url.
   // If |instance| is not null, its process is used to render the tab.
-  virtual TabContents* CreateTabContentsForURL(
+  virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
       const GURL& referrer,
       Profile* profile,
@@ -91,14 +92,14 @@ class TabStripModelDelegate {
 
   // Creates an entry in the historical tab database for the specified
   // TabContents.
-  virtual void CreateHistoricalTab(TabContents* contents) = 0;
+  virtual void CreateHistoricalTab(TabContentsWrapper* contents) = 0;
 
   // Runs any unload listeners associated with the specified TabContents before
   // it is closed. If there are unload listeners that need to be run, this
   // function returns true and the TabStripModel will wait before closing the
   // TabContents. If it returns false, there are no unload listeners and the
   // TabStripModel can close the TabContents immediately.
-  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) = 0;
+  virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents) = 0;
 
   // Returns true if a tab can be restored.
   virtual bool CanRestoreTab() = 0;

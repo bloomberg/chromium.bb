@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 
 namespace {
@@ -20,7 +21,7 @@ bool ClipboardFunction::RunImpl() {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
 
-  TabContents* contents = NULL;
+  TabContentsWrapper* contents = NULL;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
                                     NULL, NULL, &contents, NULL)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(

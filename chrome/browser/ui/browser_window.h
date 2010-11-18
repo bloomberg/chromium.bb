@@ -20,6 +20,7 @@ class LocationBar;
 class Profile;
 class StatusBubble;
 class TabContents;
+class TabContentsWrapper;
 class TemplateURL;
 class TemplateURLModel;
 #if !defined(OS_MACOSX)
@@ -139,7 +140,7 @@ class BrowserWindow {
   virtual void UpdateReloadStopState(bool is_loading, bool force) = 0;
 
   // Updates the toolbar with the state for the specified |contents|.
-  virtual void UpdateToolbar(TabContents* contents,
+  virtual void UpdateToolbar(TabContentsWrapper* contents,
                              bool should_restore_state) = 0;
 
   // Focuses the toolbar (for accessibility).

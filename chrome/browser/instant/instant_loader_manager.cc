@@ -8,6 +8,7 @@
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 
 InstantLoaderManager::InstantLoaderManager(
     InstantLoaderDelegate* loader_delegate)
@@ -67,7 +68,7 @@ InstantLoader* InstantLoaderManager::UpdateLoader(
       // preview_contents() may be null for tests.
       if (!current_loader_->template_url_id() &&
           current_loader_->preview_contents()) {
-        current_loader_->preview_contents()->Stop();
+        current_loader_->preview_contents()->tab_contents()->Stop();
       }
       pending_loader_ = loader;
     }

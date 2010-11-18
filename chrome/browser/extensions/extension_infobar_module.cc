@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -36,7 +37,7 @@ bool ShowInfoBarFunction::RunImpl() {
   GURL url = extension->GetResourceURL(extension->url(), html_path);
 
   Browser* browser = NULL;
-  TabContents* tab_contents = NULL;
+  TabContentsWrapper* tab_contents = NULL;
   if (!ExtensionTabUtil::GetTabById(
       tab_id,
       profile(),
@@ -51,8 +52,9 @@ bool ShowInfoBarFunction::RunImpl() {
     return false;
   }
 
-  tab_contents->AddInfoBar(
-      new ExtensionInfoBarDelegate(browser, tab_contents, GetExtension(), url));
+  tab_contents->tab_contents()->AddInfoBar(
+      new ExtensionInfoBarDelegate(browser, tab_contents->tab_contents(),
+                                   GetExtension(), url));
 
   // TODO(finnur): Return the actual DOMWindow object. Bug 26463.
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));

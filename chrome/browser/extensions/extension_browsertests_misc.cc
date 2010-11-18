@@ -19,6 +19,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -794,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   ASSERT_EQ(2, tab_strip->count());
 
   EXPECT_EQ(extension->GetResourceURL("options.html"),
-            tab_strip->GetTabContentsAt(1)->GetURL());
+            tab_strip->GetTabContentsAt(1)->tab_contents()->GetURL());
 }
 
 // Test window.chrome.app.isInstalled .

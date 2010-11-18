@@ -25,6 +25,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/browser_dialogs.h"
@@ -49,6 +50,13 @@
 #endif
 
 using views::View;
+
+namespace {
+TabContents* GetTabContentsFromDelegate(LocationBarView::Delegate* delegate) {
+  const TabContentsWrapper* wrapper = delegate->GetTabContentsWrapper();
+  return wrapper ? wrapper->tab_contents() : NULL;
+}
+}  // namespace
 
 // static
 const int LocationBarView::kNormalHorizontalEdgeThickness = 1;
@@ -335,8 +343,8 @@ void LocationBarView::SetProfile(Profile* profile) {
   }
 }
 
-TabContents* LocationBarView::GetTabContents() const {
-  return delegate_->GetTabContents();
+TabContentsWrapper* LocationBarView::GetTabContentsWrapper() const {
+  return delegate_->GetTabContentsWrapper();
 }
 
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
@@ -345,7 +353,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   DCHECK(page_action);
-  TabContents* contents = delegate_->GetTabContents();
+  TabContents* contents = GetTabContentsFromDelegate(delegate_);
 
   RefreshPageActionViews();
   PageActionWithBadgeView* page_action_view =
@@ -839,10 +847,10 @@ void LocationBarView::OnChanged() {
 
   InstantController* instant = delegate_->GetInstant();
   string16 suggested_text;
-  if (update_instant_ && instant && GetTabContents()) {
+  if (update_instant_ && instant && GetTabContentsWrapper()) {
     if (location_entry_->model()->user_input_in_progress() &&
         location_entry_->model()->popup_model()->IsOpen()) {
-      instant->Update(GetTabContents(),
+      instant->Update(GetTabContentsWrapper(),
                       location_entry_->model()->CurrentMatch(),
                       WideToUTF16(location_entry_->GetText()),
                       &suggested_text);
@@ -876,15 +884,11 @@ void LocationBarView::OnSetFocus() {
 }
 
 SkBitmap LocationBarView::GetFavIcon() const {
-  DCHECK(delegate_);
-  DCHECK(delegate_->GetTabContents());
-  return delegate_->GetTabContents()->GetFavIcon();
+  return GetTabContentsFromDelegate(delegate_)->GetFavIcon();
 }
 
 std::wstring LocationBarView::GetTitle() const {
-  DCHECK(delegate_);
-  DCHECK(delegate_->GetTabContents());
-  return UTF16ToWideHack(delegate_->GetTabContents()->GetTitle());
+  return UTF16ToWideHack(GetTabContentsFromDelegate(delegate_)->GetTitle());
 }
 
 int LocationBarView::AvailableWidth(int location_bar_width) {
@@ -911,11 +915,10 @@ void LocationBarView::LayoutView(views::View* view,
 }
 
 void LocationBarView::RefreshContentSettingViews() {
-  const TabContents* tab_contents = delegate_->GetTabContents();
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
     (*i)->UpdateFromTabContents(
-        model_->input_in_progress() ? NULL : tab_contents);
+        model_->input_in_progress() ? NULL : GetTabContentsFromDelegate(delegate_));
   }
 }
 
@@ -964,7 +967,7 @@ void LocationBarView::RefreshPageActionViews() {
     }
   }
 
-  TabContents* contents = delegate_->GetTabContents();
+  TabContents* contents = GetTabContentsFromDelegate(delegate_);
   if (!page_action_views_.empty() && contents) {
     GURL url = GURL(WideToUTF8(model_->GetText()));
 
@@ -1067,7 +1070,7 @@ void LocationBarView::WriteDragData(views::View* sender,
                                     OSExchangeData* data) {
   DCHECK(GetDragOperations(sender, press_pt) != DragDropTypes::DRAG_NONE);
 
-  TabContents* tab_contents = delegate_->GetTabContents();
+  TabContents* tab_contents = GetTabContentsFromDelegate(delegate_);
   DCHECK(tab_contents);
   drag_utils::SetURLAndDragImage(tab_contents->GetURL(),
                                  UTF16ToWideHack(tab_contents->GetTitle()),
@@ -1077,7 +1080,7 @@ void LocationBarView::WriteDragData(views::View* sender,
 int LocationBarView::GetDragOperations(views::View* sender,
                                        const gfx::Point& p) {
   DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_));
-  TabContents* tab_contents = delegate_->GetTabContents();
+  TabContents* tab_contents = GetTabContentsFromDelegate(delegate_);
   return (tab_contents && tab_contents->GetURL().is_valid() &&
           !location_entry()->IsEditingOrEmpty()) ?
       (DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK) :

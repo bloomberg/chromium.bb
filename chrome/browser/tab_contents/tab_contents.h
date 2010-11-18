@@ -25,7 +25,6 @@
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/js_modal_dialog.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/language_state.h"
@@ -72,7 +71,6 @@ class FileSelectHelper;
 class InfoBarDelegate;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
-class PasswordManager;
 class PluginInstaller;
 class Profile;
 struct RendererPreferences;
@@ -88,6 +86,7 @@ class URLPattern;
 struct ThumbnailScore;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
+class WebNavigationObserver;
 struct WebPreferences;
 
 // Describes what goes in the main content area of a tab. TabContents is
@@ -100,7 +99,6 @@ class TabContents : public PageNavigator,
                     public RenderViewHostManager::Delegate,
                     public JavaScriptAppModalDialogDelegate,
                     public ImageLoadingTracker::Observer,
-                    public PasswordManagerDelegate,
                     public TabSpecificContentSettings::Delegate {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
@@ -156,9 +154,6 @@ class TabContents : public PageNavigator,
 
   // Returns the AutoFillManager, creating it if necessary.
   AutoFillManager* GetAutoFillManager();
-
-  // Returns the PasswordManager, creating it if necessary.
-  PasswordManager* GetPasswordManager();
 
   // Returns the PluginInstaller, creating it if necessary.
   PluginInstaller* GetPluginInstaller();
@@ -268,6 +263,13 @@ class TabContents : public PageNavigator,
 
   // Returns a human-readable description the tab's loading state.
   virtual std::wstring GetStatusText() const;
+
+  // Add and remove observers for page navigation notifications. Adding or
+  // removing multiple times has no effect. The order in which notifications
+  // are sent to observers is undefined. Clients must be sure to remove the
+  // observer before they go away.
+  void AddNavigationObserver(WebNavigationObserver* observer);
+  void RemoveNavigationObserver(WebNavigationObserver* observer);
 
   // Return whether this tab contents is loading a resource.
   bool is_loading() const { return is_loading_; }
@@ -695,13 +697,6 @@ class TabContents : public PageNavigator,
   // state by various UI elements.
   TabSpecificContentSettings* GetTabSpecificContentSettings() const;
 
-  // PasswordManagerDelegate implementation.
-  virtual void FillPasswordForm(
-      const webkit_glue::PasswordFormFillData& form_data);
-  virtual void AddSavePasswordInfoBar(PasswordFormManager* form_to_save);
-  virtual Profile* GetProfileForPasswordManager();
-  virtual bool DidLastPageLoadEncounterSSLErrors();
-
   // Updates history with the specified navigation. This is called by
   // OnMsgNavigate to update history state.
   void UpdateHistoryForNavigation(
@@ -982,10 +977,6 @@ class TabContents : public PageNavigator,
   virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
                                    const std::string& json_arguments,
                                    IPC::Message* reply_msg);
-  virtual void PasswordFormsFound(
-      const std::vector<webkit_glue::PasswordForm>& forms);
-  virtual void PasswordFormsVisible(
-      const std::vector<webkit_glue::PasswordForm>& visible_forms);
   virtual void PageHasOSDD(RenderViewHost* render_view_host,
                            int32 page_id,
                            const GURL& url,
@@ -1094,9 +1085,6 @@ class TabContents : public PageNavigator,
 
   // AutoFillManager, lazily created.
   scoped_ptr<AutoFillManager> autofill_manager_;
-
-  // PasswordManager, lazily created.
-  scoped_ptr<PasswordManager> password_manager_;
 
   // PluginInstaller, lazily created.
   scoped_ptr<PluginInstaller> plugin_installer_;
@@ -1303,6 +1291,9 @@ class TabContents : public PageNavigator,
   // case we don't want saved settings to apply to it and we don't want to
   // remember it.
   bool temporary_zoom_settings_;
+
+  // A list of observers notified when page state changes. Weak references.
+  ObserverList<WebNavigationObserver> web_navigation_observers_;
 
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.

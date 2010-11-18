@@ -24,7 +24,7 @@ class Browser;
 class BrowserWindow;
 class Profile;
 class RenderViewHost;
-class TabContents;
+class TabContentsWrapper;
 class Value;
 
 class DevToolsWindow
@@ -48,7 +48,7 @@ class DevToolsWindow
   void SetDocked(bool docked);
   RenderViewHost* GetRenderViewHost();
 
-  TabContents* tab_contents() { return tab_contents_; }
+  TabContentsWrapper* tab_contents() { return tab_contents_; }
   Browser* browser() { return browser_; } //  For tests.
   bool is_docked() { return docked_; }
 
@@ -98,7 +98,7 @@ class DevToolsWindow
 
   Profile* profile_;
   TabContents* inspected_tab_;
-  TabContents* tab_contents_;
+  TabContentsWrapper* tab_contents_;
   Browser* browser_;
   bool docked_;
   bool is_loaded_;

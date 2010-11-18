@@ -23,7 +23,9 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -522,7 +524,7 @@ void TileSet::Build(TabStripModel* source_model) {
   tiles_.resize(source_model->count());
   for (size_t i = 0; i < tiles_.size(); ++i) {
     tiles_[i] = new Tile;
-    tiles_[i]->contents_ = source_model->GetTabContentsAt(i);
+    tiles_[i]->contents_ = source_model->GetTabContentsAt(i)->tab_contents();
   }
 }
 
@@ -1281,7 +1283,7 @@ void AnimateCALayerFrameFromTo(
   thumbLayer.frame = NSRectToCGRect(tile.thumb_rect());
 }
 
-- (void)insertTabWithContents:(TabContents*)contents
+- (void)insertTabWithContents:(TabContentsWrapper*)contents
                       atIndex:(NSInteger)index
                  inForeground:(bool)inForeground {
   // This happens if you cmd-click a link and then immediately open tabpose
@@ -1289,7 +1291,7 @@ void AnimateCALayerFrameFromTo(
   ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
 
   // Insert new layer and relayout.
-  tileSet_->InsertTileAt(index, contents);
+  tileSet_->InsertTileAt(index, contents->tab_contents());
   tileSet_->Layout(containingRect_);
   [self  addLayersForTile:tileSet_->tile_at(index)
                  showZoom:NO
@@ -1317,13 +1319,13 @@ void AnimateCALayerFrameFromTo(
   [self selectTileAtIndex:selectedIndex];
 }
 
-- (void)tabClosingWithContents:(TabContents*)contents
+- (void)tabClosingWithContents:(TabContentsWrapper*)contents
                        atIndex:(NSInteger)index {
   // We will also get a -tabDetachedWithContents:atIndex: notification for
   // closing tabs, so do nothing here.
 }
 
-- (void)tabDetachedWithContents:(TabContents*)contents
+- (void)tabDetachedWithContents:(TabContentsWrapper*)contents
                         atIndex:(NSInteger)index {
   ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
 
@@ -1360,7 +1362,7 @@ void AnimateCALayerFrameFromTo(
     [self selectTileAtIndex:selectedIndex];
 }
 
-- (void)tabMovedWithContents:(TabContents*)contents
+- (void)tabMovedWithContents:(TabContentsWrapper*)contents
                     fromIndex:(NSInteger)from
                       toIndex:(NSInteger)to {
   ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
@@ -1397,7 +1399,7 @@ void AnimateCALayerFrameFromTo(
   [self selectTileAtIndex:selectedIndex];
 }
 
-- (void)tabChangedWithContents:(TabContents*)contents
+- (void)tabChangedWithContents:(TabContentsWrapper*)contents
                        atIndex:(NSInteger)index
                     changeType:(TabStripModelObserver::TabChangeType)change {
   // Tell the window to update text, title, and thumb layers at |index| to get
@@ -1409,16 +1411,16 @@ void AnimateCALayerFrameFromTo(
   // For now, just make sure that we don't hold on to an invalid TabContents
   // object.
   tabpose::Tile& tile = tileSet_->tile_at(index);
-  if (contents == tile.tab_contents()) {
+  if (contents->tab_contents() == tile.tab_contents()) {
     // TODO(thakis): Install a timer to send a thumb request/update title/update
     // favicon after 20ms or so, and reset the timer every time this is called
     // to make sure we get an updated thumb, without requesting them all over.
     return;
   }
 
-  tile.set_tab_contents(contents);
+  tile.set_tab_contents(contents->tab_contents());
   ThumbnailLayer* thumbLayer = [allThumbnailLayers_ objectAtIndex:index];
-  [thumbLayer setTabContents:contents];
+  [thumbLayer setTabContents:contents->tab_contents()];
 }
 
 - (void)tabStripModelDeleted {

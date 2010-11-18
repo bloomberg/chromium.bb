@@ -13,6 +13,7 @@
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_service.h"
@@ -90,7 +91,7 @@ bool DraggedTabControllerGtk::EndDrag(bool canceled) {
 TabGtk* DraggedTabControllerGtk::GetDragSourceTabForContents(
     TabContents* contents) const {
   if (attached_tabstrip_ == source_tabstrip_)
-    return contents == dragged_contents_ ? source_tab_ : NULL;
+    return contents == dragged_contents_->tab_contents() ? source_tab_ : NULL;
   return NULL;
 }
 
@@ -195,7 +196,7 @@ void DraggedTabControllerGtk::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-  DCHECK(Source<TabContents>(source).ptr() == dragged_contents_);
+  DCHECK(Source<TabContentsWrapper>(source).ptr() == dragged_contents_);
   EndDragImpl(TAB_DESTROYED);
 }
 
@@ -209,11 +210,12 @@ gfx::Point DraggedTabControllerGtk::GetWindowCreatePoint() const {
                     cursor_point.y() - window_create_point_.y());
 }
 
-void DraggedTabControllerGtk::SetDraggedContents(TabContents* new_contents) {
+void DraggedTabControllerGtk::SetDraggedContents(
+    TabContentsWrapper* new_contents) {
   if (dragged_contents_) {
     registrar_.Remove(this,
                       NotificationType::TAB_CONTENTS_DESTROYED,
-                      Source<TabContents>(dragged_contents_));
+                      Source<TabContentsWrapper>(dragged_contents_));
     if (original_delegate_)
       dragged_contents_->set_delegate(original_delegate_);
   }
@@ -222,7 +224,7 @@ void DraggedTabControllerGtk::SetDraggedContents(TabContents* new_contents) {
   if (dragged_contents_) {
     registrar_.Add(this,
                    NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(dragged_contents_));
+                   Source<TabContentsWrapper>(dragged_contents_));
 
     // We need to be the delegate so we receive messages about stuff,
     // otherwise our dragged_contents() may be replaced and subsequently
@@ -380,7 +382,7 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
     original_delegate_ = NULL;
 
     // Return the TabContents' to normalcy.
-    dragged_contents_->set_capturing_contents(false);
+    dragged_contents_->tab_contents()->set_capturing_contents(false);
 
     // We need to ask the tabstrip we're attached to ensure that the ideal
     // bounds for all its tabs are correctly generated, because the calculation
@@ -685,10 +687,10 @@ bool DraggedTabControllerGtk::CompleteDrag() {
 void DraggedTabControllerGtk::EnsureDraggedTab() {
   if (!dragged_tab_.get()) {
     gfx::Rect rect;
-    dragged_contents_->GetContainerBounds(&rect);
+    dragged_contents_->tab_contents()->GetContainerBounds(&rect);
 
-    dragged_tab_.reset(new DraggedTabGtk(dragged_contents_, mouse_offset_,
-                                         rect.size(), mini_));
+    dragged_tab_.reset(new DraggedTabGtk(dragged_contents_->tab_contents(),
+                                         mouse_offset_, rect.size(), mini_));
   }
 }
 

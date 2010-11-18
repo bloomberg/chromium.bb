@@ -17,6 +17,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages_params.h"
 #include "grit/generated_resources.h"
 
 using webkit_glue::PasswordForm;

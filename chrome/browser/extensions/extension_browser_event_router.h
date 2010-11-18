@@ -59,22 +59,24 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void OnBrowserWindowReady(const Browser* browser);
 
   // TabStripModelObserver
-  virtual void TabInsertedAt(TabContents* contents, int index, bool foreground);
+  virtual void TabInsertedAt(TabContentsWrapper* contents, int index,
+                             bool foreground);
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            TabContentsWrapper* contents,
                             int index);
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents, int from_index, int to_index);
-  virtual void TabChangedAt(TabContents* contents, int index,
+  virtual void TabMoved(TabContentsWrapper* contents, int from_index,
+                        int to_index);
+  virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabChangeType change_type);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index);
-  virtual void TabPinnedStateChanged(TabContents* contents, int index);
+  virtual void TabPinnedStateChanged(TabContentsWrapper* contents, int index);
   virtual void TabStripEmpty();
 
   // Page Action execute event.

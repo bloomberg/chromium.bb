@@ -11,10 +11,12 @@
 #include "chrome/browser/login_model.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
 class PasswordManagerDelegate;
+class PasswordManagerTest;
 class PasswordFormManager;
 class PrefService;
 
@@ -22,13 +24,14 @@ class PrefService;
 // receiving password form data from the renderer and managing the password
 // database through the WebDataService. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
-class PasswordManager : public LoginModel {
+class PasswordManager : public LoginModel,
+                        public WebNavigationObserver {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The delegate passed in is required to outlive the PasswordManager.
   explicit PasswordManager(PasswordManagerDelegate* delegate);
-  ~PasswordManager();
+  virtual ~PasswordManager();
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
@@ -37,34 +40,24 @@ class PasswordManager : public LoginModel {
                 const webkit_glue::PasswordForm* const preferred_match,
                 bool wait_for_username) const;
 
-  // Notification that the user navigated away from the current page.
-  // Unless this is a password form submission, for our purposes this
-  // means we're done with the current page, so we can clean-up.
-  void DidNavigate();
-
-  // Show a prompt to save submitted password if it is a new username for
-  // the form, or else just update the stored value.
-  void DidStopLoading();
-
-  // Notifies the password manager that password forms were parsed on the page.
-  void PasswordFormsFound(const std::vector<webkit_glue::PasswordForm>& forms);
-
-  // Notifies the password manager which password forms are initially visible.
-  void PasswordFormsVisible(
-       const std::vector<webkit_glue::PasswordForm>& visible_forms);
+  // LoginModel implementation.
+  virtual void SetObserver(LoginModelObserver* observer);
 
   // When a form is submitted, we prepare to save the password but wait
   // until we decide the user has successfully logged in. This is step 1
   // of 2 (see SavePassword).
   void ProvisionallySavePassword(webkit_glue::PasswordForm form);
 
-  // Clear any pending saves
-  void ClearProvisionalSave();
-
-  // LoginModel implementation.
-  virtual void SetObserver(LoginModelObserver* observer);
+  // WebNavigationObserver overrides.
+  virtual void DidStopLoading();
+  virtual void PasswordFormsFound(
+      const std::vector<webkit_glue::PasswordForm>& forms);
+  virtual void PasswordFormsVisible(
+      const std::vector<webkit_glue::PasswordForm>& visible_forms);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PasswordManagerTest, FormSeenThenLeftPage);
+
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //
@@ -78,6 +71,15 @@ class PasswordManager : public LoginModel {
   //
   // When a form is "seen" on a page, a PasswordFormManager is created
   // and stored in this collection until user navigates away from page.
+
+  // Clear any pending saves
+  void ClearProvisionalSave();
+
+  // Notification that the user navigated away from the current page.
+  // Unless this is a password form submission, for our purposes this
+  // means we're done with the current page, so we can clean-up.
+  void DidNavigate();
+
   typedef std::vector<PasswordFormManager*> LoginManagers;
   LoginManagers pending_login_managers_;
 

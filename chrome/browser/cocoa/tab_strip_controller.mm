@@ -37,6 +37,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "grit/app_resources.h"
@@ -376,9 +377,10 @@ private:
     // means the tab model is already fully formed with tabs. Need to walk the
     // list and create the UI for each.
     const int existingTabCount = tabStripModel_->count();
-    const TabContents* selection = tabStripModel_->GetSelectedTabContents();
+    const TabContentsWrapper* selection =
+        tabStripModel_->GetSelectedTabContents();
     for (int i = 0; i < existingTabCount; ++i) {
-      TabContents* currentContents = tabStripModel_->GetTabContentsAt(i);
+      TabContentsWrapper* currentContents = tabStripModel_->GetTabContentsAt(i);
       [self insertTabWithContents:currentContents
                           atIndex:i
                      inForeground:NO];
@@ -474,15 +476,17 @@ private:
 
   // Make sure the new tabs's sheets are visible (necessary when a background
   // tab opened a sheet while it was in the background and now becomes active).
-  TabContents* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
+  TabContentsWrapper* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
   DCHECK(newTab);
   if (newTab) {
     TabContents::ConstrainedWindowList::iterator it, end;
-    end = newTab->constrained_window_end();
+    end = newTab->tab_contents()->constrained_window_end();
     NSWindowController* controller = [[newView window] windowController];
     DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
 
-    for (it = newTab->constrained_window_begin(); it != end; ++it) {
+    for (it = newTab->tab_contents()->constrained_window_begin();
+         it != end;
+         ++it) {
       ConstrainedWindow* constrainedWindow = *it;
       static_cast<ConstrainedWindowMac*>(constrainedWindow)->Realize(
           static_cast<BrowserWindowController*>(controller));
@@ -627,10 +631,10 @@ private:
   if (!tabStripModel_->ContainsIndex(index))
     return;
 
-  TabContents* contents = tabStripModel_->GetTabContentsAt(index);
+  TabContentsWrapper* contents = tabStripModel_->GetTabContentsAt(index);
   if (contents)
     UserMetrics::RecordAction(UserMetricsAction("CloseTab_Mouse"),
-                              contents->profile());
+                              contents->tab_contents()->profile());
   const NSInteger numberOfOpenTabs = [self numberOfOpenTabs];
   if (numberOfOpenTabs > 1) {
     bool isClosingLastTab = index == numberOfOpenTabs - 1;
@@ -960,7 +964,7 @@ private:
 
 // Called when a notification is received from the model to insert a new tab
 // at |modelIndex|.
-- (void)insertTabWithContents:(TabContents*)contents
+- (void)insertTabWithContents:(TabContentsWrapper*)contents
                       atIndex:(NSInteger)modelIndex
                  inForeground:(bool)inForeground {
   DCHECK(contents);
@@ -973,7 +977,8 @@ private:
   // Make a new tab. Load the contents of this tab from the nib and associate
   // the new controller with |contents| so it can be looked up later.
   scoped_nsobject<TabContentsController> contentsController(
-      [[TabContentsController alloc] initWithContents:contents delegate:self]);
+      [[TabContentsController alloc] initWithContents:contents->tab_contents()
+                                             delegate:self]);
   [tabContentsArray_ insertObject:contentsController atIndex:index];
 
   // Make a new tab and add it to the strip. Keep track of its controller.
@@ -990,7 +995,7 @@ private:
   [newView setFrame:NSOffsetRect([newView frame],
                                  0, -[[self class] defaultTabHeight])];
 
-  [self setTabTitle:newController withContents:contents];
+  [self setTabTitle:newController withContents:contents->tab_contents()];
 
   // If a tab is being inserted, we can again use the entire tab strip width
   // for layout.
@@ -1008,7 +1013,7 @@ private:
   // dragging a tab out into a new window, we have to put the tab's favicon
   // into the right state up front as we won't be told to do it from anywhere
   // else.
-  [self updateFavIconForContents:contents atIndex:modelIndex];
+  [self updateFavIconForContents:contents->tab_contents() atIndex:modelIndex];
 
   // Send a broadcast that the number of tabs have changed.
   [[NSNotificationCenter defaultCenter]
@@ -1018,8 +1023,8 @@ private:
 
 // Called when a notification is received from the model to select a particular
 // tab. Swaps in the toolbar and content area associated with |newContents|.
-- (void)selectTabWithContents:(TabContents*)newContents
-             previousContents:(TabContents*)oldContents
+- (void)selectTabWithContents:(TabContentsWrapper*)newContents
+             previousContents:(TabContentsWrapper*)oldContents
                       atIndex:(NSInteger)modelIndex
                   userGesture:(bool)wasUserGesture {
   // Take closing tabs into account.
@@ -1034,7 +1039,7 @@ private:
           [tabContentsArray_ objectAtIndex:oldIndex];
       [oldController willBecomeUnselectedTab];
       oldContents->view()->StoreFocus();
-      oldContents->WasHidden();
+      oldContents->tab_contents()->WasHidden();
     }
   }
 
@@ -1060,33 +1065,34 @@ private:
   [self swapInTabAtIndex:modelIndex];
 
   if (newContents) {
-    newContents->DidBecomeSelected();
+    newContents->tab_contents()->DidBecomeSelected();
     newContents->view()->RestoreFocus();
 
-    if (newContents->find_ui_active())
+    if (newContents->tab_contents()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 }
 
-- (void)tabReplacedWithContents:(TabContents*)newContents
-               previousContents:(TabContents*)oldContents
+- (void)tabReplacedWithContents:(TabContentsWrapper*)newContents
+               previousContents:(TabContentsWrapper*)oldContents
                         atIndex:(NSInteger)modelIndex {
   NSInteger index = [self indexFromModelIndex:modelIndex];
   TabContentsController* oldController =
       [tabContentsArray_ objectAtIndex:index];
-  DCHECK_EQ(oldContents, [oldController tabContents]);
+  DCHECK_EQ(oldContents->tab_contents(), [oldController tabContents]);
 
   // Simply create a new TabContentsController for |newContents| and place it
   // into the array, replacing |oldContents|.  A TabSelectedAt notification will
   // follow, at which point we will install the new view.
   scoped_nsobject<TabContentsController> newController(
-      [[TabContentsController alloc] initWithContents:newContents
-                                             delegate:self]);
+      [[TabContentsController alloc]
+          initWithContents:newContents->tab_contents()
+                  delegate:self]);
 
   // Bye bye, |oldController|.
   [tabContentsArray_ replaceObjectAtIndex:index withObject:newController];
 
-  [delegate_ onReplaceTabWithContents:newContents];
+  [delegate_ onReplaceTabWithContents:newContents->tab_contents()];
 }
 
 // Remove all knowledge about this tab and its associated controller, and remove
@@ -1171,7 +1177,7 @@ private:
 // Called when a notification is received from the model that the given tab
 // has gone away. Start an animation then force a layout to put everything
 // in motion.
-- (void)tabDetachedWithContents:(TabContents*)contents
+- (void)tabDetachedWithContents:(TabContentsWrapper*)contents
                         atIndex:(NSInteger)modelIndex {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
@@ -1189,7 +1195,7 @@ private:
       postNotificationName:kTabStripNumberOfTabsChanged
                     object:self];
 
-  [delegate_ onTabDetachedWithContents:contents];
+  [delegate_ onTabDetachedWithContents:contents->tab_contents()];
 }
 
 // A helper routine for creating an NSImageView to hold the fav icon or app icon
@@ -1289,7 +1295,7 @@ private:
 // Called when a notification is received from the model that the given tab
 // has been updated. |loading| will be YES when we only want to update the
 // throbber state, not anything else about the (partially) loading tab.
-- (void)tabChangedWithContents:(TabContents*)contents
+- (void)tabChangedWithContents:(TabContentsWrapper*)contents
                        atIndex:(NSInteger)modelIndex
                     changeType:(TabStripModelObserver::TabChangeType)change {
   // Take closing tabs into account.
@@ -1307,19 +1313,19 @@ private:
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
   if (change != TabStripModelObserver::LOADING_ONLY)
-    [self setTabTitle:tabController withContents:contents];
+    [self setTabTitle:tabController withContents:contents->tab_contents()];
 
-  [self updateFavIconForContents:contents atIndex:modelIndex];
+  [self updateFavIconForContents:contents->tab_contents() atIndex:modelIndex];
 
   TabContentsController* updatedController =
       [tabContentsArray_ objectAtIndex:index];
-  [updatedController tabDidChange:contents];
+  [updatedController tabDidChange:contents->tab_contents()];
 }
 
 // Called when a tab is moved (usually by drag&drop). Keep our parallel arrays
 // in sync with the tab strip model. It can also be pinned/unpinned
 // simultaneously, so we need to take care of that.
-- (void)tabMovedWithContents:(TabContents*)contents
+- (void)tabMovedWithContents:(TabContentsWrapper*)contents
                    fromIndex:(NSInteger)modelFrom
                      toIndex:(NSInteger)modelTo {
   // Take closing tabs into account.
@@ -1345,7 +1351,7 @@ private:
 }
 
 // Called when a tab is pinned or unpinned without moving.
-- (void)tabMiniStateChangedWithContents:(TabContents*)contents
+- (void)tabMiniStateChangedWithContents:(TabContentsWrapper*)contents
                                 atIndex:(NSInteger)modelIndex {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
@@ -1360,7 +1366,7 @@ private:
   [tabController setMini:tabStripModel_->IsMiniTab(modelIndex)];
   [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [tabController setApp:tabStripModel_->IsAppTab(modelIndex)];
-  [self updateFavIconForContents:contents atIndex:modelIndex];
+  [self updateFavIconForContents:contents->tab_contents() atIndex:modelIndex];
   // If the tab is being restored and it's pinned, the mini state is set after
   // the tab has already been rendered, so re-layout the tabstrip. In all other
   // cases, the state is set before the tab is rendered so this isn't needed.
@@ -1434,7 +1440,7 @@ private:
 // previous window, setting |pinned| to YES will propagate that state to the
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
-- (void)dropTabContents:(TabContents*)contents
+- (void)dropTabContents:(TabContentsWrapper*)contents
               withFrame:(NSRect)frame
             asPinnedTab:(BOOL)pinned {
   int modelIndex = [self indexOfPlaceholder];
@@ -1715,8 +1721,9 @@ private:
     case CURRENT_TAB:
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
                                 browser_->profile());
-      tabStripModel_->GetTabContentsAt(index)->OpenURL(url, GURL(), CURRENT_TAB,
-                                                       PageTransition::TYPED);
+      tabStripModel_->GetTabContentsAt(index)
+          ->tab_contents()->OpenURL(url, GURL(), CURRENT_TAB,
+                                    PageTransition::TYPED);
       tabStripModel_->SelectTabContentsAt(index, true);
       break;
     default:

@@ -19,35 +19,35 @@ class DictionaryValue;
 class ListValue;
 class SkBitmap;
 class TabContents;
+class TabContentsWrapper;
 class TabStripModel;
 
-class ExtensionTabUtil {
- public:
-  static int GetWindowId(const Browser* browser);
-  static int GetTabId(const TabContents* tab_contents);
-  static std::string GetTabStatusText(bool is_loading);
-  static int GetWindowIdOfTab(const TabContents* tab_contents);
-  static ListValue* CreateTabList(const Browser* browser);
-  static DictionaryValue* CreateTabValue(const TabContents* tab_contents);
-  static DictionaryValue* CreateTabValue(const TabContents* tab_contents,
-                                         TabStripModel* tab_strip,
-                                         int tab_index);
-  static DictionaryValue* CreateWindowValue(const Browser* browser,
-                                            bool populate_tabs);
-  // Gets the |tab_strip_model| and |tab_index| for the given |tab_contents|.
-  static bool GetTabStripModel(const TabContents* tab_contents,
-                               TabStripModel** tab_strip_model,
-                               int* tab_index);
-  static bool GetDefaultTab(Browser* browser, TabContents** contents,
-                            int* tab_id);
-  // Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may
-  // be NULL and will not be set within the function.
-  static bool GetTabById(int tab_id, Profile* profile, bool incognito_enabled,
-                         Browser** browser,
-                         TabStripModel** tab_strip,
-                         TabContents** contents,
-                         int* tab_index);
-};
+namespace ExtensionTabUtil {
+int GetWindowId(const Browser* browser);
+int GetTabId(const TabContents* tab_contents);
+std::string GetTabStatusText(bool is_loading);
+int GetWindowIdOfTab(const TabContents* tab_contents);
+ListValue* CreateTabList(const Browser* browser);
+DictionaryValue* CreateTabValue(const TabContents* tab_contents);
+DictionaryValue* CreateTabValue(const TabContents* tab_contents,
+                                TabStripModel* tab_strip,
+                                int tab_index);
+DictionaryValue* CreateWindowValue(const Browser* browser,
+                                   bool populate_tabs);
+// Gets the |tab_strip_model| and |tab_index| for the given |tab_contents|.
+bool GetTabStripModel(const TabContents* tab_contents,
+                      TabStripModel** tab_strip_model,
+                      int* tab_index);
+bool GetDefaultTab(Browser* browser, TabContentsWrapper** contents,
+                   int* tab_id);
+// Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may
+// be NULL and will not be set within the function.
+bool GetTabById(int tab_id, Profile* profile, bool incognito_enabled,
+                Browser** browser,
+                TabStripModel** tab_strip,
+                TabContentsWrapper** contents,
+                int* tab_index);
+}
 
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {

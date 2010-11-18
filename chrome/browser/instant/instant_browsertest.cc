@@ -16,6 +16,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -68,7 +69,7 @@ class InstantTest : public InProcessBrowserTest {
 
   // Wait for instant to load and ensure it is in the state we expect.
   void SetupPreview() {
-    preview_ = browser()->instant()->GetPreviewContents();
+    preview_ = browser()->instant()->GetPreviewContents()->tab_contents();
     ASSERT_TRUE(preview_);
     ui_test_utils::WaitForNavigation(&preview_->controller());
 

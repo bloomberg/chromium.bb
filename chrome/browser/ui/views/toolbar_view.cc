@@ -327,8 +327,8 @@ cleanup:
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, LocationBarView::Delegate implementation:
 
-TabContents* ToolbarView::GetTabContents() {
-  return browser_->GetSelectedTabContents();
+TabContentsWrapper* ToolbarView::GetTabContentsWrapper() {
+  return browser_->GetSelectedTabContentsWrapper();
 }
 
 InstantController* ToolbarView::GetInstant() {

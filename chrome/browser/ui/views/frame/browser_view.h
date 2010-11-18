@@ -183,13 +183,14 @@ class BrowserView : public BrowserBubbleHost,
   // activated, false if none was shown.
   bool ActivateAppModalDialog() const;
 
-  // Returns the selected TabContents. Used by our NonClientView's
+  // Returns the selected TabContents[Wrapper]. Used by our NonClientView's
   // TabIconView::TabContentsProvider implementations.
   // TODO(beng): exposing this here is a bit bogus, since it's only used to
   // determine loading state. It'd be nicer if we could change this to be
   // bool IsSelectedTabLoading() const; or something like that. We could even
   // move it to a WindowDelegate subclass.
   TabContents* GetSelectedTabContents() const;
+  TabContentsWrapper* GetSelectedTabContentsWrapper() const;
 
   // Retrieves the icon to use in the frame to indicate an OTR window.
   SkBitmap GetOTRAvatarIcon();
@@ -263,7 +264,8 @@ class BrowserView : public BrowserBubbleHost,
   virtual LocationBar* GetLocationBar() const;
   virtual void SetFocusToLocationBar(bool select_all);
   virtual void UpdateReloadStopState(bool is_loading, bool force);
-  virtual void UpdateToolbar(TabContents* contents, bool should_restore_state);
+  virtual void UpdateToolbar(TabContentsWrapper* contents,
+                             bool should_restore_state);
   virtual void FocusToolbar();
   virtual void FocusAppMenu();
   virtual void FocusBookmarksToolbar();
@@ -337,14 +339,14 @@ class BrowserView : public BrowserBubbleHost,
                        const NotificationDetails& details);
 
   // Overridden from TabStripModelObserver:
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabDeselectedAt(TabContents* contents, int index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabDeselectedAt(TabContentsWrapper* contents, int index);
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index);
   virtual void TabStripEmpty();
 
@@ -442,28 +444,28 @@ class BrowserView : public BrowserBubbleHost,
   // true if the Bookmark Bar can be shown (i.e. it's supported for this
   // Browser type) and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
-  bool MaybeShowBookmarkBar(TabContents* contents);
+  bool MaybeShowBookmarkBar(TabContentsWrapper* contents);
 
   // Prepare to show an Info Bar for the specified TabContents. Returns true
   // if there is an Info Bar to show and one is supported for this Browser
   // type, and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
-  bool MaybeShowInfoBar(TabContents* contents);
+  bool MaybeShowInfoBar(TabContentsWrapper* contents);
 
   // Updates sidebar UI according to the current tab and sidebar state.
   void UpdateSidebar();
   // Displays active sidebar linked to the |tab_contents| or hides sidebar UI,
   // if there's no such sidebar.
-  void UpdateSidebarForContents(TabContents* tab_contents);
+  void UpdateSidebarForContents(TabContentsWrapper* tab_contents);
 
   // Updated devtools window for given contents.
-  void UpdateDevToolsForContents(TabContents* tab_contents);
+  void UpdateDevToolsForContents(TabContentsWrapper* tab_contents);
 
   // Updates various optional child Views, e.g. Bookmarks Bar, Info Bar or the
   // Download Shelf in response to a change notification from the specified
   // |contents|. |contents| can be NULL. In this case, all optional UI will be
   // removed.
-  void UpdateUIForContents(TabContents* contents);
+  void UpdateUIForContents(TabContentsWrapper* contents);
 
   // Updates an optional child View, e.g. Bookmarks Bar, Info Bar, Download
   // Shelf. If |*old_view| differs from new_view, the old_view is removed and
@@ -502,7 +504,8 @@ class BrowserView : public BrowserBubbleHost,
   // |change_tab_contents| is true, |new_contents| is added to the view
   // hierarchy, if |change_tab_contents| is false, it's assumed |new_contents|
   // has already been added to the view hierarchy.
-  void ProcessTabSelected(TabContents* new_contents, bool change_tab_contents);
+  void ProcessTabSelected(TabContentsWrapper* new_contents,
+                          bool change_tab_contents);
 
   // Last focused view that issued a tab traversal.
   int last_focused_view_storage_id_;

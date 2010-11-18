@@ -325,8 +325,16 @@ class Browser : public TabHandlerDelegate,
   int tab_count() const;
   int selected_index() const;
   int GetIndexOfController(const NavigationController* controller) const;
-  TabContents* GetTabContentsAt(int index) const;
+  TabContentsWrapper* GetSelectedTabContentsWrapper() const;
+  TabContentsWrapper* GetTabContentsWrapperAt(int index) const;
+  // Same as above but correctly handles if GetSelectedTabContents() is NULL
+  // in the model before dereferencing to get the raw TabContents.
+  // TODO(pinkerton): These should really be returning TabContentsWrapper
+  // objects, but that would require changing about 50+ other files. In order
+  // to keep changes localized, the default is to return a TabContents. Note
+  // this differs from the TabStripModel because it has far fewer clients.
   TabContents* GetSelectedTabContents() const;
+  TabContents* GetTabContentsAt(int index) const;
   void SelectTabContentsAt(int index, bool user_gesture);
   void CloseAllTabs();
 
@@ -340,12 +348,14 @@ class Browser : public TabHandlerDelegate,
 
   // Adds a selected tab with the specified URL and transition, returns the
   // created TabContents.
-  TabContents* AddSelectedTabWithURL(const GURL& url,
-                                     PageTransition::Type transition);
+  TabContentsWrapper* AddSelectedTabWithURL(
+      const GURL& url,
+      PageTransition::Type transition);
 
   // Add a new tab, given a TabContents. A TabContents appropriate to
   // display the last committed entry is created and returned.
-  TabContents* AddTab(TabContents* tab_contents, PageTransition::Type type);
+  TabContents* AddTab(TabContentsWrapper* tab_contents,
+                      PageTransition::Type type);
 
   // Add a tab with its session history restored from the SessionRestore
   // system. If select is true, the tab is selected. |tab_index| gives the index
@@ -597,7 +607,7 @@ class Browser : public TabHandlerDelegate,
 
   // Called by browser::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
-  void UpdateUIForNavigationInTab(TabContents* contents,
+  void UpdateUIForNavigationInTab(TabContentsWrapper* contents,
                                   PageTransition::Type transition,
                                   bool user_initiated);
 
@@ -619,25 +629,34 @@ class Browser : public TabHandlerDelegate,
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
 
+  // Centralized method for creating a TabContents, configuring and installing
+  // all its supporting objects and observers.
+  static TabContentsWrapper*
+      TabContentsFactory(Profile* profile,
+                         SiteInstance* site_instance,
+                         int routing_id,
+                         const TabContents* base_tab_contents,
+                         SessionStorageNamespace* session_storage_namespace);
 
   // Overridden from TabHandlerDelegate:
   virtual Profile* GetProfile() const;
   virtual Browser* AsBrowser();
 
   // Overridden from TabStripModelDelegate:
-  virtual TabContents* AddBlankTab(bool foreground);
-  virtual TabContents* AddBlankTabAt(int index, bool foreground);
-  virtual Browser* CreateNewStripWithContents(TabContents* detached_contents,
-                                              const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info,
-                                              bool maximize);
-  virtual void ContinueDraggingDetachedTab(TabContents* contents,
+  virtual TabContentsWrapper* AddBlankTab(bool foreground);
+  virtual TabContentsWrapper* AddBlankTabAt(int index, bool foreground);
+  virtual Browser* CreateNewStripWithContents(
+      TabContentsWrapper* detached_contents,
+      const gfx::Rect& window_bounds,
+      const DockInfo& dock_info,
+      bool maximize);
+  virtual void ContinueDraggingDetachedTab(TabContentsWrapper* contents,
                                            const gfx::Rect& window_bounds,
                                            const gfx::Rect& tab_bounds);
   virtual int GetDragActions() const;
   // Construct a TabContents for a given URL, profile and transition type.
   // If instance is not null, its process will be used to render the tab.
-  virtual TabContents* CreateTabContentsForURL(const GURL& url,
+  virtual TabContentsWrapper* CreateTabContentsForURL(const GURL& url,
                                                const GURL& referrer,
                                                Profile* profile,
                                                PageTransition::Type transition,
@@ -646,8 +665,8 @@ class Browser : public TabHandlerDelegate,
   virtual bool CanDuplicateContentsAt(int index);
   virtual void DuplicateContentsAt(int index);
   virtual void CloseFrameAfterDragSession();
-  virtual void CreateHistoricalTab(TabContents* contents);
-  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents);
+  virtual void CreateHistoricalTab(TabContentsWrapper* contents);
+  virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents);
   virtual bool CanCloseContentsAt(int index);
   virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
@@ -658,25 +677,25 @@ class Browser : public TabHandlerDelegate,
   virtual bool LargeIconsPermitted() const;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
                              bool foreground);
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            TabContentsWrapper* contents,
                             int index);
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabDeselectedAt(TabContents* contents, int index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabDeselectedAt(TabContentsWrapper* contents, int index);
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index);
-  virtual void TabPinnedStateChanged(TabContents* contents, int index);
+  virtual void TabPinnedStateChanged(TabContentsWrapper* contents, int index);
   virtual void TabStripEmpty();
 
  private:
@@ -774,9 +793,9 @@ class Browser : public TabHandlerDelegate,
 
   // Overriden from InstantDelegate:
   virtual void PrepareForInstant();
-  virtual void ShowInstant(TabContents* preview_contents);
+  virtual void ShowInstant(TabContentsWrapper* preview_contents);
   virtual void HideInstant();
-  virtual void CommitInstant(TabContents* preview_contents);
+  virtual void CommitInstant(TabContentsWrapper* preview_contents);
   virtual void SetSuggestedText(const string16& text);
   virtual gfx::Rect GetInstantBounds();
 
@@ -906,7 +925,8 @@ class Browser : public TabHandlerDelegate,
   //             after a return to the message loop.
   void CloseFrame();
 
-  void TabDetachedAtImpl(TabContents* contents, int index, DetachType type);
+  void TabDetachedAtImpl(TabContentsWrapper* contents,
+      int index, DetachType type);
 
   // Create a preference dictionary for the provided application name. This is
   // done only once per application name / per session.

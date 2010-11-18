@@ -15,7 +15,7 @@
 
 class Browser;
 class Profile;
-class TabContents;
+class TabContentsWrapper;
 
 namespace browser {
 
@@ -44,7 +44,7 @@ struct NavigateParams {
   NavigateParams(Browser* browser,
                  const GURL& a_url,
                  PageTransition::Type a_transition);
-  NavigateParams(Browser* browser, TabContents* a_target_contents);
+  NavigateParams(Browser* browser, TabContentsWrapper* a_target_contents);
   ~NavigateParams();
 
   // The URL/referrer to be loaded. Ignored if |target_contents| is non-NULL.
@@ -63,13 +63,13 @@ struct NavigateParams {
   //       a new TabContents, this field will remain NULL and the TabContents
   //       deleted if the TabContents it created is not added to a TabStripModel
   //       before Navigate() returns.
-  TabContents* target_contents;
+  TabContentsWrapper* target_contents;
 
   // [in]  The TabContents that initiated the Navigate() request if such context
   //       is necessary. Default is NULL, i.e. no context.
   // [out] If NULL, this value will be set to the selected TabContents in the
   //       originating browser prior to the operation performed by Navigate().
-  TabContents* source_contents;
+  TabContentsWrapper* source_contents;
 
   // The disposition requested by the navigation source. Default is
   // CURRENT_TAB. What follows is a set of coercions that happen to this value

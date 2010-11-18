@@ -22,6 +22,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/browser.h"
@@ -53,7 +54,7 @@ TabContents* DevToolsWindow::GetDevToolsContents(TabContents* inspected_tab) {
   if (!window || !window->is_docked()) {
     return NULL;
   }
-  return window->tab_contents();
+  return window->tab_contents()->tab_contents();
 }
 
 DevToolsWindow::DevToolsWindow(Profile* profile,
@@ -65,8 +66,10 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       is_loaded_(false),
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE) {
   // Create TabContents with devtools.
-  tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  tab_contents_->render_view_host()->AllowBindings(BindingsPolicy::DOM_UI);
+  tab_contents_ =
+      Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  tab_contents_->tab_contents()->
+      render_view_host()->AllowBindings(BindingsPolicy::DOM_UI);
   tab_contents_->controller().LoadURL(
       GetDevToolsUrl(), GURL(), PageTransition::START_PAGE);
 
@@ -95,7 +98,8 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow() {
 }
 
 void DevToolsWindow::SendMessageToClient(const IPC::Message& message) {
-  RenderViewHost* target_host = tab_contents_->render_view_host();
+  RenderViewHost* target_host =
+      tab_contents_->tab_contents()->render_view_host();
   IPC::Message* m =  new IPC::Message(message);
   m->set_routing_id(target_host->routing_id());
   target_host->Send(m);
@@ -130,7 +134,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
     if (FindInspectedBrowserAndTabIndex(&inspected_browser,
                                         &inspected_tab_index)) {
       BrowserWindow* inspected_window = inspected_browser->window();
-      tab_contents_->set_delegate(this);
+      tab_contents_->tab_contents()->set_delegate(this);
       inspected_window->UpdateDevTools();
       SetAttachedWindow();
       tab_contents_->view()->SetInitialFocus();
@@ -270,8 +274,9 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
     CallClientFunction(L"WebInspector.setInspectedTabId", tabId);
   }
   ListValue results;
-  const ExtensionsService* extension_service = tab_contents_->profile()->
-      GetOriginalProfile()->GetExtensionsService();
+  const ExtensionsService* extension_service =
+      tab_contents_->tab_contents()->profile()->
+          GetOriginalProfile()->GetExtensionsService();
   const ExtensionList* extensions = extension_service->extensions();
 
   for (ExtensionList::const_iterator extension = extensions->begin();

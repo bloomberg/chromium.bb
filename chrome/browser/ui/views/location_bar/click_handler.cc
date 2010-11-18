@@ -6,6 +6,7 @@
 
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "views/view.h"
 
@@ -25,7 +26,7 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event,
   if (location_bar_->location_entry()->IsEditingOrEmpty())
     return;
 
-  TabContents* tab = location_bar_->GetTabContents();
+  TabContents* tab = location_bar_->GetTabContentsWrapper()->tab_contents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();

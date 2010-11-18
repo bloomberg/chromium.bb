@@ -114,13 +114,13 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
     virtual ~TabStripWatcher();
 
     // TabStripModelObserver implementation:
-    virtual void TabInsertedAt(TabContents* contents, int index,
+    virtual void TabInsertedAt(TabContentsWrapper* contents, int index,
                                bool foreground);
     virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                              TabContents* contents,
+                              TabContentsWrapper* contents,
                               int index);
-    virtual void TabDetachedAt(TabContents* contents, int index);
-    virtual void TabChangedAt(TabContents* contents, int index,
+    virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+    virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                               TabChangeType change_type);
 
     const Browser* browser() const {

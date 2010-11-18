@@ -1970,9 +1970,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 #pragma mark BookmarkBarToolbarViewController Protocol
 
 - (int)currentTabContentsHeight {
-  return browser_->GetSelectedTabContents() ?
-      browser_->GetSelectedTabContents()->view()->GetContainerSize().height() :
-      0;
+  TabContents* tc = browser_->GetSelectedTabContents();
+  return tc ? tc->view()->GetContainerSize().height() : 0;
 }
 
 - (ThemeProvider*)themeProvider {

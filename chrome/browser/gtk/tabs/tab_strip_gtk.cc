@@ -20,6 +20,7 @@
 #include "chrome/browser/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/browser.h"
@@ -813,10 +814,10 @@ void TabStripGtk::UpdateLoadingAnimations() {
       --index;
     } else {
       TabRendererGtk::AnimationState state;
-      TabContents* contents = model_->GetTabContentsAt(index);
-      if (!contents || !contents->is_loading()) {
+      TabContentsWrapper* contents = model_->GetTabContentsAt(index);
+      if (!contents || !contents->tab_contents()->is_loading()) {
         state = TabGtk::ANIMATION_NONE;
-      } else if (contents->waiting_for_response()) {
+      } else if (contents->tab_contents()->waiting_for_response()) {
         state = TabGtk::ANIMATION_WAITING;
       } else {
         state = TabGtk::ANIMATION_LOADING;
@@ -925,7 +926,7 @@ GtkWidget* TabStripGtk::GetWidgetForViewID(ViewID view_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, TabStripModelObserver implementation:
 
-void TabStripGtk::TabInsertedAt(TabContents* contents,
+void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
                                 int index,
                                 bool foreground) {
   DCHECK(contents);
@@ -940,7 +941,8 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
   // has the Tab already constructed and we can just insert it into our list
   // again.
   if (IsDragSessionActive()) {
-    tab = drag_controller_->GetDragSourceTabForContents(contents);
+    tab = drag_controller_->GetDragSourceTabForContents(
+        contents->tab_contents());
     if (tab) {
       // If the Tab was detached, it would have been animated closed but not
       // removed, so we need to reset this property.
@@ -964,7 +966,7 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
   if (!contains_tab) {
     TabData d = { tab, gfx::Rect() };
     tab_data_.insert(tab_data_.begin() + index, d);
-    tab->UpdateData(contents, model_->IsAppTab(index), false);
+    tab->UpdateData(contents->tab_contents(), model_->IsAppTab(index), false);
   }
   tab->set_mini(model_->IsMiniTab(index));
   tab->set_app(model_->IsAppTab(index));
@@ -985,17 +987,17 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
   }
 }
 
-void TabStripGtk::TabDetachedAt(TabContents* contents, int index) {
+void TabStripGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   GenerateIdealBounds();
-  StartRemoveTabAnimation(index, contents);
+  StartRemoveTabAnimation(index, contents->tab_contents());
   // Have to do this _after_ calling StartRemoveTabAnimation, so that any
   // previous remove is completed fully and index is valid in sync with the
   // model index.
   GetTabAt(index)->set_closing(true);
 }
 
-void TabStripGtk::TabSelectedAt(TabContents* old_contents,
-                                TabContents* new_contents,
+void TabStripGtk::TabSelectedAt(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
                                 int index,
                                 bool user_gesture) {
   DCHECK(index >= 0 && index < static_cast<int>(GetTabCount()));
@@ -1015,7 +1017,7 @@ void TabStripGtk::TabSelectedAt(TabContents* old_contents,
   }
 }
 
-void TabStripGtk::TabMoved(TabContents* contents,
+void TabStripGtk::TabMoved(TabContentsWrapper* contents,
                            int from_index,
                            int to_index) {
   gfx::Rect start_bounds = GetIdealBounds(from_index);
@@ -1029,7 +1031,7 @@ void TabStripGtk::TabMoved(TabContents* contents,
   StartMoveTabAnimation(from_index, to_index);
 }
 
-void TabStripGtk::TabChangedAt(TabContents* contents, int index,
+void TabStripGtk::TabChangedAt(TabContentsWrapper* contents, int index,
                                TabChangeType change_type) {
   // Index is in terms of the model. Need to make sure we adjust that index in
   // case we have an animation going.
@@ -1040,19 +1042,19 @@ void TabStripGtk::TabChangedAt(TabContents* contents, int index,
     // We'll receive another notification of the change asynchronously.
     return;
   }
-  tab->UpdateData(contents,
+  tab->UpdateData(contents->tab_contents(),
                   model_->IsAppTab(index),
                   change_type == LOADING_ONLY);
   tab->UpdateFromModel();
 }
 
-void TabStripGtk::TabReplacedAt(TabContents* old_contents,
-                                TabContents* new_contents,
+void TabStripGtk::TabReplacedAt(TabContentsWrapper* old_contents,
+                                TabContentsWrapper* new_contents,
                                 int index) {
   TabChangedAt(new_contents, index, ALL);
 }
 
-void TabStripGtk::TabMiniStateChanged(TabContents* contents, int index) {
+void TabStripGtk::TabMiniStateChanged(TabContentsWrapper* contents, int index) {
   // Don't do anything if we've already picked up the change from TabMoved.
   if (GetTabAt(index)->mini() == model_->IsMiniTab(index))
     return;
@@ -1068,7 +1070,8 @@ void TabStripGtk::TabMiniStateChanged(TabContents* contents, int index) {
   }
 }
 
-void TabStripGtk::TabBlockedStateChanged(TabContents* contents, int index) {
+void TabStripGtk::TabBlockedStateChanged(TabContentsWrapper* contents,
+                                         int index) {
   GetTabAt(index)->SetBlocked(model_->IsTabBlocked(index));
 }
 

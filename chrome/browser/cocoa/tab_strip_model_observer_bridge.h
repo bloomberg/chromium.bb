@@ -10,7 +10,7 @@
 
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 
-class TabContents;
+class TabContentsWrapper;
 class TabStripModel;
 
 // A C++ bridge class to handle receiving notifications from the C++ tab strip
@@ -24,26 +24,26 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
   virtual ~TabStripModelObserverBridge();
 
   // Overridden from TabStripModelObserver
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
                              bool foreground);
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            TabContentsWrapper* contents,
                             int index);
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);
-  virtual void TabChangedAt(TabContents* contents, int index,
+  virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabChangeType change_type);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index);
-  virtual void TabMiniStateChanged(TabContents* contents, int index);
+  virtual void TabMiniStateChanged(TabContentsWrapper* contents, int index);
   virtual void TabStripEmpty();
   virtual void TabStripModelDeleted();
 
@@ -56,27 +56,27 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
 // Cocoa object to receive updates about changes to a tab strip model. It is
 // ok to not implement them, the calling code checks before calling.
 @interface NSObject(TabStripModelBridge)
-- (void)insertTabWithContents:(TabContents*)contents
+- (void)insertTabWithContents:(TabContentsWrapper*)contents
                       atIndex:(NSInteger)index
                  inForeground:(bool)inForeground;
-- (void)tabClosingWithContents:(TabContents*)contents
+- (void)tabClosingWithContents:(TabContentsWrapper*)contents
                        atIndex:(NSInteger)index;
-- (void)tabDetachedWithContents:(TabContents*)contents
+- (void)tabDetachedWithContents:(TabContentsWrapper*)contents
                         atIndex:(NSInteger)index;
-- (void)selectTabWithContents:(TabContents*)newContents
-             previousContents:(TabContents*)oldContents
+- (void)selectTabWithContents:(TabContentsWrapper*)newContents
+             previousContents:(TabContentsWrapper*)oldContents
                       atIndex:(NSInteger)index
                   userGesture:(bool)wasUserGesture;
-- (void)tabMovedWithContents:(TabContents*)contents
+- (void)tabMovedWithContents:(TabContentsWrapper*)contents
                     fromIndex:(NSInteger)from
                       toIndex:(NSInteger)to;
-- (void)tabChangedWithContents:(TabContents*)contents
+- (void)tabChangedWithContents:(TabContentsWrapper*)contents
                        atIndex:(NSInteger)index
                     changeType:(TabStripModelObserver::TabChangeType)change;
-- (void)tabReplacedWithContents:(TabContents*)newContents
-               previousContents:(TabContents*)oldContents
+- (void)tabReplacedWithContents:(TabContentsWrapper*)newContents
+               previousContents:(TabContentsWrapper*)oldContents
                         atIndex:(NSInteger)index;
-- (void)tabMiniStateChangedWithContents:(TabContents*)contents
+- (void)tabMiniStateChangedWithContents:(TabContentsWrapper*)contents
                                 atIndex:(NSInteger)index;
 - (void)tabStripEmpty;
 - (void)tabStripModelDeleted;

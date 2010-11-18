@@ -93,12 +93,12 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
       menus::Accelerator* accelerator);
 
   // Overridden from TabStripModelObserver:
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents, int index);
+  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents, int index);
   virtual void TabStripModelDeleted();
 
   // Overridden from NotificationObserver:

@@ -15,6 +15,7 @@
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -173,7 +174,7 @@ void DevToolsHttpProtocolHandler::OnHttpRequestUI(
        end = BrowserList::end(); it != end; ++it) {
     TabStripModel* model = (*it)->tabstrip_model();
     for (int i = 0, size = model->count(); i < size; ++i) {
-      TabContents* tab_contents = model->GetTabContentsAt(i);
+      TabContentsWrapper* tab_contents = model->GetTabContentsAt(i);
       NavigationController& controller = tab_contents->controller();
       NavigationEntry* entry = controller.GetActiveEntry();
       if (entry == NULL)
@@ -183,7 +184,8 @@ void DevToolsHttpProtocolHandler::OnHttpRequestUI(
         continue;
 
       DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
-          GetDevToolsClientHostFor(tab_contents->render_view_host());
+          GetDevToolsClientHostFor(tab_contents->tab_contents()->
+                                      render_view_host());
       if (!client_host) {
         response += StringPrintf(
             "<a href='/devtools/devtools.html?page=%d'>%s (%s)</a><br>",

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -57,9 +58,12 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
     // Specify a NULL browser for navigation. This will cause Navigate()
     // to find a browser matching params.profile or create a new one.
     Browser* browser = NULL;
-    browser::NavigateParams params(browser, new_contents);
+
+    TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
+    browser::NavigateParams params(browser, wrapper);
     params.profile = profile_;
-    params.source_contents = source;
+    // TODO(pinkerton): no way to get a wrapper for this.
+    // params.source_contents = source;
     params.disposition = disposition;
     params.window_bounds = initial_pos;
     params.show_window = true;

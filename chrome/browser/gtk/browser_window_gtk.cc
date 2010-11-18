@@ -69,6 +69,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -737,7 +738,7 @@ void BrowserWindowGtk::ShelfVisibilityChanged() {
 
 void BrowserWindowGtk::UpdateDevTools() {
   UpdateDevToolsForContents(
-      browser_->tabstrip_model()->GetSelectedTabContents());
+      browser_->GetSelectedTabContents());
 }
 
 void BrowserWindowGtk::UpdateLoadingAnimations(bool should_animate) {
@@ -837,9 +838,9 @@ void BrowserWindowGtk::UpdateReloadStopState(bool is_loading, bool force) {
       force);
 }
 
-void BrowserWindowGtk::UpdateToolbar(TabContents* contents,
+void BrowserWindowGtk::UpdateToolbar(TabContentsWrapper* contents,
                                      bool should_restore_state) {
-  toolbar_->UpdateTabContents(contents, should_restore_state);
+  toolbar_->UpdateTabContents(contents->tab_contents(), should_restore_state);
 }
 
 void BrowserWindowGtk::FocusToolbar() {
@@ -1145,44 +1146,44 @@ void BrowserWindowGtk::Observe(NotificationType type,
   }
 }
 
-void BrowserWindowGtk::TabDetachedAt(TabContents* contents, int index) {
+void BrowserWindowGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
   // browser_->GetSelectedTabContents() will return NULL or something else.
   if (index == browser_->tabstrip_model()->selected_index())
     infobar_container_->ChangeTabContents(NULL);
-  contents_container_->DetachTabContents(contents);
+  contents_container_->DetachTabContents(contents->tab_contents());
   UpdateDevToolsForContents(NULL);
 }
 
-void BrowserWindowGtk::TabSelectedAt(TabContents* old_contents,
-                                     TabContents* new_contents,
+void BrowserWindowGtk::TabSelectedAt(TabContentsWrapper* old_contents,
+                                     TabContentsWrapper* new_contents,
                                      int index,
                                      bool user_gesture) {
   DCHECK(old_contents != new_contents);
 
-  if (old_contents && !old_contents->is_being_destroyed())
+  if (old_contents && !old_contents->tab_contents()->is_being_destroyed())
     old_contents->view()->StoreFocus();
 
   // Update various elements that are interested in knowing the current
   // TabContents.
-  infobar_container_->ChangeTabContents(new_contents);
-  contents_container_->SetTabContents(new_contents);
-  UpdateDevToolsForContents(new_contents);
+  infobar_container_->ChangeTabContents(new_contents->tab_contents());
+  contents_container_->SetTabContents(new_contents->tab_contents());
+  UpdateDevToolsForContents(new_contents->tab_contents());
 
-  new_contents->DidBecomeSelected();
+  new_contents->tab_contents()->DidBecomeSelected();
   // TODO(estade): after we manage browser activation, add a check to make sure
   // we are the active browser before calling RestoreFocus().
   if (!browser_->tabstrip_model()->closing_all()) {
     new_contents->view()->RestoreFocus();
-    if (new_contents->find_ui_active())
+    if (new_contents->tab_contents()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
 
   // Update all the UI bits.
   UpdateTitleBar();
   UpdateToolbar(new_contents, true);
-  UpdateUIForContents(new_contents);
+  UpdateUIForContents(new_contents->tab_contents());
 }
 
 void BrowserWindowGtk::TabStripEmpty() {
@@ -1861,7 +1862,7 @@ gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
   // If a widget besides the native view is focused, we have to try to handle
   // the custom accelerators before letting it handle them.
   TabContents* current_tab_contents =
-      browser()->tabstrip_model()->GetSelectedTabContents();
+      browser()->GetSelectedTabContents();
   // The current tab might not have a render view if it crashed.
   if (!current_tab_contents || !current_tab_contents->GetContentNativeView() ||
       !gtk_widget_is_focus(current_tab_contents->GetContentNativeView())) {

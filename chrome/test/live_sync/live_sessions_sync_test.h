@@ -20,6 +20,7 @@
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -194,7 +195,7 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   // to ensure the tab opened successsfully.
   TabContents* OpenTab(int index, GURL url) WARN_UNUSED_RESULT {
      TabContents* tab = GetBrowser(index)->
-        AddSelectedTabWithURL(url, PageTransition::START_PAGE);
+        AddSelectedTabWithURL(url, PageTransition::START_PAGE)->tab_contents();
 
      // Wait for the page to finish loading.
      ui_test_utils::WaitForNavigation(

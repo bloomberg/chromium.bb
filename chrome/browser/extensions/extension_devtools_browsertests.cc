@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
 
   // Grab the tab_id of whatever tab happens to be first.
-  TabContents* tab_contents = browser()->tabstrip_model()->GetTabContentsAt(0);
+  TabContents* tab_contents = browser()->GetTabContentsAt(0);
   ASSERT_TRUE(tab_contents);
   int tab_id = ExtensionTabUtil::GetTabId(tab_contents);
 
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
 
   // Grab the tab_id of whatever tab happens to be first.
-  TabContents* tab_contents = browser()->tabstrip_model()->GetTabContentsAt(0);
+  TabContents* tab_contents = browser()->GetTabContentsAt(0);
   ASSERT_TRUE(tab_contents);
   int tab_id = ExtensionTabUtil::GetTabId(tab_contents);
 

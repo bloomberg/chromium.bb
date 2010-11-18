@@ -95,8 +95,8 @@ TEST_F(PrintPreviewTabControllerTest, MultiplePreviewTabs) {
   TabStripModel* model = browser()->tabstrip_model();
   ASSERT_TRUE(model);
 
-  int preview_tab_1_index = model->GetIndexOfTabContents(preview_tab_1);
-  int preview_tab_2_index = model->GetIndexOfTabContents(preview_tab_2);
+  int preview_tab_1_index = model->GetWrapperIndex(preview_tab_1);
+  int preview_tab_2_index = model->GetWrapperIndex(preview_tab_2);
 
   EXPECT_NE(-1, preview_tab_1_index);
   EXPECT_NE(-1, preview_tab_2_index);

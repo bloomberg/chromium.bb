@@ -21,6 +21,7 @@
 class DraggedTabGtk;
 class TabGtk;
 class TabStripGtk;
+class TabContentsWrapper;
 
 class DraggedTabControllerGtk : public NotificationObserver,
                                 public TabContentsDelegate {
@@ -105,7 +106,7 @@ class DraggedTabControllerGtk : public NotificationObserver,
   gfx::Point GetWindowCreatePoint() const;
 
   // Sets the TabContents being dragged with the specified |new_contents|.
-  void SetDraggedContents(TabContents* new_contents);
+  void SetDraggedContents(TabContentsWrapper* new_contents);
 
   // Move the DraggedTabView according to the current mouse screen position,
   // potentially updating the source and other TabStrips.
@@ -199,7 +200,7 @@ class DraggedTabControllerGtk : public NotificationObserver,
   NotificationRegistrar registrar_;
 
   // The TabContents being dragged.
-  TabContents* dragged_contents_;
+  TabContentsWrapper* dragged_contents_;
 
   // The original TabContentsDelegate of |dragged_contents_|, before it was
   // detached from the browser window. We store this so that we can forward

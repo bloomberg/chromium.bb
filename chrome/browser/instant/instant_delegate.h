@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 
-class TabContents;
+class TabContentsWrapper;
 
 namespace gfx {
 class Rect;
@@ -24,7 +24,7 @@ class InstantDelegate {
   virtual void PrepareForInstant() = 0;
 
   // Invoked when the instant TabContents should be shown.
-  virtual void ShowInstant(TabContents* preview_contents) = 0;
+  virtual void ShowInstant(TabContentsWrapper* preview_contents) = 0;
 
   // Invoked when the instant TabContents should be hidden.
   virtual void HideInstant() = 0;
@@ -32,7 +32,7 @@ class InstantDelegate {
   // Invoked when the user does something that should result in the preview
   // TabContents becoming the active TabContents. The delegate takes ownership
   // of the supplied TabContents.
-  virtual void CommitInstant(TabContents* preview_contents) = 0;
+  virtual void CommitInstant(TabContentsWrapper* preview_contents) = 0;
 
   // Invoked when the suggested text is to change to |text|.
   virtual void SetSuggestedText(const string16& text) = 0;

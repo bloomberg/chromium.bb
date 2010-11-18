@@ -293,8 +293,8 @@ bool WrenchMenuModel::GetAcceleratorForCommandId(
   return provider_->GetAcceleratorForCommandId(command_id, accelerator);
 }
 
-void WrenchMenuModel::TabSelectedAt(TabContents* old_contents,
-                                    TabContents* new_contents,
+void WrenchMenuModel::TabSelectedAt(TabContentsWrapper* old_contents,
+                                    TabContentsWrapper* new_contents,
                                     int index,
                                     bool user_gesture) {
   // The user has switched between tabs and the new tab may have a different
@@ -302,8 +302,9 @@ void WrenchMenuModel::TabSelectedAt(TabContents* old_contents,
   UpdateZoomControls();
 }
 
-void WrenchMenuModel::TabReplacedAt(TabContents* old_contents,
-                                    TabContents* new_contents, int index) {
+void WrenchMenuModel::TabReplacedAt(TabContentsWrapper* old_contents,
+                                    TabContentsWrapper* new_contents,
+                                    int index) {
   UpdateZoomControls();
 }
 

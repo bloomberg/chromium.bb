@@ -18,6 +18,7 @@
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -372,8 +373,12 @@ class LoginDialogTask : public Task {
     }
 
     // Tell the password manager to look for saved passwords.
-    PasswordManager* password_manager =
-        parent_contents->GetPasswordManager();
+    TabContentsWrapper** wrapper =
+        TabContentsWrapper::property_accessor()->GetProperty(
+            parent_contents->property_bag());
+    if (!wrapper)
+      return;
+    PasswordManager* password_manager = (*wrapper)->GetPasswordManager();
     std::vector<PasswordForm> v;
     MakeInputForPasswordManager(&v);
     password_manager->PasswordFormsFound(v);

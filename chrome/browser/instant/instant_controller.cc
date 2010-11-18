@@ -19,6 +19,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -155,8 +156,7 @@ void InstantController::Disable(Profile* profile) {
   UMA_HISTOGRAM_CUSTOM_COUNTS(name, delta.InMinutes(), 1, 60 * 24 * 10, 50);
 }
 
-
-void InstantController::Update(TabContents* tab_contents,
+void InstantController::Update(TabContentsWrapper* tab_contents,
                                const AutocompleteMatch& match,
                                const string16& user_text,
                                string16* suggested_text) {
@@ -230,9 +230,9 @@ bool InstantController::IsCurrent() {
 void InstantController::CommitCurrentPreview(InstantCommitType type) {
   DCHECK(loader_manager_.get());
   DCHECK(loader_manager_->current_loader());
-  TabContents* tab = ReleasePreviewContents(type);
+  TabContentsWrapper* tab = ReleasePreviewContents(type);
   delegate_->CommitInstant(tab);
-  CompleteRelease(tab);
+  CompleteRelease(tab->tab_contents());
 }
 
 void InstantController::SetCommitOnMouseUp() {
@@ -251,13 +251,14 @@ void InstantController::OnAutocompleteLostFocus(
     return;
 
   RenderWidgetHostView* rwhv =
-      GetPreviewContents()->GetRenderWidgetHostView();
+      GetPreviewContents()->tab_contents()->GetRenderWidgetHostView();
   if (!view_gaining_focus || !rwhv) {
     DestroyPreviewContents();
     return;
   }
 
-  gfx::NativeView tab_view = GetPreviewContents()->GetNativeView();
+  gfx::NativeView tab_view =
+      GetPreviewContents()->tab_contents()->GetNativeView();
   // Focus is going to the renderer.
   if (rwhv->GetNativeView() == view_gaining_focus ||
       tab_view == view_gaining_focus) {
@@ -299,12 +300,13 @@ void InstantController::OnAutocompleteLostFocus(
   DestroyPreviewContents();
 }
 
-TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
+TabContentsWrapper* InstantController::ReleasePreviewContents(
+    InstantCommitType type) {
   if (!loader_manager_.get())
     return NULL;
 
   scoped_ptr<InstantLoader> loader(loader_manager_->ReleaseCurrentLoader());
-  TabContents* tab = loader->ReleasePreviewContents(type);
+  TabContentsWrapper* tab = loader->ReleasePreviewContents(type);
 
   ClearBlacklist();
   is_active_ = false;
@@ -319,7 +321,7 @@ void InstantController::CompleteRelease(TabContents* tab) {
   tab->SetAllContentsBlocked(false);
 }
 
-TabContents* InstantController::GetPreviewContents() {
+TabContentsWrapper* InstantController::GetPreviewContents() {
   return loader_manager_.get() ?
       loader_manager_->current_loader()->preview_contents() : NULL;
 }

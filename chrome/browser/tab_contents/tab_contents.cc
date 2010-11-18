@@ -55,7 +55,6 @@
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/modal_html_dialog_delegate.h"
 #include "chrome/browser/omnibox_search_hint.h"
-#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -82,6 +81,7 @@
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_switches.h"
@@ -330,7 +330,6 @@ TabContents::TabContents(Profile* profile,
       save_package_(),
       autocomplete_history_manager_(),
       autofill_manager_(),
-      password_manager_(),
       plugin_installer_(),
       bookmark_drag_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
@@ -566,12 +565,6 @@ AutoFillManager* TabContents::GetAutoFillManager() {
   return autofill_manager_.get();
 }
 
-PasswordManager* TabContents::GetPasswordManager() {
-  if (password_manager_.get() == NULL)
-    password_manager_.reset(new PasswordManager(this));
-  return password_manager_.get();
-}
-
 PluginInstaller* TabContents::GetPluginInstaller() {
   if (plugin_installer_.get() == NULL)
     plugin_installer_.reset(new PluginInstaller(this));
@@ -767,6 +760,14 @@ std::wstring TabContents::GetStatusText() const {
   return std::wstring();
 }
 
+void TabContents::AddNavigationObserver(WebNavigationObserver* observer) {
+  web_navigation_observers_.AddObserver(observer);
+}
+
+void TabContents::RemoveNavigationObserver(WebNavigationObserver* observer) {
+  web_navigation_observers_.RemoveObserver(observer);
+}
+
 void TabContents::SetIsCrashed(bool state) {
   if (state == is_crashed_)
     return;
@@ -899,10 +900,9 @@ bool TabContents::NavigateToEntry(
       return false;
   }
 
-  // Clear any provisional password saves - this stops password infobars
-  // showing up on pages the user navigates to while the right page is
-  // loading.
-  GetPasswordManager()->ClearProvisionalSave();
+  // Notify observers about navigation.
+  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+                    NavigateToPendingEntry());
 
   if (reload_type != NavigationController::NO_RELOAD &&
       !profile()->IsOffTheRecord()) {
@@ -1642,13 +1642,6 @@ void TabContents::DidNavigateMainFramePostCommit(
     // clear the bubble when a user navigates to a named anchor in the same
     // page.
     UpdateTargetURL(details.entry->page_id(), GURL());
-
-    // UpdateHelpersForDidNavigate will handle the case where the password_form
-    // origin is valid.
-    // TODO(brettw) bug 1343111: Password manager stuff in here needs to be
-    // cleaned up and covered by tests.
-    if (!params.password_form.origin.is_valid())
-      GetPasswordManager()->DidNavigate();
   }
 
   // The keyword generator uses the navigation entries, so must be called after
@@ -1710,6 +1703,10 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Update the starred state.
   UpdateStarredStateForCurrentURL();
 
+  // Notify observers about navigation.
+  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+                    DidNavigateMainFramePostCommit(details, params));
+
   // Clear the cache of forms in AutoFill.
   if (autofill_manager_.get())
     autofill_manager_->Reset();
@@ -1724,11 +1721,9 @@ void TabContents::DidNavigateAnyFramePostCommit(
   // reload the page to stop blocking.
   suppress_javascript_messages_ = false;
 
-  // Notify the password manager of the navigation or form submit.
-  // TODO(brettw) bug 1343111: Password manager stuff in here needs to be
-  // cleaned up and covered by tests.
-  if (params.password_form.origin.is_valid())
-    GetPasswordManager()->ProvisionallySavePassword(params.password_form);
+  // Notify observers about navigation.
+  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+                    DidNavigateAnyFramePostCommit(details, params));
 
   // Let the LanguageState clear its state.
   language_state_.DidNavigate(details);
@@ -2640,10 +2635,15 @@ void TabContents::RequestMove(const gfx::Rect& new_bounds) {
 
 void TabContents::DidStartLoading() {
   SetIsLoading(true, NULL);
+
   if (content_restrictions_) {
     content_restrictions_= 0;
     delegate()->ContentRestrictionsChanged(this);
   }
+
+  // Notify observers about navigation.
+  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+                    DidStartLoading());
 }
 
 void TabContents::DidStopLoading() {
@@ -2663,11 +2663,11 @@ void TabContents::DidStopLoading() {
         controller_.GetCurrentEntryIndex()));
   }
 
-  // Tell PasswordManager we've finished a page load, which serves as a
-  // green light to save pending passwords and reset itself.
-  GetPasswordManager()->DidStopLoading();
-
   SetIsLoading(false, details.get());
+
+  // Notify observers about navigation.
+  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+                    DidStopLoading());
 }
 
 void TabContents::DocumentOnLoadCompletedInMainFrame(
@@ -2787,16 +2787,6 @@ void TabContents::ShowModalHTMLDialog(const GURL& url, int width, int height,
                                     reply_msg, this);
     delegate()->ShowHtmlDialog(dialog_delegate, NULL);
   }
-}
-
-void TabContents::PasswordFormsFound(
-    const std::vector<webkit_glue::PasswordForm>& forms) {
-  GetPasswordManager()->PasswordFormsFound(forms);
-}
-
-void TabContents::PasswordFormsVisible(
-    const std::vector<webkit_glue::PasswordForm>& visible_forms) {
-  GetPasswordManager()->PasswordFormsVisible(visible_forms);
 }
 
 // Checks to see if we should generate a keyword based on the OSDD, and if
@@ -3232,100 +3222,4 @@ void TabContents::set_encoding(const std::string& encoding) {
 void TabContents::SetAppIcon(const SkBitmap& app_icon) {
   app_icon_ = app_icon;
   NotifyNavigationStateChanged(INVALIDATE_TITLE);
-}
-
-// After a successful *new* login attempt, we take the PasswordFormManager in
-// provisional_save_manager_ and move it to a SavePasswordInfoBarDelegate while
-// the user makes up their mind with the "save password" infobar. Note if the
-// login is one we already know about, the end of the line is
-// provisional_save_manager_ because we just update it on success and so such
-// forms never end up in an infobar.
-class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  SavePasswordInfoBarDelegate(TabContents* tab_contents,
-                              PasswordFormManager* form_to_save)
-      : ConfirmInfoBarDelegate(tab_contents),
-        form_to_save_(form_to_save),
-        infobar_response_(NO_RESPONSE) {}
-
-  virtual ~SavePasswordInfoBarDelegate() {}
-
-  // Begin ConfirmInfoBarDelegate implementation.
-  virtual void InfoBarClosed() {
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
-                              infobar_response_, NUM_RESPONSE_TYPES);
-    delete this;
-  }
-
-  virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }
-
-  virtual string16 GetMessageText() const {
-    return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
-  }
-
-  virtual SkBitmap* GetIcon() const {
-    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_INFOBAR_SAVE_PASSWORD);
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK | BUTTON_CANCEL;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    if (button == BUTTON_OK)
-      return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON);
-    if (button == BUTTON_CANCEL)
-      return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
-    NOTREACHED();
-    return string16();
-  }
-
-  virtual bool Accept() {
-    DCHECK(form_to_save_.get());
-    form_to_save_->Save();
-    infobar_response_ = REMEMBER_PASSWORD;
-    return true;
-  }
-
-  virtual bool Cancel() {
-    DCHECK(form_to_save_.get());
-    form_to_save_->PermanentlyBlacklist();
-    infobar_response_ = DONT_REMEMBER_PASSWORD;
-    return true;
-  }
-  // End ConfirmInfoBarDelegate implementation.
-
- private:
-  // The PasswordFormManager managing the form we're asking the user about,
-  // and should update as per her decision.
-  scoped_ptr<PasswordFormManager> form_to_save_;
-
-  // Used to track the results we get from the info bar.
-  enum ResponseType {
-    NO_RESPONSE = 0,
-    REMEMBER_PASSWORD,
-    DONT_REMEMBER_PASSWORD,
-    NUM_RESPONSE_TYPES,
-  };
-  ResponseType infobar_response_;
-
-  DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
-};
-
-void TabContents::FillPasswordForm(
-    const webkit_glue::PasswordFormFillData& form_data) {
-  render_view_host()->FillPasswordForm(form_data);
-}
-
-void TabContents::AddSavePasswordInfoBar(PasswordFormManager* form_to_save) {
-  AddInfoBar(new SavePasswordInfoBarDelegate(this, form_to_save));
-}
-
-Profile* TabContents::GetProfileForPasswordManager() {
-  return profile();
-}
-
-bool TabContents::DidLastPageLoadEncounterSSLErrors() {
-  return controller().ssl_manager()->ProcessedSSLErrorFromRequest();
 }

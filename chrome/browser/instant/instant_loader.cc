@@ -26,6 +26,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -152,7 +153,7 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
 
   // Commits the currently buffered history.
   void CommitHistory() {
-    TabContents* tab = loader_->preview_contents();
+    TabContents* tab = loader_->preview_contents()->tab_contents();
     if (tab->profile()->IsOffTheRecord())
       return;
 
@@ -310,7 +311,7 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
 
   virtual void OnSetSuggestions(int32 page_id,
                                 const std::vector<std::string>& suggestions) {
-    TabContents* source = loader_->preview_contents();
+    TabContentsWrapper* source = loader_->preview_contents();
     if (!source->controller().GetActiveEntry() ||
         page_id != source->controller().GetActiveEntry()->page_id())
       return;
@@ -324,7 +325,7 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   }
 
   virtual void OnInstantSupportDetermined(int32 page_id, bool result) {
-    TabContents* source = loader_->preview_contents();
+    TabContents* source = loader_->preview_contents()->tab_contents();
     if (!source->controller().GetActiveEntry() ||
         page_id != source->controller().GetActiveEntry()->page_id())
       return;
@@ -390,7 +391,7 @@ InstantLoader::~InstantLoader() {
   preview_contents_.reset(NULL);
 }
 
-void InstantLoader::Update(TabContents* tab_contents,
+void InstantLoader::Update(TabContentsWrapper* tab_contents,
                            const TemplateURL* template_url,
                            const GURL& url,
                            PageTransition::Type transition_type,
@@ -407,18 +408,19 @@ void InstantLoader::Update(TabContents* tab_contents,
 
   bool created_preview_contents;
   if (preview_contents_.get() == NULL) {
-    preview_contents_.reset(
-        new TabContents(tab_contents->profile(), NULL, MSG_ROUTING_NONE,
-                        NULL, NULL));
-    preview_contents_->SetAllContentsBlocked(true);
+    TabContents* new_contents =
+        new TabContents(
+            tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+    preview_contents_.reset(new TabContentsWrapper(new_contents));
+    new_contents->SetAllContentsBlocked(true);
     // Propagate the max page id. That way if we end up merging the two
     // NavigationControllers (which happens if we commit) none of the page ids
     // will overlap.
-    int32 max_page_id = tab_contents->GetMaxPageID();
+    int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
     if (max_page_id != -1)
       preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
 
-    preview_contents_->set_delegate(preview_tab_contents_delegate_.get());
+    new_contents->set_delegate(preview_tab_contents_delegate_.get());
 
     gfx::Rect tab_bounds;
     tab_contents->view()->GetContainerBounds(&tab_bounds);
@@ -428,8 +430,8 @@ void InstantLoader::Update(TabContents* tab_contents,
     // If |preview_contents_| does not currently have a RWHV, we will call
     // SetTakesFocusOnlyOnMouseDown() as a result of the
     // RENDER_VIEW_HOST_CHANGED notification.
-    if (preview_contents_->GetRenderWidgetHostView()) {
-      preview_contents_->GetRenderWidgetHostView()->
+    if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
+      preview_contents_->tab_contents()->GetRenderWidgetHostView()->
           SetTakesFocusOnlyOnMouseDown(true);
     }
     registrar_.Add(
@@ -438,7 +440,7 @@ void InstantLoader::Update(TabContents* tab_contents,
         Source<NavigationController>(&preview_contents_->controller()));
 #endif
 
-    preview_contents_->ShowContents();
+    preview_contents_->tab_contents()->ShowContents();
     created_preview_contents = true;
   } else {
     created_preview_contents = false;
@@ -484,7 +486,8 @@ void InstantLoader::Update(TabContents* tab_contents,
       preview_contents_->controller().LoadURL(
           instant_url, GURL(), transition_type);
       frame_load_observer_.reset(
-          new FrameLoadObserver(preview_contents(), user_text_));
+          new FrameLoadObserver(preview_contents()->tab_contents(),
+                                user_text_));
     }
   } else {
     DCHECK(template_url_id_ == 0);
@@ -515,7 +518,8 @@ bool InstantLoader::IsMouseDownFromActivate() {
   return preview_tab_contents_delegate_->is_mouse_down_from_activate();
 }
 
-TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type) {
+TabContentsWrapper* InstantLoader::ReleasePreviewContents(
+    InstantCommitType type) {
   if (!preview_contents_.get())
     return NULL;
 
@@ -540,11 +544,11 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type) {
       preview_tab_contents_delegate_->CommitHistory();
     // Destroy the paint observer.
     // RenderWidgetHostView may be null during shutdown.
-    if (preview_contents_->GetRenderWidgetHostView()) {
-      preview_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->
-          set_paint_observer(NULL);
+    if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
+      preview_contents_->tab_contents()->GetRenderWidgetHostView()->
+          GetRenderWidgetHost()->set_paint_observer(NULL);
 #if defined(OS_MACOSX)
-      preview_contents_->GetRenderWidgetHostView()->
+      preview_contents_->tab_contents()->GetRenderWidgetHostView()->
           SetTakesFocusOnlyOnMouseDown(false);
       registrar_.Remove(
           this,
@@ -626,8 +630,8 @@ void InstantLoader::Observe(NotificationType type,
                             const NotificationDetails& details) {
 #if defined(OS_MACOSX)
   if (type.value == NotificationType::RENDER_VIEW_HOST_CHANGED) {
-      if (preview_contents_->GetRenderWidgetHostView()) {
-        preview_contents_->GetRenderWidgetHostView()->
+      if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
+        preview_contents_->tab_contents()->GetRenderWidgetHostView()->
             SetTakesFocusOnlyOnMouseDown(true);
       }
       return;

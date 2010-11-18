@@ -177,7 +177,7 @@ class ToolbarModel;
 // previous window, setting |pinned| to YES will propagate that state to the
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
-- (void)dropTabContents:(TabContents*)contents
+- (void)dropTabContents:(TabContentsWrapper*)contents
               withFrame:(NSRect)frame
             asPinnedTab:(BOOL)pinned;
 

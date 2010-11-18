@@ -21,7 +21,6 @@ class AuthChallengeInfo;
 
 class ConstrainedWindow;
 class GURL;
-class TabContents;
 class URLRequest;
 
 // This is the base implementation for the OS-specific classes that route

@@ -11,6 +11,7 @@
 #include "base/timer.h"
 #include "chrome/browser/dock_info.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/rect.h"
@@ -67,7 +68,7 @@ class DraggedTabController : public TabContentsDelegate,
   // begun.
   void EndDrag(bool canceled);
 
-  TabContents* dragged_contents() { return dragged_contents_; }
+  TabContentsWrapper* dragged_contents() { return dragged_contents_; }
 
   // Returns true if a drag started.
   bool started_drag() const { return started_drag_; }
@@ -141,7 +142,7 @@ class DraggedTabController : public TabContentsDelegate,
   void UpdateDockInfo(const gfx::Point& screen_point);
 
   // Sets the TabContents being dragged with the specified |new_contents|.
-  void SetDraggedContents(TabContents* new_contents);
+  void SetDraggedContents(TabContentsWrapper* new_contents);
 
   // Saves focus in the window that the drag initiated from. Focus will be
   // restored appropriately if the drag ends within this same window.
@@ -241,8 +242,8 @@ class DraggedTabController : public TabContentsDelegate,
   // Handles registering for notifications.
   NotificationRegistrar registrar_;
 
-  // The TabContents being dragged.
-  TabContents* dragged_contents_;
+  // The TabContentsWrapper being dragged.
+  TabContentsWrapper* dragged_contents_;
 
   // The original TabContentsDelegate of |dragged_contents_|, before it was
   // detached from the browser window. We store this so that we can forward

@@ -40,6 +40,7 @@
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
@@ -180,7 +181,7 @@ void BrowserWindowCocoa::ShelfVisibilityChanged() {
 
 void BrowserWindowCocoa::UpdateDevTools() {
   [controller_ updateDevToolsForContents:
-      browser_->tabstrip_model()->GetSelectedTabContents()];
+      browser_->GetSelectedTabContents()];
 }
 
 void BrowserWindowCocoa::UpdateLoadingAnimations(bool should_animate) {
@@ -243,9 +244,9 @@ void BrowserWindowCocoa::UpdateReloadStopState(bool is_loading, bool force) {
   [controller_ setIsLoading:is_loading force:force];
 }
 
-void BrowserWindowCocoa::UpdateToolbar(TabContents* contents,
+void BrowserWindowCocoa::UpdateToolbar(TabContentsWrapper* contents,
                                        bool should_restore_state) {
-  [controller_ updateToolbarWithContents:contents
+  [controller_ updateToolbarWithContents:contents->tab_contents()
                       shouldRestoreState:should_restore_state ? YES : NO];
 }
 
@@ -625,7 +626,7 @@ NSWindow* BrowserWindowCocoa::window() const {
 }
 
 void BrowserWindowCocoa::UpdateSidebarForContents(TabContents* tab_contents) {
-  if (tab_contents == browser_->tabstrip_model()->GetSelectedTabContents()) {
+  if (tab_contents == browser_->GetSelectedTabContents()) {
     [controller_ updateSidebarForContents:tab_contents];
   }
 }

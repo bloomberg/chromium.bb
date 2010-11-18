@@ -12,6 +12,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -67,7 +68,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   }
 
   // Find the TabContents that contains this tab id.
-  TabContents* contents = NULL;
+  TabContentsWrapper* contents = NULL;
   bool result = ExtensionTabUtil::GetTabById(
       tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
   if (!result || !contents) {
@@ -87,7 +88,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   page_action->SetIsVisible(tab_id, enable);
   page_action->SetTitle(tab_id, title);
   page_action->SetIconIndex(tab_id, icon_id);
-  contents->PageActionStateChanged();
+  contents->tab_contents()->PageActionStateChanged();
 
   return true;
 }
@@ -101,13 +102,15 @@ bool PageActionFunction::InitCommon(int tab_id) {
 
   // Find the TabContents that contains this tab id.
   contents_ = NULL;
+  TabContentsWrapper* wrapper = NULL;
   bool result = ExtensionTabUtil::GetTabById(
-      tab_id, profile(), include_incognito(), NULL, NULL, &contents_, NULL);
-  if (!result || !contents_) {
+      tab_id, profile(), include_incognito(), NULL, NULL, &wrapper, NULL);
+  if (!result || !wrapper) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         kNoTabError, base::IntToString(tab_id));
     return false;
   }
+  contents_ = wrapper->tab_contents();
 
   return true;
 }

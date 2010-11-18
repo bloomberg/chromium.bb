@@ -48,6 +48,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -777,8 +778,8 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     browser::Navigate(&params);
 
     if (profile_ && first_tab && process_startup) {
-      AddCrashedInfoBarIfNecessary(params.target_contents);
-      AddBadFlagsInfoBarIfNecessary(params.target_contents);
+      AddCrashedInfoBarIfNecessary(params.target_contents->tab_contents());
+      AddBadFlagsInfoBarIfNecessary(params.target_contents->tab_contents());
     }
 
     first_tab = false;

@@ -10,6 +10,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tab_menu_model.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -199,7 +200,7 @@ bool BrowserTabStripController::IsTabCloseable(int model_index) const {
 
 bool BrowserTabStripController::IsNewTabPage(int model_index) const {
   return model_->ContainsIndex(model_index) &&
-      model_->GetTabContentsAt(model_index)->GetURL() ==
+      model_->GetTabContentsAt(model_index)->tab_contents()->GetURL() ==
       GURL(chrome::kChromeUINewTabURL);
 }
 
@@ -229,8 +230,9 @@ void BrowserTabStripController::UpdateLoadingAnimations() {
     BaseTab* tab = tabstrip_->base_tab_at_tab_index(tab_index);
     int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
     if (model_->ContainsIndex(model_index)) {
-      TabContents* contents = model_->GetTabContentsAt(model_index);
-      tab->UpdateLoadingAnimation(TabContentsNetworkState(contents));
+      TabContentsWrapper* contents = model_->GetTabContentsAt(model_index);
+      tab->UpdateLoadingAnimation(
+          TabContentsNetworkState(contents->tab_contents()));
     }
   }
 }
@@ -247,7 +249,7 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
                               model_->profile());
 
     // Insert a new tab.
-    TabContents* contents = model_->delegate()->CreateTabContentsForURL(
+    TabContentsWrapper* contents = model_->delegate()->CreateTabContentsForURL(
         url, GURL(), model_->profile(), PageTransition::TYPED, false, NULL);
     model_->AddTabContents(contents, index, PageTransition::GENERATED,
                            TabStripModel::ADD_SELECTED);
@@ -277,7 +279,7 @@ void BrowserTabStripController::CreateNewTab() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
-void BrowserTabStripController::TabInsertedAt(TabContents* contents,
+void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
                                               int model_index,
                                               bool foreground) {
   DCHECK(contents);
@@ -289,35 +291,35 @@ void BrowserTabStripController::TabInsertedAt(TabContents* contents,
       contents->controller().window_id().id());
 
   TabRendererData data;
-  SetTabRendererDataFromModel(contents, model_index, &data);
+  SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data);
   tabstrip_->AddTabAt(model_index, foreground, data);
 }
 
-void BrowserTabStripController::TabDetachedAt(TabContents* contents,
+void BrowserTabStripController::TabDetachedAt(TabContentsWrapper* contents,
                                               int model_index) {
   tabstrip_->RemoveTabAt(model_index);
 }
 
-void BrowserTabStripController::TabSelectedAt(TabContents* old_contents,
-                                              TabContents* contents,
+void BrowserTabStripController::TabSelectedAt(TabContentsWrapper* old_contents,
+                                              TabContentsWrapper* contents,
                                               int model_index,
                                               bool user_gesture) {
   tabstrip_->SelectTabAt(model_->GetIndexOfTabContents(old_contents),
                          model_index);
 }
 
-void BrowserTabStripController::TabMoved(TabContents* contents,
+void BrowserTabStripController::TabMoved(TabContentsWrapper* contents,
                                          int from_model_index,
                                          int to_model_index) {
   // Update the data first as the pinned state may have changed.
   TabRendererData data;
-  SetTabRendererDataFromModel(contents, to_model_index, &data);
+  SetTabRendererDataFromModel(contents->tab_contents(), to_model_index, &data);
   tabstrip_->SetTabData(from_model_index, data);
 
   tabstrip_->MoveTab(from_model_index, to_model_index);
 }
 
-void BrowserTabStripController::TabChangedAt(TabContents* contents,
+void BrowserTabStripController::TabChangedAt(TabContentsWrapper* contents,
                                              int model_index,
                                              TabChangeType change_type) {
   if (change_type == TITLE_NOT_LOADING) {
@@ -329,32 +331,35 @@ void BrowserTabStripController::TabChangedAt(TabContents* contents,
   SetTabDataAt(contents, model_index);
 }
 
-void BrowserTabStripController::TabReplacedAt(TabContents* old_contents,
-                                              TabContents* new_contents,
+void BrowserTabStripController::TabReplacedAt(TabContentsWrapper* old_contents,
+                                              TabContentsWrapper* new_contents,
                                               int model_index) {
   SetTabDataAt(new_contents, model_index);
 }
 
-void BrowserTabStripController::TabPinnedStateChanged(TabContents* contents,
-                                                      int model_index) {
+void BrowserTabStripController::TabPinnedStateChanged(
+    TabContentsWrapper* contents,
+    int model_index) {
   // Currently none of the renderers render pinned state differently.
 }
 
 void BrowserTabStripController::TabMiniStateChanged(
-    TabContents* contents,
+    TabContentsWrapper* contents,
     int model_index) {
   SetTabDataAt(contents, model_index);
 }
 
-void BrowserTabStripController::TabBlockedStateChanged(TabContents* contents,
-                                                       int model_index) {
+void BrowserTabStripController::TabBlockedStateChanged(
+    TabContentsWrapper* contents,
+    int model_index) {
   SetTabDataAt(contents, model_index);
 }
 
-void BrowserTabStripController::SetTabDataAt(TabContents* contents,
-                                             int model_index) {
+void BrowserTabStripController::SetTabDataAt(
+    TabContentsWrapper* contents,
+    int model_index) {
   TabRendererData data;
-  SetTabRendererDataFromModel(contents, model_index, &data);
+  SetTabRendererDataFromModel(contents->tab_contents(), model_index, &data);
   tabstrip_->SetTabData(model_index, data);
 }
 

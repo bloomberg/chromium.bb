@@ -19,6 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/notification_service.h"
@@ -160,7 +161,7 @@ bool GetProcessIdForTabFunction::RunImpl() {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
 
-  TabContents* contents = NULL;
+  TabContentsWrapper* contents = NULL;
   int tab_index = -1;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
                                     NULL, NULL, &contents, &tab_index)) {
@@ -171,7 +172,8 @@ bool GetProcessIdForTabFunction::RunImpl() {
   }
 
   // Return the process ID of the tab as an integer.
-  int id = base::GetProcId(contents->GetRenderProcessHost()->GetHandle());
+  int id = base::GetProcId(contents->tab_contents()->
+      GetRenderProcessHost()->GetHandle());
   result_.reset(Value::CreateIntegerValue(id));
   return true;
 }

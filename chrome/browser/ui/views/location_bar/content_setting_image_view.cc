@@ -9,6 +9,7 @@
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/views/content_setting_bubble_contents.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 
@@ -56,7 +57,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event,
   if (canceled || !HitTest(event.location()))
     return;
 
-  TabContents* tab_contents = parent_->GetTabContents();
+  TabContents* tab_contents = parent_->GetTabContentsWrapper()->tab_contents();
   if (!tab_contents)
     return;
 

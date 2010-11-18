@@ -75,7 +75,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual LocationBar* GetLocationBar() const;
   virtual void SetFocusToLocationBar(bool select_all);
   virtual void UpdateReloadStopState(bool is_loading, bool force);
-  virtual void UpdateToolbar(TabContents* contents,
+  virtual void UpdateToolbar(TabContentsWrapper* contents,
                              bool should_restore_state);
   virtual void FocusToolbar();
   virtual void FocusAppMenu();
@@ -135,9 +135,9 @@ class BrowserWindowGtk : public BrowserWindow,
                        const NotificationDetails& details);
 
   // Overridden from TabStripModelObserver:
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
   virtual void TabStripEmpty();

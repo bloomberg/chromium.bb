@@ -34,17 +34,18 @@ TabStripModel* DefaultTabHandler::GetTabStripModel() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultTabHandler, TabStripModelDelegate implementation:
 
-TabContents* DefaultTabHandler::AddBlankTab(bool foreground) {
+TabContentsWrapper* DefaultTabHandler::AddBlankTab(bool foreground) {
   UmaNaclHistogramEnumeration(NEW_TAB_NACL_BASELINE);
   return delegate_->AsBrowser()->AddBlankTab(foreground);
 }
 
-TabContents* DefaultTabHandler::AddBlankTabAt(int index, bool foreground) {
+TabContentsWrapper* DefaultTabHandler::AddBlankTabAt(int index,
+                                                     bool foreground) {
   return delegate_->AsBrowser()->AddBlankTabAt(index, foreground);
 }
 
 Browser* DefaultTabHandler::CreateNewStripWithContents(
-    TabContents* detached_contents,
+    TabContentsWrapper* detached_contents,
     const gfx::Rect& window_bounds,
     const DockInfo& dock_info,
     bool maximize) {
@@ -55,7 +56,7 @@ Browser* DefaultTabHandler::CreateNewStripWithContents(
 }
 
 void DefaultTabHandler::ContinueDraggingDetachedTab(
-    TabContents* contents,
+    TabContentsWrapper* contents,
     const gfx::Rect& window_bounds,
     const gfx::Rect& tab_bounds) {
   delegate_->AsBrowser()->ContinueDraggingDetachedTab(contents,
@@ -67,7 +68,7 @@ int DefaultTabHandler::GetDragActions() const {
   return delegate_->AsBrowser()->GetDragActions();
 }
 
-TabContents* DefaultTabHandler::CreateTabContentsForURL(
+TabContentsWrapper* DefaultTabHandler::CreateTabContentsForURL(
     const GURL& url,
     const GURL& referrer,
     Profile* profile,
@@ -94,11 +95,12 @@ void DefaultTabHandler::CloseFrameAfterDragSession() {
   delegate_->AsBrowser()->CloseFrameAfterDragSession();
 }
 
-void DefaultTabHandler::CreateHistoricalTab(TabContents* contents) {
+void DefaultTabHandler::CreateHistoricalTab(TabContentsWrapper* contents) {
   delegate_->AsBrowser()->CreateHistoricalTab(contents);
 }
 
-bool DefaultTabHandler::RunUnloadListenerBeforeClosing(TabContents* contents) {
+bool DefaultTabHandler::RunUnloadListenerBeforeClosing(
+    TabContentsWrapper* contents) {
   return delegate_->AsBrowser()->RunUnloadListenerBeforeClosing(contents);
 }
 
@@ -141,28 +143,29 @@ bool DefaultTabHandler::UseVerticalTabs() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DefaultTabHandler, TabStripModelObserver implementation:
 
-void DefaultTabHandler::TabInsertedAt(TabContents* contents,
+void DefaultTabHandler::TabInsertedAt(TabContentsWrapper* contents,
                                       int index,
                                       bool foreground) {
   delegate_->AsBrowser()->TabInsertedAt(contents, index, foreground);
 }
 
 void DefaultTabHandler::TabClosingAt(TabStripModel* tab_strip_model,
-                                     TabContents* contents,
+                                     TabContentsWrapper* contents,
                                      int index) {
   delegate_->AsBrowser()->TabClosingAt(tab_strip_model, contents, index);
 }
 
-void DefaultTabHandler::TabDetachedAt(TabContents* contents, int index) {
+void DefaultTabHandler::TabDetachedAt(TabContentsWrapper* contents, int index) {
   delegate_->AsBrowser()->TabDetachedAt(contents, index);
 }
 
-void DefaultTabHandler::TabDeselectedAt(TabContents* contents, int index) {
+void DefaultTabHandler::TabDeselectedAt(TabContentsWrapper* contents,
+                                        int index) {
   delegate_->AsBrowser()->TabDeselectedAt(contents, index);
 }
 
-void DefaultTabHandler::TabSelectedAt(TabContents* old_contents,
-                                      TabContents* new_contents,
+void DefaultTabHandler::TabSelectedAt(TabContentsWrapper* old_contents,
+                                      TabContentsWrapper* new_contents,
                                       int index,
                                       bool user_gesture) {
   delegate_->AsBrowser()->TabSelectedAt(old_contents,
@@ -171,19 +174,19 @@ void DefaultTabHandler::TabSelectedAt(TabContents* old_contents,
                                         user_gesture);
 }
 
-void DefaultTabHandler::TabMoved(TabContents* contents,
+void DefaultTabHandler::TabMoved(TabContentsWrapper* contents,
                                  int from_index,
                                  int to_index) {
   delegate_->AsBrowser()->TabMoved(contents, from_index, to_index);
 }
 
-void DefaultTabHandler::TabReplacedAt(TabContents* old_contents,
-                                      TabContents* new_contents,
+void DefaultTabHandler::TabReplacedAt(TabContentsWrapper* old_contents,
+                                      TabContentsWrapper* new_contents,
                                       int index) {
   delegate_->AsBrowser()->TabReplacedAt(old_contents, new_contents, index);
 }
 
-void DefaultTabHandler::TabPinnedStateChanged(TabContents* contents,
+void DefaultTabHandler::TabPinnedStateChanged(TabContentsWrapper* contents,
                                               int index) {
   delegate_->AsBrowser()->TabPinnedStateChanged(contents, index);
 }

@@ -38,6 +38,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -374,13 +375,14 @@ TabCountChangeObserver::~TabCountChangeObserver() {
   tab_strip_model_->RemoveObserver(this);
 }
 
-void TabCountChangeObserver::TabInsertedAt(TabContents* contents,
+void TabCountChangeObserver::TabInsertedAt(TabContentsWrapper* contents,
                                            int index,
                                            bool foreground) {
   CheckTabCount();
 }
 
-void TabCountChangeObserver::TabDetachedAt(TabContents* contents, int index) {
+void TabCountChangeObserver::TabDetachedAt(TabContentsWrapper* contents,
+                                           int index) {
   CheckTabCount();
 }
 

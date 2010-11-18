@@ -25,27 +25,29 @@ class DefaultTabHandler : public TabHandler,
   virtual TabStripModel* GetTabStripModel() const;
 
   // Overridden from TabStripModelDelegate:
-  virtual TabContents* AddBlankTab(bool foreground);
-  virtual TabContents* AddBlankTabAt(int index, bool foreground);
-  virtual Browser* CreateNewStripWithContents(TabContents* detached_contents,
-                                              const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info,
-                                              bool maximize);
-  virtual void ContinueDraggingDetachedTab(TabContents* contents,
+  virtual TabContentsWrapper* AddBlankTab(bool foreground);
+  virtual TabContentsWrapper* AddBlankTabAt(int index, bool foreground);
+  virtual Browser* CreateNewStripWithContents(
+      TabContentsWrapper* detached_contents,
+      const gfx::Rect& window_bounds,
+      const DockInfo& dock_info,
+      bool maximize);
+  virtual void ContinueDraggingDetachedTab(TabContentsWrapper* contents,
                                            const gfx::Rect& window_bounds,
                                            const gfx::Rect& tab_bounds);
   virtual int GetDragActions() const;
-  virtual TabContents* CreateTabContentsForURL(const GURL& url,
-                                               const GURL& referrer,
-                                               Profile* profile,
-                                               PageTransition::Type transition,
-                                               bool defer_load,
-                                               SiteInstance* instance) const;
+  virtual TabContentsWrapper* CreateTabContentsForURL(
+      const GURL& url,
+      const GURL& referrer,
+      Profile* profile,
+      PageTransition::Type transition,
+      bool defer_load,
+      SiteInstance* instance) const;
   virtual bool CanDuplicateContentsAt(int index);
   virtual void DuplicateContentsAt(int index);
   virtual void CloseFrameAfterDragSession();
-  virtual void CreateHistoricalTab(TabContents* contents);
-  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents);
+  virtual void CreateHistoricalTab(TabContentsWrapper* contents);
+  virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents);
   virtual bool CanCloseContentsAt(int index);
   virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
@@ -57,25 +59,25 @@ class DefaultTabHandler : public TabHandler,
   virtual bool UseVerticalTabs() const;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
                              bool foreground);
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            TabContentsWrapper* contents,
                             int index);
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabDeselectedAt(TabContents* contents, int index);
-  virtual void TabSelectedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabDeselectedAt(TabContentsWrapper* contents, int index);
+  virtual void TabSelectedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
+  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
                              int index);
-  virtual void TabPinnedStateChanged(TabContents* contents, int index);
+  virtual void TabPinnedStateChanged(TabContentsWrapper* contents, int index);
   virtual void TabStripEmpty();
 
  private:

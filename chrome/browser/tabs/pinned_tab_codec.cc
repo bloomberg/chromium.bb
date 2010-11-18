@@ -9,6 +9,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
@@ -41,7 +42,7 @@ static void EncodePinnedTab(TabStripModel* model,
                             ListValue* values) {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
-  TabContents* tab_contents = model->GetTabContentsAt(index);
+  TabContentsWrapper* tab_contents = model->GetTabContentsAt(index);
   if (model->IsAppTab(index)) {
     const Extension* extension = tab_contents->extension_app();
     DCHECK(extension);

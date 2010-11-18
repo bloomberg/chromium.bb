@@ -10,6 +10,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -36,24 +37,26 @@ TabCloseableStateWatcher::TabStripWatcher::~TabStripWatcher() {
 //     TabStripModelObserver implementation:
 
 void TabCloseableStateWatcher::TabStripWatcher::TabInsertedAt(
-    TabContents* tab_contents, int index, bool foreground) {
+    TabContentsWrapper* tab_contents, int index, bool foreground) {
   main_watcher_->OnTabStripChanged(browser_, false);
 }
 
 void TabCloseableStateWatcher::TabStripWatcher::TabClosingAt(
-    TabStripModel* tab_strip_model, TabContents* tab_contents, int index) {
+    TabStripModel* tab_strip_model,
+    TabContentsWrapper* tab_contents,
+    int index) {
   // Check if the last tab is closing.
   if (tab_strip_model->count() == 1)
     main_watcher_->OnTabStripChanged(browser_, true);
 }
 
 void TabCloseableStateWatcher::TabStripWatcher::TabDetachedAt(
-    TabContents* tab_contents, int index) {
+    TabContentsWrapper* tab_contents, int index) {
   main_watcher_->OnTabStripChanged(browser_, false);
 }
 
 void TabCloseableStateWatcher::TabStripWatcher::TabChangedAt(
-    TabContents* tab_contents, int index, TabChangeType change_type) {
+    TabContentsWrapper* tab_contents, int index, TabChangeType change_type) {
   main_watcher_->OnTabStripChanged(browser_, false);
 }
 
@@ -191,8 +194,9 @@ void TabCloseableStateWatcher::CheckAndUpdateState(
     } else {
       TabStripModel* tabstrip_model = browser_to_check->tabstrip_model();
       if (tabstrip_model->count() == 1) {
-        new_can_close = tabstrip_model->GetTabContentsAt(0)->GetURL() !=
-            GURL(chrome::kChromeUINewTabURL);  // Tab is not NewTabPage.
+        new_can_close =
+            tabstrip_model->GetTabContentsAt(0)->tab_contents()->GetURL() !=
+                GURL(chrome::kChromeUINewTabURL);  // Tab is not NewTabPage.
       } else {
         new_can_close = true;
       }

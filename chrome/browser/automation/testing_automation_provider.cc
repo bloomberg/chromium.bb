@@ -60,7 +60,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -485,7 +485,7 @@ void TestingAutomationProvider::AppendTab(int handle, const GURL& url,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     observer = AddTabStripObserver(browser, reply_message);
-    TabContents* contents =
+    TabContentsWrapper* contents =
         browser->AddSelectedTabWithURL(url, PageTransition::TYPED);
     if (contents) {
       append_tab_response =
@@ -963,8 +963,7 @@ void TestingAutomationProvider::GetTab(int win_handle,
   if (browser_tracker_->ContainsHandle(win_handle) && (tab_index >= 0)) {
     Browser* browser = browser_tracker_->GetResource(win_handle);
     if (tab_index < browser->tab_count()) {
-      TabContents* tab_contents =
-          browser->GetTabContentsAt(tab_index);
+      TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
       *tab_handle = tab_tracker_->Add(&tab_contents->controller());
     }
   }

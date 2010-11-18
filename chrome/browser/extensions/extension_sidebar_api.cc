@@ -16,6 +16,7 @@
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -122,7 +123,7 @@ bool SidebarFunction::RunImpl() {
   }
 
   int tab_id;
-  TabContents* tab_contents = NULL;
+  TabContentsWrapper* tab_contents = NULL;
   if (details->HasKey(kTabIdKey)) {
     EXTENSION_FUNCTION_VALIDATE(details->GetInteger(kTabIdKey, &tab_id));
     if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
@@ -146,7 +147,7 @@ bool SidebarFunction::RunImpl() {
     return false;
 
   std::string content_id(GetExtension()->id());
-  return RunImpl(tab_contents, content_id, *details);
+  return RunImpl(tab_contents->tab_contents(), content_id, *details);
 }
 
 
@@ -193,7 +194,7 @@ bool GetStateSidebarFunction::RunImpl(TabContents* tab,
 
         // Check if this tab is selected.
         Browser* browser = GetCurrentBrowser();
-        TabContents* contents = NULL;
+        TabContentsWrapper* contents = NULL;
         int default_tab_id = -1;
         if (browser &&
             ExtensionTabUtil::GetDefaultTab(browser, &contents,

@@ -56,7 +56,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual LocationBar* GetLocationBar() const;
   virtual void SetFocusToLocationBar(bool select_all);
   virtual void UpdateReloadStopState(bool is_loading, bool force);
-  virtual void UpdateToolbar(TabContents* contents,
+  virtual void UpdateToolbar(TabContentsWrapper* contents,
                              bool should_restore_state);
   virtual void FocusToolbar();
   virtual void FocusAppMenu();

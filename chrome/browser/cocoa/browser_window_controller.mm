@@ -54,6 +54,7 @@
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/window_sizer.h"
@@ -616,7 +617,7 @@
       std::max(kProportion * frame.size.width,
                std::min(kProportion * frame.size.height, frame.size.width));
 
-  TabContents* contents = browser_->tabstrip_model()->GetSelectedTabContents();
+  TabContents* contents = browser_->GetSelectedTabContents();
   if (contents) {
     // If the intrinsic width is bigger, then make it the zoomed width.
     const int kScrollbarWidth = 16;  // TODO(viettrungluu): ugh.
@@ -1086,8 +1087,8 @@
     if (!isBrowser) return;
     BrowserWindowController* dragBWC = (BrowserWindowController*)dragController;
     int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
-    TabContents* contents =
-        dragBWC->browser_->tabstrip_model()->GetTabContentsAt(index);
+    TabContentsWrapper* contents =
+        dragBWC->browser_->GetTabContentsWrapperAt(index);
     // The tab contents may have gone away if given a window.close() while it
     // is being dragged. If so, bail, we've got nothing to drop.
     if (!contents)
@@ -1165,7 +1166,7 @@
 
   // Fetch the tab contents for the tab being dragged.
   int index = [tabStripController_ modelIndexForTabView:tabView];
-  TabContents* contents = browser_->tabstrip_model()->GetTabContentsAt(index);
+  TabContentsWrapper* contents = browser_->GetTabContentsWrapperAt(index);
 
   // Set the window size. Need to do this before we detach the tab so it's
   // still in the window. We have to flip the coordinates as that's what
@@ -1323,7 +1324,7 @@
 }
 
 - (NSString*)selectedTabTitle {
-  TabContents* contents = browser_->tabstrip_model()->GetSelectedTabContents();
+  TabContents* contents = browser_->GetSelectedTabContents();
   return base::SysUTF16ToNSString(contents->GetTitle());
 }
 

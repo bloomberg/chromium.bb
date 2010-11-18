@@ -21,6 +21,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -88,7 +89,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   MockTabStripModelObserver() : closing_count_(0) {}
 
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            TabContentsWrapper* contents,
                             int index) {
     closing_count_++;
   }
@@ -424,9 +425,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  TabContents* app_contents = new TabContents(browser()->profile(), NULL,
-                                              MSG_ROUTING_NONE, NULL, NULL);
-  app_contents->SetExtensionApp(extension_app);
+  TabContentsWrapper* app_contents =
+      Browser::TabContentsFactory(browser()->profile(), NULL,
+                                  MSG_ROUTING_NONE, NULL, NULL);
+  app_contents->tab_contents()->SetExtensionApp(extension_app);
 
   model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);
@@ -505,9 +507,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
   const Extension* extension_app = GetExtension();
   ui_test_utils::NavigateToURL(browser(), url);
-  TabContents* app_contents = new TabContents(browser()->profile(), NULL,
-                                              MSG_ROUTING_NONE, NULL, NULL);
-  app_contents->SetExtensionApp(extension_app);
+  TabContentsWrapper* app_contents =
+    Browser::TabContentsFactory(browser()->profile(), NULL,
+                                MSG_ROUTING_NONE, NULL, NULL);
+  app_contents->tab_contents()->SetExtensionApp(extension_app);
   model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -553,8 +556,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   EXPECT_TRUE(new_model->IsTabPinned(0));
   EXPECT_TRUE(new_model->IsTabPinned(1));
 
-  EXPECT_TRUE(new_model->GetTabContentsAt(0)->extension_app() ==
-              extension_app);
+  EXPECT_TRUE(
+      new_model->GetTabContentsAt(0)->tab_contents()->extension_app() ==
+          extension_app);
 }
 #endif  // !defined(OS_CHROMEOS)
 

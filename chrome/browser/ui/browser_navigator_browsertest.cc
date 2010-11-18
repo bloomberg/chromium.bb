@@ -6,6 +6,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -40,12 +41,13 @@ class BrowserNavigatorTest : public InProcessBrowserTest {
     return browser;
   }
 
-  TabContents* CreateTabContents() {
-    return new TabContents(browser()->profile(),
-                           NULL,
-                           MSG_ROUTING_NONE,
-                           browser()->GetSelectedTabContents(),
-                           NULL);
+  TabContentsWrapper* CreateTabContents() {
+    return Browser::TabContentsFactory(
+        browser()->profile(),
+        NULL,
+        MSG_ROUTING_NONE,
+        browser()->GetSelectedTabContents(),
+        NULL);
   }
 
   void RunSuppressTest(WindowOpenDisposition disposition) {
@@ -131,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewForegroundTab) {
   p.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&p);
   EXPECT_NE(old_contents, browser()->GetSelectedTabContents());
-  EXPECT_EQ(browser()->GetSelectedTabContents(), p.target_contents);
+  EXPECT_EQ(browser()->GetSelectedTabContentsWrapper(), p.target_contents);
   EXPECT_EQ(2, browser()->tab_count());
 }
 
@@ -347,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
   // Navigate() should have opened the contents in a new foreground in the
   // current Browser.
   EXPECT_EQ(browser(), p.browser);
-  EXPECT_EQ(browser()->GetSelectedTabContents(), p.target_contents);
+  EXPECT_EQ(browser()->GetSelectedTabContentsWrapper(), p.target_contents);
 
   // We should have one window, with two tabs.
   EXPECT_EQ(1u, BrowserList::size());
@@ -382,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_Popup) {
   // All platforms should respect size however provided width > 400 (Mac has a
   // minimum window width of 400).
   EXPECT_EQ(p.window_bounds.size(),
-            p.target_contents->view()->GetContainerSize());
+            p.target_contents->tab_contents()->view()->GetContainerSize());
 
   // We should have two windows, the new popup and the browser() provided by the
   // framework.
@@ -407,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
   // Navigate() should have inserted a new tab at slot 0 in the tabstrip.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(0, browser()->tabstrip_model()->GetIndexOfTabContents(
-      static_cast<const TabContents*>(p.target_contents)));
+      static_cast<const TabContentsWrapper*>(p.target_contents)));
 
   // We should have one window - the browser() provided by the framework.
   EXPECT_EQ(1u, BrowserList::size());
@@ -428,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewForegroundTab) {
   // Navigate() should have found browser() and create a new tab.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_NE(old_contents, browser()->GetSelectedTabContents());
-  EXPECT_EQ(browser()->GetSelectedTabContents(), p.target_contents);
+  EXPECT_EQ(browser()->GetSelectedTabContentsWrapper(), p.target_contents);
   EXPECT_EQ(2, browser()->tab_count());
 }
 
@@ -447,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_MatchProfile) {
 
   // Navigate() should have found incognito, not browser().
   EXPECT_EQ(incognito, p.browser);
-  EXPECT_EQ(incognito->GetSelectedTabContents(), p.target_contents);
+  EXPECT_EQ(incognito->GetSelectedTabContentsWrapper(), p.target_contents);
   EXPECT_EQ(1, incognito->tab_count());
 }
 

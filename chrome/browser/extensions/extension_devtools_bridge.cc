@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/common/devtools_messages.h"
 
 ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
@@ -36,7 +37,7 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
 
   Browser* browser;
   TabStripModel* tab_strip;
-  TabContents* contents;
+  TabContentsWrapper* contents;
   int tab_index;
   if (ExtensionTabUtil::GetTabById(tab_id_, profile_, true,
                                    &browser, &tab_strip,
