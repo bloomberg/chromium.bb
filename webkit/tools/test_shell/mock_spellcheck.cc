@@ -125,3 +125,9 @@ bool MockSpellCheck::InitializeIfNeeded() {
   // function always returns false.
   return false;
 }
+
+void MockSpellCheck::FillSuggestions(const string16& word,
+                                     std::vector<string16>* suggestions) {
+  if (word == ASCIIToUTF16("wellcome"))
+    suggestions->push_back(ASCIIToUTF16("welcome"));
+}
