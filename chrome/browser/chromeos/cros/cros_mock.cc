@@ -279,7 +279,7 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
 
   // NetworkMenuButton::OnNetworkManagerChanged() calls:
   EXPECT_CALL(*mock_network_library_, active_network())
-      .Times(1)
+      .Times(AnyNumber())
       .WillRepeatedly((Return((const Network*)(NULL))))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, wifi_connecting())
