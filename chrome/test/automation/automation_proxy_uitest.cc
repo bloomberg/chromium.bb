@@ -1399,7 +1399,8 @@ TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   EXPECT_FALSE(matches.empty());
 }
 
-TEST_F(AutomationProxyTest, AppModalDialogTest) {
+// Flaky especially on Windows. See crbug.com/25039.
+TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab(browser->GetTab(0));
