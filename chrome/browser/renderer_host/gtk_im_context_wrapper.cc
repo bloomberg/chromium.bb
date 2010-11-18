@@ -482,7 +482,8 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
   // Nothing needs to do, if it's currently in ProcessKeyEvent()
   // handler, which will send preedit text to webkit later.
   // Otherwise, we need send it here if it's been changed.
-  if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost()) {
+  if (!is_in_key_event_handler_ && is_composing_text_ &&
+      host_view_->GetRenderWidgetHost()) {
     host_view_->GetRenderWidgetHost()->ImeSetComposition(
         preedit_text_, preedit_underlines_, preedit_selection_start_,
         preedit_selection_end_);
