@@ -76,4 +76,19 @@ HRESULT ModuleRegistrationWithoutAppid(int reg_id, BOOL should_register) {
   return UpdateRegistryFromResourceImpl(reg_id, should_register, entries);
 }
 
+bool GuidToString(const GUID& id, std::wstring* guid_as_text) {
+  DCHECK(guid_as_text != NULL);
+  if (guid_as_text == NULL)
+    return false;
+
+  wchar_t id_as_string[MAX_PATH] = {0};
+  if (::StringFromGUID2(id, id_as_string, arraysize(id_as_string)) > 0) {
+    *guid_as_text = id_as_string;
+    return true;
+  }
+
+  NOTREACHED() << "Could not convert GUID to string.";
+  return true;
+}
+
 }  // namespace com

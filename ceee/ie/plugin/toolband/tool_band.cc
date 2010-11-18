@@ -18,6 +18,7 @@
 #include "ceee/common/windows_constants.h"
 #include "ceee/ie/common/extension_manifest.h"
 #include "ceee/ie/common/ceee_module_util.h"
+#include "ceee/ie/plugin/bho/browser_helper_object.h"
 #include "ceee/ie/plugin/bho/tool_band_visibility.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -433,7 +434,7 @@ STDMETHODIMP_(void) ToolBand::OnCfReadyStateChanged(LONG state) {
 }
 
 STDMETHODIMP_(void) ToolBand::OnCfMessage(IDispatch* event) {
-  VARIANT origin = {VT_NULL};
+  CComVariant origin;
   HRESULT hr = event->Invoke(ComMessageEvent::DISPID_MESSAGE_EVENT_ORIGIN,
       IID_NULL, 0, DISPATCH_PROPERTYGET, 0, &origin, 0, 0);
   if (FAILED(hr) || origin.vt != VT_BSTR) {
@@ -441,7 +442,7 @@ STDMETHODIMP_(void) ToolBand::OnCfMessage(IDispatch* event) {
     return;
   }
 
-  VARIANT data_bstr = {VT_NULL};
+  CComVariant data_bstr;
   hr = event->Invoke(ComMessageEvent::DISPID_MESSAGE_EVENT_DATA,
       IID_NULL, 0, DISPATCH_PROPERTYGET, 0, &data_bstr, 0, 0);
   if (FAILED(hr) || data_bstr.vt != VT_BSTR) {
@@ -515,6 +516,7 @@ STDMETHODIMP_(void) ToolBand::OnCfExtensionReady(BSTR path, int response) {
 STDMETHODIMP_(void) ToolBand::OnCfGetEnabledExtensionsComplete(
     SAFEARRAY* extension_directories) {
   CComSafeArray<BSTR> directories;
+  EnsureBhoIsAvailable();  // We will require a working bho to do anything.
   directories.Attach(extension_directories);  // MUST DETACH BEFORE RETURNING
 
   // TODO(joi@chromium.org) Handle multiple extensions.
@@ -571,10 +573,10 @@ STDMETHODIMP_(void) ToolBand::OnIeNavigateComplete2(IDispatch* dispatch,
                                                     VARIANT* url) {
   // The flag is cleared on navigation complete since at this point we are
   // certain the process of placing the toolband has been completed.
-  // Doing it in GetBandInfo proved premature as many queries are expeced.
+  // Doing it in GetBandInfo proved premature as many queries are expected.
   ClearForceOwnLineFlag();
 
-  // We need to clear that flag just once. Now that's done, unadvise.
+  // Now that deferred initializations are done, unadvise.
   DCHECK(web_browser_ != NULL);
   if (web_browser_ && listening_to_browser_events_) {
     HostingBrowserEvents::DispEventUnadvise(web_browser_,
@@ -631,4 +633,65 @@ void ToolBand::ClearForceOwnLineFlag() {
     already_checked_own_line_flag_ = true;
     ceee_module_util::SetOptionToolbandForceReposition(false);
   }
+}
+
+HRESULT ToolBand::EnsureBhoIsAvailable() {
+  if (m_spUnkSite == NULL || web_browser_ == NULL) {
+    NOTREACHED() << "Invalid client site";
+    return E_FAIL;
+  }
+
+  CComBSTR bho_class_id_bstr(CLSID_BrowserHelperObject);
+  CComVariant existing_bho;
+  HRESULT hr = web_browser_->GetProperty(bho_class_id_bstr, &existing_bho);
+
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to retrieve BHO through GetProperty call: 0x" <<
+        std::hex << hr;
+    return hr;
+  }
+
+  if (existing_bho.vt != VT_EMPTY) {
+    DCHECK(existing_bho.vt == VT_UNKNOWN && existing_bho.punkVal != NULL);
+#ifndef NDEBUG
+    if (existing_bho.vt == VT_UNKNOWN && existing_bho.punkVal != NULL) {
+      // This is a sanity / assumption check regarding what we should regard
+      // as a valid BHO.
+      ScopedComPtr<IPersist> bho_iid_access;
+      HRESULT hr2 = bho_iid_access.QueryFrom(existing_bho.punkVal);
+      DCHECK(SUCCEEDED(hr2) && bho_iid_access.get() != NULL);
+      if (SUCCEEDED(hr2) && bho_iid_access.get() != NULL) {
+        CLSID calling_card = {};
+        hr2 = bho_iid_access->GetClassID(&calling_card);
+        DCHECK(SUCCEEDED(hr2) && calling_card == CLSID_BrowserHelperObject);
+      }
+    }
+#endif
+    DVLOG(1) << "BHO already loaded";
+    return S_OK;
+  }
+
+  ScopedComPtr<IObjectWithSite> bho;
+  hr = CreateBhoInstance(bho.Receive());
+
+  if (FAILED(hr)) {
+    NOTREACHED() << "Failed to create CEEE BHO." << com::LogHr(hr);
+    return hr;
+  }
+
+  hr = bho->SetSite(web_browser_);
+  if (FAILED(hr)) {
+    NOTREACHED() << "CEEE BHO SetSite failed.:" << com::LogHr(hr);
+    return hr;
+  }
+
+  hr = web_browser_->PutProperty(bho_class_id_bstr, CComVariant(bho));
+  LOG_IF(ERROR, FAILED(hr)) << "Assigning BHO to the web browser failed.";
+  LOG_IF(INFO, SUCCEEDED(hr)) << "CEEE BHO has been created by the toolband.";
+  return hr;
+}
+
+HRESULT ToolBand::CreateBhoInstance(IObjectWithSite** new_bho_instance) {
+  DCHECK(new_bho_instance != NULL && *new_bho_instance == NULL);
+  return BrowserHelperObject::CreateInstance(new_bho_instance);
 }

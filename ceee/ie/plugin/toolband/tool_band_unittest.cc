@@ -9,7 +9,9 @@
 #include <shlguid.h>
 
 #include "ceee/common/initializing_coclass.h"
+#include "ceee/common/com_utils.h"
 #include "ceee/ie/common/mock_ceee_module_util.h"
+#include "ceee/ie/plugin/bho/browser_helper_object.h"
 #include "ceee/ie/testing/mock_browser_and_friends.h"
 #include "ceee/testing/utils/dispex_mocks.h"
 #include "ceee/testing/utils/instance_count_mixin.h"
@@ -21,27 +23,68 @@
 
 namespace {
 
+using testing::_;
 using testing::GetConnectionCount;
 using testing::InstanceCountMixin;
 using testing::MockDispatchEx;
 using testing::Return;
+using testing::StrEq;
 using testing::StrictMock;
 using testing::TestBrowser;
 using testing::TestBrowserSite;
+using testing::WithArgs;
 
-// Makes ToolBand testable - circumvents InitializeAndShowWindow.
+class MockCeeeBho
+  : public CComObjectRootEx<CComSingleThreadModel>,
+    public InitializingCoClass<MockCeeeBho>,
+    public IObjectWithSiteImpl<MockCeeeBho>,
+    public IPersistImpl<MockCeeeBho> {
+ public:
+  BEGIN_COM_MAP(MockCeeeBho)
+    COM_INTERFACE_ENTRY(IObjectWithSite)
+    COM_INTERFACE_ENTRY(IPersist)
+  END_COM_MAP()
+
+  static const CLSID& WINAPI GetObjectCLSID() {
+    // Required to make IPersistImpl work.
+    return BrowserHelperObject::GetObjectCLSID();
+  }
+
+  HRESULT Initialize(MockCeeeBho** self) {
+    *self = this;
+    return S_OK;
+  }
+};
+
+// Makes ToolBand testable - circumvents InitializeAndShowWindow and exposes
+// some otherwise protected functionality.
 class TestingToolBand
     : public ToolBand,
       public InstanceCountMixin<TestingToolBand>,
       public InitializingCoClass<TestingToolBand> {
  public:
   HRESULT Initialize(TestingToolBand** self) {
+    bho_counter_ = 0;
     *self = this;
     return S_OK;
   }
+
+  HRESULT CallEnsureBhoIsAvailable() {
+    return EnsureBhoIsAvailable();
+  }
+
+  int bho_counter_;
  private:
   virtual HRESULT InitializeAndShowWindow(IUnknown* site) {
     return S_OK;  // This aspect is not tested.
+  }
+
+  HRESULT CreateBhoInstance(IObjectWithSite** new_bho_instance) {
+    DCHECK(new_bho_instance != NULL && *new_bho_instance == NULL);
+    MockCeeeBho* correctly_typed_bho = NULL;
+    ++bho_counter_;
+    return MockCeeeBho::CreateInitialized(&correctly_typed_bho,
+                                          new_bho_instance);
   }
 };
 
@@ -358,6 +401,89 @@ TEST_F(ToolBandTest, NewInstallationTriggersLineBreak) {
   ASSERT_FALSE(dinfo_for_test.dwModeFlags & DBIMF_BREAK);
 
   ASSERT_HRESULT_SUCCEEDED(tool_band_with_site_->SetSite(NULL));
+}
+
+class BhoInToolBandTest : public ToolBandTest {
+ public:
+  virtual void SetUp() {
+    ToolBandTest::SetUp();
+
+    // In addition to whatever all other toolband tests required, bho will
+    // need a properly constructed site.
+    CreateSite();
+    CreateBrowser();
+
+    EXPECT_CALL(ceee_module_utils_, GetOptionToolbandForceReposition())
+        .WillOnce(Return(false));
+
+    ASSERT_HRESULT_SUCCEEDED(tool_band_with_site_->SetSite(site_keeper_));
+    ASSERT_TRUE(com::GuidToString(CLSID_BrowserHelperObject,
+                                  &bho_class_id_text_));
+  }
+
+  std::wstring bho_class_id_text_;
+};
+
+ACTION_P(SetArg1Variant, local_data_out) {
+  return ::VariantCopy(arg1, local_data_out);
+}
+
+ACTION_P(GetArg1Variant, local_data_in) {
+  return local_data_in->Copy(&arg1);
+}
+
+TEST_F(BhoInToolBandTest, EnsureBhoCreatedWhenNeeded) {
+  // For actual tests, use an instance of mock BHO.
+  MockCeeeBho* mocked_bho;
+  CComPtr<IObjectWithSite> mocked_bho_with_site;
+  ASSERT_HRESULT_SUCCEEDED(
+      MockCeeeBho::CreateInitialized(&mocked_bho, &mocked_bho_with_site));
+
+  // If there already is a bho of this code, do not create it.
+  CComVariant variant_with_bho(mocked_bho_with_site);
+  EXPECT_CALL(*browser_, GetProperty(StrEq(bho_class_id_text_), _)).
+      WillOnce(SetArg1Variant(&variant_with_bho));
+  ASSERT_HRESULT_SUCCEEDED(tool_band_->CallEnsureBhoIsAvailable());
+  ASSERT_TRUE(mocked_bho->m_spUnkSite == NULL);
+
+  // If there was no BHO, it will get created. Should be of known type
+  // and contain the appropriate site.
+  CComVariant bho_dropbox;
+  // Empty dropbox will trigger bho construction process.
+  EXPECT_CALL(*browser_, GetProperty(StrEq(bho_class_id_text_), _)).
+      WillOnce(SetArg1Variant(&bho_dropbox));
+  // New bho should be dropped into the dropbox.
+  EXPECT_CALL(*browser_, PutProperty(StrEq(bho_class_id_text_), _)).
+      WillOnce(GetArg1Variant(&bho_dropbox));
+  ASSERT_HRESULT_SUCCEEDED(tool_band_->CallEnsureBhoIsAvailable());
+  ASSERT_EQ(bho_dropbox.vt, VT_UNKNOWN);
+  ASSERT_TRUE(bho_dropbox.punkVal != NULL);
+
+  CComPtr<IUnknown> retrieved_bho_raw(bho_dropbox.punkVal);
+  CComPtr<IObjectWithSite> retrieved_bho;
+  ASSERT_HRESULT_SUCCEEDED(retrieved_bho_raw.QueryInterface(&retrieved_bho));
+
+  CComPtr<IUnknown> applied_site;
+  ASSERT_HRESULT_SUCCEEDED(retrieved_bho->GetSite(IID_IUnknown,
+      reinterpret_cast<void**>(&applied_site)));
+
+  ASSERT_TRUE(applied_site.IsEqualObject(browser_keeper_));
+}
+
+TEST_F(BhoInToolBandTest, BhoCreationErrorHandling) {
+  testing::LogDisabler no_dchecks;
+
+  // A failed call to get the property causes error.
+  EXPECT_CALL(*browser_, GetProperty(StrEq(bho_class_id_text_), _)).
+      WillOnce(Return(E_FAIL));
+  ASSERT_HRESULT_FAILED(tool_band_->CallEnsureBhoIsAvailable());
+
+  // Anything (whatever it is) in the property will not cause creating bho.
+  CComVariant weird_content(browser_);
+  EXPECT_CALL(*browser_, GetProperty(StrEq(bho_class_id_text_), _)).
+      WillOnce(SetArg1Variant(&weird_content));
+  tool_band_->CallEnsureBhoIsAvailable();
+  ASSERT_EQ(tool_band_->bho_counter_, 0);
 }
 
 }  // namespace

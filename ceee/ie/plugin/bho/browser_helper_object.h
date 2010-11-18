@@ -11,6 +11,7 @@
 #include <mshtml.h>  // Needed for exdisp.h
 #include <exdisp.h>
 #include <exdispid.h>
+#include <deque>
 #include <map>
 #include <set>
 #include <string>
@@ -39,6 +40,7 @@ class ATL_NO_VTABLE BrowserHelperObject
       public IDispEventSimpleImpl<0,
                                   BrowserHelperObject,
                                   &DIID_DWebBrowserEvents2>,
+      public IPersistImpl<BrowserHelperObject>,
       public IFrameEventHandlerHost,
       public IExtensionPortMessagingProvider,
       public IChromeFrameHostEvents,
@@ -50,6 +52,7 @@ class ATL_NO_VTABLE BrowserHelperObject
 
   BEGIN_COM_MAP(BrowserHelperObject)
     COM_INTERFACE_ENTRY(IObjectWithSite)
+    COM_INTERFACE_ENTRY(IPersist)
     COM_INTERFACE_ENTRY_IID(IID_IFrameEventHandlerHost, IFrameEventHandlerHost)
   END_COM_MAP()
 

@@ -171,6 +171,12 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   void OnSize(UINT type, CSize size);
   // @}
 
+  // Toolband requires a specific BHO to work. Normally, IE will create BHO
+  // about the same time as the toolband. However, in some scenarios
+  // (re-enabling the gadget) BHOs for the current pages won't be created,
+  // even though the bar will.
+  HRESULT EnsureBhoIsAvailable();
+
  private:
   // Initializes the toolband to the given site.
   // Called from SetSite.
@@ -194,6 +200,9 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   // have been installed first).
   bool ShouldForceOwnLine();
   void ClearForceOwnLineFlag();
+
+  // A test seam for BHO instantiation test.
+  virtual HRESULT CreateBhoInstance(IObjectWithSite** new_bho_instance);
 
   // The web browser that initialized this toolband.
   CComPtr<IWebBrowser2> web_browser_;

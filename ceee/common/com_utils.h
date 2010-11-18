@@ -88,6 +88,10 @@ std::ostream& operator<<(std::ostream& os, const LogWe& we);
 // replaceables, but no %APPID%.
 HRESULT ModuleRegistrationWithoutAppid(int reg_id, BOOL should_register);
 
+// Converts GUID into text and places in the provided object. Returns true if
+// succeeded. Logs possible error codes.
+bool GuidToString(const GUID& id, std::wstring* guid_as_text);
+
 }  // namespace com
 
 #endif  // CEEE_COMMON_COM_UTILS_H_
