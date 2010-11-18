@@ -1148,7 +1148,7 @@ void LayoutTestController::setMockSpeechInputResult(const CppArgumentList& args,
 bool LayoutTestController::CppVariantToBool(const CppVariant& value) {
   if (value.isBool())
     return value.ToBoolean();
-  else if (value.isInt32())
+  else if (value.isNumber())
     return 0 != value.ToInt32();
   else if (value.isString()) {
     std::string valueString = value.ToString();
@@ -1162,7 +1162,7 @@ bool LayoutTestController::CppVariantToBool(const CppVariant& value) {
 }
 
 int32 LayoutTestController::CppVariantToInt32(const CppVariant& value) {
-  if (value.isInt32())
+  if (value.isNumber())
     return value.ToInt32();
   else if (value.isString()) {
     int number;
@@ -1315,7 +1315,7 @@ void LayoutTestController::clearAllDatabases(
 void LayoutTestController::setDatabaseQuota(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
-  if ((args.size() >= 1) && args[0].isInt32())
+  if ((args.size() >= 1) && args[0].isNumber())
     SimpleDatabaseSystem::GetInstance()->SetDatabaseQuota(args[0].ToInt32());
 }
 
@@ -1425,7 +1425,7 @@ void LayoutTestController::setTimelineProfilingEnabled(
 void LayoutTestController::evaluateInWebInspector(const CppArgumentList& args,
                                                   CppVariant* result) {
   result->SetNull();
-  if (args.size() < 2 || !args[0].isInt32() || !args[1].isString())
+  if (args.size() < 2 || !args[0].isNumber() || !args[1].isString())
     return;
   shell_->dev_tools_agent()->evaluateInWebInspector(args[0].ToInt32(),
                                                     args[1].ToString());
@@ -1506,8 +1506,7 @@ void LayoutTestController::setMockGeolocationPosition(
 
 void LayoutTestController::setMockGeolocationError(const CppArgumentList& args,
                                                    CppVariant* result) {
-  if (args.size() < 2 ||
-      !args[0].isInt32() || !args[1].isString())
+  if (args.size() < 2 || !args[0].isNumber() || !args[1].isString())
     return;
   WebGeolocationServiceMock::setMockGeolocationError(
       args[0].ToInt32(), WebString::fromUTF8(args[1].ToString()));
