@@ -22,14 +22,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DesktopNotificationsTest;
-typedef LoggingNotificationDelegate<DesktopNotificationsTest>
+typedef LoggingNotificationProxyBase<DesktopNotificationsTest>
     LoggingNotificationProxy;
 
 // Test version of the balloon collection which counts the number
 // of notifications that are added to it.
 class MockBalloonCollection : public BalloonCollectionImpl {
  public:
-  MockBalloonCollection() {}
+  MockBalloonCollection() :
+    log_proxy_(new LoggingNotificationProxy()) {}
 
   // Our mock collection has an area large enough for a fixed number
   // of balloons.
@@ -39,6 +40,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
   // BalloonCollectionImpl overrides
   virtual void Add(const Notification& notification,
                    Profile* profile);
+  virtual bool Remove(const Notification& notification);
   virtual bool HasSpace() const { return count() < kMockBalloonSpace; }
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile);
@@ -61,6 +63,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
 
  private:
   std::deque<Balloon*> balloons_;
+  scoped_refptr<LoggingNotificationProxy> log_proxy_;
 };
 
 class DesktopNotificationsTest : public testing::Test {

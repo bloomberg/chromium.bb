@@ -215,7 +215,7 @@ DesktopNotificationService::DesktopNotificationService(Profile* profile,
     NotificationUIManager* ui_manager)
     : profile_(profile),
       ui_manager_(ui_manager) {
-  prefs_registrar_.Init(profile_->GetPrefs());
+  registrar_.Init(profile_->GetPrefs());
   InitPrefs();
   StartObserving();
 }
@@ -260,24 +260,16 @@ void DesktopNotificationService::InitPrefs() {
 
 void DesktopNotificationService::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
-    prefs_registrar_.Add(prefs::kDesktopNotificationDefaultContentSetting,
-                         this);
-    prefs_registrar_.Add(prefs::kDesktopNotificationAllowedOrigins, this);
-    prefs_registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
-
-    notification_registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                                NotificationService::AllSources());
+    registrar_.Add(prefs::kDesktopNotificationDefaultContentSetting, this);
+    registrar_.Add(prefs::kDesktopNotificationAllowedOrigins, this);
+    registrar_.Add(prefs::kDesktopNotificationDeniedOrigins, this);
   }
-
-  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
-                              Source<Profile>(profile_));
 }
 
 void DesktopNotificationService::StopObserving() {
   if (!profile_->IsOffTheRecord()) {
-    prefs_registrar_.RemoveAll();
+    registrar_.RemoveAll();
   }
-  notification_registrar_.RemoveAll();
 }
 
 void DesktopNotificationService::GrantPermission(const GURL& origin) {
@@ -307,24 +299,11 @@ void DesktopNotificationService::DenyPermission(const GURL& origin) {
 void DesktopNotificationService::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
-  if (NotificationType::PREF_CHANGED == type) {
-    const std::string& name = *Details<std::string>(details).ptr();
-    OnPrefsChanged(name);
-  } else if (NotificationType::EXTENSION_UNLOADED == type) {
-    // Remove all notifications currently shown or queued by the extension
-    // which was unloaded.
-    Extension* extension = Details<Extension>(details).ptr();
-    if (extension)
-      ui_manager_->CancelAllBySourceOrigin(extension->url());
-  } else if (NotificationType::PROFILE_DESTROYED == type) {
-    StopObserving();
-  }
-}
-
-void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
+  DCHECK(NotificationType::PREF_CHANGED == type);
   PrefService* prefs = profile_->GetPrefs();
+  const std::string& name = *Details<std::string>(details).ptr();
 
-  if (pref_name == prefs::kDesktopNotificationAllowedOrigins) {
+  if (name == prefs::kDesktopNotificationAllowedOrigins) {
     NotificationService::current()->Notify(
         NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
         Source<DesktopNotificationService>(this),
@@ -338,7 +317,7 @@ void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheAllowedOrigins,
             allowed_origins));
-  } else if (pref_name == prefs::kDesktopNotificationDeniedOrigins) {
+  } else if (name == prefs::kDesktopNotificationDeniedOrigins) {
     NotificationService::current()->Notify(
         NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
         Source<DesktopNotificationService>(this),
@@ -352,7 +331,7 @@ void DesktopNotificationService::OnPrefsChanged(const std::string& pref_name) {
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheDeniedOrigins,
             denied_origins));
-  } else if (pref_name == prefs::kDesktopNotificationDefaultContentSetting) {
+  } else if (name == prefs::kDesktopNotificationDefaultContentSetting) {
     NotificationService::current()->Notify(
         NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
         Source<DesktopNotificationService>(this),
@@ -584,7 +563,9 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  return ui_manager_->CancelById(proxy->id());
+  // TODO(johnnyg): clean up this "empty" notification.
+  Notification notif(GURL(), GURL(), string16(), string16(), proxy);
+  return ui_manager_->Cancel(notif);
 }
 
 

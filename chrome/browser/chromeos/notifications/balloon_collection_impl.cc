@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
@@ -22,6 +23,17 @@ namespace {
 // Margin from the edge of the work area
 const int kVerticalEdgeMargin = 5;
 const int kHorizontalEdgeMargin = 5;
+
+class NotificationMatcher {
+ public:
+  explicit NotificationMatcher(const Notification& notification)
+      : notification_(notification) {}
+  bool operator()(const Balloon* b) const {
+    return notification_.IsSame(b->notification());
+  }
+ private:
+  Notification notification_;
+};
 
 }  // namespace
 
@@ -40,7 +52,7 @@ BalloonCollectionImpl::~BalloonCollectionImpl() {
 void BalloonCollectionImpl::Add(const Notification& notification,
                                 Profile* profile) {
   Balloon* new_balloon = MakeBalloon(notification, profile);
-  base_.Add(new_balloon);
+  balloons_.push_back(new_balloon);
   new_balloon->Show();
   notification_ui_->Add(new_balloon);
 
@@ -53,13 +65,13 @@ bool BalloonCollectionImpl::AddDOMUIMessageCallback(
     const Notification& notification,
     const std::string& message,
     MessageCallback* callback) {
-  Balloon* balloon = FindBalloon(notification);
-  if (!balloon) {
+  Balloons::iterator iter = FindBalloon(notification);
+  if (iter == balloons_.end()) {
     delete callback;
     return false;
   }
   BalloonViewHost* host =
-      static_cast<BalloonViewHost*>(balloon->view()->GetHost());
+      static_cast<BalloonViewHost*>((*iter)->view()->GetHost());
   return host->AddDOMUIMessageCallback(message, callback);
 }
 
@@ -68,11 +80,10 @@ void BalloonCollectionImpl::AddSystemNotification(
     Profile* profile,
     bool sticky,
     bool control) {
-
   Balloon* new_balloon = new Balloon(notification, profile, this);
   new_balloon->set_view(
       new chromeos::BalloonViewImpl(sticky, control, true));
-  base_.Add(new_balloon);
+  balloons_.push_back(new_balloon);
   new_balloon->Show();
   notification_ui_->Add(new_balloon);
 
@@ -83,9 +94,10 @@ void BalloonCollectionImpl::AddSystemNotification(
 
 bool BalloonCollectionImpl::UpdateNotification(
     const Notification& notification) {
-  Balloon* balloon = FindBalloon(notification);
-  if (!balloon)
+  Balloons::iterator iter = FindBalloon(notification);
+  if (iter == balloons_.end())
     return false;
+  Balloon* balloon = *iter;
   balloon->Update(notification);
   notification_ui_->Update(balloon);
   return true;
@@ -93,9 +105,10 @@ bool BalloonCollectionImpl::UpdateNotification(
 
 bool BalloonCollectionImpl::UpdateAndShowNotification(
     const Notification& notification) {
-  Balloon* balloon = FindBalloon(notification);
-  if (!balloon)
+  Balloons::iterator iter = FindBalloon(notification);
+  if (iter == balloons_.end())
     return false;
+  Balloon* balloon = *iter;
   balloon->Update(notification);
   bool updated = notification_ui_->Update(balloon);
   DCHECK(updated);
@@ -103,12 +116,15 @@ bool BalloonCollectionImpl::UpdateAndShowNotification(
   return true;
 }
 
-bool BalloonCollectionImpl::RemoveById(const std::string& id) {
-  return base_.CloseById(id);
-}
-
-bool BalloonCollectionImpl::RemoveBySourceOrigin(const GURL& origin) {
-  return base_.CloseAllBySourceOrigin(origin);
+bool BalloonCollectionImpl::Remove(const Notification& notification) {
+  Balloons::iterator iter = FindBalloon(notification);
+  if (iter != balloons_.end()) {
+    // Balloon.CloseByScript() will cause OnBalloonClosed() to be called on
+    // this object, which will remove it from the collection and free it.
+    (*iter)->CloseByScript();
+    return true;
+  }
+  return false;
 }
 
 bool BalloonCollectionImpl::HasSpace() const {
@@ -121,9 +137,15 @@ void BalloonCollectionImpl::ResizeBalloon(Balloon* balloon,
 }
 
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
-  notification_ui_->Remove(source);
-  base_.Remove(source);
+  // We want to free the balloon when finished.
+  scoped_ptr<Balloon> closed(source);
 
+  notification_ui_->Remove(source);
+
+  Balloons::iterator iter = FindBalloon(source->notification());
+  if (iter != balloons_.end()) {
+    balloons_.erase(iter);
+  }
   // There may be no listener in a unit test.
   if (space_change_listener_)
     space_change_listener_->OnBalloonSpaceChanged();
@@ -148,6 +170,7 @@ void BalloonCollectionImpl::Shutdown() {
   // themselves from the parent.
   DVLOG(1) << "Shutting down notification UI";
   notification_ui_.reset();
+  STLDeleteElements(&balloons_);
 }
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
@@ -155,6 +178,13 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
   Balloon* new_balloon = new Balloon(notification, profile, this);
   new_balloon->set_view(new chromeos::BalloonViewImpl(false, true, false));
   return new_balloon;
+}
+
+std::deque<Balloon*>::iterator BalloonCollectionImpl::FindBalloon(
+    const Notification& notification) {
+  return std::find_if(balloons_.begin(),
+                      balloons_.end(),
+                      NotificationMatcher(notification));
 }
 
 }  // namespace chromeos

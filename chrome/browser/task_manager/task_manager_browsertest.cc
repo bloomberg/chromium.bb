@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profile.h"
@@ -201,9 +200,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeNotificationChanges) {
   WaitForResourceChange(3);
   notifications->Add(n2, browser()->profile());
   WaitForResourceChange(4);
-  notifications->CancelById(n1.notification_id());
+  notifications->Cancel(n1);
   WaitForResourceChange(3);
-  notifications->CancelById(n2.notification_id());
+  notifications->Cancel(n2);
   WaitForResourceChange(2);
 }
 
