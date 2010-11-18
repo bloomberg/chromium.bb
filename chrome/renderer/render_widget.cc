@@ -75,7 +75,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       popup_type_(popup_type),
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
-      is_gpu_rendering_active_(false) {
+      is_accelerated_compositing_active_(false) {
   RenderProcess::current()->AddRefProcess();
   DCHECK(render_thread_);
 }
@@ -246,7 +246,7 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
   // an ACK if we are resized to a non-empty rect.
   webwidget_->resize(new_size);
   if (!new_size.IsEmpty()) {
-    if (!webwidget_->isAcceleratedCompositingActive()) {
+    if (!is_accelerated_compositing_active_) {
       // Resize should have caused an invalidation of the entire view.
       DCHECK(paint_aggregator_.HasPendingUpdate());
     }
@@ -278,7 +278,7 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
   set_next_paint_is_restore_ack();
 
   // Generate a full repaint.
-  if (!webwidget_->isAcceleratedCompositingActive()) {
+  if (!is_accelerated_compositing_active_) {
     didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
   } else {
     scheduleComposite();
@@ -465,21 +465,6 @@ void RenderWidget::DoDeferredUpdate() {
   // GpuRenderingActivated message.
   webwidget_->layout();
 
-  // If we are using accelerated compositing then all the drawing
-  // to the associated window happens directly from the gpu process and the
-  // browser process shouldn't do any drawing.
-  // TODO(vangelis): Currently the accelerated compositing path relies on
-  // invalidating parts of the page so that we get a request to redraw.
-  // This needs to change to a model where the compositor updates the
-  // contents of the page independently and the browser process gets no
-  // longer involved.
-  if (webwidget_->isAcceleratedCompositingActive() !=
-      is_gpu_rendering_active_) {
-    is_gpu_rendering_active_ = webwidget_->isAcceleratedCompositingActive();
-    Send(new ViewHostMsg_GpuRenderingActivated(
-        routing_id_, is_gpu_rendering_active_));
-  }
-
   // OK, save the pending update to a local since painting may cause more
   // invalidation.  Some WebCore rendering objects only layout when painted.
   PaintAggregator::PendingUpdate update = paint_aggregator_.GetPendingUpdate();
@@ -495,13 +480,13 @@ void RenderWidget::DoDeferredUpdate() {
   std::vector<gfx::Rect> copy_rects;
   gfx::Rect optimized_copy_rect, optimized_copy_location;
   if (update.scroll_rect.IsEmpty() &&
-      !is_gpu_rendering_active_ &&
+      !is_accelerated_compositing_active_ &&
       GetBitmapForOptimizedPluginPaint(bounds, &dib, &optimized_copy_location,
                                        &optimized_copy_rect)) {
     bounds = optimized_copy_location;
     copy_rects.push_back(optimized_copy_rect);
     dib_id = dib->id();
-  } else if (!is_gpu_rendering_active_) {
+  } else if (!is_accelerated_compositing_active_) {
     // Compute a buffer for painting and cache it.
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
@@ -548,7 +533,7 @@ void RenderWidget::DoDeferredUpdate() {
   params.bitmap_rect = bounds;
   params.dx = update.scroll_delta.x();
   params.dy = update.scroll_delta.y();
-  if (is_gpu_rendering_active_) {
+  if (is_accelerated_compositing_active_) {
     // If painting is done via the gpu process then we clear out all damage
     // rects to save the browser process from doing unecessary work.
     params.scroll_rect = gfx::Rect();
@@ -576,15 +561,8 @@ void RenderWidget::DoDeferredUpdate() {
 // WebWidgetClient
 
 void RenderWidget::didInvalidateRect(const WebRect& rect) {
-  if (webwidget_->isAcceleratedCompositingActive()) {
-    // Drop invalidates on the floor when we are in compositing mode.
-    // TODO(nduca): Stop WebViewImpl from sending invalidates in the first
-    // place.
-    if (!(rect.x == 0 && rect.y == 0 &&
-          rect.width == 1 && rect.height == 1)) {
-      return;
-    }
-  }
+  DCHECK(!is_accelerated_compositing_active_ ||
+    (rect.x == 0 && rect.y == 0 && rect.width == 1 && rect.height == 1));
 
   // We only want one pending DoDeferredUpdate call at any time...
   bool update_pending = paint_aggregator_.HasPendingUpdate();
@@ -617,7 +595,7 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
 void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
   // Drop scrolls on the floor when we are in compositing mode.
   // TODO(nduca): stop WebViewImpl from sending scrolls in the first place.
-  if (webwidget_->isAcceleratedCompositingActive())
+  if (is_accelerated_compositing_active_)
     return;
 
   // We only want one pending DoDeferredUpdate call at any time...
@@ -646,6 +624,12 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
   //    the work that we will need to do.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &RenderWidget::CallDoDeferredUpdate));
+}
+
+void RenderWidget::didActivateAcceleratedCompositing(bool active) {
+  is_accelerated_compositing_active_ = active;
+  Send(new ViewHostMsg_GpuRenderingActivated(
+    routing_id_, is_accelerated_compositing_active_));
 }
 
 void RenderWidget::scheduleComposite() {
@@ -874,7 +858,7 @@ void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
     return;
 
   set_next_paint_is_repaint_ack();
-  if (webwidget_->isAcceleratedCompositingActive()) {
+  if (is_accelerated_compositing_active_) {
     scheduleComposite();
   } else {
     gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());

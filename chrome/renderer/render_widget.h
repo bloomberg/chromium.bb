@@ -94,6 +94,7 @@ class RenderWidget : public IPC::Channel::Listener,
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect&);
   virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect);
+  virtual void didActivateAcceleratedCompositing(bool active);
   virtual void scheduleComposite();
   virtual void didFocus();
   virtual void didBlur();
@@ -352,8 +353,9 @@ class RenderWidget : public IPC::Channel::Listener,
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
 
-  // Set to true if painting to the window is handled by the GPU process.
-  bool is_gpu_rendering_active_;
+  // Set to true if painting to the window is handled by the accelerated
+  // compositor.
+  bool is_accelerated_compositing_active_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
