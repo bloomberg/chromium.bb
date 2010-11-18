@@ -27,7 +27,10 @@ struct PPB_FileRef_Dev {
   // Returns the file system identifier of this file.
   PP_FileSystemType_Dev (*GetFileSystemType)(PP_Resource file_ref);
 
-  // Returns the name of the file.
+  // Returns the name of the file. The value returned by this function does not
+  // include any path component (such as the name of the parent directory, for
+  // example). It is just the name of the file. To get the full file path, use
+  // the GetPath() function.
   struct PP_Var (*GetName)(PP_Resource file_ref);
 
   // Returns the absolute path of the file.  This method fails if the file
