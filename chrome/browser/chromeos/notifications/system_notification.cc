@@ -65,9 +65,7 @@ void SystemNotification::Show(const string16& message,
 
 void SystemNotification::Hide() {
   if (visible_) {
-    collection_->Remove(Notification(GURL(), GURL(), string16(), string16(),
-                                     delegate_.get()));
-
+    collection_->RemoveById(delegate_->id());
     visible_ = false;
     urgent_ = false;
   }

@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/content_settings_types.h"

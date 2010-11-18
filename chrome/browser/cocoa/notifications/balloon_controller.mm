@@ -17,6 +17,7 @@
 #include "chrome/browser/cocoa/notifications/balloon_view_host_mac.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_options_menu_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

@@ -66,17 +66,34 @@ void NotificationUIManager::Add(const Notification& notification,
   CheckAndShowNotifications();
 }
 
-bool NotificationUIManager::Cancel(const Notification& notification) {
-  // First look through the notifications that haven't been shown.  If not
-  // found there, call to the active balloon collection to tear it down.
+bool NotificationUIManager::CancelById(const std::string& id) {
+  // See if this ID hasn't been shown yet.
   NotificationDeque::iterator iter;
   for (iter = show_queue_.begin(); iter != show_queue_.end(); ++iter) {
-    if (notification.IsSame((*iter)->notification())) {
+    if ((*iter)->notification().notification_id() == id) {
       show_queue_.erase(iter);
       return true;
     }
   }
-  return balloon_collection_->Remove(notification);
+  // If it has been shown, remove it from the balloon collections.
+  return balloon_collection_->RemoveById(id);
+}
+
+bool NotificationUIManager::CancelAllBySourceOrigin(const GURL& source) {
+  // Same pattern as CancelById, but more complicated than the above
+  // because there may be multiple notifications from the same source.
+  bool removed = false;
+  NotificationDeque::iterator iter;
+  for (iter = show_queue_.begin(); iter != show_queue_.end(); ++iter) {
+    if ((*iter)->notification().origin_url() == source) {
+      iter = show_queue_.erase(iter);
+      removed = true;
+    } else {
+      ++iter;
+    }
+  }
+
+  return balloon_collection_->RemoveBySourceOrigin(source) || removed;
 }
 
 void NotificationUIManager::CheckAndShowNotifications() {

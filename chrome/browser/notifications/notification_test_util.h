@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_TEST_UTIL_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "gfx/size.h"
@@ -14,7 +16,7 @@
 // the notification events are not important.
 class MockNotificationDelegate : public NotificationDelegate {
  public:
-  explicit MockNotificationDelegate(std::string id) : id_(id) {}
+  explicit MockNotificationDelegate(const std::string& id) : id_(id) {}
   virtual ~MockNotificationDelegate() {}
 
   // NotificationDelegate interface.
@@ -26,6 +28,8 @@ class MockNotificationDelegate : public NotificationDelegate {
 
  private:
   std::string id_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockNotificationDelegate);
 };
 
 // Mock implementation of Javascript object proxy which logs events that
@@ -35,10 +39,11 @@ class MockNotificationDelegate : public NotificationDelegate {
 // |Logger| class provided in template must implement method
 // static void log(string);
 template<class Logger>
-class LoggingNotificationProxyBase : public NotificationObjectProxy {
+class LoggingNotificationDelegate : public NotificationDelegate {
  public:
-  LoggingNotificationProxyBase() :
-      NotificationObjectProxy(0, 0, 0, false) {}
+  explicit LoggingNotificationDelegate(std::string id)
+      : notification_id_(id) {
+  }
 
   // NotificationObjectProxy override
   virtual void Display() {
@@ -47,12 +52,22 @@ class LoggingNotificationProxyBase : public NotificationObjectProxy {
   virtual void Error() {
     Logger::log("notification error\n");
   }
+  virtual void Click() {
+    Logger::log("notification clicked\n");
+  }
   virtual void Close(bool by_user) {
     if (by_user)
       Logger::log("notification closed by user\n");
     else
       Logger::log("notification closed by script\n");
   }
+  virtual std::string id() const {
+    return notification_id_;
+  }
+ private:
+  std::string notification_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoggingNotificationDelegate);
 };
 
 // Test version of a balloon view which doesn't do anything

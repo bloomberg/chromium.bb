@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
 #include "chrome/browser/chromeos/notifications/system_notification_factory.h"
-#include "chrome/browser/notifications/notification_delegate.h"
+#include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_service.h"
@@ -23,22 +23,6 @@
 #include "chrome/test/ui_test_utils.h"
 
 namespace {
-
-class MockNotificationDelegate : public NotificationDelegate {
- public:
-  explicit MockNotificationDelegate(const std::string& id) : id_(id) {}
-
-  virtual void Display() {}
-  virtual void Error() {}
-  virtual void Close(bool by_user) {}
-  virtual void Click() {}
-  virtual std::string id() const { return id_; }
-
- private:
-  std::string id_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockNotificationDelegate);
-};
 
 // The name of ChromeOS's window manager.
 const char* kChromeOsWindowManagerName = "chromeos-wm";
@@ -162,14 +146,14 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestBasic) {
   EXPECT_EQ(2, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
-  collection->Remove(NewMockNotification("1"));
+  collection->RemoveById("1");
   ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(1, tester->GetNewNotificationCount());
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
-  collection->Remove(NewMockNotification("2"));
+  collection->RemoveById("2");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNewNotificationCount());
   EXPECT_EQ(0, tester->GetNotificationCount());
@@ -198,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestKeepSizeState) {
   panel->OnMouseMotion(gfx::Point(10, 10));
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
-  collection->Remove(NewMockNotification("1"));
+  collection->RemoveById("1");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, tester->GetNewNotificationCount());
   EXPECT_EQ(1, tester->GetNotificationCount());
@@ -210,20 +194,20 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestKeepSizeState) {
   EXPECT_EQ(2, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
-  collection->Remove(NewMockNotification("1"));
+  collection->RemoveById("1");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, tester->GetNewNotificationCount());
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::KEEP_SIZE, tester->state());
 
-  collection->Remove(NewMockNotification("2"));
+  collection->RemoveById("2");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 
   collection->Add(NewMockNotification("3"), browser()->profile());
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
-  collection->Remove(NewMockNotification("3"));
+  collection->RemoveById("3");
 
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNotificationCount());
@@ -257,10 +241,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestSystemNotification) {
   EXPECT_EQ(1, tester->GetStickyNotificationCount());
 
   // Dismiss the notification.
-  // TODO(oshima): Consider updating API to Remove(NotificationDelegate)
-  // or Remove(std::string id);
-  collection->Remove(Notification(GURL(), GURL(), string16(), string16(),
-                                  delegate.get()));
+  collection->RemoveById(delegate->id());
   ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0, tester->GetStickyNotificationCount());
@@ -287,11 +268,11 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition1) {
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
 
-  collection->Remove(NewMockNotification("2"));
+  collection->RemoveById("2");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
 
-  collection->Remove(NewMockNotification("1"));
+  collection->RemoveById("1");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
@@ -357,20 +338,19 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestStateTransition2) {
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
-  collection->Remove(NewMockNotification("1"));
+  collection->RemoveById("1");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
 
   // Removing the system notification should minimize the panel.
-  collection->Remove(NewMockNotification("3"));
+  collection->RemoveById("3");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::MINIMIZED, tester->state());
   WaitForPanelState(tester, PanelController::MINIMIZED);
 
   // Removing the last notification. Should close the panel.
-
-  collection->Remove(NewMockNotification("2"));
+  collection->RemoveById("2");
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0, tester->GetNotificationCount());
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());

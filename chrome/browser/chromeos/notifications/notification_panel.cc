@@ -848,10 +848,8 @@ PanelController* NotificationPanelTester::GetPanelController() const {
 BalloonViewImpl* NotificationPanelTester::GetBalloonView(
     BalloonCollectionImpl* collection,
     const Notification& notification) {
-  BalloonCollectionImpl::Balloons::iterator iter =
-      collection->FindBalloon(notification);
-  DCHECK(iter != collection->balloons_.end());
-  Balloon* balloon = (*iter);
+  Balloon* balloon = collection->FindBalloon(notification);
+  DCHECK(balloon);
   return GetBalloonViewOf(balloon);
 }
 

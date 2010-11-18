@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>

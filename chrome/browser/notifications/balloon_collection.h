@@ -9,11 +9,13 @@
 #pragma once
 
 #include <deque>
+#include <string>
 
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 
 class Balloon;
+class GURL;
 class Notification;
 class Profile;
 
@@ -44,9 +46,13 @@ class BalloonCollection {
   virtual void Add(const Notification& notification,
                    Profile* profile) = 0;
 
-  // Removes a balloon from the collection if present.  Returns
+  // Removes any balloons that have this notification id.  Returns
   // true if anything was removed.
-  virtual bool Remove(const Notification& notification) = 0;
+  virtual bool RemoveById(const std::string& id) = 0;
+
+  // Removes any balloons that have this source origin.  Returns
+  // true if anything was removed.
+  virtual bool RemoveBySourceOrigin(const GURL& source_origin) = 0;
 
   // Is there room to add another notification?
   virtual bool HasSpace() const = 0;

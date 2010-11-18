@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "googleurl/src/gurl.h"
@@ -42,7 +44,7 @@ class Notification {
   void Click() const { delegate()->Click(); }
   void Close(bool by_user) const { delegate()->Close(by_user); }
 
-  bool IsSame(const Notification& other) const;
+  std::string notification_id() const { return delegate()->id(); }
 
  private:
   NotificationDelegate* delegate() const { return delegate_.get(); }
