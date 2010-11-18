@@ -254,6 +254,18 @@ bool PersonalDataManager::ImportFormData(
     }
   }
 
+  // Don't import if we already have this info.
+  if (imported_credit_card_.get()) {
+    for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
+         iter != credit_cards_.end();
+         ++iter) {
+      if (imported_credit_card_->IsSubsetOf(**iter)) {
+        imported_credit_card_.reset();
+        break;
+      }
+    }
+  }
+
   // We always save imported profiles.
   SaveImportedProfile();
 

@@ -1222,11 +1222,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   personal_data_->ImportFormData(forms);
   personal_data_->SaveImportedCreditCard();
 
-  // Wait for the refresh.
-  EXPECT_CALL(personal_data_observer_,
-      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  MessageLoop::current()->Run();
+  // Note: no refresh here.
 
   // No change is expected.
   CreditCard expected2;
