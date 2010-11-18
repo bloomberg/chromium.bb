@@ -433,8 +433,6 @@
       <include name="IDR_UPDATE_FAIL" file="update_fail.png" type="BINDATA" />
       <include name="IDR_UPDATE_MENU" file="update_menu.png" type="BINDATA" />
       <include name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" type="BINDATA" />
-      <include name="IDR_UPGRADE_DOT_ACTIVE" file="upgrade_dot_active.png" type="BINDATA" />
-      <include name="IDR_UPGRADE_DOT_INACTIVE" file="upgrade_dot_inactive.png" type="BINDATA" />
       <include name="IDR_INFO" file="info_small.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
       <include name="IDR_SPEECH_INPUT_MIC_EMPTY" file="speech_input_mic_empty.png" type="BINDATA" />

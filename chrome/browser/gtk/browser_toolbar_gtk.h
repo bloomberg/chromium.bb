@@ -10,12 +10,10 @@
 #include <string>
 
 #include "app/active_window_watcher_x.h"
-#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
 #include "app/menus/accelerator.h"
 #include "app/menus/simple_menu_model.h"
-#include "app/throb_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/custom_button.h"
@@ -44,9 +42,7 @@ class ToolbarModel;
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public menus::AcceleratorProvider,
                           public MenuGtk::Delegate,
-                          public NotificationObserver,
-                          public AnimationDelegate,
-                          public ActiveWindowWatcherX::Observer {
+                          public NotificationObserver {
  public:
   explicit BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
   virtual ~BrowserToolbarGtk();
@@ -112,14 +108,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Message that we should react to a state change.
   void UpdateTabContents(TabContents* contents, bool should_restore_state);
 
-  // AnimationDelegate implementation ------------------------------------------
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
-
-  // ActiveWindowWatcher::Observer implementation ------------------------------
-  virtual void ActiveWindowChanged(GdkWindow* active_window);
-
  private:
   // Connect/Disconnect signals for dragging a url onto the home button.
   void SetUpDragForHomeButton(bool enable);
@@ -128,10 +116,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // depending on the state of the browser window. Returns false if no action
   // was taken (the roundedness was already correct), true otherwise.
   bool UpdateRoundedness();
-
-  // Calculates whether the upgrade notification dot should be faded at all
-  // (as opposed to solid).
-  bool UpgradeAnimationIsFaded();
 
   // Gtk callback for the "expose-event" signal.
   // The alignment contains the toolbar.
@@ -152,19 +136,12 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                        GdkDragContext*, gint, gint, GtkSelectionData*,
                        guint, guint);
 
-  // Used to stop the upgrade notification animation.
-  CHROMEGTK_CALLBACK_0(BrowserToolbarGtk, void, OnWrenchMenuShow);
-
   // Used to draw the upgrade notification badge.
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnWrenchMenuButtonExpose,
                        GdkEventExpose*);
 
   // Updates preference-dependent state.
   void NotifyPrefChanged(const std::string* pref);
-
-  // Start the upgrade notification animation if we have detected an upgrade
-  // and the current toolbar is focused.
-  void MaybeShowUpgradeReminder();
 
   static void SetSyncMenuLabel(GtkWidget* widget, gpointer userdata);
 
@@ -235,11 +212,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Manages the home button drop signal handler.
   scoped_ptr<GtkSignalRegistrar> drop_handler_;
-
-  ThrobAnimation upgrade_reminder_animation_;
-
-  // We have already shown and dismissed the upgrade reminder animation.
-  bool upgrade_reminder_canceled_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToolbarGtk);
 };

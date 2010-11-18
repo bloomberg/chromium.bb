@@ -74,13 +74,6 @@ const int kToolbarWidgetSpacing = 1;
 // Amount of rounding on top corners of toolbar. Only used in Gtk theme mode.
 const int kToolbarCornerSize = 3;
 
-// The offset in pixels of the upgrade dot on the app menu.
-const int kUpgradeDotOffset = 6;
-
-// The duration of the upgrade notification animation (actually the duration
-// of a half-throb).
-const int kThrobDuration = 1000;
-
 void SetWidgetHeightRequest(GtkWidget* widget, gpointer user_data) {
   gtk_widget_set_size_request(widget, -1, GPOINTER_TO_INT(user_data));
 }
@@ -96,9 +89,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       wrench_menu_model_(this, browser),
       browser_(browser),
       window_(window),
-      profile_(NULL),
-      upgrade_reminder_animation_(this),
-      upgrade_reminder_canceled_(false) {
+      profile_(NULL) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
@@ -110,15 +101,9 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   registrar_.Add(this,
                  NotificationType::UPGRADE_RECOMMENDED,
                  NotificationService::AllSources());
-
-  upgrade_reminder_animation_.SetThrobDuration(kThrobDuration);
-
-  ActiveWindowWatcherX::AddObserver(this);
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
-  ActiveWindowWatcherX::RemoveObserver(this);
-
   browser_->command_updater()->RemoveCommandObserver(IDC_BACK, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_HOME, this);
@@ -229,8 +214,6 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_), wrench_box, FALSE, FALSE, 4);
 
   wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
-  g_signal_connect(wrench_menu_->widget(), "show",
-                   G_CALLBACK(OnWrenchMenuShowThunk), this);
   registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
                  Source<Profile>(browser_->profile()));
 
@@ -254,8 +237,6 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   SetViewIDs();
   theme_provider_->InitThemesFor(this);
-
-  MaybeShowUpgradeReminder();
 }
 
 void BrowserToolbarGtk::SetViewIDs() {
@@ -395,7 +376,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
 
     UpdateRoundedness();
   } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
-    MaybeShowUpgradeReminder();
+    gtk_widget_queue_draw(wrench_menu_button_->widget());
   } else if (type == NotificationType::ZOOM_LEVEL_CHANGED) {
     // If our zoom level changed, we need to tell the menu to update its state,
     // since the menu could still be open.
@@ -638,46 +619,9 @@ void BrowserToolbarGtk::NotifyPrefChanged(const std::string* pref) {
                            !home_page_is_new_tab_page_.IsManaged());
 }
 
-void BrowserToolbarGtk::MaybeShowUpgradeReminder() {
-  // Only show the upgrade reminder animation for the currently active window.
-  if (window_->IsActive() &&
-      Singleton<UpgradeDetector>::get()->notify_upgrade() &&
-      !upgrade_reminder_canceled_) {
-    upgrade_reminder_animation_.StartThrobbing(-1);
-  } else {
-    upgrade_reminder_animation_.Reset();
-  }
-}
-
 bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
   // If we're a popup window, only show the location bar (omnibox).
   return browser_->type() != Browser::TYPE_NORMAL;
-}
-
-void BrowserToolbarGtk::AnimationEnded(const Animation* animation) {
-  DCHECK_EQ(animation, &upgrade_reminder_animation_);
-  gtk_widget_queue_draw(wrench_menu_button_->widget()->parent);
-}
-
-void BrowserToolbarGtk::AnimationProgressed(const Animation* animation) {
-  DCHECK_EQ(animation, &upgrade_reminder_animation_);
-  if (UpgradeAnimationIsFaded())
-    gtk_widget_queue_draw(wrench_menu_button_->widget()->parent);
-}
-
-void BrowserToolbarGtk::AnimationCanceled(const Animation* animation) {
-  AnimationEnded(animation);
-}
-
-void BrowserToolbarGtk::ActiveWindowChanged(GdkWindow* active_window) {
-  MaybeShowUpgradeReminder();
-}
-
-void BrowserToolbarGtk::OnWrenchMenuShow(GtkWidget* sender) {
-  if (upgrade_reminder_animation_.is_animating()) {
-    upgrade_reminder_canceled_ = true;
-    MaybeShowUpgradeReminder();
-  }
 }
 
 gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
@@ -685,33 +629,18 @@ gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
   if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
     return FALSE;
 
-  SkBitmap badge;
-  if (UpgradeAnimationIsFaded()) {
-    badge = SkBitmapOperations::CreateBlendedBitmap(
-        *theme_provider_->GetBitmapNamed(IDR_UPGRADE_DOT_ACTIVE),
-        *theme_provider_->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE),
-        upgrade_reminder_animation_.GetCurrentValue());
-  } else {
-    badge = *theme_provider_->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE);
-  }
+  const SkBitmap& badge =
+      *theme_provider_->GetBitmapNamed(IDR_UPDATE_BADGE);
 
   // Draw the chrome app menu icon onto the canvas.
   gfx::CanvasSkiaPaint canvas(expose, false);
-  int x_offset = base::i18n::IsRTL() ?
-      sender->allocation.width - kUpgradeDotOffset - badge.width() :
-      kUpgradeDotOffset;
-  int y_offset = sender->allocation.height / 2 + badge.height();
+  int x_offset = base::i18n::IsRTL() ? 0 :
+      sender->allocation.width - badge.width();
+  int y_offset = 0;
   canvas.DrawBitmapInt(
       badge,
       sender->allocation.x + x_offset,
       sender->allocation.y + y_offset);
 
   return FALSE;
-}
-
-bool BrowserToolbarGtk::UpgradeAnimationIsFaded() {
-  return upgrade_reminder_animation_.cycles_remaining() > 0 &&
-      // This funky looking math makes the badge throb for 2 seconds once
-      // every 8 seconds.
-      ((upgrade_reminder_animation_.cycles_remaining() - 1) / 2) % 4 == 0;
 }
