@@ -61,8 +61,9 @@ void ChromeInvalidationClient::Start(
   client_config.max_ops_per_message = 40;
   invalidation_client_.reset(
       new invalidation::InvalidationClientImpl(
-          &chrome_system_resources_, client_type, client_id,
-          state, client_config, this));
+          &chrome_system_resources_, client_type, client_id, client_config,
+          this));
+  invalidation_client_->Start(state);
   cache_invalidation_packet_handler_.reset(
       new CacheInvalidationPacketHandler(base_task,
                                          invalidation_client_.get()));

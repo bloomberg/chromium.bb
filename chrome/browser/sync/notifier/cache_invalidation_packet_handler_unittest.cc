@@ -32,6 +32,7 @@ class MockNetworkEndpoint : public invalidation::NetworkEndpoint {
 
 class MockInvalidationClient : public invalidation::InvalidationClient {
  public:
+  MOCK_METHOD1(Start, void(const std::string& str));
   MOCK_METHOD1(Register, void(const invalidation::ObjectId&));
   MOCK_METHOD1(Unregister, void(const invalidation::ObjectId&));
   MOCK_METHOD0(network_endpoint, invalidation::NetworkEndpoint*());

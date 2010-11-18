@@ -25,6 +25,8 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 
   virtual ~FakeInvalidationClient() {}
 
+  virtual void Start(const std::string& state) {}
+
   virtual void Register(const invalidation::ObjectId& oid) {
     registered_oids.push_back(oid);
   }
