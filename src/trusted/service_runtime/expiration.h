@@ -22,8 +22,8 @@
  */
 #ifdef NACL_STANDALONE  /* NaCl in Chrome does not expire */
 #define EXPIRATION_CHECK 1
-#define EXPIRATION_YEAR 2010
-#define EXPIRATION_MONTH 11
+#define EXPIRATION_YEAR 2011
+#define EXPIRATION_MONTH 2
 #define EXPIRATION_DAY 17
 #endif
 
