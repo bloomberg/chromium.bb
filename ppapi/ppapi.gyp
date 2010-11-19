@@ -478,6 +478,21 @@
           'product_extension': 'plugin',
         }],
       ],
+# TODO(dmichael):  Figure out what is wrong with the script on Windows and add
+#                  it as an automated action.
+#      'actions': [
+#        {
+#          'action_name': 'generate_ppapi_include_tests',
+#          'inputs': [],
+#          'outputs': [
+#            'tests/test_c_includes.c',
+#            'tests/test_cc_includes.cc',
+#          ],
+#          'action': [
+#            '<!@(python generate_ppapi_include_tests.py)',
+#          ],
+#        },
+#      ],
     },
     {
       'target_name': 'ppapi_proxy',
