@@ -147,7 +147,6 @@ bool ServiceRuntime::StartFromCommandLine(nacl::string nacl_file,
   //      address at descriptors 3 and 4.  The socket address is transferred as
   //      the first IMC message on descriptor 5.  This is used when connecting
   //      to socket addresses.
-  // "-d" (not default) invokes the service runtime in debug mode.
   const char* kSelLdrArgs[] = { "-X", "5" };
   const int kSelLdrArgLength = NACL_ARRAY_SIZE(kSelLdrArgs);
   vector<nacl::string> kArgv(kSelLdrArgs, kSelLdrArgs + kSelLdrArgLength);

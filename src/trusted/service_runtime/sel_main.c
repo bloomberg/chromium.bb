@@ -119,7 +119,7 @@ static void PrintUsage() {
           "Usage: sel_ldr [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
           "               [-l log_file]\n"
-          "               [-X d] [-acdFgImMRsQv] -- [nacl_file] [args]\n"
+          "               [-X d] [-acFgImMRsQv] -- [nacl_file] [args]\n"
           "\n");
   fprintf(stderr,
           " -h\n"
@@ -395,7 +395,7 @@ int main(int  argc,
       debug_mode_ignore_validator == 0) {
     fprintf(stderr,
             "ERROR: dangerous debug version of sel_ldr can only "
-            "be invoked with -d/-a/-c options");
+            "be invoked with -a/-c options");
     exit(-1);
   }
 #endif
