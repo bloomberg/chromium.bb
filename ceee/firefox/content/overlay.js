@@ -113,12 +113,13 @@ function CEEE_Class() {
   this.userscriptsModule_ = null;
 
   /**
-   * Collection of functions to run once the extensions have been fully
-   * initialized.  Maps a content window to a map of description-to-function.
-   * @type {Object}
+   * Array of functions to run once the extensions have been fully
+   * initialized.  Each element of the array is itself an array with three
+   * elements: a content window, a string description, and the function to call.
+   * @type {Array.<{win: Object, desc: string, func: function()}>}
    * @private
    */
-  this.runWhenExtensionsInited_ = {};
+  this.runWhenExtensionsInited_ = [];
 };
 
 /**
@@ -248,12 +249,7 @@ CEEE_Class.prototype.onLoad_ = function() {
  */
 CEEE_Class.prototype.runWhenExtensionsInited = function(w, desc, f) {
   this.logInfo('Deferring "' + desc + '" for window=' + w.location.href);
-  var map = this.runWhenExtensionsInited_[w];
-  if (!map) {
-    map = {};
-    this.runWhenExtensionsInited_[w] = map;
-  }
-  map[desc] = f;
+  this.runWhenExtensionsInited_.push({win: w, desc: desc, func: f});
 };
 
 /**
@@ -262,6 +258,7 @@ CEEE_Class.prototype.runWhenExtensionsInited = function(w, desc, f) {
  * File objects) of extensions loaded.
  */
 CEEE_Class.prototype.initExtensions = function(extensions) {
+  this.logInfo('initExtensions starting');
   // Initialize only once.
   if (!this.toolstripUrl_ && extensions.length > 0) {
     var baseDir = Components.classes['@mozilla.org/file/local;1']
@@ -276,25 +273,18 @@ CEEE_Class.prototype.initExtensions = function(extensions) {
     } else {
       this.toolstripDir_ = baseDir;
 
-      // Inject user scripts for pages loaded before we knew which
-      // extensions were installed.  Make sure to delete all array elements
-      // and clear the array so that we don't leak references that may be
-      // held by the closures in the array.
-      for (var w in this.runWhenExtensionsInited_) {
-        var map = this.runWhenExtensionsInited_[w];
-        for (var desc in map) {
-          var windowName = (w && w.location && w.location.href) || '?';
-          this.logInfo('Running "' + desc + '" in window=' + windowName);
-          map[desc]();
-          delete map[desc];
-        }
-        delete this.runWhenExtensionsInited_[w];
+      for (var i = 0; i < this.runWhenExtensionsInited_.length; ++i) {
+        var obj = this.runWhenExtensionsInited_[i];
+        var w = obj.win;
+        var windowName = (w && w.location && w.location.href) || '?';
+        this.logInfo('Running "' + obj.desc + '" in window=' + windowName);
+        obj.func();
       }
-
-      this.runWhenExtensionsInited_ = {};
+      this.runWhenExtensionsInited_ = [];
     }
   }
-}
+  this.logInfo('initExtensions done');
+};
 
 /**
  * Create the ChromeFrame element that goes into the toolstrip.

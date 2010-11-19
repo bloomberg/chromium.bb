@@ -678,7 +678,14 @@ UserScriptManager.prototype.runUserScripts = function(w) {
   // these scripts in memory, then we will need a Chrome extension autoupdate
   // automation notification.
 
-  ceee.logInfo('runUserScripts: starting');
+  // If there is already a sandbox for this window, then it means the user
+  // scripts have already been run.  Don't need to run them again.
+  if (w.ceeeSandbox) {
+    ceee.logInfo('runUserScripts: already ran url=' + w.location.toString());
+    return;
+  }
+
+  ceee.logInfo('runUserScripts: starting for url=' + w.location.toString());
   var s = prepareSandbox(w);
 
   // Run each user script whose pattern matches the URL of content window.
