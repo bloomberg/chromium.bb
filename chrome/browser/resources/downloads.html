@@ -226,7 +226,7 @@ function createElementWithClassName(type, className) {
  * @param {String} value The link text
  */
 function createLink(onclick, value) {
-  var link = document.createElement("a");
+  var link = document.createElement('a');
   link.onclick = onclick;
   link.href = '#';
   link.innerHTML = value;
@@ -239,7 +239,7 @@ function createLink(onclick, value) {
  * @param {String} value The button text
  */
 function createButton(onclick, value) {
-  var button = document.createElement("input");
+  var button = document.createElement('input');
   button.type = 'button';
   button.value = value;
   button.onclick = onclick;
@@ -255,7 +255,7 @@ function Downloads() {
   this.downloads_ = {};
   this.node_ = $('downloads-display');
   this.summary_ = $('downloads-summary-text');
-  this.searchText_ = "";
+  this.searchText_ = '';
 
   // Keep track of the dates of the newest and oldest downloads so that we
   // know where to insert them.
@@ -432,6 +432,10 @@ function Download(download) {
     this.controlShow_ = null;
   }
 
+  this.controlRetry_ = document.createElement('a');
+  this.controlRetry_.textContent = localStrings.getString('control_retry');
+  this.nodeControls_.appendChild(this.controlRetry_);
+
   // Pause/Resume are a toggle.
   this.controlPause_ = createLink(this.togglePause_.bind(this),
       localStrings.getString('control_pause'));
@@ -453,15 +457,15 @@ function Download(download) {
   this.danger_ = createElementWithClassName('div', 'show-dangerous');
   this.node.appendChild(this.danger_);
 
-  this.dangerDesc_ = document.createElement("div");
+  this.dangerDesc_ = document.createElement('div');
   this.danger_.appendChild(this.dangerDesc_);
 
   this.dangerSave_ = createButton(this.saveDangerous_.bind(this),
-      localStrings.getString("danger_save"));
+      localStrings.getString('danger_save'));
   this.danger_.appendChild(this.dangerSave_);
 
   this.dangerDiscard_ = createButton(this.discardDangerous_.bind(this),
-      localStrings.getString("danger_discard"));
+      localStrings.getString('danger_discard'));
   this.danger_.appendChild(this.dangerDiscard_);
 
   // Update member vars.
@@ -567,6 +571,8 @@ Download.prototype.update = function(download) {
     if (this.controlShow_) {
       showInline(this.controlShow_, this.state_ == Download.States.COMPLETE);
     }
+    showInline(this.controlRetry_, this.state_ == Download.States.CANCELLED);
+    this.controlRetry_.href = this.url_;
     showInline(this.controlPause_, this.state_ == Download.States.IN_PROGRESS);
     showInline(this.controlResume_, this.state_ == Download.States.PAUSED);
     var showCancel = this.state_ == Download.States.IN_PROGRESS ||
@@ -618,7 +624,7 @@ Download.prototype.getStatusText_ = function() {
     case Download.States.DANGEROUS:
       return localStrings.getString('danger_desc');
     case Download.States.COMPLETE:
-      return "";
+      return '';
   }
 }
 
@@ -628,7 +634,7 @@ Download.prototype.getStatusText_ = function() {
  * drags.
  */
 Download.prototype.drag_ = function() {
-  chrome.send("drag", [this.id_.toString()]);
+  chrome.send('drag', [this.id_.toString()]);
   return false;
 }
 
@@ -636,7 +642,7 @@ Download.prototype.drag_ = function() {
  * Tells the backend to open this file.
  */
 Download.prototype.openFile_ = function() {
-  chrome.send("openFile", [this.id_.toString()]);
+  chrome.send('openFile', [this.id_.toString()]);
   return false;
 }
 
@@ -644,7 +650,7 @@ Download.prototype.openFile_ = function() {
  * Tells the backend that the user chose to save a dangerous file.
  */
 Download.prototype.saveDangerous_ = function() {
-  chrome.send("saveDangerous", [this.id_.toString()]);
+  chrome.send('saveDangerous', [this.id_.toString()]);
   return false;
 }
 
@@ -652,7 +658,7 @@ Download.prototype.saveDangerous_ = function() {
  * Tells the backend that the user chose to discard a dangerous file.
  */
 Download.prototype.discardDangerous_ = function() {
-  chrome.send("discardDangerous", [this.id_.toString()]);
+  chrome.send('discardDangerous', [this.id_.toString()]);
   downloads.remove(this.id_);
   return false;
 }
@@ -661,7 +667,7 @@ Download.prototype.discardDangerous_ = function() {
  * Tells the backend to show the file in explorer.
  */
 Download.prototype.show_ = function() {
-  chrome.send("show", [this.id_.toString()]);
+  chrome.send('show', [this.id_.toString()]);
   return false;
 }
 
@@ -669,7 +675,7 @@ Download.prototype.show_ = function() {
  * Tells the backend to pause this download.
  */
 Download.prototype.togglePause_ = function() {
-  chrome.send("togglepause", [this.id_.toString()]);
+  chrome.send('togglepause', [this.id_.toString()]);
   return false;
 }
 
@@ -677,7 +683,7 @@ Download.prototype.togglePause_ = function() {
  * Tells the backend to remove this download from history and download shelf.
  */
  Download.prototype.remove_ = function() {
-  chrome.send("remove", [this.id_.toString()]);
+  chrome.send('remove', [this.id_.toString()]);
   return false;
 }
 
@@ -685,7 +691,7 @@ Download.prototype.togglePause_ = function() {
  * Tells the backend to cancel this download.
  */
 Download.prototype.cancel_ = function() {
-  chrome.send("cancel", [this.id_.toString()]);
+  chrome.send('cancel', [this.id_.toString()]);
   return false;
 }
 
@@ -697,13 +703,13 @@ function load() {
   localStrings = new LocalStrings();
   downloads = new Downloads();
   $('term').focus();
-  setSearch("");
+  setSearch('');
 }
 
 function setSearch(searchText) {
   downloads.clear();
   downloads.setSearchText(searchText);
-  chrome.send("getDownloads", [searchText.toString()]);
+  chrome.send('getDownloads', [searchText.toString()]);
 }
 
 function clearAll() {

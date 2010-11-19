@@ -2135,6 +2135,10 @@ each locale. -->
                desc="In the download view, 'Cancel' link text">
         Cancel
       </message>
+      <message name="IDS_DOWNLOAD_LINK_RETRY"
+               desc="In the download view, 'Retry download' link text">
+        Retry download
+      </message>
       <if expr="os != 'darwin'">
         <message name="IDS_DOWNLOAD_LINK_SHOW"
                  desc="In the download view, 'Show in folder' link text">

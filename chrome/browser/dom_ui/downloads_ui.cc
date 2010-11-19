@@ -91,6 +91,8 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
     localized_strings.SetString("control_showinfolder",
         l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_SHOW));
   }
+  localized_strings.SetString("control_retry",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_RETRY));
   localized_strings.SetString("control_cancel",
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL));
   localized_strings.SetString("control_resume",
