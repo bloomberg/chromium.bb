@@ -59,6 +59,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
+  virtual int GetPendingPackets();
 
  private:
   struct QueuedVideoPacket {

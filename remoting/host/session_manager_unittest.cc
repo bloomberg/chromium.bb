@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::remoting::protocol::MockConnectionToClient;
+using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -101,9 +102,13 @@ TEST_F(SessionManagerTest, DISABLED_OneRecordCycle) {
   EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
       .WillOnce(FinishEncode(packet));
 
+  MockVideoStub video_stub;
+  EXPECT_CALL(*connection_, video_stub())
+      .WillRepeatedly(Return(&video_stub));
+
   // Expect the client be notified.
-  EXPECT_CALL(*connection_, SendVideoPacket(_));
-  EXPECT_CALL(*connection_, GetPendingUpdateStreamMessages())
+  EXPECT_CALL(video_stub, ProcessVideoPacket(_, _));
+  EXPECT_CALL(video_stub, GetPendingPackets())
       .Times(AtLeast(0))
       .WillRepeatedly(Return(0));
 

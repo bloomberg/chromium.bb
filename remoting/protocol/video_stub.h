@@ -23,6 +23,9 @@ class VideoStub {
   virtual void ProcessVideoPacket(const VideoPacket* video_packet,
                                   Task* done) = 0;
 
+  // Returns number of packets currently pending in the buffer.
+  virtual int GetPendingPackets() = 0;
+
  protected:
   VideoStub() { }
 

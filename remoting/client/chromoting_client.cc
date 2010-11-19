@@ -110,6 +110,10 @@ void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
     DispatchPacket();
 }
 
+int ChromotingClient::GetPendingPackets() {
+  return received_packets_.size();
+}
+
 void ChromotingClient::DispatchPacket() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   CHECK(!packet_being_processed_);

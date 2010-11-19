@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/protobuf_video_writer.h"
 
+#include "base/task.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/rtp_writer.h"
 #include "remoting/protocol/session.h"
@@ -22,17 +23,15 @@ void ProtobufVideoWriter::Init(protocol::Session* session) {
   buffered_writer_->Init(session->video_channel(), NULL);
 }
 
-void ProtobufVideoWriter::SendPacket(const VideoPacket& packet) {
-  buffered_writer_->Write(SerializeAndFrameMessage(packet));
+void ProtobufVideoWriter::ProcessVideoPacket(const VideoPacket* packet,
+                                             Task* done) {
+  buffered_writer_->Write(SerializeAndFrameMessage(*packet));
+  done->Run();
+  delete done;
 }
 
 int ProtobufVideoWriter::GetPendingPackets() {
   return buffered_writer_->GetBufferChunks();
-}
-
-
-void ProtobufVideoWriter::Close() {
-  buffered_writer_->Close();
 }
 
 }  // namespace protocol

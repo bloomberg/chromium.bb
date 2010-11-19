@@ -50,8 +50,9 @@ class ConnectionToClientTest : public testing::Test {
 
 TEST_F(ConnectionToClientTest, SendUpdateStream) {
   // Then send the actual data.
-  VideoPacket packet;
-  viewer_->SendVideoPacket(packet);
+  VideoPacket* packet = new VideoPacket();
+  viewer_->video_stub()->ProcessVideoPacket(
+      packet, new DeleteTask<VideoPacket>(packet));
 
   // And then close the connection to ConnectionToClient.
   viewer_->Disconnect();
@@ -73,20 +74,14 @@ TEST_F(ConnectionToClientTest, StateChange) {
   message_loop_.RunAllPending();
 }
 
-// Test that we can close client connection more than once and operations
-// after the connection is closed has no effect.
+// Test that we can close client connection more than once.
 TEST_F(ConnectionToClientTest, Close) {
   viewer_->Disconnect();
   message_loop_.RunAllPending();
   EXPECT_TRUE(session_->is_closed());
 
-  VideoPacket packet;
-  viewer_->SendVideoPacket(packet);
   viewer_->Disconnect();
   message_loop_.RunAllPending();
-
-  // Verify that nothing has been written.
-  EXPECT_EQ(session_->video_channel()->written_data().size(), 0u);
 }
 
 }  // namespace protocol

@@ -21,9 +21,10 @@ class ProtobufVideoWriter : public VideoWriter {
 
   // VideoWriter interface.
   virtual void Init(protocol::Session* session);
-  virtual void SendPacket(const VideoPacket& packet);
+
+  // VideoStub interface.
+  virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
   virtual int GetPendingPackets();
-  virtual void Close();
 
  private:
   scoped_refptr<BufferedSocketWriter> buffered_writer_;

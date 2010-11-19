@@ -48,21 +48,6 @@ protocol::Session* ConnectionToClient::session() {
   return session_;
 }
 
-void ConnectionToClient::SendVideoPacket(const VideoPacket& packet) {
-  DCHECK_EQ(loop_, MessageLoop::current());
-
-  // If we are disconnected then return.
-  if (!session_)
-    return;
-
-  video_writer_->SendPacket(packet);
-}
-
-int ConnectionToClient::GetPendingUpdateStreamMessages() {
-  DCHECK_EQ(loop_, MessageLoop::current());
-  return video_writer_->GetPendingPackets();
-}
-
 void ConnectionToClient::Disconnect() {
   DCHECK_EQ(loop_, MessageLoop::current());
 
@@ -73,10 +58,19 @@ void ConnectionToClient::Disconnect() {
   }
 }
 
-ConnectionToClient::ConnectionToClient() {}
+VideoStub* ConnectionToClient::video_stub() {
+  return video_writer_.get();
+}
 
-void ConnectionToClient::OnSessionStateChange(
-    protocol::Session::State state) {
+// Return pointer to ClientStub.
+ClientStub* ConnectionToClient::client_stub() {
+  return client_stub_.get();
+}
+
+ConnectionToClient::ConnectionToClient() {
+}
+
+void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
   if (state == protocol::Session::CONNECTED) {
     client_stub_.reset(new ClientControlSender(session_->control_channel()));
     video_writer_.reset(VideoWriter::Create(session_->config()));

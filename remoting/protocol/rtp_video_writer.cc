@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/rtp_video_writer.h"
 
+#include "base/task.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/proto/video.pb.h"
@@ -25,14 +26,14 @@ void RtpVideoWriter::Init(protocol::Session* session) {
   rtp_writer_.Init(session->video_rtp_channel(), session->video_rtcp_channel());
 }
 
-void RtpVideoWriter::SendPacket(const VideoPacket& packet) {
-  CHECK(packet.format().encoding() == VideoPacketFormat::ENCODING_VP8)
+void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet, Task* done) {
+  CHECK(packet->format().encoding() == VideoPacketFormat::ENCODING_VP8)
       << "Only VP8 is supported in RTP.";
 
   CompoundBuffer payload;
   // TODO(sergeyu): This copy would not be necessary CompoundBuffer was used
   // inside of VideoPacket.
-  payload.AppendCopyOf(packet.data().data(), packet.data().size());
+  payload.AppendCopyOf(packet->data().data(), packet->data().size());
 
   Vp8Descriptor vp8_desriptor;
   // TODO(sergeyu): Add a flag in VideoPacket that indicates whether this is a
@@ -47,11 +48,11 @@ void RtpVideoWriter::SendPacket(const VideoPacket& packet) {
     // Frame beginning flag is set only for the first packet in the first
     // partition.
     vp8_desriptor.frame_beginning =
-        (packet.flags() & VideoPacket::FIRST_PACKET) != 0 && position == 0;
+        (packet->flags() & VideoPacket::FIRST_PACKET) != 0 && position == 0;
 
     // Marker bit is set only for the last packet in the last partition.
     bool marker = (position + size) == payload.total_bytes() &&
-        (packet.flags() & VideoPacket::LAST_PACKET) != 0;
+        (packet->flags() & VideoPacket::LAST_PACKET) != 0;
 
     // Set fragmentation flag appropriately.
     if (position == 0) {
@@ -73,20 +74,18 @@ void RtpVideoWriter::SendPacket(const VideoPacket& packet) {
     chunk.CopyFrom(payload, position, position + size);
 
     // And send it.
-    rtp_writer_.SendPacket(packet.timestamp(), marker, vp8_desriptor, chunk);
+    rtp_writer_.SendPacket(packet->timestamp(), marker, vp8_desriptor, chunk);
 
     position += size;
   }
-
   DCHECK_EQ(position, payload.total_bytes());
+
+  done->Run();
+  delete done;
 }
 
 int RtpVideoWriter::GetPendingPackets() {
   return rtp_writer_.GetPendingPackets();
-}
-
-void RtpVideoWriter::Close() {
-  rtp_writer_.Close();
 }
 
 }  // namespace protocol

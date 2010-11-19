@@ -61,23 +61,17 @@ class ConnectionToClient :
   // Returns the connection in use.
   virtual protocol::Session* session();
 
-  // Send encoded update stream data to the viewer.
-  virtual void SendVideoPacket(const VideoPacket& packet);
-
-  // Gets the number of update stream messages not yet transmitted.
-  // Note that the value returned is an estimate using average size of the
-  // most recent update streams.
-  // TODO(hclam): Report this number accurately.
-  virtual int GetPendingUpdateStreamMessages();
-
   // Disconnect the client connection. This method is allowed to be called
   // more than once and calls after the first one will be ignored.
   //
   // After this method is called all the send method calls will be ignored.
   virtual void Disconnect();
 
+  // Send encoded update stream data to the viewer.
+  virtual VideoStub* video_stub();
+
   // Return pointer to ClientStub.
-  virtual ClientStub* client_stub() { return client_stub_.get(); }
+  virtual ClientStub* client_stub();
 
  protected:
   // Protected constructor used by unit test.

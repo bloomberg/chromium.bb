@@ -22,12 +22,17 @@ namespace protocol {
 class RtpVideoReaderTest : public testing::Test,
                            public VideoStub {
  public:
+  // VideoStub interface.
   virtual void ProcessVideoPacket(const VideoPacket* video_packet,
                                   Task* done) {
     received_packets_.push_back(VideoPacket());
     received_packets_.back() = *video_packet;
     done->Run();
     delete done;
+  }
+
+  virtual int GetPendingPackets() {
+    return 0;
   }
 
  protected:

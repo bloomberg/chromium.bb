@@ -9,6 +9,7 @@
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/video_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {
@@ -22,8 +23,7 @@ class MockConnectionToClient : public ConnectionToClient {
 
   MOCK_METHOD1(Init, void(ChromotocolConnection* connection));
   MOCK_METHOD2(SendInitClientMessage, void(int width, int height));
-  MOCK_METHOD1(SendVideoPacket, void(const VideoPacket& packet));
-  MOCK_METHOD0(GetPendingUpdateStreamMessages, int());
+  MOCK_METHOD0(video_stub, VideoStub*());
   MOCK_METHOD0(Disconnect, void());
 
  private:
@@ -66,6 +66,18 @@ class MockHostStub : public HostStub {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);
+};
+
+class MockVideoStub : public VideoStub {
+ public:
+  MockVideoStub() {}
+
+  MOCK_METHOD2(ProcessVideoPacket, void(const VideoPacket* video_packet,
+                                        Task* done));
+  MOCK_METHOD0(GetPendingPackets, int());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockVideoStub);
 };
 
 }  // namespace protocol

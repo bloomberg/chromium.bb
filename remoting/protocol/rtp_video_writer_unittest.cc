@@ -70,7 +70,7 @@ class RtpVideoWriterTest : public testing::Test {
   void InitPacket(int size, bool first, bool last) {
     InitData(size);
 
-    packet_.reset(new VideoPacket());
+    packet_ = new VideoPacket();
     packet_->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
     if (first)
       packet_->set_flags(packet_->flags() | VideoPacket::FIRST_PACKET);
@@ -112,12 +112,12 @@ class RtpVideoWriterTest : public testing::Test {
 
   MessageLoop message_loop_;
   vector<char> data_;
-  scoped_ptr<VideoPacket> packet_;
+  VideoPacket* packet_;
 };
 
 TEST_F(RtpVideoWriterTest, NotFragmented_FirstPacket) {
   InitPacket(1024, true, false);
-  writer_.SendPacket(*packet_);
+  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {
@@ -128,7 +128,7 @@ TEST_F(RtpVideoWriterTest, NotFragmented_FirstPacket) {
 
 TEST_F(RtpVideoWriterTest, NotFragmented_LastPackes) {
   InitPacket(1024, false, true);
-  writer_.SendPacket(*packet_);
+  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {
@@ -139,7 +139,7 @@ TEST_F(RtpVideoWriterTest, NotFragmented_LastPackes) {
 
 TEST_F(RtpVideoWriterTest, TwoFragments_FirstPacket) {
   InitPacket(2000, true, false);
-  writer_.SendPacket(*packet_);
+  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {
@@ -151,7 +151,7 @@ TEST_F(RtpVideoWriterTest, TwoFragments_FirstPacket) {
 
 TEST_F(RtpVideoWriterTest, TwoFragments_LastPacket) {
   InitPacket(2000, false, true);
-  writer_.SendPacket(*packet_);
+  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {
@@ -163,7 +163,7 @@ TEST_F(RtpVideoWriterTest, TwoFragments_LastPacket) {
 
 TEST_F(RtpVideoWriterTest, ThreeFragments) {
   InitPacket(3000, true, true);
-  writer_.SendPacket(*packet_);
+  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {

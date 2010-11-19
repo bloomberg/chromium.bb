@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
+#include "base/task.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
 #include "remoting/proto/control.pb.h"
@@ -305,7 +306,7 @@ void SessionManager::DoRateControl() {
   for (size_t i = 0; i < connections_.size(); ++i) {
     max_pending_update_streams =
         std::max(max_pending_update_streams,
-                 connections_[i]->GetPendingUpdateStreamMessages());
+                 connections_[i]->video_stub()->GetPendingPackets());
   }
 
   // If |slow_down| equals zero, we have no slow down.
@@ -336,9 +337,9 @@ void SessionManager::DoSendVideoPacket(VideoPacket* packet) {
 
   for (ConnectionToClientList::const_iterator i = connections_.begin();
        i < connections_.end(); ++i) {
-    (*i)->SendVideoPacket(*packet);
+    (*i)->video_stub()->ProcessVideoPacket(
+        packet, new DeleteTask<VideoPacket>(packet));
   }
-  delete packet;
 
   TraceContext::tracer()->PrintString("DoSendUpdate done");
 }

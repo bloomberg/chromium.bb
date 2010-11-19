@@ -11,18 +11,16 @@
 #define REMOTING_PROTOCOL_VIDEO_WRITER_H_
 
 #include "base/basictypes.h"
+#include "remoting/protocol/video_stub.h"
 
 namespace remoting {
-
-class VideoPacket;
-
 namespace protocol {
 
 class Session;
 class SessionConfig;
 
 // TODO(sergeyu): VideoWriter should implement VideoStub interface.
-class VideoWriter {
+class VideoWriter : public VideoStub {
  public:
   virtual ~VideoWriter();
 
@@ -30,14 +28,6 @@ class VideoWriter {
 
   // Initializes the writer.
   virtual void Init(Session* session) = 0;
-
-  // Sends the |packet|.
-  virtual void SendPacket(const VideoPacket& packet) = 0;
-
-  // Returns number of packets currently pending in the buffer.
-  virtual int GetPendingPackets() = 0;
-
-  virtual void Close() = 0;
 
  protected:
   VideoWriter() { }

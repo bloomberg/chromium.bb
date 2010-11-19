@@ -20,9 +20,10 @@ class RtpVideoWriter : public VideoWriter {
 
   // VideoWriter interface.
   virtual void Init(protocol::Session* session);
-  virtual void SendPacket(const VideoPacket& packet);
+
+  // VideoStub interface.
+  virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
   virtual int GetPendingPackets();
-  virtual void Close();
 
  private:
   RtpWriter rtp_writer_;
