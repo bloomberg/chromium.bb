@@ -342,7 +342,9 @@ void BackgroundView::InitInfoLabels() {
     version_loader_.GetVersion(
         &version_consumer_,
         NewCallback(this, &BackgroundView::OnVersion),
-        !is_official_build_);
+        is_official_build_?
+            VersionLoader::VERSION_SHORT_WITH_DATE :
+            VersionLoader::VERSION_FULL);
     if (!is_official_build_) {
       boot_times_loader_.GetBootTimes(
           &boot_times_consumer_,
@@ -382,11 +384,15 @@ void BackgroundView::UpdateWindowType() {
 void BackgroundView::OnVersion(
     VersionLoader::Handle handle, std::string version) {
   // TODO(jungshik): Is string concatenation OK here?
-  std::string version_text = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  std::string version_text = l10n_util::GetStringUTF8(IDS_PRODUCT_OS_NAME);
   version_text += ' ';
   version_text += l10n_util::GetStringUTF8(IDS_VERSION_FIELD_PREFIX);
   version_text += ' ';
   version_text += version;
+
+  // Workaround over incorrect width calculation in old fonts.
+  // TODO(glotov): remove the following line when new fonts are used.
+  version_text += ' ';
   os_version_label_->SetText(UTF8ToWide(version_text));
 }
 

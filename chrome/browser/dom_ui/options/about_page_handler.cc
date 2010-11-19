@@ -17,9 +17,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/chrome_version_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -255,7 +255,7 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   // Version information is loaded from a callback
   loader_.GetVersion(&consumer_,
                      NewCallback(this, &AboutPageHandler::OnOSVersion),
-                     true);
+                     chromeos::VersionLoader::VERSION_FULL);
 
   chromeos::UpdateLibrary* update_library =
       chromeos::CrosLibrary::Get()->GetUpdateLibrary();

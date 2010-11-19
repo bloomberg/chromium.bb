@@ -243,7 +243,7 @@ void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
          &version_consumer_,
          NewCallback(this,
                      &RegisterPageHandler::OnVersion),
-         true);
+         chromeos::VersionLoader::VERSION_FULL);
   } else {
     SkipRegistration("CrosLibrary is not loaded.");
   }

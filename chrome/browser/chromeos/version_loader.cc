@@ -12,6 +12,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 
@@ -36,23 +37,19 @@ const char VersionLoader::kVersionPrefix[] = "CHROMEOS_RELEASE_VERSION=";
 VersionLoader::Handle VersionLoader::GetVersion(
     CancelableRequestConsumerBase* consumer,
     VersionLoader::GetVersionCallback* callback,
-    bool full_version) {
+    VersionFormat format) {
   if (!g_browser_process->file_thread()) {
     // This should only happen if Chrome is shutting down, so we don't do
     // anything.
     return 0;
   }
 
-  scoped_refptr<CancelableRequest<GetVersionCallback> > request(
-      new CancelableRequest<GetVersionCallback>(callback));
+  scoped_refptr<GetVersionRequest> request(new GetVersionRequest(callback));
   AddRequest(request, consumer);
 
   g_browser_process->file_thread()->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(backend_.get(),
-                        &Backend::GetVersion,
-                        request,
-                        full_version));
+      NewRunnableMethod(backend_.get(), &Backend::GetVersion, request, format));
   return request->handle();
 }
 
@@ -82,16 +79,32 @@ std::string VersionLoader::ParseVersion(const std::string& contents,
 
 void VersionLoader::Backend::GetVersion(
     scoped_refptr<GetVersionRequest> request,
-    bool full_version) {
+    VersionFormat format) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (request->canceled())
     return;
 
   std::string version;
   std::string contents;
-  if (file_util::ReadFileToString(FilePath(kPath), &contents))
-    version = ParseVersion(contents,
-                           full_version ? kFullVersionPrefix : kVersionPrefix);
+  const FilePath file_path(kPath);
+  if (file_util::ReadFileToString(file_path, &contents)) {
+    version = ParseVersion(
+        contents,
+        (format == VERSION_FULL) ? kFullVersionPrefix : kVersionPrefix);
+  }
+
+  if (format == VERSION_SHORT_WITH_DATE) {
+    base::PlatformFileInfo fileinfo;
+    if (file_util::GetFileInfo(file_path, &fileinfo)) {
+      base::Time::Exploded ctime;
+      fileinfo.creation_time.UTCExplode(&ctime);
+      version += StringPrintf("-%02u.%02u.%02u",
+                              ctime.year % 100,
+                              ctime.month,
+                              ctime.day_of_month);
+    }
+  }
+
   request->ForwardResult(GetVersionCallback::TupleType(request->handle(),
                                                        version));
 }

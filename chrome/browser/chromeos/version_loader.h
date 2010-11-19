@@ -32,6 +32,12 @@ class VersionLoader : public CancelableRequestProvider {
  public:
   VersionLoader();
 
+  enum VersionFormat {
+    VERSION_SHORT,
+    VERSION_SHORT_WITH_DATE,
+    VERSION_FULL,
+  };
+
   // Signature
   typedef Callback2<Handle, std::string>::Type GetVersionCallback;
 
@@ -42,7 +48,7 @@ class VersionLoader : public CancelableRequestProvider {
   // otherwise it's in short format x.x.xx.x.
   Handle GetVersion(CancelableRequestConsumerBase* consumer,
                     GetVersionCallback* callback,
-                    bool full_version);
+                    VersionFormat format);
 
   static const char kFullVersionPrefix[];
   static const char kVersionPrefix[];
@@ -61,7 +67,7 @@ class VersionLoader : public CancelableRequestProvider {
     // This is invoked on the file thread.
     // If |full_version| is true then extra info is passed in version string.
     void GetVersion(scoped_refptr<GetVersionRequest> request,
-                    bool full_version);
+                    VersionFormat format);
 
    private:
     friend class base::RefCountedThreadSafe<Backend>;

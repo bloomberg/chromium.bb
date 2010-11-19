@@ -186,7 +186,7 @@ Chrome supports. -->
       </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
-          Google Chrome OS
+          Chrome OS
         </message>
       </if>
       <if expr="os.find('win') != -1">
