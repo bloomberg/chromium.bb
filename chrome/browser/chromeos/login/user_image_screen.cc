@@ -124,6 +124,7 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
   const UserManager::User& user = user_manager->logged_in_user();
   DCHECK(!user.email().empty());
 
+  user_manager->SetLoggedInUserImage(image);
   user_manager->SaveUserImage(user.email(), image);
   if (delegate())
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SELECTED);

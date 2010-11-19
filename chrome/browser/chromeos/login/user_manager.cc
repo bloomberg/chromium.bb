@@ -251,6 +251,7 @@ void UserManager::UserLoggedIn(const std::string& email) {
   ListValue* prefs_users = prefs->GetMutableList(kLoggedInUsers);
   prefs_users->Clear();
 
+  logged_in_user_ = User();
   logged_in_user_.set_email(email);
 
   // Make sure this user is first.
