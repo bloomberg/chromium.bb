@@ -479,6 +479,8 @@ public:
         const CuePoint::TrackPosition&) const;
     const BlockEntry* GetMaxKey(const VideoTrack*) const;
 
+    static bool HasBlockEntries(const Segment*, long long);
+
 protected:
     Cluster(Segment*, long, long long off);
 

@@ -1074,8 +1074,13 @@ long Segment::ParseCluster(long long& off, long long& new_pos) const
 
         if (id == 0x0F43B675)  //Cluster ID
         {
-            off = idpos - m_start;  // >= 0 means we found a cluster
-            break;
+            const long long off_ = idpos - m_start;
+
+            if (Cluster::HasBlockEntries(this, off_))
+            {
+                off = off_;   // >= 0 means we found a cluster
+                break;
+            }
         }
     }
 
@@ -1162,7 +1167,6 @@ bool Segment::AddCluster(long long off, long long pos)
     {
         Cluster* const pCluster = Cluster::Parse(this, m_clusterCount, off);
         assert(pCluster);
-        assert(pCluster->m_index == m_clusterCount);
 
         AppendCluster(pCluster);
         assert(m_clusters);
@@ -1171,7 +1175,6 @@ bool Segment::AddCluster(long long off, long long pos)
     }
 
     m_pos = pos;  //m_pos >= stop is now we know we have all clusters
-
     return (pos >= stop);
 }
 
@@ -1271,21 +1274,27 @@ long Segment::LoadCluster()
                 --m_clusterPreloadCount;
 
                 m_pos = pos + size;  //consume payload
-                break;
+                assert(m_pos <= stop);
+
+                return 0;
             }
         }
 
-        Cluster* const pCluster = Cluster::Parse(this, idx, idoff);
-        assert(pCluster);
-        assert(pCluster->m_index == idx);
-
-        AppendCluster(pCluster);
-        assert(m_clusters);
-        assert(idx < m_clusterSize);
-        assert(m_clusters[idx] == pCluster);
-
         m_pos = pos + size;  //consume payload
-        break;
+        assert(m_pos <= stop);
+
+        if (Cluster::HasBlockEntries(this, idoff))
+        {
+            Cluster* const pCluster = Cluster::Parse(this, idx, idoff);
+            assert(pCluster);
+
+            AppendCluster(pCluster);
+            assert(m_clusters);
+            assert(idx < m_clusterSize);
+            assert(m_clusters[idx] == pCluster);
+
+            return 0;
+        }
     }
 
     assert(m_pos <= stop);
@@ -1510,14 +1519,16 @@ long Segment::Load()
             const long idx = m_clusterCount;
             const long long off = idpos - m_start;
 
-            Cluster* const pCluster = Cluster::Parse(this, idx, off);
-            assert(pCluster);
-            assert(pCluster->m_index == idx);
+            if (Cluster::HasBlockEntries(this, off))
+            {
+                Cluster* const pCluster = Cluster::Parse(this, idx, off);
+                assert(pCluster);
 
-            AppendCluster(pCluster);
-            assert(m_clusters);
-            assert(m_clusterSize > idx);
-            assert(m_clusters[idx] == pCluster);
+                AppendCluster(pCluster);
+                assert(m_clusters);
+                assert(m_clusterSize > idx);
+                assert(m_clusters[idx] == pCluster);
+            }
         }
         else if (id == 0x0C53BB6B)  //Cues ID
         {
@@ -2154,8 +2165,11 @@ const BlockEntry* Segment::GetBlock(
     }
 
     assert(i == j);
+    assert(Cluster::HasBlockEntries(this, tp.m_pos));
 
     Cluster* const pCluster = Cluster::Parse(this, -1, tp.m_pos);
+    assert(pCluster);
+
     const ptrdiff_t idx = i - m_clusters;
 
     PreloadCluster(pCluster, idx);
@@ -2530,8 +2544,13 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
 
         if (id == 0x0F43B675)  //Cluster ID
         {
-            off_next = idpos - m_start;
-            break;
+            const long long off_next_ = idpos - m_start;
+
+            if (Cluster::HasBlockEntries(this, off_next_))
+            {
+                off_next = off_next_;
+                break;
+            }
         }
 
         pos += size;  //consume payload
@@ -2576,6 +2595,8 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
     assert(i == j);
 
     Cluster* const pNext = Cluster::Parse(this, -1, off_next);
+    assert(pNext);
+
     const ptrdiff_t idx_next = i - m_clusters;  //insertion position
 
     PreloadCluster(pNext, idx_next);
@@ -3776,6 +3797,9 @@ Cluster* Cluster::Parse(
     assert(off >= 0);
     assert(off < pSegment->m_size);
 
+    //if (!HasBlockEntries(pSegment, off))
+    //    return NULL;
+
     Cluster* const pCluster = new Cluster(pSegment, idx, -off);
     assert(pCluster);
 
@@ -3833,6 +3857,68 @@ Cluster::~Cluster()
 bool Cluster::EOS() const
 {
     return (m_pSegment == NULL);
+}
+
+
+bool Cluster::HasBlockEntries(
+    const Segment* pSegment,
+    long long off)  //relative to start of segment payload
+{
+    assert(pSegment);
+    assert(off >= 0);  //relative to segment
+
+    IMkvReader* const pReader = pSegment->m_pReader;
+
+    long long pos = pSegment->m_start + off;  //absolute
+    long long size;
+
+    {
+        long len;
+
+        const long long id = ReadUInt(pReader, pos, len);
+        id;
+        assert(id >= 0);
+        assert(id == 0x0F43B675);  //Cluster ID
+
+        pos += len;  //consume id
+
+        size = ReadUInt(pReader, pos, len);
+        assert(size > 0);
+
+        pos += len;  //consume size
+
+        //pos now points to start of payload
+    }
+
+    const long long stop = pos + size;
+
+    while (pos < stop)
+    {
+        long len;
+
+        const long long id = ReadUInt(pReader, pos, len);
+        assert(id >= 0);  //TODO
+        assert((pos + len) <= stop);
+
+        pos += len;  //consume id
+
+        const long long size = ReadUInt(pReader, pos, len);
+        assert(size >= 0);  //TODO
+        assert((pos + len) <= stop);
+
+        pos += len;  //consume size
+
+        if (id == 0x20)  //BlockGroup ID
+            return true;
+
+        if (id == 0x23)  //SimpleBlock ID
+            return true;
+
+        pos += size;  //consume payload
+        assert(pos <= stop);
+    }
+
+    return false;
 }
 
 
