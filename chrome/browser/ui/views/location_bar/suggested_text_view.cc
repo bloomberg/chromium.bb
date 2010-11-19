@@ -17,7 +17,8 @@ static const int kPauseTimeMS = 1000;
 static const int kFadeInTimeMS = 300;
 
 SuggestedTextView::SuggestedTextView(LocationBarView* location_bar)
-    : location_bar_(location_bar) {
+    : location_bar_(location_bar),
+      bg_color_(0) {
 }
 
 SuggestedTextView::~SuggestedTextView() {

@@ -303,6 +303,7 @@ NavigateParams::NavigateParams(
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_SELECTED),
       show_window(false),
+      ignore_path(false),
       browser(a_browser),
       profile(NULL) {
 }
@@ -316,6 +317,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_SELECTED),
       show_window(false),
+      ignore_path(false),
       browser(a_browser),
       profile(NULL) {
 }
