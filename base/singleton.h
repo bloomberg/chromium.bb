@@ -9,7 +9,6 @@
 #include "base/at_exit.h"
 #include "base/atomicops.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/thread_restrictions.h"
 
 // Default traits for Singleton<Type>. Calls operator new and operator delete on
 // the object. Registers automatic deletion at process exit.
@@ -31,11 +30,6 @@ struct DefaultSingletonTraits {
   // Set to true to automatically register deletion of the object on process
   // exit. See below for the required call that makes this happen.
   static const bool kRegisterAtExit = true;
-
-  // Set to false to disallow access on a non-joinable thread.  This is
-  // different from kRegisterAtExit because StaticMemorySingletonTraits allows
-  // access on non-joinable threads, and gracefully handles this.
-  static const bool kAllowedToAccessOnNonjoinableThread = false;
 };
 
 
@@ -45,7 +39,6 @@ struct DefaultSingletonTraits {
 template<typename Type>
 struct LeakySingletonTraits : public DefaultSingletonTraits<Type> {
   static const bool kRegisterAtExit = false;
-  static const bool kAllowedToAccessOnNonjoinableThread = true;
 };
 
 
@@ -92,7 +85,6 @@ struct StaticMemorySingletonTraits {
   }
 
   static const bool kRegisterAtExit = true;
-  static const bool kAllowedToAccessOnNonjoinableThread = true;
 
   // Exposed for unittesting.
   static void Resurrect() {
@@ -184,9 +176,6 @@ class Singleton {
 
   // Return a pointer to the one true instance of the class.
   static Type* get() {
-    if (!Traits::kAllowedToAccessOnNonjoinableThread)
-      base::ThreadRestrictions::AssertSingletonAllowed();
-
     // Our AtomicWord doubles as a spinlock, where a value of
     // kBeingCreatedMarker means the spinlock is being held for creation.
     static const base::subtle::AtomicWord kBeingCreatedMarker = 1;
