@@ -840,7 +840,7 @@ void MobileSetupHandler::SetupActivationProcess(
   DisableOtherNetworks();
 }
 
-bool MobileSetupHandler::DisableOtherNetworks() {
+void MobileSetupHandler::DisableOtherNetworks() {
   chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
       GetNetworkLibrary();
   // Disable ethernet and wifi.
