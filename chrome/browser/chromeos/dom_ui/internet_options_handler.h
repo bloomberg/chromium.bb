@@ -69,7 +69,7 @@ class InternetOptionsHandler
   // Converts CellularDataPlan structure into dictionary for JS. Formats
   // plan settings into human readable texts.
   DictionaryValue* CellularDataPlanToDictionary(
-      const chromeos::CellularDataPlan& plan);
+      const chromeos::CellularDataPlan* plan);
   // Creates the map of a network
   ListValue* GetNetwork(const std::string& service_path, const SkBitmap& icon,
       const std::string& name, bool connecting, bool connected,

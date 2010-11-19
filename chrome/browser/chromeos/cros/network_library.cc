@@ -468,16 +468,26 @@ string16 CellularDataPlan::GetUsageInfo() const {
   return string16();
 }
 
+base::TimeDelta CellularDataPlan::remaining_time() const {
+  base::TimeDelta time = plan_end_time - update_time;
+  return time.InMicroseconds() < 0 ? base::TimeDelta() : time;
+}
+
 int64 CellularDataPlan::remaining_minutes() const {
-  return base::TimeDelta(plan_end_time - update_time).InMinutes();
+  return remaining_time().InMinutes();
+}
+
+int64 CellularDataPlan::remaining_data() const {
+  int64 data = plan_data_bytes - data_bytes_used;
+  return data < 0 ? 0 : data;
 }
 
 int64 CellularDataPlan::remaining_mbytes() const {
-  return (plan_data_bytes - data_bytes_used) / (1024 * 1024);
+  return remaining_data() / (1024 * 1024);
 }
 
 string16 CellularDataPlan::GetPlanExpiration() const {
-  return TimeFormat::TimeRemaining(plan_end_time - base::Time::Now());
+  return TimeFormat::TimeRemaining(remaining_time());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -582,38 +592,43 @@ void CellularNetwork::Clear() {
   prl_version_ = 0;
 }
 
-bool CellularNetwork::is_gsm() const {
-  return network_technology_ != NETWORK_TECHNOLOGY_EVDO &&
-      network_technology_ != NETWORK_TECHNOLOGY_1XRTT &&
-      network_technology_ != NETWORK_TECHNOLOGY_UNKNOWN;
+const CellularDataPlan* CellularNetwork::GetSignificantDataPlan() const {
+  const CellularDataPlan* significant = NULL;
+  const CellularDataPlanVector& plans = GetDataPlans();
+  for (CellularDataPlanVector::const_iterator iter = plans.begin();
+       iter != plans.end();
+       ++iter) {
+    // Set significant to the first plan or to first non metered base plan.
+    if (significant == NULL ||
+        significant->plan_type == CELLULAR_DATA_PLAN_METERED_BASE)
+      significant = *iter;
+  }
+  return significant;
 }
 
-CellularNetwork::DataLeft CellularNetwork::data_left() const {
-  if (data_plans_.empty())
+CellularNetwork::DataLeft CellularNetwork::GetDataLeft() const {
+  const CellularDataPlan* plan = GetSignificantDataPlan();
+  if (!plan)
     return DATA_NORMAL;
-  const CellularDataPlan& plan(data_plans_[0]);
-  if (plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
-    base::TimeDelta remaining = plan.plan_end_time - plan.update_time;
+  if (plan->plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
+    base::TimeDelta remaining = plan->plan_end_time - plan->update_time;
     if (remaining <= base::TimeDelta::FromSeconds(0))
       return DATA_NONE;
-    else if (remaining <=
-        base::TimeDelta::FromSeconds(kCellularDataVeryLowSecs))
+    if (remaining <= base::TimeDelta::FromSeconds(kCellularDataVeryLowSecs))
       return DATA_VERY_LOW;
-    else if (remaining <= base::TimeDelta::FromSeconds(kCellularDataLowSecs))
+    if (remaining <= base::TimeDelta::FromSeconds(kCellularDataLowSecs))
       return DATA_LOW;
-    else
-      return DATA_NORMAL;
-  } else if (plan.plan_type == CELLULAR_DATA_PLAN_METERED_PAID ||
-             plan.plan_type == CELLULAR_DATA_PLAN_METERED_BASE) {
-    int64 remaining = plan.plan_data_bytes - plan.data_bytes_used;
+  } else if (plan->plan_type == CELLULAR_DATA_PLAN_METERED_PAID ||
+             plan->plan_type == CELLULAR_DATA_PLAN_METERED_BASE) {
+    int64 remaining = plan->plan_data_bytes - plan->data_bytes_used;
     if (remaining <= 0)
       return DATA_NONE;
-    else if (remaining <= kCellularDataVeryLowBytes)
+    if (remaining <= kCellularDataVeryLowBytes)
       return DATA_VERY_LOW;
-    else if (remaining <= kCellularDataLowBytes)
+    // For base plans, we do not care about low data.
+    if (remaining <= kCellularDataLowBytes &&
+        plan->plan_type != CELLULAR_DATA_PLAN_METERED_BASE)
       return DATA_LOW;
-    else
-      return DATA_NORMAL;
   }
   return DATA_NORMAL;
 }
@@ -1554,8 +1569,24 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     cellular1->set_name("Fake Cellular 1");
     cellular1->set_strength(70);
     cellular1->set_connected(true);
-    cellular1->set_activation_state(ACTIVATION_STATE_PARTIALLY_ACTIVATED);
+    cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
     cellular1->set_payment_url(std::string("http://www.google.com"));
+    cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
+
+    CellularDataPlan* base_plan = new CellularDataPlan();
+    base_plan->plan_name = "Base plan";
+    base_plan->plan_type = CELLULAR_DATA_PLAN_METERED_BASE;
+    base_plan->plan_data_bytes = 100ll * 1024 * 1024;
+    base_plan->data_bytes_used = 75ll * 1024 * 1024;
+    cellular1->data_plans_.push_back(base_plan);
+
+    CellularDataPlan* paid_plan = new CellularDataPlan();
+    paid_plan->plan_name = "Paid plan";
+    paid_plan->plan_type = CELLULAR_DATA_PLAN_METERED_PAID;
+    paid_plan->plan_data_bytes = 5ll * 1024 * 1024 * 1024;
+    paid_plan->data_bytes_used = 3ll * 1024 * 1024 * 1024;
+    cellular1->data_plans_.push_back(paid_plan);
+
     cellular_networks_.push_back(cellular1);
     cellular_ = cellular1;
 

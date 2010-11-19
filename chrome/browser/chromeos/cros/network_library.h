@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/platform_thread.h"
+#include "base/scoped_vector.h"
 #include "base/singleton.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -199,7 +200,9 @@ class CellularDataPlan {
   string16 GetPlanExpiration() const;
   // Formats plan usage info.
   string16 GetUsageInfo() const;
+  base::TimeDelta remaining_time() const;
   int64 remaining_minutes() const;
+  int64 remaining_data() const;
   int64 remaining_mbytes() const;
   std::string plan_name;
   CellularDataPlanType plan_type;
@@ -210,7 +213,7 @@ class CellularDataPlan {
   int64 data_bytes_used;
 };
 
-typedef std::vector<CellularDataPlan> CellularDataPlanVector;
+typedef ScopedVector<CellularDataPlan> CellularDataPlanVector;
 
 class CellularNetwork : public WirelessNetwork {
  public:
@@ -254,8 +257,11 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& hardware_revision() const { return hardware_revision_; }
   const std::string& last_update() const { return last_update_; }
   const unsigned int prl_version() const { return prl_version_; }
-  bool is_gsm() const;
-  DataLeft data_left() const;
+  bool is_gsm() const {
+    return network_technology_ != NETWORK_TECHNOLOGY_EVDO &&
+        network_technology_ != NETWORK_TECHNOLOGY_1XRTT &&
+        network_technology_ != NETWORK_TECHNOLOGY_UNKNOWN;
+  }
 
   // WirelessNetwork overrides.
   virtual void Clear();
@@ -265,12 +271,23 @@ class CellularNetwork : public WirelessNetwork {
   }
 
   void SetDataPlans(const CellularDataPlanList* data_plan_list) {
-    data_plans_.clear();
+    data_plans_.reset();
     for (size_t i = 0; i < data_plan_list->plans_size; i++) {
       const CellularDataPlanInfo* info(data_plan_list->GetCellularDataPlan(i));
-      data_plans_.push_back(CellularDataPlan(*info));
+      data_plans_.push_back(new CellularDataPlan(*info));
     }
   }
+
+  // This returns the significant data plan. If the user only has the
+  // base data plan, then return that. If there is a base and a paid data plan,
+  // then the significant one is the paid one. So return the paid plan.
+  // If there are no data plans, then this method returns NULL.
+  // This returns a pointer to a member of data_plans_, so if SetDataPlans()
+  // gets called, the result becomes invalid.
+  const CellularDataPlan* GetSignificantDataPlan() const;
+
+  DataLeft GetDataLeft() const;
+
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;
   // Return a string representation of activation state.

@@ -49,8 +49,9 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
 
   // Current connect celluar service path.
   std::string cellular_service_path_;
-  // Last cellular data plan data.
-  CellularDataPlan cellular_data_plan_;
+  // Last cellular data plan name and type.
+  std::string cellular_data_plan_name_;
+  CellularDataPlanType cellular_data_plan_type_;
 
   // Notification for connection errors
   SystemNotification notification_connection_error_;

@@ -400,7 +400,7 @@ SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular) {
       nextafter(static_cast<float>(kNumWifiImages), 0));
   index = std::max(std::min(index, kNumWifiImages - 1), 0);
   const int* images = kBarsImages;
-  switch (cellular->data_left()) {
+  switch (cellular->GetDataLeft()) {
     case CellularNetwork::DATA_NONE:
     case CellularNetwork::DATA_VERY_LOW:
       images = kBarsImagesVLowData;
@@ -438,7 +438,7 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
 
     int id = -1;
     if (cellular->network_technology() == NETWORK_TECHNOLOGY_EVDO) {
-      switch (cellular->data_left()) {
+      switch (cellular->GetDataLeft()) {
         case CellularNetwork::DATA_NONE:
         case CellularNetwork::DATA_VERY_LOW:
           id = IDR_STATUSBAR_NETWORK_3G_ERROR;
@@ -451,7 +451,7 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
           break;
       }
     } else if (cellular->network_technology() == NETWORK_TECHNOLOGY_1XRTT) {
-      switch (cellular->data_left()) {
+      switch (cellular->GetDataLeft()) {
         case CellularNetwork::DATA_NONE:
         case CellularNetwork::DATA_VERY_LOW:
           id = IDR_STATUSBAR_NETWORK_1X_ERROR;
@@ -651,10 +651,11 @@ void NetworkMenu::InitMenuItems() {
         label.clear();
         if (active_cellular->needs_new_plan()) {
           label = l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL);
-        } else if (!active_cellular->GetDataPlans().empty()) {
-          const chromeos::CellularDataPlan& plan =
-              *active_cellular->GetDataPlans().begin();
-          label = plan.GetUsageInfo();
+        } else {
+          const chromeos::CellularDataPlan* plan =
+              active_cellular->GetSignificantDataPlan();
+          if (plan)
+            label = plan->GetUsageInfo();
         }
         if (label.length()) {
           menu_items_.push_back(

@@ -181,7 +181,7 @@ void NetworkMenuButton::SetNetworkIcon(const Network* network) {
     } else if (network->type() == TYPE_CELLULAR) {
       const CellularNetwork* cellular =
           static_cast<const CellularNetwork*>(network);
-      if (cellular->data_left() == CellularNetwork::DATA_NONE) {
+      if (cellular->GetDataLeft() == CellularNetwork::DATA_NONE) {
         // If no data, then we show 0 bars.
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
       } else {

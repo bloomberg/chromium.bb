@@ -445,15 +445,14 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
 }
 
 DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
-    const chromeos::CellularDataPlan& plan) {
-
+    const chromeos::CellularDataPlan* plan) {
   DictionaryValue* plan_dict = new DictionaryValue();
-  plan_dict->SetInteger("plan_type", plan.plan_type);
-  plan_dict->SetString("name", plan.plan_name);
-  plan_dict->SetString("planSummary", plan.GetPlanDesciption());
-  plan_dict->SetString("dataRemaining", plan.GetDataRemainingDesciption());
-  plan_dict->SetString("planExpires", plan.GetPlanExpiration());
-  plan_dict->SetString("warning", plan.GetRemainingWarning());
+  plan_dict->SetInteger("plan_type", plan->plan_type);
+  plan_dict->SetString("name", plan->plan_name);
+  plan_dict->SetString("planSummary", plan->GetPlanDesciption());
+  plan_dict->SetString("dataRemaining", plan->GetDataRemainingDesciption());
+  plan_dict->SetString("planExpires", plan->GetPlanExpiration());
+  plan_dict->SetString("warning", plan->GetRemainingWarning());
   return plan_dict;
 }
 
