@@ -43,9 +43,13 @@ namespace o2d {
 O3D_DEFN_CLASS(Layer, ParamObject);
 
 Layer::Layer(ServiceLocator* service_locator)
-    : ParamObject(service_locator), texture_(NULL),
-      weak_pointer_manager_(this), alpha_(0), scale_x_(0), scale_y_(0),
-      translate_x_(0), translate_y_(0) {
+    : ParamObject(service_locator),
+      texture_(NULL),
+      alpha_(0),
+      scale_x_(0),
+      scale_y_(0),
+      translate_x_(0),
+      translate_y_(0) {
   DLOG(INFO) << "Create Layer";
 }
 

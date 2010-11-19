@@ -38,14 +38,14 @@
 #include <build/build_config.h>
 #include <list>
 #include <vector>
+
 #include "core/cross/renderer_platform.h"
 #include "core/cross/renderer.h"
+#include "core/cross/cairo/layer.h"
 
 namespace o3d {
 
 namespace o2d {
-
-class Layer;
 
 class RendererCairo : public Renderer {
  public:
@@ -152,7 +152,7 @@ class RendererCairo : public Renderer {
   void PopRenderStates();
 
  protected:
-  typedef std::list<Layer*> LayerRefList;
+  typedef std::list<Layer::Ref> LayerRefList;
 
   // Keep the constructor protected so only factory methods can create
   // renderers.

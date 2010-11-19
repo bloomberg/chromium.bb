@@ -49,11 +49,11 @@ namespace o2d {
 class Layer : public ParamObject {
   friend class Client;
  public:
-  typedef WeakPointer<Layer> WeakPointerType;
+  typedef SmartPointer<Layer> Ref;
 
   // Set the corresponding texture for this Layer instance.
   void SetTexture(Texture* texture) {
-    texture_ = down_cast<TextureCairo*>(texture);
+    texture_ = TextureCairo::Ref(down_cast<TextureCairo*>(texture));
   }
 
   TextureCairo* GetTexture() {
@@ -95,11 +95,6 @@ class Layer : public ParamObject {
     scale_y_ = y;
   }
 
-  // Gets a weak pointer to us.
-  WeakPointerType GetWeakPointer() const {
-    return weak_pointer_manager_.GetWeakPointer();
-  }
-
  private:
   explicit Layer(ServiceLocator* service_locator);
 
@@ -107,10 +102,7 @@ class Layer : public ParamObject {
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   // Texture Container.
-  TextureCairo* texture_;
-
-  // Manager for weak pointers to us.
-  WeakPointerType::WeakPointerManager weak_pointer_manager_;
+  TextureCairo::Ref texture_;
 
   // Transparancy of the scene.
   float alpha_;

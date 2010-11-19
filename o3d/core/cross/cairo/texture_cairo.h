@@ -38,6 +38,9 @@
 
 #include "core/cross/texture.h"
 
+typedef struct _cairo cairo_t;
+typedef struct _cairo_surface cairo_surface_t;
+
 namespace o3d {
 
 namespace o2d {
@@ -74,28 +77,8 @@ class TextureCairo : public Texture2D {
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
 
-  const void* GetData() {
-    return data_;
-  }
-
-  unsigned GetOriginX() {
-    return left_;
-  }
-
-  unsigned GetOriginY() {
-    return top_;
-  }
-
-  unsigned GetWidth() {
-    return width_;
-  }
-
-  unsigned GetHeight() {
-    return height_;
-  }
-
-  int GetPitch() {
-    return pitch_;
+  cairo_surface_t* image_surface() const {
+    return image_surface_;
   }
 
  protected:
@@ -112,30 +95,23 @@ class TextureCairo : public Texture2D {
   // Returns the implementation-specific texture handle for this texture.
   virtual void* GetTextureHandle() const;
 
-  // The 2d renderer object to be used by client.
-  RendererCairo* renderer_;
-
-  // Current Frame Data Source
-  const void* data_;
-  // X coordinate
-  unsigned left_;
-  // Y coordinate
-  unsigned top_;
-  // Current Frame Source Width
-  unsigned width_;
-  // Current Frame Source Height
-  unsigned height_;
-  // Current Frame Source Pitch
-  int pitch_;
-
  private:
   // Initializes the Texture2D.
   TextureCairo(ServiceLocator* service_locator,
+               cairo_surface_t* image_surface,
+               cairo_t* image_surface_context,
                Texture::Format format,
                int levels,
                int width,
                int height,
                bool enable_render_surfaces);
+
+  // The 2d renderer object to be used by client.
+  RendererCairo* renderer_;
+  // The Cairo image for this texture.
+  cairo_surface_t* image_surface_;
+  // A Cairo drawing context for updating this image.
+  cairo_t* image_surface_context_;
 };
 
 }  // namespace o2d

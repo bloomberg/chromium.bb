@@ -72,9 +72,6 @@ void RendererCairo::Destroy() {
   display_ = NULL;
 }
 
-// TODO(fransiskusx): Need to check if the shared memory data has been
-// unregistered. It will prevent errors when accessing unregistered
-// shared memory data to render the frame.
 void RendererCairo::Paint() {
   DLOG(INFO) << "To paint";
   cairo_t* current_drawing = cairo_create(main_surface_);
@@ -92,8 +89,8 @@ void RendererCairo::Paint() {
     Layer* cur = *i;
     TextureCairo* cur_texture = cur->GetTexture();
 
-    // Check if the pointer to data is null.
-    if (cur_texture->GetData() == NULL) {
+    if (!cur_texture) {
+      // Skip layers with no texture assigned.
       continue;
     }
 
@@ -103,17 +100,13 @@ void RendererCairo::Paint() {
     MaskArea(current_drawing, start_mask_it);
 
     // Preparing the image to render.
-    cairo_surface_t* image = cairo_image_surface_create_for_data(
-        const_cast<unsigned char*>(
-            static_cast<const unsigned char*>(cur_texture->GetData())),
-        CAIRO_FORMAT_ARGB32, cur_texture->GetWidth(),
-        cur_texture->GetHeight(), cur_texture->GetPitch());
+    cairo_surface_t* image = cur_texture->image_surface();
 
     // Scale the image.
     double width_scaling =
-        (static_cast<double>(cur->GetScaleX())) / cur_texture->GetWidth();
+        (static_cast<double>(cur->GetScaleX())) / cur_texture->width();
     double height_scaling =
-        (static_cast<double>(cur->GetScaleY())) / cur_texture->GetHeight();
+        (static_cast<double>(cur->GetScaleY())) / cur_texture->height();
 
     cairo_scale(current_drawing, width_scaling, height_scaling);
 
@@ -123,9 +116,6 @@ void RendererCairo::Paint() {
         cur->GetTranslateY() / height_scaling);
 
     cairo_paint_with_alpha(current_drawing, cur->GetAlpha());
-
-    // Cleaning up the memory.
-    cairo_surface_destroy(image);
 
     // Restore to the state with no mask.
     cairo_restore(current_drawing);
@@ -161,7 +151,7 @@ void RendererCairo::MaskArea(cairo_t* cr,  LayerRefList::iterator it) {
 }
 
 void RendererCairo::AddLayer(Layer* image) {
-  layer_list_.push_front(image);
+  layer_list_.push_front(Layer::Ref(image));
 }
 
 void RendererCairo::InitCommon() {
