@@ -49,11 +49,12 @@ for basename in ['addr_modes',
                  'fib',
                  'hello_world',
                  'long_long',
+                 'negindex',
                  'regs',
+                 'reloc',
                  'switch',
                  'vtable',
                  'vaarg',
-                 'negindex',
                  ]:
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=783
   if env['BUILD_ARCHITECTURE'] == 'arm' and basename == 'vaarg': continue
