@@ -341,7 +341,6 @@ static struct gears *
 gears_create(struct display *display)
 {
 	const int x = 200, y = 200, width = 450, height = 500;
-	EGLint major, minor;
 	struct gears *gears;
 	int i;
 

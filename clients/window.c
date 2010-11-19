@@ -203,7 +203,6 @@ display_create_drm_surface(struct display *display,
 	EGLDisplay dpy = display->dpy;
 	cairo_surface_t *surface;
 	struct wl_visual *visual;
-	struct wl_buffer *buffer;
 	EGLint name, stride;
 
 	EGLint image_attribs[] = {
@@ -343,7 +342,7 @@ display_create_shm_surface(struct display *display,
 	struct shm_surface_data *data;
 	cairo_surface_t *surface;
 	struct wl_visual *visual;
-	int stride, alloc, fd;
+	int stride, fd;
 	char filename[] = "/tmp/wayland-shm-XXXXXX";
 
 	data = malloc(sizeof *data);

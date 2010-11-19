@@ -65,7 +65,6 @@ static void set_boundary(struct smoke *smoke, float x, float y, float *p)
 static void diffuse(struct smoke *smoke, uint32_t time,
 		    float *source, float *dest)
 {
-	cairo_t *cr;
 	float *s, *d;
 	int x, y, k, stride;
 	float t, a = 0.0002;
@@ -88,10 +87,9 @@ static void diffuse(struct smoke *smoke, uint32_t time,
 static void advect(struct smoke *smoke, uint32_t time,
 		   float *uu, float *vv, float *source, float *dest)
 {
-	cairo_t *cr;
 	float *s, *d;
 	float *u, *v;
-	int x, y, k, stride;
+	int x, y, stride;
 	int i, j;
 	float px, py, fx, fy;
 
@@ -128,7 +126,7 @@ static void project(struct smoke *smoke, uint32_t time,
 		    float *u, float *v, float *p, float *div)
 {
 	int x, y, k, l, s;
-	float h, *d, *q;
+	float h;
 
 	h = 1.0 / smoke->width;
 	s = smoke->width;
@@ -166,10 +164,8 @@ static void project(struct smoke *smoke, uint32_t time,
 
 static void render(struct smoke *smoke)
 {
-	cairo_t *cr;
-	unsigned char *source, *dest;
+	unsigned char *dest;
 	int x, y, width, height, stride;
-	int k, t;
 	float *s;
 	uint32_t *d, c, a;
 
@@ -196,9 +192,7 @@ static void render(struct smoke *smoke)
 static void
 frame_callback(void *data, uint32_t time)
 {
-	cairo_surface_t *t;
 	struct smoke *smoke = data;
-	static int i;
 
 	diffuse(smoke, time / 30, smoke->b[0].u, smoke->b[1].u);
 	diffuse(smoke, time / 30, smoke->b[0].v, smoke->b[1].v);
@@ -270,7 +264,7 @@ int main(int argc, char *argv[])
 	struct timespec ts;
 	struct smoke smoke;
 	struct display *d;
-	int size, x, y;
+	int size;
 
 	d = display_create(&argc, &argv, NULL);
 
