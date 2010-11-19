@@ -4,12 +4,11 @@
 
 #include "views/accessibility/view_accessibility.h"
 
-#include "app/view_prop.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_win.h"
 
-const char kViewsNativeHostPropForAccessibility[] =
-    "Views_NativeViewHostHWNDForAccessibility";
+const wchar_t kViewsNativeHostPropForAccessibility[] =
+  L"Views_NativeViewHostHWNDForAccessibility";
 
 // static
 scoped_refptr<ViewAccessibility> ViewAccessibility::Create(views::View* view) {
@@ -711,9 +710,9 @@ HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
   if (!native_host || !accessible)
     return E_INVALIDARG;
 
-  HWND native_view_window = static_cast<HWND>(
-      app::ViewProp::GetValue(native_host->native_view(),
-                              kViewsNativeHostPropForAccessibility));
+  HWND native_view_window =
+      static_cast<HWND>(GetProp(native_host->native_view(),
+                                kViewsNativeHostPropForAccessibility));
   if (!IsWindow(native_view_window)) {
     native_view_window = native_host->native_view();
   }

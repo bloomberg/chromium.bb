@@ -207,8 +207,9 @@ class Widget {
   // Sets/Gets a native window property on the underlying native window object.
   // Returns NULL if the property does not exist. Setting the property value to
   // NULL removes the property.
-  virtual void SetNativeWindowProperty(const char* name, void* value) = 0;
-  virtual void* GetNativeWindowProperty(const char* name) = 0;
+  virtual void SetNativeWindowProperty(const std::wstring& name,
+                                       void* value) = 0;
+  virtual void* GetNativeWindowProperty(const std::wstring& name) = 0;
 
   // Gets the theme provider.
   virtual ThemeProvider* GetThemeProvider() const = 0;

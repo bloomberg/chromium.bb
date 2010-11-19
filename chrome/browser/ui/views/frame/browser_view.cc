@@ -82,7 +82,6 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "app/view_prop.h"
 #include "app/win_util.h"
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
@@ -100,7 +99,11 @@ using views::GridLayout;
 static const int kStatusBubbleHeight = 20;
 // The name of a key to store on the window handle so that other code can
 // locate this object using just the handle.
-static const char* const kBrowserViewKey = "__BROWSER_VIEW__";
+#if defined(OS_WIN)
+static const wchar_t* kBrowserViewKey = L"__BROWSER_VIEW__";
+#else
+static const char* kBrowserViewKey = "__BROWSER_VIEW__";
+#endif
 // How frequently we check for hung plugin windows.
 static const int kDefaultHungPluginDetectFrequency = 2000;
 // How long do we wait before we consider a window hung (in ms).
@@ -483,8 +486,9 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
     gfx::NativeWindow window) {
 #if defined(OS_WIN)
   if (IsWindow(window)) {
-    return reinterpret_cast<BrowserView*>(
-        app::ViewProp::GetValue(window, kBrowserViewKey));
+    HANDLE data = GetProp(window, kBrowserViewKey);
+    if (data)
+      return reinterpret_cast<BrowserView*>(data);
   }
 #else
   if (window) {
@@ -1885,7 +1889,12 @@ void BrowserView::Init() {
   SetLayoutManager(CreateLayoutManager());
   // Stow a pointer to this object onto the window handle so that we can get
   // at it later when all we have is a native view.
+#if defined(OS_WIN)
   GetWidget()->SetNativeWindowProperty(kBrowserViewKey, this);
+#else
+  g_object_set_data(G_OBJECT(GetWidget()->GetNativeView()),
+                    kBrowserViewKey, this);
+#endif
 
   // Start a hung plugin window detector for this browser object (as long as
   // hang detection is not disabled).

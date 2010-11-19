@@ -13,7 +13,7 @@
 #include "app/keyboard_code_conversion_win.h"
 #include "app/keyboard_codes.h"
 #include "app/l10n_util_win.h"
-#include "app/view_prop.h"
+#include "app/win/scoped_prop.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/win_util.h"
@@ -24,12 +24,10 @@
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
-using app::ViewProp;
-
 namespace views {
 
 // Maps to the NativeControl.
-static const char* const kNativeControlKey = "__NATIVE_CONTROL__";
+static const wchar_t* const kNativeControlKey = L"__NATIVE_CONTROL__";
 
 class NativeControlContainer : public CWindowImpl<NativeControlContainer,
                                CWindow,
@@ -91,7 +89,8 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
     // We subclass the control hwnd so we get the WM_KEYDOWN messages.
     original_handler_ = win_util::SetWindowProc(
         control_, &NativeControl::NativeControlWndProc);
-    prop_.reset(new ViewProp(control_, kNativeControlKey , parent_));
+    prop_.reset(
+        new app::win::ScopedProp(control_, kNativeControlKey , parent_));
 
     ::ShowWindow(control_, SW_SHOW);
     return 1;
@@ -167,7 +166,7 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
   // Message handler that was set before we reset it.
   WNDPROC original_handler_;
 
-  scoped_ptr<ViewProp> prop_;
+  scoped_ptr<app::win::ScopedProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeControlContainer);
 };
@@ -364,8 +363,8 @@ LRESULT CALLBACK NativeControl::NativeControlWndProc(HWND window,
                                                      UINT message,
                                                      WPARAM w_param,
                                                      LPARAM l_param) {
-  NativeControl* native_control = static_cast<NativeControl*>(
-      ViewProp::GetValue(window, kNativeControlKey));
+  NativeControl* native_control =
+      static_cast<NativeControl*>(GetProp(window, kNativeControlKey));
   DCHECK(native_control);
   WNDPROC original_handler = native_control->container_->original_handler_;
   DCHECK(original_handler);

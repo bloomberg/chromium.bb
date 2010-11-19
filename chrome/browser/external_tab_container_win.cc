@@ -7,7 +7,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/view_prop.h"
+#include "app/win/scoped_prop.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -47,9 +47,7 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
-using app::ViewProp;
-
-static const char kWindowObjectKey[] = "ChromeWindowObject";
+static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
 
 // This class overrides the LinkActivated function in the PageInfoBubbleView
 // class and routes the help center link navigation to the host browser.
@@ -136,7 +134,8 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   // TODO(jcampan): limit focus traversal to contents.
 
-  prop_.reset(new ViewProp(GetNativeView(), kWindowObjectKey, this));
+  prop_.reset(
+      new app::win::ScopedProp(GetNativeView(), kWindowObjectKey, this));
 
   if (existing_contents) {
     tab_contents_ = existing_contents;
@@ -285,7 +284,10 @@ void ExternalTabContainer::FocusThroughTabTraversal(
 
 // static
 bool ExternalTabContainer::IsExternalTabContainer(HWND window) {
-  return ViewProp::GetValue(window, kWindowObjectKey) != NULL;
+  if (::GetProp(window, kWindowObjectKey) != NULL)
+    return true;
+
+  return false;
 }
 
 // static
@@ -299,7 +301,7 @@ ExternalTabContainer* ExternalTabContainer::GetContainerForTab(
     return NULL;
   }
   ExternalTabContainer* container = reinterpret_cast<ExternalTabContainer*>(
-      ViewProp::GetValue(parent_window, kWindowObjectKey));
+      GetProp(parent_window, kWindowObjectKey));
   return container;
 }
 
@@ -309,8 +311,8 @@ ExternalTabContainer*
         gfx::NativeView native_window) {
   ExternalTabContainer* tab_container = NULL;
   if (native_window) {
-    tab_container = reinterpret_cast<ExternalTabContainer*>(
-        ViewProp::GetValue(native_window, kWindowObjectKey));
+    HANDLE handle = ::GetProp(native_window, kWindowObjectKey);
+    tab_container = reinterpret_cast<ExternalTabContainer*>(handle);
   }
   return tab_container;
 }

@@ -13,7 +13,9 @@
 #include "views/widget/child_window_message_processor.h"
 
 namespace app {
-class ViewProp;
+namespace win {
+class ScopedProp;
+}
 }
 
 namespace views {
@@ -73,7 +75,7 @@ class NativeControlWin : public ChildWindowMessageProcessor,
   DWORD GetAdditionalRTLStyle() const;
 
  private:
-  typedef ScopedVector<app::ViewProp> ViewProps;
+  typedef ScopedVector<app::win::ScopedProp> ScopedProps;
 
   // Called by the containing WidgetWin when a message of type WM_CTLCOLORBTN or
   // WM_CTLCOLORSTATIC is sent from the HWND created by an object dreived from
@@ -89,7 +91,7 @@ class NativeControlWin : public ChildWindowMessageProcessor,
   // The window procedure before we subclassed.
   WNDPROC original_wndproc_;
 
-  ViewProps props_;
+  ScopedProps props_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeControlWin);
 };

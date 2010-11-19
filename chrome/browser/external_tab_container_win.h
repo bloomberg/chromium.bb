@@ -31,7 +31,9 @@ class TabContentsContainer;
 class RenderViewContextMenuViews;
 
 namespace app {
-class ViewProp;
+namespace win {
+class ScopedProp;
+}
 }
 
 namespace IPC {
@@ -337,7 +339,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   // page without chrome frame.
   bool route_all_top_level_navigations_;
 
-  scoped_ptr<app::ViewProp> prop_;
+  scoped_ptr<app::win::ScopedProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };
