@@ -15,6 +15,23 @@ namespace webkit_glue {
 
 void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
+  // Don't load the forked npapi_layout_test_plugin in DRT, we only
+  // want to use the upstream version TestNetscapePlugIn.  We don't need to
+  // blacklist on Mac because DRT Mac already uses the upstream version of
+  // TestNetscapePlugIn.
+  const FilePath::StringType kPluginBlackList[] = {
+    FILE_PATH_LITERAL("npapi_layout_test_plugin.dll"),
+    FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
+  };
+  for (int i = plugins->size() - 1; i >= 0; --i) {
+    WebPluginInfo plugin_info = plugins->at(i);
+    for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
+      if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
+        NPAPI::PluginList::Singleton()->DisablePlugin(plugin_info.path);
+        plugins->erase(plugins->begin() + i);
+      }
+    }
+  }
 }
 
 bool IsDefaultPluginEnabled() {
