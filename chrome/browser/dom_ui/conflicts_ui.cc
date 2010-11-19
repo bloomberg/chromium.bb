@@ -207,7 +207,7 @@ ConflictsUI::ConflictsUI(TabContents* contents) : DOMUI(contents) {
 // static
 RefCountedMemory* ConflictsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_CONFLICT_MENU);
+      LoadDataResourceBytes(IDR_CONFLICT_FAVICON);
 }
 
 #endif
