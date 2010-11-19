@@ -161,7 +161,7 @@ def CheckArguments():
 # defined.
 def SetArgument(key, value):
   print '    %s=%s' % (key, str(value))
-  if ARGUMENTS.has_key(key):
+  if key in ARGUMENTS:
     print 'ERROR: %s redefined' % (key, )
     sys.exit(-1)
   else:
@@ -573,6 +573,15 @@ if (pre_base_env['TARGET_ARCHITECTURE'] == 'arm' and
 # Valgrind
 pre_base_env.AddMethod(lambda self: ARGUMENTS.get('running_on_valgrind'),
                        'IsRunningUnderValgrind')
+
+# This method indicates that the binaries we are building will validate code
+# for an architechture different than the one the binaries will run on.
+# NOTE Currently (2010/11/17) this is 'x86' vs. 'arm', and  x86-32 vs. x86-64
+# is not considered to be a cross-tools build.
+def CrossToolsBuild(env):
+  return env['BUILD_ARCHITECTURE'] != env['TARGET_ARCHITECTURE']
+
+pre_base_env.AddMethod(CrossToolsBuild, 'CrossToolsBuild')
 
 # ----------------------------------------------------------
 # PLUGIN PREREQUISITES

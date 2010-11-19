@@ -328,7 +328,7 @@ if sdl_mode != 'none' and sdl_mode != 'armlocal':
 
 VALIDATOR_LIBS = []
 if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
-    env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
+    not env.CrossToolsBuild()):
 
 
   if env['TARGET_ARCHITECTURE'] == 'x86':
@@ -402,7 +402,7 @@ unittest_inputs = [
     'sel_ldr_test.cc',
 ]
 
-if (env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE'] and
+if (not env.CrossToolsBuild() and
     (not env.get('COVERAGE_ENABLED') or not env.Bit('windows'))):
   unit_tests_exe = gtest_env.ComponentProgram('service_runtime_tests',
                                               unittest_inputs,
@@ -450,7 +450,7 @@ else:
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
 if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
-    env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
+    not env.CrossToolsBuild()):
   # NOTE: uses sdl and validator
   mmap_test_exe = sdl_env.ComponentProgram('mmap_test',
                                            ['mmap_test.c'],
@@ -550,7 +550,7 @@ if (not env.get('COVERAGE_ENABLED') and
 
 
 if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
-    env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
+    not env.CrossToolsBuild()):
   gio_shm_test_exe = sdl_env.ComponentProgram('gio_shm_test',
                                               ['gio_shm_test.c'],
                                               EXTRA_LIBS=['sel',
@@ -709,7 +709,7 @@ if not env.Bit('mac'):
 
 # Do not run when building tools to run on x86-32 but to analyze the
 # arm instruction set
-if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
+if not env.CrossToolsBuild():
   node = env.CommandSelLdrTestNacl(
       'fuzz_nullptr_test.out',
       sel_ldr_flags=['-F'],
@@ -725,7 +725,7 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
 # TODO(bradnelson): fix this to work on windows under coverage.
 # NOTE: uses sdl and validator
 if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
-    env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
+    not env.CrossToolsBuild()):
   obj_proxy_test_inputs = [ 'fs/obj_proxy_test.c', ]
   obj_proxy_test = sdl_env.ComponentProgram('obj_proxy_test',
                                             obj_proxy_test_inputs,
@@ -859,7 +859,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
 # ----------------------------------------------------------
 # More Death Tests
 # ----------------------------------------------------------
-if (env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE'] and
+if (not env.CrossToolsBuild() and
     (not env.get('COVERAGE_ENABLED') or not env.Bit('windows'))):
   # NOTE: uses sdl and validator
   sel_ldr_thread_death_test_exe = sdl_env.ComponentProgram(

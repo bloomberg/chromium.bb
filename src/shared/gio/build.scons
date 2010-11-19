@@ -50,7 +50,7 @@ env.DualLibrary('gio',
                  ])
 
 
-if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
+if not env.CrossToolsBuild():
   gtest_env = env.Clone()
   if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
     # because of: gtest-typed-test.h:236:46: error:

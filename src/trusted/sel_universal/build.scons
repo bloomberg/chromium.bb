@@ -6,7 +6,7 @@
 
 Import('env')
 
-if env['BUILD_ARCHITECTURE'] != env['TARGET_ARCHITECTURE']:
+if env.CrossToolsBuild():
   Return()
 
 
