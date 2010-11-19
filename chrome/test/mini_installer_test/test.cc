@@ -6,7 +6,6 @@
 #include "base/file_path.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -24,7 +23,7 @@ namespace {
 
 class MiniInstallTest : public testing::Test {
  public:
-   MiniInstallTest() : force_tests_(false), chrome_frame_(false) {}
+   MiniInstallTest() : chrome_frame_(false) {}
 
   static void CleanTheSystem() {
     const CommandLine* cmd = CommandLine::ForCurrentProcess();
@@ -49,27 +48,20 @@ class MiniInstallTest : public testing::Test {
         cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
     if (build.empty())
       build = L"latest";
-    force_tests_ = cmd->HasSwitch(switches::kInstallerTestForce);
     chrome_frame_ = cmd->HasSwitch(installer_util::switches::kChromeFrame);
-    if (base::win::GetVersion() < base::win::VERSION_VISTA ||
-        force_tests_) {
-      CleanTheSystem();
-      // Separate the test output from cleaning output
-      printf("\nBEGIN test----------------------------------------\n");
 
-      // Create a few differently configured installers that are used in
-      // the tests, for convenience.
-      user_inst_.reset(new ChromeMiniInstaller(kUserInstall,
-                                               chrome_frame_));
-      sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall,
-                                              chrome_frame_));
-      sys_inst_->SetBuildUnderTest(build);
-      user_inst_->SetBuildUnderTest(build);
+    CleanTheSystem();
+    // Separate the test output from cleaning output
+    printf("\nBEGIN test----------------------------------------\n");
 
-    } else {
-      printf("These tests don't run on this platform.\n");
-      exit(0);
-    }
+    // Create a few differently configured installers that are used in
+    // the tests, for convenience.
+    user_inst_.reset(new ChromeMiniInstaller(kUserInstall,
+                                             chrome_frame_));
+    sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall,
+                                            chrome_frame_));
+    sys_inst_->SetBuildUnderTest(build);
+    user_inst_->SetBuildUnderTest(build);
   }
 
   static void TearDownTestCase() {
@@ -78,9 +70,6 @@ class MiniInstallTest : public testing::Test {
   }
 
  protected:
-  // Whether these tests should be run regardless of our running platform.
-  bool force_tests_;
-
   // Decided if ChromeFrame tests should be run.
   bool chrome_frame_;
 
@@ -171,13 +160,12 @@ TEST_F(MiniInstallTest,
 }
 #endif
 
-// http://crbug.com/61497
-TEST_F(MiniInstallTest, FLAKY_InstallMiniInstallerSys) {
+TEST_F(MiniInstallTest, InstallMiniInstallerSys) {
   sys_inst_->Install();
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/57158 - Fails on windows.
+// http://crbug.com/57157 - Fails on windows.
 #define MAYBE_InstallMiniInstallerUser FLAKY_InstallMiniInstallerUser
 #else
 #define MAYBE_InstallMiniInstallerUser InstallMiniInstallerUser

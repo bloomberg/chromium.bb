@@ -6,7 +6,7 @@
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/test/test_suite.h"
-#include "base/test/test_timeouts.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
   if (command_line.HasSwitch(switches::kInstallerTestClean)) {
     printf("Current version of Chrome will be uninstalled "
            "from all levels before proceeding with tests.\n");
-  } else if (command_line.HasSwitch(switches::kInstallerTestForce)) {
+  } else if (command_line.HasSwitch(switches::kInstallerTestBackup)) {
     BackUpProfile(command_line.HasSwitch(
         installer_util::switches::kChromeFrame));
   } else {
@@ -70,8 +70,11 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  // Initialize the timeouts used by the test.
-  TestTimeouts::Initialize();
-
-  return test_suite.Run();
+  if (base::win::GetVersion() < base::win::VERSION_VISTA ||
+      command_line.HasSwitch(switches::kInstallerTestForce)) {
+    return test_suite.Run();
+  } else {
+    printf("These tests don't run on this platform.\n");
+    return 0;
+  }
 }
