@@ -26,8 +26,9 @@ typedef unsigned __int64 uint64_t;
 
 #else
 #include <stdint.h>
-#include <stddef.h>  // Needed for size_t.
 #endif
+
+#include <stddef.h>  // Needed for size_t.
 
 /**
  * @}
