@@ -30,6 +30,7 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // time of scan.
   enum ModuleType {
     LOADED_MODULE,
+    SHELL_EXTENSION,
     WINSOCK_MODULE_REGISTRATION,
   };
 
@@ -132,6 +133,23 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // them against a blacklist of known bad modules. Finally, it calls
   // ReportBack to let the observer know we are done.
   void ScanOnFileThread();
+
+  // Enumerate all modules loaded into the Chrome process.
+  void EnumerateLoadedModules();
+
+  // Enumerate all registered Windows shell extensions.
+  void EnumerateShellExtensions();
+
+  // Enumerate all registered Winsock LSP modules.
+  void EnumerateWinsockModule();
+
+  // Reads the registered shell extensions found under |parent| key in the
+  // registry.
+  void ReadShellExtensions(HKEY parent);
+
+  // Given a |module|, initializes the structure and loads additional
+  // information using the location field of the module.
+  void PopulateModuleInformation(Module* module);
 
   // Builds up a vector of path values mapping to environment variable,
   // with pairs like [c:\windows\, %systemroot%]. This is later used to

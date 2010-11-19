@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "base/win/registry.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,6 +30,10 @@
 // The period of time (in milliseconds) to wait until checking to see if any
 // incompatible modules exist.
 static const int kModuleCheckDelayMs = 60 * 1000;
+
+// The path to the Shell Extension key in the Windows registry.
+static const wchar_t kRegPath[] =
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved";
 
 // A sort method that sorts by ModuleType ordinal (loaded module at the top),
 // then by full name (including path).
@@ -226,6 +231,22 @@ void ModuleEnumerator::ScanOnFileThread() {
   // Make sure the path mapping vector is setup so we can collapse paths.
   PreparePathMappings();
 
+  EnumerateLoadedModules();
+  EnumerateShellExtensions();
+  EnumerateWinsockModule();
+
+  MatchAgainstBlacklist();
+
+  std::sort(enumerated_modules_->begin(),
+            enumerated_modules_->end(), ModuleSort);
+
+  // Send a reply back on the UI thread.
+  BrowserThread::PostTask(
+      callback_thread_id_, FROM_HERE,
+      NewRunnableMethod(this, &ModuleEnumerator::ReportBack));
+}
+
+void ModuleEnumerator::EnumerateLoadedModules() {
   // Get all modules in the current process.
   ScopedHandle snap(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE,
                     ::GetCurrentProcessId()));
@@ -244,31 +265,51 @@ void ModuleEnumerator::ScanOnFileThread() {
 
     Module entry;
     entry.type = LOADED_MODULE;
-    entry.status = NOT_MATCHED;
-    entry.normalized = false;
     entry.location = module.szExePath;
-    entry.digital_signer =
-        GetSubjectNameFromDigitalSignature(FilePath(entry.location));
-    entry.recommended_action = NONE;
-    scoped_ptr<FileVersionInfo> version_info(
-        FileVersionInfo::CreateFileVersionInfo(FilePath(entry.location)));
-    if (version_info.get()) {
-      FileVersionInfoWin* version_info_win =
-          static_cast<FileVersionInfoWin*>(version_info.get());
-
-      VS_FIXEDFILEINFO* fixed_file_info = version_info_win->fixed_file_info();
-      if (fixed_file_info) {
-        entry.description = version_info_win->file_description();
-        entry.version = version_info_win->file_version();
-        entry.product_name = version_info_win->product_name();
-      }
-    }
+    PopulateModuleInformation(&entry);
 
     NormalizeModule(&entry);
     CollapsePath(&entry);
     enumerated_modules_->push_back(entry);
   } while (::Module32Next(snap.Get(), &module));
+}
 
+void ModuleEnumerator::EnumerateShellExtensions() {
+  ReadShellExtensions(HKEY_LOCAL_MACHINE);
+  ReadShellExtensions(HKEY_CURRENT_USER);
+}
+
+void ModuleEnumerator::ReadShellExtensions(HKEY parent) {
+  base::win::RegistryValueIterator registration(parent, kRegPath);
+  while (registration.Valid()) {
+    std::wstring key(std::wstring(L"CLSID\\") + registration.Name() +
+        L"\\InProcServer32");
+    base::win::RegKey clsid;
+    if (!clsid.Open(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ)) {
+      ++registration;
+      continue;
+    }
+    string16 dll;
+    if (!clsid.ReadValue(L"", &dll)) {
+      ++registration;
+      continue;
+    }
+    clsid.Close();
+
+    Module entry;
+    entry.type = SHELL_EXTENSION;
+    entry.location = dll;
+    PopulateModuleInformation(&entry);
+
+    NormalizeModule(&entry);
+    CollapsePath(&entry);
+    enumerated_modules_->push_back(entry);
+
+    ++registration;
+  }
+}
+
+void ModuleEnumerator::EnumerateWinsockModule() {
   // Add to this list the Winsock LSP DLLs.
   WinsockLayeredServiceProviderList layered_providers;
   GetWinsockLayeredServiceProviders(&layered_providers);
@@ -294,16 +335,27 @@ void ModuleEnumerator::ScanOnFileThread() {
     NormalizeModule(&entry);
     enumerated_modules_->push_back(entry);
   }
+}
 
-  MatchAgainstBlacklist();
+void ModuleEnumerator::PopulateModuleInformation(Module* module) {
+  module->status = NOT_MATCHED;
+  module->normalized = false;
+  module->digital_signer =
+      GetSubjectNameFromDigitalSignature(FilePath(module->location));
+  module->recommended_action = NONE;
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfo(FilePath(module->location)));
+  if (version_info.get()) {
+    FileVersionInfoWin* version_info_win =
+        static_cast<FileVersionInfoWin*>(version_info.get());
 
-  std::sort(enumerated_modules_->begin(),
-            enumerated_modules_->end(), ModuleSort);
-
-  // Send a reply back on the UI thread.
-  BrowserThread::PostTask(
-      callback_thread_id_, FROM_HERE,
-      NewRunnableMethod(this, &ModuleEnumerator::ReportBack));
+    VS_FIXEDFILEINFO* fixed_file_info = version_info_win->fixed_file_info();
+    if (fixed_file_info) {
+      module->description = version_info_win->file_description();
+      module->version = version_info_win->file_version();
+      module->product_name = version_info_win->product_name();
+    }
+  }
 }
 
 void ModuleEnumerator::PreparePathMappings() {
@@ -498,9 +550,17 @@ ListValue* EnumerateModulesModel::GetModuleList() {
        module != enumerated_modules_.end(); ++module) {
     DictionaryValue* data = new DictionaryValue();
     data->SetInteger("type", module->type);
-    data->SetString("type_description",
-        (module->type == ModuleEnumerator::WINSOCK_MODULE_REGISTRATION) ?
-        ASCIIToWide("Winsock") : ASCIIToWide(""));
+    switch (module->type) {
+      case ModuleEnumerator::SHELL_EXTENSION:
+        data->SetString("type_description", ASCIIToWide("Shell Extension"));
+        break;
+      case ModuleEnumerator::WINSOCK_MODULE_REGISTRATION:
+        data->SetString("type_description", ASCIIToWide("Winsock"));
+        break;
+      default:
+        data->SetString("type_description", ASCIIToWide(""));
+        break;
+    }
     data->SetInteger("status", module->status);
     data->SetString("location", module->location);
     data->SetString("name", module->name);

@@ -146,7 +146,7 @@ html[dir=rtl] #top {
     {
       'type': 'The type of module found',
       'type_description':
-          'The type of module (string), defaults to blank for regular modules',
+      'The type of module (string), defaults to blank for regular modules',
       'status': 'The module status',
       'location': 'The module path, not including filename',
       'name': 'The name of the module',
@@ -239,14 +239,16 @@ html[dir=rtl] #top {
             <tr>
               <td colspan="2"><span class="module-name" dir="ltr"
                                    jscontent="name">NAME</span>
+                              <span dir="ltr"
+                                    jsdisplay="type_description.length > 0"
+                              >(<span dir="ltr"
+                                      jscontent="type_description">MODULE_TYPE</span
+                              >)</span>
               </td>
             </tr>
             <tr>
               <td width="75"><span i18n-content="headerSoftware" /></td>
-              <td><span dir="ltr" jsdisplay="type_description.length > 0">
-                  <span dir="ltr"
-                        jscontent="type_description">MODULE_TYPE</span>: </span>
-                  <span dir="ltr" jsvalues=".innerHTML:description"></span>
+              <td><span dir="ltr" jsvalues=".innerHTML:description"></span>
                   <span dir="ltr" jsdisplay="version.length > 0"> - </span>
                   <span dir="ltr" jscontent="version">VERSION</span></td>
             </tr>
