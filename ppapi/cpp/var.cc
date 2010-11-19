@@ -61,12 +61,6 @@ Var::Var(int32_t i) {
   needs_release_ = false;
 }
 
-Var::Var(long i) {
-  var_.type = PP_VARTYPE_INT32;
-  var_.value.as_int = i;
-  needs_release_ = false;
-}
-
 Var::Var(double d) {
   var_.type = PP_VARTYPE_DOUBLE;
   var_.value.as_double = d;

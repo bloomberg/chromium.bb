@@ -24,7 +24,6 @@ class Var {
   Var(Null);  // PP_Var of type Null.
   Var(bool b);
   Var(int32_t i);
-  Var(long i);
   Var(double d);
   Var(const char* utf8_str);  // Must be encoded in UTF-8.
   Var(const std::string& utf8_str);  // Must be encoded in UTF-8.
