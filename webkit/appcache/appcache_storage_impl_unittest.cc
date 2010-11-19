@@ -31,6 +31,8 @@ const GURL kFallbackNamespace("http://blah/fallback_namespace/");
 const GURL kFallbackNamespace2("http://blah/fallback_namespace/longer");
 const GURL kFallbackTestUrl("http://blah/fallback_namespace/longer/test");
 const GURL kOnlineNamespace("http://blah/online_namespace");
+const GURL kOnlineNamespaceWithinFallback(
+    "http://blah/fallback_namespace/online/");
 
 // For the duration of this test case, we hijack the AppCacheThread API
 // calls and implement them in terms of the io and db threads created here.
@@ -926,11 +928,19 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void FindMainResponseExclusions(bool drop_from_working_set) {
     // Setup some preconditions. Create a complete cache with a
-    // foreign entry and an online namespace.
+    // foreign entry, an online namespace, and a second online
+    // namespace nested within a fallback namespace.
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
     cache_->AddEntry(kEntryUrl,
         AppCacheEntry(AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN, 1));
     cache_->online_whitelist_namespaces_.push_back(kOnlineNamespace);
+    cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
+    cache_->fallback_namespaces_.push_back(
+        FallbackNamespace(kFallbackNamespace, kEntryUrl2));
+    cache_->online_whitelist_namespaces_.push_back(kOnlineNamespace);
+    cache_->online_whitelist_namespaces_.push_back(
+        kOnlineNamespaceWithinFallback);
+
     AppCacheDatabase::EntryRecord entry_record;
     entry_record.cache_id = 1;
     entry_record.url = kEntryUrl;
@@ -941,6 +951,16 @@ class AppCacheStorageImplTest : public testing::Test {
     whitelist_record.cache_id = 1;
     whitelist_record.namespace_url = kOnlineNamespace;
     EXPECT_TRUE(database()->InsertOnlineWhiteList(&whitelist_record));
+    AppCacheDatabase::FallbackNameSpaceRecord fallback_namespace_record;
+    fallback_namespace_record.cache_id = 1;
+    fallback_namespace_record.fallback_entry_url = kEntryUrl2;
+    fallback_namespace_record.namespace_url = kFallbackNamespace;
+    fallback_namespace_record.origin = kManifestUrl.GetOrigin();
+    EXPECT_TRUE(
+        database()->InsertFallbackNameSpace(&fallback_namespace_record));
+    whitelist_record.cache_id = 1;
+    whitelist_record.namespace_url = kOnlineNamespaceWithinFallback;
+    EXPECT_TRUE(database()->InsertOnlineWhiteList(&whitelist_record));
     if (drop_from_working_set) {
       cache_ = NULL;
       group_ = NULL;
@@ -948,11 +968,12 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // We should not find anything for the foreign entry.
     PushNextTask(NewRunnableMethod(
-        this, &AppCacheStorageImplTest::Verify_NotFound, kEntryUrl, false));
+        this, &AppCacheStorageImplTest::Verify_ExclusionNotFound,
+        kEntryUrl, 1));
     storage()->FindResponseForMainRequest(kEntryUrl, delegate());
   }
 
-  void Verify_NotFound(GURL expected_url, bool test_finished) {
+  void Verify_ExclusionNotFound(GURL expected_url, int phase) {
     EXPECT_EQ(expected_url, delegate()->found_url_);
     EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
     EXPECT_FALSE(delegate()->found_blocked_by_policy_);
@@ -963,11 +984,22 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(0, delegate()->found_entry_.types());
     EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
 
-    if (!test_finished) {
+    if (phase == 1) {
       // We should not find anything for the online namespace.
       PushNextTask(NewRunnableMethod(this,
-          &AppCacheStorageImplTest::Verify_NotFound, kOnlineNamespace, true));
+          &AppCacheStorageImplTest::Verify_ExclusionNotFound,
+          kOnlineNamespace, 2));
       storage()->FindResponseForMainRequest(kOnlineNamespace, delegate());
+      return;
+    }
+    if (phase == 2) {
+      // We should not find anything for the online namespace nested within
+      // the fallback namespace.
+      PushNextTask(NewRunnableMethod(this,
+          &AppCacheStorageImplTest::Verify_ExclusionNotFound,
+          kOnlineNamespaceWithinFallback, 3));
+      storage()->FindResponseForMainRequest(
+          kOnlineNamespaceWithinFallback, delegate());
       return;
     }
 

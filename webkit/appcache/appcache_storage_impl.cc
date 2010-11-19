@@ -558,13 +558,52 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
   GURL manifest_url_;
 };
 
+// Helpers for FindMainResponseTask::Run()
 namespace {
 bool SortByLength(
     const AppCacheDatabase::FallbackNameSpaceRecord& lhs,
     const AppCacheDatabase::FallbackNameSpaceRecord& rhs) {
   return lhs.namespace_url.spec().length() > rhs.namespace_url.spec().length();
 }
-}
+
+class NetworkNamespaceHelper {
+ public:
+  explicit NetworkNamespaceHelper(AppCacheDatabase* database)
+      : database_(database) {
+  }
+
+  bool IsInNetworkNamespace(const GURL& url, int64 cache_id) {
+    static const std::vector<GURL> kEmptyVector;
+    typedef std::pair<WhiteListMap::iterator, bool> InsertResult;
+    InsertResult result = namespaces_map_.insert(
+        WhiteListMap::value_type(cache_id, kEmptyVector));
+    if (result.second)
+      GetOnlineWhiteListForCache(cache_id, &result.first->second);
+    return AppCache::IsInNetworkNamespace(url, result.first->second);
+  }
+
+ private:
+  void GetOnlineWhiteListForCache(
+      int64 cache_id, std::vector<GURL>* urls) {
+    DCHECK(urls && urls->empty());
+    typedef std::vector<AppCacheDatabase::OnlineWhiteListRecord>
+        WhiteListVector;
+    WhiteListVector records;
+    if (!database_->FindOnlineWhiteListForCache(cache_id, &records))
+      return;
+    WhiteListVector::const_iterator iter = records.begin();
+    while (iter != records.end()) {
+      urls->push_back(iter->namespace_url);
+      ++iter;
+    }
+  }
+
+  // Key is cache id
+  typedef std::map<int64, std::vector<GURL> > WhiteListMap;
+  WhiteListMap namespaces_map_;
+  AppCacheDatabase* database_;
+};
+}  // namespace
 
 void AppCacheStorageImpl::FindMainResponseTask::Run() {
   // We have a bias for hits from caches that are in use.
@@ -615,7 +654,13 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
   bool has_candidate = false;
   GURL candidate_fallback_namespace;
   std::vector<AppCacheDatabase::FallbackNameSpaceRecord>::iterator iter;
+  NetworkNamespaceHelper network_namespace_helper(database_);
   for (iter = fallbacks.begin(); iter < fallbacks.end(); ++iter) {
+    // Skip this fallback namespace if the requested url falls into a network
+    // namespace of the containing appcache.
+    if (network_namespace_helper.IsInNetworkNamespace(url_, iter->cache_id))
+      continue;
+
     if (has_candidate &&
         (candidate_fallback_namespace.spec().length() >
          iter->namespace_url.spec().length())) {

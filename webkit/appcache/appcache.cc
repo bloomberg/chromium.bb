@@ -193,9 +193,17 @@ bool AppCache::FindResponseForRequest(const GURL& url,
   } else {
     url_no_ref = url;
   }
+
+  // 6.6.6 Changes to the networking model
+
   AppCacheEntry* entry = GetEntry(url_no_ref);
   if (entry) {
     *found_entry = *entry;
+    return true;
+  }
+
+  if (*found_network_namespace =
+         IsInNetworkNamespace(url_no_ref, online_whitelist_namespaces_)) {
     return true;
   }
 
@@ -208,7 +216,7 @@ bool AppCache::FindResponseForRequest(const GURL& url,
     return true;
   }
 
-  *found_network_namespace = IsInNetworkNamespace(url_no_ref);
+  *found_network_namespace = online_whitelist_all_;
   return *found_network_namespace;
 }
 
@@ -223,18 +231,16 @@ FallbackNamespace* AppCache::FindFallbackNamespace(const GURL& url) {
   return NULL;
 }
 
-bool AppCache::IsInNetworkNamespace(const GURL& url) {
-  if (online_whitelist_all_)
-    return true;
-
+// static
+bool AppCache::IsInNetworkNamespace(
+    const GURL& url,
+    const std::vector<GURL> &namespaces) {
   // TODO(michaeln): There are certainly better 'prefix matching'
   // structures and algorithms that can be applied here and above.
-  size_t count = online_whitelist_namespaces_.size();
+  size_t count = namespaces.size();
   for (size_t i = 0; i < count; ++i) {
-    if (StartsWithASCII(
-            url.spec(), online_whitelist_namespaces_[i].spec(), true)) {
+    if (StartsWithASCII(url.spec(), namespaces[i].spec(), true))
       return true;
-    }
   }
   return false;
 }
