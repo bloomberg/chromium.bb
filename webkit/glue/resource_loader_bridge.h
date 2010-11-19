@@ -105,6 +105,8 @@ struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
   ResourceDevToolsInfo();
   ~ResourceDevToolsInfo();
 
+  int32 http_status_code;
+  std::string http_status_text;
   HeadersVector request_headers;
   HeadersVector response_headers;
 };

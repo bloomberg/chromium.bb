@@ -90,6 +90,8 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
     case net::NetLog::TYPE_HTTP_TRANSACTION_READ_RESPONSE_HEADERS: {
       const net::HttpResponseHeaders& response_headers =
           static_cast<net::NetLogHttpResponseParameter*>(params)->GetHeaders();
+      info->http_status_code = response_headers.response_code();
+      info->http_status_text = response_headers.GetStatusText();
       std::string name, value;
       for (void* it = NULL;
            response_headers.EnumerateHeaderLines(&it, &name, &value); ) {

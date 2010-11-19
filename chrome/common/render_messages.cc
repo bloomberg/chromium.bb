@@ -428,6 +428,8 @@ void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.get() != NULL);
   if (p.get()) {
+    WriteParam(m, p->http_status_code);
+    WriteParam(m, p->http_status_text);
     WriteParam(m, p->request_headers);
     WriteParam(m, p->response_headers);
   }
@@ -442,6 +444,8 @@ bool ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Read(
     return true;
   *r = new webkit_glue::ResourceDevToolsInfo();
   return
+      ReadParam(m, iter, &(*r)->http_status_code) &&
+      ReadParam(m, iter, &(*r)->http_status_text) &&
       ReadParam(m, iter, &(*r)->request_headers) &&
       ReadParam(m, iter, &(*r)->response_headers);
 }

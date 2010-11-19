@@ -27,7 +27,9 @@ ResourceLoadTimingInfo::ResourceLoadTimingInfo()
 ResourceLoadTimingInfo::~ResourceLoadTimingInfo() {
 }
 
-ResourceDevToolsInfo::ResourceDevToolsInfo() {}
+ResourceDevToolsInfo::ResourceDevToolsInfo()
+    : http_status_code(0) {
+}
 
 ResourceDevToolsInfo::~ResourceDevToolsInfo() {}
 
