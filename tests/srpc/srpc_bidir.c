@@ -18,7 +18,7 @@ void SetUpcallServices(NaClSrpcRpc *rpc,
                        NaClSrpcArg **in_args,
                        NaClSrpcArg **out_args,
                        NaClSrpcClosure *done) {
-  const char* sd_string = (const char*) in_args[0]->u.sval;
+  const char* sd_string = (const char*) in_args[0]->u.sval.str;
   NaClSrpcService* service;
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   printf("SetUpcallServices: %s\n", sd_string);
@@ -46,7 +46,7 @@ void TestUpcall(NaClSrpcRpc *rpc,
                 NaClSrpcArg **in_args,
                 NaClSrpcArg **out_args,
                 NaClSrpcClosure *done) {
-  const char* method_name = (const char*) in_args[0]->u.sval;
+  const char* method_name = (const char*) in_args[0]->u.sval.str;
   NaClSrpcError retval;
 
   printf("Testing upcall to method: '%s'\n", method_name);

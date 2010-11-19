@@ -862,7 +862,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
 
   rpc->result = NACL_SRPC_RESULT_INTERNAL;
 
-  aux = strdup(in_args[1]->u.sval);
+  aux = strdup(in_args[1]->u.sval.str);
   if (NULL == aux) {
     rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
     goto cleanup;
@@ -1063,7 +1063,7 @@ static void NaClSecureChannelLog(struct NaClSrpcRpc      *rpc,
                                  struct NaClSrpcArg      **out_args,
                                  struct NaClSrpcClosure  *done) {
   int severity = in_args[0]->u.ival;
-  char *msg = in_args[1]->u.sval;
+  char *msg = in_args[1]->u.sval.str;
 
   UNREFERENCED_PARAMETER(out_args);
 

@@ -110,7 +110,7 @@ void MandelWorker(NaClSrpcRpc *rpc,
                   NaClSrpcArg **in_args,
                   NaClSrpcArg **out_args,
                   NaClSrpcClosure *done) {
-  char* argstr = in_args[0]->u.sval;
+  char* argstr = in_args[0]->u.sval.str;
   int xlow;
   int ylow;
   int canvas_width;

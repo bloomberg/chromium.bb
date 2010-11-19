@@ -26,7 +26,7 @@ void RunTestsWrapper(NaClSrpcRpc *rpc,
                      NaClSrpcArg **out_args,
                      NaClSrpcClosure *done) {
   int result = g_test_func();
-  out_args[0]->u.sval = strdup(result == 0 ? "passed" : "failed");
+  out_args[0]->u.sval.str = strdup(result == 0 ? "passed" : "failed");
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

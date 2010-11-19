@@ -40,7 +40,7 @@ void PostMessage(NaClSrpcRpc *rpc,
   /*
    * Strdup must be used because the SRPC layer frees the string passed to it.
    */
-  message_string = strdup(in_args[0]->u.sval);
+  message_string = strdup(in_args[0]->u.sval.str);
   /*
    * Echo the message back to the renderer.
    */

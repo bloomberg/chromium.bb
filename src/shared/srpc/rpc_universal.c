@@ -528,11 +528,11 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
      * This is a conservative estimate of the length, as it includes the
      * quotes and possibly some escape characters.
      */
-    arg->u.sval = malloc(strlen(token));
-    if (NULL == arg->u.sval) {
+    arg->u.sval.str = malloc(strlen(token));
+    if (NULL == arg->u.sval.str) {
       return 0;
     }
-    ScanEscapeString(arg->u.sval, token + 2);
+    ScanEscapeString(arg->u.sval.str, token + 2);
     break;
     /*
      * The two cases below are added to avoid warnings, they are only used
@@ -658,7 +658,7 @@ static void DumpArg(const NaClSrpcArg* arg) {
     break;
    case NACL_SRPC_ARG_TYPE_STRING:
     printf("s(\"");
-    for (p = arg->u.sval; '\0' != *p; ++p)
+    for (p = arg->u.sval.str; '\0' != *p; ++p)
       PrintOneChar(*p);
     printf("\")");
     break;
@@ -762,7 +762,7 @@ static void UpcallString(NaClSrpcRpc* rpc,
                          NaClSrpcArg** outs,
                          NaClSrpcClosure* done) {
   UNREFERENCED_PARAMETER(outs);
-  printf("UpcallString: called with '%s'\n", ins[0]->u.sval);
+  printf("UpcallString: called with '%s'\n", ins[0]->u.sval.str);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

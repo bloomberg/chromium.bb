@@ -127,7 +127,7 @@ void SharedMemoryClient(NaClSrpcRpc *rpc,
   /* Return the imc descriptor, the string we wrote, and the error count. */
   out_args[0]->u.hval = desc;
   /* NOTE: string return values from SRPC need to be heap allocated. */
-  out_args[1]->u.sval = strdup(test_string);
+  out_args[1]->u.sval.str = strdup(test_string);
   out_args[2]->u.ival = errors_seen;
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);

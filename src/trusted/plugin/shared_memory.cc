@@ -102,7 +102,7 @@ bool RpcRead(void* obj, plugin::SrpcParams* params) {
   *out = 0;
 
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_STRING;
-  params->outs()[0]->u.sval = ret_string;
+  params->outs()[0]->u.sval.str = ret_string;
 
   return true;
 }
@@ -147,8 +147,9 @@ bool RpcWrite(void* obj, plugin::SrpcParams* params) {
   // characters with character codes between 0 and 255 inclusive.
   NaClSrpcArg* str_param = params->ins()[2];
   const unsigned char* str =
-    reinterpret_cast<unsigned const char*>(str_param->u.sval);
-  uint32_t utf_bytes = nacl::saturate_cast<uint32_t>(strlen(str_param->u.sval));
+    reinterpret_cast<unsigned const char*>(str_param->u.sval.str);
+  uint32_t utf_bytes =
+      nacl::saturate_cast<uint32_t>(strlen(str_param->u.sval.str));
   unsigned char* shm_addr =
     reinterpret_cast<unsigned char*>(shared_memory->shm_addr()) + offset;
 
@@ -164,9 +165,9 @@ bool RpcWrite(void* obj, plugin::SrpcParams* params) {
     }
     // Process the byte in the string as UTF-8 characters.
     if (c1 & 0x80) {
-      // str[1] will not access out of bounds because sval is a NUL-terminated
-      // sequence of bytes.  However, NUL would fail the content test just
-      // below, so failing here seems a good thing anyway.
+      // str[1] will not access out of bounds because sval.str is a
+      // NUL-terminated sequence of bytes.  However, NUL would fail the content
+      // test just below, so failing here seems a good thing anyway.
       if (i == len - 1) {
         return false;
       }

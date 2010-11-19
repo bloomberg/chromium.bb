@@ -17,7 +17,7 @@ void TestMethod(NaClSrpcRpc *rpc,
                 NaClSrpcArg **in_args,
                 NaClSrpcArg **out_args,
                 NaClSrpcClosure *done) {
-  out_args[0]->u.sval = strdup("Deferred SRPC connection worked.");
+  out_args[0]->u.sval.str = strdup("Deferred SRPC connection worked.");
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

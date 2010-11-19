@@ -93,7 +93,7 @@ types = {'bool': ['b', 'bool', 'u.bval', ''],
          'int32_t[]': ['I', 'int32_t*', 'u.iaval.iarr', 'u.iaval.count'],
          'int64_t': ['l', 'int64_t', 'u.lval', ''],
          'int64_t[]': ['L', 'int64_t', 'u.laval.larr', 'u.laval.count'],
-         'string': ['s', 'char*', 'u.sval', ''],
+         'string': ['s', 'char*', 'u.sval.str', ''],
         }
 
 

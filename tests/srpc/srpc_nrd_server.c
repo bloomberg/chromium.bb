@@ -160,7 +160,7 @@ void TestSharedMemory(NaClSrpcRpc *rpc,
                       NaClSrpcArg **out_args,
                       NaClSrpcClosure *done) {
   int desc = in_args[0]->u.hval;
-  char* compare_string = in_args[1]->u.sval;
+  char* compare_string = in_args[1]->u.sval.str;
   char* map_addr;
   struct stat st;
 

@@ -181,6 +181,19 @@ struct NaClSrpcLongArray {
   int64_t           *larr;
 };
 
+/**
+ * Argument data type for passing character strings.
+ * @see NaClSrpcArg
+ */
+struct NaClSrpcString {
+  /** The number of characters in the string.
+   * (Only guaranteed to be valid during serialization.)
+   */
+  nacl_abi_size_t   count;
+  /** A chunk of memory containing <code>count</code> char */
+  char              *str;
+};
+
 #ifdef __cplusplus
 namespace nacl_srpc {
 class ScriptableHandleBase;
@@ -233,8 +246,8 @@ struct NaClSrpcArg {
     struct NaClSrpcIntArray     iaval;
     /** An array of int64_t values */
     struct NaClSrpcLongArray    laval;
-    /** A zero-terminated string value */
-    char                        *sval;
+    /** A string value */
+    struct NaClSrpcString       sval;
     /** A handle used to pass descriptors */
     NaClSrpcImcDescType         hval;
     /** An object value that can be exported to the browser as is */
@@ -285,7 +298,7 @@ typedef struct NaClSrpcRpc  NaClSrpcRpc;
  */
 #define STRINGZ_TO_SRPCARG(val, arg) do { \
     (arg).tag = NACL_SRPC_ARG_TYPE_STRING; \
-    (arg).u.sval = (val); } while (0)
+    (arg).u.sval.str = (val); } while (0)
 
 /**
  * The maximum number of arguments per SRPC routine.

@@ -108,7 +108,7 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         }
         break;
       case NACL_SRPC_ARG_TYPE_STRING:
-        if (!plugin::NPVariantToScalar(&args[i], &inputs[i]->u.sval)) {
+        if (!plugin::NPVariantToScalar(&args[i], &inputs[i]->u.sval.str)) {
           return false;
         }
         break;
@@ -286,7 +286,7 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
       }
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      if (!plugin::ScalarToNPVariant(outs[i]->u.sval, retvalue)) {
+      if (!plugin::ScalarToNPVariant(outs[i]->u.sval.str, retvalue)) {
         return false;
       }
       break;

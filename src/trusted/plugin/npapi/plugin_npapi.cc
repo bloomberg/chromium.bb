@@ -54,10 +54,10 @@ void InitializeIdentifiers() {
 bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
   NaClSrpcArg** ins = params->ins();
   PLUGIN_PRINTF(("UrlAsNaClDesc (obj=%p, url=%s, callback=%p)\n",
-                 obj, ins[0]->u.sval, ins[1]->u.oval));
+                 obj, ins[0]->u.sval.str, ins[1]->u.oval));
 
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
-  const char* url = ins[0]->u.sval;
+  const char* url = ins[0]->u.sval.str;
   NPObject* callback_obj = reinterpret_cast<NPObject*>(ins[1]->u.oval);
 
   plugin::UrlAsNaClDescNotify* callback =

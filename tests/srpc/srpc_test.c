@@ -106,7 +106,7 @@ void StringMethod(NaClSrpcRpc *rpc,
                   NaClSrpcArg **in_args,
                   NaClSrpcArg **out_args,
                   NaClSrpcClosure *done) {
-  out_args[0]->u.ival = strlen(in_args[0]->u.sval);
+  out_args[0]->u.ival = strlen(in_args[0]->u.sval.str);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }
@@ -221,7 +221,7 @@ void ReturnStringMethod(NaClSrpcRpc *rpc,
                          "Und singt ein Lied dabei;"
                          "Das hat eine wundersame,"
                          "Gewalt'ge Melodei.";
-  out_args[0]->u.sval = strdup(string + in_args[0]->u.ival);
+  out_args[0]->u.sval.str = strdup(string + in_args[0]->u.ival);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

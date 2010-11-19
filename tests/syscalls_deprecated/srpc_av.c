@@ -33,7 +33,7 @@ NaClSrpcError ErrorMsg(NaClSrpcArg **out_args, const char *func, int retval) {
   char message[kMessageSize];
   snprintf(message, kMessageSize, "Function %s returned %d\n", func, retval);
   /* SRPC will free string, so use strndup to make a copy */
-  out_args[0]->u.sval = strndup(message, kMessageSize);
+  out_args[0]->u.sval.str = strndup(message, kMessageSize);
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -181,7 +181,7 @@ void AVTest(NaClSrpcRpc *rpc,
     return;
   }
 
-  out_args[0]->u.sval = strdup("SUCCESS");
+  out_args[0]->u.sval.str = strdup("SUCCESS");
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

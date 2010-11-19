@@ -220,7 +220,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
         ARRAY_##phase(arg, laval, larr, va, int64_t*);          \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_STRING:                           \
-        SCALAR_##phase(arg, sval, va, char*);                   \
+        SCALAR_##phase(arg, sval.str, va, char*);               \
         break;                                                  \
       /*                                                        \
        * The two cases below are added to avoid warnings,       \

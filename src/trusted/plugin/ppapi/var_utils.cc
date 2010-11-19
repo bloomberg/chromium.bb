@@ -259,7 +259,7 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
       arg->u.lval = PPVarToNumber<int64_t>(var, exception);
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      arg->u.sval = PPVarToString(var, exception);
+      arg->u.sval.str = PPVarToString(var, exception);
       break;
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
       PPVarToArray(var, &arg->u.caval.count, &arg->u.caval.carr, exception);
@@ -399,7 +399,7 @@ pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, PluginPpapi* plugin,
       var = pp::Var(static_cast<int32_t>(arg->u.lval));
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      var = pp::Var(arg->u.sval);
+      var = pp::Var(arg->u.sval.str);
       break;
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
       var = ArrayToPPVar(arg->u.caval.carr, arg->u.caval.count, plugin,

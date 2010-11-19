@@ -162,7 +162,7 @@ void FreeSrpcArg(NaClSrpcArg* arg) {
       // All strings that are passed in SrpcArg must be allocated using
       // malloc! We cannot use browser's allocation API
       // since some of SRPC arguments is handled outside of the plugin code.
-      free(arg->u.sval);
+      free(arg->u.sval.str);
       break;
     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
       if (arg->u.vaval.varr) {

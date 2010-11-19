@@ -559,14 +559,14 @@ static int StringGet(NaClSrpcImcBuffer* buffer,
     if (dim >= NACL_ABI_SIZE_T_MAX) {
       return 0;
     }
-    arg->u.sval = (char*) malloc(dim + 1);
-    if (NULL == arg->u.sval) {
+    arg->u.sval.str = (char*) malloc(dim + 1);
+    if (NULL == arg->u.sval.str) {
       return 0;
     }
-    if (dim != __NaClSrpcImcRead(buffer, sizeof(char), dim, arg->u.sval)) {
+    if (dim != __NaClSrpcImcRead(buffer, sizeof(char), dim, arg->u.sval.str)) {
       return 0;
     }
-    arg->u.sval[dim] = '\0';
+    arg->u.sval.str[dim] = '\0';
   }
   return 1;
 }
@@ -575,10 +575,10 @@ static int StringPut(const NaClSrpcArg* arg,
                      int write_value,
                      NaClSrpcImcBuffer* buffer) {
   if (write_value) {
-    uint32_t slen = (uint32_t) strlen(arg->u.sval);
+    uint32_t slen = (uint32_t) strlen(arg->u.sval.str);
     if (1 != __NaClSrpcImcWrite(&slen, sizeof(slen), 1, buffer) ||
-        slen !=
-        __NaClSrpcImcWrite(arg->u.sval, 1, (nacl_abi_size_t) slen, buffer)) {
+        slen != __NaClSrpcImcWrite(arg->u.sval.str, 1,
+                                   (nacl_abi_size_t) slen, buffer)) {
       return 0;
     }
   }
@@ -586,7 +586,8 @@ static int StringPut(const NaClSrpcArg* arg,
 }
 
 static void StringPrint(const NaClSrpcArg* arg) {
-  dprintf((", strlen %u, '%s'", (unsigned) strlen(arg->u.sval), arg->u.sval));
+  dprintf((", strlen %u, '%s'", (unsigned) strlen(arg->u.sval.str),
+           arg->u.sval.str));
 }
 
 static uint32_t StringLength(const NaClSrpcArg* arg,
@@ -595,7 +596,7 @@ static uint32_t StringLength(const NaClSrpcArg* arg,
   *handles = 0;
   if (write_value) {
     uint32_t size = nacl_abi_size_t_saturate(sizeof(uint32_t)
-        + strlen(arg->u.sval));
+        + strlen(arg->u.sval.str));
     return size;
   } else {
     return 0;
@@ -603,8 +604,8 @@ static uint32_t StringLength(const NaClSrpcArg* arg,
 }
 
 static void StringFree(NaClSrpcArg* arg) {
-  free(arg->u.sval);
-  arg->u.sval = NULL;
+  free(arg->u.sval.str);
+  arg->u.sval.str = NULL;
 }
 
 static const ArgEltInterface kStringIoInterface = {
