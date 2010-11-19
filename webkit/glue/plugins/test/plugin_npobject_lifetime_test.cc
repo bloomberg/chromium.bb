@@ -46,6 +46,8 @@ void CALLBACK NPObjectLifetimeTest::TimerProc(
       reinterpret_cast<NPObjectLifetimeTest*>
           (::GetProp(window, L"Plugin_Instance"));
   KillTimer(window, this_instance->timer_id_);
+  ::RemoveProp(window,  L"Plugin_Instance");
+
   this_instance->timer_id_ = 0;
 
   this_instance->other_plugin_instance_object_ =

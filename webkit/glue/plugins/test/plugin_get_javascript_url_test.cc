@@ -23,7 +23,8 @@ const int kNPNEvaluateTimerElapse = 50;
 
 namespace NPAPIClient {
 
-ExecuteGetJavascriptUrlTest::ExecuteGetJavascriptUrlTest(NPP id, NPNetscapeFuncs *host_functions)
+ExecuteGetJavascriptUrlTest::ExecuteGetJavascriptUrlTest(
+    NPP id, NPNetscapeFuncs *host_functions)
   : PluginTest(id, host_functions),
     test_started_(false),
 #ifdef OS_WIN
@@ -67,6 +68,8 @@ void CALLBACK ExecuteGetJavascriptUrlTest::TimerProc(
       reinterpret_cast<ExecuteGetJavascriptUrlTest*>
           (::GetProp(window, L"Plugin_Instance"));
 
+  ::RemoveProp(window, L"Plugin_Instance");
+
   NPObject *window_obj = NULL;
   this_instance->HostFunctions()->getvalue(this_instance->id(),
                                            NPNVWindowNPObject,
@@ -90,8 +93,10 @@ void CALLBACK ExecuteGetJavascriptUrlTest::TimerProc(
 }
 #endif
 
-NPError ExecuteGetJavascriptUrlTest::NewStream(NPMIMEType type, NPStream* stream,
-                              NPBool seekable, uint16* stype) {
+NPError ExecuteGetJavascriptUrlTest::NewStream(NPMIMEType type,
+                                               NPStream* stream,
+                                               NPBool seekable,
+                                               uint16* stype) {
   if (stream == NULL) {
     SetError("NewStream got null stream");
     return NPERR_INVALID_PARAM;
@@ -123,8 +128,8 @@ int32 ExecuteGetJavascriptUrlTest::WriteReady(NPStream *stream) {
   return STREAM_CHUNK;
 }
 
-int32 ExecuteGetJavascriptUrlTest::Write(NPStream *stream, int32 offset, int32 len,
-                              void *buffer) {
+int32 ExecuteGetJavascriptUrlTest::Write(NPStream *stream, int32 offset,
+                                         int32 len, void *buffer) {
   if (stream == NULL) {
     SetError("Write got null stream");
     return -1;
@@ -155,7 +160,8 @@ int32 ExecuteGetJavascriptUrlTest::Write(NPStream *stream, int32 offset, int32 l
 }
 
 
-NPError ExecuteGetJavascriptUrlTest::DestroyStream(NPStream *stream, NPError reason) {
+NPError ExecuteGetJavascriptUrlTest::DestroyStream(NPStream *stream,
+                                                   NPError reason) {
   if (stream == NULL) {
     SetError("NewStream got null stream");
     return NPERR_INVALID_PARAM;
@@ -184,7 +190,8 @@ NPError ExecuteGetJavascriptUrlTest::DestroyStream(NPStream *stream, NPError rea
   return NPERR_NO_ERROR;
 }
 
-void ExecuteGetJavascriptUrlTest::URLNotify(const char* url, NPReason reason, void* data) {
+void ExecuteGetJavascriptUrlTest::URLNotify(const char* url, NPReason reason,
+                                            void* data) {
   COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(data),
                  cast_validity_check);
 

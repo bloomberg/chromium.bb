@@ -64,6 +64,7 @@ LRESULT CALLBACK CreateInstanceInPaintTest::WindowProc(
         reinterpret_cast<CreateInstanceInPaintTest*>
             (::GetProp(window, L"Plugin_Instance"));
     if (this_instance->test_id() == "1" && !this_instance->created_) {
+      ::RemoveProp(window, L"Plugin_Instance");
       this_instance->created_ = true;
       this_instance->HostFunctions()->geturlnotify(
           this_instance->id(), "javascript:CreateNewInstance()", NULL,

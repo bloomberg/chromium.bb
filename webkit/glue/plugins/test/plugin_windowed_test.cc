@@ -138,6 +138,10 @@ LRESULT CALLBACK WindowedPluginTest::WindowProc(
       this_ptr->done_ = true;
       CallJSFunction(this_ptr, "PluginCreated");
     }
+
+    if (this_ptr->done_) {
+      ::RemoveProp(window, L"Plugin_Instance");
+    }
   }
 
   return DefWindowProc(window, message, wparam, lparam);
