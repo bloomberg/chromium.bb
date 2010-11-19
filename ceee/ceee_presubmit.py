@@ -36,7 +36,7 @@ source_files_re = re.compile('.*\.(cc|h|py|js)$')
 _SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 
-def CheckChange(input_api, output_api, committing):
+def CheckChange(input_api, output_api, committing, is_chrome_frame=False):
   results = []
 
   do_not_submit_errors = input_api.canned_checks.CheckDoNotSubmit(input_api,
@@ -52,11 +52,12 @@ def CheckChange(input_api, output_api, committing):
   results += CheckHasStoryOrBug(input_api, output_api)
   results += LocalChecks(input_api, output_api)
   results += WarnOnAtlSmartPointers(input_api, output_api)
-  results += CheckNoDllRegisterServer(input_api, output_api)
-  results += CheckUnittestsRan(input_api, output_api, committing)
-  if internal_presubmit:
-    results += internal_presubmit.InternalChecks(input_api, output_api,
-                                                 committing)
+  if not is_chrome_frame:
+    results += CheckNoDllRegisterServer(input_api, output_api)
+    results += CheckUnittestsRan(input_api, output_api, committing)
+    if internal_presubmit:
+      results += internal_presubmit.InternalChecks(input_api, output_api,
+                                                   committing)
   return results
 
 
