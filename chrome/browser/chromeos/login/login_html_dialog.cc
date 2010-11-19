@@ -75,8 +75,7 @@ void LoginHtmlDialog::Show() {
     bubble_frame_view_ = static_cast<BubbleFrameView*>(
         bubble_window->GetNonClientView()->frame_view());
   } else {
-    (void)views::Window::CreateChromeWindow(
-        parent_window_, gfx::Rect(), html_view);
+    views::Window::CreateChromeWindow(parent_window_, gfx::Rect(), html_view);
   }
   if (bubble_frame_view_) {
     bubble_frame_view_->StartThrobber();
@@ -106,6 +105,7 @@ void LoginHtmlDialog::Observe(NotificationType type,
 // LoginHtmlDialog, protected:
 
 void LoginHtmlDialog::OnDialogClosed(const std::string& json_retval) {
+  notification_registrar_.RemoveAll();
   if (delegate_)
     delegate_->OnDialogClosed();
 }
