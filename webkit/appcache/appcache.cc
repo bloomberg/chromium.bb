@@ -202,8 +202,8 @@ bool AppCache::FindResponseForRequest(const GURL& url,
     return true;
   }
 
-  if (*found_network_namespace =
-         IsInNetworkNamespace(url_no_ref, online_whitelist_namespaces_)) {
+  if ((*found_network_namespace =
+         IsInNetworkNamespace(url_no_ref, online_whitelist_namespaces_))) {
     return true;
   }
 
