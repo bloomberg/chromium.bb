@@ -6,24 +6,26 @@
 
 #include <windowsx.h>
 
-#include "app/win/scoped_prop.h"
+#include "app/view_prop.h"
 #include "base/auto_reset.h"
 #include "base/win_util.h"
+
+using app::ViewProp;
 
 namespace views {
 
 // Property used to indicate the HWND supports having mouse wheel messages
 // rerouted to it.
-static const wchar_t* const kHWNDSupportMouseWheelRerouting =
-    L"__HWND_MW_REROUTE_OK";
+static const char* const kHWNDSupportMouseWheelRerouting =
+    "__HWND_MW_REROUTE_OK";
 
 static bool WindowSupportsRerouteMouseWheel(HWND window) {
   while (GetWindowLong(window, GWL_STYLE) & WS_CHILD) {
     if (!IsWindow(window))
       break;
 
-    if (reinterpret_cast<bool>(GetProp(window,
-                                       kHWNDSupportMouseWheelRerouting))) {
+    if (reinterpret_cast<bool>(
+            ViewProp::GetValue(window, kHWNDSupportMouseWheelRerouting))) {
       return true;
     }
     window = GetParent(window);
@@ -53,9 +55,9 @@ static bool CanRedirectMouseWheelFrom(HWND window) {
   return true;
 }
 
-app::win::ScopedProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd) {
-  return new app::win::ScopedProp(hwnd, kHWNDSupportMouseWheelRerouting,
-                                  reinterpret_cast<HANDLE>(true));
+ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd) {
+  return new ViewProp(hwnd, kHWNDSupportMouseWheelRerouting,
+                      reinterpret_cast<HANDLE>(true));
 }
 
 bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param) {

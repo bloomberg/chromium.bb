@@ -9,18 +9,16 @@
 #include <windows.h>
 
 namespace app {
-namespace win {
-class ScopedProp;
-}
+class ViewProp;
 }
 
 namespace views {
 
 // Marks the passed |hwnd| as supporting mouse-wheel message rerouting.
 // We reroute the mouse wheel messages to such HWND when they are under the
-// mouse pointer (but are not the active window). Callers must delete the
-// returned object before the window is destroyed (see ScopedProp for details).
-app::win::ScopedProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd);
+// mouse pointer (but are not the active window). Callers own the returned
+// object.
+app::ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd);
 
 // Forwards mouse wheel messages to the window under it.
 // Windows sends mouse wheel messages to the currently active window.

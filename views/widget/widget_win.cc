@@ -7,8 +7,8 @@
 #include "app/keyboard_code_conversion_win.h"
 #include "app/l10n_util_win.h"
 #include "app/system_monitor.h"
+#include "app/view_prop.h"
 #include "app/win_util.h"
-#include "app/win/scoped_prop.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "gfx/canvas_skia.h"
@@ -26,11 +26,15 @@
 #include "views/widget/widget_delegate.h"
 #include "views/window/window_win.h"
 
+using app::ViewProp;
+
 namespace views {
 
 // Property used to link the HWND to its RootView.
-static const wchar_t* const kRootViewWindowProperty = L"__ROOT_VIEW__";
-static const wchar_t* kWidgetKey = L"__VIEWS_WIDGET__";
+static const char* const kRootViewWindowProperty = "__ROOT_VIEW__";
+
+// Links the HWND to it's Widget (as a Widget, not a WidgetWin).
+static const char* const kWidgetKey = "__VIEWS_WIDGET__";
 
 bool WidgetWin::screen_reader_active_ = false;
 
@@ -39,7 +43,8 @@ bool WidgetWin::screen_reader_active_ = false;
 #define OBJID_CUSTOM 1
 
 RootView* GetRootViewForHWND(HWND hwnd) {
-  return reinterpret_cast<RootView*>(::GetProp(hwnd, kRootViewWindowProperty));
+  return reinterpret_cast<RootView*>(
+      ViewProp::GetValue(hwnd, kRootViewWindowProperty));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -414,21 +419,21 @@ const Window* WidgetWin::GetWindow() const {
   return GetWindowImpl(hwnd());
 }
 
-void WidgetWin::SetNativeWindowProperty(const std::wstring& name, void* value) {
+void WidgetWin::SetNativeWindowProperty(const char* name, void* value) {
   // Remove the existing property (if any).
-  for (ScopedProps::iterator i = props_.begin(); i != props_.end(); ++i) {
-    if ((*i)->key() == name) {
+  for (ViewProps::iterator i = props_.begin(); i != props_.end(); ++i) {
+    if ((*i)->Key() == name) {
       props_.erase(i);
       break;
     }
   }
 
   if (value)
-    props_.push_back(new app::win::ScopedProp(hwnd(), name, value));
+    props_.push_back(new ViewProp(hwnd(), name, value));
 }
 
-void* WidgetWin::GetNativeWindowProperty(const std::wstring& name) {
-  return GetProp(hwnd(), name.c_str());
+void* WidgetWin::GetNativeWindowProperty(const char* name) {
+  return ViewProp::GetValue(hwnd(), name);
 }
 
 ThemeProvider* WidgetWin::GetThemeProvider() const {
@@ -1298,8 +1303,7 @@ Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
 }
 
 static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM l_param) {
-  RootView* root_view =
-      reinterpret_cast<RootView*>(GetProp(hwnd, kRootViewWindowProperty));
+  RootView* root_view = GetRootViewForHWND(hwnd);
   if (root_view) {
     *reinterpret_cast<RootView**>(l_param) = root_view;
     return FALSE;  // Stop enumerating.
@@ -1309,8 +1313,7 @@ static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM l_param) {
 
 // static
 RootView* Widget::FindRootView(HWND hwnd) {
-  RootView* root_view =
-      reinterpret_cast<RootView*>(GetProp(hwnd, kRootViewWindowProperty));
+  RootView* root_view = GetRootViewForHWND(hwnd);
   if (root_view)
     return root_view;
 
@@ -1323,8 +1326,7 @@ RootView* Widget::FindRootView(HWND hwnd) {
 // Enumerate child windows as they could have RootView distinct from
 // the HWND's root view.
 BOOL CALLBACK EnumAllRootViewsChildProc(HWND hwnd, LPARAM l_param) {
-  RootView* root_view =
-      reinterpret_cast<RootView*>(GetProp(hwnd, kRootViewWindowProperty));
+  RootView* root_view = GetRootViewForHWND(hwnd);
   if (root_view) {
     std::set<RootView*>* root_views_set =
         reinterpret_cast<std::set<RootView*>*>(l_param);
@@ -1335,8 +1337,7 @@ BOOL CALLBACK EnumAllRootViewsChildProc(HWND hwnd, LPARAM l_param) {
 
 void Widget::FindAllRootViews(HWND window,
                               std::vector<RootView*>* root_views) {
-  RootView* root_view =
-      reinterpret_cast<RootView*>(GetProp(window, kRootViewWindowProperty));
+  RootView* root_view = GetRootViewForHWND(window);
   std::set<RootView*> root_views_set;
   if (root_view)
     root_views_set.insert(root_view);
@@ -1356,12 +1357,9 @@ void Widget::FindAllRootViews(HWND window,
 
 // static
 Widget* Widget::GetWidgetFromNativeView(gfx::NativeView native_view) {
-  if (IsWindow(native_view)) {
-    HANDLE raw_widget = GetProp(native_view, kWidgetKey);
-    if (raw_widget)
-      return reinterpret_cast<Widget*>(raw_widget);
-  }
-  return NULL;
+  return IsWindow(native_view) ?
+      reinterpret_cast<Widget*>(ViewProp::GetValue(native_view, kWidgetKey)) :
+      NULL;
 }
 
 // static

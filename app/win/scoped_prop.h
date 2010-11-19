@@ -18,6 +18,12 @@ namespace win {
 // cleanup. ScopedProp must be destroyed before the window is destroyed, else
 // you're going to leak a property, which could lead to failure to set a
 // property later on.
+//
+// *WARNING*
+// SetProp is very fragile. SetProp makes use of a finite chunk of memory that
+// is very easy to exhaust. Unless you need to share a property across process
+// boundaries you should instead use ViewProp, which does not cause leaks at the
+// window manager.
 class ScopedProp {
  public:
   // Registers the key value pair for the specified window. ScopedProp does not

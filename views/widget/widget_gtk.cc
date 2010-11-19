@@ -32,7 +32,6 @@ namespace {
 
 // g_object data keys to associate a WidgetGtk object to a GtkWidget.
 const char* kWidgetKey = "__VIEWS_WIDGET__";
-const wchar_t* kWidgetWideKey = L"__VIEWS_WIDGET__";
 // A g_object data key to associate a CompositePainter object to a GtkWidget.
 const char* kCompositePainterKey = "__VIEWS_COMPOSITE_PAINTER__";
 // A g_object data key to associate the flag whether or not the widget
@@ -803,13 +802,12 @@ const Window* WidgetGtk::GetWindow() const {
   return GetWindowImpl(widget_);
 }
 
-void WidgetGtk::SetNativeWindowProperty(const std::wstring& name,
-                                        void* value) {
-  g_object_set_data(G_OBJECT(widget_), WideToUTF8(name).c_str(), value);
+void WidgetGtk::SetNativeWindowProperty(const char* name, void* value) {
+  g_object_set_data(G_OBJECT(widget_), name, value);
 }
 
-void* WidgetGtk::GetNativeWindowProperty(const std::wstring& name) {
-  return g_object_get_data(G_OBJECT(widget_), WideToUTF8(name).c_str());
+void* WidgetGtk::GetNativeWindowProperty(const char* name) {
+  return g_object_get_data(G_OBJECT(widget_), name);
 }
 
 ThemeProvider* WidgetGtk::GetThemeProvider() const {
@@ -1490,7 +1488,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   }
   // Setting the WidgetKey property to widget_, which is used by
   // GetWidgetFromNativeWindow.
-  SetNativeWindowProperty(kWidgetWideKey, this);
+  SetNativeWindowProperty(kWidgetKey, this);
 }
 
 void WidgetGtk::ConfigureWidgetForTransparentBackground(GtkWidget* parent) {

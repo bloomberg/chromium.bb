@@ -7,14 +7,16 @@
 #include <windowsx.h>
 
 #include "app/l10n_util_win.h"
-#include "app/win/scoped_prop.h"
+#include "app/view_prop.h"
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "views/focus/focus_manager.h"
 
+using app::ViewProp;
+
 namespace views {
 
-static const wchar_t* kNativeControlWinKey = L"__NATIVE_CONTROL_WIN__";
+static const char* const kNativeControlWinKey = "__NATIVE_CONTROL_WIN__";
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeControlWin, public:
@@ -130,8 +132,7 @@ void NativeControlWin::ShowContextMenu(const gfx::Point& location) {
 void NativeControlWin::NativeControlCreated(HWND native_control) {
   // Associate this object with the control's HWND so that WidgetWin can find
   // this object when it receives messages from it.
-  props_.push_back(
-      new app::win::ScopedProp(native_control, kNativeControlWinKey, this));
+  props_.push_back(new ViewProp(native_control, kNativeControlWinKey, this));
   props_.push_back(ChildWindowMessageProcessor::Register(native_control, this));
 
   // Subclass so we get WM_KEYDOWN and WM_SETFOCUS messages.
@@ -196,8 +197,8 @@ LRESULT NativeControlWin::NativeControlWndProc(HWND window,
                                                UINT message,
                                                WPARAM w_param,
                                                LPARAM l_param) {
-  NativeControlWin* native_control =
-      static_cast<NativeControlWin*>(GetProp(window, kNativeControlWinKey));
+  NativeControlWin* native_control = reinterpret_cast<NativeControlWin*>(
+      ViewProp::GetValue(window, kNativeControlWinKey));
   DCHECK(native_control);
 
   if (message == WM_KEYDOWN &&

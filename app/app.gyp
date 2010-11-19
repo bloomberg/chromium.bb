@@ -56,6 +56,7 @@
         'text_elider_unittest.cc',
         'tree_node_iterator_unittest.cc',
         'tree_node_model_unittest.cc',
+        'view_prop_unittest.cc',
         'win_util_unittest.cc',
       ],
       'include_dirs': [
@@ -75,6 +76,7 @@
         ['OS!="win"', {
           'sources!': [
             'os_exchange_data_win_unittest.cc',
+            'view_prop_unittest.cc',
             'win_util_unittest.cc',
           ],
         }],

@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
+#include "app/view_prop.h"
 #include "app/win/scoped_prop.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -51,6 +52,7 @@
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
 
+using app::ViewProp;
 using base::TimeDelta;
 using base::TimeTicks;
 using WebKit::WebInputEvent;
@@ -71,7 +73,7 @@ const int kMaxTooltipLength = 1024;
 // listening for MSAA events.
 const int kIdCustom = 1;
 
-const wchar_t* kRenderWidgetHostViewKey = L"__RENDER_WIDGET_HOST_VIEW__";
+const char* const kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 
 // A callback function for EnumThreadWindows to enumerate and dismiss
 // any owned popop windows
@@ -308,9 +310,10 @@ void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
 
   // Add a property indicating that a particular renderer is associated with
   // this window. Used by the GPU process to validate window handles it
-  // receives from renderer processes.
+  // receives from renderer processes. As this is used by a separate process we
+  // have to use ScopedProp here instead of ViewProp.
   int renderer_id = render_widget_host_->process()->id();
-  props_.push_back(
+  renderer_id_prop_.reset(
       new app::win::ScopedProp(m_hWnd,
                                chrome::kChromiumRendererIdProperty,
                                reinterpret_cast<HANDLE>(renderer_id)));
@@ -798,12 +801,11 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   props_.push_back(views::SetWindowSupportsRerouteMouseWheel(m_hWnd));
   // Save away our HWND in the parent window as a property so that the
   // accessibility code can find it.
-  props_.push_back(new app::win::ScopedProp(
-                       GetParent(), kViewsNativeHostPropForAccessibility,
-                       m_hWnd));
-  props_.push_back(new app::win::ScopedProp(
-                       m_hWnd, kRenderWidgetHostViewKey,
-                       static_cast<RenderWidgetHostView*>(this)));
+  props_.push_back(new ViewProp(GetParent(),
+                                kViewsNativeHostPropForAccessibility,
+                                m_hWnd));
+  props_.push_back(new ViewProp(m_hWnd, kRenderWidgetHostViewKey,
+                                static_cast<RenderWidgetHostView*>(this)));
   return 0;
 }
 
@@ -834,6 +836,7 @@ void RenderWidgetHostViewWin::OnDestroy() {
   // sequence as part of the usual cleanup when the plugin instance goes away.
   EnumChildWindows(m_hWnd, DetachPluginWindowsCallback, NULL);
 
+  renderer_id_prop_.reset();
   props_.reset();
 
   ResetTooltip();
@@ -1635,11 +1638,7 @@ void RenderWidgetHostViewWin::ShutdownHost() {
 RenderWidgetHostView*
     RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
         gfx::NativeView native_view) {
-  if (::IsWindow(native_view)) {
-    HANDLE raw_render_host_view = ::GetProp(native_view,
-                                            kRenderWidgetHostViewKey);
-    if (raw_render_host_view)
-      return reinterpret_cast<RenderWidgetHostView*>(raw_render_host_view);
-  }
-  return NULL;
+  return ::IsWindow(native_view) ?
+      reinterpret_cast<RenderWidgetHostView*>(
+          ViewProp::GetValue(native_view, kRenderWidgetHostViewKey)) : NULL;
 }
