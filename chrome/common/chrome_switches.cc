@@ -396,6 +396,10 @@ const char kEnableBackgroundMode[] = "enable-background-mode";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
+// Enable experimental client-side detection of phishing pages.
+const char kEnableClientSidePhishingDetection[] =
+    "enable-client-side-phishing-detection";
+
 // This flag enables UI for clearing server data.  Temporarily in place
 // until there's a server endpoint deployed.
 const char kEnableClearServerData[]         = "enable-clear-server-data";

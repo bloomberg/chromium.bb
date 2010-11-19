@@ -80,6 +80,7 @@
 #include "chrome/renderer/render_widget_fullscreen_pepper.h"
 #include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
+#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/speech_input_dispatcher.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
@@ -528,6 +529,15 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   page_click_tracker_->AddListener(password_autocomplete_manager_.get());
   page_click_tracker_->AddListener(autofill_helper_.get());
   ClearBlockedContentSettings();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClientSidePhishingDetection)) {
+    phishing_delegate_.reset(
+        new safe_browsing::PhishingClassifierDelegate(this, NULL));
+    RenderThread* thread = RenderThread::current();
+    if (thread && thread->phishing_scorer()) {
+      phishing_delegate_->SetPhishingScorer(thread->phishing_scorer());
+    }
+  }
 }
 
 RenderView::~RenderView() {
@@ -564,6 +574,10 @@ RenderView::~RenderView() {
 #endif
 
   render_thread_->RemoveFilter(audio_message_filter_);
+
+  // Tell the PhishingClassifierDelegate that the view is going away.
+  if (phishing_delegate_.get())
+    phishing_delegate_->CancelPendingClassification();
 
 #ifndef NDEBUG
   // Make sure we are no longer referenced by the ViewMap.
@@ -1027,6 +1041,9 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
   }
 
   OnCaptureThumbnail();
+
+  if (phishing_delegate_.get())
+    phishing_delegate_->FinishedLoad(&contents);
 }
 
 void RenderView::CaptureText(WebFrame* frame, string16* contents) {
@@ -2494,6 +2511,10 @@ void RenderView::closeWidgetSoon() {
   // to access the WebView.
   translate_helper_.CancelPendingTranslation();
 
+  // Same for the phishing classifier.
+  if (phishing_delegate_.get())
+    phishing_delegate_->CancelPendingClassification();
+
   if (script_can_close_)
     RenderWidget::closeWidgetSoon();
 }
@@ -3196,6 +3217,10 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
 
     // Any pending translation is now obsolete.
     translate_helper_.CancelPendingTranslation();
+
+    // Let the phishing classifier decide whether to cancel classification.
+    if (phishing_delegate_.get())
+      phishing_delegate_->CommittedLoadInFrame(frame);
 
     // Advance our offset in session history, applying the length limit.  There
     // is now no forward history.

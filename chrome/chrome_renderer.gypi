@@ -204,6 +204,8 @@
         'renderer/safe_browsing/features.h',
         'renderer/safe_browsing/phishing_classifier.cc',
         'renderer/safe_browsing/phishing_classifier.h',
+        'renderer/safe_browsing/phishing_classifier_delegate.cc',
+        'renderer/safe_browsing/phishing_classifier_delegate.h',
         'renderer/safe_browsing/phishing_dom_feature_extractor.cc',
         'renderer/safe_browsing/phishing_dom_feature_extractor.h',
         'renderer/safe_browsing/phishing_term_feature_extractor.cc',

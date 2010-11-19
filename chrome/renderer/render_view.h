@@ -98,6 +98,10 @@ class PluginInstance;
 class FullscreenContainer;
 }
 
+namespace safe_browsing {
+class PhishingClassifierDelegate;
+}
+
 namespace webkit_glue {
 class ImageResourceFetcher;
 struct FileUploadData;
@@ -221,6 +225,12 @@ class RenderView : public RenderWidget,
 
   PageClickTracker* page_click_tracker() const {
     return page_click_tracker_.get();
+  }
+
+  // May be NULL if client-side phishing detection is disabled.
+  safe_browsing::PhishingClassifierDelegate*
+      phishing_classifier_delegate() const {
+    return phishing_delegate_.get();
   }
 
   // Returns true if we should display scrollbars for the given view size and
@@ -1349,6 +1359,10 @@ class RenderView : public RenderWidget,
 
   // Responsible for sending page load related histograms.
   PageLoadHistograms page_load_histograms_;
+
+  // Handles the interaction between the RenderView and the phishing
+  // classifier.
+  scoped_ptr<safe_browsing::PhishingClassifierDelegate> phishing_delegate_;
 
   // Misc ----------------------------------------------------------------------
 

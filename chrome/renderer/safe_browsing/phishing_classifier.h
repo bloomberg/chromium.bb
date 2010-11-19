@@ -38,14 +38,19 @@ class PhishingClassifier {
   static const double kInvalidScore;
 
   // Creates a new PhishingClassifier object that will operate on
-  // |render_view|.  |scorer| will be used for computing the final score, and
-  // must live at least as long as the PhishingClassifier.  |clock| is used to
-  // time feature extractor operations, and the PhishingClassifier takes
-  // ownership of this object.
-  PhishingClassifier(RenderView* render_view,
-                     const Scorer* scorer,
-                     FeatureExtractorClock* clock);
-  ~PhishingClassifier();
+  // |render_view|.  |clock| is used to time feature extractor operations, and
+  // the PhishingClassifier takes ownership of this object.  Note that the
+  // classifier will not be 'ready' until set_phishing_scorer() is called.
+  PhishingClassifier(RenderView* render_view, FeatureExtractorClock* clock);
+  virtual ~PhishingClassifier();
+
+  // Sets a scorer for the classifier to use in computing the phishiness score.
+  // This must live at least as long as the PhishingClassifier.
+  void set_phishing_scorer(const Scorer* scorer);
+
+  // Returns true if the classifier is ready to classify pages, i.e. it
+  // has had a scorer set via set_phishing_scorer().
+  bool is_ready() const;
 
   // Called by the RenderView when a page has finished loading.  This begins
   // the feature extraction and scoring process. |page_text| should contain
@@ -59,12 +64,17 @@ class PhishingClassifier {
   // MessageLoop to continue processing.  Once the scoring process is complete,
   // |done_callback| is run on the current thread.  PhishingClassifier takes
   // ownership of the callback.
-  void BeginClassification(const string16* page_text, DoneCallback* callback);
+  //
+  // It is an error to call BeginClassification if the classifier is not yet
+  // ready.
+  virtual void BeginClassification(const string16* page_text,
+                                   DoneCallback* callback);
 
   // Called by the RenderView (on the render thread) when a page is unloading
   // or the RenderView is being destroyed.  This cancels any extraction that
-  // is in progress.
-  void CancelPendingClassification();
+  // is in progress.  It is an error to call CancelPendingClassification if
+  // the classifier is not yet ready.
+  virtual void CancelPendingClassification();
 
  private:
   // Any score equal to or above this value is considered phishy.

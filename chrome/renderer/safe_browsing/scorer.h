@@ -73,11 +73,13 @@ class Scorer {
   // expect to load.
   static const int kMaxPhishingModelSizeBytes;
 
+ protected:
+  // Most clients should use the factory method.  This constructor is public
+  // to allow for mock implementations.
+  Scorer();
+
  private:
   friend class PhishingScorerTest;
-
-  // Use factory method.
-  Scorer();
 
   // Computes the score for a given rule and feature map.  The score is computed
   // by multiplying the rule weight with the product of feature weights for the

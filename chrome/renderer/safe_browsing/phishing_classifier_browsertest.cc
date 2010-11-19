@@ -61,7 +61,7 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
     clock_ = new MockFeatureExtractorClock;
     scorer_.reset(Scorer::Create(model.SerializeAsString()));
     ASSERT_TRUE(scorer_.get());
-    classifier_.reset(new PhishingClassifier(view_, scorer_.get(), clock_));
+    classifier_.reset(new PhishingClassifier(view_, clock_));
   }
 
   virtual void TearDown() {
@@ -102,6 +102,13 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
 };
 
 TEST_F(PhishingClassifierTest, TestClassification) {
+  // No scorer yet, so the classifier is not ready.
+  EXPECT_FALSE(classifier_->is_ready());
+
+  // Now set the scorer.
+  classifier_->set_phishing_scorer(scorer_.get());
+  EXPECT_TRUE(classifier_->is_ready());
+
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(*clock_, Now())
       .WillRepeatedly(::testing::Return(base::TimeTicks::Now()));

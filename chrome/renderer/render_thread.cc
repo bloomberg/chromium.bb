@@ -17,6 +17,7 @@
 #include "base/metrics/stats_table.h"
 #include "base/nullable_string16.h"
 #include "base/process_util.h"
+#include "base/scoped_callback_factory.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -65,6 +66,8 @@
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/renderer_webidbfactory_impl.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
+#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "chrome/renderer/safe_browsing/scorer.h"
 #include "chrome/renderer/search_extension.h"
 #include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
@@ -215,6 +218,26 @@ class RenderViewZoomer : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
 
+class RenderViewPhishingScorerSetter : public RenderViewVisitor {
+ public:
+  explicit RenderViewPhishingScorerSetter(const safe_browsing::Scorer* scorer)
+      : scorer_(scorer) {
+  }
+
+  virtual bool Visit(RenderView* render_view) {
+    safe_browsing::PhishingClassifierDelegate* delegate =
+        render_view->phishing_classifier_delegate();
+    if (delegate)
+      delegate->SetPhishingScorer(scorer_);
+    return true;
+  }
+
+ private:
+  const safe_browsing::Scorer* scorer_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewPhishingScorerSetter);
+};
+
 }  // namespace
 
 // When we run plugins in process, we actually run them on the render thread,
@@ -255,6 +278,7 @@ void RenderThread::Init() {
   idle_notification_delay_in_s_ = is_extension_process_ ?
       kInitialExtensionIdleHandlerDelayS : kInitialIdleHandlerDelayS;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
+  callback_factory_.reset(new base::ScopedCallbackFactory<RenderThread>(this));
 
   visited_link_slave_.reset(new VisitedLinkSlave());
   user_script_slave_.reset(new UserScriptSlave());
@@ -1072,8 +1096,20 @@ void RenderThread::OnGpuChannelEstablished(
 }
 
 void RenderThread::OnSetPhishingModel(IPC::PlatformFileForTransit model_file) {
-  // TODO(bryner): create a Scorer from the model file, and propagate it to the
-  // RenderViews so that they can create PhishingClassifiers.
+  safe_browsing::Scorer::CreateFromFile(
+      IPC::PlatformFileForTransitToPlatformFile(model_file),
+      GetFileThreadMessageLoopProxy(),
+      callback_factory_->NewCallback(&RenderThread::PhishingScorerCreated));
+}
+
+void RenderThread::PhishingScorerCreated(safe_browsing::Scorer* scorer) {
+  if (!scorer) {
+    DLOG(ERROR) << "Unable to create a PhishingScorer - corrupt model?";
+    return;
+  }
+  phishing_scorer_.reset(scorer);
+  RenderViewPhishingScorerSetter setter(phishing_scorer_.get());
+  RenderView::ForEach(&setter);
 }
 
 scoped_refptr<base::MessageLoopProxy>

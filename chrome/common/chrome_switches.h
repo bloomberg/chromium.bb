@@ -122,6 +122,7 @@ extern const char kEnableAppLauncher[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableBackgroundMode[];
 extern const char kEnableBenchmarking[];
+extern const char kEnableClientSidePhishingDetection[];
 extern const char kEnableClearServerData[];
 extern const char kEnableClickToPlay[];
 extern const char kEnableCloudPrintProxy[];

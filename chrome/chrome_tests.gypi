@@ -2072,6 +2072,7 @@
         'renderer/render_widget_browsertest.h',
         'renderer/safe_browsing/mock_feature_extractor_clock.h',
         'renderer/safe_browsing/phishing_classifier_browsertest.cc',
+        'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
         'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
         'renderer/safe_browsing/phishing_thumbnailer_browsertest.cc',
         'renderer/safe_browsing/render_view_fake_resources_test.cc',

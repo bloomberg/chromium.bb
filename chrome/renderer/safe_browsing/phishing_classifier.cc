@@ -31,21 +31,11 @@ const double PhishingClassifier::kInvalidScore = -1.0;
 const double PhishingClassifier::kPhishyThreshold = 0.5;
 
 PhishingClassifier::PhishingClassifier(RenderView* render_view,
-                                       const Scorer* scorer,
                                        FeatureExtractorClock* clock)
     : render_view_(render_view),
-      scorer_(scorer),
+      scorer_(NULL),
       clock_(clock),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-  url_extractor_.reset(new PhishingUrlFeatureExtractor);
-  dom_extractor_.reset(
-      new PhishingDOMFeatureExtractor(render_view_, clock_.get()));
-  term_extractor_.reset(new PhishingTermFeatureExtractor(
-      &scorer_->page_terms(),
-      &scorer_->page_words(),
-      scorer_->max_words_per_term(),
-      clock_.get()));
-
   Clear();
 }
 
@@ -55,8 +45,27 @@ PhishingClassifier::~PhishingClassifier() {
   CheckNoPendingClassification();
 }
 
+void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
+  DCHECK(!scorer_);
+  scorer_ = scorer;
+  url_extractor_.reset(new PhishingUrlFeatureExtractor);
+  dom_extractor_.reset(
+      new PhishingDOMFeatureExtractor(render_view_, clock_.get()));
+  term_extractor_.reset(new PhishingTermFeatureExtractor(
+      &scorer_->page_terms(),
+      &scorer_->page_words(),
+      scorer_->max_words_per_term(),
+      clock_.get()));
+}
+
+bool PhishingClassifier::is_ready() const {
+  return scorer_ != NULL;
+}
+
 void PhishingClassifier::BeginClassification(const string16* page_text,
                                              DoneCallback* done_callback) {
+  DCHECK(is_ready());
+
   // The RenderView should have called CancelPendingClassification() before
   // starting a new classification, so DCHECK this.
   CheckNoPendingClassification();
@@ -120,6 +129,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
 void PhishingClassifier::CancelPendingClassification() {
   // Note that cancelling the feature extractors is simply a no-op if they
   // were not running.
+  DCHECK(is_ready());
   dom_extractor_->CancelPendingExtraction();
   term_extractor_->CancelPendingExtraction();
   method_factory_.RevokeAll();
