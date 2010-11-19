@@ -2731,6 +2731,7 @@ void Browser::OpenURLFromTab(TabContents* source,
   params.referrer = referrer;
   params.disposition = disposition;
   params.tabstrip_add_types = TabStripModel::ADD_NONE;
+  params.show_window = true;
   browser::Navigate(&params);
 }
 
@@ -2781,6 +2782,7 @@ void Browser::AddNewContents(TabContents* source,
           tabstrip_model()->GetWrapperIndex(source));
   params.disposition = disposition;
   params.window_bounds = initial_pos;
+  params.show_window = true;
   browser::Navigate(&params);
 }
 
