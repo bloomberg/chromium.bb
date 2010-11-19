@@ -45,6 +45,7 @@ import time
 # local imports
 import test_lib
 
+GlobalPlatform=None  # for pychecker, initialized in ProcessOptions
 GlobalReportStream = [sys.stdout]
 GlobalSettings = {}
 GlobalSigType = 'normal'
@@ -140,6 +141,13 @@ def SuccessMessage():
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
 # SIGSEGV, except for actual x86 segmentation violations.
 status_map = {
+    'sigabrt' : {
+        'linux2': -6, # SIGABRT
+        'darwin': -6, # SIGABRT
+        'cygwin': -6, # SIGABRT
+        'win32':  -6, # SIGABRT
+        'win64':  -6, # SIGABRT
+        },
     'sigpipe': {
         'linux2': -13, # SIGPIPE
         'darwin': -13, # SIGPIPE
@@ -277,6 +285,15 @@ def ProcessOptions(argv):
 
 
 # Parse output for signal type and number
+#
+# The '** Signal' output is from the nacl signal handler code and is
+# only appropriate for non-qemu runs; when the emulator is used, the
+# 2nd match with 'qemu: uncaught target signal ddd' yields the signal
+# number.
+#
+# TODO(noelallen,bsy): when nacl_signal testing is enabled for arm,
+# remove/fix the explicit qemu match code below.
+#
 def ExitStatusInfo(stderr):
   sigNum = 0
   sigType = 'normal'
@@ -288,6 +305,9 @@ def ExitStatusInfo(stderr):
       if words[0] == '**' and words[1] == 'Signal':
         sigNum = -int(words[2])
         sigType= words[4]
+      if (words[0] == 'qemu:' and words[1] == 'uncaught' and
+          words[2] == 'target' and words[3] == 'signal'):
+        sigNum = -int(words[4])
 
   return sigNum, sigType
 

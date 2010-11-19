@@ -224,6 +224,12 @@ def _SetEnvForPnacl(env, arch):
       'x86-32': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl-gcc',
       'x86-64': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl64-gcc'
       }
+  ld_map = {
+      'arm':    (pnacl_sdk_root + '/arm-none-linux-gnueabi/bin/' +
+                 'arm-none-linux-gnueabi-ld'),
+      'x86-32': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl-ld',
+      'x86-64': '${MAIN_DIR}/toolchain/linux_x86/bin/nacl64-ld'
+        }
 
   env.Replace(# Replace header and lib paths.
               NACL_SDK_INCLUDE=pnacl_sdk_include,
@@ -239,8 +245,7 @@ def _SetEnvForPnacl(env, arch):
               CC_OTHER=cc_other_map[arch],
               LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,
               # Grrr... and sometimes we need raw assembly and the real ld.
-              LD=(pnacl_sdk_root + '/arm-none-linux-gnueabi/bin/' +
-                  'arm-none-linux-gnueabi-ld'),
+              LD=ld_map[arch],
               AR=pnacl_sdk_ar,
               RANLIB=pnacl_sdk_ranlib,
               DISASS=pnacl_sdk_disass,
