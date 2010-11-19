@@ -1,0 +1,31 @@
+# -*- python -*-
+# Copyright (c) 2008 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+Import('env')
+
+# NOTE: the arm emulator does not handle atomic ops properly
+TEST_SUITES = ['small_tests']
+
+# Do not run on qemu
+if env['TARGET_ARCHITECTURE'] == 'arm' or ARGUMENTS.get('bitcode'):
+  TEST_SUITES = ['small_tests_arm_hw_only']
+
+
+simple_srpc_test_exe = env.ComponentProgram(
+    'simple_srpc_test',
+    'simple_srpc_test.c',
+    EXTRA_LIBS=['google_nacl_imc',
+                'google_nacl_imc_c',
+                'nonnacl_srpc',
+                'nrd_xfer',
+                'nacl_base',
+                'platform',
+                'gio'])
+node = env.CommandTest(
+    'simple_srpc_test.out',
+    command=[simple_srpc_test_exe])
+env.AddNodeToTestSuite(node, TEST_SUITES, 'run_simple_srpc_test')
+
