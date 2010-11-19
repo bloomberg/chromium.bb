@@ -132,10 +132,10 @@ GtkWindow* GeneralPageGtk::GetWindow() {
 
 void GeneralPageGtk::NotifyPrefChanged(const std::string* pref_name) {
   initializing_ = true;
+  PrefService* prefs = profile()->GetPrefs();
   if (!pref_name ||
       *pref_name == prefs::kRestoreOnStartup ||
       *pref_name == prefs::kURLsToRestoreOnStartup) {
-    PrefService* prefs = profile()->GetPrefs();
     const SessionStartupPref startup_pref =
         SessionStartupPref::GetStartupPref(prefs);
     bool radio_buttons_enabled = !SessionStartupPref::TypeIsManaged(prefs);
@@ -203,6 +203,12 @@ void GeneralPageGtk::NotifyPrefChanged(const std::string* pref_name) {
       instant_checkbox_) {
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(instant_checkbox_), instant_.GetValue());
+    std::string description = l10n_util::GetStringUTF8(IDS_INSTANT_PREF);
+    if (instant_.GetValue()) {
+      description += " " +
+          base::StringPrintf("[%d]", prefs->GetInteger(prefs::kInstantType));
+    }
+    gtk_button_set_label(GTK_BUTTON(instant_checkbox_), description.c_str());
   }
 
   initializing_ = false;
