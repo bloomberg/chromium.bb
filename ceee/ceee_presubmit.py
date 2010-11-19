@@ -51,6 +51,7 @@ def CheckChange(input_api, output_api, committing):
   results += CheckLongLines(input_api, output_api)
   results += CheckHasStoryOrBug(input_api, output_api)
   results += LocalChecks(input_api, output_api)
+  results += WarnOnAtlSmartPointers(input_api, output_api)
   results += CheckNoDllRegisterServer(input_api, output_api)
   results += CheckUnittestsRan(input_api, output_api, committing)
   if internal_presubmit:
@@ -178,6 +179,23 @@ def CheckNoDllRegisterServer(input_api, output_api):
             'Please search for CEEE_DEFINE_DLL_REGISTER_SERVER.' %
             f.LocalPath())]
   return []
+
+
+def WarnOnAtlSmartPointers(input_api, output_api):
+  smart_pointer_re = re.compile(r'\bCCom(Ptr|BSTR|Variant)\b')
+  bad_files = []
+  for f in input_api.AffectedFiles(include_deletes=False):
+    contents = input_api.ReadFile(f, 'r')
+    if smart_pointer_re.search(contents):
+      bad_files.append(f.LocalPath())
+  if bad_files:
+    return [output_api.PresubmitPromptWarning(
+        'The following files use CComPtr, CComBSTR and/or CComVariant.\n'
+        'Please consider switching to ScopedComPtr, ScopedBstr and/or\n'
+        'ScopedVariant as per team policy. (NOTE: Will soon be an error.)',
+        items=bad_files)]
+  else:
+    return []
 
 
 def LocalChecks(input_api, output_api, max_cols=80):
