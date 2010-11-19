@@ -9,11 +9,14 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -55,6 +58,24 @@ void CoreOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("managedPrefsBannerText",
       l10n_util::GetStringUTF16(IDS_OPTIONS_MANAGED_PREFS));
 
+  // Search
+  localized_strings->SetString("searchPageTitle",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SEARCH_PAGE_TITLE));
+  localized_strings->SetString("searchPageInfo",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_SEARCH_PAGE_INFO,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("searchPageNoMatches",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES));
+  localized_strings->SetString("searchPageHelpLabel",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SEARCH_PAGE_HELP_LABEL));
+  localized_strings->SetString("searchPageHelpTitle",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("searchPageHelpURL",
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kChromeHelpURL)).spec());
+
+  // Common
   localized_strings->SetString("ok",
       l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("cancel",

@@ -170,6 +170,9 @@ extern const char kLanguageOptionsSubPage[];
 extern const char kSystemOptionsSubPage[];
 #endif
 
+// General help link for Chrome.
+extern const char kChromeHelpURL[];
+
 // "What do these mean?" URL for the Page Info bubble.
 extern const char kPageInfoHelpCenterURL[];
 

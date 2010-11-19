@@ -7049,6 +7049,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Some options have been disabled by your IT administrator.
       </message>
 
+      <!-- Options search page strings. -->
+      <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="">
+        Search
+      </message>
+      <message name="IDS_OPTIONS_SEARCH_PAGE_INFO" desc="">
+        Type to search <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings.
+      </message>
+      <message name="IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES" desc="">
+        No matches were found.
+      </message>
+      <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_LABEL" desc="">
+        Can't find what you're looking for?
+      </message>
+      <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE" desc="">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
+      </message>
+
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the domain's DNS information for that URL in advance. ">
         Use DNS pre-fetching to improve page load performance

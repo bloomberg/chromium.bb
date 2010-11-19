@@ -123,6 +123,7 @@
 <script src="options/personal_options.js"></script>
 <script src="options/search_engine_manager.js"></script>
 <script src="options/search_engine_manager_engine_list.js"></script>
+<script src="options/search_page.js"></script>
 <script src="options/sync_options.js"></script>
 <script src="options/zippy.js"></script>
 <script>
@@ -146,6 +147,7 @@ var PasswordsExceptions = options.PasswordsExceptions;
 var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
 var SearchEngineManager = options.SearchEngineManager;
+var SearchPage = options.SearchPage;
 var ProxyOptions = options.ProxyOptions;
 var SyncOptions = options.SyncOptions;
 
@@ -190,6 +192,7 @@ function load() {
     OptionsPage.register(InternetOptions.getInstance());
   }
 
+  OptionsPage.register(SearchPage.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance());
@@ -324,14 +327,19 @@ window.onpopstate = function(e) {
              i18n-content="managedPrefsBannerText"></span>
      </div>
      <div id="mainview-content">
+       <!-- Start main pages -->
+       <!-- Please keep the main pages in desired order of display.  This will
+            allow search results to display in the desired order. -->
        <if expr="pp_ifdef('chromeos')">
          <include src="options/chromeos_system_options.html">
          <include src="options/chromeos_internet_options.html">
          <include src="options/chromeos_accounts_options.html">
        </if>
-       <include src="options/advanced_options.html">
+       <include src="options/search_page.html">
        <include src="options/browser_options.html">
        <include src="options/personal_options.html">
+       <include src="options/advanced_options.html">
+       <!-- End main pages -->
        <div id="subpage-sheet-container" class="hidden">
          <div id="subpage-sheet">
            <if expr="pp_ifdef('chromeos')">

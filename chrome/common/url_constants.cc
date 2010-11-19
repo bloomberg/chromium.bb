@@ -174,7 +174,14 @@ const char kLanguageOptionsSubPage[] = "language";
 const char kSystemOptionsSubPage[] = "system";
 #endif
 
-const char kPageInfoHelpCenterURL[] =
+const char kChromeHelpURL[] =
+#if defined(OS_CHROMEOS)
+  "http://www.google.com/support/chromeos/";
+#else
+  "http://www.google.com/support/chrome/";
+#endif
+
+  const char kPageInfoHelpCenterURL[] =
 #if defined(OS_CHROMEOS)
     "http://www.google.com/support/chromeos/bin/answer.py?answer=95617";
 #else
