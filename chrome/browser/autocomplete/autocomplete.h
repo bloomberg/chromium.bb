@@ -249,6 +249,13 @@ class AutocompleteInput {
     return prevent_inline_autocomplete_;
   }
 
+  // Returns the value of |prevent_inline_autocomplete| supplied to the
+  // constructor. This differs from the value returned by
+  // |prevent_inline_autocomplete()| if the input contained trailing whitespace.
+  bool initial_prevent_inline_autocomplete() const {
+    return initial_prevent_inline_autocomplete_;
+  }
+
   // Returns whether, given an input string consisting solely of a substituting
   // keyword, we should score it like a non-substituting keyword.
   bool prefer_keyword() const { return prefer_keyword_; }
@@ -277,6 +284,7 @@ class AutocompleteInput {
   url_parse::Parsed parts_;
   std::wstring scheme_;
   GURL canonicalized_url_;
+  bool initial_prevent_inline_autocomplete_;
   bool prevent_inline_autocomplete_;
   bool prefer_keyword_;
   bool allow_exact_keyword_match_;

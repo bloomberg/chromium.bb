@@ -182,6 +182,8 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       enter_was_inserted_(false),
       enable_tab_to_search_(true),
       selection_suggested_(false),
+      delete_was_pressed_(false),
+      delete_at_end_pressed_(false),
       going_to_focus_(NULL) {
   model_->SetPopupModel(popup_view_->GetModel());
 }
@@ -587,6 +589,10 @@ bool AutocompleteEditViewGtk::IsSelectAll() {
       gtk_text_iter_equal(&end, &sel_end);
 }
 
+bool AutocompleteEditViewGtk::DeleteAtEndPressed() {
+  return delete_at_end_pressed_;
+}
+
 void AutocompleteEditViewGtk::GetSelectionBounds(std::wstring::size_type* start,
                                                  std::wstring::size_type* end) {
   CharRange selection = GetSelection();
@@ -714,6 +720,8 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
       (new_sel.cp_min <= std::min(sel_before_change_.cp_min,
                                  sel_before_change_.cp_max));
 
+  delete_at_end_pressed_ = false;
+
   bool something_changed = model_->OnAfterPossibleChange(new_text,
       selection_differs, text_changed_, just_deleted_text, at_end_of_edit);
 
@@ -721,10 +729,15 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
   // OnChanged() method, which is called in TextChanged().
   // But we still need to call EmphasizeURLComponents() to make sure the text
   // attributes are updated correctly.
-  if (something_changed && text_changed_)
+  if (something_changed && text_changed_) {
     TextChanged();
-  else if (selection_differs)
+  } else if (selection_differs) {
     EmphasizeURLComponents();
+  } else if (delete_was_pressed_ && at_end_of_edit) {
+    delete_at_end_pressed_ = true;
+    controller_->OnChanged();
+  }
+  delete_was_pressed_ = false;
 
   return something_changed;
 }
@@ -908,6 +921,9 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
                        event->keyval == GDK_ISO_Left_Tab ||
                        event->keyval == GDK_KP_Tab) &&
                       !(event->state & GDK_CONTROL_MASK));
+
+  delete_was_pressed_ = (event->keyval == GDK_Delete ||
+                         event->keyval == GDK_KP_Delete);
 
   // Reset |enter_was_inserted_|, which may be set in the "insert-text" signal
   // handler, so that we'll know if an Enter key event was handled by IME.

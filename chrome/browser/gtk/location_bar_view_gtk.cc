@@ -536,11 +536,12 @@ void LocationBarViewGtk::OnChanged() {
   if (update_instant_ && instant && GetTabContents()) {
     if (location_entry_->model()->user_input_in_progress() &&
         location_entry_->model()->popup_model()->IsOpen()) {
-      instant->Update(browser_->GetSelectedTabContentsWrapper(),
-                      location_entry_->model()->CurrentMatch(),
-                      WideToUTF16(location_entry_->GetText()),
-                      false, // TODO: make this real
-                      &suggested_text);
+      instant->Update(
+          browser_->GetSelectedTabContentsWrapper(),
+          location_entry_->model()->CurrentMatch(),
+          WideToUTF16(location_entry_->GetText()),
+          location_entry_->model()->UseVerbatimInstant(),
+          &suggested_text);
     } else {
       instant->DestroyPreviewContents();
     }

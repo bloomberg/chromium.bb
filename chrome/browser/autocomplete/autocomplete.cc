@@ -44,6 +44,7 @@ using base::TimeDelta;
 
 AutocompleteInput::AutocompleteInput()
   : type_(INVALID),
+    initial_prevent_inline_autocomplete_(false),
     prevent_inline_autocomplete_(false),
     prefer_keyword_(false),
     allow_exact_keyword_match_(true),
@@ -57,6 +58,7 @@ AutocompleteInput::AutocompleteInput(const std::wstring& text,
                                      bool allow_exact_keyword_match,
                                      bool synchronous_only)
     : desired_tld_(desired_tld),
+      initial_prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),

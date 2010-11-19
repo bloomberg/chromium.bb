@@ -171,9 +171,15 @@ void AutocompleteEditModel::GetDataForURLExport(GURL* url,
   }
 }
 
-bool AutocompleteEditModel::PreventInlineAutocomplete() {
-  return
-      popup_->autocomplete_controller()->input().prevent_inline_autocomplete();
+bool AutocompleteEditModel::UseVerbatimInstant() {
+  const AutocompleteInput& input = popup_->autocomplete_controller()->input();
+  if (input.initial_prevent_inline_autocomplete() ||
+      view_->DeleteAtEndPressed() || (popup_->selected_line() != 0))
+    return true;
+
+  std::wstring::size_type start, end;
+  view_->GetSelectionBounds(&start, &end);
+  return (start != end) || (start != view_->GetText().size());
 }
 
 std::wstring AutocompleteEditModel::GetDesiredTLD() const {

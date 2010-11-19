@@ -157,9 +157,10 @@ class AutocompleteEditModel : public NotificationObserver {
   // Sets the url, and if known, the title and favicon.
   void GetDataForURLExport(GURL* url, std::wstring* title, SkBitmap* favicon);
 
-  // Returns true if inline autocomplete was prevented the last time
-  // autocomplete was run.
-  bool PreventInlineAutocomplete();
+  // Returns true if a verbatim query should be used for instant. A verbatim
+  // query is forced in certain situations, such as pressing delete at the end
+  // of the edit.
+  bool UseVerbatimInstant();
 
   // If the user presses ctrl-enter, it means "add .com to the the end".  The
   // desired TLD is the TLD the user desires to add to the end of the current

@@ -314,11 +314,12 @@ void LocationBarViewMac::OnChanged() {
   if (update_instant_ && instant && GetTabContents()) {
     if (edit_view_->model()->user_input_in_progress() &&
         edit_view_->model()->popup_model()->IsOpen()) {
-      instant->Update(browser_->GetSelectedTabContentsWrapper(),
-                      edit_view_->model()->CurrentMatch(),
-                      WideToUTF16(edit_view_->GetText()),
-                      false, // TODO: make this real
-                      &suggested_text);
+      instant->Update
+          (browser_->GetSelectedTabContentsWrapper(),
+           edit_view_->model()->CurrentMatch(),
+           WideToUTF16(edit_view_->GetText()),
+           edit_view_->model()->UseVerbatimInstant(),
+           &suggested_text);
     } else {
       if (instant->is_active())
         instant->DestroyPreviewContents();

@@ -36,6 +36,7 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
   virtual void ReplaceSelection(const string16& text) {}
   virtual void SetForcedQuery() {}
   virtual bool IsSelectAll() { return false; }
+  virtual bool DeleteAtEndPressed() { return false; }
   virtual void GetSelectionBounds(std::wstring::size_type* start,
                                   std::wstring::size_type* end) {}
   virtual void SelectAll(bool reversed) {}

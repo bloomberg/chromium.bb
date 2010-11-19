@@ -122,6 +122,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual void SetForcedQuery();
 
   virtual bool IsSelectAll();
+  virtual bool DeleteAtEndPressed();
   virtual void GetSelectionBounds(std::wstring::size_type* start,
                                   std::wstring::size_type* end);
   virtual void SelectAll(bool reversed);
@@ -464,6 +465,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Indicates if the selected text is suggested text or not. If the selection
   // is not suggested text, that means the user manually made the selection.
   bool selection_suggested_;
+
+  // Was delete pressed?
+  bool delete_was_pressed_;
+
+  // Was the delete key pressed with an empty selection at the end of the edit?
+  bool delete_at_end_pressed_;
 
 #if GTK_CHECK_VERSION(2, 20, 0)
   // Stores the text being composed by the input method.

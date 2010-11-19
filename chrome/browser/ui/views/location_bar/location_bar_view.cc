@@ -853,7 +853,7 @@ void LocationBarView::OnChanged() {
       instant->Update(GetTabContentsWrapper(),
                       location_entry_->model()->CurrentMatch(),
                       WideToUTF16(location_entry_->GetText()),
-                      false, // TODO: make this real
+                      location_entry_->model()->UseVerbatimInstant(),
                       &suggested_text);
     } else {
       instant->DestroyPreviewContents();
@@ -1111,7 +1111,7 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 
 void LocationBarView::SetSuggestedText(const string16& input) {
   // Don't show the suggested text if inline autocomplete is prevented.
-  string16 text = location_entry_->model()->PreventInlineAutocomplete() ?
+  string16 text = location_entry_->model()->UseVerbatimInstant() ?
       string16() : input;
   if (!text.empty()) {
     if (!suggested_text_view_) {

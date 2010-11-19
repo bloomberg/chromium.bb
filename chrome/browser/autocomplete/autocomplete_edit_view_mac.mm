@@ -373,6 +373,11 @@ bool AutocompleteEditViewMac::IsSelectAll() {
   return NSEqualRanges(all_range, GetSelectedRange());
 }
 
+bool AutocompleteEditViewMac::DeleteAtEndPressed() {
+  // TODO: implement me.
+  return false;
+}
+
 void AutocompleteEditViewMac::GetSelectionBounds(std::wstring::size_type* start,
                                                  std::wstring::size_type* end) {
   if (![field_ currentEditor]) {
