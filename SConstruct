@@ -1224,6 +1224,7 @@ base_env.Append(
     'tests/selenium_self_test/build.scons',
     'tests/tools/build.scons',
     'tests/unittests/shared/imc/build.scons',
+    'tests/unittests/shared/platform/build.scons',
     'installer/build.scons'
     ],
   )
