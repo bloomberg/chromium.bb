@@ -4,3 +4,8 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// Seems like it started failing with r72364.
+BUG_LEVIN LINUX MAC : svg/custom/use-infinite-recursion.svg = IMAGE
+
+BUG_LEVIN MAC : fast/xsl/xslt-mismatched-tags-in-xslt.xml = IMAGE
