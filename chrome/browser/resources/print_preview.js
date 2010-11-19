@@ -8,6 +8,10 @@ var localStrings = new LocalStrings();
  * Window onload handler, sets up the page.
  */
 function load() {
+  $('cancel-button').addEventListener('click', function(e) {
+    window.close();
+  });
+
   chrome.send('getPrinters');
 };
 
