@@ -600,6 +600,9 @@ window_create_surface(struct window *window)
 		surface = display_create_shm_surface(window->display,
 						     &window->allocation);
 		break;
+        default:
+		surface = NULL;
+		break;
 	}
 
 	window_set_surface(window, surface);
