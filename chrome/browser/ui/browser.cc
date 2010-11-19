@@ -2065,7 +2065,8 @@ void Browser::ExecuteCommandWithDisposition(
   if (!GetSelectedTabContentsWrapper())
     return;
 
-  DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command";
+  DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
+                                                << id;
 
   // If command execution is blocked then just record the command and return.
   if (block_command_execution_) {
