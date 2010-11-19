@@ -268,6 +268,14 @@ def _SetEnvForSdkManually(env):
               #       CC_NATIVE compiles to native code
               #       (CC_NATIVE has to handle both .c and .S files)
               CC_NATIVE=GetEnvOrDummy('CC_NATIVE'),
+              # NOTE: CC_OTHER is used in bitcode compilation scenarios
+              #       where CC compiles to bitcode and we need to build
+              #       native assembly code source code, typically for
+              #       low-level tests.  We cannot use CC_NATIVE because
+              #       CC_NATIVE on x86 does not handle .S files propery.
+              #       See
+              # http://code.google.com/p/nativeclient/issues/detail?id=1182
+              CC_OTHER=GetEnvOrDummy('CC_OTHER'),
               # NOTE: use g++ for linking so we can handle c AND c++
               LINK=GetEnvOrDummy('LINK'),
               RANLIB=GetEnvOrDummy('RANLIB'),
