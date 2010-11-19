@@ -892,7 +892,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = true;
+    expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
     frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
                                CHECKING_EVENT);
@@ -1853,35 +1853,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
-  void FailMakeGroupObsoleteTest() {
-    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
-
-    MakeService();
-    MockAppCacheStorage* storage =
-        reinterpret_cast<MockAppCacheStorage*>(service_->storage());
-    storage->SimulateMakeGroupObsoleteFailure();
-
-    group_ = new AppCacheGroup(
-        service_.get(), MockHttpServer::GetMockUrl("files/gone"),
-        service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
-    group_->update_job_ = update;
-
-    MockFrontend* frontend = MakeMockFrontend();
-    AppCacheHost* host = MakeHost(1, frontend);
-    update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
-
-    // Set up checks for when update job finishes.
-    do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = false;
-    expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               CHECKING_EVENT);
-
-    WaitForUpdateToFinish();
-  }
-
   void UpgradeFailMakeGroupObsoleteTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
@@ -1993,7 +1964,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = true;
+    expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
     MockFrontend::HostIds ids1(1, host->host_id());
     frontend->AddExpectedEvent(ids1, CHECKING_EVENT);
@@ -3407,10 +3378,6 @@ TEST_F(AppCacheUpdateJobTest, MasterEntryFailStoreNewestCacheTest) {
 
 TEST_F(AppCacheUpdateJobTest, UpgradeFailStoreNewestCache) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailStoreNewestCacheTest);
-}
-
-TEST_F(AppCacheUpdateJobTest, FailMakeGroupObsolete) {
-  RunTestOnIOThread(&AppCacheUpdateJobTest::FailMakeGroupObsoleteTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, UpgradeFailMakeGroupObsolete) {

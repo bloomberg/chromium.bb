@@ -538,7 +538,8 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
       ContinueHandleManifestFetchCompleted(true);
   } else if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
     ContinueHandleManifestFetchCompleted(false);
-  } else if (response_code == 404 || response_code == 410) {
+  } else if ((response_code == 404 || response_code == 410) &&
+             update_type_ == UPGRADE_ATTEMPT) {
     service_->storage()->MakeGroupObsolete(group_, this);  // async
   } else {
     std::string message;
@@ -559,7 +560,8 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
 void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
                                             bool success) {
   DCHECK(master_entry_fetches_.empty());
-  CancelAllMasterEntryFetches("The group has been made obsolete");
+  CancelAllMasterEntryFetches("The cache has been made obsolete, "
+                              "the manifest file returned 404 or 410");
   if (success) {
     DCHECK(group->is_obsolete());
     NotifyAllAssociatedHosts(OBSOLETE_EVENT);
@@ -567,7 +569,7 @@ void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
     MaybeCompleteUpdate();
   } else {
     // Treat failure to mark group obsolete as a cache failure.
-    HandleCacheFailure("Failed to make the group as obsolete");
+    HandleCacheFailure("Failed to mark the cache as obsolete");
   }
 }
 
