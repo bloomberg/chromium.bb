@@ -62,6 +62,15 @@
   fun:linked_ptr<PluginGroup>*
 }
 
+{
+  bug_62880
+  ThreadSanitizer:Race
+  fun:ObserverListBase*Iterator*
+  fun:browser_sync::sessions::SyncSessionContext::NotifyListeners*
+  ...
+  fun:browser_sync::SyncerThread::*
+}
+
 ############################
 # Benign races
 {
