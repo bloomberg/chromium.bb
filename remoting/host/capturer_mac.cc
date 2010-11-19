@@ -25,6 +25,7 @@ CapturerMac::CapturerMac(MessageLoop* message_loop)
   err = CGDisplayRegisterReconfigurationCallback(
       CapturerMac::DisplaysReconfiguredCallback, this);
   DCHECK_EQ(err, kCGErrorSuccess);
+  ScreenConfigurationChanged();
 }
 
 CapturerMac::~CapturerMac() {
@@ -48,6 +49,7 @@ void CapturerMac::ScreenConfigurationChanged() {
 
   width_ = CGDisplayPixelsWide(mainDevice);
   height_ = CGDisplayPixelsHigh(mainDevice);
+  pixel_format_ = media::VideoFrame::RGB32;
   bytes_per_row_ = width_ * sizeof(uint32_t);
   size_t buffer_size = height() * bytes_per_row_;
   for (int i = 0; i < kNumBuffers; ++i) {
