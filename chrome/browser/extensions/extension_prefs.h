@@ -78,6 +78,10 @@ class ExtensionPrefs {
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(const Extension* extension, Extension::State);
 
+  // Getter and setter for browser action visibility.
+  bool GetBrowserActionVisibility(const Extension* extension);
+  void SetBrowserActionVisibility(const Extension* extension, bool visible);
+
   // Did the extension ask to escalate its permission during an upgrade?
   bool DidExtensionEscalatePermissions(const std::string& id);
 

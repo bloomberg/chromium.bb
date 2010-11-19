@@ -26,6 +26,9 @@ ExtensionToolbarModel::ExtensionToolbarModel(ExtensionsService* service)
                  Source<Profile>(service_->profile()));
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
                  Source<Profile>(service_->profile()));
+  registrar_.Add(this,
+                 NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+                 NotificationService::AllSources());
 
   visible_icon_count_ = prefs_->GetInteger(prefs::kExtensionToolbarSize);
 }
@@ -99,6 +102,10 @@ void ExtensionToolbarModel::Observe(NotificationType type,
   } else if (type == NotificationType::EXTENSION_UNLOADED ||
              type == NotificationType::EXTENSION_UNLOADED_DISABLED) {
     RemoveExtension(extension);
+  } else if (type ==
+             NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
+    if (!service_->GetBrowserActionVisibility(extension))
+      RemoveExtension(extension);
   } else {
     NOTREACHED() << "Received unexpected notification";
   }
@@ -166,6 +173,8 @@ void ExtensionToolbarModel::InitializeExtensionList() {
     const Extension* extension = service_->extensions()->at(i);
     if (!extension->browser_action())
       continue;
+    if (!service_->GetBrowserActionVisibility(extension))
+      continue;
 
     std::vector<std::string>::iterator pos =
         std::find(pref_order.begin(), pref_order.end(), extension->id());
@@ -210,7 +219,7 @@ void ExtensionToolbarModel::UpdatePrefs() {
 }
 
 const Extension* ExtensionToolbarModel::GetExtensionByIndex(int index) const {
-  return toolitems_.at(index);
+  return toolitems_[index];
 }
 
 int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {

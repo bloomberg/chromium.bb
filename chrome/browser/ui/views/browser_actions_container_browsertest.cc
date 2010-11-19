@@ -14,15 +14,17 @@
 
 class BrowserActionsContainerTest : public ExtensionBrowserTest {
  public:
-  BrowserActionsContainerTest() {
+  BrowserActionsContainerTest() : browser_(NULL) {
   }
   virtual ~BrowserActionsContainerTest() {}
 
   virtual Browser* CreateBrowser(Profile* profile) {
-    Browser* b = InProcessBrowserTest::CreateBrowser(profile);
-    browser_actions_bar_.reset(new BrowserActionTestUtil(b));
-    return b;
+    browser_ = InProcessBrowserTest::CreateBrowser(profile);
+    browser_actions_bar_.reset(new BrowserActionTestUtil(browser_));
+    return browser_;
   }
+
+  Browser* browser() { return browser_; }
 
   BrowserActionTestUtil* browser_actions_bar() {
     return browser_actions_bar_.get();
@@ -40,6 +42,8 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
 
  private:
   scoped_ptr<BrowserActionTestUtil> browser_actions_bar_;
+
+  Browser* browser_;  // Weak.
 };
 
 // Test the basic functionality.
@@ -157,6 +161,30 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(2));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
+  BrowserActionsContainer::disable_animations_during_testing_ = true;
+
+  // Load extension A (contains browser action).
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
+                                          .AppendASCII("browser_action")
+                                          .AppendASCII("basics")));
+  EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
+  EnsureExtensionHasIcon(0);
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  std::string idA = browser_actions_bar()->GetExtensionId(0);
+
+  // Force hide this browser action.
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  service->SetBrowserActionVisibility(service->GetExtensionById(idA, false),
+                                      false);
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+
+  ReloadExtension(idA);
+
+  // The browser action should become visible again.
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {

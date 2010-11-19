@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
 using base::Time;
@@ -75,8 +76,11 @@ const char kPrefLaunchType[] = "launchType";
 // A preference determining the order of which the apps appear on the NTP.
 const char kPrefAppLaunchIndex[] = "app_launcher_index";
 
-// "A preference for storing extra data sent in update checks for an extension.
+// A preference for storing extra data sent in update checks for an extension.
 const char kUpdateUrlData[] = "update_url_data";
+
+// Whether the browser action is visible in the toolbar.
+const char kBrowserActionVisible[] = "browser_action_visible";
 
 }  // namespace
 
@@ -583,6 +587,30 @@ void ExtensionPrefs::SetExtensionState(const Extension* extension,
   UpdateExtensionPref(extension->id(), kPrefState,
                       Value::CreateIntegerValue(state));
   SavePrefsAndNotify();
+}
+
+bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {
+  DictionaryValue* extension_prefs = GetExtensionPref(extension->id());
+  bool visible = false;
+  if (!extension_prefs->GetBoolean(kBrowserActionVisible, &visible) || visible)
+    return true;
+
+  return false;
+}
+
+void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
+                                                bool visible) {
+  if (GetBrowserActionVisibility(extension) == visible)
+    return;
+
+  UpdateExtensionPref(extension->id(), kBrowserActionVisible,
+                      Value::CreateBooleanValue(visible));
+  SavePrefsAndNotify();
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+      Source<ExtensionPrefs>(this),
+      Details<const Extension>(extension));
 }
 
 std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {

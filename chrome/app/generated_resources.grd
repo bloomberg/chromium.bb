@@ -3804,6 +3804,9 @@ each locale. -->
       <message name="IDS_EXTENSIONS_OPTIONS" desc="The button text for the options button.">
         Options
       </message>
+      <message name="IDS_EXTENSIONS_HIDE" desc="The text for the Hide context menu item.">
+        Hide button
+      </message>
       <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools.">
         Inspect popup
       </message>

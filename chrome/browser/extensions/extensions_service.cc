@@ -305,7 +305,6 @@ ExtensionsServiceBackend::ExtensionsServiceBackend(
   policy_extension_provider->SetPreferences(prefs);
   external_extension_providers_.push_back(
       linked_ptr<ExternalExtensionProvider>(policy_extension_provider));
-
 }
 
 ExtensionsServiceBackend::~ExtensionsServiceBackend() {
@@ -881,9 +880,8 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
 
   const Extension* extension =
       GetExtensionByIdInternal(extension_id, false, true);
-  if (!extension) {
+  if (!extension)
     return;
-  }
 
   extension_prefs_->SetExtensionState(extension, Extension::ENABLED);
 
@@ -893,6 +891,9 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
                                            disabled_extensions_.end(),
                                            extension);
   disabled_extensions_.erase(iter);
+
+  // Make sure any browser action contained within it is not hidden.
+  extension_prefs_->SetBrowserActionVisibility(extension, true);
 
   ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
@@ -1373,6 +1374,15 @@ void ExtensionsService::SetAllowFileAccess(const Extension* extension,
       NotificationType::EXTENSION_USER_SCRIPTS_UPDATED,
       Source<Profile>(profile_),
       Details<const Extension>(extension));
+}
+
+bool ExtensionsService::GetBrowserActionVisibility(const Extension* extension) {
+  return extension_prefs_->GetBrowserActionVisibility(extension);
+}
+
+void ExtensionsService::SetBrowserActionVisibility(const Extension* extension,
+                                                   bool visible) {
+  extension_prefs_->SetBrowserActionVisibility(extension, visible);
 }
 
 void ExtensionsService::CheckForExternalUpdates() {

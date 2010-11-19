@@ -921,6 +921,10 @@ class NotificationType {
     // are no details.
     EXTENSION_PAGE_ACTION_COUNT_CHANGED,
 
+    // Sent when a browser action's visibility has changed. The source is the
+    // ExtensionPrefs* that changed. The details are a Extension*.
+    EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+
     // Sent when a page action's visibility has changed. The source is the
     // ExtensionAction* that changed. The details are a TabContents*.
     EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,

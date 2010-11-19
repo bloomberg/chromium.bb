@@ -21,6 +21,7 @@
 enum MenuEntries {
   NAME = 0,
   CONFIGURE,
+  HIDE,
   DISABLE,
   UNINSTALL,
   MANAGE,
@@ -62,6 +63,8 @@ void ExtensionContextMenuModel::InitCommonCommands() {
   AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator();
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS);
+  if (extension->browser_action())
+    AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
   AddItemWithStringId(UNINSTALL, IDS_EXTENSIONS_UNINSTALL);
   AddSeparator();
@@ -114,6 +117,11 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       profile_->GetExtensionProcessManager()->OpenOptionsPage(extension,
                                                               browser_);
       break;
+    case HIDE: {
+      ExtensionsService* extension_service = profile_->GetExtensionsService();
+      extension_service->SetBrowserActionVisibility(extension, false);
+      break;
+    }
     case DISABLE: {
       ExtensionsService* extension_service = profile_->GetExtensionsService();
       extension_service->DisableExtension(extension_id_);
