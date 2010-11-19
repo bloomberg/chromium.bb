@@ -21,6 +21,7 @@ CapturerGdi::CapturerGdi(MessageLoop* message_loop)
       capture_fullscreen_(true) {
   memset(target_bitmap_, 0, sizeof(target_bitmap_));
   memset(buffers_, 0, sizeof(buffers_));
+  ScreenConfigurationChanged();
 }
 
 CapturerGdi::~CapturerGdi() {
