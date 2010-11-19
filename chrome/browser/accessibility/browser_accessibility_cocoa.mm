@@ -234,12 +234,23 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
         GetState(browserAccessibility_, WebAccessibility::STATE_FOCUSED)];
     return ret;
   }
-  // TODO(dtseng): provide complete implementations for the following.
-  if ([attribute isEqualToString:NSAccessibilityEnabledAttribute] ||
-      [attribute isEqualToString:@"AXVisited"] ||
-      [attribute isEqualToString:@"AXLoaded"]) {
-    return [NSNumber numberWithBool:YES];
+  if ([attribute isEqualToString:NSAccessibilityEnabledAttribute]) {
+    return [NSNumber numberWithBool:
+        !GetState(browserAccessibility_, WebAccessibility::STATE_UNAVAILABLE)];
   }
+
+  // AXWebArea attributes.
+  if ([attribute isEqualToString:@"AXLoaded"])
+    return [NSNumber numberWithBool:YES];
+  if ([attribute isEqualToString:@"AXURL"]) {
+    return NSStringForWebAccessibilityAttribute(
+        browserAccessibility_->attributes(),
+        WebAccessibility::ATTR_DOC_URL);
+  }
+
+  // TODO(dtseng): provide complete implementations for the following.
+  if ([attribute isEqualToString:@"AXVisited"])
+    return [NSNumber numberWithBool:NO];
 
   // Text related attributes.
   if ([attribute isEqualToString:
@@ -342,6 +353,14 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       nil]];
 
   // Specific role attributes.
+  if ([self role] == @"AXWebArea") {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXLoaded",
+        @"AXURL",
+        @"AXVisited",
+        nil]];
+  }
+
   if ([self role] == NSAccessibilityTextFieldRole) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityInsertionPointLineNumberAttribute,
