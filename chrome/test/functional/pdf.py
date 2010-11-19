@@ -37,9 +37,12 @@ class PDFTest(pyauto.PyUITest):
     properties = self.GetBrowserInfo()['properties']
     if properties['branding'] != 'Google Chrome':
       return
-    pdf_files_path = os.path.join(self.DataDir(), 'pyauto_private', 'pdf')
+    pdf_files_path = os.path.join(self.DataDir(), 'plugin', 'pdf')
     pdf_files = glob.glob(os.path.join(pdf_files_path, '*.pdf'))
     for pdf_file in pdf_files:
+      # Some pdfs cause known crashes. Exclude them. crbug.com/63549
+      if os.path.basename(pdf_file) in ('nullip.pdf', 'sample.pdf'):
+        continue
       url = self.GetFileURLForPath(os.path.join(pdf_files_path, pdf_file))
       self.AppendTab(pyauto.GURL(url))
     for tab_index in range(1, len(pdf_files) + 1):
