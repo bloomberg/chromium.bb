@@ -38,16 +38,19 @@ cr.define('options.add_startup_page', function() {
       var titleEl = this.ownerDocument.createElement('span');
       titleEl.className = 'title';
       titleEl.classList.add('favicon-cell');
-      titleEl.textContent = this.pageInfo['title'];
       titleEl.style.backgroundImage = url('chrome://favicon/' +
                                          this.pageInfo['url']);
-
-      var urlEL = this.ownerDocument.createElement('span');
-      urlEL.className = 'url';
-      urlEL.textContent = this.pageInfo['displayURL'];
-
       this.appendChild(titleEl);
-      this.appendChild(urlEL);
+      if (this.pageInfo['title'].length > 0) {
+        titleEl.textContent = this.pageInfo['title'];
+
+        var urlEL = this.ownerDocument.createElement('span');
+        urlEL.className = 'url';
+        urlEL.textContent = this.pageInfo['displayURL'];
+        this.appendChild(urlEL);
+      } else {
+        titleEl.textContent = this.pageInfo['displayURL'];
+      }
     },
   };
 
