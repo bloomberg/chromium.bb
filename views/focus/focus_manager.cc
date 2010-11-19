@@ -313,7 +313,11 @@ void FocusManager::SetFocusedViewWithReason(
   if (view) {
     view->SchedulePaint();
     view->Focus();
-    view->DidGainFocus();
+    if (view == focused_view_) {
+      // Only tell the view it is focused if it's still our focused view. It's
+      // possible for Focus to remove/delete the view.
+      view->DidGainFocus();
+    }
   }
 }
 
