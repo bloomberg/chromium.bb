@@ -395,19 +395,17 @@ SkBitmap NetworkMenu::IconForNetworkStrength(int strength, bool black) {
 // static
 SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular) {
   DCHECK(cellular);
-  // Compose wifi icon by superimposing various icons.
+  // Compose cellular icon by superimposing various icons.
   int index = static_cast<int>(cellular->strength() / 100.0 *
       nextafter(static_cast<float>(kNumWifiImages), 0));
   index = std::max(std::min(index, kNumWifiImages - 1), 0);
   const int* images = kBarsImages;
   switch (cellular->GetDataLeft()) {
     case CellularNetwork::DATA_NONE:
-    case CellularNetwork::DATA_VERY_LOW:
       images = kBarsImagesVLowData;
       break;
+    case CellularNetwork::DATA_VERY_LOW:
     case CellularNetwork::DATA_LOW:
-      images = kBarsImagesLowData;
-      break;
     case CellularNetwork::DATA_NORMAL:
       images = kBarsImages;
       break;
@@ -440,12 +438,10 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
     if (cellular->network_technology() == NETWORK_TECHNOLOGY_EVDO) {
       switch (cellular->GetDataLeft()) {
         case CellularNetwork::DATA_NONE:
-        case CellularNetwork::DATA_VERY_LOW:
           id = IDR_STATUSBAR_NETWORK_3G_ERROR;
           break;
+        case CellularNetwork::DATA_VERY_LOW:
         case CellularNetwork::DATA_LOW:
-          id = IDR_STATUSBAR_NETWORK_3G_WARN;
-          break;
         case CellularNetwork::DATA_NORMAL:
           id = IDR_STATUSBAR_NETWORK_3G;
           break;
@@ -453,18 +449,14 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
     } else if (cellular->network_technology() == NETWORK_TECHNOLOGY_1XRTT) {
       switch (cellular->GetDataLeft()) {
         case CellularNetwork::DATA_NONE:
-        case CellularNetwork::DATA_VERY_LOW:
           id = IDR_STATUSBAR_NETWORK_1X_ERROR;
           break;
+        case CellularNetwork::DATA_VERY_LOW:
         case CellularNetwork::DATA_LOW:
-          id = IDR_STATUSBAR_NETWORK_1X_WARN;
-          break;
         case CellularNetwork::DATA_NORMAL:
           id = IDR_STATUSBAR_NETWORK_1X;
           break;
       }
-    } else {
-      id = -1;
     }
     if (id == -1)
       return SkBitmap();
