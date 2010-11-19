@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
 }
 
 // See http://crbug.com/63675.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_KeyPathTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyPathTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
 
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
 }
 
 // See http://crbug.com/63675.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_TransactionTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
