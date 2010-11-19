@@ -76,7 +76,8 @@ class SpeechRecognizer
   SpeechRecognizer(Delegate* delegate,
                    int caller_id,
                    const std::string& language,
-                   const std::string& grammar);
+                   const std::string& grammar,
+                   const std::string& hardware_info);
   ~SpeechRecognizer();
 
   // Starts audio recording and does recognition after recording ends. The same
@@ -112,6 +113,7 @@ class SpeechRecognizer
  private:
   void ReleaseAudioBuffers();
   void InformErrorAndCancelRecognition(ErrorCode error);
+  void SendRecordedAudioToServer();
 
   void HandleOnError(int error_code);  // Handles OnError in the IO thread.
 
@@ -122,6 +124,7 @@ class SpeechRecognizer
   int caller_id_;
   std::string language_;
   std::string grammar_;
+  std::string hardware_info_;
 
   // Buffer holding the recorded audio. Owns the strings inside the list.
   typedef std::list<std::string*> AudioBufferQueue;

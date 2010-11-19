@@ -21,6 +21,7 @@
 #define CHROME_INSTALLER_UTIL_WMI_H_
 #pragma once
 
+#include "base/string16.h"
 #include <string>
 #include <wbemidl.h>
 
@@ -71,6 +72,14 @@ class WMIProcess {
   // Processes created this way are children of wmiprvse.exe and run with the
   // caller credentials.
   static bool Launch(const std::wstring& command_line, int* process_id);
+};
+
+// This class contains functionality of the WMI class 'Win32_ComputerSystem'
+// more info: http://msdn.microsoft.com/en-us/library/aa394102(VS.85).aspx
+class WMIComputerSystem {
+ public:
+  // Returns a human readable string for the model/make of this computer.
+  static string16 GetModel();
 };
 
 }  // namespace installer

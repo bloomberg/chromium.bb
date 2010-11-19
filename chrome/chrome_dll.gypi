@@ -35,6 +35,7 @@
                   'urlmon.dll',
                   'imm32.dll',
                   'iphlpapi.dll',
+                  'setupapi.dll',
                 ],
                 # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
                 'SubSystem': '2',

@@ -9,7 +9,6 @@
 #include "app/l10n_util.h"
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/escape.h"
@@ -20,7 +19,7 @@
 namespace {
 
 const char* const kDefaultSpeechRecognitionUrl =
-    "http://www.google.com/speech-api/v1/recognize?client=chromium&";
+    "https://www.google.com/speech-api/v1/recognize?client=chromium&";
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
 const char* const kConfidenceString = "confidence";
@@ -123,6 +122,7 @@ SpeechRecognitionRequest::~SpeechRecognitionRequest() {}
 
 bool SpeechRecognitionRequest::Send(const std::string& language,
                                     const std::string& grammar,
+                                    const std::string& hardware_info,
                                     const std::string& content_type,
                                     const std::string& audio_data) {
   DCHECK(!url_fetcher_.get());
@@ -145,7 +145,10 @@ bool SpeechRecognitionRequest::Send(const std::string& language,
   parts.push_back("lang=" + EscapeQueryParamValue(lang_param, true));
 
   if (!grammar.empty())
-    parts.push_back("grammar=" + EscapeQueryParamValue(grammar, true));
+    parts.push_back("lm=" + EscapeQueryParamValue(grammar, true));
+  if (!hardware_info.empty())
+    parts.push_back("xhw=" + EscapeQueryParamValue(hardware_info, true));
+
   GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
 
   url_fetcher_.reset(URLFetcher::Create(url_fetcher_id_for_tests,

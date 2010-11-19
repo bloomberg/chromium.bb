@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 
 #pragma comment(lib, "wbemuuid.lib")
 
@@ -148,6 +149,45 @@ bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
     *process_id = pid.intVal;
 
   return true;
+}
+
+string16 WMIComputerSystem::GetModel() {
+  base::win::ScopedComPtr<IWbemServices> services;
+  if (!WMI::CreateLocalConnection(true, services.Receive()))
+    return string16();
+
+  base::win::ScopedBstr query_language(L"WQL");
+  base::win::ScopedBstr query(L"SELECT * FROM Win32_ComputerSystem");
+  base::win::ScopedComPtr<IEnumWbemClassObject> enumerator;
+  HRESULT hr = services->ExecQuery(
+      query_language, query,
+      WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL,
+      enumerator.Receive());
+  if (FAILED(hr) || !enumerator)
+    return string16();
+
+  base::win::ScopedComPtr<IWbemClassObject> class_object;
+  ULONG items_returned = 0;
+  hr = enumerator->Next(WBEM_INFINITE, 1,  class_object.Receive(),
+                        &items_returned);
+  if (!items_returned)
+    return string16();
+
+  base::win::ScopedVariant manufacturer;
+  class_object->Get(L"Manufacturer", 0, manufacturer.Receive(), 0, 0);
+  base::win::ScopedVariant model;
+  class_object->Get(L"Model", 0, model.Receive(), 0, 0);
+
+  string16 model_string;
+  if (manufacturer.type() == VT_BSTR) {
+    model_string = V_BSTR(&manufacturer);
+    if (model.type() == VT_BSTR)
+      model_string += L" ";
+  }
+  if (model.type() == VT_BSTR)
+    model_string += V_BSTR(&model);
+
+  return model_string;
 }
 
 }  // namespace installer
