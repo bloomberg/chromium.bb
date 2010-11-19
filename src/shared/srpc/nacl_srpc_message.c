@@ -4,9 +4,6 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/shared/srpc/nacl_srpc_message.h"
-
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,12 +11,24 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+/*
+ * #including nacl_srpc_message.h before nacl_host_desc.h currently
+ * fails with nacl-glibc because it leaves nacl_abi_time_t undeclared.
+ * TODO(mseaborn): Fix problems with these headers.
+ */
 #include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_message.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
-#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
 #ifdef __native_client__
+/*
+ * We cannot currently #include service_runtime/include/sys/errno.h
+ * with nacl-glibc because it #includes sys/reent.h, which is a
+ * newlibism that glibc does not provide.
+ * TODO(mseaborn): Fix problems with these headers.
+ */
+# include <errno.h>
 /**
  * Note: nacl/nacl_inttypes.h must be included last...
  * after all other types headers.
@@ -28,6 +37,8 @@
 # include <nacl/nacl_inttypes.h>
 # define NACL_ABI_RECVMSG_DATA_TRUNCATED RECVMSG_DATA_TRUNCATED
 # define NACL_ABI_RECVMSG_DESC_TRUNCATED RECVMSG_DESC_TRUNCATED
+# define NACL_ABI_EIO EIO
+# define NACL_ABI_EINVAL EINVAL
 #else
 # include "native_client/src/include/portability.h"
 # include "native_client/src/trusted/desc/nrd_xfer_effector.h"
