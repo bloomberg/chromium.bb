@@ -9106,7 +9106,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Skip sign-in and browse as Guest
       </message>
       <message name="IDS_GO_INCOGNITO_BUTTON">
-        Go incognito
+        Browse as Guest
       </message>
       <message name="IDS_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/locker screen">
         Shut down
