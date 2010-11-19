@@ -409,36 +409,13 @@ wl_event_loop_destroy(struct wl_event_loop *loop)
 	free(loop);
 }
 
-static void
-dispatch_idles(struct wl_event_loop *loop)
-{
-	struct wl_event_source_idle *source, *next;
-
-	source = container_of(loop->idle_list.next,
-			      struct wl_event_source_idle, link);
-
-	while (&source->link != &loop->idle_list) {
-		source->func(source->data);
-		next = container_of(source->link.next,
-				    struct wl_event_source_idle, link);
-		free(source);
-		source = next;
-	}
-
-	wl_list_init(&loop->idle_list);
-}
-
 WL_EXPORT int
-wl_event_loop_wait(struct wl_event_loop *loop)
+wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 {
 	struct epoll_event ep[32];
 	struct wl_event_source *source;
-	int i, count, timeout;
-
-	if (wl_list_empty(&loop->idle_list))
-		timeout = -1;
-	else
-		timeout = 0;
+	struct wl_event_source_idle *idle;
+	int i, count;
 
 	count = epoll_wait(loop->epoll_fd, ep, ARRAY_LENGTH(ep), timeout);
 	if (count < 0)
@@ -449,9 +426,19 @@ wl_event_loop_wait(struct wl_event_loop *loop)
 		source->interface->dispatch(source, &ep[i]);
 	}
 
-	if (count == 0)
-		dispatch_idles(loop);
+	while (!wl_list_empty(&loop->idle_list)) {
+		idle = container_of(loop->idle_list.next,
+				      struct wl_event_source_idle, link);
+		wl_list_remove(&idle->link);
+		idle->func(idle->data);
+		free(idle);
+	}
 
-	
 	return 0;
+}
+
+WL_EXPORT int
+wl_event_loop_get_fd(struct wl_event_loop *loop)
+{
+	return loop->epoll_fd;
 }

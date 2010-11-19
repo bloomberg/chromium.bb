@@ -436,7 +436,7 @@ WL_EXPORT void
 wl_display_run(struct wl_display *display)
 {
 	while (1)
-		wl_event_loop_wait(display->loop);
+		wl_event_loop_dispatch(display->loop, -1);
 }
 
 static void
