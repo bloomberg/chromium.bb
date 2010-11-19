@@ -87,21 +87,17 @@ static nacl::string ProcessArguments(int argc,
     } else if (string(argv[i]) == "--") {
       // Done processing sel_ldr args. If no '-f nacl_file' was given earlier,
       // the first argument after '--' is the nacl_file.
-      if (app_name == "" && i + 1 < argc) {
-        app_name = argv[i + 1];
-        i++;
+      i++;
+      if (app_name == "" && i < argc) {
+        app_name = argv[i++];
       }
-      break;
+      // The remaining arguments are passed to the executable.
+      for (; i < argc; i++) {
+        app_argv->push_back(argv[i]);
+      }
     } else {
       sel_ldr_argv->push_back(argv[i]);
     }
-  }
-  // Postcondition: i is the index of the first nexe module argument (if any)
-  // Postcondition: sel_ldr_argv contains the arguments to sel_ldr
-
-  // Initialize the arguments to the nexe module
-  for (int j = i; j < argc; j++) {
-    app_argv->push_back(argv[j]);
   }
 
   if (app_name == "") {
