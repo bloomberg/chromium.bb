@@ -51,25 +51,31 @@
 int dummy = 666;
 int sum = 55;
 
+volatile int STRIDE = 8;
+
 #include "barebones.h"
 
+/* declare some arrays used by the loops */
 #undef REPEAT_BODY
 #define REPEAT_BODY(N) int array ## N [20];
 REPEAT
 
 
 int main() {
+  /* declare loop variables */
 #undef REPEAT_BODY
 #define REPEAT_BODY(N) int i ## N;
 REPEAT
 
+  /* declare loop variables */
 #undef REPEAT_BODY
 #define REPEAT_BODY(N) for( i ## N = 0 ;  i ## N < 20; i ## N++) \
     array ## N [ i ## N ] =  i ## N;
 REPEAT
 
+  /* now loop */
 #undef REPEAT_BODY
-#define REPEAT_BODY(N) for( i ## N = 0;  i ## N < 20; i ## N += 8)
+#define REPEAT_BODY(N) for( i ## N = 0;  i ## N < 20; i ## N += STRIDE)
 REPEAT
   {
     /* NOTE: one of the factors is zero, hece we are always adding zero */
