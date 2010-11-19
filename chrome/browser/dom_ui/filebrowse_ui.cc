@@ -47,6 +47,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/escape.h"
+#include "net/url_request/url_request_file_job.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -819,6 +820,13 @@ void FilebrowseHandler::GetChildrenForPath(FilePath& path, bool is_refresh) {
   }
 
   is_refresh_ = is_refresh;
+
+#if defined(OS_CHROMEOS)
+  // Don't allow listing files in inaccessible dirs.
+  if (URLRequestFileJob::AccessDisabled(path))
+    return;
+#endif  // OS_CHROMEOS
+
   FilePath default_download_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
                         &default_download_path)) {
@@ -961,6 +969,11 @@ void FilebrowseHandler::HandleDeleteFile(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   std::string path = WideToUTF8(ExtractStringValue(args));
   FilePath currentpath(path);
+
+  // Don't allow file deletion in inaccessible dirs.
+  if (URLRequestFileJob::AccessDisabled(currentpath))
+    return;
+
   for (unsigned int x = 0; x < active_download_items_.size(); x++) {
     FilePath item = active_download_items_[x]->full_path();
     if (item == currentpath) {
@@ -993,6 +1006,10 @@ void FilebrowseHandler::HandleCopyFile(const ListValue* value) {
         list_value->GetString(1, &dest)) {
       FilePath SrcPath = FilePath(src);
       FilePath DestPath = FilePath(dest);
+
+      // Don't allow file copy to inaccessible dirs.
+      if (URLRequestFileJob::AccessDisabled(DestPath))
+        return;
 
       TaskProxy* task = new TaskProxy(AsWeakPtr(), SrcPath, DestPath);
       task->AddRef();
