@@ -376,6 +376,66 @@ void InitializeStatsTable(base::ProcessId browser_pid,
   }
 }
 
+#if defined(OS_POSIX)
+// Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
+void SetupSignalHandlers() {
+  // Sanitise our signal handling state. Signals that were ignored by our
+  // parent will also be ignored by us. We also inherit our parent's sigmask.
+  sigset_t empty_signal_set;
+  CHECK(0 == sigemptyset(&empty_signal_set));
+  CHECK(0 == sigprocmask(SIG_SETMASK, &empty_signal_set, NULL));
+
+  struct sigaction sigact;
+  memset(&sigact, 0, sizeof(sigact));
+  sigact.sa_handler = SIG_DFL;
+  static const int signals_to_reset[] =
+      {SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
+       SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
+  for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
+    CHECK(0 == sigaction(signals_to_reset[i], &sigact, NULL));
+  }
+
+  // Always ignore SIGPIPE.  We check the return value of write().
+  CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
+}
+
+// Check for --version and --product-version; return true if we encountered
+// one of these switches and should exit now.
+bool HandleVersionSwitches(const CommandLine& command_line) {
+  const chrome::VersionInfo version_info;
+
+#if !defined(OS_MACOSX)
+  if (command_line.HasSwitch(switches::kProductVersion)) {
+    printf("%s\n", version_info.Version().c_str());
+    return true;
+  }
+#endif
+
+  if (command_line.HasSwitch(switches::kVersion)) {
+    printf("%s %s %s\n",
+           version_info.Name().c_str(),
+           version_info.Version().c_str(),
+           platform_util::GetVersionStringModifier().c_str());
+    return true;
+  }
+
+  return false;
+}
+
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+// Show the man page if --help or -h is on the command line.
+void HandleHelpSwitches(const CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kHelp) ||
+      command_line.HasSwitch(switches::kHelpShort)) {
+    FilePath binary(command_line.argv()[0]);
+    execlp("man", "man", binary.BaseName().value().c_str(), NULL);
+    PLOG(FATAL) << "execlp failed";
+  }
+}
+#endif
+
+#endif  // OS_POSIX
+
 }  // namespace
 
 #if defined(OS_WIN)
@@ -426,21 +486,7 @@ int ChromeMain(int argc, char** argv) {
   // in correct encoding.
   setlocale(LC_ALL, "");
 
-  // Sanitise our signal handling state. Signals that were ignored by our
-  // parent will also be ignored by us. We also inherit our parent's sigmask.
-  sigset_t empty_signal_set;
-  CHECK(0 == sigemptyset(&empty_signal_set));
-  CHECK(0 == sigprocmask(SIG_SETMASK, &empty_signal_set, NULL));
-
-  struct sigaction sigact;
-  memset(&sigact, 0, sizeof(sigact));
-  sigact.sa_handler = SIG_DFL;
-  static const int signals_to_reset[] =
-      {SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
-       SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
-  for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
-    CHECK(0 == sigaction(signals_to_reset[i], &sigact, NULL));
-  }
+  SetupSignalHandlers();
 #endif
 
   // Initialize the command line.
@@ -451,24 +497,14 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  const chrome::VersionInfo version_info;
 
 #if defined(OS_POSIX)
-
-#if !defined(OS_MACOSX)
-  if (parsed_command_line.HasSwitch(switches::kProductVersion)) {
-    printf("%s\n", version_info.Version().c_str());
-    return 0;
-  }
+  if (HandleVersionSwitches(parsed_command_line))
+    return 0;  // Got a --version switch; exit with a success error code.
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  // This will directly exit if the user asked for help.
+  HandleHelpSwitches(parsed_command_line);
 #endif
-
-  if (parsed_command_line.HasSwitch(switches::kVersion)) {
-    printf("%s %s %s\n",
-           version_info.Name().c_str(),
-           version_info.Version().c_str(),
-           platform_util::GetVersionStringModifier().c_str());
-    return 0;
-  }
 #endif  // OS_POSIX
 
   std::string process_type =
@@ -491,19 +527,7 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  // Show the man page on --help or -h.
-  if (parsed_command_line.HasSwitch(switches::kHelp) ||
-      parsed_command_line.HasSwitch(switches::kHelpShort)) {
-    FilePath binary(parsed_command_line.argv()[0]);
-    execlp("man", "man", binary.BaseName().value().c_str(), NULL);
-    PLOG(FATAL) << "execlp failed";
-  }
 #endif
-
-#if defined(OS_POSIX)
-  // Always ignore SIGPIPE.  We check the return value of write().
-  CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
-#endif  // OS_POSIX
 
   if (parsed_command_line.HasSwitch(switches::kEnableNaCl)) {
     // NaCl currently requires two flags to run
@@ -551,6 +575,7 @@ int ChromeMain(int argc, char** argv) {
     //
     // Note that we *can't* rely on BeingDebugged to catch this case because we
     // are the child process, which is not being debugged.
+    // TODO(evanm): move this to some shared subprocess-init function.
     if (!base::debug::BeingDebugged())
       signal(SIGINT, SIG_IGN);
 #endif
