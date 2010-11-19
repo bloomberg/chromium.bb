@@ -284,7 +284,7 @@ Issues:
   after the data has been transferred.
 
 \item How do we marshall several mime-types?  We could make the drag
-  setup a multi-step operation: dnd.create, drag.offer(mime-type1,
+  setup a multi-step operation: dnd.create, drag.offer(mime-type1),
   drag.offer(mime-type2), drag.activate().  The drag object could send
   multiple offer events on each motion event.  Or we could just
   implement an array type, but that's a pain to work with.
@@ -429,7 +429,7 @@ ftp://ftp.isi.edu/in-notes/iana/assignments/media-types/
 \item multiseat
 \item linux implementation using libudev, egl, kms, evdev, cairo
 \item for fullscreen clients, the system compositor can reprogram the
-   video scanout address to source fromt the client provided buffer.
+   video scanout address to source from the client provided buffer.
 \end{itemize}
 
 \subsection{Session Compositor}
