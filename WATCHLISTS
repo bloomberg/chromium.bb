@@ -164,6 +164,9 @@
       'filepath': 'chrome/browser/labs' \
                   '|chrome/browser/dom_ui/labs'
     },
+    'file_system': {
+      'filepath': 'file_system/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -222,5 +225,6 @@
     'pyauto': ['anantha@chromium.org', 'jrg@chromium.org',
                'nirnimesh@chromium.org'],
     'labs': ['thakis@chromium.org'],
+    'file_system': ['kinuko@chromium.org'],
   },
 }
