@@ -165,7 +165,22 @@ bool PluginLib::Load() {
   base::NativeLibrary library = 0;
 
   if (!internal_) {
+#if defined(OS_WIN)
+    // This is to work around a bug in the Real player recorder plugin which
+    // intercepts LoadLibrary calls from chrome.dll and wraps NPAPI functions
+    // provided by the plugin. It crashes if the media player plugin is being
+    // loaded. Workaround is to load the dll dynamically by getting the
+    // LoadLibrary API address from kernel32.dll which bypasses the recorder
+    // plugin.
+    if (web_plugin_info_.name.find(L"Windows Media Player") !=
+        std::wstring::npos) {
+      library = base::LoadNativeLibraryDynamically(web_plugin_info_.path);
+    } else {
+      library = base::LoadNativeLibrary(web_plugin_info_.path);
+    }
+#else  // OS_WIN
     library = base::LoadNativeLibrary(web_plugin_info_.path);
+#endif  // OS_WIN
     if (library == 0) {
       LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Couldn't load plugin " << web_plugin_info_.path.value();
