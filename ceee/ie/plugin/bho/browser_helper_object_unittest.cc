@@ -477,7 +477,6 @@ TEST_F(BrowserHelperObjectTest, RenavigationNotifiesUrl) {
 TEST_F(BrowserHelperObjectTest, OnNavigateCompleteUnhandled) {
   CreateSite();
   CreateBrowser();
-  ExpectChromeFrameGetSessionId();
 
   // Create an object that doesn't implement IWebBrowser2.
   MockDispatchEx* non_browser = NULL;

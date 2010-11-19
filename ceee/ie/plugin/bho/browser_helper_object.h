@@ -18,6 +18,8 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
 #include "base/task.h"
 #include "ceee/ie/plugin/bho/tab_events_funnel.h"
 #include "ceee/ie/common/chrome_frame_host.h"
@@ -160,6 +162,34 @@ class ATL_NO_VTABLE BrowserHelperObject
   // @}
 
  protected:
+  typedef base::win::ScopedComPtr<IContentScriptNativeApi, &GUID_NULL>
+      ScopedContentScriptNativeApiPtr;
+  typedef base::win::ScopedComPtr<IDispatch> ScopedDispatchPtr;
+  typedef base::win::ScopedComPtr<IWebBrowser2> ScopedWebBrowser2Ptr;
+
+  HRESULT OpenChannelToExtensionImpl(
+      const ScopedContentScriptNativeApiPtr& instance,
+      const std::string& extension, const std::string& channel_name,
+      int cookie);
+  void OnBeforeNavigate2Impl(const ScopedDispatchPtr& webbrowser_disp,
+                             const CComBSTR& url);
+
+  void OnCfPrivateMessageImpl(const CComBSTR& msg,
+                              const CComBSTR& origin,
+                              const CComBSTR& target);
+  void OnDocumentCompleteImpl(const ScopedWebBrowser2Ptr& webbrowser,
+                              const CComBSTR& url);
+  void OnNavigateComplete2Impl(const ScopedWebBrowser2Ptr& webbrowser,
+                               const CComBSTR& url);
+  void OnNavigateErrorImpl(const ScopedWebBrowser2Ptr& webbrowser,
+                           const CComBSTR& url,
+                           LONG status_code);
+  void InsertCodeImpl(const CComBSTR& code,
+                      const CComBSTR& file,
+                      bool all_frames,
+                      CeeeTabCodeType type);
+
+
   // Finds the handler attached to webbrowser.
   // @returns S_OK if handler is found.
   HRESULT GetBrowserHandler(IWebBrowser2* webbrowser,

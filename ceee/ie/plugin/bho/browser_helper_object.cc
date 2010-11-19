@@ -643,24 +643,40 @@ void BrowserHelperObject::CloseAll(IContentScriptNativeApi* instance) {
 HRESULT BrowserHelperObject::OpenChannelToExtension(
     IContentScriptNativeApi* instance, const std::string& extension,
     const std::string& channel_name, int cookie) {
-  // TODO(hansl@google.com): separate this method into an event and an Impl.
+  ScopedContentScriptNativeApiPtr scoped_instance(instance);
   if (EnsureTabId() == false) {
     deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OpenChannelToExtension,
-        instance, extension, channel_name, cookie));
+        this, &BrowserHelperObject::OpenChannelToExtensionImpl,
+        scoped_instance, extension, channel_name, cookie));
     return S_OK;
+  } else {
+    return OpenChannelToExtensionImpl(scoped_instance,
+                                      extension,
+                                      channel_name,
+                                      cookie);
   }
+}
 
+HRESULT BrowserHelperObject::OpenChannelToExtensionImpl(
+    const ScopedContentScriptNativeApiPtr& instance,
+    const std::string& extension,
+    const std::string& channel_name,
+    int cookie) {
   scoped_ptr<DictionaryValue> tab_info(new DictionaryValue());
 
   DCHECK(tab_id_ != kInvalidChromeSessionId);
   tab_info->SetInteger(keys::kIdKey, tab_id_);
 
-  return extension_port_manager_.OpenChannelToExtension(instance,
-                                                        extension,
-                                                        channel_name,
-                                                        tab_info.release(),
-                                                        cookie);
+  HRESULT hr =
+      extension_port_manager_.OpenChannelToExtension(instance,
+                                                     extension,
+                                                     channel_name,
+                                                     tab_info.release(),
+                                                     cookie);
+  if (FAILED(hr))
+    LOG(ERROR) << "OpenChannelToExtension failed, hr=" << com::LogHr(hr);
+
+  return hr;
 }
 
 HRESULT BrowserHelperObject::PostMessage(int port_id,
@@ -672,28 +688,31 @@ HRESULT BrowserHelperObject::OnCfPrivateMessage(BSTR msg,
                                                 BSTR origin,
                                                 BSTR target) {
   // OnPortMessage uses tab_id_, so we need to check here.
-  // TODO(hansl@google.com): separate this method into an event and an Impl.
   if (EnsureTabId() == false) {
     deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnCfPrivateMessage,
-        CComBSTR(msg), origin, target));
+        this, &BrowserHelperObject::OnCfPrivateMessageImpl,
+        msg, origin, target));
     return S_OK;
+  } else {
+    OnCfPrivateMessageImpl(msg, origin, target);
   }
 
+  return S_OK;
+}
+
+void BrowserHelperObject::OnCfPrivateMessageImpl(const CComBSTR& msg,
+                                                 const CComBSTR& origin,
+                                                 const CComBSTR& target) {
   const wchar_t* start = com::ToString(target);
-  const wchar_t* end = start + ::SysStringLen(target);
+  const wchar_t* end = start + target.Length();
   if (LowerCaseEqualsASCII(start, end, ext::kAutomationPortRequestTarget) ||
       LowerCaseEqualsASCII(start, end, ext::kAutomationPortResponseTarget)) {
     extension_port_manager_.OnPortMessage(msg);
-    return S_OK;
+  } else {
+    LOG(ERROR) << "Unexpected message: '" << msg << "' to invalid target: "
+        << target;
   }
-
-  // TODO(siggi@chromium.org): What to do here?
-  LOG(ERROR) << "Unexpected message: '" << msg << "' to invalid target: "
-      << target;
-  return E_UNEXPECTED;
 }
-
 
 STDMETHODIMP_(void) BrowserHelperObject::OnBeforeNavigate2(
     IDispatch* webbrowser_disp, VARIANT* url, VARIANT* /*flags*/,
@@ -704,31 +723,35 @@ STDMETHODIMP_(void) BrowserHelperObject::OnBeforeNavigate2(
     return;
   }
 
-  // TODO(hansl@google.com): separate this method into an event and an Impl.
-  if (EnsureTabId() == false) {
-    VARIANT* null_param = NULL;
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnBeforeNavigate2,
-        webbrowser_disp, url, null_param, null_param, null_param, null_param,
-        reinterpret_cast<VARIANT_BOOL*>(NULL)));
-    return;
-  }
-
-  CComPtr<IWebBrowser2> webbrowser;
-  HRESULT hr = webbrowser_disp->QueryInterface(&webbrowser);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "OnBeforeNavigate2 failed to QI " << com::LogHr(hr);
-    return;
-  }
-
   if (V_VT(url) != VT_BSTR) {
     LOG(ERROR) << "OnBeforeNavigate2 url VT=" << V_VT(url);
     return;
   }
 
+  DCHECK(V_VT(url) == VT_BSTR);
+  CComBSTR url_bstr(url->bstrVal);
+  if (EnsureTabId() == false) {
+    VARIANT* null_param = NULL;
+    deferred_tab_id_call_.push_back(NewRunnableMethod(
+        this, &BrowserHelperObject::OnBeforeNavigate2Impl,
+        ScopedDispatchPtr(webbrowser_disp), url_bstr));
+  } else {
+    OnBeforeNavigate2Impl(ScopedDispatchPtr(webbrowser_disp), url_bstr);
+  }
+}
+
+void BrowserHelperObject::OnBeforeNavigate2Impl(
+    const ScopedDispatchPtr& webbrowser_disp, const CComBSTR& url) {
+  base::win::ScopedComPtr<IWebBrowser2> webbrowser;
+  HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "OnBeforeNavigate2 failed to QI " << com::LogHr(hr);
+    return;
+  }
+
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
-    (*iter)->OnBeforeNavigate(webbrowser, url->bstrVal);
+    (*iter)->OnBeforeNavigate(webbrowser, url);
   }
 
   // Notify the infobar executor on the event but only for the main browser.
@@ -744,7 +767,7 @@ STDMETHODIMP_(void) BrowserHelperObject::OnBeforeNavigate2(
     DCHECK(SUCCEEDED(hr)) << "Failed to get ICeeeInfobarExecutor interface " <<
         com::LogHr(hr);
     if (SUCCEEDED(hr)) {
-      infobar_executor->OnTopFrameBeforeNavigate(CComBSTR(url->bstrVal));
+      infobar_executor->OnTopFrameBeforeNavigate(url);
     }
   }
 }
@@ -756,15 +779,8 @@ STDMETHODIMP_(void) BrowserHelperObject::OnDocumentComplete(
     return;
   }
 
-  // TODO(hansl@google.com): separate this method into an event and an Impl.
-  if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnDocumentComplete, webbrowser_disp, url));
-    return;
-  }
-
-  CComPtr<IWebBrowser2> webbrowser;
-  HRESULT hr = webbrowser_disp->QueryInterface(&webbrowser);
+  ScopedWebBrowser2Ptr webbrowser;
+  HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
   if (FAILED(hr)) {
     LOG(ERROR) << "OnDocumentComplete failed to QI " << com::LogHr(hr);
     return;
@@ -775,9 +791,23 @@ STDMETHODIMP_(void) BrowserHelperObject::OnDocumentComplete(
     return;
   }
 
+  DCHECK(V_VT(url) == VT_BSTR);
+  CComBSTR url_bstr(url->bstrVal);
+
+  if (EnsureTabId() == false) {
+    deferred_tab_id_call_.push_back(NewRunnableMethod(
+        this, &BrowserHelperObject::OnDocumentCompleteImpl,
+        webbrowser, url_bstr));
+  } else {
+    OnDocumentCompleteImpl(webbrowser, url_bstr);
+  }
+}
+
+void BrowserHelperObject::OnDocumentCompleteImpl(
+    const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
-    (*iter)->OnDocumentComplete(webbrowser, url->bstrVal);
+    (*iter)->OnDocumentComplete(webbrowser, url);
   }
 }
 
@@ -788,15 +818,8 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateComplete2(
     return;
   }
 
-  // TODO(hansl@google.com): separate this method into an event and an Impl.
-  if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnNavigateComplete2, webbrowser_disp, url));
-    return;
-  }
-
-  CComPtr<IWebBrowser2> webbrowser;
-  HRESULT hr = webbrowser_disp->QueryInterface(&webbrowser);
+  ScopedWebBrowser2Ptr webbrowser;
+  HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
   if (FAILED(hr)) {
     LOG(ERROR) << "OnNavigateComplete2 failed to QI " << com::LogHr(hr);
     return;
@@ -807,11 +830,24 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateComplete2(
     return;
   }
 
-  HandleNavigateComplete(webbrowser, url->bstrVal);
+  DCHECK(V_VT(url) == VT_BSTR);
+  CComBSTR url_bstr(url->bstrVal);
+  if (EnsureTabId() == false) {
+    deferred_tab_id_call_.push_back(NewRunnableMethod(
+        this, &BrowserHelperObject::OnNavigateComplete2Impl,
+            webbrowser, url_bstr));
+  } else {
+    BrowserHelperObject::OnNavigateComplete2Impl(webbrowser, url_bstr);
+  }
+}
+
+void BrowserHelperObject::OnNavigateComplete2Impl(
+    const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
+  HandleNavigateComplete(webbrowser, url);
 
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
-    (*iter)->OnNavigateComplete(webbrowser, url->bstrVal);
+    (*iter)->OnNavigateComplete(webbrowser, url);
   }
 }
 
@@ -823,18 +859,8 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateError(
     return;
   }
 
-  // TODO(hansl@google.com): separate this method into an event and an Impl.
-  if (EnsureTabId() == false) {
-    VARIANT* null_param = NULL;
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnNavigateError,
-        webbrowser_disp, url, null_param, status_code,
-        reinterpret_cast<VARIANT_BOOL*>(NULL)));
-    return;
-  }
-
-  CComPtr<IWebBrowser2> webbrowser;
-  HRESULT hr = webbrowser_disp->QueryInterface(&webbrowser);
+  ScopedWebBrowser2Ptr webbrowser;
+  HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
   if (FAILED(hr)) {
     LOG(ERROR) << "OnNavigateError failed to QI " << com::LogHr(hr);
     return;
@@ -850,9 +876,25 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateError(
     return;
   }
 
+  DCHECK(V_VT(url) == VT_BSTR);
+  CComBSTR url_bstr(url->bstrVal);
+  DCHECK(V_VT(status_code) == VT_I4);
+  LONG status = status_code->lVal;
+  if (EnsureTabId() == false) {
+    deferred_tab_id_call_.push_back(NewRunnableMethod(
+        this, &BrowserHelperObject::OnNavigateErrorImpl,
+        webbrowser, url_bstr, status));
+  } else {
+    OnNavigateErrorImpl(webbrowser, url_bstr, status);
+  }
+}
+
+void BrowserHelperObject::OnNavigateErrorImpl(
+    const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url,
+    LONG status_code) {
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
-    (*iter)->OnNavigateError(webbrowser, url->bstrVal, status_code->lVal);
+    (*iter)->OnNavigateError(webbrowser, url, status_code);
   }
 }
 
@@ -1201,14 +1243,20 @@ HRESULT BrowserHelperObject::GetExtensionPortMessagingProvider(
 
 HRESULT BrowserHelperObject::InsertCode(BSTR code, BSTR file, BOOL all_frames,
                                         CeeeTabCodeType type) {
-  // TODO(hansl@google.com): separate this method into an event and an Impl.
   if (EnsureTabId() == false) {
     deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::InsertCode,
-        code, file, all_frames, type));
-    return S_OK;
+        this, &BrowserHelperObject::InsertCodeImpl,
+        code, file, all_frames == TRUE, type));
+  } else {
+    InsertCodeImpl(code, file, all_frames == TRUE, type);
   }
 
+  return S_OK;
+}
+
+void BrowserHelperObject::InsertCodeImpl(
+    const CComBSTR& code, const CComBSTR& file, bool all_frames,
+    CeeeTabCodeType type) {
   // If all_frames is false, we execute only in the top level frame.  Otherwise
   // we do the top level frame as well as all the inner frames.
   if (all_frames) {
@@ -1236,8 +1284,6 @@ HRESULT BrowserHelperObject::InsertCode(BSTR code, BSTR file, BOOL all_frames,
       // extension.  Clean this up once we support multiple extensions.
     }
   }
-
-  return S_OK;
 }
 
 HRESULT BrowserHelperObject::HandleReadyStateChanged(READYSTATE old_state,
