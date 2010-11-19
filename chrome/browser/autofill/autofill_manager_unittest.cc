@@ -891,6 +891,8 @@ TEST_F(AutoFillManagerTest, GetCombinedAutoFillAndAutocompleteSuggestions) {
   // This triggers the combined message send.
   std::vector<string16> suggestions;
   suggestions.push_back(ASCIIToUTF16("Jay"));
+  // This suggestion is a duplicate, and should be trimmed.
+  suggestions.push_back(ASCIIToUTF16("Elvis"));
   suggestions.push_back(ASCIIToUTF16("Jason"));
   rvh()->AutocompleteSuggestionsReturned(suggestions);
 

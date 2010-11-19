@@ -1791,11 +1791,8 @@ void RenderViewHost::AutocompleteSuggestionsReturned(
   for (size_t i = 0; i < suggestions.size(); ++i) {
     bool unique = true;
     for (size_t j = 0; j < autofill_values_.size(); ++j) {
-      // TODO(isherman): Why just when the label is empty?
-      // If the AutoFill label is empty, we need to make sure we don't add a
-      // duplicate value.
-      if (autofill_labels_[j].empty() &&
-          autofill_values_[j] == suggestions[i]) {
+      // Don't add duplicate values.
+      if (autofill_values_[j] == suggestions[i]) {
         unique = false;
         break;
       }
