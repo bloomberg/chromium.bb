@@ -16,7 +16,7 @@
 
 """Tool for uploading diffs from a version control system to the codereview app.
 
-Usage summary: upload.py [options] [-- diff_options]
+Usage summary: upload.py [options] [-- diff_options] [path...]
 
 Diff options are passed to the diff command of the underlying system.
 
@@ -447,7 +447,8 @@ class HttpRpcServer(AbstractRpcServer):
     return opener
 
 
-parser = optparse.OptionParser(usage="%prog [options] [-- diff_options]")
+parser = optparse.OptionParser(
+    usage="%prog [options] [-- diff_options] [path...]")
 parser.add_option("-y", "--assume_yes", action="store_true",
                   dest="assume_yes", default=False,
                   help="Assume that the answer to yes/no questions is 'yes'.")
@@ -457,7 +458,7 @@ group.add_option("-q", "--quiet", action="store_const", const=0,
                  dest="verbose", help="Print errors only.")
 group.add_option("-v", "--verbose", action="store_const", const=2,
                  dest="verbose", default=1,
-                 help="Print info level logs (default).")
+                 help="Print info level logs.")
 group.add_option("--noisy", action="store_const", const=3,
                  dest="verbose", help="Print all logs.")
 # Review server
@@ -555,7 +556,7 @@ def GetRpcServer(server, email=None, host_override=None, save_cookies=True,
 
   # If this is the dev_appserver, use fake authentication.
   host = (host_override or server).lower()
-  if host == "localhost" or host.startswith("localhost:"):
+  if re.match(r'(http://)?localhost([:/]|$)', host):
     if email is None:
       email = "test@example.com"
       logging.info("Using debug user %s.  Override with --email" % email)
@@ -867,7 +868,7 @@ class SubversionVCS(VersionControlSystem):
     return self.svn_base
 
   def _GuessBase(self, required):
-    """Returns the SVN base URL.
+    """Returns base URL for current diff.
 
     Args:
       required: If true, exits if the url can't be guessed, otherwise None is
@@ -875,36 +876,24 @@ class SubversionVCS(VersionControlSystem):
     """
     info = RunShell(["svn", "info"])
     for line in info.splitlines():
-      words = line.split()
-      if len(words) == 2 and words[0] == "URL:":
-        url = words[1]
+      if line.startswith("URL: "):
+        url = line.split()[1]
         scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
         username, netloc = urllib.splituser(netloc)
         if username:
           logging.info("Removed username from base URL")
-        if netloc.endswith("svn.python.org"):
-          if netloc == "svn.python.org":
-            if path.startswith("/projects/"):
-              path = path[9:]
-          elif netloc != "pythondev@svn.python.org":
-            ErrorExit("Unrecognized Python URL: %s" % url)
-          base = "http://svn.python.org/view/*checkout*%s/" % path
-          logging.info("Guessed Python base = %s", base)
-        elif netloc.endswith("svn.collab.net"):
-          if path.startswith("/repos/"):
-            path = path[6:]
-          base = "http://svn.collab.net/viewvc/*checkout*%s/" % path
-          logging.info("Guessed CollabNet base = %s", base)
+        guess = ""
+        if netloc == "svn.python.org" and scheme == "svn+ssh":
+          path = "projects" + path
+          scheme = "http"
+          guess = "Python "
         elif netloc.endswith(".googlecode.com"):
-          path = path + "/"
-          base = urlparse.urlunparse(("http", netloc, path, params,
-                                      query, fragment))
-          logging.info("Guessed Google Code base = %s", base)
-        else:
-          path = path + "/"
-          base = urlparse.urlunparse((scheme, netloc, path, params,
-                                      query, fragment))
-          logging.info("Guessed base = %s", base)
+          scheme = "http"
+          guess = "Google Code "
+        path = path + "/"
+        base = urlparse.urlunparse((scheme, netloc, path, params,
+                                    query, fragment))
+        logging.info("Guessed %sbase = %s", guess, base)
         return base
     if required:
       ErrorExit("Can't find URL in output from svn info")
@@ -1185,7 +1174,10 @@ class GitVCS(VersionControlSystem):
   def GenerateDiff(self, extra_args):
     extra_args = extra_args[:]
     if self.options.revision:
-      extra_args = [self.options.revision] + extra_args
+      if ":" in self.options.revision:
+        extra_args = self.options.revision.split(":", 1) + extra_args
+      else:
+        extra_args = [self.options.revision] + extra_args
 
     # --no-ext-diff is broken in some versions of Git, so try to work around
     # this by overriding the environment (but there is still a problem if the
@@ -1267,8 +1259,6 @@ class MercurialVCS(VersionControlSystem):
     return filename[len(self.subdir):].lstrip(r"\/")
 
   def GenerateDiff(self, extra_args):
-    # If no file specified, restrict to the current subdir
-    extra_args = extra_args or ["."]
     cmd = ["hg", "diff", "--git", "-r", self.base_rev] + extra_args
     data = RunShell(cmd, silent_ok=True)
     svndiff = []
@@ -1319,13 +1309,12 @@ class MercurialVCS(VersionControlSystem):
     # the working copy
     if out[0].startswith('%s: ' % relpath):
       out = out[1:]
-    if len(out) > 1:
+    status, _ = out[0].split(' ', 1)
+    if len(out) > 1 and status == "A":
       # Moved/copied => considered as modified, use old filename to
       # retrieve base contents
       oldrelpath = out[1].strip()
       status = "M"
-    else:
-      status, _ = out[0].split(' ', 1)
     if ":" in self.base_rev:
       base_rev = self.base_rev.split(":", 1)[0]
     else:
@@ -1522,8 +1511,10 @@ def LoadSubversionAutoProperties():
       - config file doesn't exist, or
       - 'enable-auto-props' is not set to 'true-like-value' in [miscellany].
   """
-  # Todo(hayato): Windows users might use different path for configuration file.
-  subversion_config = os.path.expanduser("~/.subversion/config")
+  if os.name == 'nt':
+    subversion_config = os.environ.get("APPDATA") + "\\Subversion\\config"
+  else:
+    subversion_config = os.path.expanduser("~/.subversion/config")
   if not os.path.exists(subversion_config):
     return {}
   config = ConfigParser.ConfigParser()
