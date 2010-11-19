@@ -212,10 +212,10 @@ class DownloadItem {
   // target_name_ possibly with the uniquifier number.
   FilePath GetFileNameToReportUser() const;
 
-  // Returns the user-verified target name for the download.
-  // This returns the same path as target_name() for safe downloads
+  // Returns the user-verified target file path for the download.
+  // This returns the same path as GetTargetFilePath() for safe downloads
   // but does not for dangerous downloads until the name is verified.
-  FilePath GetUserVerifiedFileName() const;
+  FilePath GetUserVerifiedFilePath() const;
 
   // Returns true if the current file name is not the final target name yet.
   bool NeedsRename() const {

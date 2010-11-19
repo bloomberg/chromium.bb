@@ -202,8 +202,8 @@ class DownloadItemGtk : public DownloadItem::Observer,
   SkBitmap* icon_small_;
   SkBitmap* icon_large_;
 
-  // The last download file name for which we requested an icon.
-  FilePath icon_filename_;
+  // The last download file path for which we requested an icon.
+  FilePath icon_filepath_;
 
   NotificationRegistrar registrar_;
 

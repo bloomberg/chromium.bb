@@ -54,8 +54,8 @@ class DownloadItemMac : DownloadItem::Observer {
   // For canceling an in progress icon request.
   CancelableRequestConsumerT<int, 0> icon_consumer_;
 
-  // Stores the last known name where the file will be saved.
-  FilePath lastFileName_;
+  // Stores the last known path where the file will be saved.
+  FilePath lastFilePath_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemMac);
 };

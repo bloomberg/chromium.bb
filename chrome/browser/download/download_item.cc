@@ -169,15 +169,15 @@ bool DownloadItem::CanOpenDownload() {
 
 bool DownloadItem::ShouldOpenFileBasedOnExtension() {
   return download_manager_->ShouldOpenFileBasedOnExtension(
-      GetUserVerifiedFileName());
+      GetUserVerifiedFilePath());
 }
 
 void DownloadItem::OpenFilesBasedOnExtension(bool open) {
   DownloadPrefs* prefs = download_manager_->download_prefs();
   if (open)
-    prefs->EnableAutoOpenBasedOnExtension(GetUserVerifiedFileName());
+    prefs->EnableAutoOpenBasedOnExtension(GetUserVerifiedFilePath());
   else
-    prefs->DisableAutoOpenBasedOnExtension(GetUserVerifiedFileName());
+    prefs->DisableAutoOpenBasedOnExtension(GetUserVerifiedFilePath());
 }
 
 void DownloadItem::OpenDownload() {
@@ -277,7 +277,7 @@ void DownloadItem::Finished() {
     auto_opened_ = true;
   } else if (open_when_complete() ||
              download_manager_->ShouldOpenFileBasedOnExtension(
-                 GetUserVerifiedFileName()) ||
+                 GetUserVerifiedFilePath()) ||
              is_temporary()) {
     // If the download is temporary, like in drag-and-drop, do not open it but
     // we still need to set it auto-opened so that it can be removed from the
@@ -431,10 +431,10 @@ FilePath DownloadItem::GetFileNameToReportUser() const {
   return target_name_;
 }
 
-FilePath DownloadItem::GetUserVerifiedFileName() const {
+FilePath DownloadItem::GetUserVerifiedFilePath() const {
   if (safety_state_ == DownloadItem::SAFE)
-    return target_name_;
-  return full_path_.BaseName();
+    return GetTargetFilePath();
+  return full_path_;
 }
 
 void DownloadItem::Init(bool start_timer) {

@@ -355,7 +355,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
     parent_shelf_->MaybeShowMoreDownloadItems();
   }
 
-  if (download->GetUserVerifiedFileName() != icon_filename_) {
+  if (download->GetUserVerifiedFilePath() != icon_filepath_) {
     // Turns out the file path is "unconfirmed %d.crdownload" for dangerous
     // downloads. When the download is confirmed, the file is renamed on
     // another thread, so reload the icon if the download filename changes.
@@ -510,11 +510,11 @@ void DownloadItemGtk::OnLoadLargeIconComplete(IconManager::Handle handle,
 void DownloadItemGtk::LoadIcon() {
   icon_consumer_.CancelAllRequests();
   IconManager* im = g_browser_process->icon_manager();
-  icon_filename_ = get_download()->GetUserVerifiedFileName();
-  im->LoadIcon(icon_filename_,
+  icon_filepath_ = get_download()->GetUserVerifiedFilePath();
+  im->LoadIcon(icon_filepath_,
                IconLoader::SMALL, &icon_consumer_,
                NewCallback(this, &DownloadItemGtk::OnLoadSmallIconComplete));
-  im->LoadIcon(icon_filename_,
+  im->LoadIcon(icon_filepath_,
                IconLoader::LARGE, &icon_consumer_,
                NewCallback(this, &DownloadItemGtk::OnLoadLargeIconComplete));
 }
