@@ -19,7 +19,7 @@ TestingPrefService::TestingPrefValueStore::TestingPrefValueStore(
     PrefStore* default_prefs)
     : PrefValueStore(managed_platform_prefs, device_management_prefs,
                      extension_prefs, command_line_prefs,
-                     user_prefs, recommended_prefs, default_prefs) {
+                     user_prefs, recommended_prefs, default_prefs, NULL) {
 }
 
 // TODO(pamg): Instantiate no PrefStores by default. Allow callers to specify

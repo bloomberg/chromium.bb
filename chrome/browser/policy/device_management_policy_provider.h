@@ -18,6 +18,8 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 
+class TokenService;
+
 namespace policy {
 
 class DeviceManagementBackend;
@@ -33,8 +35,11 @@ class DeviceManagementPolicyProvider
        public DeviceManagementBackend::DevicePolicyResponseDelegate,
        public base::SupportsWeakPtr<DeviceManagementPolicyProvider> {
  public:
-  explicit DeviceManagementPolicyProvider(
-      const PolicyDefinitionList* policy_list);
+  DeviceManagementPolicyProvider(const PolicyDefinitionList* policy_list,
+                                 DeviceManagementBackend* backend,
+                                 TokenService* token_service,
+                                 const FilePath& storage_dir);
+
   virtual ~DeviceManagementPolicyProvider();
 
   // ConfigurationPolicyProvider implementation:
@@ -54,18 +59,9 @@ class DeviceManagementPolicyProvider
   // server and no response or error has yet been received.
   bool IsPolicyRequestPending() const { return policy_request_pending_; }
 
- protected:
-  friend class DeviceManagementPolicyProviderTest;
-
-  // Called only by unit tests, this constructor allows the caller to specify in
-  // |backend| the device management backend to which policy requests are
-  // sent. The provider takes over ownership of |backend|.  The directory
-  // specified in |storage_dir| is used to store the device token and persisted
-  // policy, rather than the user's data directory.
-  DeviceManagementPolicyProvider(
-      const PolicyDefinitionList* policy_list,
-      DeviceManagementBackend* backend,
-      const FilePath& storage_dir);
+  // Tells the provider that the passed in token service reference is about to
+  // become invalid.
+  void Shutdown();
 
  private:
   class InitializeAfterIOThreadExistsTask;
@@ -102,6 +98,7 @@ class DeviceManagementPolicyProvider
       const FilePath& user_data_dir);
 
   scoped_ptr<DeviceManagementBackend> backend_;
+  TokenService* token_service_; // weak
   scoped_ptr<DeviceManagementPolicyCache> cache_;
   scoped_refptr<DeviceTokenFetcher> token_fetcher_;
   NotificationRegistrar registrar_;

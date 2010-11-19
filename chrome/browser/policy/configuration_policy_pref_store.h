@@ -17,6 +17,8 @@
 #include "chrome/browser/policy/configuration_policy_store_interface.h"
 #include "chrome/common/pref_store.h"
 
+class Profile;
+
 namespace policy {
 
 // An implementation of the |PrefStore| that holds a Dictionary
@@ -43,7 +45,8 @@ class ConfigurationPolicyPrefStore : public PrefStore,
 
   // Creates a ConfigurationPolicyPrefStore that supplies policy from
   // the device management server.
-  static ConfigurationPolicyPrefStore* CreateDeviceManagementPolicyPrefStore();
+  static ConfigurationPolicyPrefStore* CreateDeviceManagementPolicyPrefStore(
+      Profile* profile);
 
   // Creates a ConfigurationPolicyPrefStore that reads recommended policy.
   static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();

@@ -124,6 +124,8 @@ class ProfileImpl : public Profile,
   virtual ExtensionInfoMap* GetExtensionInfoMap();
   virtual PromoCounter* GetInstantPromoCounter();
   virtual BrowserSignin* GetBrowserSignin();
+  virtual policy::DeviceManagementPolicyProvider*
+      GetDeviceManagementPolicyProvider();
 
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
@@ -270,6 +272,9 @@ class ProfileImpl : public Profile,
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
+
+  scoped_ptr<policy::DeviceManagementPolicyProvider>
+      device_management_policy_provider_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::Preferences> chromeos_preferences_;

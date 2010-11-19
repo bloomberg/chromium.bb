@@ -582,6 +582,11 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetExtensionInfoMap();
   }
 
+  virtual policy::DeviceManagementPolicyProvider*
+      GetDeviceManagementPolicyProvider() {
+    return NULL;
+  }
+
   virtual PromoCounter* GetInstantPromoCounter() {
     return NULL;
   }

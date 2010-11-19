@@ -172,7 +172,7 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // that conflict with proxy settings specified by proxy policy.
   bool HasPolicyConflictingUserProxySettings();
 
-      protected:
+ protected:
   // In decreasing order of precedence:
   //   |managed_platform_prefs| contains all managed platform (non-cloud policy)
   //        preference values.
@@ -186,6 +186,14 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   //   |default_prefs| contains application-default preference values. It must
   //        be non-null if any preferences are to be registered.
   //
+  // The |profile| parameter is used to construct a replacement device
+  // management pref store in case of policy refresh, may be NULL for the local
+  // state preferences.
+  //
+  // TODO(mnissler, danno): Refactor the pref store interface and refresh logic
+  // so refreshes can be handled by the pref store itself and the profile
+  // parameter be removed here.
+  //
   // This constructor should only be used internally, or by subclasses in
   // testing. The usual way to create a PrefValueStore is by creating a
   // PrefService.
@@ -195,18 +203,15 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
                  PrefStore* command_line_prefs,
                  PrefStore* user_prefs,
                  PrefStore* recommended_prefs,
-                 PrefStore* default_prefs);
+                 PrefStore* default_prefs,
+                 Profile* profile);
 
  private:
+  typedef std::map<std::string, Value::ValueType> PrefTypeMap;
+
   friend class PrefValueStoreTest;
   FRIEND_TEST_ALL_PREFIXES(PrefValueStoreTest,
                            TestRefreshPolicyPrefsCompletion);
-
-  scoped_ptr<PrefStore> pref_stores_[PrefNotifier::PREF_STORE_TYPE_MAX + 1];
-
-  // A mapping of preference names to their registered types.
-  typedef std::map<std::string, Value::ValueType> PrefTypeMap;
-  PrefTypeMap pref_types_;
 
   // Returns true if the preference with the given name has a value in the
   // given PrefStoreType, of the same value type as the preference was
@@ -236,6 +241,14 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
       PrefStore* new_device_management_pref_store,
       PrefStore* new_recommended_pref_store,
       AfterRefreshCallback* callback);
+
+  scoped_ptr<PrefStore> pref_stores_[PrefNotifier::PREF_STORE_TYPE_MAX + 1];
+
+  // A mapping of preference names to their registered types.
+  PrefTypeMap pref_types_;
+
+  // The associated profile, if applicable.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };

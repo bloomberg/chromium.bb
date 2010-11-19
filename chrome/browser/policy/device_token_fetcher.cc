@@ -23,18 +23,21 @@ namespace em = enterprise_management;
 
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementBackend* backend,
+    TokenService* token_service,
     const FilePath& token_path)
     : token_path_(token_path),
       backend_(backend),
+      token_service_(token_service),
       state_(kStateNotStarted),
       device_token_load_complete_event_(true, false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // The token fetcher gets initialized AuthTokens for the device management
-  // server are available. Install a notification observer to ensure that the
-  // device management token gets fetched after the AuthTokens are available.
+
+  auth_token_ = token_service_->GetTokenForService(
+      GaiaConstants::kDeviceManagementService);
+
   registrar_.Add(this,
                  NotificationType::TOKEN_AVAILABLE,
-                 NotificationService::AllSources());
+                 Source<TokenService>(token_service_));
 }
 
 void DeviceTokenFetcher::Observe(NotificationType type,
@@ -42,13 +45,14 @@ void DeviceTokenFetcher::Observe(NotificationType type,
                                  const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (type == NotificationType::TOKEN_AVAILABLE) {
-    const Source<TokenService> token_service(source);
-    const TokenService::TokenAvailableDetails* token_details =
-        Details<const TokenService::TokenAvailableDetails>(details).ptr();
-    if (token_details->service() == GaiaConstants::kDeviceManagementService) {
-      if (!HasAuthToken()) {
-        auth_token_ = token_details->token();
-        SendServerRequestIfPossible();
+    if (Source<TokenService>(source).ptr() == token_service_) {
+      const TokenService::TokenAvailableDetails* token_details =
+          Details<const TokenService::TokenAvailableDetails>(details).ptr();
+      if (token_details->service() == GaiaConstants::kDeviceManagementService) {
+        if (!HasAuthToken()) {
+          auth_token_ = token_details->token();
+          SendServerRequestIfPossible();
+        }
       }
     }
   } else {
@@ -102,6 +106,11 @@ void DeviceTokenFetcher::StartFetching() {
   }
 }
 
+void DeviceTokenFetcher::Shutdown() {
+  token_service_ = NULL;
+  backend_ = NULL;
+}
+
 void DeviceTokenFetcher::AttemptTokenLoadFromDisk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (file_util::PathExists(token_path_)) {
@@ -139,7 +148,8 @@ void DeviceTokenFetcher::MakeReadyToRequestDeviceToken() {
 void DeviceTokenFetcher::SendServerRequestIfPossible() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == kStateReadyToRequestDeviceTokenFromServer
-      && HasAuthToken()) {
+      && HasAuthToken()
+      && backend_) {
     em::DeviceRegisterRequest register_request;
     SetState(kStateRequestingDeviceTokenFromServer);
     backend_->ProcessRegisterRequest(auth_token_,

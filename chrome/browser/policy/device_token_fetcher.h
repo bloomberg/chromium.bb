@@ -15,6 +15,8 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class TokenService;
+
 namespace policy {
 
 namespace em = enterprise_management;
@@ -35,6 +37,7 @@ class DeviceTokenFetcher
   // the device token once it's retrieved from the server. Should only be called
   // by unit tests.
   DeviceTokenFetcher(DeviceManagementBackend* backend,
+                     TokenService* token_service,
                      const FilePath& token_path);
   virtual ~DeviceTokenFetcher() {}
 
@@ -51,6 +54,10 @@ class DeviceTokenFetcher
   // Called by subscribers of the device management token to indicate that they
   // will need the token in the future. Must be called on the UI thread.
   void StartFetching();
+
+  // Instructs the fetcher to shut down, before the backend and token service
+  // references become stale.
+  void Shutdown();
 
   // Returns true if there is a pending token request to the device management
   // server.
@@ -121,6 +128,7 @@ class DeviceTokenFetcher
 
   FilePath token_path_;
   DeviceManagementBackend* backend_;  // weak
+  TokenService* token_service_;
   FetcherState state_;
   std::string device_token_;
   std::string device_id_;

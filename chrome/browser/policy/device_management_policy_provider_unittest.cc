@@ -13,9 +13,10 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/policy_constants.h"
-#include "chrome/test/device_management_test_util.h"
 #include "chrome/test/mock_notification_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+const char kTestToken[] = "device_policy_provider_test_auth_token";
 
 namespace policy {
 
@@ -42,16 +43,19 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
   }
 
   void CreateNewProvider() {
+    token_service_.reset(new TokenService);
     provider_.reset(new DeviceManagementPolicyProvider(
         ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
         backend_,
+        token_service_.get(),
         storage_dir_.path()));
     loop_.RunAllPending();
   }
 
   void SimulateSuccessfulLoginAndRunPending() {
     loop_.RunAllPending();
-    SimulateSuccessfulLogin();
+    token_service_->IssueAuthTokenForTest(
+        GaiaConstants::kDeviceManagementService, kTestToken);
     loop_.RunAllPending();
   }
 
@@ -81,6 +85,7 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
   ScopedTempDir storage_dir_;
+  scoped_ptr<TokenService> token_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementPolicyProviderTest);
 };

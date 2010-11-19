@@ -11,12 +11,14 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/test/device_management_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
+
+const char kTestToken[] = "device_token_fetcher_test_auth_token";
 
 using testing::_;
 using testing::Mock;
@@ -46,19 +48,24 @@ class DeviceTokenFetcherTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    backend_.reset();
+    token_service_.reset();
     loop_.RunAllPending();
   }
 
   void SimulateSuccessfulLoginAndRunPending() {
     loop_.RunAllPending();
-    SimulateSuccessfulLogin();
+    token_service_->IssueAuthTokenForTest(
+        GaiaConstants::kDeviceManagementService, kTestToken);
     loop_.RunAllPending();
   }
 
   DeviceTokenFetcher* NewTestFetcher(const FilePath& token_dir) {
+    token_service_.reset(new TokenService);
     backend_.reset(new MockDeviceManagementBackend());
     return new DeviceTokenFetcher(
         backend_.get(),
+        token_service_.get(),
         token_dir.Append(FILE_PATH_LITERAL("test-token-file.txt")));
   }
 
@@ -72,6 +79,7 @@ class DeviceTokenFetcherTest : public testing::Test {
   }
 
   MessageLoop loop_;
+  scoped_ptr<TokenService> token_service_;
   scoped_ptr<MockDeviceManagementBackend> backend_;
   ScopedTempDir temp_user_data_dir_;
   scoped_refptr<DeviceTokenFetcher> fetcher_;
@@ -101,7 +109,7 @@ TEST_F(DeviceTokenFetcherTest, StoreAndLoad) {
   FilePath token_path;
   GetDeviceTokenPath(fetcher_, &token_path);
   scoped_refptr<DeviceTokenFetcher> fetcher2(
-      new DeviceTokenFetcher(backend_.get(), token_path));
+      new DeviceTokenFetcher(backend_.get(), token_service_.get(), token_path));
   fetcher2->StartFetching();
   loop_.RunAllPending();
   ASSERT_EQ(device_id, fetcher2->GetDeviceID());

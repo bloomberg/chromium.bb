@@ -54,14 +54,16 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
     managed =
         ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore();
     device_management =
-        ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore();
+        ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
+            profile);
     extension = new ExtensionPrefStore(profile, PrefNotifier::EXTENSION_STORE);
     command_line = new CommandLinePrefStore(CommandLine::ForCurrentProcess());
     recommended =
         ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
   }
   return new PrefValueStore(managed, device_management, extension,
-                            command_line, user, recommended, default_store);
+                            command_line, user, recommended, default_store,
+                            profile);
 }
 
 PrefValueStore::~PrefValueStore() {}
@@ -428,7 +430,8 @@ void PrefValueStore::RefreshPolicyPrefs(
   PrefStore* new_managed_platform_pref_store(
       ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore());
   PrefStore* new_device_management_pref_store(
-      ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore());
+      ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
+          profile_));
   PrefStore* new_recommended_pref_store(
       ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore());
   BrowserThread::ID current_thread_id;
@@ -466,7 +469,9 @@ PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
                                PrefStore* command_line_prefs,
                                PrefStore* user_prefs,
                                PrefStore* recommended_prefs,
-                               PrefStore* default_prefs) {
+                               PrefStore* default_prefs,
+                               Profile* profile)
+    : profile_(profile) {
   // NULL default pref store is usually bad, but may be OK for some unit tests.
   if (!default_prefs)
     LOG(WARNING) << "default pref store is null";

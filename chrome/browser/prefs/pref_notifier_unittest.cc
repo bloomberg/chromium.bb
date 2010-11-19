@@ -62,7 +62,7 @@ class MockPrefValueStore : public PrefValueStore {
  public:
   MockPrefValueStore()
       : PrefValueStore(NULL, NULL, NULL, NULL, NULL, NULL,
-                       new DefaultPrefStore()) {}
+                       new DefaultPrefStore(), NULL) {}
 
   virtual ~MockPrefValueStore() {}
 

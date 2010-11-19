@@ -1627,8 +1627,6 @@
         'test/browser_with_test_window_test.cc',
         'test/browser_with_test_window_test.h',
         'test/data/resource.rc',
-        'test/device_management_test_util.cc',
-        'test/device_management_test_util.h',
         'test/file_test_utils.cc',
         'test/file_test_utils.h',
         'test/menu_model_test.cc',

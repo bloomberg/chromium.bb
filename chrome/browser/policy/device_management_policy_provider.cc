@@ -56,22 +56,13 @@ class DeviceManagementPolicyProvider::InitializeAfterIOThreadExistsTask
 DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
     const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
     DeviceManagementBackend* backend,
+    TokenService* token_service,
     const FilePath& storage_dir)
     : ConfigurationPolicyProvider(policy_list),
       backend_(backend),
+      token_service_(token_service),
       storage_dir_(GetOrCreateDeviceManagementDir(storage_dir)),
       policy_request_pending_(false) {
-  Initialize();
-}
-
-DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list)
-    : ConfigurationPolicyProvider(policy_list),
-      policy_request_pending_(false) {
-  FilePath user_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_dir))
-    NOTREACHED();
-  storage_dir_ = GetOrCreateDeviceManagementDir(user_dir);
   Initialize();
 }
 
@@ -88,11 +79,11 @@ void DeviceManagementPolicyProvider::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  if ((type == NotificationType::DEVICE_TOKEN_AVAILABLE) &&
-      (token_fetcher_.get() == Source<DeviceTokenFetcher>(source).ptr())) {
-    if (!policy_request_pending_) {
-      if (IsPolicyStale())
-        SendPolicyRequest();
+  if (type == NotificationType::DEVICE_TOKEN_AVAILABLE) {
+    if (token_fetcher_.get() == Source<DeviceTokenFetcher>(source).ptr() &&
+        !policy_request_pending_ &&
+        IsPolicyStale()) {
+      SendPolicyRequest();
     }
   } else {
     NOTREACHED();
@@ -112,6 +103,12 @@ void DeviceManagementPolicyProvider::OnError(
                << code << ")";
   policy_request_pending_ = false;
   // TODO(danno): do something sensible in the error case, perhaps retry later?
+}
+
+void DeviceManagementPolicyProvider::Shutdown() {
+  token_service_ = NULL;
+  if (token_fetcher_)
+    token_fetcher_->Shutdown();
 }
 
 DeviceManagementBackend* DeviceManagementPolicyProvider::GetBackend() {
@@ -141,8 +138,11 @@ void DeviceManagementPolicyProvider::Initialize() {
 void DeviceManagementPolicyProvider::InitializeAfterIOThreadExists() {
   const FilePath token_path = storage_dir_.Append(
       FILE_PATH_LITERAL("Token"));
-  token_fetcher_ = new DeviceTokenFetcher(GetBackend(), token_path);
-  token_fetcher_->StartFetching();
+  if (token_service_) {
+    token_fetcher_ =
+        new DeviceTokenFetcher(GetBackend(), token_service_, token_path);
+    token_fetcher_->StartFetching();
+  }
 }
 
 void DeviceManagementPolicyProvider::SendPolicyRequest() {

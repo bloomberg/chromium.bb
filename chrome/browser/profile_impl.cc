@@ -54,6 +54,10 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/device_management_backend_impl.h"
+#include "chrome/browser/policy/device_management_policy_provider.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -509,6 +513,10 @@ ProfileImpl::~ProfileImpl() {
 
   // Delete the NTP resource cache so we can unregister pref observers.
   ntp_resource_cache_.reset();
+
+  // Shut down the DM policy provider before the token service dies.
+  if (device_management_policy_provider_.get())
+    device_management_policy_provider_->Shutdown();
 
   // The sync service needs to be deleted before the services it calls.
   sync_service_.reset();
@@ -1309,6 +1317,26 @@ ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
 
 ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {
   return extension_info_map_.get();
+}
+
+policy::DeviceManagementPolicyProvider*
+ProfileImpl::GetDeviceManagementPolicyProvider() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDeviceManagementUrl))
+    return NULL;
+
+  if (!device_management_policy_provider_.get()) {
+    device_management_policy_provider_.reset(
+        new policy::DeviceManagementPolicyProvider(
+            policy::ConfigurationPolicyPrefStore::
+                GetChromePolicyDefinitionList(),
+            new policy::DeviceManagementBackendImpl(
+                command_line->GetSwitchValueASCII(
+                    switches::kDeviceManagementUrl)),
+            GetTokenService(),
+            GetPath()));
+  }
+  return device_management_policy_provider_.get();
 }
 
 PromoCounter* ProfileImpl::GetInstantPromoCounter() {
