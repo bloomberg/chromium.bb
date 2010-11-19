@@ -61,6 +61,7 @@ struct WebPreferences {
   bool user_style_sheet_enabled;
   GURL user_style_sheet_location;
   bool author_and_user_styles_enabled;
+  bool frame_flattening_enabled;
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;
   bool experimental_webgl_enabled;

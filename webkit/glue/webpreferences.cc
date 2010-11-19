@@ -57,6 +57,7 @@ WebPreferences::WebPreferences()
       hyperlink_auditing_enabled(true),
       user_style_sheet_enabled(false),
       author_and_user_styles_enabled(true),
+      frame_flattening_enabled(false),
       allow_universal_access_from_file_urls(false),
       allow_file_access_from_file_urls(false),
       experimental_webgl_enabled(false),
@@ -116,6 +117,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Safari uses the same default. It is unlikley an embedder would want to
   // change this, since it would break existing rich text editors.
   settings->setEditableLinkBehaviorNeverLive();
+
+  settings->setFrameFlatteningEnabled(frame_flattening_enabled);
 
   settings->setFontRenderingModeNormal();
   settings->setJavaEnabled(java_enabled);
