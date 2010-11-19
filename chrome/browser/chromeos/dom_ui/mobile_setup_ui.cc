@@ -213,6 +213,9 @@ class MobileSetupHandler
                    const std::string& error_description);
   // Prepares network devices for cellular activation process.
   void SetupActivationProcess(chromeos::CellularNetwork* network);
+  // Disables ethernet and wifi newtorks since they interefere with
+  // detection of restricted pool on cellular side.
+  void DisableOtherNetworks();
   // Resets network devices after cellular activation process.
   // |network| should be NULL if the activation process failed.
   void CompleteActivation(chromeos::CellularNetwork* network);
@@ -617,6 +620,9 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     }
     case PLAN_ACTIVATION_RECONNECTING: {
       if (network->connected()) {
+        // Make sure other networks are not interfering with our detection of
+        // restricted pool.
+        DisableOtherNetworks();
         // Wait until the service shows up and gets activated.
         switch (network->activation_state()) {
           case chromeos::ACTIVATION_STATE_ACTIVATED:
@@ -810,7 +816,6 @@ void MobileSetupHandler::ReEnableOtherConnections() {
   }
 }
 
-
 void MobileSetupHandler::SetupActivationProcess(
     chromeos::CellularNetwork* network) {
   if (!network)
@@ -832,17 +837,22 @@ void MobileSetupHandler::SetupActivationProcess(
   network->set_auto_connect(false);
   lib->SaveCellularNetwork(network);
 
+  DisableOtherNetworks();
+}
+
+bool MobileSetupHandler::DisableOtherNetworks() {
+  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary();
   // Disable ethernet and wifi.
-  if (!reenable_ethernet_ && lib->ethernet_enabled()) {
+  if (lib->ethernet_enabled()) {
     reenable_ethernet_ = true;
     lib->EnableEthernetNetworkDevice(false);
   }
-  if (!reenable_wifi_ && lib->wifi_enabled()) {
+  if (lib->wifi_enabled()) {
     reenable_wifi_ = true;
     lib->EnableWifiNetworkDevice(false);
   }
 }
-
 
 bool MobileSetupHandler::GotActivationError(
     const chromeos::CellularNetwork* network, std::string* error) {
