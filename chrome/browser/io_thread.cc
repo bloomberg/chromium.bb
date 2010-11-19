@@ -443,11 +443,16 @@ void IOThread::RegisterPrefs(PrefService* local_state) {
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
     net::HostResolver* resolver) {
-
-  net::HttpAuthFilterWhitelist* auth_filter_default_credentials =
-      new net::HttpAuthFilterWhitelist(auth_server_whitelist_);
-  net::HttpAuthFilterWhitelist* auth_filter_delegate =
-      new net::HttpAuthFilterWhitelist(auth_delegate_whitelist_);
+  net::HttpAuthFilterWhitelist* auth_filter_default_credentials = NULL;
+  if (!auth_server_whitelist_.empty()) {
+    auth_filter_default_credentials =
+        new net::HttpAuthFilterWhitelist(auth_server_whitelist_);
+  }
+  net::HttpAuthFilterWhitelist* auth_filter_delegate = NULL;
+  if (!auth_delegate_whitelist_.empty()) {
+    auth_filter_delegate =
+        new net::HttpAuthFilterWhitelist(auth_delegate_whitelist_);
+  }
   globals_->url_security_manager.reset(
       net::URLSecurityManager::Create(auth_filter_default_credentials,
                                       auth_filter_delegate));
