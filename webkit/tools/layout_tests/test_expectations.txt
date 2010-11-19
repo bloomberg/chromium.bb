@@ -5,10 +5,5 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-BUG_LEVIN : fast/dom/StyleSheet/gc-inline-style-cssvalues.html = TEXT
-BUG_LEVIN : fast/dom/StyleSheet/gc-styleheet-wrapper.xhtml = TEXT
-
-// Due to r66721, which reverted a context menu change to attempt to fix
-// crashes on Windows.
-BUG63460 : editing/selection/context-menu-on-text.html = TEXT
-BUG63460 : editing/spelling/context-menu-suggestions.html = TEXT
+BUG_LEVIN MAC : fast/ruby/nested-ruby.html = IMAGE
+BUG_LEVIN WIN LINUX : fast/ruby/nested-ruby.html = IMAGE+TEXT
