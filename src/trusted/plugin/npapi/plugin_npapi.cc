@@ -239,6 +239,7 @@ NPError PluginNpapi::GetValue(NPPVariable variable, void* value) {
     case NPPVpluginUrlRequestsDisplayedBool:
     case NPPVpluginWantsAllNetworkStreams:
     case NPPVpluginCancelSrcStream:
+    case NPPVSupportsAdvancedKeyHandling:
 #ifdef XP_MACOSX
     // Mac has several drawing, event, etc. models in NPAPI that are unique.
     case NPPVpluginDrawingModel:
