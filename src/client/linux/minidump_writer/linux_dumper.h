@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -164,6 +164,17 @@ class LinuxDumper {
  private:
   bool EnumerateMappings(wasteful_vector<MappingInfo*>* result) const;
   bool EnumerateThreads(wasteful_vector<pid_t>* result) const;
+
+  // For the case where a running program has been deleted, it'll show up in
+  // /proc/pid/maps as "/path/to/program (deleted)". If this is the case, then
+  // see if '/path/to/program (deleted)' matches /proc/pid/exe and return
+  // /proc/pid/exe in |path| so ELF identifier generation works correctly. This
+  // also checks to see if '/path/to/program (deleted)' exists, so it does not
+  // get fooled by a poorly named binary.
+  // For programs that don't end with ' (deleted)', this is a no-op.
+  // This assumes |path| is a buffer with length NAME_MAX.
+  // Returns true if |path| is modified.
+  bool HandleDeletedFileInMapping(char* path);
 
   const pid_t pid_;
 
