@@ -692,6 +692,38 @@ class TestingAutomationProvider : public AutomationProvider,
                                 DictionaryValue* args,
                                 IPC::Message* reply_message);
 
+  // Gets info about the elements in the NTP.
+  // Uses the JSON interface for input/output.
+  void GetNTPInfo(Browser* browser,
+                  DictionaryValue* args,
+                  IPC::Message* reply_message);
+
+  // Moves a thumbnail in the NTP's Most Visited sites section to a different
+  // index.
+  // Uses the JSON interface for input/output.
+  void MoveNTPMostVisitedThumbnail(Browser* browser,
+                                   DictionaryValue* args,
+                                   IPC::Message* reply_message);
+
+  // Removes a thumbnail from the NTP's Most Visited sites section.
+  // Uses the JSON interface for input/output.
+  void RemoveNTPMostVisitedThumbnail(Browser* browser,
+                                     DictionaryValue* args,
+                                     IPC::Message* reply_message);
+
+  // Unpins a thumbnail in the NTP's Most Visited sites section.
+  // Uses the JSON interface for input/output.
+  void UnpinNTPMostVisitedThumbnail(Browser* browser,
+                                    DictionaryValue* args,
+                                    IPC::Message* reply_message);
+
+  // Restores all thumbnails that have been removed (i.e., blacklisted) from the
+  // NTP's Most Visited sites section.
+  // Uses the JSON interface for input/output.
+  void RestoreAllNTPMostVisitedThumbnails(Browser* browser,
+                                          DictionaryValue* args,
+                                          IPC::Message* reply_message);
+
   void WaitForTabCountToBecome(int browser_handle,
                                int target_tab_count,
                                IPC::Message* reply_message);

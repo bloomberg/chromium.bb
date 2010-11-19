@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -47,6 +48,12 @@ class NewTabUI : public DOMUI,
   static void SetURLTitleAndDirection(DictionaryValue* dictionary,
                                       const string16& title,
                                       const GURL& gurl);
+
+  // Converts a list of TabRestoreService entries to the JSON format required
+  // by the NTP and adds them to the given list value.
+  static void AddRecentlyClosedEntries(
+      const TabRestoreService::Entries& entries,
+      ListValue* entry_list_value);
 
   // The current preference version.
   static int current_pref_version() { return current_pref_version_; }

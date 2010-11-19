@@ -670,6 +670,13 @@ class NotificationType {
     // details the TopSites.
     TOP_SITES_LOADED,
 
+    // Sent by TopSites when it has finished updating its most visited URLs
+    // cache after querying the history service. The source is the TopSites and
+    // the details a CancelableRequestProvider::Handle from the history service
+    // query.
+    // Used only in testing.
+    TOP_SITES_UPDATED,
+
     // Thumbnails---------------------------------------------------------------
 
     // Sent by the ThumbnailGenerator whenever a render widget host

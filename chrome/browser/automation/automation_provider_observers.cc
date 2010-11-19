@@ -22,11 +22,14 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/dom_ui/most_visited_handler.h"
+#include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_updater.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -35,6 +38,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -47,6 +51,7 @@
 #include "chrome/common/notification_service.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/rect.h"
+#include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
@@ -1402,6 +1407,90 @@ void PageSnapshotTaker::SendMessage(bool success) {
   AutomationMsg_CaptureEntirePageAsPNG::WriteReplyParams(reply_message_,
                                                          success);
   automation_->Send(reply_message_);
+  delete this;
+}
+
+NTPInfoObserver::NTPInfoObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    CancelableRequestConsumer* consumer)
+        : automation_(automation),
+          reply_message_(reply_message),
+          consumer_(consumer),
+          request_(NULL),
+          ntp_info_(new DictionaryValue) {
+  top_sites_ = automation_->profile()->GetTopSites();
+  if (!top_sites_) {
+    AutomationJSONReply(automation_, reply_message_)
+        .SendError("Profile does not have service for querying the top sites.");
+    return;
+  }
+  TabRestoreService* service = automation_->profile()->GetTabRestoreService();
+  if (!service) {
+    AutomationJSONReply(automation_, reply_message_)
+        .SendError("No TabRestoreService.");
+    return;
+  }
+
+  // Get the info that would be displayed in the recently closed section.
+  ListValue* recently_closed_list = new ListValue;
+  NewTabUI::AddRecentlyClosedEntries(service->entries(),
+                                     recently_closed_list);
+  ntp_info_->Set("recently_closed", recently_closed_list);
+
+  // Add default site URLs.
+  ListValue* default_sites_list = new ListValue;
+  std::vector<GURL> urls = MostVisitedHandler::GetPrePopulatedUrls();
+  for (size_t i = 0; i < urls.size(); ++i) {
+    default_sites_list->Append(Value::CreateStringValue(
+        urls[i].possibly_invalid_spec()));
+  }
+  ntp_info_->Set("default_sites", default_sites_list);
+
+  registrar_.Add(this, NotificationType::TOP_SITES_UPDATED,
+                 Source<history::TopSites>(top_sites_));
+  if (top_sites_->loaded()) {
+    OnTopSitesLoaded();
+  } else {
+    registrar_.Add(this, NotificationType::TOP_SITES_LOADED,
+                   Source<Profile>(automation_->profile()));
+  }
+}
+
+void NTPInfoObserver::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  if (type == NotificationType::TOP_SITES_LOADED) {
+    OnTopSitesLoaded();
+  } else if (type == NotificationType::TOP_SITES_UPDATED) {
+    Details<CancelableRequestProvider::Handle> request_details(details);
+    if (request_ == *request_details.ptr()) {
+      top_sites_->GetMostVisitedURLs(
+          consumer_,
+          NewCallback(this, &NTPInfoObserver::OnTopSitesReceived));
+    }
+  }
+}
+
+void NTPInfoObserver::OnTopSitesLoaded() {
+  request_ = top_sites_->StartQueryForMostVisited();
+}
+
+void NTPInfoObserver::OnTopSitesReceived(
+    const history::MostVisitedURLList& visited_list) {
+  ListValue* list_value = new ListValue;
+  for (size_t i = 0; i < visited_list.size(); ++i) {
+    const history::MostVisitedURL& visited = visited_list[i];
+    if (visited.url.spec().empty())
+      break;  // This is the signal that there are no more real visited sites.
+    DictionaryValue* dict = new DictionaryValue;
+    dict->SetString("url", visited.url.spec());
+    dict->SetString("title", visited.title);
+    dict->SetBoolean("is_pinned", top_sites_->IsURLPinned(visited.url));
+    list_value->Append(dict);
+  }
+  ntp_info_->Set("most_visited", list_value);
+  AutomationJSONReply(automation_, reply_message_).SendSuccess(ntp_info_.get());
   delete this;
 }
 

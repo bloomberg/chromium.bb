@@ -547,3 +547,13 @@ void MostVisitedHandler::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedURLsBlacklist);
   prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedPinnedURLs);
 }
+
+// static
+std::vector<GURL> MostVisitedHandler::GetPrePopulatedUrls() {
+  const std::vector<MostVisitedPage> pages =
+      MostVisitedHandler::GetPrePopulatedPages();
+  std::vector<GURL> page_urls;
+  for (size_t i = 0; i < pages.size(); ++i)
+    page_urls.push_back(pages[i].url);
+  return page_urls;
+}

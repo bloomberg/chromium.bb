@@ -63,6 +63,10 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // Returns a vector containing the urls for the prepopulated pages.
+  // Used only in testing.
+  static std::vector<GURL> GetPrePopulatedUrls();
+
  private:
   struct MostVisitedPage;
 

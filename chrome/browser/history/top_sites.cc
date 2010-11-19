@@ -440,6 +440,23 @@ void TopSites::DiffMostVisited(const MostVisitedURLList& old_list,
   }
 }
 
+CancelableRequestProvider::Handle TopSites::StartQueryForMostVisited() {
+  DCHECK(loaded_);
+  if (!profile_)
+    return NULL;
+
+  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  // |hs| may be null during unit tests.
+  if (hs) {
+    return hs->QueryMostVisitedURLs(
+        num_results_to_request_from_history(),
+        kDaysOfHistory,
+        &cancelable_consumer_,
+        NewCallback(this, &TopSites::OnTopSitesAvailableFromHistory));
+  }
+  return NULL;
+}
+
 TopSites::~TopSites() {
 }
 
@@ -533,19 +550,8 @@ void TopSites::AddTemporaryThumbnail(const GURL& url,
   temp_images_.push_back(image);
 }
 
-void TopSites::StartQueryForMostVisited() {
-  if (!profile_)
-    return;
-
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  // |hs| may be null during unit tests.
-  if (hs) {
-    hs->QueryMostVisitedURLs(
-        num_results_to_request_from_history(),
-        kDaysOfHistory,
-        &cancelable_consumer_,
-        NewCallback(this, &TopSites::OnTopSitesAvailableFromHistory));
-  }
+void TopSites::TimerFired() {
+  StartQueryForMostVisited();
 }
 
 // static
@@ -844,7 +850,7 @@ void TopSites::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
 
   timer_start_time_ = base::TimeTicks::Now();
   timer_.Stop();
-  timer_.Start(delta, this, &TopSites::StartQueryForMostVisited);
+  timer_.Start(delta, this, &TopSites::TimerFired);
 }
 
 void TopSites::OnHistoryMigrationWrittenToDisk(TopSitesBackend::Handle handle) {
@@ -902,6 +908,12 @@ void TopSites::OnTopSitesAvailableFromHistory(
     CancelableRequestProvider::Handle handle,
     MostVisitedURLList pages) {
   SetTopSites(pages);
+
+  // Used only in testing.
+  NotificationService::current()->Notify(
+      NotificationType::TOP_SITES_UPDATED,
+      Source<TopSites>(this),
+      Details<CancelableRequestProvider::Handle>(&handle));
 }
 
 }  // namespace history

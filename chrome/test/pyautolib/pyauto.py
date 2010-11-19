@@ -86,6 +86,7 @@ import omnibox_info
 import plugins_info
 import prefs_info
 from pyauto_errors import JSONInterfaceError
+from pyauto_errors import NTPThumbnailNotShownError
 import simplejson as json  # found in third_party
 
 
@@ -1780,6 +1781,190 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'datatypes': datatypes,
     }
     return self._GetResultFromJSONRequest(cmd_dict)['success']
+
+  def GetNTPThumbnails(self):
+    """Return a list of info about the sites in the NTP most visited section.
+    SAMPLE:
+      [{ u'title': u'Google',
+         u'url': u'http://www.google.com',
+         u'is_pinned': False},
+       {
+         u'title': u'Yahoo',
+         u'url': u'http://www.yahoo.com',
+         u'is_pinned': True}]
+    """
+    return self._GetNTPInfo()['most_visited']
+
+  def GetNTPThumbnailIndex(self, thumbnail):
+    """Returns the index of the given NTP thumbnail, or -1 if it is not shown.
+
+    Args:
+      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
+    """
+    thumbnails = self.GetNTPThumbnails()
+    for i in range(len(thumbnails)):
+      if thumbnails[i]['url'] == thumbnail['url']:
+        return i
+    return -1
+
+  def MoveNTPThumbnail(self, thumbnail, new_index):
+    """Moves the given thumbnail to a new index. The indices in the NTP Most
+    Visited sites section look like:
+      0  1  2  3
+      4  5  6  7
+
+    When a thumbnail is moved, it is automatically pinned.
+
+    Args:
+      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
+      new_index: the index to be moved to in the Most Visited sites section
+
+    Raises:
+      IndexError if there is no thumbnail at the index
+    """
+    if new_index < 0 or new_index >= len(self.GetNTPThumbnails()):
+      raise IndexError()
+    self._CheckNTPThumbnailShown(thumbnail)
+    cmd_dict = {
+      'command': 'MoveNTPMostVisitedThumbnail',
+      'url': thumbnail['url'],
+      'index': new_index,
+      'old_index': self.GetNTPThumbnailIndex(thumbnail)
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
+
+  def RemoveNTPThumbnail(self, thumbnail):
+    """Removes the NTP thumbnail and returns true on success.
+
+    Args:
+      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
+    """
+    self._CheckNTPThumbnailShown(thumbnail)
+    cmd_dict = {
+      'command': 'RemoveNTPMostVisitedThumbnail',
+      'url': thumbnail['url']
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
+
+  def PinNTPThumbnail(self, thumbnail):
+    """Pins the NTP thumbnail.
+
+    Args:
+      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
+    """
+    self._CheckNTPThumbnailShown(thumbnail)
+    self.MoveNTPThumbnail(thumbnail, self.GetNTPThumbnailIndex(thumbnail))
+
+  def UnpinNTPThumbnail(self, thumbnail):
+    """Unpins the NTP thumbnail and returns true on success.
+
+    Args:
+      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
+    """
+    self._CheckNTPThumbnailShown(thumbnail)
+    cmd_dict = {
+      'command': 'UnpinNTPMostVisitedThumbnail',
+      'url': thumbnail['url']
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
+
+  def IsNTPThumbnailPinned(self, thumbnail):
+    """Returns whether the NTP thumbnail is pinned.
+
+    Args:
+      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
+    """
+    self._CheckNTPThumbnailShown(thumbnail)
+    index = self.GetNTPThumbnailIndex(thumbnail)
+    return self.GetNTPThumbnails()[index]['is_pinned']
+
+  def RestoreAllNTPThumbnails(self):
+    """Restores all the removed NTP thumbnails.
+    Note:
+      the default thumbnails may come back into the Most Visited sites
+      section after doing this
+    """
+    cmd_dict = {
+      'command': 'RestoreAllNTPMostVisitedThumbnails'
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
+
+  def GetNTPDefaultSites(self):
+    """Returns a list of URLs for all the default NTP sites, regardless of
+    whether they are showing or not.
+
+    These sites are the ones present in the NTP on a fresh install of Chrome.
+    """
+    return self._GetNTPInfo()['default_sites']
+
+  def RemoveNTPDefaultThumbnails(self):
+    """Removes all thumbnails for default NTP sites, regardless of whether they
+    are showing or not."""
+    cmd_dict = { 'command': 'RemoveNTPMostVisitedThumbnail' }
+    for site in self.GetNTPDefaultSites():
+      cmd_dict['url'] = site
+      self._GetResultFromJSONRequest(cmd_dict)
+
+  def GetNTPRecentlyClosed(self):
+    """Return a list of info about the items in the NTP recently closed section.
+    SAMPLE:
+      [{
+         u'type': u'tab',
+         u'url': u'http://www.bing.com',
+         u'title': u'Bing',
+         u'timestamp': 2139082.03912,  # Seconds since epoch (Jan 1, 1970)
+         u'direction': u'ltr'},
+       {
+         u'type': u'window',
+         u'timestamp': 2130821.90812,
+         u'tabs': [
+         {
+           u'type': u'tab',
+           u'url': u'http://www.cnn.com',
+           u'title': u'CNN',
+           u'timestamp': 2129082.12098,
+           u'direction': u'ltr'}]},
+       {
+         u'type': u'tab',
+         u'url': u'http://www.altavista.com',
+         u'title': u'Altavista',
+         u'timestamp': 21390820.12903,
+         u'direction': u'rtl'}]
+    """
+    return self._GetNTPInfo()['recently_closed']
+
+  def _GetNTPInfo(self):
+    """Get info about the NTP. This does not retrieve the actual info shown
+    in a particular NTP, but the current data that would be used to display
+    a NTP.
+
+    This includes info about the most visited sites, the recently closed
+    tabs and windows, and the default NTP sites.
+
+    TODO(kkania): Add info about apps.
+
+    Returns:
+      a dictionary containing info about NTP info. See details about the
+      sections in their respective methods.
+
+    SAMPLE:
+    { u'most_visited': [ ... ],
+      u'recently_closed': [ ... ]
+      u'default_sites': [ ... ]
+    }
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'GetNTPInfo',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def _CheckNTPThumbnailShown(self, thumbnail):
+    if self.GetNTPThumbnailIndex(thumbnail) == -1:
+      raise NTPThumbnailNotShownError()
+
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
   """Base TestSuite for PyAuto UI tests."""

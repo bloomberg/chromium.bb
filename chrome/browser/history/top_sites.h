@@ -13,10 +13,10 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/lock.h"
-#include "base/time.h"
-#include "base/timer.h"
 #include "base/ref_counted.h"
 #include "base/ref_counted_memory.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
@@ -141,6 +141,13 @@ class TopSites
                               const MostVisitedURLList& new_list,
                               TopSitesDelta* delta);
 
+  // Query history service for the list of available thumbnails. Returns the
+  // handle for the request, or NULL if a request could not be made.
+  // Public only for testing purposes.
+  CancelableRequestProvider::Handle StartQueryForMostVisited();
+
+  bool loaded() const { return loaded_; }
+
  private:
   friend class base::RefCountedThreadSafe<TopSites>;
   friend class TopSitesTest;
@@ -203,8 +210,8 @@ class TopSites
                              const RefCountedBytes* thumbnail,
                              const ThumbnailScore& score);
 
-  // Query history service for the list of available thumbnails.
-  void StartQueryForMostVisited();
+  // Called by our timer. Starts the query for the most visited sites.
+  void TimerFired();
 
   // Finds the given URL in the redirect chain for the given TopSite, and
   // returns the distance from the destination in hops that the given URL is.

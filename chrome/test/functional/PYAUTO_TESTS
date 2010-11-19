@@ -30,6 +30,7 @@
     'content',
     'cookies',
     'crash_reporter',
+    'databases',
     'downloads',
     'find_in_page',
     # Turkish I problem. crbug.com/60638
@@ -40,6 +41,7 @@
     'infobars',
     'navigation',
     'notifications',
+    'ntp',
     'omnibox',
     'passwords',
     'plugins',
