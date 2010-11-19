@@ -967,10 +967,11 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
         expected_tab_count =
             std::max(1, static_cast<int>(command_line.args().size()));
       }
-      CreateAutomationProvider<TestingAutomationProvider>(
+      if (!CreateAutomationProvider<TestingAutomationProvider>(
           testing_channel_id,
           profile,
-          static_cast<size_t>(expected_tab_count));
+          static_cast<size_t>(expected_tab_count)))
+        return false;
     }
   }
 
@@ -987,11 +988,13 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       silent_launch = true;
 
     if (command_line.HasSwitch(switches::kChromeFrame)) {
-      CreateAutomationProvider<ChromeFrameAutomationProvider>(
-          automation_channel_id, profile, expected_tabs);
+      if (!CreateAutomationProvider<ChromeFrameAutomationProvider>(
+          automation_channel_id, profile, expected_tabs))
+        return false;
     } else {
-      CreateAutomationProvider<AutomationProvider>(automation_channel_id,
-                                                   profile, expected_tabs);
+      if (!CreateAutomationProvider<AutomationProvider>(
+          automation_channel_id, profile, expected_tabs))
+        return false;
     }
   }
 
@@ -1026,16 +1029,20 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
 }
 
 template <class AutomationProviderClass>
-void BrowserInit::CreateAutomationProvider(const std::string& channel_id,
+bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
                                            Profile* profile,
                                            size_t expected_tabs) {
   scoped_refptr<AutomationProviderClass> automation =
       new AutomationProviderClass(profile);
-  automation->ConnectToChannel(channel_id);
+
+  if (!automation->InitializeChannel(channel_id))
+    return false;
   automation->SetExpectedTabCount(expected_tabs);
 
   AutomationProviderList* list =
       g_browser_process->InitAutomationProviderList();
   DCHECK(list);
   list->AddProvider(automation);
+
+  return true;
 }

@@ -12,6 +12,7 @@
 #include "base/platform_thread.h"
 #include "base/time.h"
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/ui/ui_test.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
@@ -109,19 +110,26 @@ class ExternalTabUITestMockClient : public AutomationProxy {
 };
 
 // Base your external tab UI tests on this.
-class ExternalTabUITest : public UITest {
+class ExternalTabUITest : public UITest, public ProxyLauncher {
  public:
   ExternalTabUITest() : UITest(MessageLoop::TYPE_UI) {}
-  // Override UITest's CreateAutomationProxy to provide the unit test
+
+  // Override UITest's CreateProxyLauncher to provide the unit test
   // with our special implementation of AutomationProxy.
-  // This function is called from within UITest::LaunchBrowserAndServer.
+  // This function is called from within UITest::SetUp().
+  virtual ProxyLauncher* CreateProxyLauncher();
+
+  // ProxyLauncher functions
   virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+  virtual void InitializeConnection(UITestBase* ui_test_base) const;
+  virtual std::string PrefixedChannelID() const;
  protected:
   // Filtered Inet will override automation callbacks for network resources.
   virtual bool ShouldFilterInet() {
     return false;
   }
   ExternalTabUITestMockClient* mock_;
+  std::string channel_id_;      // Channel id of automation proxy.
 };
 
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H_

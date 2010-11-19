@@ -841,9 +841,25 @@ template <typename T> T** ReceivePointer(scoped_refptr<T>& p) {  // NOLINT
   return reinterpret_cast<T**>(&p);
 }
 
-AutomationProxy* ExternalTabUITest::CreateAutomationProxy(int exec_timeout) {
-  mock_ = new ExternalTabUITestMockClient(exec_timeout);
+// Replace the default automation proxy with our mock client.
+ProxyLauncher* ExternalTabUITest::CreateProxyLauncher() {
+  channel_id_ = AutomationProxy::GenerateChannelID();
+  return this;
+}
+
+AutomationProxy* ExternalTabUITest::CreateAutomationProxy(
+    int execution_timeout) {
+  mock_ = new ExternalTabUITestMockClient(execution_timeout);
+  mock_->InitializeChannel(channel_id_, false);
   return mock_;
+}
+
+void ExternalTabUITest::InitializeConnection(UITestBase* ui_test_base) const {
+  ui_test_base->LaunchBrowserAndServer();
+}
+
+std::string ExternalTabUITest::PrefixedChannelID() const {
+  return channel_id_;
 }
 
 // Create with specifying a url

@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -82,14 +83,22 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   Profile* profile() const { return profile_; }
 
-  // Establishes a connection to an automation client, if present.
-  // An AutomationProxy should be established (probably in a different process)
-  // before calling this.
-  void ConnectToChannel(const std::string& channel_id);
+  // Initializes a channel for a connection to an AutomationProxy.
+  // If channel_id starts with kNamedInterfacePrefix, it will act
+  // as a server, create a named IPC socket with channel_id as its
+  // path, and will listen on the socket for incoming connections.
+  // If channel_id does not, it will act as a client and establish
+  // a connection on its primary IPC channel. See ipc/ipc_channel_posix.cc
+  // for more information about kPrimaryIPCChannel.
+  bool InitializeChannel(const std::string& channel_id) WARN_UNUSED_RESULT;
 
   // Sets the number of tabs that we expect; when this number of tabs has
   // loaded, an AutomationMsg_InitialLoadsComplete message is sent.
   void SetExpectedTabCount(size_t expected_tabs);
+
+  // Called when the inital set of tabs has finished loading.
+  // Call SetExpectedTabCount(0) to set this to true immediately.
+  void OnInitialLoadsComplete();
 
   // Add a listener for navigation status notification. Currently only
   // navigation completion is observed; when the |number_of_navigations|
@@ -138,6 +147,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // IPC implementations
   virtual bool Send(IPC::Message* msg);
+  virtual void OnChannelConnected(int pid);
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
@@ -405,6 +415,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       extension_test_result_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
   PortContainerMap port_containers_;
+
+  // True iff connected to an AutomationProxy.
+  bool is_connected_;
+
+  // True iff browser finished loading initial set of tabs.
+  bool initial_loads_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };

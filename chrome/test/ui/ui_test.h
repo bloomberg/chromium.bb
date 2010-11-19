@@ -38,6 +38,7 @@ class BrowserProxy;
 class DictionaryValue;
 class FilePath;
 class GURL;
+class ProxyLauncher;
 class ScopedTempDir;
 class TabProxy;
 
@@ -68,14 +69,21 @@ class UITestBase {
  public:
   // ********* Utility functions *********
 
-  // Launches the browser and IPC testing server.
+  // Launches the browser only.
+  void LaunchBrowser();
+
+  // Launches the browser and IPC testing connection in server mode.
   void LaunchBrowserAndServer();
+
+  // Launches the IPC testing connection in client mode,
+  // which then attempts to connect to a browser.
+  void ConnectToRunningBrowser();
 
   // Only for pyauto.
   void set_command_execution_timeout_ms(int timeout);
 
-  // Overridable so that derived classes can provide their own AutomationProxy.
-  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+  // Overridable so that derived classes can provide their own ProxyLauncher.
+  virtual ProxyLauncher* CreateProxyLauncher();
 
   // Closes the browser and IPC testing server.
   void CloseBrowserAndServer();
@@ -102,7 +110,7 @@ class UITestBase {
   // Terminates the browser, simulates end of session.
   void TerminateBrowser();
 
-  // Tells the browser to navigato to the givne URL in the active tab
+  // Tells the browser to navigate to the given URL in the active tab
   // of the first app window.
   // Does not wait for the navigation to complete to return.
   void NavigateToURLAsync(const GURL& url);
@@ -361,8 +369,8 @@ class UITestBase {
 
  protected:
   AutomationProxy* automation() {
-    EXPECT_TRUE(server_.get());
-    return server_.get();
+    EXPECT_TRUE(automation_proxy_.get());
+    return automation_proxy_.get();
   }
 
   virtual bool ShouldFilterInet() {
@@ -412,6 +420,7 @@ class UITestBase {
                                         // id on the command line? Default is
                                         // true.
   bool enable_file_cookies_;            // Enable file cookies, default is true.
+  scoped_ptr<ProxyLauncher> launcher_;  // Launches browser and AutomationProxy.
   ProfileType profile_type_;            // Are we using a profile with a
                                         // complex theme?
   FilePath websocket_pid_file_;         // PID file for websocket server.
@@ -419,6 +428,8 @@ class UITestBase {
                                         // the browser. Used in ShutdownTest.
 
  private:
+  void WaitForBrowserLaunch();
+
   bool LaunchBrowserHelper(const CommandLine& arguments,
                            bool wait,
                            base::ProcessHandle* process);
@@ -450,7 +461,7 @@ class UITestBase {
   static std::string js_flags_;         // Flags passed to the JS engine.
   static std::string log_level_;        // Logging level.
 
-  scoped_ptr<AutomationProxy> server_;
+  scoped_ptr<AutomationProxy> automation_proxy_;
 
   std::string ui_test_name_;
 
@@ -468,7 +479,7 @@ class UITest : public UITestBase, public PlatformTest {
   virtual void SetUp();
   virtual void TearDown();
 
-  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+  virtual ProxyLauncher* CreateProxyLauncher();
 
   // Synchronously launches local http server normally used to run LayoutTests.
   void StartHttpServer(const FilePath& root_directory);

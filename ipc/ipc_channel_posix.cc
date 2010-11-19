@@ -273,8 +273,9 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
     : mode_(mode),
       is_blocked_on_write_(false),
       message_send_bytes_written_(0),
-      uses_fifo_(CommandLine::ForCurrentProcess()->HasSwitch(
-                     switches::kIPCUseFIFO)),
+      uses_fifo_(
+          CommandLine::ForCurrentProcess()->HasSwitch(switches::kIPCUseFIFO) ||
+          mode == MODE_NAMED_SERVER || mode == MODE_NAMED_CLIENT),
       server_listen_pipe_(-1),
       pipe_(-1),
       client_pipe_(-1),
@@ -285,10 +286,15 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
       listener_(listener),
       waiting_connect_(true),
       factory_(this) {
-  if (!CreatePipe(channel_id, mode)) {
+  if (mode_ == MODE_NAMED_SERVER)
+    mode_ = MODE_SERVER;
+  if (mode_ == MODE_NAMED_CLIENT)
+    mode_ = MODE_CLIENT;
+
+  if (!CreatePipe(channel_id, mode_)) {
     // The pipe may have been closed already.
     PLOG(WARNING) << "Unable to create pipe named \"" << channel_id
-                  << "\" in " << (mode == MODE_SERVER ? "server" : "client")
+                  << "\" in " << (mode_ == MODE_SERVER ? "server" : "client")
                   << " mode";
   }
 }
@@ -346,7 +352,7 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
     // TODO(playmobil): We shouldn't need to create fifos on disk.
     // TODO(playmobil): If we do, they should be in the user data directory.
     // TODO(playmobil): Cleanup any stale fifos.
-    pipe_name_ = "/var/tmp/chrome_" + channel_id;
+    pipe_name_ = channel_id;
     if (mode == MODE_SERVER) {
       if (!CreateServerFifo(pipe_name_, &server_listen_pipe_)) {
         return false;

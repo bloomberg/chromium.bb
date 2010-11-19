@@ -167,6 +167,8 @@
       'sources': [
         'test/automated_ui_tests/automated_ui_test_base.cc',
         'test/automated_ui_tests/automated_ui_test_base.h',
+        'test/automation/proxy_launcher.cc',
+        'test/automation/proxy_launcher.h',
         'test/testing_browser_process.h',
         'test/ui/javascript_test_util.cc',
         'test/ui/npapi_test_helper.cc',
@@ -512,6 +514,7 @@
         'test/ui/dromaeo_benchmark_uitest.cc',
         'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
+        'test/ui/named_interface_uitest.cc',
         'test/ui/npapi_uitest.cc',
         'test/ui/omnibox_uitest.cc',
         'test/ui/pepper_uitest.cc',
@@ -597,6 +600,10 @@
               },
             },
           },
+          'sources!': [
+            # TODO(dtu): port to windows http://crosbug.com/8515
+            'test/ui/named_interface_uitest.cc',
+          ],
         }, { # else: OS != "win"
           'sources!': [
             # TODO(port): http://crbug.com/45770
@@ -3102,6 +3109,8 @@
              '-Wno-uninitialized',
           ],
           'sources': [
+            'test/automation/proxy_launcher.cc',
+            'test/automation/proxy_launcher.h',
             'test/pyautolib/pyautolib.cc',
             'test/pyautolib/pyautolib.h',
             'test/ui/ui_test.cc',
