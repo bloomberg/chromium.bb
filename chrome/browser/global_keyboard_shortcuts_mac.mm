@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,13 @@
 // we differentiate between shortcuts that are checked before any other view
 // gets the chance to handle them (WindowKeyboardShortcut) or after all views
 // had a chance but did not handle the keypress event
-// (DelayedWindowKeyboardShortcut)
+// (DelayedWindowKeyboardShortcut).
 
-const KeyboardShortcutData* GetWindowKeyboardShortcutTable
-    (size_t* num_entries) {
+const KeyboardShortcutData* GetWindowKeyboardShortcutTable(
+    size_t* num_entries) {
   static const KeyboardShortcutData keyboard_shortcuts[] = {
+    //cmd   shift  cntrl  option
+    //---   -----  -----  ------
     // '{' / '}' characters should be matched earlier than virtual key code
     // (therefore we can match alt-8 as '{' on german keyboards).
     {true,  false, false, false, 0,             '}', IDC_SELECT_NEXT_TAB},
@@ -56,9 +58,11 @@ const KeyboardShortcutData* GetWindowKeyboardShortcutTable
   return keyboard_shortcuts;
 }
 
-const KeyboardShortcutData* GetDelayedWindowKeyboardShortcutTable
-    (size_t* num_entries) {
+const KeyboardShortcutData* GetDelayedWindowKeyboardShortcutTable(
+    size_t* num_entries) {
   static const KeyboardShortcutData keyboard_shortcuts[] = {
+    //cmd   shift  cntrl  option
+    //---   -----  -----  ------
     {false, false, false, false, kVK_Escape,        0, IDC_STOP},
   };
 
@@ -67,9 +71,11 @@ const KeyboardShortcutData* GetDelayedWindowKeyboardShortcutTable
   return keyboard_shortcuts;
 }
 
-const KeyboardShortcutData* GetBrowserKeyboardShortcutTable
-    (size_t* num_entries) {
+const KeyboardShortcutData* GetBrowserKeyboardShortcutTable(
+    size_t* num_entries) {
   static const KeyboardShortcutData keyboard_shortcuts[] = {
+    //cmd   shift  cntrl  option
+    //---   -----  -----  ------
     {true,  false, false, false, kVK_LeftArrow,    0,   IDC_BACK},
     {true,  false, false, false, kVK_RightArrow,   0,   IDC_FORWARD},
     {false, false, false, false, kVK_Delete,       0,   IDC_BACK},
