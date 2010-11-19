@@ -34,7 +34,3 @@ Notification& Notification::operator=(const Notification& notification) {
   delegate_ = notification.delegate();
   return *this;
 }
-
-bool Notification::IsSame(const Notification& other) const {
-  return delegate()->id() == other.delegate()->id();
-}

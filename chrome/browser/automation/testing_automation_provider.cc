@@ -4296,7 +4296,7 @@ void TestingAutomationProvider::CloseNotification(
   // This will delete itself when finished.
   new OnNotificationBalloonCountObserver(
       this, reply_message, collection, balloon_count - 1);
-  manager->Cancel(balloons[index]->notification());
+  manager->CancelById(balloons[index]->notification().notification_id());
 }
 
 // Refer to WaitForNotificationCount() in chrome/test/pyautolib/pyauto.py for

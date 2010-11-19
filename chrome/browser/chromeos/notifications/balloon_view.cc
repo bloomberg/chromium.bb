@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -300,7 +301,8 @@ void BalloonViewImpl::Observe(NotificationType type,
 // BalloonViewImpl public.
 
 bool BalloonViewImpl::IsFor(const Notification& notification) const {
-  return balloon_->notification().IsSame(notification);
+  return balloon_->notification().notification_id() ==
+      notification.notification_id();
 }
 
 void BalloonViewImpl::Activated() {

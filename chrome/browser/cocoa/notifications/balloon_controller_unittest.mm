@@ -30,7 +30,8 @@ namespace {
 class MockBalloonCollection : public BalloonCollection {
   virtual void Add(const Notification& notification,
                    Profile* profile) {}
-  virtual bool Remove(const Notification& notification) { return false; }
+  virtual bool RemoveById(const std::string& id) { return false; }
+  virtual bool RemoveBySourceOrigin(const GURL& origin) { return false; }
   virtual bool HasSpace() const { return true; }
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) {};
   virtual void DisplayChanged() {}

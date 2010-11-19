@@ -11,6 +11,8 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_helper.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 

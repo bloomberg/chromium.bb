@@ -45,7 +45,6 @@ BalloonCollectionImpl::BalloonCollectionImpl()
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {
-  STLDeleteElements(&balloons_);
 }
 
 void BalloonCollectionImpl::Add(const Notification& notification,
@@ -59,10 +58,11 @@ void BalloonCollectionImpl::Add(const Notification& notification,
   new_balloon->SetPosition(layout_.OffScreenLocation(), false);
   new_balloon->Show();
 #if USE_OFFSETS
-  if (balloons_.size() > 0)
-    new_balloon->set_offset(balloons_[balloons_.size() - 1]->offset());
+  int count = base_.count();
+  if (count > 0)
+    new_balloon->set_offset(base_.balloons()[count - 1]->offset());
 #endif
-  balloons_.push_back(new_balloon);
+  base_.Add(new_balloon);
   PositionBalloons(false);
 
   // There may be no listener in a unit test.
@@ -74,28 +74,24 @@ void BalloonCollectionImpl::Add(const Notification& notification,
     on_collection_changed_callback_->Run();
 }
 
-bool BalloonCollectionImpl::Remove(const Notification& notification) {
-  Balloons::iterator iter;
-  for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
-    if (notification.IsSame((*iter)->notification())) {
-      // Balloon.CloseByScript() will cause OnBalloonClosed() to be called on
-      // this object, which will remove it from the collection and free it.
-      (*iter)->CloseByScript();
-      return true;
-    }
-  }
-  return false;
+bool BalloonCollectionImpl::RemoveById(const std::string& id) {
+  return base_.CloseById(id);
+}
+
+bool BalloonCollectionImpl::RemoveBySourceOrigin(const GURL& origin) {
+  return base_.CloseAllBySourceOrigin(origin);
 }
 
 bool BalloonCollectionImpl::HasSpace() const {
-  if (count() < kMinAllowedBalloonCount)
+  int count = base_.count();
+  if (count < kMinAllowedBalloonCount)
     return true;
 
   int max_balloon_size = 0;
   int total_size = 0;
   layout_.GetMaxLinearSize(&max_balloon_size, &total_size);
 
-  int current_max_size = max_balloon_size * count();
+  int current_max_size = max_balloon_size * count;
   int max_allowed_size = static_cast<int>(total_size *
                                           kPercentBalloonFillFactor);
   return current_max_size < max_allowed_size - max_balloon_size;
@@ -114,16 +110,16 @@ void BalloonCollectionImpl::DisplayChanged() {
 
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   // We want to free the balloon when finished.
-  scoped_ptr<Balloon> closed(source);
-  Balloons::iterator it = balloons_.begin();
+  const Balloons& balloons = base_.balloons();
+  Balloons::const_iterator it = balloons.begin();
 
 #if USE_OFFSETS
   gfx::Point offset;
   bool apply_offset = false;
-  while (it != balloons_.end()) {
+  while (it != balloons.end()) {
     if (*it == source) {
-      it = balloons_.erase(it);
-      if (it != balloons_.end()) {
+      ++it;
+      if (it != balloons.end()) {
         apply_offset = true;
         offset.set_y((source)->offset().y() - (*it)->offset().y() +
             (*it)->content_size().height() - source->content_size().height());
@@ -138,15 +134,9 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   // leaves the balloon area.
   if (apply_offset)
     AddMessageLoopObserver();
-#else
-  for (; it != balloons_.end(); ++it) {
-    if (*it == source) {
-      balloons_.erase(it);
-      break;
-    }
-  }
 #endif
 
+  base_.Remove(source);
   PositionBalloons(true);
 
   // There may be no listener in a unit test.
@@ -159,9 +149,13 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
 }
 
 void BalloonCollectionImpl::PositionBalloonsInternal(bool reposition) {
+  const Balloons& balloons = base_.balloons();
+
   layout_.RefreshSystemMetrics();
   gfx::Point origin = layout_.GetLayoutOrigin();
-  for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it) {
+  for (Balloons::const_iterator it = balloons.begin();
+       it != balloons.end();
+       ++it) {
     gfx::Point upper_left = layout_.NextPosition((*it)->GetViewSize(), &origin);
     (*it)->SetPosition(upper_left, reposition);
   }
@@ -188,7 +182,10 @@ void BalloonCollectionImpl::CancelOffsets() {
   // Unhook from listening to all UI events.
   RemoveMessageLoopObserver();
 
-  for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it)
+  const Balloons& balloons = base_.balloons();
+  for (Balloons::const_iterator it = balloons.begin();
+       it != balloons.end();
+       ++it)
     (*it)->set_offset(gfx::Point(0, 0));
 
   PositionBalloons(true);

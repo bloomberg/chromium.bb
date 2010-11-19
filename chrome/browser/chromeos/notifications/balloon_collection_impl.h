@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/balloon_collection_base.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -60,12 +61,13 @@ class BalloonCollectionImpl : public BalloonCollection,
   // BalloonCollectionInterface overrides
   virtual void Add(const Notification& notification,
                    Profile* profile);
-  virtual bool Remove(const Notification& notification);
+  virtual bool RemoveById(const std::string& id);
+  virtual bool RemoveBySourceOrigin(const GURL& origin);
   virtual bool HasSpace() const;
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
   virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source);
-  virtual const Balloons& GetActiveBalloons() { return balloons_; }
+  virtual const Balloons& GetActiveBalloons() { return base_.balloons(); }
 
   // NotificationObserver overrides:
   virtual void Observe(NotificationType type,
@@ -115,19 +117,18 @@ class BalloonCollectionImpl : public BalloonCollection,
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile);
 
+  // Base implementation for the collection of active balloons.
+  BalloonCollectionBase base_;
+
  private:
   friend class NotificationPanelTester;
 
   // Shutdown the notification ui.
   void Shutdown();
 
-  // The number of balloons being displayed.
-  int count() const { return balloons_.size(); }
-
-  Balloons::iterator FindBalloon(const Notification& notification);
-
-  // Queue of active balloons.
-  Balloons balloons_;
+  Balloon* FindBalloon(const Notification& notification) {
+    return base_.FindBalloon(notification);
+  }
 
   scoped_ptr<NotificationUI> notification_ui_;
 
