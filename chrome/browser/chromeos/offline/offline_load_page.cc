@@ -12,14 +12,19 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
@@ -63,33 +68,89 @@ OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
 
 std::string OfflineLoadPage::GetHTMLContents() {
   DictionaryValue strings;
-  SetString(&strings, "headLine", IDS_OFFLINE_LOAD_HEADLINE);
-  SetString(&strings, "description", IDS_OFFLINE_LOAD_DESCRIPTION);
-  SetString(&strings, "load_button", IDS_OFFLINE_LOAD_BUTTON);
-  SetString(&strings, "back_button", IDS_OFFLINE_BACK_BUTTON);
-
-  // TODO(oshima): tab()->GetTitle() always return url. This has to be
-  // a cached title.
-  strings.SetString("title", tab()->GetTitle());
-  strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
-  strings.SetString("display_go_back",
+  // Toggle Cancel button.
+  strings.SetString("display_cancel",
                     tab()->controller().CanGoBack() ? "inline" : "none");
+
   int64 time_to_wait = std::max(
       static_cast<int64>(0),
       kMaxBlankPeriod -
-          NetworkStateNotifier::GetOfflineDuration().InMilliseconds());
+      NetworkStateNotifier::GetOfflineDuration().InMilliseconds());
+  // Set the timeout to show the page.
   strings.SetString("on_load",
                     WideToUTF16Hack(base::StringPrintf(L"startTimer(%ld)",
-                                                       time_to_wait)));
+                                                        time_to_wait)));
+  // Button labels
+  SetString(&strings, "load_button", IDS_OFFLINE_LOAD_BUTTON);
+  SetString(&strings, "cancel_button", IDS_OFFLINE_CANCEL_BUTTON);
 
-  // TODO(oshima): thumbnail is not working yet. fix this.
-  const std::string url = "chrome://thumb/" + GetURL().spec();
-  strings.SetString("thumbnailUrl", "url(" + url + ")");
+  SetString(&strings, "heading", IDS_OFFLINE_LOAD_HEADLINE);
+  SetString(&strings, "network_settings", IDS_OFFLINE_NETWORK_SETTINGS);
+
+  bool rtl = base::i18n::IsRTL();
+  strings.SetString("textdirection", rtl ? "rtl" : "ltr");
+
+  string16 failed_url(ASCIIToUTF16(url().spec()));
+  if (rtl)
+    base::i18n::WrapStringWithLTRFormatting(&failed_url);
+  strings.SetString("url", failed_url);
+
+  // The offline page for app has icons and slightly different message.
+  Profile* profile = tab()->profile();
+  DCHECK(profile);
+  const Extension* extension = NULL;
+  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  // Extension service does not exist in test.
+  if (extensions_service)
+    extension = extensions_service->GetExtensionByWebExtent(url());
+
+  if (extension)
+    GetAppOfflineStrings(extension, failed_url, &strings);
+  else
+    GetNormalOfflineStrings(failed_url, &strings);
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_OFFLINE_LOAD_HTML));
   return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
+}
+
+void OfflineLoadPage::GetAppOfflineStrings(
+    const Extension* app,
+    const string16& failed_url,
+    DictionaryValue* strings) const {
+  strings->SetString("title", app->name());
+
+  GURL icon_url = app->GetIconURL(Extension::EXTENSION_ICON_LARGE,
+                                  ExtensionIconSet::MATCH_EXACTLY);
+  if (icon_url.is_empty()) {
+    strings->SetString("display_icon", "none");
+    strings->SetString("icon", string16());
+  } else {
+    // Default icon is not accessible from interstitial page.
+    // TODO(oshima): Figure out how to use default icon.
+    strings->SetString("display_icon", "block");
+    strings->SetString("icon", icon_url.spec());
+  }
+
+  strings->SetString(
+      "msg",
+      l10n_util::GetStringFUTF16(IDS_APP_OFFLINE_LOAD_DESCRIPTION,
+                                 failed_url));
+}
+
+void OfflineLoadPage::GetNormalOfflineStrings(
+    const string16& failed_url, DictionaryValue* strings) const {
+  strings->SetString("title", tab()->GetTitle());
+
+  // No icon for normal web site.
+  strings->SetString("display_icon", "none");
+  strings->SetString("icon", string16());
+
+  strings->SetString(
+      "msg",
+      l10n_util::GetStringFUTF16(IDS_SITE_OFFLINE_LOAD_DESCRIPTION,
+                                 failed_url));
 }
 
 void OfflineLoadPage::CommandReceived(const std::string& cmd) {
@@ -103,6 +164,10 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
     Proceed();
   } else if (command == "dontproceed") {
     DontProceed();
+  } else if (command == "open_network_settings") {
+    Browser* browser = BrowserList::GetLastActive();
+    DCHECK(browser);
+    browser->ShowOptionsTab(chrome::kInternetOptionsSubPage);
   } else {
     LOG(WARNING) << "Unknown command:" << cmd;
   }

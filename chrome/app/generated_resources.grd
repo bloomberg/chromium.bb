@@ -7402,16 +7402,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Offline page  -->
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OFFLINE_LOAD_HEADLINE" desc="Offline Page HTML headline">
-          Network is not available.
+          Your device is offline.
         </message>
-        <message name="IDS_OFFLINE_LOAD_DESCRIPTION" desc="Offline Page HTML description">
-          Page will be loaded when network becomes available. Press 'Load Now' if you want to load now.
+        <message name="IDS_SITE_OFFLINE_LOAD_DESCRIPTION" desc="offline site">
+          The webpage at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. &lt;br&gt; 
+          Try reconnecting, connecting to another network or proceeding with loading anyway.
+        </message>
+        <message name="IDS_APP_OFFLINE_LOAD_DESCRIPTION" desc="offline app">
+          The app at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. &lt;br&gt;
+          Try reconnecting, connecting to another network or proceeding with loading anyway.
         </message>
         <message name="IDS_OFFLINE_LOAD_BUTTON">
-          Load Now
+          Load Anyway
         </message>
-        <message name="IDS_OFFLINE_BACK_BUTTON">
+        <message name="IDS_OFFLINE_CANCEL_BUTTON">
           Cancel
+        </message>
+        <message name="IDS_OFFLINE_NETWORK_SETTINGS">
+          Network Settings ...
         </message>
       </if>
 
