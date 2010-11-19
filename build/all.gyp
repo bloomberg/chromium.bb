@@ -27,6 +27,7 @@
         '../src/trusted/perf_counter/perf_counter.gyp:*',
         '../src/trusted/sel_universal/sel_universal.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
+        '../src/shared/ppapi/ppapi.gyp:*',
         '../src/shared/ppapi_proxy/ppapi_proxy.gyp:*',
         # Tests
         '../src/trusted/service_runtime/service_runtime_tests.gyp:*',

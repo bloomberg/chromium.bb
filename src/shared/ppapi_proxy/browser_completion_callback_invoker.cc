@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gen/native_client/src/shared/ppapi_proxy/ppp_rpc.h"
+#include "srpcgen/ppp_rpc.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/ppapi_proxy/completion_callback_table.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"

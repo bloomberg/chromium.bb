@@ -100,6 +100,14 @@ hooks = [
                "native_client/build/all.gyp"],
   },
   {
+    "pattern": ".",
+    "action": ["python", "native_client/tools/multipy.py",
+               "native_client/src/shared/ppapi_proxy/ppapi_proxy.mpy",
+               "GENDIR=srpc",
+               "SRCDIR=native_client/src/shared/ppapi_proxy",
+               "TOOLDIR=native_client/tools"],
+  },
+  {
     "pattern": "DEPS$",
     "action": ["python", "native_client/build/download_toolchains.py",
                "--x86-version", Var("x86_toolchain_version"),

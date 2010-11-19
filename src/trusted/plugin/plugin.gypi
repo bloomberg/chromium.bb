@@ -33,8 +33,6 @@
       # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
       # which exports a library which is then linked in.
       # Currently this results inlink time symbol clashes
-      '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/np_entry.cc',
-      '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/npn_gate.cc',
       # generic URL-origin / same-domain handling
       'origin.cc',
       # Portable plugin code
@@ -57,6 +55,8 @@
     ],
     'npapi_sources': [
       # NPAPI specific code
+      '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/np_entry.cc',
+      '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/npn_gate.cc',
       'npapi/async_receive.cc',
       'npapi/browser_impl_npapi.cc',
       'npapi/closure.cc',
@@ -73,6 +73,7 @@
       'ppapi/array_ppapi.cc',
       'ppapi/browser_interface_ppapi.cc',
       'ppapi/plugin_ppapi.cc',
+      'ppapi/module_ppapi.cc',
       'ppapi/file_downloader.cc',
       'ppapi/scriptable_handle_ppapi.cc',
       'ppapi/var_utils.cc',

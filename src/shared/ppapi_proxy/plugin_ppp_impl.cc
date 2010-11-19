@@ -6,7 +6,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
-#include "gen/native_client/src/shared/ppapi_proxy/ppp_rpc.h"
+#include "srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_getinterface.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"

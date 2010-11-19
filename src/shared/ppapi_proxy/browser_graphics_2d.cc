@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gen/native_client/src/shared/ppapi_proxy/ppb_rpc.h"
+#include "srpcgen/ppb_rpc.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"

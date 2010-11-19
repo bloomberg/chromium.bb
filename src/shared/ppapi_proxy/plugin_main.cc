@@ -5,7 +5,7 @@
  */
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "gen/native_client/src/shared/ppapi_proxy/ppp_rpc.h"
+#include "srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_core.h"
 
 // PPAPI plugins are actually "hosted" by ppruntime.  This is because the

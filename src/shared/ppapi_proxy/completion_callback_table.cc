@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "native_client/src/shared/ppapi_proxy/completion_callback_table.h"
-
-#include "gen/native_client/src/shared/ppapi_proxy/ppp_rpc.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "srpcgen/ppp_rpc.h"
 
 namespace ppapi_proxy {
 

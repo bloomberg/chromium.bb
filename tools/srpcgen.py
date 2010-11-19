@@ -47,6 +47,7 @@ import getopt
 #import string
 #import StringIO
 import sys
+import os
 
 AUTOGEN_COMMENT = """\
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
@@ -313,6 +314,14 @@ def PrintClientFile(output, include_name, specs):
       s += '}\n\n'
   print >>output, s
 
+def MakePath(name):
+  paths = name.split(os.sep)
+  path = os.sep.join(paths[:-1])
+  try:
+    os.makedirs(path)
+  except OSError:
+    return
+
 
 def main(argv):
   usage = 'Usage: srpcgen.py [-c] [-s] <iname> <gname> <.h> <.cc> <specs>'
@@ -330,10 +339,13 @@ def main(argv):
   include_guard_name = pargs[1]
   # Get the name of the header file to be generated.
   h_file_name = pargs[2]
+  MakePath(h_file_name)
   h_file = open(h_file_name, 'w')
   # Get the name of the source file to be generated.  Depending upon whether
   # -c or -s is generated, this file contains either client or server methods.
-  cc_file = open(pargs[3], 'w')
+  cc_file_name = pargs[3]
+  MakePath(cc_file_name)
+  cc_file = open(cc_file_name, 'w')
   # The remaining arguments are the spec files to be compiled.
   spec_files = pargs[4:]
 

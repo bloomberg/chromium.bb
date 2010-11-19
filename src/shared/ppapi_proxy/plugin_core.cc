@@ -9,7 +9,7 @@
 #include <map>
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-#include "gen/native_client/src/shared/ppapi_proxy/ppb_rpc.h"
+#include "srpcgen/ppb_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource_tracker.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"

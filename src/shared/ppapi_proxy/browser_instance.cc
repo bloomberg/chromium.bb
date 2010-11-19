@@ -17,7 +17,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
-#include "gen/native_client/src/shared/ppapi_proxy/ppp_rpc.h"
+#include "srpcgen/ppp_rpc.h"
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"

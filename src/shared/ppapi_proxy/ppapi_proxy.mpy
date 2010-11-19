@@ -1,3 +1,10 @@
-%(SRPCGEN)s -c PppRpcs GEN_PPAPI_PROXY_PPP_RPC_H_ %(GENDIR)s/ppp_rpc.h %(GENDIR)s/ppp_rpc_client.cc objectstub.srpc ppp.srpc ppp_instance.srpc
-%(SRPCGEN)s -s PpbRpcs GEN_PPAPI_PROXY_PPB_RPC_H_ %(GENDIR)s/ppb_rpc.h %(GENDIR)s/ppb_rpc_server.cc objectstub.srpc ppb_core.srpc
-%(SRPCGEN)s -s PpbUpcalls GEN_PPAPI_PROXY_UPCALL_H_ %(GENDIR)s/upcall.h %(GENDIR)s/upcall_server.cc upcall.srpc
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+%(TOOLDIR)s/srpcgen.py -c PppRpcs GEN_PPAPI_PROXY_PPP_RPC_H_ %(GENDIR)s/trusted/srpcgen/ppp_rpc.h %(GENDIR)s/trusted/srpcgen/ppp_rpc_client.cc %(SRCDIR)s/objectstub.srpc %(SRCDIR)s/completion_callback.srpc %(SRCDIR)s/ppp.srpc %(SRCDIR)s/ppp_instance.srpc
+%(TOOLDIR)s/srpcgen.py -s PpbRpcs GEN_PPAPI_PROXY_PPB_RPC_H_ %(GENDIR)s/trusted/srpcgen/ppb_rpc.h %(GENDIR)s/trusted/srpcgen/ppb_rpc_server.cc %(SRCDIR)s/objectstub.srpc %(SRCDIR)s/ppb_core.srpc %(SRCDIR)s/ppb_graphics_2d.srpc %(SRCDIR)s/ppb_image_data.srpc
+%(TOOLDIR)s/srpcgen.py -s PpbUpcalls GEN_PPAPI_PROXY_UPCALL_H_ %(GENDIR)s/trusted/srpcgen/upcall.h %(GENDIR)s/trusted/srpcgen/upcall_server.cc %(SRCDIR)s/upcall.srpc
+%(TOOLDIR)s/srpcgen.py -s PppRpcs GEN_PPAPI_PROXY_PPP_RPC_H_ %(GENDIR)s/untrusted/srpcgen/ppp_rpc.h %(GENDIR)s/untrusted/srpcgen/ppp_rpc_server.cc %(SRCDIR)s/objectstub.srpc %(SRCDIR)s/completion_callback.srpc %(SRCDIR)s/ppp.srpc %(SRCDIR)s/ppp_instance.srpc
+%(TOOLDIR)s/srpcgen.py -c PpbRpcs GEN_PPAPI_PROXY_PPB_RPC_H_ %(GENDIR)s/untrusted/srpcgen/ppb_rpc.h %(GENDIR)s/untrusted/srpcgen/ppb_rpc_client.cc %(SRCDIR)s/objectstub.srpc %(SRCDIR)s/ppb_core.srpc %(SRCDIR)s/ppb_graphics_2d.srpc %(SRCDIR)s/ppb_image_data.srpc
+%(TOOLDIR)s/srpcgen.py -c PpbUpcalls GEN_PPAPI_PROXY_UPCALL_H_ %(GENDIR)s/untrusted/srpcgen/upcall.h %(GENDIR)s/untrusted/srpcgen/upcall_client.cc %(SRCDIR)s/upcall.srpc

@@ -26,8 +26,6 @@
 
 import getopt
 import os
-import string
-import subprocess
 import sys
 
 class MultiPy(object):
@@ -80,7 +78,14 @@ class MultiPy(object):
     src = open(script, 'r')
     lines = src.readlines()
     src.close()
-    self.commands.extend(lines)
+
+    # Iterate through lines, removing comments and empties
+    for line in lines:
+      line = line.strip()
+      if not line or line[0] == '#':
+        continue
+      # Add valid lines to the list of commands
+      self.commands.append(line)
 
 
   def AddVarMap(self, key, value):
@@ -107,6 +112,7 @@ class MultiPy(object):
     for index in range(len(commandarray)):
       token = commandarray[index]
       commandarray[index] = os.sep.join(token.split('/'))
+    command = ' '.join(commandarray)
     return command
 
 
@@ -154,7 +160,7 @@ class MultiPy(object):
     return val
 
 
-def usage(self):
+def usage():
   """ Print the usage information. """
   print __doc__
   sys.exit(1)
@@ -199,7 +205,7 @@ def main(argv):
       print "Unknown argument:", arg
       usage()
 
-  if mpy.Run() == True:
+  if mpy.Run():
     return 0
   else:
     return 1

@@ -6,7 +6,7 @@
 
 #include <new>
 
-#include "gen/native_client/src/shared/ppapi_proxy/upcall.h"
+#include "srpcgen/upcall.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"

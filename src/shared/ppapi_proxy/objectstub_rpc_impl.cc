@@ -6,8 +6,8 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
-#include "gen/native_client/src/shared/ppapi_proxy/ppb_rpc.h"
-#include "gen/native_client/src/shared/ppapi_proxy/ppp_rpc.h"
+#include "srpcgen/ppb_rpc.h"
+#include "srpcgen/ppp_rpc.h"
 #ifdef __native_client__
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #else

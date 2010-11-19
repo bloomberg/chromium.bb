@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "native_client/src/include/portability.h"
-#include "gen/native_client/src/shared/ppapi_proxy/ppb_rpc.h"
+#include "srpcgen/ppb_rpc.h"
 
 //
 // The following methods are the SRPC dispatchers for ppapi/c/ppb_core.h.
