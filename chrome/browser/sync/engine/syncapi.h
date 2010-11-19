@@ -721,7 +721,11 @@ class SyncManager {
     virtual void OnUpdatedToken(const std::string& token) = 0;
 
     // Called when user interaction is required to obtain a valid passphrase.
-    virtual void OnPassphraseRequired() = 0;
+    // If the passphrase is required to decrypt something that has
+    // already been encrypted (and thus has to match the existing key),
+    // |for_decryption| will be true.  If the passphrase is needed for
+    // encryption, |for_decryption| will be false.
+    virtual void OnPassphraseRequired(bool for_decryption) = 0;
 
     // Called when the passphrase provided by the user has been accepted and is
     // now used to encrypt sync data.  |bootstrap_token| is an opaque base64

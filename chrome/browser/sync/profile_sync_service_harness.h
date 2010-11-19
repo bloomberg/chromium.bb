@@ -132,6 +132,12 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver,
     // The sync client awaits the OnBackendInitialized() callback.
     WAITING_FOR_ON_BACKEND_INITIALIZED,
 
+    // Waiting for a passphrase to be required.
+    WAITING_FOR_PASSPHRASE_REQUIRED,
+
+    // Waiting for a set passphrase to be accepted by the cryptographer.
+    WAITING_FOR_PASSPHRASE_ACCEPTED,
+
     // The sync client is waiting for the first sync cycle to complete.
     WAITING_FOR_INITIAL_SYNC,
 
@@ -146,9 +152,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver,
 
     // The sync client is fully synced and there are no pending updates.
     FULLY_SYNCED,
-
-    // Waiting for a set passphrase to be accepted by the cryptographer.
-    WAITING_FOR_PASSPHRASE_ACCEPTED,
 
     // Syncing is disabled for the client.
     SYNC_DISABLED,
@@ -180,7 +183,7 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver,
   // Returns the new value of |last_timestamp_|.
   int64 GetUpdatedTimestamp();
 
-  void StartObservingPassphraseAcceptance();
+  void StartObservingPassphraseEvents();
 
   WaitState wait_state_;
 

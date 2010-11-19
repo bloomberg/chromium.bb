@@ -252,6 +252,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return observed_passphrase_required_;
   }
 
+  bool passphrase_required_for_decryption() const {
+    return passphrase_required_for_decryption_;
+  }
+
   // A timestamp marking the last time the service observed a transition from
   // the SYNCING state to the READY state. Note that this does not reflect the
   // last time we polled the server to see if there were any changes; the
@@ -404,6 +408,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Whether we have seen a SYNC_PASSPHRASE_REQUIRED since initializing the
   // backend, telling us that it is safe to send a passphrase down ASAP.
   bool observed_passphrase_required_;
+
+  // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
+  // was required for decryption?
+  bool passphrase_required_for_decryption_;
 
  private:
   friend class ProfileSyncServiceTest;

@@ -65,6 +65,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        const std::string& cros_user)
     : last_auth_error_(AuthError::None()),
       observed_passphrase_required_(false),
+      passphrase_required_for_decryption_(false),
       factory_(factory),
       profile_(profile),
       cros_user_(cros_user),
@@ -1021,6 +1022,7 @@ void ProfileSyncService::Observe(NotificationType type,
       DCHECK(backend_.get());
       DCHECK(backend_->IsNigoriEnabled());
       observed_passphrase_required_ = true;
+      passphrase_required_for_decryption_ = *(Details<bool>(details).ptr());
 
       if (!cached_passphrase_.value.empty()) {
         SetPassphrase(cached_passphrase_.value,

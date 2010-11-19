@@ -383,11 +383,11 @@ void SyncBackendHost::Core::NotifyResumed() {
                                          NotificationService::NoDetails());
 }
 
-void SyncBackendHost::Core::NotifyPassphraseRequired() {
+void SyncBackendHost::Core::NotifyPassphraseRequired(bool for_decryption) {
   NotificationService::current()->Notify(
       NotificationType::SYNC_PASSPHRASE_REQUIRED,
       Source<SyncBackendHost>(host_),
-      NotificationService::NoDetails());
+      Details<bool>(&for_decryption));
 }
 
 void SyncBackendHost::Core::NotifyPassphraseAccepted(
@@ -718,9 +718,9 @@ void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
       auth_error));
 }
 
-void SyncBackendHost::Core::OnPassphraseRequired() {
+void SyncBackendHost::Core::OnPassphraseRequired(bool for_decryption) {
   host_->frontend_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &Core::NotifyPassphraseRequired));
+      NewRunnableMethod(this, &Core::NotifyPassphraseRequired, for_decryption));
 }
 
 void SyncBackendHost::Core::OnPassphraseAccepted(

@@ -1432,7 +1432,7 @@ void SyncManager::SyncInternal::BootstrapEncryption(
       cryptographer->SetKeys(nigori.encrypted());
     } else {
       cryptographer->SetPendingKeys(nigori.encrypted());
-      observer_->OnPassphraseRequired();
+      observer_->OnPassphraseRequired(true);
     }
   }
 }
@@ -1608,7 +1608,7 @@ void SyncManager::SyncInternal::SetPassphrase(
   KeyParams params = {"localhost", "dummy", passphrase};
   if (cryptographer->has_pending_keys()) {
     if (!cryptographer->DecryptPendingKeys(params)) {
-      observer_->OnPassphraseRequired();
+      observer_->OnPassphraseRequired(true);
       return;
     }
 
@@ -2052,8 +2052,10 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
 
       // If we've completed a sync cycle and the cryptographer isn't ready yet,
       // prompt the user for a passphrase.
-      if (!cryptographer->is_ready() || cryptographer->has_pending_keys()) {
-        observer_->OnPassphraseRequired();
+      if (cryptographer->has_pending_keys()) {
+        observer_->OnPassphraseRequired(true);
+      } else if (!cryptographer->is_ready()) {
+        observer_->OnPassphraseRequired(false);
       }
     }
 

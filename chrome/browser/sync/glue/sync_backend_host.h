@@ -226,7 +226,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const sessions::SyncSessionSnapshot* snapshot);
     virtual void OnInitializationComplete();
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
-    virtual void OnPassphraseRequired();
+    virtual void OnPassphraseRequired(bool for_decryption);
     virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
     virtual void OnPaused();
     virtual void OnResumed();
@@ -368,8 +368,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void HandleAuthErrorEventOnFrontendLoop(
         const GoogleServiceAuthError& new_auth_error);
 
-    // Invoked when a passphrase is required to decrypt a set of Nigori keys.
-    void NotifyPassphraseRequired();
+    // Invoked when a passphrase is required to decrypt a set of Nigori keys,
+    // or for encrypting.  If the reason is decryption, |for_decryption| will
+    // be true.
+    void NotifyPassphraseRequired(bool for_decryption);
 
     // Invoked when the passphrase provided by the user has been accepted.
     void NotifyPassphraseAccepted(const std::string& bootstrap_token);
