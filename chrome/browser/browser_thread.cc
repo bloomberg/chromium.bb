@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/thread_restrictions.h"
 
 // Friendly names for the well-known threads.
 static const char* browser_thread_names[BrowserThread::ID_COUNT] = {
@@ -112,6 +113,11 @@ bool BrowserThread::IsWellKnownThread(ID identifier) {
 
 // static
 bool BrowserThread::CurrentlyOn(ID identifier) {
+  // We shouldn't use MessageLoop::current() since it uses LazyInstance which
+  // may be deleted by ~AtExitManager when a WorkerPool thread calls this
+  // function.
+  // http://crbug.com/63678
+  base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
   AutoLock lock(lock_);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return browser_threads_[identifier] &&
@@ -160,6 +166,11 @@ bool BrowserThread::PostNonNestableDelayedTask(
 
 // static
 bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
+  // We shouldn't use MessageLoop::current() since it uses LazyInstance which
+  // may be deleted by ~AtExitManager when a WorkerPool thread calls this
+  // function.
+  // http://crbug.com/63678
+  base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
   MessageLoop* cur_message_loop = MessageLoop::current();
   for (int i = 0; i < ID_COUNT; ++i) {
     if (browser_threads_[i] &&
