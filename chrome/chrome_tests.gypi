@@ -1370,6 +1370,7 @@
         'browser/net/load_timing_observer_unittest.cc',
         'browser/net/passive_log_collector_unittest.cc',
         'browser/net/predictor_unittest.cc',
+        'browser/net/prerender_interceptor_unittest.cc',
         'browser/net/resolve_proxy_msg_helper_unittest.cc',
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',

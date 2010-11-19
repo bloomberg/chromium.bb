@@ -23,6 +23,7 @@
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/prerender_interceptor.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/raw_host_resolver_proc.h"
@@ -332,6 +333,12 @@ void IOThread::Init() {
   globals_->dnsrr_resolver.reset(new net::DnsRRResolver);
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePagePrerender)) {
+    prerender_interceptor_.reset(
+        new chrome_browser_net::PrerenderInterceptor());
+  }
 }
 
 void IOThread::CleanUp() {
@@ -385,6 +392,8 @@ void IOThread::CleanUp() {
   // Deletion will unregister this interceptor.
   delete speculative_interceptor_;
   speculative_interceptor_ = NULL;
+
+  prerender_interceptor_.reset();
 
   // TODO(eroman): hack for http://crbug.com/15513
   if (globals_->host_resolver->GetAsHostResolverImpl()) {

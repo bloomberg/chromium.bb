@@ -449,6 +449,8 @@ void ResourceDispatcherHost::BeginRequest(
     load_flags |= net::LOAD_MAIN_FRAME;
   } else if (request_data.resource_type == ResourceType::SUB_FRAME) {
     load_flags |= net::LOAD_SUB_FRAME;
+  } else if (request_data.resource_type == ResourceType::PREFETCH) {
+    load_flags |= net::LOAD_PREFETCH;
   }
   // Raw headers are sensitive, as they inclide Cookie/Set-Cookie, so only
   // allow requesting them if requestor has ReadRawCookies permission.
