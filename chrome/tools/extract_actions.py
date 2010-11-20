@@ -161,6 +161,7 @@ def AddClosedSourceActions(actions):
   actions.add('PDF.PrintPage')
   actions.add('PDF.FitToHeightButton')
   actions.add('PDF.FitToWidthButton')
+  actions.add('PDF.ZoomFromBrowser')
   actions.add('PDF.ZoomOutButton')
   actions.add('PDF.ZoomInButton')
 

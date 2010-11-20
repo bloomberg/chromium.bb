@@ -886,6 +886,7 @@
 0x5f58a2db6428c1a0	PDF.FitToWidthButton
 0x95be082d470e41c9	PDF.PrintPage
 0xf7d4dd6244747179	PDF.SavePage
+0x99ed44568e5ff51a	PDF.ZoomFromBrowser
 0x1d57434947820665	PDF.ZoomInButton
 0x40ca10ced9d81d17	PDF.ZoomOutButton
 0xee3677bcca83ece9	PageDown
