@@ -290,6 +290,7 @@
       ],
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
+        'browser/accessibility/accessibility_mac_uitest.mm',
         'browser/autocomplete/autocomplete_edit_view_browsertest.cc',
         'browser/autofill/autofill_common_test.cc',
         'browser/autofill/autofill_browsertest.cc',
