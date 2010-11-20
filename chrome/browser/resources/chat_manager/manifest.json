@@ -1,7 +1,7 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDrlwvcbUtVrbQvI7EPV1BTa63N8YkbBToHzxlMl0IzSBwOV+TUOsHE8vRq0HZWuwMAGeH8WdWVC3HRNdES8lScjlzxb1TsTQJAsF+hLXgcjgCUSSSGCfFzypvuvKsRQTx0d02yfWKJa47o0Ws5wL72NVtc7c51HujwWYg+Mz01wIDAQAB",
   "name": "__MSG_CHAT_MANAGER_NAME__",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "icons": {
     "128": "128.png",
     "16": "16.png",
@@ -39,7 +39,7 @@
   ],
   "app": {
     "launch": {
-      "local_path": "central_roster_viewer.html",
+      "local_path": "central_roster.html",
       "container": "panel",
       "width": 225,
       "height": 316

@@ -11,18 +11,18 @@ Central roster: hosting all Google Talk chats in ChromeOS.
 -->
 <head>
 <style>
-  .talk_roster {
-    position: fixed;
-    left: 0px;
-    top: 0px;
-  }
+  .talk_roster,
   .talk_iframe {
     width: 100%;
     height: 100%;
     border: none;
+    padding: 0px;
     overflow: hidden;
   }
   body {
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
     text-align: center;
   }
 </style>
@@ -32,6 +32,40 @@ Central roster: hosting all Google Talk chats in ChromeOS.
   var retryTime;
   var retryTimer;
   var chatClient = null;
+
+  document.title = chrome.i18n.getMessage('CHAT_MANAGER_NAME');
+
+  // make sure there is only one central roster
+  function makeSingleton() {
+    // list of all chat manager popups
+    var chat_popups = [];
+
+    chrome.windows.getAll({populate: true}, function(wins) {
+      // find all chat manager popups
+      for (var winIdx = 0, win = wins[winIdx]; win; win = wins[++winIdx]) {
+        var tabs = win.tabs;
+        for (var tabIdx = 0, tab = tabs[tabIdx]; tab; tab = tabs[++tabIdx]) {
+          if (tab.url === location.href) {
+            chat_popups.push({tabId: tab.id, winId: win.id});
+          }
+        }
+      }
+      if (chat_popups.length > 0) {
+        // multiple popups are executing this function at the same time
+        // so we need a global criteria to pickup a "winner":
+        // "keep only the tab with smallest id"
+        chat_popups.sort(function(t1, t2) { return t1.tabId - t2.tabId; });
+        for (var i = 0, l = chat_popups.length; i < l; i++) {
+          if (i == 0) {
+            chrome.windows.update(chat_popups[i].winId, {focused: true});
+          } else {
+            chrome.tabs.remove(chat_popups[i].tabId);
+          }
+        }
+      }
+    });
+  }
+  makeSingleton();
 
   var args = {
     'protocol': 'https',
@@ -70,10 +104,10 @@ Central roster: hosting all Google Talk chats in ChromeOS.
     var minutes = Math.floor(seconds / 60);
     seconds -= minutes * 60;
 
-    document.getElementById('retryStatus').textContent = 
-        chrome.i18n.getMessage('CHAT_MANAGER_RETRYING_IN', 
+    document.getElementById('retryStatus').textContent =
+        chrome.i18n.getMessage('CHAT_MANAGER_RETRYING_IN',
             [minutes, (seconds < 10 ? '0' : '') + seconds]);
-        
+
     if (retryTime <= 0) {
       retryConnection();
     } else {
@@ -104,7 +138,7 @@ Central roster: hosting all Google Talk chats in ChromeOS.
       if (!localStorage.retryStartTime) {
         localStorage.retryStartTime = MIN_RETRY_MILLISECONDS;
       } else if (localStorage.retryStartTime < MAX_RETRY_MILLISECONDS) {
-        localStorage.retryStartTime = Math.min(localStorage.retryStartTime * 2, 
+        localStorage.retryStartTime = Math.min(localStorage.retryStartTime * 2,
             MAX_RETRY_MILLISECONDS);
       }
       retryTime = localStorage.retryStartTime;
@@ -114,20 +148,12 @@ Central roster: hosting all Google Talk chats in ChromeOS.
   }
   function onPageLoaded() {
     // localize the page
-    document.getElementById('retryMessage').textContent = 
+    document.getElementById('retryMessage').textContent =
         chrome.i18n.getMessage('CHAT_MANAGER_COULD_NOT_CONNECT');
-    document.getElementById('retryButton').value = 
+    document.getElementById('retryButton').value =
         chrome.i18n.getMessage('CHAT_MANAGER_RETRY_NOW');
 
-    if (localStorage.hasOpenedInViewer) {
-      runGTalkScript();
-    }
-  }
-  function onOpenedInViewer() {
-    if (!localStorage.hasOpenedInViewer) {
-      localStorage.hasOpenedInViewer = true;
-      runGTalkScript();
-    }
+    runGTalkScript();
   }
 </script>
 </head>
