@@ -273,8 +273,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestEnableResourcesTab) {
 #define MAYBE_TestResourceContentLength TestResourceContentLength
 #endif  // defined(OS_LINUX)
 
+// Disabled because times out on builder: http://crbug.com/54592.
 // Tests profiler panel.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FLAKY_TestProfilerTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
 
