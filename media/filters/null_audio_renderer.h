@@ -19,7 +19,6 @@
 
 #include <deque>
 
-#include "base/lock.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "media/base/buffers.h"

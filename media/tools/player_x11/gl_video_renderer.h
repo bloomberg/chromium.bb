@@ -6,7 +6,6 @@
 #define MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 
 #include "app/gfx/gl/gl_bindings.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"

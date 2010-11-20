@@ -52,6 +52,7 @@
 
 #include "base/lock.h"
 #include "base/observer_list.h"
+#include "base/platform_thread.h"
 
 namespace browser_sync {
 

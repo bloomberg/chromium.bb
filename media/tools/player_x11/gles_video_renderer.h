@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
-#define MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
+#ifndef MEDIA_TOOLS_PLAYER_X11_GLES_VIDEO_RENDERER_H_
+#define MEDIA_TOOLS_PLAYER_X11_GLES_VIDEO_RENDERER_H_
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
-#include "base/lock.h"
+#include <utility>
+#include <vector>
+
 #include "base/scoped_ptr.h"
 #include "media/base/filters.h"
 #include "media/base/video_frame.h"

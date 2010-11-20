@@ -10,7 +10,6 @@
 #include <deque>
 
 #include "base/callback.h"
-#include "base/lock.h"
 #include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "base/thread.h"

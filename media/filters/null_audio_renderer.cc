@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <cmath>
 
+#include "base/logging.h"
 #include "media/base/filter_host.h"
 #include "media/filters/null_audio_renderer.h"
 

@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "testing/gtest/include/gtest/gtest.h"

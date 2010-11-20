@@ -8,7 +8,6 @@
 #include <sys/time.h>
 
 #include "base/lock.h"
-#include "base/lock_impl.h"
 #include "base/logging.h"
 #include "base/time.h"
 

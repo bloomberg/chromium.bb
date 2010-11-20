@@ -4,7 +4,11 @@
 
 #include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
 
+#include <string>
+#include <vector>
+
 #include "base/file_util_proxy.h"
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
@@ -66,4 +70,3 @@ void WebFileSystemCallbackDispatcher::DidFail(
 void WebFileSystemCallbackDispatcher::DidWrite(int64 bytes, bool complete) {
   NOTREACHED();
 }
-

@@ -8,6 +8,7 @@
 
 #include "base/at_exit.h"
 #include "base/atomicops.h"
+#include "base/platform_thread.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/thread_restrictions.h"
 

@@ -17,7 +17,6 @@
 #ifndef MEDIA_BASE_FILTER_HOST_H_
 #define MEDIA_BASE_FILTER_HOST_H_
 
-#include "base/task.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline.h"
 

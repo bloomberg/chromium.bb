@@ -7,7 +7,6 @@
 
 #include <X11/Xlib.h>
 
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"

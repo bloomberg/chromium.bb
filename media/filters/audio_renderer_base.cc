@@ -5,8 +5,10 @@
 #include "media/filters/audio_renderer_base.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "media/base/filter_host.h"
 #include "media/filters/audio_renderer_algorithm_ola.h"
 

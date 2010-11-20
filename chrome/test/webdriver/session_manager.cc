@@ -18,7 +18,6 @@
 #endif
 
 #include "base/command_line.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/process_util.h"

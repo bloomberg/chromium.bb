@@ -61,7 +61,6 @@
 #include <map>
 
 #include "base/gtest_prod_util.h"
-#include "base/lock.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

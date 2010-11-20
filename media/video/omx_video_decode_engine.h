@@ -6,12 +6,11 @@
 #define MEDIA_VIDEO_OMX_VIDEO_DECODE_ENGINE_H_
 
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "media/omx/omx_configurator.h"
 #include "media/video/video_decode_engine.h"
 #include "third_party/openmax/il/OMX_Component.h"

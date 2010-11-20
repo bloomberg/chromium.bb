@@ -12,7 +12,6 @@
 
 #include "app/clipboard/clipboard_util_win.h"
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
@@ -127,7 +126,7 @@ HGLOBAL CreateGlobalData(const std::basic_string<charT>& str) {
   return data;
 };
 
-} // namespace
+}  // namespace
 
 Clipboard::Clipboard() : create_window_(false) {
   if (MessageLoop::current()->type() == MessageLoop::TYPE_UI) {

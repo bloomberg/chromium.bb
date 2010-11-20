@@ -10,7 +10,6 @@
 #include <exdispid.h>
 #include <string>
 
-#include "base/lock.h"
 #include "base/scoped_comptr_win.h"
 
 #include "chrome_frame/test_utils.h"
@@ -286,4 +285,3 @@ END_COM_MAP()
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_IE_EVENT_SINK_H_
-

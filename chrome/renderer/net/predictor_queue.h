@@ -28,7 +28,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
 
 class DnsQueue {

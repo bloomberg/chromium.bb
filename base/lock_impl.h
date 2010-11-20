@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 #endif
 
 #include "base/basictypes.h"
-#include "base/platform_thread.h"
 
 // This class implements the underlying platform-specific spin-lock mechanism
 // used for the Lock class.  Most users should not use LockImpl directly, but

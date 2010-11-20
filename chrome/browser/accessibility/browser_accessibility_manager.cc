@@ -4,6 +4,7 @@
 
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 
+#include "base/logging.h"
 #include "chrome/browser/accessibility/browser_accessibility.h"
 
 using webkit_glue::WebAccessibility;

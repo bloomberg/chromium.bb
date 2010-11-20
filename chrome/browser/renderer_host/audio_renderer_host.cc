@@ -4,7 +4,6 @@
 
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 
-#include "base/lock.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
@@ -397,9 +396,9 @@ void AudioRendererHost::OnCreateStream(
   entry->render_view_id = msg.routing_id();
   entry->stream_id = stream_id;
 
- audio_entries_.insert(std::make_pair(
-     AudioEntryId(msg.routing_id(), stream_id),
-     entry.release()));
+  audio_entries_.insert(std::make_pair(
+      AudioEntryId(msg.routing_id(), stream_id),
+      entry.release()));
 }
 
 void AudioRendererHost::OnPlayStream(const IPC::Message& msg, int stream_id) {
