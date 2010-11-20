@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,36 @@
 class MessageLoop;
 class Task;
 
+// This class maintains state that is used to upload histogram data from the
+// various renderer processes, into the browser process.  Such transactions are
+// usually instigated by the browser.  In general, a renderer process will
+// respond by gathering snapshots of all internal histograms, calculating what
+// has changed since its last upload, and transmitting a pickled collection of
+// deltas.
+//
+// There are actually two modes of update request.  One is synchronous (and
+// blocks the UI thread, waiting to populate an about:histograms tab) and the
+// other is asynchronous, and used by the metrics services in preparation for a
+// log upload.
+//
+// To assure that all the renderers have responded, a counter is maintained (for
+// each mode) to indicate the number of pending (not yet responsive) renderers.
+// To avoid confusion about a response (i.e., is the renderer responding to a
+// current request for an update, or to an old request for an update) we tag
+// each group of requests with a sequence number.  When an update arrives we can
+// ignore it (relative to the counter) if it does not relate to a current
+// outstanding sequence number.
+//
+// There is one final mode of use, where a renderer spontaneously decides to
+// transmit a collection of histogram data.  This is designed for use when the
+// renderer is terminating.  Unfortunately, renders may be terminated without
+// warning, and the best we can do is periodically acquire data from a tab, such
+// as when a page load has completed.  In this mode, the renderer uses a
+// reserved sequence number, different from any sequence number that might be
+// specified by a browser request.  Since this sequence number can't match an
+// outstanding sequence number, the pickled data is accepted into the browser,
+// but there is no impact on the counters.
+
 class HistogramSynchronizer : public
     base::RefCountedThreadSafe<HistogramSynchronizer> {
  public:
@@ -27,6 +57,10 @@ class HistogramSynchronizer : public
     SYNCHRONOUS_HISTOGRAMS
   };
 
+  // Construction also sets up the global singleton instance.  This instance is
+  // used to communicate between the IO and UI thread, and is destroyed only
+  // as the main thread (browser_main) terminates, which means the IO thread has
+  // already completed, and will not need this instance any further.
   HistogramSynchronizer();
 
   ~HistogramSynchronizer();
@@ -43,46 +77,49 @@ class HistogramSynchronizer : public
 
   // Contact all renderers, and get them to upload to the browser any/all
   // changes to histograms.  When all changes have been acquired, or when the
-  // wait time expires (whichever is sooner), post the callback_task to the UI
-  // thread. Note the callback_task is posted exactly once. This method is
-  // called on the IO thread from UMA via PostMessage.
+  // wait time expires (whichever is sooner), post the callback_task to the
+  // specified thread. Note the callback_task is posted exactly once.
   static void FetchRendererHistogramsAsynchronously(
       MessageLoop* callback_thread, Task* callback_task, int wait_time);
 
-  // This method is called on the IO thread. Desrializes the histograms and
+  // This method is called on the IO thread. Deserializes the histograms and
   // records that we have received histograms from a renderer process.
   static void DeserializeHistogramList(
       int sequence_number, const std::vector<std::string>& histograms);
 
  private:
-  // Records that we are waiting for one less histogram from a renderer for the
-  // given sequence number. If we have received a response from all histograms,
-  // either signal the waiting process or call the callback function. Returns
-  // true when we receive histograms from the last of N renderers that were
-  // contacted for an update.
-  bool DecrementPendingRenderers(int sequence_number);
+  // Establish a new sequence_number_, and use it to notify all the renderers of
+  // the need to supply, to the browser, any changes in their histograms.
+  // The argument indicates whether this will set async_sequence_number_ or
+  // synchronous_sequence_number_.
+  // Return the sequence number that was used.
+  int NotifyAllRenderers(RendererHistogramRequester requester);
 
-  void SetCallbackTaskToCallAfterGettingHistograms(
-      MessageLoop* callback_thread, Task* callback_task);
+  // Records that we are waiting for one less histogram from a renderer for the
+  // given sequence number. If we have received a response from all renderers,
+  // either signal the waiting process or call the callback function.
+  void DecrementPendingRenderers(int sequence_number);
+
+  // Set the callback_thread_ and callback_task_ members. If these members
+  // already had values, then as a side effect, post the old callback_task_ to
+  // the old callaback_thread_.  This side effect should not generally happen,
+  // but is in place to assure correctness (that any tasks that were set, are
+  // eventually called, and never merely discarded).
+  void SetCallbackTaskAndThread(MessageLoop* callback_thread,
+                                Task* callback_task);
 
   void ForceHistogramSynchronizationDoneCallback(int sequence_number);
 
-  // Calls the callback task, if there is a callback_task.
-  void CallCallbackTaskAndResetData();
+  // Gets a new sequence number to be sent to renderers from browser process and
+  // set the number of pending responses for the given type to renderer_count.
+  int GetNextAvailableSequenceNumber(RendererHistogramRequester requster,
+                                     int renderer_count);
 
-  // Gets a new sequence number to be sent to renderers from browser process.
-  // This will also reset the count of pending renderers for the given type to
-  // 1.  After all calls to renderers have been made, a call to
-  // DecrementPendingRenderers() must be mode to make it possible for the
-  // counter to go to zero (after all renderers have responded).
-  int GetNextAvailableSequenceNumber(RendererHistogramRequester requster);
+  // Internal helper function, to post task, and record callback stats.
+  void InternalPostTask(MessageLoop* thread, Task* task,
+      int unresponsive_renderers, const base::TimeTicks& started);
 
-  // Increments the count of the renderers we're waiting for for the request
-  // of the given type.
-  void IncrementPendingRenderers(RendererHistogramRequester requester);
-
-  // This lock_ protects access to next_sequence_number_,
-  // synchronous_renderers_pending_, and synchronous_sequence_number_.
+  // This lock_ protects access to all members.
   Lock lock_;
 
   // This condition variable is used to block caller of the synchronous request
@@ -101,28 +138,28 @@ class HistogramSynchronizer : public
   // sure a response from a renderer is associated with the current round of
   // requests (and not merely a VERY belated prior response).
   // All sequence numbers used are non-negative.
-  // next_available_sequence_number_ is the next available number (used to
-  // avoid reuse for a long time).  Access is protected by lock_.
-  int next_available_sequence_number_;
+  // last_used_sequence_number_ is the most recently used number (used to avoid
+  // reuse for a long time).
+  int last_used_sequence_number_;
 
   // The sequence number used by the most recent asynchronous update request to
-  // contact all renderers.  Access is only permitted on the IO thread.
+  // contact all renderers.
   int async_sequence_number_;
 
   // The number of renderers that have not yet responded to requests (as part of
-  // an asynchronous update).  Access is only permitted on the IO thread.
+  // an asynchronous update).
   int async_renderers_pending_;
 
   // The time when we were told to start the fetch histograms asynchronously
-  // from renderers.  Access is only permitted on the IO thread.
+  // from renderers.
   base::TimeTicks async_callback_start_time_;
 
   // The sequence number used by the most recent synchronous update request to
-  // contact all renderers.  Protected by lock_.
+  // contact all renderers.
   int synchronous_sequence_number_;
 
   // The number of renderers that have not yet responded to requests (as part of
-  // a synchronous update).  Protected by lock_.
+  // a synchronous update).
   int synchronous_renderers_pending_;
 
   // This singleton instance should be started during the single threaded
