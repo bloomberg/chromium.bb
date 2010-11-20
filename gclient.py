@@ -1193,6 +1193,9 @@ def GenUsage(parser, command):
 def Main(argv):
   """Doesn't parse the arguments here, just find the right subcommand to
   execute."""
+  if sys.hexversion < 0x02050000:
+    print >> sys.stderr, (
+        '\nYour python version is unsupported, please upgrade.\n')
   try:
     # Make stdout auto-flush so buildbot doesn't kill us during lengthy
     # operations. Python as a strong tendency to buffer sys.stdout.
