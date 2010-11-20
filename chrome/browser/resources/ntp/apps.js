@@ -97,11 +97,6 @@ var apps = (function() {
     return div;
   }
 
-  function createContextMenu(app) {
-    var menu = new cr.ui.Menu;
-    var button = document.createElement(button);
-  }
-
   function launchApp(appId) {
     var appsSection = $('apps');
     var expanded = !appsSection.classList.contains('hidden');
@@ -174,10 +169,15 @@ var apps = (function() {
         $('apps-launch-command').label = app['name'];
         $('apps-options-command').canExecuteChange();
 
-        var appLinkSel = '.app a[app-id=' + app['id'] + ']';
-        var launchType =
-            el.querySelector(appLinkSel).getAttribute('launch-type');
+        var launchTypeEl;
+        if (el.getAttribute('app-id') === app['id']) {
+          launchTypeEl = el;
+        } else {
+          appLinkSel = 'a[app-id=' + app['id'] + ']';
+          launchTypeEl = el.querySelector(appLinkSel);
+        }
 
+        var launchType = launchTypeEl.getAttribute('launch-type');
         var launchContainer = app['launch_container'];
         var isPanel = launchContainer == LaunchContainer.LAUNCH_PANEL;
 
@@ -304,6 +304,9 @@ var apps = (function() {
       a.setAttribute('ping', PING_APP_LAUNCH_PREFIX + '+' + this.showPromo);
       a.style.backgroundImage = url(app['icon_small']);
       a.className = 'item';
+
+      addContextMenu(a, app);
+
       return a;
     },
 

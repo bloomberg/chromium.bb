@@ -239,6 +239,11 @@ if ('mode' in hashParams) {
 <command id="apps-launch-type-fullscreen"
     i18n-values=".label:applaunchtypefullscreen" launch-type="2">
 
+<!-- These are populated dynamically -->
+<menu id="apps-menu"></menu>
+<menu id="most-visited-menu"></menu>
+<menu id="recently-closed-menu"></menu>
+
 <menu id="app-context-menu">
   <button class="default" command="#apps-launch-command"></button>
   <hr>
@@ -249,11 +254,6 @@ if ('mode' in hashParams) {
   <button command="#apps-options-command"></button>
   <button command="#apps-uninstall-command"></button>
 </menu>
-
-<!-- These are populated dynamically -->
-<menu id="apps-menu"></menu>
-<menu id="most-visited-menu"></menu>
-<menu id="recently-closed-menu"></menu>
 
 </body>
 
