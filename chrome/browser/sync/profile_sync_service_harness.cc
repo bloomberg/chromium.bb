@@ -238,6 +238,18 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       }
       break;
     }
+    case WAITING_FOR_PASSPHRASE_REQUIRED: {
+      LogClientInfo("WAITING_FOR_PASSPHRASE_REQUIRED");
+      if (service_->observed_passphrase_required())
+        SignalStateCompleteWithNextState(WAITING_FOR_PASSPHRASE_ACCEPTED);
+      break;
+    }
+    case WAITING_FOR_PASSPHRASE_ACCEPTED: {
+      LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
+      if (passphrase_acceptance_counter_ >= 0)
+        SignalStateCompleteWithNextState(WAITING_FOR_INITIAL_SYNC);
+      break;
+    }
     case WAITING_FOR_INITIAL_SYNC: {
       LogClientInfo("WAITING_FOR_INITIAL_SYNC");
       if (IsSynced()) {
@@ -283,18 +295,6 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case FULLY_SYNCED: {
       // The client is online and fully synced. There is nothing to do.
       LogClientInfo("FULLY_SYNCED");
-      break;
-    }
-    case WAITING_FOR_PASSPHRASE_REQUIRED: {
-      LogClientInfo("WAITING_FOR_PASSPHRASE_REQUIRED");
-      if (service_->observed_passphrase_required())
-        SignalStateCompleteWithNextState(WAITING_FOR_PASSPHRASE_ACCEPTED);
-      break;
-    }
-    case WAITING_FOR_PASSPHRASE_ACCEPTED: {
-      LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
-      if (passphrase_acceptance_counter_ >= 0)
-        SignalStateCompleteWithNextState(WAITING_FOR_INITIAL_SYNC);
       break;
     }
     case SYNC_DISABLED: {
@@ -460,6 +460,7 @@ ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
 }
 
 bool ProfileSyncServiceHarness::IsSynced() {
+  LogClientInfo("IsSynced");
   if (service() == NULL)
     return false;
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
@@ -577,8 +578,11 @@ void ProfileSyncServiceHarness::LogClientInfo(std::string message) {
               << ": max_local_timestamp: " << snap->max_local_timestamp
               << ", has_more_to_sync: " << snap->has_more_to_sync
               << ", unsynced_count: " << snap->unsynced_count
+              << ", num_conflicting_updates: " << snap->num_conflicting_updates
               << ", has_unsynced_items: "
               << service()->backend()->HasUnsyncedItems()
+              << ", observed_passphrase_required: "
+              << service()->observed_passphrase_required()
               << ", notifications_enabled: "
               << GetStatus().notifications_enabled
               << ", service_is_pushing_changes: " << ServiceIsPushingChanges();
