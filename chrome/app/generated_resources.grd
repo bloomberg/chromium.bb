@@ -978,6 +978,17 @@ each locale. -->
         Close
       </message>
 
+      <if expr="os == 'darwin'">
+        <message name="IDS_PREFERENCES" desc="The Mac menu item to open the preferences window in the app menu.">
+          Preferences...
+        </message>
+      </if>
+      <if expr="os == 'linux2'">
+        <message name="IDS_PREFERENCES" desc="The text label of the Preferences menu item.">
+          Preferences
+        </message>
+      </if>
+
       <!-- App menu -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
@@ -8473,9 +8484,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <!-- App menu -->
         <message name="IDS_ABOUT_MAC" desc="The Mac menu item to open the about box.">
           About <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-        </message>
-        <message name="IDS_PREFERENCES_MAC" desc="The Mac menu item to open the preferences window in the app menu.">
-          Preferences...
         </message>
         <message name="IDS_CLEAR_BROWSING_DATA_MAC" desc="The Mac menu item for clearing of browsing data in the app menu.">
           Clear Browsing Data...

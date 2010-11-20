@@ -484,20 +484,17 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
   // Add Preferences item
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTabbedOptions)) {
-    menu->AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
-  } else {
-#if defined(TOOLKIT_GTK)
-    string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
-    if (preferences.empty())
-      menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
-    else
-      menu->AddItem(IDC_OPTIONS, preferences);
+#if defined(OS_CHROMEOS)
+  menu->AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
+#elif defined(TOOLKIT_GTK)
+  string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
+  if (!preferences.empty())
+    menu->AddItem(IDC_OPTIONS, preferences);
+  else
+    menu->AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
 #else
-    menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+  menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
-  }
   menu->AddSeparator();
   int application_position = 0;
   context_menu_application_offset_ = menu->GetItemCount();

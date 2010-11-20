@@ -391,22 +391,19 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   AddSeparator();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTabbedOptions)) {
-    AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
-  } else {
-#if defined(OS_MACOSX)
-    AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES_MAC);
+#if defined(OS_CHROMEOS)
+  AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
+#elif defined(OS_MACOSX)
+  AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
 #elif defined(OS_LINUX)
-    string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
-    if (!preferences.empty())
-      AddItem(IDC_OPTIONS, preferences);
-    else
-      AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+  string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
+  if (!preferences.empty())
+    AddItem(IDC_OPTIONS, preferences);
+  else
+    AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES);
 #else
-    AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+  AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
-  }
 
 #if defined(OS_CHROMEOS)
   const string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
