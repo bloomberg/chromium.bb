@@ -1705,11 +1705,10 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
           error.reason == net::ERR_CACHE_MISS &&
           EqualsASCII(failed_request.httpMethod(), "POST")) {
         LocalizedError::GetFormRepostStrings(failed_url, &error_strings);
-        resource_id = IDR_ERROR_NO_DETAILS_HTML;
       } else {
         LocalizedError::GetStrings(error, &error_strings);
-        resource_id = IDR_NET_ERROR_HTML;
       }
+      resource_id = IDR_NET_ERROR_HTML;
     }
 
     alt_html = GetAltHTMLForTemplate(error_strings, resource_id);

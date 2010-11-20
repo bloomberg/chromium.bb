@@ -113,9 +113,10 @@ if (window.screen.colorDepth >= 24)
   </h1>
 
   <div id="errorSummary" jsselect="summary">
-   <p jsvalues=".innerHTML:msg"></div>
+   <span jsvalues=".innerHTML:msg"></span>
+  </div>
 
-  <div id="suggestions">
+  <div id="suggestions" jsdisplay="suggestionsHeading">
    <h2 i18n-content="suggestionsHeading"></h2>
    <ul>
     <li jsselect="suggestionsReload">
@@ -140,7 +141,7 @@ if (window.screen.colorDepth >= 24)
    </ul>
   </div>
 
-  <div id="errorDetails" i18n-content="details"></div>
+  <div id="errorDetails" jsselect="details" jscontent="$this"></div>
  </div>
 </div>
 </body>

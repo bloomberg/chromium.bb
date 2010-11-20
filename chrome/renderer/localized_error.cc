@@ -328,12 +328,11 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   if (error_map)
     options = *error_map;
 
-  string16 suggestions_heading;
   if (options.suggestions != SUGGEST_NONE) {
-    suggestions_heading =
-        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_HEADING);
+    error_strings->SetString(
+        "suggestionsHeading",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_HEADING));
   }
-  error_strings->SetString("suggestionsHeading", suggestions_heading);
 
   string16 failed_url(ASCIIToUTF16(error.unreachableURL.spec()));
   // URLs are always LTR.
@@ -490,7 +489,6 @@ void LocalizedError::GetFormRepostStrings(const GURL& display_url,
                                           failed_url));
   error_strings->SetString(
       "heading", l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_TITLE));
-  error_strings->SetString("suggestionsHeading", "");
   DictionaryValue* summary = new DictionaryValue;
   summary->SetString(
       "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_HTTP_POST_WARNING));
