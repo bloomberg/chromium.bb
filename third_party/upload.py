@@ -261,10 +261,12 @@ class AbstractRpcServer(object):
       else:
         raise
 
-  def _GetAuthCookie(self, auth_token):
+  def _GetAuthCookie(self, host, auth_token):
     """Fetches authentication cookies for an authentication token.
 
     Args:
+      host: The host to get a cookie against. Because of 301, it may be a
+            different host than self.host.
       auth_token: The authentication token returned by ClientLogin.
 
     Raises:
@@ -273,20 +275,31 @@ class AbstractRpcServer(object):
     # This is a dummy value to allow us to identify when we're successful.
     continue_location = "http://localhost/"
     args = {"continue": continue_location, "auth": auth_token}
-    req = self._CreateRequest("%s/_ah/login?%s" %
-                              (self.host, urllib.urlencode(args)))
-    try:
-      response = self.opener.open(req)
-    except urllib2.HTTPError, e:
-      response = e
+    tries = 0
+    url = "%s/_ah/login?%s" % (host, urllib.urlencode(args))
+    while tries < 3:
+      req = self._CreateRequest(url)
+      try:
+        response = self.opener.open(req)
+      except urllib2.HTTPError, e:
+        response = e
+        if e.code == 301:
+          # Handle permanent redirect manually.
+          url = e.info()["location"]
+          continue
+      break
     if (response.code != 302 or
         response.info()["location"] != continue_location):
       raise urllib2.HTTPError(req.get_full_url(), response.code, response.msg,
                               response.headers, response.fp)
     self.authenticated = True
 
-  def _Authenticate(self):
+  def _Authenticate(self, host):
     """Authenticates the user.
+
+    Args:
+      host: The host to get a cookie against. Because of 301, it may be a
+            different host than self.host.
 
     The authentication process works as follows:
      1) We get a username and password from the user
@@ -336,7 +349,7 @@ class AbstractRpcServer(object):
           print >>sys.stderr, "The service is not available; try again later."
           break
         raise
-      self._GetAuthCookie(auth_token)
+      self._GetAuthCookie(host, auth_token)
       return
 
   def Send(self, request_path, payload=None,
@@ -363,18 +376,18 @@ class AbstractRpcServer(object):
     # TODO: Don't require authentication.  Let the server say
     # whether it is necessary.
     if not self.authenticated:
-      self._Authenticate()
+      self._Authenticate(self.host)
 
     old_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(timeout)
     try:
       tries = 0
+      args = dict(kwargs)
+      url = "%s%s" % (self.host, request_path)
+      if args:
+        url += "?" + urllib.urlencode(args)
       while True:
         tries += 1
-        args = dict(kwargs)
-        url = "%s%s" % (self.host, request_path)
-        if args:
-          url += "?" + urllib.urlencode(args)
         req = self._CreateRequest(url=url, data=payload)
         req.add_header("Content-Type", content_type)
         if extra_headers:
@@ -389,10 +402,14 @@ class AbstractRpcServer(object):
           if tries > 3:
             raise
           elif e.code == 401 or e.code == 302:
-            self._Authenticate()
+            url_loc = urlparse.urlparse(url)
+            self._Authenticate('%s://%s' % (url_loc[0], url_loc[1]))
 ##           elif e.code >= 500 and e.code < 600:
 ##             # Server Error - try again.
 ##             continue
+          elif e.code == 301:
+            # Handle permanent redirect manually.
+            url = e.info()["location"]
           else:
             raise
     finally:
@@ -402,9 +419,9 @@ class AbstractRpcServer(object):
 class HttpRpcServer(AbstractRpcServer):
   """Provides a simplified RPC-style interface for HTTP requests."""
 
-  def _Authenticate(self):
+  def _Authenticate(self, *args):
     """Save the cookie jar after authentication."""
-    super(HttpRpcServer, self)._Authenticate()
+    super(HttpRpcServer, self)._Authenticate(*args)
     if self.save_cookies:
       StatusUpdate("Saving authentication cookies to %s" % self.cookie_file)
       self.cookie_jar.save()
