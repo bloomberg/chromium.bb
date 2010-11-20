@@ -122,7 +122,7 @@ void PrintWebViewHelper::Print(WebFrame* frame,
 
   // Initialize print settings.
   if (!InitPrintSettings(frame))
-    return; // Failed to init print page settings.
+    return;  // Failed to init print page settings.
 
   int expected_pages_count = 0;
   bool use_browser_overlays = true;
@@ -141,13 +141,15 @@ void PrintWebViewHelper::Print(WebFrame* frame,
   if (expected_pages_count) {
     if (!is_preview_) {
       // Ask the browser to show UI to retrieve the final print settings.
-      if (!GetPrintSettingsFromUser(
-              frame, expected_pages_count, use_browser_overlays))
+      if (!GetPrintSettingsFromUser(frame, expected_pages_count,
+                                    use_browser_overlays)) {
         print_cancelled = true;
+      }
     }
 
     // Render Pages for printing.
-    if (!print_cancelled && RenderPagesForPrint(frame)) {
+    if (!print_cancelled) {
+      RenderPagesForPrint(frame);
       // Reset cancel counter on first successful print.
       user_cancelled_scripted_print_count_ = 0;
       return;  // All went well.
@@ -432,21 +434,15 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebFrame* frame,
     NOTREACHED();
     return false;
   }
-  return true;
+  return (print_settings.params.dpi && print_settings.params.document_cookie);
 }
 
-bool PrintWebViewHelper::RenderPagesForPrint(WebFrame *frame) {
+void PrintWebViewHelper::RenderPagesForPrint(WebFrame *frame) {
   ViewMsg_PrintPages_Params print_settings = *print_pages_params_;
-  // If the settings are invalid, early quit.
-  if (print_settings.params.dpi && print_settings.params.document_cookie) {
-    if (print_settings.params.selection_only) {
-      CopyAndPrint(frame);
-    } else {
-      // TODO: Always copy before printing.
-      PrintPages(print_settings, frame);
-    }
-    return true;
+  if (print_settings.params.selection_only) {
+    CopyAndPrint(frame);
+  } else {
+    // TODO: Always copy before printing.
+    PrintPages(print_settings, frame);
   }
-  NOTREACHED();
-  return false;
 }

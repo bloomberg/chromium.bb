@@ -139,12 +139,13 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
                                ViewMsg_Print_Params* params);
 
   // Get final print settings from the user.
+  // Return false if the user cancels or on error.
   bool GetPrintSettingsFromUser(WebKit::WebFrame* frame,
                                 int expected_pages_count,
                                 bool use_browser_overlays);
 
   // Render the frame for printing.
-  bool RenderPagesForPrint(WebKit::WebFrame* frame);
+  void RenderPagesForPrint(WebKit::WebFrame* frame);
 
   RenderView* render_view_;
   WebKit::WebView* print_web_view_;
