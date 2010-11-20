@@ -19,23 +19,6 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
-namespace {
-
-// Returns true if the specified node is of type URL, or has a descendant
-// of type URL.
-bool NodeHasURLs(const BookmarkNode* node) {
-  if (node->is_url())
-    return true;
-
-  for (int i = 0; i < node->GetChildCount(); ++i) {
-    if (NodeHasURLs(node->GetChild(i)))
-      return true;
-  }
-  return false;
-}
-
-}  // namespace
-
 BookmarkContextMenuController::BookmarkContextMenuController(
     gfx::NativeWindow parent_window,
     BookmarkContextMenuControllerDelegate* delegate,
@@ -302,7 +285,7 @@ void BookmarkContextMenuController::BookmarkModelChanged() {
 
 bool BookmarkContextMenuController::HasURLs() const {
   for (size_t i = 0; i < selection_.size(); ++i) {
-    if (NodeHasURLs(selection_[i]))
+    if (bookmark_utils::NodeHasURLs(selection_[i]))
       return true;
   }
   return false;

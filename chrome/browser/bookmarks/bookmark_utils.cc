@@ -654,4 +654,17 @@ const BookmarkNode* GetParentForNewNodes(
   return real_parent;
 }
 
+bool NodeHasURLs(const BookmarkNode* node) {
+  DCHECK(node);
+
+  if (node->is_url())
+    return true;
+
+  for (int i = 0; i < node->GetChildCount(); ++i) {
+    if (NodeHasURLs(node->GetChild(i)))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace bookmark_utils

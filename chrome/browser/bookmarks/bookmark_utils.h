@@ -203,6 +203,10 @@ const BookmarkNode* GetParentForNewNodes(
     const std::vector<const BookmarkNode*>& selection,
     int* index);
 
+// Returns true if the specified node is of type URL, or has a descendant
+// of type URL.
+bool NodeHasURLs(const BookmarkNode* node);
+
 // Number of bookmarks we'll open before prompting the user to see if they
 // really want to open all.
 //
