@@ -21,6 +21,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "gfx/codec/png_codec.h"
+#include "net/test/test_server.h"
 
 extern base::hash_map<std::string, int> g_test_timeout_overrides;
 
@@ -52,22 +53,24 @@ class PDFBrowserTest : public InProcessBrowserTest,
         next_dummy_search_value_(0),
         load_stop_notification_count_(0) {
     EnableDOMAutomation();
+
+    pdf_test_server_.reset(new net::TestServer(
+        net::TestServer::TYPE_HTTP,
+        FilePath(FILE_PATH_LITERAL("pdf/test"))));
   }
 
  protected:
+  // Use our own TestServer so that we can serve files from the pdf directory.
+  net::TestServer* pdf_test_server() { return pdf_test_server_.get(); }
+
   int load_stop_notification_count() const {
     return load_stop_notification_count_;
   }
 
-  virtual void SetUp() {
-    FilePath pdf_path;
-    PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-    InProcessBrowserTest::SetUp();
-  }
-
   FilePath GetPDFTestDir() {
-    return FilePath(FilePath::kCurrentDirectory).AppendASCII("plugin").
-        AppendASCII("pdf");
+    return FilePath(FilePath::kCurrentDirectory).AppendASCII("..").
+        AppendASCII("..").AppendASCII("..").AppendASCII("pdf").
+        AppendASCII("test");
   }
 
   void Load() {
@@ -204,6 +207,8 @@ class PDFBrowserTest : public InProcessBrowserTest,
   FilePath snapshot_filename_;
   // How many times we've seen NotificationType::LOAD_STOP.
   int load_stop_notification_count_;
+
+  scoped_ptr<net::TestServer> pdf_test_server_;
 };
 
 #if defined(OS_MACOSX)
@@ -281,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
 // This also loads all documents that used to crash, to ensure we don't have
 // regressions.
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Loading) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(pdf_test_server()->Start());
 
   NavigationController* controller =
       &(browser()->GetSelectedTabContents()->controller());
@@ -289,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Loading) {
   registrar.Add(this,
                 NotificationType::LOAD_STOP,
                 Source<NavigationController>(controller));
-  std::string base_url = std::string("files/plugin/pdf/");
+  std::string base_url = std::string("files/");
 
   file_util::FileEnumerator file_enumerator(
       ui_test_utils::GetTestFilePath(GetPDFTestDir(), FilePath()),
@@ -308,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Loading) {
 
     LOG(WARNING) << "PDFBrowserTest.Loading: " << filename;
 
-    GURL url = test_server()->GetURL(base_url + filename);
+    GURL url = pdf_test_server()->GetURL(base_url + filename);
     ui_test_utils::NavigateToURL(browser(), url);
 
     while (true) {
