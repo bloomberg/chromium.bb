@@ -48,7 +48,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
+// See http://crbug.com/63675.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
@@ -61,7 +62,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ObjectStoreTest) {
+// See http://crbug.com/63675.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ObjectStoreTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("object_store_test.html"))));
 }
 
