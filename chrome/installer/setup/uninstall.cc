@@ -252,11 +252,13 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
   if (got_local_state) {
     FilePath user_local_file(
         user_local_state.Append(chrome::kLocalStateFilename));
-    FilePath path = FilePath::FromWStringHack(*local_state_path);
-    if (!file_util::CreateTemporaryFile(&path))
+    FilePath path;
+    if (!file_util::CreateTemporaryFile(&path)) {
       LOG(ERROR) << "Failed to create temporary file for Local State.";
-    else
+    } else {
+      *local_state_path = path.value();
       file_util::CopyFile(user_local_file, path);
+    }
   } else {
     LOG(ERROR) << "Could not retrieve user's profile directory.";
   }
