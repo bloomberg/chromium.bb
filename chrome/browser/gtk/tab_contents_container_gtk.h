@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
@@ -68,6 +69,11 @@ class TabContentsContainerGtk : public NotificationObserver,
 
   // Removes |preview_contents_|.
   void RemovePreviewContents();
+
+  // Handle focus traversal on the tab contents container. Focus should not
+  // traverse to the preview contents.
+  CHROMEGTK_CALLBACK_1(TabContentsContainerGtk, gboolean, OnFocus,
+                       GtkDirectionType);
 
   NotificationRegistrar registrar_;
 

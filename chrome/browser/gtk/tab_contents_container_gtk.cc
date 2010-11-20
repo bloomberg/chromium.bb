@@ -40,6 +40,7 @@ void TabContentsContainerGtk::Init() {
 
   floating_.Own(gtk_floating_container_new());
   gtk_widget_set_name(floating_.get(), "chrome-tab-contents-container");
+  g_signal_connect(floating_.get(), "focus", G_CALLBACK(OnFocusThunk), this);
 
   expanded_ = gtk_expanded_container_new();
   gtk_container_add(GTK_CONTAINER(floating_.get()), expanded_);
@@ -178,6 +179,20 @@ void TabContentsContainerGtk::TabContentsDestroyed(TabContents* contents) {
     SetTabContents(NULL);
   else
     NOTREACHED();
+}
+
+// Prevent |preview_contents_| from getting focus via the tab key. If
+// |tab_contents_| exists, try to focus that. Otherwise, do nothing, but stop
+// event propagation. See bug http://crbug.com/63365
+gboolean TabContentsContainerGtk::OnFocus(GtkWidget* widget,
+                                          GtkDirectionType focus) {
+  if (preview_contents_) {
+    gtk_widget_child_focus(tab_contents_->GetContentNativeView(), focus);
+    return TRUE;
+  }
+
+  // No preview contents; let the default handler run.
+  return FALSE;
 }
 
 // -----------------------------------------------------------------------------
