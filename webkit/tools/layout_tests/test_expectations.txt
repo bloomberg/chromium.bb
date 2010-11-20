@@ -7,5 +7,8 @@
 
 BUG_LEVIN WIN : fast/xsl/xslt-mismatched-tags-in-xslt.xml = IMAGE PASS
 
+// Not sure when this started crashing, seen on my webkit roll, but was crashing before that.
+BUG_JPARENT SLOW LINUX : fast/dom/HTMLHeadElement/head-check.html = CRASH PASS
+
 // Debug only timeout, so no coverage from canaries, somewhere in range 72395:72417.
 BUG_JPARENT WIN DEBUG : inspector/styles-disable-then-delete.html = TIMEOUT
