@@ -17,6 +17,7 @@ class RenderView;
 
 namespace WebKit {
 class WebInputElement;
+class WebKeyboardEvent;
 class WebString;
 }
 
@@ -85,10 +86,11 @@ class AutoFillHelper : public PageClickListener {
   // WebViewClient editor call forwarded by the RenderView.
   void TextDidChangeInTextField(const WebKit::WebInputElement& element);
 
-  // Called when an input element in the page has been clicked.
-  // |already_focused| is true if |element| was focused before it was clicked.
-  void InputElementClicked(const WebKit::WebInputElement& element,
-                           bool already_focused);
+  // WebViewClient editor call forwarded by the RenderView.  For lower level
+  // event translation.  Specifically, for down/up key presses in an input
+  // element.
+  void KeyDownInTextField(const WebKit::WebInputElement& element,
+                          const WebKit::WebKeyboardEvent& event);
 
  private:
   enum AutoFillAction {
@@ -122,9 +124,9 @@ class AutoFillHelper : public PageClickListener {
   // |value| is the current text in the field, and |unique_id| is the selected
   // profile's unique ID.  |action| specifies whether to Fill or Preview the
   // values returned from the AutoFillManager.
-  void QueryAutoFillFormData(const WebKit::WebNode& node,
-                             int unique_id,
-                             AutoFillAction action);
+  void FillAutoFillFormData(const WebKit::WebNode& node,
+                            int unique_id,
+                            AutoFillAction action);
 
   // Scans the given frame for forms and sends them up to the browser.
   void SendForms(WebKit::WebFrame* frame);

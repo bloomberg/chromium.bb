@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/autofill_helper.h"
 
+#include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -23,6 +24,7 @@ using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
+using WebKit::WebKeyboardEvent;
 using WebKit::WebNode;
 using WebKit::WebString;
 
@@ -191,7 +193,7 @@ void AutoFillHelper::FormDataFilled(int query_id,
 void AutoFillHelper::DidSelectAutoFillSuggestion(const WebNode& node,
                                                  int unique_id) {
   DidClearAutoFillSelection(node);
-  QueryAutoFillFormData(node, unique_id, AUTOFILL_PREVIEW);
+  FillAutoFillFormData(node, unique_id, AUTOFILL_PREVIEW);
 }
 
 void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
@@ -220,7 +222,7 @@ void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
       webframe->notifiyPasswordListenerOfAutocomplete(element);
   } else {
     // Fill the values for the whole form.
-    QueryAutoFillFormData(node, unique_id, AUTOFILL_FILL);
+    FillAutoFillFormData(node, unique_id, AUTOFILL_FILL);
   }
 
   suggestions_clear_index_ = -1;
@@ -246,6 +248,13 @@ void AutoFillHelper::FrameDetached(WebFrame* frame) {
 
 void AutoFillHelper::TextDidChangeInTextField(const WebInputElement& element) {
   ShowSuggestions(element, false, true, false);
+}
+
+void AutoFillHelper::KeyDownInTextField(const WebInputElement& element,
+                                        const WebKeyboardEvent& event) {
+  if (event.windowsKeyCode == app::VKEY_DOWN ||
+      event.windowsKeyCode == app::VKEY_UP)
+    ShowSuggestions(element, true, true, true);
 }
 
 bool AutoFillHelper::InputElementClicked(const WebInputElement& element,
@@ -286,7 +295,7 @@ void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
   QueryAutoFillSuggestions(element, autofill_disabled);
 }
 
-void AutoFillHelper::QueryAutoFillFormData(const WebNode& node,
+void AutoFillHelper::FillAutoFillFormData(const WebNode& node,
                                            int unique_id,
                                            AutoFillAction action) {
   static int query_counter = 0;

@@ -2121,6 +2121,7 @@ void RenderView::textFieldDidReceiveKeyDown(
     const WebKit::WebInputElement& element,
     const WebKit::WebKeyboardEvent& event) {
   password_autocomplete_manager_->TextFieldHandlingKeyDown(element, event);
+  autofill_helper_->KeyDownInTextField(element, event);
 }
 
 bool RenderView::handleCurrentKeyboardEvent() {
