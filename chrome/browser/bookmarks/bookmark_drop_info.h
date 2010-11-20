@@ -29,8 +29,8 @@ class BookmarkDropInfo {
   void Update(const views::DropTargetEvent& event);
 
   // Data from the drag.
-  void SetData(const BookmarkDragData& data) { data_ = data; }
-  BookmarkDragData& data() { return data_; }
+  void SetData(const BookmarkNodeData& data) { data_ = data; }
+  BookmarkNodeData& data() { return data_; }
 
   // Value of event.GetSourceOperations when Update was last invoked.
   int source_operations() const { return source_operations_; }
@@ -58,7 +58,7 @@ class BookmarkDropInfo {
   // Invoked from the timer. Scrolls up/down a line.
   void Scroll();
 
-  BookmarkDragData data_;
+  BookmarkNodeData data_;
 
   int source_operations_;
 

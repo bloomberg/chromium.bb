@@ -16,21 +16,21 @@ namespace bookmark_pasteboard_helper_mac {
 
 // Writes a set of bookmark elements from a profile to the general pasteboard.
 // This should be used for copy/paste functions.
-void WriteToClipboard(const std::vector<BookmarkDragData::Element>& elements,
+void WriteToClipboard(const std::vector<BookmarkNodeData::Element>& elements,
                       FilePath::StringType profile_path);
 
 // Writes a set of bookmark elements from a profile to the dragging pasteboard
 // for drag and drop functions.
 void WriteToDragClipboard(
-    const std::vector<BookmarkDragData::Element>& elements,
+    const std::vector<BookmarkNodeData::Element>& elements,
     FilePath::StringType profile_path);
 
 // Reads a set of bookmark elements from the general copy/paste clipboard.
-bool ReadFromClipboard(std::vector<BookmarkDragData::Element>& elements,
+bool ReadFromClipboard(std::vector<BookmarkNodeData::Element>& elements,
                        FilePath::StringType* profile_path);
 
 // Reads a set of bookmark elements from the drag and drop clipboard.
-bool ReadFromDragClipboard(std::vector<BookmarkDragData::Element>& elements,
+bool ReadFromDragClipboard(std::vector<BookmarkNodeData::Element>& elements,
                            FilePath::StringType* profile_path);
 
 // Returns true if the general copy/paste pasteboard contains any sort of

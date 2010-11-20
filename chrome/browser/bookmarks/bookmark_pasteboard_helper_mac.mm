@@ -47,7 +47,7 @@ NSString* const kWebBookmarkTypeLeaf =
     @"WebBookmarkTypeLeaf";
 
 void ConvertPlistToElements(NSArray* input,
-                            std::vector<BookmarkDragData::Element>& elements) {
+                            std::vector<BookmarkNodeData::Element>& elements) {
   NSUInteger len = [input count];
   for (NSUInteger i = 0; i < len; ++i) {
     NSDictionary* pboardBookmark = [input objectAtIndex:i];
@@ -70,7 +70,7 @@ void ConvertPlistToElements(NSArray* input,
       new_node->SetTitle(base::SysNSStringToUTF16(title));
       new_node->SetURL(GURL(base::SysNSStringToUTF8(urlString)));
     }
-    BookmarkDragData::Element e = BookmarkDragData::Element(new_node.get());
+    BookmarkNodeData::Element e = BookmarkNodeData::Element(new_node.get());
     if(is_folder)
       ConvertPlistToElements([pboardBookmark objectForKey:@"Children"],
                              e.children);
@@ -79,7 +79,7 @@ void ConvertPlistToElements(NSArray* input,
 }
 
 bool ReadBookmarkDictionaryListPboardType(NSPasteboard* pb,
-      std::vector<BookmarkDragData::Element>& elements) {
+      std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* bookmarks =
       [pb propertyListForType:kBookmarkDictionaryListPboardType];
   if (!bookmarks) return false;
@@ -88,7 +88,7 @@ bool ReadBookmarkDictionaryListPboardType(NSPasteboard* pb,
 }
 
 bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pb,
-      std::vector<BookmarkDragData::Element>& elements) {
+      std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* bookmarkPairs =
       [pb propertyListForType:kWebURLsWithTitlesPboardType];
   if (![bookmarkPairs isKindOfClass:[NSArray class]]) {
@@ -108,7 +108,7 @@ bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pb,
     string16 title = base::SysNSStringToUTF16([titlesArr objectAtIndex:i]);
     std::string url = base::SysNSStringToUTF8([urlsArr objectAtIndex:i]);
     if (!url.empty()) {
-      BookmarkDragData::Element element;
+      BookmarkNodeData::Element element;
       element.is_url = true;
       element.url = GURL(url);
       element.title = title;
@@ -119,7 +119,7 @@ bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pb,
 }
 
 bool ReadNSURLPboardType(NSPasteboard* pb,
-                         std::vector<BookmarkDragData::Element>& elements) {
+                         std::vector<BookmarkNodeData::Element>& elements) {
   NSURL* url = [NSURL URLFromPasteboard:pb];
   if (url == nil) {
     return false;
@@ -129,7 +129,7 @@ bool ReadNSURLPboardType(NSPasteboard* pb,
   if (!title)
     title = [pb stringForType:NSStringPboardType];
 
-  BookmarkDragData::Element element;
+  BookmarkNodeData::Element element;
   element.is_url = true;
   element.url = GURL(urlString);
   element.title = base::SysNSStringToUTF16(title);
@@ -138,10 +138,10 @@ bool ReadNSURLPboardType(NSPasteboard* pb,
 }
 
 NSArray* GetPlistForBookmarkList(
-    const std::vector<BookmarkDragData::Element>& elements) {
+    const std::vector<BookmarkNodeData::Element>& elements) {
   NSMutableArray* plist = [NSMutableArray array];
   for (size_t i = 0; i < elements.size(); ++i) {
-    BookmarkDragData::Element element = elements[i];
+    BookmarkNodeData::Element element = elements[i];
     if (element.is_url) {
       NSString* title = base::SysUTF16ToNSString(element.title);
       NSString* url = base::SysUTF8ToNSString(element.url.spec());
@@ -174,16 +174,16 @@ NSArray* GetPlistForBookmarkList(
 }
 
 void WriteBookmarkDictionaryListPboardType(NSPasteboard* pb,
-    const std::vector<BookmarkDragData::Element>& elements) {
+    const std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* plist = GetPlistForBookmarkList(elements);
   [pb setPropertyList:plist forType:kBookmarkDictionaryListPboardType];
 }
 
 void FillFlattenedArraysForBookmarks(
-    const std::vector<BookmarkDragData::Element>& elements,
+    const std::vector<BookmarkNodeData::Element>& elements,
     NSMutableArray* titles, NSMutableArray* urls) {
   for (size_t i = 0; i < elements.size(); ++i) {
-    BookmarkDragData::Element element = elements[i];
+    BookmarkNodeData::Element element = elements[i];
     if (element.is_url) {
       NSString* title = base::SysUTF16ToNSString(element.title);
       NSString* url = base::SysUTF8ToNSString(element.url.spec());
@@ -196,7 +196,7 @@ void FillFlattenedArraysForBookmarks(
 }
 
 void WriteSimplifiedBookmarkTypes(NSPasteboard* pb,
-    const std::vector<BookmarkDragData::Element>& elements) {
+    const std::vector<BookmarkNodeData::Element>& elements) {
   NSMutableArray* titles = [NSMutableArray array];
   NSMutableArray* urls = [NSMutableArray array];
   FillFlattenedArraysForBookmarks(elements, titles, urls);
@@ -221,7 +221,7 @@ void WriteSimplifiedBookmarkTypes(NSPasteboard* pb,
 }
 
 void WriteToClipboardPrivate(
-    const std::vector<BookmarkDragData::Element>& elements,
+    const std::vector<BookmarkNodeData::Element>& elements,
     NSPasteboard* pb,
     FilePath::StringType profile_path) {
   if (elements.size() == 0) {
@@ -242,7 +242,7 @@ void WriteToClipboardPrivate(
 }
 
 bool ReadFromClipboardPrivate(
-    std::vector<BookmarkDragData::Element>& elements,
+    std::vector<BookmarkNodeData::Element>& elements,
     NSPasteboard* pb,
     FilePath::StringType* profile_path) {
   elements.clear();
@@ -266,26 +266,26 @@ bool ClipboardContainsBookmarksPrivate(NSPasteboard* pb) {
 
 namespace bookmark_pasteboard_helper_mac {
 
-void WriteToClipboard(const std::vector<BookmarkDragData::Element>& elements,
+void WriteToClipboard(const std::vector<BookmarkNodeData::Element>& elements,
                       FilePath::StringType profile_path) {
   NSPasteboard* pb = [NSPasteboard generalPasteboard];
   WriteToClipboardPrivate(elements, pb, profile_path);
 }
 
 void WriteToDragClipboard(
-    const std::vector<BookmarkDragData::Element>& elements,
+    const std::vector<BookmarkNodeData::Element>& elements,
     FilePath::StringType profile_path) {
   NSPasteboard* pb = [NSPasteboard pasteboardWithName:NSDragPboard];
   WriteToClipboardPrivate(elements, pb, profile_path);
 }
 
-bool ReadFromClipboard(std::vector<BookmarkDragData::Element>& elements,
+bool ReadFromClipboard(std::vector<BookmarkNodeData::Element>& elements,
                        FilePath::StringType* profile_path) {
   NSPasteboard* pb = [NSPasteboard generalPasteboard];
   return ReadFromClipboardPrivate(elements, pb, profile_path);
 }
 
-bool ReadFromDragClipboard(std::vector<BookmarkDragData::Element>& elements,
+bool ReadFromDragClipboard(std::vector<BookmarkNodeData::Element>& elements,
                            FilePath::StringType* profile_path) {
   NSPasteboard* pb = [NSPasteboard pasteboardWithName:NSDragPboard];
   return ReadFromClipboardPrivate(elements, pb, profile_path);
@@ -306,10 +306,10 @@ void StartDrag(Profile* profile, const std::vector<const BookmarkNode*>& nodes,
     gfx::NativeView view) {
   DCHECK([view isKindOfClass:[TabContentsViewCocoa class]]);
   TabContentsViewCocoa* tabView = static_cast<TabContentsViewCocoa*>(view);
-  std::vector<BookmarkDragData::Element> elements;
+  std::vector<BookmarkNodeData::Element> elements;
   for (std::vector<const BookmarkNode*>::const_iterator it = nodes.begin();
        it != nodes.end(); ++it) {
-    elements.push_back(BookmarkDragData::Element(*it));
+    elements.push_back(BookmarkNodeData::Element(*it));
   }
   NSPasteboard* pb = [NSPasteboard pasteboardWithName:NSDragPboard];
   scoped_nsobject<BookmarkDragSource> source([[BookmarkDragSource alloc]

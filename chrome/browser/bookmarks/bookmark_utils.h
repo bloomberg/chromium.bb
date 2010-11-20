@@ -45,14 +45,14 @@ int BookmarkDragOperation(const BookmarkNode* node);
 // drop is over.
 int BookmarkDropOperation(Profile* profile,
                           const views::DropTargetEvent& event,
-                          const BookmarkDragData& data,
+                          const BookmarkNodeData& data,
                           const BookmarkNode* parent,
                           int index);
 
 // Performs a drop of bookmark data onto |parent_node| at |index|. Returns the
 // type of drop the resulted.
 int PerformBookmarkDrop(Profile* profile,
-                        const BookmarkDragData& data,
+                        const BookmarkNodeData& data,
                         const BookmarkNode* parent_node,
                         int index);
 
@@ -62,14 +62,14 @@ int PerformBookmarkDrop(Profile* profile,
 // |data| are an ancestor of |drop_parent| and one of the nodes isn't already
 // a child of |drop_parent| at |index|.
 bool IsValidDropLocation(Profile* profile,
-                         const BookmarkDragData& data,
+                         const BookmarkNodeData& data,
                          const BookmarkNode* drop_parent,
                          int index);
 
 // Clones bookmark node, adding newly created nodes to |parent| starting at
 // |index_to_add_at|.
 void CloneBookmarkNode(BookmarkModel* model,
-                       const std::vector<BookmarkDragData::Element>& elements,
+                       const std::vector<BookmarkNodeData::Element>& elements,
                        const BookmarkNode* parent,
                        int index_to_add_at);
 

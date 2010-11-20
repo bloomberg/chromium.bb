@@ -166,4 +166,9 @@ struct BookmarkDragData {
   FilePath::StringType profile_path_;
 };
 
+// TODO(tfarina): Remove this when we finish renaming all the remaining entries.
+// This is a temporary hack, to make it possible to convert all the entries in
+// small chunks. See crbug.com/37891 for context.
+typedef BookmarkDragData BookmarkNodeData;
+
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_DRAG_DATA_H_

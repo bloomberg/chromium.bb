@@ -87,7 +87,7 @@ class NewBrowserPageNavigator : public PageNavigator {
 };
 
 void CloneBookmarkNodeImpl(BookmarkModel* model,
-                           const BookmarkDragData::Element& element,
+                           const BookmarkNodeData::Element& element,
                            const BookmarkNode* parent,
                            int index_to_add_at) {
   if (element.is_url) {
@@ -228,7 +228,7 @@ int BookmarkDragOperation(const BookmarkNode* node) {
 
 int BookmarkDropOperation(Profile* profile,
                           const views::DropTargetEvent& event,
-                          const BookmarkDragData& data,
+                          const BookmarkNodeData& data,
                           const BookmarkNode* parent,
                           int index) {
   if (data.IsFromProfile(profile) && data.size() > 1)
@@ -248,7 +248,7 @@ int BookmarkDropOperation(Profile* profile,
 }
 
 int PerformBookmarkDrop(Profile* profile,
-                        const BookmarkDragData& data,
+                        const BookmarkNodeData& data,
                         const BookmarkNode* parent_node,
                         int index) {
   BookmarkModel* model = profile->GetBookmarkModel();
@@ -271,7 +271,7 @@ int PerformBookmarkDrop(Profile* profile,
 }
 
 bool IsValidDropLocation(Profile* profile,
-                         const BookmarkDragData& data,
+                         const BookmarkNodeData& data,
                          const BookmarkNode* drop_parent,
                          int index) {
   if (!drop_parent->is_folder()) {
@@ -304,7 +304,7 @@ bool IsValidDropLocation(Profile* profile,
 }
 
 void CloneBookmarkNode(BookmarkModel* model,
-                       const std::vector<BookmarkDragData::Element>& elements,
+                       const std::vector<BookmarkNodeData::Element>& elements,
                        const BookmarkNode* parent,
                        int index_to_add_at) {
   if (!parent->is_folder() || !model) {
@@ -325,7 +325,7 @@ void DragBookmarks(Profile* profile,
 #if defined(TOOLKIT_VIEWS)
   // Set up our OLE machinery
   OSExchangeData data;
-  BookmarkDragData drag_data(nodes);
+  BookmarkNodeData drag_data(nodes);
   drag_data.Write(profile, &data);
 
   views::RootView* root_view =
@@ -395,7 +395,7 @@ void CopyToClipboard(BookmarkModel* model,
   if (nodes.empty())
     return;
 
-  BookmarkDragData(nodes).WriteToClipboard(NULL);
+  BookmarkNodeData(nodes).WriteToClipboard(NULL);
 
   if (remove_nodes) {
     for (size_t i = 0; i < nodes.size(); ++i) {
@@ -411,7 +411,7 @@ void PasteFromClipboard(BookmarkModel* model,
   if (!parent)
     return;
 
-  BookmarkDragData bookmark_data;
+  BookmarkNodeData bookmark_data;
   if (!bookmark_data.ReadFromClipboard())
     return;
 
@@ -424,7 +424,7 @@ void PasteFromClipboard(BookmarkModel* model,
 bool CanPasteFromClipboard(const BookmarkNode* node) {
   if (!node)
     return false;
-  return BookmarkDragData::ClipboardContainsBookmarks();
+  return BookmarkNodeData::ClipboardContainsBookmarks();
 }
 
 std::string GetNameForURL(const GURL& url) {
