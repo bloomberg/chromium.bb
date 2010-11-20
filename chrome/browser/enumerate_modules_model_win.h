@@ -81,6 +81,8 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
     string16 digital_signer;
     // The help tips bitmask.
     RecommendedAction recommended_action;
+    // The duplicate count within each category of modules.
+    int duplicate_count;
     // Whether this module has been normalized (necessary before checking it
     // against blacklist).
     bool normalized;
@@ -141,7 +143,7 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   void EnumerateShellExtensions();
 
   // Enumerate all registered Winsock LSP modules.
-  void EnumerateWinsockModule();
+  void EnumerateWinsockModules();
 
   // Reads the registered shell extensions found under |parent| key in the
   // registry.
@@ -150,6 +152,11 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // Given a |module|, initializes the structure and loads additional
   // information using the location field of the module.
   void PopulateModuleInformation(Module* module);
+
+  // Checks the module list to see if a |module| of the same type, location
+  // and name has been added before and if so, increments its duplication
+  // counter. If it doesn't appear in the list, it is added.
+  void AddToListWithoutDuplicating(const Module&);
 
   // Builds up a vector of path values mapping to environment variable,
   // with pairs like [c:\windows\, %systemroot%]. This is later used to

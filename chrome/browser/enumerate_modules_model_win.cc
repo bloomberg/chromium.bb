@@ -13,10 +13,12 @@
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_version_info_win.h"
+#include "base/metrics/histogram.h"
 #include "base/scoped_handle.h"
 #include "base/sha2.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -52,6 +54,21 @@ namespace {
 // Used to protect the LoadedModuleVector which is accessed
 // from both the UI thread and the FILE thread.
 Lock* lock = NULL;
+
+// A struct to help de-duping modules before adding them to the enumerated
+// modules vector.
+struct FindModule {
+ public:
+  explicit FindModule(const ModuleEnumerator::Module& x)
+    : module(x) {}
+  bool operator()(ModuleEnumerator::Module module_in) const {
+    return (module.type == module_in.type) &&
+      (module.location == module_in.location) &&
+      (module.name == module_in.name);
+  }
+
+  const ModuleEnumerator::Module& module;
+};
 
 }
 
@@ -226,14 +243,27 @@ void ModuleEnumerator::ScanNow(ModulesVector* list) {
 }
 
 void ModuleEnumerator::ScanOnFileThread() {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
   enumerated_modules_->clear();
 
   // Make sure the path mapping vector is setup so we can collapse paths.
   PreparePathMappings();
 
+  base::TimeTicks checkpoint = base::TimeTicks::Now();
   EnumerateLoadedModules();
+  HISTOGRAM_TIMES("Conflicts.EnumerateLoadedModules",
+                  base::TimeTicks::Now() - checkpoint);
+
+  checkpoint = base::TimeTicks::Now();
   EnumerateShellExtensions();
-  EnumerateWinsockModule();
+  HISTOGRAM_TIMES("Conflicts.EnumerateShellExtensions",
+                  base::TimeTicks::Now() - checkpoint);
+
+  checkpoint = base::TimeTicks::Now();
+  EnumerateWinsockModules();
+  HISTOGRAM_TIMES("Conflicts.EnumerateWinsockModules",
+                  base::TimeTicks::Now() - checkpoint);
 
   MatchAgainstBlacklist();
 
@@ -244,6 +274,9 @@ void ModuleEnumerator::ScanOnFileThread() {
   BrowserThread::PostTask(
       callback_thread_id_, FROM_HERE,
       NewRunnableMethod(this, &ModuleEnumerator::ReportBack));
+
+  HISTOGRAM_TIMES("Conflicts.EnumerationTotalTime",
+                  base::TimeTicks::Now() - start_time);
 }
 
 void ModuleEnumerator::EnumerateLoadedModules() {
@@ -303,13 +336,13 @@ void ModuleEnumerator::ReadShellExtensions(HKEY parent) {
 
     NormalizeModule(&entry);
     CollapsePath(&entry);
-    enumerated_modules_->push_back(entry);
+    AddToListWithoutDuplicating(entry);
 
     ++registration;
   }
 }
 
-void ModuleEnumerator::EnumerateWinsockModule() {
+void ModuleEnumerator::EnumerateWinsockModules() {
   // Add to this list the Winsock LSP DLLs.
   WinsockLayeredServiceProviderList layered_providers;
   GetWinsockLayeredServiceProviders(&layered_providers);
@@ -321,6 +354,7 @@ void ModuleEnumerator::EnumerateWinsockModule() {
     entry.location = layered_providers[i].path;
     entry.description = layered_providers[i].name;
     entry.recommended_action = NONE;
+    entry.duplicate_count = 0;
 
     wchar_t expanded[MAX_PATH];
     DWORD size = ExpandEnvironmentStrings(
@@ -333,12 +367,13 @@ void ModuleEnumerator::EnumerateWinsockModule() {
 
     // Paths have already been collapsed.
     NormalizeModule(&entry);
-    enumerated_modules_->push_back(entry);
+    AddToListWithoutDuplicating(entry);
   }
 }
 
 void ModuleEnumerator::PopulateModuleInformation(Module* module) {
   module->status = NOT_MATCHED;
+  module->duplicate_count = 0;
   module->normalized = false;
   module->digital_signer =
       GetSubjectNameFromDigitalSignature(FilePath(module->location));
@@ -358,6 +393,22 @@ void ModuleEnumerator::PopulateModuleInformation(Module* module) {
   }
 }
 
+void ModuleEnumerator::AddToListWithoutDuplicating(const Module& module) {
+  DCHECK(module.normalized);
+  // These are registered modules, not loaded modules so the same module
+  // can be registered multiple times, often dozens of times. There is no need
+  // to list each registration, so we just increment the count for each module
+  // that is counted multiple times.
+  ModulesVector::iterator iter;
+  iter = std::find_if(enumerated_modules_->begin(),
+                      enumerated_modules_->end(),
+                      FindModule(module));
+  if (iter != enumerated_modules_->end())
+    iter->duplicate_count++;
+  else
+    enumerated_modules_->push_back(module);
+}
+
 void ModuleEnumerator::PreparePathMappings() {
   path_mapping_.clear();
 
@@ -368,6 +419,7 @@ void ModuleEnumerator::PreparePathMappings() {
   env_vars.push_back(L"USERPROFILE");
   env_vars.push_back(L"SystemRoot");
   env_vars.push_back(L"TEMP");
+  env_vars.push_back(L"TMP");
   for (std::vector<string16>::const_iterator variable = env_vars.begin();
        variable != env_vars.end(); ++variable) {
     std::string path;
@@ -418,6 +470,17 @@ void ModuleEnumerator::MatchAgainstBlacklist() {
         module->status = status;
         module->recommended_action = kModuleBlacklist[i].help_tip;
         break;
+      }
+    }
+
+    // Modules loaded from these locations are frequently malicious
+    // and notorious for changing frequently so they are not good candidates
+    // for blacklising individually. Mark them as suspicious if we haven't
+    // classified them as bad yet.
+    if (module->status == NOT_MATCHED || module->status == GOOD) {
+      if (StartsWith(module->location, L"%temp%", false) ||
+          StartsWith(module->location, L"%tmp%", false)) {
+        module->status = SUSPECTED_BAD;
       }
     }
   }
@@ -645,6 +708,11 @@ void EnumerateModulesModel::DoneScanning() {
 
   scanning_ = false;
   lock->Release();
+
+  HISTOGRAM_COUNTS_100("Conflicts.SuspectedBadModules",
+                       suspected_bad_modules_detected_);
+  HISTOGRAM_COUNTS_100("Conflicts.ConfirmedBadModules",
+                       confirmed_bad_modules_detected_);
 
   NotificationService::current()->Notify(
       NotificationType::MODULE_LIST_ENUMERATED,
