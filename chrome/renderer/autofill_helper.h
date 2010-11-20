@@ -32,12 +32,6 @@ class AutoFillHelper : public PageClickListener {
  public:
   explicit AutoFillHelper(RenderView* render_view);
 
-  // Queries the browser for Autocomplete and AutoFill suggestions for the given
-  // |node|.  If |autofill_disabled| is true, the query is guaranteed to return
-  // no results, but might return a descriptive warning message.
-  void QueryAutoFillSuggestions(const WebKit::WebNode& node,
-                                bool autofill_disabled);
-
   // Removes the Autocomplete suggestion |value| for the field named |name|.
   void RemoveAutocompleteSuggestion(const WebKit::WebString& name,
                                     const WebKit::WebString& value);
@@ -120,6 +114,10 @@ class AutoFillHelper : public PageClickListener {
                        bool requires_caret_at_end,
                        bool display_warning_if_disabled);
 
+  // Queries the browser for Autocomplete and AutoFill suggestions for the given
+  // |node|.
+  void QueryAutoFillSuggestions(const WebKit::WebNode& node);
+
   // Queries the AutoFillManager for form data for the form containing |node|.
   // |value| is the current text in the field, and |unique_id| is the selected
   // profile's unique ID.  |action| specifies whether to Fill or Preview the
@@ -142,9 +140,6 @@ class AutoFillHelper : public PageClickListener {
 
   // The node corresponding to the last request sent for form field AutoFill.
   WebKit::WebNode autofill_query_node_;
-
-  // Whether autofill is disabled for |autofill_query_node_| by the website.
-  bool autofill_disabled_;
 
   // The action to take when receiving AutoFill data from the AutoFillManager.
   AutoFillAction autofill_action_;

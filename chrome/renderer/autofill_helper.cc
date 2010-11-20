@@ -51,33 +51,9 @@ bool NodeIsAutoFilled(const WebKit::WebNode& node) {
 AutoFillHelper::AutoFillHelper(RenderView* render_view)
     : render_view_(render_view),
       autofill_query_id_(0),
-      autofill_disabled_(false),
       autofill_action_(AUTOFILL_NONE),
       suggestions_clear_index_(-1),
       suggestions_options_index_(-1) {
-}
-
-void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node,
-                                              bool autofill_disabled) {
-  static int query_counter = 0;
-  autofill_query_id_ = query_counter++;
-  autofill_query_node_ = node;
-  autofill_disabled_ = autofill_disabled;
-
-  const WebFormControlElement& element = node.toConst<WebFormControlElement>();
-  webkit_glue::FormField field;
-  FormManager::WebFormControlElementToFormField(
-      element, FormManager::EXTRACT_VALUE, &field);
-
-  // WebFormControlElementToFormField does not scrape the DOM for the field
-  // label, so find the label here.
-  // TODO(jhawkins): Add form and field identities so we can use the cached form
-  // data in FormManager.
-  field.set_label(FormManager::LabelForElement(element));
-
-  bool field_autofilled = NodeIsAutoFilled(node);
-  render_view_->Send(new ViewHostMsg_QueryFormFieldAutoFill(
-      render_view_->routing_id(), autofill_query_id_, field_autofilled, field));
 }
 
 void AutoFillHelper::RemoveAutocompleteSuggestion(
@@ -113,10 +89,22 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
   std::vector<int> ids(unique_ids);
   int separator_index = -1;
 
-  if (autofill_disabled_) {
+  const WebInputElement& element =
+      autofill_query_node_.toConst<WebInputElement>();
+
+  if (!element.autoComplete()) {
     // If autofill is disabled and we had suggestions, show a warning instead.
-    v.assign(1,
-             l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
+    webkit_glue::FormData form;
+    bool autocomplete_enabled_for_form =
+        form_manager_.FindFormWithFormControlElement(
+            element, FormManager::REQUIRE_AUTOCOMPLETE, &form);
+    if (!autocomplete_enabled_for_form) {
+      v.assign(1,
+               l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
+    } else {
+      v.assign(1,
+               l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FIELD_DISABLED));
+    }
     l.assign(1, string16());
     i.assign(1, string16());
     ids.assign(1, -1);
@@ -269,10 +257,11 @@ void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
                                      bool autofill_on_empty_values,
                                      bool requires_caret_at_end,
                                      bool display_warning_if_disabled) {
-  bool autofill_disabled = !element.isEnabledFormControl() ||
-      !element.isText() || element.isPasswordField() ||
-      !element.autoComplete() || element.isReadOnly();
-  if (autofill_disabled && !display_warning_if_disabled)
+  if (!element.isEnabledFormControl() || !element.isTextField() ||
+      element.isPasswordField() || element.isReadOnly())
+    return;
+
+  if (!element.autoComplete() && !display_warning_if_disabled)
     return;
 
   // If the field has no name, then we won't have values.
@@ -292,7 +281,28 @@ void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
        element.selectionEnd() != static_cast<int>(value.length())))
     return;
 
-  QueryAutoFillSuggestions(element, autofill_disabled);
+  QueryAutoFillSuggestions(element);
+}
+
+void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node) {
+  static int query_counter = 0;
+  autofill_query_id_ = query_counter++;
+  autofill_query_node_ = node;
+
+  const WebFormControlElement& element = node.toConst<WebFormControlElement>();
+  webkit_glue::FormField field;
+  FormManager::WebFormControlElementToFormField(
+      element, FormManager::EXTRACT_VALUE, &field);
+
+  // WebFormControlElementToFormField does not scrape the DOM for the field
+  // label, so find the label here.
+  // TODO(jhawkins): Add form and field identities so we can use the cached form
+  // data in FormManager.
+  field.set_label(FormManager::LabelForElement(element));
+
+  bool field_autofilled = NodeIsAutoFilled(node);
+  render_view_->Send(new ViewHostMsg_QueryFormFieldAutoFill(
+      render_view_->routing_id(), autofill_query_id_, field_autofilled, field));
 }
 
 void AutoFillHelper::FillAutoFillFormData(const WebNode& node,

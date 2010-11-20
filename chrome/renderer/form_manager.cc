@@ -580,9 +580,10 @@ bool FormManager::FindFormWithFormControlElement(
       if (iter->nameForAutofill() == element.nameForAutofill()) {
         ExtractMask extract_mask = static_cast<ExtractMask>(
             EXTRACT_VALUE | EXTRACT_OPTIONS);
-        WebFormElementToFormData(
-            form_element->form_element, requirements, extract_mask, form);
-        return true;
+        return WebFormElementToFormData(form_element->form_element,
+                                        requirements,
+                                        extract_mask,
+                                        form);
       }
     }
   }

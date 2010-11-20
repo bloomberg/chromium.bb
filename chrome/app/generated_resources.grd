@@ -6702,6 +6702,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_WARNING_FORM_DISABLED" desc="Warning text to show when autofill is disabled by the website for a given form.">
         This webpage has disabled automatic filling for this form.
       </message>
+      <message name="IDS_AUTOFILL_WARNING_FIELD_DISABLED" desc="Warning text to show when autofill is disabled by the website for a given form field.">
+        This webpage has disabled automatic filling for this form field.
+      </message>
       <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
         Automatic credit card filling is disabled because this form does not use a secure connection.
       </message>
@@ -7429,7 +7432,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Your device is offline.
         </message>
         <message name="IDS_SITE_OFFLINE_LOAD_DESCRIPTION" desc="offline site">
-          The webpage at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. &lt;br&gt; 
+          The webpage at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.offline.com</ex>&lt;/strong&gt;</ph> cannot be reached because your network connection is down. The page will be loaded when the network connection is restored. &lt;br&gt;
           Try reconnecting, connecting to another network or proceeding with loading anyway.
         </message>
         <message name="IDS_APP_OFFLINE_LOAD_DESCRIPTION" desc="offline app">
