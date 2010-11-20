@@ -48,45 +48,6 @@
     </div>
   </section>
   <section>
-    <h3 i18n-content="advancedSectionTitleNetwork"></h3>
-    <div>
-      <div id="proxiesLabel"></div>
-      <button id="proxiesConfigureButton"
-          i18n-content="proxiesConfigureButton"></button>
-    </div>
-  </section>
-  <section>
-    <h3 i18n-content="advancedSectionTitleTranslate"></h3>
-    <div>
-      <label class="checkbox">
-        <input id="enableTranslate" pref="translate.enabled"
-            metric="Options_Translate" type="checkbox">
-        <span i18n-content="translateEnableTranslate"></span>
-      </label>
-    </div>
-  </section>
-  <section>
-    <h3 i18n-content="downloadLocationGroupName"></h3>
-    <div>
-<if expr="not pp_ifdef('chromeos')">
-      <div i18n-content="downloadLocationBrowseTitle"></div>
-      <div>
-        <input id="downloadLocationPath" type="text" size="60" disabled>
-        <button id="downloadLocationBrowseButton"
-            i18n-content="downloadLocationBrowseButton"></button>
-      </div>
-      <label class="checkbox">
-        <input id="promptForDownload" pref="download.prompt_for_download"
-            metric="Options_AskForSaveLocation" type="checkbox">
-        <span i18n-content="downloadLocationAskForSaveLocation"></span>
-      </label>
-</if>
-      <div i18n-content="autoOpenFileTypesInfo"></div>
-      <div><button id="autoOpenFileTypesResetToDefault"
-          i18n-content="autoOpenFileTypesResetToDefault"></button></div>
-    </div>
-  </section>
-  <section>
     <h3 i18n-content="advancedSectionTitleContent"></h3>
     <div>
 <if expr="os == 'darwin'">
@@ -124,6 +85,45 @@
         </label>
       </div>
 </if>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="advancedSectionTitleNetwork"></h3>
+    <div>
+      <div id="proxiesLabel"></div>
+      <button id="proxiesConfigureButton"
+          i18n-content="proxiesConfigureButton"></button>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="advancedSectionTitleTranslate"></h3>
+    <div>
+      <label class="checkbox">
+        <input id="enableTranslate" pref="translate.enabled"
+            metric="Options_Translate" type="checkbox">
+        <span i18n-content="translateEnableTranslate"></span>
+      </label>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="downloadLocationGroupName"></h3>
+    <div>
+<if expr="not pp_ifdef('chromeos')">
+      <div i18n-content="downloadLocationBrowseTitle"></div>
+      <div>
+        <input id="downloadLocationPath" type="text" size="60" disabled>
+        <button id="downloadLocationBrowseButton"
+            i18n-content="downloadLocationBrowseButton"></button>
+      </div>
+      <label class="checkbox">
+        <input id="promptForDownload" pref="download.prompt_for_download"
+            metric="Options_AskForSaveLocation" type="checkbox">
+        <span i18n-content="downloadLocationAskForSaveLocation"></span>
+      </label>
+</if>
+      <div i18n-content="autoOpenFileTypesInfo"></div>
+      <div><button id="autoOpenFileTypesResetToDefault"
+          i18n-content="autoOpenFileTypesResetToDefault"></button></div>
     </div>
   </section>
   <section>
