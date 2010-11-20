@@ -335,7 +335,7 @@
             },
           },
           'dependencies': [
-            '../chrome/chrome.gyp:crash_service',
+	        '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:automation',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
@@ -429,7 +429,7 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
-            '../chrome/chrome.gyp:crash_service',
+	        '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
           ],
@@ -497,7 +497,7 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
-            '../chrome/chrome.gyp:crash_service',
+	        '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:chrome_dll_version',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
@@ -550,10 +550,7 @@
         'test/win_event_receiver.h',
         'chrome_tab.h',
         '../base/test/test_file_util_win.cc',
-        '../chrome/test/automation/proxy_launcher.cc',
-        '../chrome/test/automation/proxy_launcher.h',
         '../chrome/test/ui/ui_test.cc',
-        '../chrome/test/ui/ui_test.h',
         '../chrome/test/ui/ui_test_suite.cc',
         '../chrome/test/ui/ui_test_suite.h',
         '../chrome/test/chrome_process_util.cc',

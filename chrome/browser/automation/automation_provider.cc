@@ -113,9 +113,7 @@ using base::Time;
 
 AutomationProvider::AutomationProvider(Profile* profile)
     : profile_(profile),
-      reply_message_(NULL),
-      is_connected_(false),
-      initial_loads_complete_(false) {
+      reply_message_(NULL) {
   TRACE_EVENT_BEGIN("AutomationProvider::AutomationProvider", 0, "");
 
   browser_tracker_.reset(new AutomationBrowserTracker(this));
@@ -151,38 +149,23 @@ AutomationProvider::~AutomationProvider() {
   g_browser_process->ReleaseModule();
 }
 
-bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
-  TRACE_EVENT_BEGIN("AutomationProvider::InitializeChannel", 0, "");
-
-  std::string effective_channel_id = channel_id;
-
-  // If the channel_id starts with kNamedInterfacePrefix, create a named IPC
-  // server and listen on it, else connect as client to an existing IPC server
-  bool use_named_interface =
-      channel_id.find(automation::kNamedInterfacePrefix) == 0;
-  if (use_named_interface) {
-    effective_channel_id = channel_id.substr(
-        strlen(automation::kNamedInterfacePrefix));
-    if (effective_channel_id.length() <= 0)
-      return false;
-  }
+void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
+  TRACE_EVENT_BEGIN("AutomationProvider::ConnectToChannel", 0, "");
 
   if (!automation_resource_message_filter_.get()) {
     automation_resource_message_filter_ = new AutomationResourceMessageFilter;
   }
 
-  channel_.reset(new IPC::SyncChannel(
-      effective_channel_id,
-      use_named_interface ? IPC::Channel::MODE_NAMED_SERVER
-                          : IPC::Channel::MODE_CLIENT,
-      this,
-      automation_resource_message_filter_,
-      g_browser_process->io_thread()->message_loop(),
-      true, g_browser_process->shutdown_event()));
+  channel_.reset(
+      new IPC::SyncChannel(channel_id, IPC::Channel::MODE_CLIENT, this,
+                           automation_resource_message_filter_,
+                           g_browser_process->io_thread()->message_loop(),
+                           true, g_browser_process->shutdown_event()));
 
-  TRACE_EVENT_END("AutomationProvider::InitializeChannel", 0, "");
+  // Send a hello message with our current automation protocol version.
+  channel_->Send(new AutomationMsg_Hello(0, GetProtocolVersion().c_str()));
 
-  return true;
+  TRACE_EVENT_END("AutomationProvider::ConnectToChannel", 0, "");
 }
 
 std::string AutomationProvider::GetProtocolVersion() {
@@ -191,16 +174,11 @@ std::string AutomationProvider::GetProtocolVersion() {
 }
 
 void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
-  if (expected_tabs == 0)
-    OnInitialLoadsComplete();
-  else
-    initial_load_observer_.reset(new InitialLoadObserver(expected_tabs, this));
-}
-
-void AutomationProvider::OnInitialLoadsComplete() {
-  initial_loads_complete_ = true;
-  if (is_connected_)
+  if (expected_tabs == 0) {
     Send(new AutomationMsg_InitialLoadsComplete(0));
+  } else {
+    initial_load_observer_.reset(new InitialLoadObserver(expected_tabs, this));
+  }
 }
 
 NotificationObserver* AutomationProvider::AddNavigationStatusListener(
@@ -347,17 +325,6 @@ const Extension* AutomationProvider::GetDisabledExtension(
       !service->GetExtensionById(extension->id(), false))
     return extension;
   return NULL;
-}
-
-void AutomationProvider::OnChannelConnected(int pid) {
-  is_connected_ = true;
-  LOG(INFO) << "Testing channel connected, sending hello message";
-
-  // Send a hello message with our current automation protocol version.
-  chrome::VersionInfo version_info;
-  channel_->Send(new AutomationMsg_Hello(0, version_info.Version()));
-  if (initial_loads_complete_)
-    Send(new AutomationMsg_InitialLoadsComplete(0));
 }
 
 void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
