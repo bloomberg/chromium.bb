@@ -605,12 +605,12 @@ void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
   bool has_valid_suffix_and_prefix = (number.length() ==
       (kAutoFillPhoneNumberPrefixCount + kAutoFillPhoneNumberSuffixCount));
   if (has_valid_suffix_and_prefix &&
-      field->size() == kAutoFillPhoneNumberPrefixCount) {
+      field->max_length() == kAutoFillPhoneNumberPrefixCount) {
     number = number.substr(kAutoFillPhoneNumberPrefixOffset,
                            kAutoFillPhoneNumberPrefixCount);
     field->set_value(number);
   } else if (has_valid_suffix_and_prefix &&
-             field->size() == kAutoFillPhoneNumberSuffixCount) {
+             field->max_length() == kAutoFillPhoneNumberSuffixCount) {
     number = number.substr(kAutoFillPhoneNumberSuffixOffset,
                            kAutoFillPhoneNumberSuffixCount);
     field->set_value(number);

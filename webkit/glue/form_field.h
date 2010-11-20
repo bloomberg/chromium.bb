@@ -21,14 +21,14 @@ class FormField {
             const string16& name,
             const string16& value,
             const string16& form_control_type,
-            int size);
+            int max_length);
   virtual ~FormField();
 
   const string16& label() const { return label_; }
   const string16& name() const { return name_; }
   const string16& value() const { return value_; }
   const string16& form_control_type() const { return form_control_type_; }
-  int size() const { return size_; }
+  int max_length() const { return max_length_; }
   // Returns option string for elements for which they make sense (select-one,
   // for example) for the rest of elements return an empty array.
   const std::vector<string16>& option_strings() const {
@@ -41,7 +41,7 @@ class FormField {
   void set_form_control_type(const string16& form_control_type) {
     form_control_type_ = form_control_type;
   }
-  void set_size(int size) { size_ = size; }
+  void set_max_length(int max_length) { max_length_ = max_length; }
   void set_option_strings(const std::vector<string16>& strings) {
     option_strings_ = strings;
   }
@@ -62,7 +62,7 @@ class FormField {
   string16 name_;
   string16 value_;
   string16 form_control_type_;
-  int size_;
+  int max_length_;
   std::vector<string16> option_strings_;
 };
 

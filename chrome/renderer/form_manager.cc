@@ -310,7 +310,7 @@ void FormManager::WebFormControlElementToFormField(
 
   if (element.formControlType() == WebString::fromUTF8("text")) {
     const WebInputElement& input_element = element.toConst<WebInputElement>();
-    field->set_size(input_element.size());
+    field->set_max_length(input_element.maxLength());
   }
 
   if (!(extract_mask & EXTRACT_VALUE))

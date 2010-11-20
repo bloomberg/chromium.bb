@@ -38,6 +38,13 @@ using WebKit::WebURLError;
 using webkit_glue::FormData;
 using webkit_glue::FormField;
 
+namespace {
+
+// TODO(isherman): Pull this as a named constant from WebKit
+const int kDefaultMaxLength = 0x80000;
+
+}  // namespace
+
 // Test that we get form state change notifications when input fields change.
 TEST_F(RenderViewTest, OnNavStateChanged) {
   // Don't want any delay for form state sync changes. This will still post a
@@ -942,13 +949,13 @@ TEST_F(RenderViewTest, SendForms) {
                 ASCIIToUTF16("firstname"),
                 string16(),
                 ASCIIToUTF16("text"),
-                20))) << forms[0].fields[0];
+                kDefaultMaxLength))) << forms[0].fields[0];
   EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("middlename"),
                 string16(),
                 ASCIIToUTF16("text"),
-                20))) << forms[0].fields[1];
+                kDefaultMaxLength))) << forms[0].fields[1];
   EXPECT_TRUE(forms[0].fields[2].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("lastname"),
@@ -985,13 +992,13 @@ TEST_F(RenderViewTest, SendForms) {
                 ASCIIToUTF16("firstname"),
                 string16(),
                 ASCIIToUTF16("text"),
-                20))) << form2.fields[0];
+                kDefaultMaxLength))) << form2.fields[0];
   EXPECT_TRUE(form2.fields[1].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("middlename"),
                 string16(),
                 ASCIIToUTF16("text"),
-                20))) << form2.fields[1];
+                kDefaultMaxLength))) << form2.fields[1];
   EXPECT_TRUE(form2.fields[2].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("lastname"),
@@ -1026,13 +1033,13 @@ TEST_F(RenderViewTest, FillFormElement) {
                 ASCIIToUTF16("firstname"),
                 string16(),
                 ASCIIToUTF16("text"),
-                20))) << forms[0].fields[0];
+                kDefaultMaxLength))) << forms[0].fields[0];
   EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("middlename"),
                 string16(),
                 ASCIIToUTF16("text"),
-                20))) << forms[0].fields[1];
+                kDefaultMaxLength))) << forms[0].fields[1];
 
   // Verify that |didAcceptAutoFillSuggestion()| sets the value of the expected
   // field.

@@ -1338,23 +1338,23 @@ TEST_F(AutoFillManagerTest, FillPhoneNumber) {
 
   autofill_test::CreateTestFormField(
       "country code", "country code", "", "text", &field);
-  field.set_size(1);
+  field.set_max_length(1);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "area code", "area code", "", "text", &field);
-  field.set_size(3);
+  field.set_max_length(3);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "phone", "phone prefix", "1", "text", &field);
-  field.set_size(3);
+  field.set_max_length(3);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "-", "phone suffix", "", "text", &field);
-  field.set_size(4);
+  field.set_max_length(4);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField(
       "Phone Extension", "ext", "", "text", &field);
-  field.set_size(3);
+  field.set_max_length(3);
   form.fields.push_back(field);
 
   // Set up our FormStructures.

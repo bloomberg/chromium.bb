@@ -20,13 +20,13 @@ using WebKit::WebVector;
 namespace webkit_glue {
 
 FormField::FormField()
-    : size_(0) {
+    : max_length_(0) {
 }
 
 // TODO(jhawkins): This constructor should probably be deprecated and the
 // functionality moved to FormManager.
 FormField::FormField(WebFormControlElement element)
-    : size_(0) {
+    : max_length_(0) {
   name_ = element.nameForAutofill();
 
   // TODO(jhawkins): Extract the field label.  For now we just use the field
@@ -37,7 +37,7 @@ FormField::FormField(WebFormControlElement element)
   if (form_control_type_ == ASCIIToUTF16("text")) {
     const WebInputElement& input_element = element.toConst<WebInputElement>();
     value_ = input_element.value();
-    size_ = input_element.size();
+    max_length_ = input_element.size();
   } else if (form_control_type_ == ASCIIToUTF16("select-one")) {
     WebSelectElement select_element = element.to<WebSelectElement>();
     value_ = select_element.value();
@@ -58,12 +58,12 @@ FormField::FormField(const string16& label,
                      const string16& name,
                      const string16& value,
                      const string16& form_control_type,
-                     int size)
+                     int max_length)
   : label_(label),
     name_(name),
     value_(value),
     form_control_type_(form_control_type),
-    size_(size) {
+    max_length_(max_length) {
 }
 
 FormField::~FormField() {
@@ -75,7 +75,7 @@ bool FormField::operator==(const FormField& field) const {
   return (label_ == field.label_ &&
           name_ == field.name_ &&
           form_control_type_ == field.form_control_type_ &&
-          size_ == field.size_);
+          max_length_ == field.max_length_);
 }
 
 bool FormField::operator!=(const FormField& field) const {
@@ -87,7 +87,7 @@ bool FormField::StrictlyEqualsHack(const FormField& field) const {
           name_ == field.name_ &&
           value_ == field.value_ &&
           form_control_type_ == field.form_control_type_ &&
-          size_ == field.size_);
+          max_length_ == field.max_length_);
 }
 
 std::ostream& operator<<(std::ostream& os, const FormField& field) {
@@ -100,7 +100,7 @@ std::ostream& operator<<(std::ostream& os, const FormField& field) {
       << " "
       << UTF16ToUTF8(field.form_control_type())
       << " "
-      << field.size();
+      << field.max_length();
 }
 
 }  // namespace webkit_glue
