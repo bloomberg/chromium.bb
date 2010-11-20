@@ -146,12 +146,6 @@ ACCEPTABLE_ARGUMENTS = set([
     # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
     # where there is no -dev package for the 32-bit libcrypto.
     'use_libcrypto',
-    # run_whole_archive_test is disabled because it runs ncval.  ncval
-    # does not pass on dynamically-linked executables because, to
-    # reduce executable size, the code segment is not page-aligned,
-    # and ncval rejects such executables.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=1183
-    'run_whole_archive_test',
   ])
 
 def CheckArguments():
@@ -315,6 +309,12 @@ nacl_glibc_skiplist = [
     'sdk_minimal_test',
     # TODO(elijahtaylor) add apropriate syscall hooks for glibc
     'run_gc_instrumentation_test',
+    # run_whole_archive_test is disabled because it runs ncval.  ncval
+    # does not pass on dynamically-linked executables because, to
+    # reduce executable size, the code segment is not page-aligned,
+    # and ncval rejects such executables.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=1183
+    'run_whole_archive_test',
     ]
 
 
