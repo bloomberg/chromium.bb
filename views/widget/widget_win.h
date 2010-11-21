@@ -23,9 +23,7 @@
 #include "views/widget/widget.h"
 
 namespace app {
-namespace win {
-class ScopedProp;
-}
+class ViewProp;
 }
 
 namespace gfx {
@@ -234,9 +232,8 @@ class WidgetWin : public gfx::WindowImpl,
   virtual bool GetAccelerator(int cmd_id, menus::Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
-  virtual void SetNativeWindowProperty(const std::wstring& name,
-                                       void* value);
-  virtual void* GetNativeWindowProperty(const std::wstring& name);
+  virtual void SetNativeWindowProperty(const char* name, void* value);
+  virtual void* GetNativeWindowProperty(const char* name);
   virtual ThemeProvider* GetThemeProvider() const;
   virtual ThemeProvider* GetDefaultThemeProvider() const;
   virtual FocusManager* GetFocusManager();
@@ -487,7 +484,7 @@ class WidgetWin : public gfx::WindowImpl,
   bool is_window_;
 
  private:
-  typedef ScopedVector<app::win::ScopedProp> ScopedProps;
+  typedef ScopedVector<app::ViewProp> ViewProps;
 
   // Implementation of GetWindow. Ascends the parents of |hwnd| returning the
   // first ancestor that is a Window.
@@ -595,7 +592,7 @@ class WidgetWin : public gfx::WindowImpl,
   // we always mod this value with the max view events above .
   int accessibility_view_events_index_;
 
-  ScopedProps props_;
+  ViewProps props_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetWin);
 };

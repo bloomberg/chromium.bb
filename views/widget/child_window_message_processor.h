@@ -9,9 +9,7 @@
 #include <windows.h>
 
 namespace app {
-namespace win {
-class ScopedProp;
-}
+class ViewProp;
 }
 
 namespace views {
@@ -25,8 +23,8 @@ class ChildWindowMessageProcessor {
  public:
   // Registers |processor| for |hwnd|. The caller takes ownership of the
   // returned object.
-  static app::win::ScopedProp* Register(HWND hwnd,
-                                        ChildWindowMessageProcessor* processor);
+  static app::ViewProp* Register(HWND hwnd,
+                                 ChildWindowMessageProcessor* processor);
 
   // Returns the ChildWindowMessageProcessor for |hwnd|, NULL if there isn't
   // one.

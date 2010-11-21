@@ -160,6 +160,6 @@ class ATL_NO_VTABLE ViewAccessibility
   DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };
 
-extern const wchar_t kViewsNativeHostPropForAccessibility[];
+extern const char kViewsNativeHostPropForAccessibility[];
 
 #endif  // VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_H_

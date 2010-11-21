@@ -25,6 +25,9 @@
 #include "webkit/glue/webcursor.h"
 
 namespace app {
+
+class ViewProp;
+
 namespace win {
 class ScopedProp;
 }
@@ -340,7 +343,8 @@ class RenderWidgetHostViewWin
   // method.
   WebKit::WebTextInputType text_input_type_;
 
-  ScopedVector<app::win::ScopedProp> props_;
+  ScopedVector<app::ViewProp> props_;
+  scoped_ptr<app::win::ScopedProp> renderer_id_prop_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };
