@@ -39,19 +39,6 @@ STDMETHODIMP InfobarBrowserWindow::GetWantsPrivileged(
   return S_OK;
 }
 
-STDMETHODIMP InfobarBrowserWindow::GetChromeExtraArguments(BSTR* args) {
-  DCHECK(args);
-
-  // Must enable experimental extensions because we want to load html pages
-  // from our extension.
-  // Extra arguments are passed on verbatim, so we add the -- prefix.
-  CComBSTR str = "--";
-  str.Append(switches::kEnableExperimentalExtensionApis);
-
-  *args = str.Detach();
-  return S_OK;
-}
-
 STDMETHODIMP InfobarBrowserWindow::GetChromeProfileName(BSTR* profile_name) {
   *profile_name = ::SysAllocString(
       ceee_module_util::GetBrokerProfileNameForIe());

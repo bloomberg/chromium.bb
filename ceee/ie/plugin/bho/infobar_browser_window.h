@@ -102,7 +102,6 @@ class ATL_NO_VTABLE InfobarBrowserWindow
   // @name IChromeFramePrivileged implementation.
   // @{
   STDMETHOD(GetWantsPrivileged)(boolean *wants_privileged);
-  STDMETHOD(GetChromeExtraArguments)(BSTR *args);
   STDMETHOD(GetChromeProfileName)(BSTR *args);
   STDMETHOD(GetExtensionApisToAutomate)(BSTR *args);
   STDMETHOD(ShouldShowVersionMismatchDialog)();

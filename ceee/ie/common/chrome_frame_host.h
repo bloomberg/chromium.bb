@@ -140,7 +140,6 @@ class ATL_NO_VTABLE ChromeFrameHost
   // @name IChromeFramePrivileged implementation.
   // @{
   STDMETHOD(GetWantsPrivileged)(boolean* wants_privileged);
-  STDMETHOD(GetChromeExtraArguments)(BSTR* args);
   STDMETHOD(GetChromeProfileName)(BSTR* args);
   STDMETHOD(GetExtensionApisToAutomate)(BSTR* functions_enabled);
   STDMETHOD(ShouldShowVersionMismatchDialog)();

@@ -335,7 +335,7 @@
             },
           },
           'dependencies': [
-	        '../chrome/chrome.gyp:crash_service',
+            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:automation',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
@@ -429,7 +429,7 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
-	        '../chrome/chrome.gyp:crash_service',
+            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
           ],
@@ -497,7 +497,7 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
-	        '../chrome/chrome.gyp:crash_service',
+            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:chrome_dll_version',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
@@ -808,7 +808,8 @@
             '/c', '<(RULE_INPUT_PATH)',
           ],
           'process_outputs_as_sources': 0,
-          'message': 'Assembling <(RULE_INPUT_PATH) to <(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj.',
+          'message':
+              'Assembling <(RULE_INPUT_PATH) to <(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj.',
         },
       ],
       'msvs_settings': {
@@ -886,6 +887,8 @@
         'resource.h',
       ],
       'include_dirs': [
+        # For chrome_tab.h
+        '<(SHARED_INTERMEDIATE_DIR)',
         '<(INTERMEDIATE_DIR)/../npchrome_frame',
       ],
       'conditions': [

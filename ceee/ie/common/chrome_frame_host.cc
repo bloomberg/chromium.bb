@@ -61,17 +61,6 @@ STDMETHODIMP ChromeFrameHost::GetWantsPrivileged(boolean* wants_privileged) {
   return S_OK;
 }
 
-STDMETHODIMP ChromeFrameHost::GetChromeExtraArguments(BSTR* args) {
-  DCHECK(args);
-
-  // Extra arguments are passed on verbatim, so we add the -- prefix.
-  CComBSTR str = "--";
-  str.Append(switches::kEnableExperimentalExtensionApis);
-
-  *args = str.Detach();
-  return S_OK;
-}
-
 STDMETHODIMP ChromeFrameHost::GetChromeProfileName(BSTR* profile_name) {
   return chrome_profile_name_.CopyTo(profile_name);
 }

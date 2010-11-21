@@ -453,16 +453,8 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
       url_fetcher_->set_privileged_mode(is_privileged_);
     }
 
-    std::wstring chrome_extra_arguments;
     std::wstring profile_name(GetHostProcessName(false));
     if (is_privileged_) {
-      // Does the host want to provide extra arguments?
-      base::win::ScopedBstr extra_arguments_arg;
-      service_hr = service->GetChromeExtraArguments(
-          extra_arguments_arg.Receive());
-      if (S_OK == service_hr && extra_arguments_arg)
-        chrome_extra_arguments.assign(extra_arguments_arg,
-                                      extra_arguments_arg.Length());
 
       base::win::ScopedBstr automated_functions_arg;
       service_hr = service->GetExtensionApisToAutomate(
@@ -489,6 +481,15 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     }
 
     InitializeAutomationSettings();
+
+    // To avoid http://code.google.com/p/chromium/issues/detail?id=63427,
+    // we always pass this flag needed by CEEE. It has no effect on
+    // normal CF operation.
+    //
+    // Extra arguments are passed on verbatim, so we add the -- prefix.
+    std::wstring chrome_extra_arguments(L"--");
+    chrome_extra_arguments.append(
+        ASCIIToWide(switches::kEnableExperimentalExtensionApis));
 
     url_fetcher_->set_frame_busting(!is_privileged_);
     automation_client_->SetUrlFetcher(url_fetcher_.get());

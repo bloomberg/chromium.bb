@@ -98,18 +98,17 @@ interface IChromeFrameInternal : IUnknown {
 
 [
   object,
-  uuid(8AD52429-3CE0-4883-BC69-2DFA055D20D4),
+  uuid(B1B52A4D-B22E-489f-8CCD-1CF9166FA90E),
   oleautomation,
   nonextensible,
   hidden,
 ]
+// Internal implementation interface. Not intended as an API. May change
+// frequently, don't treat this as frozen.
 interface IChromeFramePrivileged : IUnknown {
   // If the host returns false for wants_privileged, the control
   // won't enable privileged mode.
   HRESULT GetWantsPrivileged([out] boolean *wants_privileged);
-  // Extra arguments to supply to the Chrome instance.  Returns S_FALSE when
-  // no extra arguments are needed.  Always sets the output string to non-NULL.
-  HRESULT GetChromeExtraArguments([out] BSTR *args);
   // The profile name we want to use.
   HRESULT GetChromeProfileName([out] BSTR *profile_name);
   // The comma-separated list of extension API functions you wish to automate.

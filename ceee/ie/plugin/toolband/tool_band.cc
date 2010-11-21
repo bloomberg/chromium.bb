@@ -213,17 +213,6 @@ STDMETHODIMP ToolBand::GetWantsPrivileged(boolean* wants_privileged) {
   return S_OK;
 }
 
-STDMETHODIMP ToolBand::GetChromeExtraArguments(BSTR* args) {
-  DCHECK(args);
-
-  // Extra arguments are passed on verbatim, so we add the -- prefix.
-  CComBSTR str = "--";
-  str.Append(switches::kEnableExperimentalExtensionApis);
-
-  *args = str.Detach();
-  return S_OK;
-}
-
 STDMETHODIMP ToolBand::GetChromeProfileName(BSTR* profile_name) {
   *profile_name = ::SysAllocString(
       ceee_module_util::GetBrokerProfileNameForIe());
