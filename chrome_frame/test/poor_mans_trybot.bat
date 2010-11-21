@@ -26,23 +26,31 @@ REM a ton of stuff in that directory. Just be aware of it, and check
 REM what files you actually have in the local copy on the VM after
 REM running this script. If you encounter this issue, a reboot of the
 REM VM seems to help.
+REM
+REM ALSO NOTE: At least one test
+REM (ChromeFrameTestWithWebServer.FullTabModeIE_TestPostReissue) fails
+REM until you choose "never show again" in the "did you notice the
+REM infobar" dialog that IE shows, at least if you're running IE7.
+
+if (%1)==() goto usage
 
 setlocal
 set CLIENT_ROOT=%~dp0%..\..
+set CONFIG=%1
 
 @ECHO ON
 c:
 mkdir \trybot
 cd \trybot
 rmdir /s /q base
-rmdir /s /q chrome\debug
+rmdir /s /q chrome\%CONFIG%
 rmdir /s /q chrome_frame
 mkdir base
-mkdir chrome\debug
+mkdir chrome\%CONFIG%
 mkdir chrome_frame\test\data
 mkdir chrome_frame\test\html_util_test_data
 copy %CLIENT_ROOT%\base\base_paths_win.cc base\base_paths_win.cc
-xcopy %CLIENT_ROOT%\chrome\debug chrome\debug /E /EXCLUDE:%CLIENT_ROOT%\chrome_frame\test\poor_mans_trybot_xcopy_filter.txt
+xcopy %CLIENT_ROOT%\chrome\%CONFIG% chrome\%CONFIG% /E /EXCLUDE:%CLIENT_ROOT%\chrome_frame\test\poor_mans_trybot_xcopy_filter.txt
 xcopy %CLIENT_ROOT%\chrome_frame\test\data chrome_frame\test\data /E
 xcopy %CLIENT_ROOT%\chrome_frame\test\html_util_test_data chrome_frame\test\html_util_test_data /E
 copy %CLIENT_ROOT%\chrome_frame\CFInstance.js chrome_frame\CFInstance.js
@@ -51,9 +59,16 @@ copy %CLIENT_ROOT%\chrome_frame\CFInstall.js chrome_frame\CFInstall.js
 echo ************************************
 echo DO THE FOLLOWING IN AN ADMIN PROMPT:
 echo ************************************
-echo regsvr32 \trybot\chrome\debug\servers\npchrome_frame.dll
+echo regsvr32 \trybot\chrome\%CONFIG%\servers\npchrome_frame.dll
+echo rundll32 \trybot\chrome\debug\servers\npchrome_frame.dll,RegisterNPAPIPlugin
 echo *********************************
 echo THEN DO THIS IN A REGULAR PROMPT:
 echo *********************************
-echo chrome\debug\chrome_frame_unittests.exe
-echo chrome\debug\chrome_frame_tests.exe
+echo \trybot\chrome\%CONFIG%\chrome_frame_unittests.exe
+echo \trybot\chrome\%CONFIG%\chrome_frame_tests.exe
+goto end
+
+:usage
+echo "Usage: poor_mans_trybot.bat [debug|release]"
+
+:end
