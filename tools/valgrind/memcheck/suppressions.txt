@@ -793,6 +793,42 @@
    fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
 }
+{
+   # Intentionally leaking NSS to prevent shutdown crashes
+   bug_61585a
+   Memcheck:Leak
+   fun:calloc
+   fun:error_get_my_stack
+   fun:nss_ClearErrorStack
+   fun:NSSArena_Create
+   ...
+   fun:nss_Init
+   fun:NSS_InitReadWrite
+   ...
+   fun:_ZN4base13EnsureNSSInitEv
+}
+{
+   bug_61585b
+   Memcheck:Leak
+   fun:malloc
+   fun:PORT_Alloc_Util
+   fun:sec_asn1e_allocate_item
+   fun:SEC_ASN1EncodeItem_Util
+   fun:sftkdb_encodeCipherText
+   fun:sftkdb_EncryptAttribute
+   fun:sftkdb_ChangePassword
+   fun:NSC_InitPIN
+   fun:PK11_InitPin
+   ...
+   fun:_ZN4base13OpenTestNSSDBERK8FilePathPKc
+}
+{
+   bug_61585c
+   Memcheck:Leak
+   fun:malloc
+   fun:PL_ArenaAllocate
+   fun:PORT_ArenaAlloc_Util
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
