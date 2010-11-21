@@ -520,6 +520,7 @@ emit_header(struct protocol *protocol, int server)
 	       "#endif\n"
 	       "\n"
 	       "#include <stdint.h>\n"
+	       "#include <stddef.h>\n"
 	       "#include \"wayland-util.h\"\n\n"
 	       "struct wl_client;\n\n",
 	       copyright,
