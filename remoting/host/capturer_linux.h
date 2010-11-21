@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_CAPTURER_LINUX_H_
 #define REMOTING_HOST_CAPTURER_LINUX_H_
 
+#include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "remoting/host/capturer.h"
 
 namespace remoting {

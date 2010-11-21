@@ -126,8 +126,8 @@ class Thread : PlatformThread::Delegate {
   PlatformThreadId thread_id() const { return thread_id_; }
 
   // Returns true if the thread has been started, and not yet stopped.
-  // When a thread is running, the thread_id_ is non-zero.
-  bool IsRunning() const { return thread_id_ != 0; }
+  // When a thread is running, |thread_id_| is a valid id.
+  bool IsRunning() const { return thread_id_ != kInvalidThreadId; }
 
  protected:
   // Called just prior to starting the message loop

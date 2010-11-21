@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "chrome/common/net/url_fetcher.h"
 
 class DictionaryValue;

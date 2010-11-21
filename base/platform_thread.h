@@ -34,9 +34,19 @@ typedef pid_t PlatformThreadId;
 #endif
 #endif
 
+const PlatformThreadId kInvalidThreadId = 0;
+
 // A namespace for low-level thread functions.
 class PlatformThread {
  public:
+  // Implement this interface to run code on a background thread.  Your
+  // ThreadMain method will be called on the newly created thread.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void ThreadMain() = 0;
+  };
+
   // Gets the current thread id, which may be useful for logging purposes.
   static PlatformThreadId CurrentId();
 
@@ -48,14 +58,6 @@ class PlatformThread {
 
   // Sets the thread name visible to a debugger.  This has no effect otherwise.
   static void SetName(const char* name);
-
-  // Implement this interface to run code on a background thread.  Your
-  // ThreadMain method will be called on the newly created thread.
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-    virtual void ThreadMain() = 0;
-  };
 
   // Creates a new thread.  The |stack_size| parameter can be 0 to indicate
   // that the default stack size should be used.  Upon success,

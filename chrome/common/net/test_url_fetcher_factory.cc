@@ -5,6 +5,7 @@
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/url_request/url_request_status.h"
 

@@ -20,6 +20,7 @@
 #include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
+#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"

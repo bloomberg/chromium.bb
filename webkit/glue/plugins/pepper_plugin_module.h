@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/native_library.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"

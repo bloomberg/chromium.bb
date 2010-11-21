@@ -17,6 +17,7 @@
 #include "base/crypto/symmetric_key.h"
 #include "base/non_thread_safe.h"
 #include "base/pickle.h"
+#include "base/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/dns_util.h"
 #include "net/base/dnsrr_resolver.h"

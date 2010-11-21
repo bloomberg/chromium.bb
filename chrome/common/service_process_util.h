@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/process.h"
+#include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
 
@@ -97,4 +98,3 @@ class ServiceProcessState {
 };
 
 #endif  // CHROME_COMMON_SERVICE_PROCESS_UTIL_H_
-

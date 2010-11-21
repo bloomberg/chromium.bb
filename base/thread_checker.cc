@@ -7,7 +7,7 @@
 // This code is only done in debug builds.
 #ifndef NDEBUG
 
-ThreadChecker::ThreadChecker() {
+ThreadChecker::ThreadChecker() : valid_thread_id_(kInvalidThreadId) {
   EnsureThreadIdAssigned();
 }
 
@@ -15,17 +15,20 @@ ThreadChecker::~ThreadChecker() {}
 
 bool ThreadChecker::CalledOnValidThread() const {
   EnsureThreadIdAssigned();
-  return *valid_thread_id_ == PlatformThread::CurrentId();
+  AutoLock auto_lock(lock_);
+  return valid_thread_id_ == PlatformThread::CurrentId();
 }
 
 void ThreadChecker::DetachFromThread() {
-  valid_thread_id_.reset();
+  AutoLock auto_lock(lock_);
+  valid_thread_id_ = kInvalidThreadId;
 }
 
 void ThreadChecker::EnsureThreadIdAssigned() const {
-  if (valid_thread_id_.get())
+  AutoLock auto_lock(lock_);
+  if (valid_thread_id_ != kInvalidThreadId)
     return;
-  valid_thread_id_.reset(new PlatformThreadId(PlatformThread::CurrentId()));
+  valid_thread_id_ = PlatformThread::CurrentId();
 }
 
 #endif  // NDEBUG
