@@ -132,13 +132,19 @@ bool DispatchXEvent(XEvent* xev) {
 
       case ButtonPress:
       case ButtonRelease: {
-        MouseEvent mouseev(xev);
-        if (xev->type == ButtonPress) {
-          return root->OnMousePressed(mouseev);
+        if (xev->xbutton.button == 4 || xev->xbutton.button == 5) {
+          // Scrolling the wheel triggers button press/release events.
+          MouseWheelEvent wheelev(xev);
+          return root->ProcessMouseWheelEvent(wheelev);
         } else {
-          root->OnMouseReleased(mouseev, false);
-          return true;  // Assume the event has been processed to make sure we
-                        // don't process it twice.
+          MouseEvent mouseev(xev);
+          if (xev->type == ButtonPress) {
+            return root->OnMousePressed(mouseev);
+          } else {
+            root->OnMouseReleased(mouseev, false);
+            return true;  // Assume the event has been processed to make sure we
+                          // don't process it twice.
+          }
         }
       }
 

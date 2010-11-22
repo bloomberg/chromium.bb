@@ -45,8 +45,22 @@ int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
     modifiers |= WebKit::WebInputEvent::ControlKey;
   if (event.IsAltDown())
     modifiers |= WebKit::WebInputEvent::AltKey;
+  if (event.IsCapsLockDown())
+    modifiers |= WebKit::WebInputEvent::CapsLockOn;
 
   return modifiers;
+}
+
+void InitializeWebMouseEventFromViewsEvent(const views::LocatedEvent& e,
+                                           const gfx::Point& origin,
+                                           WebKit::WebMouseEvent* wmevent) {
+  wmevent->timeStampSeconds = base::Time::Now().ToDoubleT();
+  wmevent->modifiers = WebInputEventFlagsFromViewsEvent(e);
+
+  wmevent->windowX = wmevent->x = e.x();
+  wmevent->windowY = wmevent->y = e.y();
+  wmevent->globalX = wmevent->x + origin.x();
+  wmevent->globalY = wmevent->y + origin.y();
 }
 
 }  // namespace
@@ -397,8 +411,18 @@ void RenderWidgetHostViewViews::OnMouseExited(const views::MouseEvent& event) {
 }
 
 bool RenderWidgetHostViewViews::OnMouseWheel(const views::MouseWheelEvent& e) {
-  NOTIMPLEMENTED();
-  return false;
+  WebMouseWheelEvent wmwe;
+  InitializeWebMouseEventFromViewsEvent(e, GetPosition(), &wmwe);
+
+  wmwe.type = WebKit::WebInputEvent::MouseWheel;
+  wmwe.button = WebKit::WebMouseEvent::ButtonNone;
+
+  // TODO(sadrul): How do we determine if it's a horizontal scroll?
+  wmwe.deltaY = e.GetOffset();
+  wmwe.wheelTicksY = wmwe.deltaY > 0 ? 1 : -1;
+
+  GetRenderWidgetHost()->ForwardWheelEvent(wmwe);
+  return true;
 }
 
 bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent &e) {
@@ -412,7 +436,8 @@ bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent &e) {
 
   wke.text[0] = wke.unmodifiedText[0] =
     static_cast<unsigned short>(gdk_keyval_to_unicode(
-          app::GdkKeyCodeForWindowsKeyCode(e.GetKeyCode(), false /*shift*/)));
+          app::GdkKeyCodeForWindowsKeyCode(e.GetKeyCode(),
+              e.IsShiftDown() ^ e.IsCapsLockDown())));
 
   wke.modifiers = WebInputEventFlagsFromViewsEvent(e);
   ForwardKeyboardEvent(wke);
@@ -514,15 +539,7 @@ bool RenderWidgetHostViewViews::ContainsNativeView(
 WebKit::WebMouseEvent RenderWidgetHostViewViews::WebMouseEventFromViewsEvent(
     const views::MouseEvent& event) {
   WebKit::WebMouseEvent wmevent;
-
-  wmevent.timeStampSeconds = base::Time::Now().ToDoubleT();
-  wmevent.windowX = wmevent.x = event.x();
-  wmevent.windowY = wmevent.y = event.y();
-  int x, y;
-  gdk_window_get_origin(GetNativeView()->window, &x, &y);
-  wmevent.globalX = wmevent.x + x;
-  wmevent.globalY = wmevent.y + y;
-  wmevent.modifiers = WebInputEventFlagsFromViewsEvent(event);
+  InitializeWebMouseEventFromViewsEvent(event, GetPosition(), &wmevent);
 
   // Setting |wmevent.button| is not necessary for -move events, but it is
   // necessary for -clicks and -drags.

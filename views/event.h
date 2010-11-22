@@ -381,6 +381,10 @@ class MouseWheelEvent : public LocatedEvent {
         offset_(offset) {
   }
 
+#if defined(TOUCH_UI)
+  explicit MouseWheelEvent(XEvent* xev);
+#endif
+
   int GetOffset() const {
     return offset_;
   }

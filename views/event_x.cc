@@ -25,6 +25,8 @@ int GetEventFlagsFromXState(unsigned int state) {
     flags |= Event::EF_SHIFT_DOWN;
   if (state & Mod1Mask)
     flags |= Event::EF_ALT_DOWN;
+  if (state & LockMask)
+    flags |= Event::EF_CAPS_LOCK_DOWN;
   if (state & Button1Mask)
     flags |= Event::EF_LEFT_BUTTON_DOWN;
   if (state & Button2Mask)
@@ -170,6 +172,14 @@ MouseEvent::MouseEvent(XEvent* xev)
     : LocatedEvent(GetMouseEventType(xev),
                    GetMouseEventLocation(xev),
                    GetMouseEventFlags(xev)) {
+}
+
+MouseWheelEvent::MouseWheelEvent(XEvent* xev)
+    : LocatedEvent(Event::ET_MOUSEWHEEL,
+                   GetMouseEventLocation(xev),
+                   GetEventFlagsFromXState(xev->xbutton.state)),
+      offset_(xev->xbutton.button == 4 ? 53 : -53) {  // '53' is also the value
+                                                      // used for GTK+.
 }
 
 }  // namespace views

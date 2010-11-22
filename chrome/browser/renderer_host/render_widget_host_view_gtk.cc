@@ -366,6 +366,7 @@ class RenderWidgetHostViewGtkWidget {
   static float GetScrollPixelsPerTick() {
     static float scroll_pixels = -1;
     if (scroll_pixels < 0) {
+      // TODO(brettw): Remove the command line switch (crbug.com/63525)
       scroll_pixels = kDefaultScrollPixelsPerTick;
       CommandLine* command_line = CommandLine::ForCurrentProcess();
       std::string scroll_pixels_option =
