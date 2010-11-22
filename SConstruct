@@ -315,6 +315,11 @@ nacl_glibc_skiplist = [
     # and ncval rejects such executables.
     # See http://code.google.com/p/nativeclient/issues/detail?id=1183
     'run_whole_archive_test',
+    # run_srpc_sysv_shm_test fails because:
+    # 1) it uses fstat(), while we only have an fstat64() wrapper;
+    # 2) the test needs an explicit fflush(stdout) call because the
+    # process is killed without exit() being called.
+    'run_srpc_sysv_shm_test',
     ]
 
 
