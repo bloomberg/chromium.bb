@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+  // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,12 +38,12 @@ namespace {
 static const char* kConnectableProperty = "Connectable";
 static const char* kIsActiveProperty = "IsActive";
 static const char* kStateProperty = "State";
+static const char* kConnectivityStateProperty = "ConnectivityState";
 static const char* kSignalStrengthProperty = "Strength";
 static const char* kActivationStateProperty = "Cellular.ActivationState";
 static const char* kNetworkTechnologyProperty = "Cellular.NetworkTechnology";
 static const char* kPaymentURLProperty = "Cellular.OlpUrl";
-static const char* kRestrictedPoolProperty = "Cellular.RestrictedPool";
-static const char* kRoamingStateProperty = "Cellular.RoamingState";
+  static const char* kRoamingStateProperty = "Cellular.RoamingState";
 
 // Connman state options.
 static const char* kStateIdle = "idle";
@@ -51,7 +51,7 @@ static const char* kStateCarrier = "carrier";
 static const char* kStateAssociation = "association";
 static const char* kStateConfiguration = "configuration";
 static const char* kStateReady = "ready";
-static const char* kStateDisconnect = "disconnect";
+  static const char* kStateDisconnect = "disconnect";
 static const char* kStateFailure = "failure";
 static const char* kStateActivationFailure = "activation-failure";
 
@@ -61,6 +61,11 @@ static const char* kActivationStateActivating = "activating";
 static const char* kActivationStateNotActivated = "not-activated";
 static const char* kActivationStatePartiallyActivated = "partially-activated";
 static const char* kActivationStateUnknown = "unknown";
+
+// Connman connectivity state options
+static const char* kConnStateUnrestricted = "unrestricted";
+static const char* kConnStateRestricted = "restricted";
+static const char* kConnStateNone = "none";
 
 // Connman network technology options.
 static const char* kNetworkTechnology1Xrtt = "1xRTT";
@@ -113,6 +118,16 @@ static ActivationState ParseActivationState(
   return ACTIVATION_STATE_UNKNOWN;
 }
 
+static ConnectivityState ParseConnectivityState(const std::string& state) {
+  if (state == kConnStateUnrestricted)
+    return CONN_STATE_UNRESTRICTED;
+  if (state == kConnStateRestricted)
+    return CONN_STATE_RESTRICTED;
+  if (state == kConnStateNone)
+    return CONN_STATE_NONE;
+  return CONN_STATE_UNKNOWN;
+}
+
 static NetworkTechnology ParseNetworkTechnology(
     const std::string& technology) {
     if (technology == kNetworkTechnology1Xrtt)
@@ -135,16 +150,18 @@ static NetworkTechnology ParseNetworkTechnology(
     return NETWORK_TECHNOLOGY_LTE_ADVANCED;
   return NETWORK_TECHNOLOGY_UNKNOWN;
 }
+
 static NetworkRoamingState ParseRoamingState(
     const std::string& roaming_state) {
     if (roaming_state == kRoamingStateHome)
-    return ROAMING_STATE_HOME;
+      return ROAMING_STATE_HOME;
   if (roaming_state == kRoamingStateRoaming)
     return ROAMING_STATE_ROAMING;
   if (roaming_state == kRoamingStateUnknown)
     return ROAMING_STATE_UNKNOWN;
   return ROAMING_STATE_UNKNOWN;
 }
+
 }
 
 // Helper function to wrap Html with <th> tag.
@@ -498,7 +515,7 @@ CellularNetwork::CellularNetwork()
       activation_state_(ACTIVATION_STATE_UNKNOWN),
       network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
       roaming_state_(ROAMING_STATE_UNKNOWN),
-      restricted_pool_(false),
+      connectivity_state_(CONN_STATE_UNKNOWN),
       prl_version_(0) {
   type_ = TYPE_CELLULAR;
 }
@@ -508,7 +525,7 @@ CellularNetwork::CellularNetwork(const CellularNetwork& network)
   activation_state_ = network.activation_state();
   network_technology_ = network.network_technology();
   roaming_state_ = network.roaming_state();
-  restricted_pool_ = network.restricted_pool();
+  connectivity_state_ = network.connectivity_state();
   service_name_ = network.service_name();
   operator_name_ = network.operator_name();
   operator_code_ = network.operator_code();
@@ -534,7 +551,7 @@ CellularNetwork::CellularNetwork(const ServiceInfo* service)
   activation_state_ = service->activation_state;
   network_technology_ = service->network_technology;
   roaming_state_ = service->roaming_state;
-  restricted_pool_ = service->restricted_pool;
+  connectivity_state_ = service->connectivity_state;
   // Carrier Info
   if (service->carrier_info) {
     operator_name_ = SafeString(service->carrier_info->operator_name);
@@ -573,7 +590,7 @@ void CellularNetwork::Clear() {
   activation_state_ = ACTIVATION_STATE_UNKNOWN;
   roaming_state_ = ROAMING_STATE_UNKNOWN;
   network_technology_ = NETWORK_TECHNOLOGY_UNKNOWN;
-  restricted_pool_ = false;
+  connectivity_state_ = CONN_STATE_UNKNOWN;
   service_name_.clear();
   operator_name_.clear();
   operator_code_.clear();
@@ -666,6 +683,24 @@ std::string CellularNetwork::GetNetworkTechnologyString() const {
     default:
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_NETWORK_CELLULAR_TECHNOLOGY_UNKNOWN);
+      break;
+  }
+}
+
+std::string CellularNetwork::GetConnectivityStateString() const {
+  // These strings do not appear in the UI, so no need to localize them
+  switch (connectivity_state_) {
+    case CONN_STATE_UNKNOWN:
+      return "unknown";
+      break;
+    case CONN_STATE_UNRESTRICTED:
+      return "unrestricted";
+      break;
+    case CONN_STATE_RESTRICTED:
+      return "restricted";
+      break;
+    case CONN_STATE_NONE:
+      return "none";
       break;
   }
 }
@@ -1736,9 +1771,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         if (value->GetAsInteger(&intval))
           wireless->set_strength(intval);
       } else if (cellular != NULL) {
-        if (strcmp(key, kRestrictedPoolProperty) == 0) {
-          if (value->GetAsBoolean(&boolval))
-            cellular->set_restricted_pool(boolval);
+        if (strcmp(key, kConnectivityStateProperty) == 0) {
+          if (value->GetAsString(&stringval))
+            cellular->set_connectivity_state(ParseConnectivityState(stringval));
         } else if (strcmp(key, kActivationStateProperty) == 0) {
           if (value->GetAsString(&stringval))
             cellular->set_activation_state(ParseActivationState(stringval));

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+  // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -236,7 +236,12 @@ class CellularNetwork : public WirelessNetwork {
     return network_technology_;
   }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
-  bool restricted_pool() const { return restricted_pool_; }
+  const ConnectivityState connectivity_state() const {
+    return connectivity_state_;
+  }
+  bool restricted_pool() const {
+    return connectivity_state() == CONN_STATE_RESTRICTED;
+  }
   bool needs_new_plan() const {
     return restricted_pool() && connected() &&
         activation_state() == ACTIVATION_STATE_ACTIVATED;
@@ -290,6 +295,8 @@ class CellularNetwork : public WirelessNetwork {
 
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;
+  // Return a string representation of connectivity state.
+  std::string GetConnectivityStateString() const;
   // Return a string representation of activation state.
   std::string GetActivationStateString() const;
   // Return a string representation of roaming state.
@@ -303,7 +310,7 @@ class CellularNetwork : public WirelessNetwork {
   ActivationState activation_state_;
   NetworkTechnology network_technology_;
   NetworkRoamingState roaming_state_;
-  bool restricted_pool_;
+  ConnectivityState connectivity_state_;
   std::string service_name_;
   // Carrier Info
   std::string operator_name_;
@@ -337,8 +344,8 @@ class CellularNetwork : public WirelessNetwork {
   void set_roaming_state(NetworkRoamingState state) {
     roaming_state_ = state;
   }
-  void set_restricted_pool(bool restricted_pool) {
-    restricted_pool_ = restricted_pool;
+  void set_connectivity_state(ConnectivityState connectivity_state) {
+    connectivity_state_ = connectivity_state;
   }
 
   friend class NetworkLibraryImpl;
