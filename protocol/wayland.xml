@@ -273,6 +273,6 @@
     </event>
   </interface>
 
-  <interface name="visual" version="1">
+  <interface name="visual" version="1" />
 
 </protocol>
