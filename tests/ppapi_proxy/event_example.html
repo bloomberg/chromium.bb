@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <!--
+  Copyright (c) 2010 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+<head>
+  <title>PPAPI InputEvent test</title>
+
+  <script type="text/javascript">
+    module = null;  // Global application object.
+    function moduleDidLoad() {
+      module = document.getElementById('event_module');
+      // Get the events property to force creation of the instance object when
+      // EventInstance::GetInstanceObject is called.
+      var initialEventsString = module.events;
+    }
+
+    function getEvents() {
+      try {
+        alert(module.events);
+      } catch(e) {
+        alert(e.message);
+      }
+    }
+  </script>
+</head>
+<body>
+<h1>InputEvent Handling Example</h1>
+  <form name="event_form" action="" method="get">
+  <input type="button" value="Get Events" onclick="getEvents()"/>
+  </form>
+  <embed name="nacl_module"
+         id="event_module"
+         width=400 height=400
+         src="ppapi_event_example.nexe"
+         type="application/x-ppapi-nacl-srpc"
+         style="background-color:gray"
+         onload="moduleDidLoad();" />
+<p>
+This example demonstrates input events in ppapi.  Each time an input event
+happens in the context of the gray box, the embedded NaCl module prints a
+message describing the event to the shell where you started your Browser.
+Alternatively, you can click the "Get Events" button to pop up a dialog box
+showing all input events that have happened since the last time you clicked the
+button.
+</p>
+</body>
+</html>
+

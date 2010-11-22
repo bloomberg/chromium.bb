@@ -29,3 +29,22 @@ env.Publish('ppapi_basic_object.nexe', 'run',
             [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')])
 
 
+ppapi_event_example_inputs = [
+  'event_example.cc',
+]
+
+event_example_nexe = env.ComponentProgram('ppapi_event_example.nexe',
+                                          ppapi_event_example_inputs,
+                                          EXTRA_LIBS=['ppruntime',
+                                                      'google_nacl_imc',
+                                                      'google_nacl_platform',
+                                                      'gio',
+                                                      'ppapi_cpp',
+                                                      'pthread',
+                                                      'srpc'])
+
+# Note that the html is required to run this program.
+env.Publish('ppapi_event_example.nexe', 'run',
+            [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+             'event_example.html'])
+
