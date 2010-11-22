@@ -85,19 +85,11 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 };
 
-// Crashes on Vista (dbg): http://crbug.com/44991
-#if defined(OS_WIN)
-#define ShutdownWhileOpen DISABLED_ShutdownWhileOpen
-#endif
 // Regression test for http://crbug.com/13361
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ShutdownWhileOpen) {
   browser()->window()->ShowTaskManager();
 }
 
-// Times out on Vista; disabled to keep tests fast. http://crbug.com/44991
-#if defined(OS_WIN)
-#define NoticeTabContentsChanges DISABLED_NoticeTabContentsChanges
-#endif
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
 
@@ -207,10 +199,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeNotificationChanges) {
   WaitForResourceChange(2);
 }
 
-// Times out on Vista; disabled to keep tests fast. http://crbug.com/44991
-#if defined(OS_WIN)
-#define KillExtension DISABLED_KillExtension
-#endif
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
@@ -232,10 +220,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
   WaitForResourceChange(2);
 }
 
-// Times out on Vista; disabled to keep tests fast. http://crbug.com/44991
-#if defined(OS_WIN)
-#define KillExtensionAndReload DISABLED_KillExtensionAndReload
-#endif
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtensionAndReload) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
