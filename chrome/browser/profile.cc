@@ -582,8 +582,7 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetExtensionInfoMap();
   }
 
-  virtual policy::DeviceManagementPolicyProvider*
-      GetDeviceManagementPolicyProvider() {
+  virtual policy::ProfilePolicyContext* GetPolicyContext() {
     return NULL;
   }
 

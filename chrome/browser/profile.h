@@ -31,7 +31,7 @@ class SSLConfigService;
 }
 
 namespace policy {
-class DeviceManagementPolicyProvider;
+class ProfilePolicyContext;
 }
 
 namespace webkit_database {
@@ -476,9 +476,8 @@ class Profile {
   // Returns the PromoCounter for Instant, or NULL if not applicable.
   virtual PromoCounter* GetInstantPromoCounter() = 0;
 
-  // Get the device management policy provider for this profile.
-  virtual policy::DeviceManagementPolicyProvider*
-      GetDeviceManagementPolicyProvider() = 0;
+  // Gets the device management service associated with this profile.
+  virtual policy::ProfilePolicyContext* GetPolicyContext() = 0;
 
 #if defined(OS_CHROMEOS)
   // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.

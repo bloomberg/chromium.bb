@@ -39,6 +39,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"
+#include "chrome/test/test_url_request_context_getter.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -109,26 +110,6 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
-};
-
-// Used to return a dummy context (normally the context is on the IO thread).
-// The one here can be run on the main test thread. Note that this can lead to
-// a leak if your test does not have a BrowserThread::IO in it because
-// URLRequestContextGetter is defined as a ReferenceCounted object with a
-// special trait that deletes it on the IO thread.
-class TestURLRequestContextGetter : public URLRequestContextGetter {
- public:
-  virtual URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_.get();
-  }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
-  }
-
- private:
-  scoped_refptr<URLRequestContext> context_;
 };
 
 class TestExtensionURLRequestContext : public URLRequestContext {

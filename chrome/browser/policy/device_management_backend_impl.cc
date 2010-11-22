@@ -7,22 +7,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/common/net/url_request_context_getter.h"
-#include "net/base/cookie_monster.h"
 #include "net/base/escape.h"
-#include "net/base/host_resolver.h"
-#include "net/base/ssl_config_service_defaults.h"
-#include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_network_layer.h"
-#include "net/proxy/proxy_service.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/policy/device_management_service.h"
 #include "chrome/common/chrome_version_info.h"
 
 namespace policy {
@@ -32,97 +20,19 @@ namespace {
 // Name constants for URL query parameters.
 const char kServiceParamRequest[] = "request";
 const char kServiceParamDeviceType[] = "devicetype";
+const char kServiceParamAppType[] = "apptype";
 const char kServiceParamDeviceID[] = "deviceid";
 const char kServiceParamAgent[] = "agent";
 
-// String constants for the device type and agent we report to the service.
-const char kServiceValueDeviceType[] = "Chrome";
+// String constants for the device and app type we report to the server.
+const char kServiceValueDeviceType[] = "Chrome OS";
+const char kServiceValueAppType[] = "Chrome";
+
 const char kServiceValueAgent[] =
     "%s enterprise management client version %s (%s)";
 
 const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
 const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
-
-}  // namespace
-
-// Custom request context implementation that allows to override the user agent,
-// amongst others. Using the default request context is not an option since this
-// service may be constructed before the default request context is created
-// (i.e. before the profile has been loaded).
-class DeviceManagementBackendRequestContext : public URLRequestContext {
- public:
-  explicit DeviceManagementBackendRequestContext(IOThread::Globals* io_globals);
-  virtual ~DeviceManagementBackendRequestContext();
-
- private:
-  virtual const std::string& GetUserAgent(const GURL& url) const;
-
-  std::string user_agent_;
-};
-
-DeviceManagementBackendRequestContext::DeviceManagementBackendRequestContext(
-    IOThread::Globals* io_globals) {
-  net_log_ = io_globals->net_log.get();
-  host_resolver_ = io_globals->host_resolver.get();
-  proxy_service_ = net::ProxyService::CreateDirect();
-  ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
-  http_auth_handler_factory_ =
-      net::HttpAuthHandlerFactory::CreateDefault(host_resolver_);
-  http_transaction_factory_ =
-      net::HttpNetworkLayer::CreateFactory(host_resolver_,
-                                           io_globals->dnsrr_resolver.get(),
-                                           NULL /* ssl_host_info_factory */,
-                                           proxy_service_,
-                                           ssl_config_service_,
-                                           http_auth_handler_factory_,
-                                           NULL /* network_delegate */,
-                                           net_log_);
-  cookie_store_ = new net::CookieMonster(NULL, NULL);
-  user_agent_ = DeviceManagementBackendImpl::GetAgentString();
-  accept_language_ = "*";
-  accept_charset_ = "*";
-}
-
-DeviceManagementBackendRequestContext
-    ::~DeviceManagementBackendRequestContext() {
-  delete http_transaction_factory_;
-  delete http_auth_handler_factory_;
-}
-
-const std::string&
-DeviceManagementBackendRequestContext::GetUserAgent(const GURL& url) const {
-  return user_agent_;
-}
-
-// Request context holder.
-class DeviceManagementBackendRequestContextGetter
-    : public URLRequestContextGetter {
- public:
-  DeviceManagementBackendRequestContextGetter()
-      : io_thread_(g_browser_process->io_thread()) {}
-
-  // URLRequestContextGetter overrides.
-  virtual URLRequestContext* GetURLRequestContext();
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
-
- private:
-  scoped_refptr<URLRequestContext> context_;
-  IOThread* io_thread_;
-};
-
-
-URLRequestContext*
-DeviceManagementBackendRequestContextGetter::GetURLRequestContext() {
-  if (!context_)
-    context_ = new DeviceManagementBackendRequestContext(io_thread_->globals());
-
-  return context_.get();
-}
-
-scoped_refptr<base::MessageLoopProxy>
-DeviceManagementBackendRequestContextGetter::GetIOMessageLoopProxy() const {
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
-}
 
 // Helper class for URL query parameter encoding/decoding.
 class URLQueryParameters {
@@ -162,31 +72,96 @@ std::string URLQueryParameters::Encode() {
   return result;
 }
 
-// Wraps common response parsing and handling functionality.
-class ResponseHandler {
+}  // namespace
+
+// A base class containing the common code for the jobs created by the backend
+// implementation. Subclasses provide custom code for handling actual register,
+// unregister, and policy jobs.
+class DeviceManagementJobBase
+    : public DeviceManagementService::DeviceManagementJob {
  public:
-  ResponseHandler() {}
-  virtual ~ResponseHandler() {}
+  virtual ~DeviceManagementJobBase() {
+    backend_impl_->JobDone(this);
+  }
 
-  // Handles the URL request response.
-  void HandleResponse(const URLRequestStatus& status,
-                      int response_code,
-                      const ResponseCookies& cookies,
-                      const std::string& data);
+  // DeviceManagementJob overrides:
+  virtual void HandleResponse(const URLRequestStatus& status,
+                              int response_code,
+                              const ResponseCookies& cookies,
+                              const std::string& data);
+  virtual GURL GetURL(const std::string& server_url);
+  virtual void ConfigureRequest(URLFetcher* fetcher);
 
-  // Forwards the given error to the delegate.
-  virtual void OnError(DeviceManagementBackend::ErrorCode error) = 0;
+ protected:
+  // Constructs a device management job running for the given backend.
+  DeviceManagementJobBase(DeviceManagementBackendImpl* backend_impl,
+                      const std::string& request_type)
+      : backend_impl_(backend_impl) {
+    query_params_.Put(kServiceParamRequest, request_type);
+    query_params_.Put(kServiceParamDeviceType, kServiceValueDeviceType);
+    query_params_.Put(kServiceParamAppType, kServiceValueAppType);
+    chrome::VersionInfo version_info;
+    std::string agent = base::StringPrintf(kServiceValueAgent,
+                                           version_info.Name().c_str(),
+                                           version_info.Version().c_str(),
+                                           version_info.LastChange().c_str());
+    query_params_.Put(kServiceParamAgent, agent);
+  }
+
+  void SetQueryParam(const std::string& name, const std::string& value) {
+    query_params_.Put(name, value);
+  }
+
+  void SetAuthToken(const std::string& auth_token) {
+    auth_token_ = auth_token;
+  }
+
+  void SetDeviceManagementToken(const std::string& device_management_token) {
+    device_management_token_ = device_management_token;
+  }
+
+  void SetDeviceID(const std::string& device_id) {
+    query_params_.Put(kServiceParamDeviceID, device_id);
+  }
+
+  void SetPayload(const em::DeviceManagementRequest& request) {
+    if (!request.SerializeToString(&payload_)) {
+      NOTREACHED();
+      LOG(ERROR) << "Failed to serialize request.";
+    }
+  }
 
  private:
-  // Implemented by subclasses to handle the decoded response.
-  virtual void ProcessResponse(
+  // Implemented by subclasses to handle decoded responses and errors.
+  virtual void OnResponse(
       const em::DeviceManagementResponse& response) = 0;
+  virtual void OnError(DeviceManagementBackend::ErrorCode error) = 0;
+
+  // The backend this job is handling a request for.
+  DeviceManagementBackendImpl* backend_impl_;
+
+  // Query parameters.
+  URLQueryParameters query_params_;
+
+  // Auth token (if applicaple).
+  std::string auth_token_;
+
+  // Device management token (if applicable).
+  std::string device_management_token_;
+
+  // The payload.
+  std::string payload_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceManagementJobBase);
 };
 
-void ResponseHandler::HandleResponse(const URLRequestStatus& status,
-                                     int response_code,
-                                     const ResponseCookies& cookies,
-                                     const std::string& data) {
+void DeviceManagementJobBase::HandleResponse(const URLRequestStatus& status,
+                                             int response_code,
+                                             const ResponseCookies& cookies,
+                                             const std::string& data) {
+  // Delete ourselves when this is done.
+  scoped_ptr<DeviceManagementJob> scoped_killer(this);
+
   if (status.status() != URLRequestStatus::SUCCESS) {
     OnError(DeviceManagementBackend::kErrorRequestFailed);
     return;
@@ -226,77 +201,162 @@ void ResponseHandler::HandleResponse(const URLRequestStatus& status,
       return;
   }
 
-  ProcessResponse(response);
+  OnResponse(response);
 }
 
-// Handles device registration responses.
-class RegisterResponseHandler : public ResponseHandler {
+GURL DeviceManagementJobBase::GetURL(
+    const std::string& server_url) {
+  return GURL(server_url + '?' + query_params_.Encode());
+}
+
+void DeviceManagementJobBase::ConfigureRequest(URLFetcher* fetcher) {
+  fetcher->set_upload_data("application/octet-stream", payload_);
+  std::string extra_headers;
+  if (!auth_token_.empty())
+    extra_headers += kServiceTokenAuthHeader + auth_token_ + "\n";
+  if (!device_management_token_.empty())
+    extra_headers += kDMTokenAuthHeader + device_management_token_ + "\n";
+  fetcher->set_extra_request_headers(extra_headers);
+}
+
+// Handles device registration jobs.
+class DeviceManagementRegisterJob : public DeviceManagementJobBase {
  public:
-  RegisterResponseHandler(
-      DeviceManagementBackend::DeviceRegisterResponseDelegate* delegate)
-      : delegate_(delegate) {}
+  DeviceManagementRegisterJob(
+      DeviceManagementBackendImpl* backend_impl,
+      const std::string& auth_token,
+      const std::string& device_id,
+      const em::DeviceRegisterRequest& request,
+      DeviceManagementBackend::DeviceRegisterResponseDelegate* delegate);
+  virtual ~DeviceManagementRegisterJob() {}
 
  private:
-  // ResponseHandler overrides.
+  // DeviceManagementJobBase overrides.
   virtual void OnError(DeviceManagementBackend::ErrorCode error) {
     delegate_->OnError(error);
   }
-  virtual void ProcessResponse(const em::DeviceManagementResponse& response) {
+  virtual void OnResponse(const em::DeviceManagementResponse& response) {
     delegate_->HandleRegisterResponse(response.register_response());
   }
 
   DeviceManagementBackend::DeviceRegisterResponseDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceManagementRegisterJob);
 };
 
-// Handles device unregister responses.
-class UnregisterResponseHandler : public ResponseHandler {
+DeviceManagementRegisterJob::DeviceManagementRegisterJob(
+    DeviceManagementBackendImpl* backend_impl,
+    const std::string& auth_token,
+    const std::string& device_id,
+    const em::DeviceRegisterRequest& request,
+    DeviceManagementBackend::DeviceRegisterResponseDelegate* delegate)
+    : DeviceManagementJobBase(backend_impl, "register"),
+      delegate_(delegate) {
+  SetDeviceID(device_id);
+  SetAuthToken(auth_token);
+  em::DeviceManagementRequest request_wrapper;
+  request_wrapper.mutable_register_request()->CopyFrom(request);
+  SetPayload(request_wrapper);
+}
+
+// Handles device unregistration jobs.
+class DeviceManagementUnregisterJob : public DeviceManagementJobBase {
  public:
-  UnregisterResponseHandler(
-      DeviceManagementBackend::DeviceUnregisterResponseDelegate* delegate)
-      : delegate_(delegate) {}
+  DeviceManagementUnregisterJob(
+      DeviceManagementBackendImpl* backend_impl,
+      const std::string& device_management_token,
+      const em::DeviceUnregisterRequest& request,
+      DeviceManagementBackend::DeviceUnregisterResponseDelegate* delegate);
+  virtual ~DeviceManagementUnregisterJob() {}
 
  private:
-  // ResponseHandler overrides.
+  // DeviceManagementJobBase overrides.
   virtual void OnError(DeviceManagementBackend::ErrorCode error) {
     delegate_->OnError(error);
   }
-  virtual void ProcessResponse(const em::DeviceManagementResponse& response) {
+  virtual void OnResponse(const em::DeviceManagementResponse& response) {
     delegate_->HandleUnregisterResponse(response.unregister_response());
   }
 
   DeviceManagementBackend::DeviceUnregisterResponseDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceManagementUnregisterJob);
 };
 
-// Handles device policy responses.
-class PolicyResponseHandler : public ResponseHandler {
+DeviceManagementUnregisterJob::DeviceManagementUnregisterJob(
+    DeviceManagementBackendImpl* backend_impl,
+    const std::string& device_management_token,
+    const em::DeviceUnregisterRequest& request,
+    DeviceManagementBackend::DeviceUnregisterResponseDelegate* delegate)
+    : DeviceManagementJobBase(backend_impl, "unregister"),
+      delegate_(delegate) {
+  SetDeviceManagementToken(device_management_token);
+  em::DeviceManagementRequest request_wrapper;
+  request_wrapper.mutable_unregister_request()->CopyFrom(request);
+  SetPayload(request_wrapper);
+}
+
+// Handles policy request jobs.
+class DeviceManagementPolicyJob : public DeviceManagementJobBase {
  public:
-  PolicyResponseHandler(
-      DeviceManagementBackend::DevicePolicyResponseDelegate* delegate)
-      : delegate_(delegate) {}
+  DeviceManagementPolicyJob(
+      DeviceManagementBackendImpl* backend_impl,
+      const std::string& device_management_token,
+      const em::DevicePolicyRequest& request,
+      DeviceManagementBackend::DevicePolicyResponseDelegate* delegate);
+  virtual ~DeviceManagementPolicyJob() {}
 
  private:
-  // ResponseHandler overrides.
+  // DeviceManagementJobBase overrides.
   virtual void OnError(DeviceManagementBackend::ErrorCode error) {
     delegate_->OnError(error);
   }
-  virtual void ProcessResponse(const em::DeviceManagementResponse& response) {
+  virtual void OnResponse(const em::DeviceManagementResponse& response) {
     delegate_->HandlePolicyResponse(response.policy_response());
   }
 
   DeviceManagementBackend::DevicePolicyResponseDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceManagementPolicyJob);
 };
 
+DeviceManagementPolicyJob::DeviceManagementPolicyJob(
+    DeviceManagementBackendImpl* backend_impl,
+    const std::string& device_management_token,
+    const em::DevicePolicyRequest& request,
+    DeviceManagementBackend::DevicePolicyResponseDelegate* delegate)
+    : DeviceManagementJobBase(backend_impl, "policy"),
+      delegate_(delegate) {
+  SetDeviceManagementToken(device_management_token);
+  em::DeviceManagementRequest request_wrapper;
+  request_wrapper.mutable_policy_request()->CopyFrom(request);
+  SetPayload(request_wrapper);
+}
+
 DeviceManagementBackendImpl::DeviceManagementBackendImpl(
-    const std::string& server_url)
-    : server_url_(server_url),
-      request_context_getter_(
-          new DeviceManagementBackendRequestContextGetter()) {
+    DeviceManagementService* service)
+    : service_(service) {
 }
 
 DeviceManagementBackendImpl::~DeviceManagementBackendImpl() {
-  // Cancel all pending requests.
-  STLDeleteContainerPairPointers(response_handlers_.begin(),
-                                 response_handlers_.end());
+  // Swap to a helper, so we don't interfere with the unregistration on delete.
+  JobSet to_be_deleted;
+  to_be_deleted.swap(pending_jobs_);
+  for (JobSet::iterator job(to_be_deleted.begin());
+       job != to_be_deleted.end();
+       ++job) {
+    service_->RemoveJob(*job);
+    delete *job;
+  }
+}
+
+void DeviceManagementBackendImpl::JobDone(DeviceManagementJobBase* job) {
+  pending_jobs_.erase(job);
+}
+
+void DeviceManagementBackendImpl::AddJob(DeviceManagementJobBase* job) {
+  pending_jobs_.insert(job);
+  service_->AddJob(job);
 }
 
 void DeviceManagementBackendImpl::ProcessRegisterRequest(
@@ -304,112 +364,24 @@ void DeviceManagementBackendImpl::ProcessRegisterRequest(
     const std::string& device_id,
     const em::DeviceRegisterRequest& request,
     DeviceRegisterResponseDelegate* delegate) {
-  em::DeviceManagementRequest request_wrapper;
-  request_wrapper.mutable_register_request()->CopyFrom(request);
-
-  URLQueryParameters params;
-  PutCommonQueryParameters(&params);
-  params.Put(kServiceParamRequest, "register");
-  params.Put(kServiceParamDeviceID, device_id);
-
-  CreateFetcher(request_wrapper,
-                new RegisterResponseHandler(delegate),
-                params.Encode(),
-                kServiceTokenAuthHeader + auth_token);
+  AddJob(new DeviceManagementRegisterJob(this, auth_token, device_id, request,
+                                         delegate));
 }
 
 void DeviceManagementBackendImpl::ProcessUnregisterRequest(
     const std::string& device_management_token,
     const em::DeviceUnregisterRequest& request,
     DeviceUnregisterResponseDelegate* delegate) {
-  em::DeviceManagementRequest request_wrapper;
-  request_wrapper.mutable_unregister_request()->CopyFrom(request);
-
-  URLQueryParameters params;
-  PutCommonQueryParameters(&params);
-  params.Put(kServiceParamRequest, "unregister");
-
-  CreateFetcher(request_wrapper,
-                new UnregisterResponseHandler(delegate),
-                params.Encode(),
-                kDMTokenAuthHeader + device_management_token);
+  AddJob(new DeviceManagementUnregisterJob(this, device_management_token,
+                                           request, delegate));
 }
 
 void DeviceManagementBackendImpl::ProcessPolicyRequest(
     const std::string& device_management_token,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
-  em::DeviceManagementRequest request_wrapper;
-  request_wrapper.mutable_policy_request()->CopyFrom(request);
-
-  URLQueryParameters params;
-  PutCommonQueryParameters(&params);
-  params.Put(kServiceParamRequest, "policy");
-
-  CreateFetcher(request_wrapper,
-                new PolicyResponseHandler(delegate),
-                params.Encode(),
-                kDMTokenAuthHeader + device_management_token);
-}
-
-// static
-std::string DeviceManagementBackendImpl::GetAgentString() {
-  chrome::VersionInfo version_info;
-  return base::StringPrintf(kServiceValueAgent,
-                            version_info.Name().c_str(),
-                            version_info.Version().c_str(),
-                            version_info.LastChange().c_str());
-}
-
-void DeviceManagementBackendImpl::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const URLRequestStatus& status,
-    int response_code,
-    const ResponseCookies& cookies,
-    const std::string& data) {
-  ResponseHandlerMap::iterator entry(response_handlers_.find(source));
-  if (entry != response_handlers_.end()) {
-    ResponseHandler* handler = entry->second;
-    handler->HandleResponse(status, response_code, cookies, data);
-    response_handlers_.erase(entry);
-    delete handler;
-  } else {
-    NOTREACHED() << "Callback from foreign URL fetcher";
-  }
-  delete source;
-}
-
-void DeviceManagementBackendImpl::CreateFetcher(
-    const em::DeviceManagementRequest& request,
-    ResponseHandler* handler,
-    const std::string& query_params,
-    const std::string& extra_headers) {
-  scoped_ptr<ResponseHandler> handler_ptr(handler);
-
-  // Construct the payload.
-  std::string payload;
-  if (!request.SerializeToString(&payload)) {
-    handler->OnError(DeviceManagementBackend::kErrorRequestInvalid);
-    return;
-  }
-
-  // Instantiate the fetcher.
-  GURL url(server_url_ + '?' + query_params);
-  URLFetcher* fetcher = URLFetcher::Create(0, url, URLFetcher::POST, this);
-  fetcher->set_request_context(request_context_getter_.get());
-  fetcher->set_upload_data("application/octet-stream", payload);
-  fetcher->set_extra_request_headers(extra_headers);
-  response_handlers_[fetcher] = handler_ptr.release();
-
-  // Start the request. The fetcher will call OnURLFetchComplete when done.
-  fetcher->Start();
-}
-
-void DeviceManagementBackendImpl::PutCommonQueryParameters(
-    URLQueryParameters* params) {
-  params->Put(kServiceParamDeviceType, kServiceValueDeviceType);
-  params->Put(kServiceParamAgent, GetAgentString());
+  AddJob(new DeviceManagementPolicyJob(this, device_management_token, request,
+                                       delegate));
 }
 
 }  // namespace policy

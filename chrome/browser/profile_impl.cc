@@ -56,8 +56,7 @@
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/device_management_backend_impl.h"
-#include "chrome/browser/policy/device_management_policy_provider.h"
+#include "chrome/browser/policy/profile_policy_context.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -355,6 +354,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
 
   extension_info_map_ = new ExtensionInfoMap();
 
+  GetPolicyContext()->Initialize();
+
   // Log the profile size after a reasonable startup delay.
   BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
                                  new ProfileSizeTask(path_), 112000);
@@ -489,6 +490,8 @@ ProfileImpl::~ProfileImpl() {
       Source<Profile>(this),
       NotificationService::NoDetails());
 
+  GetPolicyContext()->Shutdown();
+
   tab_restore_service_ = NULL;
 
   StopCreateSessionServiceTimer();
@@ -513,10 +516,6 @@ ProfileImpl::~ProfileImpl() {
 
   // Delete the NTP resource cache so we can unregister pref observers.
   ntp_resource_cache_.reset();
-
-  // Shut down the DM policy provider before the token service dies.
-  if (device_management_policy_provider_.get())
-    device_management_policy_provider_->Shutdown();
 
   // The sync service needs to be deleted before the services it calls.
   sync_service_.reset();
@@ -1319,24 +1318,11 @@ ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {
   return extension_info_map_.get();
 }
 
-policy::DeviceManagementPolicyProvider*
-ProfileImpl::GetDeviceManagementPolicyProvider() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDeviceManagementUrl))
-    return NULL;
+policy::ProfilePolicyContext* ProfileImpl::GetPolicyContext() {
+  if (!profile_policy_context_.get())
+    profile_policy_context_.reset(new policy::ProfilePolicyContext(this));
 
-  if (!device_management_policy_provider_.get()) {
-    device_management_policy_provider_.reset(
-        new policy::DeviceManagementPolicyProvider(
-            policy::ConfigurationPolicyPrefStore::
-                GetChromePolicyDefinitionList(),
-            new policy::DeviceManagementBackendImpl(
-                command_line->GetSwitchValueASCII(
-                    switches::kDeviceManagementUrl)),
-            GetTokenService(),
-            GetPath()));
-  }
-  return device_management_policy_provider_.get();
+  return profile_policy_context_.get();
 }
 
 PromoCounter* ProfileImpl::GetInstantPromoCounter() {

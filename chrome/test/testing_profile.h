@@ -308,10 +308,7 @@ class TestingProfile : public Profile {
   virtual ChromeBlobStorageContext* GetBlobStorageContext() { return NULL; }
   virtual ExtensionInfoMap* GetExtensionInfoMap() { return NULL; }
   virtual PromoCounter* GetInstantPromoCounter() { return NULL; }
-  virtual policy::DeviceManagementPolicyProvider*
-      GetDeviceManagementPolicyProvider() {
-    return NULL;
-  }
+  virtual policy::ProfilePolicyContext* GetPolicyContext() { return NULL; }
 
  protected:
   base::Time start_time_;

@@ -186,7 +186,7 @@ class RequestHandler(object):
 
     # Respond only if the client requested policy for the cros/device scope,
     # since that's where chrome policy is supposed to live in.
-    if msg.policy_scope == 'cros/device':
+    if msg.policy_scope == 'chromeos/device':
       setting = response.policy_response.setting.add()
       setting.policy_key = 'chrome-policy'
       policy_value = dm.GenericSetting()
@@ -226,17 +226,17 @@ class RequestHandler(object):
       will contain the error response to send back.
     """
     error = None
-
+    dmtoken = None
     match = re.match('GoogleDMToken token=(\\w+)',
                      self._headers.getheader('Authorization', ''))
     if match:
       dmtoken = match.group(1)
-      if not dmtoken:
-        error = dm.DeviceManagementResponse.DEVICE_MANAGEMENT_TOKEN_INVALID
-      elif not self._server.LookupDevice(dmtoken):
-        error = dm.DeviceManagementResponse.DEVICE_NOT_FOUND
-      else:
-        return (dmtoken, None)
+    if not dmtoken:
+      error = dm.DeviceManagementResponse.DEVICE_MANAGEMENT_TOKEN_INVALID
+    elif not self._server.LookupDevice(dmtoken):
+      error = dm.DeviceManagementResponse.DEVICE_NOT_FOUND
+    else:
+      return (dmtoken, None)
 
     response = dm.DeviceManagementResponse()
     response.error = error

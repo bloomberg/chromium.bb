@@ -11,7 +11,6 @@
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend.h"
-#include "chrome/browser/policy/device_management_backend_impl.h"
 #include "chrome/browser/policy/device_management_policy_cache.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/common/chrome_paths.h"
@@ -19,15 +18,11 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 
-namespace {
+namespace policy {
 
-const char kChromePolicyScope[] = "cros/device";
+const char kChromePolicyScope[] = "chromeos/device";
 const char kChromeDevicePolicySettingKey[] = "chrome-policy";
 const int64 kPolicyRefreshRateInMinutes = 3 * 60;  // 3 hours
-
-}  // namespace
-
-namespace policy {
 
 // Ensures that the portion of the policy provider implementation that requires
 // the IOThread is deferred until the IOThread is fully initialized. The policy
@@ -111,14 +106,6 @@ void DeviceManagementPolicyProvider::Shutdown() {
     token_fetcher_->Shutdown();
 }
 
-DeviceManagementBackend* DeviceManagementPolicyProvider::GetBackend() {
-  if (!backend_.get()) {
-    backend_.reset(new DeviceManagementBackendImpl(
-        GetDeviceManagementURL()));
-  }
-  return backend_.get();
-}
-
 void DeviceManagementPolicyProvider::Initialize() {
   registrar_.Add(this,
                  NotificationType::DEVICE_TOKEN_AVAILABLE,
@@ -140,7 +127,7 @@ void DeviceManagementPolicyProvider::InitializeAfterIOThreadExists() {
       FILE_PATH_LITERAL("Token"));
   if (token_service_) {
     token_fetcher_ =
-        new DeviceTokenFetcher(GetBackend(), token_service_, token_path);
+        new DeviceTokenFetcher(backend_.get(), token_service_, token_path);
     token_fetcher_->StartFetching();
   }
 }
@@ -152,9 +139,8 @@ void DeviceManagementPolicyProvider::SendPolicyRequest() {
     em::DevicePolicySettingRequest* setting =
         policy_request.add_setting_request();
     setting->set_key(kChromeDevicePolicySettingKey);
-    GetBackend()->ProcessPolicyRequest(token_fetcher_->GetDeviceToken(),
-                                       policy_request,
-                                       this);
+    backend_->ProcessPolicyRequest(token_fetcher_->GetDeviceToken(),
+                                   policy_request, this);
     policy_request_pending_ = true;
   }
 }

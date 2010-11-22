@@ -2413,6 +2413,8 @@
         'browser/policy/device_management_backend.h',
         'browser/policy/device_management_backend_impl.cc',
         'browser/policy/device_management_backend_impl.h',
+        'browser/policy/device_management_service.cc',
+        'browser/policy/device_management_service.h',
         'browser/policy/device_management_policy_cache.cc',
         'browser/policy/device_management_policy_cache.h',
         'browser/policy/device_management_policy_provider.cc',
@@ -2424,6 +2426,8 @@
         'browser/policy/file_based_policy_provider.h',
         'browser/policy/managed_prefs_banner_base.cc',
         'browser/policy/managed_prefs_banner_base.h',
+        'browser/policy/profile_policy_context.cc',
+        'browser/policy/profile_policy_context.h',
         # TODO(danno): Find a better way to include these files
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.cc',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.h',

@@ -23,6 +23,7 @@
 #endif
 #include "chrome/browser/policy/device_management_policy_provider.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
+#include "chrome/browser/policy/profile_policy_context.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
@@ -374,7 +375,7 @@ ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
       Singleton<ConfigurationPolicyProviderKeeper>::get();
   ConfigurationPolicyProvider* provider = NULL;
   if (profile)
-    provider = profile->GetDeviceManagementPolicyProvider();
+    provider = profile->GetPolicyContext()->GetDeviceManagementPolicyProvider();
   if (!provider)
     provider = keeper->device_management_provider();
   return new ConfigurationPolicyPrefStore(provider);

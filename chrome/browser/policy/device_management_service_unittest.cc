@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/device_management_backend_impl.h"
-
 #include "base/message_loop.h"
 #include "base/string_split.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend_mock.h"
+#include "chrome/browser/policy/device_management_service.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/test/test_url_request_context_getter.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -18,9 +19,7 @@ using testing::_;
 
 namespace policy {
 
-namespace {
-
-const char kServiceURL[] = "https://example.com/management_service";
+const char kServiceUrl[] = "https://example.com/management_service";
 
 // Encoded error response messages for testing the error code paths.
 const char kResponseEmpty[] = "\x08\x00";
@@ -31,17 +30,18 @@ const char kResponseErrorActivationPending[] = "\x08\x04";
 
 #define PROTO_STRING(name) (std::string(name, arraysize(name) - 1))
 
-}  // namespace
-
-// Unit tests for the google apps policy backend. The pattern here is each test
-// case triggeres a request and installs a mock delegate. The test will run and
-// the default action installed on the test delegate will quit the loop.
+// Unit tests for the device management policy service. The tests are run
+// against a TestURLFetcherFactory that is used to short-circuit the request
+// without calling into the actual network stack.
 template<typename TESTBASE>
-class DeviceManagementBackendImplTestBase : public TESTBASE {
+class DeviceManagementServiceTestBase : public TESTBASE {
  protected:
-  DeviceManagementBackendImplTestBase()
-      : io_thread_(BrowserThread::IO, &loop_),
-        service_(kServiceURL) {}
+  DeviceManagementServiceTestBase()
+      : request_context_(new TestURLRequestContextGetter()),
+        io_thread_(BrowserThread::IO, &loop_) {
+    ResetService();
+    service_->Initialize(request_context_.get());
+  }
 
   virtual void SetUp() {
     URLFetcher::set_factory(&factory_);
@@ -49,13 +49,26 @@ class DeviceManagementBackendImplTestBase : public TESTBASE {
 
   virtual void TearDown() {
     URLFetcher::set_factory(NULL);
+    backend_.reset();
+    service_.reset();
+    request_context_ = NULL;
     loop_.RunAllPending();
   }
 
+  void ResetService() {
+    backend_.reset();
+    service_.reset(new DeviceManagementService(kServiceUrl));
+    backend_.reset(service_->CreateBackend());
+  }
+
+  TestURLFetcherFactory factory_;
+  scoped_refptr<TestURLRequestContextGetter> request_context_;
+  scoped_ptr<DeviceManagementService> service_;
+  scoped_ptr<DeviceManagementBackend> backend_;
+
+ private:
   MessageLoopForUI loop_;
   BrowserThread io_thread_;
-  TestURLFetcherFactory factory_;
-  DeviceManagementBackendImpl service_;
 };
 
 struct FailedRequestParams {
@@ -76,44 +89,44 @@ struct FailedRequestParams {
 
 // A parameterized test case for erroneous response situations, they're mostly
 // the same for all kinds of requests.
-class DeviceManagementBackendImplFailedRequestTest
-    : public DeviceManagementBackendImplTestBase<
+class DeviceManagementServiceFailedRequestTest
+    : public DeviceManagementServiceTestBase<
           testing::TestWithParam<FailedRequestParams> > {
 };
 
-TEST_P(DeviceManagementBackendImplFailedRequestTest, RegisterRequest) {
+TEST_P(DeviceManagementServiceFailedRequestTest, RegisterRequest) {
   DeviceRegisterResponseDelegateMock mock;
   EXPECT_CALL(mock, OnError(GetParam().expected_error_));
   em::DeviceRegisterRequest request;
-  service_.ProcessRegisterRequest("token", "device id", request, &mock);
+  backend_->ProcessRegisterRequest("token", "device id", request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceURL),
+                                          GURL(kServiceUrl),
                                           GetParam().request_status_,
                                           GetParam().http_status_,
                                           ResponseCookies(),
                                           GetParam().response_);
 }
 
-TEST_P(DeviceManagementBackendImplFailedRequestTest, UnregisterRequest) {
+TEST_P(DeviceManagementServiceFailedRequestTest, UnregisterRequest) {
   DeviceUnregisterResponseDelegateMock mock;
   EXPECT_CALL(mock, OnError(GetParam().expected_error_));
   em::DeviceUnregisterRequest request;
-  service_.ProcessUnregisterRequest("token", request, &mock);
+  backend_->ProcessUnregisterRequest("token", request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceURL),
+                                          GURL(kServiceUrl),
                                           GetParam().request_status_,
                                           GetParam().http_status_,
                                           ResponseCookies(),
                                           GetParam().response_);
 }
 
-TEST_P(DeviceManagementBackendImplFailedRequestTest, PolicyRequest) {
+TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
   DevicePolicyResponseDelegateMock mock;
   EXPECT_CALL(mock, OnError(GetParam().expected_error_));
   em::DevicePolicyRequest request;
@@ -121,12 +134,12 @@ TEST_P(DeviceManagementBackendImplFailedRequestTest, PolicyRequest) {
   em::DevicePolicySettingRequest* setting_request =
       request.add_setting_request();
   setting_request->set_key("policy");
-  service_.ProcessPolicyRequest("token", request, &mock);
+  backend_->ProcessPolicyRequest("token", request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceURL),
+                                          GURL(kServiceUrl),
                                           GetParam().request_status_,
                                           GetParam().http_status_,
                                           ResponseCookies(),
@@ -134,8 +147,8 @@ TEST_P(DeviceManagementBackendImplFailedRequestTest, PolicyRequest) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    DeviceManagementBackendImplFailedRequestTestInstance,
-    DeviceManagementBackendImplFailedRequestTest,
+    DeviceManagementServiceFailedRequestTestInstance,
+    DeviceManagementServiceFailedRequestTest,
     testing::Values(
         FailedRequestParams(
             DeviceManagementBackend::kErrorRequestFailed,
@@ -173,8 +186,8 @@ INSTANTIATE_TEST_CASE_P(
             200,
             PROTO_STRING(kResponseErrorActivationPending))));
 
-class DeviceManagementBackendImplTest
-    : public DeviceManagementBackendImplTestBase<testing::Test> {
+class DeviceManagementServiceTest
+    : public DeviceManagementServiceTestBase<testing::Test> {
 };
 
 MATCHER_P(MessageEquals, reference, "") {
@@ -225,19 +238,19 @@ class QueryParams {
   ParamMap params_;
 };
 
-TEST_F(DeviceManagementBackendImplTest, RegisterRequest) {
+TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   DeviceRegisterResponseDelegateMock mock;
   em::DeviceRegisterResponse expected_response;
   expected_response.set_device_management_token("mtoken");
   EXPECT_CALL(mock, HandleRegisterResponse(MessageEquals(expected_response)));
   em::DeviceRegisterRequest request;
-  service_.ProcessRegisterRequest("token", "device id", request, &mock);
+  backend_->ProcessRegisterRequest("token", "device id", request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   // Check the data the fetcher received.
   const GURL& request_url(fetcher->original_url());
-  const GURL service_url(kServiceURL);
+  const GURL service_url(kServiceUrl);
   EXPECT_EQ(service_url.scheme(), request_url.scheme());
   EXPECT_EQ(service_url.host(), request_url.host());
   EXPECT_EQ(service_url.port(), request_url.port());
@@ -261,25 +274,25 @@ TEST_F(DeviceManagementBackendImplTest, RegisterRequest) {
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceURL),
+                                          GURL(kServiceUrl),
                                           status,
                                           200,
                                           ResponseCookies(),
                                           response_data);
 }
 
-TEST_F(DeviceManagementBackendImplTest, UnregisterRequest) {
+TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
   DeviceUnregisterResponseDelegateMock mock;
   em::DeviceUnregisterResponse expected_response;
   EXPECT_CALL(mock, HandleUnregisterResponse(MessageEquals(expected_response)));
   em::DeviceUnregisterRequest request;
-  service_.ProcessUnregisterRequest("dmtokenvalue", request, &mock);
+  backend_->ProcessUnregisterRequest("dmtokenvalue", request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   // Check the data the fetcher received.
   const GURL& request_url(fetcher->original_url());
-  const GURL service_url(kServiceURL);
+  const GURL service_url(kServiceUrl);
   EXPECT_EQ(service_url.scheme(), request_url.scheme());
   EXPECT_EQ(service_url.host(), request_url.host());
   EXPECT_EQ(service_url.port(), request_url.port());
@@ -303,18 +316,18 @@ TEST_F(DeviceManagementBackendImplTest, UnregisterRequest) {
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceURL),
+                                          GURL(kServiceUrl),
                                           status,
                                           200,
                                           ResponseCookies(),
                                           response_data);
 }
 
-TEST_F(DeviceManagementBackendImplTest, PolicyRequest) {
+TEST_F(DeviceManagementServiceTest, PolicyRequest) {
   DevicePolicyResponseDelegateMock mock;
   em::DevicePolicyResponse expected_response;
   em::DevicePolicySetting* policy_setting = expected_response.add_setting();
-  policy_setting->set_policy_key("policy");
+  policy_setting->set_policy_key("chrome-policy");
   policy_setting->set_watermark("fresh");
   em::GenericSetting* policy_value = policy_setting->mutable_policy_value();
   em::GenericNamedValue* named_value = policy_value->add_named_value();
@@ -330,18 +343,18 @@ TEST_F(DeviceManagementBackendImplTest, PolicyRequest) {
   EXPECT_CALL(mock, HandlePolicyResponse(MessageEquals(expected_response)));
 
   em::DevicePolicyRequest request;
-  request.set_policy_scope("chromium");
+  request.set_policy_scope("chromeos/device");
   em::DevicePolicySettingRequest* setting_request =
       request.add_setting_request();
   setting_request->set_key("policy");
   setting_request->set_watermark("stale");
-  service_.ProcessPolicyRequest("dmtokenvalue", request, &mock);
+  backend_->ProcessPolicyRequest("dmtokenvalue", request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   // Check the data the fetcher received.
   const GURL& request_url(fetcher->original_url());
-  const GURL service_url(kServiceURL);
+  const GURL service_url(kServiceUrl);
   EXPECT_EQ(service_url.scheme(), request_url.scheme());
   EXPECT_EQ(service_url.host(), request_url.host());
   EXPECT_EQ(service_url.port(), request_url.port());
@@ -365,7 +378,83 @@ TEST_F(DeviceManagementBackendImplTest, PolicyRequest) {
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   fetcher->delegate()->OnURLFetchComplete(fetcher,
-                                          GURL(kServiceURL),
+                                          GURL(kServiceUrl),
+                                          status,
+                                          200,
+                                          ResponseCookies(),
+                                          response_data);
+}
+
+TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
+  DeviceRegisterResponseDelegateMock mock;
+  EXPECT_CALL(mock, HandleRegisterResponse(_)).Times(0);
+  em::DeviceRegisterRequest request;
+  backend_->ProcessRegisterRequest("token", "device id", request, &mock);
+  TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  // There shouldn't be any callbacks.
+  backend_.reset();
+}
+
+TEST_F(DeviceManagementServiceTest, CancelUnregisterRequest) {
+  DeviceUnregisterResponseDelegateMock mock;
+  EXPECT_CALL(mock, HandleUnregisterResponse(_)).Times(0);
+  em::DeviceUnregisterRequest request;
+  backend_->ProcessUnregisterRequest("dmtokenvalue", request, &mock);
+  TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  // There shouldn't be any callbacks.
+  backend_.reset();
+}
+
+TEST_F(DeviceManagementServiceTest, CancelPolicyRequest) {
+  DevicePolicyResponseDelegateMock mock;
+  EXPECT_CALL(mock, HandlePolicyResponse(_)).Times(0);
+  em::DevicePolicyRequest request;
+  request.set_policy_scope("chromium");
+  em::DevicePolicySettingRequest* setting_request =
+      request.add_setting_request();
+  setting_request->set_key("policy");
+  setting_request->set_watermark("stale");
+  backend_->ProcessPolicyRequest("dmtokenvalue", request, &mock);
+  TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  // There shouldn't be any callbacks.
+  backend_.reset();
+}
+
+TEST_F(DeviceManagementServiceTest, JobQueueing) {
+  // Start with a non-initialized service.
+  ResetService();
+
+  // Make a request. We should not see any fetchers being created.
+  DeviceRegisterResponseDelegateMock mock;
+  em::DeviceRegisterResponse expected_response;
+  expected_response.set_device_management_token("mtoken");
+  EXPECT_CALL(mock, HandleRegisterResponse(MessageEquals(expected_response)));
+  em::DeviceRegisterRequest request;
+  backend_->ProcessRegisterRequest("token", "device id", request, &mock);
+  TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  ASSERT_FALSE(fetcher);
+
+  // Now initialize the service. That should start the job.
+  service_->Initialize(request_context_.get());
+  fetcher = factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  factory_.RemoveFetcherFromMap(0);
+
+  // Check that the request is processed as expected.
+  std::string response_data;
+  em::DeviceManagementResponse response_wrapper;
+  response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
+  response_wrapper.mutable_register_response()->CopyFrom(expected_response);
+  ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
+  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  fetcher->delegate()->OnURLFetchComplete(fetcher,
+                                          GURL(kServiceUrl),
                                           status,
                                           200,
                                           ResponseCookies(),

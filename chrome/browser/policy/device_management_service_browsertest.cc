@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/device_management_backend_impl.h"
-
 #include "base/message_loop.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend_mock.h"
+#include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_request.h"
@@ -21,9 +22,8 @@ using testing::InvokeWithoutArgs;
 
 namespace policy {
 
-namespace {
-
-const char kServiceUrl[] = "http://example.com/service";
+// Dummy service URL for testing with request interception enabled.
+const char kServiceUrl[] = "http://example.com/device_management";
 
 // Binary representation of successful register response containing a token.
 const char kServiceResponseRegister[] =
@@ -40,8 +40,6 @@ const char kServiceResponseUnregister[] =
     "\x08\x00\x22\x00";
 
 #define PROTO_STRING(name) (std::string(name, arraysize(name) - 1))
-
-}  // namespace
 
 // Interceptor implementation that returns test data back to the service.
 class CannedResponseInterceptor : public URLRequest::Interceptor {
@@ -75,7 +73,7 @@ class CannedResponseInterceptor : public URLRequest::Interceptor {
   const std::string response_data_;
 };
 
-class DeviceManagementBackendImplIntegrationTest : public InProcessBrowserTest {
+class DeviceManagementServiceIntegrationTest : public InProcessBrowserTest {
  public:
   void CaptureToken(const em::DeviceRegisterResponse& response) {
     token_ = response.device_management_token();
@@ -89,21 +87,23 @@ static void QuitMessageLoop() {
   MessageLoop::current()->Quit();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
+IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
                        CannedResponses) {
   URLFetcher::enable_interception_for_tests(true);
-  DeviceManagementBackendImpl service(kServiceUrl);
+  DeviceManagementService service(kServiceUrl);
+  service.Initialize(browser()->profile()->GetRequestContext());
+  scoped_ptr<DeviceManagementBackend> backend(service.CreateBackend());
 
   {
     CannedResponseInterceptor interceptor(
         GURL(kServiceUrl), PROTO_STRING(kServiceResponseRegister));
     DeviceRegisterResponseDelegateMock delegate;
     EXPECT_CALL(delegate, HandleRegisterResponse(_))
-        .WillOnce(DoAll(Invoke(this, &DeviceManagementBackendImplIntegrationTest
+        .WillOnce(DoAll(Invoke(this, &DeviceManagementServiceIntegrationTest
                                           ::CaptureToken),
                         InvokeWithoutArgs(QuitMessageLoop)));
     em::DeviceRegisterRequest request;
-    service.ProcessRegisterRequest("token", "device id", request, &delegate);
+    backend->ProcessRegisterRequest("token", "device id", request, &delegate);
     MessageLoop::current()->Run();
   }
 
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
     em::DevicePolicySettingRequest* setting_request =
         request.add_setting_request();
     setting_request->set_key("policy");
-    service.ProcessPolicyRequest(token_, request, &delegate);
+    backend->ProcessPolicyRequest(token_, request, &delegate);
 
     MessageLoop::current()->Run();
   }
@@ -130,29 +130,31 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
     EXPECT_CALL(delegate, HandleUnregisterResponse(_))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     em::DeviceUnregisterRequest request;
-    service.ProcessUnregisterRequest(token_, request, &delegate);
+    backend->ProcessUnregisterRequest(token_, request, &delegate);
 
     MessageLoop::current()->Run();
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
+IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
                        WithTestServer) {
-  net::TestServer test_server(
+  net::TestServer test_server_(
       net::TestServer::TYPE_HTTP,
       FilePath(FILE_PATH_LITERAL("chrome/test/data/policy")));
-  ASSERT_TRUE(test_server.Start());
-  DeviceManagementBackendImpl service(
-      test_server.GetURL("device_management").spec());
+  ASSERT_TRUE(test_server_.Start());
+  DeviceManagementService service(
+      test_server_.GetURL("device_management").spec());
+  service.Initialize(browser()->profile()->GetRequestContext());
+  scoped_ptr<DeviceManagementBackend> backend(service.CreateBackend());
 
   {
     DeviceRegisterResponseDelegateMock delegate;
     EXPECT_CALL(delegate, HandleRegisterResponse(_))
-        .WillOnce(DoAll(Invoke(this, &DeviceManagementBackendImplIntegrationTest
+        .WillOnce(DoAll(Invoke(this, &DeviceManagementServiceIntegrationTest
                                           ::CaptureToken),
                         InvokeWithoutArgs(QuitMessageLoop)));
     em::DeviceRegisterRequest request;
-    service.ProcessRegisterRequest("token", "device id", request, &delegate);
+    backend->ProcessRegisterRequest("token", "device id", request, &delegate);
     MessageLoop::current()->Run();
   }
 
@@ -167,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
     em::DevicePolicySettingRequest* setting_request =
         request.add_setting_request();
     setting_request->set_key("policy");
-    service.ProcessPolicyRequest(token_, request, &delegate);
+    backend->ProcessPolicyRequest(token_, request, &delegate);
 
     MessageLoop::current()->Run();
   }
@@ -177,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
     EXPECT_CALL(delegate, HandleUnregisterResponse(_))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     em::DeviceUnregisterRequest request;
-    service.ProcessUnregisterRequest(token_, request, &delegate);
+    backend->ProcessUnregisterRequest(token_, request, &delegate);
 
     MessageLoop::current()->Run();
   }

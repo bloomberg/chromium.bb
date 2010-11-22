@@ -66,10 +66,6 @@ class DeviceManagementPolicyProvider
  private:
   class InitializeAfterIOThreadExistsTask;
 
-  // Returns the device management backend to use for backend requests, lazily
-  // creating a new one if one doesn't already exist.
-  DeviceManagementBackend* GetBackend();
-
   // Called by constructors to perform shared initialization. Initialization
   // requiring the IOThread must not be performed directly in this method,
   // rather must be deferred until the IOThread is fully initialized. This is

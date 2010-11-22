@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_DEVICE_MANAGEMENT_BACKEND_MOCK_H_
 #define CHROME_BROWSER_POLICY_DEVICE_MANAGEMENT_BACKEND_MOCK_H_
 
+#include "chrome/browser/policy/device_management_backend.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
