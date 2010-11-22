@@ -270,6 +270,8 @@
         'browser/background_contents_service.h',
         'browser/background_mode_manager.cc',
         'browser/background_mode_manager.h',
+        'browser/background_page_tracker.cc',
+        'browser/background_page_tracker.h',
         'browser/blocked_content_container.cc',
         'browser/blocked_content_container.h',
         'browser/bookmarks/bookmark_codec.cc',

@@ -1039,6 +1039,12 @@ class NotificationType {
     // if only suspected bad modules were found.
     MODULE_INCOMPATIBILITY_DETECTED,
 
+    // Background App Tracking Notifications -----------------------------------
+    // Sent when the state of the background page tracker has changed (the
+    // number of unacknowledged background pages have changed). Source is the
+    // BackgroundPageTracker and there are no Details.
+    BACKGROUND_PAGE_TRACKER_CHANGED,
+
     // Accessibility Notifications ---------------------------------------------
 
     // Notification that a window in the browser UI (not the web content)

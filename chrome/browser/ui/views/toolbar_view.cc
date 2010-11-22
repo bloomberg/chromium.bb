@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
+#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -108,6 +109,9 @@ ToolbarView::ToolbarView(Browser* browser)
   }
   registrar_.Add(this, NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED,
+                 NotificationService::AllSources());
 }
 
 ToolbarView::~ToolbarView() {
@@ -180,10 +184,11 @@ void ToolbarView::Init(Profile* profile) {
       l10n_util::GetString(IDS_PRODUCT_NAME)));
   app_menu_->SetID(VIEW_ID_APP_MENU);
 
-  // Catch the case where the window is created after we detect a new version.
-  if (IsUpgradeRecommended() || ShouldShowIncompatibilityWarning())
+  // Add any necessary badges to the menu item based on the system state.
+  if (IsUpgradeRecommended() || ShouldShowIncompatibilityWarning() ||
+      ShouldShowBackgroundPageBadge()) {
     UpdateAppMenuBadge();
-
+  }
   LoadImages();
 
   // Always add children in order from left to right, for accessibility.
@@ -322,6 +327,9 @@ cleanup:
   if (destroyed_flag)
     return;
   destroyed_flag_ = NULL;
+
+  // Stop showing the background app badge also.
+  BackgroundPageTracker::GetSingleton()->AcknowledgeBackgroundPages();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -399,6 +407,10 @@ void ToolbarView::Observe(NotificationType type,
     bool confirmed_bad = *Details<bool>(details).ptr();
     if (confirmed_bad)
       UpdateAppMenuBadge();
+  } else if (type ==
+      NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED) {
+    // Force a repaint to add/remove the badge.
+    UpdateAppMenuBadge();
   }
 }
 
@@ -577,6 +589,11 @@ bool ToolbarView::IsUpgradeRecommended() {
 #endif
 }
 
+bool ToolbarView::ShouldShowBackgroundPageBadge() {
+  return BackgroundPageTracker::GetSingleton()->
+      GetUnacknowledgedBackgroundPageCount() > 0;
+}
+
 bool ToolbarView::ShouldShowIncompatibilityWarning() {
 #if defined(OS_WIN)
   EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetSingleton();
@@ -654,7 +671,9 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   }
   SkBitmap icon = *tp->GetBitmapNamed(id);
 
-  bool add_badge = IsUpgradeRecommended() || ShouldShowIncompatibilityWarning();
+  bool add_badge = IsUpgradeRecommended() ||
+                   ShouldShowIncompatibilityWarning() ||
+                   ShouldShowBackgroundPageBadge();
   if (!add_badge)
     return icon;
 
@@ -663,14 +682,16 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
       new gfx::CanvasSkia(icon.width(), icon.height(), false));
   canvas->DrawBitmapInt(icon, 0, 0);
 
-  SkBitmap* badge = NULL;
+  SkBitmap badge;
   // Only one badge can be active at any given time. The Upgrade notification
   // is deemed most important, then the DLL conflict badge.
   if (IsUpgradeRecommended()) {
-    badge = tp->GetBitmapNamed(IDR_UPDATE_BADGE);
+    badge = *tp->GetBitmapNamed(IDR_UPDATE_BADGE);
+  } else if (ShouldShowBackgroundPageBadge()) {
+    badge = GetBackgroundPageBadge();
   } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
-    badge = tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
+    badge = *tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
 #else
     NOTREACHED();
 #endif
@@ -680,9 +701,15 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
 
   static const int kBadgeRightMargin = 2;
   static const int kBadgeTopMargin = 2;
-  canvas->DrawBitmapInt(*badge,
-                        icon.width() - badge->width() - kBadgeRightMargin,
+  canvas->DrawBitmapInt(badge,
+                        icon.width() - badge.width() - kBadgeRightMargin,
                         kBadgeTopMargin);
 
   return canvas->ExtractBitmap();
+}
+
+SkBitmap ToolbarView::GetBackgroundPageBadge() {
+  ThemeProvider* tp = GetThemeProvider();
+  // TODO(atwilson): Add code to display current number of pages in badge.
+  return *tp->GetBitmapNamed(IDR_BACKGROUND_BADGE);
 }

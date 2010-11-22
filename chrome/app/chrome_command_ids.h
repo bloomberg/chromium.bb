@@ -172,6 +172,7 @@
 #define IDC_DEV_TOOLS_INSPECT           40025
 #define IDC_UPGRADE_DIALOG              40026
 #define IDC_VIEW_INCOMPATIBILITIES      40027
+#define IDC_VIEW_BACKGROUND_PAGES       40028
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

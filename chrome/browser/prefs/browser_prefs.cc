@@ -8,6 +8,7 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/background_mode_manager.h"
+#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -97,6 +98,7 @@ void RegisterLocalState(PrefService* local_state) {
   TaskManager::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
   AutoFillManager::RegisterBrowserPrefs(local_state);
+  BackgroundPageTracker::RegisterPrefs(local_state);
 #if defined(OS_CHROMEOS)
   chromeos::UserManager::RegisterPrefs(local_state);
   chromeos::UserCrosSettingsProvider::RegisterPrefs(local_state);

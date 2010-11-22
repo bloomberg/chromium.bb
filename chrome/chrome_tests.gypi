@@ -1030,6 +1030,7 @@
         'browser/back_forward_menu_model_unittest.cc',
         'browser/background_contents_service_unittest.cc',
         'browser/background_mode_manager_unittest.cc',
+        'browser/background_page_tracker_unittest.cc',
         'browser/bookmarks/bookmark_codec_unittest.cc',
         'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/bookmarks/bookmark_drag_data_unittest.cc',

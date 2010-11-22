@@ -11,10 +11,12 @@
 #include "app/menus/button_menu_item_model.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/i18n/number_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/encoding_menu_controller.h"
@@ -202,6 +204,9 @@ WrenchMenuModel::WrenchMenuModel(menus::AcceleratorProvider* provider,
                  Source<Profile>(browser_->profile()));
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED,
+                 NotificationService::AllSources());
 }
 
 WrenchMenuModel::~WrenchMenuModel() {
@@ -218,7 +223,8 @@ bool WrenchMenuModel::IsLabelForCommandIdDynamic(int command_id) const {
 #if defined(OS_MACOSX)
          command_id == IDC_FULLSCREEN ||
 #endif
-         command_id == IDC_SYNC_BOOKMARKS;
+         command_id == IDC_SYNC_BOOKMARKS ||
+         command_id == IDC_VIEW_BACKGROUND_PAGES;
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -236,6 +242,12 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringUTF16(string_id);
     }
 #endif
+    case IDC_VIEW_BACKGROUND_PAGES: {
+      string16 num_background_pages = base::FormatNumber(
+          BackgroundPageTracker::GetSingleton()->GetBackgroundPageCount());
+      return l10n_util::GetStringFUTF16(IDS_VIEW_BACKGROUND_PAGES,
+                                        num_background_pages);
+    }
     default:
       NOTREACHED();
       return string16();
@@ -282,8 +294,10 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
 #else
     return false;
 #endif
+  } else if (command_id == IDC_VIEW_BACKGROUND_PAGES) {
+    BackgroundPageTracker* tracker = BackgroundPageTracker::GetSingleton();
+    return tracker->GetBackgroundPageCount() > 0;
   }
-
   return true;
 }
 
@@ -318,7 +332,22 @@ void WrenchMenuModel::TabStripModelDeleted() {
 void WrenchMenuModel::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  UpdateZoomControls();
+  switch (type.value) {
+    case NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED: {
+      bool show_badge = BackgroundPageTracker::GetSingleton()->
+          GetUnacknowledgedBackgroundPageCount() > 0;
+      SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
+          show_badge ? *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+              IDR_BACKGROUND_MENU) : SkBitmap());
+      break;
+    }
+    case NotificationType::ZOOM_LEVEL_CHANGED:
+    case NotificationType::NAV_ENTRY_COMMITTED:
+      UpdateZoomControls();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 // For testing.
@@ -415,7 +444,10 @@ void WrenchMenuModel::Build() {
     AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(
         IDS_ABOUT, product_name));
   }
-
+  string16 num_background_pages = base::FormatNumber(
+      BackgroundPageTracker::GetSingleton()->GetBackgroundPageCount());
+  AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
+      IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
   AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringFUTF16(
       IDS_UPDATE_NOW, product_name));
   AddItem(IDC_VIEW_INCOMPATIBILITIES, l10n_util::GetStringUTF16(
@@ -428,6 +460,14 @@ void WrenchMenuModel::Build() {
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           *rb.GetBitmapNamed(IDR_CONFLICT_MENU));
 #endif
+
+  // Add an icon to the View Background Pages item if t
+  if (BackgroundPageTracker::GetSingleton()->
+      GetUnacknowledgedBackgroundPageCount() > 0) {
+    // TODO(atwilson): Add code to display current number of pages in badge.
+    SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
+            *rb.GetBitmapNamed(IDR_BACKGROUND_MENU));
+  }
 
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
   if (browser_defaults::kShowExitMenuItem) {

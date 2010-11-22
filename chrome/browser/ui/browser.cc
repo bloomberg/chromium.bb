@@ -2211,7 +2211,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_DEV_TOOLS_INSPECT:     ToggleDevToolsWindow(
                                         DEVTOOLS_TOGGLE_ACTION_INSPECT);
                                     break;
-    case IDC_TASK_MANAGER:          OpenTaskManager();                break;
+    case IDC_TASK_MANAGER:          // fall through to OpenTaskManager().
+    case IDC_VIEW_BACKGROUND_PAGES: OpenTaskManager();                break;
     case IDC_REPORT_BUG:            OpenBugReportDialog();            break;
 
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
@@ -3526,6 +3527,10 @@ void Browser::InitCommandState() {
   // show.
   command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_INCOMPATIBILITIES, true);
+
+  // View Background Pages entry is always enabled, but is hidden if there are
+  // no background pages.
+  command_updater_.UpdateCommandEnabled(IDC_VIEW_BACKGROUND_PAGES, true);
 
   // Initialize other commands whose state changes based on fullscreen mode.
   UpdateCommandsForFullscreenMode(false);

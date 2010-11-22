@@ -1115,4 +1115,8 @@ const char kManagedDefaultPluginsSetting[] =
 const char kManagedDefaultPopupsSetting[] =
     "profile.managed_default_content_settings.popups";
 
+// Dictionary for storing the set of known background pages (keys are extension
+// IDs of background page owners, value is a boolean that is true if the user
+// needs to acknowledge this page.
+const char kKnownBackgroundPages[] = "background_pages.known";
 }  // namespace prefs

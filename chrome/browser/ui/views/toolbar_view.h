@@ -138,6 +138,9 @@ class ToolbarView : public AccessiblePaneView,
   // Returns true if we should show the upgrade recommended dot.
   bool IsUpgradeRecommended();
 
+  // Returns true if we should show the background page badge.
+  bool ShouldShowBackgroundPageBadge();
+
   // Returns true if we should show the warning for incompatible software.
   bool ShouldShowIncompatibilityWarning();
 
@@ -163,6 +166,10 @@ class ToolbarView : public AccessiblePaneView,
   // Gets a bitmap with the icon for the app menu and any overlaid notification
   // badge.
   SkBitmap GetAppMenuIcon(views::CustomButton::ButtonState state);
+
+  // Gets a badge for the wrench icon corresponding to the number of
+  // unacknowledged background pages in the system.
+  SkBitmap GetBackgroundPageBadge();
 
   scoped_ptr<BackForwardMenuModel> back_menu_model_;
   scoped_ptr<BackForwardMenuModel> forward_menu_model_;

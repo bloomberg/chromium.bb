@@ -1030,6 +1030,9 @@ each locale. -->
         <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
           View incompatibilities
         </message>
+        <message name="IDS_VIEW_BACKGROUND_PAGES" desc="The text label of the View background pages menu item">
+          View background apps (<ph name="NUM_BACKGROUND_APPS">$1<ex>3</ex></ph>)
+        </message>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
         </message>
@@ -1070,6 +1073,9 @@ each locale. -->
         </message>
         <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
           View Incompatibilities
+        </message>
+        <message name="IDS_VIEW_BACKGROUND_PAGES" desc="The text label of the View background pages menu item">
+          View Background Apps (<ph name="NUM_BACKGROUND_APPS">$1<ex>3</ex></ph>)
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit
