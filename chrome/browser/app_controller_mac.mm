@@ -295,10 +295,8 @@ void RecordLastRunAppBundlePath() {
   // http://dev.chromium.org/developers/design-documents/confirm-to-quit-experiment
   NSEvent* currentEvent = [app currentEvent];
   if ([currentEvent type] == NSKeyDown) {
-    ConfirmQuitPanelController* quitPanel =
-        [[ConfirmQuitPanelController alloc] init];  // Releases self.
     // Show the info panel that explains what the user must to do confirm quit.
-    [quitPanel showWindow:self];
+    [[ConfirmQuitPanelController sharedController] showWindow:self];
 
     // How long the user must hold down Cmd+Q to confirm the quit.
     const NSTimeInterval kTimeToConfirmQuit = 1.5;
@@ -361,7 +359,7 @@ void RecordLastRunAppBundlePath() {
     } else {
       // Slowly fade the confirm window out in case the user doesn't
       // understand what they have to do to quit.
-      [quitPanel dismissPanel];
+      [[ConfirmQuitPanelController sharedController] dismissPanel];
       return NSTerminateCancel;
     }
   }  // if event type is KeyDown

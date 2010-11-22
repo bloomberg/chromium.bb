@@ -11,12 +11,23 @@
 #import "chrome/browser/cocoa/confirm_quit_panel_controller.h"
 
 @interface ConfirmQuitPanelController (Private)
+- (id)initInternal;
 - (void)animateFadeOut;
 @end
 
+ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
+
 @implementation ConfirmQuitPanelController
 
-- (id)init {
++ (ConfirmQuitPanelController*)sharedController {
+  if (!g_confirmQuitPanelController) {
+    g_confirmQuitPanelController =
+        [[ConfirmQuitPanelController alloc] initInternal];
+  }
+  return g_confirmQuitPanelController;
+}
+
+- (id)initInternal {
   NSString* nibPath =
       [mac_util::MainAppBundle() pathForResource:@"ConfirmQuitPanel"
                                           ofType:@"nib"];
@@ -34,10 +45,15 @@
   // Release all animations because CAAnimation retains its delegate (self),
   // which will cause a retain cycle. Break it!
   [[self window] setAnimations:[NSDictionary dictionary]];
+  g_confirmQuitPanelController = nil;
   [self autorelease];
 }
 
 - (void)showWindow:(id)sender {
+  // If a panel that is fading out is going to be reused here, make sure it
+  // does not get released when the animation finishes.
+  scoped_nsobject<ConfirmQuitPanelController> stayAlive([self retain]);
+  [[self window] setAnimations:[NSDictionary dictionary]];
   [[self window] center];
   [[self window] setAlphaValue:1.0];
   [super showWindow:sender];
@@ -62,7 +78,7 @@
   [[window animator] setAlphaValue:0.0];
 }
 
-- (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)flag {
+- (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
   [self close];
 }
 

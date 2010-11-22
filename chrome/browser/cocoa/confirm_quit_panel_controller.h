@@ -11,8 +11,9 @@
 @interface ConfirmQuitPanelController : NSWindowController<NSWindowDelegate> {
 }
 
-// Designated initializer. Loads window from NIB but does not show it.
-- (id)init;
+// Returns a singleton instance of the Controller. This will create one if it
+// does not currently exist.
++ (ConfirmQuitPanelController*)sharedController;
 
 // Shows the window.
 - (void)showWindow:(id)sender;

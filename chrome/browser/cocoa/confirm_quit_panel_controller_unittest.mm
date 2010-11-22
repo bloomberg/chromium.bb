@@ -9,18 +9,20 @@
 namespace {
 
 class ConfirmQuitPanelControllerTest : public CocoaTest {
- public:
-  ConfirmQuitPanelControllerTest() : controller_(nil) {
-  }
-
-  ConfirmQuitPanelController* controller_;  // Weak, owns self.
 };
 
 
 TEST_F(ConfirmQuitPanelControllerTest, ShowAndDismiss) {
-  controller_ = [[ConfirmQuitPanelController alloc] init];
-  [controller_ showWindow:nil];
-  [controller_ dismissPanel];  // Releases self.
+  ConfirmQuitPanelController* controller =
+      [ConfirmQuitPanelController sharedController];
+  // Test singleton.
+  EXPECT_EQ(controller, [ConfirmQuitPanelController sharedController]);
+  [controller showWindow:nil];
+  [controller dismissPanel];  // Releases self.
+  // The controller should still be the singleton instance until after the
+  // animation runs and the window closes. That will happen after this test body
+  // finishes executing.
+  EXPECT_EQ(controller, [ConfirmQuitPanelController sharedController]);
 }
 
 }  // namespace
