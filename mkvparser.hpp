@@ -244,6 +244,7 @@ public:
     long GetFirst(const BlockEntry*&) const;
     long GetNext(const BlockEntry* pCurr, const BlockEntry*& pNext) const;
     virtual bool VetEntry(const BlockEntry*) const = 0;
+    virtual long Seek(long long time_ns, const BlockEntry*&) const = 0;
 
 protected:
     Track(Segment*, const Info&);
@@ -278,6 +279,7 @@ public:
     double GetFrameRate() const;
 
     bool VetEntry(const BlockEntry*) const;
+    long Seek(long long time_ns, const BlockEntry*&) const;
 
 private:
     long long m_width;
@@ -298,6 +300,7 @@ public:
     long long GetChannels() const;
     long long GetBitDepth() const;
     bool VetEntry(const BlockEntry*) const;
+    long Seek(long long time_ns, const BlockEntry*&) const;
 
 private:
     double m_rate;
@@ -506,6 +509,8 @@ private:
 class Segment
 {
     friend class Cues;
+    friend class VideoTrack;
+    friend class AudioTrack;
 
     Segment(const Segment&);
     Segment& operator=(const Segment&);
@@ -546,7 +551,7 @@ public:
     const Cluster* GetNext(const Cluster*);
 
     const Cluster* FindCluster(long long time_nanoseconds) const;
-    const BlockEntry* Seek(long long time_nanoseconds, const Track*) const;
+    //const BlockEntry* Seek(long long time_nanoseconds, const Track*) const;
 
 private:
 

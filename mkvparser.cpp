@@ -2666,6 +2666,7 @@ const Cluster* Segment::FindCluster(long long time_ns) const
 }
 
 
+#if 0
 const BlockEntry* Segment::Seek(
     long long time_ns,
     const Track* pTrack) const
@@ -2808,6 +2809,7 @@ const BlockEntry* Segment::Seek(
 
     return pTrack->GetEOS();
 }
+#endif
 
 
 #if 0
@@ -3107,7 +3109,9 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
             const Block* const pBlock = pBlockEntry->GetBlock();
             assert(pBlock);
 
-            if (pBlock->GetTrackNumber() == m_info.number)
+            const long long tn = pBlock->GetTrackNumber();
+
+            if ((tn == m_info.number) && VetEntry(pBlockEntry))
                 return 0;
 
             pBlockEntry = pCluster->GetNext(pBlockEntry);
@@ -3322,6 +3326,98 @@ bool VideoTrack::VetEntry(const BlockEntry* pBlockEntry) const
 }
 
 
+long VideoTrack::Seek(
+    long long time_ns,
+    const BlockEntry*& pResult) const
+{
+    const long status = GetFirst(pResult);
+
+    if (status < 0)  //buffer underflow, etc
+        return status;
+
+    assert(pResult);
+
+    if (pResult->EOS())
+        return 0;
+
+    const long count = m_pSegment->GetCount();
+    assert(count > 0);
+
+    const Cluster* pCluster = pResult->GetCluster();
+    assert(pCluster);
+    assert(pCluster->m_index >= 0);
+    assert(pCluster->m_index < count);
+
+    if (time_ns <= pResult->GetBlock()->GetTime(pCluster))
+        return 0;
+
+    Cluster** const i = m_pSegment->m_clusters + pCluster->m_index;
+    assert(i);
+    assert(*i == pCluster);
+    assert(pCluster->GetTime() <= time_ns);
+
+    Cluster** const j = i + count;
+
+    Cluster** lo = i;
+    Cluster** hi = j;
+
+    while (lo < hi)
+    {
+        //INVARIANT:
+        //[i, lo) <= time_ns
+        //[lo, hi) ?
+        //[hi, j)  > time_ns
+
+        Cluster** const mid = lo + (hi - lo) / 2;
+        assert(mid < hi);
+
+        pCluster = *mid;
+        assert(pCluster);
+        assert(pCluster->m_index == long(mid - m_pSegment->m_clusters));
+
+        const long long t = pCluster->GetTime();
+
+        if (t <= time_ns)
+            lo = mid + 1;
+        else
+            hi = mid;
+
+        assert(lo <= hi);
+    }
+
+    assert(lo == hi);
+    assert(lo > i);
+    assert(lo <= j);
+
+    pCluster = *--lo;
+    assert(pCluster);
+    assert(pCluster->GetTime() <= time_ns);
+
+    pResult = pCluster->GetEntry(this, time_ns);
+
+    if ((pResult != 0) && !pResult->EOS())  //found a keyframe
+        return 0;
+
+    while (lo != i)
+    {
+        pCluster = *--lo;
+        assert(pCluster);
+        assert(pCluster->GetTime() <= time_ns);
+
+        pResult = pCluster->GetMaxKey(this);
+
+        if ((pResult != 0) && !pResult->EOS())
+            return 0;
+    }
+
+    //weird: we're on the first cluster, but no keyframe found
+    //should never happen but we must return something anyway
+
+    pResult = GetEOS();
+    return 0;
+}
+
+
 long long VideoTrack::GetWidth() const
 {
     return m_width;
@@ -3410,6 +3506,88 @@ bool AudioTrack::VetEntry(const BlockEntry* pBlockEntry) const
     assert(pBlock->GetTrackNumber() == m_info.number);
 
     return true;
+}
+
+
+long AudioTrack::Seek(
+    long long time_ns,
+    const BlockEntry*& pResult) const
+{
+    const long status = GetFirst(pResult);
+
+    if (status < 0)  //buffer underflow, etc
+        return status;
+
+    assert(pResult);
+
+    if (pResult->EOS())
+        return 0;
+
+    const long count = m_pSegment->GetCount();
+    assert(count > 0);
+
+    const Cluster* pCluster = pResult->GetCluster();
+    assert(pCluster);
+    assert(pCluster->m_index >= 0);
+    assert(pCluster->m_index < count);
+
+    if (time_ns <= pResult->GetBlock()->GetTime(pCluster))
+        return 0;
+
+    Cluster** const i = m_pSegment->m_clusters + pCluster->m_index;
+    assert(i);
+    assert(*i == pCluster);
+    assert(pCluster->GetTime() <= time_ns);
+
+    Cluster** const j = i + count;
+
+    Cluster** lo = i;
+    Cluster** hi = j;
+
+    while (lo < hi)
+    {
+        //INVARIANT:
+        //[i, lo) <= time_ns
+        //[lo, hi) ?
+        //[hi, j)  > time_ns
+
+        Cluster** const mid = lo + (hi - lo) / 2;
+        assert(mid < hi);
+
+        pCluster = *mid;
+        assert(pCluster);
+        assert(pCluster->m_index == long(mid - m_pSegment->m_clusters));
+
+        const long long t = pCluster->GetTime();
+
+        if (t <= time_ns)
+            lo = mid + 1;
+        else
+            hi = mid;
+
+        assert(lo <= hi);
+    }
+
+    assert(lo == hi);
+    assert(lo > i);
+    assert(lo <= j);
+
+    while (lo > i)
+    {
+        pCluster = *--lo;
+        assert(pCluster);
+        assert(pCluster->GetTime() <= time_ns);
+
+        pResult = pCluster->GetEntry(this);
+
+        if ((pResult != 0) && !pResult->EOS())
+            return 0;
+
+        //landed on empty cluster (no entries)
+    }
+
+    pResult = GetEOS();  //weird
+    return 0;
 }
 
 
