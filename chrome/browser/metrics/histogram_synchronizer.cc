@@ -31,7 +31,6 @@ HistogramSynchronizer::HistogramSynchronizer()
     last_used_sequence_number_(kNeverUsableSequenceNumber),
     async_sequence_number_(kNeverUsableSequenceNumber),
     async_renderers_pending_(0),
-    async_callback_start_time_(TimeTicks::TimeTicks()),
     synchronous_sequence_number_(kNeverUsableSequenceNumber),
     synchronous_renderers_pending_(0) {
   DCHECK(histogram_synchronizer_ == NULL);
