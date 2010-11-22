@@ -71,13 +71,28 @@
   fun:browser_sync::SyncerThread::*
 }
 
+{
+  bug_64075a
+  ThreadSanitizer:Race
+  fun:disk_cache::EntryImpl::GetDataSize*
+  fun:net::HttpCache::Transaction::AddTruncatedFlag*
+  fun:net::HttpCache::DoneWithEntry*
+}
+
+{
+  bug_64075b
+  ThreadSanitizer:Race
+  fun:disk_cache::EntryImpl::UpdateSize*
+  fun:disk_cache::EntryImpl::WriteDataImpl*
+}
+
 ############################
 # Benign races
 {
-  bug_62694 [benign race in Histogram]
+  bug_62694 [benign races in Histogram in CookieMonster]
   ThreadSanitizer:Race
   ...
-  fun:base::Histogram::Add
+  fun:base::Histogram::*
   fun:net::CookieMonster::*
 }
 
