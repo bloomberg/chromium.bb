@@ -60,6 +60,10 @@ const int kCursorOffset = 5;
 // Url for setting up sync authentication.
 const char kSettingsSyncLoginUrl[] = "chrome://settings/personal";
 
+// URL that will be opened on when user logs in first time on the device.
+const char kGetStartedURL[] =
+    "chrome-extension://ngfanffidlhaegpnpjnocdhkijfnlapn/index.html";
+
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {
  public:
@@ -500,6 +504,9 @@ void ExistingUserController::OnLoginSuccess(
   }
   AppendStartUrlToCmdline();
   if (selected_view_index_ + 1 == controllers_.size() && !known_user) {
+#if defined(OFFICIAL_BUILD)
+    CommandLine::ForCurrentProcess()->AppendArg(kGetStartedURL);
+#endif  // OFFICIAL_BUILD
     // For new user login don't launch browser until we pass image screen.
     LoginUtils::Get()->EnableBrowserLaunch(false);
     LoginUtils::Get()->CompleteLogin(username, password, credentials);
