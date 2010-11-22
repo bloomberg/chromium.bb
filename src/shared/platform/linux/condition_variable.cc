@@ -6,9 +6,6 @@
 
 // This file provides Linux implementation for the ConditionVariable class
 
-#ifdef __native_client__
-#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-#endif  // __native_client__
 #include "native_client/src/shared/platform/linux/condition_variable.h"
 #include "native_client/src/shared/platform/linux/lock.h"
 

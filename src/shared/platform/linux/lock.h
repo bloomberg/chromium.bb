@@ -11,9 +11,6 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_LOCK_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_LOCK_H_
 
-#ifdef __native_client__
-#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-#endif  // __native_client__
 #include <pthread.h>
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
