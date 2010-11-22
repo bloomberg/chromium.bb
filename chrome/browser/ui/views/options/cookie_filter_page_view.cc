@@ -23,6 +23,8 @@ CookieFilterPageView::CookieFilterPageView(Profile* profile)
       show_cookies_button_(NULL) {
   clear_site_data_on_exit_.Init(prefs::kClearSiteDataOnExit,
                                 profile->GetPrefs(), NULL);
+  block_third_party_cookies_.Init(prefs::kBlockThirdPartyCookies,
+                                  profile->GetPrefs(), this);
 }
 
 CookieFilterPageView::~CookieFilterPageView() {
@@ -86,6 +88,12 @@ void CookieFilterPageView::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kClearSiteDataOnExit) {
     clear_on_close_check_->SetChecked(
         clear_site_data_on_exit_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kBlockThirdPartyCookies) {
+    block_3rdparty_check_->SetChecked(
+        block_third_party_cookies_.GetValue());
+    block_3rdparty_check_->SetEnabled(
+        !block_third_party_cookies_.IsManaged());
   }
 }
 
