@@ -147,7 +147,7 @@ int main(int argc, char**argv) {
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
   if (use_cache) {
-    factory = new net::HttpCache(host_resolver.get(), NULL, proxy_service,
+    factory = new net::HttpCache(host_resolver.get(), NULL, NULL, proxy_service,
         ssl_config_service, http_auth_handler_factory.get(), NULL, NULL,
         net::HttpCache::DefaultBackend::InMemory(0));
   } else {
@@ -155,6 +155,7 @@ int main(int argc, char**argv) {
         net::ClientSocketFactory::GetDefaultFactory(),
         host_resolver.get(),
         NULL /* dnsrr_resolver */,
+        NULL /* dns_cert_checker */,
         NULL /* ssl_host_info_factory */,
         proxy_service,
         ssl_config_service,

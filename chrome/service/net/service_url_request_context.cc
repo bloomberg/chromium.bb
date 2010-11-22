@@ -125,6 +125,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   http_transaction_factory_ = new net::HttpCache(
       net::HttpNetworkLayer::CreateFactory(host_resolver_,
                                            dnsrr_resolver_,
+                                           NULL /* dns_cert_checker */,
                                            NULL /* ssl_host_info_factory */,
                                            proxy_service_,
                                            ssl_config_service_,
