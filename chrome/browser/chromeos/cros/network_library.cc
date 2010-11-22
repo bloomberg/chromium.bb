@@ -690,9 +690,6 @@ std::string CellularNetwork::GetNetworkTechnologyString() const {
 std::string CellularNetwork::GetConnectivityStateString() const {
   // These strings do not appear in the UI, so no need to localize them
   switch (connectivity_state_) {
-    case CONN_STATE_UNKNOWN:
-      return "unknown";
-      break;
     case CONN_STATE_UNRESTRICTED:
       return "unrestricted";
       break;
@@ -702,6 +699,9 @@ std::string CellularNetwork::GetConnectivityStateString() const {
     case CONN_STATE_NONE:
       return "none";
       break;
+    case CONN_STATE_UNKNOWN:
+    default:
+      return "unknown";
   }
 }
 
