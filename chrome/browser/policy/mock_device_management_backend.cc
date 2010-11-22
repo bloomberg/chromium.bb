@@ -42,7 +42,7 @@ void MockDeviceManagementBackend::AllShouldSucceed() {
       WillByDefault(Invoke(
           this,
           &MockDeviceManagementBackend::SimulateSuccessfulRegisterRequest));
-  ON_CALL(*this, ProcessPolicyRequest(_, _, _)).
+  ON_CALL(*this, ProcessPolicyRequest(_, _, _, _)).
       WillByDefault(Invoke(
           this,
           &MockDeviceManagementBackend::SimulateSuccessfulPolicyRequest));
@@ -53,7 +53,7 @@ void MockDeviceManagementBackend::AllShouldFail() {
       WillByDefault(Invoke(
           this,
           &MockDeviceManagementBackend::SimulateFailedRegisterRequest));
-  ON_CALL(*this, ProcessPolicyRequest(_, _, _)).
+  ON_CALL(*this, ProcessPolicyRequest(_, _, _, _)).
       WillByDefault(Invoke(
           this,
           &MockDeviceManagementBackend::SimulateFailedPolicyRequest));
@@ -90,6 +90,7 @@ void MockDeviceManagementBackend::SimulateSuccessfulRegisterRequest(
 
 void MockDeviceManagementBackend::SimulateSuccessfulPolicyRequest(
     const std::string& device_management_token,
+    const std::string& device_id,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
   delegate->HandlePolicyResponse(policy_response_);
@@ -105,6 +106,7 @@ void MockDeviceManagementBackend::SimulateFailedRegisterRequest(
 
 void MockDeviceManagementBackend::SimulateFailedPolicyRequest(
     const std::string& device_management_token,
+    const std::string& device_id,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
   delegate->OnError(kErrorRequestFailed);

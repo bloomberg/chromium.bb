@@ -15,21 +15,26 @@
 
 namespace policy {
 
-namespace {
-
 // Name constants for URL query parameters.
-const char kServiceParamRequest[] = "request";
-const char kServiceParamDeviceType[] = "devicetype";
-const char kServiceParamAppType[] = "apptype";
-const char kServiceParamDeviceID[] = "deviceid";
-const char kServiceParamAgent[] = "agent";
+const char DeviceManagementBackendImpl::kParamRequest[] = "request";
+const char DeviceManagementBackendImpl::kParamDeviceType[] = "devicetype";
+const char DeviceManagementBackendImpl::kParamAppType[] = "apptype";
+const char DeviceManagementBackendImpl::kParamDeviceID[] = "deviceid";
+const char DeviceManagementBackendImpl::kParamAgent[] = "agent";
 
 // String constants for the device and app type we report to the server.
-const char kServiceValueDeviceType[] = "Chrome OS";
-const char kServiceValueAppType[] = "Chrome";
+const char DeviceManagementBackendImpl::kValueRequestRegister[] = "register";
+const char DeviceManagementBackendImpl::kValueRequestUnregister[] =
+    "unregister";
+const char DeviceManagementBackendImpl::kValueRequestPolicy[] = "policy";
+const char DeviceManagementBackendImpl::kValueDeviceType[] = "Chrome OS";
+const char DeviceManagementBackendImpl::kValueAppType[] = "Chrome";
 
-const char kServiceValueAgent[] =
-    "%s enterprise management client version %s (%s)";
+namespace {
+
+const char kValueAgent[] = "%s enterprise management client version %s (%s)";
+
+const char kPostContentType[] = "application/octet-stream";
 
 const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
 const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
@@ -95,17 +100,17 @@ class DeviceManagementJobBase
  protected:
   // Constructs a device management job running for the given backend.
   DeviceManagementJobBase(DeviceManagementBackendImpl* backend_impl,
-                      const std::string& request_type)
+                          const std::string& request_type,
+                          const std::string& device_id)
       : backend_impl_(backend_impl) {
-    query_params_.Put(kServiceParamRequest, request_type);
-    query_params_.Put(kServiceParamDeviceType, kServiceValueDeviceType);
-    query_params_.Put(kServiceParamAppType, kServiceValueAppType);
-    chrome::VersionInfo version_info;
-    std::string agent = base::StringPrintf(kServiceValueAgent,
-                                           version_info.Name().c_str(),
-                                           version_info.Version().c_str(),
-                                           version_info.LastChange().c_str());
-    query_params_.Put(kServiceParamAgent, agent);
+    query_params_.Put(DeviceManagementBackendImpl::kParamRequest, request_type);
+    query_params_.Put(DeviceManagementBackendImpl::kParamDeviceType,
+                      DeviceManagementBackendImpl::kValueDeviceType);
+    query_params_.Put(DeviceManagementBackendImpl::kParamAppType,
+                      DeviceManagementBackendImpl::kValueAppType);
+    query_params_.Put(DeviceManagementBackendImpl::kParamDeviceID, device_id);
+    query_params_.Put(DeviceManagementBackendImpl::kParamAgent,
+                      DeviceManagementBackendImpl::GetAgentString());
   }
 
   void SetQueryParam(const std::string& name, const std::string& value) {
@@ -118,10 +123,6 @@ class DeviceManagementJobBase
 
   void SetDeviceManagementToken(const std::string& device_management_token) {
     device_management_token_ = device_management_token;
-  }
-
-  void SetDeviceID(const std::string& device_id) {
-    query_params_.Put(kServiceParamDeviceID, device_id);
   }
 
   void SetPayload(const em::DeviceManagementRequest& request) {
@@ -210,7 +211,7 @@ GURL DeviceManagementJobBase::GetURL(
 }
 
 void DeviceManagementJobBase::ConfigureRequest(URLFetcher* fetcher) {
-  fetcher->set_upload_data("application/octet-stream", payload_);
+  fetcher->set_upload_data(kPostContentType, payload_);
   std::string extra_headers;
   if (!auth_token_.empty())
     extra_headers += kServiceTokenAuthHeader + auth_token_ + "\n";
@@ -250,9 +251,11 @@ DeviceManagementRegisterJob::DeviceManagementRegisterJob(
     const std::string& device_id,
     const em::DeviceRegisterRequest& request,
     DeviceManagementBackend::DeviceRegisterResponseDelegate* delegate)
-    : DeviceManagementJobBase(backend_impl, "register"),
+    : DeviceManagementJobBase(
+          backend_impl,
+          DeviceManagementBackendImpl::kValueRequestRegister,
+          device_id),
       delegate_(delegate) {
-  SetDeviceID(device_id);
   SetAuthToken(auth_token);
   em::DeviceManagementRequest request_wrapper;
   request_wrapper.mutable_register_request()->CopyFrom(request);
@@ -264,6 +267,7 @@ class DeviceManagementUnregisterJob : public DeviceManagementJobBase {
  public:
   DeviceManagementUnregisterJob(
       DeviceManagementBackendImpl* backend_impl,
+      const std::string& device_id,
       const std::string& device_management_token,
       const em::DeviceUnregisterRequest& request,
       DeviceManagementBackend::DeviceUnregisterResponseDelegate* delegate);
@@ -286,9 +290,13 @@ class DeviceManagementUnregisterJob : public DeviceManagementJobBase {
 DeviceManagementUnregisterJob::DeviceManagementUnregisterJob(
     DeviceManagementBackendImpl* backend_impl,
     const std::string& device_management_token,
+    const std::string& device_id,
     const em::DeviceUnregisterRequest& request,
     DeviceManagementBackend::DeviceUnregisterResponseDelegate* delegate)
-    : DeviceManagementJobBase(backend_impl, "unregister"),
+    : DeviceManagementJobBase(
+          backend_impl,
+          DeviceManagementBackendImpl::kValueRequestUnregister,
+          device_id),
       delegate_(delegate) {
   SetDeviceManagementToken(device_management_token);
   em::DeviceManagementRequest request_wrapper;
@@ -302,6 +310,7 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
   DeviceManagementPolicyJob(
       DeviceManagementBackendImpl* backend_impl,
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DevicePolicyRequest& request,
       DeviceManagementBackend::DevicePolicyResponseDelegate* delegate);
   virtual ~DeviceManagementPolicyJob() {}
@@ -323,9 +332,13 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
 DeviceManagementPolicyJob::DeviceManagementPolicyJob(
     DeviceManagementBackendImpl* backend_impl,
     const std::string& device_management_token,
+    const std::string& device_id,
     const em::DevicePolicyRequest& request,
     DeviceManagementBackend::DevicePolicyResponseDelegate* delegate)
-    : DeviceManagementJobBase(backend_impl, "policy"),
+    : DeviceManagementJobBase(
+          backend_impl,
+          DeviceManagementBackendImpl::kValueRequestPolicy,
+          device_id),
       delegate_(delegate) {
   SetDeviceManagementToken(device_management_token);
   em::DeviceManagementRequest request_wrapper;
@@ -350,6 +363,14 @@ DeviceManagementBackendImpl::~DeviceManagementBackendImpl() {
   }
 }
 
+std::string DeviceManagementBackendImpl::GetAgentString() {
+  chrome::VersionInfo version_info;
+  return base::StringPrintf(kValueAgent,
+                            version_info.Name().c_str(),
+                            version_info.Version().c_str(),
+                            version_info.LastChange().c_str());
+}
+
 void DeviceManagementBackendImpl::JobDone(DeviceManagementJobBase* job) {
   pending_jobs_.erase(job);
 }
@@ -370,18 +391,20 @@ void DeviceManagementBackendImpl::ProcessRegisterRequest(
 
 void DeviceManagementBackendImpl::ProcessUnregisterRequest(
     const std::string& device_management_token,
+    const std::string& device_id,
     const em::DeviceUnregisterRequest& request,
     DeviceUnregisterResponseDelegate* delegate) {
   AddJob(new DeviceManagementUnregisterJob(this, device_management_token,
-                                           request, delegate));
+                                           device_id, request, delegate));
 }
 
 void DeviceManagementBackendImpl::ProcessPolicyRequest(
     const std::string& device_management_token,
+    const std::string& device_id,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
-  AddJob(new DeviceManagementPolicyJob(this, device_management_token, request,
-                                       delegate));
+  AddJob(new DeviceManagementPolicyJob(this, device_management_token, device_id,
+                                       request, delegate));
 }
 
 }  // namespace policy

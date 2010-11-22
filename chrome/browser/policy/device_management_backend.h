@@ -94,11 +94,13 @@ class DeviceManagementBackend : NonThreadSafe {
 
   virtual void ProcessUnregisterRequest(
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* delegate) = 0;
 
   virtual void ProcessPolicyRequest(
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate) = 0;
 

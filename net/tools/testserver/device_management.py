@@ -227,13 +227,15 @@ class RequestHandler(object):
     """
     error = None
     dmtoken = None
+    request_device_id = self.GetUniqueParam('deviceid')
     match = re.match('GoogleDMToken token=(\\w+)',
                      self._headers.getheader('Authorization', ''))
     if match:
       dmtoken = match.group(1)
     if not dmtoken:
       error = dm.DeviceManagementResponse.DEVICE_MANAGEMENT_TOKEN_INVALID
-    elif not self._server.LookupDevice(dmtoken):
+    elif (not request_device_id or
+          not self._server.LookupDevice(dmtoken) == request_device_id):
       error = dm.DeviceManagementResponse.DEVICE_NOT_FOUND
     else:
       return (dmtoken, None)

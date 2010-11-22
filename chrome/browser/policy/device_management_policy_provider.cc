@@ -140,6 +140,7 @@ void DeviceManagementPolicyProvider::SendPolicyRequest() {
         policy_request.add_setting_request();
     setting->set_key(kChromeDevicePolicySettingKey);
     backend_->ProcessPolicyRequest(token_fetcher_->GetDeviceToken(),
+                                   token_fetcher_->GetDeviceID(),
                                    policy_request, this);
     policy_request_pending_ = true;
   }

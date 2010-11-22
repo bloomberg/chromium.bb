@@ -63,7 +63,7 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
     MockConfigurationPolicyStore store;
     backend_->AllShouldSucceed();
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
-    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _)).Times(1);
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(1);
     SimulateSuccessfulLoginAndRunPending();
     EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(1);
     provider_->Provide(&store);
@@ -113,7 +113,7 @@ TEST_F(DeviceManagementPolicyProviderTest, EmptyProvideWithFailedBackend) {
   MockConfigurationPolicyStore store;
   backend_->AllShouldFail();
   EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
-  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _)).Times(0);
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(0);
   SimulateSuccessfulLoginAndRunPending();
   EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(0);
   provider_->Provide(&store);
@@ -129,7 +129,7 @@ TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
   // Simulate a app relaunch by constructing a new provider. Policy should be
   // immediately provided and no refresh should be triggered.
   CreateNewBackend();
-  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _)).Times(0);
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(0);
   CreateNewProvider();
   MockConfigurationPolicyStore store;
   EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(1);

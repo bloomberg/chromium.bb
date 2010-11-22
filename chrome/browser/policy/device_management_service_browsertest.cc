@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
                                           ::CaptureToken),
                         InvokeWithoutArgs(QuitMessageLoop)));
     em::DeviceRegisterRequest request;
-    backend->ProcessRegisterRequest("token", "device id", request, &delegate);
+    backend->ProcessRegisterRequest("token", "testid", request, &delegate);
     MessageLoop::current()->Run();
   }
 
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     em::DevicePolicySettingRequest* setting_request =
         request.add_setting_request();
     setting_request->set_key("policy");
-    backend->ProcessPolicyRequest(token_, request, &delegate);
+    backend->ProcessPolicyRequest(token_, "testid", request, &delegate);
 
     MessageLoop::current()->Run();
   }
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     EXPECT_CALL(delegate, HandleUnregisterResponse(_))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     em::DeviceUnregisterRequest request;
-    backend->ProcessUnregisterRequest(token_, request, &delegate);
+    backend->ProcessUnregisterRequest(token_, "testid", request, &delegate);
 
     MessageLoop::current()->Run();
   }
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
                                           ::CaptureToken),
                         InvokeWithoutArgs(QuitMessageLoop)));
     em::DeviceRegisterRequest request;
-    backend->ProcessRegisterRequest("token", "device id", request, &delegate);
+    backend->ProcessRegisterRequest("token", "testid", request, &delegate);
     MessageLoop::current()->Run();
   }
 
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     em::DevicePolicySettingRequest* setting_request =
         request.add_setting_request();
     setting_request->set_key("policy");
-    backend->ProcessPolicyRequest(token_, request, &delegate);
+    backend->ProcessPolicyRequest(token_, "testid", request, &delegate);
 
     MessageLoop::current()->Run();
   }
@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     EXPECT_CALL(delegate, HandleUnregisterResponse(_))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     em::DeviceUnregisterRequest request;
-    backend->ProcessUnregisterRequest(token_, request, &delegate);
+    backend->ProcessUnregisterRequest(token_, "testid", request, &delegate);
 
     MessageLoop::current()->Run();
   }

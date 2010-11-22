@@ -34,13 +34,15 @@ class MockDeviceManagementBackend
       const em::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* delegate));
 
-  MOCK_METHOD3(ProcessUnregisterRequest, void(
+  MOCK_METHOD4(ProcessUnregisterRequest, void(
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* delegate));
 
-  MOCK_METHOD3(ProcessPolicyRequest, void(
+  MOCK_METHOD4(ProcessPolicyRequest, void(
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate));
 
@@ -56,6 +58,7 @@ class MockDeviceManagementBackend
 
   void SimulateSuccessfulPolicyRequest(
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate);
 
@@ -67,6 +70,7 @@ class MockDeviceManagementBackend
 
   void SimulateFailedPolicyRequest(
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate);
 

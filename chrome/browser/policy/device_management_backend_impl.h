@@ -24,6 +24,22 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
   explicit DeviceManagementBackendImpl(DeviceManagementService* service);
   virtual ~DeviceManagementBackendImpl();
 
+  static std::string GetAgentString();
+
+  // Name constants for URL query parameters.
+  static const char kParamRequest[];
+  static const char kParamDeviceType[];
+  static const char kParamAppType[];
+  static const char kParamDeviceID[];
+  static const char kParamAgent[];
+
+  // String constants for the device and app type we report to the server.
+  static const char kValueRequestRegister[];
+  static const char kValueRequestUnregister[];
+  static const char kValueRequestPolicy[];
+  static const char kValueDeviceType[];
+  static const char kValueAppType[];
+
  private:
   friend class DeviceManagementJobBase;
 
@@ -44,10 +60,12 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
       DeviceRegisterResponseDelegate* response_delegate);
   virtual void ProcessUnregisterRequest(
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* response_delegate);
   virtual void ProcessPolicyRequest(
       const std::string& device_management_token,
+      const std::string& device_id,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* response_delegate);
 
