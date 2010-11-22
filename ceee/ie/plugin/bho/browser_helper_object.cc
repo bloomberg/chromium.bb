@@ -691,7 +691,7 @@ HRESULT BrowserHelperObject::OnCfPrivateMessage(BSTR msg,
   if (EnsureTabId() == false) {
     deferred_tab_id_call_.push_back(NewRunnableMethod(
         this, &BrowserHelperObject::OnCfPrivateMessageImpl,
-        msg, origin, target));
+        CComBSTR(msg), CComBSTR(origin), CComBSTR(target)));
     return S_OK;
   } else {
     OnCfPrivateMessageImpl(msg, origin, target);
@@ -1246,7 +1246,7 @@ HRESULT BrowserHelperObject::InsertCode(BSTR code, BSTR file, BOOL all_frames,
   if (EnsureTabId() == false) {
     deferred_tab_id_call_.push_back(NewRunnableMethod(
         this, &BrowserHelperObject::InsertCodeImpl,
-        code, file, all_frames == TRUE, type));
+        CComBSTR(code), CComBSTR(file), all_frames == TRUE, type));
   } else {
     InsertCodeImpl(code, file, all_frames == TRUE, type);
   }
