@@ -62,13 +62,14 @@ atexit.register(PrintFinalReport)
 def VerboseConfigInfo(env):
   "Should we print verbose config information useful for bug reports"
   if '--help' in sys.argv: return False
-  if env.Bit('prebuilt') or ARGUMENTS.get('built_elsewhere'): return False
+  if env.Bit('prebuilt') or env.Bit('built_elsewhere'): return False
   return ARGUMENTS.get('sysinfo', True)
 
 # ----------------------------------------------------------
 # SANITY CHECKS
 # ----------------------------------------------------------
 
+# NOTE BitFromArgument(...) implicitly defines additional ACCEPTABLE_ARGUMENTS.
 ACCEPTABLE_ARGUMENTS = set([
     # TODO: add comments what these mean
     # TODO: check which ones are obsolete
@@ -78,22 +79,10 @@ ACCEPTABLE_ARGUMENTS = set([
     'DOXYGEN',
     'MODE',
     'SILENT',
-    # Inherit environment variables instead of scrubbing environment.
-    'USE_ENVIRON',
-    # assume we are building via bitcode
-    'bitcode',
-    # enable building of apps that use multi media function
-    'build_av_apps',
     # set build platform
     'buildplatform',
-    'build_vim',
-    'built_elsewhere',
     # used for browser_tests
     'chrome_browser_path',
-    # make sel_ldr less strict
-    'dangerous_debug_disable_inner_sandbox',
-    # disable warning mechanism in src/untrusted/nosys/warning.h
-    'disable_nosys_linker_warnings',
     # where should we store extrasdk libraries
     'extra_sdk_lib_destination',
     # where should we store extrasdk headers
@@ -110,15 +99,8 @@ ACCEPTABLE_ARGUMENTS = set([
     # Not using nacl_linkflags since that gets clobbered in some tests.
     'pnacl_bcldflags',
     'naclsdk_mode',
-    'naclsdk_validate',
-    # build only C libraries, skip C++, used during SDK build
-    'nocpp',
     # set both targetplatform and buildplatform
     'platform',
-    # enable pretty printing
-    'pp',
-    # track how often each (target) command is run and print summary "at exit"
-    'target_stats',
     # Run tests under this tool (e.g. valgrind, tsan, strace, etc).
     # If the tool has options, pass them after comma: 'tool,--opt1,--opt2'.
     # NB: no way to use tools the names or the args of
@@ -134,19 +116,119 @@ ACCEPTABLE_ARGUMENTS = set([
     'sysinfo',
     # set target platform
     'targetplatform',
-    # changes tests behaviour in a way suitable for valgrind
-    'running_on_valgrind',
     # activates buildbot-specific presets
     'buildbot',
-    # werror=0 allows "-Werror" (warnings as errors) to be omitted.
-    'werror',
-    # link with valgrind untrusted bits
-    'with_valgrind',
-    # use_libcrypto=0 allows use of -lcrypt to be disabled, which
-    # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
-    # where there is no -dev package for the 32-bit libcrypto.
-    'use_libcrypto',
   ])
+
+
+# Overly general to provide compatibility with existing build bots, etc.
+# In the future it might be worth restricting the values that are accepted.
+_TRUE_STRINGS = set(['1', 'true', 'yes'])
+_FALSE_STRINGS = set(['0', 'false', 'no'])
+
+
+# Converts a string representing a Boolean value, of some sort, into an actual
+# Boolean value. Python's built in type coercion does not work because
+# bool('False') == True
+def StringValueToBoolean(value):
+  # ExpandArguments may stick non-string values in ARGUMENTS. Be accommodating.
+  if isinstance(value, bool):
+    return value
+
+  if not isinstance(value, basestring):
+    raise Exception("Expecting a string but got a %s" % repr(type(value)))
+
+  if value.lower() in _TRUE_STRINGS:
+    return True
+  elif value.lower() in _FALSE_STRINGS:
+    return False
+  else:
+    raise Exception("Cannot convert '%s' to a boolean value" % value)
+
+
+def GetBinaryArgumentValue(arg_name, default):
+  if not isinstance(default, bool):
+    raise Exception("Default value for '%s' must be a boolean" % bit_name)
+  if arg_name not in ARGUMENTS:
+    return default
+  return StringValueToBoolean(ARGUMENTS[arg_name])
+
+
+# name is the name of the bit
+# arg_name is the name of the command-line argument, if it differs from the bit
+def BitFromArgument(env, name, default, desc, arg_name=None):
+  # In most cases the bit name matches the argument name
+  if arg_name is None:
+    arg_name = name
+
+  DeclareBit(name, desc)
+  assert arg_name not in ACCEPTABLE_ARGUMENTS, arg_name
+  ACCEPTABLE_ARGUMENTS.add(arg_name)
+
+  if GetBinaryArgumentValue(arg_name, default):
+    env.SetBits(name)
+  else:
+    env.ClearBits(name)
+
+
+# SetUpArgumentBits declares binary command-line arguments and converts them to
+# bits. For example, one of the existing declarations would result in the
+# argument "bitcode=1" causing env.Bit('bitcode') to evaluate to true.
+# NOTE Command-line arguments are a SCons-ism that is separate from
+# command-line options.  Options are prefixed by "-" or "--" whereas arguments
+# are not.  The function SetBitFromOption can be used for options.
+# NOTE This function must be called before the bits are used
+# NOTE This function must be called after all modifications of ARGUMENTS have
+# been performed. See: ExpandArguments
+def SetUpArgumentBits(env):
+  BitFromArgument(env, 'bitcode', default=False,
+    desc="We are building bitcode")
+
+  BitFromArgument(env, 'built_elsewhere', default=False,
+    desc="The programs have already been built by another system")
+
+  BitFromArgument(env, 'target_stats', default=False,
+    desc="Collect and display information about which commands are executed "
+      "during the build process")
+
+  BitFromArgument(env, 'werror', default=True,
+    desc="Treat warnings as errors (-Werror)")
+
+  BitFromArgument(env, 'disable_nosys_linker_warnings', default=False,
+    desc="Disable warning mechanism in src/untrusted/nosys/warning.h")
+
+  BitFromArgument(env, 'naclsdk_validate', default=True,
+    desc="Verify the presence of the SDK")
+
+  BitFromArgument(env, 'nocpp', default=False,
+    desc="Skip the compilation of C++ code")
+
+  BitFromArgument(env, 'running_on_valgrind', default=False,
+    desc="Compile and test using valgrind")
+
+  BitFromArgument(env, 'build_vim', default=False,
+    desc="Build vim")
+
+  BitFromArgument(env, 'build_av_apps', default=True,
+    desc="Build multi media apps")
+
+  # This argument allows -lcrypt to be disabled, which
+  # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
+  # where there is no -dev package for the 32-bit libcrypto
+  BitFromArgument(env, 'use_libcrypto', default=True,
+    desc="Use libcrypto")
+
+  BitFromArgument(env, 'pp', default=False,
+    desc="Enable pretty printing")
+
+  BitFromArgument(env, 'dangerous_debug_disable_inner_sandbox',
+    default=False, desc="Make sel_ldr less strict")
+
+  # By default SCons does not use the system's enviroment variables when
+  # executing commands, to help isolate the build process.
+  BitFromArgument(env, 'use_environ', arg_name='USE_ENVIRON',
+    default=False, desc="Expose existing evironment variables to the build")
+
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -176,7 +258,6 @@ def ExpandArguments():
                 '--error-exitcode=1')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
-    SetArgument('with_valgrind', True)
   elif ARGUMENTS.get('buildbot') == 'tsan':
     print 'buildbot=tsan expands to the following arguments:'
     SetArgument('run_under',
@@ -184,7 +265,6 @@ def ExpandArguments():
                 '--nacl-untrusted,--error-exitcode=1')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
-    SetArgument('with_valgrind', True)
   elif ARGUMENTS.get('buildbot') == 'tsan-trusted':
     print 'buildbot=tsan-trusted expands to the following arguments:'
     SetArgument('run_under',
@@ -192,7 +272,6 @@ def ExpandArguments():
                 '--error-exitcode=1')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
-    SetArgument('with_valgrind', True)
   elif ARGUMENTS.get('buildbot'):
     print 'ERROR: unexpected argument buildbot="%s"' % (
         ARGUMENTS.get('buildbot'), )
@@ -231,10 +310,14 @@ pre_base_env = Environment(
     **kwargs
 )
 
+# This function should be called ASAP after the environment is created, but
+# after ExpandArguments.
+SetUpArgumentBits(pre_base_env)
+
 # Scons normally wants to scrub the environment.  However, sometimes
 # we want to allow PATH and other variables through so that Scons
 # scripts can find nacl-gcc without needing a Scons-specific argument.
-if int(ARGUMENTS.get('USE_ENVIRON', '0')):
+if pre_base_env.Bit('use_environ'):
   pre_base_env['ENV'] = os.environ.copy()
 
 # We want to pull CYGWIN setup in our environment or at least set flag
@@ -534,19 +617,12 @@ pre_base_env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
 
 pre_base_env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
-# TODO(robertm): hacks for not breaking things while switching to pnacl TC
-#                This should be fixed by integrating pnacl more tightly
-#                with scons.
-if os.environ.get('TARGET_CODE') and not ARGUMENTS.get('bitcode'):
-    Banner("please update your scons invocations to include bitcode=1\n"
-           "execution continues in 10 sec")
-    ARGUMENTS['bitcode'] = 1
-    import time
-    time.sleep(10)
+if TARGET_NAME == 'arm' and not pre_base_env.Bit('bitcode'):
+  # This has always been a silent default on ARM.
+  pre_base_env.SetBits('bitcode')
+  # TODO(ncbray) remove when ARGUMENTS.get('bitcode') is not used directly
+  ARGUMENTS['bitcode'] = 1
 
-if TARGET_NAME == 'arm' and not ARGUMENTS.get('bitcode'):
-    # This has always been a silent default on ARM.
-    ARGUMENTS['bitcode'] = 1
 
 # Determine where the object files go
 if BUILD_NAME == TARGET_NAME:
@@ -577,7 +653,7 @@ def FixupArmEnvironment():
 
 # Source setup bash scripts and glean the settings.
 if (pre_base_env['TARGET_ARCHITECTURE'] == 'arm' and
-    not ARGUMENTS.get('built_elsewhere') and
+    not pre_base_env.Bit('built_elsewhere') and
     ARGUMENTS.get('naclsdk_mode') != 'manual'):
   FixupArmEnvironment()
 
@@ -742,7 +818,7 @@ if pre_base_env.Bit('disable_hardy64_vmware_failures'):
   print 'Running with --disable_hardy64_vmware_failures'
 
 
-if pre_base_env.Bit('prebuilt') or ARGUMENTS.get('built_elsewhere'):
+if pre_base_env.Bit('prebuilt') or pre_base_env.Bit('built_elsewhere'):
   n = pre_base_env.Command('firefox_install_command',
                            [],
                            InstallPlugin)
@@ -870,7 +946,7 @@ def BrowserTester(env,
   node = env.Command(target, deps, ' '.join(command))
   # If we are testing build output captured from elsewhere,
   # ignore build dependencies.
-  if ARGUMENTS.get('built_elsewhere'):
+  if env.Bit('built_elsewhere'):
     env.Ignore(node, deps)
   return node
 
@@ -1095,7 +1171,7 @@ def CommandTest(env, name, command, size='small',
 
   # If we are testing build output captured from elsewhere,
   # ignore build dependencies.
-  if ARGUMENTS.get('built_elsewhere'):
+  if env.Bit('built_elsewhere'):
     env.Ignore(name, deps)
   else:
     env.Depends(name, extra_deps)
@@ -1126,7 +1202,7 @@ def GetPrintableEnvironmentName(env):
 
 CMD_COUNTER = {}
 ENV_COUNTER = {}
-if ARGUMENTS.get('target_stats', 0):
+if pre_base_env.Bit('target_stats'):
   def CommandStats(cmd, targets, source, env):
     cmd_name = GetPrintableCommandName(cmd)
     CMD_COUNTER[cmd_name] = CMD_COUNTER.get(cmd_name, 0) + 1
@@ -1138,7 +1214,7 @@ if ARGUMENTS.get('target_stats', 0):
   pre_base_env.Append(PRINT_CMD_LINE_FUNC=CommandStats)
 
 
-if ARGUMENTS.get('pp', 0):
+if pre_base_env.Bit('pp'):
   def CommandPrettyPrinter(cmd, targets, source, env):
     if not targets:
       return
@@ -1153,7 +1229,7 @@ if ARGUMENTS.get('pp', 0):
 # ----------------------------------------------------------
 # for generation of a promiscuous sel_ldr
 # ----------------------------------------------------------
-if ARGUMENTS.get('dangerous_debug_disable_inner_sandbox'):
+if pre_base_env.Bit('dangerous_debug_disable_inner_sandbox'):
   pre_base_env.Append(
       # NOTE: this also affects .S files
       CPPDEFINES=['DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX'],
@@ -1482,7 +1558,7 @@ unix_like_env.Prepend(
                 ],
 )
 
-if int(ARGUMENTS.get('use_libcrypto', 1)):
+if unix_like_env.Bit('use_libcrypto'):
   unix_like_env.Append(LIBS=['crypto'])
 else:
   unix_like_env.Append(CFLAGS=['-DUSE_CRYPTO=0'])
@@ -1659,11 +1735,11 @@ nacl_env = pre_base_env.Clone(
       ],
 )
 
-if ARGUMENTS.get('bitcode'):
+if nacl_env.Bit('bitcode'):
   target_root = nacl_env.subst('${TARGET_ROOT}') + '-pnacl'
   nacl_env.Replace(TARGET_ROOT=target_root)
 
-if ARGUMENTS.get('with_valgrind'):
+if nacl_env.Bit('running_on_valgrind'):
   nacl_env.Append(CCFLAGS = ['-g', '-Wno-overlength-strings',
                              '-fno-optimize-sibling-calls'],
                   CPPDEFINES = [['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
@@ -1671,13 +1747,13 @@ if ARGUMENTS.get('with_valgrind'):
                   LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
                   LIBS = ['valgrind'])
 
-if nacl_env['BUILD_ARCHITECTURE'] == 'x86' and not ARGUMENTS.get('bitcode'):
+if nacl_env['BUILD_ARCHITECTURE'] == 'x86' and not nacl_env.Bit('bitcode'):
   if nacl_env['BUILD_SUBARCH'] == '32':
     nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
   elif nacl_env['BUILD_SUBARCH'] == '64':
     nacl_env.Append(CCFLAGS = ['-m64'], LINKFLAGS = '-m64')
 
-if ARGUMENTS.get('bitcode'):
+if nacl_env.Bit('bitcode'):
   # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
   nacl_env.FilterOut(CCFLAGS = ['-Werror'])
   nacl_env.Append(CFLAGS = werror_flags)
@@ -1763,14 +1839,14 @@ nacl_env.Append(
     ])
 
 # NOTE: DEFAULT OFF
-if int(ARGUMENTS.get('build_vim', '0')):
+if nacl_env.Bit('build_vim'):
   nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     'tests/vim/nacl.scons',
     ])
 
 # NOTE: DEFAULT ON
-if int(ARGUMENTS.get('build_av_apps', '1')):
+if nacl_env.Bit('build_av_apps'):
   nacl_env.Append(
       BUILD_SCONSCRIPTS = [
       ####  ALPHABETICALLY SORTED ####
@@ -1818,7 +1894,7 @@ if nacl_env.GetOption('download'):
 # Sanity check whether we are ready to build nacl modules
 # ----------------------------------------------------------
 # NOTE: this uses stuff from: site_scons/site_tools/naclsdk.py
-if int(ARGUMENTS.get('naclsdk_validate', "1")):
+if nacl_env.Bit('naclsdk_validate'):
   nacl_env.ValidateSdk()
 
 # ----------------------------------------------------------
@@ -1866,7 +1942,7 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     ARFLAGS = 'rc'
 )
 
-if ARGUMENTS.get('bitcode'):
+if nacl_extra_sdk_env.Bit('bitcode'):
   target_root = nacl_extra_sdk_env.subst('${TARGET_ROOT}') + '-pnacl'
   nacl_extra_sdk_env.Replace(TARGET_ROOT=target_root)
 
@@ -1881,7 +1957,7 @@ nacl_extra_sdk_env.Append(CCFLAGS=['-Wall',
 # Optionally disable certain link warning which cause ASMs to
 # be injected into the object files
 # This undoes the effect of src/untrusted/nosys/warning.h
-if ARGUMENTS.get('disable_nosys_linker_warnings'):
+if nacl_extra_sdk_env.Bit('disable_nosys_linker_warnings'):
   nacl_extra_sdk_env.Append(
       CPPDEFINES=['NATIVE_CLIENT_SRC_UNTRUSTED_NOSYS_WARNING_H_=1',
                   'stub_warning(n)=struct xyzzy',
@@ -1937,7 +2013,7 @@ def RawSyscallObjects(env, sources):
 nacl_env.AddMethod(RawSyscallObjects)
 
 # TODO(khim): document this
-if not ARGUMENTS.get('nocpp'):
+if not nacl_extra_sdk_env.Bit('nocpp'):
   nacl_extra_sdk_env.Append(
       BUILD_SCONSCRIPTS = [
         ####  ALPHABETICALLY SORTED ####
