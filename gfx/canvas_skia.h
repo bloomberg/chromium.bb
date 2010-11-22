@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "gfx/canvas.h"
 #include "skia/ext/platform_canvas.h"
 
@@ -48,7 +49,7 @@ class CanvasSkia : public skia::PlatformCanvas,
   // Attempts to fit the text with the provided width and height. Increases
   // height and then width as needed to make the text fit. This method
   // supports multiple lines.
-  static void SizeStringInt(const std::wstring& text,
+  static void SizeStringInt(const string16& text,
                             const gfx::Font& font,
                             int* width, int* height,
                             int flags);

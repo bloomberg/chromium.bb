@@ -9,6 +9,7 @@
 #include "app/throb_animation.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "views/controls/button/button.h"
 #include "views/event.h"
@@ -402,7 +403,7 @@ void TextButton::UpdateColor() {
 void TextButton::UpdateTextSize() {
   int width = 0, height = 0;
   gfx::CanvasSkia::SizeStringInt(
-      text_, font_, &width, &height,
+      WideToUTF16Hack(text_), font_, &width, &height,
       gfx::Canvas::NO_ELLIPSIS | PrefixTypeToCanvasType(prefix_type_));
 
   // Add 2 extra pixels to width and height when text halo is used.

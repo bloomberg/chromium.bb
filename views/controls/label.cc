@@ -68,7 +68,8 @@ int Label::GetHeightForWidth(int w) {
 
   w = std::max(0, w - GetInsets().width());
   int h = font_.GetHeight();
-  gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, ComputeMultiLineFlags());
+  gfx::CanvasSkia::SizeStringInt(WideToUTF16Hack(text_), font_, &w, &h,
+                                 ComputeMultiLineFlags());
   return h + GetInsets().height();
 }
 
@@ -294,7 +295,8 @@ gfx::Size Label::GetTextSize() const {
     int flags = ComputeMultiLineFlags();
     if (!is_multi_line_)
       flags |= gfx::Canvas::NO_ELLIPSIS;
-    gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, flags);
+    gfx::CanvasSkia::SizeStringInt(WideToUTF16Hack(text_), font_, &w, &h,
+                                   flags);
     text_size_.SetSize(w, h);
     text_size_valid_ = true;
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/username_view.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/rect.h"
@@ -78,7 +79,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
       gfx::Canvas::TEXT_VALIGN_MIDDLE |
       gfx::Canvas::NO_ELLIPSIS;
   int text_height;
-  gfx::CanvasSkia::SizeStringInt(GetText(), font(),
+  gfx::CanvasSkia::SizeStringInt(WideToUTF16Hack(GetText()), font(),
                                  &text_width_, &text_height,
                                  flags);
   text_width_ = std::min(text_width_, bounds.width() - margin_width_);

@@ -221,7 +221,8 @@ int PlatformFontGtk::GetAverageCharacterWidth() const {
 
 int PlatformFontGtk::GetStringWidth(const std::wstring& text) const {
   int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontGtk*>(this)),
+  CanvasSkia::SizeStringInt(WideToUTF16Hack(text),
+                            Font(const_cast<PlatformFontGtk*>(this)),
                             &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }

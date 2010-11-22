@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
@@ -103,7 +104,8 @@ int PlatformFontWin::GetAverageCharacterWidth() const {
 
 int PlatformFontWin::GetStringWidth(const std::wstring& text) const {
   int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontWin*>(this)),
+  CanvasSkia::SizeStringInt(WideToUTF16Hack(text),
+                            Font(const_cast<PlatformFontWin*>(this)),
                             &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }

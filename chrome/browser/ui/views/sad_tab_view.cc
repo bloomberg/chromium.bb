@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -95,8 +96,8 @@ void SadTabView::Layout() {
   gfx::CanvasSkia cc(0, 0, true);
   int message_width = static_cast<int>(width() * kMessageSize);
   int message_height = 0;
-  cc.SizeStringInt(message_, *message_font_, &message_width, &message_height,
-                   gfx::Canvas::MULTI_LINE);
+  cc.SizeStringInt(WideToUTF16Hack(message_), *message_font_, &message_width,
+                   &message_height, gfx::Canvas::MULTI_LINE);
   int message_x = (width() - message_width) / 2;
   int message_y = title_bounds_.bottom() + kTitleMessageSpacing;
   message_bounds_.SetRect(message_x, message_y, message_width, message_height);

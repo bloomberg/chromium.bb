@@ -25,12 +25,12 @@ CanvasSkia::~CanvasSkia() {
 }
 
 // static
-void CanvasSkia::SizeStringInt(const std::wstring& text,
+void CanvasSkia::SizeStringInt(const string16& text,
                                const gfx::Font& font,
                                int* width, int* height,
                                int flags) {
   NSFont* native_font = font.GetNativeFont();
-  NSString* ns_string = base::SysWideToNSString(text);
+  NSString* ns_string = base::SysUTF16ToNSString(text);
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:native_font
                                   forKey:NSFontAttributeName];

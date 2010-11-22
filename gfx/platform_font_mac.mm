@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 
@@ -57,7 +58,8 @@ int PlatformFontMac::GetAverageCharacterWidth() const {
 
 int PlatformFontMac::GetStringWidth(const std::wstring& text) const {
   int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontMac*>(this)),
+  CanvasSkia::SizeStringInt(WideToUTF16Hack(text),
+                            Font(const_cast<PlatformFontMac*>(this)),
                             &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }

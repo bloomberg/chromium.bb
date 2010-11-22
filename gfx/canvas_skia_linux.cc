@@ -90,7 +90,7 @@ static void UpdateCairoFontOptions() {
 
 // Pass a width > 0 to force wrapping and elliding.
 static void SetupPangoLayout(PangoLayout* layout,
-                             const std::wstring& text,
+                             const string16& text,
                              const gfx::Font& font,
                              int width,
                              int flags) {
@@ -140,7 +140,7 @@ static void SetupPangoLayout(PangoLayout* layout,
   pango_font_description_free(desc);
 
   // Set text and accelerator character if needed.
-  std::string utf8 = WideToUTF8(text);
+  std::string utf8 = UTF16ToUTF8(text);
   if (flags & gfx::Canvas::SHOW_PREFIX) {
     // Escape the text string to be used as markup.
     gchar* escaped_text = g_markup_escape_text(utf8.c_str(), utf8.size());
@@ -211,7 +211,8 @@ DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
   cr_ = canvas_->beginPlatformPaint();
   layout_ = pango_cairo_create_layout(cr_);
 
-  SetupPangoLayout(layout_, text, font, bounds_.width(), flags_);
+  SetupPangoLayout(layout_, WideToUTF16Hack(text), font, bounds_.width(),
+                   flags_);
 
   pango_layout_set_height(layout_, bounds_.height() * PANGO_SCALE);
 
@@ -309,7 +310,7 @@ CanvasSkia::~CanvasSkia() {
 }
 
 // static
-void CanvasSkia::SizeStringInt(const std::wstring& text,
+void CanvasSkia::SizeStringInt(const string16& text,
                                const gfx::Font& font,
                                int* width, int* height,
                                int flags) {
