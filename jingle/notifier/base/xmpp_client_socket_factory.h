@@ -10,7 +10,7 @@
 #include "net/socket/client_socket_factory.h"
 
 namespace net {
-class DnsCertProvenanceChecker;
+class DnsRRResolver;
 class HostPortPair;
 class SSLHostInfo;
 }
@@ -33,8 +33,7 @@ class XmppClientSocketFactory : public net::ClientSocketFactory {
   virtual net::SSLClientSocket* CreateSSLClientSocket(
       net::ClientSocketHandle* transport_socket,
       const net::HostPortPair& host_and_port, const net::SSLConfig& ssl_config,
-      net::SSLHostInfo* ssl_host_info,
-      net::DnsCertProvenanceChecker* dns_cert_checker);
+      net::SSLHostInfo* ssl_host_info, net::DnsRRResolver* dnsrr_resolver);
 
  private:
   net::ClientSocketFactory* const client_socket_factory_;
