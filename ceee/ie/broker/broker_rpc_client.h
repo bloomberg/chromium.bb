@@ -17,7 +17,7 @@ class BrokerRpcClient {
   ~BrokerRpcClient();
 
   // Initialize connection with server.
-  bool Connect();
+  HRESULT Connect();
 
   // Relese connection with server
   void Disconnect();
@@ -30,8 +30,11 @@ class BrokerRpcClient {
   // @name Remote calls.
   // @{
   // Calls FireEvent on server side.
-  bool FireEvent(BSTR event_name, BSTR event_args);
+  HRESULT FireEvent(const char* event_name, const char* event_args);
   // @}
+
+  // Starts new CEEE broker if nessesary.
+  static HRESULT StartServer();
 
  private:
   void LockContext();

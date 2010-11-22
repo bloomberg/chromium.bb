@@ -12,7 +12,7 @@
 // Implements a set of methods to send infobar related events to the Broker.
 class InfobarEventsFunnel : public EventsFunnel {
  public:
-  InfobarEventsFunnel() : EventsFunnel(false)  {}
+  InfobarEventsFunnel() {}
 
   // Sends the infobar.onDocumentComplete event to the Broker.
   virtual HRESULT OnDocumentComplete();

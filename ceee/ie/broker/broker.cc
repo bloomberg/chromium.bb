@@ -7,11 +7,12 @@
 #include "ceee/ie/broker/broker.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
+#include "ceee/common/com_utils.h"
 #include "ceee/ie/broker/api_dispatcher.h"
 #include "ceee/ie/broker/chrome_postman.h"
 #include "ceee/ie/broker/executors_manager.h"
 #include "ceee/ie/common/ceee_module_util.h"
-
 
 HRESULT CeeeBroker::FinalConstruct() {
   // So that we get a pointer to the ExecutorsManager and let tests override it.
@@ -28,7 +29,9 @@ STDMETHODIMP CeeeBroker::Execute(BSTR function, BSTR* response) {
 }
 
 STDMETHODIMP CeeeBroker::FireEvent(BSTR event_name, BSTR event_args) {
-  ChromePostman::GetInstance()->FireEvent(event_name, event_args);
+  ChromePostman::GetInstance()->FireEvent(
+      WideToUTF8(com::ToString(event_name)).c_str(),
+      WideToUTF8(com::ToString(event_args)).c_str());
   return S_OK;
 }
 

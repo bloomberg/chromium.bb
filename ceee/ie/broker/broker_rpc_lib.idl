@@ -29,8 +29,8 @@ void Disconnect(
 // Fires event to broker.
 void FireEvent(
     [in] handle_t binding_handle,
-    [in] BSTR event_name,
-    [in] BSTR event_args);
+    [in, string] const char* event_name,
+    [in, string] const char* event_args);
 // @}
 }
 

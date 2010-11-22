@@ -68,15 +68,16 @@ class ApiExecutionTask : public Task {
 
 class FireEventTask : public Task {
  public:
-  FireEventTask(BSTR event_name, BSTR event_args)
+  FireEventTask(const char* event_name, const char* event_args)
       : event_name_(event_name), event_args_(event_args) {}
 
   virtual void Run() {
-    ProductionApiDispatcher::get()->FireEvent(event_name_, event_args_);
+    ProductionApiDispatcher::get()->FireEvent(event_name_.c_str(),
+                                              event_args_.c_str());
   }
  private:
-  CComBSTR event_name_;
-  CComBSTR event_args_;
+  std::string event_name_;
+  std::string event_args_;
 };
 
 
@@ -109,6 +110,8 @@ void ChromePostman::Term() {
 void ChromePostman::PostMessage(BSTR message, BSTR target) {
   MessageLoop* message_loop = chrome_postman_thread_.message_loop();
   if (message_loop) {
+    // TODO(siggi@chromium.org): Remove the task subclass and change this to
+    // use NewRunnableMethod.
     message_loop->PostTask(
         FROM_HERE, new ChromeFrameMessageTask(&chrome_postman_thread_,
                                               message, target));
@@ -118,9 +121,11 @@ void ChromePostman::PostMessage(BSTR message, BSTR target) {
   }
 }
 
-void ChromePostman::FireEvent(BSTR event_name, BSTR event_args) {
+void ChromePostman::FireEvent(const char* event_name, const char* event_args) {
   MessageLoop* message_loop = api_worker_thread_.message_loop();
   if (message_loop) {
+    // TODO(siggi@chromium.org): Remove the task subclass and change this to
+    // use NewRunnableMethod.
     message_loop->PostTask(FROM_HERE,
                            new FireEventTask(event_name, event_args));
   } else {

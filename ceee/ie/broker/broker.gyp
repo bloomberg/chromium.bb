@@ -20,6 +20,9 @@
         'VCMIDLTool': {
           'OutputDirectory': '<(SHARED_INTERMEDIATE_DIR)',
           'DLLDataFileName': '$(InputName)_dlldata.c',
+          # Prevent middle to insert 'unsigned' before 'char' in generated
+          # *.h and *.c files.
+          'DefaultCharType': '0',
           'AdditionalOptions': '/prefix all "BrokerRpcClient_" '
                                'server "BrokerRpcServer_"'
         },

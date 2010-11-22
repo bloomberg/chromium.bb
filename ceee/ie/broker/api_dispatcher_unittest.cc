@@ -255,7 +255,7 @@ TEST(ApiDispatcher, PermanentEventHandler) {
   CComBSTR request_name(keys::kAutomationBrowserEventRequestTarget);
   EXPECT_CALL(postman, PostMessage(StrEq(CComBSTR(message1_str.c_str()).m_str),
                                    StrEq(request_name.m_str))).Times(1);
-  dispatcher.FireEvent(CComBSTR("Event1"), CComBSTR("EventHandler1Args"));
+  dispatcher.FireEvent("Event1", "EventHandler1Args");
 
   ListValue message2;
   message2.Append(Value::CreateStringValue("Event2"));
@@ -264,10 +264,10 @@ TEST(ApiDispatcher, PermanentEventHandler) {
   base::JSONWriter::Write(&message2, false, &message2_str);
   EXPECT_CALL(postman, PostMessage(StrEq(CComBSTR(message2_str.c_str()).m_str),
                                    StrEq(request_name.m_str))).Times(1);
-  dispatcher.FireEvent(CComBSTR("Event2"), CComBSTR("EventHandler2Args"));
+  dispatcher.FireEvent("Event2", "EventHandler2Args");
 
   // There shouldn't be a post when the event handler returns false.
-  dispatcher.FireEvent(CComBSTR("Event3"), CComBSTR(""));
+  dispatcher.FireEvent("Event3", "");
 }
 
 // TODO(mad@chromium.org): Add tests for the EphemeralEventHandlers.

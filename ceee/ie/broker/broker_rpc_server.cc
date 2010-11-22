@@ -122,8 +122,8 @@ void __RPC_USER BrokerContextHandle_rundown(BrokerContextHandle context) {
 
 void BrokerRpcServer_FireEvent(
     handle_t binding_handle,
-    BSTR event_name,
-    BSTR event_args) {
+    const char* event_name,
+    const char* event_args) {
   DCHECK(ChromePostman::GetInstance());
   if (ChromePostman::GetInstance())
     ChromePostman::GetInstance()->FireEvent(event_name, event_args);

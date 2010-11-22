@@ -11,15 +11,16 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 
 class Value;
+
+class BrokerRpcClient;
 
 // Defines a base class for sending events to the Broker.
 class EventsFunnel {
  protected:
-  // @param keep_broker_alive If true broker will be alive during
-  // lifetime of this funnel, otherwise only during SendEvent.
-  explicit EventsFunnel(bool keep_broker_alive);
+  EventsFunnel();
   virtual ~EventsFunnel();
 
   // Send the given event to the Broker.
@@ -28,10 +29,14 @@ class EventsFunnel {
   // protected virtual for testability...
   virtual HRESULT SendEvent(const char* event_name, const Value& event_args);
 
+ protected:
+  virtual HRESULT SendEventToBroker(const char* event_name,
+                                    const char* event_args);
+
  private:
-  // If true constructor/destructor of class increments/decrements ref counter
-  // of broker thread. Otherwise SendEvent does it for every event.
-  const bool keep_broker_alive_;
+  // Pointer to broker client. If is not NULL attempt to connect was performed
+  // and new attempts are not nessesary.
+  scoped_ptr<BrokerRpcClient> broker_rpc_client_;
   DISALLOW_COPY_AND_ASSIGN(EventsFunnel);
 };
 

@@ -28,7 +28,8 @@ MOCK_STATIC_CLASS_BEGIN(BrokerRpcMock)
     MOCK_STATIC_INIT(BrokerRpcServer_FireEvent)
   MOCK_STATIC_INIT_END()
   MOCK_STATIC0(std::wstring, , GetRpcEndPointAddress);
-  MOCK_STATIC3(void, , BrokerRpcServer_FireEvent, handle_t, BSTR, BSTR);
+  MOCK_STATIC3(void, , BrokerRpcServer_FireEvent, handle_t, const char*,
+               const char*);
 MOCK_STATIC_CLASS_END(BrokerRpcMock)
 
 class BrokerRpcTest : public testing::Test {
@@ -47,7 +48,7 @@ class BrokerRpcTest : public testing::Test {
 TEST_F(BrokerRpcTest, ConnectNoServer) {
   BrokerRpcClient client;
   ASSERT_FALSE(client.is_connected());
-  ASSERT_FALSE(client.Connect());
+  ASSERT_FALSE(SUCCEEDED(client.Connect()));
   ASSERT_FALSE(client.is_connected());
 }
 
@@ -57,7 +58,7 @@ TEST_F(BrokerRpcTest, Connect) {
   ASSERT_TRUE(server.Start());
   ASSERT_TRUE(server.is_started());
   BrokerRpcClient client;
-  ASSERT_TRUE(client.Connect());
+  ASSERT_TRUE(SUCCEEDED(client.Connect()));
   ASSERT_TRUE(client.is_connected());
 }
 
@@ -66,16 +67,16 @@ TEST_F(BrokerRpcTest, FireEvent) {
   ASSERT_TRUE(server.Start());
 
   BrokerRpcClient client;
-  ASSERT_TRUE(client.Connect());
+  ASSERT_TRUE(SUCCEEDED(client.Connect()));
 
-  CComBSTR event_name = L"event_name";
-  CComBSTR event_args = L"event_args";
+  const char* event_name = "event_name";
+  const char* event_args = "event_args";
 
-  EXPECT_CALL(broker_rpc_mock_, BrokerRpcServer_FireEvent(_,
-      StrEq(event_name.m_str), StrEq(event_args.m_str)))
-          .Times(1);
+  EXPECT_CALL(broker_rpc_mock_, BrokerRpcServer_FireEvent(_, StrEq(event_name),
+                                                          StrEq(event_args)))
+      .Times(1);
 
-  ASSERT_TRUE(client.FireEvent(event_name, event_args));
+  ASSERT_TRUE(SUCCEEDED(client.FireEvent(event_name, event_args)));
 }
 
 }  // namespace

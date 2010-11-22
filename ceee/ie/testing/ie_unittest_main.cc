@@ -28,23 +28,6 @@ void Lock() {
 }
 void Unlock() {
 }
-void AddRefModuleWorkerThread() {
-}
-void ReleaseModuleWorkerThread() {
-}
-
-// Fires an event to the broker, so that the call can be made with an
-// instance of a broker proxy that was CoCreated in the worker thread.
-void FireEventToBroker(const std::string& event_name,
-                       const std::string& event_args) {
-  // Must get some work done so that the function can be mocked.
-  // Otherwise, it would be too short to be side stepped...
-  if (event_name == event_args) {
-    CHECK(event_name == event_args);
-  } else {
-    CHECK(event_name != event_args);
-  }
-}
 
 }  // namespace ceee_module_util
 

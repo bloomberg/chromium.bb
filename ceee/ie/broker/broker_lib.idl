@@ -22,8 +22,8 @@ typedef long CeeeWindowHandle;
 // integrity level than the calling process.
 
 // Allows the execution of code in destination threads.
+// This interface is DEPRECATED.
 interface ICeeeBroker : IUnknown {
-  // This method is DEPRECATED.
   // Execute the requested message in the appropriate process/thread.
   //
   // @param function The JSON encoded function message to process.

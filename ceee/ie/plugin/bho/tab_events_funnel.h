@@ -14,7 +14,7 @@
 // Implements a set of methods to send tab related events to the Broker.
 class TabEventsFunnel : public EventsFunnel {
  public:
-  TabEventsFunnel() : EventsFunnel(true) {}
+  TabEventsFunnel() {}
 
   // Sends the tabs.onMoved event to the Broker.
   // @param tab_handle The HWND of the tab that moved.

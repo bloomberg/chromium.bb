@@ -27,13 +27,6 @@ void Lock() {
 }
 void Unlock() {
 }
-void AddRefModuleWorkerThread() {
-}
-void ReleaseModuleWorkerThread() {
-}
-void FireEventToBroker(const std::string& event_name,
-                       const std::string& event_args) {
-}
 
 }  // namespace ceee_module_util
 

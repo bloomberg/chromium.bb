@@ -9,10 +9,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
-#include "base/thread.h"
 #include "ceee/common/com_utils.h"
 #include "ceee/common/install_utils.h"
-#include "ceee/ie/broker/broker_rpc_client.h"
 #include "ceee/ie/common/ceee_module_util.h"
 #include "ceee/ie/plugin/bho/browser_helper_object.h"
 #include "ceee/ie/plugin/bho/executor.h"
@@ -61,76 +59,16 @@ class ToolbandModule : public CAtlDllModuleT<ToolbandModule> {
     return module_initialized_;
   }
 
-  // Fires an event to the broker, so that the call can be made with an
-  // instance of a broker proxy that was CoCreated in the worker thread.
-  void FireEventToBroker(const std::string& event_name,
-                         const std::string& event_args);
-
  private:
-  // TODO(vitalybuka@google.com): Fire events without this thread.
-  class ComWorkerThread : public base::Thread {
-   public:
-    ComWorkerThread();
 
-    // Called just prior to starting the message loop
-    virtual void Init();
-
-    // Called just after the message loop ends
-    virtual void CleanUp();
-
-    // Called by FireEventTask so that the broker we instantiate in the
-    // worker thread can be used.
-    void FireEventToBroker(BSTR event_name, BSTR event_args);
-   protected:
-    BrokerRpcClient broker_rpc_;
-  };
-
-  class FireEventTask : public Task {
-   public:
-    FireEventTask(ComWorkerThread* worker_thread,
-                  const std::string& event_name,
-                  const std::string& event_args)
-        : worker_thread_(worker_thread),
-          event_name_(event_name.c_str()),
-          event_args_(event_args.c_str()) {
-    }
-    virtual void Run() {
-      worker_thread_->FireEventToBroker(event_name_, event_args_);
-    }
-   private:
-    ComWorkerThread* worker_thread_;
-    CComBSTR event_name_;
-    CComBSTR event_args_;
-  };
-  // We only start the thread on first use. If we would start it on
-  // initialization, when our DLL is loaded into the broker process,
-  // it would try to start this thread which tries to CoCreate a Broker
-  // and this could cause a complex deadlock...
-  void EnsureThreadStarted();
-
-  // We use a pointer so that we can make sure we only destroy the object
-  // when the thread is properly stopped. Otherwise, we would get a DCHECK
-  // if the thread is killed before we get to Stop it when DllCanUnloadNow
-  // returns S_OK, which happens when the application quits with live objects,
-  // this causes the destructor to DCHECK.
-  ComWorkerThread* worker_thread_;
   base::AtExitManager at_exit_;
   bool module_initialized_;
   bool crash_reporting_initialized_;
-
-  int worker_thread_ref_count_;
-
-  friend void ceee_module_util::AddRefModuleWorkerThread();
-  friend void ceee_module_util::ReleaseModuleWorkerThread();
-
-  void IncThreadRefCount();
-  void DecThreadRefCount();
 };
 
 ToolbandModule::ToolbandModule()
     : crash_reporting_initialized_(false),
-      module_initialized_(false),
-      worker_thread_(NULL) {
+      module_initialized_(false) {
   wchar_t logfile_path[MAX_PATH];
   DWORD len = ::GetTempPath(arraysize(logfile_path), logfile_path);
   ::PathAppend(logfile_path, kLogFileName);
@@ -162,10 +100,6 @@ ToolbandModule::ToolbandModule()
 ToolbandModule::~ToolbandModule() {
   ScriptHost::set_default_debug_application(NULL);
 
-  // Just leave thread as is. Releasing interface from this thread may hang IE.
-  DCHECK(worker_thread_ref_count_ == 0);
-  DCHECK(worker_thread_ == NULL);
-
   // Uninitialize control hosting.
   BOOL uninitialized = AtlAxWinTerm();
   DCHECK(uninitialized);
@@ -175,43 +109,33 @@ ToolbandModule::~ToolbandModule() {
 
 HRESULT ToolbandModule::DllCanUnloadNow() {
   HRESULT hr = CAtlDllModuleT<ToolbandModule>::DllCanUnloadNow();
-  if (hr == S_OK) {
-    // We must protect our data member against concurrent calls to check if we
-    // can be unloaded. We must also making the call to Term within the lock
-    // to make sure we don't try to re-initialize in case a new
-    // DllGetClassObject would occur in the mean time, in another thread.
-    m_csStaticDataInitAndTypeInfo.Lock();
-    if (module_initialized_) {
-      Term();
-    }
-    m_csStaticDataInitAndTypeInfo.Unlock();
-  }
+  if (hr == S_OK)
+    Term();
   return hr;
 }
 
 HRESULT ToolbandModule::DllGetClassObject(REFCLSID clsid, REFIID iid,
                                          void** object)  {
-  // Same comment as above in ToolbandModule::DllCanUnloadNow().
-  m_csStaticDataInitAndTypeInfo.Lock();
-  if (!module_initialized_) {
-    Init();
-  }
-  m_csStaticDataInitAndTypeInfo.Unlock();
+  Init();
   return CAtlDllModuleT<ToolbandModule>::DllGetClassObject(clsid, iid, object);
 }
 
 void ToolbandModule::Init() {
+  // We must protect our data member against concurrent calls to check if we
+  // can be unloaded. We must also making the call to Term within the lock
+  // to make sure we don't try to re-initialize in case a new
+  // DllGetClassObject would occur in the mean time, in another thread.
+  CComCritSecLock<CComCriticalSection> lock(m_csStaticDataInitAndTypeInfo);
+  if (module_initialized_)
+    return;
   crash_reporting_initialized_ = InitializeCrashReporting();
   module_initialized_ = true;
 }
 
 void ToolbandModule::Term() {
-  if (worker_thread_ != NULL) {
-    // It is OK to call Stop on a thread even when it isn't running.
-    worker_thread_->Stop();
-    delete worker_thread_;
-    worker_thread_ = NULL;
-  }
+  CComCritSecLock<CComCriticalSection> lock(m_csStaticDataInitAndTypeInfo);
+  if (!module_initialized_)
+    return;
   if (crash_reporting_initialized_) {
     bool crash_reporting_deinitialized = ShutdownCrashReporting();
     DCHECK(crash_reporting_deinitialized);
@@ -220,107 +144,7 @@ void ToolbandModule::Term() {
   module_initialized_ = false;
 }
 
-void ToolbandModule::IncThreadRefCount() {
-  m_csStaticDataInitAndTypeInfo.Lock();
-  DCHECK_GE(worker_thread_ref_count_, 0);
-  worker_thread_ref_count_++;
-  m_csStaticDataInitAndTypeInfo.Unlock();
-}
-
-void ToolbandModule::DecThreadRefCount() {
-  ComWorkerThread* thread = NULL;
-
-  m_csStaticDataInitAndTypeInfo.Lock();
-  // If we're already at 0, we have a problem, so we check if we're >=.
-  DCHECK_GT(worker_thread_ref_count_, 0);
-
-  // If this was our last reference, we delete the thread. This is okay even if
-  // we increment the count again, because the thread is created on the "first"
-  // FireEventToBroker, thus it will be created again if needed.
-  if (--worker_thread_ref_count_ == 0) {
-    if (worker_thread_ != NULL) {
-      // Store the worker_thread to a temporary pointer. It will be freed later.
-      thread = worker_thread_;
-      worker_thread_ = NULL;
-    }
-  }
-  m_csStaticDataInitAndTypeInfo.Unlock();
-
-  // Clean the thread after the unlock to be certain we don't get a deadlock
-  // (the CriticalSection could be used in the worker thread).
-  if (thread) {
-    // It is OK to call Stop on a thread even when it isn't running.
-    thread->Stop();
-    delete thread;
-  }
-}
-
-void ToolbandModule::EnsureThreadStarted() {
-  m_csStaticDataInitAndTypeInfo.Lock();
-  if (worker_thread_ == NULL) {
-    worker_thread_ = new ComWorkerThread;
-    // The COM worker thread must be a UI thread so that it can pump windows
-    // messages and allow COM to handle cross apartment calls.
-    worker_thread_->StartWithOptions(base::Thread::Options(MessageLoop::TYPE_UI,
-                                                           0));  // stack_size
-  }
-  m_csStaticDataInitAndTypeInfo.Unlock();
-}
-
-void ToolbandModule::FireEventToBroker(const std::string& event_name,
-                                      const std::string& event_args) {
-  EnsureThreadStarted();
-  DCHECK(worker_thread_ != NULL);
-  MessageLoop* message_loop = worker_thread_->message_loop();
-  if (message_loop) {
-    message_loop->PostTask(FROM_HERE,
-        new FireEventTask(worker_thread_, event_name, event_args));
-  } else {
-    LOG(ERROR) << "Trying to post a message before the COM worker thread is"
-                  "completely initialized and ready.";
-  }
-}
-
-
-ToolbandModule::ComWorkerThread::ComWorkerThread()
-    : base::Thread("CEEE-COM Worker Thread") {
-}
-
-void ToolbandModule::ComWorkerThread::Init() {
-  ::CoInitializeEx(0, COINIT_MULTITHREADED);
-  // TODO(vitalybuka@google.com): Start broker without COM.
-  CComPtr<ICeeeBroker> broker_;
-  HRESULT hr = broker_.CoCreateInstance(CLSID_CeeeBroker);
-  DCHECK(SUCCEEDED(hr)) << "Failed to create broker. " << com::LogHr(hr);
-  broker_rpc_.Connect();
-  DCHECK(broker_rpc_.is_connected());
-  ::CoUninitialize();
-}
-
-void ToolbandModule::ComWorkerThread::CleanUp() {
-  broker_rpc_.Disconnect();
-}
-
-void ToolbandModule::ComWorkerThread::FireEventToBroker(BSTR event_name,
-                                                        BSTR event_args) {
-  DCHECK(broker_rpc_.is_connected());
-  bool result = broker_rpc_.FireEvent(event_name, event_args);
-  DCHECK(result);
-}
-
 ToolbandModule module;
-
-void ceee_module_util::AddRefModuleWorkerThread() {
-  module.IncThreadRefCount();
-}
-void ceee_module_util::ReleaseModuleWorkerThread() {
-  module.DecThreadRefCount();
-}
-
-void ceee_module_util::FireEventToBroker(const std::string& event_name,
-                                             const std::string& event_args) {
-  module.FireEventToBroker(event_name, event_args);
-}
 
 void ceee_module_util::Lock() {
   module.m_csStaticDataInitAndTypeInfo.Lock();

@@ -6,8 +6,10 @@
 
 #include "ceee/ie/broker/broker_rpc_client.h"
 
+#include <atlbase.h>
 #include "base/lock.h"
 #include "base/logging.h"
+#include "broker_lib.h"  // NOLINT
 #include "broker_rpc_lib.h"  // NOLINT
 #include "ceee/common/com_utils.h"
 #include "ceee/ie/broker/broker_rpc_utils.h"
@@ -55,16 +57,25 @@ void BrokerRpcClient::ReleaseContext() {
   } RpcEndExcept
 }
 
-bool BrokerRpcClient::Connect() {
+HRESULT BrokerRpcClient::StartServer() {
+  // TODO(vitalybuka@google.com): Start broker without COM after the last
+  // COM interface is removed.
+  CComPtr<ICeeeBrokerRegistrar> broker;
+  HRESULT hr = broker.CoCreateInstance(CLSID_CeeeBroker);
+  LOG_IF(ERROR, FAILED(hr)) << "Failed to create broker. " << com::LogHr(hr);
+  return hr;
+}
+
+HRESULT BrokerRpcClient::Connect() {
   if (is_connected())
-    return true;
+    return S_OK;
 
   std::wstring end_point = GetRpcEndPointAddress();
   std::wstring protocol = kRpcProtocol;
   DCHECK(!protocol.empty());
   DCHECK(!end_point.empty());
   if (protocol.empty() || end_point.empty())
-    return false;
+    return RPC_E_FAULT;
 
   // TODO(vitalybuka@google.com): There's no guarantee (aside from name
   // uniqueness) that it will connect to an endpoint created by the same user.
@@ -94,9 +105,11 @@ bool BrokerRpcClient::Connect() {
       LockContext();
     }
   }
-  if (!is_connected())
+  if (!is_connected()) {
     Disconnect();
-  return is_connected();
+    return RPC_E_FAULT;
+  }
+  return S_OK;
 }
 
 void BrokerRpcClient::Disconnect() {
@@ -109,12 +122,13 @@ void BrokerRpcClient::Disconnect() {
   }
 }
 
-bool BrokerRpcClient::FireEvent(BSTR event_name, BSTR event_args) {
+HRESULT BrokerRpcClient::FireEvent(const char* event_name,
+                                   const char* event_args) {
   RpcTryExcept {
     BrokerRpcClient_FireEvent(binding_handle_, event_name, event_args);
-    return true;
+    return S_OK;
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
     LogRpcException("RPC error in FireEvent", RpcExceptionCode());
   } RpcEndExcept
-  return false;
+  return RPC_E_FAULT;
 }

@@ -13,7 +13,7 @@
 // Implements a set of methods to send cookie related events to the Broker.
 class CookieEventsFunnel : public EventsFunnel {
  public:
-  CookieEventsFunnel() : EventsFunnel(false) {}
+  CookieEventsFunnel() {}
 
   // Sends the cookies.onChanged event to the Broker.
   // @param removed True if the cookie was removed vs. set.

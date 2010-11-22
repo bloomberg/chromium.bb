@@ -123,6 +123,7 @@
         },
       },
       'dependencies': [
+        'broker/broker.gyp:broker_rpc_lib',
         'common/common.gyp:ie_common',
         'common/common.gyp:ie_common_settings',
         'common/common.gyp:ie_guids',
@@ -137,6 +138,7 @@
       'libraries': [
         'oleacc.lib',
         'iepmapi.lib',
+        'rpcrt4.lib',
       ],
     },
   ]

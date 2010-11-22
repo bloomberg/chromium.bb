@@ -7,21 +7,18 @@
 
 #include "ceee/ie/plugin/bho/events_funnel.h"
 
+#include <atlbase.h>
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "ceee/ie/broker/broker_rpc_client.h"
 #include "ceee/ie/common/ceee_module_util.h"
 
 
-EventsFunnel::EventsFunnel(bool keep_broker_alive)
-    : keep_broker_alive_(keep_broker_alive) {
-  if (keep_broker_alive_)
-    ceee_module_util::AddRefModuleWorkerThread();
+EventsFunnel::EventsFunnel() {
 }
 
 EventsFunnel::~EventsFunnel() {
-  if (keep_broker_alive_)
-    ceee_module_util::ReleaseModuleWorkerThread();
 }
 
 HRESULT EventsFunnel::SendEvent(const char* event_name,
@@ -36,7 +33,22 @@ HRESULT EventsFunnel::SendEvent(const char* event_name,
     base::JSONWriter::Write(&list, false, &event_args_str);
   }
 
-  EventsFunnel thread_locker(!keep_broker_alive_);
-  ceee_module_util::FireEventToBroker(event_name, event_args_str);
-  return S_OK;
+  return SendEventToBroker(event_name, event_args_str.c_str());
+}
+
+HRESULT EventsFunnel::SendEventToBroker(const char* event_name,
+                                        const char* event_args) {
+  if (!broker_rpc_client_.get()) {
+    broker_rpc_client_.reset(new BrokerRpcClient());
+    if (!broker_rpc_client_.get())
+      return E_OUTOFMEMORY;
+    HRESULT hr = BrokerRpcClient::StartServer();
+    if (FAILED(hr))
+      return hr;
+    hr = broker_rpc_client_->Connect();
+    // Don't reset broker_rpc_client_. See comment in *h file.
+    if (FAILED(hr))
+      return hr;
+  }
+  return broker_rpc_client_->FireEvent(event_name, event_args);
 }

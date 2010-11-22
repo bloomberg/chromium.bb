@@ -42,7 +42,7 @@ class ApiDispatcher {
   //
   // @param event_name The name of the event to fire.
   // @param event_args The JSON encoded event arguments.
-  virtual void FireEvent(BSTR event_name, BSTR event_args);
+  virtual void FireEvent(const char* event_name, const char* event_args);
 
   // This class holds on the result and can be derived from to generate results
   // that are either specific to tabs or windows for example.

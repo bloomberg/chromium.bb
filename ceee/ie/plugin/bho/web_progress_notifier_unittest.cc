@@ -107,8 +107,8 @@ class TestWebProgressNotifier : public WebProgressNotifier {
         mock_is_possible_user_action_in_content_window_(false),
         mock_is_possible_user_action_in_browser_ui_(false) {}
 
-  virtual WebNavigationEventsFunnel& webnavigation_events_funnel() {
-    return mock_webnavigation_events_funnel_;
+  virtual WebNavigationEventsFunnel* webnavigation_events_funnel() {
+    return &mock_webnavigation_events_funnel_;
   }
 
   virtual WindowMessageSource* CreateWindowMessageSource() {

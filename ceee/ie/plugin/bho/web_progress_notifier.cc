@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "ceee/common/com_utils.h"
 #include "ceee/ie/plugin/bho/dom_utils.h"
+#include "ceee/ie/plugin/bho/webnavigation_events_funnel.h"
 
 namespace {
 
@@ -121,8 +122,13 @@ void WebProgressNotifier::OnBeforeNavigate(IWebBrowser2* browser, BSTR url) {
     return;
 
   // TODO(yzshen@google.com): add support for requestId.
-  HRESULT hr = webnavigation_events_funnel().OnBeforeNavigate(
-      tab_handle_, url, frame_info->frame_id, -1, base::Time::Now());
+  HRESULT hr = E_POINTER;
+  WebNavigationEventsFunnel* funnel = webnavigation_events_funnel();
+  DCHECK(funnel != NULL);
+  if (funnel) {
+    hr = funnel->OnBeforeNavigate(tab_handle_, url, frame_info->frame_id, -1,
+                                 base::Time::Now());
+  }
   DCHECK(SUCCEEDED(hr))
       << "Failed to fire the webNavigation.onBeforeNavigate event "
       << com::LogHr(hr);
@@ -190,8 +196,13 @@ void WebProgressNotifier::OnDocumentComplete(IWebBrowser2* browser, BSTR url) {
         HasPotentialJavaScriptRedirect(browser);
   }
 
-  HRESULT hr = webnavigation_events_funnel().OnCompleted(
-      tab_handle_, url, frame_info->frame_id, base::Time::Now());
+  HRESULT hr = E_POINTER;
+  WebNavigationEventsFunnel* funnel = webnavigation_events_funnel();
+  DCHECK(funnel != NULL);
+  if (funnel) {
+    hr = funnel->OnCompleted(tab_handle_, url, frame_info->frame_id,
+                            base::Time::Now());
+  }
   DCHECK(SUCCEEDED(hr)) << "Failed to fire the webNavigation.onCompleted event "
                         << com::LogHr(hr);
 }
@@ -230,11 +241,16 @@ void WebProgressNotifier::HandleNavigateComplete(
     }
   }
 
-  HRESULT hr = webnavigation_events_funnel().OnCommitted(
+  HRESULT hr = E_POINTER;
+  WebNavigationEventsFunnel* funnel = webnavigation_events_funnel();
+  DCHECK(funnel != NULL);
+  if (funnel) {
+    hr = funnel->OnCommitted(
       tab_handle_, url, frame_info->frame_id,
       PageTransition::CoreTransitionString(frame_info->transition_type),
       TransitionQualifiersString(frame_info->transition_qualifiers).c_str(),
       timestamp);
+  }
   DCHECK(SUCCEEDED(hr)) << "Failed to fire the webNavigation.onCommitted event "
                         << com::LogHr(hr);
 
@@ -254,8 +270,13 @@ void WebProgressNotifier::OnNavigateError(IWebBrowser2* browser, BSTR url,
   if (!GetFrameInfo(browser, &frame_info))
     return;
 
-  HRESULT hr = webnavigation_events_funnel().OnErrorOccurred(
-      tab_handle_, url, frame_info->frame_id, CComBSTR(L""), base::Time::Now());
+  HRESULT hr = E_POINTER;
+  WebNavigationEventsFunnel* funnel = webnavigation_events_funnel();
+  DCHECK(funnel != NULL);
+  if (funnel) {
+    hr = funnel->OnErrorOccurred(tab_handle_, url,
+        frame_info->frame_id, CComBSTR(L""), base::Time::Now());
+  }
   DCHECK(SUCCEEDED(hr))
       << "Failed to fire the webNavigation.onErrorOccurred event "
       << com::LogHr(hr);
@@ -268,8 +289,13 @@ void WebProgressNotifier::OnNewWindow(BSTR url_context, BSTR url) {
   if (FilterOutWebBrowserEvent(NULL, FilteringInfo::NEW_WINDOW))
     return;
 
-  HRESULT hr = webnavigation_events_funnel().OnBeforeRetarget(
-      tab_handle_, url_context, url, base::Time::Now());
+  HRESULT hr = E_POINTER;
+  WebNavigationEventsFunnel* funnel = webnavigation_events_funnel();
+  DCHECK(funnel != NULL);
+  if (funnel) {
+    hr = funnel->OnBeforeRetarget(tab_handle_, url_context, url,
+                                 base::Time::Now());
+  }
   DCHECK(SUCCEEDED(hr))
       << "Failed to fire the webNavigation.onBeforeRetarget event "
       << com::LogHr(hr);
@@ -303,6 +329,19 @@ void WebProgressNotifier::OnHandleMessage(
       break;
     }
   }
+}
+
+WebNavigationEventsFunnel* WebProgressNotifier::webnavigation_events_funnel() {
+  if (!webnavigation_events_funnel_.get())
+    webnavigation_events_funnel_.reset(new WebNavigationEventsFunnel());
+  return webnavigation_events_funnel_.get();
+}
+
+WebRequestNotifier* WebProgressNotifier::webrequest_notifier() {
+  if (cached_webrequest_notifier_ == NULL) {
+    cached_webrequest_notifier_ = ProductionWebRequestNotifier::get();
+  }
+  return cached_webrequest_notifier_;
 }
 
 WindowMessageSource* WebProgressNotifier::CreateWindowMessageSource() {

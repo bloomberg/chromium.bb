@@ -76,12 +76,12 @@ void ApiDispatcher::HandleApiRequest(BSTR message_text, BSTR* response) {
   invocation->Execute(*args_list, request_id);
 }
 
-void ApiDispatcher::FireEvent(BSTR event_name, BSTR event_args) {
+void ApiDispatcher::FireEvent(const char* event_name, const char* event_args) {
   DCHECK(IsRunningInSingleThread());
   DLOG(INFO) << "ApiDispatcher::FireEvent. " << event_name << " - " <<
       event_args;
-  std::string event_args_str(CW2A(event_args).m_psz);
-  std::string event_name_str(CW2A(event_name).m_psz);
+  std::string event_args_str(event_args);
+  std::string event_name_str(event_name);
   // Start by going through the permanent event handlers map.
   PermanentEventHandlersMap::const_iterator iter =
       permanent_event_handlers_.find(event_name_str);

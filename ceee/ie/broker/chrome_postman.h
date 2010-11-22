@@ -43,7 +43,7 @@ class ChromePostman
   virtual void PostMessage(BSTR message, BSTR target);
 
   // This posts a tasks to the Api Invocation thread to fire the given event.
-  virtual void FireEvent(BSTR event_name, BSTR event_args);
+  virtual void FireEvent(const char* event_name, const char* event_args);
 
   // This creates both an STA and an MTA threads. We must make sure we only call
   // Chrome Frame from this STA. And since we can't block Chrome Frame we use

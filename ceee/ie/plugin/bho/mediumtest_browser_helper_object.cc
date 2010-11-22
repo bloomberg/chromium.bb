@@ -82,6 +82,15 @@ class TestingBrowserHelperObject
         browser, parent_browser, this, IID_IFrameEventHandler, handler);
   }
 
+  // Overrides original implementation to suppress calls to broker.
+  WebProgressNotifier* CreateWebProgressNotifier() {
+    scoped_ptr<WebProgressNotifier> web_progress_notifier(
+        new TestingWebProgressNotifier());
+    HRESULT hr = web_progress_notifier->Initialize(this, tab_window_,
+                                                   web_browser_);
+    return SUCCEEDED(hr) ? web_progress_notifier.release() : NULL;
+  }
+
   virtual TabEventsFunnel& tab_events_funnel() {
     return mock_tab_events_funnel_;
   }
@@ -214,6 +223,23 @@ class TestingBrowserHelperObject
   CComPtr<ICeeeBrokerRegistrar> broker_keeper_;
 
  private:
+  class TestingWebProgressNotifier : public WebProgressNotifier {
+   public:
+    class TesingNavigationEventsFunne : public WebNavigationEventsFunnel {
+     public:
+      HRESULT SendEventToBroker(const char*, const char*) {
+        return S_OK;
+      }
+    };
+
+    virtual WebNavigationEventsFunnel* webnavigation_events_funnel() {
+      if (!webnavigation_events_funnel_.get())
+        webnavigation_events_funnel_.reset(new TesingNavigationEventsFunne());
+
+      return webnavigation_events_funnel_.get();
+    }
+  };
+
   MockChromeFrameHost* mock_chrome_frame_host_;
   StrictMock<testing::MockTabEventsFunnel> mock_tab_events_funnel_;
 };

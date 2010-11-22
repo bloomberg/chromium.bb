@@ -15,14 +15,6 @@
 
 namespace ceee_module_util {
 
-void AddRefModuleWorkerThread();
-void ReleaseModuleWorkerThread();
-
-// Fires an event to the broker, so that the call can be made with an
-// instance of a broker proxy that was CoCreated in the worker thread.
-void FireEventToBroker(const std::string& event_name,
-                       const std::string& event_args);
-
 void Lock();
 void Unlock();
 

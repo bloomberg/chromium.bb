@@ -14,10 +14,11 @@
 
 #include "base/scoped_ptr.h"
 #include "ceee/ie/plugin/bho/web_browser_events_source.h"
-#include "ceee/ie/plugin/bho/webnavigation_events_funnel.h"
 #include "ceee/ie/plugin/bho/webrequest_notifier.h"
 #include "ceee/ie/plugin/bho/window_message_source.h"
 #include "chrome/common/page_transition_types.h"
+
+class WebNavigationEventsFunnel;
 
 // WebProgressNotifier sends to the Broker various Web progress events,
 // including Web page navigation events and HTTP request/response events.
@@ -199,17 +200,10 @@ class WebProgressNotifier : public WebBrowserEventsSource::Sink,
   };
 
   // Accessor so that we can mock it in unit tests.
-  virtual WebNavigationEventsFunnel& webnavigation_events_funnel() {
-    return webnavigation_events_funnel_;
-  }
+  virtual WebNavigationEventsFunnel* webnavigation_events_funnel();
 
   // Accessor so that we can mock WebRequestNotifier in unit tests.
-  virtual WebRequestNotifier* webrequest_notifier() {
-    if (cached_webrequest_notifier_ == NULL) {
-      cached_webrequest_notifier_ = ProductionWebRequestNotifier::get();
-    }
-    return cached_webrequest_notifier_;
-  }
+  virtual WebRequestNotifier* webrequest_notifier();
 
   // Unit testing seems to create a WindowMessageSource instance.
   virtual WindowMessageSource* CreateWindowMessageSource();
@@ -297,7 +291,7 @@ class WebProgressNotifier : public WebBrowserEventsSource::Sink,
   scoped_ptr<WindowMessageSource> window_message_source_;
 
   // The funnel for sending webNavigation events to the broker.
-  WebNavigationEventsFunnel webnavigation_events_funnel_;
+  scoped_ptr<WebNavigationEventsFunnel> webnavigation_events_funnel_;
 
   // Information related to the main frame.
   FrameInfo main_frame_info_;

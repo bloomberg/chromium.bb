@@ -113,8 +113,7 @@ HRESULT WindowEventsFunnel::SendEvent(const char* event_name,
   }
 
   DCHECK(ChromePostman::GetInstance() != NULL);
-  ChromePostman::GetInstance()->FireEvent(CComBSTR(event_name),
-                                          CComBSTR(event_args_str.c_str()));
+  ChromePostman::GetInstance()->FireEvent(event_name, event_args_str.c_str());
   return S_OK;
 }
 

@@ -65,14 +65,14 @@ TEST(WindowEventsFunnelTest, SendEvent) {
 
   class MockChromePostman : public ChromePostman {
    public:
-    MOCK_METHOD2(FireEvent, void(BSTR, BSTR));
+    MOCK_METHOD2(FireEvent, void(const char*, const char*));
   };
   // Simply instantiating the postman will register it as the
   // one and only singleton to use all the time.
   CComObjectStackEx<testing::StrictMock<MockChromePostman>> postman;
   EXPECT_CALL(postman, FireEvent(
-      StrEq(CComBSTR(kEventName).m_str),
-      StrEq(CComBSTR(event_args_str.c_str()).m_str))).Times(1);
+      StrEq(kEventName),
+      StrEq(event_args_str.c_str()))).Times(1);
   EXPECT_HRESULT_SUCCEEDED(events_funnel.CallSendEvent(kEventName, event_args));
 }
 
