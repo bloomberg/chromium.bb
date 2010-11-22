@@ -5981,11 +5981,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUMMARY_GONE" desc="Summary of the error page when the server returns a 410.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> no longer exists.
       </message>
-      <message name="IDS_ERRORPAGES_DETAILS_GONE" desc="Details in the error page when a server returns a 403.">
-        The requested resource no longer exists, and there is forwarding address.  This is expected to be a permanent condition.
+      <message name="IDS_ERRORPAGES_DETAILS_GONE" desc="Details in the error page when a server returns a 410.">
+        The requested resource no longer exists, and there is no forwarding address.  This is expected to be a permanent condition.
       </message>
 
-      <message name="IDS_ERRORPAGES_HEADING_HTTP_SERVER_ERROR" desc="Heading in the error page for 5xx errors.">
+      <message name="IDS_ERRORPAGES_HEADING_HTTP_SERVER_ERROR" desc="Heading in the error page for HTTP 5xx errors, which are considered to be server side errors.">
         Server error
       </message>
 
@@ -5994,7 +5994,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         It may be down for maintenance or configured incorrectly.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_INTERNAL_SERVER_ERROR" desc="The error message displayed when the server returns a 500.">
-        As unexpected condition was encountered while the server was attempting to fulfill the request.
+        An unexpected condition was encountered while the server was attempting to fulfill the request.
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE" desc="Summary in the error page when the server returns a 501 or 505.">
