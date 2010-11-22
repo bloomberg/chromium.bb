@@ -38,7 +38,7 @@ PrinterJobHandler::PrinterJobHandler(
       job_handler_message_loop_proxy_(
           base::MessageLoopProxy::CreateForCurrentThread()),
       shutting_down_(false),
-      server_job_available_(false),
+      job_check_pending_(false),
       printer_update_pending_(true),
       printer_delete_pending_(false),
       task_in_progress_(false) {
@@ -50,7 +50,7 @@ bool PrinterJobHandler::Initialize() {
     printer_watcher_ = print_system_->CreatePrinterWatcher(
         printer_info_.printer_name);
     printer_watcher_->StartWatching(this);
-    NotifyJobAvailable();
+    CheckForJobs(kJobFetchReasonStartup);
   } else {
     // This printer does not exist any more. Delete it from the server.
     OnPrinterDeleted();
@@ -97,16 +97,22 @@ void PrinterJobHandler::Start() {
         printer_update_pending_ = false;
         task_in_progress_ = UpdatePrinterInfo();
       }
-      if (!task_in_progress_ && server_job_available_) {
+      if (!task_in_progress_ && job_check_pending_) {
         task_in_progress_ = true;
-        server_job_available_ = false;
+        job_check_pending_ = false;
         // We need to fetch any pending jobs for this printer
         SetNextJSONHandler(&PrinterJobHandler::HandleJobMetadataResponse);
         request_ = new CloudPrintURLFetcher;
         request_->StartGetRequest(
             CloudPrintHelpers::GetUrlForJobFetch(
-                cloud_print_server_url_, printer_info_cloud_.printer_id),
+                cloud_print_server_url_, printer_info_cloud_.printer_id,
+                job_fetch_reason_),
             this, auth_token_, kCloudPrintAPIRetryPolicy);
+        last_job_fetch_time_ = base::TimeTicks::Now();
+        VLOG(1) << "Last job fetch time for printer "
+                << printer_info_.printer_name.c_str() << " is "
+                << last_job_fetch_time_.ToInternalValue();
+        job_fetch_reason_.clear();
       }
     }
   }
@@ -123,11 +129,13 @@ void PrinterJobHandler::Stop() {
   }
 }
 
-void PrinterJobHandler::NotifyJobAvailable() {
-  VLOG(1) << "CP_PROXY: Notify job available, id: "
+void PrinterJobHandler::CheckForJobs(const std::string& reason) {
+  VLOG(1) << "CP_PROXY: CheckForJobs, id: "
           << printer_info_cloud_.printer_id
+          << ", reason: " << reason
           << ", task in progress: " << task_in_progress_;
-  server_job_available_ = true;
+  job_fetch_reason_ = reason;
+  job_check_pending_ = true;
   if (!task_in_progress_) {
     MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::Start));
@@ -427,7 +435,7 @@ PrinterJobHandler::HandleSuccessStatusUpdateResponse(
                                    &JobStatusUpdater::UpdateStatus));
   if (succeeded) {
     // Since we just printed successfully, we want to look for more jobs.
-    server_job_available_ = true;
+    CheckForJobs(kJobFetchReasonQueryMore);
   }
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::Stop));
@@ -535,8 +543,8 @@ void PrinterJobHandler::SetNextDataHandler(DataHandler handler) {
 }
 
 bool PrinterJobHandler::HavePendingTasks() {
-  return server_job_available_ || printer_update_pending_ ||
-         printer_delete_pending_;
+  return (job_check_pending_ || printer_update_pending_ ||
+          printer_delete_pending_);
 }
 
 void PrinterJobHandler::FailedFetchingJobData() {

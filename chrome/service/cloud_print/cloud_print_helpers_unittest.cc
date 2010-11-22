@@ -36,8 +36,10 @@ void CheckURLs(const GURL& server_base_url) {
                               expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
-  url = CloudPrintHelpers::GetUrlForJobFetch(server_base_url, "myprinter");
-  expected_url = StringPrintf("%sfetch?printerid=myprinter",
+  url = CloudPrintHelpers::GetUrlForJobFetch(server_base_url,
+                                             "myprinter",
+                                             "nogoodreason");
+  expected_url = StringPrintf("%sfetch?printerid=myprinter&deb=nogoodreason",
                               expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 

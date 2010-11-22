@@ -39,6 +39,10 @@ extern const char kChromeCloudPrintProxyHeader[];
 extern const char kCloudPrintAPIRetryPolicy[];
 extern const char kJobDataRetryPolicy[];
 extern const char kCloudPrintUserAgent[];
+extern const char kJobFetchReasonStartup[];
+extern const char kJobFetchReasonPoll[];
+extern const char kJobFetchReasonNotified[];
+extern const char kJobFetchReasonQueryMore[];
 
 // Max retry count for job data fetch requests.
 const int kJobDataMaxRetryCount = 5;

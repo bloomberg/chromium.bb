@@ -45,3 +45,14 @@ const char kCloudPrintAPIRetryPolicy[] = "cloudprint.google.com/api";
 const char kJobDataRetryPolicy[] = "cloudprint.google.com/jobdata";
 // The string to be appended to the user-agent for cloudprint requests.
 const char kCloudPrintUserAgent[] = "GoogleCloudPrintProxy";
+
+// Reasons for fetching print jobs.
+// Job fetch on proxy startup.
+const char kJobFetchReasonStartup[] = "startup";
+// Job fetch because we are polling.
+const char kJobFetchReasonPoll[] = "poll";
+// Job fetch on being notified by the server.
+const char kJobFetchReasonNotified[] = "notified";
+// Job fetch after a successful print to query for more jobs.
+const char kJobFetchReasonQueryMore[] = "querymore";
+

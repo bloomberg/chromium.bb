@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/thread.h"
+#include "base/time.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
 #include "googleurl/src/gurl.h"
@@ -111,10 +112,12 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                     Delegate* delegate);
   ~PrinterJobHandler();
   bool Initialize();
-  // Notifies the JobHandler that a job is available
-  void NotifyJobAvailable();
+  // Requests a job check. |reason| is the reason for fetching the job. Used
+  // for logging and diagnostc purposes.
+  void CheckForJobs(const std::string& reason);
   // Shutdown everything (the process is exiting).
   void Shutdown();
+  base::TimeTicks last_job_fetch_time() const { return last_job_fetch_time_; }
   // End public interface
 
   // Begin Delegate implementations
@@ -264,8 +267,11 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // We set this flag so as to do nothing in those tasks.
   bool shutting_down_;
 
+  // A string indicating the reason we are fetching jobs from the server
+  // (used to specify the reason in the fetch URL).
+  std::string job_fetch_reason_;
   // Flags that specify various pending server updates
-  bool server_job_available_;
+  bool job_check_pending_;
   bool printer_update_pending_;
   bool printer_delete_pending_;
 
@@ -274,6 +280,8 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   scoped_refptr<cloud_print::PrintSystem::PrinterWatcher> printer_watcher_;
   typedef std::list< scoped_refptr<JobStatusUpdater> > JobStatusUpdaterList;
   JobStatusUpdaterList job_status_updater_list_;
+
+  base::TimeTicks last_job_fetch_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterJobHandler);
 };

@@ -92,11 +92,14 @@ GURL CloudPrintHelpers::GetUrlForPrinterList(const GURL& cloud_print_server_url,
 }
 
 GURL CloudPrintHelpers::GetUrlForJobFetch(const GURL& cloud_print_server_url,
-                                          const std::string& printer_id) {
+                                          const std::string& printer_id,
+                                          const std::string& reason) {
   std::string path(AppendPathToUrl(cloud_print_server_url, "fetch"));
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
-  std::string query = StringPrintf("printerid=%s", printer_id.c_str());
+  std::string query = StringPrintf("printerid=%s&deb=%s",
+                                   printer_id.c_str(),
+                                   reason.c_str());
   replacements.SetQueryStr(query);
   return cloud_print_server_url.ReplaceComponents(replacements);
 }

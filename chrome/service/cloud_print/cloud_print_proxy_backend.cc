@@ -185,6 +185,9 @@ class CloudPrintProxyBackend::Core
   scoped_ptr<notifier::TalkMediator> talk_mediator_;
   // Indicates whether XMPP notifications are currently enabled.
   bool notifications_enabled_;
+  // The time when notifications were enabled. Valid only when
+  // notifications_enabled_ is true.
+  base::TimeTicks notifications_enabled_since_;
   // Indicates whether a task to poll for jobs has been scheduled.
   bool job_poll_scheduled_;
   // The channel we are interested in receiving push notifications for.
@@ -418,8 +421,8 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
   // Important to delete the TalkMediator on this thread.
   talk_mediator_.reset();
   notifications_enabled_ = false;
+  notifications_enabled_since_ = base::TimeTicks();
   request_ = NULL;
-  MessageLoop::current()->QuitNow();
 }
 
 void CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters(
@@ -529,7 +532,7 @@ void CloudPrintProxyBackend::Core::HandlePrinterNotification(
   VLOG(1) << "CP_PROXY: Handle printer notification, id: " << printer_id;
   JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
   if (index != job_handler_map_.end())
-    index->second->NotifyJobAvailable();
+    index->second->CheckForJobs(kJobFetchReasonNotified);
 }
 
 void CloudPrintProxyBackend::Core::PollForJobs() {
@@ -537,7 +540,13 @@ void CloudPrintProxyBackend::Core::PollForJobs() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   for (JobHandlerMap::iterator index = job_handler_map_.begin();
        index != job_handler_map_.end(); index++) {
-    index->second->NotifyJobAvailable();
+    // If notifications are on, then we should poll for this printer only if
+    // the last time it fetched jobs was before notifications were last enabled.
+    bool should_poll =
+        !notifications_enabled_ ||
+        (index->second->last_job_fetch_time() <= notifications_enabled_since_);
+    if (should_poll)
+      index->second->CheckForJobs(kJobFetchReasonPoll);
   }
   job_poll_scheduled_ = false;
   // If we don't have notifications, poll again after a while.
@@ -724,18 +733,28 @@ bool CloudPrintProxyBackend::Core::RemovePrinterFromList(
 void CloudPrintProxyBackend::Core::OnNotificationStateChange(
     bool notification_enabled) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  bool previously_enabled = notifications_enabled_;
+  bool state_changed = (notification_enabled != notifications_enabled_);
   notifications_enabled_ = notification_enabled;
-  // If we lost notifications, we want to schedule a job poll. Also if
-  // notifications just got re-enabled, we want to poll once for jobs we might
-  // have missed when we were dark.
+  if (notifications_enabled_) {
+    notifications_enabled_since_ = base::TimeTicks::Now();
+    VLOG(1) << "Notifications for proxy " << proxy_id_ << " were enabled at "
+            << notifications_enabled_since_.ToInternalValue();
+  } else {
+    VLOG(1) << "Notifications for proxy " << proxy_id_ << " disabled.";
+    notifications_enabled_since_ = base::TimeTicks();
+  }
+  // A state change means one of two cases.
+  // Case 1: We just lost notifications. This this case we want to schedule a
+  // job poll.
+  // Case 2: Notifications just got re-enabled. In this case we want to schedule
+  // a poll once for jobs we might have missed when we were dark. In reality
+  // this is only needed when notifications get enabled for the first time. In
+  // all other cases there would already be a scheduled task to poll in the
+  // queue.
   // Note that ScheduleJobPoll will not schedule again if a job poll task is
   // already scheduled.
-  if (!notifications_enabled_) {
+  if (state_changed)
     ScheduleJobPoll();
-  } else if (!previously_enabled) {
-    PollForJobs();
-  }
 }
 
 
