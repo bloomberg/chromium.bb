@@ -449,33 +449,33 @@ def ValidateTestSuiteNames(suite_name, node_name):
 
   # Prevent a silent failiure - strings are iterable!
   if not isinstance(suite_name, (list, tuple)):
-    raise Exception, ("Test suites for %s should be specified as a list, " +
-      "not as a %s: %s") % (node_name, type(suite_name).__name__,
-      repr(suite_name))
+    raise Exception("Test suites for %s should be specified as a list, "
+      "not as a %s: %s" % (node_name, type(suite_name).__name__,
+      repr(suite_name)))
 
   if not suite_name:
-    raise Exception, ("No test suites are specified for %s. Put the test in " +
-      "'broken_tests' if there's a known issue and you don't want it to " +
-      "run.") % node_name
+    raise Exception("No test suites are specified for %s. Put the test in "
+      "'broken_tests' if there's a known issue and you don't want it to "
+      "run" % (node_name,))
 
   if 'broken_tests' in suite_name and len(suite_name) != 1:
-    raise Exception, ("'broken_tests' is a special test suite - if you're " +
-      "adding a test to it, that test (%s) should not be in any other " +
-      "suite.") % node_name
+    raise Exception("'broken_tests' is a special test suite - if you're "
+      "adding a test to it, that test (%s) should not be in any other "
+      "suite" % (node_name,))
 
   # Make sure each test is in at least one test suite we know will run
   # 'broken_tests' is where you put tests you deliberately do not want to run
   major_suites = set(suite_name).intersection(MAJOR_TEST_SUITES)
   if not major_suites:
-    raise Exception, ("None of the test suites %s for %s are run on a " +
-    "regular basis.") % (repr(suite_name), node_name)
+    raise Exception("None of the test suites %s for %s are run on a "
+    "regular basis" % (repr(suite_name), node_name))
 
   # Make sure a wierd test suite hasn't been inadvertantly specified
   for s in suite_name:
     if s not in ACCEPTABLE_TEST_SUITES:
-      raise Exception, ("\"%s\" is not a known test suite. Either this is " +
-      "a typo for %s, or it should be added to ACCEPTABLE_TEST_SUITES in " +
-      "SConstruct.") % (s, node_name)
+      raise Exception("\"%s\" is not a known test suite. Either this is "
+      "a typo for %s, or it should be added to ACCEPTABLE_TEST_SUITES in "
+      "SConstruct" % (s, node_name))
 
 def IsBrokenTest(suite_name):
   return len(suite_name) == 1 and 'broken_tests' == suite_name[0]

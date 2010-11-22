@@ -18,11 +18,11 @@ def GetAssemblerFile(env):
     elif env['BUILD_SUBARCH'] == '64':
       return 'sandboxed_x86_64.S'
     else:
-      raise Exception, 'unknown x86 subarchitecture'
+      raise Exception('unknown x86 subarchitecture')
   elif env['BUILD_ARCHITECTURE'] == 'arm':
     return 'sandboxed_arm.S'
   else:
-    raise Exception, 'unknown architecture'
+    raise Exception('unknown architecture')
 
 asm_env = env.Clone()
 if ARGUMENTS.get('bitcode'):

@@ -42,7 +42,7 @@ elif env['TARGET_ARCHITECTURE'] == 'arm':
                        '/nacl_text_pad_test.S')
   bundle_size = 16
 else:
-  raise Exception, 'unknown architecture'
+  raise Exception('unknown architecture')
 
 def NewAsmEnv(env, *alist, **kwarg):
   asm_env = env.Clone()
@@ -66,14 +66,14 @@ def NewAsmEnv(env, *alist, **kwarg):
                             ' -o ${TARGET} ${SOURCES}' +
                             elf_patcher_addenda)
     else:
-      raise Exception, 'new subarchtecture for x86?!?'
+      raise Exception('new subarchtecture for x86?!?')
   elif env['TARGET_ARCHITECTURE'] == 'arm':
     asm_env['LINKCOM'] = ('${LD} --native-client -e _start -Ttext 0x20000' +
                           ' -nostdlib -static' +
                           ' ${RO_START} ${RW_START} -o ${TARGET} ${SOURCES}' +
                           elf_patcher_addenda)
   else:
-    raise Exception, 'unknown architecture'
+    raise Exception('unknown architecture')
 
   asm_env.Append(CPPDEFINES = [
                      ['NACL_BLOCK_SHIFT', 5],

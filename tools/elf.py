@@ -345,11 +345,11 @@ class Elf:
     self.elf_str = elf_str
 
     if elf_str[:len(ehdr_ident_mag)] != ehdr_ident_mag:
-      raise ElfException, 'bad ELF ident string'
+      raise ElfException('bad ELF ident string')
     elf_class = ord(elf_str[ehdr_ident['class']])
     if (elf_class > len(ehdr_ident_class) or
         ehdr_ident_class[elf_class] is None):
-      raise ElfException, 'bad ELF class'
+      raise ElfException('bad ELF class')
     self.wordsize = ehdr_ident_class[elf_class]
     ehdr_format = ehdr_format_map[self.wordsize]
 
@@ -358,7 +358,7 @@ class Elf:
 
     if self.ehdr.phentsize < struct.calcsize(
         phdr_format_map[self.wordsize]):
-      raise ElfException, 'program header size too small'
+      raise ElfException('program header size too small')
 
   def PhdrList(self):
     pos = self.ehdr.phoff

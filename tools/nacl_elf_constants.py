@@ -28,5 +28,5 @@ def GetNaClElfConstants(header_file):
         results[ix] = int(m.group(1), 0)
         continue
   if -1 in results:
-    raise RuntimeError, 'Could not parse header file %s' % header_file
+    raise RuntimeError('Could not parse header file %s' % header_file)
   return dict(zip(symbols, results))
