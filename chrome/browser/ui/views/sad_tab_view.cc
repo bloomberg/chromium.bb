@@ -31,6 +31,15 @@ static const SkColor kLinkColor = SK_ColorWHITE;
 static const SkColor kBackgroundColor = SkColorSetRGB(35, 48, 64);
 static const SkColor kBackgroundEndColor = SkColorSetRGB(35, 48, 64);
 
+// Font size correction.
+#if defined(CROS_FONTS_USING_BCI)
+static const int kTitleFontSizeDelta = 1;
+static const int kMessageFontSizeDelta = 0;
+#else
+static const int kTitleFontSizeDelta = 2;
+static const int kMessageFontSizeDelta = 1;
+#endif
+
 // static
 SkBitmap* SadTabView::sad_tab_bitmap_ = NULL;
 gfx::Font* SadTabView::title_font_ = NULL;
@@ -134,9 +143,10 @@ void SadTabView::InitClass() {
   if (!initialized) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     title_font_ = new gfx::Font(
-        rb.GetFont(ResourceBundle::BaseFont).DeriveFont(2, gfx::Font::BOLD));
+        rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kTitleFontSizeDelta,
+                                                        gfx::Font::BOLD));
     message_font_ = new gfx::Font(
-        rb.GetFont(ResourceBundle::BaseFont).DeriveFont(1));
+        rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kMessageFontSizeDelta));
     sad_tab_bitmap_ = rb.GetBitmapNamed(IDR_SAD_TAB);
 
     title_ = l10n_util::GetString(IDS_SAD_TAB_TITLE);

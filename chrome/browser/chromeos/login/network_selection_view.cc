@@ -60,9 +60,6 @@ const int kPaddingColumnWidth = 55;
 const int kMediumPaddingColumnWidth = 20;
 const int kControlPaddingRow = 15;
 
-// Size to add to the welcome title font.
-const int kWelcomeTitleFontDelta = 5;
-
 // Fixed size for language/keyboard/network controls height.
 const int kSelectionBoxHeight = 29;
 

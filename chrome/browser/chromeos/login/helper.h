@@ -42,7 +42,7 @@ views::Painter* CreateBackgroundPainter();
 // |size| is not empty. Otherwise the whole monitor is occupied.
 gfx::Rect CalculateScreenBounds(const gfx::Size& size);
 
-// Corrects font size for NativeButton control.
+// Corrects font size for Label control.
 void CorrectLabelFontSize(views::Label* label);
 
 // Corrects font size for MenuButton control.
@@ -110,8 +110,16 @@ class WideButton : public views::NativeButton {
 
 }  // namespace login
 
-// Font size correction in points for login/oobe textfields/buttons/title.
+// Font size correction in points for login/oobe controls.
+#if defined(CROS_FONTS_USING_BCI)
+const int kFontSizeCorrectionDelta = 1;
+const int kUnselectedUsernameFontDelta = 0;
+const int kWelcomeTitleFontDelta = 5;
+#else
 const int kFontSizeCorrectionDelta = 2;
+const int kUnselectedUsernameFontDelta = 1;
+const int kWelcomeTitleFontDelta = 5;
+#endif
 
 // New pod sizes.
 const int kNewUserPodFullWidth = 372;

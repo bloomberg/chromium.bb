@@ -47,10 +47,11 @@ const int kUserNameGap = 4;
 
 // Approximate height of controls window, this constant is used in new user
 // case to make border window size close to existing users.
+#if defined(CROS_FONTS_USING_BCI)
+const int kControlsHeight = 31;
+#else
 const int kControlsHeight = 28;
-
-// Delta for the unselected username font.
-const int kUnselectedUsernameFontDelta = 1;
+#endif
 
 // Widget that notifies window manager about clicking on itself.
 // Doesn't send anything if user is selected.

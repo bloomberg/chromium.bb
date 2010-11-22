@@ -25,6 +25,12 @@ PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
   return NULL;
 }
 
+#if defined(CROS_FONTS_USING_BCI)
+const int kFontSizeDelta = 0;
+#else
+const int kFontSizeDelta = 1;
+#endif
+
 }  // namespace
 
 namespace chromeos {
@@ -42,7 +48,7 @@ InputMethodMenuButton::InputMethodMenuButton(StatusAreaHost* host)
   set_border(NULL);
   set_use_menu_button_paint(true);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(1));
+      ResourceBundle::BaseFont).DeriveFont(kFontSizeDelta));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
   SetDisabledColor(0x00FFFFFF);  // White with 00% Alpha (invisible)
   SetShowMultipleIconStates(false);

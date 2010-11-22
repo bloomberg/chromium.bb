@@ -121,11 +121,11 @@ const int kIconVerticalPadding = 2;
 const int kTextVerticalPadding = 3;
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
-#if !defined(OS_CHROMEOS)
-const int kEditFontAdjust = -1;
-#else
+#if defined(OS_CHROMEOS) && !defined(CROS_FONTS_USING_BCI)
 // Don't adjust font on chromeos as it becomes too small.
 const int kEditFontAdjust = 0;
+#else
+const int kEditFontAdjust = -1;
 #endif
 
 // Horizontal padding between the buttons on the opt in promo.

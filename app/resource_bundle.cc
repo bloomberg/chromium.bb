@@ -13,6 +13,21 @@
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace {
+
+// Font sizes relative to base font.
+#if defined(OS_CHROMEOS) && defined(CROS_FONTS_USING_BCI)
+const int kSmallFontSizeDelta = -3;
+const int kMediumFontSizeDelta = 2;
+const int kLargeFontSizeDelta = 7;
+#else
+const int kSmallFontSizeDelta = -2;
+const int kMediumFontSizeDelta = 3;
+const int kLargeFontSizeDelta = 8;
+#endif
+
+}  // namespace
+
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 
 /* static */
@@ -175,17 +190,18 @@ void ResourceBundle::LoadFontsIfNecessary() {
         base_font_->DeriveFont(0, base_font_->GetStyle() | gfx::Font::BOLD);
 
     small_font_.reset(new gfx::Font());
-    *small_font_ = base_font_->DeriveFont(-2);
+    *small_font_ = base_font_->DeriveFont(kSmallFontSizeDelta);
 
     medium_font_.reset(new gfx::Font());
-    *medium_font_ = base_font_->DeriveFont(3);
+    *medium_font_ = base_font_->DeriveFont(kMediumFontSizeDelta);
 
     medium_bold_font_.reset(new gfx::Font());
     *medium_bold_font_ =
-        base_font_->DeriveFont(3, base_font_->GetStyle() | gfx::Font::BOLD);
+        base_font_->DeriveFont(kMediumFontSizeDelta,
+                               base_font_->GetStyle() | gfx::Font::BOLD);
 
     large_font_.reset(new gfx::Font());
-    *large_font_ = base_font_->DeriveFont(8);
+    *large_font_ = base_font_->DeriveFont(kLargeFontSizeDelta);
   }
 }
 

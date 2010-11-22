@@ -28,6 +28,13 @@ static const int kTitleTopPadding = 10;
 static const int kTitleContentPadding = 10;
 static const int kHorizontalPadding = 10;
 
+// Title font size correction.
+#if defined(CROS_FONTS_USING_BCI)
+static const int kTitleFontSizeDelta = 0;
+#else
+static const int kTitleFontSizeDelta = 1;
+#endif
+
 }  // namespace
 
 namespace chromeos {
@@ -44,7 +51,8 @@ BubbleFrameView::BubbleFrameView(views::Window* frame,
   if (frame_->GetDelegate()->ShouldShowWindowTitle()) {
     title_ = new views::Label(frame_->GetDelegate()->GetWindowTitle());
     title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    title_->SetFont(title_->font().DeriveFont(1, gfx::Font::BOLD));
+    title_->SetFont(title_->font().DeriveFont(kFontSizeCorrectionDelta,
+                                              gfx::Font::BOLD));
     AddChildView(title_);
   }
 

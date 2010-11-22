@@ -50,6 +50,13 @@ const int kPermissionLabelWidth =
     kPermissionBoxBorderWidth * 2 -
     kPermissionBoxHorizontalPadding * 2;
 
+// Heading font size correction.
+#if defined(CROS_FONTS_USING_BCI)
+const int kHeadingFontSizeDelta = 0;
+#else
+const int kHeadingFontSizeDelta = 1;
+#endif
+
 }  // namespace
 
 
@@ -131,7 +138,8 @@ InstallDialogContent2::InstallDialogContent2(
   heading_ = new views::Label(
       l10n_util::GetStringF(IDS_EXTENSION_INSTALL_PROMPT_HEADING,
                             UTF8ToWide(extension->name())));
-  heading_->SetFont(heading_->font().DeriveFont(1, gfx::Font::BOLD));
+  heading_->SetFont(heading_->font().DeriveFont(kHeadingFontSizeDelta,
+                                                gfx::Font::BOLD));
   heading_->SetMultiLine(true);
   heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(heading_);

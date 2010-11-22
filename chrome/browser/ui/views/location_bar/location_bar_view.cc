@@ -130,7 +130,8 @@ void LocationBarView::Init() {
         ResourceBundle::BaseFont);
   } else {
     // Use a larger version of the system font.
-    font_ = font_.DeriveFont(3);
+    font_ = ResourceBundle::GetSharedInstance().GetFont(
+        ResourceBundle::MediumFont);
   }
 
   // If this makes the font too big, try to make it smaller so it will fit.

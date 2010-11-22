@@ -85,7 +85,7 @@ class InstalledBubbleContent : public views::View,
     heading_ = new views::Label(
         l10n_util::GetStringF(IDS_EXTENSION_INSTALLED_HEADING,
                               UTF8ToWide(extension->name())));
-    heading_->SetFont(font.DeriveFont(3, gfx::Font::NORMAL));
+    heading_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);

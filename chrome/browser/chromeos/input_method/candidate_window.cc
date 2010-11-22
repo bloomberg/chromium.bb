@@ -46,7 +46,11 @@ const SkColor kAnnotationColor = SkColorSetRGB(0x88, 0x88, 0x88);
 
 // We'll use a bigger font size, so Chinese characters are more readable
 // in the candidate window.
-const int kFontSizeDelta = 2;  // Two size bigger.
+#if defined(CROS_FONTS_USING_BCI)
+const int kFontSizeDelta = 1;
+#else
+const int kFontSizeDelta = 2;
+#endif
 
 // The minimum width of candidate labels in the vertical candidate
 // window. We use this value to prevent the candidate window from being
@@ -1264,8 +1268,8 @@ void CandidateWindowController::Impl::OnConnectionChange(
   }
 }
 
-CandidateWindowController::CandidateWindowController() :
-    impl_(new CandidateWindowController::Impl) {
+CandidateWindowController::CandidateWindowController()
+    : impl_(new CandidateWindowController::Impl) {
 }
 
 CandidateWindowController::~CandidateWindowController() {
