@@ -1128,7 +1128,7 @@ void AnimateCALayerFrameFromTo(
   return NO;
 }
 
-- (void)mouseMoved:(NSEvent*)event {
+-(void)selectTileFromMouseEvent:(NSEvent*)event {
   int newIndex = -1;
   CGPoint p = NSPointToCGPoint([event locationInWindow]);
   for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
@@ -1141,7 +1141,14 @@ void AnimateCALayerFrameFromTo(
     [self selectTileAtIndexWithoutAnimation:newIndex];
 }
 
+- (void)mouseMoved:(NSEvent*)event {
+  [self selectTileFromMouseEvent:event];
+}
+
 - (void)mouseDown:(NSEvent*)event {
+  // Just in case the user clicked without ever moving the mouse.
+  [self selectTileFromMouseEvent:event];
+
   [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
 }
 
