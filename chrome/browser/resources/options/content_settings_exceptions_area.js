@@ -343,7 +343,8 @@ cr.define('options.contentSettings', function() {
       this.dataModel = new ArrayDataModel([]);
 
       // Whether the exceptions in this list allow an 'Ask every time' option.
-      this.enableAskOption = (this.contentType == 'plugins');
+      this.enableAskOption = (this.contentType == 'plugins' &&
+                              templateData.enable_click_to_play);
     },
 
     /**

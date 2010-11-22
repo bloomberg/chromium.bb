@@ -255,6 +255,10 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PLUGIN_NOLOAD_RADIO));
   localized_strings->SetString("disable_individual_plugins",
       l10n_util::GetStringUTF16(IDS_PLUGIN_SELECTIVE_DISABLE));
+  localized_strings->SetBoolean("enable_click_to_play",
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClickToPlay));
+
 
   // Pop-ups filter.
   localized_strings->SetString("popups_tab_label",
