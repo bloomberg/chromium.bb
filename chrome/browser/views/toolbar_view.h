@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_VIEWS_TOOLBAR_VIEW_H_
 #pragma once
 
-#include "chrome/browser/ui/views/toolbar_view.h"
+ #include "chrome/browser/ui/views/toolbar_view.h"
 // TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_TOOLBAR_VIEW_H_
-

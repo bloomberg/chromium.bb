@@ -80,6 +80,9 @@ ToolbarView::ToolbarView(Browser* browser)
       back_(NULL),
       forward_(NULL),
       reload_(NULL),
+#if defined(OS_CHROMEOS)
+      feedback_(NULL),
+#endif
       home_(NULL),
       location_bar_(NULL),
       browser_actions_(NULL),
@@ -166,6 +169,16 @@ void ToolbarView::Init(Profile* profile) {
   reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
   reload_->SetID(VIEW_ID_RELOAD_BUTTON);
 
+#if defined(OS_CHROMEOS)
+  feedback_ = new views::ImageButton(this);
+  feedback_->set_tag(IDC_FEEDBACK);
+  feedback_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
+                                       views::Event::EF_MIDDLE_BUTTON_DOWN);
+  feedback_->set_tag(IDC_FEEDBACK);
+  feedback_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_FEEDBACK));
+  feedback_->SetID(VIEW_ID_FEEDBACK_BUTTON);
+#endif
+
   home_ = new views::ImageButton(this);
   home_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
                                      views::Event::EF_MIDDLE_BUTTON_DOWN);
@@ -198,6 +211,9 @@ void ToolbarView::Init(Profile* profile) {
   AddChildView(home_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
+#if defined(OS_CHROMEOS)
+  AddChildView(feedback_);
+#endif
   AddChildView(app_menu_);
 
   location_bar_->Init();
@@ -449,6 +465,9 @@ gfx::Size ToolbarView::GetPreferredSize() {
         (show_home_button_.GetValue() ?
             (home_->GetPreferredSize().width() + kButtonSpacing) : 0) +
         browser_actions_->GetPreferredSize().width() +
+#if defined(OS_CHROMEOS)
+        feedback_->GetPreferredSize().width() + kButtonSpacing +
+#endif
         app_menu_->GetPreferredSize().width() + kEdgeSpacing;
 
     static SkBitmap normal_background;
@@ -514,9 +533,16 @@ void ToolbarView::Layout() {
   }
 
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
+#if defined(OS_CHROMEOS)
+  int feedback_menu_width = feedback_->GetPreferredSize().width() +
+                            kButtonSpacing;
+#endif
   int app_menu_width = app_menu_->GetPreferredSize().width();
   int location_x = home_->x() + home_->width() + kStandardSpacing;
   int available_width = width() - kEdgeSpacing - app_menu_width -
+#if defined(OS_CHROMEOS)
+      feedback_menu_width -
+#endif
       browser_actions_width - location_x;
 
   location_bar_->SetBounds(location_x, child_y, std::max(available_width, 0),
@@ -533,8 +559,15 @@ void ToolbarView::Layout() {
   //                required.
   browser_actions_->Layout();
 
+#if defined(OS_CHROMEOS)
+  feedback_->SetBounds(browser_actions_->x() + browser_actions_width, child_y,
+                       feedback_->GetPreferredSize().width(), child_height);
+  app_menu_->SetBounds(feedback_->x() + feedback_->width() + kButtonSpacing,
+                       child_y, app_menu_width, child_height);
+#else
   app_menu_->SetBounds(browser_actions_->x() + browser_actions_width, child_y,
                        app_menu_width, child_height);
+#endif
 }
 
 void ToolbarView::Paint(gfx::Canvas* canvas) {
@@ -641,6 +674,15 @@ void ToolbarView::LoadImages() {
       tp->GetBitmapNamed(IDR_STOP_P));
   reload_->SetToggledImage(views::CustomButton::BS_DISABLED,
       tp->GetBitmapNamed(IDR_STOP_D));
+
+#if defined(OS_CHROMEOS)
+  feedback_->SetImage(views::CustomButton::BS_NORMAL,
+      tp->GetBitmapNamed(IDR_FEEDBACK));
+  feedback_->SetImage(views::CustomButton::BS_HOT,
+      tp->GetBitmapNamed(IDR_FEEDBACK_H));
+  feedback_->SetImage(views::CustomButton::BS_PUSHED,
+      tp->GetBitmapNamed(IDR_FEEDBACK_P));
+#endif
 
   home_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_HOME));
   home_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_HOME_H));

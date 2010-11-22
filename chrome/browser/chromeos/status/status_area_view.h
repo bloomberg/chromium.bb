@@ -13,7 +13,6 @@
 namespace chromeos {
 
 class ClockMenuButton;
-class FeedbackMenuButton;
 class InputMethodMenuButton;
 class NetworkMenuButton;
 class PowerMenuButton;
@@ -35,7 +34,6 @@ class StatusAreaView : public AccessiblePaneView {
   virtual void ChildPreferredSizeChanged(View* child);
 
   ClockMenuButton* clock_view() { return clock_view_; }
-  FeedbackMenuButton* feedback_view() { return feedback_view_; }
   InputMethodMenuButton* input_method_view() { return input_method_view_; }
   NetworkMenuButton* network_view() { return network_view_; }
   PowerMenuButton* power_view() { return power_view_; }
@@ -44,7 +42,6 @@ class StatusAreaView : public AccessiblePaneView {
   StatusAreaHost* host_;
 
   ClockMenuButton* clock_view_;
-  FeedbackMenuButton* feedback_view_;
   InputMethodMenuButton* input_method_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* power_view_;

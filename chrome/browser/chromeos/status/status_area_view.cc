@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
-#include "chrome/browser/chromeos/status/feedback_menu_button.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/power_menu_button.h"
@@ -22,7 +21,6 @@ const int kSeparation = 1;
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
       clock_view_(NULL),
-      feedback_view_(NULL),
       input_method_view_(NULL),
       network_view_(NULL),
       power_view_(NULL) {
@@ -36,10 +34,6 @@ void StatusAreaView::Init() {
   // InputMethod.
   input_method_view_ = new InputMethodMenuButton(host_);
   AddChildView(input_method_view_);
-
-  // Feedback.
-  feedback_view_ = new FeedbackMenuButton(host_);
-  AddChildView(feedback_view_);
 
   // Network.
   network_view_ = new NetworkMenuButton(host_);
@@ -96,7 +90,6 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
 
 void StatusAreaView::EnableButtons(bool enable) {
   clock_view()->Enable(enable);
-  feedback_view()->Enable(enable);
   input_method_view()->Enable(enable);
   network_view()->Enable(enable);
   power_view()->Enable(enable);
