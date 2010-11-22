@@ -1950,10 +1950,11 @@
    bug_41186
    Memcheck:Addr1
    fun:_ZNK16GtkThemeProvider11UseGtkThemeEv
-   fun:_ZN12browser_sync53_GLOBAL__N__ZN12browser_sync22kCurrentThemeClientTagE14UseSystemThemeEP7Profile
+   fun:_ZN12browser_sync*14UseSystemThemeEP7Profile
    fun:_ZN12browser_sync33GetThemeSpecificsFromCurrentThemeEP7ProfilePN7sync_pb14ThemeSpecificsE
    fun:_ZN12browser_sync44SetCurrentThemeFromThemeSpecificsIfNecessaryERKN7sync_pb14ThemeSpecificsEP7Profile
 }
+
 {
    bug_42389
    Memcheck:Leak
