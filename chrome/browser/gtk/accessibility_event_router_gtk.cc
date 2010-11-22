@@ -219,10 +219,10 @@ void AccessibilityEventRouterGtk::InstallEventListener(
 bool AccessibilityEventRouterGtk::IsPassword(GtkWidget* widget) {
   bool is_password = false;
 #if defined (TOOLKIT_VIEWS)
-  is_password = (GTK_IS_ENTRY(widget) &&
+  is_password = (GTK_IS_VIEWS_ENTRY(widget) &&
                  GTK_VIEWS_ENTRY(widget)->host != NULL &&
                  GTK_VIEWS_ENTRY(widget)->host->IsPassword()) ||
-                (GTK_IS_TEXT_VIEW(widget) &&
+                (GTK_IS_VIEWS_TEXTVIEW(widget) &&
                  GTK_VIEWS_TEXTVIEW(widget)->host != NULL &&
                  GTK_VIEWS_TEXTVIEW(widget)->host->IsPassword());
 #endif
