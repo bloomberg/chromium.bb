@@ -106,7 +106,7 @@ class TabStripModelObserver {
   // window.
   virtual void TabBlockedStateChanged(TabContentsWrapper* contents, int index);
 
-  // The TabStripModel now no longer has any phantom tabs. The implementer may
+  // The TabStripModel now no longer has any tabs. The implementer may
   // use this as a trigger to try and close the window containing the
   // TabStripModel, for example...
   virtual void TabStripEmpty();

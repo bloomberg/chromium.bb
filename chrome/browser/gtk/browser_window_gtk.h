@@ -140,7 +140,6 @@ class BrowserWindowGtk : public BrowserWindow,
                              TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
-  virtual void TabStripEmpty();
 
   // Overridden from ActiveWindowWatcher::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
@@ -152,8 +151,6 @@ class BrowserWindowGtk : public BrowserWindow,
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }
 
   void UpdateDevToolsForContents(TabContents* contents);
-
-  void UpdateUIForContents(TabContents* contents);
 
   void OnBoundsChanged(const gfx::Rect& bounds);
   void OnDebouncedBoundsChanged();
@@ -200,6 +197,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // This should only be called by the bookmark bar itself.
   void BookmarkBarIsFloating(bool is_floating);
 
+  // Returns the tab contents we're currently displaying in the tab contents
+  // container.
+  TabContents* GetDisplayedTabContents();
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Returns whether to draw the content drop shadow on the sides and bottom
@@ -242,7 +243,7 @@ class BrowserWindowGtk : public BrowserWindow,
 
  private:
   // Show or hide the bookmark bar.
-  void MaybeShowBookmarkBar(TabContents* contents, bool animate);
+  void MaybeShowBookmarkBar(bool animate);
 
   // Sets the default size for the window and the the way the user is allowed to
   // resize it.

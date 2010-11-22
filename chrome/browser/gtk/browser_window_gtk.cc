@@ -733,7 +733,7 @@ void BrowserWindowGtk::UpdateTitleBar() {
 }
 
 void BrowserWindowGtk::ShelfVisibilityChanged() {
-  MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
+  MaybeShowBookmarkBar(false);
 }
 
 void BrowserWindowGtk::UpdateDevTools() {
@@ -1109,10 +1109,12 @@ void BrowserWindowGtk::PrepareForInstant() {
 
 void BrowserWindowGtk::ShowInstant(TabContents* preview_contents) {
   contents_container_->SetPreviewContents(preview_contents);
+  MaybeShowBookmarkBar(false);
 }
 
 void BrowserWindowGtk::HideInstant() {
   contents_container_->PopPreviewContents();
+  MaybeShowBookmarkBar(false);
 }
 
 gfx::Rect BrowserWindowGtk::GetInstantBounds() {
@@ -1128,7 +1130,7 @@ void BrowserWindowGtk::Observe(NotificationType type,
                                const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
-      MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), true);
+      MaybeShowBookmarkBar(true);
       break;
 
     case NotificationType::PREF_CHANGED: {
@@ -1183,11 +1185,7 @@ void BrowserWindowGtk::TabSelectedAt(TabContentsWrapper* old_contents,
   // Update all the UI bits.
   UpdateTitleBar();
   UpdateToolbar(new_contents, true);
-  UpdateUIForContents(new_contents->tab_contents());
-}
-
-void BrowserWindowGtk::TabStripEmpty() {
-  UpdateUIForContents(NULL);
+  MaybeShowBookmarkBar(false);
 }
 
 void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
@@ -1218,11 +1216,11 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   }
 }
 
-void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
-                                            bool animate) {
+void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
   if (!IsBookmarkBarSupported())
     return;
 
+  TabContents* contents = GetDisplayedTabContents();
   bool show_bar = false;
 
   if (IsBookmarkBarSupported() && contents) {
@@ -1275,10 +1273,6 @@ void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
         prefs::kDevToolsSplitLocation, divider_offset);
     gtk_widget_hide(devtools_container_->widget());
   }
-}
-
-void BrowserWindowGtk::UpdateUIForContents(TabContents* contents) {
-  MaybeShowBookmarkBar(contents, false);
 }
 
 void BrowserWindowGtk::DestroyBrowser() {
@@ -1452,6 +1446,10 @@ void BrowserWindowGtk::BookmarkBarIsFloating(bool is_floating) {
   // This can be NULL during initialization of the bookmark bar.
   if (bookmark_bar_.get())
     PlaceBookmarkBar(is_floating);
+}
+
+TabContents* BrowserWindowGtk::GetDisplayedTabContents() {
+  return contents_container_->GetVisibleTabContents();
 }
 
 void BrowserWindowGtk::QueueToolbarRedraw() {
@@ -2096,7 +2094,7 @@ void BrowserWindowGtk::ShowSupportedWindowFeatures() {
   }
 
   if (IsBookmarkBarSupported())
-    MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
+    MaybeShowBookmarkBar(false);
 }
 
 void BrowserWindowGtk::HideUnsupportedWindowFeatures() {

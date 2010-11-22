@@ -79,6 +79,10 @@ void TabContentsContainerGtk::SetTabContents(TabContents* tab_contents) {
   }
 }
 
+TabContents* TabContentsContainerGtk::GetVisibleTabContents() {
+  return preview_contents_ ? preview_contents_ : tab_contents_;
+}
+
 void TabContentsContainerGtk::SetPreviewContents(TabContents* preview) {
   if (preview_contents_)
     RemovePreviewContents();
