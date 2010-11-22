@@ -243,17 +243,13 @@ class ContentScriptManagerTest: public testing::Test {
 
     // Register the window object and initialize its globals.
     EXPECT_CALL(*script_host_,
-        RegisterScriptObject(StrEq(L"unsafeWindow"), _, false))
+        RegisterScriptObject(StrEq(L"window"), _, true))
             .WillOnce(Return(S_OK));
-    EXPECT_CALL(*script_host_, RunExpression(StrEq(L"ceee.initGlobals_"), _))
-        .WillOnce(DoAll(
-            CopyVariantToArgument<1>(CComVariant(function_keeper_)),
-            Return(S_OK)));
 
     // And expect three invocations.
     // TODO(siggi@chromium.org): be more specific?
     EXPECT_CALL(*function_, Invoke(_, _, _, _, _, _, _, _))
-        .Times(3).WillRepeatedly(Return(S_OK));
+        .Times(2).WillRepeatedly(Return(S_OK));
   }
 
   void ExpectCreateScriptHost(TestingContentScriptManager* manager) {

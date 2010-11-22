@@ -181,10 +181,7 @@ HRESULT ContentScriptManager::InitializeScriptHost(
   hr = document->get_parentWindow(&window);
   if (FAILED(hr))
     return hr;
-  hr = script_host->RegisterScriptObject(L"unsafeWindow", window, false);
-  if (FAILED(hr))
-    return hr;
-  hr = InvokeNamedFunction(script_host, L"ceee.initGlobals_", NULL, 0);
+  hr = script_host->RegisterScriptObject(L"window", window, true);
 
   return hr;
 }
