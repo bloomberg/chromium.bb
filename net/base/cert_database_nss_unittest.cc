@@ -14,6 +14,7 @@
 #include "base/nss_util_internal.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/cert_database.h"

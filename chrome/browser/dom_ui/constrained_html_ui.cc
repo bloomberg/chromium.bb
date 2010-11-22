@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
 
+#include "base/singleton.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

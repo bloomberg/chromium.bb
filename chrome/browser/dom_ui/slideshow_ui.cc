@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/thread.h"

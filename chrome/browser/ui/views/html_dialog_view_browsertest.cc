@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/message_loop.h"
+#include "base/singleton.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents_wrapper.h"
 
+#include "base/singleton.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

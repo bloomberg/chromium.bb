@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "net/base/x509_cert_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -249,8 +250,6 @@ TEST(X509TypesTest, Matching) {
   EXPECT_FALSE(spamco.Matches(bogus));
 }
 
-#if defined(OS_MACOSX)  // ParseDistinguishedName not implemented for Win/Linux
-
 TEST(X509TypesTest, ParseDNVerisign) {
   CertPrincipal verisign;
   EXPECT_TRUE(verisign.ParseDistinguishedName(VerisignDN, sizeof(VerisignDN)));
@@ -339,6 +338,4 @@ TEST(X509TypesTest, ParseDNEntrust) {
             entrust.organization_unit_names[1]);
 }
 
-#endif
-
-}
+}  // namespace net
