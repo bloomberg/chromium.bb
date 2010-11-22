@@ -243,15 +243,12 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
     }
   }
 
-  // TODO(tony): We're not ready for this yet.  If we include this plugin
-  // path, we end up loading both copies of TestNetscapePlugin.  Once we
-  // deprecate the old plugin, we can add this path.
   // Add <app bundle's parent dir>/plugins to the plugin path so we can load
   // test plugins.
-  //FilePath plugins_dir;
-  //PathService::Get(base::DIR_EXE, &plugins_dir);
-  //plugins_dir = plugins_dir.AppendASCII("../../../plugins");
-  //NPAPI::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
+  FilePath plugins_dir;
+  PathService::Get(base::DIR_EXE, &plugins_dir);
+  plugins_dir = plugins_dir.AppendASCII("../../../plugins");
+  NPAPI::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
 }
 
 NSButton* MakeTestButton(NSRect* rect, NSString* title, NSView* parent) {
