@@ -48,6 +48,10 @@ class ExtensionDataDeleter
   // thread.
   void DeleteLocalStorageOnWebkitThread();
 
+  // Deletes indexed db files for the extension. May only be called on the
+  // webkit thread.
+  void DeleteIndexedDBOnWebkitThread();
+
   // The database context for deleting the database.
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
 

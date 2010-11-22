@@ -38,6 +38,12 @@ class IndexedDBContext {
   static void ClearLocalState(const FilePath& profile_path,
                               const char* url_scheme_to_be_skipped);
 
+  // Deletes a single indexed db file.
+  void DeleteIndexedDBFile(const FilePath& file_path);
+
+  // Deletes all indexed db files for the given origin.
+  void DeleteIndexedDBForOrigin(const string16& origin_id);
+
  private:
   scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
 

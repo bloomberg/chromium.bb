@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
@@ -65,4 +66,19 @@ void IndexedDBContext::ClearLocalState(const FilePath& profile_path,
     if (!EqualsASCII(origin.protocol(), url_scheme_to_be_skipped))
       file_util::Delete(file_path, false);
   }
+}
+
+void IndexedDBContext::DeleteIndexedDBFile(const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  // TODO(pastarmovj): Close all database connections that use that file.
+  file_util::Delete(file_path, false);
+}
+
+void IndexedDBContext::DeleteIndexedDBForOrigin(const string16& origin_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  // TODO(pastarmovj): Remove this check once we are safe to delete any time.
+  FilePath idb_file = GetIndexedDBFilePath(origin_id);
+  DCHECK_EQ(idb_file.BaseName().value().substr(0, strlen("chrome-extension")),
+            FILE_PATH_LITERAL("chrome-extension"));
+  DeleteIndexedDBFile(GetIndexedDBFilePath(origin_id));
 }
