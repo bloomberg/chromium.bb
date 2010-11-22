@@ -120,9 +120,9 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_FONTSETTINGS_INFO));
   localized_strings->SetString("defaultZoomLevelLabel",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL));
-  localized_strings->SetString("fontSettingsCustomizeFontsButton",
+  localized_strings->SetString("fontSettingsConfigureFontsOnlyButton",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON));
+          IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTSONLY_BUTTON));
   localized_strings->SetString("advancedSectionTitlePrivacy",
       l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY));
   localized_strings->SetString("advancedSectionTitleContent",

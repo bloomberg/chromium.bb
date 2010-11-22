@@ -52,7 +52,7 @@ var OptionsPage = options.OptionsPage;
       $('autoOpenFileTypesResetToDefault').onclick = function(event) {
         chrome.send('autoOpenFileTypesAction');
       };
-      $('fontSettingsCustomizeFontsButton').onclick = function(event) {
+      $('fontSettingsConfigureFontsOnlyButton').onclick = function(event) {
         OptionsPage.showPageByName('fontSettings');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
