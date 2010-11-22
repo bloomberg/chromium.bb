@@ -75,6 +75,12 @@ class BootTimesLoader
   // the identifier BootTime.|marker_name|.
   void AddLoginTimeMarker(const std::string& marker_name, bool send_to_uma);
 
+  // Add a time marker for logout. A timeline will be dumped to
+  // /tmp/logout-times-sent after logout is done. If |send_to_uma| is true
+  // the time between this marker and the last will be sent to UMA with
+  // the identifier ShutdownTime.|marker_name|.
+  void AddLogoutTimeMarker(const std::string& marker_name, bool send_to_uma);
+
   // Records current uptime and disk usage for metrics use.
   // Posts task to file thread.
   // name will be used as part of file names in /tmp.
@@ -97,6 +103,11 @@ class BootTimesLoader
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Writes the logout times to a /tmp/logout-times-sent. Unlike login
+  // times, we manually call this function for logout times, as we cannot
+  // rely on notification service to tell when the logout is done.
+  void WriteLogoutTimes();
 
  private:
   // BootTimesLoader calls into the Backend on the file thread to load
@@ -141,7 +152,10 @@ class BootTimesLoader
   static void RecordStats(
       const std::string& name, const Stats& stats);
   static Stats GetCurrentStats();
-  static void WriteLoginTimes(const std::vector<TimeMarker> login_times);
+  static void WriteTimes(const std::string base_name,
+                         const std::string uma_name,
+                         const std::string uma_prefix,
+                         const std::vector<TimeMarker> login_times);
 
   // Used to hold the stats at main().
   Stats chrome_main_stats_;
@@ -153,6 +167,7 @@ class BootTimesLoader
   bool have_registered_;
 
   std::vector<TimeMarker> login_time_markers_;
+  std::vector<TimeMarker> logout_time_markers_;
 
   DISALLOW_COPY_AND_ASSIGN(BootTimesLoader);
 };

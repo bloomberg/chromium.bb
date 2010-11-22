@@ -22,6 +22,10 @@
 #include "chrome/browser/chrome_browser_application_mac.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/boot_times_loader.h"
+#endif
+
 namespace {
 
 // This object is instantiated when the first Browser object is added to the
@@ -260,6 +264,10 @@ void BrowserList::CloseAllBrowsers() {
     AllBrowsersClosedAndAppExiting();
     return;
   }
+#if defined(OS_CHROMEOS)
+  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
+      "StartedClosingWindows", false);
+#endif
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end();) {
     if (use_post) {

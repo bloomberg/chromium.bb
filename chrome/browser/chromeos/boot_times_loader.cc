@@ -48,14 +48,21 @@ static const char kChromeFirstRender[] = "chrome-first-render";
 // Names of login UMA values.
 static const char kUmaAuthenticate[] = "BootTime.Authenticate";
 static const char kUmaLogin[] = "BootTime.Login";
+static const char kUmaLoginPrefix[] = "BootTime.";
+static const char kUmaLogout[] = "ShutdownTime.Logout";
+static const char kUmaLogoutPrefix[] = "ShutdownTime.";
 
 // Name of file collecting login times.
 static const char kLoginTimes[] = "login-times-sent";
+
+// Name of file collecting logout times.
+static const char kLogoutTimes[] = "logout-times-sent";
 
 BootTimesLoader::BootTimesLoader()
     : backend_(new Backend()),
       have_registered_(false) {
   login_time_markers_.reserve(30);
+  logout_time_markers_.reserve(30);
 }
 
 // static
@@ -202,6 +209,21 @@ void BootTimesLoader::Backend::GetBootTimes(
       GetBootTimesCallback::TupleType(request->handle(), boot_times));
 }
 
+// Appends the given buffer into the file. Returns the number of bytes
+// written, or -1 on error.
+// TODO(satorux): Move this to file_util.
+static int AppendFile(const FilePath& file_path,
+                      const char* data,
+                      int size) {
+  FILE* file = file_util::OpenFile(file_path, "a");
+  if (!file) {
+    return -1;
+  }
+  const int num_bytes_written = fwrite(data, 1, size, file);
+  file_util::CloseFile(file);
+  return num_bytes_written;
+}
+
 static void RecordStatsDelayed(
     const std::string& name,
     const std::string& uptime,
@@ -212,34 +234,34 @@ static void RecordStatsDelayed(
       log_path.Append(FilePath(kUptimePrefix + name));
   const FilePath disk_output = log_path.Append(FilePath(kDiskPrefix + name));
 
-  // Write out the files, ensuring that they don't exist already.
-  if (!file_util::PathExists(uptime_output))
-    file_util::WriteFile(uptime_output, uptime.data(), uptime.size());
-  if (!file_util::PathExists(disk_output))
-    file_util::WriteFile(disk_output, disk.data(), disk.size());
+  // Append numbers to the files.
+  AppendFile(uptime_output, uptime.data(), uptime.size());
+  AppendFile(disk_output, disk.data(), disk.size());
 }
 
 // static
-void BootTimesLoader::WriteLoginTimes(
+void BootTimesLoader::WriteTimes(
+    const std::string base_name,
+    const std::string uma_name,
+    const std::string uma_prefix,
     const std::vector<TimeMarker> login_times) {
   const int kMinTimeMillis = 1;
   const int kMaxTimeMillis = 30000;
   const int kNumBuckets = 100;
-  const char kUmaPrefix[] = "BootTime.";
   const FilePath log_path(kLogPath);
 
   base::Time first = login_times.front().time();
   base::Time last = login_times.back().time();
   base::TimeDelta total = last - first;
   scoped_refptr<base::Histogram>total_hist = base::Histogram::FactoryTimeGet(
-      kUmaLogin,
+      uma_name,
       base::TimeDelta::FromMilliseconds(kMinTimeMillis),
       base::TimeDelta::FromMilliseconds(kMaxTimeMillis),
       kNumBuckets,
       base::Histogram::kUmaTargetedHistogramFlag);
   total_hist->AddTime(total);
   std::string output =
-      base::StringPrintf("%s: %.2f", kUmaLogin, total.InSecondsF());
+      base::StringPrintf("%s: %.2f", uma_name.c_str(), total.InSecondsF());
   base::Time prev = first;
   for (unsigned int i = 0; i < login_times.size(); ++i) {
     TimeMarker tm = login_times[i];
@@ -248,7 +270,7 @@ void BootTimesLoader::WriteLoginTimes(
     std::string name;
 
     if (tm.send_to_uma()) {
-      name = kUmaPrefix + tm.name();
+      name = uma_prefix + tm.name();
       scoped_refptr<base::Histogram>prev_hist = base::Histogram::FactoryTimeGet(
           name,
           base::TimeDelta::FromMilliseconds(kMinTimeMillis),
@@ -268,7 +290,14 @@ void BootTimesLoader::WriteLoginTimes(
     prev = tm.time();
   }
   file_util::WriteFile(
-      log_path.Append(kLoginTimes), output.data(), output.size());
+      log_path.Append(base_name), output.data(), output.size());
+}
+
+void BootTimesLoader::WriteLogoutTimes() {
+  WriteTimes(kLogoutTimes,
+             kUmaLogout,
+             kUmaLogoutPrefix,
+             logout_time_markers_);
 }
 
 void BootTimesLoader::RecordStats(const std::string& name, const Stats& stats) {
@@ -317,6 +346,11 @@ void BootTimesLoader::AddLoginTimeMarker(
   login_time_markers_.push_back(TimeMarker(marker_name, send_to_uma));
 }
 
+void BootTimesLoader::AddLogoutTimeMarker(
+    const std::string& marker_name, bool send_to_uma) {
+  logout_time_markers_.push_back(TimeMarker(marker_name, send_to_uma));
+}
+
 void BootTimesLoader::Observe(
     NotificationType type,
     const NotificationSource& source,
@@ -343,7 +377,13 @@ void BootTimesLoader::Observe(
       // Don't swamp the FILE thread right away.
       BrowserThread::PostDelayedTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableFunction(WriteLoginTimes, login_time_markers_),
+          // This doesn't compile without std::string(...), as
+          // NewRunnableFunction doesn't accept arrays.
+          NewRunnableFunction(WriteTimes,
+                              std::string(kLoginTimes),
+                              std::string(kUmaLogin),
+                              std::string(kUmaLoginPrefix),
+                              login_time_markers_),
           kLoginTimeWriteDelayMs);
       have_registered_ = false;
     } else {

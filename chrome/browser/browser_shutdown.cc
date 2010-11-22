@@ -43,6 +43,10 @@
 #include "chrome/browser/rlz/rlz.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/boot_times_loader.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 
@@ -101,6 +105,10 @@ FilePath GetShutdownMsPath() {
 }
 
 void Shutdown() {
+#if defined(OS_CHROMEOS)
+  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
+      "BrowserShutdownStarted", false);
+#endif
   // During shutdown we will end up some blocking operations.  But the
   // work needs to get done and we're going to wait for them no matter
   // what thread they're on, so don't worry about it slowing down
@@ -162,6 +170,10 @@ void Shutdown() {
   // before calling UninstallJankometer().
   delete g_browser_process;
   g_browser_process = NULL;
+#if defined(OS_CHROMEOS)
+  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("BrowserDeleted",
+                                                        true);
+#endif
 
   // Uninstall Jank-O-Meter here after the IO thread is no longer running.
   UninstallJankometer();

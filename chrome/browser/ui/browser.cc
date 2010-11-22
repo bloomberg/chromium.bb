@@ -130,6 +130,7 @@
 
 #if defined(OS_CHROMEOS)
 #include <gdk/gdk.h>  // For GdkScreen
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
@@ -1462,6 +1463,11 @@ void Browser::Search() {
 void Browser::Exit() {
   UserMetrics::RecordAction(UserMetricsAction("Exit"), profile_);
 #if defined(OS_CHROMEOS)
+  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutStarted", false);
+  // Write /tmp/uptime-logout-started as well.
+  const char kLogoutStarted[] = "logout-started";
+  chromeos::BootTimesLoader::Get()->RecordCurrentStats(kLogoutStarted);
+
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
     return;

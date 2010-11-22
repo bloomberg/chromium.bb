@@ -510,6 +510,10 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
 #elif defined(OS_POSIX)
   MessageLoopForUI::current()->Run();
 #endif
+#if defined(OS_CHROMEOS)
+  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded",
+                                                        true);
+#endif
 
   TRACE_EVENT_END("BrowserMain:MESSAGE_LOOP", 0, "");
 }
@@ -1671,6 +1675,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   ignore_result(browser_process.release());
   browser_shutdown::Shutdown();
 
+#if defined(OS_CHROMEOS)
+  // To be precise, logout (browser shutdown) is not yet done, but the
+  // remaining work is negligible, hence we say LogoutDone here.
+  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutDone",
+                                                        false);
+  chromeos::BootTimesLoader::Get()->WriteLogoutTimes();
+#endif
   TRACE_EVENT_END("BrowserMain", 0, 0);
   return result_code;
 }
