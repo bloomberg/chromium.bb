@@ -34,7 +34,7 @@
 // |model_| doesn't actually do anything when it gains focus, it just
 // initializes.  Visible activity happens only after the user edits.
 // NSTextField delegate receives messages around starting and ending
-// edits, so that sufcices to catch focus changes.  Since all calls
+// edits, so that suffices to catch focus changes.  Since all calls
 // into |model_| start from AutocompleteEditViewMac, in the worst case
 // we can add code to sync up the sense of focus as needed.
 //
@@ -71,6 +71,9 @@ NSColor* HostTextColor() {
 }
 NSColor* BaseTextColor() {
   return [NSColor darkGrayColor];
+}
+NSColor* SuggestTextColor() {
+  return [NSColor grayColor];
 }
 NSColor* SecureSchemeColor() {
   return ColorWithRGBBytes(0x07, 0x95, 0x00);
@@ -171,6 +174,7 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
       field_(field),
+      suggest_text_length_(0),
       line_height_(0) {
   DCHECK(controller);
   DCHECK(toolbar_model);
@@ -288,7 +292,7 @@ void AutocompleteEditViewMac::OpenURL(const GURL& url,
 }
 
 std::wstring AutocompleteEditViewMac::GetText() const {
-  return base::SysNSStringToWide([field_ stringValue]);
+  return base::SysNSStringToWide(GetNonSuggestTextSubstring());
 }
 
 bool AutocompleteEditViewMac::IsEditingOrEmpty() const {
@@ -369,7 +373,7 @@ void AutocompleteEditViewMac::SetForcedQuery() {
 bool AutocompleteEditViewMac::IsSelectAll() {
   if (![field_ currentEditor])
     return true;
-  const NSRange all_range = NSMakeRange(0, [[field_ stringValue] length]);
+  const NSRange all_range = NSMakeRange(0, GetText().length());
   return NSEqualRanges(all_range, GetSelectedRange());
 }
 
@@ -397,7 +401,7 @@ void AutocompleteEditViewMac::SelectAll(bool reversed) {
 
   // TODO(shess): Verify that we should be stealing focus at this
   // point.
-  SetSelectedRange(NSMakeRange(0, GetText().size()));
+  SetSelectedRange(NSMakeRange(0, GetText().length()));
 }
 
 void AutocompleteEditViewMac::RevertAll() {
@@ -448,7 +452,43 @@ void AutocompleteEditViewMac::ClosePopup() {
 void AutocompleteEditViewMac::SetFocus() {
 }
 
+void AutocompleteEditViewMac::SetSuggestText(const string16& suggest_text) {
+  NSString* text = GetNonSuggestTextSubstring();
+  bool needs_update = (suggest_text_length_ > 0);
+
+  // Append the new suggest text.
+  suggest_text_length_ = suggest_text.length();
+  if (suggest_text_length_ > 0) {
+    text = [text stringByAppendingString:base::SysUTF16ToNSString(
+               suggest_text)];
+    needs_update = true;
+  }
+
+  if (needs_update) {
+    NSRange current_range = GetSelectedRange();
+    SetTextInternal(base::SysNSStringToWide(text));
+    if (NSMaxRange(current_range) <= [text length] - suggest_text_length_)
+      SetSelectedRange(current_range);
+    else
+      SetSelectedRange(NSMakeRange([text length] - suggest_text_length_, 0));
+  }
+}
+
+bool AutocompleteEditViewMac::CommitSuggestText() {
+  bool success = (suggest_text_length_ > 0);
+  suggest_text_length_ = 0;
+  SetText(GetText());
+  return success;
+}
+
 void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
+  // If we are setting the text directly, there cannot be any suggest text.
+  suggest_text_length_ = 0;
+  SetTextInternal(display_text);
+}
+
+void AutocompleteEditViewMac::SetTextInternal(
+    const std::wstring& display_text) {
   NSString* ss = base::SysWideToNSString(display_text);
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
@@ -462,7 +502,7 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   // In the current implementation, this tells LocationBarViewMac to
   // mess around with |model_| and update |field_|.  Unfortunately,
   // when I look at our peer implementations, it's not entirely clear
-  // to me if this is safe.  SetText() is sort of an utility method,
+  // to me if this is safe.  SetTextInternal() is sort of an utility method,
   // and different callers sometimes have different needs.  Research
   // this issue so that it can be added safely.
 
@@ -478,6 +518,17 @@ void AutocompleteEditViewMac::SetTextAndSelectedRange(
     const std::wstring& display_text, const NSRange range) {
   SetText(display_text);
   SetSelectedRange(range);
+}
+
+NSString* AutocompleteEditViewMac::GetNonSuggestTextSubstring() const {
+  NSString* text = [field_ stringValue];
+  if (suggest_text_length_ > 0) {
+    NSUInteger length = [text length];
+
+    DCHECK_LE(suggest_text_length_, length);
+    text = [text substringToIndex:(length - suggest_text_length_)];
+  }
+  return text;
 }
 
 void AutocompleteEditViewMac::EmphasizeURLComponents() {
@@ -512,6 +563,11 @@ void AutocompleteEditViewMac::ApplyTextAttributes(
   [paragraph_style setMaximumLineHeight:line_height_];
   [as addAttribute:NSParagraphStyleAttributeName value:paragraph_style
              range:NSMakeRange(0, [as length])];
+
+  // Grey out the suggest text.
+  [as addAttribute:NSForegroundColorAttributeName value:SuggestTextColor()
+             range:NSMakeRange([as length] - suggest_text_length_,
+                               suggest_text_length_)];
 
   url_parse::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
@@ -557,12 +613,10 @@ void AutocompleteEditViewMac::ApplyTextAttributes(
 
 void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
     const std::wstring& display_text, bool save_original_selection) {
-  // TODO(shess): I believe this is for when the user arrows around
-  // the popup, will be restored if they hit escape.  Figure out if
-  // that is for certain it.
   if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
 
+  suggest_text_length_ = 0;
   SetWindowTextAndCaretPos(display_text, display_text.size());
   controller_->OnChanged();
   [field_ clearUndoChain];
@@ -676,6 +730,15 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
   // We should only arrive here when the field is focussed.
   DCHECK(IsFirstResponder());
 
+  if (cmd != @selector(moveRight:) &&
+      cmd != @selector(insertTab:) &&
+      cmd != @selector(insertTabIgnoringFieldEditor:)) {
+    // Reset the suggest text for any change other than key right or tab.
+    // TODO(rohitrao): This is here to prevent complications when editing text.
+    // See if this can be removed.
+    SetSuggestText(string16());
+  }
+
   // Don't intercept up/down-arrow if the popup isn't open.
   if (popup_view_->IsOpen()) {
     if (cmd == @selector(moveDown:)) {
@@ -685,6 +748,19 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
 
     if (cmd == @selector(moveUp:)) {
       model_->OnUpOrDownKeyPressed(-1);
+      return true;
+    }
+  }
+
+  if (cmd == @selector(moveRight:)) {
+    // Only commit suggested text if the cursor is all the way to the right and
+    // there is no selection.
+    NSRange range = GetSelectedRange();
+    if (range.length == 0 &&
+        suggest_text_length_ > 0 &&
+        (range.location + suggest_text_length_ ==
+         [[field_ stringValue] length])) {
+      controller_->OnCommitSuggestedText(GetText());
       return true;
     }
   }
@@ -707,6 +783,11 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
       cmd == @selector(insertTabIgnoringFieldEditor:)) {
     if (model_->is_keyword_hint() && !model_->keyword().empty()) {
       model_->AcceptKeyword();
+      return true;
+    }
+
+    if (suggest_text_length_ > 0) {
+      controller_->OnCommitSuggestedText(GetText());
       return true;
     }
   }
@@ -891,6 +972,34 @@ bool AutocompleteEditViewMac::OnBackspacePressed() {
   // beginning of the text.  Delete the selected keyword.
   model_->ClearKeyword(GetText());
   return true;
+}
+
+NSRange AutocompleteEditViewMac::SelectionRangeForProposedRange(
+    NSRange proposed_range) {
+  // Should never call this function unless editing is in progress.
+  DCHECK([field_ currentEditor]);
+
+  if (![field_ currentEditor])
+    return proposed_range;
+
+  // Do not use [field_ stringValue] here, as that forces a sync between the
+  // field and the editor.  This sync will end up setting the selection, which
+  // in turn calls this method, leading to an infinite loop.  Instead, retrieve
+  // the current string value directly from the editor.
+  size_t text_length = [[[field_ currentEditor] string] length];
+
+  // Cannot select suggested text.
+  size_t max = text_length - suggest_text_length_;
+  NSUInteger start = proposed_range.location;
+  NSUInteger end = proposed_range.location + proposed_range.length;
+
+  if (start > max)
+    start = max;
+
+  if (end > max)
+    end = max;
+
+  return NSMakeRange(start, end - start);
 }
 
 void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {

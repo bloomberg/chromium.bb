@@ -19,6 +19,7 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 using ::testing::Return;
+using ::testing::ReturnArg;
 using ::testing::StrictMock;
 using ::testing::A;
 
@@ -206,6 +207,8 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Cut) {
   NSString* test_string = @"astring";
   EXPECT_CALL(field_observer_, OnDidBeginEditing());
   EXPECT_CALL(field_observer_, OnDidChange());
+  EXPECT_CALL(field_observer_, SelectionRangeForProposedRange(A<NSRange>()))
+      .WillRepeatedly(ReturnArg<0>());
   [editor_ setString:test_string];
   [editor_ selectAll:nil];
 

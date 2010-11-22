@@ -35,6 +35,7 @@ namespace {
 
 class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
  public:
+  MOCK_METHOD1(SelectionRangeForProposedRange, NSRange(NSRange range));
   MOCK_METHOD1(OnControlKeyChanged, void(bool pressed));
   MOCK_METHOD0(CanCopy, bool());
   MOCK_METHOD1(CopyToPasteboard, void(NSPasteboard* pboard));

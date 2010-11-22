@@ -271,6 +271,19 @@
   [self didChangeText];
 }
 
+- (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange
+                              granularity:(NSSelectionGranularity)granularity {
+  AutocompleteTextFieldObserver* observer = [self observer];
+  NSRange modifiedRange = [super selectionRangeForProposedRange:proposedSelRange
+                                                    granularity:granularity];
+  if (observer)
+    return observer->SelectionRangeForProposedRange(modifiedRange);
+  return modifiedRange;
+}
+
+
+
+
 - (void)setSelectedRange:(NSRange)charRange
                 affinity:(NSSelectionAffinity)affinity
           stillSelecting:(BOOL)flag {

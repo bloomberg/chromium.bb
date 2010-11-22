@@ -207,6 +207,14 @@
   [undoManager_ removeAllActions];
 }
 
+- (NSRange)textView:(NSTextView *)aTextView
+    willChangeSelectionFromCharacterRange:(NSRange)oldRange
+    toCharacterRange:(NSRange)newRange {
+  if (observer_)
+    return observer_->SelectionRangeForProposedRange(newRange);
+  return newRange;
+}
+
 - (void)addToolTip:(NSString*)tooltip forRect:(NSRect)aRect {
   [currentToolTips_ addObject:tooltip];
   [self addToolTipRect:aRect owner:tooltip userData:nil];

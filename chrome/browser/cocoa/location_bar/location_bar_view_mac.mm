@@ -141,7 +141,7 @@ std::wstring LocationBarViewMac::GetInputString() const {
 }
 
 void LocationBarViewMac::SetSuggestedText(const string16& text) {
-  // TODO(rohitrao): implement me.  http://crbug.com/56385
+  edit_view_->SetSuggestText(text);
 }
 
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
@@ -222,9 +222,12 @@ void LocationBarViewMac::OnAutocompleteWillClosePopup() {
   InstantController* controller = browser_->instant();
   if (controller && !controller->commit_on_mouse_up())
     controller->DestroyPreviewContents();
+  SetSuggestedText(string16());
 }
 
 void LocationBarViewMac::OnAutocompleteLosingFocus(gfx::NativeView unused) {
+  SetSuggestedText(string16());
+
   InstantController* instant = browser_->instant();
   if (!instant)
     return;
@@ -248,7 +251,7 @@ void LocationBarViewMac::OnAutocompleteWillAccept() {
 }
 
 bool LocationBarViewMac::OnCommitSuggestedText(const std::wstring& typed_text) {
-  return false;
+  return edit_view_->CommitSuggestText();
 }
 
 void LocationBarViewMac::OnSetSuggestedSearchText(
@@ -325,6 +328,8 @@ void LocationBarViewMac::OnChanged() {
         instant->DestroyPreviewContents();
     }
   }
+
+  SetSuggestedText(suggested_text);
 }
 
 void LocationBarViewMac::OnSelectionBoundsChanged() {

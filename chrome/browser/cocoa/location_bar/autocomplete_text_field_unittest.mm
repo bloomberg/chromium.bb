@@ -19,8 +19,10 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+using ::testing::A;
 using ::testing::InSequence;
 using ::testing::Return;
+using ::testing::ReturnArg;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -226,6 +228,10 @@ TEST_F(AutocompleteTextFieldObserverTest, FlagsChanged) {
 // field catches -flagsChanged: because it's on the responder chain,
 // the field editor doesn't implement it.
 TEST_F(AutocompleteTextFieldObserverTest, FieldEditorFlagsChanged) {
+  // Many of these methods try to change the selection.
+  EXPECT_CALL(field_observer_, SelectionRangeForProposedRange(A<NSRange>()))
+      .WillRepeatedly(ReturnArg<0>());
+
   InSequence dummy;  // Call mock in exactly the order specified.
   EXPECT_CALL(field_observer_, OnSetFocus(false));
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
@@ -312,6 +318,10 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorWithDecoration) {
 // Test that resetting the field editor bounds does not cause untoward
 // messages to the field's observer.
 TEST_F(AutocompleteTextFieldObserverTest, ResetFieldEditorContinuesEditing) {
+  // Many of these methods try to change the selection.
+  EXPECT_CALL(field_observer_, SelectionRangeForProposedRange(A<NSRange>()))
+      .WillRepeatedly(ReturnArg<0>());
+
   EXPECT_CALL(field_observer_, OnSetFocus(false));
   // Becoming first responder doesn't begin editing.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
@@ -727,6 +737,10 @@ TEST_F(AutocompleteTextFieldTest, EditorGetsCorrectUndoManager) {
 }
 
 TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {
+  // Many of these methods try to change the selection.
+  EXPECT_CALL(field_observer_, SelectionRangeForProposedRange(A<NSRange>()))
+      .WillRepeatedly(ReturnArg<0>());
+
   EXPECT_CALL(field_observer_, OnSetFocus(false));
   // Becoming first responder doesn't begin editing.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];

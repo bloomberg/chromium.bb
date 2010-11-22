@@ -33,6 +33,9 @@
 // AutocompleteEditViewMac rather than traversing the delegate chain.
 class AutocompleteTextFieldObserver {
  public:
+  // Called before changing the selected range of the field.
+  virtual NSRange SelectionRangeForProposedRange(NSRange proposed_range) = 0;
+
   // Called when the control-key state changes while the field is
   // first responder.
   virtual void OnControlKeyChanged(bool pressed) = 0;
