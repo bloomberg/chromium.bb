@@ -1954,7 +1954,6 @@
    fun:_ZN12browser_sync33GetThemeSpecificsFromCurrentThemeEP7ProfilePN7sync_pb14ThemeSpecificsE
    fun:_ZN12browser_sync44SetCurrentThemeFromThemeSpecificsIfNecessaryERKN7sync_pb14ThemeSpecificsEP7Profile
 }
-
 {
    bug_42389
    Memcheck:Leak
@@ -2475,9 +2474,6 @@
    fun:_ZN23OffTheRecordProfileImpl*Profile
    fun:_ZN7Profile25CreateOffTheRecordProfileEv
    fun:_ZN11ProfileImpl22GetOffTheRecordProfileEv
-   fun:_ZN7Browser18NewIncognitoWindowEv
-   fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
-   fun:_ZN7Browser14ExecuteCommandEi
 }
 {
    bug_50968
