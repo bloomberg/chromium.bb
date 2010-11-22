@@ -267,6 +267,10 @@ int main(int argc, char *argv[])
 	int size;
 
 	d = display_create(&argc, &argv, NULL);
+	if (d == NULL) {
+		fprintf(stderr, "failed to create display: %m\n");
+		return -1;
+	}
 
 	smoke.x = 200;
 	smoke.y = 200;

@@ -207,6 +207,10 @@ main(int argc, char *argv[])
 	int i;
 
 	d = display_create(&argc, &argv, option_entries);
+	if (d == NULL) {
+		fprintf(stderr, "failed to create display: %m\n");
+		return -1;
+	}
 
 	for (i = 1; i < argc; i++) {
 		struct view *view;

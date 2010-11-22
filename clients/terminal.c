@@ -548,6 +548,10 @@ int main(int argc, char *argv[])
 	struct terminal *terminal;
 
 	d = display_create(&argc, &argv, option_entries);
+	if (d == NULL) {
+		fprintf(stderr, "failed to create display: %m\n");
+		return -1;
+	}
 
 	terminal = terminal_create(d, option_fullscreen);
 	if (terminal_run(terminal, "/bin/bash"))

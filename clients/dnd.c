@@ -581,6 +581,10 @@ main(int argc, char *argv[])
 	srandom(tv.tv_usec);
 
 	d = display_create(&argc, &argv, option_entries);
+	if (d == NULL) {
+		fprintf(stderr, "failed to create display: %m\n");
+		return -1;
+	}
 
 	display_set_drag_offer_handler(d, drag_offer_handler);
 
