@@ -23,9 +23,13 @@ scoped_ptr<views::Accelerator> WizardAccessibilityHelper::accelerator_;
 
 // static
 views::Accelerator WizardAccessibilityHelper::GetAccelerator() {
+  // Use an accelerator that would never match any hotkey to temporarily
+  // disable the accessibility hotkey per http://crosbug.com/9195
+  // TODO(xiyuan): Change back to real hotkey as the following
+  //      new views::Accelerator(app::VKEY_Z, false, true, true)
   if (!WizardAccessibilityHelper::accelerator_.get())
     WizardAccessibilityHelper::accelerator_.reset(
-        new views::Accelerator(app::VKEY_Z, false, true, true));
+        new views::Accelerator(app::VKEY_UNKNOWN, 0xdeadbeef));
   return *(WizardAccessibilityHelper::accelerator_.get());
 }
 
