@@ -10,11 +10,10 @@
 
 namespace info_bubble {
 
-// TODO(andybons): confirm constants with UI dudes.
 const CGFloat kBubbleArrowHeight = 8.0;
 const CGFloat kBubbleArrowWidth = 15.0;
-const CGFloat kBubbleArrowXOffset = 10.0;
 const CGFloat kBubbleCornerRadius = 8.0;
+const CGFloat kBubbleArrowXOffset = kBubbleArrowWidth + kBubbleCornerRadius;
 
 enum BubbleArrowLocation {
   kTopLeft,

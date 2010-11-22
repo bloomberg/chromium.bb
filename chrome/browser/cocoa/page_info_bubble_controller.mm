@@ -72,7 +72,7 @@ const NSInteger kWindowWidth = 380;
 const NSInteger kVerticalSpacing = 10;
 
 // Padding along on the X-axis between the window frame and content.
-const NSInteger kFramePadding = 20;
+const NSInteger kFramePadding = 10;
 
 // Spacing between the optional headline and description text views.
 const NSInteger kHeadlineSpacing = 2;
@@ -211,7 +211,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 // not using HTTPS.
 - (void)performLayout {
   // |offset| is the Y position that should be drawn at next.
-  CGFloat offset = kFramePadding;
+  CGFloat offset = kFramePadding + info_bubble::kBubbleArrowHeight;
 
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
@@ -430,13 +430,15 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 // next offset.
 - (CGFloat)addSeparatorToSubviews:(NSMutableArray*)subviews
                          atOffset:(CGFloat)offset {
-  scoped_nsobject<NSBox> spacer(
-      [[NSBox alloc] initWithFrame:NSMakeRect(0, offset, kWindowWidth, 1)]);
+  const CGFloat kSpacerHeight = 1.0;
+  NSRect frame = NSMakeRect(kFramePadding, offset,
+      kWindowWidth - 2 * kFramePadding, kSpacerHeight);
+  scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
   [spacer setBoxType:NSBoxSeparator];
   [spacer setBorderType:NSLineBorder];
   [spacer setAlphaValue:0.2];
   [subviews addObject:spacer.get()];
-  return kVerticalSpacing;
+  return kVerticalSpacing + kSpacerHeight;
 }
 
 // Takes in the bubble's height and the parent window, which should be a
