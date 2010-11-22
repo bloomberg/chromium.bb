@@ -255,8 +255,8 @@ bool WifiConfigView::Save() {
 
 void WifiConfigView::Cancel() {
   // If we have a bad passphrase error, clear the passphrase.
-  if (wifi_->error() == ERROR_BAD_PASSPHRASE ||
-      wifi_->error() == ERROR_BAD_WEPKEY) {
+  if (wifi_.get() && (wifi_->error() == ERROR_BAD_PASSPHRASE ||
+                      wifi_->error() == ERROR_BAD_WEPKEY)) {
     wifi_->set_passphrase(std::string());
     CrosLibrary::Get()->GetNetworkLibrary()->SaveWifiNetwork(wifi_.get());
   }
