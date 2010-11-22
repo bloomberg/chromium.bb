@@ -669,6 +669,10 @@ unsigned long WebGraphicsContext3DCommandBufferImpl::getError() {
   return glGetError();
 }
 
+bool WebGraphicsContext3DCommandBufferImpl::isContextLost() {
+  return ggl::IsCommandBufferContextLost(context_);
+}
+
 DELEGATE_TO_GL_2(getFloatv, GetFloatv, unsigned long, float*)
 
 DELEGATE_TO_GL_4(getFramebufferAttachmentParameteriv,

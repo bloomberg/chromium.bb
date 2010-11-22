@@ -162,6 +162,10 @@ gpu::gles2::GLES2Implementation* GetImplementation(Context* context);
 // Return the current GGL error.
 Error GetError(Context* context);
 
+// Return true if GPU process reported context lost or there was a problem
+// communicating with the GPU process.
+bool IsCommandBufferContextLost(Context* context);
+
 }  // namespace ggl
 
 #endif  // CHROME_RENDERER_GGL_GGL_H_

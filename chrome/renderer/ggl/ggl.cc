@@ -111,6 +111,8 @@ class Context : public base::SupportsWeakPtr<Context> {
   // Replace the current error code with this.
   void SetError(Error error);
 
+  bool IsCommandBufferContextLost();
+
   // TODO(gman): Remove this.
   void DisableShaderTranslation();
 
@@ -405,6 +407,11 @@ void Context::SetError(Error error) {
   last_error_ = error;
 }
 
+bool Context::IsCommandBufferContextLost() {
+  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
+  return state.error == gpu::error::kLostContext;
+}
+
 // TODO(gman): Remove This
 void Context::DisableShaderTranslation() {
   gles2_implementation_->CommandBufferEnableCHROMIUM(
@@ -540,6 +547,10 @@ Error GetError(Context* context) {
 #else
   return NOT_INITIALIZED;
 #endif
+}
+
+bool IsCommandBufferContextLost(Context* context) {
+  return context->IsCommandBufferContextLost();
 }
 
 // TODO(gman): Remove This
