@@ -31,11 +31,9 @@ class DeviceTokenFetcher
       public DeviceManagementBackend::DeviceRegisterResponseDelegate,
       public base::RefCountedThreadSafe<DeviceTokenFetcher> {
  public:
-  // Requests to the device management server are sent through |backend|, which
-  // is passed in explicitly to simplify mocking of the backend for unit
-  // testing. The fetcher uses the directory in |token_dir| in which to store
-  // the device token once it's retrieved from the server. Should only be called
-  // by unit tests.
+  // Requests to the device management server are sent through |backend|. It
+  // obtains the authentication token from |token_service|. The fetcher stores
+  // the device token to |token_path| once it's retrieved from the server.
   DeviceTokenFetcher(DeviceManagementBackend* backend,
                      TokenService* token_service,
                      const FilePath& token_path);

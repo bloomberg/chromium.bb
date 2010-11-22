@@ -187,12 +187,14 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   //        be non-null if any preferences are to be registered.
   //
   // The |profile| parameter is used to construct a replacement device
-  // management pref store in case of policy refresh, may be NULL for the local
-  // state preferences.
+  // management pref store. This is done after policy refresh when we swap out
+  // the policy pref stores for new ones, so the |profile| pointer needs to be
+  // kept around for then. It is safe to pass a NULL pointer for local state
+  // preferences.
   //
   // TODO(mnissler, danno): Refactor the pref store interface and refresh logic
-  // so refreshes can be handled by the pref store itself and the profile
-  // parameter be removed here.
+  // so refreshes can be handled by the pref store itself without swapping
+  // stores. This way we can get rid of the profile pointer here.
   //
   // This constructor should only be used internally, or by subclasses in
   // testing. The usual way to create a PrefValueStore is by creating a
@@ -247,7 +249,9 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // A mapping of preference names to their registered types.
   PrefTypeMap pref_types_;
 
-  // The associated profile, if applicable.
+  // The associated profile, in case this value store is associated with a
+  // profile pref service. Used for recreating the device management pref store
+  // upon policy refresh.
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
