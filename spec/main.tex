@@ -59,12 +59,6 @@ an object id that uniquely identifies an object on the server.  Each
 object implements an interface and the requests include an opcode that
 identifies which method in the interface to invoke.
 
-The wire protocol is determined from the C prototypes of the requests
-and events.  There is a straight forward mapping from the C types to
-packing the bytes in the request written to the socket.  It is
-possible to map the events and requests to function calls in other
-languages, but that hasn't been done at this point.
-
 The server sends back events to the client, each event is emitted from
 an object.  Events can be error conditions.  The event includes the
 object id and the event opcode, from which the client can determine
@@ -78,7 +72,56 @@ spontanously when the server state changes.
   no need (or mechanism) to query server state.
 
 \item server will broadcast presence of a number of global objects,
-  which in turn will broadcast their current state
+  which in turn will broadcast their current state.
+\end{itemize}
+
+\subsection{Code generation}
+
+The interfaces, requests and events are defined in protocol/wayland.xml.
+This xml is used to generate the function prototypes that can be used by
+clients and compositors.
+
+The protocol entry points are generated as inline functions which just
+wraps the \verb:wl_proxy_*: functions.  The inline functions aren't
+part of the library ABI and languange bindings should generate their
+own stubs for the protocl entry points from the xml.
+
+\subsection{Wire format}
+
+The protocol is sent over a UNIX domain stream socket.  Currently, the
+endpoint is named \texttt{\textbackslash0wayland}, but it is subject
+to change.  The protocol is message-based.  A message sent by a client
+to the server is called \texttt{request}.  A message from the server
+to a client is called \texttt{event}.  Every message is structured as
+32-bit words, values are represented in the host's byte-order.
+
+The message header has 2 words in it:
+\begin{itemize}
+\item The first word is the sender's object id (32-bit).
+\item The second has 2 parts of 16-bit.  The upper 16-bits are the message
+  size in bytes, starting at the header (i.e. it has a minimum value of 8).
+  The lower is the request/event opcode.
+\end{itemize}
+
+The payload describes the request/event arguments.  Every argument is always
+aligned to 32-bit.  There is no prefix that describes the type, but it is
+inferred implicitly from the xml specification.
+
+The representation of argument types are as follows:
+\begin{itemize}
+\item "int" or "uint": The value is the 32-bit value of the signed/unsigned
+  int.
+\item "string": Starts with an unsigned 32-bit length, followed by the
+  string contents, including terminating NUL byte, then padding to a
+  32-bit boundary.
+\item "object": A 32-bit object ID.
+\item "new\_id": the 32-bit object ID.  On requests, the client
+  decides the ID.  The only event with "new\_id" is advertisements of
+  globals, and the server will use IDs below 0x10000.
+\item "array": Starts with 32-bit array size in bytes, followed by the array
+  contents verbatim, and finally padding to a 32-bit boundary.
+\item "fd": the file descriptor is not stored in the message buffer, but in
+  the ancillary data of the UNIX domain socket message (msg\_control).
 \end{itemize}
 
 \subsection{Connect Time}
