@@ -3340,23 +3340,24 @@ long VideoTrack::Seek(
     if (pResult->EOS())
         return 0;
 
-    const long count = m_pSegment->GetCount();
-    assert(count > 0);
-
     const Cluster* pCluster = pResult->GetCluster();
     assert(pCluster);
-    assert(pCluster->m_index >= 0);
-    assert(pCluster->m_index < count);
 
     if (time_ns <= pResult->GetBlock()->GetTime(pCluster))
         return 0;
 
-    Cluster** const i = m_pSegment->m_clusters + pCluster->m_index;
+    Cluster** const clusters = m_pSegment->m_clusters;
+    assert(clusters);
+
+    const long count = m_pSegment->GetCount();
+    assert(count > 0);
+
+    Cluster** const i = clusters + pCluster->m_index;
     assert(i);
     assert(*i == pCluster);
     assert(pCluster->GetTime() <= time_ns);
 
-    Cluster** const j = i + count;
+    Cluster** const j = clusters + count;
 
     Cluster** lo = i;
     Cluster** hi = j;
@@ -3523,23 +3524,24 @@ long AudioTrack::Seek(
     if (pResult->EOS())
         return 0;
 
-    const long count = m_pSegment->GetCount();
-    assert(count > 0);
-
     const Cluster* pCluster = pResult->GetCluster();
     assert(pCluster);
-    assert(pCluster->m_index >= 0);
-    assert(pCluster->m_index < count);
 
     if (time_ns <= pResult->GetBlock()->GetTime(pCluster))
         return 0;
 
-    Cluster** const i = m_pSegment->m_clusters + pCluster->m_index;
+    Cluster** const clusters = m_pSegment->m_clusters;
+    assert(clusters);
+
+    const long count = m_pSegment->GetCount();
+    assert(count > 0);
+
+    Cluster** const i = clusters + pCluster->m_index;
     assert(i);
     assert(*i == pCluster);
     assert(pCluster->GetTime() <= time_ns);
 
-    Cluster** const j = i + count;
+    Cluster** const j = clusters + count;
 
     Cluster** lo = i;
     Cluster** hi = j;
