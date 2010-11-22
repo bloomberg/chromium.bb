@@ -82,7 +82,7 @@ configure-gcc-with-newlib:
 	    $(GCC_CONFIGURE_VARS) \
 	    $(GCC_CONFIGURE_FLAGS) \
 	    --disable-shared \
-	    --enable-languages="c,c++" \
+	    --enable-languages="c,c++,objc" \
 	    --enable-threads=nacl \
 	    --enable-tls \
 	    --with-newlib

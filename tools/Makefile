@@ -258,6 +258,7 @@ SRC/gcc: | SRC
 	cd SRC && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
 	cd SRC && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
 	cd SRC && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2
+	cd SRC && tar xf $(SRCDIR)/gcc/gcc-objc-$(GCC_VERSION).tar.bz2
 	cd SRC && tar xf $(SRCDIR)/gcc/gcc-testsuite-$(GCC_VERSION).tar.bz2
 	mv SRC/gcc-$(GCC_VERSION) SRC/gcc
 	$(MAKE) -f $(THISMAKEFILE) unpack-gcc-extras
