@@ -87,6 +87,7 @@ extern const char kSystemLevelToast[];
 extern const char kToastResultsKey[];
 }  // namespace switches
 
+extern const wchar_t kCeeeBrokerExe[];
 extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeFrameDll[];
