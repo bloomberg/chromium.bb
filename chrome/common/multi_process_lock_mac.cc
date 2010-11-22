@@ -25,7 +25,8 @@ class MultiProcessLockMac : public MultiProcessLock {
     }
 
     if (name_.length() > MULTI_PROCESS_LOCK_NAME_MAX_LEN) {
-      LOG(ERROR) << "Socket name too long - " << name_;
+      LOG(ERROR) << "Socket name too long (" << name_.length()
+                 << " > " << MULTI_PROCESS_LOCK_NAME_MAX_LEN << ") - " << name_;
       return false;
     }
 
