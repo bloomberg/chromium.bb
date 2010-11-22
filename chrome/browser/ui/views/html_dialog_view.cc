@@ -71,15 +71,13 @@ bool HtmlDialogView::CanResize() const {
 bool HtmlDialogView::IsModal() const {
   if (delegate_)
     return delegate_->IsDialogModal();
-  else
-    return false;
+  return false;
 }
 
 std::wstring HtmlDialogView::GetWindowTitle() const {
   if (delegate_)
     return delegate_->GetDialogTitle();
-  else
-    return std::wstring();
+  return std::wstring();
 }
 
 void HtmlDialogView::WindowClosing() {
@@ -116,8 +114,7 @@ std::wstring HtmlDialogView::GetDialogTitle() const {
 GURL HtmlDialogView::GetDialogContentURL() const {
   if (delegate_)
     return delegate_->GetDialogContentURL();
-  else
-    return GURL();
+  return GURL();
 }
 
 void HtmlDialogView::GetDOMMessageHandlers(
@@ -134,8 +131,7 @@ void HtmlDialogView::GetDialogSize(gfx::Size* size) const {
 std::string HtmlDialogView::GetDialogArgs() const {
   if (delegate_)
     return delegate_->GetDialogArgs();
-  else
-    return std::string();
+  return std::string();
 }
 
 void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
@@ -157,8 +153,13 @@ void HtmlDialogView::OnCloseContents(TabContents* source,
 bool HtmlDialogView::ShouldShowDialogTitle() const {
   if (delegate_)
     return delegate_->ShouldShowDialogTitle();
-  else
-    return true;
+  return true;
+}
+
+bool HtmlDialogView::HandleContextMenu(const ContextMenuParams& params) {
+  if (delegate_)
+    return delegate_->HandleContextMenu(params);
+  return HtmlDialogTabContentsDelegate::HandleContextMenu(params);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

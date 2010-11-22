@@ -17,6 +17,8 @@ namespace gfx {
 class Size;
 }
 
+struct ContextMenuParams;
+
 // Implement this class to receive notifications.
 class HtmlDialogUIDelegate {
  public:
@@ -54,6 +56,10 @@ class HtmlDialogUIDelegate {
   // A callback to allow the delegate to dictate that the window should not
   // have a title bar.  This is useful when presenting branded interfaces.
   virtual bool ShouldShowDialogTitle() const = 0;
+
+  // A callback to allow the delegate to inhibit context menu or show
+  // customized menu.
+  virtual bool HandleContextMenu(const ContextMenuParams& params);
 
  protected:
   virtual ~HtmlDialogUIDelegate() {}

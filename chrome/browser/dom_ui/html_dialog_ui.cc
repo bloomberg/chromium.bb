@@ -79,3 +79,7 @@ ExternalHtmlDialogUI::ExternalHtmlDialogUI(TabContents* tab_contents)
 
 ExternalHtmlDialogUI::~ExternalHtmlDialogUI() {
 }
+
+bool HtmlDialogUIDelegate::HandleContextMenu(const ContextMenuParams& params) {
+  return false;
+}

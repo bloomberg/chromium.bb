@@ -116,6 +116,9 @@ class SelectFileDialogImpl : public SelectFileDialog {
     virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {
     }
     virtual bool ShouldShowDialogTitle() const { return true; }
+    virtual bool HandleContextMenu(const ContextMenuParams& params) {
+      return true;
+    }
 
     DISALLOW_COPY_AND_ASSIGN(FileBrowseDelegate);
   };
