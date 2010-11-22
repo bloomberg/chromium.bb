@@ -559,13 +559,33 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 	wlsc_input_device_set_pointer_image(wd, pointer);
 }
 
+static uint32_t
+get_time(void)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+struct wlsc_drag {
+	struct wl_drag drag;
+	struct wlsc_listener listener;
+};
+
+static void
+wl_drag_set_pointer_focus(struct wl_drag *drag,
+			  struct wlsc_surface *surface, uint32_t time,
+			  int32_t x, int32_t y, int32_t sx, int32_t sy);
+
 static void
 destroy_drag(struct wl_resource *resource, struct wl_client *client)
 {
-	struct wl_drag *drag =
-		container_of(resource, struct wl_drag, resource);
+	struct wlsc_drag *drag =
+		container_of(resource, struct wlsc_drag, drag.resource);
 
-	/* FIXME: More stuff */
+	wl_list_remove(&drag->listener.link);
 
 	free(drag);
 }
@@ -573,10 +593,24 @@ destroy_drag(struct wl_resource *resource, struct wl_client *client)
 const static struct wl_drag_interface drag_interface;
 
 static void
+drag_handle_surface_destroy(struct wlsc_listener *listener,
+			    struct wlsc_surface *surface)
+{
+	struct wlsc_drag *drag =
+		container_of(listener, struct wlsc_drag, listener);
+	uint32_t time = get_time();
+
+	if (drag->drag.pointer_focus == &surface->base)
+		wl_drag_set_pointer_focus(&drag->drag, NULL, time, 0, 0, 0, 0);
+}
+
+static void
 shell_create_drag(struct wl_client *client,
 		  struct wl_shell *shell, uint32_t id)
 {
-	struct wl_drag *drag;
+	struct wlsc_drag *drag;
+	struct wlsc_compositor *ec =
+		container_of(shell, struct wlsc_compositor, shell);
 
 	drag = malloc(sizeof *drag);
 	if (drag == NULL) {
@@ -585,14 +619,18 @@ shell_create_drag(struct wl_client *client,
 	}
 
 	memset(drag, 0, sizeof *drag);
-	drag->resource.base.id = id;
-	drag->resource.base.interface = &wl_drag_interface;
-	drag->resource.base.implementation =
+	drag->drag.resource.base.id = id;
+	drag->drag.resource.base.interface = &wl_drag_interface;
+	drag->drag.resource.base.implementation =
 		(void (**)(void)) &drag_interface;
 
-	drag->resource.destroy = destroy_drag;
+	drag->drag.resource.destroy = destroy_drag;
 
-	wl_client_add_resource(client, &drag->resource);
+	drag->listener.func = drag_handle_surface_destroy;
+	wl_list_insert(ec->surface_destroy_listener_list.prev,
+		       &drag->listener.link);
+
+	wl_client_add_resource(client, &drag->drag.resource);
 }
 
 const static struct wl_shell_interface shell_interface = {
@@ -711,11 +749,6 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 
 	return NULL;
 }
-
-static void
-wl_drag_set_pointer_focus(struct wl_drag *drag,
-			  struct wlsc_surface *surface, uint32_t time,
-			  int32_t x, int32_t y, int32_t sx, int32_t sy);
 
 void
 notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
@@ -996,16 +1029,6 @@ const static struct wl_input_device_interface input_device_interface = {
 	input_device_attach,
 };
 
-static uint32_t
-get_time(void)
-{
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
-
 static void
 handle_surface_destroy(struct wlsc_listener *listener,
 		       struct wlsc_surface *surface)
@@ -1016,6 +1039,9 @@ handle_surface_destroy(struct wlsc_listener *listener,
 
 	if (device->keyboard_focus == surface)
 		wlsc_input_device_set_keyboard_focus(device, NULL, time);
+	if (device->pointer_focus == surface)
+		wlsc_input_device_set_pointer_focus(device, NULL, time,
+						    0, 0, 0, 0);
 	if (device->pointer_focus == surface ||
 	    (&device->pointer_focus->base == &wl_grab_surface &&
 	     device->grab_surface == surface))
