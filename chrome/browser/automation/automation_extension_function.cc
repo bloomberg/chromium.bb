@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -51,6 +52,18 @@ bool AutomationExtensionFunction::RunImpl() {
   message_to_host.SetString(keys::kAutomationArgsKey, args_);
   message_to_host.SetInteger(keys::kAutomationRequestIdKey, request_id_);
   message_to_host.SetBoolean(keys::kAutomationHasCallbackKey, has_callback_);
+  // Send the API request's associated tab along to the automation client, so
+  // that it can determine the execution context of the API call.
+  TabContents* contents = NULL;
+  ExtensionFunctionDispatcher* function_dispatcher = dispatcher();
+  if (function_dispatcher && function_dispatcher->delegate()) {
+    contents = function_dispatcher->delegate()->associated_tab_contents();
+  } else {
+    NOTREACHED() << "Extension function dispatcher delegate not found.";
+  }
+  if (contents)
+    message_to_host.Set(keys::kAutomationTabJsonKey,
+                        ExtensionTabUtil::CreateTabValue(contents));
 
   std::string message;
   base::JSONWriter::Write(&message_to_host, false, &message);

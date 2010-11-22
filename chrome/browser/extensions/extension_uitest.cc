@@ -168,6 +168,14 @@ TEST_F(ExtensionTestSimpleApiCall, FLAKY_RunTest) {
   EXPECT_TRUE(message_dict->GetBoolean(keys::kAutomationHasCallbackKey,
                                        &has_callback));
   EXPECT_FALSE(has_callback);
+  DictionaryValue* associated_tab = NULL;
+  EXPECT_TRUE(message_dict->GetDictionary(keys::kAutomationTabJsonKey,
+      &associated_tab));
+  std::string associated_tab_url;
+  EXPECT_TRUE(associated_tab->GetString(
+      extension_tabs_module_constants::kUrlKey, &associated_tab_url));
+  EXPECT_EQ("chrome-extension://pmgpglkggjdpkpghhdmbdhababjpcohk/test.html",
+            associated_tab_url);
 }
 
 // A test that loads a basic extension that makes an API call that does
@@ -209,6 +217,11 @@ public:
     bool has_callback = false;
     EXPECT_TRUE(request_dict->GetBoolean(keys::kAutomationHasCallbackKey,
       &has_callback));
+    // The API requests in this extension come from the background page, so
+    // the tab is not set.
+    DictionaryValue* associated_tab = NULL;
+    EXPECT_FALSE(request_dict->GetDictionary(keys::kAutomationTabJsonKey,
+      &associated_tab));
 
     if (messages_received_ == 1) {
       EXPECT_EQ("tabs.getSelected", function_name);
