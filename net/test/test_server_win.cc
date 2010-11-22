@@ -96,7 +96,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
     return false;
   python_exe = python_exe
       .Append(FILE_PATH_LITERAL("third_party"))
-      .Append(FILE_PATH_LITERAL("python_26"))
+      .Append(FILE_PATH_LITERAL("python_24"))
       .Append(FILE_PATH_LITERAL("python.exe"));
 
   CommandLine python_command(python_exe);

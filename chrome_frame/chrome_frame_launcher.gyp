@@ -20,7 +20,7 @@
     'conditions': [
       ['OS=="win"', {
         'python': [
-          '<(DEPTH)\\third_party\\python_26\\setup_env.bat && python'
+          '<(DEPTH)\\third_party\\python_24\\setup_env.bat && python'
         ],
       }, { # OS != win
         'python': [
