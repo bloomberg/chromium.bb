@@ -138,24 +138,7 @@ void ContentFilterPageView::InitControlLayout() {
   layout->AddView(block_radio_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  exceptions_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_COOKIES_EXCEPTIONS_BUTTON));
-
-  layout->StartRow(0, single_column_set_id);
-  layout->AddView(exceptions_button_, 1, 1, GridLayout::LEADING,
-                  GridLayout::FILL);
-
-  UpdateView();
-
-  registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
-      NotificationService::AllSources());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ContentFilterPageView,
-void ContentFilterPageView::UpdateView() {
   ContentSetting default_setting;
-  bool is_content_type_managed = false;
   if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     default_setting = profile()->GetGeolocationContentSettingsMap()->
         GetDefaultContentSetting();
@@ -165,8 +148,6 @@ void ContentFilterPageView::UpdateView() {
   } else {
     default_setting = profile()->GetHostContentSettingsMap()->
         GetDefaultContentSetting(content_type_);
-    is_content_type_managed = profile()->GetHostContentSettingsMap()->
-        IsDefaultContentSettingManaged(content_type_);
   }
   // Now that these have been added to the view hierarchy, it's safe to call
   // SetChecked() on them.
@@ -180,12 +161,12 @@ void ContentFilterPageView::UpdateView() {
     block_radio_->SetChecked(true);
   }
 
-  // Set enable state of the buttons.
-  allow_radio_->SetEnabled(!is_content_type_managed);
-  if (ask_radio_)
-    ask_radio_->SetEnabled(!is_content_type_managed);
-  block_radio_->SetEnabled(!is_content_type_managed);
-  exceptions_button_->SetEnabled(!is_content_type_managed);
+  exceptions_button_ = new views::NativeButton(this,
+      l10n_util::GetString(IDS_COOKIES_EXCEPTIONS_BUTTON));
+
+  layout->StartRow(0, single_column_set_id);
+  layout->AddView(exceptions_button_, 1, 1, GridLayout::LEADING,
+                  GridLayout::FILL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -246,25 +227,5 @@ void ContentFilterPageView::ButtonPressed(views::Button* sender,
   } else {
     profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
         content_type_, default_setting);
-  }
-}
-
-void ContentFilterPageView::NotifyContentSettingsChanged(
-    const HostContentSettingsMap::ContentSettingsDetails *details) {
-  if (details->type() == CONTENT_SETTINGS_TYPE_DEFAULT ||
-      details->type() == content_type_) {
-    UpdateView();
-  }
-}
-
-void ContentFilterPageView::Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-  if (type == NotificationType::CONTENT_SETTINGS_CHANGED) {
-    NotifyContentSettingsChanged(
-        Details<HostContentSettingsMap::ContentSettingsDetails>
-            (details).ptr());
-  } else {
-    OptionsPageBase::Observe(type, source, details);
   }
 }
