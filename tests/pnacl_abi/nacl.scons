@@ -14,7 +14,7 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   Return()
 
 TESTS = ['small_structs_by_value.c',
-         #'data_type.c',
+         'data_type.c',
          'vaarg.c',
          ]
 
