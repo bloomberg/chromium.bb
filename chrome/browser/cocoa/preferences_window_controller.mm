@@ -33,6 +33,8 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/instant/instant_confirm_dialog.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -334,6 +336,7 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 // Record the user performed a certain action and save the preferences.
 - (void)recordUserAction:(const UserMetricsAction&) action;
 - (void)registerPrefObservers;
+- (void)configureInstant;
 
 // KVC setter methods.
 - (void)setNewTabPageIsHomePageIndex:(NSInteger)val;
@@ -585,6 +588,8 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   DCHECK_EQ(defaultBrowserChange.height, 0.0)
       << "Button should have been right height in nib";
 
+  [self configureInstant];
+
   // Size the sync row.
   CGFloat syncRowChange = SizeToFitButtonPair(syncButton_,
                                               syncCustomizeButton_);
@@ -798,6 +803,7 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
                              prefs_, observer_.get());
   homepage_.Init(prefs::kHomePage, prefs_, observer_.get());
   showHomeButton_.Init(prefs::kShowHomeButton, prefs_, observer_.get());
+  instantEnabled_.Init(prefs::kInstantEnabled, prefs_, observer_.get());
 
   // Personal Stuff panel
   askSavePasswords_.Init(prefs::kPasswordManagerEnabled,
@@ -936,6 +942,8 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   } else if (*prefName == prefs::kShowHomeButton) {
     [self setShowHomeButton:showHomeButton_.GetValue() ? YES : NO];
     [self setShowHomeButtonEnabled:!showHomeButton_.IsManaged()];
+  } else if (*prefName == prefs::kInstantEnabled) {
+    [self configureInstant];
   }
 }
 
@@ -1184,6 +1192,34 @@ enum { kHomepageNewTabPage, kHomepageURL };
 
 - (IBAction)manageSearchEngines:(id)sender {
   [KeywordEditorCocoaController showKeywordEditor:profile_];
+}
+
+- (IBAction)toggleInstant:(id)sender {
+  if (instantEnabled_.GetValue()) {
+    InstantController::Disable(profile_);
+  } else {
+    [instantCheckbox_ setState:NSOffState];
+    browser::ShowInstantConfirmDialogIfNecessary([self window], profile_);
+  }
+}
+
+// Sets the state of the Instant checkbox and adds the type information to the
+// label.
+- (void)configureInstant {
+  bool enabled = instantEnabled_.GetValue();
+  NSInteger state = enabled ? NSOnState : NSOffState;
+  [instantCheckbox_ setState:state];
+
+  NSString* title = l10n_util::GetNSStringWithFixup(IDS_INSTANT_PREF);
+  if (enabled) {
+    title = [NSString stringWithFormat:@"%@ [%d]", title,
+        prefs_->GetInteger(prefs::kInstantType)];
+  }
+  [instantCheckbox_ setTitle:title];
+}
+
+- (IBAction)learnMoreAboutInstant:(id)sender {
+  browser::ShowOptionsURL(profile_, GURL(browser::kInstantLearnMoreURL));
 }
 
 // Called when the user clicks the button to make Chromium the default

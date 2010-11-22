@@ -89,6 +89,8 @@ class ProfileSyncService;
   BooleanPrefMember newTabPageIsHomePage_;
   StringPrefMember homepage_;
   BooleanPrefMember showHomeButton_;
+  BooleanPrefMember instantEnabled_;
+  IBOutlet NSButton* instantCheckbox_;
   scoped_nsobject<SearchEngineListModel> searchEngineModel_;
   // Used when creating a new home page url to make the new cell editable.
   BOOL pendingSelectForEdit_;
@@ -167,6 +169,8 @@ class ProfileSyncService;
 - (IBAction)removeSelectedHomepages:(id)sender;
 - (IBAction)useCurrentPagesAsHomepage:(id)sender;
 - (IBAction)manageSearchEngines:(id)sender;
+- (IBAction)toggleInstant:(id)sender;
+- (IBAction)learnMoreAboutInstant:(id)sender;
 - (IBAction)makeDefaultBrowser:(id)sender;
 
 // User Data panel

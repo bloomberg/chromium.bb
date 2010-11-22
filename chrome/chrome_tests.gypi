@@ -1187,6 +1187,7 @@
         'browser/cocoa/infobar_container_controller_unittest.mm',
         'browser/cocoa/infobar_controller_unittest.mm',
         'browser/cocoa/infobar_gradient_view_unittest.mm',
+        'browser/cocoa/instant_confirm_window_controller_unittest.mm',
         'browser/cocoa/keystone_glue_unittest.mm',
         'browser/cocoa/keyword_editor_cocoa_controller_unittest.mm',
         'browser/cocoa/location_bar/autocomplete_text_field_cell_unittest.mm',
