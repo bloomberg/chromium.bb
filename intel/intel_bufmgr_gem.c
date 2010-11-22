@@ -467,8 +467,23 @@ drm_intel_bo_gem_set_in_aperture_size(drm_intel_bufmgr_gem *bufmgr_gem,
 	 * aperture. Optimal packing is for wimps.
 	 */
 	size = bo_gem->bo.size;
-	if (bufmgr_gem->gen < 4 && bo_gem->tiling_mode != I915_TILING_NONE)
-		size *= 2;
+	if (bufmgr_gem->gen < 4 && bo_gem->tiling_mode != I915_TILING_NONE) {
+		int min_size;
+
+		if (bufmgr_gem->has_relaxed_fencing) {
+			if (bufmgr_gem->gen == 3)
+				min_size = 1024*1024;
+			else
+				min_size = 512*1024;
+
+			while (min_size < size)
+				min_size *= 2;
+		} else
+			min_size = size;
+
+		/* Account for worst-case alignment. */
+		size = 2 * min_size;
+	}
 
 	bo_gem->reloc_tree_size = size;
 }
