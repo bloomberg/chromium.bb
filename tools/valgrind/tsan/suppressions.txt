@@ -86,6 +86,15 @@
   fun:disk_cache::EntryImpl::WriteDataImpl*
 }
 
+{
+  bug_64080
+  ThreadSanitizer:Race
+  ...
+  fun:chromeos::PulseAudioMixer::~PulseAudioMixer*
+  ...
+  fun:Singleton<chromeos::AudioHandler*>::OnExit*
+}
+
 ############################
 # Benign races
 {

@@ -13,6 +13,9 @@ obj:*/libfreetype*
 obj:*/libnss*
 obj:*/nss/*
 
+# ignore pulseaudio - We don't have symbols there and it can be slow otherwise
+obj:*/libpulse.so*
+
 # ignore this standard stuff
 fun:clone
 fun:fork
