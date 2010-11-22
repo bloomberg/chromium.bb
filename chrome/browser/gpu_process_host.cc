@@ -83,46 +83,10 @@ bool GpuProcessHost::Init() {
   if (!CreateChannel())
     return false;
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::StringType gpu_launcher =
-      browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
-
-  FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
-  if (exe_path.empty())
+  if (!CanLaunchGpuProcess())
     return false;
 
-  CommandLine* cmd_line = new CommandLine(exe_path);
-  cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
-
-  // Propagate relevant command line switches.
-  static const char* const kSwitchNames[] = {
-    switches::kUseGL,
-    switches::kDisableGpuVsync,
-    switches::kDisableGpuWatchdog,
-    switches::kDisableLogging,
-    switches::kEnableAcceleratedDecoding,
-    switches::kEnableLogging,
-    switches::kGpuStartupDialog,
-    switches::kLoggingLevel,
-  };
-  cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                             arraysize(kSwitchNames));
-
-  // If specified, prepend a launcher program to the command line.
-  if (!gpu_launcher.empty())
-    cmd_line->PrependWrapper(gpu_launcher);
-
-  Launch(
-#if defined(OS_WIN)
-      FilePath(),
-#elif defined(OS_POSIX)
-      false,  // Never use the zygote (GPU plugin can't be sandboxed).
-      base::environment_vector(),
-#endif
-      cmd_line);
-
-  return true;
+  return LaunchGpuProcess();
 }
 
 // static
@@ -382,5 +346,53 @@ bool GpuProcessHost::CanShutdown() {
 void GpuProcessHost::OnProcessCrashed() {
   // TODO(alokp): Update gpu process crash rate.
   BrowserChildProcessHost::OnProcessCrashed();
+}
+
+bool GpuProcessHost::CanLaunchGpuProcess() const {
+  // TODO(alokp): Answer based on crash rate.
+  return true;
+}
+
+bool GpuProcessHost::LaunchGpuProcess() {
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  CommandLine::StringType gpu_launcher =
+      browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
+
+  FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
+  if (exe_path.empty())
+    return false;
+
+  CommandLine* cmd_line = new CommandLine(exe_path);
+  cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+
+  // Propagate relevant command line switches.
+  static const char* const kSwitchNames[] = {
+    switches::kUseGL,
+    switches::kDisableGpuVsync,
+    switches::kDisableGpuWatchdog,
+    switches::kDisableLogging,
+    switches::kEnableAcceleratedDecoding,
+    switches::kEnableLogging,
+    switches::kGpuStartupDialog,
+    switches::kLoggingLevel,
+  };
+  cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                             arraysize(kSwitchNames));
+
+  // If specified, prepend a launcher program to the command line.
+  if (!gpu_launcher.empty())
+    cmd_line->PrependWrapper(gpu_launcher);
+
+  Launch(
+#if defined(OS_WIN)
+      FilePath(),
+#elif defined(OS_POSIX)
+      false,  // Never use the zygote (GPU plugin can't be sandboxed).
+      base::environment_vector(),
+#endif
+      cmd_line);
+
+  return true;
 }
 

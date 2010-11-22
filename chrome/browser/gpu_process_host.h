@@ -107,6 +107,9 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   virtual bool CanShutdown();
   virtual void OnProcessCrashed();
 
+  bool CanLaunchGpuProcess() const;
+  bool LaunchGpuProcess();
+
   bool initialized_;
   bool initialized_successfully_;
 
