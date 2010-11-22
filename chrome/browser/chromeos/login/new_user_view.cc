@@ -450,7 +450,7 @@ void NewUserView::Login() {
   if (login_in_process_ || username_field_->text().empty())
     return;
 
-  throbber_->Start();
+  StartThrobber();
   login_in_process_ = true;
   EnableInputControls(false);
   std::string username = UTF16ToUTF8(username_field_->text());
@@ -485,7 +485,7 @@ void NewUserView::ClearAndEnablePassword() {
   EnableInputControls(true);
   SetPassword(std::string());
   password_field_->RequestFocus();
-  throbber_->Stop();
+  StopThrobber();
 }
 
 void NewUserView::ClearAndEnableFields() {
@@ -494,7 +494,7 @@ void NewUserView::ClearAndEnableFields() {
   SetUsername(std::string());
   SetPassword(std::string());
   username_field_->RequestFocus();
-  throbber_->Stop();
+  StopThrobber();
 }
 
 gfx::Rect NewUserView::GetPasswordBounds() const {
@@ -503,6 +503,10 @@ gfx::Rect NewUserView::GetPasswordBounds() const {
 
 gfx::Rect NewUserView::GetUsernameBounds() const {
   return username_field_->GetScreenBounds();
+}
+
+void NewUserView::StartThrobber() {
+  throbber_->Start();
 }
 
 void NewUserView::StopThrobber() {
@@ -547,6 +551,7 @@ void NewUserView::EnableInputControls(bool enabled) {
   if (need_guest_link_) {
     guest_link_->SetEnabled(enabled);
   }
+  delegate_->SetStatusAreaEnabled(enabled);
 }
 
 void NewUserView::InitLink(views::Link** link) {

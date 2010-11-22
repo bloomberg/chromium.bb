@@ -55,6 +55,9 @@ class NewUserView : public views::View,
 
     // User tries to navigate away from NewUserView pod.
     virtual void NavigateAway() = 0;
+
+    // Enables/disables raw of controls at status area.
+    virtual void SetStatusAreaEnabled(bool enable) = 0;
   };
 
   // If |need_border| is true, RoundedRect border and background are required.
@@ -75,6 +78,9 @@ class NewUserView : public views::View,
 
   // Resets password and username text and focuses on username.
   void ClearAndEnableFields();
+
+  // Starts throbber shown during login.
+  void StartThrobber();
 
   // Stops throbber shown during login.
   void StopThrobber();

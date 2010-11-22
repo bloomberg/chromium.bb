@@ -129,6 +129,9 @@ class UserController : public views::ButtonListener,
   }
   virtual void ClearErrors();
   virtual void NavigateAway();
+  virtual void SetStatusAreaEnabled(bool enable) {
+    delegate_->SetStatusAreaEnabled(enable);
+  }
 
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();

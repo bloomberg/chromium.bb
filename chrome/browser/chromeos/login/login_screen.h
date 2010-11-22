@@ -41,6 +41,7 @@ class LoginScreen : public ViewScreen<NewUserView>,
   virtual void AddStartUrl(const GURL& start_url) { start_url_ = start_url; }
   virtual void ClearErrors();
   virtual void NavigateAway() {}
+  virtual void SetStatusAreaEnabled(bool enable) {}
 
   // Overridden from LoginStatusConsumer.
   virtual void OnLoginFailure(const LoginFailure& error);
