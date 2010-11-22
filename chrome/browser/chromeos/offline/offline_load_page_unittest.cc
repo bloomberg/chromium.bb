@@ -23,6 +23,7 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
                       const GURL& url,
                       Delegate* delegate)
     : chromeos::OfflineLoadPage(tab_contents, url, delegate) {
+    EnableTest();
   }
 
   // Overriden from InterstitialPage.  Don't create a view.
@@ -103,13 +104,14 @@ TEST_F(OfflineLoadPageTest, OfflinePaeProceed) {
 
   // Simulate the user clicking "proceed".
   interstitial->Proceed();
+  MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(OK, user_response());
 
   // The URL remains to be URL2.
   EXPECT_EQ(kURL2, contents()->GetURL().spec());
 
-  // Ccommit navigation and the interstitial page is gone.
+  // Commit navigation and the interstitial page is gone.
   Navigate(kURL2, 2);
   EXPECT_FALSE(GetOfflineLoadPage());
 }

@@ -33,6 +33,14 @@ namespace {
 // Maximum time to show a blank page.
 const int kMaxBlankPeriod = 3000;
 
+// This is a workaround for  crosbug.com/8285.
+// Chrome sometimes fails to load the page silently
+// when the load is requested right after network is
+// restored. This happens more often in HTTPS than HTTP.
+// This should be removed once the root cause is fixed.
+const int kSecureDelayMs = 1000;
+const int kDefaultDelayMs = 300;
+
 // A utility function to set the dictionary's value given by |resource_id|.
 void SetString(DictionaryValue* strings, const char* name, int resource_id) {
   strings->SetString(name, l10n_util::GetStringUTF16(resource_id));
@@ -61,7 +69,10 @@ OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
                                  const GURL& url,
                                  Delegate* delegate)
     : InterstitialPage(tab_contents, true, url),
-      delegate_(delegate) {
+      delegate_(delegate),
+      proceeded_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      in_test_(false) {
   registrar_.Add(this, NotificationType::NETWORK_STATE_CHANGED,
                  NotificationService::AllSources());
 }
@@ -174,11 +185,26 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
 }
 
 void OfflineLoadPage::Proceed() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  int delay = url().SchemeIsSecure() ? kSecureDelayMs : kDefaultDelayMs;
+  if (in_test_)
+    delay = 0;
+  proceeded_ = true;
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      method_factory_.NewRunnableMethod(&OfflineLoadPage::DoProceed),
+      delay);
+}
+
+void OfflineLoadPage::DoProceed() {
   delegate_->OnBlockingPageComplete(true);
   InterstitialPage::Proceed();
 }
 
 void OfflineLoadPage::DontProceed() {
+  // Inogre if it's already proceeded.
+  if (proceeded_)
+    return;
   delegate_->OnBlockingPageComplete(false);
   InterstitialPage::DontProceed();
 }
