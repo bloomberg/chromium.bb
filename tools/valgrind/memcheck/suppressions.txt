@@ -367,6 +367,17 @@
   Memcheck:Value8
   ...
   fun:inflate
+  fun:_ZN4spdy10SpdyFramer26DecompressFrameWithZStreamERKNS_9SpdyFrameEP10z_stream_s
+  fun:_ZN4spdy10SpdyFramer22DecompressControlFrameERKNS_16SpdyControlFrameE
+  fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
+}
+{
+  # zlib is smarter than we are:
+  #   http://www.zlib.net/zlib_faq.html#faq36
+  zlib_conditional_jump_performance_c
+  Memcheck:Value8
+  ...
+  fun:inflate
   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
 }
 {
@@ -454,6 +465,16 @@
    fun:PORT_ArenaZAlloc_Util
    fun:sec_pkcs7_create_content_info
    fun:SEC_PKCS7CreateData
+   fun:sec_pkcs12_encoder_start_context
+   fun:SEC_PKCS12Encode
+}
+{
+   bug_51332c
+   Memcheck:Leak
+   fun:calloc
+   fun:PORT_ZAlloc_Util
+   fun:PORT_NewArena_Util
+   fun:sec_pkcs7_create_content_info
    fun:sec_pkcs12_encoder_start_context
    fun:SEC_PKCS12Encode
 }
@@ -2122,7 +2143,7 @@
    fun:event_del
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher26StopWatchingFileDescriptorEv
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcherD1Ev
-   fun:_ZN61MessageLoopTest_FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
+   fun:*MessageLoopTest_FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
 }
 {
    bug_44966b
@@ -2901,7 +2922,7 @@
    fun:malloc
    ...
    fun:*inflateInit2_
-   fun:*inflateInit_
+   ...
    fun:_ZN8remoting16DecompressorZlib10InitStreamEv
    fun:_ZN8remoting16DecompressorZlib5ResetEv
 }
