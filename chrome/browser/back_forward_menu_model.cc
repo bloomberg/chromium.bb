@@ -7,6 +7,7 @@
 #include "chrome/browser/back_forward_menu_model.h"
 
 #include "app/l10n_util.h"
+#include "app/text_elider.h"
 #include "app/resource_bundle.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -21,6 +22,7 @@
 
 const int BackForwardMenuModel::kMaxHistoryItems = 12;
 const int BackForwardMenuModel::kMaxChapterStops = 5;
+static const int kMaxWidth = 700;
 
 BackForwardMenuModel::BackForwardMenuModel(Browser* browser,
                                            ModelType model_type)
@@ -71,10 +73,13 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   if (IsSeparator(index))
     return string16();
 
-  // Return the entry title, escaping any '&' characters.
+  // Return the entry title, escaping any '&' characters and eliding it if it's
+  // super long.
   NavigationEntry* entry = GetNavigationEntry(index);
   string16 menu_text(entry->GetTitleForDisplay(
       &GetTabContents()->controller()));
+  menu_text = gfx::ElideText(menu_text, gfx::Font(), kMaxWidth, false);
+
   for (size_t i = menu_text.find('&'); i != string16::npos;
        i = menu_text.find('&', i + 2)) {
     menu_text.insert(i, 1, '&');
