@@ -294,6 +294,9 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)onRenderWidgetHostViewGone {
+  if (!renderWidgetHostView_)
+    return;
+
   CGLLockContext(cglContext_);
   // Deallocate the plugin handle while we still can.
   renderWidgetHostView_->DeallocFakePluginWindowHandle(pluginHandle_);
@@ -419,6 +422,11 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   // Delegate first responder to the RWHVMac.
   [[self window] makeFirstResponder:[self superview]];
   return YES;
+}
+
+- (void)viewDidMoveToSuperview {
+  if (![self superview])
+    [self onRenderWidgetHostViewGone];
 }
 @end
 
@@ -852,6 +860,13 @@ gfx::PluginWindowHandle
 RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque,
                                                         bool root) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // |render_widget_host_| is set to NULL when |RWHVMac::Destroy()| has
+  // completed. If |AllocateFakePluginWindowHandle()| is called after that,
+  // we will crash when the AcceleratedPluginView we allocate below is
+  // destroyed.
+  DCHECK(render_widget_host_);
+
   // Create an NSView to host the plugin's/compositor's pixels.
   gfx::PluginWindowHandle handle =
       plugin_container_manager_.AllocateFakePluginWindowHandle(opaque, root);
