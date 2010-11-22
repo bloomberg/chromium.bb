@@ -23,7 +23,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
 #include "views/fill_layout.h"
@@ -92,6 +91,7 @@ static void InitMenuButtonProperties(views::MenuButton* menu_button) {
   menu_button->set_animate_on_state_change(false);
   // Menu is positioned by bottom right corner of the MenuButton.
   menu_button->set_menu_offset(kMenuHorizontalOffset, kMenuVerticalOffset);
+  chromeos::CorrectMenuButtonFontSize(menu_button);
 }
 
 }  // namespace
@@ -448,7 +448,7 @@ void NetworkSelectionView::RecreateNativeControls() {
   // sized so delete and recreate the button on text update.
   bool is_continue_enabled = IsContinueEnabled();
   delete continue_button_;
-  continue_button_ = new views::NativeButton(
+  continue_button_ = new login::WideButton(
       delegate_,
       l10n_util::GetString(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
   continue_button_->SetEnabled(is_continue_enabled);

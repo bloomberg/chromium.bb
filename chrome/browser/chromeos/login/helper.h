@@ -20,6 +20,7 @@ class Size;
 
 namespace views {
 class Label;
+class MenuButton;
 class Painter;
 class Textfield;
 class Throbber;
@@ -43,6 +44,9 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size);
 
 // Corrects font size for NativeButton control.
 void CorrectLabelFontSize(views::Label* label);
+
+// Corrects font size for MenuButton control.
+void CorrectMenuButtonFontSize(views::MenuButton* button);
 
 // Corrects font size for NativeButton control.
 void CorrectNativeButtonFontSize(views::NativeButton* button);
