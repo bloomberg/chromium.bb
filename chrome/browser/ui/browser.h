@@ -250,8 +250,9 @@ class Browser : public TabHandlerDelegate,
       extension_misc::LaunchContainer container,
       const GURL& url);
 
-  // Open an application for |extension| in a new application window or panel.
-  static TabContents* OpenApplicationWindow(Profile* profile, GURL& url);
+  // Open an application in a new application window.  Used to implement
+  // app shortcuts.
+  static TabContents* OpenApplicationWindow(Profile* profile, const GURL& url);
 
   // Open an application for |extension| in a new application tab, or
   // |existing_tab| if not NULL.  Returns NULL if there are no appropriate

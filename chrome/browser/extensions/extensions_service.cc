@@ -607,7 +607,7 @@ void ExtensionsService::InitEventRouters() {
 void ExtensionsService::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(!ready_);
+  DCHECK(!ready_);  // Can't redo init.
   DCHECK_EQ(extensions_.size(), 0u);
 
   // Hack: we need to ensure the ResourceDispatcherHost is ready before we load
@@ -1483,10 +1483,11 @@ void ExtensionsService::GarbageCollectExtensions() {
 }
 
 void ExtensionsService::OnLoadedInstalledExtensions() {
-  ready_ = true;
   if (updater_.get()) {
     updater_->Start();
   }
+
+  ready_ = true;
   NotificationService::current()->Notify(
       NotificationType::EXTENSIONS_READY,
       Source<Profile>(profile_),

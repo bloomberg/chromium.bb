@@ -279,10 +279,11 @@ void ExtensionProcessManager::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::EXTENSIONS_READY:
+    case NotificationType::EXTENSIONS_READY: {
       CreateBackgroundHosts(this,
           Source<Profile>(source).ptr()->GetExtensionsService()->extensions());
       break;
+    }
 
     case NotificationType::EXTENSION_LOADED: {
       ExtensionsService* service =
@@ -452,6 +453,9 @@ void IncognitoExtensionProcessManager::Observe(
       // it matches our profile.
       Browser* browser = Source<Browser>(source).ptr();
       if (browser->profile() == browsing_instance_->profile()) {
+        // On Chrome OS, a login screen is implemented as a browser.
+        // This browser has no extension service.  In this case,
+        // service will be NULL.
         ExtensionsService* service =
             browsing_instance_->profile()->GetExtensionsService();
         if (service && service->is_ready())

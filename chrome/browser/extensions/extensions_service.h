@@ -386,6 +386,7 @@ class ExtensionsService
   ExtensionPrefs* extension_prefs() { return extension_prefs_.get(); }
 
   // Whether the extension service is ready.
+  // TODO(skerner): Get rid of this method.  crbug.com/63756
   bool is_ready() { return ready_; }
 
   // Note that this may return NULL if autoupdate is not turned on.
@@ -512,7 +513,8 @@ class ExtensionsService
   // Used by dispatchers to limit API quota for individual extensions.
   ExtensionsQuotaService quota_service_;
 
-  // Is the service ready to go?
+  // Record that Init() has been called, and NotificationType::EXTENSIONS_READY
+  // has fired.
   bool ready_;
 
   // Our extension updater, if updates are turned on.
