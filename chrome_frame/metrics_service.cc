@@ -471,6 +471,8 @@ void MetricsService::SetReporting(bool enable) {
           SetTimer(NULL, kChromeFrameMetricsTimerId,
                    kInitialUMAUploadTimeoutMilliSeconds,
                    reinterpret_cast<TIMERPROC>(TransmissionTimerProc));
+    } else {
+      UploadData();
     }
   }
 }
