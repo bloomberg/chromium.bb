@@ -1330,8 +1330,10 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "shm") == 0) {
 		d->shm = wl_shm_create(display, id);
 	} else if (strcmp(interface, "drag_offer") == 0) {
-		offer = wl_drag_offer_create(display, id);
-		d->drag_offer_handler(offer, d);
+		if (d->drag_offer_handler) {
+			offer = wl_drag_offer_create(display, id);
+			d->drag_offer_handler(offer, d);
+		}
 	}
 }
 
