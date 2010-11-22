@@ -16,12 +16,16 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#import "chrome/browser/cocoa/location_bar/instant_opt_in_controller.h"
 #include "gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompletePopupModel;
+
 class AutocompleteEditModel;
 class AutocompleteEditViewMac;
+@class AutocompleteMatrix;
+class AutocompletePopupModel;
+@class InstantOptInController;
 @class NSImage;
 class Profile;
 
@@ -31,13 +35,17 @@ class Profile;
 // TODO(rohitrao): This class is set up in a way that makes testing hard.
 // Refactor and write unittests.  http://crbug.com/9977
 
-class AutocompletePopupViewMac : public AutocompletePopupView {
+class AutocompletePopupViewMac : public AutocompletePopupView,
+                                 public InstantOptInControllerDelegate {
  public:
   AutocompletePopupViewMac(AutocompleteEditViewMac* edit_view,
                            AutocompleteEditModel* edit_model,
                            Profile* profile,
                            NSTextField* field);
   virtual ~AutocompletePopupViewMac();
+
+  // Implement the InstantOptInControllerDelegate interface.
+  virtual void UserPressedOptIn(bool opt_in);
 
   // Implement the AutocompletePopupView interface.
   virtual bool IsOpen() const;
@@ -111,6 +119,9 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
       const float cellWidth);
 
  private:
+  // Returns the AutocompleteMatrix for this popup view.
+  AutocompleteMatrix* GetAutocompleteMatrix();
+
   // Create the popup_ instance if needed.
   void CreatePopupIfNeeded();
 
@@ -125,12 +136,16 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // Returns the NSImage that should be used as an icon for the given match.
   NSImage* ImageForMatch(const AutocompleteMatch& match);
 
+  // Returns whether or not to show the instant opt-in prompt.
+  bool ShouldShowInstantOptIn();
+
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditViewMac* edit_view_;
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.
   scoped_nsobject<NSWindow> popup_;
+  scoped_nsobject<InstantOptInController> opt_in_controller_;
   NSRect targetPopupFrame_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupViewMac);

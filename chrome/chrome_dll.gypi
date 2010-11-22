@@ -233,6 +233,7 @@
                 'app/nibs/ImportSettingsDialog.xib',
                 'app/nibs/InfoBar.xib',
                 'app/nibs/InfoBarContainer.xib',
+                'app/nibs/InstantOptIn.xib',
                 'app/nibs/ImportProgressDialog.xib',
                 'app/nibs/KeywordEditor.xib',
                 'app/nibs/MainMenu.xib',

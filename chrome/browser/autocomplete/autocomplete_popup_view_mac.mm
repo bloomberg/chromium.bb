@@ -8,6 +8,7 @@
 
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
+#include "base/mac_util.h"
 #include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -17,10 +18,17 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/cocoa/image_utils.h"
+#import "chrome/browser/cocoa/location_bar/instant_opt_in_controller.h"
+#import "chrome/browser/cocoa/location_bar/instant_opt_in_view.h"
+#import "chrome/browser/cocoa/location_bar/omnibox_popup_view.h"
+#include "chrome/browser/instant/instant_confirm_dialog.h"
+#include "chrome/browser/instant/promo_counter.h"
+#include "chrome/browser/profile.h"
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
 namespace {
 
@@ -251,9 +259,15 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 
 @interface AutocompleteMatrix : NSMatrix {
  @private
+  // If YES, the matrix draws itself with rounded corners at the bottom.
+  // Otherwise, the bottom corners will be square.
+  BOOL bottomCornersRounded_;
+
   // Target for click and middle-click.
   AutocompletePopupViewMac* popupView_;  // weak, owns us.
 }
+
+@property(assign, nonatomic) BOOL bottomCornersRounded;
 
 // Create a zero-size matrix initializing |popupView_|.
 - initWithPopupView:(AutocompletePopupViewMac*)popupView;
@@ -276,6 +290,7 @@ AutocompletePopupViewMac::AutocompletePopupViewMac(
       edit_view_(edit_view),
       field_(field),
       popup_(nil),
+      opt_in_controller_(nil),
       targetPopupFrame_(NSZeroRect) {
   DCHECK(edit_view);
   DCHECK(edit_model);
@@ -290,9 +305,20 @@ AutocompletePopupViewMac::~AutocompletePopupViewMac() {
 
   // Break references to |this| because the popup may not be
   // deallocated immediately.
-  AutocompleteMatrix* matrix = [popup_ contentView];
+  AutocompleteMatrix* matrix = GetAutocompleteMatrix();
   DCHECK(matrix == nil || [matrix isKindOfClass:[AutocompleteMatrix class]]);
   [matrix setPopupView:NULL];
+}
+
+AutocompleteMatrix* AutocompletePopupViewMac::GetAutocompleteMatrix() {
+  // The AutocompleteMatrix will always be the first subview of the popup's
+  // content view.
+  if (popup_ && [[[popup_ contentView] subviews] count]) {
+    NSArray* subviews = [[popup_ contentView] subviews];
+    DCHECK_GE([subviews count], 0U);
+    return (AutocompleteMatrix*)[subviews objectAtIndex:0];
+  }
+  return nil;
 }
 
 bool AutocompletePopupViewMac::IsOpen() const {
@@ -306,8 +332,7 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
                                                backing:NSBackingStoreBuffered
                                                  defer:YES]);
     [popup_ setMovableByWindowBackground:NO];
-    // The window shape is determined by the content view
-    // (AutocompleteMatrix).
+    // The window shape is determined by the content view (OmniboxPopupView).
     [popup_ setAlphaValue:1.0];
     [popup_ setOpaque:NO];
     [popup_ setBackgroundColor:[NSColor clearColor]];
@@ -316,7 +341,11 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
 
     scoped_nsobject<AutocompleteMatrix> matrix(
         [[AutocompleteMatrix alloc] initWithPopupView:this]);
-    [popup_ setContentView:matrix];
+    scoped_nsobject<OmniboxPopupView> contentView(
+        [[OmniboxPopupView alloc] initWithFrame:NSZeroRect]);
+
+    [contentView addSubview:matrix];
+    [popup_ setContentView:contentView];
   }
 }
 
@@ -407,7 +436,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
 
     // Break references to |this| because the popup may not be
     // deallocated immediately.
-    AutocompleteMatrix* matrix = [popup_ contentView];
+    AutocompleteMatrix* matrix = GetAutocompleteMatrix();
     DCHECK(matrix == nil || [matrix isKindOfClass:[AutocompleteMatrix class]]);
     [matrix setPopupView:NULL];
 
@@ -424,7 +453,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   gfx::Font resultFont(base::SysNSStringToWide([fieldFont fontName]),
                        static_cast<int>(resultFontSize));
 
-  AutocompleteMatrix* matrix = [popup_ contentView];
+  AutocompleteMatrix* matrix = GetAutocompleteMatrix();
 
   // Calculate the width of the matrix based on backing out the
   // popup's border from the width of the field.  Would prefer to use
@@ -454,6 +483,22 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   const CGFloat cellHeight = cellSize.height + kCellHeightAdjust;
   [matrix setCellSize:NSMakeSize(matrixWidth, cellHeight)];
 
+  // Add in the instant view if needed and not already present.
+  CGFloat instantHeight = 0;
+  if (ShouldShowInstantOptIn()) {
+    if (!opt_in_controller_.get()) {
+      opt_in_controller_.reset(
+          [[InstantOptInController alloc] initWithDelegate:this]);
+    }
+    [[popup_ contentView] addSubview:[opt_in_controller_ view]];
+    [GetAutocompleteMatrix() setBottomCornersRounded:NO];
+    instantHeight = NSHeight([[opt_in_controller_ view] frame]);
+  } else {
+    [[opt_in_controller_ view] removeFromSuperview];
+    opt_in_controller_.reset(nil);
+    [GetAutocompleteMatrix() setBottomCornersRounded:YES];
+  }
+
   // Update the selection before placing (and displaying) the window.
   PaintUpdatesNow();
 
@@ -461,7 +506,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   // because actually resizing the matrix messed up the popup size
   // animation.
   DCHECK_EQ([matrix intercellSpacing].height, 0.0);
-  PositionPopup(rows * cellHeight);
+  CGFloat matrixHeight = rows * cellHeight;
+  PositionPopup(matrixHeight + instantHeight);
 }
 
 gfx::Rect AutocompletePopupViewMac::GetTargetBounds() {
@@ -480,7 +526,7 @@ void AutocompletePopupViewMac::SetSelectedLine(size_t line) {
 // This is only called by model in SetSelectedLine() after updating
 // everything.  Popup should already be visible.
 void AutocompletePopupViewMac::PaintUpdatesNow() {
-  AutocompleteMatrix* matrix = [popup_ contentView];
+  AutocompleteMatrix* matrix = GetAutocompleteMatrix();
   [matrix selectCellAtRow:model_->selected_line() column:0];
 }
 
@@ -507,6 +553,24 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
   edit_view_->OpenURL(url, disposition, match.transition, GURL(), row,
                       is_keyword_hint ? std::wstring() : keyword);
+}
+
+void AutocompletePopupViewMac::UserPressedOptIn(bool opt_in) {
+  PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
+  DCHECK(counter);
+  counter->Hide();
+  if (opt_in) {
+    browser::ShowInstantConfirmDialogIfNecessary([field_ window],
+                                                 model_->profile());
+  }
+
+  // This call will remove and delete |opt_in_controller_|.
+  UpdatePopupAppearance();
+}
+
+bool AutocompletePopupViewMac::ShouldShowInstantOptIn() {
+  PromoCounter* counter = model_->profile()->GetInstantPromoCounter();
+  return (counter && counter->ShouldShow(base::Time::Now()));
 }
 
 @implementation AutocompleteButtonCell
@@ -569,7 +633,7 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
 
 @implementation AutocompleteMatrix
 
-
+@synthesize bottomCornersRounded = bottomCornersRounded_;
 
 // Remove all tracking areas and initialize the one we want.  Removing
 // all might be overkill, but it's unclear why there would be others
@@ -752,10 +816,16 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
 // This handles drawing the decorations of the rounded popup window,
 // calling on NSMatrix to draw the actual contents.
 - (void)drawRect:(NSRect)rect {
+  CGFloat bottomCornerRadius =
+      (bottomCornersRounded_ ? kPopupRoundingRadius : 0);
+
+  // "Top" really means "bottom" here, since the view is flipped.
   NSBezierPath* path =
-     [NSBezierPath bezierPathWithRoundedRect:[self bounds]
-                                     xRadius:kPopupRoundingRadius
-                                     yRadius:kPopupRoundingRadius];
+     [NSBezierPath gtm_bezierPathWithRoundRect:[self bounds]
+                           topLeftCornerRadius:bottomCornerRadius
+                          topRightCornerRadius:bottomCornerRadius
+                        bottomLeftCornerRadius:kPopupRoundingRadius
+                       bottomRightCornerRadius:kPopupRoundingRadius];
 
   // Draw the matrix clipped to our border.
   [NSGraphicsContext saveGraphicsState];
