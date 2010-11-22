@@ -240,10 +240,10 @@ class FindMatchTests(pyauto.PyUITest):
     if properties['branding'] != 'Google Chrome':
       return
     url = self.GetFileURLForPath(os.path.join(
-        self.DataDir(), 'pdf_browsertest.pdf'))
+        self.DataDir(), 'plugin', 'Embed.pdf'))
     self.NavigateToURL(url)
-    search_count = self.FindInPage('venenatis')['match_count']
-    self.assertEqual(4, search_count, 'Failed to find in the pdf file')
+    search_count = self.FindInPage('adobe')['match_count']
+    self.assertEqual(8, search_count, 'Failed to find in the pdf file')
 
 
 if __name__ == '__main__':
