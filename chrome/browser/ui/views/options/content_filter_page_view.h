@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_OPTIONS_CONTENT_FILTER_PAGE_VIEW_H_
 #pragma once
 
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/notification_registrar.h"
 #include "views/controls/button/button.h"
 
 namespace views {
@@ -27,7 +29,18 @@ class ContentFilterPageView : public OptionsPageView,
   ContentFilterPageView(Profile* profile, ContentSettingsType content_type);
   virtual ~ContentFilterPageView();
 
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
  protected:
+  // Updates the state of the UI. UpdateView is called when the content filter
+  // page is initialized and after the content setting changed (either the
+  // value or the is managed state).
+  virtual void UpdateView();
+
+  virtual void NotifyContentSettingsChanged(
+      const HostContentSettingsMap::ContentSettingsDetails *details);
+
   // OptionsPageView implementation:
   virtual void InitControlLayout();
 
@@ -42,6 +55,8 @@ class ContentFilterPageView : public OptionsPageView,
   views::RadioButton* ask_radio_;
   views::RadioButton* block_radio_;
   views::NativeButton* exceptions_button_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentFilterPageView);
 };

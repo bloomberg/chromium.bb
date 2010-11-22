@@ -45,6 +45,9 @@ class CookieFilterPageView : public ContentFilterPageView,
   // Clear locally stored site data on exit pref.
   BooleanPrefMember clear_site_data_on_exit_;
 
+  // Block all third party cookies.
+  BooleanPrefMember block_third_party_cookies_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(CookieFilterPageView);
 };
 
