@@ -1,0 +1,17 @@
+Name: libjpeg-turbo
+URL: http://sourceforge.net/projects/libjpeg-turbo/
+License File: LICENSE.txt
+
+This consists of three components:
+* A partial copy of libjpeg-turbo-1.0.1;
+* A build file (libjpeg.gyp), and;
+* Patched header files used by Chromium.
+
+This libjpeg-turbo can replace our libjpeg-6b without any modifications in the
+Chromium code.
+
+Same as our copy of libjpeg-6b, this libjpeg-turbo also added a new file
+jpeglibmangler.h and included it from jpeglib.h that changes the names of all
+externally visible functions to chromium_* so that we can avoid conflicts that
+arise when system libraries attempt to use our libjpeg. The 'google.patch' file
+represents our changes from the original libjpeg-turbo-1.0.1.
