@@ -897,8 +897,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         message = rule.get('message')
         if message:
           message = gyp.common.EncodePOSIXShellArgument(message)
-          message = '@echo note: ' + ExpandXcodeVariables(message,
-                                                          rule_input_dict)
+          message = ExpandXcodeVariables(message, rule_input_dict)
         messages.append(message)
 
         # Turn the list into a string that can be passed to a shell.
@@ -975,14 +974,15 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
           # Make sure that output directories exist before executing the rule
           # action.
-          # TODO(mark): quote the list of concrete_output_dirs.
           if len(concrete_output_dirs) > 0:
-            makefile.write('\tmkdir -p %s\n' % ' '.join(concrete_output_dirs))
+            makefile.write('\t@mkdir -p "%s"\n' %
+                           '" "'.join(concrete_output_dirs))
 
           # The rule message and action have already had the necessary variable
           # substitutions performed.
           if message:
-            makefile.write('\t%s\n' % message)
+            # Mark it with note: so Xcode picks it up in build output.
+            makefile.write('\t@echo note: %s\n' % message)
           makefile.write('\t%s\n' % action)
 
         makefile.close()
