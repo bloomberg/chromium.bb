@@ -126,10 +126,15 @@ void OobeProgressBar::OnLocaleChanged() {
   SchedulePaint();
 }
 
-void OobeProgressBar::SetProgress(size_t progress) {
-  DCHECK(progress < steps_.size());
-  progress_ = progress;
-  SchedulePaint();
+void OobeProgressBar::SetStep(int step) {
+  for (size_t i = 0; i < steps_.size(); ++i) {
+    if (steps_[i] == step) {
+      progress_ = i;
+      SchedulePaint();
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 }  // namespace chromeos

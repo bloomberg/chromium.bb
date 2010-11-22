@@ -37,14 +37,13 @@ class BackgroundView : public views::View,
  public:
   enum LoginStep {
     SELECT_NETWORK,
-#if defined(OFFICIAL_BUILD)
     EULA,
-#endif
     SIGNIN,
-#if defined(OFFICIAL_BUILD)
     REGISTRATION,
-#endif
-    PICTURE
+    PICTURE,
+
+    // Steps count, must be the last in the enum.
+    STEPS_COUNT
   };
 
   BackgroundView();

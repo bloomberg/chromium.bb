@@ -27,12 +27,9 @@ class OobeProgressBar : public views::View {
   // Overridden from View:
   virtual void Paint(gfx::Canvas* canvas);
 
-  // Set and get the progress bar progress in range [0, steps_.size() - 1].
-  void SetProgress(size_t progress);
-  int GetProgress() const { return progress_; }
-
-  // Add progress to current.
-  void AddProgress(size_t tick) { SetProgress(progress_ + tick); }
+  // Set the current step for the progress bar. Must be one of the steps
+  // passed in the constructor.
+  void SetStep(int step);
 
  protected:
   // Overridden from View:
@@ -51,7 +48,11 @@ class OobeProgressBar : public views::View {
 
   gfx::Font font_;
 
+  // Unique ids for progress bar steps. The order defines how the steps are
+  // enumerated on screen.
   std::vector<int> steps_;
+
+  //  Index of the current step.
   size_t progress_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeProgressBar);

@@ -49,6 +49,25 @@ namespace {
 
 const SkColor kVersionColor = 0xff5c739f;
 
+// Returns the corresponding step id for step constant.
+int GetStepId(size_t step) {
+  switch (step) {
+    case chromeos::BackgroundView::SELECT_NETWORK:
+      return IDS_OOBE_SELECT_NETWORK;
+    case chromeos::BackgroundView::EULA:
+      return IDS_OOBE_EULA;
+    case chromeos::BackgroundView::SIGNIN:
+      return IDS_OOBE_SIGNIN;
+    case chromeos::BackgroundView::REGISTRATION:
+      return IDS_OOBE_REGISTRATION;
+    case chromeos::BackgroundView::PICTURE:
+      return IDS_OOBE_PICTURE;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 // The same as TextButton but switches cursor to hand cursor when mouse
 // is over the button.
 class TextButtonWithHandCursorOver : public views::TextButton {
@@ -183,9 +202,9 @@ bool BackgroundView::IsOobeProgressBarVisible() {
 }
 
 void BackgroundView::SetOobeProgress(LoginStep step) {
-  DCHECK(step <= PICTURE);
+  DCHECK(step < STEPS_COUNT);
   if (progress_bar_)
-    progress_bar_->SetProgress(step);
+    progress_bar_->SetStep(GetStepId(step));
 }
 
 void BackgroundView::ShowScreenSaver() {
@@ -358,16 +377,16 @@ void BackgroundView::InitInfoLabels() {
 
 void BackgroundView::InitProgressBar() {
   std::vector<int> steps;
-  steps.push_back(IDS_OOBE_SELECT_NETWORK);
+  steps.push_back(GetStepId(SELECT_NETWORK));
 #if defined(OFFICIAL_BUILD)
-  steps.push_back(IDS_OOBE_EULA);
+  steps.push_back(GetStepId(EULA));
 #endif
-  steps.push_back(IDS_OOBE_SIGNIN);
+  steps.push_back(GetStepId(SIGNIN));
 #if defined(OFFICIAL_BUILD)
   if (WizardController::IsRegisterScreenDefined())
-    steps.push_back(IDS_OOBE_REGISTRATION);
+    steps.push_back(GetStepId(REGISTRATION));
 #endif
-  steps.push_back(IDS_OOBE_PICTURE);
+  steps.push_back(GetStepId(PICTURE));
   progress_bar_ = new OobeProgressBar(steps);
   AddChildView(progress_bar_);
 }
