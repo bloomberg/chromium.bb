@@ -376,9 +376,14 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         layer_ = layer;
         surface_ = plugin_->GetAcceleratedSurface();
 
-        renderer_ = [[CARenderer rendererWithCGLContext:surface_->context()
-                                                options:NULL] retain];
-        [renderer_ setLayer:layer_];
+        // If surface initialization fails for some reason, just continue
+        // without any drawing; returning false would be a more confusing user
+        // experience (since it triggers a missing plugin placeholder).
+        if (surface_->context()) {
+          renderer_ = [[CARenderer rendererWithCGLContext:surface_->context()
+                                                  options:NULL] retain];
+          [renderer_ setLayer:layer_];
+        }
         plugin_->BindFakePluginWindowHandle(false);
       }
       break;
@@ -978,7 +983,7 @@ void WebPluginDelegateImpl::SetImeEnabled(bool enabled) {
 
 void WebPluginDelegateImpl::DrawLayerInSurface() {
   // If we haven't plumbed up the surface yet, don't try to draw.
-  if (!windowed_handle())
+  if (!windowed_handle() || !renderer_)
     return;
 
   [renderer_ beginFrameAtTime:CACurrentMediaTime() timeStamp:NULL];

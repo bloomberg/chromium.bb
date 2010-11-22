@@ -28,6 +28,7 @@ class WebPluginAcceleratedSurface {
   virtual void SetSize(const gfx::Size& size) = 0;
 
   // Returns the context used to draw into this surface.
+  // If initializing the surface failed, this will be NULL.
   virtual CGLContextObj context() = 0;
 
   // Readies the surface for drawing. Must be called before any drawing session.

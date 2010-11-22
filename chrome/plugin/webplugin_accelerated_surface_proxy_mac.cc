@@ -15,7 +15,13 @@ WebPluginAcceleratedSurfaceProxy::WebPluginAcceleratedSurfaceProxy(
         : plugin_proxy_(plugin_proxy),
           window_handle_(NULL) {
   surface_ = new AcceleratedSurface;
-  surface_->Initialize(NULL, true);
+  // It's possible for OpenGL to fail to initialze (e.g., if an incompatible
+  // mode is forced via flags), so handle that gracefully.
+  if (!surface_->Initialize(NULL, true)) {
+    delete surface_;
+    surface_ = NULL;
+    return;
+  }
 
   // Only used for 10.5 support, but harmless on 10.6+.
   surface_->SetTransportDIBAllocAndFree(
@@ -37,6 +43,9 @@ void WebPluginAcceleratedSurfaceProxy::SetWindowHandle(
 }
 
 void WebPluginAcceleratedSurfaceProxy::SetSize(const gfx::Size& size) {
+  if (!surface_)
+    return;
+
   uint64 io_surface_id = surface_->SetSurfaceSize(size);
   if (io_surface_id) {
     plugin_proxy_->SetAcceleratedSurface(window_handle_, size, io_surface_id);
@@ -49,15 +58,21 @@ void WebPluginAcceleratedSurfaceProxy::SetSize(const gfx::Size& size) {
 }
 
 CGLContextObj WebPluginAcceleratedSurfaceProxy::context() {
-  return surface_->context();
+  return surface_ ? surface_->context() : NULL;
 }
 
 void WebPluginAcceleratedSurfaceProxy::StartDrawing() {
+  if (!surface_)
+    return;
+
   surface_->MakeCurrent();
   surface_->Clear(gfx::Rect(surface_->GetSize()));
 }
 
 void WebPluginAcceleratedSurfaceProxy::EndDrawing() {
+  if (!surface_)
+    return;
+
   surface_->SwapBuffers();
   plugin_proxy_->AcceleratedFrameBuffersDidSwap(
       window_handle_, surface_->GetSurfaceId());
