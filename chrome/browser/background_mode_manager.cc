@@ -495,6 +495,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
 #else
   menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
+  menu->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   menu->AddSeparator();
   int application_position = 0;
   context_menu_application_offset_ = menu->GetItemCount();
@@ -550,15 +551,18 @@ void BackgroundModeManager::ExecuteApplication(int item) {
 
 void BackgroundModeManager::ExecuteCommand(int item) {
   switch (item) {
+    case IDC_ABOUT:
+      GetBrowserWindow()->OpenAboutChromeDialog();
+      break;
     case IDC_EXIT:
       UserMetrics::RecordAction(UserMetricsAction("Exit"), profile_);
       BrowserList::CloseAllBrowsersAndExit();
       break;
-    case IDC_ABOUT:
-      GetBrowserWindow()->OpenAboutChromeDialog();
-      break;
     case IDC_OPTIONS:
       GetBrowserWindow()->OpenOptionsDialog();
+      break;
+    case IDC_TASK_MANAGER:
+      GetBrowserWindow()->OpenTaskManager();
       break;
     default:
       ExecuteApplication(item);
