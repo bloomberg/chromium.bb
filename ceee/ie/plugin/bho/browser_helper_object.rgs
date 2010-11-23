@@ -1,6 +1,6 @@
 HKCR {
 NoRemove CLSID {
-    ForceRemove {E49EBDB7-CEC9-4014-A5F5-8D3C8F5997DC} = s 'Google Chrome Extensions Execution Environment Helper' {
+    ForceRemove '%CLSID%' = s '%NAME%' {
       InprocServer32 = s '%MODULE%' {
         val ThreadingModel = s 'Apartment'
       }
@@ -15,7 +15,7 @@ HKLM {
         NoRemove CurrentVersion {
           NoRemove Explorer {
             NoRemove 'Browser Helper Objects' {
-              ForceRemove '{E49EBDB7-CEC9-4014-A5F5-8D3C8F5997DC}' = s 'Google Chrome Extensions Execution Environment Helper' {
+              ForceRemove '%CLSID%' = s '%NAME%' {
                 val 'NoExplorer' = d '1'
               }
             }

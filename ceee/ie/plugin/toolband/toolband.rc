@@ -80,7 +80,6 @@ END
 
 IDR_BROWSERHELPEROBJECT REGISTRY                "ceee\\ie\\plugin\\bho\\browser_helper_object.rgs"
 IDR_EXECUTOR            REGISTRY                "ceee\\ie\\plugin\\bho\\executor.rgs"
-IDR_EXECUTOR_CREATOR    REGISTRY                "ceee\\ie\\plugin\\bho\\executor_creator.rgs"
 IDR_TOOL_BAND           REGISTRY                "tool_band.rgs"
 IDR_TOOLBAND_PROXY      REGISTRY                "toolband_proxy.rgs"
 
@@ -98,7 +97,10 @@ IDR_GREASEMONKEY_API_JS BINDATA                 "chrome\\renderer\\resources\\gr
 
 STRINGTABLE
 BEGIN
-    IDS_PROJNAME            "IE"
+    IDS_PROJNAME                    "IE"
+    IDS_CEEE_NAME                   "Google Chrome Extensions Execution Environment"
+    IDS_CEEE_EXECUTOR_CREATOR_NAME  "Google CEEE Executor Creator"
+    IDS_CEEE_EXECUTOR_NAME          "Google CEEE Executor"
 END
 
 #endif    // English (U.S.) resources

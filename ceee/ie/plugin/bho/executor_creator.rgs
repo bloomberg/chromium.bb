@@ -1,9 +1,0 @@
-HKCR {
-  NoRemove CLSID {
-    ForceRemove '{4A562910-2D54-4e98-B87F-D4A7F5F5D0B9}' = s 'Google CEEE Executor Creator' {
-      InprocServer32 = s '%MODULE%' {
-        val ThreadingModel = s 'Free'
-      }
-    }
-  }
-}

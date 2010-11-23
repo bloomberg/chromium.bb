@@ -1,9 +1,9 @@
 HKCR {
   NoRemove CLSID {
-    ForceRemove {6D88A70D-2218-4466-BBD6-87AB563811A2} = s 'Google CEEE Broker' {
+    ForceRemove '%CLSID%' = s '%NAME%' {
       ForceRemove 'Programmable'
       LocalServer32 = s '%MODULE%'
-      'TypeLib' = s '{45B783D0-8040-49a6-A719-84E320AAB3C5}'
+      'TypeLib' = s '%LIBID%'
     }
   }
 }

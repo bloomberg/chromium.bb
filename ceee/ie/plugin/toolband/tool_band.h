@@ -20,6 +20,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/win/rgs_helper.h"
 #include "ceee/ie/plugin/toolband/resource.h"
 
 #include "chrome_tab.h"  // NOLINT
@@ -53,7 +54,11 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   ToolBand();
   ~ToolBand();
 
-  DECLARE_REGISTRY_RESOURCEID(IDR_TOOL_BAND)
+  DECLARE_REGISTRY_RESOURCEID_EX(IDR_TOOL_BAND)
+  BEGIN_REGISTRY_MAP(ToolBand)
+    REGMAP_UUID("CLSID", CLSID_ToolBand)
+    REGMAP_RESOURCE("NAME", IDS_CEEE_NAME)
+  END_REGISTRY_MAP()
 
   BEGIN_COM_MAP(ToolBand)
     COM_INTERFACE_ENTRY(IDeskBand)

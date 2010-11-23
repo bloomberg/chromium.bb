@@ -15,6 +15,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "base/win/rgs_helper.h"
 #include "ceee/ie/plugin/bho/infobar_manager.h"
 #include "ceee/ie/plugin/toolband/resource.h"
 
@@ -38,7 +39,12 @@ class ATL_NO_VTABLE CeeeExecutorCreator
   CeeeExecutorCreator();
   void FinalRelease();
 
-  DECLARE_REGISTRY_RESOURCEID(IDR_EXECUTOR_CREATOR)
+  DECLARE_REGISTRY_RESOURCEID_EX(IDR_EXECUTOR)
+  BEGIN_REGISTRY_MAP(CeeeExecutorCreator)
+    REGMAP_UUID("CLSID", CLSID_CeeeExecutorCreator)
+    REGMAP_RESOURCE("NAME", IDS_CEEE_EXECUTOR_CREATOR_NAME)
+    REGMAP_ENTRY("THREADING_MODEL", "Free")
+  END_REGISTRY_MAP()
 
   DECLARE_NOT_AGGREGATABLE(CeeeExecutorCreator)
   BEGIN_COM_MAP(CeeeExecutorCreator)
@@ -167,7 +173,12 @@ class ATL_NO_VTABLE CeeeExecutor
       public ICeeeCookieExecutor,
       public ICeeeInfobarExecutor {
  public:
-  DECLARE_REGISTRY_RESOURCEID(IDR_EXECUTOR)
+  DECLARE_REGISTRY_RESOURCEID_EX(IDR_EXECUTOR)
+  BEGIN_REGISTRY_MAP(CeeeExecutor)
+    REGMAP_UUID("CLSID", CLSID_CeeeExecutor)
+    REGMAP_RESOURCE("NAME", IDS_CEEE_EXECUTOR_NAME)
+    REGMAP_ENTRY("THREADING_MODEL", "Apartment")
+  END_REGISTRY_MAP()
 
   DECLARE_NOT_AGGREGATABLE(CeeeExecutor)
   BEGIN_COM_MAP(CeeeExecutor)

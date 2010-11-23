@@ -1,8 +1,8 @@
 HKCR {
   NoRemove CLSID {
-    ForceRemove '{057FCFE3-F872-483d-86B0-0430E375E41F}' = s 'Google CEEE Executor' {
+    ForceRemove '%CLSID%' = s '%NAME%' {
       InprocServer32 = s '%MODULE%' {
-        val ThreadingModel = s 'Apartment'
+        val ThreadingModel = s '%THREADING_MODEL%'
       }
     }
   }

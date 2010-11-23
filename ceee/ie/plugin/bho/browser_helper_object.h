@@ -21,6 +21,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/task.h"
+#include "base/win/rgs_helper.h"
 #include "ceee/ie/broker/broker_rpc_client.h"
 #include "ceee/ie/plugin/bho/tab_events_funnel.h"
 #include "ceee/ie/common/chrome_frame_host.h"
@@ -50,7 +51,12 @@ class ATL_NO_VTABLE BrowserHelperObject
       public ToolBandVisibility,
       public WebBrowserEventsSource {
  public:
-  DECLARE_REGISTRY_RESOURCEID(IDR_BROWSERHELPEROBJECT)
+  DECLARE_REGISTRY_RESOURCEID_EX(IDR_BROWSERHELPEROBJECT)
+  BEGIN_REGISTRY_MAP(BrowserHelperObject)
+    REGMAP_UUID("CLSID", CLSID_BrowserHelperObject)
+    REGMAP_RESOURCE("NAME", IDS_CEEE_NAME)
+  END_REGISTRY_MAP()
+
   DECLARE_NOT_AGGREGATABLE(BrowserHelperObject)
 
   BEGIN_COM_MAP(BrowserHelperObject)

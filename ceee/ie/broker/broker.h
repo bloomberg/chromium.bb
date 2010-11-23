@@ -11,6 +11,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include "base/win/rgs_helper.h"
 #include "ceee/ie/broker/resource.h"
 
 #include "broker_lib.h"  // NOLINT
@@ -30,7 +31,12 @@ class ATL_NO_VTABLE CeeeBroker
       public ICeeeBrokerRegistrar,
       public IExternalConnectionImpl<CeeeBroker> {
  public:
-  DECLARE_REGISTRY_RESOURCEID(IDR_BROKER)
+  DECLARE_REGISTRY_RESOURCEID_EX(IDR_BROKER)
+  BEGIN_REGISTRY_MAP(CeeeBroker)
+    REGMAP_UUID("CLSID", CLSID_CeeeBroker)
+    REGMAP_UUID("LIBID", LIBID_CeeeBrokerLib)
+    REGMAP_ENTRY("NAME", "Google CEEE Broker")
+  END_REGISTRY_MAP()
 
   DECLARE_NOT_AGGREGATABLE(CeeeBroker)
   BEGIN_COM_MAP(CeeeBroker)

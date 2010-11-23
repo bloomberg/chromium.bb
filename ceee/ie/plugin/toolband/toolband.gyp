@@ -63,7 +63,6 @@
         'toolband_module.cc',
         '../bho/browser_helper_object.rgs',
         '../executor.rgs',
-        '../executor_creator.rgs',
         '../scripting/content_script_manager.rc',
       ],
       'libraries': [
