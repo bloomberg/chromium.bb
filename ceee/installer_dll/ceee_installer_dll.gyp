@@ -18,6 +18,7 @@
         '../../base/base.gyp:base',
         '../../chrome/chrome.gyp:common',
         '../../ceee/common/common.gyp:ceee_common',
+        '../../ceee/common/common.gyp:initializing_coclass',
         '../../ceee/ie/common/common.gyp:ie_common',
         '../firefox/firefox.gyp:xpi',
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',

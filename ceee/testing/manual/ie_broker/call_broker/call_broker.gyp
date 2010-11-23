@@ -17,10 +17,10 @@
         '_CONSOLE',
       ],
       'dependencies': [
-        '<(DEPTH)/ceee/ie/plugin/toolband/toolband.gyp:toolband_idl',
-        '<(DEPTH)/ceee/ie/common/common.gyp:ie_common',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/ceee/common/common.gyp:ceee_common',
+        '<(DEPTH)/ceee/ie/plugin/toolband/toolband.gyp:toolband_idl',
+        '<(DEPTH)/ceee/ie/common/common.gyp:ie_common',
       ],
     },
   ]

@@ -21,6 +21,7 @@
         '../toolband/toolband.gyp:toolband_idl',
         '../../../../base/base.gyp:base',
         '../../../../ceee/common/common.gyp:ceee_common',
+        '../../../../ceee/common/common.gyp:initializing_coclass',
       ],
       'sources': [
         'base.js',

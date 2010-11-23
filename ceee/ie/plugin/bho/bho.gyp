@@ -16,6 +16,7 @@
       'dependencies': [
         '../toolband/toolband.gyp:toolband_idl',
         '../../broker/broker.gyp:broker',
+        '../../broker/broker.gyp:broker_rpc_idl',
         '../../broker/broker.gyp:broker_rpc_lib',
         '../../common/common.gyp:ie_common',
         '../../common/common.gyp:ie_common_settings',
