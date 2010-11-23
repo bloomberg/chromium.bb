@@ -98,13 +98,22 @@ void ExtensionToolbarModel::Observe(NotificationType type,
 
   const Extension* extension = Details<const Extension>(details).ptr();
   if (type == NotificationType::EXTENSION_LOADED) {
+    // We don't want to add the same extension twice. It may have already been
+    // added by EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED below, if the user
+    // hides the browser action and then disables and enables the extension.
+    for (size_t i = 0; i < toolitems_.size(); i++) {
+      if (toolitems_[i].get() == extension)
+        return;  // Already exists.
+    }
     AddExtension(extension);
   } else if (type == NotificationType::EXTENSION_UNLOADED ||
              type == NotificationType::EXTENSION_UNLOADED_DISABLED) {
     RemoveExtension(extension);
   } else if (type ==
              NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
-    if (!service_->GetBrowserActionVisibility(extension))
+    if (service_->GetBrowserActionVisibility(extension))
+      AddExtension(extension);
+    else
       RemoveExtension(extension);
   } else {
     NOTREACHED() << "Received unexpected notification";

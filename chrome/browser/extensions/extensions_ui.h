@@ -162,6 +162,9 @@ class ExtensionsDOMHandler
   // Callback for "options" message.
   void HandleOptionsMessage(const ListValue* args);
 
+  // Callback for "showButton" message.
+  void HandleShowButtonMessage(const ListValue* args);
+
   // Callback for "load" message.
   void HandleLoadMessage(const ListValue* args);
 

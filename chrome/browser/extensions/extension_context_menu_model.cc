@@ -63,10 +63,10 @@ void ExtensionContextMenuModel::InitCommonCommands() {
   AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator();
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS);
-  if (extension->browser_action())
-    AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
   AddItemWithStringId(UNINSTALL, IDS_EXTENSIONS_UNINSTALL);
+  if (extension->browser_action())
+    AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);
   AddSeparator();
   AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);
 }

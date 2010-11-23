@@ -169,6 +169,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_OK));
   localized_strings.SetString("cancelButton",
       l10n_util::GetStringUTF16(IDS_CANCEL));
+  localized_strings.SetString("showButton",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON));
 
   SetFontAndTextDirection(&localized_strings);
 
@@ -311,7 +313,9 @@ void ExtensionsDOMHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("uninstall",
       NewCallback(this, &ExtensionsDOMHandler::HandleUninstallMessage));
   dom_ui_->RegisterMessageCallback("options",
-    NewCallback(this, &ExtensionsDOMHandler::HandleOptionsMessage));
+      NewCallback(this, &ExtensionsDOMHandler::HandleOptionsMessage));
+  dom_ui_->RegisterMessageCallback("showButton",
+      NewCallback(this, &ExtensionsDOMHandler::HandleShowButtonMessage));
   dom_ui_->RegisterMessageCallback("load",
       NewCallback(this, &ExtensionsDOMHandler::HandleLoadMessage));
   dom_ui_->RegisterMessageCallback("pack",
@@ -403,6 +407,9 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
       NotificationService::AllSources());
   registrar_.Add(this,
       NotificationType::BACKGROUND_CONTENTS_DELETED,
+      NotificationService::AllSources());
+  registrar_.Add(this,
+      NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       NotificationService::AllSources());
 }
 
@@ -547,6 +554,11 @@ void ExtensionsDOMHandler::HandleOptionsMessage(const ListValue* args) {
     return;
   dom_ui_->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(
       extension, NULL);
+}
+
+void ExtensionsDOMHandler::HandleShowButtonMessage(const ListValue* args) {
+  const Extension* extension = GetExtension(args);
+  extensions_service_->SetBrowserActionVisibility(extension, true);
 }
 
 void ExtensionsDOMHandler::HandleLoadMessage(const ListValue* args) {
@@ -696,6 +708,7 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_FUNCTION_DISPATCHER_DESTROYED:
     case NotificationType::NAV_ENTRY_COMMITTED:
     case NotificationType::BACKGROUND_CONTENTS_NAVIGATED:
+    case NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
       MaybeUpdateAfterNotification();
       break;
     default:
@@ -799,6 +812,9 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
 
   if (!extension->options_url().is_empty())
     extension_data->SetString("options_url", extension->options_url().spec());
+
+  if (service && !service->GetBrowserActionVisibility(extension))
+    extension_data->SetBoolean("enable_show_button", true);
 
   // Add list of content_script detail DictionaryValues.
   ListValue *content_script_list = new ListValue();

@@ -362,6 +362,7 @@ var extensionDataFormat = {
       'is_hosted_app': false,
       'order': 1,
       'options_url': 'options.html',
+      'enable_show_button': false,
       'icon': 'relative-path-to-icon.png',
       'content_scripts': [
         {
@@ -564,7 +565,7 @@ function sendInspectMessage(viewData) {
 }
 
 /**
- * Handles a 'reload' button getting clicked.
+ * Handles a 'reload' link getting clicked.
  */
 function handleReloadExtension(node) {
   // Tell the C++ ExtensionDOMHandler to reload the extension.
@@ -572,7 +573,7 @@ function handleReloadExtension(node) {
 }
 
 /**
- * Handles a 'enable' or 'disable' button getting clicked.
+ * Handles a 'enable' or 'disable' link getting clicked.
  */
 function handleEnableExtension(node, enable) {
   // Tell the C++ ExtensionDOMHandler to reload the extension.
@@ -615,17 +616,24 @@ function handleToggleAllowFileAccess(node) {
 }
 
 /**
- * Handles an 'uninstall' button getting clicked.
+ * Handles an 'uninstall' link getting clicked.
  */
 function handleUninstallExtension(node) {
   chrome.send('uninstall', [node.extensionId]);
 }
 
 /**
- * Handles an 'options' button getting clicked.
+ * Handles an 'options' link getting clicked.
  */
 function handleOptions(node) {
   chrome.send('options', [node.extensionId]);
+}
+
+/**
+* Handles a 'show button' link getting clicked.
+*/
+function handleShowButton(node) {
+  chrome.send('showButton', [node.extensionId]);
 }
 
 /**
@@ -918,6 +926,14 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   href="javascript:void 0;"
                   i18n-content="options"
                   >OPTIONS</a>
+                <span jsdisplay="enable_show_button && enabled">-</span>
+                <a
+                  jsdisplay="enable_show_button && enabled"
+                  jsvalues=".extensionId:id"
+                  onclick="handleShowButton(this)"
+                  href="javascript:void 0;"
+                  i18n-content="showButton"
+                  >SHOW_BUTTON</a>
                 <label jsdisplay="enabled && !is_hosted_app">
                 <input type="checkbox"
                   jsvalues=".extensionId:id;.enabled:enabled"
