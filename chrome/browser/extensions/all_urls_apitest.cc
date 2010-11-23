@@ -15,12 +15,20 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
+namespace {
 
-// Note: This test is flaky, but is actively being worked on.
-// See http://crbug.com/57694. Finnur is adding traces to figure out where the
-// problem lies and needs to check in these traces because the problem doesn't
-// repro locally (nor on the try bots).
+void Checkpoint(const char* message, const base::TimeTicks& start_time) {
+  LOG(INFO) << message << " : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+}
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  Checkpoint("Setting up extensions", start_time);
+
   // First setup the two extensions.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");
@@ -28,81 +36,81 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
                                           .AppendASCII("execute_script");
 
   // Then add the two extensions to the whitelist.
+  Checkpoint("Setting up whitelist", start_time);
   Extension::ScriptingWhitelist whitelist;
   whitelist.push_back(Extension::GenerateIdForPath(extension_dir1));
   whitelist.push_back(Extension::GenerateIdForPath(extension_dir2));
   Extension::SetScriptingWhitelist(whitelist);
 
   // Then load extensions.
+  Checkpoint("LoadExtension1", start_time);
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
-  printf("***** LoadExtension1 called \n");
   ASSERT_TRUE(LoadExtension(extension_dir1));
-  printf("***** LoadExtension2 called \n");
+  Checkpoint("LoadExtension2", start_time);
   ASSERT_TRUE(LoadExtension(extension_dir2));
-  printf("***** LoadExtensions done \n");
   EXPECT_EQ(size_before + 2, service->extensions()->size());
 
   std::string url;
 
   // Now verify we run content scripts on chrome://newtab/.
+  Checkpoint("Verify content scripts", start_time);
   url = "chrome://newtab/";
-  printf("***** %s\n", url.c_str());
   ExtensionTestMessageListener listener1a("content script: " + url, false);
   ExtensionTestMessageListener listener1b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  printf("***** Wait 1a\n");
+  Checkpoint("Wait for 1a", start_time);
   ASSERT_TRUE(listener1a.WaitUntilSatisfied());
-  printf("***** Wait 1b\n");
+  Checkpoint("Wait for 1b", start_time);
   ASSERT_TRUE(listener1b.WaitUntilSatisfied());
 
   // Now verify data: urls.
+  Checkpoint("Verify data:urls", start_time);
   url = "data:text/html;charset=utf-8,<html>asdf</html>";
-  printf("***** %s\n", url.c_str());
   ExtensionTestMessageListener listener2a("content script: " + url, false);
   ExtensionTestMessageListener listener2b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  printf("***** Wait 2a\n");
+  Checkpoint("Wait for 2a", start_time);
   ASSERT_TRUE(listener2a.WaitUntilSatisfied());
-  printf("***** Wait 2b\n");
+  Checkpoint("Wait for 2b", start_time);
   ASSERT_TRUE(listener2b.WaitUntilSatisfied());
 
   // Now verify about:version.
+  Checkpoint("Verify about:version", start_time);
   url = "about:version";
-  printf("***** %s\n", url.c_str());
   ExtensionTestMessageListener listener3a("content script: " + url, false);
   ExtensionTestMessageListener listener3b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  printf("***** Wait 3a\n");
+  Checkpoint("Wait for 3a", start_time);
   ASSERT_TRUE(listener3a.WaitUntilSatisfied());
-  printf("***** Wait 3b\n");
+  Checkpoint("Wait for 3b", start_time);
   ASSERT_TRUE(listener3b.WaitUntilSatisfied());
 
   // Now verify about:blank.
+  Checkpoint("Verify about:blank", start_time);
   url = "about:blank";
-  printf("***** %s\n", url.c_str());
   ExtensionTestMessageListener listener4a("content script: " + url, false);
   ExtensionTestMessageListener listener4b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  printf("***** Wait 4a\n");
+  Checkpoint("Wait for 4a", start_time);
   ASSERT_TRUE(listener4a.WaitUntilSatisfied());
-  printf("***** Wait 4b\n");
+  Checkpoint("Wait for 4b", start_time);
   ASSERT_TRUE(listener4b.WaitUntilSatisfied());
 
   // Now verify we can script a regular http page.
+  Checkpoint("Verify regular http page", start_time);
   ASSERT_TRUE(test_server()->Start());
   GURL page_url = test_server()->GetURL(kAllUrlsTarget);
-  printf("***** %s\n", page_url.spec().c_str());
   ExtensionTestMessageListener listener5a("content script: " + page_url.spec(),
                                           false);
   ExtensionTestMessageListener listener5b("execute: " + page_url.spec(), false);
   ui_test_utils::NavigateToURL(browser(), page_url);
-  printf("***** Wait 5a\n");
+  Checkpoint("Wait for 5a", start_time);
   ASSERT_TRUE(listener5a.WaitUntilSatisfied());
-  printf("***** Wait 5b\n");
+  Checkpoint("Wait for 5ba", start_time);
   ASSERT_TRUE(listener5b.WaitUntilSatisfied());
 
-  printf("***** DONE!\n");
+  Checkpoint("Test complete", start_time);
 }
 
 // Test that an extension NOT whitelisted for scripting can ask for <all_urls>
