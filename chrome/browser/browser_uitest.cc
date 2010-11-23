@@ -43,8 +43,7 @@ class VisibleBrowserTest : public UITest {
 TEST_F(BrowserTest, WindowsSessionEnd) {
 #elif defined(OS_POSIX)
 // The browser should quit gracefully and quickly if it receives a SIGTERM.
-// http://code.google.com/p/chromium/issues/detail?id=39500
-TEST_F(BrowserTest, FLAKY_PosixSessionEnd) {
+TEST_F(BrowserTest, PosixSessionEnd) {
 #endif
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("title1.html");
