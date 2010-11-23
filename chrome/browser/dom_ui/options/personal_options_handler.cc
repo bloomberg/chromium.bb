@@ -101,7 +101,7 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_APPEARANCE_GROUP_NAME));
   localized_strings->SetString("themes_GTK_button",
       l10n_util::GetStringUTF16(IDS_THEMES_GTK_BUTTON));
-  localized_strings->SetString("themes_set_classic",
+  localized_strings->SetString("themesSetClassic",
       l10n_util::GetStringUTF16(IDS_THEMES_SET_CLASSIC));
   localized_strings->SetString("showWindow_decorations_radio",
       l10n_util::GetStringUTF16(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
@@ -110,7 +110,7 @@ void PersonalOptionsHandler::GetLocalizedValues(
 #else
   localized_strings->SetString("themes",
       l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME));
-  localized_strings->SetString("themes_reset",
+  localized_strings->SetString("themesReset",
       l10n_util::GetStringUTF16(IDS_THEMES_RESET_BUTTON));
   localized_strings->SetString("themes_default",
       l10n_util::GetStringUTF16(IDS_THEMES_DEFAULT_THEME_LABEL));
@@ -245,9 +245,9 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 #endif
 
   bool is_classic_theme = !is_gtk_theme && provider->GetThemeID().empty();
-  FundamentalValue classic_enabled(!is_classic_theme);
+  FundamentalValue enabled(!is_classic_theme);
   dom_ui_->CallJavascriptFunction(
-      L"options.PersonalOptions.setClassicThemeButtonEnabled", classic_enabled);
+      L"options.PersonalOptions.setThemesResetButtonEnabled", enabled);
 }
 
 void PersonalOptionsHandler::Initialize() {
