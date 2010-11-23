@@ -436,6 +436,104 @@ void HandleHelpSwitches(const CommandLine& command_line) {
 
 #endif  // OS_POSIX
 
+// We dispatch to a process-type-specific FooMain() based on a command-line
+// flag.  This struct is used to build a table of (flag, main function) pairs.
+struct MainFunction {
+  const char* name;
+  int (*function)(const MainFunctionParams&);
+};
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+// On platforms that use the zygote, we have a special subset of
+// subprocesses that are launched via the zygote.  This function
+// fills in some process-launching bits around ZygoteMain().
+// Returns the exit code of the subprocess.
+int RunZygote(const MainFunctionParams& main_function_params) {
+  static const MainFunction kMainFunctions[] = {
+    { switches::kRendererProcess,    RendererMain },
+    { switches::kExtensionProcess,   RendererMain },
+    { switches::kWorkerProcess,      WorkerMain },
+    { switches::kPpapiPluginProcess, PpapiPluginMain },
+#if !defined(DISABLE_NACL)
+    { switches::kNaClLoaderProcess,  NaClMain },
+#endif
+  };
+
+  // This function call can return multiple times, once per fork().
+  if (!ZygoteMain(main_function_params))
+    return 1;
+
+  // Zygote::HandleForkRequest may have reallocated the command
+  // line so update it here with the new version.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  // The StatsTable must be initialized in each process; we already
+  // initialized for the browser process, now we need to initialize
+  // within the new processes as well.
+  pid_t browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
+  InitializeStatsTable(browser_pid, command_line);
+
+  MainFunctionParams main_params(command_line,
+                                 main_function_params.sandbox_info_,
+                                 main_function_params.autorelease_pool_);
+  // Get the new process type from the new command line.
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
+    if (process_type == kMainFunctions[i].name)
+      return kMainFunctions[i].function(main_params);
+  }
+
+  NOTREACHED() << "Unknown zygote process type: " << process_type;
+  return 1;
+}
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+
+// Run the FooMain() for a given process type.
+// If |process_type| is empty, runs BrowserMain().
+// Returns the exit code for this process.
+int RunNamedProcessTypeMain(const std::string& process_type,
+                            const MainFunctionParams& main_function_params) {
+  static const MainFunction kMainFunctions[] = {
+    { "",                            BrowserMain },
+    { switches::kRendererProcess,    RendererMain },
+    // An extension process is just a renderer process. We use a different
+    // command line argument to differentiate crash reports.
+    { switches::kExtensionProcess,   RendererMain },
+    { switches::kPluginProcess,      PluginMain },
+    { switches::kWorkerProcess,      WorkerMain },
+    { switches::kPpapiPluginProcess, PpapiPluginMain },
+    { switches::kUtilityProcess,     UtilityMain },
+    { switches::kGpuProcess,         GpuMain },
+    { switches::kServiceProcess,     ServiceProcessMain },
+
+#if defined(OS_MACOSX)
+    // TODO(port): Use OOP profile import - http://crbug.com/22142 .
+    { switches::kProfileImportProcess, ProfileImportMain },
+#endif
+#if !defined(DISABLE_NACL)
+    { switches::kNaClLoaderProcess, NaClMain },
+#ifdef _WIN64  // The broker process is used only on Win64.
+    { switches::kNaClBrokerProcess, NaClBrokerMain },
+#endif
+#endif  // DISABLE_NACL
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    // Zygote startup is special -- see RunZygote comments above
+    // for why we don't use ZygoteMain directly.
+    { switches::kZygoteProcess, RunZygote },
+#endif
+  };
+
+  for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
+    if (process_type == kMainFunctions[i].name)
+      return kMainFunctions[i].function(main_function_params);
+  }
+
+  NOTREACHED() << "Unknown process type: " << process_type;
+  return 1;
+}
+
 }  // namespace
 
 #if defined(OS_WIN)
@@ -777,85 +875,7 @@ int ChromeMain(int argc, char** argv) {
   // as our process name since we exec() via that to be update-safe.
 #endif
 
-  // TODO(port): turn on these main() functions as they've been de-winified.
-  int rv = -1;
-  if (process_type == switches::kRendererProcess) {
-    rv = RendererMain(main_params);
-  } else if (process_type == switches::kExtensionProcess) {
-    // An extension process is just a renderer process. We use a different
-    // command line argument to differentiate crash reports.
-    rv = RendererMain(main_params);
-  } else if (process_type == switches::kPluginProcess) {
-    rv = PluginMain(main_params);
-  } else if (process_type == switches::kPpapiPluginProcess) {
-    rv = PpapiPluginMain(main_params);
-  } else if (process_type == switches::kUtilityProcess) {
-    rv = UtilityMain(main_params);
-  } else if (process_type == switches::kGpuProcess) {
-    rv = GpuMain(main_params);
-  } else if (process_type == switches::kProfileImportProcess) {
-#if defined(OS_MACOSX)
-    rv = ProfileImportMain(main_params);
-#else
-    // TODO(port): Use OOP profile import - http://crbug.com/22142 .
-    NOTIMPLEMENTED();
-    rv = -1;
-#endif
-  } else if (process_type == switches::kWorkerProcess) {
-    rv = WorkerMain(main_params);
-#ifndef DISABLE_NACL
-  } else if (process_type == switches::kNaClLoaderProcess) {
-    rv = NaClMain(main_params);
-#endif
-#ifdef _WIN64  // The broker process is used only on Win64.
-  } else if (process_type == switches::kNaClBrokerProcess) {
-    rv = NaClBrokerMain(main_params);
-#endif
-  } else if (process_type == switches::kZygoteProcess) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    // This function call can return multiple times, once per fork().
-    if (ZygoteMain(main_params)) {
-      // Zygote::HandleForkRequest may have reallocated the command
-      // line so update it here with the new version.
-      const CommandLine& parsed_command_line =
-        *CommandLine::ForCurrentProcess();
-
-      // The StatsTable must be initialized in each process; we already
-      // initialized for the browser process, now we need to initialize
-      // within the new processes as well.
-      InitializeStatsTable(browser_pid, parsed_command_line);
-
-      MainFunctionParams main_params(parsed_command_line, sandbox_wrapper,
-                                     &autorelease_pool);
-      std::string process_type =
-        parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
-      if (process_type == switches::kRendererProcess ||
-          process_type == switches::kExtensionProcess) {
-        rv = RendererMain(main_params);
-#if !defined(DISABLE_NACL)
-      } else if (process_type == switches::kNaClLoaderProcess) {
-        rv = NaClMain(main_params);
-#endif
-      } else if (process_type == switches::kWorkerProcess) {
-        rv = WorkerMain(main_params);
-      } else if (process_type == switches::kPpapiPluginProcess) {
-        rv = PpapiPluginMain(main_params);
-      } else {
-        NOTREACHED() << "Unknown process type: " << process_type;
-      }
-    } else {
-      rv = 0;
-    }
-#else
-    NOTIMPLEMENTED();
-#endif
-  } else if (process_type == switches::kServiceProcess) {
-    rv = ServiceProcessMain(main_params);
-  } else if (process_type.empty()) {
-    rv = BrowserMain(main_params);
-  } else {
-    NOTREACHED() << "Unknown process type";
-  }
+  int exit_code = RunNamedProcessTypeMain(process_type, main_params);
 
   if (SubprocessNeedsResourceBundle(process_type))
     ResourceBundle::CleanupSharedInstance();
@@ -875,5 +895,5 @@ int ChromeMain(int argc, char** argv) {
   DestructCrashReporter();
 #endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
 
-  return rv;
+  return exit_code;
 }
