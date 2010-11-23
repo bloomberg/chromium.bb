@@ -416,10 +416,10 @@ void BackgroundView::OnVersion(
 void BackgroundView::OnBootTimes(
     BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times) {
   const char* kBootTimesNoChromeExec =
-      "Boot took %.2f seconds (firmware %.2fs, kernel %.2fs, system %.2fs)";
+      "Non-firmware boot took %.2f seconds (kernel %.2fs, system %.2fs)";
   const char* kBootTimesChromeExec =
-      "Boot took %.2f seconds "
-      "(firmware %.2fs, kernel %.2fs, system %.2fs, chrome %.2fs)";
+      "Non-firmware boot took %.2f seconds "
+      "(kernel %.2fs, system %.2fs, chrome %.2fs)";
   std::string boot_times_text;
 
   if (boot_times.chrome > 0) {
@@ -427,7 +427,6 @@ void BackgroundView::OnBootTimes(
         base::StringPrintf(
             kBootTimesChromeExec,
             boot_times.total,
-            boot_times.firmware,
             boot_times.pre_startup,
             boot_times.system,
             boot_times.chrome);
@@ -436,7 +435,6 @@ void BackgroundView::OnBootTimes(
         base::StringPrintf(
             kBootTimesNoChromeExec,
             boot_times.total,
-            boot_times.firmware,
             boot_times.pre_startup,
             boot_times.system);
   }
