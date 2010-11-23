@@ -1783,9 +1783,9 @@ void RenderView::UpdateEncoding(WebFrame* frame,
   }
 }
 
-// Sends the previous session history state to the browser so it will be saved
-// before we navigate to a new page. This must be called *before* the page ID
-// has been updated so we know what it was.
+// Sends the last committed session history state to the browser so it will be
+// saved before we navigate to a new page. This must be called *before* the
+// page ID has been updated so we know what it was.
 void RenderView::UpdateSessionHistory(WebFrame* frame) {
   // If we have a valid page ID at this point, then it corresponds to the page
   // we are navigating away from.  Otherwise, this is the first navigation, so
@@ -3348,8 +3348,8 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
 
   navigation_state->set_commit_load_time(Time::Now());
   if (is_new_navigation) {
-    // When we perform a new navigation, we need to update the previous session
-    // history entry with state for the page we are leaving.
+    // When we perform a new navigation, we need to update the last committed
+    // session history entry with state for the page we are leaving.
     UpdateSessionHistory(frame);
 
     // We bump our Page ID to correspond with the new session history entry.
