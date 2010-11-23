@@ -628,8 +628,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFileSystem,
     switches::kPpapiOutOfProcess,
     switches::kEnablePrintPreview,
-    switches::kEnableClientSidePhishingDetection,
-    switches::kEnableCrxlessWebApps
+    switches::kEnableClientSidePhishingDetection
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

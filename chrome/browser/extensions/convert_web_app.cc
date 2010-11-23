@@ -34,7 +34,7 @@ using base::Time;
 
 namespace {
 
-const char kIconsDirName[] = "icons";
+const char kIconsDirName[] = "_icons";
 
 // Create the public key for the converted web app.
 //

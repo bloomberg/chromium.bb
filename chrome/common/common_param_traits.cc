@@ -237,7 +237,6 @@ void ParamTraits<WebApplicationInfo>::Write(Message* m,
     WriteParam(m, p.icons[i].url);
     WriteParam(m, p.icons[i].width);
     WriteParam(m, p.icons[i].height);
-    WriteParam(m, p.icons[i].data);
   }
 }
 
@@ -256,8 +255,7 @@ bool ParamTraits<WebApplicationInfo>::Read(
     result =
         ReadParam(m, iter, &icon_info.url) &&
         ReadParam(m, iter, &icon_info.width) &&
-        ReadParam(m, iter, &icon_info.height) &&
-        ReadParam(m, iter, &icon_info.data);
+        ReadParam(m, iter, &icon_info.height);
     if (!result)
       return false;
     r->icons.push_back(icon_info);

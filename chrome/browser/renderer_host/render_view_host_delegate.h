@@ -286,10 +286,6 @@ class RenderViewHostDelegate {
         int32 page_id,
         const WebApplicationInfo& app_info) = 0;
 
-    // Notification when an application programmatically requests installation.
-    virtual void OnInstallApplication(
-        const WebApplicationInfo& app_info) = 0;
-
     // Notification that the contents of the page has been loaded.
     virtual void OnPageContents(const GURL& url,
                                 int renderer_process_id,

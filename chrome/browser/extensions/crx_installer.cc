@@ -14,7 +14,6 @@
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
-#include "base/time.h"
 #include "base/task.h"
 #include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/convert_user_script.h"
-#include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/profile.h"
@@ -77,11 +75,11 @@ bool CrxInstaller::ClearWhitelistedInstallId(const std::string& id) {
   return false;
 }
 
-CrxInstaller::CrxInstaller(ExtensionsService* frontend,
+CrxInstaller::CrxInstaller(const FilePath& install_directory,
+                           ExtensionsService* frontend,
                            ExtensionInstallUI* client)
-    : install_directory_(frontend->install_directory()),
+    : install_directory_(install_directory),
       install_source_(Extension::INTERNAL),
-      extensions_enabled_(frontend->extensions_enabled()),
       delete_source_(false),
       allow_privilege_increase_(false),
       is_gallery_install_(false),
@@ -90,6 +88,7 @@ CrxInstaller::CrxInstaller(ExtensionsService* frontend,
       client_(client),
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false) {
+  extensions_enabled_ = frontend_->extensions_enabled();
 }
 
 CrxInstaller::~CrxInstaller() {
@@ -157,29 +156,6 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
     ReportFailureFromFileThread(error);
     return;
   }
-
-  OnUnpackSuccess(extension->path(), extension->path(), extension);
-}
-
-void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &CrxInstaller::ConvertWebAppOnFileThread,
-                        web_app));
-}
-
-void CrxInstaller::ConvertWebAppOnFileThread(
-    const WebApplicationInfo& web_app) {
-  std::string error;
-  scoped_refptr<Extension> extension(
-      ConvertWebAppToExtension(web_app, base::Time::Now()));
-  if (!extension) {
-    // Validation should have stopped any potential errors before getting here.
-    NOTREACHED() << "Could not convert web app to extension.";
-    return;
-  }
-
-  // TODO(aa): conversion data gets lost here :(
 
   OnUnpackSuccess(extension->path(), extension->path(), extension);
 }
@@ -386,7 +362,7 @@ void CrxInstaller::CompleteInstall() {
   std::string error;
   extension_ = extension_file_util::LoadExtension(
       version_dir, install_source_, true, &error);
-  CHECK(error.empty()) << error;
+  DCHECK(error.empty());
 
   ReportSuccessFromFileThread();
 }

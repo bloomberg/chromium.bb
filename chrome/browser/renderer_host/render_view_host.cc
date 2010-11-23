@@ -852,8 +852,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnReceivedSerializedHtmlData);
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetApplicationInfo,
                         OnDidGetApplicationInfo);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_InstallApplication,
-                        OnInstallApplication);
     IPC_MESSAGE_FORWARD(ViewHostMsg_JSOutOfMemory, delegate_,
                         RenderViewHostDelegate::OnJSOutOfMemory);
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK);
@@ -1656,14 +1654,6 @@ void RenderViewHost::OnDidGetApplicationInfo(
       delegate_->GetBrowserIntegrationDelegate();
   if (integration_delegate)
     integration_delegate->OnDidGetApplicationInfo(page_id, info);
-}
-
-void RenderViewHost::OnInstallApplication(
-    const WebApplicationInfo& info) {
-  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
-      delegate_->GetBrowserIntegrationDelegate();
-  if (integration_delegate)
-    integration_delegate->OnInstallApplication(info);
 }
 
 void RenderViewHost::GetSerializedHtmlDataForCurrentPageWithLocalLinks(
