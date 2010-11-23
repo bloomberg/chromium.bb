@@ -595,13 +595,7 @@ bool BrowserView::IsOffTheRecord() const {
 }
 
 bool BrowserView::ShouldShowOffTheRecordAvatar() const {
-  bool should_show_off_the_record_avatar =
-      IsOffTheRecord() && IsBrowserTypeNormal();
-#if defined(OS_CHROMEOS)
-  should_show_off_the_record_avatar = should_show_off_the_record_avatar &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
-#endif
-  return should_show_off_the_record_avatar;
+  return IsOffTheRecord() && IsBrowserTypeNormal();
 }
 
 bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {

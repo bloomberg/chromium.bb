@@ -45,6 +45,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -62,7 +63,7 @@ const char kAuthSuffix[] = "\n";
 const char kGuestModeLoggingLevel[] = "1";
 
 // Format of command line switch.
-const char kSwitchFormatString[] = "--%s=\"%s\"";
+const char kSwitchFormatString[] = " --%s=\"%s\"";
 
 }  // namespace
 
@@ -312,6 +313,12 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
 
     if (start_url.is_valid())
       command_line.AppendArg(start_url.spec());
+
+    // Override the value of the homepage that is set in first run mode.
+    // TODO(altimofeev): extend action of the |kNoFirstRun| to cover this case.
+    command_line.AppendSwitchASCII(
+        switches::kHomePage,
+        GURL(chrome::kChromeUINewTabURL).spec());
 
     std::string cmd_line_str = command_line.command_line_string();
     // Special workaround for the arguments that should be quoted.
