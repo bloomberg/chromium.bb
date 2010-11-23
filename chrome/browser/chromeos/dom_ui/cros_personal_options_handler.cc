@@ -19,11 +19,13 @@ CrosPersonalOptionsHandler::CrosPersonalOptionsHandler() {
 CrosPersonalOptionsHandler::~CrosPersonalOptionsHandler() {
 }
 
+// TODO(jhawkins): Move the contents of this file to PersonalOptionsHandler
+// within an OS_CHROMEOS #ifdef.
 void CrosPersonalOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("account",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PERSONAL_ACCOUNT_GROUP_NAME));
-  localized_strings->SetString("enable_screenlock",
+  localized_strings->SetString("enableScreenlock",
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
 }
 
@@ -45,4 +47,3 @@ void CrosPersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
 }
 
 }  // namespace chromeos
-

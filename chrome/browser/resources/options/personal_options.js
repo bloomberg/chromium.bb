@@ -16,7 +16,7 @@ cr.define('options', function() {
   //
   function PersonalOptions() {
     OptionsPage.call(this, 'personal', templateData.personalPage,
-                     'personalPage');
+                     'personal-page');
   }
 
   cr.addSingletonGetter(PersonalOptions);
@@ -46,14 +46,14 @@ cr.define('options', function() {
       $('privacy-dashboard-link').onclick = function(event) {
         chrome.send('openPrivacyDashboardTabAndActivate');
       };
-      $('showpasswords').onclick = function(event) {
+      $('show-passwords').onclick = function(event) {
         PasswordsExceptions.load();
         OptionsPage.showPageByName('passwordsExceptions');
         OptionsPage.showTab($('passwords-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordsExceptions']);
       };
-      $('autofill_options').onclick = function(event) {
+      $('autofill-options').onclick = function(event) {
         OptionsPage.showPageByName('autoFillOptions');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowAutoFillSettings']);
@@ -63,13 +63,13 @@ cr.define('options', function() {
       };
 
       if (!cr.isChromeOS) {
-        $('import_data').onclick = function(event) {
+        $('import-data').onclick = function(event) {
           OptionsPage.showOverlay('importDataOverlay');
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };
 
         if (navigator.platform.match(/linux|BSD/i)) {
-          $('themes_GTK_button').onclick = function(event) {
+          $('themes-GTK-button').onclick = function(event) {
             chrome.send('themesSetGTK');
           };
         }
@@ -162,7 +162,7 @@ cr.define('options', function() {
 
     setGtkThemeButtonEnabled_: function(enabled) {
       if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
-        $('themes_GTK_button').disabled = !enabled;
+        $('themes-GTK-button').disabled = !enabled;
       }
     },
 

@@ -51,69 +51,51 @@ void PersonalOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString("sync_section",
+  localized_strings->SetString("syncSection",
       l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
-  localized_strings->SetString("sync_not_setup_info",
-      l10n_util::GetStringFUTF16(IDS_SYNC_NOT_SET_UP_INFO,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString("start_sync",
-      l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
-  localized_strings->SetString("sync_customize",
-      l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
-  localized_strings->SetString("stop_sync",
-      l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL));
-  localized_strings->SetString("stop_syncing_explanation",
-      l10n_util::GetStringFUTF16(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString("stop_syncing_title",
-      l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE));
-  localized_strings->SetString("stop_syncing_confirm_button_label",
-      l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL));
-  localized_strings->SetString("privacy_dashboard_link",
+  localized_strings->SetString("privacyDashboardLink",
       l10n_util::GetStringUTF16(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
 
   localized_strings->SetString("passwords",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_GROUP_NAME));
-  localized_strings->SetString("passwords_asktosave",
+  localized_strings->SetString("passwordsAskToSave",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_ASKTOSAVE));
-  localized_strings->SetString("passwords_neversave",
+  localized_strings->SetString("passwordsNeverSave",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_NEVERSAVE));
-  localized_strings->SetString("showpasswords",
+  localized_strings->SetString("showPasswords",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS));
 
   localized_strings->SetString("autofill",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME));
-  localized_strings->SetString("autofill_options",
+  localized_strings->SetString("autofillOptions",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
 
-  localized_strings->SetString("browsing_data",
+  localized_strings->SetString("browsingData",
       l10n_util::GetStringUTF16(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME));
-  localized_strings->SetString("import_data",
+  localized_strings->SetString("importData",
       l10n_util::GetStringUTF16(IDS_OPTIONS_IMPORT_DATA_BUTTON));
 
-  localized_strings->SetString("themes_gallery",
+  localized_strings->SetString("themesGallery",
       l10n_util::GetStringUTF16(IDS_THEMES_GALLERY_BUTTON));
-  localized_strings->SetString("themes_gallery_url",
+  localized_strings->SetString("themesGalleryURL",
       l10n_util::GetStringUTF16(IDS_THEMES_GALLERY_URL));
 
 #if defined(TOOLKIT_GTK)
   localized_strings->SetString("appearance",
       l10n_util::GetStringUTF16(IDS_APPEARANCE_GROUP_NAME));
-  localized_strings->SetString("themes_GTK_button",
+  localized_strings->SetString("themesGTKButton",
       l10n_util::GetStringUTF16(IDS_THEMES_GTK_BUTTON));
   localized_strings->SetString("themesSetClassic",
       l10n_util::GetStringUTF16(IDS_THEMES_SET_CLASSIC));
-  localized_strings->SetString("showWindow_decorations_radio",
+  localized_strings->SetString("showWindowDecorations",
       l10n_util::GetStringUTF16(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
-  localized_strings->SetString("hideWindow_decorations_radio",
+  localized_strings->SetString("hideWindowDecorations",
       l10n_util::GetStringUTF16(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
 #else
   localized_strings->SetString("themes",
       l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME));
   localized_strings->SetString("themesReset",
       l10n_util::GetStringUTF16(IDS_THEMES_RESET_BUTTON));
-  localized_strings->SetString("themes_default",
-      l10n_util::GetStringUTF16(IDS_THEMES_DEFAULT_THEME_LABEL));
 #endif
 }
 
