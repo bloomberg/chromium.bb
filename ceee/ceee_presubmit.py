@@ -124,14 +124,16 @@ You must build and run the CEEE smoke tests before submitting. To clear this
 error, run the script "smoke_test.bat" in the CEEE directory.
 '''
 
+
 def CheckUnittestsRan(input_api, output_api, committing):
   '''Checks that the unittests success file is newer than any modified file'''
   # But only if there were IE files modified, since we only have unit tests
   # for CEEE IE.
   files = []
+  ie_paths_re = re.compile('ceee[\\/](ie|common)[\\/]')
   for f in input_api.AffectedFiles(include_deletes = False):
     path = f.LocalPath()
-    if path.startswith('ie\\') or path.startswith('common\\'):
+    if (ie_paths_re.match(path)):
       files.append(f)
 
   if not files:
