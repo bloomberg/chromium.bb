@@ -9,7 +9,7 @@ Import('env')
 env.ComponentLibrary('testrunner', ['test_runner.c'])
 
 
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   # The test is disabled for ARM/PNaCl because dynamic_load_test.nexe
   # was disabled for ARM/PNaCl.  TODO(mseaborn): Re-enable both.
   Return()

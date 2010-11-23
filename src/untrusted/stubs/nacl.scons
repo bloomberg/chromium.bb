@@ -19,7 +19,7 @@ def GetPlatformSuffix(env):
 platform = GetPlatformSuffix(env)
 
 
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   # NOTE: we make sure everything in this directory gets compiled
   #       all the way down into native code.
   #       This is tricky in the pnacl case where a .c file would
@@ -32,7 +32,7 @@ if ARGUMENTS.get('bitcode'):
 # the nacl-gcc toolchain does not want to switch to using
 # src/untrusted/startup/nacl_startup.c
 # c.f. http://code.google.com/p/nativeclient/issues/detail?id=651
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   crt1 = env.ComponentObject('crt1', ['crt1_%s.S' % platform])
 else:
   crt1 = env.ComponentObject('crt1', ['crt1_x86.S'])
@@ -43,7 +43,7 @@ crtn = env.ComponentObject('crtn', ['crtn_%s.S' % platform])
 
 # NOTE: we only provide setjmp/longjmp for pnacl, nacl-gcc obtains
 # them from newlib, while pnacl's newlib is arch neutral
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   setjmp = [env.StaticObject('setjmp.o', ['setjmp_%s.S' % platform])]
 else:
   setjmp = []

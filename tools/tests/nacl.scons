@@ -30,7 +30,7 @@
 Import('env')
 
 # TODO(robertm): explore if/why this overly restrictive guard is necessary
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
    Return()
 
 if env['BUILD_ARCHITECTURE'] == 'x86':
@@ -111,7 +111,7 @@ else:
 
 # If we aren't running on a tester (built_elsewhere),
 # try to use the toolchain.
-if not ARGUMENTS.get('built_elsewhere'):
+if not env.Bit('built_elsewhere'):
   # Eventually we may want more SDK tests.
   # NOTE this test is explicitly run by the toolchain makefile in a case
   # where toolchain_tests is empty. Do not assume the lack of dependencies

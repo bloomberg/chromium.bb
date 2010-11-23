@@ -15,7 +15,7 @@ EXTRA_ARGS = ['100']
 # NOTE(jasonwkim): [2010/08/31 13:49:46 PDT (Tuesday)]
 # small_thread_test has problem with arm/qemu (also fails on x86-32-pnacl)
 
-if env['TARGET_ARCHITECTURE'] == 'arm' or ARGUMENTS.get('bitcode'):
+if env['TARGET_ARCHITECTURE'] == 'arm' or env.Bit('bitcode'):
   TEST_SUITES = ['small_tests_arm_hw_only']
 
 if env.IsRunningUnderValgrind():

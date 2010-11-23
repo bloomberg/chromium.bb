@@ -23,7 +23,7 @@ if env.Bit('nacl_glibc'):
 # PNaCl toolchain with x86 fails.  Comment out the following to expose
 # the issues.
 
-# if ARGUMENTS.get('bitcode') and env['TARGET_ARCHITECTURE'] == 'x86':
+# if env.Bit('bitcode') and env['TARGET_ARCHITECTURE'] == 'x86':
 #   Return()
 
 # ----------------------------------------------------------
@@ -47,7 +47,7 @@ else:
 def NewAsmEnv(env, *alist, **kwarg):
   asm_env = env.Clone()
   elf_patcher_addenda = ''
-  if ARGUMENTS.get('bitcode'):
+  if asm_env.Bit('bitcode'):
     asm_env.Replace(CC=env['CC_OTHER'])
     elf_patcher_addenda = (' && ${PYTHON}' +
                            ' ${SCONSTRUCT_DIR}/tools/elf_patcher.py' +

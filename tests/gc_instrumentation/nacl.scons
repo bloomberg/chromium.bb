@@ -6,7 +6,7 @@
 Import('env')
 
 # PNaCl doesn't have -finstrument-for-thread-suspension currently
-if not ARGUMENTS.get('bitcode'):
+if not env.Bit('bitcode'):
   inputs = ['gc_noinst.c']
 
   # Compile gc_instrumentation.c with -finstrument-for-thread-suspension

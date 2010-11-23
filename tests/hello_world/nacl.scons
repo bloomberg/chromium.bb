@@ -96,7 +96,7 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_misc_math_test')
 
 
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   env.Append(CPPDEFINES=['PNACL_ABI_TEST=1'])
 else:
   env.Append(CCFLAGS=['-std=c99'])

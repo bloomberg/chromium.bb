@@ -6,7 +6,7 @@
 Import('env')
 
 # tests in this directory contain c++ which does not work on pnacl/x86
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   Return()
 
 env.Replace(EXTRA_LIBS=['google_nacl_platform', 'gio', 'pthread'])

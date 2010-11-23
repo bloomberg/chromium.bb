@@ -7,7 +7,7 @@
 Import('env')
 
 # TODO(robertm): explore if/why this overly restrictive guard is necessary
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   Return()
 
 # TODO(mseaborn): Extend the ARM validator to support this.

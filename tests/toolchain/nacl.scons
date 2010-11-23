@@ -8,7 +8,7 @@ Import('env')
 # NOTE: This approach does not work for -lc because of tons of
 #       undefined symbols which would have to be stubbed out
 wa_env = env.Clone()
-if not ARGUMENTS.get('bitcode') and not env.Bit('nacl_glibc'):
+if not wa_env.Bit('bitcode') and not wa_env.Bit('nacl_glibc'):
   # NOTE: the pnacl linker does not understand '-Wl,-whole-archive'
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=943
   # NOTE: This test does not build successfully with nacl-glibc yet.
@@ -39,7 +39,7 @@ env.AddNodeToTestSuite(node,
 
 # NOTE: this currently only works for PNaCl, c.f:
 # http://code.google.com/p/nativeclient/issues/detail?id=968
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   INITFINIT_TESTS=['toolchain_tests', 'small_tests']
 else:
   INITFINIT_TESTS=['broken_tests']

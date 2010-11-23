@@ -7,7 +7,7 @@ Import('env')
 
 # Don't use -lnosys on pnacl - it's automagically included and will spoil
 # things if included before -lc
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   extra_libs = ['pthread']
 else:
   extra_libs = ['pthread', 'nosys']

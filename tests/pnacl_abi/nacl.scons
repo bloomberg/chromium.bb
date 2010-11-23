@@ -6,7 +6,7 @@
 Import('env')
 
 # These tests only make sense for the PNaCl toolchain
-if not ARGUMENTS.get('bitcode'):
+if not env.Bit('bitcode'):
   Return()
 
 # we do not have llvm's ${DISASS} when we run on ARM boxes

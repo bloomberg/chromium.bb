@@ -280,11 +280,6 @@ def ExpandArguments():
 #-----------------------------------------------------------
 ExpandArguments()
 
-if int(ARGUMENTS.get('werror', 1)):
-  werror_flags = ['-Werror']
-else:
-  werror_flags = []
-
 # ----------------------------------------------------------
 environment_list = []
 
@@ -325,6 +320,10 @@ if pre_base_env.Bit('use_environ'):
 # so let's do it in all cases.
 pre_base_env['ENV']['CYGWIN'] = os.environ.get('CYGWIN', 'nodosfilewarning')
 
+if pre_base_env.Bit('werror'):
+  werror_flags = ['-Werror']
+else:
+  werror_flags = []
 
 # ----------------------------------------------------------
 # Method to make sure -pedantic, etc, are not stripped from the
@@ -620,9 +619,6 @@ pre_base_env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 if TARGET_NAME == 'arm' and not pre_base_env.Bit('bitcode'):
   # This has always been a silent default on ARM.
   pre_base_env.SetBits('bitcode')
-  # TODO(ncbray) remove when ARGUMENTS.get('bitcode') is not used directly
-  ARGUMENTS['bitcode'] = 1
-
 
 # Determine where the object files go
 if BUILD_NAME == TARGET_NAME:

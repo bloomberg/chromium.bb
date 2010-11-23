@@ -49,7 +49,7 @@ env.AddNodeToTestSuite(node,
 # TODO(jvoung) enable this once we fix linking to handle libm dependencies
 # introduced by lowering (llvm intrinsics -> libm functions).
 # c.f. http://code.google.com/p/nativeclient/issues/detail?id=821
-if (ARGUMENTS.get('bitcode')):
+if env.Bit('bitcode'):
    Return()
 
 noerrno_env = env.Clone()

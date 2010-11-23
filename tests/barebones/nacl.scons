@@ -20,7 +20,7 @@ else:
 
 LINK_FLAGS_MULTILIB = ['-nostdlib']
 
-if env['BUILD_ARCHITECTURE'] == 'x86' and not ARGUMENTS.get('bitcode'):
+if env['BUILD_ARCHITECTURE'] == 'x86' and not env.Bit('bitcode'):
   if env['BUILD_SUBARCH'] == '32':
     LINK_FLAGS_MULTILIB.append('-m32')
   elif env['BUILD_SUBARCH'] == '64':
@@ -83,7 +83,7 @@ for basename in ['addr_modes',
 
 # a test that the validador can handle an empty segment after the last
 # real segment. The gold linker produces files this
-if env['BUILD_ARCHITECTURE'] == 'arm' and not ARGUMENTS.get('bitcode'):
+if env['BUILD_ARCHITECTURE'] == 'arm' and not env.Bit('bitcode'):
   nexe = '${SCONSTRUCT_DIR}/tests/prebuilt/arm/gold-barebones_hello_world.nexe'
   node = env.CommandSelLdrTestNacl(
       'gold-barebones_hello_world.out',

@@ -6,7 +6,7 @@
 Import('env')
 
 # tests in this directory contain (inline) assembler
-if ARGUMENTS.get('bitcode'):
+if env.Bit('bitcode'):
   Return()
 
 if not env.IsRunningUnderValgrind():

@@ -25,7 +25,7 @@ def GetAssemblerFile(env):
     raise Exception('unknown architecture')
 
 asm_env = env.Clone()
-if ARGUMENTS.get('bitcode'):
+if asm_env.Bit('bitcode'):
   asm_env.Replace(CC=env['CC_NATIVE'])
 asm_obj = asm_env.ComponentObject(GetAssemblerFile(env))
 
