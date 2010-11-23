@@ -108,7 +108,8 @@ enum AutoSizeGroupBehavior {
   kAutoSizeGroupBehaviorVerticalToFit,
   kAutoSizeGroupBehaviorVerticalFirstToFit,
   kAutoSizeGroupBehaviorHorizontalToFit,
-  kAutoSizeGroupBehaviorHorizontalFirstGrows
+  kAutoSizeGroupBehaviorHorizontalFirstGrows,
+  kAutoSizeGroupBehaviorFirstTwoAsRowVerticalToFit
 };
 
 // Helper to tweak the layout of the "pref groups" and also ripple any height
@@ -192,6 +193,50 @@ CGFloat AutoSizeGroup(NSArray* views, AutoSizeGroupBehavior behavior,
         [GTMUILocalizerAndLayoutTweaker
             resizeViewWithoutAutoResizingSubViews:view
                                             delta:delta];
+      }
+      break;
+    }
+    case kAutoSizeGroupBehaviorFirstTwoAsRowVerticalToFit: {
+      // Start out like kAutoSizeGroupBehaviorVerticalToFit but don't do
+      // the first two.  Then handle the two as a row, but apply any
+      // vertical shift.
+      // All but the first two (in the row); walk bottom up.
+      for (NSUInteger index = [views count] - 1; index > 2; --index) {
+        NSView* view = [views objectAtIndex:index];
+        NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
+        DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
+        if (localVerticalShift) {
+          NSPoint origin = [view frame].origin;
+          origin.y += localVerticalShift;
+          [view setFrameOrigin:origin];
+        }
+        localVerticalShift += delta.height;
+      }
+      // Deal with the two for the horizontal row.  Size the second one.
+      CGFloat horizontalShift = 0.0;
+      NSView* view = [views objectAtIndex:2];
+      NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
+      DCHECK_GE(delta.height, 0.0) << "Should NOT shrink in height";
+      horizontalShift -= delta.width;
+      NSPoint origin = [view frame].origin;
+      origin.x += horizontalShift;
+      if (localVerticalShift) {
+        origin.y += localVerticalShift;
+      }
+      [view setFrameOrigin:origin];
+      // Now expand the first item in the row to consume the space opened up.
+      view = [views objectAtIndex:1];
+      if (horizontalShift) {
+        NSSize delta = NSMakeSize(horizontalShift, 0.0);
+        [GTMUILocalizerAndLayoutTweaker
+         resizeViewWithoutAutoResizingSubViews:view
+                                         delta:delta];
+      }
+      // And move it up by any amount needed from the previous items.
+      if (localVerticalShift) {
+        NSPoint origin = [view frame].origin;
+        origin.y += localVerticalShift;
+        [view setFrameOrigin:origin];
       }
       break;
     }
@@ -639,8 +684,20 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   verticalShift += AutoSizeGroup(basicsGroupDefaultBrowser_,
                                  kAutoSizeGroupBehaviorVerticalFirstToFit,
                                  verticalShift);
+  // TODO(rsesek/rohitrao): This is ugly, when the instant experiement is no
+  // longer displayed, please remove this code, the NSTextField and IBOutlet
+  // needed.
+  DCHECK(instantExperiment_ != nil);
+  if (verticalShift) {
+    // If the default browser moved things up, move the experiment field up
+    // also, it is not in the SearchEngine group due to its position on screen.
+    NSPoint origin = [instantExperiment_ frame].origin;
+    origin.y += verticalShift;
+    [instantExperiment_ setFrameOrigin:origin];
+  }
+  // End TODO
   verticalShift += AutoSizeGroup(basicsGroupSearchEngine_,
-                                 kAutoSizeGroupBehaviorHorizontalFirstGrows,
+                                 kAutoSizeGroupBehaviorFirstTwoAsRowVerticalToFit,
                                  verticalShift);
   verticalShift += AutoSizeGroup(basicsGroupToolbar_,
                                  kAutoSizeGroupBehaviorVerticalToFit,
@@ -1210,12 +1267,12 @@ enum { kHomepageNewTabPage, kHomepageURL };
   NSInteger state = enabled ? NSOnState : NSOffState;
   [instantCheckbox_ setState:state];
 
-  NSString* title = l10n_util::GetNSStringWithFixup(IDS_INSTANT_PREF);
+  NSString* title = @"";
   if (enabled) {
-    title = [NSString stringWithFormat:@"%@ [%d]", title,
+    title = [NSString stringWithFormat:@"[%d]",
         prefs_->GetInteger(prefs::kInstantType)];
   }
-  [instantCheckbox_ setTitle:title];
+  [instantExperiment_ setStringValue:title];
 }
 
 - (IBAction)learnMoreAboutInstant:(id)sender {
