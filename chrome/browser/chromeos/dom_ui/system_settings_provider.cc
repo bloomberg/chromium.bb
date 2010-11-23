@@ -145,7 +145,7 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
       zone_strings = ures_getByKey(zone_bundle, "zone_strings", NULL, &status);
   }
 
-  UnicodeString zone_id;
+  icu::UnicodeString zone_id;
   zone.getID(zone_id);
   std::string zone_id_str;
   zone_id.toUTF8String(zone_id_str);
@@ -154,10 +154,10 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
   ReplaceSubstringsAfterOffset(&zone_id_str, 0, "/", ":");
   scoped_ptr_malloc<UResourceBundle, UResClose> zone_item(
       ures_getByKey(zone_strings, zone_id_str.c_str(), NULL, &status));
-  UnicodeString city;
+  icu::UnicodeString city;
   if (U_FAILURE(status))
     goto fallback;
-  city = ures_getUnicodeStringByKey(zone_item.get(), "ec", &status);
+  city = icu::ures_getUnicodeStringByKey(zone_item.get(), "ec", &status);
   if (U_SUCCESS(status))
     return string16(city.getBuffer(), city.length());
 
