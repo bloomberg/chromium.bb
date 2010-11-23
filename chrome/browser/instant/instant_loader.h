@@ -156,7 +156,7 @@ class InstantLoader : public NotificationObserver {
   // Is the preview_contents ready to be shown?
   bool ready_;
 
-  // The text the user typed in the omnibox.
+  // The text the user typed in the omnibox, stripped of the leading ?, if any.
   string16 user_text_;
 
   // The latest suggestion from the page.

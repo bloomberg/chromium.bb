@@ -414,7 +414,9 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
 
   last_transition_type_ = transition_type;
   url_ = url;
-  user_text_ = user_text;
+  // Strip leading ?.
+  user_text_ = !user_text.empty() && (UTF16ToWide(user_text)[0] == L'?') ?
+      user_text.substr(1) : user_text;
   verbatim_ = verbatim;
 
   bool created_preview_contents;
