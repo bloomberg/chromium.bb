@@ -354,8 +354,19 @@ void IOThread::CleanUp() {
 
   // Break any cycles between the ProxyScriptFetcher and URLRequestContext.
   for (ProxyScriptFetchers::const_iterator it = fetchers_.begin();
-       it != fetchers_.end(); ++it) {
-    (*it)->Cancel();
+       it != fetchers_.end();) {
+    ManagedProxyScriptFetcher* fetcher = *it;
+    {
+      // Hang on to the context while cancelling to avoid problems
+      // with the cancellation causing the context to be destroyed
+      // (see http://crbug.com/63796 ).  Ideally, the IOThread would
+      // own the URLRequestContexts.
+      scoped_refptr<URLRequestContext> context(fetcher->GetRequestContext());
+      fetcher->Cancel();
+    }
+    // Any number of fetchers may have been deleted at this point, so
+    // use upper_bound instead of a simple increment.
+    it = fetchers_.upper_bound(fetcher);
   }
 
   // If any child processes are still running, terminate them and
