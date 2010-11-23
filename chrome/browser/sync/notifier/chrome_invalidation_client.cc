@@ -38,7 +38,6 @@ void ChromeInvalidationClient::Start(
     Listener* listener, StateWriter* state_writer,
     base::WeakPtr<talk_base::Task> base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  DCHECK(base_task.get());
   Stop();
 
   chrome_system_resources_.StartScheduler();
@@ -64,12 +63,19 @@ void ChromeInvalidationClient::Start(
           &chrome_system_resources_, client_type, client_id, client_config,
           this));
   invalidation_client_->Start(state);
-  cache_invalidation_packet_handler_.reset(
-      new CacheInvalidationPacketHandler(base_task,
-                                         invalidation_client_.get()));
+  ChangeBaseTask(base_task);
   registration_manager_.reset(
       new RegistrationManager(invalidation_client_.get()));
   RegisterTypes();
+}
+
+void ChromeInvalidationClient::ChangeBaseTask(
+    base::WeakPtr<talk_base::Task> base_task) {
+  DCHECK(invalidation_client_.get());
+  DCHECK(base_task.get());
+  cache_invalidation_packet_handler_.reset(
+      new CacheInvalidationPacketHandler(base_task,
+                                         invalidation_client_.get()));
 }
 
 void ChromeInvalidationClient::Stop() {

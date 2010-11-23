@@ -34,8 +34,7 @@ void ServerNotifierThread::ListenForUpdates() {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
   worker_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &ServerNotifierThread::StartInvalidationListener));
+      NewRunnableMethod(this, &ServerNotifierThread::DoListenForUpdates));
 }
 
 void ServerNotifierThread::SubscribeForUpdates(
@@ -97,38 +96,34 @@ void ServerNotifierThread::WriteState(const std::string& state) {
   state_writers_->Notify(&StateWriter::WriteState, state);
 }
 
-void ServerNotifierThread::OnDisconnect() {
-  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  StopInvalidationListener();
-  MediatorThreadImpl::OnDisconnect();
-}
-
-void ServerNotifierThread::StartInvalidationListener() {
+void ServerNotifierThread::DoListenForUpdates() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   if (!base_task_.get()) {
     return;
   }
 
-  StopInvalidationListener();
-  chrome_invalidation_client_.reset(new ChromeInvalidationClient());
+  if (chrome_invalidation_client_.get()) {
+    // If we already have an invalidation client, simply change the
+    // base task.
+    chrome_invalidation_client_->ChangeBaseTask(base_task_);
+  } else {
+    // Otherwise, create the invalidation client.
+    chrome_invalidation_client_.reset(new ChromeInvalidationClient());
 
-  // TODO(akalin): Make cache_guid() part of the client ID.  If we do
-  // so and we somehow propagate it up to the server somehow, we can
-  // make it so that we won't receive any notifications that were
-  // generated from our own changes.
-  const std::string kClientId = "server_notifier_thread";
-  chrome_invalidation_client_->Start(
-      kClientId, state_, this, this, base_task_);
-  state_.clear();
+    // TODO(akalin): Make cache_guid() part of the client ID.  If we do
+    // so and we somehow propagate it up to the server somehow, we can
+    // make it so that we won't receive any notifications that were
+    // generated from our own changes.
+    const std::string kClientId = "server_notifier_thread";
+    chrome_invalidation_client_->Start(
+        kClientId, state_, this, this, base_task_);
+    state_.clear();
+  }
 }
 
 void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  // |chrome_invalidation_client_| can be NULL if we receive an
-  // OnDisconnect() event after we gets posted but before we run.
-  if (!chrome_invalidation_client_.get()) {
-    return;
-  }
+  DCHECK(chrome_invalidation_client_.get());
   chrome_invalidation_client_->RegisterTypes();
   observers_->Notify(&Observer::OnSubscriptionStateChange, true);
 }

@@ -59,6 +59,11 @@ class ChromeInvalidationClient
 
   void Stop();
 
+  // Changes the task used to |base_task|, which must still be
+  // non-NULL.  Must only be called between calls to Start() and
+  // Stop().
+  void ChangeBaseTask(base::WeakPtr<talk_base::Task> base_task);
+
   // Register the sync types that we're interested in getting
   // notifications for.  Must only be called between calls to Start()
   // and Stop().

@@ -65,18 +65,14 @@ class ServerNotifierThread
   // StateWriter implementation.
   virtual void WriteState(const std::string& state);
 
- protected:
-  virtual void OnDisconnect();
-
  private:
   // Posted to the worker thread by ListenForUpdates().
-  void StartInvalidationListener();
+  void DoListenForUpdates();
 
   // Posted to the worker thread by SubscribeForUpdates().
   void RegisterTypesAndSignalSubscribed();
 
-  // Called by StartInvalidationListener() and posted to the worker
-  // thread by Stop().
+  // Posted to the worker thread by Logout().
   void StopInvalidationListener();
 
   std::string state_;
