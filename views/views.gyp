@@ -393,7 +393,7 @@
       ],
     },
     {
-      'target_name': 'view_unit_tests',
+      'target_name': 'views_unittests',
       'type': 'executable',
       'dependencies': [
         '../app/app.gyp:app_resources',
@@ -460,7 +460,7 @@
       ],
     },
     {
-      'target_name': 'view_examples',
+      'target_name': 'views_examples',
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
