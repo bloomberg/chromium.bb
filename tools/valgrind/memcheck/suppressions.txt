@@ -2239,10 +2239,18 @@
    fun:_ZN14RunnableMethodIN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserverEMS1_FvvE6Tuple0E3RunEv
 }
 {
-   bug_46420
+   bug_46420a
    Memcheck:Addr4
    fun:_Z25WillHandleBrowserAboutURLP4GURLP7Profile
    fun:_ZN54BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test8TestBodyEv
+}
+{
+   bug_46420b
+   Memcheck:Addr4
+   fun:*StackDumpSignalHandler*
+   ...
+   fun:_ZN54BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test8TestBodyEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_46570_a
