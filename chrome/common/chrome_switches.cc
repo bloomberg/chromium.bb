@@ -1313,6 +1313,11 @@ const char kSetToken[]                      = "set-token";
 const char kWebSocketLiveExperimentHost[]   = "websocket-live-experiment-host";
 #endif
 
+#if defined(HAVE_XINPUT2)
+const char kTouchDevices[]                  = "touch-devices";
+#endif
+
+
 // USE_SECCOMP_SANDBOX controls whether the seccomp sandbox is opt-in or -out.
 // TODO(evan): unify all of these once we turn the seccomp sandbox always
 // on.  Also remove the #include of command_line.h above.

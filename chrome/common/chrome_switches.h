@@ -390,6 +390,10 @@ extern const char kWebSocketLiveExperimentHost[];
 extern const char kRendererCheckFalseTest[];
 #endif
 
+#if defined(HAVE_XINPUT2)
+extern const char kTouchDevices[];
+#endif
+
 #if defined(USE_SECCOMP_SANDBOX)
 extern const char kDisableSeccompSandbox[];
 #else

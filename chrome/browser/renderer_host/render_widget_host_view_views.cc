@@ -33,6 +33,7 @@ static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;
+using WebKit::WebTouchEvent;
 
 namespace {
 
@@ -49,6 +50,48 @@ int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
     modifiers |= WebKit::WebInputEvent::CapsLockOn;
 
   return modifiers;
+}
+
+WebKit::WebTouchPoint::State TouchPointStateFromEvent(
+    const views::TouchEvent* event) {
+  switch (event->GetType()) {
+    case views::Event::ET_TOUCH_PRESSED:
+      return WebKit::WebTouchPoint::StatePressed;
+    case views::Event::ET_TOUCH_RELEASED:
+      return WebKit::WebTouchPoint::StateReleased;
+    case views::Event::ET_TOUCH_MOVED:
+      return WebKit::WebTouchPoint::StateMoved;
+    case views::Event::ET_TOUCH_CANCELLED:
+      return WebKit::WebTouchPoint::StateCancelled;
+    default:
+      return WebKit::WebTouchPoint::StateUndefined;
+  }
+}
+
+WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
+    const views::TouchEvent* event) {
+  switch (event->GetType()) {
+    case views::Event::ET_TOUCH_PRESSED:
+      return WebKit::WebInputEvent::TouchStart;
+    case views::Event::ET_TOUCH_RELEASED:
+      return WebKit::WebInputEvent::TouchEnd;
+    case views::Event::ET_TOUCH_MOVED:
+      return WebKit::WebInputEvent::TouchMove;
+    case views::Event::ET_TOUCH_CANCELLED:
+      return WebKit::WebInputEvent::TouchCancel;
+    default:
+      return WebKit::WebInputEvent::Undefined;
+  }
+}
+
+void UpdateTouchPointPosition(const views::TouchEvent* event,
+                              const gfx::Point& origin,
+                              WebKit::WebTouchPoint* tpoint) {
+  tpoint->position.x = event->x();
+  tpoint->position.y = event->y();
+
+  tpoint->screenPosition.x = tpoint->position.x + origin.x();
+  tpoint->screenPosition.y = tpoint->position.y + origin.y();
 }
 
 void InitializeWebMouseEventFromViewsEvent(const views::LocatedEvent& e,
@@ -78,7 +121,9 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       is_loading_(false),
       native_cursor_(NULL),
       is_showing_context_menu_(false),
-      visually_deemphasized_(false) {
+      visually_deemphasized_(false),
+      touch_event_()
+    {
   SetFocusable(true);
   host_->set_view(this);
 }
@@ -579,6 +624,75 @@ TODO(bryeung): key bindings
   }
 #endif
   host_->ForwardKeyboardEvent(event);
+}
+
+bool RenderWidgetHostViewViews::OnTouchEvent(const views::TouchEvent& e) {
+  // Update the list of touch points first.
+  WebKit::WebTouchPoint* point = NULL;
+
+  switch (e.GetType()) {
+    case views::Event::ET_TOUCH_PRESSED:
+      // Add a new touch point.
+      if (touch_event_.touchPointsLength <
+          WebTouchEvent::touchPointsLengthCap) {
+        point = &touch_event_.touchPoints[touch_event_.touchPointsLength++];
+        point->id = e.identity();
+      }
+      break;
+    case views::Event::ET_TOUCH_RELEASED:
+    case views::Event::ET_TOUCH_CANCELLED:
+    case views::Event::ET_TOUCH_MOVED: {
+      // The touch point should have been added to the event from an earlier
+      // _PRESSED event. So find that.
+      // At the moment, only a maximum of 4 touch-points are allowed. So a
+      // simple loop should be sufficient.
+      for (int i = 0; i < WebTouchEvent::touchPointsLengthCap; ++i) {
+        point = touch_event_.touchPoints + i;
+        if (point->id == e.identity()) {
+          break;
+        }
+        point = NULL;
+      }
+      DCHECK(point != NULL) << "Touchpoint not found for event " << e.GetType();
+      break;
+    }
+    default:
+      DLOG(WARNING) << "Unknown touch event " << e.GetType();
+      break;
+  }
+
+  if (!point)
+    return false;
+
+  // Update the location and state of the point.
+  UpdateTouchPointPosition(&e, GetPosition(), point);
+  point->state = TouchPointStateFromEvent(&e);
+
+  // Mark the rest of the points as stationary.
+  for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
+    WebKit::WebTouchPoint* iter = touch_event_.touchPoints + i;
+    if (iter != point) {
+      iter->state = WebKit::WebTouchPoint::StateStationary;
+    }
+  }
+
+  // Update the type of the touch event.
+  touch_event_.type = TouchEventTypeFromEvent(&e);
+
+  // The event and all the touches have been updated. Dispatch.
+  host_->ForwardTouchEvent(touch_event_);
+
+  // If the touch was released, then remove it from the list of touch points.
+  if (e.GetType() == views::Event::ET_TOUCH_RELEASED) {
+    --touch_event_.touchPointsLength;
+    for (int i = point - touch_event_.touchPoints;
+         i < touch_event_.touchPointsLength;
+         ++i) {
+      touch_event_.touchPoints[i] = touch_event_.touchPoints[i + 1];
+    }
+  }
+
+  return true;
 }
 
 // static

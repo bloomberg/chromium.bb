@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -94,6 +95,10 @@
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/browser/chromeos/wm_overview_controller.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
+#endif
+
+#if defined(HAVE_XINPUT2)
+#include "views/focus/accelerator_handler.h"
 #endif
 
 namespace {
@@ -1014,6 +1019,30 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   if (command_line.HasSwitch(switches::kLoginManager) ||
       command_line.HasSwitch(switches::kLoginPassword)) {
     silent_launch = true;
+  }
+#endif
+
+#if defined(HAVE_XINPUT2)
+  // Get a list of pointer-devices that should be treated as touch-devices.
+  // TODO(sad): Instead of/in addition to getting the list from the
+  // command-line, query X for a list of touch devices.
+  std::string touch_devices =
+    command_line.GetSwitchValueASCII(switches::kTouchDevices);
+
+  if (!touch_devices.empty()) {
+    std::vector<std::string> devs;
+    std::vector<unsigned int> device_ids;
+    unsigned int devid;
+    base::SplitString(touch_devices, ',', &devs);
+    for (std::vector<std::string>::iterator iter = devs.begin();
+        iter != devs.end(); ++iter) {
+      if (base::StringToInt(*iter, reinterpret_cast<int*>(&devid))) {
+        device_ids.push_back(devid);
+      } else {
+        DLOG(WARNING) << "Invalid touch-device id: " << *iter;
+      }
+    }
+    views::SetTouchDeviceList(device_ids);
   }
 #endif
 

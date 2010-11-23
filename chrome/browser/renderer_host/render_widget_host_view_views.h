@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "gfx/native_widget_types.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/event.h"
 #include "views/view.h"
@@ -21,10 +22,6 @@
 
 class RenderWidgetHost;
 struct NativeWebKeyboardEvent;
-
-namespace WebKit {
-class WebMouseEvent;
-}
 
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
@@ -85,7 +82,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   gfx::NativeCursor GetCursorForPoint(views::Event::EventType type,
                                       const gfx::Point& point);
 
-  // Views mouse events
+  // Views mouse events, overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
@@ -94,7 +91,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void OnMouseExited(const views::MouseEvent& event);
   virtual bool OnMouseWheel(const views::MouseWheelEvent& e);
 
-  // Views keyboard events
+  // Views keyboard events, overridden from views::View.
   virtual bool OnKeyPressed(const views::KeyEvent &e);
   virtual bool OnKeyReleased(const views::KeyEvent &e);
 
@@ -103,6 +100,9 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // Forwards a keyboard event to renderer.
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
+
+  // Views touch events, overridden from views::View.
+  virtual bool OnTouchEvent(const views::TouchEvent& e);
 
  private:
   friend class RenderWidgetHostViewViewsWidget;
@@ -161,6 +161,11 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // The size that we want the renderer to be.
   gfx::Size requested_size_;
+
+  // The touch-event. Its touch-points are updated as necessary. A new
+  // touch-point is added from an ET_TOUCH_PRESSED event, and a touch-point is
+  // removed from the list on an ET_TOUCH_RELEASED event.
+  WebKit::WebTouchEvent touch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewViews);
 };

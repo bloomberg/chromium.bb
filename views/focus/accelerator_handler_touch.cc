@@ -4,6 +4,7 @@
 
 #include "views/focus/accelerator_handler.h"
 
+#include <bitset>
 #include <gtk/gtk.h>
 #if defined(HAVE_XINPUT2)
 #include <X11/extensions/XInput2.h>
@@ -18,6 +19,36 @@
 #include "views/widget/widget_gtk.h"
 
 namespace views {
+
+#if defined(HAVE_XINPUT2)
+// Functions related to determining touch devices.
+class TouchFactory {
+ public:
+  // Keep a list of touch devices so that it is possible to determine if a
+  // pointer event is a touch-event or a mouse-event.
+  static void SetTouchDeviceListInternal(
+      const std::vector<unsigned int>& devices) {
+    for (std::vector<unsigned int>::const_iterator iter = devices.begin();
+        iter != devices.end(); ++iter) {
+      DCHECK(*iter < touch_devices.size());
+      touch_devices[*iter] = true;
+    }
+  }
+
+  // Is the device a touch-device?
+  static bool IsTouchDevice(unsigned int deviceid) {
+    return deviceid < touch_devices.size() ? touch_devices[deviceid] : false;
+  }
+
+ private:
+  // A quick lookup table for determining if a device is a touch device.
+  static std::bitset<128> touch_devices;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchFactory);
+};
+
+std::bitset<128> TouchFactory::touch_devices;
+#endif
 
 namespace {
 
@@ -41,7 +72,18 @@ RootView* FindRootViewForGdkWindow(GdkWindow* gdk_window) {
 #if defined(HAVE_XINPUT2)
 bool X2EventIsTouchEvent(XEvent* xev) {
   // TODO(sad): Determine if the captured event is a touch-event.
-  return false;
+  XGenericEventCookie* cookie = &xev->xcookie;
+  switch (cookie->evtype) {
+    case XI_ButtonPress:
+    case XI_ButtonRelease:
+    case XI_Motion: {
+      // Is the event coming from a touch device?
+      return TouchFactory::IsTouchDevice(
+          static_cast<XIDeviceEvent*>(cookie->data)->sourceid);
+    }
+    default:
+      return false;
+  }
 }
 #endif  // HAVE_XINPUT2
 
@@ -50,13 +92,13 @@ bool X2EventIsTouchEvent(XEvent* xev) {
 #if defined(HAVE_XINPUT2)
 bool DispatchX2Event(RootView* root, XEvent* xev) {
   if (X2EventIsTouchEvent(xev)) {
-    // TODO(sad): Create a TouchEvent, and send it off to |root|. If the event
+    // Create a TouchEvent, and send it off to |root|. If the event
     // is processed by |root|, then return. Otherwise let it fall through so it
     // can be used (if desired) as a mouse event.
 
-    // TouchEvent touch(xev);
-    // if (root->OnTouchEvent(touch))
-    //  return true;
+    TouchEvent touch(xev);
+    if (root->OnTouchEvent(touch))
+      return true;
   }
 
   XGenericEventCookie* cookie = &xev->xcookie;
@@ -170,6 +212,12 @@ bool DispatchXEvent(XEvent* xev) {
 
   return false;
 }
+
+#if defined(HAVE_XINPUT2)
+void SetTouchDeviceList(std::vector<unsigned int>& devices) {
+  TouchFactory::SetTouchDeviceListInternal(devices);
+}
+#endif
 
 AcceleratorHandler::AcceleratorHandler() {}
 

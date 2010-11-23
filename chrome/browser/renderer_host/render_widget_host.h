@@ -279,6 +279,10 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                                   const std::string& value);
   virtual void ForwardEditCommandsForNextKeyEvent(
       const EditCommands& edit_commands);
+#if defined(TOUCH_UI)
+  virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
+#endif
+
 
   // Update the text direction of the focused input element and notify it to a
   // renderer process.

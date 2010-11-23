@@ -3472,6 +3472,7 @@
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
+            '../build/linux/system.gyp:x11',
             '../third_party/undoview/undoview.gyp:undoview',
           ],
           'link_settings': {
@@ -3545,6 +3546,7 @@
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
+            '../build/linux/system.gyp:x11',
           ],
           'sources': [
             'browser/file_path_watcher_stub.cc',

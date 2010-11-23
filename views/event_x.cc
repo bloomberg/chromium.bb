@@ -71,6 +71,46 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
 
   return buttonflags;
 }
+
+Event::EventType GetTouchEventType(XEvent* xev) {
+  XGenericEventCookie* cookie = &xev->xcookie;
+  switch (cookie->evtype) {
+    case XI_ButtonPress:
+      return Event::ET_TOUCH_PRESSED;
+    case XI_ButtonRelease:
+      return Event::ET_TOUCH_RELEASED;
+    case XI_Motion:
+      return Event::ET_TOUCH_MOVED;
+
+    // Note: We will not generate a _STATIONARY event here. It will be created,
+    // when necessary, by a RWHVV.
+
+    // TODO(sad): When do we trigger a _CANCELLED event? Maybe that will also be
+    // done by a RWHVV, e.g. when it gets destroyed in the middle of a
+    // touch-sequence?
+  }
+
+  return Event::ET_UNKNOWN;
+}
+
+gfx::Point GetTouchEventLocation(XEvent* xev) {
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+  return gfx::Point(xiev->event_x, xiev->event_y);
+}
+
+int GetTouchEventFlags(XEvent* xev) {
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+  return GetButtonMaskForX2Event(xiev) |
+         GetEventFlagsFromXState(xiev->mods.effective);
+}
+
+int GetTouchIDFromXEvent(XEvent* xev) {
+  // TODO(sad): How we determine the touch-id from the event is as yet
+  // undecided.
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+  return xiev->sourceid;
+}
+
 #endif  // HAVE_XINPUT2
 
 Event::EventType GetMouseEventType(XEvent* xev) {
@@ -181,5 +221,14 @@ MouseWheelEvent::MouseWheelEvent(XEvent* xev)
       offset_(xev->xbutton.button == 4 ? 53 : -53) {  // '53' is also the value
                                                       // used for GTK+.
 }
+
+#if defined(HAVE_XINPUT2)
+TouchEvent::TouchEvent(XEvent* xev)
+    : LocatedEvent(GetTouchEventType(xev),
+                   GetTouchEventLocation(xev),
+                   GetTouchEventFlags(xev)),
+      touch_id_(GetTouchIDFromXEvent(xev)) {
+}
+#endif
 
 }  // namespace views

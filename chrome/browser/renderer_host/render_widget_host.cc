@@ -628,6 +628,13 @@ void RenderWidgetHost::ForwardEditCommandsForNextKeyEvent(
   // only handled by RenderView.
 }
 
+#if defined(TOUCH_UI)
+void RenderWidgetHost::ForwardTouchEvent(
+    const WebKit::WebTouchEvent& touch_event) {
+  ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent), false);
+}
+#endif
+
 void RenderWidgetHost::RendererExited() {
   // Clearing this flag causes us to re-create the renderer when recovering
   // from a crashed renderer.

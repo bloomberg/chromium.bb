@@ -297,6 +297,10 @@ class TouchEvent : public LocatedEvent {
   // from 'from' coordinate system to 'to' coordinate system.
   TouchEvent(const TouchEvent& model, View* from, View* to);
 
+#if defined(HAVE_XINPUT2)
+  explicit TouchEvent(XEvent* xev);
+#endif
+
   // Return the touch point for this event.
   bool identity() const {
     return touch_id_;
