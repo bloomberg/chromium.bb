@@ -3179,6 +3179,7 @@
               }
             }],
             ['OS=="win"', {
+              'product_extension': 'pyd',
               'include_dirs': [
                 '..',
                 '../third_party/python_26/include',

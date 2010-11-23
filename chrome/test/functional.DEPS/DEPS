@@ -9,6 +9,6 @@ deps = {
 
 deps_os = {
   'win': {
-    'src/third_party/python_24': '/trunk/deps/third_party/python_24@22967',
+    'src/third_party/python_26': '/trunk/tools/third_party/python_26@66685',
   }
 }
