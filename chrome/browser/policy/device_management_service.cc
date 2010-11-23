@@ -27,14 +27,13 @@ namespace {
 // Custom request context implementation that allows to override the user agent,
 // amongst others. Wraps a baseline request context from which we reuse the
 // networking components.
-class DeviceManagementBackendRequestContext : public URLRequestContext {
+class DeviceManagementRequestContext : public URLRequestContext {
  public:
-  explicit DeviceManagementBackendRequestContext(
-      URLRequestContext* base_context);
-  virtual ~DeviceManagementBackendRequestContext();
+  explicit DeviceManagementRequestContext(URLRequestContext* base_context);
+  virtual ~DeviceManagementRequestContext();
 };
 
-DeviceManagementBackendRequestContext::DeviceManagementBackendRequestContext(
+DeviceManagementRequestContext::DeviceManagementRequestContext(
     URLRequestContext* base_context) {
   // Share resolver, proxy service and ssl bits with the baseline context. This
   // is important so we don't make redundant requests (e.g. when resolving proxy
@@ -56,17 +55,15 @@ DeviceManagementBackendRequestContext::DeviceManagementBackendRequestContext(
   accept_charset_ = "*";
 }
 
-DeviceManagementBackendRequestContext
-    ::~DeviceManagementBackendRequestContext() {
+DeviceManagementRequestContext::~DeviceManagementRequestContext() {
   delete http_transaction_factory_;
   delete http_auth_handler_factory_;
 }
 
 // Request context holder.
-class DeviceManagementBackendRequestContextGetter
-    : public URLRequestContextGetter {
+class DeviceManagementRequestContextGetter : public URLRequestContextGetter {
  public:
-  DeviceManagementBackendRequestContextGetter(
+  DeviceManagementRequestContextGetter(
       URLRequestContextGetter* base_context_getter)
       : base_context_getter_(base_context_getter) {}
 
@@ -81,10 +78,10 @@ class DeviceManagementBackendRequestContextGetter
 
 
 URLRequestContext*
-DeviceManagementBackendRequestContextGetter::GetURLRequestContext() {
+DeviceManagementRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!context_) {
-    context_ = new DeviceManagementBackendRequestContext(
+    context_ = new DeviceManagementRequestContext(
         base_context_getter_->GetURLRequestContext());
   }
 
@@ -92,7 +89,7 @@ DeviceManagementBackendRequestContextGetter::GetURLRequestContext() {
 }
 
 scoped_refptr<base::MessageLoopProxy>
-DeviceManagementBackendRequestContextGetter::GetIOMessageLoopProxy() const {
+DeviceManagementRequestContextGetter::GetIOMessageLoopProxy() const {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 
@@ -112,7 +109,8 @@ DeviceManagementBackend* DeviceManagementService::CreateBackend() {
 void DeviceManagementService::Initialize(
     URLRequestContextGetter* request_context_getter) {
   DCHECK(!request_context_getter_);
-  request_context_getter_ = request_context_getter;
+  request_context_getter_ =
+      new DeviceManagementRequestContextGetter(request_context_getter);
   while (!queued_jobs_.empty()) {
     StartJob(queued_jobs_.front());
     queued_jobs_.pop_front();

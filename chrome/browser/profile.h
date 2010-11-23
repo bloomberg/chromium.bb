@@ -476,7 +476,7 @@ class Profile {
   // Returns the PromoCounter for Instant, or NULL if not applicable.
   virtual PromoCounter* GetInstantPromoCounter() = 0;
 
-  // Gets the device management service associated with this profile.
+  // Gets the policy context associated with this profile.
   virtual policy::ProfilePolicyContext* GetPolicyContext() = 0;
 
 #if defined(OS_CHROMEOS)
