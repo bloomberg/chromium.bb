@@ -207,26 +207,43 @@ bool PersonalDataManager::ImportFormData(
           string16 number;
           string16 city_code;
           string16 country_code;
+          PhoneNumber::ParsePhoneNumber(value,
+                                        &number, &city_code, &country_code);
+          if (number.empty())
+            continue;
+
           if (group == AutoFillType::PHONE_HOME) {
-            PhoneNumber::ParsePhoneNumber(
-                value, &number, &city_code, &country_code);
-            imported_profile_->SetInfo(
-                AutoFillType(PHONE_HOME_COUNTRY_CODE), country_code);
-            imported_profile_->SetInfo(
-                AutoFillType(PHONE_HOME_CITY_CODE), city_code);
-            imported_profile_->SetInfo(
-                AutoFillType(PHONE_HOME_NUMBER), number);
+            imported_profile_->SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE),
+                                       country_code);
+            imported_profile_->SetInfo(AutoFillType(PHONE_HOME_CITY_CODE),
+                                       city_code);
+            imported_profile_->SetInfo(AutoFillType(PHONE_HOME_NUMBER), number);
           } else if (group == AutoFillType::PHONE_FAX) {
-            PhoneNumber::ParsePhoneNumber(
-                value, &number, &city_code, &country_code);
-            imported_profile_->SetInfo(
-                AutoFillType(PHONE_FAX_COUNTRY_CODE), country_code);
-            imported_profile_->SetInfo(
-                AutoFillType(PHONE_FAX_CITY_CODE), city_code);
-            imported_profile_->SetInfo(
-                AutoFillType(PHONE_FAX_NUMBER), number);
+            imported_profile_->SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE),
+                                       country_code);
+            imported_profile_->SetInfo(AutoFillType(PHONE_FAX_CITY_CODE),
+                                       city_code);
+            imported_profile_->SetInfo(AutoFillType(PHONE_FAX_NUMBER), number);
           }
+
           continue;
+        }
+
+        // Phone and fax numbers can be split across multiple fields, so we
+        // might have already stored the prefix, and now be at the suffix.
+        // If so, combine them to form the full number.
+        if (group == AutoFillType::PHONE_HOME ||
+            group == AutoFillType::PHONE_FAX) {
+          AutoFillType number_type(PHONE_HOME_NUMBER);
+          if (group == AutoFillType::PHONE_FAX)
+            number_type = AutoFillType(PHONE_FAX_NUMBER);
+
+          string16 stored_number = imported_profile_->GetFieldText(number_type);
+          if (stored_number.size() ==
+                  static_cast<size_t>(PhoneNumber::kPrefixLength) &&
+              value.size() == static_cast<size_t>(PhoneNumber::kSuffixLength)) {
+            value = stored_number + value;
+          }
         }
 
         imported_profile_->SetInfo(AutoFillType(field_type.field_type()),

@@ -14,6 +14,7 @@
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/guid.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -36,12 +37,6 @@ namespace {
 // The rate for positive/negative matches potentially could be different.
 const double kAutoFillPositiveUploadRateDefaultValue = 0.01;
 const double kAutoFillNegativeUploadRateDefaultValue = 0.01;
-
-// Size and offset of the prefix and suffix portions of phone numbers.
-const int kAutoFillPhoneNumberPrefixOffset = 0;
-const int kAutoFillPhoneNumberPrefixCount = 3;
-const int kAutoFillPhoneNumberSuffixOffset = 3;
-const int kAutoFillPhoneNumberSuffixCount = 4;
 
 const string16::value_type kCreditCardPrefix[] = {'*',0};
 const string16::value_type kLabelSeparator[] = {';',' ','*',0};
@@ -603,16 +598,17 @@ void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
   // matches the "prefix" or "suffix" sizes and fill accordingly.
   string16 number = profile->GetFieldText(AutoFillType(PHONE_HOME_NUMBER));
   bool has_valid_suffix_and_prefix = (number.length() ==
-      (kAutoFillPhoneNumberPrefixCount + kAutoFillPhoneNumberSuffixCount));
+      static_cast<size_t>(PhoneNumber::kPrefixLength +
+                          PhoneNumber::kSuffixLength));
   if (has_valid_suffix_and_prefix &&
-      field->max_length() == kAutoFillPhoneNumberPrefixCount) {
-    number = number.substr(kAutoFillPhoneNumberPrefixOffset,
-                           kAutoFillPhoneNumberPrefixCount);
+      field->max_length() == PhoneNumber::kPrefixLength) {
+    number = number.substr(PhoneNumber::kPrefixOffset,
+                           PhoneNumber::kPrefixLength);
     field->set_value(number);
   } else if (has_valid_suffix_and_prefix &&
-             field->max_length() == kAutoFillPhoneNumberSuffixCount) {
-    number = number.substr(kAutoFillPhoneNumberSuffixOffset,
-                           kAutoFillPhoneNumberSuffixCount);
+             field->max_length() == PhoneNumber::kSuffixLength) {
+    number = number.substr(PhoneNumber::kSuffixOffset,
+                           PhoneNumber::kSuffixLength);
     field->set_value(number);
   } else {
     field->set_value(number);

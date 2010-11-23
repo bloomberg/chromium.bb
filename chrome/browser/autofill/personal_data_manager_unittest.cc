@@ -543,6 +543,46 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
 
+TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
+  FormData form;
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "First name:", "first_name", "George", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Last name:", "last_name", "Washington", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Phone #:", "home_phone_area_code", "650", "text", &field);
+  field.set_max_length(3);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Phone #:", "home_phone_prefix", "555", "text", &field);
+  field.set_max_length(3);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Phone #:", "home_phone_suffix", "0000", "text", &field);
+  field.set_max_length(4);
+  form.fields.push_back(field);
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+  personal_data_->ImportFormData(forms);
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  AutoFillProfile expected;
+  autofill_test::SetProfileInfo(&expected, NULL, "George", NULL, "Washington",
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "6505550000", NULL);
+  const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+}
+
 TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
   CreditCard credit_card0;
   credit_card0.set_label(ASCIIToUTF16("Home"));
