@@ -247,6 +247,27 @@ void RenderWidgetHost::WasRestored() {
       NotificationType::RENDER_WIDGET_VISIBILITY_CHANGED,
       Source<RenderWidgetHost>(this),
       Details<bool>(&is_visible));
+
+  // It's possible for our size to be out of sync with the renderer. The
+  // following is one case that leads to this:
+  // 1. WasResized -> Send ViewMsg_Resize to render
+  // 2. WasResized -> do nothing as resize_ack_pending_ is true
+  // 3. WasHidden
+  // 4. OnMsgUpdateRect from (1) processed. Does NOT invoke WasResized as view
+  //    is hidden. Now renderer/browser out of sync with what they think size
+  //    is.
+  // By invoking WasResized the renderer is updated as necessary. WasResized
+  // does nothing if the sizes are already in sync.
+  //
+  // TODO: ideally ViewMsg_WasRestored would take a size. This way, the renderer
+  // could handle both the restore and resize at once. This isn't that big a
+  // deal as RenderWidget::WasRestored delays updating, so that the resize from
+  // WasResized is usually processed before the renderer is painted.
+  //
+  // NOTE: This is disabled on Mac because of 64113.
+#if !defined(OS_MACOSX)
+  WasResized();
+#endif
 }
 
 void RenderWidgetHost::WasResized() {
