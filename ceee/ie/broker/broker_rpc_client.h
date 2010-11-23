@@ -31,6 +31,14 @@ class BrokerRpcClient {
   // @{
   // Calls FireEvent on server side.
   HRESULT FireEvent(const char* event_name, const char* event_args);
+  // Adds uma to histograms on the server side. Either performance timings or
+  // generic histogram.
+  virtual bool SendUmaHistogramTimes(BSTR event_name,
+                                     int sample);
+  virtual bool SendUmaHistogramData(BSTR event_name,
+                                    int sample,
+                                    int min, int max,
+                                    int bucket_count);
   // @}
 
   // Starts new CEEE broker if nessesary.

@@ -62,6 +62,8 @@
         '../../../ceee/common/common.gyp:initializing_coclass',
         '../../../ceee/common/common.gyp:ceee_common',
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
+        # Metrics service requires this.
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_user_agent',
       ],
       'sources': [
         'api_dispatcher.cc',
@@ -102,6 +104,10 @@
         'window_api_module.h',
         'window_events_funnel.cc',
         'window_events_funnel.h',
+        # For chrome metrics service
+        '<(DEPTH)/chrome_frame/metrics_service.cc',
+        '<(DEPTH)/chrome_frame/metrics_service.h',
+        '<(DEPTH)/chrome_frame/renderer_glue.cc',
       ],
       'include_dirs': [
         # For chrome_tab.h
@@ -133,6 +139,7 @@
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_frame_ie',  # for GUIDs.
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
+        '<(DEPTH)/chrome/chrome.gyp:common',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

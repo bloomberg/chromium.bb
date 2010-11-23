@@ -22,6 +22,7 @@
 #include "ceee/ie/broker/tab_api_module.h"
 #include "ceee/ie/common/extension_manifest.h"
 #include "ceee/ie/common/ie_util.h"
+#include "ceee/ie/common/metrics_util.h"
 #include "ceee/ie/common/ceee_module_util.h"
 #include "ceee/ie/plugin/bho/cookie_accountant.h"
 #include "ceee/ie/plugin/bho/http_negotiate.h"
@@ -105,6 +106,8 @@ BrowserHelperObject::BrowserHelperObject()
 }
 
 BrowserHelperObject::~BrowserHelperObject() {
+  broker_rpc_.Disconnect();
+
   TRACE_EVENT_END("ceee.bho", this, "");
 }
 
@@ -129,6 +132,8 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
   }
 
   if (NULL == site) {
+    metrics_util::ScopedTimer metrics_timer("ceee/BHO.TearDown", &broker_rpc_);
+
     // We're being torn down.
     TearDown();
 
@@ -137,6 +142,7 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
     FireOnUnmappedEvent();
   }
 
+  metrics_util::ScopedTimer metrics_timer("ceee/BHO.Initialize", &broker_rpc_);
   HRESULT hr = SuperSite::SetSite(site);
   if (FAILED(hr))
     return hr;
@@ -252,6 +258,9 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
       com::LogHr(hr);
   DCHECK(SUCCEEDED(hr)) << "CoCreating Broker. " << com::LogHr(hr);
   if (SUCCEEDED(hr)) {
+    broker_rpc_.Connect();
+    DCHECK(broker_rpc_.is_connected());
+
     DCHECK(executor_ == NULL);
     hr = CreateExecutor(&executor_);
     LOG_IF(ERROR, FAILED(hr)) << "Failed to create Executor, hr=" <<
@@ -742,6 +751,9 @@ STDMETHODIMP_(void) BrowserHelperObject::OnBeforeNavigate2(
 
 void BrowserHelperObject::OnBeforeNavigate2Impl(
     const ScopedDispatchPtr& webbrowser_disp, const CComBSTR& url) {
+  metrics_util::ScopedTimer metrics_timer("ceee/BHO.BeforeNavigate",
+                                          &broker_rpc_);
+
   base::win::ScopedComPtr<IWebBrowser2> webbrowser;
   HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
   if (FAILED(hr)) {
@@ -805,6 +817,8 @@ STDMETHODIMP_(void) BrowserHelperObject::OnDocumentComplete(
 
 void BrowserHelperObject::OnDocumentCompleteImpl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
+  metrics_util::ScopedTimer metrics_timer("ceee/BHO.DocumentComplete",
+                                          &broker_rpc_);
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
     (*iter)->OnDocumentComplete(webbrowser, url);
@@ -843,6 +857,9 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateComplete2(
 
 void BrowserHelperObject::OnNavigateComplete2Impl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
+  metrics_util::ScopedTimer metrics_timer("ceee/BHO.NavigateComplete",
+                                          &broker_rpc_);
+
   HandleNavigateComplete(webbrowser, url);
 
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
@@ -892,6 +909,9 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateError(
 void BrowserHelperObject::OnNavigateErrorImpl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url,
     LONG status_code) {
+  metrics_util::ScopedTimer metrics_timer("ceee/BHO.NavigateError",
+                                          &broker_rpc_);
+
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
     (*iter)->OnNavigateError(webbrowser, url, status_code);

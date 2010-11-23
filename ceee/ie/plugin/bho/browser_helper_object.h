@@ -21,6 +21,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/task.h"
+#include "ceee/ie/broker/broker_rpc_client.h"
 #include "ceee/ie/plugin/bho/tab_events_funnel.h"
 #include "ceee/ie/common/chrome_frame_host.h"
 #include "ceee/ie/plugin/bho/frame_event_handler.h"
@@ -365,6 +366,9 @@ class ATL_NO_VTABLE BrowserHelperObject
 
   // Indicates if the current shown page is a full-tab chrome frame.
   bool full_tab_chrome_frame_;
+
+  // The RPC client used to communicate with the broker.
+  BrokerRpcClient broker_rpc_;
 
  private:
   // Used during initialization to get the tab information from Chrome and

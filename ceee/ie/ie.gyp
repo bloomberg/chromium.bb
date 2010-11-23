@@ -34,6 +34,7 @@
         'common/crash_reporter_unittest.cc',
         'common/extension_manifest_unittest.cc',
         'common/ceee_module_util_unittest.cc',
+        'common/metrics_util_unittest.cc',
         'plugin/bho/browser_helper_object_unittest.cc',
         'plugin/bho/cookie_accountant_unittest.cc',
         'plugin/bho/cookie_events_funnel_unittest.cc',

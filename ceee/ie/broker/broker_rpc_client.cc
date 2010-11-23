@@ -132,3 +132,25 @@ HRESULT BrokerRpcClient::FireEvent(const char* event_name,
   } RpcEndExcept
   return RPC_E_FAULT;
 }
+
+bool BrokerRpcClient::SendUmaHistogramTimes(BSTR event_name, int sample) {
+  RpcTryExcept {
+    BrokerRpcClient_SendUmaHistogramTimes(binding_handle_, event_name, sample);
+    return true;
+  } RpcExcept(HandleRpcException(RpcExceptionCode())) {
+    LogRpcException("RPC error in SendUmaHistogramTimes", RpcExceptionCode());
+  } RpcEndExcept
+  return false;
+}
+
+bool BrokerRpcClient::SendUmaHistogramData(BSTR event_name, int sample,
+                                           int min, int max, int bucket_count) {
+  RpcTryExcept {
+    BrokerRpcClient_SendUmaHistogramData(binding_handle_, event_name, sample,
+        min, max, bucket_count);
+    return true;
+  } RpcExcept(HandleRpcException(RpcExceptionCode())) {
+    LogRpcException("RPC error in SendUmaHistogramData", RpcExceptionCode());
+  } RpcEndExcept
+  return false;
+}

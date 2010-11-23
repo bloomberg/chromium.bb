@@ -21,6 +21,7 @@
 #include "ceee/ie/common/crash_reporter.h"
 #include "ceee/common/com_utils.h"
 #include "chrome/common/url_constants.h"
+#include "chrome_frame/metrics_service.h"
 
 namespace {
 
@@ -164,6 +165,9 @@ HRESULT CeeeBrokerModule::PreMessageLoop(int show) {
   if (!rpc_server_.Start())
     return RPC_E_FAULT;
 
+  // Initialize metrics. We need the rpc_server_ above to be available.
+  MetricsService::Start();
+
   return CAtlExeModuleT<CeeeBrokerModule>::PreMessageLoop(show);
 }
 
@@ -172,6 +176,10 @@ HRESULT CeeeBrokerModule::PostMessageLoop() {
   Singleton<ExecutorsManager,
             ExecutorsManager::SingletonTraits>()->Terminate();
   WindowEventsFunnel::Terminate();
+
+  // Upload data if necessary.
+  MetricsService::Stop();
+
   chrome_postman_.Term();
   return hr;
 }

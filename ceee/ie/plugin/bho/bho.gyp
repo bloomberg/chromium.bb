@@ -16,6 +16,7 @@
       'dependencies': [
         '../toolband/toolband.gyp:toolband_idl',
         '../../broker/broker.gyp:broker',
+        '../../broker/broker.gyp:broker_rpc_lib',
         '../../common/common.gyp:ie_common',
         '../../common/common.gyp:ie_common_settings',
         '../../../common/common.gyp:ceee_common',
@@ -23,7 +24,7 @@
         '../../../../base/base.gyp:base',
         '../../../../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
         # For the vtable patching stuff...
-        '../../../../chrome_frame/chrome_frame.gyp:chrome_frame_ie',
+        '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_frame_ie',
       ],
       'sources': [
         'browser_helper_object.cc',
@@ -78,6 +79,9 @@
       'include_dirs': [
         # For chrome_tab.h
         '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'libraries': [
+        'rpcrt4.lib',
       ],
     },
   ]

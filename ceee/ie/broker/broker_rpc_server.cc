@@ -7,6 +7,7 @@
 #include "ceee/ie/broker/broker_rpc_server.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/metrics/histogram.h"
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "broker_rpc_lib.h"  // NOLINT
@@ -14,6 +15,10 @@
 #include "ceee/ie/broker/broker_module_util.h"
 #include "ceee/ie/broker/broker_rpc_utils.h"
 #include "ceee/ie/broker/chrome_postman.h"
+
+// This lock ensures that histograms created by the broker are thread safe.
+// The histograms created here can be initialized on multiple threads.
+Lock g_metrics_lock;
 
 BrokerRpcServer::BrokerRpcServer()
     : is_started_(false),
@@ -127,4 +132,40 @@ void BrokerRpcServer_FireEvent(
   DCHECK(ChromePostman::GetInstance());
   if (ChromePostman::GetInstance())
     ChromePostman::GetInstance()->FireEvent(event_name, event_args);
+}
+
+void BrokerRpcServer_SendUmaHistogramTimes(handle_t binding_handle,
+                                           BSTR event_name,
+                                           int sample) {
+  // We can't unfortunately use the HISTOGRAM_*_TIMES here because they use
+  // static variables to save time. FactoryTimeGet is not so expensive though
+  // and this call is non-blocking.
+  AutoLock lock(g_metrics_lock);
+  std::string name(CW2A(event_name).m_psz);
+  scoped_refptr<base::Histogram> counter =
+      base::Histogram::FactoryTimeGet(name,
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromSeconds(10),
+          50, base::Histogram::kUmaTargetedHistogramFlag);
+  DCHECK_EQ(name, counter->histogram_name());
+  if (counter.get())
+    counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
+}
+
+void BrokerRpcServer_SendUmaHistogramData(handle_t binding_handle,
+                                          BSTR event_name,
+                                          int sample,
+                                          int min, int max,
+                                          int bucket_count) {
+  // We can't unfortunately use the HISTOGRAM_*_COUNT here because they use
+  // static variables to save time. FactoryTimeGet is not so expensive though
+  // and this call is non-blocking.
+  AutoLock lock(g_metrics_lock);
+  std::string name(CW2A(event_name).m_psz);
+  scoped_refptr<base::Histogram> counter =
+      base::Histogram::FactoryGet(name, min, max, bucket_count,
+          base::Histogram::kUmaTargetedHistogramFlag);
+  DCHECK_EQ(name, counter->histogram_name());
+  if (counter.get())
+    counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
 }

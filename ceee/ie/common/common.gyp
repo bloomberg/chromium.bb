@@ -77,6 +77,7 @@
         'mock_ie_tab_interfaces.h',
         'ceee_module_util.cc',
         'ceee_module_util.h',
+        'metrics_util.h',
 
         # TODO(joi@chromium.org) Refactor to use chrome/common library.
         '../../../chrome/browser/automation/extension_automation_constants.cc',
