@@ -161,6 +161,10 @@ void PulseAudioMixer::DoGetVolume(GetVolumeCallback* callback,
 }
 
 bool PulseAudioMixer::InitThread() {
+  AutoLock lock(mixer_state_lock_);
+
+  if (mixer_state_ != UNINITIALIZED)
+    return false;
   if (thread_ == NULL) {
     thread_.reset(new base::Thread("PulseAudioMixer"));
     if (!thread_->Start()) {
@@ -168,6 +172,7 @@ bool PulseAudioMixer::InitThread() {
       return false;
     }
   }
+  mixer_state_ = INITIALIZING;
   return true;
 }
 
@@ -196,24 +201,26 @@ bool PulseAudioMixer::PulseAudioInit() {
 
   {
     AutoLock lock(mixer_state_lock_);
-    if (mixer_state_ != UNINITIALIZED)
+    if (mixer_state_ != INITIALIZING)
       return false;
-    mixer_state_ = INITIALIZING;
-  }
 
-  while (true) {
-    // Create connection to default server.
     pa_mainloop_ = pa_threaded_mainloop_new();
     if (!pa_mainloop_) {
       LOG(ERROR) << "Can't create PulseAudio mainloop";
-      break;
+      mixer_state_ = UNINITIALIZED;
+      return false;
     }
 
     if (pa_threaded_mainloop_start(pa_mainloop_) != 0) {
       LOG(ERROR) << "Can't start PulseAudio mainloop";
-      break;
+      pa_threaded_mainloop_free(pa_mainloop_);
+      mixer_state_ = UNINITIALIZED;
+      return false;
     }
+  }
 
+  while (true) {
+    // Create connection to default server.
     if (!MainloopSafeLock())
       return false;
 
@@ -276,7 +283,13 @@ bool PulseAudioMixer::PulseAudioInit() {
     if (device_id_ == kInvalidDeviceId)
       break;
 
-    set_mixer_state(READY);
+    {
+      AutoLock lock(mixer_state_lock_);
+      if (mixer_state_ == SHUTTING_DOWN)
+        return false;
+      mixer_state_ = READY;
+    }
+
     return true;
   }
 
@@ -286,17 +299,17 @@ bool PulseAudioMixer::PulseAudioInit() {
 }
 
 void PulseAudioMixer::PulseAudioFree() {
-  if (!pa_mainloop_)
-    return;
-
   {
     AutoLock lock(mixer_state_lock_);
-    DCHECK_NE(mixer_state_, UNINITIALIZED);
-    if (mixer_state_ == SHUTTING_DOWN)
+    if (!pa_mainloop_)
+      mixer_state_ = UNINITIALIZED;
+    if ((mixer_state_ == UNINITIALIZED) || (mixer_state_ == SHUTTING_DOWN))
       return;
     // If still initializing on another thread, this will cause it to exit.
     mixer_state_ = SHUTTING_DOWN;
   }
+
+  DCHECK(pa_mainloop_);
 
   MainloopLock();
   if (pa_context_) {
@@ -310,7 +323,10 @@ void PulseAudioMixer::PulseAudioFree() {
   pa_threaded_mainloop_free(pa_mainloop_);
   pa_mainloop_ = NULL;
 
-  set_mixer_state(UNINITIALIZED);
+  {
+    AutoLock lock(mixer_state_lock_);
+    mixer_state_ = UNINITIALIZED;
+  }
 }
 
 void PulseAudioMixer::CompleteOperation(pa_operation* pa_op,

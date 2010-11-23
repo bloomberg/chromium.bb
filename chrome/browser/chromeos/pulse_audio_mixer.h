@@ -107,11 +107,6 @@ class PulseAudioMixer {
                                    int eol,
                                    void* userdata);
 
-  void set_mixer_state(State state) {
-    AutoLock lock(mixer_state_lock_);
-    mixer_state_ = state;
-  }
-
   // These call down to PulseAudio's mainloop locking functions
   void MainloopLock() const;
   void MainloopUnlock() const;
