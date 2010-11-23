@@ -48,6 +48,28 @@ bool GetUserDocumentsDirectory(FilePath* result) {
   return mac_util::GetUserDirectory(NSDocumentDirectory, result);
 }
 
+void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
+  // If the profile directory is under ~/Library/Application Support,
+  // use a suitable cache directory under ~/Library/Caches.  For
+  // example, a profile directory of ~/Library/Application
+  // Support/Google/Chrome/MyProfileName would use the cache directory
+  // ~/Library/Caches/Google/Chrome/MyProfileName.
+
+  // Default value in cases where any of the following fails.
+  *result = profile_dir;
+
+  FilePath app_data_dir;
+  if (!PathService::Get(base::DIR_APP_DATA, &app_data_dir))
+    return;
+  FilePath cache_dir;
+  if (!PathService::Get(base::DIR_CACHE, &cache_dir))
+    return;
+  if (!app_data_dir.AppendRelativePath(profile_dir, &cache_dir))
+    return;
+
+  *result = cache_dir;
+}
+
 bool GetUserDownloadsDirectory(FilePath* result) {
   return mac_util::GetUserDirectory(NSDownloadsDirectory, result);
 }
