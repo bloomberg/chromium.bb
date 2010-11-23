@@ -71,9 +71,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
 }
 
 // TODO(mpcomplete): http://code.google.com/p/chromium/issues/detail?id=38992
-// Disabled, http://crbug.com/38992.
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   BrowserActionsContainer::disable_animations_during_testing_ = true;
+
+  base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Load extension A (contains browser action).
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
@@ -84,6 +85,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   std::string idA = browser_actions_bar()->GetExtensionId(0);
 
+  LOG(INFO) << "Load extension A done  : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   // Load extension B (contains browser action).
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
@@ -92,6 +97,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EnsureExtensionHasIcon(0);
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   std::string idB = browser_actions_bar()->GetExtensionId(1);
+
+  LOG(INFO) << "Load extension B done  : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 
   EXPECT_NE(idA, idB);
 
@@ -104,15 +113,27 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   std::string idC = browser_actions_bar()->GetExtensionId(2);
 
+  LOG(INFO) << "Load extension C done  : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   // Change container to show only one action, rest in overflow: A, [B, C].
   browser_actions_bar()->SetIconVisibilityCount(1);
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+
+  LOG(INFO) << "Icon visibility count 1: "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 
   // Disable extension A (should disappear). State becomes: B [C].
   DisableExtension(idA);
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(0));
+
+  LOG(INFO) << "Disable extension A    : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 
   // Enable A again. A should get its spot in the same location and the bar
   // should not grow (chevron is showing). For details: http://crbug.com/35349.
@@ -122,11 +143,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
 
+  LOG(INFO) << "Enable extension A     : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   // Disable C (in overflow). State becomes: A, [B].
   DisableExtension(idC);
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
+
+  LOG(INFO) << "Disable extension C    : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 
   // Enable C again. State becomes: A, [B, C].
   EnableExtension(idC);
@@ -134,9 +163,17 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
 
+  LOG(INFO) << "Enable extension C     : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   // Now we have 3 extensions. Make sure they are all visible. State: A, B, C.
   browser_actions_bar()->SetIconVisibilityCount(3);
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
+
+  LOG(INFO) << "Checkpoint             : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 
   // Disable extension A (should disappear). State becomes: B, C.
   DisableExtension(idA);
@@ -144,11 +181,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(0));
 
+  LOG(INFO) << "Disable extension A    : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   // Disable extension B (should disappear). State becomes: C.
   DisableExtension(idB);
   EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idC, browser_actions_bar()->GetExtensionId(0));
+
+  LOG(INFO) << "Disable extension B    : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 
   // Enable B (makes B and C showing now). State becomes: B, C.
   EnableExtension(idB);
@@ -156,11 +201,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(0));
 
+  LOG(INFO) << "Enable extension B     : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   // Enable A (makes A, B and C showing now). State becomes: B, C, A.
   EnableExtension(idA);
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(2));
+
+  LOG(INFO) << "Test complete          : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
@@ -188,12 +241,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
-  std::cout << "Test starting\n" << std::flush;
+  LOG(INFO) << "Test starting\n" << std::flush;
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
 
-  std::cout << "Loading extension\n" << std::flush;
+  LOG(INFO) << "Loading extension\n" << std::flush;
 
   // Load extension A (contains browser action).
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
@@ -202,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
 
   const Extension* extension = service->extensions()->at(size_before);
 
-  std::cout << "Creating bitmap\n" << std::flush;
+  LOG(INFO) << "Creating bitmap\n" << std::flush;
 
   // Create and cache and empty bitmap.
   SkBitmap bitmap;
@@ -211,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
                     Extension::kBrowserActionIconMaxSize);
   bitmap.allocPixels();
 
-  std::cout << "Set as cached image\n" << std::flush;
+  LOG(INFO) << "Set as cached image\n" << std::flush;
 
   gfx::Size size(Extension::kBrowserActionIconMaxSize,
                  Extension::kBrowserActionIconMaxSize);
@@ -220,9 +273,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
       bitmap,
       size);
 
-  std::cout << "Disabling extension\n" << std::flush;
+  LOG(INFO) << "Disabling extension\n" << std::flush;
   DisableExtension(extension->id());
-  std::cout << "Enabling extension\n" << std::flush;
+  LOG(INFO) << "Enabling extension\n" << std::flush;
   EnableExtension(extension->id());
-  std::cout << "Test ending\n" << std::flush;
+  LOG(INFO) << "Test ending\n" << std::flush;
 }
