@@ -21,15 +21,13 @@ class ExternalPolicyExtensionProvider
   explicit ExternalPolicyExtensionProvider();
   virtual ~ExternalPolicyExtensionProvider();
 
-  // Set the internal list of extensions based on
-  // prefs::kExtensionInstallForceList.
-  void SetPreferences(PrefService* prefs);
+  // Set the internal list of extensions based on |forcelist|.
+  // Does not take ownership of |forcelist|.
+  void SetPreferences(const ListValue* forcelist);
 
  private:
   friend class MockExternalPolicyExtensionProviderVisitor;
 
-  // Set the internal list of extensions based on |forcelist|.
-  void SetPreferences(const ListValue* forcelist);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_POLICY_EXTENSION_PROVIDER_H_

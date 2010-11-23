@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/values_util.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -232,6 +233,9 @@ class ExtensionsServiceBackend
                                                  const GURL& update_url,
                                                  Extension::Location location);
 
+  virtual void UpdateExternalPolicyExtensionProvider(
+      scoped_refptr<RefCountedList> forcelist);
+
  private:
   friend class base::RefCountedThreadSafe<ExtensionsServiceBackend>;
 
@@ -269,6 +273,8 @@ class ExtensionsServiceBackend
   typedef std::vector<linked_ptr<ExternalExtensionProvider> >
       ProviderCollection;
   ProviderCollection external_extension_providers_;
+  linked_ptr<ExternalPolicyExtensionProvider>
+      external_policy_extension_provider_;
 
   // Set to true by OnExternalExtensionUpdateUrlFound() when an external
   // extension URL is found.  Used in CheckForExternalUpdates() to see
@@ -300,11 +306,14 @@ ExtensionsServiceBackend::ExtensionsServiceBackend(
       linked_ptr<ExternalExtensionProvider>(
           new ExternalRegistryExtensionProvider()));
 #endif
-  ExternalPolicyExtensionProvider* policy_extension_provider =
-      new ExternalPolicyExtensionProvider();
-  policy_extension_provider->SetPreferences(prefs);
-  external_extension_providers_.push_back(
-      linked_ptr<ExternalExtensionProvider>(policy_extension_provider));
+  // The policy-controlled extension provider is also stored in a member
+  // variable so that UpdateExternalPolicyExtensionProvider can access it and
+  // update its extension list later.
+  external_policy_extension_provider_.reset(
+      new ExternalPolicyExtensionProvider());
+  external_policy_extension_provider_->SetPreferences(
+      prefs->GetList(prefs::kExtensionInstallForceList));
+  external_extension_providers_.push_back(external_policy_extension_provider_);
 }
 
 ExtensionsServiceBackend::~ExtensionsServiceBackend() {
@@ -407,6 +416,12 @@ void ExtensionsServiceBackend::CheckExternalUninstall(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           frontend.get(), &ExtensionsService::UninstallExtension, id, true));
+}
+
+void ExtensionsServiceBackend::UpdateExternalPolicyExtensionProvider(
+    scoped_refptr<RefCountedList> forcelist) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  external_policy_extension_provider_->SetPreferences(forcelist->Get());
 }
 
 void ExtensionsServiceBackend::ClearProvidersForTesting() {
@@ -555,6 +570,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
   pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, this);
+  pref_change_registrar_.Add(prefs::kExtensionInstallForceList, this);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -1398,6 +1414,19 @@ void ExtensionsService::CheckForExternalUpdates() {
           killed_extensions, scoped_refptr<ExtensionsService>(this)));
 }
 
+void ExtensionsService::UpdateExternalPolicyExtensionProvider() {
+  const ListValue* list_pref =
+      profile_->GetPrefs()->GetList(prefs::kExtensionInstallForceList);
+  RefCountedList* list_copy = new RefCountedList(
+      static_cast<ListValue*>(list_pref->DeepCopy()));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          backend_.get(),
+          &ExtensionsServiceBackend::UpdateExternalPolicyExtensionProvider,
+          scoped_refptr<RefCountedList>(list_copy)));
+}
+
 void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   // Make sure the extension gets deleted after we return from this function.
   scoped_refptr<const Extension> extension(
@@ -1909,9 +1938,18 @@ void ExtensionsService::Observe(NotificationType type,
 
     case NotificationType::PREF_CHANGED: {
       std::string* pref_name = Details<std::string>(details).ptr();
-      DCHECK(*pref_name == prefs::kExtensionInstallAllowList ||
-             *pref_name == prefs::kExtensionInstallDenyList);
-      CheckAdminBlacklist();
+      if (*pref_name == prefs::kExtensionInstallAllowList ||
+          *pref_name == prefs::kExtensionInstallDenyList) {
+        CheckAdminBlacklist();
+      } else if (*pref_name == prefs::kExtensionInstallForceList) {
+        UpdateExternalPolicyExtensionProvider();
+        CheckForExternalUpdates();
+        // TODO(gfeher): Also check for external extensions that can be
+        // uninstalled because they were removed from the pref.
+        // (crbug.com/63667)
+      } else {
+        NOTREACHED() << "Unexpected preference name.";
+      }
       break;
     }
 

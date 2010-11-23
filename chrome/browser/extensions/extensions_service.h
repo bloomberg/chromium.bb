@@ -292,6 +292,10 @@ class ExtensionsService
   // Check for updates (or potentially new extensions from external providers)
   void CheckForExternalUpdates();
 
+  // Copies the list of force-installed extensions from the user PrefService
+  // to ExternalPolicyExtensionProvider.
+  void UpdateExternalPolicyExtensionProvider();
+
   // Unload the specified extension.
   void UnloadExtension(const std::string& extension_id);
 

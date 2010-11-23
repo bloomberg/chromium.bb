@@ -9,9 +9,11 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_updater.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 
@@ -310,4 +312,45 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   service->extension_prefs()->GetKilledExtensionIds(&killed_ids);
   EXPECT_TRUE(killed_ids.end() == killed_ids.find(kExtensionId))
       << "Uninstalling non-external extension should not set kill bit.";
+}
+
+// See http://crbug.com/57378 for flakiness details.
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
+  // We don't want autoupdate blacklist checks.
+  service->updater()->set_blacklist_checks_enabled(false);
+
+  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+
+  // Note: This interceptor gets requests on the IO thread.
+  scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
+  URLFetcher::enable_interception_for_tests(true);
+
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
+                                     basedir.AppendASCII("manifest_v2.xml"));
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+                                     basedir.AppendASCII("v2.crx"));
+
+  const size_t size_before = service->extensions()->size();
+  ASSERT_TRUE(service->disabled_extensions()->empty());
+
+  // Set the policy as a user preference and fire notification observers.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  ListValue* forcelist =
+      prefs->GetMutableList(prefs::kExtensionInstallForceList);
+  ASSERT_TRUE(forcelist->empty());
+  forcelist->Append(Value::CreateStringValue(
+      "ogjcoiohnmldgjemafoockdghcjciccf;"
+      "http://localhost/autoupdate/manifest"));
+  prefs->pref_notifier()->FireObservers(prefs::kExtensionInstallForceList);
+
+  // Check if the extension got installed.
+  ASSERT_TRUE(WaitForExtensionInstall());
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(size_before + 1, extensions->size());
+  ASSERT_EQ(kExtensionId, extensions->at(size_before)->id());
+  EXPECT_EQ("2.0", extensions->at(size_before)->VersionString());
+  EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD,
+            extensions->at(size_before)->location());
 }

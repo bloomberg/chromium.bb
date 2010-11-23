@@ -38,11 +38,6 @@ ExternalPolicyExtensionProvider::~ExternalPolicyExtensionProvider() {
 }
 
 void ExternalPolicyExtensionProvider::SetPreferences(
-    PrefService* prefs) {
-  SetPreferences(prefs->GetList(prefs::kExtensionInstallForceList));
-}
-
-void ExternalPolicyExtensionProvider::SetPreferences(
     const ListValue* forcelist) {
   DictionaryValue* result = new DictionaryValue();
   if (forcelist != NULL) {
