@@ -1670,15 +1670,6 @@
    fun:_ZNSt6vectorIN21NotificationRegistrar6RecordESaIS1_EE9push_backERKS1_
    fun:_ZN21NotificationRegistrar3AddEP20NotificationObserver16NotificationTypeRK18NotificationSource
 }
-
-{
-   bug_32088
-   Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
-   fun:error_get_my_stack
-   fun:nss_ClearErrorStack
-}
 {
    bug_32273_a
    Memcheck:Leak
