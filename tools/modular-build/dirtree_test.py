@@ -78,6 +78,9 @@ class Dir(dirtree.DirTree):
         os.mkdir(dest)
       entry.WriteTree(dest)
 
+  def GetId(self):
+    return ["Dir", [entry.GetId() for leafname, entry in self._entries]]
+
 
 class File(dirtree.DirTree):
 
@@ -86,6 +89,9 @@ class File(dirtree.DirTree):
 
   def WriteTree(self, dest_path):
     dirtree.WriteFile(dest_path, self._data)
+
+  def GetId(self):
+    return ["File", self._data]
 
 
 example_tree = Dir([("foo-1.0", Dir([("README", File("hello"))]))])
@@ -101,6 +107,10 @@ class DirTreeTests(TempDirTestCase):
     tree.WriteTree(temp_dir)
     return temp_dir
 
+  def _CheckGetId(self, tree):
+    # Just check that GetId() is callable and returns a stable value.
+    self.assertEquals(tree.GetId(), tree.GetId())
+
   def test_untar(self):
     temp_dir = self._RealizeTree(example_tree)
     tar_file = os.path.join(temp_dir, "foo-1.0.tar.gz")
@@ -110,10 +120,12 @@ class DirTreeTests(TempDirTestCase):
     tree = dirtree.TarballTree(tar_file)
     dest_dir = self._RealizeTree(tree)
     self.assertEquals(os.listdir(dest_dir), ["README"])
+    self._CheckGetId(tree)
 
     tree = dirtree.MultiTarballTree([tar_file, tar_file])
     dest_dir = self._RealizeTree(tree)
     self.assertEquals(os.listdir(dest_dir), ["README"])
+    self._CheckGetId(tree)
 
   @Quieten
   def test_patch_tree(self):
@@ -126,10 +138,12 @@ class DirTreeTests(TempDirTestCase):
     rc = subprocess.call(["diff", "-urN", "a", "b"],
                          stdout=open(diff_file, "w"), cwd=temp_dir)
     self.assertEquals(rc, 1)
-    result_dir = self._RealizeTree(dirtree.PatchedTree(tree1, [diff_file]))
+    tree = dirtree.PatchedTree(tree1, [diff_file])
+    result_dir = self._RealizeTree(tree)
     rc = subprocess.call(["diff", "-urN",
                           os.path.join(temp_dir, "b"), result_dir])
     self.assertEquals(rc, 0)
+    self._CheckGetId(tree)
 
     # Check that patch doesn't ask questions if we try re-applying a patch.
     self.assertRaises(

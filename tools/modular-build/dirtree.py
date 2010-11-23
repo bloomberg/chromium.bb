@@ -72,6 +72,11 @@ class DirTree(object):
   def WriteTree(self, dest_dir):
     raise NotImplementedError()
 
+  # Returns a digest representing the inputs that are used to generate
+  # this tree.
+  def GetId(self):
+    raise NotImplementedError()
+
 
 class EmptyTree(DirTree):
 
@@ -95,6 +100,9 @@ class TarballTree(DirTree):
                 os.path.join(dest_dir, leafname))
     os.rmdir(os.path.join(dest_dir, tar_name))
 
+  def GetId(self):
+    return ["TarballTree", HashFile(self._tar_path)]
+
 
 # This handles gcc, where two source tarballs must be unpacked on top
 # of each other.
@@ -113,6 +121,10 @@ class MultiTarballTree(DirTree):
                 os.path.join(dest_dir, leafname))
     os.rmdir(os.path.join(dest_dir, tar_name))
 
+  def GetId(self):
+    return ["MultiTarballTree",
+            [HashFile(tar_path) for tar_path in self._tar_paths]]
+
 
 class PatchedTree(DirTree):
 
@@ -127,6 +139,10 @@ class PatchedTree(DirTree):
       subprocess.check_call(["patch", "--forward", "--batch", "-d", dest_dir,
                              "-p%i" % self._strip, "-i", patch_file])
 
+  def GetId(self):
+    return ["PatchedTree", self._orig_tree.GetId(),
+            [HashFile(patch_file) for patch_file in self._patch_files]]
+
 
 class CopyTree(DirTree):
 
@@ -135,6 +151,11 @@ class CopyTree(DirTree):
 
   def WriteTree(self, dest_path):
     CopyOnto(self._src_path, dest_path)
+
+  def GetId(self):
+    # Pretend the tree's contents will never change.  We might want to
+    # fix that if we ever use this for non-test code.
+    return ["CopyTree"]
 
 
 # A tree snapshot represents a directory tree.  Directories are

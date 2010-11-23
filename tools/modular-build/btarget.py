@@ -276,7 +276,8 @@ def SourceTarget(name, dest_dir, src_tree):
   def DoBuild(opts):
     ResetDir(dest_dir)
     src_tree.WriteTree(dest_dir)
-  return BuildTarget(name, dest_dir, DoBuild, args=["source"], deps=[])
+  return BuildTarget(name, dest_dir, DoBuild,
+                     args=["source", src_tree.GetId()], deps=[])
 
 
 def SourceTargetGit(name, dest_dir, url, commit_id):
