@@ -136,7 +136,6 @@ void PluginHost::InitializeHostFuncs() {
   host_funcs_.convertpoint = NPN_ConvertPoint;
   host_funcs_.handleevent = NPN_HandleEvent;
   host_funcs_.unfocusinstance = NPN_UnfocusInstance;
-  // TODO: Implement redirect handling: http://crbug.com/63030
   host_funcs_.urlredirectresponse = NPN_URLRedirectResponse;
 }
 
