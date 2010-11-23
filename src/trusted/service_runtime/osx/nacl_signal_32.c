@@ -15,7 +15,7 @@
  */
 
 #if __DARWIN_UNIX03
-  #define REG(R) uc_mcontext->__ss->__##R
+  #define REG(R) uc_mcontext->__ss.__##R
 #else
   #define REG(R) uc_mcontext->ss.R
 #endif
@@ -74,6 +74,3 @@ void NaClSignalContextToHandler(void *rawCtx,
   uctx->REG(fs) = sigCtx->fs;
   uctx->REG(gs) = sigCtx->gs;
 }
-
-
-
