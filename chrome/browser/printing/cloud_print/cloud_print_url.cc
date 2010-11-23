@@ -23,9 +23,9 @@ void CloudPrintURL::RegisterPreferences() {
                                    kDefaultCloudPrintServiceURL);
 }
 
-// Returns the root service URL for the cloud print service.  The default is to
-// point at the Google Cloud Print service.  This can be overridden by the
-// command line or by the user preferences.
+// Returns the root service URL for the cloud print service.  The
+// default is to point at the Google Cloud Print service.  This can be
+// overridden by the command line or by the user preferences.
 GURL CloudPrintURL::GetCloudPrintServiceURL() {
   DCHECK(profile_);
   RegisterPreferences();
