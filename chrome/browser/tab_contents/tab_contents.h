@@ -328,9 +328,6 @@ class TabContents : public PageNavigator,
   // Invoked when the tab contents becomes selected. If you override, be sure
   // and invoke super's implementation.
   virtual void DidBecomeSelected();
-  base::TimeTicks last_selected_time() const {
-    return last_selected_time_;
-  }
 
   // Invoked when the tab contents becomes hidden.
   // NOTE: If you override this, call the superclass version too!
@@ -1280,9 +1277,6 @@ class TabContents : public PageNavigator,
 
   // The time that we started to close the tab.
   base::TimeTicks tab_close_start_time_;
-
-  // The time that this tab was last selected.
-  base::TimeTicks last_selected_time_;
 
   // Information about the language the page is in and has been translated to.
   LanguageState language_state_;

@@ -67,9 +67,6 @@ class ZygoteHost {
     return 0;
   }
 
-  // Adjust the OOM score of the given renderer's PID.
-  void AdjustRendererOOMScore(base::ProcessHandle process_handle, int score);
-
  private:
   friend struct DefaultSingletonTraits<ZygoteHost>;
   ZygoteHost();
