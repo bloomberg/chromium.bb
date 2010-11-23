@@ -95,6 +95,13 @@
   fun:Singleton<chromeos::AudioHandler*>::OnExit*
 }
 
+{
+  bug_64186
+  ThreadSanitizer:Race
+  fun:chromeos::CrosLibrary::Library*GetDefaultImpl*
+  fun:chromeos::CrosLibrary::GetSystemLibrary*
+}
+
 ############################
 # Benign races
 {
