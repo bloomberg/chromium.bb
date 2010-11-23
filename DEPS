@@ -8,7 +8,7 @@ vars = {
   "skia_revision": "626",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "40423",
-  "nacl_revision": "3664",
+  "nacl_revision": "3764",
   "libjingle_revision": "50",
   "libvpx_revision": "65287",
   "ffmpeg_revision": "66222",
@@ -189,10 +189,10 @@ deps_os = {
       "/trunk/deps/reference_builds/chrome@41984",
 
     "src/third_party/cygwin":
-      "/trunk/deps/third_party/cygwin@11984",
+      "/trunk/deps/third_party/cygwin@66844",
 
-    "src/third_party/python_24":
-      "/trunk/deps/third_party/python_24@22967",
+    "src/third_party/python_26":
+      "/trunk/tools/third_party/python_26@66685",
 
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@33727",

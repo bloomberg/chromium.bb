@@ -3179,11 +3179,11 @@
             ['OS=="win"', {
               'include_dirs': [
                 '..',
-                '../third_party/python_24/include',
+                '../third_party/python_26/include',
               ],
               'link_settings': {
                 'libraries': [
-                  '../third_party/python_24/libs/python24.lib',
+                  '../third_party/python_26/libs/python26.lib',
                 ],
               }
             }],
