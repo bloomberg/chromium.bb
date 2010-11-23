@@ -88,6 +88,10 @@ cr.define('options', function() {
     }
   };
 
+  // A boolean flag from InternerOptionsHandler to indicate whether to use
+  // inline DOMUI for ethernet/wifi login/options.
+  InternetOptions.useSettingsUI = false;
+
   // Network status update will be blocked while typing in WEP password etc.
   InternetOptions.updateLocked = false;
   InternetOptions.updatePending = false;
@@ -154,6 +158,8 @@ cr.define('options', function() {
       $('enableCellular').classList.add('hidden');
       $('disableCellular').classList.add('hidden');
     }
+
+    InternetOptions.useSettingsUI = data.networkUseSettingsUI;
   };
 
   // Prevent clobbering of password input field.

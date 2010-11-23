@@ -29,6 +29,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/time_format.h"
 #include "grit/browser_resources.h"
@@ -36,6 +37,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "views/window/window.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 static const char kOtherNetworksFakePath[] = "?";
@@ -56,7 +58,8 @@ std::string FormatHardwareAddress(const std::string& address) {
 
 }  // namespace
 
-InternetOptionsHandler::InternetOptionsHandler() {
+InternetOptionsHandler::InternetOptionsHandler()
+    : use_settings_ui_(false) {
   chromeos::NetworkLibrary* netlib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   netlib->AddNetworkManagerObserver(this);
@@ -310,6 +313,8 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetBoolean("cellularAvailable",
                                 cros->cellular_available());
   localized_strings->SetBoolean("cellularEnabled", cros->cellular_enabled());
+
+  localized_strings->SetBoolean("networkUseSettingsUI", use_settings_ui_);
 }
 
 void InternetOptionsHandler::RegisterMessages() {
@@ -719,6 +724,18 @@ void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
                              true);
 }
 
+void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
+  DCHECK(!use_settings_ui_);
+
+  // TODO(beng): This is an improper direct dependency on Browser. Route this
+  // through some sort of delegate.
+  Browser* browser = BrowserList::FindBrowserWithProfile(dom_ui_->GetProfile());
+  views::Window* window = browser::CreateViewsWindow(
+      browser->window()->GetNativeHandle(), gfx::Rect(), view);
+  window->SetIsAlwaysOnTop(true);
+  window->Show();
+}
+
 void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
   std::string str_type;
   std::string service_path;
@@ -749,17 +766,28 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
         return;
       }
       cros->ForgetWifiNetwork(service_path);
+    } else if (!use_settings_ui_ &&
+               service_path == kOtherNetworksFakePath) {
+      // Other wifi networks.
+      CreateModalPopup(new chromeos::NetworkConfigView());
     } else if ((network = cros->FindWifiNetworkByPath(service_path))) {
       if (command == "connect") {
         // Connect to wifi here. Open password page if appropriate.
         if (network->encrypted() && !network->auto_connect()) {
-          if (network->encryption() == chromeos::SECURITY_8021X) {
-            PopulateDictionaryDetails(network, cros);
+          if (use_settings_ui_) {
+            if (network->encryption() == chromeos::SECURITY_8021X) {
+              PopulateDictionaryDetails(network, cros);
+            } else {
+              DictionaryValue dictionary;
+              dictionary.SetString("servicePath", network->service_path());
+              dom_ui_->CallJavascriptFunction(
+                  L"options.InternetOptions.showPasswordEntry", dictionary);
+            }
           } else {
-            DictionaryValue dictionary;
-            dictionary.SetString("servicePath", network->service_path());
-            dom_ui_->CallJavascriptFunction(
-                L"options.InternetOptions.showPasswordEntry", dictionary);
+            chromeos::NetworkConfigView* view =
+                new chromeos::NetworkConfigView(network, true);
+            CreateModalPopup(view);
+            view->SetLoginTextfieldFocus();
           }
         } else {
           cros->ConnectToWifiNetwork(

@@ -92,18 +92,21 @@ WifiConfigView::~WifiConfigView() {
 }
 
 void WifiConfigView::UpdateCanLogin(void) {
+  static const size_t kMinWirelessPasswordLen = 5;
+
   bool can_login = true;
   if (other_network_) {
     // Enforce ssid is non empty.
     // If security is not none, also enforce passphrase is non empty.
     can_login = !GetSSID().empty() &&
         (security_combobox_->selected_item() == INDEX_NONE ||
-            !passphrase_textfield_->text().empty());
+            passphrase_textfield_->text().length() >= kMinWirelessPasswordLen);
   } else {
     // Connecting to an encrypted network
     if (passphrase_textfield_ != NULL) {
       // if the network requires a passphrase, make sure it is non empty.
-      can_login &= !passphrase_textfield_->text().empty();
+      can_login &=
+          passphrase_textfield_->text().length() >= kMinWirelessPasswordLen;
     }
     if (identity_textfield_ != NULL) {
       // If we have an identity field, we can login if we have a non empty

@@ -73,14 +73,14 @@ cr.define('options.internet', function() {
             InternetOptions.unlockUpdates();
             // If clicked on other networks item.
             if (data && data.servicePath == '?') {
-              item.showOtherLogin();
-            } else if (data) {
-                if (!data.connecting && !data.connected) {
-                  chrome.send('buttonClickCallback',
-                              [String(data.networkType),
-                               data.servicePath,
-                               'connect']);
-                }
+              if (InternetOptions.useSettingsUI) {
+                item.showOtherLogin();
+              } else {
+                chrome.send('buttonClickCallback',
+                            [String(data.networkType),
+                             data.servicePath,
+                             'connect']);
+              }
             }
           }
         }
@@ -234,6 +234,19 @@ cr.define('options.internet', function() {
                              self.data.servicePath,
                              'options']);
               }));
+        } else if (!this.data.connecting) {
+          // connect button (if not ethernet and not showing activate button)
+          if (this.data.networkType != NetworkItem.TYPE_ETHERNET &&
+              !show_activate && !no_plan) {
+            buttonsDiv.appendChild(
+                this.createButton_('connect_button', 'connect',
+                                   function(e) {
+                  chrome.send('buttonClickCallback',
+                              [String(self.data.networkType),
+                               self.data.servicePath,
+                               'connect']);
+                }));
+          }
         }
       } else {
         // Put "Forget this network" button.
