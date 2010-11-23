@@ -18,23 +18,6 @@
       ]
     },
     {
-      'target_name': 'testing_invoke_executor',
-      'type': 'executable',
-      'sources': [
-        'plugin/bho/testing_invoke_executor.cc',
-      ],
-      'dependencies': [
-        '../../base/base.gyp:base',
-        '../common/common.gyp:ceee_common',
-        'common/common.gyp:ie_guids',
-        'plugin/toolband/toolband.gyp:toolband_idl',
-        'plugin/toolband/toolband.gyp:toolband_proxy_lib',
-      ],
-      'libraries': [
-        'rpcrt4.lib',
-      ],
-    },
-    {
       'target_name': 'ie_unittests',
       'type': 'executable',
       'sources': [
@@ -58,7 +41,6 @@
         'plugin/bho/dom_utils_unittest.cc',
         'plugin/bho/events_funnel_unittest.cc',
         'plugin/bho/executor_unittest.cc',
-        'plugin/bho/executor_com_unittest.cc',
         'plugin/bho/extension_port_manager.cc',
         'plugin/bho/frame_event_handler_unittest.cc',
         'plugin/bho/infobar_events_funnel_unittest.cc',
@@ -96,7 +78,6 @@
         },
       },
       'dependencies': [
-        'testing_invoke_executor',
         'common/common.gyp:ie_common',
         'common/common.gyp:ie_common_settings',
         'common/common.gyp:ie_guids',
@@ -108,7 +89,6 @@
         'plugin/toolband/toolband.gyp:ceee_ie_lib',
         'plugin/toolband/toolband.gyp:ie_toolband_common',
         'plugin/toolband/toolband.gyp:toolband_idl',
-        'plugin/toolband/toolband.gyp:toolband_proxy_lib',
         '../../base/base.gyp:base',
         '../../breakpad/breakpad.gyp:breakpad_handler',
         '../testing/sidestep/sidestep.gyp:sidestep',
@@ -151,7 +131,6 @@
         'plugin/bho/bho.gyp:bho',
         'plugin/scripting/scripting.gyp:scripting',
         'plugin/toolband/toolband.gyp:toolband_idl',
-        'plugin/toolband/toolband.gyp:toolband_proxy_lib',
         '../../base/base.gyp:base',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',

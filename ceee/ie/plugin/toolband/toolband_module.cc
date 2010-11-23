@@ -16,7 +16,6 @@
 #include "ceee/ie/plugin/bho/executor.h"
 #include "ceee/ie/plugin/toolband/toolband_module_reporting.h"
 #include "ceee/ie/plugin/toolband/tool_band.h"
-#include "ceee/ie/plugin/toolband/toolband_proxy.h"
 #include "ceee/ie/plugin/scripting/script_host.h"
 #include "ceee/common/windows_constants.h"
 #include "chrome/common/url_constants.h"
@@ -46,8 +45,6 @@ OBJECT_ENTRY_AUTO(CLSID_CeeeExecutor, CeeeExecutor)
 
 class ToolbandModule : public CAtlDllModuleT<ToolbandModule> {
  public:
-  typedef CAtlDllModuleT<ToolbandModule> Super;
-
   ToolbandModule();
   ~ToolbandModule();
 
@@ -62,11 +59,8 @@ class ToolbandModule : public CAtlDllModuleT<ToolbandModule> {
     return module_initialized_;
   }
 
-  // We override reg/unregserver to register proxy/stubs.
-  HRESULT DllRegisterServer();
-  HRESULT DllUnregisterServer();
-
  private:
+
   base::AtExitManager at_exit_;
   bool module_initialized_;
   bool crash_reporting_initialized_;
@@ -114,7 +108,7 @@ ToolbandModule::~ToolbandModule() {
 }
 
 HRESULT ToolbandModule::DllCanUnloadNow() {
-  HRESULT hr = Super::DllCanUnloadNow();
+  HRESULT hr = CAtlDllModuleT<ToolbandModule>::DllCanUnloadNow();
   if (hr == S_OK)
     Term();
   return hr;
@@ -123,26 +117,7 @@ HRESULT ToolbandModule::DllCanUnloadNow() {
 HRESULT ToolbandModule::DllGetClassObject(REFCLSID clsid, REFIID iid,
                                          void** object)  {
   Init();
-  return Super::DllGetClassObject(clsid, iid, object);
-}
-
-HRESULT ToolbandModule::DllRegisterServer() {
-  // No typelib registration.
-  HRESULT hr = Super::DllRegisterServer();
-  if (SUCCEEDED(hr) && !RegisterAsyncProxies(true)) {
-    hr = SELFREG_E_CLASS;
-  }
-  return hr;
-}
-
-HRESULT ToolbandModule::DllUnregisterServer() {
-  // No typelib registration.
-  HRESULT hr = Super::DllUnregisterServer(FALSE);
-  if (!RegisterAsyncProxies(false) && SUCCEEDED(hr)) {
-    // Note the error.
-    hr = SELFREG_E_CLASS;
-  }
-  return hr;
+  return CAtlDllModuleT<ToolbandModule>::DllGetClassObject(clsid, iid, object);
 }
 
 void ToolbandModule::Init() {
@@ -187,7 +162,8 @@ LONG ceee_module_util::UnlockModule() {
   return module.Unlock();
 }
 
-// DLL Entry Point.
+
+// DLL Entry Point
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason,
                                LPVOID reserved) {
   // Prevent us from being loaded by older versions of the shell.
@@ -220,7 +196,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
 // function, which keeps us safe from ever forgetting to check for
 // the --enable-ceee flag.
 STDAPI DllRegisterServerImpl(void) {
-  // Registers objects.
+  // registers object, typelib and all interfaces in typelib
   HRESULT hr = module.DllRegisterServer();
   return hr;
 }

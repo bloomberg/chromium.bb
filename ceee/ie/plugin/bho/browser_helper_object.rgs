@@ -4,6 +4,7 @@ NoRemove CLSID {
       InprocServer32 = s '%MODULE%' {
         val ThreadingModel = s 'Apartment'
       }
+      'TypeLib' = s '{7C09079D-F9CB-4E9E-9293-D224B071D8BA}'
     }
   }
 }

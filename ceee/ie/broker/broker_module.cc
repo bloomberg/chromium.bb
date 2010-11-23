@@ -18,7 +18,6 @@
 #include "ceee/ie/broker/executors_manager.h"
 #include "ceee/ie/broker/resource.h"
 #include "ceee/ie/broker/window_events_funnel.h"
-#include "ceee/ie/plugin/toolband/toolband_proxy.h"
 #include "ceee/ie/common/crash_reporter.h"
 #include "ceee/common/com_utils.h"
 #include "chrome/common/url_constants.h"
@@ -153,14 +152,6 @@ HRESULT CeeeBrokerModule::InitializeCom() {
   }
   DLOG_IF(WARNING, FAILED(hr)) << "IGlobalOptions::Set failed "
                                << com::LogHr(hr);
-
-  // Register the executor proxy/stubs.
-  // Note that this registers the proxy/stub class objects for all threads
-  // in the multithreaded apartment.
-  if (!RegisterProxyStubs(NULL)) {
-    LOG(ERROR) << "Failed to register executor proxy/stubs";
-    return E_UNEXPECTED;
-  }
 
   // The above is best-effort, don't bail on error.
   return S_OK;

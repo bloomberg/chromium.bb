@@ -27,7 +27,6 @@
 #include "ceee/ie/plugin/bho/cookie_accountant.h"
 #include "ceee/ie/plugin/bho/http_negotiate.h"
 #include "ceee/ie/plugin/scripting/script_host.h"
-#include "ceee/ie/plugin/toolband/toolband_proxy.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/common/automation_constants.h"
@@ -152,23 +151,12 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
     // We're being initialized.
     hr = Initialize(site);
 
-    // Release the site, and tear down our own state in case of failure.
-    if (FAILED(hr)) {
-      TearDown();
+    // Release the site in case of failure.
+    if (FAILED(hr))
       SuperSite::SetSite(NULL);
-    }
   }
 
   return hr;
-}
-
-HRESULT BrowserHelperObject::RegisterProxies() {
-  return RegisterProxyStubs(&proxy_stub_cookies_) ? S_OK : E_UNEXPECTED;
-}
-
-void BrowserHelperObject::UnregisterProxies() {
-  UnregisterProxyStubs(proxy_stub_cookies_);
-  proxy_stub_cookies_.clear();
 }
 
 HRESULT BrowserHelperObject::GetParentBrowser(IWebBrowser2* browser,
@@ -257,17 +245,12 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   DCHECK(SUCCEEDED(hr)) << "InitializeChromeFrameHost failed " <<
       com::LogHr(hr);
   if (FAILED(hr)) {
+    TearDown();
     return hr;
   }
 
   // Initialize the extension port manager.
   extension_port_manager_.Initialize(chrome_frame_host_);
-
-  // Register the proxy/stubs for the executor.
-  // Note the proxy registration function will have logged what occurred.
-  hr = RegisterProxies();
-  if (FAILED(hr))
-    return hr;
 
   // Preemptively feed the broker with an executor in our thread.
   hr = GetBrokerRegistrar(&broker_registrar_);
@@ -297,18 +280,21 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   CComQIPtr<IServiceProvider> service_provider(site);
   DCHECK(service_provider);
   if (service_provider == NULL) {
+    TearDown();
     return E_FAIL;
   }
 
   hr = ConnectSinks(service_provider);
   DCHECK(SUCCEEDED(hr)) << "ConnectSinks failed " << com::LogHr(hr);
   if (FAILED(hr)) {
+    TearDown();
     return hr;
   }
 
   hr = GetTabWindow(service_provider);
   DCHECK(SUCCEEDED(hr)) << "GetTabWindow failed " << com::LogHr(hr);
   if (FAILED(hr)) {
+    TearDown();
     return hr;
   }
 
@@ -376,9 +362,6 @@ HRESULT BrowserHelperObject::TearDown() {
     chrome_frame_host_->TearDown();
   }
   chrome_frame_host_.Release();
-
-  // Unregister the proxy/stubs for the executor.
-  UnregisterProxies();
 
   return S_OK;
 }

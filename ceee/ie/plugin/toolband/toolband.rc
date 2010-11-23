@@ -82,7 +82,6 @@ IDR_BROWSERHELPEROBJECT REGISTRY                "..\\..\\ceee\\ie\\plugin\\bho\\
 IDR_EXECUTOR            REGISTRY                "..\\..\\ceee\\ie\\plugin\\bho\\executor.rgs"
 IDR_EXECUTOR_CREATOR    REGISTRY                "..\\..\\ceee\\ie\\plugin\\bho\\executor_creator.rgs"
 IDR_TOOL_BAND           REGISTRY                "tool_band.rgs"
-IDR_TOOLBAND_PROXY      REGISTRY                "toolband_proxy.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //

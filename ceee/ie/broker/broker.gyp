@@ -133,7 +133,6 @@
         '../common/common.gyp:ie_common_settings',
         '../common/common.gyp:ie_guids',
         '../plugin/toolband/toolband.gyp:toolband_idl',
-        '../plugin/toolband/toolband.gyp:toolband_proxy_lib',
         '../../../base/base.gyp:base',
         '../../../breakpad/breakpad.gyp:breakpad_handler',
         '../../../ceee/common/common.gyp:ceee_common',

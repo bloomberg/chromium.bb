@@ -163,11 +163,6 @@ class ATL_NO_VTABLE BrowserHelperObject
   // @}
 
  protected:
-  // Register proxy/stubs for executor interfaces.
-  virtual HRESULT RegisterProxies();
-  // Unregister proxy/stubs for executor interfaces.
-  virtual void UnregisterProxies();
-
   typedef base::win::ScopedComPtr<IContentScriptNativeApi, &GUID_NULL>
       ScopedContentScriptNativeApiPtr;
   typedef base::win::ScopedComPtr<IDispatch> ScopedDispatchPtr;
@@ -225,8 +220,6 @@ class ATL_NO_VTABLE BrowserHelperObject
 
   // Initializes the BHO to the given site.
   // Called from SetSite.
-  // @note On failure the state of the BHO may be inconsistent,
-  //    so a TearDown may be needed.
   HRESULT Initialize(IUnknown* site);
 
   // Tears down an initialized bho.
@@ -378,10 +371,6 @@ class ATL_NO_VTABLE BrowserHelperObject
   BrokerRpcClient broker_rpc_;
 
  private:
-  // The BHO registers proxy/stubs for the CEEE executor on initialization.
-  // These are the cookies to allow us to unregister then on teardown.
-  std::vector<DWORD> proxy_stub_cookies_;
-
   // Used during initialization to get the tab information from Chrome and
   // register ourselves with the broker.
   HRESULT RegisterTabInfo();
