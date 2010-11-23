@@ -29,7 +29,6 @@ using testing::CopyInterfaceToArgument;
 using testing::DoAll;
 using testing::GetConnectionCount;
 using testing::InstanceCountMixin;
-using testing::MockBrokerRpcClient;
 using testing::MockChromeFrameHost;
 using testing::MockDispatchEx;
 using testing::MockIOleWindow;
@@ -104,16 +103,6 @@ class TestingBrowserHelperObject
 
   virtual HRESULT CreateChromeFrameHost() {
     EXPECT_TRUE(chrome_frame_host_ != NULL);
-    return S_OK;
-  }
-
-  virtual HRESULT ConnectRpcBrokerClient() {
-    MockBrokerRpcClient* rpc_client = new MockBrokerRpcClient();
-    EXPECT_CALL(*rpc_client, is_connected()).WillOnce(Return(true));
-    EXPECT_CALL(*rpc_client, SendUmaHistogramTimes(_, _))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*rpc_client, Disconnect()).Times(1);
-    broker_rpc_.reset(rpc_client);
     return S_OK;
   }
 

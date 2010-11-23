@@ -14,23 +14,23 @@
 class BrokerRpcClient {
  public:
   BrokerRpcClient();
-  virtual ~BrokerRpcClient();
+  ~BrokerRpcClient();
 
   // Initialize connection with server.
-  virtual HRESULT Connect();
+  HRESULT Connect();
 
   // Relese connection with server
-  virtual void Disconnect();
+  void Disconnect();
 
   // Returns true if object ready for remote calls.
-  virtual bool is_connected() const {
+  bool is_connected() const {
     return context_ != NULL && binding_handle_ != NULL;
   }
 
   // @name Remote calls.
   // @{
   // Calls FireEvent on server side.
-  virtual HRESULT FireEvent(const char* event_name, const char* event_args);
+  HRESULT FireEvent(const char* event_name, const char* event_args);
   // Adds uma to histograms on the server side. Either performance timings or
   // generic histogram.
   virtual bool SendUmaHistogramTimes(BSTR event_name,

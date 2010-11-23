@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ceee/ie/broker/api_dispatcher.h"
-#include "ceee/ie/broker/broker_rpc_client.h"
 #include "ceee/ie/plugin/bho/cookie_events_funnel.h"
 #include "ceee/ie/plugin/bho/tab_events_funnel.h"
 #include "ceee/ie/plugin/bho/webnavigation_events_funnel.h"
@@ -354,17 +353,6 @@ class MockWebRequestEventsFunnel : public WebRequestEventsFunnel {
                                       const char* ip,
                                       const base::Time& time_stamp));
 };
-
-class MockBrokerRpcClient : public BrokerRpcClient {
- public:
-  MOCK_METHOD0(Connect, HRESULT());
-  MOCK_METHOD0(Disconnect, void());
-  MOCK_CONST_METHOD0(is_connected, bool());
-  MOCK_METHOD2(FireEvent, HRESULT(const char*, const char*));
-  MOCK_METHOD2(SendUmaHistogramTimes, bool(BSTR, int));
-  MOCK_METHOD5(SendUmaHistogramData, bool(BSTR, int, int, int, int));
-};
-
 
 }  // namespace testing
 
