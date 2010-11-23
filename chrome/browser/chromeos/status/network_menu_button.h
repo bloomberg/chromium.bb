@@ -80,8 +80,7 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual bool ShouldOpenButtonOptions() const;
 
  private:
-  void SetNetworkIcon(const Network* network);
-  void SetNetworkBadge(NetworkLibrary* cros, const Network* network);
+  void SetNetworkIcon(NetworkLibrary* cros, const Network* network);
 
   // Called when the active network has possibly changed. This will remove
   // old network observer and add a network observer for the active network.

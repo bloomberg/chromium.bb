@@ -211,8 +211,7 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       // Connect or reconnect.
       if (auto_connect >= 0)
         wifi->set_auto_connect(auto_connect ? true : false);
-      if (cros->wifi_network() &&
-          wifi->service_path() == cros->wifi_network()->service_path()) {
+      if (wifi->connecting() || wifi->connected()) {
         // Show the config settings for the active network.
         ShowWifi(wifi, false);
         return true;
@@ -264,18 +263,14 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
           cellular->needs_new_plan()) {
         ActivateCellular(cellular);
         return true;
-      } else if (cros->cellular_network() &&
-                 (cellular->service_path() ==
-                  cros->cellular_network()->service_path())) {
-        // Show the config settings for the cellular network.
+      } else if (cellular->connecting() || cellular->connected()) {
+        // Cellular network is connecting or connected,
+        // so we show the config settings for the cellular network.
         ShowCellular(cellular, false);
         return true;
-      } else {
-        bool connected = cros->ConnectToCellularNetwork(cellular);
-        if (!connected) {
-          ShowCellular(cellular, true);
-        }
       }
+      // Clicked on a disconnected cellular network, so connect to it.
+      cros->ConnectToCellularNetwork(cellular);
     } else {
       // If we are attempting to connect to a network that no longer exists,
       // display a notification.
@@ -433,35 +428,37 @@ SkBitmap NetworkMenu::IconForNetworkConnecting(double animation_value,
 // TODO(ers) update for GSM when we have the necessary images
 SkBitmap NetworkMenu::BadgeForNetworkTechnology(
     const CellularNetwork* cellular) {
+  if (!cellular)
+    return SkBitmap();
 
-    int id = -1;
-    if (cellular->network_technology() == NETWORK_TECHNOLOGY_EVDO) {
-      switch (cellular->GetDataLeft()) {
-        case CellularNetwork::DATA_NONE:
-          id = IDR_STATUSBAR_NETWORK_3G_ERROR;
-          break;
-        case CellularNetwork::DATA_VERY_LOW:
-        case CellularNetwork::DATA_LOW:
-        case CellularNetwork::DATA_NORMAL:
-          id = IDR_STATUSBAR_NETWORK_3G;
-          break;
-      }
-    } else if (cellular->network_technology() == NETWORK_TECHNOLOGY_1XRTT) {
-      switch (cellular->GetDataLeft()) {
-        case CellularNetwork::DATA_NONE:
-          id = IDR_STATUSBAR_NETWORK_1X_ERROR;
-          break;
-        case CellularNetwork::DATA_VERY_LOW:
-        case CellularNetwork::DATA_LOW:
-        case CellularNetwork::DATA_NORMAL:
-          id = IDR_STATUSBAR_NETWORK_1X;
-          break;
-      }
+  int id = -1;
+  if (cellular->network_technology() == NETWORK_TECHNOLOGY_EVDO) {
+    switch (cellular->GetDataLeft()) {
+      case CellularNetwork::DATA_NONE:
+        id = IDR_STATUSBAR_NETWORK_3G_ERROR;
+        break;
+      case CellularNetwork::DATA_VERY_LOW:
+      case CellularNetwork::DATA_LOW:
+      case CellularNetwork::DATA_NORMAL:
+        id = IDR_STATUSBAR_NETWORK_3G;
+        break;
     }
-    if (id == -1)
-      return SkBitmap();
-    else
-      return *ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
+  } else if (cellular->network_technology() == NETWORK_TECHNOLOGY_1XRTT) {
+    switch (cellular->GetDataLeft()) {
+      case CellularNetwork::DATA_NONE:
+        id = IDR_STATUSBAR_NETWORK_1X_ERROR;
+        break;
+      case CellularNetwork::DATA_VERY_LOW:
+      case CellularNetwork::DATA_LOW:
+      case CellularNetwork::DATA_NORMAL:
+        id = IDR_STATUSBAR_NETWORK_1X;
+        break;
+    }
+  }
+  if (id == -1)
+    return SkBitmap();
+  else
+    return *ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
 }
 
 // static
