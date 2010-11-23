@@ -110,5 +110,11 @@ fun_r:threadLockingTest
 # see http://crbug.com/44580
 fun_r:*BrowserThread*GetCurrentThreadIdentifier*
 
+# BrowserThread accesses MessageLoop::current() in ::CurrentlyOn.
+# We can't use suppressions to hide these reports since the concurrent stack
+# is simply "base::Thread::ThreadMain"
+# See http://crbug.com/63678
+fun_r:*BrowserThread*CurrentlyOn*
+
 # zlib is smarter than we are, see http://www.zlib.net/zlib_faq.html#faq36
 fun_r:inflate
