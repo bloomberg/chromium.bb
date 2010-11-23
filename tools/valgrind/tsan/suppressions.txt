@@ -105,6 +105,14 @@
   fun:net::CookieMonster::*
 }
 
+{
+  bug_64185 [probably-benign races in Histogram in skia::ImageOperations]
+  ThreadSanitizer:Race
+  ...
+  fun:base::Histogram::*
+  fun:skia::ImageOperations::*
+}
+
 ############################
 # Real races in third_party
 {
