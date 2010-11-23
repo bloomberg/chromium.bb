@@ -175,6 +175,8 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
       command_updater_(command_updater),
       field_(field),
       suggest_text_length_(0),
+      delete_was_pressed_(false),
+      delete_at_end_pressed_(false),
       line_height_(0) {
   DCHECK(controller);
   DCHECK(toolbar_model);
@@ -378,8 +380,7 @@ bool AutocompleteEditViewMac::IsSelectAll() {
 }
 
 bool AutocompleteEditViewMac::DeleteAtEndPressed() {
-  // TODO: implement me.
-  return false;
+  return delete_at_end_pressed_;
 }
 
 void AutocompleteEditViewMac::GetSelectionBounds(std::wstring::size_type* start,
@@ -434,8 +435,10 @@ void AutocompleteEditViewMac::UpdatePopup() {
     if ([editor hasMarkedText])
       prevent_inline_autocomplete = true;
 
-    if (NSMaxRange([editor selectedRange]) < [[editor textStorage] length])
+    if (NSMaxRange([editor selectedRange]) <
+        [[editor textStorage] length] - suggest_text_length_) {
       prevent_inline_autocomplete = true;
+    }
   }
 
   model_->StartAutocomplete([editor selectedRange].length != 0,
@@ -684,8 +687,13 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
       (length < text_before_change_.length() &&
        new_selection.location <= selection_before_change_.location);
 
+  delete_at_end_pressed_ = false;
+
   const bool something_changed = model_->OnAfterPossibleChange(new_text,
       selection_differs, text_differs, just_deleted_text, at_end_of_edit);
+
+  if (delete_was_pressed_ && at_end_of_edit)
+    delete_at_end_pressed_ = true;
 
   // Restyle in case the user changed something.
   // TODO(shess): I believe there are multiple-redraw cases, here.
@@ -694,6 +702,8 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
   // back (we'll lose the styling).
   EmphasizeURLComponents();
   controller_->OnChanged();
+
+  delete_was_pressed_ = false;
 
   return something_changed;
 }
@@ -738,6 +748,9 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
     // See if this can be removed.
     SetSuggestText(string16());
   }
+
+  if (cmd == @selector(deleteForward:))
+    delete_was_pressed_ = true;
 
   // Don't intercept up/down-arrow if the popup isn't open.
   if (popup_view_->IsOpen()) {

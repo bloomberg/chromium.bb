@@ -188,6 +188,12 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // the field.
   size_t suggest_text_length_;
 
+  // Was delete pressed?
+  bool delete_was_pressed_;
+
+  // Was the delete key pressed with an empty selection at the end of the edit?
+  bool delete_at_end_pressed_;
+
   // The maximum/standard line height for the displayed text.
   CGFloat line_height_;
 
