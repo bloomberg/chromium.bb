@@ -1175,6 +1175,8 @@ void TestWebViewDelegate::Reset() {
   TestShell* shell = shell_;
   this->~TestWebViewDelegate();
   new (this) TestWebViewDelegate(shell);
+  if (shell->speech_input_controller_mock())
+    shell->speech_input_controller_mock()->clearResults();
 }
 
 void TestWebViewDelegate::SetSmartInsertDeleteEnabled(bool enabled) {
