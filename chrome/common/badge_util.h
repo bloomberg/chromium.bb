@@ -6,6 +6,9 @@
 #define CHROME_COMMON_BADGE_UTIL_H_
 #pragma once
 
+#include "base/string16.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+
 class SkPaint;
 
 // badge_util provides a set of helper routines for rendering dynamically
@@ -15,6 +18,14 @@ namespace badge_util {
 // Helper routine that returns a singleton SkPaint object configured for
 // rendering badge overlay text (correct font, typeface, etc).
 SkPaint* GetBadgeTextPaintSingleton();
+
+// Given an |icon|, renders the |text| centered on the |icon|. If |text| is
+// too large to fit within the bounds of the image, the |fallback| string is
+// rendered instead (or nothing, if |fallback| is empty).
+SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
+                              float font_size_in_pixels,
+                              const string16& text,
+                              const string16& fallback);
 
 }  // namespace badge_util;
 

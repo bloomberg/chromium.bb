@@ -28,6 +28,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/badge_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
@@ -54,6 +55,22 @@
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
+
+// The size of the font used for dynamic text overlays on menu items.
+const float kMenuBadgeFontSize = 12.0;
+
+namespace {
+SkBitmap GetBackgroundPageIcon() {
+  string16 pages = base::FormatNumber(
+      BackgroundPageTracker::GetSingleton()->GetBackgroundPageCount());
+  return badge_util::DrawBadgeIconOverlay(
+      *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_BACKGROUND_MENU),
+      kMenuBadgeFontSize,
+      pages,
+      l10n_util::GetStringUTF16(IDS_BACKGROUND_PAGE_BADGE_OVERFLOW));
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
@@ -334,11 +351,15 @@ void WrenchMenuModel::Observe(NotificationType type,
                               const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED: {
-      bool show_badge = BackgroundPageTracker::GetSingleton()->
-          GetUnacknowledgedBackgroundPageCount() > 0;
-      SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
-          show_badge ? *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-              IDR_BACKGROUND_MENU) : SkBitmap());
+      int num_pages = BackgroundPageTracker::GetSingleton()->
+          GetUnacknowledgedBackgroundPageCount();
+      if (num_pages > 0) {
+        SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
+                GetBackgroundPageIcon());
+      } else {
+        // Just set a blank icon (no icon).
+        SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES), SkBitmap());
+      }
       break;
     }
     case NotificationType::ZOOM_LEVEL_CHANGED:
@@ -461,12 +482,12 @@ void WrenchMenuModel::Build() {
           *rb.GetBitmapNamed(IDR_CONFLICT_MENU));
 #endif
 
-  // Add an icon to the View Background Pages item if t
+  // Add an icon to the View Background Pages item if there are unacknowledged
+  // pages.
   if (BackgroundPageTracker::GetSingleton()->
       GetUnacknowledgedBackgroundPageCount() > 0) {
-    // TODO(atwilson): Add code to display current number of pages in badge.
     SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
-            *rb.GetBitmapNamed(IDR_BACKGROUND_MENU));
+            GetBackgroundPageIcon());
   }
 
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/number_formatting.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/background_page_tracker.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/wrench_menu_model.h"
+#include "chrome/common/badge_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
@@ -69,6 +71,15 @@ static const int kPulsateEveryMs = 8000;
 static const int kPopupTopSpacingNonGlass = 3;
 static const int kPopupBottomSpacingNonGlass = 2;
 static const int kPopupBottomSpacingGlass = 1;
+
+// The size of the font to use in the text overlay for the background page
+// badge.
+static const float kBadgeTextFontSize = 9.0;
+
+// Margins for the wrench menu badges (badge is placed in the upper right
+// corner of the wrench menu with the specified margins).
+static const int kBadgeRightMargin = 2;
+static const int kBadgeTopMargin = 2;
 
 static SkBitmap* kPopupBackgroundEdge = NULL;
 
@@ -726,7 +737,8 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
 
   SkBitmap badge;
   // Only one badge can be active at any given time. The Upgrade notification
-  // is deemed most important, then the DLL conflict badge.
+  // is deemed most important, then the temporary background page badge,
+  // then the DLL conflict badge.
   if (IsUpgradeRecommended()) {
     badge = *tp->GetBitmapNamed(IDR_UPDATE_BADGE);
   } else if (ShouldShowBackgroundPageBadge()) {
@@ -741,8 +753,6 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
     NOTREACHED();
   }
 
-  static const int kBadgeRightMargin = 2;
-  static const int kBadgeTopMargin = 2;
   canvas->DrawBitmapInt(badge,
                         icon.width() - badge.width() - kBadgeRightMargin,
                         kBadgeTopMargin);
@@ -752,6 +762,13 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
 
 SkBitmap ToolbarView::GetBackgroundPageBadge() {
   ThemeProvider* tp = GetThemeProvider();
-  // TODO(atwilson): Add code to display current number of pages in badge.
-  return *tp->GetBitmapNamed(IDR_BACKGROUND_BADGE);
+  SkBitmap* badge = tp->GetBitmapNamed(IDR_BACKGROUND_BADGE);
+  string16 badge_text = base::FormatNumber(
+      BackgroundPageTracker::GetSingleton()->GetBackgroundPageCount());
+  return badge_util::DrawBadgeIconOverlay(
+      *badge,
+      kBadgeTextFontSize,
+      badge_text,
+      l10n_util::GetStringUTF16(IDS_BACKGROUND_PAGE_BADGE_OVERFLOW));
 }
+

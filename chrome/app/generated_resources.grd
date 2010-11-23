@@ -1081,6 +1081,9 @@ each locale. -->
           E&amp;xit
         </message>
       </if>
+      <message name="IDS_BACKGROUND_PAGE_BADGE_OVERFLOW" desc="The character displayed in the background page badge, if the count of background pages is too large to fit in the badge. Should be only a single character to ensure it will always fit in the badge.">
+        !
+      </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_SIGN_OUT" desc="The text label of the Sign Out menu item">
           Sign out

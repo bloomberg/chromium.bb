@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -23,7 +24,6 @@ SkPaint* GetBadgeTextPaintSingleton() {
   if (!text_paint) {
     text_paint = new SkPaint;
     text_paint->setAntiAlias(true);
-
     text_paint->setTextAlign(SkPaint::kLeft_Align);
 
     SkTypeface* typeface = SkTypeface::CreateFromName(
@@ -48,6 +48,52 @@ SkPaint* GetBadgeTextPaintSingleton() {
     typeface->unref();
   }
   return text_paint;
+}
+
+SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
+                              float font_size,
+                              const string16& text,
+                              const string16& fallback) {
+  const int kMinPadding = 1;
+
+  // Calculate the proper style/text overlay to render on the badge.
+  SkPaint* paint = badge_util::GetBadgeTextPaintSingleton();
+  paint->setTextSize(SkFloatToScalar(font_size));
+  paint->setColor(SK_ColorWHITE);
+
+  std::string badge_text = UTF16ToUTF8(text);
+
+  // See if the text will fit - otherwise use a default.
+  SkScalar text_width = paint->measureText(badge_text.c_str(),
+                                           badge_text.size());
+
+  if (SkScalarRound(text_width) > (icon.width() - kMinPadding * 2)) {
+    // String is too large - use the alternate text.
+    badge_text = UTF16ToUTF8(fallback);
+    text_width = paint->measureText(badge_text.c_str(), badge_text.size());
+  }
+
+  // When centering the text, we need to make sure there are an equal number
+  // of pixels on each side as otherwise the text looks off-center. So if the
+  // padding would be uneven, clip one pixel off the right side.
+  int badge_width = icon.width();
+  if ((SkScalarRound(text_width) % 1) != (badge_width % 1))
+    badge_width--;
+
+  // Render the badge bitmap and overlay into a canvas.
+  scoped_ptr<gfx::CanvasSkia> canvas(
+      new gfx::CanvasSkia(badge_width, icon.height(), false));
+  canvas->DrawBitmapInt(icon, 0, 0);
+
+  // Draw the text overlay centered horizontally and vertically. Skia expects
+  // us to specify the lower left coordinate of the text box, which is why we
+  // add 'font_size - 1' to the height.
+  SkScalar x = (badge_width - text_width)/2;
+  SkScalar y = (icon.height() - font_size)/2 + font_size - 1;
+  canvas->drawText(badge_text.c_str(), badge_text.size(), x, y, *paint);
+
+  // Return the generated image.
+  return canvas->ExtractBitmap();
 }
 
 }  // namespace badge_util
