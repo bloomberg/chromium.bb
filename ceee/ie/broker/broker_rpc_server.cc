@@ -138,8 +138,7 @@ void BrokerRpcServer_SendUmaHistogramTimes(handle_t binding_handle,
                                            BSTR event_name,
                                            int sample) {
   // We can't unfortunately use the HISTOGRAM_*_TIMES here because they use
-  // static variables to save time. FactoryTimeGet is not so expensive though
-  // and this call is non-blocking.
+  // static variables to save time.
   AutoLock lock(g_metrics_lock);
   std::string name(CW2A(event_name).m_psz);
   scoped_refptr<base::Histogram> counter =
@@ -158,8 +157,7 @@ void BrokerRpcServer_SendUmaHistogramData(handle_t binding_handle,
                                           int min, int max,
                                           int bucket_count) {
   // We can't unfortunately use the HISTOGRAM_*_COUNT here because they use
-  // static variables to save time. FactoryTimeGet is not so expensive though
-  // and this call is non-blocking.
+  // static variables to save time.
   AutoLock lock(g_metrics_lock);
   std::string name(CW2A(event_name).m_psz);
   scoped_refptr<base::Histogram> counter =

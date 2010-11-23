@@ -41,6 +41,7 @@ using testing::kLevelTwoFrame;
 using testing::kOrphansPage;
 using testing::kSimplePage;
 using testing::kTwoFramesPage;
+using testing::MockBrokerRpcClient;
 using testing::MockChromeFrameHost;
 using testing::NotNull;
 using testing::Return;
@@ -106,7 +107,7 @@ class TestingBrowserHelperObject
     return S_OK;
   }
 
-  HRESULT CreateChromeFrameHost() {
+  virtual HRESULT CreateChromeFrameHost() {
     HRESULT hr = MockChromeFrameHost::CreateInitializedIID(
         &mock_chrome_frame_host_, IID_IChromeFrameHost, &chrome_frame_host_);
 
@@ -135,6 +136,16 @@ class TestingBrowserHelperObject
     }
 
     return hr;
+  }
+
+  virtual HRESULT ConnectRpcBrokerClient() {
+    MockBrokerRpcClient* rpc_client = new MockBrokerRpcClient();
+    EXPECT_CALL(*rpc_client, is_connected()).WillOnce(Return(true));
+    EXPECT_CALL(*rpc_client, SendUmaHistogramTimes(_, _))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*rpc_client, Disconnect()).Times(1);
+    broker_rpc_.reset(rpc_client);
+    return S_OK;
   }
 
   // Stub content script manifest loading.
@@ -281,11 +292,11 @@ class BrowserEventSink
   }
 };
 
-class BrowerHelperObjectTest: public ShellBrowserTestImpl<BrowserEventSink> {
+class BrowserHelperObjectTest: public ShellBrowserTestImpl<BrowserEventSink> {
  public:
   typedef ShellBrowserTestImpl<BrowserEventSink> Super;
 
-  BrowerHelperObjectTest() : bho_(NULL), site_(NULL) {
+  BrowserHelperObjectTest() : bho_(NULL), site_(NULL) {
   }
 
   virtual void SetUp() {
@@ -361,7 +372,8 @@ class BrowerHelperObjectTest: public ShellBrowserTestImpl<BrowserEventSink> {
 //    document's URL changes.
 // 3. That we don't leak discarded frame event handlers.
 // 4. That we don't crash during any of this.
-TEST_F(BrowerHelperObjectTest, FrameHandlerCreationAndDestructionOnNavigation) {
+TEST_F(BrowserHelperObjectTest,
+       FrameHandlerCreationAndDestructionOnNavigation) {
   const std::wstring two_frames_resources[] = {
       GetTestUrl(kTwoFramesPage),
       GetTestUrl(kFrameOne),
@@ -414,7 +426,7 @@ TEST_F(BrowerHelperObjectTest, FrameHandlerCreationAndDestructionOnNavigation) {
 // I hope to find a viable repro for this later, and because this
 // code exercises some modes of navigation that the above test does
 // not.
-TEST_F(BrowerHelperObjectTest, DeepFramesAreCorrectlyHandled) {
+TEST_F(BrowserHelperObjectTest, DeepFramesAreCorrectlyHandled) {
   const std::wstring simple_page_resources[] = { GetTestUrl(kSimplePage) };
   const std::wstring deep_frames_resources[] = {
       GetTestUrl(kDeepFramesPage),
@@ -498,7 +510,7 @@ TEST_F(BrowerHelperObjectTest, DeepFramesAreCorrectlyHandled) {
 // attach the new frame to its parent that we had seen before. So we needed to
 // add code to create a handler for the ancestors of such orphans.
 //
-TEST_F(BrowerHelperObjectTest, OrphanFrame) {
+TEST_F(BrowserHelperObjectTest, OrphanFrame) {
   const std::wstring simple_page_resources[] = { GetTestUrl(kSimplePage) };
   const std::wstring orphan_page_resources[] = {
       GetTestUrl(kOrphansPage),

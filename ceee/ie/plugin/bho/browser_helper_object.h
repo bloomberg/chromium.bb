@@ -205,22 +205,25 @@ class ATL_NO_VTABLE BrowserHelperObject
   virtual HRESULT HandleReadyStateChanged(READYSTATE old_state,
                                           READYSTATE new_state);
 
-  // Unit testing seems to create the frame event handler.
+  // Unit testing seam to create the frame event handler.
   virtual HRESULT CreateFrameEventHandler(IWebBrowser2* browser,
                                           IWebBrowser2* parent_browser,
                                           IFrameEventHandler** handler);
 
-  // Unit testing seems to get the parent of a browser.
+  // Unit testing seam to connect to Broker RPC server.
+  virtual HRESULT ConnectRpcBrokerClient();
+
+  // Unit testing seam to get the parent of a browser.
   virtual HRESULT GetParentBrowser(IWebBrowser2* browser,
                                    IWebBrowser2** parent_browser);
 
-  // Unit testing seems to create the broker registrar.
+  // Unit testing seam to create the broker registrar.
   virtual HRESULT GetBrokerRegistrar(ICeeeBrokerRegistrar** broker);
 
-  // Unit testing seems to create an executor.
+  // Unit testing seam to create an executor.
   virtual HRESULT CreateExecutor(IUnknown** executor);
 
-  // Unit testing seems to create a WebProgressNotifier instance.
+  // Unit testing seam to create a WebProgressNotifier instance.
   virtual WebProgressNotifier* CreateWebProgressNotifier();
 
   // Initializes the BHO to the given site.
@@ -375,7 +378,7 @@ class ATL_NO_VTABLE BrowserHelperObject
   bool full_tab_chrome_frame_;
 
   // The RPC client used to communicate with the broker.
-  BrokerRpcClient broker_rpc_;
+  scoped_ptr<BrokerRpcClient> broker_rpc_;
 
  private:
   // The BHO registers proxy/stubs for the CEEE executor on initialization.
