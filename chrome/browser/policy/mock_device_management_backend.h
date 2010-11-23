@@ -11,8 +11,8 @@
 
 #include "base/values.h"
 #include "chrome/browser/policy/device_management_backend.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 
@@ -49,6 +49,8 @@ class MockDeviceManagementBackend
   void AllShouldSucceed();
   void AllShouldFail();
   void UnmanagedDevice();
+  void RegisterFailsOncePolicyFailsTwice();
+  void AllWorksFirstPolicyFailsLater();
 
   void SimulateSuccessfulRegisterRequest(
       const std::string& auth_token,
@@ -85,6 +87,10 @@ class MockDeviceManagementBackend
  private:
   em::DevicePolicyResponse policy_response_;
   em::DevicePolicySetting* policy_setting_;
+
+  int policy_remaining_fail_count_;
+  int register_remaining_fail_count_;
+  int policy_remaining_success_count_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementBackend);
 };

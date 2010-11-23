@@ -23,15 +23,14 @@ const char kTestToken[] = "device_token_fetcher_test_auth_token";
 using testing::_;
 using testing::Mock;
 
-class MockTokenAvailableObserver : public NotificationObserver {
+class MockTokenAvailableObserver : public DeviceTokenFetcher::Observer {
  public:
   MockTokenAvailableObserver() {}
   virtual ~MockTokenAvailableObserver() {}
 
-  MOCK_METHOD3(Observe, void(
-      NotificationType type,
-      const NotificationSource& source,
-      const NotificationDetails& details));
+  MOCK_METHOD0(OnTokenSuccess, void());
+  MOCK_METHOD0(OnTokenError, void());
+  MOCK_METHOD0(OnNotManaged, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTokenAvailableObserver);
@@ -142,12 +141,12 @@ TEST_F(DeviceTokenFetcherTest, SimpleFetchDoubleLogin) {
 }
 
 TEST_F(DeviceTokenFetcherTest, FetchBetweenBrowserLaunchAndNotify) {
-  NotificationRegistrar registrar;
   MockTokenAvailableObserver observer;
-  registrar.Add(&observer,
-                NotificationType::DEVICE_TOKEN_AVAILABLE,
-                NotificationService::AllSources());
-  EXPECT_CALL(observer, Observe(_, _, _)).Times(1);
+  DeviceTokenFetcher::ObserverRegistrar registrar;
+  registrar.Init(fetcher_);
+  registrar.AddObserver(&observer);
+  EXPECT_CALL(observer, OnTokenSuccess()).Times(1);
+  EXPECT_CALL(observer, OnTokenError()).Times(0);
   backend_->AllShouldSucceed();
   EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
   SimulateSuccessfulLoginAndRunPending();
@@ -158,8 +157,9 @@ TEST_F(DeviceTokenFetcherTest, FetchBetweenBrowserLaunchAndNotify) {
 
   // Swap out the fetchers, including copying the device management token on
   // disk to where the new fetcher expects it.
-  fetcher_ = NewTestFetcher(
-      temp_user_data_dir_.path());
+  registrar.RemoveAll();
+  fetcher_ = NewTestFetcher(temp_user_data_dir_.path());
+  registrar.Init(fetcher_);
   fetcher_->StartFetching();
   ASSERT_TRUE(fetcher_->IsTokenPending());
   loop_.RunAllPending();
@@ -170,6 +170,12 @@ TEST_F(DeviceTokenFetcherTest, FetchBetweenBrowserLaunchAndNotify) {
 }
 
 TEST_F(DeviceTokenFetcherTest, FailedServerRequest) {
+  MockTokenAvailableObserver observer;
+  DeviceTokenFetcher::ObserverRegistrar registrar;
+  registrar.Init(fetcher_);
+  registrar.AddObserver(&observer);
+  EXPECT_CALL(observer, OnTokenSuccess()).Times(0);
+  EXPECT_CALL(observer, OnTokenError()).Times(1);
   backend_->AllShouldFail();
   EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
   SimulateSuccessfulLoginAndRunPending();
@@ -179,14 +185,16 @@ TEST_F(DeviceTokenFetcherTest, FailedServerRequest) {
 }
 
 TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
+  FilePath token_path;
+  GetDeviceTokenPath(fetcher_, &token_path);
+  file_util::WriteFile(token_path, "foo", 3);
+  ASSERT_TRUE(file_util::PathExists(token_path));
   backend_->UnmanagedDevice();
   EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
   SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   ASSERT_EQ("", fetcher_->GetDeviceToken());
   ASSERT_EQ("", device_id(fetcher_));
-  FilePath token_path;
-  GetDeviceTokenPath(fetcher_, &token_path);
   ASSERT_FALSE(file_util::PathExists(token_path));
 }
 

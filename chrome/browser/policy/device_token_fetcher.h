@@ -7,8 +7,10 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
+#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/policy/device_management_backend.h"
@@ -31,6 +33,38 @@ class DeviceTokenFetcher
       public DeviceManagementBackend::DeviceRegisterResponseDelegate,
       public base::RefCountedThreadSafe<DeviceTokenFetcher> {
  public:
+  class Observer {
+   public:
+    virtual void OnTokenSuccess() = 0;
+    virtual void OnTokenError() = 0;
+    virtual void OnNotManaged() = 0;
+    virtual ~Observer() {}
+  };
+
+  class ObserverRegistrar {
+   public:
+    void Init(DeviceTokenFetcher* token_fetcher) {
+      token_fetcher_ = token_fetcher;
+    }
+    ~ObserverRegistrar() {
+      RemoveAll();
+    }
+    void AddObserver(DeviceTokenFetcher::Observer* observer) {
+      observers_.push_back(observer);
+      token_fetcher_->AddObserver(observer);
+    }
+    void RemoveAll() {
+      for (std::vector<DeviceTokenFetcher::Observer*>::iterator it =
+          observers_.begin(); it != observers_.end(); ++it) {
+        token_fetcher_->RemoveObserver(*it);
+      }
+      observers_.clear();
+    }
+   private:
+    DeviceTokenFetcher* token_fetcher_;
+    std::vector<DeviceTokenFetcher::Observer*> observers_;
+  };
+
   // Requests to the device management server are sent through |backend|. It
   // obtains the authentication token from |token_service|. The fetcher stores
   // the device token to |token_path| once it's retrieved from the server.
@@ -48,6 +82,9 @@ class DeviceTokenFetcher
   virtual void HandleRegisterResponse(
       const em::DeviceRegisterResponse& response);
   virtual void OnError(DeviceManagementBackend::ErrorCode code);
+
+  // Re-initializes this DeviceTokenFetcher
+  void Restart();
 
   // Called by subscribers of the device management token to indicate that they
   // will need the token in the future. Must be called on the UI thread.
@@ -87,7 +124,8 @@ class DeviceTokenFetcher
     kStateReadyToRequestDeviceTokenFromServer,
     kStateRequestingDeviceTokenFromServer,
     kStateHasDeviceToken,
-    kStateFailure
+    kStateFailure,
+    kStateNotManaged,
   };
 
   // Moves the fetcher into a new state. If the fetcher has the device token
@@ -114,6 +152,26 @@ class DeviceTokenFetcher
   // available.
   void SendServerRequestIfPossible();
 
+  void AddObserver(Observer* obs) {
+    observer_list_.AddObserver(obs);
+  }
+
+  void RemoveObserver(Observer* obs) {
+    observer_list_.RemoveObserver(obs);
+  }
+
+  void NotifyTokenSuccess() {
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnTokenSuccess());
+  }
+
+  void NotifyTokenError() {
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnTokenError());
+  }
+
+  void NotifyNotManaged() {
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnNotManaged());
+  }
+
   // Saves the device management token to disk once it has been retrieved from
   // the server. Must be called on the FILE thread.
   static void WriteDeviceTokenToDisk(const FilePath& path,
@@ -124,6 +182,7 @@ class DeviceTokenFetcher
   // management server and generate the device token.
   static std::string GenerateNewDeviceID();
 
+  ObserverList<Observer, true> observer_list_;
   FilePath token_path_;
   DeviceManagementBackend* backend_;  // weak
   TokenService* token_service_;

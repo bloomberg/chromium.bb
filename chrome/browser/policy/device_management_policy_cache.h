@@ -33,8 +33,9 @@ class DeviceManagementPolicyCache {
   // cache files are ignored.
   void LoadPolicyFromFile();
 
-  // Resets the policy information.
-  void SetPolicy(const em::DevicePolicyResponse& policy);
+  // Resets the policy information. Returns true if the new policy is different
+  // from the previously stored policy.
+  bool SetPolicy(const em::DevicePolicyResponse& policy);
 
   // Gets the policy information. Ownership of the return value is transferred
   // to the caller.

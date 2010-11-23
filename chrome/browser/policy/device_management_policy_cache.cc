@@ -105,9 +105,10 @@ void DeviceManagementPolicyCache::LoadPolicyFromFile() {
   }
 }
 
-void DeviceManagementPolicyCache::SetPolicy(
+bool DeviceManagementPolicyCache::SetPolicy(
     const em::DevicePolicyResponse& policy) {
   DictionaryValue* value = DeviceManagementPolicyCache::DecodePolicy(policy);
+  const bool new_policy_differs = !(value->Equals(policy_.get()));
   base::Time now(base::Time::Now());
   {
     AutoLock lock(lock_);
@@ -123,6 +124,7 @@ void DeviceManagementPolicyCache::SetPolicy(
       FROM_HERE,
       new PersistPolicyTask(backing_file_path_, policy_copy,
                             base::Time::NowFromSystemTime()));
+  return new_policy_differs;
 }
 
 DictionaryValue* DeviceManagementPolicyCache::GetPolicy() {

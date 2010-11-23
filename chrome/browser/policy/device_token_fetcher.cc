@@ -87,9 +87,23 @@ void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
   if (code == DeviceManagementBackend::kErrorServiceManagementNotSupported) {
     device_token_ = std::string();
     device_id_ = std::string();
-    file_util::Delete(token_path_, false);
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        // The Windows compiler needs explicit template instantiation.
+        NewRunnableFunction<bool(*)(const FilePath&, bool), FilePath, bool>(
+            &file_util::Delete, token_path_, false));
+    SetState(kStateNotManaged);
+    return;
   }
   SetState(kStateFailure);
+}
+
+void DeviceTokenFetcher::Restart() {
+  DCHECK(!IsTokenPending());
+  device_token_.clear();
+  device_token_load_complete_event_.Reset();
+  MakeReadyToRequestDeviceToken();
 }
 
 void DeviceTokenFetcher::StartFetching() {
@@ -186,12 +200,13 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
   state_ = state;
   if (state == kStateFailure) {
     device_token_load_complete_event_.Signal();
+    NotifyTokenError();
+  } else if (state == kStateNotManaged) {
+    device_token_load_complete_event_.Signal();
+    NotifyNotManaged();
   } else if (state == kStateHasDeviceToken) {
     device_token_load_complete_event_.Signal();
-    NotificationService::current()->Notify(
-        NotificationType::DEVICE_TOKEN_AVAILABLE,
-        Source<DeviceTokenFetcher>(this),
-        NotificationService::NoDetails());
+    NotifyTokenSuccess();
   }
 }
 

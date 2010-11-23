@@ -28,7 +28,10 @@ using em::DeviceUnregisterResponse;
 using em::DevicePolicyResponse;
 
 MockDeviceManagementBackend::MockDeviceManagementBackend()
-    : DeviceManagementBackend() {
+    : DeviceManagementBackend(),
+      policy_remaining_fail_count_(0),
+      register_remaining_fail_count_(0),
+      policy_remaining_success_count_(0) {
   policy_setting_ = policy_response_.add_setting();
   policy_setting_->set_policy_key("chrome-policy");
   policy_setting_->set_watermark("fresh");
@@ -66,6 +69,17 @@ void MockDeviceManagementBackend::UnmanagedDevice() {
           &MockDeviceManagementBackend::SimulateUnmanagedRegisterRequest));
 }
 
+void MockDeviceManagementBackend::RegisterFailsOncePolicyFailsTwice() {
+  register_remaining_fail_count_ = 1;
+  policy_remaining_fail_count_ = 2;
+  AllShouldFail();
+}
+
+void MockDeviceManagementBackend::AllWorksFirstPolicyFailsLater() {
+  policy_remaining_success_count_ = 3;
+  AllShouldSucceed();
+}
+
 void MockDeviceManagementBackend::AddBooleanPolicy(const char* policy_name,
                                                    bool value) {
   em::GenericSetting* policy_value = policy_setting_->mutable_policy_value();
@@ -93,6 +107,15 @@ void MockDeviceManagementBackend::SimulateSuccessfulPolicyRequest(
     const std::string& device_id,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
+  if (policy_remaining_success_count_) {
+    policy_remaining_success_count_--;
+    if (!policy_remaining_success_count_) {
+      ON_CALL(*this, ProcessPolicyRequest(_, _, _, _)).
+          WillByDefault(Invoke(
+              this,
+              &MockDeviceManagementBackend::SimulateFailedPolicyRequest));
+    }
+  }
   delegate->HandlePolicyResponse(policy_response_);
 }
 
@@ -101,6 +124,14 @@ void MockDeviceManagementBackend::SimulateFailedRegisterRequest(
     const std::string& device_id,
     const em::DeviceRegisterRequest& request,
     DeviceRegisterResponseDelegate* delegate) {
+  if (register_remaining_fail_count_) {
+    register_remaining_fail_count_--;
+    if (!register_remaining_fail_count_) {
+      ON_CALL(*this, ProcessRegisterRequest(_, _, _, _)).WillByDefault(Invoke(
+          this,
+          &MockDeviceManagementBackend::SimulateSuccessfulRegisterRequest));
+    }
+  }
   delegate->OnError(kErrorRequestFailed);
 }
 
@@ -109,6 +140,15 @@ void MockDeviceManagementBackend::SimulateFailedPolicyRequest(
     const std::string& device_id,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
+  if (policy_remaining_fail_count_) {
+    policy_remaining_fail_count_--;
+    if (!policy_remaining_fail_count_) {
+      ON_CALL(*this, ProcessPolicyRequest(_, _, _, _)).
+          WillByDefault(Invoke(
+              this,
+              &MockDeviceManagementBackend::SimulateSuccessfulPolicyRequest));
+    }
+  }
   delegate->OnError(kErrorRequestFailed);
 }
 

@@ -134,7 +134,10 @@ TEST_F(DeviceManagementPolicyCacheTest, SetPolicy) {
   DeviceManagementPolicyCache cache(test_file());
   em::DevicePolicyResponse policy;
   AddStringPolicy(&policy, "HomepageLocation", "http://www.example.com");
-  cache.SetPolicy(policy);
+  EXPECT_TRUE(cache.SetPolicy(policy));
+  em::DevicePolicyResponse policy2;
+  AddStringPolicy(&policy2, "HomepageLocation", "http://www.example.com");
+  EXPECT_FALSE(cache.SetPolicy(policy2));
   DictionaryValue expected;
   expected.Set("HomepageLocation",
                Value::CreateStringValue("http://www.example.com"));
@@ -147,14 +150,14 @@ TEST_F(DeviceManagementPolicyCacheTest, ResetPolicy) {
 
   em::DevicePolicyResponse policy;
   AddStringPolicy(&policy, "HomepageLocation", "http://www.example.com");
-  cache.SetPolicy(policy);
+  EXPECT_TRUE(cache.SetPolicy(policy));
   DictionaryValue expected;
   expected.Set("HomepageLocation",
                Value::CreateStringValue("http://www.example.com"));
   scoped_ptr<Value> policy_value(cache.GetPolicy());
   EXPECT_TRUE(expected.Equals(policy_value.get()));
 
-  cache.SetPolicy(em::DevicePolicyResponse());
+  EXPECT_TRUE(cache.SetPolicy(em::DevicePolicyResponse()));
   policy_value.reset(cache.GetPolicy());
   DictionaryValue empty;
   EXPECT_TRUE(empty.Equals(policy_value.get()));
@@ -189,7 +192,7 @@ TEST_F(DeviceManagementPolicyCacheTest, FreshPolicyOverride) {
   em::DevicePolicyResponse updated_policy;
   AddStringPolicy(&updated_policy, "HomepageLocation",
                   "http://www.chromium.org");
-  cache.SetPolicy(updated_policy);
+  EXPECT_TRUE(cache.SetPolicy(updated_policy));
 
   cache.LoadPolicyFromFile();
   DictionaryValue expected;

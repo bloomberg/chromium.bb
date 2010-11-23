@@ -76,9 +76,20 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
     loop_.RunAllPending();
   }
 
- protected:
   MockDeviceManagementBackend* backend_;  // weak
   scoped_ptr<DeviceManagementPolicyProvider> provider_;
+
+ protected:
+  void SetRefreshDelays(DeviceManagementPolicyProvider* provider,
+                        int64 policy_refresh_rate_ms,
+                        int64 policy_refresh_max_earlier_ms,
+                        int64 policy_refresh_error_delay_ms,
+                        int64 token_fetch_error_delay_ms) {
+    provider->set_policy_refresh_rate_ms(policy_refresh_rate_ms);
+    provider->set_policy_refresh_max_earlier_ms(policy_refresh_max_earlier_ms);
+    provider->set_policy_refresh_error_delay_ms(policy_refresh_error_delay_ms);
+    provider->set_token_fetch_error_delay_ms(token_fetch_error_delay_ms);
+  }
 
  private:
   MessageLoop loop_;
@@ -127,13 +138,23 @@ TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
   SimulateSuccessfulInitialPolicyFetch();
 
   // Simulate a app relaunch by constructing a new provider. Policy should be
-  // immediately provided and no refresh should be triggered.
+  // refreshed (since that might be the purpose of the app relaunch).
   CreateNewBackend();
-  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(0);
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(1);
   CreateNewProvider();
+  Mock::VerifyAndClearExpectations(backend_);
+
+  // Simulate another app relaunch, this time against a failing backend.
+  // Cached policy should still be available.
+  CreateNewBackend();
+  backend_->AllShouldFail();
   MockConfigurationPolicyStore store;
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(1);
+  CreateNewProvider();
+  SimulateSuccessfulLoginAndRunPending();
   EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(1);
   provider_->Provide(&store);
+  ASSERT_EQ(1U, store.policy_map().size());
 }
 
 // When policy is successfully fetched from the device management server, it
@@ -144,9 +165,24 @@ TEST_F(DeviceManagementPolicyProviderTest, FetchTriggersRefresh) {
   registrar.Add(&observer,
                 NotificationType::POLICY_CHANGED,
                 NotificationService::AllSources());
-  EXPECT_CALL(observer,
-              Observe(_, _, _)).Times(1);
+  EXPECT_CALL(observer, Observe(_, _, _)).Times(1);
   SimulateSuccessfulInitialPolicyFetch();
 }
 
+TEST_F(DeviceManagementPolicyProviderTest, ErrorCausesNewRequest) {
+  backend_->RegisterFailsOncePolicyFailsTwice();
+  SetRefreshDelays(provider_.get(), 1000 * 1000, 0, 0, 0);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(2);
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(3);
+  SimulateSuccessfulLoginAndRunPending();
 }
+
+TEST_F(DeviceManagementPolicyProviderTest, RefreshPolicies) {
+  backend_->AllWorksFirstPolicyFailsLater();
+  SetRefreshDelays(provider_.get(), 0, 0, 1000 * 1000, 1000);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(4);
+  SimulateSuccessfulLoginAndRunPending();
+}
+
+}  // namespace policy
