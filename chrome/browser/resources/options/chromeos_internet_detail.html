@@ -87,32 +87,18 @@
   </div>
   <div id="cellularPlanTab" class="subpages-tab-contents cellular-details">
     <section>
-      <table class="option-control-table" id="details-plan-table">
-        <tr class="plan-loading-info">
-          <td colspan="2" i18n-content="planLoading" class="option-value"></td>
-        </tr>
-        <tr class="no-plan-info">
-          <td colspan="2" class="option-value"><button id="purchaseMore"
-              i18n-content="purchaseMore"></button></td>
-        </tr>
-        <tr class="plan-details-info">
-          <td class="option-name" id="planSummary"></td>
-          <td class="option-value"><button id="moreInfo"
-              class="details-button" i18n-content="moreInfo"></button></td>
-        </tr>
-      </table>
-    </section>
-    <section class="plan-details-info">
-      <table class="option-control-table">
-        <tr>
-          <td class="option-name" i18n-content="dataRemaining"></td>
-          <td id="dataRemaining" class="option-value"></td>
-        </tr>
-        <tr>
-          <td class="option-name" i18n-content="planExpires"></td>
-          <td id="planExpires" class="option-value"></td>
-        </tr>
-      </table>
+      <div>
+        <table class="option-control-table" id="details-plan-table">
+          <tr class="plan-loading-info">
+            <td i18n-content="planLoading" class="option-value"></td>
+          </tr>
+          <tr class="no-plan-info">
+            <td class="option-value"><button id="purchaseMore"
+                i18n-content="purchaseMore"></button></td>
+          </tr>
+        </table>
+      </div>
+      <div id="planList"></div>
     </section>
     <section class="plan-details-info">
       <div>

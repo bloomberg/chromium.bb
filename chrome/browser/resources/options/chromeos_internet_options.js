@@ -38,6 +38,8 @@ cr.define('options', function() {
       options.internet.NetworkElement.decorate($('rememberedList'));
       $('rememberedList').load(templateData.rememberedList);
 
+      options.internet.CellularPlanElement.decorate($('planList'));
+
       $('wiredSection').hidden = (templateData.wiredList.length == 0);
       $('wirelessSection').hidden = (templateData.wirelessList.length == 0);
       $('rememberedSection').hidden = (templateData.rememberedList.length == 0);
@@ -71,10 +73,6 @@ cr.define('options', function() {
       $('purchaseMore').onclick = function(event) {
         chrome.send('buyDataPlan', []);
       };
-      $('moreInfo').onclick = function(event) {
-        chrome.send('showMorePlanInfo', []);
-      };
-
       this.showNetworkDetails_();
     },
 
@@ -193,17 +191,13 @@ cr.define('options', function() {
 
   InternetOptions.updateCellularPlans = function (data) {
     var page = $('detailsInternetPage');
-    if (!data.plans || !data.plans.length || !data.plans[0].plan_type) {
-      // No cellular data plan.
+    if (data.needsPlan) {
       page.setAttribute('nocellplan', true);
       page.removeAttribute('hascellplan');
     } else {
       page.removeAttribute('nocellplan');
       page.setAttribute('hascellplan', true);
-      var plan = data.plans[0];
-      $('planSummary').textContent = plan.planSummary;
-      $('dataRemaining').textContent = plan.dataRemaining;
-      $('planExpires').textContent = plan.planExpires;
+      $('planList').load(data.plans);
     }
     page.removeAttribute('cellplanloading');
   };

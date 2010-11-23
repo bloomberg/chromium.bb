@@ -136,7 +136,14 @@ html[dir='rtl'] .network-item-text {
 }
 
 #planSummary {
-  width: 250px;
+  width: 350px;
+  padding-bottom: 5px;
+}
+
+#planWarning {
+  width: 350px;
+  padding-top: 5px;
+  font-weight: bold;
 }
 
 html[dir='rtl'] .details-button {
@@ -153,6 +160,7 @@ html[dir='rtl'] .details-button {
 #detailsInternetPage[wireless] .cellular-details,
 #detailsInternetPage[cellplanloading] .no-plan-info,
 #detailsInternetPage[cellplanloading] .plan-details-info,
+#detailsInternetPage[cellplanloading] #planList,
 #detailsInternetPage[hascellplan] .plan-loading-info,
 #detailsInternetPage[hascellplan] .no-plan-info,
 #detailsInternetPage[nocellplan] .plan-loading-info,

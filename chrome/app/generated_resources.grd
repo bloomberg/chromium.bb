@@ -9321,8 +9321,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_MORE_INFO" desc="In settings Internet options, the title for button for getting more information about the current cellular data plan.">
         More info...
       </message>
-        <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN" desc="In settings Internet options, the message displayed while cellular data plan information is being loaded.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME" desc="In settings Internet options, the label displayed next to cellular plan name.">
+        Plan name:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN" desc="In settings Internet options, the message displayed while cellular data plan information is being loaded.">
         Loading cellular data plan information, please wait...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND" desc="In settings Internet options, the message displayed while cellular data plans are missing or could not be found.">
+        No active cellular plan found.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING" desc="In settings Internet options, the label for mobile plan remaining data info.">
         Data remaining:

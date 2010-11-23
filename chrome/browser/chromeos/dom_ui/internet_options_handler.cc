@@ -246,15 +246,18 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION));
 
+  localized_strings->SetString("planName",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME));
   localized_strings->SetString("planLoading",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN));
+  localized_strings->SetString("noPlansFound",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND));
   localized_strings->SetString("purchaseMore",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE));
-  localized_strings->SetString("moreInfo",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_MORE_INFO));
   localized_strings->SetString("dataRemaining",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING));
@@ -447,7 +450,7 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
 DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
     const chromeos::CellularDataPlan* plan) {
   DictionaryValue* plan_dict = new DictionaryValue();
-  plan_dict->SetInteger("plan_type", plan->plan_type);
+  plan_dict->SetInteger("planType", plan->plan_type);
   plan_dict->SetString("name", plan->plan_name);
   plan_dict->SetString("planSummary", plan->GetPlanDesciption());
   plan_dict->SetString("dataRemaining", plan->GetDataRemainingDesciption());
