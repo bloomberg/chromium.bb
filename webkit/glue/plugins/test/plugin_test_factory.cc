@@ -34,7 +34,8 @@ PluginTest* CreatePluginTest(const std::string& test_name,
     new_test = new PluginArgumentsTest(instance, host_functions);
   } else if (test_name == "geturl" || test_name == "geturl_404_response" ||
              test_name == "geturl_fail_write" ||
-             test_name == "plugin_referrer_test") {
+             test_name == "plugin_referrer_test" ||
+             test_name == "geturlredirectnotify") {
     new_test = new PluginGetURLTest(instance, host_functions);
   } else if (test_name == "npobject_proxy") {
     new_test = new NPObjectProxyTest(instance, host_functions);

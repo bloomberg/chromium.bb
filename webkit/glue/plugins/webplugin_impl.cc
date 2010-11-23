@@ -14,6 +14,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCookieJar.h"
@@ -216,6 +217,7 @@ struct WebPluginImpl::ClientInfo {
   WebKit::WebURLRequest request;
   bool pending_failure_notification;
   linked_ptr<WebKit::WebURLLoader> loader;
+  bool notify_redirects;
 };
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
@@ -770,6 +772,22 @@ void WebPluginImpl::OnMissingPluginStatus(int status) {
   NOTREACHED();
 }
 
+void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
+  for (size_t i = 0; i < clients_.size(); ++i) {
+    if (clients_[i].id == static_cast<unsigned long>(resource_id)) {
+      if (clients_[i].loader.get()) {
+        if (allow) {
+          clients_[i].loader->setDefersLoading(false);
+        } else {
+          clients_[i].loader->cancel();
+          clients_[i].client->DidFail();
+        }
+      }
+      break;
+    }
+  }
+}
+
 void WebPluginImpl::Invalidate() {
   if (container_)
     container_->invalidate();
@@ -782,7 +800,8 @@ void WebPluginImpl::InvalidateRect(const gfx::Rect& rect) {
 
 void WebPluginImpl::OnDownloadPluginSrcUrl() {
   HandleURLRequestInternal(
-      plugin_url_.spec().c_str(), "GET", NULL, NULL, 0, 0, false, DOCUMENT_URL);
+      plugin_url_.spec().c_str(), "GET", NULL, NULL, 0, 0, false, DOCUMENT_URL,
+      false);
 }
 
 WebPluginResourceClient* WebPluginImpl::GetClientFromLoader(
@@ -806,10 +825,32 @@ WebPluginImpl::ClientInfo* WebPluginImpl::GetClientInfoFromLoader(
 
 void WebPluginImpl::willSendRequest(WebURLLoader* loader,
                                     WebURLRequest& request,
-                                    const WebURLResponse&) {
-  WebPluginResourceClient* client = GetClientFromLoader(loader);
-  if (client)
-    client->WillSendRequest(request.url());
+                                    const WebURLResponse& response) {
+  WebPluginImpl::ClientInfo* client_info = GetClientInfoFromLoader(loader);
+  if (client_info) {
+    if (net::HttpResponseHeaders::IsRedirectResponseCode(
+            response.httpStatusCode())) {
+      // If the plugin does not participate in url redirect notifications then
+      // just block cross origin 307 POST redirects.
+      if (!client_info->notify_redirects) {
+        if (response.httpStatusCode() == 307 &&
+            LowerCaseEqualsASCII(request.httpMethod().utf8(), "post")) {
+          GURL original_request_url(response.url());
+          GURL response_url(request.url());
+          if (original_request_url.GetOrigin() != response_url.GetOrigin()) {
+            loader->setDefersLoading(true);
+            loader->cancel();
+            client_info->client->DidFail();
+            return;
+          }
+        }
+      } else {
+        loader->setDefersLoading(true);
+      }
+    }
+    client_info->client->WillSendRequest(request.url(),
+                                         response.httpStatusCode());
+  }
 }
 
 void WebPluginImpl::didSendData(WebURLLoader* loader,
@@ -998,11 +1039,13 @@ void WebPluginImpl::HandleURLRequest(const char* url,
                                      const char* buf,
                                      unsigned int len,
                                      int notify_id,
-                                     bool popups_allowed) {
+                                     bool popups_allowed,
+                                     bool notify_redirects) {
   // GetURL/PostURL requests initiated explicitly by plugins should specify the
   // plugin SRC url as the referrer if it is available.
   HandleURLRequestInternal(
-      url, method, target, buf, len, notify_id, popups_allowed, PLUGIN_SRC);
+      url, method, target, buf, len, notify_id, popups_allowed, PLUGIN_SRC,
+      notify_redirects);
 }
 
 void WebPluginImpl::HandleURLRequestInternal(const char* url,
@@ -1012,7 +1055,8 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
                                              unsigned int len,
                                              int notify_id,
                                              bool popups_allowed,
-                                             Referrer referrer_flag) {
+                                             Referrer referrer_flag,
+                                             bool notify_redirects) {
   // For this request, we either route the output to a frame
   // because a target has been specified, or we handle the request
   // here, i.e. by executing the script if it is a javascript url
@@ -1070,7 +1114,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
     return;
 
   InitiateHTTPRequest(resource_id, resource_client, complete_url, method, buf,
-                      len, NULL, referrer_flag);
+                      len, NULL, referrer_flag, notify_redirects);
 }
 
 unsigned long WebPluginImpl::GetNextResourceId() {
@@ -1089,7 +1133,8 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
                                         const char* buf,
                                         int buf_len,
                                         const char* range_info,
-                                        Referrer referrer_flag) {
+                                        Referrer referrer_flag,
+                                        bool notify_redirects) {
   if (!client) {
     NOTREACHED();
     return false;
@@ -1106,6 +1151,7 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   info.request.setTargetType(WebURLRequest::TargetIsObject);
   info.request.setHTTPMethod(WebString::fromUTF8(method));
   info.pending_failure_notification = false;
+  info.notify_redirects = notify_redirects;
 
   if (range_info) {
     info.request.addHTTPHeaderField(WebString::fromUTF8("Range"),
@@ -1167,7 +1213,7 @@ void WebPluginImpl::InitiateHTTPRangeRequest(
       delegate_->CreateSeekableResourceClient(resource_id, range_request_id);
   InitiateHTTPRequest(
       resource_id, resource_client, complete_url, "GET", NULL, 0, range_info,
-      load_manually_ ? NO_REFERRER : PLUGIN_SRC);
+      load_manually_ ? NO_REFERRER : PLUGIN_SRC, false);
 }
 
 void WebPluginImpl::SetDeferResourceLoading(unsigned long resource_id,

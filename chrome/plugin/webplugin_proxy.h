@@ -120,7 +120,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
                         const char* buf,
                         unsigned int len,
                         int notify_id,
-                        bool popups_allowed);
+                        bool popups_allowed,
+                        bool notify_redirects);
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
                       const TransportDIB::Handle& windowless_buffer,
@@ -175,6 +176,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
                                TransportDIB::Handle* dib_handle);
   virtual void FreeSurfaceDIB(TransportDIB::Id dib_id);
 #endif
+
+  virtual void URLRedirectResponse(bool allow, int resource_id);
 
  private:
   bool Send(IPC::Message* msg);

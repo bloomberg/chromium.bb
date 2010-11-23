@@ -196,12 +196,13 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   }
 }
 
-void WebPluginDelegateStub::OnWillSendRequest(int id, const GURL& url) {
+void WebPluginDelegateStub::OnWillSendRequest(int id, const GURL& url,
+                                              int http_status_code) {
   WebPluginResourceClient* client = webplugin_->GetResourceClient(id);
   if (!client)
     return;
 
-  client->WillSendRequest(url);
+  client->WillSendRequest(url, http_status_code);
 }
 
 void WebPluginDelegateStub::OnDidReceiveResponse(

@@ -54,7 +54,8 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
       in_close_streams_(false),
       next_timer_id_(1),
       next_notify_id_(0),
-      next_range_request_id_(0) {
+      next_range_request_id_(0),
+      handles_url_redirects_(false) {
   npp_ = new NPP_t();
   npp_->ndata = 0;
   npp_->pdata = 0;
@@ -153,6 +154,12 @@ bool PluginInstance::Start(const GURL& url,
 
   NPError err = NPP_New(mode, param_count,
       const_cast<char **>(param_names), const_cast<char **>(param_values));
+
+  if (err == NPERR_NO_ERROR) {
+    handles_url_redirects_ =
+        ((npp_functions_->version >= NPVERS_HAS_URL_REDIRECT_HANDLING) &&
+         (npp_functions_->urlredirectnotify));
+  }
   return err == NPERR_NO_ERROR;
 }
 
@@ -348,6 +355,14 @@ NPError PluginInstance::NPP_ClearSiteData(uint64 flags,
   DCHECK(npp_functions_ != 0);
   // TODO(bauerb): Call NPAPI function when it is defined in the header.
   return NPERR_NO_ERROR;
+}
+
+void PluginInstance::NPP_URLRedirectNotify(const char* url, int32_t status,
+                                           void* notify_data) {
+  DCHECK(npp_functions_ != 0);
+  if (npp_functions_->urlredirectnotify != 0) {
+    npp_functions_->urlredirectnotify(npp_, url, status, notify_data);
+  }
 }
 
 void PluginInstance::SendJavaScriptStream(const GURL& url,
@@ -556,7 +571,8 @@ void PluginInstance::RequestURL(const char* url,
   }
 
   webplugin_->HandleURLRequest(
-      url, method, target, buf, len, notify_id, popups_allowed());
+      url, method, target, buf, len, notify_id, popups_allowed(),
+      notify ? handles_url_redirects_ : false);
 }
 
 bool PluginInstance::ConvertPoint(double source_x, double source_y,
@@ -639,6 +655,25 @@ void PluginInstance::GetNotifyData(
   } else {
     *notify = false;
     *notify_data = NULL;
+  }
+}
+
+void PluginInstance::URLRedirectResponse(bool allow, void* notify_data) {
+  // The notify_data passed in allows us to identify the matching stream.
+  std::vector<scoped_refptr<PluginStream> >::iterator stream_index;
+  for (stream_index = open_streams_.begin();
+          stream_index != open_streams_.end(); ++stream_index) {
+    PluginStream* plugin_stream = *stream_index;
+    if (plugin_stream->notify_data() == notify_data) {
+      webkit_glue::WebPluginResourceClient* resource_client =
+          plugin_stream->AsResourceClient();
+      webplugin_->URLRedirectResponse(allow, resource_client->ResourceId());
+      if (allow) {
+        plugin_stream->UpdateUrl(
+            plugin_stream->pending_redirect_url().c_str());
+      }
+      break;
+    }
   }
 }
 

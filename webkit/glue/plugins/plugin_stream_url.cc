@@ -4,8 +4,10 @@
 
 #include "webkit/glue/plugins/plugin_stream_url.h"
 
+#include "net/http/http_response_headers.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/webplugin.h"
 
 namespace NPAPI {
@@ -37,7 +39,17 @@ bool PluginStreamUrl::Close(NPReason reason) {
   return result;
 }
 
-void PluginStreamUrl::WillSendRequest(const GURL& url) {
+void PluginStreamUrl::WillSendRequest(const GURL& url, int http_status_code) {
+  if (notify_needed()) {
+    // If the plugin participates in HTTP url redirect handling then notify it.
+    if (net::HttpResponseHeaders::IsRedirectResponseCode(http_status_code) &&
+        instance()->handles_url_redirects()) {
+      pending_redirect_url_ = url.spec();
+      instance()->NPP_URLRedirectNotify(url.spec().c_str(), http_status_code,
+          notify_data());
+      return;
+    }
+  }
   url_ = url;
   UpdateUrl(url.spec().c_str());
 }

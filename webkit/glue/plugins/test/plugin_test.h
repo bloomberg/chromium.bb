@@ -43,6 +43,8 @@ class PluginTest {
   virtual void    StreamAsFile(NPStream* stream, const char* fname);
   virtual void    URLNotify(const char* url, NPReason reason, void* data);
   virtual int16   HandleEvent(void* event);
+  virtual void    URLRedirectNotify(const char* url, int32_t status,
+                                    void* notify_data);
   // Returns true if the test has not had any errors.
   bool Succeeded() { return test_status_.length() == 0; }
 

@@ -24,6 +24,13 @@
 // url for testing GetURL with a bogus URL.
 #define BOGUS_URL "bogoproto:///x:/asdf.xysdhffieasdf.asdhj/"
 
+// url for testing redirect notifications sent to plugins.
+#define REDIRECT_SRC_URL \
+    "http://mock.http/npapi/plugin_read_page_redirect_src.html"
+
+// The notification id for the redirect notification url.
+#define REDIRECT_SRC_URL_NOTIFICATION_ID 4
+
 // The identifier for the bogus url stream.
 #define BOGUS_URL_STREAM_ID 3
 
@@ -38,7 +45,9 @@ PluginGetURLTest::PluginGetURLTest(NPP id, NPNetscapeFuncs *host_functions)
     tests_in_progress_(0),
     test_file_(NULL),
     expect_404_response_(false),
-    npn_evaluate_context_(false) {
+    npn_evaluate_context_(false),
+    handle_url_redirects_(false),
+    received_url_redirect_notification_(false) {
 }
 
 NPError PluginGetURLTest::New(uint16 mode, int16 argc, const char* argn[],
@@ -62,6 +71,10 @@ NPError PluginGetURLTest::New(uint16 mode, int16 argc, const char* argn[],
     referrer_target_url_ = referrer_target_url;
   }
 
+  if (!base::strcasecmp(GetArgValue("name", argc, argn, argv),
+                        "geturlredirectnotify")) {
+    handle_url_redirects_ = true;
+  }
   return PluginTest::New(mode, argc, argn, argv, saved);
 }
 
@@ -84,6 +97,11 @@ NPError PluginGetURLTest::SetWindow(NPWindow* pNPWindow) {
       HostFunctions()->pushpopupsenabledstate(id(), true);
       HostFunctions()->geturl(id(), referrer_target_url_.c_str(), "_blank");
       HostFunctions()->poppopupsenabledstate(id());
+      return NPERR_NO_ERROR;
+    } else if (handle_url_redirects_) {
+      HostFunctions()->geturlnotify(
+          id(), REDIRECT_SRC_URL, NULL,
+          reinterpret_cast<void*>(REDIRECT_SRC_URL_NOTIFICATION_ID));
       return NPERR_NO_ERROR;
     }
 
@@ -178,6 +196,9 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
       break;
     case BOGUS_URL_STREAM_ID:
       SetError("Unexpected NewStream for BOGUS_URL");
+      break;
+    case REDIRECT_SRC_URL_NOTIFICATION_ID:
+      SetError("Should not redirect to URL when plugin denied it.");
       break;
     default:
       SetError("Unexpected NewStream callback");
@@ -364,6 +385,13 @@ void PluginGetURLTest::URLNotify(const char* url, NPReason reason, void* data) {
       }
       tests_in_progress_--;
       break;
+    case REDIRECT_SRC_URL_NOTIFICATION_ID: {
+      if (!received_url_redirect_notification_) {
+        SetError("Failed to receive URLRedirect notification");
+      }
+      tests_in_progress_--;
+      break;
+    }
     default:
       SetError("Unexpected NewStream callback");
       break;
@@ -371,6 +399,16 @@ void PluginGetURLTest::URLNotify(const char* url, NPReason reason, void* data) {
 
   if (tests_in_progress_ == 0)
       SignalTestCompleted();
+}
+
+void PluginGetURLTest::URLRedirectNotify(const char* url,
+                                         int32_t status,
+                                         void* notify_data) {
+  if (!base::strcasecmp(url, "http://mock.http/npapi/plugin_read_page.html")) {
+    received_url_redirect_notification_ = true;
+    // Disallow redirect notification.
+    HostFunctions()->urlredirectresponse(id(), notify_data, false);
+  }
 }
 
 } // namespace NPAPIClient

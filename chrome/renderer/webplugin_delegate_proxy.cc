@@ -90,10 +90,10 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
   }
 
   // PluginResourceClient implementation:
-  void WillSendRequest(const GURL& url) {
+  void WillSendRequest(const GURL& url, int http_status_code) {
     DCHECK(channel_ != NULL);
     channel_->Send(new PluginMsg_WillSendRequest(instance_id_, resource_id_,
-                                                 url));
+                                                 url, http_status_code));
   }
 
   void DidReceiveResponse(const std::string& mime_type,
@@ -144,6 +144,10 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
 
   bool IsMultiByteResponseExpected() {
     return multibyte_response_expected_;
+  }
+
+  int ResourceId() {
+    return resource_id_;
   }
 
  private:
@@ -477,6 +481,8 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
 #endif
+    IPC_MESSAGE_HANDLER(PluginHostMsg_URLRedirectResponse,
+                        OnURLRedirectResponse)
 
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -1346,7 +1352,7 @@ void WebPluginDelegateProxy::OnHandleURLRequest(
   plugin_->HandleURLRequest(
       params.url.c_str(), params.method.c_str(), target, data,
       static_cast<unsigned int>(params.buffer.size()), params.notify_id,
-      params.popups_allowed);
+      params.popups_allowed, params.notify_redirects);
 }
 
 webkit_glue::WebPluginResourceClient*
@@ -1556,3 +1562,12 @@ bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
   return false;
 }
 #endif
+
+void WebPluginDelegateProxy::OnURLRedirectResponse(bool allow,
+                                                   int resource_id) {
+  if (!plugin_)
+    return;
+
+  plugin_->URLRedirectResponse(allow, resource_id);
+}
+

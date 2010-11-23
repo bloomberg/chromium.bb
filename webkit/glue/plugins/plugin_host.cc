@@ -137,7 +137,7 @@ void PluginHost::InitializeHostFuncs() {
   host_funcs_.handleevent = NPN_HandleEvent;
   host_funcs_.unfocusinstance = NPN_UnfocusInstance;
   // TODO: Implement redirect handling: http://crbug.com/63030
-  host_funcs_.urlredirectresponse = NULL;
+  host_funcs_.urlredirectresponse = NPN_URLRedirectResponse;
 }
 
 void PluginHost::PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides) {
@@ -1102,5 +1102,11 @@ NPBool NPN_UnfocusInstance(NPP id, NPFocusDirection direction) {
   return false;
 }
 
+void NPN_URLRedirectResponse(NPP instance, void* notify_data, NPBool allow) {
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(instance));
+  if (plugin.get()) {
+    plugin->URLRedirectResponse(!!allow, notify_data);
+  }
+}
 
 }  // extern "C"

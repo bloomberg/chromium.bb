@@ -36,6 +36,8 @@ class PluginGetURLTest : public PluginTest {
   virtual NPError DestroyStream(NPStream *stream, NPError reason);
   virtual void    StreamAsFile(NPStream* stream, const char* fname);
   virtual void    URLNotify(const char* url, NPReason reason, void* data);
+  virtual void    URLRedirectNotify(const char* url, int32_t status,
+                                    void* notify_data);
 
  private:
   bool tests_started_;
@@ -45,6 +47,10 @@ class PluginGetURLTest : public PluginTest {
   bool expect_404_response_;
   // This flag is set to true in the context of the NPN_Evaluate call.
   bool npn_evaluate_context_;
+  // The following two flags handle URL redirect notifications received by
+  // plugins.
+  bool handle_url_redirects_;
+  bool received_url_redirect_notification_;
   std::string page_not_found_url_;
   std::string fail_write_url_;
   std::string referrer_target_url_;

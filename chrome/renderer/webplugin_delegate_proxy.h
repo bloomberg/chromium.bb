@@ -180,6 +180,8 @@ class WebPluginDelegateProxy
                                           uint64 surface_id);
 #endif
 
+  void OnURLRedirectResponse(bool allow, int resource_id);
+
   // Draw a graphic indicating a crashed plugin.
   void PaintSadPlugin(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
 

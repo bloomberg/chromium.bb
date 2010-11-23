@@ -315,7 +315,8 @@ void WebPluginProxy::HandleURLRequest(const char* url,
                                       const char* buf,
                                       unsigned int len,
                                       int notify_id,
-                                      bool popups_allowed) {
+                                      bool popups_allowed,
+                                      bool notify_redirects) {
  if (!target && (0 == base::strcasecmp(method, "GET"))) {
     // Please refer to https://bugzilla.mozilla.org/show_bug.cgi?id=366082
     // for more details on this.
@@ -343,6 +344,7 @@ void WebPluginProxy::HandleURLRequest(const char* url,
 
   params.notify_id = notify_id;
   params.popups_allowed = popups_allowed;
+  params.notify_redirects = notify_redirects;
 
   Send(new PluginHostMsg_URLRequest(route_id_, params));
 }
@@ -725,3 +727,8 @@ void WebPluginProxy::ResourceClientDeleted(
     }
   }
 }
+
+void WebPluginProxy::URLRedirectResponse(bool allow, int resource_id) {
+  Send(new PluginHostMsg_URLRedirectResponse(route_id_, allow, resource_id));
+}
+

@@ -34,6 +34,7 @@ NPError PluginClient::GetEntryPoints(NPPluginFuncs* pFuncs) {
   pFuncs->getvalue      = NPP_GetValue;
   pFuncs->setvalue      = NPP_SetValue;
   pFuncs->javaClass     = NULL;
+  pFuncs->urlredirectnotify = NPP_URLRedirectNotify;
 
   return NPERR_NO_ERROR;
 }
@@ -114,8 +115,8 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   NPError rv = plugin->Destroy();
   delete plugin;
@@ -126,8 +127,8 @@ NPError NPP_SetWindow(NPP instance, NPWindow* pNPWindow) {
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   return plugin->SetWindow(pNPWindow);
 }
@@ -137,8 +138,8 @@ NPError NPP_NewStream(NPP instance, NPMIMEType type,
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   return plugin->NewStream(type, stream, seekable, stype);
 }
@@ -147,8 +148,8 @@ int32 NPP_WriteReady(NPP instance, NPStream *stream) {
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   return plugin->WriteReady(stream);
 }
@@ -158,8 +159,8 @@ int32 NPP_Write(NPP instance, NPStream *stream, int32 offset,
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   return plugin->Write(stream, offset, len, buffer);
 }
@@ -168,8 +169,8 @@ NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPError reason) {
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   return plugin->DestroyStream(stream, reason);
 }
@@ -178,8 +179,8 @@ void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* fname) {
   if (instance == NULL)
     return;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   return plugin->StreamAsFile(stream, fname);
 }
@@ -196,8 +197,8 @@ void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
   if (instance == NULL)
     return;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   return plugin->URLNotify(url, reason, notifyData);
 }
@@ -222,9 +223,18 @@ int16 NPP_HandleEvent(NPP instance, void* event) {
   if (instance == NULL)
     return 0;
 
-  NPAPIClient::PluginTest *plugin =
-    (NPAPIClient::PluginTest*)instance->pdata;
+  NPAPIClient::PluginTest* plugin =
+      reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
 
   return plugin->HandleEvent(event);
+}
+
+void NPP_URLRedirectNotify(NPP instance, const char* url, int32_t status,
+                           void* notify_data) {
+  if (instance) {
+    NPAPIClient::PluginTest* plugin =
+        reinterpret_cast<NPAPIClient::PluginTest*>(instance->pdata);
+    plugin->URLRedirectNotify(url, status, notify_data);
+  }
 }
 } // extern "C"

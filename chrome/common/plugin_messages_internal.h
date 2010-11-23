@@ -243,9 +243,10 @@ IPC_BEGIN_MESSAGES(Plugin)
                       string16 /* text */)
 #endif
 
-  IPC_SYNC_MESSAGE_ROUTED2_0(PluginMsg_WillSendRequest,
+  IPC_SYNC_MESSAGE_ROUTED3_0(PluginMsg_WillSendRequest,
                              unsigned long /* id */,
-                             GURL /* url */)
+                             GURL /* url */,
+                             int  /* http_status_code */)
 
   IPC_MESSAGE_ROUTED1(PluginMsg_DidReceiveResponse,
                       PluginMsg_DidReceiveResponseParams)
@@ -470,6 +471,10 @@ IPC_BEGIN_MESSAGES(PluginHost)
 
   IPC_MESSAGE_CONTROL1(PluginHostMsg_ClearSiteDataResult,
                        bool /* success */)
+
+  IPC_MESSAGE_ROUTED2(PluginHostMsg_URLRedirectResponse,
+                      bool /* allow */,
+                      int  /* resource_id */)
 
 IPC_END_MESSAGES(PluginHost)
 

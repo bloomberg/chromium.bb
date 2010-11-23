@@ -126,7 +126,8 @@ class WebPlugin {
                                 const char* buf,
                                 unsigned int len,
                                 int notify_id,
-                                bool popups_allowed) = 0;
+                                bool popups_allowed,
+                                bool notify_redirects) = 0;
 
   // Cancels document load.
   virtual void CancelDocumentLoad() = 0;
@@ -168,13 +169,17 @@ class WebPlugin {
   // This API is only for use with Pepper, and is only overridden
   // by in-renderer implementations.
   virtual WebPluginDelegate* delegate() { return NULL; }
+
+  // Handles NPN_URLRedirectResponse calls issued by plugins in response to
+  // HTTP URL redirect notifications.
+  virtual void URLRedirectResponse(bool allow, int resource_id) = 0;
 };
 
 // Simpler version of ResourceHandleClient that lends itself to proxying.
 class WebPluginResourceClient {
  public:
   virtual ~WebPluginResourceClient() {}
-  virtual void WillSendRequest(const GURL& url) = 0;
+  virtual void WillSendRequest(const GURL& url, int http_status_code) = 0;
   // The request_is_seekable parameter indicates whether byte range requests
   // can be issued for the underlying stream.
   virtual void DidReceiveResponse(const std::string& mime_type,
@@ -187,6 +192,7 @@ class WebPluginResourceClient {
   virtual void DidFinishLoading() = 0;
   virtual void DidFail() = 0;
   virtual bool IsMultiByteResponseExpected() = 0;
+  virtual int ResourceId() = 0;
 };
 
 }  // namespace webkit_glue

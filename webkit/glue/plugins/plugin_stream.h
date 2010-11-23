@@ -83,6 +83,8 @@ class PluginStream : public base::RefCounted<PluginStream> {
 
   void* notify_data() const { return notify_data_; }
 
+  std::string pending_redirect_url() const { return pending_redirect_url_; }
+
  protected:
   friend class base::RefCounted<PluginStream>;
 
@@ -91,6 +93,11 @@ class PluginStream : public base::RefCounted<PluginStream> {
   PluginInstance* instance() { return instance_.get(); }
   // Check if the stream is open.
   bool open() { return opened_; }
+
+  // If the plugin participates in HTTP URL redirect handling then this member
+  // holds the url being redirected to while we wait for the plugin to make a
+  // decision on whether to allow or deny the redirect.
+  std::string pending_redirect_url_;
 
  private:
 

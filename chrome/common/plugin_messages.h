@@ -56,6 +56,7 @@ struct PluginHostMsg_URLRequest_Params {
   std::vector<char> buffer;
   int notify_id;
   bool popups_allowed;
+  bool notify_redirects;
 };
 
 struct PluginMsg_DidReceiveResponseParams {

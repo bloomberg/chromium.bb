@@ -88,6 +88,14 @@ TEST_F(NPAPITesterBase, GetJavaScriptURL2) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 
+TEST_F(NPAPITesterBase, GetURLRedirectNotification) {
+  const FilePath test_case(FILE_PATH_LITERAL("geturl_redirect_notify.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
+  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
+  WaitForFinish("geturlredirectnotify", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, action_max_timeout_ms());
+}
+
 // Tests that if an NPObject is proxies back to its original process, the
 // original pointer is returned and not a proxy.  If this fails the plugin
 // will crash.

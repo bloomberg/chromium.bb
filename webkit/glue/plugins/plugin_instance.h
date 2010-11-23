@@ -199,6 +199,8 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void NPP_Destroy();
   bool NPP_Print(NPPrint* platform_print);
   NPError NPP_ClearSiteData(uint64, const char*, uint64);
+  void NPP_URLRedirectNotify(const char* url, int32_t status,
+                             void* notify_data);
 
   void SendJavaScriptStream(const GURL& url,
                             const std::string& result,
@@ -233,6 +235,12 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
                   unsigned int len,
                   bool notify,
                   void* notify_data);
+
+  // Handles NPN_URLRedirectResponse calls issued by plugins in response to
+  // HTTP URL redirect notifications.
+  void URLRedirectResponse(bool allow, void* notify_data);
+
+  bool handles_url_redirects() const { return handles_url_redirects_; }
 
  private:
   friend class base::RefCountedThreadSafe<PluginInstance>;
@@ -336,6 +344,9 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   typedef std::map<int, scoped_refptr<PluginStream> > PendingRangeRequestMap;
   PendingRangeRequestMap pending_range_requests_;
   int next_range_request_id_;
+  // The plugin handles the NPAPI URL redirect notification API.
+  // See here https://wiki.mozilla.org/NPAPI:HTTPRedirectHandling
+  bool handles_url_redirects_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

@@ -127,6 +127,8 @@ class WebPluginImpl : public WebPlugin,
                                    std::string* json_retval);
   virtual void OnMissingPluginStatus(int status);
 
+  virtual void URLRedirectResponse(bool allow, int resource_id);
+
   // Given a (maybe partial) url, completes using the base url.
   GURL CompleteURL(const char* url);
 
@@ -179,7 +181,8 @@ class WebPluginImpl : public WebPlugin,
                            const char* buf,
                            int len,
                            const char* range_info,
-                           Referrer referrer_flag);
+                           Referrer referrer_flag,
+                           bool notify_redirects);
 
   gfx::Rect GetWindowClipRect(const gfx::Rect& rect);
 
@@ -196,7 +199,7 @@ class WebPluginImpl : public WebPlugin,
   // to relay the callbacks to the plugin.
   virtual void willSendRequest(WebKit::WebURLLoader* loader,
                                WebKit::WebURLRequest& request,
-                               const WebKit::WebURLResponse&);
+                               const WebKit::WebURLResponse& response);
   virtual void didSendData(WebKit::WebURLLoader* loader,
                            unsigned long long bytes_sent,
                            unsigned long long total_bytes_to_be_sent);
@@ -223,7 +226,8 @@ class WebPluginImpl : public WebPlugin,
                         const char* buf,
                         unsigned int len,
                         int notify_id,
-                        bool popups_allowed);
+                        bool popups_allowed,
+                        bool notify_redirects);
 
   void CancelDocumentLoad();
 
@@ -247,7 +251,8 @@ class WebPluginImpl : public WebPlugin,
                                 unsigned int len,
                                 int notify_id,
                                 bool popups_allowed,
-                                Referrer referrer_flag);
+                                Referrer referrer_flag,
+                                bool notify_redirects);
 
   // Tears down the existing plugin instance and creates a new plugin instance
   // to handle the response identified by the loader parameter.

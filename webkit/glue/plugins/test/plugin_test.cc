@@ -147,4 +147,9 @@ int16 PluginTest::HandleEvent(void* event) {
   return 0;
 }
 
+void PluginTest::URLRedirectNotify(const char* url, int32_t status,
+                                   void* notify_data) {
+  // There is no default action
+}
+
 } // namespace NPAPIClient

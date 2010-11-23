@@ -32,6 +32,7 @@ void PluginStream::UpdateUrl(const char* url) {
   DCHECK(!opened_);
   free(const_cast<char*>(stream_.url));
   stream_.url = _strdup(url);
+  pending_redirect_url_.clear();
 }
 
 void PluginStream::WriteAsFile() {

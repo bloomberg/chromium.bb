@@ -22,7 +22,8 @@ PluginMsg_Init_Params::~PluginMsg_Init_Params() {
 
 PluginHostMsg_URLRequest_Params::PluginHostMsg_URLRequest_Params()
     : notify_id(-1),
-      popups_allowed(false) {
+      popups_allowed(false),
+      notify_redirects(false) {
 }
 
 PluginHostMsg_URLRequest_Params::~PluginHostMsg_URLRequest_Params() {
@@ -123,6 +124,7 @@ void ParamTraits<PluginHostMsg_URLRequest_Params>::Write(Message* m,
   WriteParam(m, p.buffer);
   WriteParam(m, p.notify_id);
   WriteParam(m, p.popups_allowed);
+  WriteParam(m, p.notify_redirects);
 }
 
 bool ParamTraits<PluginHostMsg_URLRequest_Params>::Read(const Message* m,
@@ -134,7 +136,8 @@ bool ParamTraits<PluginHostMsg_URLRequest_Params>::Read(const Message* m,
       ReadParam(m, iter, &p->target) &&
       ReadParam(m, iter, &p->buffer) &&
       ReadParam(m, iter, &p->notify_id) &&
-      ReadParam(m, iter, &p->popups_allowed);
+      ReadParam(m, iter, &p->popups_allowed) &&
+      ReadParam(m, iter, &p->notify_redirects);
 }
 
 void ParamTraits<PluginHostMsg_URLRequest_Params>::Log(const param_type& p,
@@ -151,6 +154,8 @@ void ParamTraits<PluginHostMsg_URLRequest_Params>::Log(const param_type& p,
   LogParam(p.notify_id, l);
   l->append(", ");
   LogParam(p.popups_allowed, l);
+  l->append(", ");
+  LogParam(p.notify_redirects, l);
   l->append(")");
 }
 
