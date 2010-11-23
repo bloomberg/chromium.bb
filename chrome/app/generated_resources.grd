@@ -4152,11 +4152,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION" desc="Description of the 'Experimental Extension APIs' lab.">
         Enables experimental extension APIs. Note that the extension gallery doesn't allow you to upload extensions that use experimental APIs.
       </message>
-      <message name="IDS_FLAGS_CLICK_TO_PLAY_NAME" desc="Name of the 'Click-to-Play' lab.">
-        Click-to-Play
+      <message name="IDS_FLAGS_CLICK_TO_PLAY_NAME" desc="Name of the 'Click to play' lab.">
+        Click to play
       </message>
-      <message name="IDS_FLAGS_CLICK_TO_PLAY_DESCRIPTION" desc="Description of the 'Click-to-Play' lab.">
-        Click on a blocked plug-in to run it.
+      <message name="IDS_FLAGS_CLICK_TO_PLAY_DESCRIPTION" desc="Description of the 'Click to play' lab.">
+        Enables a "click to play" option in the plug-in content settings.
       </message>
 
       <!-- Instant -->
@@ -4241,8 +4241,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         http://www.google.com/support/chrome/bin/answer.py?answer=666386&amp;hl=[GRITLANGCODE]&amp;n=<ph name="NAME">$1<ex>Hash</ex></ph>&amp;l=<ph name="LOCATION">$2<ex>Hash</ex></ph>&amp;d=<ph name="DESC">$3<ex>Hash</ex></ph>&amp;s=<ph name="SIGNER">$4<ex>Hash</ex></ph>
       </message>
 
-      <!-- Click-to-load -->
-      <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">
+      <!-- Click to play -->
+      <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click to play UI.">
         Click to run this plug-in
       </message>
       <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plug-in.">
