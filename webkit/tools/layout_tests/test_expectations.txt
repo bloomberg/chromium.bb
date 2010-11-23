@@ -13,9 +13,6 @@ BUG_JPARENT SLOW LINUX : fast/dom/HTMLHeadElement/head-check.html = CRASH PASS
 // Debug only timeout, so no coverage from canaries, somewhere in range 72395:72417.
 BUG_JPARENT WIN DEBUG : inspector/styles-disable-then-delete.html = TIMEOUT
 
-// Temporary until test is rebaselined upstream. Failures started with r72582.
-BUG_JPARENT MAC : fast/lists/001-vertical.html = IMAGE
-
 // Started to flake since http://src.chromium.org/viewvc/chrome?view=rev&revision=66937
 // (72440; 72514] range
 BUG_ANTON LINUX DEBUG : fast/ruby/nested-ruby.html = CRASH PASS
