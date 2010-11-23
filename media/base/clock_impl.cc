@@ -19,7 +19,7 @@ ClockImpl::~ClockImpl() {
 
 base::TimeDelta ClockImpl::Play() {
   DCHECK(!playing_);
-  reference_ = time_provider_();
+  reference_ = GetTimeFromProvider();
   playing_ = true;
   return media_time_;
 }
@@ -38,14 +38,14 @@ void ClockImpl::SetTime(const base::TimeDelta& time) {
     return;
   }
   if (playing_) {
-    reference_ = time_provider_();
+    reference_ = GetTimeFromProvider();
   }
   media_time_ = time;
 }
 
 void ClockImpl::SetPlaybackRate(float playback_rate) {
   if (playing_) {
-    base::Time time = time_provider_();
+    base::Time time = GetTimeFromProvider();
     media_time_ = ElapsedViaProvidedTime(time);
     reference_ = time;
   }
@@ -56,7 +56,7 @@ base::TimeDelta ClockImpl::Elapsed() const {
   if (!playing_) {
     return media_time_;
   }
-  return ElapsedViaProvidedTime(time_provider_());
+  return ElapsedViaProvidedTime(GetTimeFromProvider());
 }
 
 base::TimeDelta ClockImpl::ElapsedViaProvidedTime(
@@ -67,4 +67,10 @@ base::TimeDelta ClockImpl::ElapsedViaProvidedTime(
   return media_time_ + base::TimeDelta::FromMicroseconds(now_us);
 }
 
+base::Time ClockImpl::GetTimeFromProvider() const {
+  if (time_provider_) {
+    return time_provider_();
+  }
+  return base::Time();
+}
 }  // namespace media

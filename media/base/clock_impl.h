@@ -35,6 +35,8 @@ class ClockImpl : public Clock {
   // value as returned by |time_provider_|.
   base::TimeDelta ElapsedViaProvidedTime(const base::Time& time) const;
 
+  virtual base::Time GetTimeFromProvider() const;
+
   // Function returning current time in base::Time units.
   TimeProvider* time_provider_;
 
