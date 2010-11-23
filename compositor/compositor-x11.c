@@ -80,19 +80,21 @@ struct x11_input {
 };
 
 
-static void
+static int
 x11_input_create(struct x11_compositor *c)
 {
 	struct x11_input *input;
 
 	input = malloc(sizeof *input);
 	if (input == NULL)
-		return;
+		return -1;
 
 	memset(input, 0, sizeof *input);
 	wlsc_input_device_init(&input->base, &c->base);
 
 	c->base.input_device = &input->base;
+
+	return 0;
 }
 
 
@@ -247,7 +249,11 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		return -1;
 	}
 
-	eglBindAPI(EGL_OPENGL_ES_API);
+	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+		fprintf(stderr, "failed to bind EGL_OPENGL_ES_API\n");
+		return -1;
+	}
+
 	c->base.context = eglCreateContext(c->base.display, NULL,
 					   EGL_NO_CONTEXT, context_attribs);
 	if (c->base.context == NULL) {
@@ -661,15 +667,17 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 
 	c->base.wl_display = display;
 	if (x11_compositor_init_egl(c) < 0)
-        return NULL;
+		return NULL;
 
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&c->base, display) < 0)
 		return NULL;
 
-	x11_compositor_create_output(c, width, height);
+	if (x11_compositor_create_output(c, width, height) < 0)
+		return NULL;
 
-	x11_input_create(c);
+	if (x11_input_create(c) < 0)
+		return NULL;
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
 

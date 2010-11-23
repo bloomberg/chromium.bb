@@ -339,7 +339,11 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	eglBindAPI(EGL_OPENGL_ES_API);
+	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+		fprintf(stderr, "failed to bind api EGL_OPENGL_ES_API\n");
+		return -1;
+	}
+
 	ec->base.context = eglCreateContext(ec->base.display, NULL,
 					    EGL_NO_CONTEXT, context_attribs);
 	if (ec->base.context == NULL) {

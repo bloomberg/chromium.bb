@@ -1463,7 +1463,10 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		return NULL;
 	}
 
-	eglBindAPI(EGL_OPENGL_API);
+	if (!eglBindAPI(EGL_OPENGL_API)) {
+		fprintf(stderr, "failed to bind api EGL_OPENGL_API\n");
+		return NULL;
+	}
 
 	d->ctx = eglCreateContext(d->dpy, NULL, EGL_NO_CONTEXT, NULL);
 	if (d->ctx == NULL) {
