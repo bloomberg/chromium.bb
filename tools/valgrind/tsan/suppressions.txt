@@ -96,10 +96,17 @@
 }
 
 {
-  bug_64186
+  bug_64186a
   ThreadSanitizer:Race
   fun:chromeos::CrosLibrary::Library*GetDefaultImpl*
   fun:chromeos::CrosLibrary::GetSystemLibrary*
+}
+
+{
+  bug_64186b
+  ThreadSanitizer:Race
+  ...
+  fun:MetricsService::InitTask::Run*
 }
 
 ############################
