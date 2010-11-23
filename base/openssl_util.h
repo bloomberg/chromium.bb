@@ -30,6 +30,8 @@ class ScopedOpenSSL {
 
  private:
   T* ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedOpenSSL);
 };
 
 // Provides a buffer of at least MIN_SIZE bytes, for use when calling OpenSSL's
