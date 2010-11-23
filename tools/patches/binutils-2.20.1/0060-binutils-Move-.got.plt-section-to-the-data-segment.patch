@@ -1,0 +1,48 @@
+From 3b2eaf0825e444a7a122caf1e79a3e989e53dc87 Mon Sep 17 00:00:00 2001
+From: Andrey Khalyavin <halyavin@google.com>
+Date: Tue, 23 Nov 2010 15:57:01 +0300
+Subject: [PATCH 60/60] [binutils] Move .got.plt section to the data segment.
+ BUG=http://code.google.com/p/nativeclient/issues/detail?id=960
+
+I do nothing in case of DATA_GOT, RELRO_NOW and GOTPLT variables exist during linker script generation from linker script template. The reason is that $RELRO_NOW undefines $SEPARATE_GOTPLT in the template. Case when someone sets $GOTPLT by other means is not supported. Also, we don't have $RELRO_NOW defined now.
+
+TEST=#in /native_client/tools
+make SDKLOC=/path_to_new_toolchain
+
+./scons MODE=nacl,dbg-linux platform=x86-64 sdl=none naclsdk_mode=custom:/path_to_new_toolchain thread_test.nexe
+objdump -ph ./scons-out/nacl-x86-64/staging/thread_test.nexe >~/thread_test_dump.txt
+
+Review URL: http://codereview.chromium.org/5115005
+---
+ binutils/ld/scripttempl/naclelf.sc |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/binutils/ld/scripttempl/naclelf.sc b/binutils/ld/scripttempl/naclelf.sc
+index 2b2fb5c..1fbfb42 100644
+--- a/binutils/ld/scripttempl/naclelf.sc
++++ b/binutils/ld/scripttempl/naclelf.sc
+@@ -121,7 +121,7 @@ if test -z "$GOT"; then
+     GOT=".got          ${RELOCATING-0} : { *(.got.plt) *(.igot.plt) *(.got) *(.igot) }"
+   else
+     GOT=".got          ${RELOCATING-0} : { *(.got) *(.igot) }"
+-    GOTPLT=".got.plt      ${RELOCATING-0} : { *(.got.plt)  *(.igot.plt) }"
++    GOTPLT=".got.plt      ${RELOCATING-0} : { *(.got.plt)  *(.igot.plt) } :data"
+   fi
+ fi
+ DYNAMIC=".dynamic      ${RELOCATING-0} : { *(.dynamic) }"
+@@ -490,11 +490,10 @@ cat <<EOF
+   ${DATA_GOT+${RELRO_NOW-${SEPARATE_GOTPLT+${GOT}}}}
+   ${RELOCATING+${DATA_SEGMENT_RELRO_END}}
+   ${DATA_GOT+${RELRO_NOW-${SEPARATE_GOTPLT-${GOT}}}}
++  ${RELOCATING+. = ALIGN(${COMMONPAGESIZE});} /* nacl wants page alignment */
+   ${DATA_GOT+${RELRO_NOW-${GOTPLT}}}
+-
+   ${DATA_PLT+${PLT_BEFORE_GOT-${PLT}}}
+ 
+-  ${RELOCATING+. = ALIGN(${COMMONPAGESIZE});} /* nacl wants page alignment */
+   .data         ${RELOCATING-0} :
+   {
+     ${RELOCATING+${DATA_START_SYMBOLS}}
+-- 
+1.7.3.1
+
