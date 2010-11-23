@@ -4,6 +4,12 @@
 //
 // @file
 // Interface and object declarations for CEEE IE toolband.
+//
+// Note: We hand-register the proxy/stubs for the marshalable interfaces
+//    in this file in each COM apartment that needs to use them. 
+//    If you add new marshalable interfaces to this file be sure to update
+//    the list of interface proxy/stubs in toolband_proxy.cc, and to
+//    call RegisterProxyStubs and UnregisterProxyStubs appropriately.
 import "oaidl.idl";
 import "ocidl.idl";
 
@@ -102,11 +108,10 @@ typedef struct  {
 
 [
   object,
-  uuid(8DEEECC5-7B49-482d-99F8-2109EA5F2618),
+  uuid(66CDB7E2-B326-493e-B469-16234426C89B),
   nonextensible,
   helpstring("ICeeeWindowExecutor Interface"),
   pointer_default(unique),
-  oleautomation
 ]
 // Object provided to the broker to execute code in a given window's thread.
 interface ICeeeWindowExecutor : IUnknown {
@@ -176,11 +181,11 @@ interface ICeeeWindowExecutor : IUnknown {
 
 [
   object,
-  uuid(C7FF41BA-72D5-4086-8B5A-2EF4FD12E0FE),
+  uuid(1F509E26-002A-461b-9083-ABD1002BD4E2),
+  async_uuid(EDF51257-5A41-4391-8186-44DB3E84FBE6),
   nonextensible,
   helpstring("ICeeeTabExecutor Interface"),
   pointer_default(unique),
-  oleautomation
 ]
 // Object provided to the broker to execute code in a given window's thread.
 interface ICeeeTabExecutor : IUnknown {
@@ -228,11 +233,10 @@ interface ICeeeTabExecutor : IUnknown {
 
 [
   object,
-  uuid(07630967-D7FB-4745-992F-28614930D9A3),
+  uuid(875DB992-6ADA-4330-AD3F-28B3E3B9DB01),
   nonextensible,
   helpstring("ICeeeCookieExecutor Interface"),
   pointer_default(unique),
-  oleautomation
 ]
 // Object provided to the broker to execute code in a given window's thread.
 interface ICeeeCookieExecutor : IUnknown {
@@ -267,11 +271,10 @@ interface ICeeeCookieExecutor : IUnknown {
 
 [
   object,
-  uuid(276D47E8-1692-4a21-907D-948D170E4330),
+  uuid(C79A1479-33F6-419f-970F-2FB3D1388922),
   nonextensible,
   helpstring("ICeeeInfobarExecutor Interface"),
   pointer_default(unique),
-  oleautomation
 ]
 // Object provided to the broker to execute code in a given window's thread.
 interface ICeeeInfobarExecutor : IUnknown {

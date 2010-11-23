@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "ceee/ie/plugin/bho/infobar_manager.h"
 #include "ceee/ie/plugin/toolband/resource.h"
 
@@ -69,12 +70,98 @@ class ATL_NO_VTABLE CeeeExecutorCreator
   long current_thread_id_;
 };
 
+// Implements an asynchronous call object for ICeeeTabExecutor.
+// This is instantiated through the executor's ICallFactory::CreateCall method.
+// For asynchronous methods, it posts a window message and processes the
+// method completion when the message is dispatched. This is done to avoid
+// performing significant operations inside IE, reentrantly during an
+// outgoing out-of-apartment call. During those times, IE and the various
+// third-party addons performing such outcalls tend to be in a fragile state.
+// @note the COM marshaling machinery will instantiate a new one of these for
+//      each call it handles, so these are not implemented to cope with reuse.
+class AsyncTabCall
+    : public CComObjectRootEx<CComSingleThreadModel>,
+      public CComCoClass<AsyncTabCall>,
+      public CWindowImpl<AsyncTabCall>,
+      public AsyncICeeeTabExecutor {
+ public:
+  DECLARE_GET_CONTROLLING_UNKNOWN()
+
+  BEGIN_COM_MAP(AsyncTabCall)
+    COM_INTERFACE_ENTRY(AsyncICeeeTabExecutor)
+    COM_INTERFACE_ENTRY_AUTOAGGREGATE(IID_ISynchronize,
+                                      synchronize_.p,
+                                      CLSID_ManualResetEvent)
+  END_COM_MAP()
+
+  // The window message we post to ourselves.
+  static const uint32 kExecuteTaskMessage = WM_USER;
+
+  BEGIN_MSG_MAP(AsyncTabCall)
+    MSG_WM_CREATE(OnCreate)
+    MESSAGE_HANDLER(kExecuteTaskMessage, OnExecuteTask)
+  END_MSG_MAP()
+
+  AsyncTabCall();
+  ~AsyncTabCall();
+
+  // Creates an initialized instance. Aggregated if outer is non-NULL.
+  // @param executor the executor instance we invoke on.
+  // @param outer the controlling outer or NULL.
+  // @param async_call on success, returns the new AsyncTabCall.
+  static HRESULT CreateInitialized(ICeeeTabExecutor* executor,
+                                   IUnknown* outer,
+                                   IUnknown** async_call);
+
+  static bool ImplementsThreadSafeReferenceCounting() {
+    return false;
+  }
+
+  // @name AsyncICeeeTabExecutor implementation.
+  // @{
+  STDMETHOD(Begin_Initialize)(CeeeWindowHandle hwnd);
+  STDMETHOD(Finish_Initialize)();
+  STDMETHOD(Begin_GetTabInfo)();
+  STDMETHOD(Finish_GetTabInfo)(CeeeTabInfo *tab_info);
+  STDMETHOD(Begin_Navigate)(BSTR url, long flags, BSTR target);
+  STDMETHOD(Finish_Navigate)();
+  STDMETHOD(Begin_InsertCode)(BSTR code, BSTR file, BOOL all_frames,
+      CeeeTabCodeType type);
+  STDMETHOD(Finish_InsertCode)();
+  // @}
+
+  // Initialize a newly constructed async tab call.
+  // This is public only for unittesting.
+  HRESULT Initialize(ICeeeTabExecutor* executor);
+
+ private:
+  void NavigateImpl(const CComBSTR& url, long flags, const CComBSTR& target);
+  void InsertCodeImpl(const CComBSTR& code,
+                      const CComBSTR& file,
+                      BOOL all_frames,
+                      CeeeTabCodeType type);
+
+  int OnCreate(LPCREATESTRUCT lpCreateStruct);
+  LRESULT OnExecuteTask(UINT msg, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  virtual void OnFinalMessage(HWND window);
+  bool ScheduleTask(Task* task);
+  HRESULT Signal();
+
+  CComPtr<IUnknown> synchronize_;
+  CComPtr<ICeeeTabExecutor> executor_;
+
+  // The task we've scheduled for execution.
+  scoped_ptr<Task> task_;
+  HRESULT task_hr_;
+};
+
 // The executor object that is instantiated in the destination thread and
 // then called to... execute stuff...
 class ATL_NO_VTABLE CeeeExecutor
     : public CComObjectRootEx<CComSingleThreadModel>,
       public CComCoClass<CeeeExecutor, &CLSID_CeeeExecutor>,
       public IObjectWithSiteImpl<CeeeExecutor>,
+      public ICallFactory,
       public ICeeeWindowExecutor,
       public ICeeeTabExecutor,
       public ICeeeCookieExecutor,
@@ -85,6 +172,7 @@ class ATL_NO_VTABLE CeeeExecutor
   DECLARE_NOT_AGGREGATABLE(CeeeExecutor)
   BEGIN_COM_MAP(CeeeExecutor)
     COM_INTERFACE_ENTRY(IObjectWithSite)
+    COM_INTERFACE_ENTRY(ICallFactory)
     COM_INTERFACE_ENTRY(ICeeeWindowExecutor)
     COM_INTERFACE_ENTRY(ICeeeTabExecutor)
     COM_INTERFACE_ENTRY(ICeeeCookieExecutor)
@@ -92,6 +180,17 @@ class ATL_NO_VTABLE CeeeExecutor
   END_COM_MAP()
   DECLARE_PROTECT_FINAL_CONSTRUCT()
   DECLARE_CLASSFACTORY()
+
+  CeeeExecutor();
+  ~CeeeExecutor();
+
+  // @name ICallFactory implementation.
+  // @{
+  STDMETHOD(CreateCall)(REFIID async_iid,
+                        IUnknown *outer,
+                        REFIID requested_iid,
+                        IUnknown **out);
+  // @}
 
   // @name ICeeeWindowExecutor implementation.
   // @{
@@ -131,9 +230,13 @@ class ATL_NO_VTABLE CeeeExecutor
   STDMETHOD(OnTopFrameBeforeNavigate)(BSTR url);
   // @}
 
-  CeeeExecutor() : hwnd_(NULL) {}
-
  protected:
+  // Unittest seam.
+  virtual HRESULT CreateTabCall(ICeeeTabExecutor* executor,
+                                IUnknown *outer,
+                                REFIID riid2,
+                                IUnknown **out);
+
   // Get the IWebBrowser2 interface of the
   // frame event host that was set as our site.
   virtual HRESULT GetWebBrowser(IWebBrowser2** browser);
