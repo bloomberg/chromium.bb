@@ -27,7 +27,7 @@ function setPrinters(printers) {
     }
   } else {
     var option = document.createElement('option');
-    option.textContent = localStrings.getString('no-printer');
+    option.textContent = localStrings.getString('noPrinter');
     $('printer-list').add(option);
     $('printer-list').disabled = true;
     $('print-button').disabled = true;
