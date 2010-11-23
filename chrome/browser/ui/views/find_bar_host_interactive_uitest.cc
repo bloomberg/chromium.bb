@@ -38,6 +38,12 @@ class FindInPageTest : public InProcessBrowserTest {
   }
 };
 
+void Checkpoint(const char* message, const base::TimeTicks& start_time) {
+  LOG(INFO) << message << " : "
+    << (base::TimeTicks::Now() - start_time).InMilliseconds()
+    << " ms" << std::flush;
+}
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
@@ -122,56 +128,72 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
 // This tests that whenever you clear values from the Find box and close it that
 // it respects that and doesn't show you the last search, as reported in bug:
 // http://crbug.com/40121.
-// Disabled, http://crbug.com/62937.
-IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_PrepopulateRespectBlank) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 #if defined(OS_MACOSX)
   // FindInPage on Mac doesn't use prepopulated values. Search there is global.
   return;
 #endif
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  Checkpoint("Starting test server", start_time);
+
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
+  Checkpoint("Navigating", start_time);
   GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Show the Find bar.
+  Checkpoint("Showing Find window", start_time);
   browser()->GetFindBarController()->Show();
 
   // Search for "a".
+  Checkpoint("Search for 'a'", start_time);
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), app::VKEY_A, false, false, false, false));
 
   // We should find "a" here.
+  Checkpoint("GetFindBarText", start_time);
   EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarText());
 
   // Delete "a".
+  Checkpoint("Delete 'a'", start_time);
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), app::VKEY_BACK, false, false, false, false));
 
   // Validate we have cleared the text.
+  Checkpoint("Validate clear", start_time);
   EXPECT_EQ(string16(), GetFindBarText());
 
   // Close the Find box.
+  Checkpoint("Close find", start_time);
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), app::VKEY_ESCAPE, false, false, false, false));
 
   // Show the Find bar.
+  Checkpoint("Showing Find window", start_time);
   browser()->GetFindBarController()->Show();
 
   // After the Find box has been reopened, it should not have been prepopulated
   // with "a" again.
+  Checkpoint("GetFindBarText", start_time);
   EXPECT_EQ(string16(), GetFindBarText());
 
   // Close the Find box.
+  Checkpoint("Press Esc", start_time);
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), app::VKEY_ESCAPE, false, false, false, false));
 
   // Press F3 to trigger FindNext.
+  Checkpoint("Press F3", start_time);
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), app::VKEY_F3, false, false, false, false));
 
   // After the Find box has been reopened, it should still have no prepopulate
   // value.
+  Checkpoint("GetFindBarText", start_time);
   EXPECT_EQ(string16(), GetFindBarText());
+
+  Checkpoint("Test completed", start_time);
 }
