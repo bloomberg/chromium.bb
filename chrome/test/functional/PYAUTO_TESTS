@@ -116,5 +116,7 @@
     '-downloads.DownloadsTest.testCancelDownload',
     '-downloads.DownloadsTest.testPauseAndResume',
     '-translate.TranslateTest.testDownloadsNotTranslated',
+    # crosbug.com/9499
+    '-crash_reporter.CrashReporterTest.testRendererCrash',
   ],
 }
