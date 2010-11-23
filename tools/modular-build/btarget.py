@@ -9,6 +9,7 @@ import optparse
 import os
 import re
 import subprocess
+import sys
 
 import dirtree
 import treemappers
@@ -28,6 +29,7 @@ def CheckedRepr(val):
 class BuildOptions(object):
 
   allow_non_pristine = False
+  allow_overwrite = False
 
 
 class TargetState(object):
@@ -50,6 +52,11 @@ class TargetState(object):
 
 
 class TargetNotBuiltException(Exception):
+
+  pass
+
+
+class UnexpectedChangeError(Exception):
 
   pass
 
@@ -84,8 +91,27 @@ class TargetBase(object):
              not opts.allow_non_pristine) or
             self.GetCurrentInput() != cached["input"])
 
+  def _CheckForManualChange(self, opts):
+    cached = self._state.GetState()
+    if cached is not None:
+      current_hash = self._GetOutputHash()
+      if current_hash != cached["output"]:
+        msg = ("Build target %r has changed since it was rebuilt "
+               "(from %r to %r)." %
+               (self.GetName(), cached["output"], current_hash))
+        if opts.allow_overwrite:
+          sys.stderr.write(msg + "  We are rebuilding it anyway, "
+                           "because --allow-overwrite is in force.\n")
+        else:
+          raise UnexpectedChangeError(
+              msg + "  Either it was changed by a badly-behaved build step "
+              "or changed by hand, so we are cowardly refusing to overwrite "
+              "these changes.  Build with \"%s --allow-overwrite\" to "
+              "rebuild the target anyway." % self.GetName())
+
   def DoBuild(self, opts):
     input = self.GetCurrentInput()
+    self._CheckForManualChange(opts)
     result_info = self._build_func(opts)
     if result_info is None:
       result_info = {}
@@ -556,6 +582,11 @@ def BuildMain(root_targets, args, stream):
                     action="store_true",
                     help="Re-run 'make' without deleting the build directory "
                     "or re-running 'configure'")
+  parser.add_option("--allow-overwrite", dest="allow_overwrite",
+                    action="store_true",
+                    help="If a target's contents do not match what we "
+                    "previously built, allow the target to be clobbered. "
+                    "This could lose manual changes to the target.")
   options, args = parser.parse_args(args)
 
   do_graph = False
@@ -565,6 +596,7 @@ def BuildMain(root_targets, args, stream):
 
   opts = BuildOptions()
   opts.allow_non_pristine = options.non_pristine
+  opts.allow_overwrite = options.allow_overwrite
   if len(args) > 0:
     root_targets = SubsetTargets(root_targets, args)
   if do_graph:

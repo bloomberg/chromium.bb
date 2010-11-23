@@ -440,6 +440,28 @@ digraph {
     self.assertEquals(dirtree.ReadFile(os.path.join(clone_dir, "myfile")),
                       "File contents")
 
+  @Quieten
+  def test_not_overwriting_manual_changes(self):
+    tempdir = self.MakeTempDir()
+    src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
+                               GetExample("minimal"))
+
+    def BuildIt(opts):
+      stream = StringIO.StringIO()
+      btarget.BuildMain([src], ["--single", "-b", "src"] + opts, stream)
+
+    BuildIt([])
+    # The source tree has not been modified yet, so DoBuild() can be
+    # re-run without raising an exception.
+    BuildIt([])
+    dirtree.WriteFile(os.path.join(src.dest_path, "new-file"),
+                      "New file that was added manually.\n")
+    self.assertRaises(btarget.UnexpectedChangeError, lambda: BuildIt([]))
+    # Check that --allow-overwrite causes the build to run
+    # successfully and the file gets clobbered as a result.
+    BuildIt(["--allow-overwrite"])
+    self.assertFalse(os.path.exists(os.path.join(src.dest_path, "new-file")))
+
 
 if __name__ == "__main__":
   unittest.main()
