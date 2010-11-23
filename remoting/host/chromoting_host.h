@@ -26,6 +26,7 @@ class ConnectionToClient;
 class HostStub;
 class InputStub;
 class SessionConfig;
+class CandidateSessionConfig;
 }  // namespace protocol
 
 class Capturer;
@@ -63,10 +64,13 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public protocol::ConnectionToClient::EventHandler,
                        public JingleClient::Callback {
  public:
-  ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config);
-  ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
-                 Capturer* capturer);
-  virtual ~ChromotingHost();
+  // Factory methods that must be used to create ChromotingHost
+  // instances.  Default capturer is used if it is not specified.
+  static ChromotingHost* Create(ChromotingHostContext* context,
+                                MutableHostConfig* config);
+  static ChromotingHost* Create(ChromotingHostContext* context,
+                                MutableHostConfig* config,
+                                Capturer* capturer);
 
   // Asynchronously start the host process.
   //
@@ -103,16 +107,21 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response);
 
+  // Sets desired configuration for the protocol. Ownership of the
+  // |config| is transferred to the object. Must be called before Start().
+  void set_protocol_config(protocol::CandidateSessionConfig* config);
+
  private:
+  friend class base::RefCountedThreadSafe<ChromotingHost>;
+  ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
+                 Capturer* capturer);
+  virtual ~ChromotingHost();
+
   enum State {
     kInitial,
     kStarted,
     kStopped,
   };
-
-  // This method connects to the talk network and start listening for incoming
-  // connections.
-  void DoStart(Task* shutdown_task);
 
   // Callback for protocol::SessionManager::Close().
   void OnServerClosed();
@@ -167,6 +176,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Lock is to lock the access to |state_|.
   Lock lock_;
+
+  // Configuration of the protocol.
+  scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHost);
 };

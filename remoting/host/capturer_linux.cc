@@ -339,4 +339,9 @@ void CapturerLinuxPimpl::SlowBlit(XImage* image, int dest_x, int dest_y,
   }
 }
 
+// static
+Capturer* Capturer::Create(MessageLoop* message_loop) {
+  return new CapturerLinux(message_loop);
+}
+
 }  // namespace remoting

@@ -273,8 +273,8 @@ bool ServiceProcess::StartChromotingHost() {
   chromoting_context_->Start();
 
   // Create a chromoting host object.
-  chromoting_host_ = new remoting::ChromotingHost(chromoting_context_.get(),
-                                                  chromoting_config_);
+  chromoting_host_ = remoting::ChromotingHost::Create(chromoting_context_.get(),
+                                                      chromoting_config_);
 
   // Then start the chromoting host.
   // When ChromotingHost is shutdown because of failure or a request that

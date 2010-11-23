@@ -174,4 +174,9 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
   SendInput(1, &input, sizeof(INPUT));
 }
 
+protocol::InputStub* CreateEventExecutor(MessageLoop* message_loop,
+                                         Capturer* capturer) {
+  return new EventExecutorWin(message_loop, capturer);
+}
+
 }  // namespace remoting

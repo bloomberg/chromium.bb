@@ -136,4 +136,9 @@ void CapturerGdi::CaptureImage() {
       SRCCOPY | CAPTUREBLT);
 }
 
+// static
+Capturer* Capturer::Create(MessageLoop* message_loop) {
+  return new CapturerGdi(message_loop);
+}
+
 }  // namespace remoting

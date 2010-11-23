@@ -44,8 +44,10 @@ class Capturer {
   // CaptureCompletedCallback is called when the capturer has completed.
   typedef Callback1<scoped_refptr<CaptureData> >::Type CaptureCompletedCallback;
 
-  explicit Capturer(MessageLoop* message_loop);
   virtual ~Capturer();
+
+  // Create platform-specific cpaturer.
+  static Capturer* Create(MessageLoop* message_loop);
 
   // Called when the screen configuration is changed.
   virtual void ScreenConfigurationChanged() = 0;
@@ -84,6 +86,8 @@ class Capturer {
   virtual void CaptureInvalidRects(CaptureCompletedCallback* callback);
 
  protected:
+  explicit Capturer(MessageLoop* message_loop);
+
   // Update the list of |invalid_rects| to prepare for capturing the
   // screen data.
   // Depending on the platform implementation, this routine might:

@@ -8,21 +8,13 @@
 #include "base/task.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
-#if defined(OS_WIN)
-#include "remoting/host/capturer_gdi.h"
-#include "remoting/host/event_executor_win.h"
-#elif defined(OS_LINUX)
-#include "remoting/host/capturer_linux.h"
-#include "remoting/host/event_executor_linux.h"
-#elif defined(OS_MACOSX)
-#include "remoting/host/capturer_mac.h"
-#include "remoting/host/event_executor_mac.h"
-#endif
 #include "remoting/base/encoder.h"
 #include "remoting/base/encoder_verbatim.h"
 #include "remoting/base/encoder_vp8.h"
 #include "remoting/base/encoder_zlib.h"
+#include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_stub_fake.h"
 #include "remoting/host/session_manager.h"
@@ -36,28 +28,18 @@ using remoting::protocol::ConnectionToClient;
 
 namespace remoting {
 
-ChromotingHost::ChromotingHost(ChromotingHostContext* context,
-                               MutableHostConfig* config)
-    : context_(context),
-      config_(config),
-#if defined(OS_WIN)
-      capturer_(new remoting::CapturerGdi(
-          context->main_message_loop())),
-      input_stub_(new remoting::EventExecutorWin(
-          context->main_message_loop(), capturer_.get())),
-#elif defined(OS_LINUX)
-      capturer_(new remoting::CapturerLinux(
-          context->main_message_loop())),
-      input_stub_(new remoting::EventExecutorLinux(
-          context->main_message_loop(), capturer_.get())),
-#elif defined(OS_MACOSX)
-      capturer_(new remoting::CapturerMac(
-          context->main_message_loop())),
-      input_stub_(new remoting::EventExecutorMac(
-          context->main_message_loop(), capturer_.get())),
-#endif
-      host_stub_(new HostStubFake()),
-      state_(kInitial) {
+// static
+ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
+                                       MutableHostConfig* config) {
+  return Create(context, config,
+                Capturer::Create(context->main_message_loop()));
+}
+
+// static
+ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
+                                       MutableHostConfig* config,
+                                       Capturer* capturer) {
+  return new ChromotingHost(context, config, capturer);
 }
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
@@ -65,19 +47,13 @@ ChromotingHost::ChromotingHost(ChromotingHostContext* context,
     : context_(context),
       config_(config),
       capturer_(capturer),
-#if defined(OS_WIN)
-      input_stub_(new remoting::EventExecutorWin(
+      input_stub_(CreateEventExecutor(
           context->main_message_loop(), capturer)),
-#elif defined(OS_LINUX)
-      input_stub_(new remoting::EventExecutorLinux(
-          context->main_message_loop(), capturer)),
-#elif defined(OS_MACOSX)
-      input_stub_(new remoting::EventExecutorMac(
-          context->main_message_loop(), capturer)),
-#endif
       host_stub_(new HostStubFake()),
-      state_(kInitial) {
+      state_(kInitial),
+      protocol_config_(protocol::CandidateSessionConfig::CreateDefault()) {
 }
+
 
 ChromotingHost::~ChromotingHost() {
 }
@@ -293,12 +269,10 @@ void ChromotingHost::OnNewClientSession(
     return;
   }
 
-  scoped_ptr<protocol::CandidateSessionConfig>
-      local_config(protocol::CandidateSessionConfig::CreateDefault());
-  local_config->SetInitialResolution(
-      protocol::ScreenResolution(capturer_->width(), capturer_->height()));
+  *protocol_config_->mutable_initial_resolution() =
+      protocol::ScreenResolution(capturer_->width(), capturer_->height());
   // TODO(sergeyu): Respect resolution requested by the client if supported.
-  protocol::SessionConfig* config = local_config->Select(
+  protocol::SessionConfig* config = protocol_config_->Select(
       session->candidate_config(), true /* force_host_resolution */);
 
   if (!config) {
@@ -320,6 +294,13 @@ void ChromotingHost::OnNewClientSession(
                                        this, host_stub_.get(),
                                        input_stub_.get());
   connection_->Init(session);
+}
+
+void ChromotingHost::set_protocol_config(
+    protocol::CandidateSessionConfig* config) {
+  DCHECK(config_.get());
+  DCHECK_EQ(state_, kInitial);
+  protocol_config_.reset(config);
 }
 
 void ChromotingHost::OnServerClosed() {

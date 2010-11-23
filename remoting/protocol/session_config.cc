@@ -105,26 +105,6 @@ CandidateSessionConfig::CandidateSessionConfig(
 
 CandidateSessionConfig::~CandidateSessionConfig() { }
 
-void CandidateSessionConfig::AddControlConfig(
-    const ChannelConfig& control_config) {
-  control_configs_.push_back(control_config);
-}
-
-void CandidateSessionConfig::AddEventConfig(
-    const ChannelConfig& event_config) {
-  event_configs_.push_back(event_config);
-}
-
-void CandidateSessionConfig::AddVideoConfig(
-    const ChannelConfig& video_config) {
-  video_configs_.push_back(video_config);
-}
-
-void CandidateSessionConfig::SetInitialResolution(
-    const ScreenResolution& resolution) {
-  initial_resolution_ = resolution;
-}
-
 SessionConfig* CandidateSessionConfig::Select(
     const CandidateSessionConfig* client_config,
     bool force_host_resolution) {
@@ -215,29 +195,37 @@ CandidateSessionConfig* CandidateSessionConfig::CreateEmpty() {
 CandidateSessionConfig* CandidateSessionConfig::CreateFrom(
     const SessionConfig* config) {
   CandidateSessionConfig* result = CreateEmpty();
-  result->AddControlConfig(config->control_config());
-  result->AddEventConfig(config->event_config());
-  result->AddVideoConfig(config->video_config());
-  result->SetInitialResolution(config->initial_resolution());
+  result->mutable_control_configs()->push_back(config->control_config());
+  result->mutable_event_configs()->push_back(config->event_config());
+  result->mutable_video_configs()->push_back(config->video_config());
+  *result->mutable_initial_resolution() = (config->initial_resolution());
   return result;
 }
 
 // static
 CandidateSessionConfig* CandidateSessionConfig::CreateDefault() {
   CandidateSessionConfig* result = CreateEmpty();
-  result->AddControlConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                                         kDefaultStreamVersion,
-                                         ChannelConfig::CODEC_UNDEFINED));
-  result->AddEventConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                                          kDefaultStreamVersion,
-                                          ChannelConfig::CODEC_UNDEFINED));
+  result->mutable_control_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED));
+  result->mutable_event_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED));
 
-  result->AddVideoConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                                       kDefaultStreamVersion,
-                                       ChannelConfig::CODEC_ZIP));
-  result->AddVideoConfig(ChannelConfig(ChannelConfig::TRANSPORT_SRTP,
-                                       kDefaultStreamVersion,
-                                       ChannelConfig::CODEC_VP8));
+  result->mutable_video_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VP8));
+  result->mutable_video_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_ZIP));
+  result->mutable_video_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_SRTP,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VP8));
   return result;
 }
 

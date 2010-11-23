@@ -29,4 +29,9 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
   delete done;
 }
 
+protocol::InputStub* CreateEventExecutor(MessageLoop* message_loop,
+                                         Capturer* capturer) {
+  return new EventExecutorMac(message_loop, capturer);
+}
+
 }  // namespace remoting

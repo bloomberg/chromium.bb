@@ -10,14 +10,11 @@
 #include "base/task.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "remoting/host/event_executor.h"
 #include "remoting/protocol/input_stub.h"
-
-class MessageLoop;
 
 namespace remoting {
 
-class Capturer;
-class ChromotingClientMessage;
 class EventExecutorLinuxPimpl;
 
 // A class to generate events on Linux.

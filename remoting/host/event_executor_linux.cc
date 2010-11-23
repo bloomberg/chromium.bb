@@ -437,4 +437,9 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
   delete done;
 }
 
+protocol::InputStub* CreateEventExecutor(MessageLoop* message_loop,
+                                         Capturer* capturer) {
+  return new EventExecutorLinux(message_loop, capturer);
+}
+
 }  // namespace remoting

@@ -165,4 +165,9 @@ void CapturerMac::DisplaysReconfiguredCallback(
   }
 }
 
+// static
+Capturer* Capturer::Create(MessageLoop* message_loop) {
+  return new CapturerMac(message_loop);
+}
+
 }  // namespace remoting

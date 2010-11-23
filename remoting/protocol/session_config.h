@@ -101,22 +101,33 @@ class CandidateSessionConfig {
     return control_configs_;
   }
 
+  std::vector<ChannelConfig>* mutable_control_configs() {
+    return &control_configs_;
+  }
+
   const std::vector<ChannelConfig>& event_configs() const {
     return event_configs_;
+  }
+
+  std::vector<ChannelConfig>* mutable_event_configs() {
+    return &event_configs_;
   }
 
   const std::vector<ChannelConfig>& video_configs() const {
     return video_configs_;
   }
 
+  std::vector<ChannelConfig>* mutable_video_configs() {
+    return &video_configs_;
+  }
+
   const ScreenResolution& initial_resolution() const {
     return initial_resolution_;
   }
 
-  void AddControlConfig(const ChannelConfig& control_config);
-  void AddEventConfig(const ChannelConfig& event_config);
-  void AddVideoConfig(const ChannelConfig& video_config);
-  void SetInitialResolution(const ScreenResolution& initial_resolution);
+  ScreenResolution* mutable_initial_resolution() {
+    return &initial_resolution_;
+  }
 
   // Selects session configuration that is supported by both participants.
   // NULL is returned if such configuration doesn't exist. When selecting

@@ -8,14 +8,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "remoting/host/event_executor.h"
 #include "remoting/protocol/input_stub.h"
 
-class MessageLoop;
-
 namespace remoting {
-
-class Capturer;
-class ChromotingClientMessage;
 
 // A class to generate events on Mac.
 class EventExecutorMac : public protocol::InputStub {

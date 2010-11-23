@@ -35,13 +35,20 @@
 #include "remoting/host/json_host_config.h"
 #include "remoting/proto/video.pb.h"
 
+using remoting::ChromotingHost;
+using remoting::protocol::CandidateSessionConfig;
+using remoting::protocol::ChannelConfig;
+using std::string;
+using std::wstring;
+
 #if defined(OS_WIN)
-const std::wstring kDefaultConfigPath = L".ChromotingConfig.json";
+const wchar_t kDefaultConfigPath[] = L".ChromotingConfig.json";
 const wchar_t kHomeDrive[] = L"HOMEDRIVE";
 const wchar_t kHomePath[] = L"HOMEPATH";
+// TODO(sergeyu): Use environment utils from base/environment.h.
 const wchar_t* GetEnvironmentVar(const wchar_t* x) { return _wgetenv(x); }
 #else
-const std::string kDefaultConfigPath = ".ChromotingConfig.json";
+const char kDefaultConfigPath[] = ".ChromotingConfig.json";
 static char* GetEnvironmentVar(const char* x) { return getenv(x); }
 #endif
 
@@ -49,8 +56,15 @@ void ShutdownTask(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
-const std::string kFakeSwitchName = "fake";
-const std::string kConfigSwitchName = "config";
+const char kFakeSwitchName[] = "fake";
+const char kConfigSwitchName[] = "config";
+const char kVideoSwitchName[] = "video";
+
+const char kVideoSwitchValueVerbatim[] = "verbatim";
+const char kVideoSwitchValueZip[] = "zip";
+const char kVideoSwitchValueVp8[] = "vp8";
+const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
+
 
 int main(int argc, char** argv) {
   // Needed for the Mac, so we don't leak objects when threads are created.
@@ -68,10 +82,10 @@ int main(int argc, char** argv) {
 
 
 #if defined(OS_WIN)
-  std::wstring home_path = GetEnvironmentVar(kHomeDrive);
+  wstring home_path = GetEnvironmentVar(kHomeDrive);
   home_path += GetEnvironmentVar(kHomePath);
 #else
-  std::string home_path = GetEnvironmentVar(base::env_vars::kHome);
+  string home_path = GetEnvironmentVar(base::env_vars::kHome);
 #endif
   FilePath config_path(home_path);
   config_path = config_path.Append(kDefaultConfigPath);
@@ -98,15 +112,42 @@ int main(int argc, char** argv) {
       << "Cannot load media library";
 
   // Construct a chromoting host.
-  scoped_refptr<remoting::ChromotingHost> host;
+  scoped_refptr<ChromotingHost> host;
 
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);
   if (fake) {
-    host = new remoting::ChromotingHost(
+    host = ChromotingHost::Create(
         &context, config,
         new remoting::CapturerFake(context.main_message_loop()));
   } else {
-    host = new remoting::ChromotingHost(&context, config);
+    host = ChromotingHost::Create(&context, config);
+  }
+
+  if (cmd_line->HasSwitch(kVideoSwitchName)) {
+    string video_codec = cmd_line->GetSwitchValueASCII(kVideoSwitchName);
+    scoped_ptr<CandidateSessionConfig> config(
+        CandidateSessionConfig::CreateDefault());
+    config->mutable_video_configs()->clear();
+
+    ChannelConfig::TransportType transport = ChannelConfig::TRANSPORT_STREAM;
+    ChannelConfig::Codec codec;
+    if (video_codec == kVideoSwitchValueVerbatim) {
+      codec = ChannelConfig::CODEC_VERBATIM;
+    } else if (video_codec == kVideoSwitchValueZip) {
+      codec = ChannelConfig::CODEC_ZIP;
+    } else if (video_codec == kVideoSwitchValueVp8) {
+      codec = ChannelConfig::CODEC_VP8;
+    } else if (video_codec == kVideoSwitchValueVp8Rtp) {
+      transport = ChannelConfig::TRANSPORT_SRTP;
+      codec = ChannelConfig::CODEC_VP8;
+    } else {
+      LOG(ERROR) << "Unknown video codec: " << video_codec;
+      context.Stop();
+      return 1;
+    }
+    config->mutable_video_configs()->push_back(ChannelConfig(
+        transport, remoting::protocol::kDefaultStreamVersion, codec));
+    host->set_protocol_config(config.release());
   }
 
   // Let the chromoting host run until the shutdown task is executed.
