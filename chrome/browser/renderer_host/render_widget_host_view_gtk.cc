@@ -898,40 +898,34 @@ void RenderWidgetHostViewGtk::ShowCurrentCursor() {
   if (!view_.get()->window)
     return;
 
+  // TODO(port): WebKit bug https://bugs.webkit.org/show_bug.cgi?id=16388 is
+  // that calling gdk_window_set_cursor repeatedly is expensive.  We should
+  // avoid it here where possible.
   GdkCursor* gdk_cursor;
-  switch (current_cursor_.GetCursorType()) {
-    case GDK_CURSOR_IS_PIXMAP:
-      // TODO(port): WebKit bug https://bugs.webkit.org/show_bug.cgi?id=16388 is
-      // that calling gdk_window_set_cursor repeatedly is expensive.  We should
-      // avoid it here where possible.
-      gdk_cursor = current_cursor_.GetCustomCursor();
-      break;
-
-    case GDK_LAST_CURSOR:
-      if (is_loading_) {
-        // Use MOZ_CURSOR_SPINNING if we are showing the default cursor and
-        // the page is loading.
-        static const GdkColor fg = { 0, 0, 0, 0 };
-        static const GdkColor bg = { 65535, 65535, 65535, 65535 };
-        GdkPixmap* source =
-            gdk_bitmap_create_from_data(NULL, moz_spinning_bits, 32, 32);
-        GdkPixmap* mask =
-            gdk_bitmap_create_from_data(NULL, moz_spinning_mask_bits, 32, 32);
-        gdk_cursor = gdk_cursor_new_from_pixmap(source, mask, &fg, &bg, 2, 2);
-        g_object_unref(source);
-        g_object_unref(mask);
-      } else {
-        gdk_cursor = NULL;
-      }
-      break;
-
-    default:
-      gdk_cursor = gtk_util::GetCursor(
-          static_cast<GdkCursorType>(current_cursor_.GetCursorType()));
+  bool should_unref = false;
+  if (current_cursor_.GetCursorType() == GDK_LAST_CURSOR) {
+    if (is_loading_) {
+      // Use MOZ_CURSOR_SPINNING if we are showing the default cursor and
+      // the page is loading.
+      static const GdkColor fg = { 0, 0, 0, 0 };
+      static const GdkColor bg = { 65535, 65535, 65535, 65535 };
+      GdkPixmap* source =
+        gdk_bitmap_create_from_data(NULL, moz_spinning_bits, 32, 32);
+      GdkPixmap* mask =
+        gdk_bitmap_create_from_data(NULL, moz_spinning_mask_bits, 32, 32);
+      gdk_cursor = gdk_cursor_new_from_pixmap(source, mask, &fg, &bg, 2, 2);
+      should_unref = true;
+      g_object_unref(source);
+      g_object_unref(mask);
+    } else {
+      gdk_cursor = NULL;
+    }
+  } else {
+    gdk_cursor = current_cursor_.GetNativeCursor();
   }
   gdk_window_set_cursor(view_.get()->window, gdk_cursor);
   // The window now owns the cursor.
-  if (gdk_cursor)
+  if (should_unref && gdk_cursor)
     gdk_cursor_unref(gdk_cursor);
 }
 

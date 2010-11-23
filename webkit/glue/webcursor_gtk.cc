@@ -22,9 +22,12 @@ namespace {
 // It attempts to create a custom cursor from the data inlined in
 // webcursor_gtk_data.h.
 GdkCursor* GetInlineCustomCursor(CustomCursorType type) {
+  static GdkCursor* CustomCursorsGdk[G_N_ELEMENTS(CustomCursors)];
+  GdkCursor* cursor = CustomCursorsGdk[type];
+  if (cursor)
+    return cursor;
   const CustomCursor& custom = CustomCursors[type];
-  GdkCursor* cursor = gdk_cursor_new_from_name(gdk_display_get_default(),
-                                               custom.name);
+  cursor = gdk_cursor_new_from_name(gdk_display_get_default(), custom.name);
   if (!cursor) {
     const GdkColor fg = { 0, 0, 0, 0 };
     const GdkColor bg = { 65535, 65535, 65535, 65535 };
@@ -37,6 +40,7 @@ GdkCursor* GetInlineCustomCursor(CustomCursorType type) {
     g_object_unref(source);
     g_object_unref(mask);
   }
+  CustomCursorsGdk[type] = cursor;
   return cursor;
 }
 
@@ -45,11 +49,13 @@ GdkCursor* GetInlineCustomCursor(CustomCursorType type) {
 #if !GTK_CHECK_VERSION(2, 16, 0)
 // Get/create a custom cursor which is invisible.
 GdkCursor* GetInvisibleCustomCursor() {
+  static GdkCursor* cursor = NULL;
+  if (cursor)
+    return cursor;
   const char bits[] = { 0 };
   const GdkColor color = { 0, 0, 0, 0 };
   GdkPixmap* bitmap = gdk_bitmap_create_from_data(NULL, bits, 1, 1);
-  GdkCursor* cursor =
-      gdk_cursor_new_from_pixmap(bitmap, bitmap, &color, &color, 0, 0);
+  cursor = gdk_cursor_new_from_pixmap(bitmap, bitmap, &color, &color, 0, 0);
   g_object_unref(bitmap);
   return cursor;
 }
@@ -154,7 +160,14 @@ int WebCursor::GetCursorType() const {
   return GDK_LAST_CURSOR;
 }
 
-GdkCursor* WebCursor::GetCustomCursor() const {
+gfx::NativeCursor WebCursor::GetNativeCursor() {
+  int type = GetCursorType();
+  if (type == GDK_CURSOR_IS_PIXMAP)
+    return GetCustomCursor();
+  return gfx::GetCursor(type);
+}
+
+GdkCursor* WebCursor::GetCustomCursor() {
   switch (type_) {
 // See comment above |GetInvisibleCustomCursor()|.
 #if !GTK_CHECK_VERSION(2, 16, 0)
@@ -186,10 +199,14 @@ GdkCursor* WebCursor::GetCustomCursor() const {
 
   gdk_pixbuf_unref(pixbuf);
 
+  if (unref_)
+    gdk_cursor_unref(unref_);
+  unref_ = cursor;
   return cursor;
 }
 
 void WebCursor::InitPlatformData() {
+  unref_ = NULL;
   return;
 }
 
@@ -206,9 +223,15 @@ bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
 }
 
 void WebCursor::CleanupPlatformData() {
+  if (unref_) {
+    gdk_cursor_unref(unref_);
+    unref_ = NULL;
+  }
   return;
 }
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {
+  if (other.unref_)
+    unref_ = gdk_cursor_ref(other.unref_);
   return;
 }

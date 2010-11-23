@@ -30,6 +30,10 @@
 #include "views/standard_layout.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
+#if defined(OS_LINUX)
+#include "gfx/gtk_util.h"
+#endif
+
 // If we don't clamp the maximum width, then very long URLs and titles can make
 // the bubble arbitrarily wide.
 const int kMaxContentsWidth = 500;
@@ -99,7 +103,7 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursorForPoint(
     g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
 #elif defined(OS_LINUX)
-  return gdk_cursor_new(GDK_HAND2);
+  return gfx::GetCursor(GDK_HAND2);
 #endif
 }
 

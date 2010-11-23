@@ -14,6 +14,10 @@
 #include "gfx/font.h"
 #include "views/event.h"
 
+#if defined(OS_LINUX)
+#include "gfx/gtk_util.h"
+#endif
+
 namespace {
 
 void GetColors(const SkColor* background_color,  // NULL means "use default"
@@ -170,7 +174,7 @@ gfx::NativeCursor Link::GetCursorForPoint(Event::EventType event_type,
     g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
 #elif defined(OS_LINUX)
-  return gdk_cursor_new(GDK_HAND2);
+  return gfx::GetCursor(GDK_HAND2);
 #endif
 }
 

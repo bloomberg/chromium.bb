@@ -127,41 +127,6 @@ GList* GetIconList() {
   return icon_list;
 }
 
-// A process wide singleton that manages our usage of gdk
-// cursors. gdk_cursor_new() hits the disk in several places and GdkCursor
-// instances can be reused throughout the process.
-class GdkCursorCache {
- public:
-  ~GdkCursorCache() {
-    for (std::map<GdkCursorType, GdkCursor*>::iterator it =
-             cursor_cache_.begin(); it != cursor_cache_.end(); ++it) {
-      gdk_cursor_unref(it->second);
-    }
-    cursor_cache_.clear();
-  }
-
-  GdkCursor* GetCursorImpl(GdkCursorType type) {
-    std::map<GdkCursorType, GdkCursor*>::iterator it = cursor_cache_.find(type);
-    GdkCursor* cursor = NULL;
-    if (it == cursor_cache_.end()) {
-      cursor = gdk_cursor_new(type);
-      cursor_cache_.insert(std::make_pair(type, cursor));
-    } else {
-      cursor = it->second;
-    }
-
-    // Add a reference to the returned cursor because our consumers mix us with
-    // gdk_cursor_new(). Both the normal constructor and GetCursorImpls() need
-    // to be paired with a gdk_cursor_unref() so ref it here (as we own the ref
-    // that comes from gdk_cursor_new().
-    gdk_cursor_ref(cursor);
-
-    return cursor;
-  }
-
-  std::map<GdkCursorType, GdkCursor*> cursor_cache_;
-};
-
 // Expose event handler for a container that simply suppresses the default
 // drawing and propagates the expose event to the container's children.
 gboolean PaintNoBackground(GtkWidget* widget,
@@ -874,11 +839,6 @@ void SetAlwaysShowImage(GtkWidget* image_menu_item) {
                           &true_value);
   }
 #endif
-}
-
-GdkCursor* GetCursor(GdkCursorType type) {
-  static GdkCursorCache impl;
-  return impl.GetCursorImpl(type);
 }
 
 void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel) {

@@ -17,6 +17,40 @@
 
 namespace {
 
+// A process wide singleton that manages our usage of gdk
+// cursors. gdk_cursor_new() hits the disk in several places and GdkCursor
+// instances can be reused throughout the process.
+class GdkCursorCache {
+ public:
+   GdkCursorCache() {}
+  ~GdkCursorCache() {
+    for (std::map<GdkCursorType, GdkCursor*>::iterator it =
+        cursor_cache_.begin(); it != cursor_cache_.end(); ++it) {
+      gdk_cursor_unref(it->second);
+    }
+    cursor_cache_.clear();
+  }
+
+  GdkCursor* GetCursorImpl(GdkCursorType type) {
+    std::map<GdkCursorType, GdkCursor*>::iterator it = cursor_cache_.find(type);
+    GdkCursor* cursor = NULL;
+    if (it == cursor_cache_.end()) {
+      cursor = gdk_cursor_new(type);
+      cursor_cache_.insert(std::make_pair(type, cursor));
+    } else {
+      cursor = it->second;
+    }
+
+    // It is not necessary to add a reference here. The callers can ref the
+    // cursor if they need it for something.
+    return cursor;
+  }
+
+  std::map<GdkCursorType, GdkCursor*> cursor_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(GdkCursorCache);
+};
+
 void FreePixels(guchar* pixels, gpointer data) {
   free(data);
 }
@@ -144,6 +178,11 @@ double GetPangoResolution() {
     g_object_unref(default_context);
   }
   return resolution;
+}
+
+GdkCursor* GetCursor(int type) {
+  static GdkCursorCache impl;
+  return impl.GetCursorImpl(static_cast<GdkCursorType>(type));
 }
 
 std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {

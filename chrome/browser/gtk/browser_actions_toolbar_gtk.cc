@@ -823,7 +823,7 @@ gboolean BrowserActionsToolbarGtk::OnGripperExpose(GtkWidget* gripper,
 gboolean BrowserActionsToolbarGtk::OnGripperEnterNotify(
     GtkWidget* gripper, GdkEventCrossing* event) {
   gdk_window_set_cursor(gripper->window,
-                        gtk_util::GetCursor(GDK_SB_H_DOUBLE_ARROW));
+                        gfx::GetCursor(GDK_SB_H_DOUBLE_ARROW));
   return FALSE;
 }
 

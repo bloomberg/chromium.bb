@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/view_ids.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/background.h"
@@ -119,7 +120,7 @@ gfx::NativeCursor ShutdownButton::GetCursorForPoint(
   if (!IsEnabled()) {
     return NULL;
   }
-  return gdk_cursor_new(GDK_HAND2);
+  return gfx::GetCursor(GDK_HAND2);
 }
 
 void ShutdownButton::ButtonPressed(views::Button* sender,

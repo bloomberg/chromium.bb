@@ -12,6 +12,10 @@
 #include "skia/ext/skia_utils_win.h"
 #include "views/background.h"
 
+#if defined(OS_LINUX)
+#include "gfx/gtk_util.h"
+#endif
+
 namespace views {
 
 // Size of the divider in pixels.
@@ -128,7 +132,7 @@ gfx::NativeCursor SingleSplitView::GetCursorForPoint(
     static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
     return is_horizontal_ ? we_resize_cursor : ns_resize_cursor;
 #elif defined(OS_LINUX)
-    return gdk_cursor_new(is_horizontal_ ?
+    return gfx::GetCursor(is_horizontal_ ?
                               GDK_SB_H_DOUBLE_ARROW :
                               GDK_SB_V_DOUBLE_ARROW);
 #endif

@@ -131,13 +131,10 @@ void TestWebViewDelegate::didChangeCursor(const WebCursorInfo& cursor_info) {
     if (cursor_type == GDK_LAST_CURSOR)
       gdk_cursor = NULL;
     else
-      gdk_cursor = gdk_cursor_new(cursor_type);
+      gdk_cursor = gfx::GetCursor(cursor_type);
   }
   cursor_type_ = cursor_type;
   gdk_window_set_cursor(shell_->webViewWnd()->window, gdk_cursor);
-  // The window now owns the cursor.
-  if (gdk_cursor)
-    gdk_cursor_unref(gdk_cursor);
 }
 
 WebRect TestWebViewDelegate::windowRect() {

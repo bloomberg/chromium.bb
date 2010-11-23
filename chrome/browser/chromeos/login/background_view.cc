@@ -29,6 +29,7 @@
 #include "chrome/browser/views/dom_view.h"
 #include "cros/chromeos_wm_ipc_enums.h"
 #include "googleurl/src/gurl.h"
+#include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -84,7 +85,7 @@ class TextButtonWithHandCursorOver : public views::TextButton {
     if (!IsEnabled()) {
       return NULL;
     }
-    return gdk_cursor_new(GDK_HAND2);
+    return gfx::GetCursor(GDK_HAND2);
   }
 
  private:

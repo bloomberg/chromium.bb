@@ -76,6 +76,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       about_to_validate_and_paint_(false),
       is_hidden_(false),
       is_loading_(false),
+      native_cursor_(NULL),
       is_showing_context_menu_(false),
       visually_deemphasized_(false) {
   SetFocusable(true);
@@ -365,6 +366,11 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
   }
 }
 
+gfx::NativeCursor RenderWidgetHostViewViews::GetCursorForPoint(
+    views::Event::EventType type, const gfx::Point& point) {
+  return native_cursor_;
+}
+
 bool RenderWidgetHostViewViews::OnMousePressed(const views::MouseEvent& event) {
   RequestFocus();
 
@@ -511,7 +517,7 @@ void RenderWidgetHostViewViews::ShowCurrentCursor() {
   if (!native_view()->window)
     return;
 
-  // TODO(anicolao): change to set cursors without GTK
+  native_cursor_ = current_cursor_.GetNativeCursor();
 }
 
 void RenderWidgetHostViewViews::CreatePluginContainer(

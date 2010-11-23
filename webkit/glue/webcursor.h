@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_WEBCURSOR_H_
 
 #include "base/basictypes.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 
@@ -65,6 +66,9 @@ class WebCursor {
   // compare the bitmaps to verify whether they are equal.
   bool IsEqual(const WebCursor& other) const;
 
+  // Returns a native cursor representing the current WebCursor instance.
+  gfx::NativeCursor GetNativeCursor();
+
 #if defined(OS_WIN)
   // Returns a HCURSOR representing the current WebCursor instance.
   // The ownership of the HCURSOR (does not apply to external cursors) remains
@@ -85,7 +89,7 @@ class WebCursor {
 
   // Return a new GdkCursor* for this cursor.  Only valid if GetCursorType
   // returns GDK_CURSOR_IS_PIXMAP.
-  GdkCursor* GetCustomCursor() const;
+  GdkCursor* GetCustomCursor();
 #elif defined(OS_MACOSX)
   // Gets an NSCursor* for this cursor.
   NSCursor* GetCursor() const;
@@ -147,6 +151,11 @@ class WebCursor {
   // A custom cursor created from custom bitmap data by Webkit.
   HCURSOR custom_cursor_;
 #endif  // OS_WIN
+
+#if defined(USE_X11)
+  // A custom cursor created that should be unref'ed from the destructor.
+  GdkCursor* unref_;
+#endif
 };
 
 #endif  // WEBKIT_GLUE_WEBCURSOR_H_

@@ -779,8 +779,6 @@ void RootView::SetActiveCursor(gfx::NativeCursor cursor) {
   if (!native_view)
     return;
   gdk_window_set_cursor(native_view->window, cursor);
-  if (cursor)
-    gdk_cursor_destroy(cursor);
 #endif
 }
 

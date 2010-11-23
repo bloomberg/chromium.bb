@@ -79,6 +79,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/gtk_util.h"
 #include "gfx/rect.h"
 #include "gfx/skia_utils_gtk.h"
 #include "grit/app_resources.h"
@@ -369,11 +370,6 @@ BrowserWindowGtk::~BrowserWindowGtk() {
   ActiveWindowWatcherX::RemoveObserver(this);
 
   browser_->tabstrip_model()->RemoveObserver(this);
-
-  if (frame_cursor_) {
-    gdk_cursor_unref(frame_cursor_);
-    frame_cursor_ = NULL;
-  }
 }
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
@@ -1403,7 +1399,6 @@ void BrowserWindowGtk::ResetCustomFrameCursor() {
   if (!frame_cursor_)
     return;
 
-  gdk_cursor_unref(frame_cursor_);
   frame_cursor_ = NULL;
   gdk_window_set_cursor(GTK_WIDGET(window_)->window, NULL);
 }
@@ -1895,7 +1890,6 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
   if (!UseCustomFrame() || event->window != widget->window) {
     // Reset the cursor.
     if (frame_cursor_) {
-      gdk_cursor_unref(frame_cursor_);
       frame_cursor_ = NULL;
       gdk_window_set_cursor(GTK_WIDGET(window_)->window, NULL);
     }
@@ -1915,17 +1909,12 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
     last_cursor = frame_cursor_->type;
 
   if (last_cursor != new_cursor) {
-    if (frame_cursor_) {
-      gdk_cursor_unref(frame_cursor_);
+    if (has_hit_edge) {
+      frame_cursor_ = gfx::GetCursor(new_cursor);
+    } else {
       frame_cursor_ = NULL;
     }
-    if (has_hit_edge) {
-      frame_cursor_ = gtk_util::GetCursor(new_cursor);
-      gdk_window_set_cursor(GTK_WIDGET(window_)->window,
-                            frame_cursor_);
-    } else {
-      gdk_window_set_cursor(GTK_WIDGET(window_)->window, NULL);
-    }
+    gdk_window_set_cursor(GTK_WIDGET(window_)->window, frame_cursor_);
   }
   return FALSE;
 }

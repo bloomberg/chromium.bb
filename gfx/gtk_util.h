@@ -16,6 +16,7 @@
 
 typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GdkRegion GdkRegion;
+typedef struct _GdkCursor GdkCursor;
 
 class CommandLine;
 class SkBitmap;
@@ -41,6 +42,10 @@ void SubtractRectanglesFromRegion(GdkRegion* region,
 // Returns the resolution (DPI) used by pango. A negative values means the
 // resolution hasn't been set.
 double GetPangoResolution();
+
+// Returns a static instance of a GdkCursor* object, sharable across the
+// process. Caller must gdk_cursor_ref() it if they want to assume ownership.
+GdkCursor* GetCursor(int type);
 
 // Change windows accelerator style to GTK style. (GTK uses _ for
 // accelerators.  Windows uses & with && as an escape for &.)

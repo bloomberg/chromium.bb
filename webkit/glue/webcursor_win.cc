@@ -186,6 +186,10 @@ HCURSOR WebCursor::GetCursor(HINSTANCE module_handle){
   return custom_cursor_;
 }
 
+gfx::NativeCursor WebCursor::GetNativeCursor() {
+  return GetCursor(NULL);
+}
+
 void WebCursor::InitFromExternalCursor(HCURSOR cursor) {
   WebCursorInfo::Type cursor_type = ToCursorType(cursor);
 

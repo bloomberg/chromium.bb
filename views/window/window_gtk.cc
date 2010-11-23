@@ -7,6 +7,7 @@
 #include "gfx/rect.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
+#include "gfx/gtk_util.h"
 #include "gfx/path.h"
 #include "views/event.h"
 #include "views/screen.h"
@@ -329,9 +330,7 @@ gboolean WindowGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
       non_client_view_->NonClientHitTest(gfx::Point(x, y));
   if (hittest_code != HTCLIENT) {
     GdkCursorType cursor_type = HitTestCodeToGdkCursorType(hittest_code);
-    GdkCursor* cursor = gdk_cursor_new(cursor_type);
-    gdk_window_set_cursor(widget->window, cursor);
-    gdk_cursor_destroy(cursor);
+    gdk_window_set_cursor(widget->window, gfx::GetCursor(cursor_type));
   }
 
   return WidgetGtk::OnMotionNotify(widget, event);
@@ -362,9 +361,7 @@ gboolean WindowGtk::OnWindowStateEvent(GtkWidget* widget,
 }
 
 gboolean WindowGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
-  GdkCursor* cursor = gdk_cursor_new(GDK_LEFT_PTR);
-  gdk_window_set_cursor(widget->window, cursor);
-  gdk_cursor_destroy(cursor);
+  gdk_window_set_cursor(widget->window, gfx::GetCursor(GDK_LEFT_PTR));
 
   return WidgetGtk::OnLeaveNotify(widget, event);
 }

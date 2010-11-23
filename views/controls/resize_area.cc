@@ -7,6 +7,10 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 
+#if defined(OS_LINUX)
+#include "gfx/gtk_util.h"
+#endif
+
 namespace views {
 
 const char ResizeArea::kViewClassName[] = "views/ResizeArea";
@@ -39,7 +43,7 @@ gfx::NativeCursor ResizeArea::GetCursorForPoint(Event::EventType event_type,
     g_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   return g_resize_cursor;
 #elif defined(OS_LINUX)
-  return gdk_cursor_new(GDK_SB_H_DOUBLE_ARROW);
+  return gfx::GetCursor(GDK_SB_H_DOUBLE_ARROW);
 #endif
 }
 

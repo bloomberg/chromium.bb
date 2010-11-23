@@ -160,6 +160,10 @@ NSCursor* WebCursor::GetCursor() const {
   return nil;
 }
 
+gfx::NativeCursor WebCursor::GetNativeCursor() {
+  return GetCursor();
+}
+
 void WebCursor::InitFromThemeCursor(ThemeCursor cursor) {
   WebKit::WebCursorInfo cursor_info;
 

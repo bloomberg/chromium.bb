@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "chrome/browser/gtk/gtk_util.h"
+#include "gfx/gtk_util.h"
 
 static const gchar* kLinkMarkup = "<u><span color=\"%s\">%s</span></u>";
 
@@ -161,10 +162,7 @@ static void gtk_chrome_link_button_destroy(GtkObject* object) {
 
   gtk_chrome_link_button_destroy_text_resources(button);
 
-  if (button->hand_cursor) {
-    gdk_cursor_unref(button->hand_cursor);
-    button->hand_cursor = NULL;
-  }
+  button->hand_cursor = NULL;
 
   GTK_OBJECT_CLASS(gtk_chrome_link_button_parent_class)->destroy(object);
 }
@@ -196,7 +194,7 @@ static void gtk_chrome_link_button_init(GtkChromeLinkButton* button) {
   strncpy(button->normal_color, "blue", 9);
   button->native_markup = NULL;
   button->using_native_theme = TRUE;
-  button->hand_cursor = gtk_util::GetCursor(GDK_HAND2);
+  button->hand_cursor = gfx::GetCursor(GDK_HAND2);
   button->text = NULL;
 
   gtk_container_add(GTK_CONTAINER(button), button->label);

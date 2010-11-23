@@ -260,11 +260,6 @@ GdkColor AverageColors(GdkColor color_one, GdkColor color_two);
 // crucial to its functionality.
 void SetAlwaysShowImage(GtkWidget* image_menu_item);
 
-// Returns a static instance of a GdkCursor* object, sharable across the
-// process.  Returns a GdkCursor with a +1 refcount, as if it was just created
-// with gdk_cursor_new(); owner must gdk_cursor_unref() it when done with it.
-GdkCursor* GetCursor(GdkCursorType type);
-
 // Stacks a |popup| window directly on top of a |toplevel| window.
 void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel);
 

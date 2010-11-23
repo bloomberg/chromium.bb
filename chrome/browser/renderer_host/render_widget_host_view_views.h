@@ -81,6 +81,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   virtual void Paint(gfx::Canvas* canvas);
 
+  // Overridden from views::View.
+  gfx::NativeCursor GetCursorForPoint(views::Event::EventType type,
+                                      const gfx::Point& point);
+
   // Views mouse events
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
@@ -137,6 +141,9 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
+
+  // The native cursor.
+  gfx::NativeCursor native_cursor_;
 
   // Whether we are showing a context menu.
   bool is_showing_context_menu_;
