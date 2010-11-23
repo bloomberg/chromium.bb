@@ -29,8 +29,28 @@ namespace {
 void SetLocalizedStrings(DictionaryValue* localized_strings) {
   localized_strings->SetString(std::string("title"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_TITLE));
-  localized_strings->SetString(std::string("no-printer"),
+  localized_strings->SetString(std::string("noPrinter"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_NO_PRINTER));
+
+  localized_strings->SetString(std::string("printButton"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_PRINT_BUTTON));
+  localized_strings->SetString(std::string("cancelButton"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_CANCEL_BUTTON));
+
+  localized_strings->SetString(std::string("optionAllPages"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_ALL_PAGES));
+  localized_strings->SetString(std::string("optionBw"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_BW));
+  localized_strings->SetString(std::string("optionCollate"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_COLLATE));
+  localized_strings->SetString(std::string("optionColor"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_COLOR));
+  localized_strings->SetString(std::string("optionLandscape"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_LANDSCAPE));
+  localized_strings->SetString(std::string("optionPortrait"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_PORTRAIT));
+  localized_strings->SetString(std::string("optionTwoSided"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_OPTION_TWO_SIDED));
 }
 
 }  // namespace

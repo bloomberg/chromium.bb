@@ -23,11 +23,13 @@ body {
 
 #navbar-container {
   background-color: #f8fafd;
-  width: 300px;
+  width: 295px;
+  height: 100%;
+  overflow: auto;
 }
 
 #destination-container {
-  background-color: #ffffff;
+  background-color: #fff;
   padding: 10px;
 }
 
@@ -36,24 +38,34 @@ body {
   margin: 0;
 }
 
-#options-container {
-  padding: 10px;
-}
-
 #separator {
   background: -webkit-gradient(linear,
                                left top,
                                right top,
                                from(#a4a4a4),
-                               to(#cccccc));
+                               to(#ccc));
   height: 100%;
-  width: 10px;
+  width: 6px;
 }
 
 #mainview {
   -webkit-box-flex: 1;
   -webkit-padding-start: 10px;
-  background-color: #cccccc;
+  background-color: #ccc;
+}
+
+section {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  margin-top: 15px;
+}
+
+section > h3 {
+  -webkit-padding-start: 10px;
+  font-size: 100%;
+  font-weight: normal;
+  margin: 0;
+  width: 50px;
 }
 
 .hidden {

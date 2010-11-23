@@ -17,13 +17,61 @@
     <h1>Destination</h1>
     <select id="printer-list"></select>
     <div id="buttons">
-      <button id="print-button">Print</button>
-      <button id="cancel-button">Cancel</button>
+      <button id="print-button" i18n-content="printButton"></button>
+      <button id="cancel-button" i18n-content="cancelButton"></button>
     </div>
   </div>
-  <div id="options-container">
-    OPTIONS HERE
-  </div>
+
+  <section>
+    <h3>Pages</h3>
+    <div>
+      <input id="pages" type="textbox"></input>
+      <label>
+        <input id="all-pages" type="checkbox">
+        <span i18n-content="optionAllPages"></span>
+      </label>
+      <div>
+        <label>
+          <input id="two-sided" type="checkbox">
+          <span i18n-content="optionTwoSided"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Copies</h3>
+    <div>
+      <input id="copies" type="textbox"></input>
+      <div>
+        <label>
+          <input id="collate" type="checkbox">
+          <span i18n-content="optionCollate"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Layout</h3>
+    <div>
+      <select id="layout">
+        <option i18n-content="optionPortrait"></option>
+        <option i18n-content="optionLandscape"></option>
+      </select>
+    </div>
+  </section>
+
+  <section>
+    <h3>Color</h3>
+    <div>
+      <select id="color">
+        <option i18n-content="optionColor"></option>
+        <option i18n-content="optionBw"></option>
+      </select>
+    </div>
+  </section>
+
 </div>
 <div id="separator"></div>
 <div id="mainview">
