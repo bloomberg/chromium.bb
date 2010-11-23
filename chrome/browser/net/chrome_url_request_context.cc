@@ -16,7 +16,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/profile.h"
@@ -34,6 +33,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket/dns_cert_provenance_checker.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -224,6 +224,47 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
 };
 
 // ----------------------------------------------------------------------------
+// Implementation of DnsCertProvenanceChecker
+// ----------------------------------------------------------------------------
+
+// WARNING: do not use this with anything other than the main
+// ChromeURLRequestContext. Eventually we'll want to have the other contexts
+// point to the main ChromeURLRequestContext, which then causes lifetime
+// ordering issues wrt ChromeURLRequestContexts, since we're using a raw
+// pointer, and we'll get shutdown ordering problems.
+
+class ChromeDnsCertProvenanceChecker :
+    public net::DnsCertProvenanceChecker,
+    public net::DnsCertProvenanceChecker::Delegate {
+ public:
+  ChromeDnsCertProvenanceChecker(
+      net::DnsRRResolver* dnsrr_resolver,
+      ChromeURLRequestContext* url_req_context)
+      : dnsrr_resolver_(dnsrr_resolver),
+        url_req_context_(url_req_context) {
+  }
+
+  // DnsCertProvenanceChecker interface
+  virtual void DoAsyncVerification(
+      const std::string& hostname,
+      const std::vector<base::StringPiece>& der_certs) {
+    net::DnsCertProvenanceChecker::DoAsyncLookup(hostname, der_certs,
+                                                 dnsrr_resolver_, this);
+  }
+
+  // DnsCertProvenanceChecker::Delegate interface
+  virtual void OnDnsCertLookupFailed(
+      const std::string& hostname,
+      const std::vector<std::string>& der_certs) {
+    // Currently unimplemented.
+  }
+
+ private:
+  net::DnsRRResolver* const dnsrr_resolver_;
+  ChromeURLRequestContext* const url_req_context_;
+};
+
+// ----------------------------------------------------------------------------
 // Helper factories
 // ----------------------------------------------------------------------------
 
@@ -266,9 +307,11 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 
+  /* Disabled for now due to Chrome Frame linking issues on Windows.
   context->set_dns_cert_checker(
-      CreateDnsCertProvenanceChecker(io_thread_globals->dnsrr_resolver.get(),
-                                     context));
+      new ChromeDnsCertProvenanceChecker(
+          io_thread_globals->dnsrr_resolver.get(),
+          context)); */
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

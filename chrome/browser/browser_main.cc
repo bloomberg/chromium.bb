@@ -50,10 +50,8 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/blob_url_request_job_factory.h"
-#include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
-#include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
-#include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 #include "chrome/browser/plugin_service.h"
@@ -563,8 +561,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
         &value);
     net::SpdySessionPool::set_max_sessions_per_domain(value);
   }
-
-  SetDnsCertProvenanceCheckerFactory(CreateChromeDnsCertProvenanceChecker);
 }
 
 // Creates key child threads. We need to do this explicitly since
