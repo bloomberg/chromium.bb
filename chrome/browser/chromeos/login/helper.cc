@@ -10,7 +10,6 @@
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "views/controls/button/menu_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
@@ -103,11 +102,6 @@ void CorrectLabelFontSize(views::Label* label) {
     label->SetFont(label->font().DeriveFont(kFontSizeCorrectionDelta));
 }
 
-void CorrectMenuButtonFontSize(views::MenuButton* button) {
-  if (button)
-    button->SetFont(button->font().DeriveFont(kFontSizeCorrectionDelta));
-}
-
 void CorrectNativeButtonFontSize(views::NativeButton* button) {
   if (button)
     button->set_font(button->font().DeriveFont(kFontSizeCorrectionDelta));
@@ -127,14 +121,8 @@ namespace login {
 // Minimal width for the button.
 const int kButtonMinWidth = 90;
 
-// Button should have the same height as textfield.
-const int kButtonHeightDelta = 2;
-
 gfx::Size WideButton::GetPreferredSize() {
   gfx::Size preferred_size = NativeButton::GetPreferredSize();
-  // Decrease vertical margins.
-  preferred_size.set_height(preferred_size.height() - kButtonHeightDelta);
-  // Set minimal width.
   if (preferred_size.width() < kButtonMinWidth)
     preferred_size.set_width(kButtonMinWidth);
   return preferred_size;
