@@ -96,7 +96,7 @@ void WifiConfigView::UpdateCanLogin(void) {
   if (other_network_) {
     // Enforce ssid is non empty.
     // If security is not none, also enforce passphrase is non empty.
-    can_login = !ssid_textfield_->text().empty() &&
+    can_login = !GetSSID().empty() &&
         (security_combobox_->selected_item() == INDEX_NONE ||
             !passphrase_textfield_->text().empty());
   } else {
@@ -264,8 +264,10 @@ void WifiConfigView::Cancel() {
 
 const std::string WifiConfigView::GetSSID() const {
   std::string result;
-  if (ssid_textfield_ != NULL)
-    result = UTF16ToUTF8(ssid_textfield_->text());
+  if (ssid_textfield_ != NULL) {
+    std::string untrimmed = UTF16ToUTF8(ssid_textfield_->text());
+    TrimWhitespaceASCII(untrimmed, TRIM_ALL, &result);
+  }
   return result;
 }
 
