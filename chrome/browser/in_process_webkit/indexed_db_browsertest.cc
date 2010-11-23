@@ -76,6 +76,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
+  SimpleTest(testUrl(FilePath(
+      FILE_PATH_LITERAL("transaction_run_forever.html"))));
+  ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
+}
+
 // In proc browser test is needed here because ClearLocalState indirectly calls
 // WebKit's isMainThread through WebSecurityOrigin->SecurityOrigin.
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {

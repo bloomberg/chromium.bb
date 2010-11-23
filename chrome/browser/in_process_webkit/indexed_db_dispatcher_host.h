@@ -244,7 +244,8 @@ class IndexedDBDispatcherHost
     void OnDestroyed(int32 idb_transaction_id);
 
     IndexedDBDispatcherHost* parent_;
-    IDMap<WebKit::WebIDBTransaction, IDMapOwnPointer> map_;
+    typedef IDMap<WebKit::WebIDBTransaction, IDMapOwnPointer> MapType;
+    MapType map_;
   };
 
   // Only use on the IO thread.

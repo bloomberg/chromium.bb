@@ -26,9 +26,19 @@ function getLog()
   return "" + document.getElementById('status').innerHTML;
 }
 
+function unexpectedAbortCallback()
+{
+  fail('unexpectedAbortCallback');
+}
+
 function unexpectedSuccessCallback()
 {
   fail('unexpectedSuccessCallback');
+}
+
+function unexpectedCompleteCallback()
+{
+  fail('unexpectedCompleteCallback');
 }
 
 function unexpectedErrorCallback()

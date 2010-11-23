@@ -82,11 +82,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
-  DeleteOnWebKitThread(database_dispatcher_host_.release());
-  DeleteOnWebKitThread(index_dispatcher_host_.release());
-  DeleteOnWebKitThread(object_store_dispatcher_host_.release());
-  DeleteOnWebKitThread(cursor_dispatcher_host_.release());
-  DeleteOnWebKitThread(transaction_dispatcher_host_.release());
 }
 
 void IndexedDBDispatcherHost::Init(int process_id,
@@ -116,6 +111,9 @@ void IndexedDBDispatcherHost::Shutdown() {
 
   database_dispatcher_host_.reset();
   index_dispatcher_host_.reset();
+  object_store_dispatcher_host_.reset();
+  cursor_dispatcher_host_.reset();
+  transaction_dispatcher_host_.reset();
 }
 
 bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
@@ -1075,6 +1073,11 @@ IndexedDBDispatcherHost::TransactionDispatcherHost::TransactionDispatcherHost(
 
 IndexedDBDispatcherHost::
     TransactionDispatcherHost::~TransactionDispatcherHost() {
+  MapType::iterator it(&map_);
+  while (!it.IsAtEnd()) {
+    it.GetCurrentValue()->abort();
+    it.Advance();
+  }
 }
 
 bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
