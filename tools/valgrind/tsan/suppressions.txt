@@ -109,6 +109,13 @@
   fun:MetricsService::InitTask::Run*
 }
 
+{
+  bug_64188
+  ThreadSanitizer:Race
+  ...
+  fun:base::RefCounted<net::NetLog::EventParameters>::*
+}
+
 ############################
 # Benign races
 {
