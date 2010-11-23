@@ -1022,7 +1022,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   }
 #endif
 
-#if defined(HAVE_XINPUT2)
+#if defined(HAVE_XINPUT2) && defined(TOUCH_UI)
   // Get a list of pointer-devices that should be treated as touch-devices.
   // TODO(sad): Instead of/in addition to getting the list from the
   // command-line, query X for a list of touch devices.
