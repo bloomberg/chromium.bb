@@ -245,12 +245,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
 }
 
 // Flaky crash on Mac debug. http://crbug.com/45079
-// Stuck/time-out on XP test. http://crbug.com/51814
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define PageActionRefreshCrash DISABLED_PageActionRefreshCrash
+#if defined(OS_MACOSX)
+#define PageActionRefreshCrash PageActionRefreshCrash
 #endif
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
 
   size_t size_before = service->extensions()->size();
@@ -263,21 +264,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   ASSERT_EQ(size_before + 1, service->extensions()->size());
   const Extension* extensionA = service->extensions()->at(size_before);
 
+  LOG(INFO) << "Load extension A done  : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   // Load extension B.
   ASSERT_TRUE(LoadExtension(base_path.AppendASCII("ExtB")));
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(2));
   ASSERT_EQ(size_before + 2, service->extensions()->size());
   const Extension* extensionB = service->extensions()->at(size_before + 1);
 
+  LOG(INFO) << "Load extension B done  : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   ReloadExtension(extensionA->id());
   // ExtensionA has changed, so refetch it.
   ASSERT_EQ(size_before + 2, service->extensions()->size());
   extensionA = service->extensions()->at(size_before + 1);
 
+  LOG(INFO) << "Reload extension A done: "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
   ReloadExtension(extensionB->id());
+
+  LOG(INFO) << "Reload extension B done: "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 
   // This is where it would crash, before http://crbug.com/44415 was fixed.
   ReloadExtension(extensionA->id());
+
+  LOG(INFO) << "Test completed         : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
 }
 
 // Makes sure that the RSS detects RSS feed links, even when rel tag contains
