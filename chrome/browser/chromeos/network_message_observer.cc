@@ -15,12 +15,30 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/window.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
+
+namespace {
+
+// Returns prefs::kShowPlanNotifications in the profile of the last active
+// browser. If there is no active browser, returns true.
+bool ShouldShowMobilePlanNotifications() {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser || !browser->profile())
+    return true;
+
+  PrefService* prefs = browser->profile()->GetPrefs();
+  return prefs->GetBoolean(prefs::kShowPlanNotifications);
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -192,6 +210,13 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* obj) {
 
   cellular_data_plan_name_ = new_plan_name;
   cellular_data_plan_type_ = new_plan_type;
+
+  bool should_show_notifications = ShouldShowMobilePlanNotifications();
+  if (!should_show_notifications) {
+    notification_low_data_.Hide();
+    notification_no_data_.Hide();
+    return;
+  }
 
   if (new_plan) {
     notification_low_data_.Hide();

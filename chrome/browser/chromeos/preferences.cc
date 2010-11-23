@@ -116,6 +116,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 
   // Screen lock default to off.
   prefs->RegisterBooleanPref(prefs::kEnableScreenLock, false);
+
+  // Mobile plan notifications default to on.
+  prefs->RegisterBooleanPref(prefs::kShowPlanNotifications, true);
 }
 
 void Preferences::Init(PrefService* prefs) {

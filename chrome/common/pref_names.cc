@@ -417,6 +417,10 @@ const char kLabsMediaplayerEnabled[] = "settings.labs.mediaplayer";
 // A boolean pref that turns on screen locker.
 const char kEnableScreenLock[] = "settings.enable_screen_lock";
 
+// A boolean pref of whether to show mobile plan notifications.
+const char kShowPlanNotifications[] =
+    "settings.internet.mobile.show_plan_notifications";
+
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

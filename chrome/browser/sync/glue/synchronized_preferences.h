@@ -182,6 +182,10 @@ static const char* kSynchronizedPreferences[] = {
   //   prefs::kLanguageXkbAutoRepeatDelay,
   //   prefs::kLanguageXkbAutoRepeatEnabled,
   //   prefs::kLanguageXkbAutoRepeatInterval,
+
+  // Whether to show mobile plan notifications.
+  //   Settings -> Internet -> Mobile plan details
+  prefs::kShowPlanNotifications,
 #endif
 };
 

@@ -157,6 +157,7 @@ extern const char kAccessibilityEnabled[];
 extern const char kLabsAdvancedFilesystemEnabled[];
 extern const char kLabsMediaplayerEnabled[];
 extern const char kEnableScreenLock[];
+extern const char kShowPlanNotifications[];
 #endif
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];
