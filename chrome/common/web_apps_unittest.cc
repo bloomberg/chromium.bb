@@ -52,7 +52,7 @@ WebApplicationInfo* ParseFromDefinitionAndExpectSuccess(
   web_app->manifest_url = GURL("http://example.com/");
 
   string16 error;
-  if (!web_apps::ParseWebAppFromDefinitionFile(*defintion, web_app.get(),
+  if (!web_apps::ParseWebAppFromDefinitionFile(defintion.get(), web_app.get(),
                                                &error)) {
     ADD_FAILURE() << "Error parsing " << name << ": " << UTF16ToUTF8(error);
     return NULL;
@@ -71,7 +71,8 @@ void ParseFromDefinitionAndExpectFailure(const std::string& name,
   web_app.manifest_url = GURL("http://example.com/");
 
   string16 error;
-  if (web_apps::ParseWebAppFromDefinitionFile(*definition, &web_app, &error)) {
+  if (web_apps::ParseWebAppFromDefinitionFile(definition.get(), &web_app,
+                                              &error)) {
     ADD_FAILURE() << "Expected error parsing " << name
                   << " but parse succeeded.";
     return;

@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
+#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_zoom.h"
@@ -172,6 +173,7 @@
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/plugins/webplugin_impl.h"
 #include "webkit/glue/plugins/webview_plugin.h"
+#include "webkit/glue/resource_fetcher.h"
 #include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
@@ -266,6 +268,7 @@ using webkit_glue::FormField;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
+using webkit_glue::ResourceFetcher;
 using webkit_glue::SiteIsolationMetrics;
 using webkit_glue::WebAccessibility;
 
@@ -512,6 +515,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(
           notification_provider_(new NotificationProvider(this))),
       accessibility_ack_pending_(false),
+      pending_app_icon_requests_(0),
       session_storage_namespace_id_(session_storage_namespace_id),
       decrement_shared_popup_at_destruction_(false) {
 #if defined(OS_MACOSX)
@@ -543,12 +547,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 RenderView::~RenderView() {
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
-
-  // Dispose of un-disposed image fetchers.
-  for (ImageResourceFetcherSet::iterator i = image_fetchers_.begin();
-       i != image_fetchers_.end(); ++i) {
-    delete *i;
-  }
 
   // If file chooser is still waiting for answer, dispatch empty answer.
   while (!file_chooser_completions_.empty()) {
@@ -626,7 +624,7 @@ RenderView* RenderView::Create(
   return view;
 }
 
-/*static*/
+// static
 void RenderView::SetNextPageID(int32 next_page_id) {
   // This method should only be called during process startup, and the given
   // page id had better not exceed our current next page id!
@@ -650,6 +648,140 @@ WebKit::WebView* RenderView::webview() const {
 
 void RenderView::UserMetricsRecordAction(const std::string& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(action));
+}
+
+bool RenderView::InstallWebApplicationUsingDefinitionFile(WebFrame* frame,
+                                                          string16* error) {
+  // There is an issue of drive-by installs with the below implementation. A web
+  // site could force a user to install an app by timing the dialog to come up
+  // just before the user clicks.
+  //
+  // We do show a success UI that allows users to uninstall, but it seems that
+  // we might still want to put up an infobar before showing the install dialog.
+  //
+  // TODO(aa): Figure out this issue before removing the kEnableCrxlessWebApps
+  // switch.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCrxlessWebApps)) {
+    *error = ASCIIToUTF16("CRX-less web apps aren't enabled.");
+    return false;
+  }
+
+  if (frame != frame->top()) {
+    *error = ASCIIToUTF16("Applications can only be installed from the top "
+                          "frame.");
+    return false;
+  }
+
+  if (pending_app_info_.get()) {
+    *error = ASCIIToUTF16("An application install is already in progress.");
+    return false;
+  }
+
+  pending_app_info_.reset(new WebApplicationInfo());
+  if (!web_apps::ParseWebAppFromWebDocument(frame, pending_app_info_.get(),
+                                            error)) {
+    return false;
+  }
+
+  if (!pending_app_info_->manifest_url.is_valid()) {
+    *error = ASCIIToUTF16("Web application definition not found or invalid.");
+    return false;
+  }
+
+  app_definition_fetcher_.reset(new ResourceFetcher(
+      pending_app_info_->manifest_url, webview()->mainFrame(),
+      NewCallback(this, &RenderView::DidDownloadApplicationDefinition)));
+  return true;
+}
+
+void RenderView::DidDownloadApplicationDefinition(
+    const WebKit::WebURLResponse& response,
+    const std::string& data) {
+  scoped_ptr<WebApplicationInfo> app_info(
+      pending_app_info_.release());
+
+  JSONStringValueSerializer serializer(data);
+  int error_code = 0;
+  std::string error_message;
+  scoped_ptr<Value> result(serializer.Deserialize(&error_code, &error_message));
+  if (!result.get()) {
+    AddErrorToRootConsole(UTF8ToUTF16(error_message));
+    return;
+  }
+
+  string16 error_message_16;
+  if (!web_apps::ParseWebAppFromDefinitionFile(result.get(), app_info.get(),
+                                               &error_message_16)) {
+    AddErrorToRootConsole(error_message_16);
+    return;
+  }
+
+  if (!app_info->icons.empty()) {
+    pending_app_info_.reset(app_info.release());
+    pending_app_icon_requests_ =
+        static_cast<int>(pending_app_info_->icons.size());
+    for (size_t i = 0; i < pending_app_info_->icons.size(); ++i) {
+      app_icon_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
+          new ImageResourceFetcher(
+              pending_app_info_->icons[i].url,
+              webview()->mainFrame(),
+              static_cast<int>(i),
+              pending_app_info_->icons[i].width,
+              NewCallback(this, &RenderView::DidDownloadApplicationIcon))));
+    }
+  } else {
+    Send(new ViewHostMsg_InstallApplication(routing_id_, *app_info));
+  }
+}
+
+void RenderView::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
+                                            const SkBitmap& image) {
+  pending_app_info_->icons[fetcher->id()].data = image;
+
+  // Remove the image fetcher from our pending list. We're in the callback from
+  // ImageResourceFetcher, best to delay deletion.
+  for (ImageResourceFetcherList::iterator iter = app_icon_fetchers_.begin();
+       iter != app_icon_fetchers_.end(); ++iter) {
+    if (iter->get() == fetcher) {
+      iter->release();
+      app_icon_fetchers_.erase(iter);
+      break;
+    }
+  }
+
+  // We're in the callback from the ImageResourceFetcher, best to delay
+  // deletion.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+
+  if (--pending_app_icon_requests_ > 0)
+    return;
+
+  // There is a maximum size of IPC on OS X and Linux that we have run into in
+  // some situations. We're not sure what it is, but our hypothesis is in the
+  // neighborhood of 1 MB.
+  //
+  // To be on the safe side, we give ourselves 128 KB for just the image data.
+  // This should be more than enough for 128, 48, and 16 px 32-bit icons. If we
+  // want to start allowing larger icons (see bug 63406), we'll have to either
+  // experiment mor ewith this and find the real limit, or else come up with
+  // some alternative way to transmit the icon data to the browser process.
+  //
+  // See also: bug 63729.
+  const int kMaxIconSize = 1024 * 128;
+  int actual_icon_size = 0;
+  for (size_t i = 0; i < pending_app_info_->icons.size(); ++i) {
+    actual_icon_size += pending_app_info_->icons[i].data.getSize();
+  }
+
+  if (actual_icon_size > kMaxIconSize) {
+    AddErrorToRootConsole(ASCIIToUTF16(
+        "Icons are too large. Maximum total size for app icons is 128 KB."));
+    return;
+  }
+
+  Send(new ViewHostMsg_InstallApplication(routing_id_, *pending_app_info_));
+  pending_app_info_.reset(NULL);
 }
 
 void RenderView::PluginCrashed(const FilePath& plugin_path) {
@@ -3012,6 +3144,14 @@ void RenderView::didCompleteClientRedirect(
 }
 
 void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
+  // If there are any app-related fetches in progress, they can be cancelled now
+  // since we have navigated away from the page that created them.
+  if (!frame->parent()) {
+    image_fetchers_.clear();
+    app_icon_fetchers_.clear();
+    app_definition_fetcher_.reset(NULL);
+  }
+
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
   bool content_initiated = !pending_navigation_state_.get();
@@ -3889,9 +4029,10 @@ bool RenderView::DownloadImage(int id, const GURL& image_url, int image_size) {
   if (!webview())
     return false;
   // Create an image resource fetcher and assign it with a call back object.
-  image_fetchers_.insert(new ImageResourceFetcher(
-      image_url, webview()->mainFrame(), id, image_size,
-      NewCallback(this, &RenderView::DidDownloadImage)));
+  image_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
+      new ImageResourceFetcher(
+          image_url, webview()->mainFrame(), id, image_size,
+          NewCallback(this, &RenderView::DidDownloadImage))));
   return true;
 }
 
@@ -3903,11 +4044,17 @@ void RenderView::DidDownloadImage(ImageResourceFetcher* fetcher,
                                           fetcher->image_url(),
                                           image.isNull(),
                                           image));
-  // Dispose of the image fetcher.
-  DCHECK(image_fetchers_.find(fetcher) != image_fetchers_.end());
-  image_fetchers_.erase(fetcher);
-  // We're in the callback from the ImageResourceFetcher, best to delay
-  // deletion.
+
+  // Remove the image fetcher from our pending list. We're in the callback from
+  // ImageResourceFetcher, best to delay deletion.
+  for (ImageResourceFetcherList::iterator iter = image_fetchers_.begin();
+       iter != image_fetchers_.end(); ++iter) {
+    if (iter->get() == fetcher) {
+      iter->release();
+      image_fetchers_.erase(iter);
+      break;
+    }
+  }
   MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
 }
 
@@ -5533,3 +5680,10 @@ void RenderView::OnSelectPopupMenuItem(int selected_index) {
   external_popup_menu_.reset();
 }
 #endif
+
+void RenderView::AddErrorToRootConsole(const string16& message) {
+  if (webview() && webview()->mainFrame()) {
+    webview()->mainFrame()->addMessageToConsole(
+        WebConsoleMessage(WebConsoleMessage::LevelError, message));
+  }
+}

@@ -2060,6 +2060,11 @@ void TabContents::OnDidGetApplicationInfo(int32 page_id,
     delegate()->OnDidGetApplicationInfo(this, page_id);
 }
 
+void TabContents::OnInstallApplication(const WebApplicationInfo& info) {
+  if (delegate())
+    delegate()->OnInstallApplication(this, info);
+}
+
 void TabContents::OnDisabledOutdatedPlugin(const string16& name,
                                            const GURL& update_url) {
   new DisabledPluginInfoBar(this, name, update_url);

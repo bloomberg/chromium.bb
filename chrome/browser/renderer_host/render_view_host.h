@@ -670,6 +670,7 @@ class RenderViewHost : public RenderWidgetHost {
                                     int32 status);
 
   void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
+  void OnInstallApplication(const WebApplicationInfo& info);
   void OnMsgShouldCloseACK(bool proceed);
   void OnQueryFormFieldAutoFill(int request_id,
                                 bool form_autofilled,

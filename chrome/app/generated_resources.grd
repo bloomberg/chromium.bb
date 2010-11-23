@@ -4098,6 +4098,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION" desc="Description of the Cloud Print Proxy lab">
         Enables a background service that connects the <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> service to any printers installed on this computer. Once this lab is enabled, you can turn <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> on by logging in with your Google account in the Options/Preferences in the Under the Hood section.
       </message>
+      <message name="IDS_FLAGS_CRXLESS_WEB_APPS_NAME" desc="Title of the CRX-less web apps lab">
+        CRX-less Web Apps
+      </message>
+      <message name="IDS_FLAGS_CRXLESS_WEB_APPS_DESCRIPTION" desc="Description of the CRX-less web apps lab">
+        Enables support for installing Chrome apps that are deployed using a manifest file on a web page, rather than by packaging the manifest and icons into a crx file.
+      </message>
       <message name="IDS_FLAGS_CONFLICTS_CHECK_NAME" desc="Title of the run conflicts check flag">
         Check for known conflicts with 3rd party modules.
       </message>

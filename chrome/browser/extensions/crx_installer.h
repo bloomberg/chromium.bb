@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/web_apps.h"
 
 class ExtensionsService;
 class SkBitmap;
@@ -60,21 +61,22 @@ class CrxInstaller
   // only be called on the UI thread.
   static bool ClearWhitelistedInstallId(const std::string& id);
 
-  // Constructor.  Extensions will be unpacked to |install_directory|.
-  // Extension objects will be sent to |frontend|, and any UI will be shown
-  // via |client|. For silent install, pass NULL for |client|.
-  CrxInstaller(const FilePath& install_directory,
-               ExtensionsService* frontend,
+  // Constructor.  Extensions will be installed into
+  // frontend->install_directory() then registered with |frontend|. Any install
+  // UI will be displayed using |client|. Pass NULL for |client| for silent
+  // install.
+  CrxInstaller(ExtensionsService* frontend,
                ExtensionInstallUI* client);
 
-  // Install the crx in |source_file|. Note that this will most likely
-  // complete asynchronously.
+  // Install the crx in |source_file|.
   void InstallCrx(const FilePath& source_file);
 
-  // Install the user script in |source_file|. Note that this will most likely
-  // complete asynchronously.
+  // Convert the specified user script into an extension and install it.
   void InstallUserScript(const FilePath& source_file,
                          const GURL& original_url);
+
+  // Convert the specified web app into an extension and install it.
+  void InstallWebApp(const WebApplicationInfo& web_app);
 
   // Overridden from ExtensionInstallUI::Delegate:
   virtual void InstallUIProceed();
@@ -121,6 +123,9 @@ class CrxInstaller
 
   // Converts the source user script to an extension.
   void ConvertUserScriptOnFileThread();
+
+  // Converts the source web app to an extension.
+  void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app);
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.

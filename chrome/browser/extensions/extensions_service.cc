@@ -642,8 +642,7 @@ void ExtensionsService::Init() {
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
   scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(install_directory_,
-                       this,  // frontend
+      new CrxInstaller(this,  // frontend
                        NULL));  // no client (silent install)
   installer->set_allow_privilege_increase(true);
   installer->InstallCrx(extension_path);
@@ -685,8 +684,7 @@ void ExtensionsService::UpdateExtension(const std::string& id,
       NULL : new ExtensionInstallUI(profile_);
 
   scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(install_directory_,
-                       this,  // frontend
+      new CrxInstaller(this,  // frontend
                        client));
   installer->set_expected_id(id);
   if (is_pending_extension)
@@ -1877,8 +1875,7 @@ void ExtensionsService::OnExternalExtensionFileFound(
   }
 
   scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(install_directory_,
-                       this,  // frontend
+      new CrxInstaller(this,  // frontend
                        NULL));  // no client (silent install)
   installer->set_install_source(location);
   installer->set_expected_id(id);

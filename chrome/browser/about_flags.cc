@@ -154,6 +154,13 @@ const Experiment kExperiments[] = {
     switches::kEnableCloudPrintProxy
   },
   {
+    "crxless-web-apps",
+    IDS_FLAGS_CRXLESS_WEB_APPS_NAME,
+    IDS_FLAGS_CRXLESS_WEB_APPS_DESCRIPTION,
+    kOsAll,
+    switches::kEnableCrxlessWebApps
+  },
+  {
     "match-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PREDICTIVE_INSTANT_NAME,
     IDS_FLAGS_PREDICTIVE_INSTANT_DESCRIPTION,

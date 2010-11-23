@@ -988,9 +988,7 @@ TEST_F(ExtensionsServiceTest, InstallUserScript) {
 
   ASSERT_TRUE(file_util::PathExists(path));
   scoped_refptr<CrxInstaller> installer(
-      new CrxInstaller(service_->install_directory(),
-                       service_,
-                       NULL));  // silent install
+      new CrxInstaller(service_, NULL));  // silent install
   installer->InstallUserScript(
       path,
       GURL("http://www.aaronboodman.com/scripts/user_script_basic.user.js"));

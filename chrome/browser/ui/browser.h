@@ -47,6 +47,7 @@ class SkBitmap;
 class StatusBubble;
 class TabNavigation;
 class TabStripModel;
+struct WebApplicationInfo;
 namespace gfx {
 class Point;
 }
@@ -779,6 +780,8 @@ class Browser : public TabHandlerDelegate,
       NavigationType::Type navigation_type);
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id);
+  virtual void OnInstallApplication(TabContents* tab_contents,
+                                    const WebApplicationInfo& app_info);
   virtual void ContentRestrictionsChanged(TabContents* source);
 
   // Overridden from SelectFileDialog::Listener:

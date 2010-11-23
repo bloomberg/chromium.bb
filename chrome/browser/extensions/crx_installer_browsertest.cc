@@ -50,9 +50,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     MockInstallUI* mock_install_ui = new MockInstallUI(browser()->profile());
 
     scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(service->install_directory(),
-                         service,
-                         mock_install_ui /* ownership transferred */));
+        new CrxInstaller(service, mock_install_ui /* ownership transferred */));
 
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);

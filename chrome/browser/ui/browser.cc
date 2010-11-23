@@ -46,6 +46,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -97,6 +98,7 @@
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/web_apps.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -3153,6 +3155,19 @@ void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
   }
 
   pending_web_app_action_ = NONE;
+}
+
+void Browser::OnInstallApplication(TabContents* source,
+                                   const WebApplicationInfo& web_app) {
+  ExtensionsService* extensions_service = profile()->GetExtensionsService();
+  if (!extensions_service)
+    return;
+
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(extensions_service,
+                       extensions_service->show_extensions_prompts() ?
+                       new ExtensionInstallUI(profile()) : NULL));
+  installer->InstallWebApp(web_app);
 }
 
 void Browser::ContentRestrictionsChanged(TabContents* source) {
