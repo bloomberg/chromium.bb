@@ -341,13 +341,18 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
     GtkTreeIter iter;
     gtk_tree_model_get_iter(
         model, &iter, reinterpret_cast<GtkTreePath*>(item->data));
-    CookieTreeOriginNode* node = static_cast<CookieTreeOriginNode*>(
-        adapter->GetNode(&iter));
-    if (node->CanCreateContentException()) {
+    CookieTreeNode* node =
+        static_cast<CookieTreeNode*>(adapter->GetNode(&iter));
+    if (node->GetDetailedInfo().node_type !=
+        CookieTreeNode::DetailedInfo::TYPE_ORIGIN)
+      continue;
+    CookieTreeOriginNode* origin_node = static_cast<CookieTreeOriginNode*>(
+        node);
+    if (origin_node->CanCreateContentException()) {
       if (!last_domain_name.empty())
         multiple_domains_added = true;
-      last_domain_name = node->GetTitle();
-      node->CreateContentException(
+      last_domain_name = origin_node->GetTitle();
+      origin_node->CreateContentException(
           tab_contents_->profile()->GetHostContentSettingsMap(), setting);
     }
   }
