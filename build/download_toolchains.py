@@ -28,7 +28,7 @@ PLATFORM_COLLAPSE = {
 
 PLATFORM_MAPPING = {
     'win32': [
-        ['win_x86_win7', 'win_x86'],  # Multilib toolchain
+        ['win_x86', 'win_x86'],  # Multilib toolchain
     ],
     'linux': [
         ['linux_x86', 'linux_x86'],  # Multilib toolchain
