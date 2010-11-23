@@ -29,15 +29,16 @@
 #endif
 
 #ifndef NDEBUG
-#define TEST_ITERATIONS 2
-#define DATABASE_TEST_ITERATIONS 2
+static const int kTestIterations = 2;
+static const int kDatabaseTestIterations = 2;
 #else
-#define TEST_ITERATIONS 10
+static const int kTestIterations = 10;
 // For some unknown reason, the DB perf tests are much much slower on the
 // Vista perf bot, so we have to cut down the number of iterations to 5
 // to make sure each test finishes in less than 10 minutes.
-#define DATABASE_TEST_ITERATIONS 5
+static const int kDatabaseTestIterations = 5;
 #endif
+static const int kIDBTestIterations = 5;
 
 // URL at which data files may be found for HTTP tests.  The document root of
 // this URL's server should point to data/page_cycler/.
@@ -164,7 +165,7 @@ class PageCyclerTest : public UIPerfTest {
     show_window_ = true;
 
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-    num_test_iterations_ = TEST_ITERATIONS;
+    num_test_iterations_ = kTestIterations;
 
     if (parsed_command_line.HasSwitch(switches::kPageCyclerIterations)) {
       std::string str = parsed_command_line.GetSwitchValueASCII(
@@ -357,6 +358,16 @@ static FilePath GetDatabaseDataPath(const char* name) {
   return test_path;
 }
 
+static FilePath GetIndexedDatabaseDataPath(const char* name) {
+  FilePath test_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
+  test_path = test_path.Append(FILE_PATH_LITERAL("tools"));
+  test_path = test_path.Append(FILE_PATH_LITERAL("page_cycler"));
+  test_path = test_path.Append(FILE_PATH_LITERAL("indexed_db"));
+  test_path = test_path.AppendASCII(name);
+  return test_path;
+}
+
 static bool HasDatabaseErrors(const std::string timings) {
   size_t pos = 0;
   size_t new_pos = 0;
@@ -410,7 +421,7 @@ class PageCyclerDatabaseTest : public PageCyclerTest {
   }
 
   virtual int GetTestIterations() {
-    return DATABASE_TEST_ITERATIONS;
+    return kDatabaseTestIterations;
   }
 };
 
@@ -429,7 +440,45 @@ class PageCyclerDatabaseReferenceTest : public PageCyclerReferenceTest {
   }
 
   virtual int GetTestIterations() {
-    return DATABASE_TEST_ITERATIONS;
+    return kDatabaseTestIterations;
+  }
+};
+
+class PageCyclerIndexedDatabaseTest : public PageCyclerTest {
+ public:
+  PageCyclerIndexedDatabaseTest() {
+    print_times_only_ = true;
+  }
+
+  virtual FilePath GetDataPath(const char* name) {
+    return GetIndexedDatabaseDataPath(name);
+  }
+
+  virtual bool HasErrors(const std::string timings) {
+    return HasDatabaseErrors(timings);
+  }
+
+  virtual int GetTestIterations() {
+    return kIDBTestIterations;
+  }
+};
+
+class PageCyclerIndexedDatabaseReferenceTest : public PageCyclerReferenceTest {
+ public:
+  PageCyclerIndexedDatabaseReferenceTest() {
+    print_times_only_ = true;
+  }
+
+  virtual FilePath GetDataPath(const char* name) {
+    return GetIndexedDatabaseDataPath(name);
+  }
+
+  virtual bool HasErrors(const std::string timings) {
+    return HasDatabaseErrors(timings);
+  }
+
+  virtual int GetTestIterations() {
+    return kIDBTestIterations;
   }
 };
 
@@ -449,6 +498,16 @@ TEST_F(PageCyclerDatabaseTest, Database##name##File) { \
   RunTest(test, test, false); \
 } \
 TEST_F(PageCyclerDatabaseReferenceTest, Database##name##File) { \
+  RunTest(test, test, false); \
+}
+
+// This macro simplifies setting up regular and reference build tests
+// for HTML5 Indexed DB tests.
+#define PAGE_CYCLER_IDB_TESTS(test, name) \
+TEST_F(PageCyclerIndexedDatabaseTest, IndexedDB##name##File) { \
+  RunTest(test, test, false); \
+} \
+TEST_F(PageCyclerIndexedDatabaseReferenceTest, IndexedDB##name##File) { \
   RunTest(test, test, false); \
 }
 
@@ -509,5 +568,8 @@ PAGE_CYCLER_DATABASE_TESTS("delete-transactions",
 PAGE_CYCLER_DATABASE_TESTS("pseudo-random-transactions",
                            PseudoRandomTransactions);
 #endif
+
+// Indexed DB tests.
+PAGE_CYCLER_IDB_TESTS("basic_insert", BasicInsert);
 
 }  // namespace
