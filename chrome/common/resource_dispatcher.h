@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/hash_tables.h"
+#include "base/linked_ptr.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "ipc/ipc_channel.h"
@@ -79,12 +80,16 @@ class ResourceDispatcher {
     MessageQueue deferred_message_queue;
     bool is_deferred;
     GURL url;
+    linked_ptr<IPC::Message> pending_redirect_message;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
 
   // Helper to lookup the info based on the request_id.
   // May return NULL if the request as been canceled from the client side.
   PendingRequestInfo* GetPendingRequestInfo(int request_id);
+
+  // Follows redirect, if any, for the given request.
+  void FollowPendingRedirect(int request_id, PendingRequestInfo& request_info);
 
   // Message response handlers, called by the message handler for this process.
   void OnUploadProgress(

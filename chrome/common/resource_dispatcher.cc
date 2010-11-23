@@ -395,18 +395,30 @@ void ResourceDispatcher::OnReceivedRedirect(
   if (!request_info)
     return;
 
+  int32 routing_id = message.routing_id();
   bool has_new_first_party_for_cookies = false;
   GURL new_first_party_for_cookies;
   if (request_info->peer->OnReceivedRedirect(new_url, info,
                                             &has_new_first_party_for_cookies,
                                             &new_first_party_for_cookies)) {
-    message_sender()->Send(
-        new ViewHostMsg_FollowRedirect(message.routing_id(), request_id,
+    request_info->pending_redirect_message.reset(
+        new ViewHostMsg_FollowRedirect(routing_id, request_id,
                                        has_new_first_party_for_cookies,
                                        new_first_party_for_cookies));
+    if (!request_info->is_deferred) {
+      FollowPendingRedirect(request_id, *request_info);
+    }
   } else {
-    CancelPendingRequest(message.routing_id(), request_id);
+    CancelPendingRequest(routing_id, request_id);
   }
+}
+
+void ResourceDispatcher::FollowPendingRedirect(
+    int request_id,
+    PendingRequestInfo& request_info) {
+  IPC::Message* msg = request_info.pending_redirect_message.release();
+  if (msg)
+    message_sender()->Send(msg);
 }
 
 void ResourceDispatcher::OnRequestComplete(int request_id,
@@ -491,6 +503,9 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
     request_info.is_deferred = value;
   } else if (request_info.is_deferred) {
     request_info.is_deferred = false;
+
+    FollowPendingRedirect(request_id, request_info);
+
     MessageLoop::current()->PostTask(FROM_HERE,
         method_factory_.NewRunnableMethod(
             &ResourceDispatcher::FlushDeferredMessages, request_id));
