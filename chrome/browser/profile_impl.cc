@@ -81,7 +81,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
@@ -171,6 +170,11 @@ FilePath GetCachePath(const FilePath& base) {
 
 FilePath GetMediaCachePath(const FilePath& base) {
   return base.Append(chrome::kMediaCacheDirname);
+}
+
+bool HasACacheSubdir(const FilePath &dir) {
+  return file_util::PathExists(GetCachePath(dir)) ||
+         file_util::PathExists(GetMediaCachePath(dir));
 }
 
 // Simple task to log the size of the current profile.
@@ -276,11 +280,46 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(prefs, CommandLine::ForCurrentProcess());
 
-  // It would be nice to use PathService for fetching this directory, but
-  // the cache directory depends on the profile directory, which isn't available
-  // to PathService.
-  chrome::GetUserCacheDirectory(path_, &base_cache_path_);
-  file_util::CreateDirectory(base_cache_path_);
+#if defined(OS_MACOSX)
+  // If the profile directory doesn't already have a cache directory and it
+  // is under ~/Library/Application Support, use a suitable cache directory
+  // under ~/Library/Caches.  For example, a profile directory of
+  // ~/Library/Application Support/Google/Chrome/MyProfileName that doesn't
+  // have a "Cache" or "MediaCache" subdirectory would use the cache directory
+  // ~/Library/Caches/Google/Chrome/MyProfileName.
+  //
+  // TODO(akalin): Come up with unit tests for this.
+  if (!HasACacheSubdir(path_)) {
+    FilePath app_data_path, user_cache_path;
+    if (PathService::Get(base::DIR_APP_DATA, &app_data_path) &&
+        PathService::Get(base::DIR_USER_CACHE, &user_cache_path) &&
+        app_data_path.AppendRelativePath(path_, &user_cache_path)) {
+      base_cache_path_ = user_cache_path;
+    }
+  }
+#elif defined(OS_POSIX)  // Posix minus Mac.
+  // See http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+  // for a spec on where cache files go.  The net effect for most systems is we
+  // use ~/.cache/chromium/ for Chromium and ~/.cache/google-chrome/ for
+  // official builds.
+  // If we're using a different user-data-dir, though, fall through
+  // to the "normal" cache directory (a subdirectory of that).
+  // TODO(evan): all of this logic belongs in path_service; refactor and remove
+  // this IsOverriden business.
+  if (!PathService::IsOverridden(chrome::DIR_USER_DATA)) {
+#if defined(GOOGLE_CHROME_BUILD)
+    const char kCacheDir[] = "google-chrome";
+#else
+    const char kCacheDir[] = "chromium";
+#endif
+    PathService::Get(base::DIR_USER_CACHE, &base_cache_path_);
+    base_cache_path_ = base_cache_path_.Append(kCacheDir);
+    if (!file_util::PathExists(base_cache_path_))
+      file_util::CreateDirectory(base_cache_path_);
+  }
+#endif
+  if (base_cache_path_.empty())
+    base_cache_path_ = path_;
 
   // Listen for theme installations from our original profile.
   registrar_.Add(this, NotificationType::THEME_INSTALLED,
