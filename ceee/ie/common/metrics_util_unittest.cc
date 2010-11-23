@@ -36,12 +36,6 @@ using testing::SetArgumentPointee;
 using testing::StrictMock;
 using testing::Return;
 
-class BrokerRpcClientMock : public BrokerRpcClient {
-public:
-  MOCK_METHOD2(SendUmaHistogramTimes, bool(BSTR, int));
-  MOCK_METHOD5(SendUmaHistogramData, bool(BSTR, int, int, int, int));
-};
-
 class CeeeMetricsUtilTest : public testing::Test {
  protected:
   virtual void CreateAndDestroyTimer(BrokerRpcClient* rpc_client) {
@@ -64,7 +58,7 @@ TEST_F(CeeeMetricsUtilTest, ScopedTimerSuccess) {
 
   // Test that timing is right. This should ultimately succeed.
   // We expect less than a couple milliseconds on this call.
-  BrokerRpcClientMock broker_rpc;
+  testing::MockBrokerRpcClient broker_rpc;
   EXPECT_CALL(broker_rpc, SendUmaHistogramTimes(_, testing::Lt(10)));
   CreateAndDestroyTimer(&broker_rpc);
 }
