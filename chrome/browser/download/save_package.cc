@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/save_package.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -1212,12 +1214,36 @@ void SavePackage::CreateDirectoryOnFileThread(
   }
 
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
-  FilePath suggested_path = save_dir.Append(
-      GetSuggestedNameForSaveAs(can_save_as_complete, mime_type));
+  FilePath suggested_filename = GetSuggestedNameForSaveAs(can_save_as_complete,
+                                                          mime_type);
+  FilePath::StringType pure_file_name =
+      suggested_filename.RemoveExtension().BaseName().value();
+  FilePath::StringType file_name_ext = suggested_filename.Extension();
+
+  // Need to make sure the suggested file name is not too long.
+  uint32 max_path = kMaxFilePathLength;
+#if defined(OS_POSIX)
+  // On POSIX, the length of |pure_file_name| + |file_name_ext| is further
+  // restricted by NAME_MAX. The maximum allowed path looks like:
+  // '/path/to/save_dir' + '/' + NAME_MAX.
+  max_path = std::min(max_path,
+                      static_cast<uint32>(save_dir.value().length()) +
+                      NAME_MAX + 1);
+#endif
+  if (GetSafePureFileName(save_dir, file_name_ext, max_path, &pure_file_name)) {
+    save_dir = save_dir.Append(pure_file_name + file_name_ext);
+  } else {
+    // Cannot create a shorter filename. This will cause the save as operation
+    // to fail unless the user pick a shorter name. Continuing even though it
+    // will fail because returning means no save as popup for the user, which
+    // is even more confusing. This case should be rare though.
+    save_dir = save_dir.Append(suggested_filename);
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &SavePackage::ContinueGetSaveInfo,
-          suggested_path, can_save_as_complete));
+      NewRunnableMethod(this, &SavePackage::ContinueGetSaveInfo, save_dir,
+                        can_save_as_complete));
 }
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
