@@ -185,6 +185,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   std::map<std::string, int> guid_id_map_;
   std::map<int, std::string> id_guid_map_;
 
+  friend class FormStructureBrowserTest;
   friend class TestAutoFillManager;
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressForm);

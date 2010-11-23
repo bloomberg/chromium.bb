@@ -294,6 +294,7 @@
         'browser/autocomplete/autocomplete_edit_view_browsertest.cc',
         'browser/autofill/autofill_common_test.cc',
         'browser/autofill/autofill_browsertest.cc',
+        'browser/autofill/form_structure_browsertest.cc',
         'browser/browser_focus_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',
         'browser/collected_cookies_uitest.cc',
