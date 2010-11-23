@@ -44,6 +44,7 @@
     'ntp',
     'omnibox',
     'passwords',
+    'pdf',
     'plugins',
     # 'popups',  crbug.com/59208
     'prefs',
