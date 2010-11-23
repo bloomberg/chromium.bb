@@ -76,6 +76,8 @@ class CeeeBrokerModule : public CAtlExeModuleT<CeeeBrokerModule> {
   HRESULT PostMessageLoop();
   HRESULT PreMessageLoop(int show);
  private:
+  void TearDown();
+
   // We maintain a postman COM object on the stack so that we can
   // properly initialize and terminate it at the right time.
   CComObjectStackEx<ChromePostman> chrome_postman_;
@@ -162,17 +164,30 @@ HRESULT CeeeBrokerModule::PreMessageLoop(int show) {
   chrome_postman_.Init();
   WindowEventsFunnel::Initialize();
 
-  if (!rpc_server_.Start())
-    return RPC_E_FAULT;
+  // Another instance of broker may be shutting down right now. Do several
+  // attempts in hope the process exits and releases endpoint.
+  for (int i = 0; i < 10 && !rpc_server_.Start(); ++i)
+    Sleep(500);
 
   // Initialize metrics. We need the rpc_server_ above to be available.
   MetricsService::Start();
 
-  return CAtlExeModuleT<CeeeBrokerModule>::PreMessageLoop(show);
+  HRESULT hr = rpc_server_.is_started() ? S_OK : RPC_E_FAULT;
+  if (SUCCEEDED(hr))
+    hr = CAtlExeModuleT<CeeeBrokerModule>::PreMessageLoop(show);
+  if (FAILED(hr))
+    TearDown();
+  return hr;
 }
 
 HRESULT CeeeBrokerModule::PostMessageLoop() {
   HRESULT hr = CAtlExeModuleT<CeeeBrokerModule>::PostMessageLoop();
+  TearDown();
+  return hr;
+}
+
+void CeeeBrokerModule::TearDown() {
+  rpc_server_.Stop();
   Singleton<ExecutorsManager,
             ExecutorsManager::SingletonTraits>()->Terminate();
   WindowEventsFunnel::Terminate();
@@ -181,13 +196,11 @@ HRESULT CeeeBrokerModule::PostMessageLoop() {
   MetricsService::Stop();
 
   chrome_postman_.Term();
-  return hr;
 }
 
 CeeeBrokerModule::~CeeeBrokerModule() {
   crash_reporter_.ShutdownCrashReporting();
   logging::CloseLogFile();
-
   TRACE_EVENT_END("ceee.broker", this, "");
 }
 
