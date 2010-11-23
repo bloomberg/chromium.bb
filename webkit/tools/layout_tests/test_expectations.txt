@@ -19,3 +19,9 @@ BUG_JPARENT MAC : fast/lists/001-vertical.html = IMAGE
 // Started to flake since http://src.chromium.org/viewvc/chrome?view=rev&revision=66937
 // (72440; 72514] range
 BUG_ANTON LINUX DEBUG : fast/ruby/nested-ruby.html = CRASH PASS
+
+// Need rebaseline.
+BUG_KINUKO : fast/filesystem/read-directory.html = TEXT
+BUG_KINUKO : fast/filesystem/simple-persistent.html = TEXT
+BUG_KINUKO : fast/filesystem/simple-temporary.html = TEXT
+BUG_KINUKO : fast/filesystem/async-operations.html = TEXT

@@ -48,6 +48,7 @@
 #include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/support/test_webkit_client.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 using WebKit::WebCString;
@@ -543,18 +544,11 @@ WebURL GetDevToolsPathAsURL() {
 }
 
 // FileSystem
-void OpenFileSystem(WebFrame*, WebFileSystem::Type type,
-    long long, bool, WebFileSystemCallbacks* callbacks) {
-  // TODO(kinuko): hook up FileSystemPathManager in a way that the code could
-  // be shared with test_shell.
-  if (test_environment->webkit_client()->file_system_root().empty()) {
-    callbacks->didFail(WebKit::WebFileErrorSecurity);
-  } else {
-    callbacks->didOpenFileSystem(
-        "TestShellFileSystem",
-        webkit_glue::FilePathToWebString(
-            test_environment->webkit_client()->file_system_root()));
-  }
+void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
+    long long size, bool create, WebFileSystemCallbacks* callbacks) {
+  SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
+      test_environment->webkit_client()->fileSystem());
+  fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
 }
 
 }  // namespace webkit_support

@@ -70,6 +70,7 @@
 #include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/test_geolocation_service.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -1126,15 +1127,9 @@ bool TestWebViewDelegate::allowScript(WebFrame* frame,
 void TestWebViewDelegate::openFileSystem(
     WebFrame* frame, WebFileSystem::Type type, long long size, bool create,
     WebFileSystemCallbacks* callbacks) {
-  if (shell_->file_system_root().empty()) {
-    // The FileSystem temp directory was not initialized successfully.
-    callbacks->didFail(WebKit::WebFileErrorSecurity);
-  } else {
-    // TODO(michaeln): need to put origin/type in the path.
-    callbacks->didOpenFileSystem(
-        "TestShellFileSystem",
-        webkit_glue::FilePathToWebString(shell_->file_system_root()));
-  }
+  SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
+      WebKit::webKitClient()->fileSystem());
+  fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
 }
 
 // WebPluginPageDelegate -----------------------------------------------------

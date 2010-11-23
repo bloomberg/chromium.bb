@@ -89,12 +89,6 @@ class SandboxedFileSystemOperation : public FileSystemOperation {
                                     bool create,
                                     int64 growth);
 
-  // Checks if a given |path| does not contain any restricted names/chars
-  // for new files. Returns true if the given |path| is safe.
-  // Otherwise it fires dispatcher's DidFail method with
-  // PLATFORM_FILE_ERROR_SECURITY and returns false.
-  bool CheckIfFilePathIsSafe(const FilePath& path);
-
   // Not owned.  See the comment at the constructor.
   SandboxedFileSystemContext* file_system_context_;
 

@@ -351,10 +351,6 @@ public:
       test_params_ = test_params;
     }
 
-    const FilePath& file_system_root() const {
-      return file_system_root_.path();
-    }
-
 #if defined(OS_MACOSX)
     // handle cleaning up a shell given the associated window
     static void DestroyAssociatedShell(gfx::NativeWindow handle);
@@ -459,9 +455,6 @@ private:
         device_orientation_client_mock_;
     scoped_ptr<WebKit::WebSpeechInputControllerMock>
         speech_input_controller_mock_;
-
-    // A temporary directory for FileSystem API.
-    ScopedTempDir file_system_root_;
 
     const TestParams* test_params_;
 

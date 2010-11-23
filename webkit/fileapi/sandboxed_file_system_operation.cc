@@ -115,9 +115,10 @@ void SandboxedFileSystemOperation::Truncate(
   FileSystemOperation::Truncate(path, length);
 }
 
-void SandboxedFileSystemOperation::TouchFile(const FilePath& path,
-                const base::Time& last_access_time,
-                const base::Time& last_modified_time) {
+void SandboxedFileSystemOperation::TouchFile(
+    const FilePath& path,
+    const base::Time& last_access_time,
+    const base::Time& last_modified_time) {
   if (!VerifyFileSystemPathForWrite(path, true /* create */, 0))
     return;
   FileSystemOperation::TouchFile(path, last_access_time, last_modified_time);
@@ -166,16 +167,6 @@ bool SandboxedFileSystemOperation::VerifyFileSystemPathForWrite(
   if (!file_system_context_->quota_manager()->CheckOriginQuota(
           origin_url, growth)) {
     dispatcher()->DidFail(base::PLATFORM_FILE_ERROR_NO_SPACE);
-    return false;
-  }
-  return true;
-}
-
-bool SandboxedFileSystemOperation::CheckIfFilePathIsSafe(
-    const FilePath& path) {
-  if (file_system_context_->path_manager()->IsRestrictedFileName(
-          path.BaseName())) {
-    dispatcher()->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
   return true;
