@@ -14,7 +14,7 @@ namespace chromeos {
 // height.
 class TextfieldWithMargin : public views::Textfield {
  public:
-  TextfieldWithMargin() {};
+  TextfieldWithMargin();
 
   explicit TextfieldWithMargin(views::Textfield::StyleFlags style)
       : Textfield(style) {}

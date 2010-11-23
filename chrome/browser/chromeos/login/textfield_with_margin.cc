@@ -9,13 +9,20 @@ namespace {
 // Holds ratio of the margin to the preferred text height.
 const double kTextMarginRate = 0.33;
 
+// Size of each vertical margin (top, bottom).
+const int kVerticalMargin = 3;
+
 }  // namespace
 
 namespace chromeos {
 
+TextfieldWithMargin::TextfieldWithMargin() {
+}
+
 void TextfieldWithMargin::Layout() {
   int margin = GetPreferredSize().height() * kTextMarginRate;
   SetHorizontalMargins(margin, margin);
+  SetVerticalMargins(kVerticalMargin, kVerticalMargin);
   views::Textfield::Layout();
 }
 
