@@ -66,6 +66,14 @@ bool IsPluginBuiltInFlash(const CommandLine& cmd_line) {
   FilePath path =  cmd_line.GetSwitchValuePath(switches::kPluginPath);
   return (path.BaseName() == FilePath(L"gcswf32.dll"));
 }
+
+// Disables Input method editor services for the whole process.
+void DisableIME() {
+  if (0 == ::GetSystemMetrics(SM_IMMENABLED))
+    return;
+  ::ImmDisableIME(-1);
+}
+
 #endif
 
 // main() routine for running as the plugin process.
@@ -135,6 +143,7 @@ int PluginMain(const MainFunctionParams& parameters) {
       // start elevated and it will call DelayedLowerToken(0) when it's ready.
       if (IsPluginBuiltInFlash(parsed_command_line)) {
         DVLOG(1) << "Sandboxing flash";
+        DisableIME();
         DelayedLowerToken(target_services);
       } else {
         target_services->LowerToken();
