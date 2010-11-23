@@ -76,14 +76,14 @@ class AcceleratedSurfaceContainerMac {
   // time the drawing context has changed.
   void ForceTextureReload() { texture_needs_upload_ = true; }
 
+  // Returns if the surface should be shown.
+  bool ShouldBeVisible() const;
+
   // Notifies the the container that its surface was painted to.
   void set_was_painted_to(uint64 surface_id);
 
   // Notifies the container that its surface is invalid.
   void set_surface_invalid() { was_painted_to_ = false; }
-
-  // Returns if the surface should be shown.
-  bool should_be_visible() const { return visible_ && was_painted_to_; }
  private:
   // The manager of this accelerated surface container.
   AcceleratedSurfaceContainerManagerMac* manager_;
@@ -115,7 +115,7 @@ class AcceleratedSurfaceContainerMac {
   int32 height_;
 
   // The clip rectangle, relative to the (x_, y_) origin.
-  gfx::Rect clipRect_;
+  gfx::Rect clip_rect_;
 
   // The "live" OpenGL texture referring to this IOSurfaceRef. Note
   // that per the CGLTexImageIOSurface2D API we do not need to

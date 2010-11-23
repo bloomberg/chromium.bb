@@ -156,7 +156,7 @@ bool AcceleratedSurfaceContainerManagerMac::SurfaceShouldBeVisible(
     return false;
 
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
-  return container && container->should_be_visible();
+  return container && container->ShouldBeVisible();
 }
 
 AcceleratedSurfaceContainerMac*

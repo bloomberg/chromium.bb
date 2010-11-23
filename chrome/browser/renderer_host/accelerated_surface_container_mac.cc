@@ -53,7 +53,8 @@ void AcceleratedSurfaceContainerMac::SetSizeAndTransportDIB(
 void AcceleratedSurfaceContainerMac::SetGeometry(
     const webkit_glue::WebPluginGeometry& geom) {
   visible_ = geom.visible;
-  clipRect_ = geom.clip_rect;
+  if (geom.rects_valid)
+    clip_rect_ = geom.clip_rect;
 }
 
 void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
@@ -140,10 +141,10 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     // TODO(kbr): convert this to use only OpenGL ES 2.0 functionality.
 
     // TODO(kbr): may need to pay attention to cutout rects.
-    int clipX = clipRect_.x();
-    int clipY = clipRect_.y();
-    int clipWidth = clipRect_.width();
-    int clipHeight = clipRect_.height();
+    int clipX = clip_rect_.x();
+    int clipY = clip_rect_.y();
+    int clipWidth = clip_rect_.width();
+    int clipHeight = clip_rect_.height();
 
     if (clipX + clipWidth > texture_width)
       clipWidth = texture_width - clipX;
@@ -195,6 +196,10 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     glEnd();
     glDisable(target);
   }
+}
+
+bool AcceleratedSurfaceContainerMac::ShouldBeVisible() const {
+  return visible_ && was_painted_to_ && !clip_rect_.IsEmpty();
 }
 
 void AcceleratedSurfaceContainerMac::set_was_painted_to(uint64 surface_id) {

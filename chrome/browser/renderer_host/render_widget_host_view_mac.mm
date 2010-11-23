@@ -577,30 +577,25 @@ void RenderWidgetHostViewMac::MovePluginWindows(
        iter != moves.end();
        ++iter) {
     webkit_glue::WebPluginGeometry geom = *iter;
-    // Ignore bogus moves which claim to move the plugin to (0, 0)
-    // with width and height (0, 0)
-    if (geom.window_rect.x() == 0 &&
-        geom.window_rect.y() == 0 &&
-        geom.window_rect.IsEmpty()) {
-      continue;
-    }
-
-    gfx::Rect rect = geom.window_rect;
-    if (geom.visible) {
-      rect.set_x(rect.x() + geom.clip_rect.x());
-      rect.set_y(rect.y() + geom.clip_rect.y());
-      rect.set_width(geom.clip_rect.width());
-      rect.set_height(geom.clip_rect.height());
-    }
 
     PluginViewMap::iterator it = plugin_views_.find(geom.window);
     DCHECK(plugin_views_.end() != it);
     if (plugin_views_.end() == it) {
       continue;
     }
-    NSRect new_rect([cocoa_view_ flipRectToNSRect:rect]);
-    [it->second setFrame:new_rect];
-    [it->second setNeedsDisplay:YES];
+
+    if (geom.rects_valid) {
+      gfx::Rect rect = geom.window_rect;
+      if (geom.visible) {
+        rect.set_x(rect.x() + geom.clip_rect.x());
+        rect.set_y(rect.y() + geom.clip_rect.y());
+        rect.set_width(geom.clip_rect.width());
+        rect.set_height(geom.clip_rect.height());
+      }
+      NSRect new_rect([cocoa_view_ flipRectToNSRect:rect]);
+      [it->second setFrame:new_rect];
+      [it->second setNeedsDisplay:YES];
+    }
 
     plugin_container_manager_.SetPluginContainerGeometry(geom);
 
