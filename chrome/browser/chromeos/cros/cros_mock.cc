@@ -283,19 +283,19 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .WillRepeatedly((Return((const Network*)(NULL))))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, wifi_connecting())
-      .Times(1)
+      .Times(AnyNumber())
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, cellular_connecting())
-      .Times(1)
+      .Times(AnyNumber())
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, Connected())
-      .Times(2)
+      .Times(AnyNumber())
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, Connecting())
-      .Times(1)
+      .Times(AnyNumber())
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
 
@@ -329,10 +329,6 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, cellular_enabled())
-      .Times(1)
-      .WillRepeatedly((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, Connected())
       .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();

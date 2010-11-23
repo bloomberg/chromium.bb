@@ -76,15 +76,15 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, wifi_connected())
         .Times(1)
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_network_library_, wifi_connecting())
-        .Times(2)
-        .WillRepeatedly(Return(false));
+//    EXPECT_CALL(*mock_network_library_, wifi_connecting())
+//        .Times(2)
+//        .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, cellular_connected())
         .Times(1)
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_network_library_, cellular_connecting())
-        .Times(2)
-        .WillRepeatedly(Return(false));
+//    EXPECT_CALL(*mock_network_library_, cellular_connecting())
+//        .Times(2)
+//        .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, ethernet_available())
         .Times(1)
         .WillRepeatedly((Return(true)))
@@ -111,13 +111,13 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .RetiresOnSaturation();
 
     // Add a Connecting for prewarming auth url check.
-    EXPECT_CALL(*mock_network_library_, Connecting())
-        .Times(1)
-        .WillRepeatedly(Return(false));
+//    EXPECT_CALL(*mock_network_library_, Connecting())
+//        .Times(1)
+//        .WillRepeatedly(Return(false));
     // Add a Connected for prewarming auth url check.
-    EXPECT_CALL(*mock_network_library_, Connected())
-        .Times(4)
-        .WillRepeatedly(Return(false));
+//    EXPECT_CALL(*mock_network_library_, Connected())
+//        .Times(4)
+//        .WillRepeatedly(Return(false));
     // Add an Observer for prewarming auth url check.
     EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
         .Times(3);
