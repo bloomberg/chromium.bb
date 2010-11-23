@@ -242,6 +242,13 @@ pid_t ZygoteHost::ForkRenderer(
       return base::kNullProcessHandle;
   }
 
+  const int kRendererScore = 5;
+  AdjustRendererOOMScore(pid, kRendererScore);
+
+  return pid;
+}
+
+void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
   // 1) You can't change the oom_adj of a non-dumpable process (EPERM) unless
   //    you're root. Because of this, we can't set the oom_adj from the browser
   //    process.
@@ -274,27 +281,23 @@ pid_t ZygoteHost::ForkRenderer(
     selinux_valid = true;
   }
 
-  const int kRendererScore = 5;
   if (using_suid_sandbox_ && !selinux) {
     base::ProcessHandle sandbox_helper_process;
-    base::file_handle_mapping_vector dummy_map;
     std::vector<std::string> adj_oom_score_cmdline;
 
     adj_oom_score_cmdline.push_back(sandbox_binary_);
     adj_oom_score_cmdline.push_back(base::kAdjustOOMScoreSwitch);
     adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
-    adj_oom_score_cmdline.push_back(base::IntToString(kRendererScore));
+    adj_oom_score_cmdline.push_back(base::IntToString(score));
     CommandLine adj_oom_score_cmd(adj_oom_score_cmdline);
-    if (base::LaunchApp(adj_oom_score_cmdline, dummy_map, false,
+    if (base::LaunchApp(adj_oom_score_cmd, false, true,
                         &sandbox_helper_process)) {
       ProcessWatcher::EnsureProcessGetsReaped(sandbox_helper_process);
     }
   } else if (!using_suid_sandbox_) {
-    if (!base::AdjustOOMScore(pid, kRendererScore))
-      LOG(ERROR) << "Failed to adjust OOM score of renderer";
+    if (!base::AdjustOOMScore(pid, score))
+      PLOG(ERROR) << "Failed to adjust OOM score of renderer with pid " << pid;
   }
-
-  return pid;
 }
 
 void ZygoteHost::EnsureProcessTerminated(pid_t process) {
