@@ -247,7 +247,11 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   // test plugins.
   FilePath plugins_dir;
   PathService::Get(base::DIR_EXE, &plugins_dir);
-  plugins_dir = plugins_dir.AppendASCII("../../../plugins");
+  if (mac_util::AmIBundled()) {
+    plugins_dir = plugins_dir.AppendASCII("../../../plugins");
+  } else {
+    plugins_dir = plugins_dir.AppendASCII("plugins");
+  }
   NPAPI::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
 }
 

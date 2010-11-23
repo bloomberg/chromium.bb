@@ -328,13 +328,6 @@
                 '<(PRODUCT_DIR)/libffmpegsumo.dylib',
               ],
             },
-            {
-              # TODO(tony): We should have TestShell.app load plugins from
-              # <(PRODUCT_DIR)/plugins so we don't have this extra copy of
-              # the plugin.
-              'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/PlugIns/',
-              'files': ['<(PRODUCT_DIR)/TestNetscapePlugIn.plugin/'],
-            },
           ],
         }, { # OS != "mac"
           'dependencies': [

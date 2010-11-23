@@ -30,14 +30,6 @@ void GetPluginCommonDirectory(std::vector<FilePath>* plugin_dirs,
   plugin_dirs->push_back(FilePath(mac_util::PathFromFSRef(ref)));
 }
 
-void GetPluginPrivateDirectory(std::vector<FilePath>* plugin_dirs) {
-  NSString* plugin_path = [[NSBundle mainBundle] builtInPlugInsPath];
-  if (!plugin_path)
-    return;
-
-  plugin_dirs->push_back(FilePath([plugin_path fileSystemRepresentation]));
-}
-
 // Returns true if the plugin should be prevented from loading.
 bool IsBlacklistedPlugin(const WebPluginInfo& info) {
   // We blacklist Gears by included MIME type, since that is more stable than
@@ -68,10 +60,6 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 
   // Load from the machine-wide area
   GetPluginCommonDirectory(plugin_dirs, false);
-
-  // Load any bundled plugins (deprecated)
-  // TODO(stuartmorgan): Remove this once it's not used in TestShell.
-  GetPluginPrivateDirectory(plugin_dirs);
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath &path,

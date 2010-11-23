@@ -30,11 +30,11 @@ using WebKit::WebString;
 #define TEST_PLUGIN_NAME "libnpapi_test_plugin.so"
 #endif
 
-#if defined(OS_MACOSX)
-#define TEST_PLUGIN_DIRECTORY "PlugIns"
-#else
-#define TEST_PLUGIN_DIRECTORY "plugins"
-#endif
+namespace {
+
+const char kPluginsDir[] = "plugins";
+
+}
 
 // Ignore these until 64-bit plugin build is fixed. http://crbug.com/18337
 #if !defined(ARCH_CPU_64_BITS)
@@ -47,7 +47,7 @@ class PluginTest : public TestShellTest {
     plugin_src_ = executable_directory.AppendASCII(TEST_PLUGIN_NAME);
     CHECK(file_util::PathExists(plugin_src_));
 
-    plugin_file_path_ = executable_directory.AppendASCII(TEST_PLUGIN_DIRECTORY);
+    plugin_file_path_ = executable_directory.AppendASCII(kPluginsDir);
     file_util::CreateDirectory(plugin_file_path_);
 
     plugin_file_path_ = plugin_file_path_.AppendASCII(TEST_PLUGIN_NAME);
@@ -127,7 +127,7 @@ TEST_F(PluginTest, Refresh) {
 // don't crash.
 TEST_F(PluginTest, DeleteFrameDuringEvent) {
   FilePath test_html = data_dir_;
-  test_html = test_html.AppendASCII(TEST_PLUGIN_DIRECTORY);
+  test_html = test_html.AppendASCII(kPluginsDir);
   test_html = test_html.AppendASCII("delete_frame.html");
   test_shell_->LoadFile(test_html);
   test_shell_->WaitTestFinished();
@@ -145,7 +145,7 @@ TEST_F(PluginTest, DeleteFrameDuringEvent) {
 // Tests that a forced reload of the plugin will not crash.
 TEST_F(PluginTest, ForceReload) {
   FilePath test_html = data_dir_;
-  test_html = test_html.AppendASCII(TEST_PLUGIN_DIRECTORY);
+  test_html = test_html.AppendASCII(kPluginsDir);
   test_html = test_html.AppendASCII("force_reload.html");
   test_shell_->LoadFile(test_html);
   test_shell_->WaitTestFinished();
@@ -168,7 +168,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
 // Tests that hiding/showing the parent frame hides/shows the plugin.
 TEST_F(PluginTest, PluginVisibilty) {
   FilePath test_html = data_dir_;
-  test_html = test_html.AppendASCII(TEST_PLUGIN_DIRECTORY);
+  test_html = test_html.AppendASCII(kPluginsDir);
   test_html = test_html.AppendASCII("plugin_visibility.html");
   test_shell_->LoadFile(test_html);
   test_shell_->WaitTestFinished();

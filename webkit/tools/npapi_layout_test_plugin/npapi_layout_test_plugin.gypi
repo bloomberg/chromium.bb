@@ -43,24 +43,7 @@
             'npapi_layout_test_plugin.def',
             'npapi_layout_test_plugin.rc',
           ],
-        # TODO(bradnelson):
-        # This copy should really live here, as a post-build step,
-        # but it's currently being implemented via
-        # AdditionalDependencies, which tries to do the copy before
-        # the file is built...
-        #
         }, { # OS == "win"
-        #  # The old VS build would explicitly copy the .dll into the
-        #  # plugins subdirectory like this.  It might be possible to
-        #  # use the 'product_dir' setting to build directly into
-        #  # plugins/ (as is done on Linux), but we'd need to verify
-        #  # that nothing breaks first.
-        #  'copies': [
-        #    {
-        #      'destination': '<(PRODUCT_DIR)/plugins',
-        #      'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
-        #    },
-        #  ],
           'variables': {
             # This is not a relative pathname.  Avoid pathname relativization
             # by sticking it in a variable that isn't recognized as one
