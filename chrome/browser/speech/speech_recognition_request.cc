@@ -148,6 +148,9 @@ bool SpeechRecognitionRequest::Send(const std::string& language,
     parts.push_back("lm=" + EscapeQueryParamValue(grammar, true));
   if (!hardware_info.empty())
     parts.push_back("xhw=" + EscapeQueryParamValue(hardware_info, true));
+  // TODO(satish): Remove this hardcoded value once the page is allowed to
+  // set this via an attribute.
+  parts.push_back("maxresults=3");
 
   GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
 

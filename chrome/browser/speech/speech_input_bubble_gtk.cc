@@ -179,14 +179,17 @@ void SpeechInputBubbleGtk::UpdateLayout() {
   } else {
     // Heading text, icon and cancel button are visible, hide the Try Again
     // button.
-    gtk_label_set_text(GTK_LABEL(label_),
-        l10n_util::GetStringUTF8(IDS_SPEECH_INPUT_BUBBLE_HEADING).c_str());
     if (display_mode() == DISPLAY_MODE_RECORDING) {
+      gtk_label_set_text(GTK_LABEL(label_),
+          l10n_util::GetStringUTF8(IDS_SPEECH_INPUT_BUBBLE_HEADING).c_str());
       SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_SPEECH_INPUT_MIC_EMPTY);
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
       gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
       g_object_unref(pixbuf);
+    } else {
+      gtk_label_set_text(GTK_LABEL(label_),
+          l10n_util::GetStringUTF8(IDS_SPEECH_INPUT_BUBBLE_WORKING).c_str());
     }
     gtk_widget_show(icon_);
     gtk_widget_hide(try_again_button_);

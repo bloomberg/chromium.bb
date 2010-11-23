@@ -103,8 +103,11 @@ void ContentView::UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
   if (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE) {
     message_->SetText(UTF16ToWideHack(message_text));
   } else if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
+    heading_->SetText(l10n_util::GetString(IDS_SPEECH_INPUT_BUBBLE_HEADING));
     icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_SPEECH_INPUT_MIC_EMPTY));
+  } else {
+    heading_->SetText(l10n_util::GetString(IDS_SPEECH_INPUT_BUBBLE_WORKING));
   }
 }
 
