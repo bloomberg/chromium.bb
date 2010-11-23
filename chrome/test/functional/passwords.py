@@ -5,6 +5,7 @@
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class PasswordTest(pyauto.PyUITest):
@@ -41,6 +42,28 @@ class PasswordTest(pyauto.PyUITest):
       'blacklist': False }
     self.assertTrue(self.AddSavedPassword(password1))
     self.assertEquals(self.GetSavedPasswords(), [password1])
+
+  def testDisplayAndSavePasswordInfobar(self):
+    """Verify password infobar displays and able to save password."""
+    url_https = 'https://www.google.com/accounts/'
+    url_logout = 'https://www.google.com/accounts/Logout'
+    creds = self.GetPrivateInfo()['test_google_account']
+    username = creds['username']
+    password = creds['password']
+    test_utils.GoogleAccountsLogin(self, ['url'], username, password)
+    # Wait until page completes loading.
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState'), 'complete')
+    self.WaitForInfobarCount(1)
+    infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
+    self.assertEqual(infobar[0]['type'], 'confirm_infobar')
+    self.PerformActionOnInfobar('accept', infobar_index=0)
+    self.NavigateToURL(url_logout)
+    self.NavigateToURL(url_https)
+    test_utils.VerifyGoogleAccountCredsFilled(self, username, password)
+    self.ExecuteJavascript('document.getElementById("gaia_loginform").submit();'
+                           'window.domAutomationController.send("done")')
+    test_utils.ClearPasswords(self)
 
 
 if __name__ == '__main__':

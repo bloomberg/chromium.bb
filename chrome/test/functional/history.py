@@ -8,6 +8,7 @@ import time
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class HistoryTest(pyauto.PyUITest):
@@ -144,15 +145,10 @@ class HistoryTest(pyauto.PyUITest):
 
   def testDownloadNoHistory(self):
     """Downloaded URLs should not show up in history."""
+    zip_file = 'a_zip_file.zip'
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
-    file_url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'downloads',
-                                                   'a_zip_file.zip'))
-    downloaded_file = os.path.join(self.GetDownloadDirectory().value(),
-                                   'a_zip_file.zip')
-    os.path.exists(downloaded_file) and os.remove(downloaded_file)
-    self.DownloadAndWaitForStart(file_url)
-    self.WaitForAllDownloadsToComplete()
-    os.path.exists(downloaded_file) and os.remove(downloaded_file)
+    test_utils.DownloadFileFromDownloadsDataDir(self, zip_file)
+    test_utils.RemoveDownloadedTestFile(self, zip_file)
     # We shouldn't have any history
     history = self.GetHistoryInfo().History()
     self.assertEqual(0, len(history))
@@ -203,6 +199,26 @@ class HistoryTest(pyauto.PyUITest):
     self.assertEqual('Google', history[0]['title'])
     self.assertTrue('google.com' in history[0]['url'])
     self.assertTrue(abs(new_time - history[0]['time']) < 1.0)
+
+  def testHttpsHistory(self):
+    """Verify a site using https protocol shows up within history."""
+    https_url = 'https://encrypted.google.com/'
+    url_title = 'Google'
+    self.NavigateToURL(https_url)
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(len(history), 1)
+    self.assertEqual(url_title, history[0]['title'])
+    self.assertEqual(https_url, history[0]['url'])
+
+  def testFtpHistory(self):
+    """Verify a site using ftp protocol shows up within history."""
+    ftp_url = 'ftp://ftp.kernel.org/'
+    ftp_title = 'Index of /'
+    self.NavigateToURL(ftp_url)
+    history = self.GetHistoryInfo().History()
+    self.assertEqual(len(history), 1)
+    self.assertEqual(ftp_title, history[0]['title'])
+    self.assertEqual(ftp_url, history[0]['url'])
 
 
 if __name__ == '__main__':

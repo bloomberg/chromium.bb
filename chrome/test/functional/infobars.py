@@ -9,7 +9,7 @@ import re
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
-
+import test_utils
 
 class InfobarTest(pyauto.PyUITest):
   """TestCase for Infobars."""
@@ -113,16 +113,15 @@ class InfobarTest(pyauto.PyUITest):
 
   def testMultipleDownloadsInfobar(self):
     """Verify the mutiple downloads infobar."""
+    zip_file = 'a_zip_file.zip'
+    html_file = 'download-a_zip_file.html'
     assert pyauto.PyUITest.IsEnUS()
     file_url = self.GetFileURLForPath(
-        os.path.join(self.DataDir(), 'downloads', 'download-a_zip_file.html'))
+        os.path.join(self.DataDir(), 'downloads', html_file))
     match_text = 'This site is attempting to download multiple files. ' \
                  'Do you want to allow this?'
     self.NavigateToURL('chrome://downloads')  # trigger download manager
-    # Clear existing files of the same name in the downloads folder
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  'a_zip_file.zip')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    test_utils.RemoveDownloadedTestFile(self, zip_file)
     self.DownloadAndWaitForStart(file_url)
     # trigger page reload, which triggers the download infobar
     self.GetBrowserWindow(0).GetTab(0).Reload()
@@ -135,11 +134,8 @@ class InfobarTest(pyauto.PyUITest):
     self.assertEqual(2, len(infobars[0]['buttons']))
     self.assertEqual('Allow', infobars[0]['buttons'][0])
     self.assertEqual('Deny', infobars[0]['buttons'][1])
-    # Ensure we quit only after all downloads have completed
     self.WaitForAllDownloadsToComplete()
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  'a_zip_file.zip')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    test_utils.RemoveDownloadedTestFile(self, zip_file)
 
 
 if __name__ == '__main__':
