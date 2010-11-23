@@ -133,6 +133,13 @@ class TestingBrowserHelperObject
 
   MOCK_METHOD2(GetParentBrowser, HRESULT(IWebBrowser2*, IWebBrowser2**));
 
+  // Neuter the proxy registration/unregistration.
+  HRESULT RegisterProxies() {
+    return S_OK;
+  }
+  void UnregisterProxies() {
+  }
+
   // Pulicize
   using BrowserHelperObject::HandleNavigateComplete;
 

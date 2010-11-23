@@ -1,0 +1,11 @@
+HKLM {
+  NoRemove Software {
+    NoRemove Classes {
+      NoRemove 'Interface' {
+        '%IID%' = s '%NAME%' {
+          AsynchronousInterface = s '%ASYNC_IID%'
+        }
+      }
+    }
+  }
+}

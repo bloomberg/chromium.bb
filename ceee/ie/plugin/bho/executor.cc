@@ -36,7 +36,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "ceee/common/com_utils.h"
@@ -46,6 +45,7 @@
 #include "ceee/ie/plugin/bho/frame_event_handler.h"
 #include "ceee/ie/plugin/bho/infobar_manager.h"
 #include "ceee/ie/plugin/bho/tab_window_manager.h"
+#include "ceee/ie/plugin/toolband/toolband_proxy.h"
 #include "chrome_frame/utils.h"
 
 #include "broker_lib.h"  // NOLINT
@@ -146,6 +146,14 @@ LRESULT CeeeExecutorCreator::GetMsgProc(int code, WPARAM wparam,
         return 0;
       }
 
+      // Register the proxy/stubs for the executor.
+      // We don't make arrangements to unregister them here as we don't
+      // expect we'll ever unload from the process.
+      // TODO(siggi@chromium.org): Is it worth arranging for unregistration
+      //    in this case?
+      if (!RegisterProxyStubs(NULL))
+        LOG(ERROR) << "Executor Creator failed to register proxy/stubs";
+
       CComPtr<ICeeeWindowExecutor> executor;
       HRESULT hr = executor.CoCreateInstance(CLSID_CeeeExecutor);
       LOG_IF(ERROR, FAILED(hr)) << "Failed to create Executor, hr=" <<
@@ -177,6 +185,229 @@ LRESULT CeeeExecutorCreator::GetMsgProc(int code, WPARAM wparam,
     }
   }
   return ::CallNextHookEx(NULL, code, wparam, lparam);
+}
+
+AsyncTabCall::AsyncTabCall() : task_hr_(E_PENDING), task_(NULL) {
+  VLOG(1) << "AsyncTabCall " << this << " created";
+}
+
+AsyncTabCall::~AsyncTabCall() {
+  VLOG(1) << "AsyncTabCall " << this << " deleted";
+}
+
+HRESULT AsyncTabCall::CreateInitialized(ICeeeTabExecutor* executor,
+                                        IUnknown* outer,
+                                        IUnknown** async_call) {
+  CComPolyObject<AsyncTabCall>* async_tab_call = NULL;
+  HRESULT hr = CComPolyObject<AsyncTabCall>::CreateInstance(
+      outer, &async_tab_call);
+
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to create async tab call " << com::LogHr(hr);
+    return hr;
+  }
+  DCHECK(async_tab_call != NULL);
+
+  hr = async_tab_call->m_contained.Initialize(executor);
+  if (FAILED(hr)) {
+    delete async_tab_call;
+    LOG(ERROR) << "Async tab call initialization failed " << com::LogHr(hr);
+  }
+
+  return async_tab_call->QueryInterface(async_call);
+}
+
+HRESULT AsyncTabCall::Initialize(ICeeeTabExecutor* executor) {
+  DCHECK(executor != NULL);
+  executor_ = executor;
+  return S_OK;
+}
+
+STDMETHODIMP AsyncTabCall::Begin_Initialize(CeeeWindowHandle hwnd) {
+  DCHECK(task_hr_ == E_PENDING && task_ == NULL);
+  task_hr_ = executor_->Initialize(hwnd);
+  return Signal();
+}
+
+STDMETHODIMP AsyncTabCall::Finish_Initialize() {
+  return task_hr_;
+}
+
+// A noop function.
+static void Noop() {
+}
+
+STDMETHODIMP AsyncTabCall::Begin_GetTabInfo() {
+  DCHECK(task_hr_ == E_PENDING && task_ == NULL);
+
+  // We do all the work on Finish_GetTabInfo, so schedule only a noop
+  // invocation. Alternatively we could schedule NULL here, though that
+  // would make it more difficult to distinguish error cases.
+  return ScheduleTask(NewRunnableFunction(Noop));
+}
+
+STDMETHODIMP AsyncTabCall::Finish_GetTabInfo(CeeeTabInfo *tab_info) {
+  return executor_->GetTabInfo(tab_info);
+}
+
+STDMETHODIMP AsyncTabCall::Begin_Navigate(BSTR url, long flags, BSTR target) {
+  DCHECK(task_hr_ == E_PENDING && task_ == NULL);
+
+  if (!ScheduleTask(NewRunnableMethod(this,
+                                      &AsyncTabCall::NavigateImpl,
+                                      CComBSTR(url),
+                                      flags,
+                                      CComBSTR(target)))) {
+    LOG(ERROR) << "Failed to schedule navigation task";
+    return E_OUTOFMEMORY;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP AsyncTabCall::Finish_Navigate() {
+  return task_hr_;
+}
+
+STDMETHODIMP AsyncTabCall::Begin_InsertCode(BSTR code,
+                                            BSTR file,
+                                            BOOL all_frames,
+                                            CeeeTabCodeType type) {
+  DCHECK(task_hr_ == E_PENDING && task_ == NULL);
+
+  if (!ScheduleTask(NewRunnableMethod(this,
+                                      &AsyncTabCall::InsertCodeImpl,
+                                      CComBSTR(code),
+                                      CComBSTR(file),
+                                      all_frames,
+                                      type))) {
+    LOG(ERROR) << "Failed to schedule insert code task";
+    return E_OUTOFMEMORY;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP AsyncTabCall::Finish_InsertCode() {
+  return task_hr_;
+}
+
+void AsyncTabCall::NavigateImpl(const CComBSTR& url,
+                                long flags,
+                                const CComBSTR& target) {
+  task_hr_ = executor_->Navigate(url, flags, target);
+}
+
+void AsyncTabCall::InsertCodeImpl(const CComBSTR& code,
+                                  const CComBSTR& file,
+                                  BOOL all_frames,
+                                  CeeeTabCodeType type) {
+  task_hr_ = executor_->InsertCode(code, file, all_frames, type);
+}
+
+int AsyncTabCall::OnCreate(LPCREATESTRUCT lpCreateStruct) {
+  // Our window maintains a self-reference to our object.
+  GetUnknown()->AddRef();
+  return 1;
+}
+
+LRESULT AsyncTabCall::OnExecuteTask(
+    UINT msg, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  VLOG(1) << "OnExecuteTask for " << this;
+
+  if (task_.get() != NULL) {
+    task_->Run();
+    task_.reset();
+  }
+
+  // Signal the call done, this'll cause the Finish_ call to execute.
+  Signal();
+
+  DestroyWindow();
+  return 1;
+}
+
+void AsyncTabCall::OnFinalMessage(HWND window) {
+  // Release our window's self-reference.
+  GetUnknown()->Release();
+}
+
+bool AsyncTabCall::ScheduleTask(Task* task) {
+  DCHECK(task != NULL);
+  DCHECK(m_hWnd == NULL);
+
+  if (Create(HWND_MESSAGE) == NULL) {
+    LOG(ERROR) << "Failed to create window";
+
+    delete task;
+    return false;
+  }
+  DCHECK(m_hWnd != NULL);
+
+  // Schedule the task for later by posting a message.
+  task_.reset(task);
+  PostMessage(kExecuteTaskMessage);
+
+  return true;
+}
+
+HRESULT AsyncTabCall::Signal() {
+  // We need to explicitly query for ISynchronize, because we're
+  // most likely aggregated, and the implementation is on our
+  // controlling outer.
+  CComPtr<ISynchronize> sync;
+  HRESULT hr = GetUnknown()->QueryInterface(&sync);
+  if (sync == NULL) {
+    LOG(ERROR) << "Failed to retrieve ISynchronize " << com::LogHr(hr);
+    return hr;
+  }
+  DCHECK(sync != NULL);
+
+  hr = sync->Signal();
+  if (FAILED(hr))
+    LOG(ERROR) << "Failed to signal " << com::LogHr(hr);
+
+  return hr;
+}
+
+CeeeExecutor::CeeeExecutor() : hwnd_(NULL) {
+}
+
+CeeeExecutor::~CeeeExecutor() {
+}
+
+HRESULT CeeeExecutor::CreateTabCall(ICeeeTabExecutor* executor,
+                                    IUnknown *outer,
+                                    REFIID riid2,
+                                    IUnknown **out) {
+  CComPtr<IUnknown> tab_call;
+  HRESULT hr = AsyncTabCall::CreateInitialized(executor, outer, &tab_call);
+  if (SUCCEEDED(hr))
+    hr = tab_call->QueryInterface(riid2, reinterpret_cast<void**>(out));
+
+  if (FAILED(hr)) {
+    delete tab_call;
+    LOG(ERROR) << "Async executor initialization failed " << com::LogHr(hr);
+  }
+
+  return hr;
+}
+
+STDMETHODIMP CeeeExecutor::CreateCall(REFIID async_iid,
+                                      IUnknown *outer,
+                                      REFIID requested_iid,
+                                      IUnknown **out) {
+  DCHECK(outer != NULL);
+  DCHECK(out != NULL);
+  // Null for safety.
+  *out = NULL;
+
+  if (async_iid == IID_AsyncICeeeTabExecutor) {
+    return CreateTabCall(this, outer, requested_iid, out);
+  } else {
+    LOG(ERROR) << "Unexpected IID to CreateCall";
+    return E_NOINTERFACE;
+  }
 }
 
 HRESULT CeeeExecutor::Initialize(CeeeWindowHandle hwnd) {

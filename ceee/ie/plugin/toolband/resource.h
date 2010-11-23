@@ -18,7 +18,7 @@
 #define IDR_GREASEMONKEY_API_JS         105
 #define IDR_EXECUTOR                    106
 #define IDR_EXECUTOR_CREATOR            107
-#define IDR_NO_EXTENSION                108
+#define IDR_TOOLBAND_PROXY              108
 
 // Next default values for new objects
 //

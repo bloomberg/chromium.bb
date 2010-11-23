@@ -41,6 +41,7 @@
         '../../broker/broker.gyp:broker_rpc_lib',
         'ceee_ie_lib',
         'ie_toolband_common',
+        'toolband_proxy_lib',
         'toolband_idl',
         '../bho/bho.gyp:bho',
         '../scripting/scripting.gyp:scripting',
@@ -66,8 +67,8 @@
         '../scripting/content_script_manager.rc',
       ],
       'libraries': [
-        'oleacc.lib',
         'iepmapi.lib',
+        'oleacc.lib',
         'rpcrt4.lib',
       ],
       'include_dirs': [
@@ -119,6 +120,33 @@
       'direct_dependent_settings': {
         'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       },
+    },
+    {
+      # This target builds a library out of the toolband proxy/stubs.
+      # TODO(siggi): Rename the IDL and move it to ie/plugin/common, as
+      #     it's defining interfaces that are common across the the broker
+      #     and bho/executor.
+      'target_name': 'toolband_proxy_lib',
+      'type': 'static_library',
+      'sources': [
+        'toolband_proxy.h',
+        'toolband_proxy.cc',
+        'toolband_proxy.rgs',
+        '<(SHARED_INTERMEDIATE_DIR)/toolband_p.c',
+        '<(SHARED_INTERMEDIATE_DIR)/toolband_dlldata.c',
+      ],
+      'dependencies': [
+        '../../../../base/base.gyp:base',
+        'toolband_idl',
+      ],
+      'defines': [
+        # This define adds ToolbandProxy as a prefix to the generated
+        # proxy/stub entrypoint routine names.
+        'ENTRY_PREFIX=ToolbandProxy',
+        # The proxy stub code defines _purecall, which conflicts with our
+        # CRT, so we neuter this here.
+        '_purecall=ToolbandPureCall',
+      ],
     },
   ]
 }
