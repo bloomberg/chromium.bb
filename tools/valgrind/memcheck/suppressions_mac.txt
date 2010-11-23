@@ -587,6 +587,23 @@
    fun:_ZN15AQIONodeManager12FindAQIONodeEmbbb
 }
 {
+   bug_46186_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
+   fun:_ZN16HALDefaultDevice22InstallServerListenersEv
+   fun:_ZN16HALDefaultDevice10InitializeEv
+   fun:_ZN9HALSystem15InitializeShellEv
+   fun:_ZN9HALSystem16CheckOutInstanceEv
+   fun:AudioObjectGetPropertyData
+   fun:_ZN12_GLOBAL__N_116HasAudioHardwareEm
+   fun:_ZN15AudioManagerMac21HasAudioOutputDevicesEv
+   fun:_ZN5mediaL21HasAudioOutputDevicesEv
+   fun:_ZN5media45AudioOutputControllerTest_CreateAndClose_Test8TestBodyEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
+
+{
    bug_47949
    Memcheck:Cond
    fun:rips_f_DrawRing
