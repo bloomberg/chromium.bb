@@ -112,6 +112,8 @@ class UserManager : public UserImageLoader::Delegate,
     return current_user_is_new_;
   }
 
+  bool user_is_logged_in() const { return user_is_logged_in_; }
+
  protected:
   UserManager();
   virtual ~UserManager();
@@ -139,6 +141,9 @@ class UserManager : public UserImageLoader::Delegate,
   // Cached flag of whether the currently logged-in user existed before this
   // login.
   bool current_user_is_new_;
+
+  // Cached flag of whether any user is logged in at the moment.
+  bool user_is_logged_in_;
 
   NotificationRegistrar registrar_;
 

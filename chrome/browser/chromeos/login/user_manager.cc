@@ -227,6 +227,7 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
 }
 
 void UserManager::OffTheRecordUserLoggedIn() {
+  user_is_logged_in_ = true;
   logged_in_user_ = User();
   logged_in_user_.set_email(kIncognitoUser);
   NotifyOnLogin();
@@ -251,6 +252,7 @@ void UserManager::UserLoggedIn(const std::string& email) {
   ListValue* prefs_users = prefs->GetMutableList(kLoggedInUsers);
   prefs_users->Clear();
 
+  user_is_logged_in_ = true;
   logged_in_user_ = User();
   logged_in_user_.set_email(email);
 
@@ -401,7 +403,8 @@ void UserManager::OnImageLoaded(const std::string& username,
 UserManager::UserManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader(this))),
       current_user_is_owner_(false),
-      current_user_is_new_(false) {
+      current_user_is_new_(false),
+      user_is_logged_in_(false) {
   registrar_.Add(this, NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       NotificationService::AllSources());
 }

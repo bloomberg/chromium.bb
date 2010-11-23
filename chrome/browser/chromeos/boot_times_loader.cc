@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -364,6 +365,9 @@ void BootTimesLoader::Observe(
                         NotificationService::AllSources());
     }
   } else if (type == NotificationType::LOAD_START) {
+    // Make sure it's not some page load initiated by OOBE/login screen.
+    if (!UserManager::Get()->user_is_logged_in())
+      return;
     // Only log for first tab to render.  Make sure this is only done once.
     // If the network isn't connected we'll get a second LOAD_START once it is
     // and the page is reloaded.
