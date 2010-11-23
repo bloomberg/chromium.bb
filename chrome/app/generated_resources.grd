@@ -9060,12 +9060,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NETWORK_DATA_EXPIRED_TITLE" desc="Title for network data expired notification">
         <ph name="network">$1<ex>YBH</ex></ph> data expired
       </message>
-      <message name="IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE" desc="Message for network minutes until expirations notification">
-        <ph name="minues">$1<ex>30</ex></ph> minutes until expiration
-      </message>
-      <message name="IDS_NETWORK_MINUTES_REMAINING_MESSAGE" desc="Message for network minutes remaining notification">
-        <ph name="minues">$1<ex>30</ex></ph> minutes remaining
-      </message>
       <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
         Network Connection Error
       </message>

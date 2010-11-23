@@ -416,46 +416,36 @@ string16 CellularDataPlan::GetPlanDesciption() const {
 string16 CellularDataPlan::GetRemainingWarning() const {
   if (plan_type == chromeos::CELLULAR_DATA_PLAN_UNLIMITED) {
     // Time based plan. Show nearing expiration and data expiration.
-    int64 time_left = base::TimeDelta(
-        plan_end_time - update_time).InSeconds();
-    if (time_left <= 0) {
-      return l10n_util::GetStringFUTF16(
-          IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0"));
-    } else if (time_left <= chromeos::kCellularDataVeryLowSecs) {
-      return l10n_util::GetStringFUTF16(
-          IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(time_left/60)));
+    if (remaining_time().InSeconds() <= chromeos::kCellularDataVeryLowSecs) {
+      return GetPlanExpiration();
     }
   } else if (plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_PAID ||
              plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_BASE) {
     // Metered plan. Show low data and out of data.
-    int64 bytes_remaining = plan_data_bytes - data_bytes_used;
-    if (bytes_remaining <= 0) {
-      return l10n_util::GetStringFUTF16(
-          IDS_NETWORK_DATA_REMAINING_MESSAGE, ASCIIToUTF16("0"));
-    } else if (bytes_remaining <= chromeos::kCellularDataVeryLowBytes) {
+    if (remaining_data() <= chromeos::kCellularDataVeryLowBytes) {
       return l10n_util::GetStringFUTF16(
           IDS_NETWORK_DATA_REMAINING_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(bytes_remaining/(1024*1024))));
+          UTF8ToUTF16(base::Int64ToString(remaining_mbytes())));
     }
   }
   return string16();
 }
 
 string16 CellularDataPlan::GetDataRemainingDesciption() const {
+  int64 remaining_bytes = remaining_data();
   switch (plan_type) {
     case chromeos::CELLULAR_DATA_PLAN_UNLIMITED: {
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED);
     }
     case chromeos::CELLULAR_DATA_PLAN_METERED_PAID: {
-      return FormatBytes(plan_data_bytes - data_bytes_used,
-          GetByteDisplayUnits(plan_data_bytes - data_bytes_used),
+      return FormatBytes(remaining_bytes,
+          GetByteDisplayUnits(remaining_bytes),
           true);
     }
     case chromeos::CELLULAR_DATA_PLAN_METERED_BASE: {
-      return FormatBytes(plan_data_bytes - data_bytes_used,
-          GetByteDisplayUnits(plan_data_bytes - data_bytes_used),
+      return FormatBytes(remaining_bytes,
+          GetByteDisplayUnits(remaining_bytes),
           true);
     }
     default:
@@ -467,26 +457,19 @@ string16 CellularDataPlan::GetDataRemainingDesciption() const {
 string16 CellularDataPlan::GetUsageInfo() const {
   if (plan_type == chromeos::CELLULAR_DATA_PLAN_UNLIMITED) {
     // Time based plan. Show nearing expiration and data expiration.
-    int64 time_left = base::TimeDelta(
-        plan_end_time - update_time).InSeconds();
-    return l10n_util::GetStringFUTF16(
-          IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(time_left/60)));
+    return GetPlanExpiration();
   } else if (plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_PAID ||
              plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_BASE) {
     // Metered plan. Show low data and out of data.
-    int64 bytes_remaining = plan_data_bytes - data_bytes_used;
-    if (bytes_remaining <= 0)
-      bytes_remaining = 0;
     return l10n_util::GetStringFUTF16(
         IDS_NETWORK_DATA_AVAILABLE_MESSAGE,
-        UTF8ToUTF16(base::Int64ToString(bytes_remaining/(1024*1024))));
+        UTF8ToUTF16(base::Int64ToString(remaining_mbytes())));
   }
   return string16();
 }
 
 base::TimeDelta CellularDataPlan::remaining_time() const {
-  base::TimeDelta time = plan_end_time - update_time;
+  base::TimeDelta time = plan_end_time - base::Time::Now();
   return time.InMicroseconds() < 0 ? base::TimeDelta() : time;
 }
 
@@ -628,7 +611,7 @@ CellularNetwork::DataLeft CellularNetwork::GetDataLeft() const {
   if (!plan)
     return DATA_NORMAL;
   if (plan->plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
-    base::TimeDelta remaining = plan->plan_end_time - plan->update_time;
+    base::TimeDelta remaining = plan->remaining_time();
     if (remaining <= base::TimeDelta::FromSeconds(0))
       return DATA_NONE;
     if (remaining <= base::TimeDelta::FromSeconds(kCellularDataVeryLowSecs))
@@ -637,7 +620,7 @@ CellularNetwork::DataLeft CellularNetwork::GetDataLeft() const {
       return DATA_LOW;
   } else if (plan->plan_type == CELLULAR_DATA_PLAN_METERED_PAID ||
              plan->plan_type == CELLULAR_DATA_PLAN_METERED_BASE) {
-    int64 remaining = plan->plan_data_bytes - plan->data_bytes_used;
+    int64 remaining = plan->remaining_data();
     if (remaining <= 0)
       return DATA_NONE;
     if (remaining <= kCellularDataVeryLowBytes)

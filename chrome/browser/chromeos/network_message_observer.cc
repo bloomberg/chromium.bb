@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/window.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/window/dialog_delegate.h"
@@ -255,24 +256,23 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* obj) {
 
   if (cellular->GetDataLeft() == CellularNetwork::DATA_NONE) {
     notification_low_data_.Hide();
-    int message = cellular_data_plan_type_ == CELLULAR_DATA_PLAN_UNLIMITED ?
-        IDS_NETWORK_MINUTES_REMAINING_MESSAGE :
-        IDS_NETWORK_DATA_REMAINING_MESSAGE;
-    notification_no_data_.Show(l10n_util::GetStringFUTF16(
-        message, ASCIIToUTF16("0")),
+    string16 message =
+        cellular_data_plan_type_ == CELLULAR_DATA_PLAN_UNLIMITED ?
+            TimeFormat::TimeRemaining(base::TimeDelta()) :
+            l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_REMAINING_MESSAGE,
+                                       ASCIIToUTF16("0"));
+    notification_no_data_.Show(message,
         l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
         NewCallback(this, &NetworkMessageObserver::OpenMobileSetupPage),
         false, false);
   } else if (cellular->GetDataLeft() == CellularNetwork::DATA_VERY_LOW) {
     notification_no_data_.Hide();
-    int message = cellular_data_plan_type_ == CELLULAR_DATA_PLAN_UNLIMITED ?
-        IDS_NETWORK_MINUTES_REMAINING_MESSAGE :
-        IDS_NETWORK_DATA_REMAINING_MESSAGE;
-    int64 remaining = cellular_data_plan_type_ == CELLULAR_DATA_PLAN_UNLIMITED ?
-        plan->remaining_minutes() :
-        plan->remaining_mbytes();
-    notification_low_data_.Show(l10n_util::GetStringFUTF16(
-        message, UTF8ToUTF16(base::Int64ToString(remaining))),
+    string16 message =
+        cellular_data_plan_type_ == CELLULAR_DATA_PLAN_UNLIMITED ?
+            plan->GetPlanExpiration() :
+            l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_REMAINING_MESSAGE,
+                 UTF8ToUTF16(base::Int64ToString(plan->remaining_mbytes())));
+    notification_low_data_.Show(message,
         l10n_util::GetStringUTF16(IDS_NETWORK_MORE_INFO_MESSAGE),
         NewCallback(this, &NetworkMessageObserver::OpenMoreInfoPage),
         false, false);
