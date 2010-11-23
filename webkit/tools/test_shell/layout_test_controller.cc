@@ -207,7 +207,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("markerTextForListItem", &LayoutTestController::markerTextForListItem);
 
   BindMethod("setMockDeviceOrientation", &LayoutTestController::setMockDeviceOrientation);
-  BindMethod("addMockSpeechInputResult", &LayoutTestController::addMockSpeechInputResult);
+  BindMethod("setMockSpeechInputResult", &LayoutTestController::setMockSpeechInputResult);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -1133,13 +1133,12 @@ void LayoutTestController::setAllowFileAccessFromFileURLs(
   result->SetNull();
 }
 
-void LayoutTestController::addMockSpeechInputResult(const CppArgumentList& args,
+void LayoutTestController::setMockSpeechInputResult(const CppArgumentList& args,
                                                     CppVariant* result) {
-  if (args.size() > 0 && args[0].isString() && args[1].isNumber() &&
-      args[2].isString()) {
-    shell_->speech_input_controller_mock()->addMockRecognitionResult(
-        WebString::fromUTF8(args[0].ToString()), args[1].ToDouble(),
-        WebString::fromUTF8(args[2].ToString()));
+  if (args.size() > 0 && args[0].isString() && args[1].isString()) {
+    shell_->speech_input_controller_mock()->setMockRecognitionResult(
+        WebString::fromUTF8(args[0].ToString()),
+        WebString::fromUTF8(args[1].ToString()));
   }
   result->SetNull();
 }
