@@ -48,9 +48,9 @@ class MenuBarHelper {
   void Clear();
 
  private:
+  CHROMEGTK_CALLBACK_0(MenuBarHelper, void, OnMenuHiddenOrDestroyed);
   CHROMEGTK_CALLBACK_1(MenuBarHelper, gboolean, OnMenuMotionNotify,
                        GdkEventMotion*);
-  CHROMEGTK_CALLBACK_0(MenuBarHelper, void, OnMenuHidden);
   CHROMEGTK_CALLBACK_1(MenuBarHelper, void, OnMenuMoveCurrent,
                        GtkMenuDirectionType);
 

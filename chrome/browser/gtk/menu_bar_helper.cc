@@ -82,10 +82,12 @@ void MenuBarHelper::MenuStartedShowing(GtkWidget* button, GtkWidget* menu) {
   showing_menu_ = menu;
 
   signal_handlers_.reset(new GtkSignalRegistrar());
+  signal_handlers_->Connect(menu, "destroy",
+                            G_CALLBACK(OnMenuHiddenOrDestroyedThunk), this);
+  signal_handlers_->Connect(menu, "hide",
+                            G_CALLBACK(OnMenuHiddenOrDestroyedThunk), this);
   signal_handlers_->Connect(menu, "motion-notify-event",
                             G_CALLBACK(OnMenuMotionNotifyThunk), this);
-  signal_handlers_->Connect(menu, "hide",
-                            G_CALLBACK(OnMenuHiddenThunk), this);
   signal_handlers_->Connect(menu, "move-current",
                             G_CALLBACK(OnMenuMoveCurrentThunk), this);
   gtk_container_foreach(GTK_CONTAINER(menu), PopulateSubmenus, &submenus_);
@@ -140,7 +142,7 @@ gboolean MenuBarHelper::OnMenuMotionNotify(GtkWidget* menu,
   return FALSE;
 }
 
-void MenuBarHelper::OnMenuHidden(GtkWidget* menu) {
+void MenuBarHelper::OnMenuHiddenOrDestroyed(GtkWidget* menu) {
   DCHECK_EQ(showing_menu_, menu);
 
   signal_handlers_.reset();

@@ -89,6 +89,8 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
 
 BookmarkMenuController::~BookmarkMenuController() {
   profile_->GetBookmarkModel()->RemoveObserver(this);
+  // Make sure the hide handler runs.
+  gtk_widget_hide(menu_);
   gtk_widget_destroy(menu_);
   g_object_unref(menu_);
 }
