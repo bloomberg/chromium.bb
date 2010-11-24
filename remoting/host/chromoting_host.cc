@@ -263,8 +263,9 @@ void ChromotingHost::OnNewClientSession(
     return;
   }
 
-  // Check that the user has access to the host.
-  if (!access_verifier_.VerifyPermissions(session->jid())) {
+  // Check that the client has access to the host.
+  if (!access_verifier_.VerifyPermissions(session->jid(),
+                                          session->initiator_token())) {
     *response = protocol::SessionManager::DECLINE;
     return;
   }
@@ -283,6 +284,8 @@ void ChromotingHost::OnNewClientSession(
   }
 
   session->set_config(config);
+  session->set_receiver_token(
+      GenerateHostAuthToken(session->initiator_token()));
 
   *response = protocol::SessionManager::ACCEPT;
 
@@ -324,6 +327,12 @@ Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig* config) {
 #endif
 
   return NULL;
+}
+
+std::string ChromotingHost::GenerateHostAuthToken(
+    const std::string& encoded_client_token) {
+  // TODO(ajwong): Return the signature of this instead.
+  return encoded_client_token;
 }
 
 }  // namespace remoting

@@ -11,20 +11,31 @@
 
 namespace remoting {
 
+namespace protocol {
+class ClientAuthToken;
+}  // namespace protocol
+
 class HostConfig;
 
 // AccessVerifier is used by to verify that the client has access to the host.
-// Currently it just checks that host and client have the same bare JID.
+// Currently it
 //
-// TODO(sergeyu): AccessVerifier should query directory to verify user
-// permissions.
+//   1) Checks that host and client have the same bare JID.
+//   2) Verifies that the access token can be decoded.
+//
+// TODO(sergeyu): Remove the bare-JID check, and instead ask the directory to
+// perform user authorization.
 class AccessVerifier {
  public:
   AccessVerifier();
   bool Init(HostConfig* config);
-  bool VerifyPermissions(const std::string& client_jid);
+  bool VerifyPermissions(const std::string& client_jid,
+                         const std::string& encoded_client_token);
 
  private:
+  bool DecodeClientAuthToken(const std::string& encoded_client_token,
+                             protocol::ClientAuthToken* client_token);
+
   std::string host_jid_prefix_;
   bool initialized_;
 

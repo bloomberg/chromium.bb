@@ -138,6 +138,22 @@ void JingleSession::set_config(const SessionConfig* config) {
   config_.reset(config);
 }
 
+const std::string& JingleSession::initiator_token() {
+  return initiator_token_;
+}
+
+void JingleSession::set_initiator_token(const std::string& initiator_token) {
+  initiator_token_ = initiator_token;
+}
+
+const std::string& JingleSession::receiver_token() {
+  return receiver_token_;
+}
+
+void JingleSession::set_receiver_token(const std::string& receiver_token) {
+  receiver_token_ = receiver_token;
+}
+
 void JingleSession::Close(Task* closed_task) {
   if (MessageLoop::current() != jingle_session_manager_->message_loop()) {
     jingle_session_manager_->message_loop()->PostTask(

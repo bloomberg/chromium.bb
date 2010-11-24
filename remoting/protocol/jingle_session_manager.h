@@ -28,21 +28,29 @@ class JingleThread;
 
 namespace protocol {
 
-// ContentDescription used for chromoting sessions. It simply wraps
-// CandidateSessionConfig. CandidateSessionConfig doesn't inherit
-// from ContentDescription to avoid dependency on libjingle in
-// Chromotocol Session interface.
+// ContentDescription used for chromoting sessions. It contains the information
+// from the content description stanza in the session intialization handshake.
+//
+// This class also provides a type abstraction so that the Chromotocol Session
+// interface does not need to depend on libjingle.
 class ContentDescription : public cricket::ContentDescription {
  public:
-  explicit ContentDescription(const CandidateSessionConfig* config);
+  explicit ContentDescription(const CandidateSessionConfig* config,
+                              const std::string& auth_token);
   ~ContentDescription();
 
   const CandidateSessionConfig* config() const {
     return candidate_config_.get();
   }
 
+  const std::string& auth_token() const { return auth_token_; }
+
  private:
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
+
+  // This may contain the initiating, or the accepting token depending on
+  // context.
+  std::string auth_token_;
 };
 
 // This class implements SessionClient for Chromoting sessions. It acts as a
@@ -61,14 +69,29 @@ class JingleSessionManager
                     cricket::SessionManager* cricket_session_manager,
                     IncomingSessionCallback* incoming_session_callback);
 
-  // ChromotocolServer interface.
+  // SessionManager interface.
   virtual scoped_refptr<protocol::Session> Connect(
       const std::string& jid,
+      const std::string& client_token,
       CandidateSessionConfig* candidate_config,
       protocol::Session::StateChangeCallback* state_change_callback);
   virtual void Close(Task* closed_task);
 
   void set_allow_local_ips(bool allow_local_ips);
+
+  // cricket::SessionClient interface.
+  virtual void OnSessionCreate(cricket::Session* cricket_session,
+                               bool received_initiate);
+  virtual void OnSessionDestroy(cricket::Session* cricket_session);
+
+  virtual bool ParseContent(cricket::SignalingProtocol protocol,
+                            const buzz::XmlElement* elem,
+                            const cricket::ContentDescription** content,
+                            cricket::ParseError* error);
+  virtual bool WriteContent(cricket::SignalingProtocol protocol,
+                            const cricket::ContentDescription* content,
+                            buzz::XmlElement** elem,
+                            cricket::WriteError* error);
 
  protected:
   virtual ~JingleSessionManager();
@@ -88,28 +111,16 @@ class JingleSessionManager
 
   void DoConnect(
       scoped_refptr<JingleSession> jingle_session,
-      const std::string& jid,
+      const std::string& host_jid,
+      const std::string& client_token,
       protocol::Session::StateChangeCallback* state_change_callback);
 
   // Creates outgoing session description for an incoming session.
   cricket::SessionDescription* CreateSessionDescription(
-      const CandidateSessionConfig* candidate_config);
+      const CandidateSessionConfig* candidate_config,
+      const std::string& auth_token);
 
-  // cricket::SessionClient interface.
-  virtual void OnSessionCreate(cricket::Session* cricket_session,
-                               bool received_initiate);
-  virtual void OnSessionDestroy(cricket::Session* cricket_session);
-
-  virtual bool ParseContent(cricket::SignalingProtocol protocol,
-                            const buzz::XmlElement* elem,
-                            const cricket::ContentDescription** content,
-                            cricket::ParseError* error);
-  virtual bool WriteContent(cricket::SignalingProtocol protocol,
-                            const cricket::ContentDescription* content,
-                            buzz::XmlElement** elem,
-                            cricket::WriteError* error);
-
-  std::string local_jid_;
+  std::string local_jid_;  // Full jid for the local side of the session.
   JingleThread* jingle_thread_;
   cricket::SessionManager* cricket_session_manager_;
   scoped_ptr<IncomingSessionCallback> incoming_session_callback_;

@@ -181,6 +181,22 @@ void FakeSession::set_config(const SessionConfig* config) {
   config_.reset(config);
 }
 
+const std::string& FakeSession::initiator_token() {
+  return initiator_token_;
+}
+
+void FakeSession::set_initiator_token(const std::string& initiator_token) {
+  initiator_token_ = initiator_token;
+}
+
+const std::string& FakeSession::receiver_token() {
+  return receiver_token_;
+}
+
+void FakeSession::set_receiver_token(const std::string& receiver_token) {
+  receiver_token_ = receiver_token;
+}
+
 void FakeSession::Close(Task* closed_task) {
   closed_ = true;
   closed_task->Run();

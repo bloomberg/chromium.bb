@@ -13,6 +13,7 @@
       'target_name': 'chromotocol_proto',
       'type': 'none',
       'sources': [
+        'auth.proto',
         'control.proto',
         'event.proto',
         'internal.proto',
@@ -66,6 +67,8 @@
       # chromotocol_proto to compile.
       'hard_dependency': 1,
       'sources': [
+        '<(out_dir)/auth.pb.cc',
+        '<(out_dir)/auth.pb.h',
         '<(out_dir)/control.pb.cc',
         '<(out_dir)/control.pb.h',
         '<(out_dir)/event.pb.cc',

@@ -76,6 +76,12 @@ class Session : public base::RefCountedThreadSafe<Session> {
   // given to the connection.
   virtual void set_config(const SessionConfig* config) = 0;
 
+  // The raw auth tokens from the session-initiate, or session-accept stanzas.
+  virtual const std::string& initiator_token() = 0;
+  virtual void set_initiator_token(const std::string& initiator_token) = 0;
+  virtual const std::string& receiver_token() = 0;
+  virtual void set_receiver_token(const std::string& receiver_token) = 0;
+
   // Closes connection. Callbacks are guaranteed not to be called after
   // |closed_task| is executed.
   virtual void Close(Task* closed_task) = 0;

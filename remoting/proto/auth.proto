@@ -1,0 +1,21 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Messages related to Client/Host Mutual Authentication and Local Login.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package remoting.protocol;
+
+// Represents the data used in generating the client auth token during session
+// initiation.
+message ClientAuthToken {
+  optional string host_full_jid = 1;
+  optional string client_full_jid = 2;
+
+  // A short-lived OAuth token identifying the client to the host.
+  optional string client_oauth_token = 3;
+}

@@ -33,6 +33,7 @@ namespace protocol {
 
 namespace {
 const int kBufferSize = 4096;
+const char kDummyAuthToken[] = "";
 }  // namespace
 
 class ProtocolTestClient;
@@ -285,7 +286,7 @@ void ProtocolTestClient::OnStateChange(
       ProtocolTestConnection* connection =
           new ProtocolTestConnection(this, client_->message_loop());
       connection->Init(session_manager_->Connect(
-          host_jid_, CandidateSessionConfig::CreateDefault(),
+          host_jid_, kDummyAuthToken, CandidateSessionConfig::CreateDefault(),
           NewCallback(connection,
                       &ProtocolTestConnection::OnStateChange)));
       connections_.push_back(make_scoped_refptr(connection));

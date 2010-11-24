@@ -76,10 +76,21 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   typedef Callback2<Session*, IncomingSessionResponse*>::Type
       IncomingSessionCallback;
 
-  // Initializes session to the host |jid|.  Ownership of the
-  // |config| is passed to the new session.
+  // Tries to create a session to the host |jid|.
+  //
+  // |host_jid| is the full jid of the host to connect to.
+  // |host_public_key| is used to encrypt the client authentication token.
+  // |client_oauth_token| is a short-lived OAuth token identify the client.
+  // |config| contains the session configurations that the client supports.
+  // |state_change_callback| is called when the connection state changes.
+  //
+  // This function may be called from any thread. The |state_change_callback|
+  // is invoked on the network thread.
+  //
+  // Ownership of the |config| is passed to the new session.
   virtual scoped_refptr<Session> Connect(
-      const std::string& jid,
+      const std::string& host_jid,
+      const std::string& client_token,
       CandidateSessionConfig* config,
       Session::StateChangeCallback* state_change_callback) = 0;
 

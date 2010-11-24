@@ -8,12 +8,11 @@
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/proto/auth.pb.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
-using cricket::ContentDescription;
-using cricket::SessionDescription;
 using buzz::QName;
 using buzz::XmlElement;
 
@@ -150,8 +149,10 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 }  // namespace
 
 ContentDescription::ContentDescription(
-    const CandidateSessionConfig* candidate_config)
-    : candidate_config_(candidate_config) {
+    const CandidateSessionConfig* candidate_config,
+    const std::string& auth_token)
+    : candidate_config_(candidate_config),
+      auth_token_(auth_token) {
 }
 
 ContentDescription::~ContentDescription() { }
@@ -218,23 +219,25 @@ void JingleSessionManager::set_allow_local_ips(bool allow_local_ips) {
 }
 
 scoped_refptr<protocol::Session> JingleSessionManager::Connect(
-    const std::string& jid,
+    const std::string& host_jid,
+    const std::string& receiver_token,
     CandidateSessionConfig* candidate_config,
     protocol::Session::StateChangeCallback* state_change_callback) {
   // Can be called from any thread.
-  scoped_refptr<JingleSession> jingle_session(
-      new JingleSession(this));
+  scoped_refptr<JingleSession> jingle_session(new JingleSession(this));
   jingle_session->set_candidate_config(candidate_config);
+  jingle_session->set_receiver_token(receiver_token);
   message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::DoConnect,
-                                   jingle_session, jid,
+                                   jingle_session, host_jid, receiver_token,
                                    state_change_callback));
   return jingle_session;
 }
 
 void JingleSessionManager::DoConnect(
     scoped_refptr<JingleSession> jingle_session,
-    const std::string& jid,
+    const std::string& host_jid,
+    const std::string& receiver_token,
     protocol::Session::StateChangeCallback* state_change_callback) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   cricket::Session* cricket_session = cricket_session_manager_->CreateSession(
@@ -246,8 +249,9 @@ void JingleSessionManager::DoConnect(
   sessions_.push_back(jingle_session);
 
   cricket_session->Initiate(
-      jid,
-      CreateSessionDescription(jingle_session->candidate_config()->Clone()));
+      host_jid,
+      CreateSessionDescription(jingle_session->candidate_config()->Clone(),
+                               receiver_token));
 }
 
 JingleThread* JingleSessionManager::jingle_thread() {
@@ -309,9 +313,8 @@ void JingleSessionManager::AcceptConnection(
       static_cast<const ContentDescription*>(content->description);
   jingle_session->set_candidate_config(content_description->config()->Clone());
 
-  IncomingSessionResponse response = protocol::SessionManager::DECLINE;
-
   // Always reject connection if there is no callback.
+  IncomingSessionResponse response = protocol::SessionManager::DECLINE;
   if (incoming_session_callback_.get())
     incoming_session_callback_->Run(jingle_session, &response);
 
@@ -321,7 +324,9 @@ void JingleSessionManager::AcceptConnection(
       DCHECK(jingle_session->config());
       CandidateSessionConfig* candidate_config =
           CandidateSessionConfig::CreateFrom(jingle_session->config());
-      cricket_session->Accept(CreateSessionDescription(candidate_config));
+      cricket_session->Accept(
+          CreateSessionDescription(candidate_config,
+                                   jingle_session->initiator_token()));
       break;
     }
 
@@ -404,7 +409,10 @@ bool JingleSessionManager::ParseContent(
 
     *config->mutable_initial_resolution() = resolution;
 
-    *content = new ContentDescription(config.release());
+    std::string auth_token;
+    // TODO(ajwong): Parse this out.
+
+    *content = new ContentDescription(config.release(), auth_token);
     return true;
   }
   LOG(ERROR) << "Invalid description: " << element->Str();
@@ -463,12 +471,13 @@ bool JingleSessionManager::WriteContent(
   return true;
 }
 
-SessionDescription* JingleSessionManager::CreateSessionDescription(
-    const CandidateSessionConfig* config) {
-  SessionDescription* desc = new SessionDescription();
+cricket::SessionDescription* JingleSessionManager::CreateSessionDescription(
+    const CandidateSessionConfig* config,
+    const std::string& auth_token) {
+  cricket::SessionDescription* desc = new cricket::SessionDescription();
   desc->AddContent(JingleSession::kChromotingContentName,
                    kChromotingXmlNamespace,
-                   new ContentDescription(config));
+                   new ContentDescription(config, auth_token));
   return desc;
 }
 

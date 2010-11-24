@@ -44,6 +44,7 @@ const int kMessageSize = 1024;
 const int kMessages = 100;
 const int kTestDataSize = kMessages * kMessageSize;
 const int kUdpWriteDelayMs = 10;
+const char kTestToken[] = "a_dummy_token";
 }  // namespace
 
 class MockSessionManagerCallback {
@@ -166,6 +167,7 @@ class JingleSessionTest : public testing::Test {
 
     client_session_ = client_server_->Connect(
         SessionManagerPair::kHostJid,
+        kTestToken,
         CandidateSessionConfig::CreateDefault(),
         NewCallback(&client_connection_callback_,
                     &MockSessionCallback::OnStateChange));
@@ -537,6 +539,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
   client_session_ = client_server_->Connect(
       SessionManagerPair::kHostJid,
+      kTestToken,
       CandidateSessionConfig::CreateDefault(),
       NewCallback(&client_connection_callback_,
                   &MockSessionCallback::OnStateChange));

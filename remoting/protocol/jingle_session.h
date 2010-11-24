@@ -51,10 +51,16 @@ class JingleSession : public protocol::Session,
   virtual const std::string& jid();
   virtual MessageLoop* message_loop();
 
-  virtual const CandidateSessionConfig* candidate_config();
   virtual const SessionConfig* config();
-
   virtual void set_config(const SessionConfig* config);
+
+  virtual const std::string& initiator_token();
+  virtual void set_initiator_token(const std::string& initiator_token);
+  virtual const std::string& receiver_token();
+  virtual void set_receiver_token(const std::string& receiver_token);
+
+  // These fields are only set on the receiving side.
+  virtual const CandidateSessionConfig* candidate_config();
 
   virtual void Close(Task* closed_task);
 
@@ -95,8 +101,13 @@ class JingleSession : public protocol::Session,
   // The corresponding libjingle session.
   cricket::Session* cricket_session_;
 
-  scoped_ptr<const CandidateSessionConfig> candidate_config_;
   scoped_ptr<const SessionConfig> config_;
+
+  std::string initiator_token_;
+  std::string receiver_token_;
+
+  // These data members are only set on the receiving side.
+  scoped_ptr<const CandidateSessionConfig> candidate_config_;
 
   cricket::PseudoTcpChannel* control_channel_;
   scoped_ptr<StreamSocketAdapter> control_channel_adapter_;

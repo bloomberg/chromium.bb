@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
@@ -87,9 +88,18 @@ void JingleConnectionToHost::InitSession() {
   // TODO(sergeyu): Set resolution in the |candidate_config| to the desired
   // resolution.
 
+  ClientAuthToken auth_token_proto;
+  auth_token_proto.set_host_full_jid(host_jid_);
+  auth_token_proto.set_client_full_jid(jingle_client_->GetFullJid());
+  // TODO(ajwong): Use real token.
+  auth_token_proto.set_client_oauth_token("");
+
+  // TODO(ajwong): We should encrypt this based on the host's public key.
+  std::string client_token = auth_token_proto.SerializeAsString();
+
   // Initialize |session_|.
   session_ = session_manager_->Connect(
-      host_jid_, candidate_config,
+      host_jid_, client_token, candidate_config,
       NewCallback(this, &JingleConnectionToHost::OnSessionStateChange));
 }
 

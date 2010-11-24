@@ -129,6 +129,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Creates encoder for the specified configuration.
   Encoder* CreateEncoder(const protocol::SessionConfig* config);
 
+  std::string GenerateHostAuthToken(const std::string& encoded_client_token);
+
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;
 

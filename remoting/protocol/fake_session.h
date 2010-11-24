@@ -118,6 +118,11 @@ class FakeSession : public Session {
   virtual const SessionConfig* config();
   virtual void set_config(const SessionConfig* config);
 
+  virtual const std::string& initiator_token();
+  virtual void set_initiator_token(const std::string& initiator_token);
+  virtual const std::string& receiver_token();
+  virtual void set_receiver_token(const std::string& receiver_token);
+
   virtual void Close(Task* closed_task);
 
  public:
@@ -130,6 +135,10 @@ class FakeSession : public Session {
   FakeSocket video_channel_;
   FakeUdpSocket video_rtp_channel_;
   FakeUdpSocket video_rtcp_channel_;
+
+  std::string initiator_token_;
+  std::string receiver_token_;
+
   std::string jid_;
   bool closed_;
 };

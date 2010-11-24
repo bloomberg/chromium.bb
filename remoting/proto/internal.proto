@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Internal messages as a unit for transmission in the wire.
+// Internal message types that should not be seen outside the protocol
+// directory.
 
 syntax = "proto2";
 
@@ -16,7 +17,6 @@ package remoting;
 
 // Defines the message that is sent from the client to the host.
 // Only one of the optional messages should be present.
-// NEXT ID: 7
 message ChromotingClientMessage {
   optional KeyEvent key_event = 1;
   optional MouseSetPositionEvent mouse_set_position_event = 2;
