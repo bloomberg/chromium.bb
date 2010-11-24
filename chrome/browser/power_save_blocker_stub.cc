@@ -8,5 +8,4 @@
 
 void PowerSaveBlocker::ApplyBlock(bool blocking) {
   // http://code.google.com/p/chromium/issues/detail?id=33605
-  // http://code.google.com/p/chromium/issues/detail?id=34081
 }
