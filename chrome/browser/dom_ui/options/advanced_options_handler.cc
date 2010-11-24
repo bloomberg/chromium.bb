@@ -135,19 +135,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE));
   localized_strings->SetString("translateEnableTranslate",
       l10n_util::GetStringUTF16(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE));
-  // Add ChromeApps preferences if background mode is runtime-enabled.
-  bool background_mode_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBackgroundMode);
-  localized_strings->SetString("enable-background-mode",
-      background_mode_enabled ? "true" : "false");
-  localized_strings->SetString("advancedSectionTitleChromeApps",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_ADVANCED_SECTION_TITLE_CHROME_APPS));
-  localized_strings->SetString("chromeAppsEnableBackgroundMode",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE));
-  localized_strings->SetString("chromeAppsLearnMoreBackgroundModeURL",
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE_BACKGROUND_MODE_URL));
 #if !defined(OS_CHROMEOS)
   // Add the cloud print proxy management ui section if it's been runtime
   // enabled.

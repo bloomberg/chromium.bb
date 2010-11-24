@@ -144,11 +144,6 @@ class ProfileSyncService;
   BOOL safeBrowsingEnabled_;
   BOOL metricsReportingEnabled_;
   BOOL proxiesConfigureButtonEnabled_;
-  IBOutlet NSTextField* backgroundModeTitle_;
-  IBOutlet NSButton* backgroundModeCheckbox_;
-  IBOutlet NSTextField* backgroundModeDescription_;
-  IBOutlet NSButton* backgroundModeLearnMore_;
-  BooleanPrefMember backgroundModeEnabled_;
 }
 
 // Designated initializer. |profile| should not be NULL.
@@ -194,7 +189,6 @@ class ProfileSyncService;
 - (IBAction)changeFontAndLanguageSettings:(id)sender;
 - (IBAction)openProxyPreferences:(id)sender;
 - (IBAction)showCertificates:(id)sender;
-- (IBAction)backgroundModeLearnMore:(id)sender;
 - (IBAction)resetToDefaults:(id)sender;
 
 // When a toolbar button is clicked

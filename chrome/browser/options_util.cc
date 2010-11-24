@@ -27,7 +27,6 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
   const char* kUserPrefs[] = {
     prefs::kAcceptLanguages,
     prefs::kAlternateErrorPagesEnabled,
-    prefs::kBackgroundModeEnabled,
     prefs::kClearSiteDataOnExit,
     prefs::kCookieBehavior,
     prefs::kDefaultCharset,

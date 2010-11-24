@@ -394,17 +394,6 @@ be available for now. -->
         Chromium installation directory seems to be in use. Please reboot your computer and try again.
       </message>
       <!-- Options Dialog -->
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CHROME_APPS" desc="The title text in the options panel that provides options for installed web apps.">
-        Chromium Web Apps
-      </message>
-      <if expr="os == 'darwin'">
-        <message name="IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE" desc="The label in the checkbox that enables launch-at-login.">
-          Open Chromium at login and launch background web apps
-        </message>
-        <message name="IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE_DESCRIPTION" desc="The description text under the checkbox that enables launch-at-login.">
-          Web apps are only active while Chromium is running.
-        </message>
-      </if>
       <message name="IDS_OPTIONS_DISABLE_SERVICES" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
         Chromium may use web services to improve your browsing experience. You may optionally disable these services.
       </message>

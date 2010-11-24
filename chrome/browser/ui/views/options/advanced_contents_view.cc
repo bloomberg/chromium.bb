@@ -1310,92 +1310,6 @@ void TranslateSection::NotifyPrefChanged(const std::string* pref_name) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ChromeAppsSection
-
-class ChromeAppsSection : public AdvancedSection,
-                          public views::ButtonListener,
-                          public views::LinkController {
- public:
-  explicit ChromeAppsSection(Profile* profile);
-  virtual ~ChromeAppsSection() {}
-
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
-
- protected:
-  // OptionsPageView overrides:
-  virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::string* pref_name);
-
- private:
-  // Controls for this section:
-  views::Checkbox* enable_background_mode_checkbox_;
-  views::Link* learn_more_link_;
-
-  // Preferences for this section:
-  BooleanPrefMember enable_background_mode_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAppsSection);
-};
-
-ChromeAppsSection::ChromeAppsSection(Profile* profile)
-    : enable_background_mode_checkbox_(NULL),
-      learn_more_link_(NULL),
-      AdvancedSection(profile, l10n_util::GetString(
-          IDS_OPTIONS_ADVANCED_SECTION_TITLE_CHROME_APPS)) {
-}
-
-void ChromeAppsSection::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  DCHECK(sender == enable_background_mode_checkbox_);
-  bool enabled = enable_background_mode_checkbox_->checked();
-  UserMetricsRecordAction(enabled ?
-                          UserMetricsAction("Options_BackgroundMode_Enable") :
-                          UserMetricsAction("Options_BackgroundMode_Disable"),
-                          profile()->GetPrefs());
-  enable_background_mode_.SetValue(enabled);
-}
-
-void ChromeAppsSection::LinkActivated(views::Link* source, int event_flags) {
-  DCHECK(source == learn_more_link_);
-  browser::ShowOptionsURL(
-      profile(),
-      GURL(l10n_util::GetString(IDS_LEARN_MORE_BACKGROUND_MODE_URL)));
-}
-
-void ChromeAppsSection::InitControlLayout() {
-  AdvancedSection::InitControlLayout();
-
-  GridLayout* layout = new GridLayout(contents_);
-  contents_->SetLayoutManager(layout);
-
-  AddIndentedColumnSet(layout, 0);
-
-  enable_background_mode_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE));
-  enable_background_mode_checkbox_->set_listener(this);
-  AddWrappingCheckboxRow(layout, enable_background_mode_checkbox_, 0, true);
-
-  // Init member pref so we can update the controls if prefs change.
-  enable_background_mode_.Init(prefs::kBackgroundModeEnabled,
-      profile()->GetPrefs(), this);
-
-  // Add our link to the help center page for this feature.
-  learn_more_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
-  learn_more_link_->SetController(this);
-  AddLeadingControl(layout, learn_more_link_, 0, false);
-}
-
-void ChromeAppsSection::NotifyPrefChanged(const std::string* pref_name) {
-  if (!pref_name || *pref_name == prefs::kBackgroundModeEnabled) {
-    enable_background_mode_checkbox_->SetChecked(
-        enable_background_mode_.GetValue());
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // CloudPrintProxySection
 
 class CloudPrintProxySection : public AdvancedSection,
@@ -1680,11 +1594,6 @@ void AdvancedContentsView::InitControlLayout() {
       profile()->GetCloudPrintProxyService()) {
     layout->StartRow(0, single_column_view_set_id);
     layout->AddView(new CloudPrintProxySection(profile()));
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBackgroundMode)) {
-    layout->StartRow(0, single_column_view_set_id);
-    layout->AddView(new ChromeAppsSection(profile()));
   }
 }
 

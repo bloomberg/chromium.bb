@@ -399,7 +399,6 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setFileHandlerUIEnabled:(BOOL)value;
 - (void)setTranslateEnabled:(BOOL)value;
 - (void)setTabsToLinks:(BOOL)value;
-- (void)setBackgroundModeEnabled:(BOOL)value;
 - (void)displayPreferenceViewForPage:(OptionsPage)page
                              animate:(BOOL)animate;
 - (void)resetSubViews;
@@ -601,15 +600,6 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   // remove the checkbox and slide everything above it down.
   RemoveViewFromView(underTheHoodContentView_, enableLoggingCheckbox_);
 #endif  // !defined(GOOGLE_CHROME_BUILD)
-
-  // If BackgroundMode is not enabled, hide the related prefs UI.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBackgroundMode)) {
-    RemoveViewFromView(underTheHoodContentView_, backgroundModeTitle_);
-    RemoveViewFromView(underTheHoodContentView_, backgroundModeCheckbox_);
-    RemoveViewFromView(underTheHoodContentView_, backgroundModeDescription_);
-    RemoveViewFromView(underTheHoodContentView_, backgroundModeLearnMore_);
-  }
 
   // There are four problem children within the groups:
   //   Basics - Default Browser
@@ -877,8 +867,6 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   autoOpenFiles_.Init(
       prefs::kDownloadExtensionsToOpen, prefs_, observer_.get());
   translateEnabled_.Init(prefs::kEnableTranslate, prefs_, observer_.get());
-  backgroundModeEnabled_.Init(prefs::kBackgroundModeEnabled, prefs_,
-                              observer_.get());
   tabsToLinks_.Init(prefs::kWebkitTabsToLinks, prefs_, observer_.get());
 
   // During unit tests, there is no local state object, so we fall back to
@@ -1531,10 +1519,6 @@ const int kDisabledIndex = 1;
   else if (*prefName == prefs::kEnableTranslate) {
     [self setTranslateEnabled:translateEnabled_.GetValue() ? YES : NO];
   }
-  else if (*prefName == prefs::kBackgroundModeEnabled) {
-    [self setBackgroundModeEnabled:backgroundModeEnabled_.GetValue() ?
-          YES : NO];
-  }
   else if (*prefName == prefs::kWebkitTabsToLinks) {
     [self setTabsToLinks:tabsToLinks_.GetValue() ? YES : NO];
   }
@@ -1596,12 +1580,6 @@ const int kDisabledIndex = 1;
   // We open a new browser window so the Options dialog doesn't get lost
   // behind other windows.
   browser::ShowOptionsURL(profile_, url);
-}
-
-- (IBAction)backgroundModeLearnMore:(id)sender {
-  browser::ShowOptionsURL(
-      profile_,
-      GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_BACKGROUND_MODE_URL)));
 }
 
 - (IBAction)resetAutoOpenFiles:(id)sender {
@@ -1791,19 +1769,6 @@ const int kDisabledIndex = 1;
     [self recordUserAction:UserMetricsAction("Options_Translate_Disable")];
   }
   translateEnabled_.SetValue(value);
-}
-
-- (BOOL)backgroundModeEnabled {
-  return backgroundModeEnabled_.GetValue();
-}
-
-- (void)setBackgroundModeEnabled:(BOOL)value {
-  if (value) {
-    [self recordUserAction:UserMetricsAction("Options_BackgroundMode_Enable")];
-  } else {
-    [self recordUserAction:UserMetricsAction("Options_BackgroundMode_Disable")];
-  }
-  backgroundModeEnabled_.SetValue(value);
 }
 
 - (BOOL)tabsToLinks {

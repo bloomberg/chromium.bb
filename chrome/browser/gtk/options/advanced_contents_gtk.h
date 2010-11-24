@@ -12,7 +12,6 @@
 #include "base/scoped_ptr.h"
 
 class Profile;
-class ChromeAppsSection;
 class DownloadSection;
 class NetworkSection;
 class PrivacySection;
@@ -36,7 +35,6 @@ class AdvancedContentsGtk {
   Profile* profile_;
 
   // The sections of the page.
-  scoped_ptr<ChromeAppsSection> chrome_apps_section_;
   scoped_ptr<DownloadSection> download_section_;
   scoped_ptr<NetworkSection> network_section_;
   scoped_ptr<TranslateSection> translate_section_;

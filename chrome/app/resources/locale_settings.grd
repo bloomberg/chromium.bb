@@ -525,11 +525,6 @@
         http://tools.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
       </message>
 
-      <!-- The URL for the "Learn more" page for the Chrome Web Apps section under Options.-->
-      <message name="IDS_LEARN_MORE_BACKGROUND_MODE_URL" translateable="false">
-        http://www.google.com/support/chrome/bin/answer.py?answer=188022&amp;hl=[GRITLANGCODE]
-      </message>
-
       <!-- The URL for the "Learn more" page for the usage/crash reporting option in the first run dialog. -->
       <message name="IDS_LEARN_MORE_REPORTING_URL" translateable="false">
         http://www.google.com/support/chrome/bin/answer.py?answer=96817&amp;hl=[GRITLANGCODE]

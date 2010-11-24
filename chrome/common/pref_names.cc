@@ -763,10 +763,6 @@ const char kPreferencesWindowPlacement[] = "preferences.window_placement";
 // renderer's in-memory cache of objects.
 const char kMemoryCacheSize[] = "renderer.memory_cache.size";
 
-// Boolean that records if chrome should run in background mode when background
-// apps are installed.
-const char kBackgroundModeEnabled[] = "background_mode.enabled";
-
 // Boolean that records if chrome has set "launch on startup" property for
 // itself earlier and is allowed to reset it later, reducing likelihood of
 // overriding user choices.

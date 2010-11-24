@@ -276,7 +276,6 @@ extern const char kKeywordEditorWindowPlacement[];
 extern const char kPreferencesWindowPlacement[];
 extern const char kMemoryCacheSize[];
 
-extern const char kBackgroundModeEnabled[];
 extern const char kLaunchOnStartupResetAllowed[];
 
 extern const char kDownloadDefaultDirectory[];
