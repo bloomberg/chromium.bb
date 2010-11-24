@@ -151,6 +151,13 @@ void PasswordManager::DidStopLoading() {
   }
 }
 
+void PasswordManager::DidNavigateAnyFramePostCommit(
+      const NavigationController::LoadCommittedDetails& details,
+      const ViewHostMsg_FrameNavigate_Params& params) {
+  if (params.password_form.origin.is_valid())
+    ProvisionallySavePassword(params.password_form);
+}
+
 void PasswordManager::PasswordFormsFound(
     const std::vector<PasswordForm>& forms) {
   if (!delegate_->GetProfileForPasswordManager())

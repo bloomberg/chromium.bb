@@ -32,7 +32,9 @@ class WebNavigationObserver {
   virtual void DidStartLoading() { }
   virtual void DidStopLoading() { }
 
-  // TODO(pinkerton): Not sure the best place for these.
+  // TODO(beng): These should move from here once PasswordManager is able to
+  //             establish its own private communication protocol to the
+  //             renderer.
   virtual void PasswordFormsFound(
       const std::vector<webkit_glue::PasswordForm>& forms) { }
   virtual void PasswordFormsVisible(

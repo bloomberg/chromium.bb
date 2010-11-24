@@ -977,6 +977,10 @@ class TabContents : public PageNavigator,
   virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
                                    const std::string& json_arguments,
                                    IPC::Message* reply_msg);
+  virtual void PasswordFormsFound(
+      const std::vector<webkit_glue::PasswordForm>& forms);
+  virtual void PasswordFormsVisible(
+      const std::vector<webkit_glue::PasswordForm>& visible_forms);
   virtual void PageHasOSDD(RenderViewHost* render_view_host,
                            int32 page_id,
                            const GURL& url,
