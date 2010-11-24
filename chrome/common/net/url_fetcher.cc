@@ -97,7 +97,9 @@ class URLFetcher::Core
   GURL url_;                         // The URL we eventually wound up at
   RequestType request_type_;         // What type of request is this?
   URLFetcher::Delegate* delegate_;   // Object to notify on completion
-  MessageLoop* delegate_loop_;       // Message loop of the creating thread
+  scoped_refptr<base::MessageLoopProxy> delegate_loop_proxy_;
+                                     // Message loop proxy of the creating
+                                     // thread.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
                                      // The message loop proxy for the thread
                                      // on which the request IO happens.
@@ -192,7 +194,7 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       original_url_(original_url),
       request_type_(request_type),
       delegate_(d),
-      delegate_loop_(MessageLoop::current()),
+      delegate_loop_proxy_(base::MessageLoopProxy::CreateForCurrentThread()),
       request_(NULL),
       load_flags_(net::LOAD_NORMAL),
       response_code_(-1),
@@ -210,7 +212,7 @@ URLFetcher::Core::~Core() {
 }
 
 void URLFetcher::Core::Start() {
-  DCHECK(delegate_loop_);
+  DCHECK(delegate_loop_proxy_);
   CHECK(request_context_getter_) << "We need an URLRequestContext!";
   io_message_loop_proxy_ = request_context_getter_->GetIOMessageLoopProxy();
   CHECK(io_message_loop_proxy_.get()) << "We need an IO message loop proxy";
@@ -221,7 +223,7 @@ void URLFetcher::Core::Start() {
 }
 
 void URLFetcher::Core::Stop() {
-  DCHECK_EQ(MessageLoop::current(), delegate_loop_);
+  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   delegate_ = NULL;
   fetcher_ = NULL;
   if (io_message_loop_proxy_.get()) {
@@ -269,8 +271,14 @@ void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
 
   // See comments re: HEAD requests in OnResponseStarted().
   if (!request_->status().is_io_pending() || (request_type_ == HEAD)) {
-    delegate_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &Core::OnCompletedURLRequest, request_->status()));
+    bool posted = delegate_loop_proxy_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &Core::OnCompletedURLRequest,
+                          request_->status()));
+    // If the delegate message loop does not exist any more, then the delegate
+    // should be gone too.
+    DCHECK(posted || !delegate_);
     ReleaseRequest();
   }
 }
@@ -341,7 +349,7 @@ void URLFetcher::Core::CancelURLRequest() {
 }
 
 void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
-  DCHECK(MessageLoop::current() == delegate_loop_);
+  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
 
   // Checks the response from server.
   if (response_code_ >= 500) {
