@@ -38,6 +38,11 @@ bool GetChromeFrameUserDataDirectory(FilePath* result) {
   return true;
 }
 
+void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
+  // This function does more complicated things on Mac/Linux.
+  *result = profile_dir;
+}
+
 bool GetUserDocumentsDirectory(FilePath* result) {
   wchar_t path_buf[MAX_PATH];
   if (FAILED(SHGetFolderPath(NULL, CSIDL_MYDOCUMENTS, NULL,
