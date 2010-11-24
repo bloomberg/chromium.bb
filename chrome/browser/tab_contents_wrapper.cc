@@ -9,8 +9,6 @@
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
-////////////////////////////////////////////////////////////////////////////////
-// TabContentsWrapper, public:
 
 TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     : tab_contents_(contents) {
@@ -18,9 +16,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // Stash this in the property bag so it can be retrieved without having to
   // go to a Browser.
   property_accessor()->SetProperty(contents->property_bag(), this);
-
-  // Needed so that we initialize the password manager on first navigation.
-  tab_contents()->AddNavigationObserver(this);
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
@@ -30,15 +25,6 @@ TabContentsWrapper::~TabContentsWrapper() {
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
   return Singleton< PropertyAccessor<TabContentsWrapper*> >::get();
-}
-
-TabContentsWrapper* TabContentsWrapper::Clone() {
-  TabContents* new_contents = tab_contents()->Clone();
-  TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
-  // Instantiate the passowrd manager if it has been instantiated here.
-  if (password_manager_.get())
-    new_wrapper->GetPasswordManager();
-  return new_wrapper;
 }
 
 PasswordManager* TabContentsWrapper::GetPasswordManager() {
@@ -54,10 +40,11 @@ PasswordManager* TabContentsWrapper::GetPasswordManager() {
   return password_manager_.get();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TabContentsWrapper, WebNavigationObserver implementation:
-
-void TabContentsWrapper::NavigateToPendingEntry() {
-  GetPasswordManager();
-  tab_contents()->RemoveNavigationObserver(this);
+TabContentsWrapper* TabContentsWrapper::Clone() {
+  TabContents* new_contents = tab_contents()->Clone();
+  TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
+  // Instantiate the passowrd manager if it has been instantiated here.
+  if (password_manager_.get())
+    new_wrapper->GetPasswordManager();
+  return new_wrapper;
 }

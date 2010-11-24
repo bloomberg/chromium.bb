@@ -50,9 +50,6 @@ class PasswordManager : public LoginModel,
 
   // WebNavigationObserver overrides.
   virtual void DidStopLoading();
-  virtual void DidNavigateAnyFramePostCommit(
-      const NavigationController::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
   virtual void PasswordFormsFound(
       const std::vector<webkit_glue::PasswordForm>& forms);
   virtual void PasswordFormsVisible(
