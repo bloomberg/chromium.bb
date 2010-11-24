@@ -656,7 +656,8 @@ bool FormManager::ClearFormWithNode(const WebNode& node) {
   return true;
 }
 
-bool FormManager::ClearPreviewedFormWithNode(const WebNode& node) {
+bool FormManager::ClearPreviewedFormWithNode(const WebNode& node,
+                                             bool was_autofilled) {
   FormElement* form_element = NULL;
   if (!FindCachedFormElementWithNode(node, &form_element))
     return false;
@@ -683,14 +684,16 @@ bool FormManager::ClearPreviewedFormWithNode(const WebNode& node) {
 
     // Clear the suggested value. For the initiating node, also restore the
     // original value.
-    input_element.setSuggestedValue(string16());
+    input_element.setSuggestedValue(WebString());
     bool is_initiating_node = (node == input_element);
     if (is_initiating_node) {
       // Call |setValue()| to force the renderer to update the field's displayed
       // value.
       input_element.setValue(input_element.value());
+      input_element.setAutofilled(was_autofilled);
+    } else {
+      input_element.setAutofilled(false);
     }
-    input_element.setAutofilled(false);
 
     // Clearing the suggested value in the focused node (above) can cause
     // selection to be lost. We force selection range to restore the text

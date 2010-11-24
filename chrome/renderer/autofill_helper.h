@@ -144,6 +144,9 @@ class AutoFillHelper : public PageClickListener {
   // The action to take when receiving AutoFill data from the AutoFillManager.
   AutoFillAction autofill_action_;
 
+  // Was the query node autofilled prior to previewing the form?
+  bool was_query_node_autofilled_;
+
   // The menu index of the "Clear" menu item.
   int suggestions_clear_index_;
 

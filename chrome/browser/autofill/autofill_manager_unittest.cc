@@ -8,7 +8,9 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
+#include "base/string_number_conversions.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
@@ -143,6 +145,28 @@ class TestAutoFillManager : public AutoFillManager {
     test_personal_data_->AddProfile(profile);
   }
 
+  int GetPackedCreditCardID(int credit_card_id) {
+    return PackGUIDs(IDToGUID(credit_card_id), std::string());
+  }
+
+ protected:
+  virtual int GUIDToID(const std::string& guid) OVERRIDE {
+    if (guid.empty())
+      return 0;
+
+    int id;
+    EXPECT_TRUE(base::StringToInt(guid.substr(guid.rfind("-") + 1), &id));
+    return id;
+  }
+
+  virtual const std::string IDToGUID(int id) OVERRIDE {
+    EXPECT_TRUE(id >= 0);
+    if (id <= 0)
+      return std::string();
+
+    return base::StringPrintf("00000000-0000-0000-0000-%012d", id);
+  }
+
  private:
   TestPersonalDataManager* test_personal_data_;
   bool autofill_enabled_;
@@ -248,7 +272,8 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
   bool GetAutoFillSuggestionsMessage(int* page_id,
                                      std::vector<string16>* values,
                                      std::vector<string16>* labels,
-                                     std::vector<string16>* icons) {
+                                     std::vector<string16>* icons,
+                                     std::vector<int>* unique_ids) {
     const uint32 kMsgID = ViewMsg_AutoFillSuggestionsReturned::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
@@ -265,6 +290,8 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
       *labels = autofill_param.c;
     if (icons)
       *icons = autofill_param.d;
+    if (unique_ids)
+      *unique_ids = autofill_param.e;
     return true;
   }
 
@@ -321,8 +348,9 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
@@ -335,6 +363,9 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(1, unique_ids[0]);
+  EXPECT_EQ(2, unique_ids[1]);
 }
 
 // Test that we return only matching address profile suggestions when the
@@ -367,8 +398,9 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(1U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
@@ -376,6 +408,8 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
   EXPECT_EQ(ASCIIToUTF16("3734 Elvis Presley Blvd."), labels[0]);
   ASSERT_EQ(1U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
+  ASSERT_EQ(1U, unique_ids.size());
+  EXPECT_EQ(1, unique_ids[0]);
 }
 
 // Test that we return no suggestions when the form has no relevant fields.
@@ -472,8 +506,9 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMethodGet) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(1U, values.size());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED),
@@ -482,6 +517,8 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMethodGet) {
   EXPECT_EQ(string16(), labels[0]);
   ASSERT_EQ(1U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
+  ASSERT_EQ(1U, unique_ids.size());
+  EXPECT_EQ(-1, unique_ids[0]);
 
   // Now add some Autocomplete suggestions. We should return the autocomplete
   // suggestions and the warning; these will be culled by the renderer.
@@ -495,8 +532,8 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMethodGet) {
   suggestions.push_back(ASCIIToUTF16("Jason"));
   rvh()->AutocompleteSuggestionsReturned(suggestions);
 
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID2, page_id);
   ASSERT_EQ(3U, values.size());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED),
@@ -511,6 +548,10 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMethodGet) {
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
   EXPECT_EQ(string16(), icons[2]);
+  ASSERT_EQ(3U, unique_ids.size());
+  EXPECT_EQ(-1, unique_ids[0]);
+  EXPECT_EQ(0, unique_ids[1]);
+  EXPECT_EQ(0, unique_ids[2]);
 
   // Now clear the test profiles and try again -- we shouldn't return a warning.
   test_personal_data_->ClearAutoFillProfiles();
@@ -547,8 +588,9 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[0]);
@@ -559,6 +601,9 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(ASCIIToUTF16("visaCC"), icons[0]);
   EXPECT_EQ(ASCIIToUTF16("masterCardCC"), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(autofill_manager_->GetPackedCreditCardID(4), unique_ids[0]);
+  EXPECT_EQ(autofill_manager_->GetPackedCreditCardID(5), unique_ids[1]);
 }
 
 // Test that we return only matching credit card profile suggestions when the
@@ -591,8 +636,9 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(1U, values.size());
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[0]);
@@ -600,6 +646,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   EXPECT_EQ(ASCIIToUTF16("*3456"), labels[0]);
   ASSERT_EQ(1U, icons.size());
   EXPECT_EQ(ASCIIToUTF16("visaCC"), icons[0]);
+  ASSERT_EQ(1U, unique_ids.size());
+  EXPECT_EQ(autofill_manager_->GetPackedCreditCardID(4), unique_ids[0]);
 }
 
 // Test that we return credit card profile suggestions when the selected form
@@ -632,8 +680,9 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis Presley"), values[0]);
@@ -644,6 +693,9 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(ASCIIToUTF16("visaCC"), icons[0]);
   EXPECT_EQ(ASCIIToUTF16("masterCardCC"), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(autofill_manager_->GetPackedCreditCardID(4), unique_ids[0]);
+  EXPECT_EQ(autofill_manager_->GetPackedCreditCardID(5), unique_ids[1]);
 }
 
 // Test that we return a warning explaining that credit card profile suggestions
@@ -676,8 +728,9 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(1U, values.size());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
@@ -686,6 +739,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   EXPECT_EQ(string16(), labels[0]);
   ASSERT_EQ(1U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
+  ASSERT_EQ(1U, unique_ids.size());
+  EXPECT_EQ(-1, unique_ids[0]);
 
   // Now add some Autocomplete suggestions. We should show the autocomplete
   // suggestions and the warning.
@@ -699,8 +754,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   suggestions.push_back(ASCIIToUTF16("Jason"));
   rvh()->AutocompleteSuggestionsReturned(suggestions);
 
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID2, page_id);
   ASSERT_EQ(3U, values.size());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
@@ -715,6 +770,10 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
   EXPECT_EQ(string16(), icons[2]);
+  ASSERT_EQ(3U, unique_ids.size());
+  EXPECT_EQ(-1, unique_ids[0]);
+  EXPECT_EQ(0, unique_ids[1]);
+  EXPECT_EQ(0, unique_ids[2]);
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   test_personal_data_->ClearCreditCards();
@@ -751,8 +810,9 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestions) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
@@ -765,6 +825,9 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestions) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(1, unique_ids[0]);
+  EXPECT_EQ(2, unique_ids[1]);
 
   process()->sink().ClearMessages();
   autofill_test::CreateTestFormField(
@@ -778,8 +841,8 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestions) {
 
   // Test that we sent the credit card suggestions to the renderer.
   page_id = 0;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[0]);
@@ -790,6 +853,9 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestions) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(ASCIIToUTF16("visaCC"), icons[0]);
   EXPECT_EQ(ASCIIToUTF16("masterCardCC"), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(autofill_manager_->GetPackedCreditCardID(4), unique_ids[0]);
+  EXPECT_EQ(autofill_manager_->GetPackedCreditCardID(5), unique_ids[1]);
 }
 
 // Test that for non-https forms with both address and credit card fields, we
@@ -825,8 +891,9 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
@@ -839,6 +906,9 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(1, unique_ids[0]);
+  EXPECT_EQ(2, unique_ids[1]);
 
   process()->sink().ClearMessages();
   autofill_test::CreateTestFormField(
@@ -851,8 +921,8 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
 
   // Test that we sent the right message to the renderer.
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(1U, values.size());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
@@ -861,6 +931,8 @@ TEST_F(AutoFillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   EXPECT_EQ(string16(), labels[0]);
   ASSERT_EQ(1U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
+  ASSERT_EQ(1U, unique_ids.size());
+  EXPECT_EQ(-1, unique_ids[0]);
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   test_personal_data_->ClearCreditCards();
@@ -901,8 +973,9 @@ TEST_F(AutoFillManagerTest, GetCombinedAutoFillAndAutocompleteSuggestions) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(4U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
@@ -919,6 +992,11 @@ TEST_F(AutoFillManagerTest, GetCombinedAutoFillAndAutocompleteSuggestions) {
   EXPECT_EQ(string16(), icons[1]);
   EXPECT_EQ(string16(), icons[2]);
   EXPECT_EQ(string16(), icons[3]);
+  ASSERT_EQ(4U, unique_ids.size());
+  EXPECT_EQ(1, unique_ids[0]);
+  EXPECT_EQ(2, unique_ids[1]);
+  EXPECT_EQ(0, unique_ids[2]);
+  EXPECT_EQ(0, unique_ids[3]);
 }
 
 // Test that we return autocomplete-like suggestions when trying to autofill
@@ -951,8 +1029,9 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsFieldIsAutoFilled) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
@@ -963,6 +1042,9 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsFieldIsAutoFilled) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(1, unique_ids[0]);
+  EXPECT_EQ(2, unique_ids[1]);
 }
 
 // Test that nothing breaks when there are autocomplete suggestions but no
@@ -998,8 +1080,9 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   ASSERT_EQ(2U, labels.size());
@@ -1010,6 +1093,9 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(0, unique_ids[0]);
+  EXPECT_EQ(0, unique_ids[1]);
 }
 
 // Test that we do not return duplicate values drawn from multiple profiles when
@@ -1027,6 +1113,7 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   AutoFillProfile* profile = new AutoFillProfile;
   autofill_test::SetProfileInfo(profile, "Duplicate", "Elvis", "", "", "", "",
                                 "", "", "", "", "", "", "", "");
+  profile->set_guid("00000000-0000-0000-0000-000000000101");
   autofill_manager_->AddProfile(profile);
 
   // The page ID sent to the AutoFillManager from the RenderView, used to send
@@ -1048,8 +1135,9 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
-  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels,
-                                            &icons));
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
   EXPECT_EQ(kPageID, page_id);
   ASSERT_EQ(2U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
@@ -1060,6 +1148,9 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   ASSERT_EQ(2U, icons.size());
   EXPECT_EQ(string16(), icons[0]);
   EXPECT_EQ(string16(), icons[1]);
+  ASSERT_EQ(2U, unique_ids.size());
+  EXPECT_EQ(1, unique_ids[0]);
+  EXPECT_EQ(2, unique_ids[1]);
 }
 
 // Test that we correctly fill an address form.
@@ -1071,6 +1162,7 @@ TEST_F(AutoFillManagerTest, FillAddressForm) {
                                 "916 16th St.", "Apt. 6", "Lubbock",
                                 "Texas", "79401", "USA",
                                 "12345678901", "");
+  profile->set_guid("00000000-0000-0000-0000-000000000007");
   autofill_manager_->AddProfile(profile);
 
   FormData form;

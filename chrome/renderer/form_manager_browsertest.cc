@@ -2710,7 +2710,7 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNode) {
   email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
 
   // Clear the previewed fields.
-  EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(lastname));
+  EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(lastname, false));
 
   // Fields with empty suggestions suggestions are not modified.
   EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
@@ -2766,12 +2766,66 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
   email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
 
   // Clear the previewed fields.
-  EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(firstname));
+  EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(firstname, false));
 
   // Fields with non-empty values are restored.
   EXPECT_EQ(ASCIIToUTF16("W"), firstname.value());
   EXPECT_TRUE(firstname.suggestedValue().isEmpty());
   EXPECT_FALSE(firstname.isAutofilled());
+  EXPECT_EQ(1, firstname.selectionStart());
+  EXPECT_EQ(1, firstname.selectionEnd());
+
+  // Verify the previewed fields are cleared.
+  EXPECT_TRUE(lastname.value().isEmpty());
+  EXPECT_TRUE(lastname.suggestedValue().isEmpty());
+  EXPECT_FALSE(lastname.isAutofilled());
+  EXPECT_TRUE(email.value().isEmpty());
+  EXPECT_TRUE(email.suggestedValue().isEmpty());
+  EXPECT_FALSE(email.isAutofilled());
+}
+
+TEST_F(FormManagerTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" value=\"W\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"text\" id=\"email\"/>"
+           "  <INPUT type=\"submit\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetFormsInFrame(web_frame, FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Set the auto-filled attribute.
+  WebInputElement firstname =
+      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  firstname.setAutofilled(true);
+  WebInputElement lastname =
+      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  lastname.setAutofilled(true);
+  WebInputElement email =
+      web_frame->document().getElementById("email").to<WebInputElement>();
+  email.setAutofilled(true);
+
+  // Set the suggested values on all of the elements.
+  firstname.setSuggestedValue(ASCIIToUTF16("Wyatt"));
+  lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
+  email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
+
+  // Clear the previewed fields.
+  EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(firstname, true));
+
+  // Fields with non-empty values are restored.
+  EXPECT_EQ(ASCIIToUTF16("W"), firstname.value());
+  EXPECT_TRUE(firstname.suggestedValue().isEmpty());
+  EXPECT_TRUE(firstname.isAutofilled());
   EXPECT_EQ(1, firstname.selectionStart());
   EXPECT_EQ(1, firstname.selectionEnd());
 

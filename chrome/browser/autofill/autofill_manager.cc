@@ -240,15 +240,8 @@ bool AutoFillManager::GetAutoFillSuggestions(bool field_autofilled,
   // redundant. In addition, remove duplicate values.
   if (field_autofilled) {
     RemoveDuplicateElements(&values, &unique_ids);
-    labels.resize(values.size());
-    icons.resize(values.size());
-    unique_ids.resize(values.size());
-
-    for (size_t i = 0; i < labels.size(); ++i) {
-      labels[i] = string16();
-      icons[i] = string16();
-      unique_ids[i] = 0;
-    }
+    labels.assign(values.size(), string16());
+    icons.assign(values.size(), string16());
   }
 
   host->AutoFillSuggestionsReturned(values, labels, icons, unique_ids);

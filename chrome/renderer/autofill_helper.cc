@@ -52,6 +52,7 @@ AutoFillHelper::AutoFillHelper(RenderView* render_view)
     : render_view_(render_view),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
+      was_query_node_autofilled_(false),
       suggestions_clear_index_(-1),
       suggestions_options_index_(-1) {
 }
@@ -218,7 +219,7 @@ void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
 }
 
 void AutoFillHelper::DidClearAutoFillSelection(const WebNode& node) {
-  form_manager_.ClearPreviewedFormWithNode(node);
+  form_manager_.ClearPreviewedFormWithNode(node, was_query_node_autofilled_);
 }
 
 void AutoFillHelper::FrameContentsAvailable(WebFrame* frame) {
@@ -318,6 +319,7 @@ void AutoFillHelper::FillAutoFillFormData(const WebNode& node,
     return;
 
   autofill_action_ = action;
+  was_query_node_autofilled_ = element.isAutofilled();
   render_view_->Send(new ViewHostMsg_FillAutoFillFormData(
       render_view_->routing_id(), autofill_query_id_, form, unique_id));
 }

@@ -95,6 +95,16 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
     personal_data_ = personal_data;
   }
 
+  // Maps GUIDs to and from IDs that are used to identify profiles and credit
+  // cards sent to and from the renderer process.
+  virtual int GUIDToID(const std::string& guid);
+  virtual const std::string IDToGUID(int id);
+
+  // Methods for packing and unpacking credit card and profile IDs for sending
+  // and receiving to and from the renderer process.
+  int PackGUIDs(const std::string& cc_guid, const std::string& profile_guid);
+  void UnpackGUIDs(int id, std::string* cc_guid, std::string* profile_guid);
+
  private:
   // Returns a list of values from the stored profiles that match |type| and the
   // value of |field| and returns the labels of the matching profiles. |labels|
@@ -135,16 +145,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
   // Parses the forms using heuristic matching and querying the AutoFill server.
   void ParseForms(const std::vector<webkit_glue::FormData>& forms);
-
-  // Methods for packing and unpacking credit card and profile IDs for sending
-  // and receiving to and from the renderer process.
-  int PackGUIDs(const std::string& cc_guid, const std::string& profile_guid);
-  void UnpackGUIDs(int id, std::string* cc_guid, std::string* profile_guid);
-
-  // Maps GUIDs to and from IDs that are used to identify profiles and credit
-  // cards sent to and from the renderer process.
-  int GUIDToID(const std::string& guid);
-  const std::string IDToGUID(int id);
 
   // The following function is meant to be called from unit-test only.
   void set_disable_download_manager_requests(bool value) {
