@@ -47,8 +47,8 @@ void RtpVideoReader::ResetQueue() {
 }
 
 void RtpVideoReader::OnRtpPacket(const RtpPacket* rtp_packet) {
-  uint16 sequence_number = rtp_packet->header().sequence_number;
-  int16 relative_number = sequence_number - last_sequence_number_;
+  uint32 sequence_number = rtp_packet->extended_sequence_number();
+  int32 relative_number = sequence_number - last_sequence_number_;
   int packet_index;
 
   if (packets_queue_.empty()) {

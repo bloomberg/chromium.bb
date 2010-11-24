@@ -11,6 +11,17 @@ namespace remoting {
 namespace protocol {
 
 struct RtpHeader {
+  RtpHeader()
+      : padding(false),
+        extension(false),
+        sources(0),
+        marker(false),
+        payload_type(0),
+        sequence_number(0),
+        timestamp(0),
+        sync_source_id(0) {
+  }
+
   // RTP version is always set to 2.
   // version = 2
   bool padding;
@@ -34,6 +45,13 @@ struct Vp8Descriptor {
     MIDDLE_FRAGMENT = 2,
     LAST_FRAGMENT = 3,
   };
+
+  Vp8Descriptor()
+      : non_reference_frame(false),
+        fragmentation_info(NOT_FRAGMENTED),
+        frame_beginning(false),
+        picture_id(kuint32max) {
+  }
 
   bool non_reference_frame;
   uint8 fragmentation_info;

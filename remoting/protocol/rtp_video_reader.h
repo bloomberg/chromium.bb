@@ -52,7 +52,7 @@ class RtpVideoReader : public VideoReader {
   RtpReader rtp_reader_;
 
   PacketsQueue packets_queue_;
-  uint16 last_sequence_number_;
+  uint32 last_sequence_number_;
 
   // The stub that processes all received packets.
   VideoStub* video_stub_;

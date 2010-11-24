@@ -23,7 +23,7 @@ RtpVideoWriter::RtpVideoWriter() { }
 RtpVideoWriter::~RtpVideoWriter() { }
 
 void RtpVideoWriter::Init(protocol::Session* session) {
-  rtp_writer_.Init(session->video_rtp_channel(), session->video_rtcp_channel());
+  rtp_writer_.Init(session->video_rtp_channel());
 }
 
 void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet, Task* done) {

@@ -27,12 +27,24 @@ class RtpPacket {
   const CompoundBuffer& payload() const { return payload_; }
   CompoundBuffer* mutable_payload() { return &payload_; }
 
+  const uint32 extended_sequence_number() const {
+    return extended_sequence_number_;
+  }
+  void set_extended_sequence_number(uint32 value) {
+    extended_sequence_number_ = value;
+  }
+
  private:
   RtpHeader header_;
   CompoundBuffer payload_;
   Vp8Descriptor vp8_descriptor_;
+  uint32 extended_sequence_number_;
 };
 
+// RtpReader implements and RTP receiver. It reads packets from RTP
+// socket, parses them, calculates extended sequence number and then
+// passes them to a callback. It also collects statistics for RTCP
+// receiver reports, but doesn't send any RTCP packets itself.
 class RtpReader : public SocketReaderBase {
  public:
   RtpReader();
@@ -49,10 +61,16 @@ class RtpReader : public SocketReaderBase {
   void Init(net::Socket* socket, OnMessageCallback* on_message_callback);
 
  protected:
+  friend class RtpVideoReaderTest;
+
   virtual void OnDataReceived(net::IOBuffer* buffer, int data_size);
 
  private:
   scoped_ptr<OnMessageCallback> on_message_callback_;
+
+  uint16 max_sequence_number_;
+  uint16 wrap_around_count_;
+  bool started_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpReader);
 };

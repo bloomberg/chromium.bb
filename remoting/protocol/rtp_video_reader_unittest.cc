@@ -80,19 +80,31 @@ class RtpVideoReaderTest : public testing::Test,
 
   void SplitAndSend(const FragmentInfo fragments[], int count) {
     for (int i = 0; i < count; ++i) {
-      RtpPacket* packet = new RtpPacket();
+      RtpHeader header;
+      header.sequence_number = fragments[i].sequence_number;
+      header.marker = fragments[i].last;
+      header.timestamp = fragments[i].timestamp;
 
-      packet->mutable_header()->sequence_number = fragments[i].sequence_number;
-      packet->mutable_header()->marker = fragments[i].last;
-      packet->mutable_header()->timestamp = fragments[i].timestamp;
+      Vp8Descriptor descriptor;
+      descriptor.non_reference_frame = true;
+      descriptor.frame_beginning = fragments[i].first;
+      descriptor.fragmentation_info = fragments[i].fragmentation_info;
 
-      packet->mutable_vp8_descriptor()->frame_beginning = fragments[i].first;
-      packet->mutable_vp8_descriptor()->fragmentation_info =
-          fragments[i].fragmentation_info;
-      packet->mutable_payload()->AppendCopyOf(
-          &*data_.begin() + fragments[i].start,
-          fragments[i].end - fragments[i].start);
-      reader_->OnRtpPacket(packet);
+      int header_size = GetRtpHeaderSize(header);
+      int vp8_desc_size = GetVp8DescriptorSize(descriptor);
+      int payload_size = fragments[i].end - fragments[i].start;
+      int size = header_size + vp8_desc_size + payload_size;
+      scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(size);
+
+      PackRtpHeader(header, reinterpret_cast<uint8*>(buffer->data()),
+                    header_size);
+      PackVp8Descriptor(descriptor, reinterpret_cast<uint8*>(buffer->data()) +
+                        header_size, vp8_desc_size);
+
+      memcpy(buffer->data() + header_size + vp8_desc_size,
+             &*data_.begin() + fragments[i].start, payload_size);
+
+      reader_->rtp_reader_.OnDataReceived(buffer, size);
     }
   }
 

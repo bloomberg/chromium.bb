@@ -20,9 +20,9 @@ class RtpWriter {
   RtpWriter();
   virtual ~RtpWriter();
 
-  // Initializes the writer. Must be called on the thread the sockets belong
-  // to.
-  void Init(net::Socket* rtp_socket, net::Socket* rtcp_socket);
+  // Initializes the writer. Must be called on the thread the socket
+  // belongs to.
+  void Init(net::Socket* socket);
 
   // Sends next packet. The packet is mutated by
   void SendPacket(uint32 timestamp, bool marker,
@@ -37,9 +37,6 @@ class RtpWriter {
   void Close();
 
  private:
-  net::Socket* rtp_socket_;
-  net::Socket* rtcp_socket_;
-
   uint32 last_packet_number_;
 
   scoped_refptr<BufferedDatagramWriter> buffered_rtp_writer_;

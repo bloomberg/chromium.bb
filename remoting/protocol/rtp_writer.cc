@@ -17,20 +17,16 @@ const uint8 kRtpPayloadTypePrivate = 96;
 }  // namespace
 
 RtpWriter::RtpWriter()
-    : rtp_socket_(NULL),
-      rtcp_socket_(NULL),
-      last_packet_number_(0) {
+    : last_packet_number_(0) {
 }
 
 RtpWriter::~RtpWriter() { }
 
 // Initializes the writer. Must be called on the thread the sockets belong
 // to.
-void RtpWriter::Init(net::Socket* rtp_socket, net::Socket* rtcp_socket) {
+void RtpWriter::Init(net::Socket* rtp_socket) {
   buffered_rtp_writer_ = new BufferedDatagramWriter();
   buffered_rtp_writer_->Init(rtp_socket, NULL);
-  rtp_socket_ = rtp_socket;
-  rtcp_socket_ = rtcp_socket;
 }
 
 void RtpWriter::SendPacket(uint32 timestamp, bool marker,
@@ -49,8 +45,7 @@ void RtpWriter::SendPacket(uint32 timestamp, bool marker,
   // so SSRC isn't useful. Implement it in future if neccessary.
   header.sync_source_id = 0;
 
-  // TODO(sergeyu): Handle sequence number wrapping.
-  header.sequence_number = last_packet_number_;
+  header.sequence_number = last_packet_number_ & 0xFFFF;
   ++last_packet_number_;
 
   int header_size = GetRtpHeaderSize(header);
