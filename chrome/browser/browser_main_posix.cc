@@ -16,10 +16,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/boot_times_loader.h"
-#endif
-
 namespace {
 
 // See comment in |PreEarlyInitialization()|, where sigaction is called.
@@ -113,10 +109,6 @@ void ShutdownDetector::ThreadMain() {
   } while (bytes_read < sizeof(signal));
 
   VLOG(1) << "Handling shutdown for signal " << signal << ".";
-#if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("ShutdownDetected",
-                                                        false);
-#endif
 
   if (!BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
