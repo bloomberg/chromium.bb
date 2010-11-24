@@ -11,6 +11,8 @@
 
 namespace net {
 
+void SetNonBlocking(int fd);
+
 // Summary:
 //   creates a socket for listening, and bind()s and listen()s it.
 // Args:
@@ -27,19 +29,29 @@ namespace net {
 //   backlog - passed into listen. This is the number of pending incoming
 //             connections a socket which is listening may have acquired before
 //             the OS starts rejecting new incoming connections.
+//   reuseaddr - if true sets SO_REUSEADDR on the listening socket
+//   reuseport - if true sets SO_REUSEPORT on the listening socket
+//   wait_for_iface - A boolean indicating that CreateListeningSocket should
+//                    block until the interface that it will bind to has been
+//                    raised. This is intended for HA environments.
+//   disable_nagle - if true sets TCP_NODELAY on the listening socket.
 //   listen_fd - this will be assigned a positive value if the socket is
 //               successfully created, else it will be assigned -1.
-//   error_stream - in the case of errors, output describing the error will
-//                  be written into error_stream.
-void CreateListeningSocket(const std::string& host,
-                           const std::string& port,
-                           bool is_numeric_host_address,
-                           int backlog,
-                           int * listen_fd,
-                           bool reuseaddr,
-                           bool reuseport,
-                           std::ostream* error_stream);
+int CreateListeningSocket(const std::string& host,
+                          const std::string& port,
+                          bool is_numeric_host_address,
+                          int backlog,
+                          bool reuseaddr,
+                          bool reuseport,
+                          bool wait_for_iface,
+                          bool disable_nagle,
+                          int * listen_fd);
 
+int CreateConnectedSocket(int *connect_fd,
+                          const std::string& host,
+                          const std::string& port,
+                          bool is_numeric_host_address,
+                          bool disable_nagle);
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H__

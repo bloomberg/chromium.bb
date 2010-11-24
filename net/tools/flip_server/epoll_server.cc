@@ -13,7 +13,6 @@
 
 #include "base/logging.h"
 #include "base/timer.h"
-#include "net/tools/flip_server/other_defines.h"
 
 // Design notes: An efficient implementation of ready list has the following
 // desirable properties:
@@ -478,7 +477,8 @@ int EpollServer::NumFDsRegistered() const {
 
 void EpollServer::Wake() {
   char data = 'd';  // 'd' is for data.  It's good enough for me.
-  write(write_fd_, &data, 1);
+  int rv = write(write_fd_, &data, 1);
+  DCHECK(rv == 1);
 }
 
 int64 EpollServer::NowInUsec() const {
