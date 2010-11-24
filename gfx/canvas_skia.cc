@@ -105,10 +105,16 @@ void CanvasSkia::ScaleInt(int x, int y) {
 }
 
 void CanvasSkia::FillRectInt(const SkColor& color, int x, int y, int w, int h) {
+  FillRectInt(color, x, y, w, h, SkXfermode::kSrcOver_Mode);
+}
+
+void CanvasSkia::FillRectInt(const SkColor& color,
+                             int x, int y, int w, int h,
+                             SkXfermode::Mode mode) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setXfermodeMode(mode);
   DrawRectInt(x, y, w, h, paint);
 }
 

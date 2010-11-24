@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
+#include "gfx/canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "views/event.h"
@@ -183,7 +184,7 @@ void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
   if (requested_size_.width() != width ||
       requested_size_.height() != height) {
     requested_size_ = gfx::Size(width, height);
-    SetBounds(x(), y(), requested_size_.width(), requested_size_.height());
+    SetBounds(gfx::Rect(x(), y(), width, height));
     host_->WasResized();
   }
 }
@@ -325,7 +326,9 @@ BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
 }
 
 gfx::NativeView RenderWidgetHostViewViews::native_view() const {
-  return GetWidget()->GetNativeView();
+  if (GetWidget())
+    return GetWidget()->GetNativeView();
+  return NULL;
 }
 
 void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
@@ -334,6 +337,16 @@ void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
+  if (is_hidden_) {
+    return;
+  }
+
+  // Paint a "hole" in the canvas so that the render of the web page is on
+  // top of whatever else has already been painted in the views hierarchy.
+  // Later views might still get to paint on top.
+  canvas->FillRectInt(SK_ColorBLACK, 0, 0, kMaxWindowWidth, kMaxWindowHeight,
+                      SkXfermode::kClear_Mode);
+
   // Don't do any painting if the GPU process is rendering directly
   // into the View.
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
@@ -347,6 +360,9 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
   // TODO(anicolao): get the damage somehow
   // invalid_rect_ = damage_rect;
   invalid_rect_ = bounds();
+  gfx::Point origin;
+  ConvertPointToWidget(this, &origin);
+
   about_to_validate_and_paint_ = true;
   BackingStoreX* backing_store = static_cast<BackingStoreX*>(
       host_->GetBackingStore(true));
@@ -364,7 +380,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
       if (!visually_deemphasized_) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
-        backing_store->XShowRect(
+        backing_store->XShowRect(origin,
             paint_rect, x11_util::GetX11WindowFromGtkWidget(native_view()));
       } else {
         // If the grey blend is showing, we make two drawing calls. Use double
@@ -551,7 +567,7 @@ void RenderWidgetHostViewViews::DidGainFocus() {
 void RenderWidgetHostViewViews::WillLoseFocus() {
   // If we are showing a context menu, maintain the illusion that webkit has
   // focus.
-  if (!is_showing_context_menu_)
+  if (!is_showing_context_menu_ && !is_hidden_)
     GetRenderWidgetHost()->Blur();
 }
 
@@ -559,7 +575,7 @@ void RenderWidgetHostViewViews::WillLoseFocus() {
 void RenderWidgetHostViewViews::ShowCurrentCursor() {
   // The widget may not have a window. If that's the case, abort mission. This
   // is the same issue as that explained above in Paint().
-  if (!native_view()->window)
+  if (!native_view() || !native_view()->window)
     return;
 
   native_cursor_ = current_cursor_.GetNativeCursor();

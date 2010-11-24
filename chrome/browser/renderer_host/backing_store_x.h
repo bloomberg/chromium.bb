@@ -11,6 +11,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 
+namespace gfx {
+class Point;
+class Rect;
+}  // namespace gfx
+
 typedef struct _GdkDrawable GdkDrawable;
 class SkBitmap;
 
@@ -34,10 +39,11 @@ class BackingStoreX : public BackingStore {
   XID root_window() const { return root_window_; }
 
   // Copy from the server-side backing store to the target window
-  //   display: the display of the backing store and target window
+  //   origin: the destination rectangle origin
   //   damage: the area to copy
   //   target: the X id of the target window
-  void XShowRect(const gfx::Rect& damage, XID target);
+  void XShowRect(const gfx::Point &origin, const gfx::Rect& damage,
+                 XID target);
 
   // As above, but use Cairo instead of Xlib.
   void CairoShowRect(const gfx::Rect& damage, GdkDrawable* drawable);

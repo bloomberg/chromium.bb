@@ -102,6 +102,11 @@ class Canvas {
   virtual void FillRectInt(const SkColor& color,
                            int x, int y, int w, int h) = 0;
 
+  // Fills the specified region with the specified color and mode
+  virtual void FillRectInt(const SkColor& color,
+                           int x, int y, int w, int h,
+                           SkXfermode::Mode mode) = 0;
+
   // Fills the specified region with the specified brush.
   virtual void FillRectInt(const gfx::Brush* brush,
                            int x, int y, int w, int h) = 0;

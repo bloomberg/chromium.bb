@@ -3317,6 +3317,8 @@
         'browser/ui/views/tab_contents/tab_contents_view_gtk.h',
         'browser/ui/views/tab_contents/tab_contents_view_win.cc',
         'browser/ui/views/tab_contents/tab_contents_view_win.h',
+        'browser/ui/views/tab_contents/tab_contents_view_views.cc',
+        'browser/ui/views/tab_contents/tab_contents_view_views.h',
         'browser/ui/views/tabs/base_tab.cc',
         'browser/ui/views/tabs/base_tab.h',
         'browser/ui/views/tabs/base_tab_strip.cc',
@@ -3448,12 +3450,12 @@
             ],
           },
         }],
-	['use_gconf==0', {
-	  'sources!': [
+        ['use_gconf==0', {
+          'sources!': [
             'browser/gtk/gconf_titlebar_listener.cc',
             'browser/gtk/gconf_titlebar_listener.h',
-	  ],
-	}],
+          ],
+        }],
         ['use_gnome_keyring==0', {
           'sources!': [
             'browser/password_manager/native_backend_gnome_x.h',
@@ -3466,6 +3468,8 @@
             'browser/dom_ui/keyboard_ui.h',
             'browser/renderer_host/render_widget_host_view_views.cc',
             'browser/renderer_host/render_widget_host_view_views.h',
+            'browser/ui/views/tab_contents/tab_contents_view_views.cc',
+            'browser/ui/views/tab_contents/tab_contents_view_views.h',
           ],
         }],
         ['touchui==1', {
@@ -3474,6 +3478,8 @@
             ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
             ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
             ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],
+            ['exclude', '^browser/views/tab_contents/tab_contents_view_gtk.cc'],
+            ['exclude', '^browser/views/tab_contents/tab_contents_view_gtk.h'],
           ],
         }],
         ['OS=="linux"', {
@@ -4149,6 +4155,18 @@
                 ['exclude', '^browser/bookmarks/bookmark_drop_info.cc'],
                 ['exclude', '^browser/ui/views/autocomplete/autocomplete_popup_gtk.cc'],
                 ['exclude', '^browser/ui/views/autocomplete/autocomplete_popup_gtk.h'],
+              ],
+            }],
+            # Touch build only
+            ['OS=="linux" and toolkit_views==1 and touchui==1', {
+              'sources/': [
+                ['include', '^browser/ui/views/tab_contents/tab_contents_view_views.cc'],
+                ['include', '^browser/ui/views/tab_contents/tab_contents_view_views.h'],
+                ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_gtk.cc'],
+                ['exclude', '^browser/ui/views/tab_contents/tab_contents_view_gtk.h'],
+                # TODO(anicolao): exclude these once we have DOMUI dialogs
+                # ['exclude', '^browser/gtk/constrained_window_gtk.cc'],
+                # ['exclude', '^browser/gtk/constrained_window_gtk.h'],
               ],
             }],
             ['OS=="linux" and chromeos==1',{

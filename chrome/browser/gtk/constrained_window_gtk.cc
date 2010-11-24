@@ -9,7 +9,12 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+
+#if defined(TOUCH_UI)
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#else
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
+#endif
 
 ConstrainedWindowGtkDelegate::~ConstrainedWindowGtkDelegate() {
 }
@@ -66,8 +71,8 @@ ConstrainedWindowGtk::~ConstrainedWindowGtk() {
 void ConstrainedWindowGtk::ShowConstrainedWindow() {
   gtk_widget_show_all(border_.get());
 
-  // We collaborate with TabContentsViewGtk and stick ourselves in the
-  // TabContentsViewGtk's floating container.
+  // We collaborate with TabContentsView and stick ourselves in the
+  // TabContentsView's floating container.
   ContainingView()->AttachConstrainedWindow(this);
 
   visible_ = true;
@@ -82,8 +87,9 @@ void ConstrainedWindowGtk::CloseConstrainedWindow() {
   delete this;
 }
 
-TabContentsViewGtk* ConstrainedWindowGtk::ContainingView() {
-  return static_cast<TabContentsViewGtk*>(owner_->view());
+ConstrainedWindowGtk::TabContentsViewType*
+    ConstrainedWindowGtk::ContainingView() {
+  return static_cast<TabContentsViewType*>(owner_->view());
 }
 
 gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,

@@ -209,6 +209,12 @@ void CanvasDirect2D::FillRectInt(const SkColor& color,
   rt_->FillRectangle(RectToRectF(x, y, w, h), solid_brush);
 }
 
+void CanvasDirect2D::FillRectInt(const SkColor& color,
+                                 int x, int y, int w, int h,
+                                 SkXfermode::Mode mode) {
+  NOTIMPLEMENTED();
+}
+
 void CanvasDirect2D::FillRectInt(const gfx::Brush* brush,
                                  int x, int y, int w, int h) {
   const Direct2DBrush* d2d_brush = static_cast<const Direct2DBrush*>(brush);

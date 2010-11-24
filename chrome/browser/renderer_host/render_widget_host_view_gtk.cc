@@ -840,7 +840,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
       if (!visually_deemphasized_) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
-        backing_store->XShowRect(
+        backing_store->XShowRect(gfx::Point(0, 0),
             paint_rect, x11_util::GetX11WindowFromGtkWidget(view_.get()));
       } else {
         // If the grey blend is showing, we make two drawing calls. Use double

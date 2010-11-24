@@ -15,8 +15,12 @@
 #include "chrome/browser/tab_contents/constrained_window.h"
 
 class TabContents;
-class TabContentsViewGtk;
 typedef struct _GdkColor GdkColor;
+#if defined(TOUCH_UI)
+class TabContentsViewViews;
+#else
+class TabContentsViewGtk;
+#endif
 
 class ConstrainedWindowGtkDelegate {
  public:
@@ -38,6 +42,12 @@ class ConstrainedWindowGtkDelegate {
 // centers the dialog. It is thus an order of magnitude simpler.
 class ConstrainedWindowGtk : public ConstrainedWindow {
  public:
+#if defined(TOUCH_UI)
+   typedef TabContentsViewViews TabContentsViewType;
+#else
+   typedef TabContentsViewGtk TabContentsViewType;
+#endif
+
   virtual ~ConstrainedWindowGtk();
 
   // Overridden from ConstrainedWindow:
@@ -51,7 +61,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   GtkWidget* widget() { return border_.get(); }
 
   // Returns the View that we collaborate with to position ourselves.
-  TabContentsViewGtk* ContainingView();
+  TabContentsViewType* ContainingView();
 
  private:
   friend class ConstrainedWindow;
@@ -66,7 +76,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   // The TabContents that owns and constrains this ConstrainedWindow.
   TabContents* owner_;
 
-  // The top level widget container that exports to our TabContentsViewGtk.
+  // The top level widget container that exports to our TabContentsView.
   OwnedWidgetGtk border_;
 
   // Delegate that provides the contents of this constrained window.

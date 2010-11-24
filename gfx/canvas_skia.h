@@ -95,6 +95,8 @@ class CanvasSkia : public skia::PlatformCanvas,
   virtual void TranslateInt(int x, int y);
   virtual void ScaleInt(int x, int y);
   virtual void FillRectInt(const SkColor& color, int x, int y, int w, int h);
+  virtual void FillRectInt(const SkColor& color, int x, int y, int w, int h,
+                           SkXfermode::Mode mode);
   virtual void FillRectInt(const gfx::Brush* brush, int x, int y, int w, int h);
   virtual void DrawRectInt(const SkColor& color, int x, int y, int w, int h);
   virtual void DrawRectInt(const SkColor& color,
