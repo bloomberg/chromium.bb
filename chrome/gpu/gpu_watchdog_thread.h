@@ -5,6 +5,7 @@
 #ifndef CHROME_GPU_GPU_WATCHDOG_THREAD_H_
 #define CHROME_GPU_GPU_WATCHDOG_THREAD_H_
 
+#include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -18,19 +19,41 @@ class GpuWatchdogThread : public base::Thread,
   GpuWatchdogThread(MessageLoop* watched_message_loop, int timeout);
   virtual ~GpuWatchdogThread();
 
+  // Accessible on watched thread but only modified by watchdog thread.
+  bool armed() const { return armed_; }
+  void PostAcknowledge();
+
  protected:
   virtual void Init();
   virtual void CleanUp();
 
  private:
+
+  // An object of this type intercepts the reception and completion of all tasks
+  // on the watched thread and checks whether the watchdog is armed.
+  class GpuWatchdogTaskObserver : public MessageLoop::TaskObserver {
+   public:
+    explicit GpuWatchdogTaskObserver(GpuWatchdogThread* watchdog);
+    virtual ~GpuWatchdogTaskObserver();
+
+    // Implements MessageLoop::TaskObserver.
+    virtual void WillProcessTask(const Task* task);
+    virtual void DidProcessTask(const Task* task);
+
+   private:
+    void CheckArmed();
+    GpuWatchdogThread* watchdog_;
+  };
+
   void OnAcknowledge();
   void OnCheck();
-  void PostAcknowledge();
   void OnExit();
   void Disable();
 
   MessageLoop* watched_message_loop_;
   int timeout_;
+  volatile bool armed_;
+  GpuWatchdogTaskObserver task_observer_;
 
   typedef ScopedRunnableMethodFactory<GpuWatchdogThread> MethodFactory;
   scoped_ptr<MethodFactory> method_factory_;
