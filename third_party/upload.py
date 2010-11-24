@@ -188,6 +188,8 @@ class AbstractRpcServer(object):
     if (not self.host.startswith("http://") and
         not self.host.startswith("https://")):
       self.host = "http://" + self.host
+    assert re.match(r'^[a-z]+://[a-z0-9\.-_]+[a-z](|:[0-9]+)$', self.host), (
+        '%s is malformed' % host)
     self.host_override = host_override
     self.auth_function = auth_function
     self.authenticated = False
