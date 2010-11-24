@@ -90,15 +90,15 @@ class DeviceTokenFetcherTest : public testing::Test {
 
 TEST_F(DeviceTokenFetcherTest, IsPending) {
   ASSERT_TRUE(fetcher_->IsTokenPending());
-  backend_->AllShouldSucceed();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
   SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
 }
 
 TEST_F(DeviceTokenFetcherTest, StoreAndLoad) {
-  backend_->AllShouldSucceed();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
   SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   std::string device_token = fetcher_->GetDeviceToken();
@@ -116,8 +116,8 @@ TEST_F(DeviceTokenFetcherTest, StoreAndLoad) {
 }
 
 TEST_F(DeviceTokenFetcherTest, SimpleFetchSingleLogin) {
-  backend_->AllShouldSucceed();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
   SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   ASSERT_TRUE(fetcher_->IsTokenValid());
@@ -126,8 +126,8 @@ TEST_F(DeviceTokenFetcherTest, SimpleFetchSingleLogin) {
 }
 
 TEST_F(DeviceTokenFetcherTest, SimpleFetchDoubleLogin) {
-  backend_->AllShouldSucceed();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
   SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token(fetcher_->GetDeviceToken());
@@ -147,8 +147,8 @@ TEST_F(DeviceTokenFetcherTest, FetchBetweenBrowserLaunchAndNotify) {
   registrar.AddObserver(&observer);
   EXPECT_CALL(observer, OnTokenSuccess()).Times(1);
   EXPECT_CALL(observer, OnTokenError()).Times(0);
-  backend_->AllShouldSucceed();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
   SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token(fetcher_->GetDeviceToken());
@@ -176,8 +176,9 @@ TEST_F(DeviceTokenFetcherTest, FailedServerRequest) {
   registrar.AddObserver(&observer);
   EXPECT_CALL(observer, OnTokenSuccess()).Times(0);
   EXPECT_CALL(observer, OnTokenError()).Times(1);
-  backend_->AllShouldFail();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailRegister(
+          DeviceManagementBackend::kErrorRequestFailed));
   SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token(fetcher_->GetDeviceToken());
@@ -189,8 +190,9 @@ TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
   GetDeviceTokenPath(fetcher_, &token_path);
   file_util::WriteFile(token_path, "foo", 3);
   ASSERT_TRUE(file_util::PathExists(token_path));
-  backend_->UnmanagedDevice();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailRegister(
+          DeviceManagementBackend::kErrorServiceManagementNotSupported));
   SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   ASSERT_EQ("", fetcher_->GetDeviceToken());

@@ -24,8 +24,8 @@ namespace em = enterprise_management;
 class MockDeviceManagementBackend
     : public DeviceManagementBackend {
  public:
-  MockDeviceManagementBackend();
-  virtual ~MockDeviceManagementBackend();
+  MockDeviceManagementBackend() {}
+  virtual ~MockDeviceManagementBackend() {}
 
   // DeviceManagementBackend method overrides:
   MOCK_METHOD4(ProcessRegisterRequest, void(
@@ -46,54 +46,40 @@ class MockDeviceManagementBackend
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate));
 
-  void AllShouldSucceed();
-  void AllShouldFail();
-  void UnmanagedDevice();
-  void RegisterFailsOncePolicyFailsTwice();
-  void AllWorksFirstPolicyFailsLater();
-
-  void SimulateSuccessfulRegisterRequest(
-      const std::string& auth_token,
-      const std::string& device_id,
-      const em::DeviceRegisterRequest& request,
-      DeviceRegisterResponseDelegate* delegate);
-
-  void SimulateSuccessfulPolicyRequest(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::DevicePolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate);
-
-  void SimulateFailedRegisterRequest(
-      const std::string& auth_token,
-      const std::string& device_id,
-      const em::DeviceRegisterRequest& request,
-      DeviceRegisterResponseDelegate* delegate);
-
-  void SimulateFailedPolicyRequest(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::DevicePolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate);
-
-  void SimulateUnmanagedRegisterRequest(
-      const std::string& auth_token,
-      const std::string& device_id,
-      const em::DeviceRegisterRequest& request,
-      DeviceRegisterResponseDelegate* delegate);
-
-  void AddBooleanPolicy(const char* policy_name, bool value);
-
  private:
-  em::DevicePolicyResponse policy_response_;
-  em::DevicePolicySetting* policy_setting_;
-
-  int policy_remaining_fail_count_;
-  int register_remaining_fail_count_;
-  int policy_remaining_success_count_;
-
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementBackend);
 };
+
+ACTION(MockDeviceManagementBackendSucceedRegister) {
+  em::DeviceRegisterResponse response;
+  std::string token("FAKE_DEVICE_TOKEN_");
+  static int next_token_suffix;
+  token += next_token_suffix++;
+  response.set_device_management_token(token);
+  arg3->HandleRegisterResponse(response);
+}
+
+ACTION_P2(MockDeviceManagementBackendSucceedBooleanPolicy, name, value) {
+  em::DevicePolicyResponse response;
+  em::DevicePolicySetting* setting = response.add_setting();
+  setting->set_policy_key("chrome-policy");
+  setting->set_watermark("fresh");
+  em::GenericSetting* policy_value = setting->mutable_policy_value();
+  em::GenericNamedValue* named_value = policy_value->add_named_value();
+  named_value->set_name(name);
+  named_value->mutable_value()->set_value_type(
+      em::GenericValue::VALUE_TYPE_BOOL);
+  named_value->mutable_value()->set_bool_value(value);
+  arg3->HandlePolicyResponse(response);
+}
+
+ACTION_P(MockDeviceManagementBackendFailRegister, error) {
+  arg3->OnError(error);
+}
+
+ACTION_P(MockDeviceManagementBackendFailPolicy, error) {
+  arg3->OnError(error);
+}
 
 }  // namespace policy
 

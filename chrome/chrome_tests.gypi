@@ -1413,7 +1413,6 @@
         'browser/policy/mock_configuration_policy_provider.h',
         'browser/policy/mock_configuration_policy_store.cc',
         'browser/policy/mock_configuration_policy_store.h',
-        'browser/policy/mock_device_management_backend.cc',
         'browser/policy/mock_device_management_backend.h',
         'browser/preferences_mock_mac.cc',
         'browser/preferences_mock_mac.h',

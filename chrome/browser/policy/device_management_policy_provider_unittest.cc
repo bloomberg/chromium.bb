@@ -21,6 +21,7 @@ const char kTestToken[] = "device_policy_provider_test_auth_token";
 namespace policy {
 
 using ::testing::_;
+using ::testing::InSequence;
 using ::testing::Mock;
 
 class DeviceManagementPolicyProviderTest : public testing::Test {
@@ -39,7 +40,6 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
 
   void CreateNewBackend() {
     backend_ = new MockDeviceManagementBackend;
-    backend_->AddBooleanPolicy(key::kDisableSpdy, true);
   }
 
   void CreateNewProvider() {
@@ -61,9 +61,11 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
 
   void SimulateSuccessfulInitialPolicyFetch() {
     MockConfigurationPolicyStore store;
-    backend_->AllShouldSucceed();
-    EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
-    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(1);
+    EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedRegister());
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(
+            key::kDisableSpdy, true));
     SimulateSuccessfulLoginAndRunPending();
     EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(1);
     provider_->Provide(&store);
@@ -105,7 +107,6 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
 // provide an empty policy.
 TEST_F(DeviceManagementPolicyProviderTest, InitialProvideNoLogin) {
   MockConfigurationPolicyStore store;
-  backend_->AllShouldSucceed();
   EXPECT_CALL(store, Apply(_, _)).Times(0);
   provider_->Provide(&store);
   EXPECT_TRUE(store.policy_map().empty());
@@ -118,12 +119,13 @@ TEST_F(DeviceManagementPolicyProviderTest, InitialProvideWithLogin) {
   SimulateSuccessfulInitialPolicyFetch();
 }
 
-// If the login succeeds but the device management backend is unreachable,
+// If the login succeed but the device management backend is unreachable,
 // there should be no policy provided if there's no previously-fetched policy,
 TEST_F(DeviceManagementPolicyProviderTest, EmptyProvideWithFailedBackend) {
   MockConfigurationPolicyStore store;
-  backend_->AllShouldFail();
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailRegister(
+          DeviceManagementBackend::kErrorRequestFailed));
   EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(0);
   SimulateSuccessfulLoginAndRunPending();
   EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(0);
@@ -140,16 +142,19 @@ TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
   // Simulate a app relaunch by constructing a new provider. Policy should be
   // refreshed (since that might be the purpose of the app relaunch).
   CreateNewBackend();
-  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(
+          key::kDisableSpdy, true));
   CreateNewProvider();
   Mock::VerifyAndClearExpectations(backend_);
 
   // Simulate another app relaunch, this time against a failing backend.
   // Cached policy should still be available.
   CreateNewBackend();
-  backend_->AllShouldFail();
   MockConfigurationPolicyStore store;
-  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(1);
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailPolicy(
+          DeviceManagementBackend::kErrorRequestFailed));
   CreateNewProvider();
   SimulateSuccessfulLoginAndRunPending();
   EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(1);
@@ -170,18 +175,38 @@ TEST_F(DeviceManagementPolicyProviderTest, FetchTriggersRefresh) {
 }
 
 TEST_F(DeviceManagementPolicyProviderTest, ErrorCausesNewRequest) {
-  backend_->RegisterFailsOncePolicyFailsTwice();
+  InSequence s;
   SetRefreshDelays(provider_.get(), 1000 * 1000, 0, 0, 0);
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(2);
-  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(3);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailRegister(
+          DeviceManagementBackend::kErrorRequestFailed));
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailPolicy(
+          DeviceManagementBackend::kErrorRequestFailed));
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailPolicy(
+          DeviceManagementBackend::kErrorRequestFailed));
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
   SimulateSuccessfulLoginAndRunPending();
 }
 
 TEST_F(DeviceManagementPolicyProviderTest, RefreshPolicies) {
-  backend_->AllWorksFirstPolicyFailsLater();
+  InSequence s;
   SetRefreshDelays(provider_.get(), 0, 0, 1000 * 1000, 1000);
-  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
-  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).Times(4);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailPolicy(
+          DeviceManagementBackend::kErrorRequestFailed));
   SimulateSuccessfulLoginAndRunPending();
 }
 
