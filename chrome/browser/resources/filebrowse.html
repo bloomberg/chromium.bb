@@ -607,8 +607,6 @@ input.error {
 <script src="shared/js/media_common.js"></script>
 <script>
 
-
-
 function $(o) {
   return document.getElementById(o);
 }
@@ -674,7 +672,7 @@ function enabledResult(info) {
   if (!advancedEnabled) {
     $('header').style.display = 'none';
   }
-  if(document.documentElement.clientWidth <= 600) {
+  if (document.documentElement.clientWidth <= 600) {
     inFullMode = false;
     if (chrome.dialogArguments) {
       var args = JSON.parse(chrome.dialogArguments);
@@ -691,7 +689,7 @@ function enabledResult(info) {
         multiSelect = false;
         selectFolder = true;
       } else {
-        alert ('got unknown type' + args.type);
+        alert('got unknown type' + args.type);
       }
       inSelectMode = true;
       if (inSaveMode) {
@@ -792,16 +790,16 @@ function enabledResult(info) {
       getDataForPath(currentSavedPath);
     }
   }
-  chrome.send("getDownloads", []);
+  chrome.send('getDownloads', []);
 }
 
 function goBackInList() {
   currentNode--;
   if (currentSavedPath == localStrings.getString('downloadpath')) {
-    currentSavedPath = 'roots'
+    currentSavedPath = 'roots';
   } else {
     var lastDirArray = currentSavedPath.split('/');
-    lastDirArray.splice(lastDirArray.length-1, 1);
+    lastDirArray.splice(lastDirArray.length - 1, 1);
     currentSavedPath = lastDirArray.join('/');
   }
   if (currentSavedPath == localStrings.getString('mediapath')) {
@@ -853,7 +851,7 @@ function getCurrentContainer() {
 
 function clearList(list) {
   if (list.hasChildNodes()) {
-    while (list.childNodes.length >=1) {
+    while (list.childNodes.length >= 1) {
       list.removeChild(list.firstChild);
     }
   }
@@ -866,60 +864,60 @@ function rootsChanged() {
 }
 
 function browseFileResult(info, results) {
-   var lastDirArray = info.path.split('/');
-   var lastDir = lastDirArray[lastDirArray.length - 1];
-   if (info.functionCall == 'getRoots') {
-     if (rootsDiv) {
-       clearList(rootsDiv);
-       createNewList(lastDir, results, rootsDiv, info.path);
-     } else {
-       var main = getCurrentContainer();
-       rootsDiv = main;
-       divArray.push(main);
-       createNewList(lastDir, results, main, info.path);
-     }
-   } else if (info.functionCall == 'getChildren') {
-     var main = getCurrentContainer();
-     main.addEventListener('dragover', function(e) {
-       if (e.preventDefault) e.preventDefault();
-       e.dataTransfer.dropEffect = 'copy';
-       return false;
-     }, false);
-     main.addEventListener('drop', function(e) {
-       if (e.stopPropagation) e.stopPropagation();
-       var src = e.dataTransfer.getData('Text');
-       var path = getPathAndFilenameForPath(src);
-       var dest = currentSavedPath + '/' + path[2];
-       var dirId = $('list/dir/' + currentSavedPath);
-       if (dirId) {
+  var lastDirArray = info.path.split('/');
+  var lastDir = lastDirArray[lastDirArray.length - 1];
+  if (info.functionCall == 'getRoots') {
+    if (rootsDiv) {
+      clearList(rootsDiv);
+      createNewList(lastDir, results, rootsDiv, info.path);
+    } else {
+      var main = getCurrentContainer();
+      rootsDiv = main;
+      divArray.push(main);
+      createNewList(lastDir, results, main, info.path);
+    }
+  } else if (info.functionCall == 'getChildren') {
+    var main = getCurrentContainer();
+    main.addEventListener('dragover', function(e) {
+      if (e.preventDefault) e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      return false;
+    }, false);
+    main.addEventListener('drop', function(e) {
+      if (e.stopPropagation) e.stopPropagation();
+      var src = e.dataTransfer.getData('Text');
+      var path = getPathAndFilenameForPath(src);
+      var dest = currentSavedPath + '/' + path[2];
+      var dirId = $('list/dir/' + currentSavedPath);
+      if (dirId) {
 
-         var element = $(dest);
-         if (!element) {
-           // TODO(dhg): We probably should do some checking for
-           // existance.
-           element = createNewFakeItem(path[2], dest, false, true);
-         }
-         dirId.appendChild(element);
-         element.scrollIntoView();
-       }
-       chrome.send('copyFile', [src, dest]);
-       return false;
-     }, false);
-     main.id = 'dir/' + info.path;
-     divArray.push(main);
-     document.location.hash = info.path;
-     createNewList(lastDir, results, main, info.path);
-   } else if (info.functionCall == 'refresh') {
-     var main = $('dir/' + info.path);
-     if (main) {
-       clearList(main);
-       createNewList(lastDir, results, main, info.path);
-     } else {
-       // not currently displayed, so just return.
-       return;
-     }
-   }
-  chrome.send("getDownloads", []);
+        var element = $(dest);
+        if (!element) {
+          // TODO(dhg): We probably should do some checking for
+          // existance.
+          element = createNewFakeItem(path[2], dest, false, true);
+        }
+        dirId.appendChild(element);
+        element.scrollIntoView();
+      }
+      chrome.send('copyFile', [src, dest]);
+      return false;
+    }, false);
+    main.id = 'dir/' + info.path;
+    divArray.push(main);
+    document.location.hash = info.path;
+    createNewList(lastDir, results, main, info.path);
+  } else if (info.functionCall == 'refresh') {
+    var main = $('dir/' + info.path);
+    if (main) {
+      clearList(main);
+      createNewList(lastDir, results, main, info.path);
+    } else {
+      // not currently displayed, so just return.
+      return;
+    }
+  }
+  chrome.send('getDownloads', []);
 }
 
 function moveScrollLeft() {
@@ -941,7 +939,7 @@ function getClassForPath(path, isDirectory) {
 }
 
 function getDataForPath(path) {
-  if (path == 'roots' ) {
+  if (path == 'roots') {
     if (inSaveMode) {
       if (advancedEnabled) {
         var newfolderbutton = $('newfolderbutton');
@@ -968,7 +966,7 @@ function getDataForPath(path) {
     }
     chrome.send('getChildren', [path]);
   }
-};
+}
 
 function setUpForScanning() {
   var header = $('header');
@@ -976,22 +974,24 @@ function setUpForScanning() {
   var main = mainColumn;
   main.className = 'scanningcontainer';
   main.textContent = localStrings.getString('scanning');
-};
+}
 
 function dialogOkClick() {
-   if (currentlySelectedPaths.length == 0) {
-     return;
-   }
-   if (!multiSelect) {
-     chrome.send('DialogClose', [JSON.stringify({'path' : currentlySelectedPaths[0]})]);
-   } else {
-     chrome.send('DialogClose', [JSON.stringify({'path' : currentlySelectedPaths})]);
-   }
-};
+  if (currentlySelectedPaths.length == 0) {
+    return;
+  }
+  if (!multiSelect) {
+    chrome.send('DialogClose',
+                [JSON.stringify({'path' : currentlySelectedPaths[0]})]);
+  } else {
+    chrome.send('DialogClose',
+                [JSON.stringify({'path' : currentlySelectedPaths})]);
+  }
+}
 
 function dialogCancelClick() {
-   chrome.send('DialogClose', ['']);
-};
+  chrome.send('DialogClose', ['']);
+}
 
 function dialogSaveClick() {
   var filenameInput = $('filename');
@@ -1006,7 +1006,7 @@ function dialogSaveClick() {
 
   filenameInput.disabled = true;
   $('savebutton').disabled = true;
-};
+}
 
 function onValidatedSavePath(valid, savePath) {
   var filenameInput = $('filename');
@@ -1022,7 +1022,8 @@ function onValidatedSavePath(valid, savePath) {
   }
 }
 
-function createNewFormItem(initialName, isDirectory, id, blurcallback, keypresscallback) {
+function createNewFormItem(
+    initialName, isDirectory, id, blurcallback, keypresscallback) {
   var element = document.createElement('li');
   element.className = 'filebrowserow';
   element.id = 'listItem' + elementIdCounter;
@@ -1047,7 +1048,7 @@ function createNewFormItem(initialName, isDirectory, id, blurcallback, keypressc
   element.appendChild(link);
 
   return element;
-};
+}
 
 function createFolder(elementId) {
   var currentPath = currentSavedPath;
@@ -1108,6 +1109,10 @@ function removeDeleteConfirm(path) {
 }
 
 function deleteFileConfirm(path) {
+  var element = menus[path];
+  if (!element || element.querySelector('.confirmdelete')) {
+    return;
+  }
   var askingDiv = document.createElement('div');
   askingDiv.className = 'confirmdelete';
   askingDiv.textContent = localStrings.getString('confirmdelete');
@@ -1121,18 +1126,15 @@ function deleteFileConfirm(path) {
   no.className = 'deleteNo';
   askingDiv.appendChild(yes);
   askingDiv.appendChild(no);
-  yes.scrollIntoView();
-  var element = menus[path];
-  if (element) {
-    element.firstChild.appendChild(askingDiv);
-  }
+  element.firstChild.appendChild(askingDiv);
+  askingDiv.scrollIntoView();
   window.event.stopPropagation();
 }
 
 function createFolderTyping(elementId) {
-   if (window.event.keyCode == 13) {
-     createFolder(elementId);
-   }
+  if (window.event.keyCode == 13) {
+    createFolder(elementId);
+  }
 }
 
 function getDirectoryForPath(path) {
@@ -1185,7 +1187,8 @@ function newDownload(results) {
       var extracted = getPathAndFilenameForPath(results[x].file_path);
       var dirId = $('list/dir/' + extracted[1]);
       if (dirId) {
-        element = createNewItem(results[x].file_name, results[x].file_path, false);
+        element =
+            createNewItem(results[x].file_name, results[x].file_path, false);
         downloadList.push(element);
         if (dirId.firstChild) {
           dirId.insertBefore(element, dirId.firstChild);
@@ -1206,8 +1209,8 @@ function removeDownload(element, dirId) {
       var child = element.children[x];
       status = child;
     } else if (element.children[x].className == 'downloadpause') {
-       var child = element.children[x];
-       pause = child;
+      var child = element.children[x];
+      pause = child;
     }
   }
   if (status) {
@@ -1231,7 +1234,7 @@ function removeDownload(element, dirId) {
 
 function downloadsList(results) {
   var removeDownloads = [];
-  removeDownloads.pushUnique = function (element) {
+  removeDownloads.pushUnique = function(element) {
   if (this.indexOf(element) === -1) {
       this.push(element);
     }
@@ -1250,7 +1253,7 @@ function downloadsList(results) {
     }
   }
 
-  for (var i = 0; i< results.length; ++i) {
+  for (var i = 0; i < results.length; ++i) {
     downloadUpdated(results[i]);
   }
 
@@ -1267,7 +1270,7 @@ function downloadUpdated(result) {
   var extracted = getPathAndFilenameForPath(result.file_path);
   var dirId = $('list/dir/' + extracted[1]);
   if (!element && result.state != 'CANCELLED') {
-     if (dirId) {
+    if (dirId) {
       element = createNewItem(result.file_name, result.file_path, false);
       if (dirId.firstChild) {
         dirId.insertBefore(element, dirId.firstChild);
@@ -1280,14 +1283,14 @@ function downloadUpdated(result) {
   if (element) {
     if (result.state == 'CANCELLED') {
       element.parentNode.removeChild(element);
-      continue;
+      return;
     }
     if (result.percent < 100 || result.state == 'DANGEROUS') {
       var progressDiv = null;
       for (var y = 0; y < element.children.length; y++) {
-         if (element.children[y].className == 'downloadstatus') {
-           progressDiv = element.children[y];
-         }
+        if (element.children[y].className == 'downloadstatus') {
+          progressDiv = element.children[y];
+        }
       }
       if (progressDiv == null) {
         downloadList.push(element);
@@ -1299,7 +1302,7 @@ function downloadUpdated(result) {
         var pauseDiv = document.createElement('div');
         pauseDiv.onclick = partial(pauseToggleDownload, result.id);
         pauseDiv.className = 'downloadpause';
-        if (result.state == "DANGEROUS") {
+        if (result.state == 'DANGEROUS') {
           element.setAttribute('dangerous', 'true');
           pauseDiv.onClick = undefined;
           var prompt = document.createElement('div');
@@ -1328,11 +1331,11 @@ function downloadUpdated(result) {
       }
       var pauseDiv = $('downloaditem' + result.id);
       if (pauseDiv &&
-          result.state == "PAUSED" &&
+          result.state == 'PAUSED' &&
           pauseDiv.textContent != kResumeDownload) {
         pauseDiv.textContent = kResumeDownload;
       } else if (pauseDiv &&
-                 result.state == "IN_PROGRESS" &&
+                 result.state == 'IN_PROGRESS' &&
                  pauseDiv.textContent != kPauseDownload) {
         pauseDiv.textContent = kPauseDownload;
       }
@@ -1370,7 +1373,7 @@ function dialogNewFolderClick() {
 
   var main = divArray[divArray.length - 1];
   var list;
-  for (var x = 0; x < main.childNodes.length; x++ ) {
+  for (var x = 0; x < main.childNodes.length; x++) {
     if (main.childNodes[x].className == 'columnlist' ||
         main.childNodes[x].className == 'columnlistadv') {
       list = main.childNodes[x].firstChild;
@@ -1400,7 +1403,7 @@ function load() {
   kPauseDownload = localStrings.getString('pause');
   kResumeDownload = localStrings.getString('resume');
   chrome.send('isAdvancedEnabled', ['']);
-};
+}
 
 function jumpToNode(nodeNumber) {
   if (currentNode == nodeNumber) {
@@ -1408,11 +1411,11 @@ function jumpToNode(nodeNumber) {
   }
   if (inFullMode) {
     var main = $('inner');
-    for (var x = (nodeNumber+1); x < divArray.length ; x++ ) {
+    for (var x = (nodeNumber + 1); x < divArray.length; x++) {
       main.removeChild(divArray[x]);
       numColumns--;
     }
-    divArray = divArray.slice(0,nodeNumber+1);
+    divArray = divArray.slice(0, nodeNumber + 1);
   }
   currentNode = nodeNumber;
 }
@@ -1475,7 +1478,7 @@ function clearMenus() {
     currentMenu.style.opacity = '';
     currentMenu = null;
   }
-};
+}
 
 function uploadImage(path) {
   var status = $('status');
@@ -1505,7 +1508,13 @@ function showMenu(path) {
 function uploadComplete(result) {
   var element = $('status');
   if (result.status_code == 201) {
-    element.innerHTML = '<a href=' + result.url + ' target="_blank">Uploaded</a>';
+    element.textContent = '';
+    var a = document.createElement('a');
+    a.href = result.url;
+    a.target = '_blank';
+    //TODO(altimofeev): Should really be localStrings.getString(...)
+    a.textContent = 'Uploaded';
+    element.appendChild(a);
   } else {
     element.textContent = 'Error';
   }
@@ -1628,10 +1637,10 @@ function getDoubleClickForItem(path, id, isDirectory) {
     return function() {};
   }
   if (inSelectMode) {
-     return function() {
-       selectItem(id, path);
-       dialogOkClick();
-     };
+    return function() {
+      selectItem(id, path);
+      dialogOkClick();
+    };
   }
   return function() {};
 }
@@ -1639,7 +1648,7 @@ function getDoubleClickForItem(path, id, isDirectory) {
 var elementIdCounter = 0;
 
 function createNewFakeItem(title, path, isDirectory, hasspinner) {
- var element = document.createElement('li');
+  var element = document.createElement('li');
 
   element.className = 'filebrowserow';
   element.id = path;
@@ -1674,7 +1683,7 @@ function createNewItem(title, path, isDirectory) {
   var element = document.createElement('li');
   element.setAttribute('draggable', 'true');
 
-  element.addEventListener('dragstart', function (e) {
+  element.addEventListener('dragstart', function(e) {
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('Text', this.id);
   }, false);
@@ -1712,7 +1721,7 @@ function createNewItem(title, path, isDirectory) {
     var menu = document.createElement('div');
     menu.className = 'menu';
     if ((pathIsVideoFile(path) || pathIsAudioFile(path)) &&
-         mediaPlayerEnabled) {
+        mediaPlayerEnabled) {
       var enqueueitem = document.createElement('div');
       enqueueitem.textContent = localStrings.getString('enqueue');
       enqueueitem.className = 'menuitem';
@@ -1751,8 +1760,8 @@ function clearChildren(element) {
 }
 
 function popout(path) {
- var newPath = 'chrome://filebrowse#' + path;
- chrome.send('openNewPopupWindow', [newPath]);
+  var newPath = 'chrome://filebrowse#' + path;
+  chrome.send('openNewPopupWindow', [newPath]);
 }
 
 function createNewList(title, results, main, path) {
@@ -1790,7 +1799,7 @@ function createNewList(title, results, main, path) {
     main.appendChild(header);
   }
   main.appendChild(mainList);
-  for (var x=0; x < results.length; x++) {
+  for (var x = 0; x < results.length; x++) {
     var element = createNewItem(results[x].title,
                                 results[x].path,
                                 results[x].isDirectory);
