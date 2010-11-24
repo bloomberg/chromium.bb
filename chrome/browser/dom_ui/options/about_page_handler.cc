@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #endif
 
 namespace {
@@ -292,8 +293,12 @@ void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
 #if defined(OS_CHROMEOS)
 
 void AboutPageHandler::CheckNow(const ListValue* args) {
-  if (chromeos::InitiateUpdateCheck)
-    chromeos::InitiateUpdateCheck();
+  // Make sure that libcros is loaded and OOBE is complete.
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
+      (!WizardController::default_controller() ||
+        WizardController::IsDeviceRegistered())) {
+    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->CheckForUpdate();
+  }
 }
 
 void AboutPageHandler::RestartNow(const ListValue* args) {

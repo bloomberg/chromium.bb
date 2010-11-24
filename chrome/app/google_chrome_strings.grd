@@ -355,9 +355,8 @@ Chrome supports. -->
       <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
         Help make Google Chrome better by automatically sending usage statistics and crash reports to Google
       </message>
-      <message name="IDS_EULA_CHECKBOX_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
-	<!--We use /n here to separate lines manually because NativeCheckboxGtk currently does not support multi-line. -->
-        Optional: Help make Google Chrome better by automatically sending usage statistics and crash\nreports to Google
+      <message name="IDS_EULA_CHECKBOX_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging on EULA screen.">
+        Optional: Help make Chrome OS better by automatically sending usage statistics and crash reports to Google.
       </message>
       <message name="IDS_PROFILE_TOO_NEW_ERROR" desc="Error displayed on startup when the profile is from a newer version of the product and can not be read">
         Your profile can not be used because it is from a newer version of Google Chrome.\n\nSome features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.
