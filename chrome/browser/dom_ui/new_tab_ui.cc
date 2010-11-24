@@ -303,6 +303,41 @@ void NewTabPageSetHomePageHandler::HandleSetHomePage(
   dom_ui_->CallJavascriptFunction(L"onHomePageSet", list_value);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// NewTabPageClosePromoHandler
+
+// Turns off the promo line permanently when it has been explicitly closed by
+// the user.
+class NewTabPageClosePromoHandler : public DOMMessageHandler {
+ public:
+  NewTabPageClosePromoHandler() {}
+  virtual ~NewTabPageClosePromoHandler() {}
+
+  // DOMMessageHandler implementation.
+  virtual void RegisterMessages();
+
+  // Callback for "closePromo".
+  void HandleClosePromo(const ListValue* args);
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(NewTabPageClosePromoHandler);
+};
+
+void NewTabPageClosePromoHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback("closePromo", NewCallback(
+      this, &NewTabPageClosePromoHandler::HandleClosePromo));
+}
+
+void NewTabPageClosePromoHandler::HandleClosePromo(
+    const ListValue* args) {
+  dom_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed, true);
+  NotificationService* service = NotificationService::current();
+  service->Notify(NotificationType::WEB_RESOURCE_STATE_CHANGED,
+                  Source<NewTabPageClosePromoHandler>(this),
+                  NotificationService::NoDetails());
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,6 +383,7 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
+    AddMessageHandler((new NewTabPageClosePromoHandler())->Attach(this));
   }
 
   // Initializing the CSS and HTML can require some CPU, so do it after

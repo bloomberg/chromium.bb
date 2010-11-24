@@ -341,16 +341,22 @@ extern const char kExtensionBlacklistUpdateVersion[];
 
 extern const char kExtensionSidebarWidth[];
 
+extern const char kNTPTipsResourceServer[];
+
 extern const char kNTPMostVisitedURLsBlacklist[];
 extern const char kNTPMostVisitedPinnedURLs[];
 extern const char kNTPWebResourceCache[];
 extern const char kNTPWebResourceCacheUpdate[];
-extern const char kNTPTipsResourceServer[];
-extern const char kNTPLogoResourceServer[];
+extern const char kNTPWebResourceServer[];
+extern const char kNTPDateResourceServer[];
 extern const char kNTPShownSections[];
 extern const char kNTPPrefVersion[];
 extern const char kNTPCustomLogoStart[];
 extern const char kNTPCustomLogoEnd[];
+extern const char kNTPPromoStart[];
+extern const char kNTPPromoEnd[];
+extern const char kNTPPromoLine[];
+extern const char kNTPPromoClosed[];
 
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsOpenDocked[];

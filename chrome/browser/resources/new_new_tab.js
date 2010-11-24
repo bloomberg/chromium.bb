@@ -794,7 +794,17 @@ function afterTransition(f) {
 
 var notificationTimeout;
 
-function showNotification(text, actionText, opt_f, opt_delay) {
+/*
+ * Displays a message (either a string or a document fragment) in the
+ * notification slot at the top of the NTP.
+ * @param {string|Node} message String or node to use as message.
+ * @param {string} actionText The text to show as a link next to the message.
+ * @param {function=} opt_f Function to call when the user clicks the action
+ *                          link.
+ * @param {number=} opt_delay The time in milliseconds before hiding the
+ * i                          notification.
+ */
+function showNotification(message, actionText, opt_f, opt_delay) {
   var notificationElement = $('notification');
   var f = opt_f || function() {};
   var delay = opt_delay || 10000;
@@ -814,11 +824,20 @@ function showNotification(text, actionText, opt_f, opt_delay) {
     hideNotification();
   }
 
-  // Remove any possible first-run trails.
+  // Remove classList entries from previous notifications.
   notification.classList.remove('first-run');
+  notification.classList.remove('promo');
+
+  var notificationNode = notificationElement.firstElementChild;
+  notificationNode.removeChild(notificationNode.firstChild);
 
   var actionLink = notificationElement.querySelector('.link-color');
-  notificationElement.firstElementChild.textContent = text;
+
+  if (typeof message == 'string')
+    notificationElement.firstElementChild.textContent = message;
+  else
+    notificationElement.firstElementChild.appendChild(message);
+
   actionLink.textContent = actionText;
 
   actionLink.onclick = doAction;
@@ -857,6 +876,15 @@ function showFirstRunNotification() {
                    null, 30000);
   var notificationElement = $('notification');
   notification.classList.add('first-run');
+}
+
+function showPromoNotification() {
+  showNotification(parseHtmlSubset(localStrings.getString('serverpromo')),
+                   localStrings.getString('closefirstrunnotification'),
+                   function () { chrome.send('closePromo'); },
+                   60000);
+  var notificationElement = $('notification');
+  notification.classList.add('promo');
 }
 
 $('main').addEventListener('click', function(e) {
@@ -1190,6 +1218,8 @@ function mostVisitedPages(data, firstRun, hasBlacklistedUrls) {
   // Only show the first run notification if first run.
   if (firstRun) {
     showFirstRunNotification();
+  } else if (localStrings.getString('serverpromo')) {
+    showPromoNotification();
   }
 }
 

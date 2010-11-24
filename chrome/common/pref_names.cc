@@ -939,11 +939,14 @@ const char kNTPWebResourceCache[] = "ntp.web_resource_cache";
 // Last time of update of web_resource_cache.
 const char kNTPWebResourceCacheUpdate[] = "ntp.web_resource_cache_update";
 
-// Last server used to fill tips.
+// Serves resources for the NTP.
+const char kNTPWebResourceServer[] = "ntp.web_resource_server";
+
+// Serves tips for the NTP.
 const char kNTPTipsResourceServer[] = "ntp.tips_resource_server";
 
-// Last server used to fill logo_resource_cache.
-const char kNTPLogoResourceServer[] = "ntp.alt_logo_resource_server";
+// Serves dates to determine display of elements on the NTP.
+const char kNTPDateResourceServer[] = "ntp.date_resource_server";
 
 // Which sections should be visible on the new tab page
 // 1 - Show the most visited sites in a grid
@@ -960,6 +963,17 @@ const char kNTPPrefVersion[] = "ntp.pref_version";
 // standard one.
 const char kNTPCustomLogoStart[] = "ntp.alt_logo_start";
 const char kNTPCustomLogoEnd[] = "ntp.alt_logo_end";
+
+// Dates between which the NTP should show a promotional line downloaded
+// from the promo server.
+const char kNTPPromoStart[] = "ntp.promo_start";
+const char kNTPPromoEnd[] = "ntp.promo_end";
+
+// Promo line from server.
+const char kNTPPromoLine[] = "ntp.promo_line";
+
+// True if user has explicitly closed the promo line.
+const char kNTPPromoClosed[] = "ntp.promo_closed";
 
 const char kDevToolsDisabled[] = "devtools.disabled";
 

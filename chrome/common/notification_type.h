@@ -742,9 +742,10 @@ class NotificationType {
     // should be the UI thread.
     DEFAULT_REQUEST_CONTEXT_AVAILABLE,
 
-    // A new web resource has been made available. Source is the
-    // WebResourceService, and the details are NoDetails.
-    WEB_RESOURCE_AVAILABLE,
+    // The state of a web resource has been changed. A resource may have been
+    // added, removed, or altered. Source is WebResourceService, and the
+    // details are NoDetails.
+    WEB_RESOURCE_STATE_CHANGED,
 
     // Autocomplete ------------------------------------------------------------
 

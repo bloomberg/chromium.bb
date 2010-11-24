@@ -99,8 +99,8 @@ void TipsHandler::SendTip(const std::string& tip, const std::string& tip_type,
 // static
 void TipsHandler::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kNTPWebResourceCache);
-  prefs->RegisterStringPref(prefs::kNTPLogoResourceServer,
-                            WebResourceService::kDefaultResourceServer);
+  prefs->RegisterStringPref(prefs::kNTPWebResourceServer,
+                            WebResourceService::kDefaultWebResourceServer);
 }
 
 bool TipsHandler::IsValidURL(const std::wstring& url_string) {

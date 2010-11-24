@@ -97,11 +97,23 @@ html[anim=false] *,
 }
 
 #notification.first-run {
-  padding: 5px 13px; /* subtract the border witdh */
+  padding: 5px 13px; /* subtract the border width */
   border: 2px solid hsl(213, 55%, 75%);
   background-color: hsl(213, 63%, 93%);
   -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
   font-weight: normal;
+}
+
+#notification.promo {
+  padding: 5px 13px; /* subtract the border width */
+  border: 1px solid hsl(0, 0%, 80%);
+  background-color: hsl(120, 93%, 93%);
+  -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
+  font-weight: normal;
+}
+
+#notification.promo a {
+  color: rgb(0, 102, 204);
 }
 
 #notification > * {

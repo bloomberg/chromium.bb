@@ -94,3 +94,41 @@ TEST_F(WebResourceServiceTest, UnpackLogoSignal) {
   ASSERT_EQ(logo_end, 0);  // date value reset to 0;
 }
 
+TEST_F(WebResourceServiceTest, UnpackPromoSignal) {
+  // Set up a testing profile and create a web resource service.
+  TestingProfile profile;
+  scoped_refptr<WebResourceService> web_resource_service(
+      new WebResourceService(&profile));
+
+  // Set up start and end dates and promo line in a Dictionary as if parsed
+  // from the service.
+  std::string json = "{ "
+                     "  \"topic\": {"
+                     "    \"answers\": ["
+                     "       {"
+                     "        \"name\": \"promo_start\","
+                     "        \"tooltip\": \"Eat more pie!\","
+                     "        \"inproduct\": \"31/01/10 01:00 GMT\""
+                     "       },"
+                     "       {"
+                     "        \"name\": \"promo_end\","
+                     "        \"inproduct\": \"31/01/12 01:00 GMT\""
+                     "       }"
+                     "    ]"
+                     "  }"
+                     "}";
+  scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
+      base::JSONReader::Read(json, false)));
+
+  // Check that prefs are set correctly.
+  web_resource_service->UnpackPromoSignal(*(test_json.get()));
+  double promo_start =
+      profile.GetPrefs()->GetReal(prefs::kNTPPromoStart);
+  ASSERT_EQ(promo_start, 1264899600);  // unix epoch for Jan 31 2010 0100 GMT.
+  double promo_end =
+      profile.GetPrefs()->GetReal(prefs::kNTPPromoEnd);
+  ASSERT_EQ(promo_end, 1327971600);  // unix epoch for Jan 31 2012 0100 GMT.
+  std::string promo_line = profile.GetPrefs()->GetString(prefs::kNTPPromoLine);
+  ASSERT_EQ(promo_line, "Eat more pie!");
+}
+

@@ -13,7 +13,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_service.h"
@@ -22,6 +24,19 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
+
+namespace {
+
+// Delay on first fetch so we don't interfere with startup.
+static const int kStartResourceFetchDelay = 5000;
+
+// Long delay between calls to update the cache (48 hours).
+static const int kLongCacheUpdateDelay = 48 * 60 * 60 * 1000;
+
+// Short delay between calls to update the cache (8 hours).
+static const int kShortCacheUpdateDelay = 8 * 60 * 60 * 1000;
+
+}  // namespace
 
 const char* WebResourceService::kCurrentTipPrefName = "current_tip";
 const char* WebResourceService::kTipCachePrefName = "tips";
@@ -49,8 +64,8 @@ class WebResourceService::WebResourceFetcher
     web_resource_service_->AddRef();
     // First, put our next cache load on the MessageLoop.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      fetcher_factory_.NewRunnableMethod(&WebResourceFetcher::StartFetch),
-                                         kCacheUpdateDelay);
+        fetcher_factory_.NewRunnableMethod(&WebResourceFetcher::StartFetch),
+            web_resource_service_->cache_update_delay());
     // If we are still fetching data, exit.
     if (web_resource_service_->in_fetch_)
       return;
@@ -187,12 +202,14 @@ class WebResourceService::UnpackerClient
   bool got_response_;
 };
 
-// Server for custom logo signals.
-const char* WebResourceService::kDefaultResourceServer =
+// Server for dynamically loaded NTP HTML elements. TODO(mirandac): append
+// locale for future usage, when we're serving localizable strings.
+const char* WebResourceService::kDefaultWebResourceServer =
     "https://www.google.com/support/chrome/bin/topic/30248/inproduct";
 
 WebResourceService::WebResourceService(Profile* profile)
     : prefs_(profile->GetPrefs()),
+      profile_(profile),
       in_fetch_(false) {
   Init();
 }
@@ -200,19 +217,27 @@ WebResourceService::WebResourceService(Profile* profile)
 WebResourceService::~WebResourceService() { }
 
 void WebResourceService::Init() {
+  // Much shorter update time if looking for a promo to display.
+  cache_update_delay_ =
+      WebResourceServiceUtil::CanShowPromo(profile_) ? kShortCacheUpdateDelay :
+                                                       kLongCacheUpdateDelay;
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_.reset(new WebResourceFetcher(this));
   prefs_->RegisterStringPref(prefs::kNTPWebResourceCacheUpdate, "0");
   prefs_->RegisterRealPref(prefs::kNTPCustomLogoStart, 0);
   prefs_->RegisterRealPref(prefs::kNTPCustomLogoEnd, 0);
+  prefs_->RegisterRealPref(prefs::kNTPPromoStart, 0);
+  prefs_->RegisterRealPref(prefs::kNTPPromoEnd, 0);
+  prefs_->RegisterStringPref(prefs::kNTPPromoLine, std::string());
+  prefs_->RegisterBooleanPref(prefs::kNTPPromoClosed, false);
 
-  if (prefs_->HasPrefPath(prefs::kNTPLogoResourceServer)) {
-    web_resource_server_ = prefs_->GetString(prefs::kNTPLogoResourceServer);
+  if (prefs_->HasPrefPath(prefs::kNTPWebResourceCache)) {
+    web_resource_server_ = prefs_->GetString(prefs::kNTPWebResourceCache);
     return;
   }
 
   // If we have not yet set a server, reset and force an immediate update.
-  web_resource_server_ = kDefaultResourceServer;
+  web_resource_server_ = kDefaultWebResourceServer;
   prefs_->SetString(prefs::kNTPWebResourceCacheUpdate, "");
 }
 
@@ -223,6 +248,8 @@ void WebResourceService::EndFetch() {
 void WebResourceService::OnWebResourceUnpacked(
   const DictionaryValue& parsed_json) {
   UnpackLogoSignal(parsed_json);
+  if (WebResourceServiceUtil::CanShowPromo(profile_))
+    UnpackPromoSignal(parsed_json);
   EndFetch();
 }
 
@@ -236,13 +263,13 @@ void WebResourceService::StartAfterDelay() {
     if (!last_update_pref.empty()) {
       double last_update_value;
       base::StringToDouble(last_update_pref, &last_update_value);
-      int ms_until_update = kCacheUpdateDelay -
+      int ms_until_update = cache_update_delay_ -
           static_cast<int>((base::Time::Now() - base::Time::FromDoubleT(
           last_update_value)).InMilliseconds());
 
-      delay = ms_until_update > kCacheUpdateDelay ?
-              kCacheUpdateDelay : (ms_until_update < kStartResourceFetchDelay ?
-                                   kStartResourceFetchDelay : ms_until_update);
+      delay = ms_until_update > cache_update_delay_ ?
+          cache_update_delay_ : (ms_until_update < kStartResourceFetchDelay ?
+                                kStartResourceFetchDelay : ms_until_update);
     }
   }
 
@@ -257,7 +284,7 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
   // Update resource server and cache update time in preferences.
   prefs_->SetString(prefs::kNTPWebResourceCacheUpdate,
       base::DoubleToString(base::Time::Now().ToDoubleT()));
-  prefs_->SetString(prefs::kNTPLogoResourceServer, web_resource_server_);
+  prefs_->SetString(prefs::kNTPWebResourceServer, web_resource_server_);
 }
 
 void WebResourceService::UnpackTips(const DictionaryValue& parsed_json) {
@@ -297,6 +324,76 @@ void WebResourceService::UnpackTips(const DictionaryValue& parsed_json) {
           WebResourceService::kCurrentTipPrefName, 0);
       }
     }
+  }
+}
+
+void WebResourceService::UnpackPromoSignal(const DictionaryValue& parsed_json) {
+  DictionaryValue* topic_dict;
+  ListValue* answer_list;
+  double old_promo_start = 0;
+  double old_promo_end = 0;
+  double promo_start = 0;
+  double promo_end = 0;
+
+  // Check for preexisting start and end values.
+  if (prefs_->HasPrefPath(prefs::kNTPPromoStart) &&
+      prefs_->HasPrefPath(prefs::kNTPPromoEnd)) {
+    old_promo_start = prefs_->GetReal(prefs::kNTPPromoStart);
+    old_promo_end = prefs_->GetReal(prefs::kNTPPromoEnd);
+  }
+
+  // Check for newly received start and end values.
+  if (parsed_json.GetDictionary("topic", &topic_dict)) {
+    if (topic_dict->GetList("answers", &answer_list)) {
+      std::string promo_start_string = "";
+      std::string promo_end_string = "";
+      std::string promo_string = "";
+      for (ListValue::const_iterator tip_iter = answer_list->begin();
+           tip_iter != answer_list->end(); ++tip_iter) {
+        if (!(*tip_iter)->IsType(Value::TYPE_DICTIONARY))
+          continue;
+        DictionaryValue* a_dic =
+            static_cast<DictionaryValue*>(*tip_iter);
+        std::string promo_signal;
+        if (a_dic->GetString("name", &promo_signal)) {
+          if (promo_signal == "promo_start") {
+            a_dic->GetString("inproduct", &promo_start_string);
+            a_dic->GetString("tooltip", &promo_string);
+            prefs_->SetString(prefs::kNTPPromoLine, promo_string);
+          } else if (promo_signal == "promo_end") {
+            a_dic->GetString("inproduct", &promo_end_string);
+          }
+        }
+      }
+      if (!promo_start_string.empty() &&
+          promo_start_string.length() > 0 &&
+          !promo_end_string.empty() &&
+          promo_end_string.length() > 0) {
+        base::Time start_time;
+        base::Time end_time;
+        if (base::Time::FromString(
+                ASCIIToWide(promo_start_string).c_str(), &start_time) &&
+            base::Time::FromString(
+                ASCIIToWide(promo_end_string).c_str(), &end_time)) {
+          promo_start = start_time.ToDoubleT();
+          promo_end = end_time.ToDoubleT();
+        }
+      }
+    }
+  }
+
+  // If start or end times have changed, trigger a new web resource
+  // notification, so that the logo on the NTP is updated. This check is
+  // outside the reading of the web resource data, because the absence of
+  // dates counts as a triggering change if there were dates before.
+  if (!(old_promo_start == promo_start) ||
+      !(old_promo_end == promo_end)) {
+    prefs_->SetReal(prefs::kNTPPromoStart, promo_start);
+    prefs_->SetReal(prefs::kNTPPromoEnd, promo_end);
+    NotificationService* service = NotificationService::current();
+    service->Notify(NotificationType::WEB_RESOURCE_STATE_CHANGED,
+                    Source<WebResourceService>(this),
+                    NotificationService::NoDetails());
   }
 }
 
@@ -361,8 +458,30 @@ void WebResourceService::UnpackLogoSignal(const DictionaryValue& parsed_json) {
     prefs_->SetReal(prefs::kNTPCustomLogoStart, logo_start);
     prefs_->SetReal(prefs::kNTPCustomLogoEnd, logo_end);
     NotificationService* service = NotificationService::current();
-    service->Notify(NotificationType::WEB_RESOURCE_AVAILABLE,
+    service->Notify(NotificationType::WEB_RESOURCE_STATE_CHANGED,
                     Source<WebResourceService>(this),
                     NotificationService::NoDetails());
   }
 }
+
+
+namespace WebResourceServiceUtil {
+
+bool CanShowPromo(Profile* profile) {
+  bool promo_closed = false;
+  PrefService* prefs = profile->GetPrefs();
+  if (prefs->HasPrefPath(prefs::kNTPPromoClosed))
+    promo_closed = prefs->GetBoolean(prefs::kNTPPromoClosed);
+  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  bool promo_options_set =
+      sync_ui_util::GetStatus(
+          profile->GetProfileSyncService()) == sync_ui_util::SYNCED ||
+      (extensions_service && extensions_service->HasInstalledExtensions());
+
+  return !promo_closed &&
+         promo_options_set &&
+         g_browser_process->GetApplicationLocale() == "en-US";
+}
+
+}  // namespace WebResourceService
+
