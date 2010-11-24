@@ -3,6 +3,34 @@
   <section>
     <div class="option">
       <table class="option-control-table">
+      <tr>
+        <td class="option-name">
+          <label class="checkbox">
+            <input id="allowBwsiCheck" pref="cros.accounts.allowBWSI"
+                type="checkbox">
+            <span i18n-content="allow_BWSI"></span>
+          </label>
+        </td>
+      </tr>
+      <tr>
+        <td class="option-name">
+          <label class="checkbox">
+            <input id="showUserNamesCheck"
+                pref="cros.accounts.showUserNamesOnSignIn" type="checkbox">
+            <span i18n-content="show_user_on_signin"></span>
+          </label>
+        </td>
+      </tr>
+      <tr>
+        <td class="option-name">
+          <label class="checkbox">
+            <input id="allowGuestCheck" pref="cros.accounts.allowGuest"
+                 type="checkbox">
+            <span i18n-content="allow_guest"></span>
+          </label>
+        </td>
+      </tr>
+      <tr><td>&nbsp;</td></tr>
       <tr><td>
         <table class="user-list-table">
           <tr><td>
@@ -17,35 +45,7 @@
           </td></tr>
         </table>
       </td></tr>
-      <tr><td>&nbsp;</td></tr>
-      <tr>
-        <td class="option-name">
-          <label class="checkbox">
-            <input id="allowBwsiCheck" pref="cros.accounts.allowBWSI"
-                type="checkbox">
-            <span i18n-content="allow_BWSI"></span>
-          </label>
-        </td>
-      </tr>
-      <tr>
-        <td class="option-name">
-          <label class="checkbox">
-            <input id="allowGuestCheck" pref="cros.accounts.allowGuest"
-                 type="checkbox">
-            <span i18n-content="allow_guest"></span>
-          </label>
-        </td>
-      </tr>
-      <tr>
-        <td class="option-name">
-          <label class="checkbox">
-            <input id="showUserNamesCheck"
-                pref="cros.accounts.showUserNamesOnSignIn" type="checkbox">
-            <span i18n-content="show_user_on_signin"></span>
-          </label>
-        </td>
-      </tr>
-      </table>
+     </table>
     </div>
   </section>
 </div>

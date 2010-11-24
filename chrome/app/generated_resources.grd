@@ -9274,13 +9274,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Join other network...
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
-        Allow browse without signing in.
+        Enable guest browsing
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_GUEST_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow guest to sign in.">
-        Allow anyone to sign in.
+        Restrict sign-in to the following users:
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to show user names and pictures on signin screen.">
-        Show usernames and pictures on sign-in page.
+        Show usernames and photos on the sign-in screen
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT" desc="In the Accounts settings tab, the instruction text on an empty username edit.">
         Enter names or addresses.
