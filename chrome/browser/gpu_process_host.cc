@@ -6,6 +6,7 @@
 
 #include "app/app_switches.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -27,6 +28,12 @@
 #endif
 
 namespace {
+
+enum GPUProcessLifetimeEvent {
+  kLaunched,
+  kCrashed,
+  kGPUProcessLifetimeEvent_Max
+  };
 
 // Tasks used by this file
 class RouteOnUIThreadTask : public Task {
@@ -343,6 +350,14 @@ bool GpuProcessHost::CanShutdown() {
   return true;
 }
 
+void GpuProcessHost::OnChildDied() {
+  // Located in OnChildDied because OnProcessCrashed suffers from a race
+  // condition on Linux. The GPU process will only die if it crashes.
+  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
+                            kCrashed, kGPUProcessLifetimeEvent_Max);
+  BrowserChildProcessHost::OnChildDied();
+}
+
 void GpuProcessHost::OnProcessCrashed() {
   // TODO(alokp): Update gpu process crash rate.
   BrowserChildProcessHost::OnProcessCrashed();
@@ -393,6 +408,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #endif
       cmd_line);
 
+  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
+                            kLaunched, kGPUProcessLifetimeEvent_Max);
   return true;
 }
 
