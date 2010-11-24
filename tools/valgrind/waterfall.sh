@@ -94,6 +94,31 @@ match_suppressions() {
              python "$THISDIR/test_suppressions.py" "$LOGS_DIR/report_"*
 }
 
+match_gtest_excludes() {
+  for PLATFORM in "Linux" "Chromium%20Mac" "Chromium%20OS"
+  do
+    echo
+    echo "Test failures on ${PLATFORM}:" | sed "s/%20/ /"
+    grep "\[  FAILED  \] .* ([0-9]\+ ms)" -R "$LOGS_DIR"/*${PLATFORM}* | \
+         grep -v "FAILS\|FLAKY" | \
+         sed -e "s/.*%20//" -e "s/_[1-9]\+:/:/" \
+             -e "s/\[  FAILED  \] //" -e "s/ ([0-9]\+ ms)//" -e "s/^/  /"
+    # Don't put any operators between "grep | sed" and "RESULT=$PIPESTATUS"
+    RESULT=$PIPESTATUS
+
+    if [ "$RESULT" == 1 ]
+    then
+      echo "  None!"
+    else
+      echo
+      echo "  Note: we don't check for failures already excluded locally yet"
+      echo "  TODO(timurrrr): don't list tests we've already excluded locally"
+    fi
+  done
+  echo
+  echo "Note: we don't print FAILS/FLAKY tests and 1200s-timeout failures"
+}
+
 find_blame() {
   # Return the blame list for the first revision for a suppression occured in
   # the logs of a given test on a given builder.
@@ -204,6 +229,7 @@ then
 elif [ "$1" = "match" ]
 then
   match_suppressions
+  match_gtest_excludes
 elif [ "$1" = "blame" ]
 then
   find_blame "$2" "$3" "$4"
