@@ -46,7 +46,7 @@ cr.define('options', function() {
       $('privacy-dashboard-link').onclick = function(event) {
         chrome.send('openPrivacyDashboardTabAndActivate');
       };
-      $('show-passwords').onclick = function(event) {
+      $('manage-passwords').onclick = function(event) {
         PasswordsExceptions.load();
         OptionsPage.showPageByName('passwordsExceptions');
         OptionsPage.showTab($('passwords-nav-tab'));
