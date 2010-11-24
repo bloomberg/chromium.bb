@@ -112,16 +112,17 @@ class ExternalTabUITestMockClient : public AutomationProxy {
 class ExternalTabUITest : public UITest {
  public:
   ExternalTabUITest() : UITest(MessageLoop::TYPE_UI) {}
-  // Override UITest's CreateAutomationProxy to provide the unit test
+  // Override UITest's CreateProxyLauncher to provide the unit test
   // with our special implementation of AutomationProxy.
-  // This function is called from within UITest::LaunchBrowserAndServer.
-  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+  // This function is called from within UITest::SetUp().
+  virtual ProxyLauncher* CreateProxyLauncher();
  protected:
   // Filtered Inet will override automation callbacks for network resources.
   virtual bool ShouldFilterInet() {
     return false;
   }
   ExternalTabUITestMockClient* mock_;
+  std::string channel_id_;      // Channel id of automation proxy.
 };
 
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H_

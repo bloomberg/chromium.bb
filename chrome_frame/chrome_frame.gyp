@@ -550,7 +550,10 @@
         'test/win_event_receiver.h',
         'chrome_tab.h',
         '../base/test/test_file_util_win.cc',
+        '../chrome/test/automation/proxy_launcher.cc',
+        '../chrome/test/automation/proxy_launcher.h',
         '../chrome/test/ui/ui_test.cc',
+        '../chrome/test/ui/ui_test.h',
         '../chrome/test/ui/ui_test_suite.cc',
         '../chrome/test/ui/ui_test_suite.h',
         '../chrome/test/chrome_process_util.cc',
@@ -809,7 +812,8 @@
           ],
           'process_outputs_as_sources': 0,
           'message':
-              'Assembling <(RULE_INPUT_PATH) to <(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj.',
+              'Assembling <(RULE_INPUT_PATH) to ' \
+              '<(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj.',
         },
       ],
       'msvs_settings': {
