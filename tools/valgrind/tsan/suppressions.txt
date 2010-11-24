@@ -127,11 +127,19 @@
 }
 
 {
-  bug_64185 [probably-benign races in Histogram in skia::ImageOperations]
+  bug_64185a [probably-benign races in Histogram in skia::ImageOperations]
   ThreadSanitizer:Race
   ...
   fun:base::Histogram::*
   fun:skia::ImageOperations::*
+}
+
+{
+  bug_64185b [probably-benign races in Histogram in skia::ImageOperations]
+  ThreadSanitizer:Race
+  ...
+  fun:base::Histogram::*
+  fun:HistogramSynchronizer::DeserializeHistogramList*
 }
 
 ############################
