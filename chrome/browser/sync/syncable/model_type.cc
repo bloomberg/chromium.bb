@@ -37,6 +37,9 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
     case AUTOFILL:
       specifics->MutableExtension(sync_pb::autofill);
       break;
+    case AUTOFILL_PROFILE:
+      specifics->MutableExtension(sync_pb::autofill_profile);
+      break;
     case THEMES:
       specifics->MutableExtension(sync_pb::theme);
       break;
@@ -103,6 +106,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
   if (specifics.HasExtension(sync_pb::autofill))
     return AUTOFILL;
+
+  if (specifics.HasExtension(sync_pb::autofill_profile))
+    return AUTOFILL_PROFILE;
 
   if (specifics.HasExtension(sync_pb::theme))
     return THEMES;
@@ -261,6 +267,9 @@ const char kExtensionNotificationType[] = "EXTENSION";
 const char kNigoriNotificationType[] = "NIGORI";
 const char kAppNotificationType[] = "APP";
 const char kSessionNotificationType[] = "SESSION";
+// TODO(lipalani) Bug 64111.
+// talk to akalin to make sure this is what I understand this to be.
+const char kAutofillProfileType[] = "AUTOFILL_PROFILE";
 // TODO(akalin): This is a hack to make new sync data types work with
 // server-issued notifications.  Remove this when it's not needed
 // anymore.
@@ -299,6 +308,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case SESSIONS:
       *notification_type = kSessionNotificationType;
+      return true;
+    case AUTOFILL_PROFILE:
+      *notification_type = kAutofillProfileType;
       return true;
     // TODO(akalin): This is a hack to make new sync data types work with
     // server-issued notifications.  Remove this when it's not needed

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_AUTOFILL_CHANGE_PROCESSOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_CHANGE_PROCESSOR_H_
+#ifndef CHROME_BROWSER_SYNC_GLUE_AUTOFILL_CHANGE_PROCESSOR2_H_
+#define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_CHANGE_PROCESSOR2_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/autofill_change_processor2.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -28,20 +28,20 @@ class WebDatabase;
 
 namespace browser_sync {
 
-class AutofillModelAssociator;
+class AutofillModelAssociator2;
 class UnrecoverableErrorHandler;
 
 // This class is responsible for taking changes from the web data service and
 // applying them to the sync_api 'syncable' model, and vice versa. All
 // operations and use of this class are from the DB thread.
-class AutofillChangeProcessor : public ChangeProcessor,
-                                public NotificationObserver {
+class AutofillChangeProcessor2 : public ChangeProcessor,
+                                 public NotificationObserver {
  public:
-  AutofillChangeProcessor(AutofillModelAssociator* model_associator,
+  AutofillChangeProcessor2(AutofillModelAssociator2* model_associator,
                           WebDatabase* web_database,
                           PersonalDataManager* personal_data,
                           UnrecoverableErrorHandler* error_handler);
-  virtual ~AutofillChangeProcessor();
+  virtual ~AutofillChangeProcessor2();
 
   // NotificationObserver implementation.
   // WebDataService -> sync_api model change application.
@@ -105,17 +105,45 @@ class AutofillChangeProcessor : public ChangeProcessor,
   void ApplySyncAutofillEntryDelete(
       const sync_pb::AutofillSpecifics& autofill);
   void ApplySyncAutofillProfileDelete(
+      const sync_pb::AutofillProfileSpecifics& profile,
       int64 sync_id);
+
+  // If the chrome model tries to add an AutoFillProfile with a label that
+  // is already in use, we perform a move-aside by calling-back into the chrome
+  // model and overwriting the label with a unique value we can apply for sync.
+  // This method should be called on an ADD notification from the chrome model.
+  // |tag| contains the unique sync client tag identifier for |profile|, which
+  // is derived from the profile label using ProfileLabelToTag.
+  // |existing_unique_label| is the current label of the object, if any; this
+  // is an allowed value, because it's taken by the item in question.
+  // For new items, set |existing_unique_label| to the empty string.
+  void ChangeProfileLabelIfAlreadyTaken(
+      sync_api::BaseTransaction* trans,
+      const string16& existing_unique_label,
+      AutoFillProfile* profile,
+      std::string* tag);
+
+  // Reassign the label of the profile, write this back to the web database,
+  // and update |tag| with the tag corresponding to the new label.
+  void OverrideProfileLabel(
+      const string16& new_label,
+      AutoFillProfile* profile_to_update,
+      std::string* tag_to_update);
+
+  // Helper to create a sync node with tag |tag|, storing |profile| as
+  // the node's AutofillSpecifics.
+  void AddAutofillProfileSyncNode(
+      sync_api::WriteTransaction* trans,
+      const sync_api::BaseNode& autofill,
+      const std::string& tag,
+      const AutoFillProfile* profile);
 
   // Helper to post a task to the UI loop to inform the PersonalDataManager
   // it needs to refresh itself.
   void PostOptimisticRefreshTask();
 
-  // Called to see if we need to upgrade to the new autofill2 profile.
-  bool HasNotMigratedYet();
-
   // The two models should be associated according to this ModelAssociator.
-  AutofillModelAssociator* model_associator_;
+  AutofillModelAssociator2* model_associator_;
 
   // The model we are processing changes from.  This is owned by the
   // WebDataService which is kept alive by our data type controller
@@ -135,9 +163,10 @@ class AutofillChangeProcessor : public ChangeProcessor,
   struct AutofillChangeRecord;
   std::vector<AutofillChangeRecord> autofill_changes_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillChangeProcessor);
+  DISALLOW_COPY_AND_ASSIGN(AutofillChangeProcessor2);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_CHANGE_PROCESSOR_H_
+#endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_CHANGE_PROCESSOR2_H_
+

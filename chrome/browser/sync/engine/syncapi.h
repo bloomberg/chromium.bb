@@ -81,6 +81,7 @@ class WriteTransaction;
 namespace sync_pb {
 class AppSpecifics;
 class AutofillSpecifics;
+class AutofillProfileSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
 class ExtensionSpecifics;
@@ -149,7 +150,7 @@ class BaseNode {
   // metahandle).  These ids are strictly local handles.  They will persist
   // on this client, but the same object on a different client may have a
   // different ID value.
-  int64 GetId() const;
+  virtual int64 GetId() const;
 
   // Nodes are hierarchically arranged into a single-rooted tree.
   // InitByRootLookup on ReadNode allows access to the root. GetParentId is
@@ -195,6 +196,9 @@ class BaseNode {
   // data.  Can only be called if GetModelType() == AUTOFILL.
   const sync_pb::AutofillSpecifics& GetAutofillSpecifics() const;
 
+  virtual const sync_pb::AutofillProfileSpecifics&
+      GetAutofillProfileSpecifics() const;
+
   // Getter specific to the NIGORI datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == NIGORI.
   const sync_pb::NigoriSpecifics& GetNigoriSpecifics() const;
@@ -232,11 +236,11 @@ class BaseNode {
 
   // Return the ID of the node immediately after this in the sibling order.
   // For the last node in the ordering, return 0.
-  int64 GetSuccessorId() const;
+  virtual int64 GetSuccessorId() const;
 
   // Return the ID of the first child of this node.  If this node has no
   // children, return 0.
-  int64 GetFirstChildId() const;
+  virtual int64 GetFirstChildId() const;
 
   // These virtual accessors provide access to data members of derived classes.
   virtual const syncable::Entry* GetEntry() const = 0;
@@ -256,8 +260,7 @@ class BaseNode {
   bool DecryptIfNecessary(syncable::Entry* entry);
 
  private:
-  // Node is meant for stack use only.
-  void* operator new(size_t size);
+  void* operator new(size_t size);  // Node is meant for stack use only.
 
   // If this node represents a password, this field will hold the actual
   // decrypted password data.
@@ -457,6 +460,9 @@ class ReadNode : public BaseNode {
   virtual const syncable::Entry* GetEntry() const;
   virtual const BaseTransaction* GetTransaction() const;
 
+ protected:
+  ReadNode();
+
  private:
   void* operator new(size_t size);  // Node is meant for stack use only.
 
@@ -491,6 +497,8 @@ class BaseTransaction {
   // to fail.
   explicit BaseTransaction(UserShare* share);
   virtual ~BaseTransaction();
+
+  BaseTransaction() { lookup_= NULL; }
 
  private:
   // A syncable ScopedDirLookup, which is the parent of syncable transactions.
@@ -536,6 +544,12 @@ class WriteTransaction : public BaseTransaction {
   // Provide access to the syncable.h transaction from the API WriteNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const;
   syncable::WriteTransaction* GetWrappedWriteTrans() { return transaction_; }
+
+ protected:
+  WriteTransaction() {}
+
+  void SetTransaction(syncable::WriteTransaction* trans) {
+      transaction_ = trans;}
 
  private:
   void* operator new(size_t size);  // Transaction is meant for stack use only.

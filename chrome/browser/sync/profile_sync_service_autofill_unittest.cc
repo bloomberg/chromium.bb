@@ -24,8 +24,10 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
+#include "chrome/browser/sync/glue/autofill_change_processor2.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
+#include "chrome/browser/sync/glue/autofill_model_associator2.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -45,9 +47,9 @@
 
 using base::Time;
 using base::WaitableEvent;
-using browser_sync::AutofillChangeProcessor;
+using browser_sync::AutofillChangeProcessor2;
 using browser_sync::AutofillDataTypeController;
-using browser_sync::AutofillModelAssociator;
+using browser_sync::AutofillModelAssociator2;
 using browser_sync::GROUP_DB;
 using browser_sync::kAutofillTag;
 using browser_sync::SyncBackendHostForProfileSyncTest;
@@ -128,10 +130,10 @@ ACTION_P4(MakeAutofillSyncComponents, service, wd, pdm, dtc) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
     return ProfileSyncFactory::SyncComponents(NULL, NULL);
-  AutofillModelAssociator* model_associator =
-      new AutofillModelAssociator(service, wd, pdm);
-  AutofillChangeProcessor* change_processor =
-      new AutofillChangeProcessor(model_associator, wd, pdm, dtc);
+  AutofillModelAssociator2* model_associator =
+      new AutofillModelAssociator2(service, wd, pdm);
+  AutofillChangeProcessor2* change_processor =
+      new AutofillChangeProcessor2(model_associator, wd, pdm, dtc);
   return ProfileSyncFactory::SyncComponents(model_associator,
                                             change_processor);
 }
@@ -212,12 +214,12 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
       return false;
 
     sync_api::WriteNode node(&trans);
-    std::string tag = AutofillModelAssociator::KeyToTag(entry.key().name(),
+    std::string tag = AutofillModelAssociator2::KeyToTag(entry.key().name(),
                                                         entry.key().value());
     if (!node.InitUniqueByCreation(syncable::AUTOFILL, autofill_root, tag))
       return false;
 
-    AutofillChangeProcessor::WriteAutofillEntry(entry, &node);
+    AutofillChangeProcessor2::WriteAutofillEntry(entry, &node);
     return true;
   }
 
@@ -228,11 +230,11 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     if (!autofill_root.InitByTagLookup(browser_sync::kAutofillTag))
       return false;
     sync_api::WriteNode node(&trans);
-    std::string tag = AutofillModelAssociator::ProfileLabelToTag(
+    std::string tag = browser_sync::AutofillModelAssociator2::ProfileLabelToTag(
         profile.Label());
     if (!node.InitUniqueByCreation(syncable::AUTOFILL, autofill_root, tag))
       return false;
-    AutofillChangeProcessor::WriteAutofillProfile(profile, &node);
+    AutofillChangeProcessor2::WriteAutofillProfile(profile, &node);
     sync_pb::AutofillSpecifics s(node.GetAutofillSpecifics());
     s.mutable_profile()->set_label(UTF16ToUTF8(profile.Label()));
     node.SetAutofillSpecifics(s);
@@ -267,7 +269,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
       } else if (autofill.has_profile()) {
         AutoFillProfile p;
         p.set_label(UTF8ToUTF16(autofill.profile().label()));
-        AutofillModelAssociator::OverwriteProfileWithServerData(&p,
+        AutofillModelAssociator2::OverwriteProfileWithServerData(&p,
             autofill.profile());
         profiles->push_back(p);
       }
@@ -390,7 +392,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     ASSERT_TRUE(dir.good());
 
     // Create autofill protobuf
-    std::string tag = AutofillModelAssociator::KeyToTag(entry_.key().name(),
+    std::string tag = AutofillModelAssociator2::KeyToTag(entry_.key().name(),
                                                         entry_.key().value());
     sync_pb::AutofillSpecifics new_autofill;
     new_autofill.set_name(UTF16ToUTF8(entry_.key().name()));

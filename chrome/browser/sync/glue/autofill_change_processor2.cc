@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/autofill_change_processor.h"
+#include "chrome/browser/sync/glue/autofill_change_processor2.h"
 
 #include <string>
 #include <vector>
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/guid.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/sync/glue/autofill_change_processor2.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
+#include "chrome/browser/sync/glue/autofill_model_associator2.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -22,7 +21,8 @@
 
 namespace browser_sync {
 
-struct AutofillChangeProcessor::AutofillChangeRecord {
+class AutofillModelAssociator2;
+struct AutofillChangeProcessor2::AutofillChangeRecord {
   sync_api::SyncManager::ChangeRecord::Action action_;
   int64 id_;
   sync_pb::AutofillSpecifics autofill_;
@@ -33,8 +33,8 @@ struct AutofillChangeProcessor::AutofillChangeRecord {
         autofill_(autofill) { }
 };
 
-AutofillChangeProcessor::AutofillChangeProcessor(
-    AutofillModelAssociator* model_associator,
+AutofillChangeProcessor2::AutofillChangeProcessor2(
+    AutofillModelAssociator2* model_associator,
     WebDatabase* web_database,
     PersonalDataManager* personal_data,
     UnrecoverableErrorHandler* error_handler)
@@ -51,9 +51,9 @@ AutofillChangeProcessor::AutofillChangeProcessor(
   StartObserving();
 }
 
-AutofillChangeProcessor::~AutofillChangeProcessor() {}
+AutofillChangeProcessor2::~AutofillChangeProcessor2() {}
 
-void AutofillChangeProcessor::Observe(NotificationType type,
+void AutofillChangeProcessor2::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
   // Ensure this notification came from our web database.
@@ -75,19 +75,136 @@ void AutofillChangeProcessor::Observe(NotificationType type,
     return;
   }
 
-  DCHECK(type.value == NotificationType::AUTOFILL_ENTRIES_CHANGED);
-
-  AutofillChangeList* changes = Details<AutofillChangeList>(details).ptr();
-  ObserveAutofillEntriesChanged(changes, &trans, autofill_root);
+  switch (type.value) {
+    case NotificationType::AUTOFILL_ENTRIES_CHANGED: {
+      AutofillChangeList* changes = Details<AutofillChangeList>(details).ptr();
+      ObserveAutofillEntriesChanged(changes, &trans, autofill_root);
+      break;
+    }
+    case NotificationType::AUTOFILL_PROFILE_CHANGED: {
+      AutofillProfileChange* change =
+          Details<AutofillProfileChange>(details).ptr();
+      ObserveAutofillProfileChanged(change, &trans, autofill_root);
+      break;
+    }
+    default:
+      NOTREACHED()  << "Invalid NotificationType.";
+  }
 }
 
-void AutofillChangeProcessor::PostOptimisticRefreshTask() {
+void AutofillChangeProcessor2::ChangeProfileLabelIfAlreadyTaken(
+    sync_api::BaseTransaction* trans,
+    const string16& pre_update_label,
+    AutoFillProfile* profile,
+    std::string* tag) {
+  DCHECK_EQ(AutofillModelAssociator2::ProfileLabelToTag(profile->Label()),
+                                                       *tag);
+  sync_api::ReadNode read_node(trans);
+  if (!pre_update_label.empty() && pre_update_label == profile->Label())
+    return;
+  if (read_node.InitByClientTagLookup(syncable::AUTOFILL, *tag)) {
+    // Handle the edge case of duplicate labels.
+    string16 new_label(AutofillModelAssociator2::MakeUniqueLabel(
+        profile->Label(), pre_update_label, trans));
+    if (new_label.empty()) {
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "No unique label; can't move aside");
+      return;
+    }
+    OverrideProfileLabel(new_label, profile, tag);
+  }
+}
+
+void AutofillChangeProcessor2::OverrideProfileLabel(
+    const string16& new_label,
+    AutoFillProfile* profile_to_update,
+    std::string* tag_to_update) {
+  tag_to_update->assign(AutofillModelAssociator2::ProfileLabelToTag(new_label));
+
+  profile_to_update->set_label(new_label);
+  if (!web_database_->UpdateAutoFillProfile(*profile_to_update)) {
+    std::string err = "Failed to overwrite label for node ";
+    err += UTF16ToUTF8(new_label);
+    error_handler()->OnUnrecoverableError(FROM_HERE, err);
+    return;
+  }
+
+  // Notify the PersonalDataManager that it's out of date.
+  PostOptimisticRefreshTask();
+}
+
+void AutofillChangeProcessor2::PostOptimisticRefreshTask() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      new AutofillModelAssociator::DoOptimisticRefreshTask(
+      new AutofillModelAssociator2::DoOptimisticRefreshTask(
            personal_data_));
 }
 
-void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
+void AutofillChangeProcessor2::AddAutofillProfileSyncNode(
+    sync_api::WriteTransaction* trans, const sync_api::BaseNode& autofill,
+    const std::string& tag, const AutoFillProfile* profile) {
+  sync_api::WriteNode sync_node(trans);
+  if (!sync_node.InitUniqueByCreation(syncable::AUTOFILL, autofill, tag)) {
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "Failed to create autofill sync node.");
+    return;
+  }
+  sync_node.SetTitle(UTF8ToWide(tag));
+
+  WriteAutofillProfile(*profile, &sync_node);
+  model_associator_->Associate(&tag, sync_node.GetId());
+}
+
+void AutofillChangeProcessor2::ObserveAutofillProfileChanged(
+    AutofillProfileChange* change, sync_api::WriteTransaction* trans,
+    const sync_api::ReadNode& autofill_root) {
+  std::string tag(AutofillModelAssociator2::ProfileLabelToTag(change->key()));
+  switch (change->type()) {
+    case AutofillProfileChange::ADD: {
+      scoped_ptr<AutoFillProfile> clone(
+          static_cast<AutoFillProfile*>(change->profile()->Clone()));
+      DCHECK_EQ(clone->Label(), change->key());
+      ChangeProfileLabelIfAlreadyTaken(trans, string16(), clone.get(), &tag);
+      AddAutofillProfileSyncNode(trans, autofill_root, tag, clone.get());
+      break;
+    }
+    case AutofillProfileChange::UPDATE: {
+      scoped_ptr<AutoFillProfile> clone(
+          static_cast<AutoFillProfile*>(change->profile()->Clone()));
+      std::string pre_update_tag = AutofillModelAssociator2::ProfileLabelToTag(
+          change->pre_update_label());
+      DCHECK_EQ(clone->Label(), change->key());
+      sync_api::WriteNode sync_node(trans);
+      ChangeProfileLabelIfAlreadyTaken(trans, change->pre_update_label(),
+                                       clone.get(), &tag);
+      if (pre_update_tag != tag) {
+        // If the label changes, replace the node instead of updating it.
+        RemoveSyncNode(pre_update_tag, trans);
+        AddAutofillProfileSyncNode(trans, autofill_root, tag, clone.get());
+        return;
+      }
+      int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
+      if (sync_api::kInvalidId == sync_id) {
+        std::string err = "Unexpected notification for: " + tag;
+        error_handler()->OnUnrecoverableError(FROM_HERE, err);
+        return;
+      } else {
+        if (!sync_node.InitByIdLookup(sync_id)) {
+          error_handler()->OnUnrecoverableError(FROM_HERE,
+              "Autofill node lookup failed.");
+          return;
+        }
+        WriteAutofillProfile(*clone.get(), &sync_node);
+      }
+      break;
+    }
+    case AutofillProfileChange::REMOVE: {
+      RemoveSyncNode(tag, trans);
+      break;
+    }
+  }
+}
+
+void AutofillChangeProcessor2::ObserveAutofillEntriesChanged(
     AutofillChangeList* changes, sync_api::WriteTransaction* trans,
     const sync_api::ReadNode& autofill_root) {
   for (AutofillChangeList::iterator change = changes->begin();
@@ -97,7 +214,7 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
         {
           sync_api::WriteNode sync_node(trans);
           std::string tag =
-              AutofillModelAssociator::KeyToTag(change->key().name(),
+              AutofillModelAssociator2::KeyToTag(change->key().name(),
                                                 change->key().value());
           if (!sync_node.InitUniqueByCreation(syncable::AUTOFILL,
                                               autofill_root, tag)) {
@@ -127,7 +244,7 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
       case AutofillChange::UPDATE:
         {
           sync_api::WriteNode sync_node(trans);
-          std::string tag = AutofillModelAssociator::KeyToTag(
+          std::string tag = AutofillModelAssociator2::KeyToTag(
               change->key().name(), change->key().value());
           int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
           if (sync_api::kInvalidId == sync_id) {
@@ -158,7 +275,7 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
         }
         break;
       case AutofillChange::REMOVE: {
-        std::string tag = AutofillModelAssociator::KeyToTag(
+        std::string tag = AutofillModelAssociator2::KeyToTag(
             change->key().name(), change->key().value());
         RemoveSyncNode(tag, trans);
         }
@@ -167,7 +284,7 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
   }
 }
 
-void AutofillChangeProcessor::RemoveSyncNode(const std::string& tag,
+void AutofillChangeProcessor2::RemoveSyncNode(const std::string& tag,
     sync_api::WriteTransaction* trans) {
   sync_api::WriteNode sync_node(trans);
   int64 sync_id = model_associator_->GetSyncIdFromChromeId(tag);
@@ -186,7 +303,7 @@ void AutofillChangeProcessor::RemoveSyncNode(const std::string& tag,
   }
 }
 
-void AutofillChangeProcessor::ApplyChangesFromSyncModel(
+void AutofillChangeProcessor2::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
@@ -209,8 +326,7 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
           << "Autofill specifics data not present on delete!";
       const sync_pb::AutofillSpecifics& autofill =
           changes[i].specifics.GetExtension(sync_pb::autofill);
-      if (autofill.has_value() ||
-        (HasNotMigratedYet() && autofill.has_profile())) {
+      if (autofill.has_value() || autofill.has_profile()) {
         autofill_changes_.push_back(AutofillChangeRecord(changes[i].action,
                                                          changes[i].id,
                                                          autofill));
@@ -235,8 +351,7 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
     const sync_pb::AutofillSpecifics& autofill(
         sync_node.GetAutofillSpecifics());
     int64 sync_id = sync_node.GetId();
-    if (autofill.has_value() ||
-      (HasNotMigratedYet() && autofill.has_profile())) {
+    if (autofill.has_value() || autofill.has_profile()) {
       autofill_changes_.push_back(AutofillChangeRecord(changes[i].action,
                                                        sync_id, autofill));
     } else {
@@ -247,7 +362,7 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
   StartObserving();
 }
 
-void AutofillChangeProcessor::CommitChangesFromSyncModel() {
+void AutofillChangeProcessor2::CommitChangesFromSyncModel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!running())
     return;
@@ -261,8 +376,8 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
       if (autofill_changes_[i].autofill_.has_value()) {
         ApplySyncAutofillEntryDelete(autofill_changes_[i].autofill_);
       } else if (autofill_changes_[i].autofill_.has_profile()) {
-        DCHECK(HasNotMigratedYet());
-        ApplySyncAutofillProfileDelete(autofill_changes_[i].id_);
+        ApplySyncAutofillProfileDelete(autofill_changes_[i].autofill_.profile(),
+                                       autofill_changes_[i].id_);
       } else {
         NOTREACHED() << "Autofill's CommitChanges received change with no"
             " data!";
@@ -276,7 +391,6 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
                                    autofill_changes_[i].autofill_, &new_entries,
                                    autofill_changes_[i].id_);
     } else if (autofill_changes_[i].autofill_.has_profile()) {
-      DCHECK(HasNotMigratedYet());
       ApplySyncAutofillProfileChange(autofill_changes_[i].action_,
                                      autofill_changes_[i].autofill_.profile(),
                                      autofill_changes_[i].id_);
@@ -298,7 +412,7 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
   StartObserving();
 }
 
-void AutofillChangeProcessor::ApplySyncAutofillEntryDelete(
+void AutofillChangeProcessor2::ApplySyncAutofillEntryDelete(
       const sync_pb::AutofillSpecifics& autofill) {
   if (!web_database_->RemoveFormElement(
       UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
@@ -308,7 +422,7 @@ void AutofillChangeProcessor::ApplySyncAutofillEntryDelete(
   }
 }
 
-void AutofillChangeProcessor::ApplySyncAutofillEntryChange(
+void AutofillChangeProcessor2::ApplySyncAutofillEntryChange(
       sync_api::SyncManager::ChangeRecord::Action action,
       const sync_pb::AutofillSpecifics& autofill,
       std::vector<AutofillEntry>* new_entries,
@@ -325,53 +439,49 @@ void AutofillChangeProcessor::ApplySyncAutofillEntryChange(
   AutofillEntry new_entry(k, timestamps);
 
   new_entries->push_back(new_entry);
-  std::string tag(AutofillModelAssociator::KeyToTag(k.name(), k.value()));
+  std::string tag(AutofillModelAssociator2::KeyToTag(k.name(), k.value()));
   if (action == sync_api::SyncManager::ChangeRecord::ACTION_ADD)
     model_associator_->Associate(&tag, sync_id);
 }
 
-void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
+void AutofillChangeProcessor2::ApplySyncAutofillProfileChange(
     sync_api::SyncManager::ChangeRecord::Action action,
     const sync_pb::AutofillProfileSpecifics& profile,
     int64 sync_id) {
   DCHECK_NE(sync_api::SyncManager::ChangeRecord::ACTION_DELETE, action);
 
+  std::string tag(AutofillModelAssociator2::ProfileLabelToTag(
+      UTF8ToUTF16(profile.label())));
   switch (action) {
     case sync_api::SyncManager::ChangeRecord::ACTION_ADD: {
-      std::string guid(guid::GenerateGUID());
-      scoped_ptr<AutoFillProfile> p(new AutoFillProfile);
-      p->set_guid(guid);
-      AutofillModelAssociator::FillProfileWithServerData(p.get(),
+      PersonalDataManager* pdm = model_associator_->sync_service()->
+          profile()->GetPersonalDataManager();
+      scoped_ptr<AutoFillProfile> p(
+          pdm->CreateNewEmptyAutoFillProfileForDBThread(
+              UTF8ToUTF16(profile.label())));
+      AutofillModelAssociator2::OverwriteProfileWithServerData(p.get(),
                                                               profile);
+
+      model_associator_->Associate(&tag, sync_id);
       if (!web_database_->AddAutoFillProfile(*p.get())) {
-        NOTREACHED() << "Couldn't add autofill profile: " << guid;
+        NOTREACHED() << "Couldn't add autofill profile: " << profile.label();
         return;
       }
-      model_associator_->Associate(&guid, sync_id);
       break;
     }
     case sync_api::SyncManager::ChangeRecord::ACTION_UPDATE: {
-      const std::string* guid = model_associator_->GetChromeNodeFromSyncId(
-          sync_id);
-      if (guid == NULL) {
-        LOG(ERROR) << " Model association has not happened for " << sync_id;
-        error_handler()->OnUnrecoverableError(FROM_HERE,
-            "model association has not happened");
+      AutoFillProfile* p = NULL;
+      string16 label = UTF8ToUTF16(profile.label());
+      if (!web_database_->GetAutoFillProfileForLabel(label, &p)) {
+        NOTREACHED() << "Couldn't retrieve autofill profile: " << label;
         return;
       }
-      AutoFillProfile *temp_ptr;
-      if (!web_database_->GetAutoFillProfileForGUID(*guid, &temp_ptr)) {
-        LOG(ERROR) << "Autofill profile not found for " << *guid;
+      AutofillModelAssociator2::OverwriteProfileWithServerData(p, profile);
+      if (!web_database_->UpdateAutoFillProfile(*p)) {
+        NOTREACHED() << "Couldn't update autofill profile: " << label;
         return;
       }
-
-      scoped_ptr<AutoFillProfile> p(temp_ptr);
-
-      AutofillModelAssociator::FillProfileWithServerData(p.get(), profile);
-      if (!web_database_->UpdateAutoFillProfile(*(p.get()))) {
-        LOG(ERROR) << "Couldn't update autofill profile: " << guid;
-        return;
-      }
+      delete p;
       break;
     }
     default:
@@ -379,47 +489,50 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
   }
 }
 
-void AutofillChangeProcessor::ApplySyncAutofillProfileDelete(
+void AutofillChangeProcessor2::ApplySyncAutofillProfileDelete(
+    const sync_pb::AutofillProfileSpecifics& profile,
     int64 sync_id) {
-
-  const std::string *guid = model_associator_->GetChromeNodeFromSyncId(sync_id);
-  if (guid == NULL) {
-    LOG(ERROR)<< "The profile is not associated";
+  string16 label(UTF8ToUTF16(profile.label()));
+  AutoFillProfile* ptr = NULL;
+  bool get_success = web_database_->GetAutoFillProfileForLabel(label, &ptr);
+  scoped_ptr<AutoFillProfile> p(ptr);
+  if (!get_success) {
+    NOTREACHED() << "Couldn't retrieve autofill profile: " << label;
     return;
   }
-
-  if (!web_database_->RemoveAutoFillProfile(*guid)) {
-    LOG(ERROR) << "Could not remove the profile";
+  if (!web_database_->RemoveAutoFillProfile(p->guid())) {
+    NOTREACHED() << "Couldn't remove autofill profile: " << label;
     return;
   }
-
   model_associator_->Disassociate(sync_id);
 }
 
-void AutofillChangeProcessor::StartImpl(Profile* profile) {
+void AutofillChangeProcessor2::StartImpl(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   observing_ = true;
 }
 
-void AutofillChangeProcessor::StopImpl() {
+void AutofillChangeProcessor2::StopImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observing_ = false;
 }
 
 
-void AutofillChangeProcessor::StartObserving() {
+void AutofillChangeProcessor2::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   notification_registrar_.Add(this, NotificationType::AUTOFILL_ENTRIES_CHANGED,
                               NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::AUTOFILL_PROFILE_CHANGED,
+                              NotificationService::AllSources());
 }
 
-void AutofillChangeProcessor::StopObserving() {
+void AutofillChangeProcessor2::StopObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   notification_registrar_.RemoveAll();
 }
 
 // static
-void AutofillChangeProcessor::WriteAutofillEntry(
+void AutofillChangeProcessor2::WriteAutofillEntry(
     const AutofillEntry& entry,
     sync_api::WriteNode* node) {
   sync_pb::AutofillSpecifics autofill;
@@ -434,10 +547,11 @@ void AutofillChangeProcessor::WriteAutofillEntry(
 }
 
 // static
-void AutofillChangeProcessor::WriteAutofillProfile(
+void AutofillChangeProcessor2::WriteAutofillProfile(
     const AutoFillProfile& profile, sync_api::WriteNode* node) {
   sync_pb::AutofillSpecifics autofill;
   sync_pb::AutofillProfileSpecifics* s(autofill.mutable_profile());
+  s->set_label(UTF16ToUTF8(profile.Label()));
   s->set_name_first(UTF16ToUTF8(
       profile.GetFieldText(AutoFillType(NAME_FIRST))));
   s->set_name_middle(UTF16ToUTF8(
@@ -465,8 +579,6 @@ void AutofillChangeProcessor::WriteAutofillProfile(
       AutoFillType(PHONE_HOME_WHOLE_NUMBER))));
   node->SetAutofillSpecifics(autofill);
 }
-bool AutofillChangeProcessor::HasNotMigratedYet() {
-  return true;
-}
 
 }  // namespace browser_sync
+
