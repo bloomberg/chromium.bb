@@ -38,6 +38,9 @@ const char* const kAliceUsername = "alice";
 const char* const kAlicePassword = "password";
 const char* const kBobUsername = "bob";
 const char* const kBobPassword = "secret";
+const char* const kCarolUsername = "Carol";
+const char* const kCarolPassword = "test";
+
 
 const char* const kFormHTML =
     "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
@@ -68,6 +71,8 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
     password1_ = ASCIIToUTF16(kAlicePassword);
     username2_ = ASCIIToUTF16(kBobUsername);
     password2_ = ASCIIToUTF16(kBobPassword);
+    username3_ = ASCIIToUTF16(kCarolUsername);
+    password3_ = ASCIIToUTF16(kCarolPassword);
 
     fill_data_.basic_data.fields.push_back(
         FormField(string16(), ASCIIToUTF16(kUsernameName),
@@ -76,6 +81,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
         FormField(string16(), ASCIIToUTF16(kPasswordName),
                   password1_, string16(), 0));
     fill_data_.additional_logins[username2_] = password2_;
+    fill_data_.additional_logins[username3_] = password3_;
 
     // We need to set the origin so it matches the frame URL and the action so
     // it matches the form action, otherwise we won't autocomplete.
@@ -141,8 +147,10 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
 
   string16 username1_;
   string16 username2_;
+  string16 username3_;
   string16 password1_;
   string16 password2_;
+  string16 password3_;
   PasswordFormFillData fill_data_;
 
   WebInputElement username_element_;
@@ -290,6 +298,18 @@ TEST_F(PasswordAutocompleteManagerTest, InlineAutocomplete) {
   // The username and password fields should match the 'bob' entry.
   CheckTextFieldsState(kBobUsername, true, kBobPassword, true);
   CheckUsernameSelection(1, 3);
+
+  // Then, the user again removes all the text and types an uppercase 'C'.
+  SimulateUsernameChange("C", true);
+  // The username and password fields should match the 'Carol' entry.
+  CheckTextFieldsState(kCarolUsername, true, kCarolPassword, true);
+  CheckUsernameSelection(1, 5);
+  // Finally, the user removes all the text and types a lowercase 'c'.  We only
+  // want case-sensitive autocompletion, so the username and the selected range
+  // should be empty.
+  SimulateUsernameChange("c", true);
+  CheckTextFieldsState("c", false, "", false);
+  CheckUsernameSelection(1, 1);
 }
 
 // Tests that selecting and item in the suggestion drop-down works.
@@ -310,4 +330,4 @@ TEST_F(PasswordAutocompleteManagerTest, SuggestionSelect) {
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
-}  // namespace
+}

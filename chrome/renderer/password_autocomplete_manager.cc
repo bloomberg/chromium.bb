@@ -161,7 +161,7 @@ bool DoUsernamesMatch(const string16& username1,
                       bool exact_match) {
   if (exact_match)
     return username1 == username2;
-  return StartsWith(username1, username2, false);
+  return StartsWith(username1, username2, true);
 }
 
 }  // namespace
