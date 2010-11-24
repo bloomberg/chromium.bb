@@ -68,3 +68,12 @@ void RendererWebCookieJarImpl::deleteCookie(
   UTF16ToUTF8(cookie_name.data(), cookie_name.length(), &cookie_name_utf8);
   sender_->Send(new ViewHostMsg_DeleteCookie(url, cookie_name_utf8));
 }
+
+bool RendererWebCookieJarImpl::cookiesEnabled(
+    const WebURL& url, const WebURL& first_party_for_cookies) {
+  bool cookies_enabled;
+  // NOTE: This may pump events (see RenderThread::Send).
+  sender_->Send(new ViewHostMsg_CookiesEnabled(
+      MSG_ROUTING_NONE, url, first_party_for_cookies, &cookies_enabled));
+  return cookies_enabled;
+}

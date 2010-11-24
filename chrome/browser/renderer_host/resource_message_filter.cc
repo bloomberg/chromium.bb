@@ -443,6 +443,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies,
                                       OnGetRawCookies)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_CookiesEnabled,
+                                      OnCookiesEnabled)
 #if defined(OS_MACOSX)
       IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
@@ -750,6 +752,28 @@ void ResourceMessageFilter::OnDeleteCookie(const GURL& url,
                                            const std::string& cookie_name) {
   URLRequestContext* context = GetRequestContextForURL(url);
   context->cookie_store()->DeleteCookie(url, cookie_name);
+}
+
+void ResourceMessageFilter::OnCookiesEnabled(
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    IPC::Message* reply_msg) {
+  URLRequestContext* context = GetRequestContextForURL(url);
+  CookiesEnabledCompletion* callback =
+      new CookiesEnabledCompletion(reply_msg, this);
+  int policy = net::OK;
+  // TODO(ananta): If this render view is associated with an automation channel,
+  // aka ChromeFrame then we need to retrieve cookie settings from the external
+  // host.
+  if (context->cookie_policy()) {
+    policy = context->cookie_policy()->CanGetCookies(
+        url, first_party_for_cookies, callback);
+    if (policy == net::ERR_IO_PENDING) {
+      Send(new ViewMsg_SignalCookiePromptEvent());
+      return; // CanGetCookies will take care to call our callback in this case.
+    }
+  }
+  callback->Run(policy);
 }
 
 #if defined(OS_MACOSX)
@@ -1795,4 +1819,20 @@ void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
 
 void GetCookiesCompletion::set_cookie_store(CookieStore* cookie_store) {
   cookie_store_ = cookie_store;
+}
+
+CookiesEnabledCompletion::CookiesEnabledCompletion(
+    IPC::Message* reply_msg,
+    ResourceMessageFilter* filter)
+    : reply_msg_(reply_msg),
+      filter_(filter) {
+}
+
+CookiesEnabledCompletion::~CookiesEnabledCompletion() {}
+
+void CookiesEnabledCompletion::RunWithParams(const Tuple1<int>& params) {
+  bool result = params.a != net::ERR_ACCESS_DENIED;
+  ViewHostMsg_CookiesEnabled::WriteReplyParams(reply_msg_, result);
+  filter_->Send(reply_msg_);
+  delete this;
 }

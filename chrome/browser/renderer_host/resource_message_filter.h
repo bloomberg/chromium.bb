@@ -158,6 +158,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                        IPC::Message* reply_msg);
   void OnDeleteCookie(const GURL& url,
                       const std::string& cookieName);
+  void OnCookiesEnabled(const GURL& url,
+                        const GURL& first_party_for_cookies,
+                        IPC::Message* reply_msg);
   void OnPluginFileDialog(const IPC::Message& msg,
                           bool multiple_files,
                           const std::wstring& title,
@@ -573,6 +576,19 @@ class GetCookiesCompletion : public net::CompletionCallback {
   int render_view_id_;
   bool raw_cookies_;
   scoped_refptr<net::CookieStore> cookie_store_;
+};
+
+class CookiesEnabledCompletion : public net::CompletionCallback {
+ public:
+  CookiesEnabledCompletion(IPC::Message* reply_msg,
+                           ResourceMessageFilter* filter);
+  virtual ~CookiesEnabledCompletion();
+
+  virtual void RunWithParams(const Tuple1<int>& params);
+
+ private:
+  IPC::Message* reply_msg_;
+  scoped_refptr<ResourceMessageFilter> filter_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_

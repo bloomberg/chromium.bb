@@ -371,15 +371,16 @@ int32 RenderThread::RoutingIDForCurrentContext() {
 }
 
 bool RenderThread::Send(IPC::Message* msg) {
-  // Certain synchronous messages can result in an app-modal cookie prompt.
+  // Certain synchronous messages cannot always be processed synchronously by
+  // the browser, e.g., Chrome frame communicating with the embedding browser.
   // This could cause a complete hang of Chrome if a windowed plug-in is trying
   // to communicate with the renderer thread since the browser's UI thread
   // could be stuck (within a Windows API call) trying to synchronously
   // communicate with the plug-in.  The remedy is to pump messages on this
-  // thread while the cookie prompt is showing.  This creates an opportunity
-  // for re-entrancy into WebKit, so we need to take care to disable callbacks,
-  // timers, and pending network loads that could trigger such callbacks.
-
+  // thread while the browser is processing this request. This creates an
+  // opportunity for re-entrancy into WebKit, so we need to take care to disable
+  // callbacks, timers, and pending network loads that could trigger such
+  // callbacks.
   bool pumping_events = false, may_show_cookie_prompt = false;
   if (msg->is_sync()) {
     if (msg->is_caller_pumping_messages()) {
@@ -388,6 +389,7 @@ bool RenderThread::Send(IPC::Message* msg) {
       switch (msg->type()) {
         case ViewHostMsg_GetCookies::ID:
         case ViewHostMsg_GetRawCookies::ID:
+        case ViewHostMsg_CookiesEnabled::ID:
         case ViewHostMsg_DOMStorageSetItem::ID:
         case ViewHostMsg_SyncLoad::ID:
         case ViewHostMsg_AllowDatabase::ID:

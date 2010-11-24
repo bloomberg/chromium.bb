@@ -36,6 +36,8 @@ class RendererWebCookieJarImpl : public WebKit::WebCookieJar {
       WebKit::WebVector<WebKit::WebCookie>& cookies);
   virtual void deleteCookie(
       const WebKit::WebURL& url, const WebKit::WebString& cookie_name);
+  virtual bool cookiesEnabled(
+      const WebKit::WebURL& url, const WebKit::WebURL& first_party_for_cookies);
 
   IPC::Message::Sender* sender_;
 };

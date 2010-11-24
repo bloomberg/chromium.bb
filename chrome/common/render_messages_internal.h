@@ -1378,22 +1378,22 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              ViewHostMsg_Resource_Request,
                              SyncLoadResult)
 
-  // Used to set a cookie.  The cookie is set asynchronously, but will be
+  // Used to set a cookie. The cookie is set asynchronously, but will be
   // available to a subsequent ViewHostMsg_GetCookies request.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_SetCookie,
                       GURL /* url */,
                       GURL /* first_party_for_cookies */,
                       std::string /* cookie */)
 
-  // Used to get cookies for the given URL.  This may be blocked by a user
-  // prompt to validate a previous SetCookie message.
+  // Used to get cookies for the given URL. This may block waiting for a
+  // previous SetCookie message to be processed.
   IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetCookies,
                              GURL /* url */,
                              GURL /* first_party_for_cookies */,
                              std::string /* cookies */)
 
-  // Used to get raw cookie information for the given URL.  This may be blocked
-  // by a user prompt to validate a previous SetCookie message.
+  // Used to get raw cookie information for the given URL. This may block
+  // waiting for a previous SetCookie message to be processed.
   IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetRawCookies,
                              GURL /* url */,
                              GURL /* first_party_for_cookies */,
@@ -1404,6 +1404,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_DeleteCookie,
                               GURL /* url */,
                               std::string /* cookie_name */)
+
+  // Used to check if cookies are enabled for the given URL. This may block
+  // waiting for a previous SetCookie message to be processed.
+  IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_CookiesEnabled,
+                             GURL /* url */,
+                             GURL /* first_party_for_cookies */,
+                             bool /* cookies_enabled */)
 
   // Used to get the list of plugins
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
