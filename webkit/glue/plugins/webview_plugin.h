@@ -12,6 +12,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 
@@ -93,6 +95,9 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   // WebViewClient methods:
   virtual bool acceptsLoadDrops() { return false; }
 
+  virtual void setToolTipText(const WebKit::WebString&,
+                              WebKit::WebTextDirection);
+
   virtual void startDragging(const WebKit::WebDragData& drag_data,
                              WebKit::WebDragOperationsMask mask,
                              const WebKit::WebImage& image,
@@ -125,6 +130,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   std::list<std::string> data_;
   bool finished_loading_;
   scoped_ptr<WebKit::WebURLError> error_;
+  WebKit::WebString old_title_;
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_WEBVIEW_PLUGIN_H_

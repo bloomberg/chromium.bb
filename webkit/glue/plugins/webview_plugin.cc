@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
@@ -86,6 +87,8 @@ void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
 
 bool WebViewPlugin::initialize(WebPluginContainer* container) {
   container_ = container;
+  if (container_)
+    old_title_ = container_->element().getAttribute("title");
   return true;
 }
 
@@ -94,6 +97,8 @@ void WebViewPlugin::destroy() {
     delegate_->WillDestroyPlugin();
     delegate_ = NULL;
   }
+  if (container_)
+    container_->element().setAttribute("title", old_title_);
   container_ = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -161,6 +166,12 @@ void WebViewPlugin::didFinishLoading() {
 void WebViewPlugin::didFailLoading(const WebURLError& error) {
   DCHECK(!error_.get());
   error_.reset(new WebURLError(error));
+}
+
+void WebViewPlugin::setToolTipText(const WebKit::WebString& text,
+                                   WebKit::WebTextDirection hint) {
+  if (container_)
+    container_->element().setAttribute("title", text);
 }
 
 void WebViewPlugin::startDragging(const WebDragData&,
