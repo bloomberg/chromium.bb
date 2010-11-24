@@ -331,12 +331,12 @@ window.onpopstate = function(e) {
        <!-- Start main pages -->
        <!-- Please keep the main pages in desired order of display.  This will
             allow search results to display in the desired order. -->
+       <include src="options/search_page.html">
        <if expr="pp_ifdef('chromeos')">
          <include src="options/chromeos_system_options.html">
          <include src="options/chromeos_internet_options.html">
          <include src="options/chromeos_accounts_options.html">
        </if>
-       <include src="options/search_page.html">
        <include src="options/browser_options.html">
        <include src="options/personal_options.html">
        <include src="options/advanced_options.html">
