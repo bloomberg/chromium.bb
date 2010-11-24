@@ -9,7 +9,7 @@ vars = {
   "breakpad_rev": "452",
   "chrome_rev": "66781",
   "nacl_breakpad_gyp_rev": "1806",
-  "gyp_rev": "805",
+  "gyp_rev": "856",
   "gtest_rev": "267",
   "tools_rev": "3748",
   "python_26_rev": "53573",
