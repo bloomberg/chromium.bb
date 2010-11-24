@@ -44,8 +44,6 @@
     'ntp',
     'omnibox',
     'passwords',
-    # crbug.com/64269
-    '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
     'pdf',
     'plugins',
     # 'popups',  crbug.com/59208
@@ -72,6 +70,8 @@
     '-downloads.DownloadsTest.testZip',
     '-downloads.DownloadsTest.testRemoveDownload',
     '-prefs.PrefsTest.testDownloadDirPref',
+    # crbug.com/64269
+    '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
   ],
 
   'mac': [
@@ -88,6 +88,8 @@
     '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
     '-browser.BrowserTest.testFlashLoadsAfterKill',  # crbug.com/63039
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
+    # crbug.com/64269
+    '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
   ],
 
   # ChromeOS is linux, but note that this section does not include the
@@ -121,5 +123,7 @@
     '-translate.TranslateTest.testDownloadsNotTranslated',
     # crosbug.com/9499
     '-crash_reporter.CrashReporterTest.testRendererCrash',
+    # crbug.com/64269
+    '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
   ],
 }
