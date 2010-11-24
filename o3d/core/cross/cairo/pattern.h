@@ -29,46 +29,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// A Pattern is a container for pixel content for painting to a Layer.
 
-#include "core/cross/cairo/layer.h"
+#ifndef O3D_CORE_CROSS_CAIRO_PATTERN_H_
+#define O3D_CORE_CROSS_CAIRO_PATTERN_H_
 
-#include "core/cross/error.h"
-#include "core/cross/renderer.h"
-#include "core/cross/cairo/renderer_cairo.h"
+#include "core/cross/object_base.h"
+
+typedef struct _cairo_pattern cairo_pattern_t;
 
 namespace o3d {
 
+class Pack;
+class Texture;
+
 namespace o2d {
 
-O3D_DEFN_CLASS(Layer, ObjectBase);
+class Pattern : public ObjectBase {
+ public:
+  typedef SmartPointer<Pattern> Ref;
 
-Layer::Layer(ServiceLocator* service_locator)
-    : ObjectBase(service_locator),
-      alpha_(1.0),
-      x_(0),
-      y_(0),
-      width_(0),
-      height_(0),
-      scale_x_(1.0),
-      scale_y_(1.0) {
-  DLOG(INFO) << "Create Layer";
-}
+  // Create a pattern that paints the content of a texture.
+  static Pattern* CreateTexturePattern(Pack* pack, Texture* texture);
 
-ObjectBase::Ref Layer::Create(ServiceLocator* service_locator) {
-  Renderer* renderer = service_locator->GetService<Renderer>();
-  if (NULL == renderer) {
-    O3D_ERROR(service_locator) << "No Render Device Available";
-    return ObjectBase::Ref();
-  }
+  // Create a pattern that paints a solid colour.
+  static Pattern* CreateRgbPattern(Pack* pack,
+                                   double red,
+                                   double green,
+                                   double blue);
 
-  Layer* image = new Layer(service_locator);
+  // Create a pattern that paints a solid colour with transparency.
+  static Pattern* CreateRgbaPattern(Pack* pack,
+                                    double red,
+                                    double green,
+                                    double blue,
+                                    double alpha);
 
-  RendererCairo* renderer2d = down_cast<RendererCairo*>(renderer);
-  renderer2d->AddLayer(image);
+  virtual ~Pattern();
 
-  return ObjectBase::Ref(image);
-}
+  cairo_pattern_t* pattern() const { return pattern_; }
+
+ private:
+  Pattern(ServiceLocator* service_locator, cairo_pattern_t* pattern);
+
+  static Pattern* WrapCairoPattern(Pack* pack, cairo_pattern_t* pattern);
+
+  cairo_pattern_t* pattern_;
+
+  O3D_DECL_CLASS(Pattern, ObjectBase)
+};  // Pattern
 
 }  // namespace o2d
 
 }  // namespace o3d
+
+#endif  // O3D_CORE_CROSS_CAIRO_PATTERN_H_

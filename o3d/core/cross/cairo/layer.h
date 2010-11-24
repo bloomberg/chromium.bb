@@ -29,70 +29,89 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// An alternative class of Transform for 2d Image Rendering Mode.
+// A Layer is a rectangular region of the O2D canvas to be filled with a
+// particular Pattern, with automatic clipping based on stacking order.
 
 #ifndef O3D_CORE_CROSS_CAIRO_LAYER_H_
 #define O3D_CORE_CROSS_CAIRO_LAYER_H_
 
 #include <vector>
-#include "core/cross/bounding_box.h"
-#include "core/cross/param.h"
-#include "core/cross/param_cache.h"
-#include "core/cross/param_object.h"
-#include "core/cross/types.h"
-#include "core/cross/cairo/texture_cairo.h"
+
+#include "core/cross/object_base.h"
+#include "core/cross/cairo/pattern.h"
 
 namespace o3d {
 
+class IClassManager;
+
 namespace o2d {
 
-class Layer : public ParamObject {
-  friend class Client;
+class Layer : public ObjectBase {
  public:
   typedef SmartPointer<Layer> Ref;
 
-  // Set the corresponding texture for this Layer instance.
-  void SetTexture(Texture* texture) {
-    texture_ = TextureCairo::Ref(down_cast<TextureCairo*>(texture));
+  Pattern* pattern() const {
+    return pattern_;
   }
 
-  TextureCairo* GetTexture() {
-    return texture_;
+  void set_pattern(Pattern* pattern) {
+    pattern_ = Pattern::Ref(pattern);
   }
 
-  float GetAlpha() {
+  double alpha() const {
     return alpha_;
   }
 
-  float GetScaleX() {
+  void set_alpha(double alpha) {
+    alpha_ = alpha;
+  }
+
+  double x() const {
+    return x_;
+  }
+
+  void set_x(double x) {
+    x_ = x;
+  }
+
+  double y() const {
+    return y_;
+  }
+
+  void set_y(double y) {
+    y_ = y;
+  }
+
+  double width() const {
+    return width_;
+  }
+
+  void set_width(double width) {
+    width_ = width;
+  }
+
+  double height() const {
+    return height_;
+  }
+
+  void set_height(double height) {
+    height_ = height;
+  }
+
+  double scale_x() const {
     return scale_x_;
   }
 
-  float GetScaleY() {
+  void set_scale_x(double scale_x) {
+    scale_x_ = scale_x;
+  }
+
+  double scale_y() const {
     return scale_y_;
   }
 
-  int GetTranslateX() {
-    return translate_x_;
-  }
-
-  int GetTranslateY() {
-    return translate_y_;
-  }
-
-  // Set the transparency of the Layer.
-  void SetAlpha(float alpha) { alpha_ = alpha; }
-
-  // Translate the given x,y from its origin.
-  void Translate(float x, float y) {
-    translate_x_ = x;
-    translate_y_ = y;
-  }
-
-  // Scale the image to the given x,y.
-  void Scale(float x, float y) {
-    scale_x_ = x;
-    scale_y_ = y;
+  void set_scale_y(double scale_y) {
+    scale_y_ = scale_y;
   }
 
  private:
@@ -101,25 +120,31 @@ class Layer : public ParamObject {
   friend class o3d::IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  // Texture Container.
-  TextureCairo::Ref texture_;
+  // The pattern used to paint this Layer.
+  Pattern::Ref pattern_;
 
-  // Transparancy of the scene.
-  float alpha_;
+  // Transparancy of this layer.
+  double alpha_;
 
-  // The end-x-size of which the current size needs to scale.
-  float scale_x_;
+  // The x coordinate of the top-left corner of this layer.
+  double x_;
 
-  // The end-y-size of which the current size needs to scale.
-  float scale_y_;
+  // The y coordinate of the top-left corner of this layer.
+  double y_;
 
-  // Size of x to translate.
-  float translate_x_;
+  // The width of this layer.
+  double width_;
 
-  // Size of y to translate.
-  float translate_y_;
+  // The height of this layer.
+  double height_;
 
-  O3D_DECL_CLASS(Layer, ParamObject)
+  // A scaling factor to apply to the pattern's x-axis.
+  double scale_x_;
+
+  // A scaling factor to apply to the pattern's y-axis.
+  double scale_y_;
+
+  O3D_DECL_CLASS(Layer, ObjectBase)
 };  // Layer
 
 }  // namespace o2d

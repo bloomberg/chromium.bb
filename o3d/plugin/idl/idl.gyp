@@ -18,6 +18,7 @@
         {
           'idl_files': [
             'layer.idl',
+            'pattern.idl',
           ],
         },
       ],

@@ -1,0 +1,95 @@
+/*
+ * Copyright 2010, Google Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+#include "core/cross/cairo/pattern.h"
+
+#include <cairo.h>
+
+#include "core/cross/pack.h"
+#include "core/cross/cairo/texture_cairo.h"
+
+namespace o3d {
+
+namespace o2d {
+
+O3D_DEFN_CLASS(Pattern, ObjectBase);
+
+// Cairo supports more pattern types than just these three, but we don't expose
+// the others.
+
+Pattern* Pattern::CreateTexturePattern(Pack* pack, Texture* texture) {
+  return WrapCairoPattern(pack,
+      cairo_pattern_create_for_surface(
+          down_cast<TextureCairo*>(texture)->image_surface()));
+}
+
+Pattern* Pattern::CreateRgbPattern(Pack* pack,
+                                   double red,
+                                   double green,
+                                   double blue) {
+  return WrapCairoPattern(pack,
+      cairo_pattern_create_rgb(red, green, blue));
+}
+
+Pattern* Pattern::CreateRgbaPattern(Pack* pack,
+                                    double red,
+                                    double green,
+                                    double blue,
+                                    double alpha) {
+  return WrapCairoPattern(pack,
+      cairo_pattern_create_rgba(red, green, blue, alpha));
+}
+
+Pattern::~Pattern() {
+  cairo_pattern_destroy(pattern_);
+}
+
+Pattern::Pattern(ServiceLocator* service_locator, cairo_pattern_t* pattern)
+    : ObjectBase(service_locator),
+      pattern_(pattern) {
+}
+
+Pattern* Pattern::WrapCairoPattern(Pack* pack, cairo_pattern_t* pattern) {
+  cairo_status_t status = cairo_pattern_status(pattern);
+  if (CAIRO_STATUS_SUCCESS != status) {
+    DLOG(ERROR) << "Error creating Cairo pattern: " << status;
+    cairo_pattern_destroy(pattern);
+    return NULL;
+  }
+  Pattern* p = new Pattern(pack->service_locator(), pattern);
+  pack->RegisterObject(p);
+  return p;
+}
+
+}  // namespace o2d
+
+}  // namespace o3d

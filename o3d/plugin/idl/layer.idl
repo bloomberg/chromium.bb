@@ -34,39 +34,49 @@ namespace o3d {
 namespace o2d {
 
 %[
-  Layer defines a container for a layer of scene.
-  It enables JavaScript to manipulate the layer.
+  A Layer is a rectangular region of the O2D canvas to be filled with a
+  particular Pattern, with automatic clipping based on stacking order.
 %]
-[nocpp, include="core/cross/cairo/layer.h"] class Layer : ParamObject {
+[nocpp, include="core/cross/cairo/layer.h"] class Layer : ObjectBase {
   %[
-    Translate the object from its current coordinate.
-
-    \param x amount to translate in x.
-    \param y amount to translate in y.
+    The Pattern used to paint this Layer.
   %]
-  void Translate(float x, float y);
+  [getter, setter] Pattern? pattern;
 
   %[
-    Scale the size of the object.
-
-    \param x amount to scale in the x dimension.
-    \param y amount to scale in the y dimension.
+    Transparancy of this layer.
   %]
-  void Scale(float x, float y);
+  [getter, setter] double alpha;
 
   %[
-    Set the transparancy of the object.
-
-    \param alpha amount of the transparancy.
+    The x coordinate of the top-left corner of this layer.
   %]
-  void SetAlpha(float alpha);
+  [getter, setter] double x;
 
   %[
-    Set the texture for this object.
-
-    \param texture the texture to assign.
+    The y coordinate of the top-left corner of this layer.
   %]
-  void SetTexture(Texture? texture);
+  [getter, setter] double y;
+
+  %[
+    The width of this layer.
+  %]
+  [getter, setter] double width;
+
+  %[
+    The height of this layer.
+  %]
+  [getter, setter] double height;
+
+  %[
+    A scaling factor to apply to the pattern's x-axis.
+  %]
+  [getter, setter] double scale_x;
+
+  %[
+    A scaling factor to apply to the pattern's y-axis.
+  %]
+  [getter, setter] double scale_y;
 };  // Layer
 
 }  // namespace o2d

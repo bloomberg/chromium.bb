@@ -66,7 +66,9 @@
 #include "core/cross/transform.h"
 #include "core/cross/tree_traversal.h"
 #include "core/cross/viewport.h"
+#if defined(RENDERER_CAIRO)
 #include "core/cross/cairo/layer.h"
+#endif
 
 namespace o3d {
 

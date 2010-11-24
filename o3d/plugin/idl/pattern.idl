@@ -29,45 +29,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-#include "core/cross/cairo/layer.h"
-
-#include "core/cross/error.h"
-#include "core/cross/renderer.h"
-#include "core/cross/cairo/renderer_cairo.h"
-
 namespace o3d {
 
 namespace o2d {
 
-O3D_DEFN_CLASS(Layer, ObjectBase);
+%[
+  A Pattern is a container for pixel content for painting to a Layer.
+%]
+[nocpp, include="core/cross/cairo/pattern.h"] class Pattern : ObjectBase {
+  %[
+    Create a pattern that paints the content of a texture.
 
-Layer::Layer(ServiceLocator* service_locator)
-    : ObjectBase(service_locator),
-      alpha_(1.0),
-      x_(0),
-      y_(0),
-      width_(0),
-      height_(0),
-      scale_x_(1.0),
-      scale_y_(1.0) {
-  DLOG(INFO) << "Create Layer";
-}
+    \param pack The Pack to add the created object to.
+    \param texture The texture to paint.
+    \return The created pattern
+  %]
+  [static] Pattern? CreateTexturePattern(Pack pack, Texture texture);
 
-ObjectBase::Ref Layer::Create(ServiceLocator* service_locator) {
-  Renderer* renderer = service_locator->GetService<Renderer>();
-  if (NULL == renderer) {
-    O3D_ERROR(service_locator) << "No Render Device Available";
-    return ObjectBase::Ref();
-  }
+  %[
+    Create a pattern that paints a solid colour.
 
-  Layer* image = new Layer(service_locator);
+    \param pack The Pack to add the created object to.
+    \param red The red component.
+    \param blue The blue component.
+    \param green The green component.
+    \return The created pattern
+  %]
+  [static] Pattern? CreateRgbPattern(Pack pack,
+                                     double red,
+                                     double green,
+                                     double blue);
 
-  RendererCairo* renderer2d = down_cast<RendererCairo*>(renderer);
-  renderer2d->AddLayer(image);
+  %[
+    Create a pattern that paints a solid colour with transparency.
 
-  return ObjectBase::Ref(image);
-}
+    \param pack The Pack to add the created object to.
+    \param red The red component.
+    \param blue The blue component.
+    \param green The green component.
+    \param alpha The alpha component.
+    \return The created pattern
+  %]
+  [static] Pattern? CreateRgbaPattern(Pack pack,
+                                      double red,
+                                      double green,
+                                      double blue,
+                                      double alpha);
+};  // Pattern
 
 }  // namespace o2d
 

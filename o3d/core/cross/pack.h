@@ -394,6 +394,14 @@ class Pack : public NamedObject {
   //   Array of Object Pointers.
   ObjectBaseArray GetObjectsByClassName(const String& class_type_name) const;
 
+  // Register the given object with the Pack.  The pack will add a reference
+  // to the object, guaranteeing its existence as long as the pack has not
+  // been destroyed. This is public so that it can be called by static
+  // factory methods.
+  // Parameters:
+  //  object: Pointer to a ObjectBase to register within the pack
+  void RegisterObject(ObjectBase *object);
+
  private:
   // Texture objects function as factories for RenderSurface objects.
   // Constructed RenderSurfaces are registered with the pack associated with
@@ -404,13 +412,6 @@ class Pack : public NamedObject {
   explicit Pack(ServiceLocator* service_locator);
 
   virtual ~Pack();
-
-  // Register the given object with the Pack.  The pack will add a reference
-  // to the object, guaranteeing its existence as long as the pack has not
-  // been destroyed.
-  // Parameters:
-  //  object: Pointer to a ObjectBase to register within the pack
-  void RegisterObject(ObjectBase *object);
 
   // Unregister a registered object from the pack. If this is the last reference
   // to the object it will be destroyed.
