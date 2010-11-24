@@ -121,6 +121,8 @@ cr.define('mobile', function() {
           $('canvas').classList.remove('hidden');
           break;
         case MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT:
+          $('statusHeader').textContent =
+              MobileSetup.localStrings_.getString('connecting_header');
           $('paymentForm').classList.add('hidden');
           $('finalMessage').classList.add('hidden');
           $('errorMessage').classList.add('hidden');
