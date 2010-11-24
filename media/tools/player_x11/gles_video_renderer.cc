@@ -364,7 +364,7 @@ void GlesVideoRenderer::CreateShader(GLuint program,
   glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
   if (!result) {
     char log[kErrorSize];
-    int len;
+    int len = 0;
     glGetShaderInfoLog(shader, kErrorSize - 1, &len, log);
     log[kErrorSize - 1] = 0;
     LOG(FATAL) << log;
@@ -379,7 +379,7 @@ void GlesVideoRenderer::LinkProgram(GLuint program) {
   glGetProgramiv(program, GL_LINK_STATUS, &result);
   if (!result) {
     char log[kErrorSize];
-    int len;
+    int len = 0;
     glGetProgramInfoLog(program, kErrorSize - 1, &len, log);
     log[kErrorSize - 1] = 0;
     LOG(FATAL) << log;

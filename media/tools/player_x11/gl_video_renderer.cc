@@ -169,7 +169,7 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &result);
   if (!result) {
     char log[kErrorSize];
-    int len;
+    int len = 0;
     glGetShaderInfoLog(vertex_shader, kErrorSize - 1, &len, log);
     log[kErrorSize - 1] = 0;
     LOG(FATAL) << log;
@@ -186,7 +186,7 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &result);
   if (!result) {
     char log[kErrorSize];
-    int len;
+    int len = 0;
     glGetShaderInfoLog(fragment_shader, kErrorSize - 1, &len, log);
     log[kErrorSize - 1] = 0;
     LOG(FATAL) << log;
@@ -199,7 +199,7 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   glGetProgramiv(program, GL_LINK_STATUS, &result);
   if (!result) {
     char log[kErrorSize];
-    int len;
+    int len = 0;
     glGetProgramInfoLog(program, kErrorSize - 1, &len, log);
     log[kErrorSize - 1] = 0;
     LOG(FATAL) << log;

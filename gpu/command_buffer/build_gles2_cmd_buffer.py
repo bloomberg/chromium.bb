@@ -2125,6 +2125,11 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     else:
       self.WriteGLES2ImplementationDeclaration(func, file)
 
+  def WriteDestinationInitalizationValidation(self, func, file):
+    """Writes the client side destintion initialization validation."""
+    for arg in func.GetOriginalArgs():
+      arg.WriteDestinationInitalizationValidation(file, func)
+
   def WriteImmediateCmdComputeSize(self, func, file):
     """Writes the size computation code for the immediate version of a cmd."""
     file.Write("  static uint32 ComputeSize(uint32 size_in_bytes) {\n")
@@ -3980,6 +3985,7 @@ class Argument(object):
     'GLfloat': 'float',
     'GLclampf': 'float',
   }
+  need_validation_ = ['GLsizei*', 'GLboolean*', 'GLenum*', 'GLint*']
 
   def __init__(self, name, type):
     self.name = name
@@ -4028,6 +4034,20 @@ class Argument(object):
   def WriteClientSideValidationCode(self, file, func):
     """Writes the validation code for an argument."""
     pass
+
+  def WriteDestinationInitalizationValidation(self, file, func):
+    """Writes the client side destintion initialization validation."""
+    pass
+
+  def WriteDestinationInitalizationValidatationIfNeeded(self, file, func):
+    """Writes the client side destintion initialization validation if needed."""
+    parts = self.type.split(" ")
+    if len(parts) > 1:
+      return
+    if parts[0] in self.need_validation_:
+      file.Write("  GL_CLIENT_VALIDATE_DESTINATION_INITALIZATION(%s, %s);\n" %
+          (self.type[:-1], self.name))
+
 
   def WriteGetAddress(self, file):
     """Writes the code to get the address this argument refers to."""
@@ -4213,6 +4233,10 @@ class ImmediatePointerArgument(Argument):
     """Overridden from Argument."""
     return None
 
+  def WriteDestinationInitalizationValidation(self, file, func):
+    """Overridden from Argument."""
+    self.WriteDestinationInitalizationValidatationIfNeeded(file, func)
+
 
 class BucketPointerArgument(Argument):
   """A class that represents an bucket argument to a function."""
@@ -4237,6 +4261,10 @@ class BucketPointerArgument(Argument):
   def GetImmediateVersion(self):
     """Overridden from Argument."""
     return None
+
+  def WriteDestinationInitalizationValidation(self, file, func):
+    """Overridden from Argument."""
+    self.WriteDestinationInitalizationValidatationIfNeeded(file, func)
 
 
 class PointerArgument(Argument):
@@ -4307,6 +4335,10 @@ class PointerArgument(Argument):
     if self.type == "const char*":
       return InputStringBucketArgument(self.name, self.type)
     return BucketPointerArgument(self.name, self.type)
+
+  def WriteDestinationInitalizationValidation(self, file, func):
+    """Overridden from Argument."""
+    self.WriteDestinationInitalizationValidatationIfNeeded(file, func)
 
 
 class InputStringBucketArgument(Argument):
@@ -4628,6 +4660,10 @@ class Function(object):
   def WriteGLES2ImplementationHeader(self, file):
     """Writes the GLES2 Implemention declaration."""
     self.type_handler.WriteGLES2ImplementationHeader(self, file)
+
+  def WriteDestinationInitalizationValidation(self, file):
+    """Writes the client side destintion initialization validation."""
+    self.type_handler.WriteDestinationInitalizationValidation(self, file)
 
   def WriteFormatTest(self, file):
     """Writes the cmd's format test."""
@@ -5113,6 +5149,7 @@ class GLGenerator(object):
       file.Write("%s GLES2%s(%s) {\n" %
                  (func.return_type, func.name,
                   func.MakeTypedOriginalArgString("")))
+      func.WriteDestinationInitalizationValidation(file)
       comma = ""
       if len(func.GetOriginalArgs()):
         comma = " << "

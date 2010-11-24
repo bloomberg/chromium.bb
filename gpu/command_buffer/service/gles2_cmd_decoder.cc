@@ -4313,7 +4313,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
     bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(info->source());
+  bucket->SetFromString(info->source().c_str());
   return error::kNoError;
 }
 
@@ -4327,7 +4327,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   if (!info) {
     return error::kNoError;
   }
-  bucket->SetFromString(info->log_info());
+  bucket->SetFromString(info->log_info().c_str());
   return error::kNoError;
 }
 
@@ -4342,7 +4342,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(info->log_info());
+  bucket->SetFromString(info->log_info().c_str());
   return error::kNoError;
 }
 
@@ -5739,7 +5739,7 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   result->size = uniform_info->size;
   result->type = uniform_info->type;
   Bucket* bucket = CreateBucket(name_bucket_id);
-  bucket->SetFromString(uniform_info->name);
+  bucket->SetFromString(uniform_info->name.c_str());
   return error::kNoError;
 }
 
@@ -5773,7 +5773,7 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   result->size = attrib_info->size;
   result->type = attrib_info->type;
   Bucket* bucket = CreateBucket(name_bucket_id);
-  bucket->SetFromString(attrib_info->name);
+  bucket->SetFromString(attrib_info->name.c_str());
   return error::kNoError;
 }
 
