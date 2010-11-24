@@ -115,7 +115,8 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
 
 // Test that an extension NOT whitelisted for scripting can ask for <all_urls>
 // and run scripts on non-restricted all pages.
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, RegularExtensions) {
+// Disabled, http://crbug.com/64304.
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, DISABLED_RegularExtensions) {
   // First load the two extension.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");
