@@ -920,6 +920,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
     geom.window_rect = rect;
     geom.clip_rect = rect;
     geom.visible = true;
+    geom.rects_valid = true;
     MovePluginWindows(std::vector<webkit_glue::WebPluginGeometry>(1, geom));
   }
 }
