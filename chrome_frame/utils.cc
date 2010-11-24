@@ -62,8 +62,9 @@ const wchar_t kEnableGCFRendererByDefault[] = L"IsDefaultRenderer";
 const wchar_t kIexploreProfileName[] = L"iexplore";
 const wchar_t kRundllProfileName[] = L"rundll32";
 
-static const wchar_t kAllowUnsafeURLs[] = L"AllowUnsafeURLs";
-static const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
+const wchar_t kAllowUnsafeURLs[] = L"AllowUnsafeURLs";
+const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
+const wchar_t kEnableFirefoxPrivilegeMode[] = L"EnableFirefoxPrivilegeMode";
 
 static const wchar_t kChromeFrameNPAPIKey[] =
     L"Software\\MozillaPlugins\\@google.com/ChromeFrame,version=1.0";

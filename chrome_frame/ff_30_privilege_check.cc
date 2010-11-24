@@ -22,6 +22,7 @@
 #include "chrome_frame/scoped_ns_ptr_win.h"
 #include "chrome_frame/ns_associate_iid_win.h"
 #include "chrome_frame/np_utils.h"
+#include "chrome_frame/utils.h"
 #include "googleurl/src/gurl.h"
 
 ASSOCIATE_IID(NS_ISERVICEMANAGER_IID_STR, nsIServiceManager);
@@ -29,6 +30,21 @@ ASSOCIATE_IID(NS_ISERVICEMANAGER_IID_STR, nsIServiceManager);
 // Returns true iff we're being instantiated into a document
 // that has the system principal's privileges
 bool IsFireFoxPrivilegedInvocation(NPP instance) {
+  // For testing purposes, check the registry to see if the privilege mode
+  // is being forced to a certain value.  If this property does not exist, the
+  // mode should be verified normally.  If this property does exist, its value
+  // is interpreted as follows:
+  //
+  //  0: force privilege mode off
+  //  1: force privilege mode on
+  //  any other value: do normal verification
+  int privilege_mode = GetConfigInt(2, kEnableFirefoxPrivilegeMode);
+  if (privilege_mode == 0) {
+    return false;
+  } else if (privilege_mode == 1) {
+    return true;
+  }
+
   // Make sure that we are running in Firefox before checking for privilege.
   const char* user_agent = npapi::UserAgent(instance);
   if (strstr(user_agent, "Firefox") == NULL)

@@ -55,6 +55,7 @@ const NPUTF8* ChromeFrameNPAPI::plugin_property_identifier_names_[] = {
   "onprivatemessage",
   "usechromenetwork",
   "onclose",
+  "sessionid",
 };
 
 const NPUTF8* ChromeFrameNPAPI::plugin_method_identifier_names_[] = {
@@ -667,6 +668,14 @@ bool ChromeFrameNPAPI::GetProperty(NPIdentifier name,
         plugin_property_identifiers_[PLUGIN_PROPERTY_USECHROMENETWORK]) {
     BOOLEAN_TO_NPVARIANT(automation_client_->use_chrome_network(), *variant);
     return true;
+  } else if (name == plugin_property_identifiers_[PLUGIN_PROPERTY_SESSIONID]) {
+    if (!is_privileged_) {
+      DLOG(WARNING) << "Attempt to read sessionid property while not "
+                       "privileged";
+    } else {
+      INT32_TO_NPVARIANT(automation_client_->GetSessionId(), *variant);
+      return true;
+    }
   }
 
   return false;

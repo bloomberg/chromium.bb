@@ -127,6 +127,10 @@ void ChromeFrameTestWithWebServer::SetUp() {
 }
 
 void ChromeFrameTestWithWebServer::TearDown() {
+  // Make sure that the Firefox privilege mode is never forced either on or off
+  // after the test completes.
+  DeleteConfigValue(kEnableFirefoxPrivilegeMode);
+
   CloseBrowser();
   CloseAllBrowsers();
   file_util::Delete(CFInstall_path_, false);
@@ -279,6 +283,19 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
                                            kPostedResultSubstring);
   WaitForTestToComplete(kLongWaitTimeout);
   ASSERT_EQ(version, UTF8ToWide(server_mock_.posted_result()));
+}
+
+void ChromeFrameTestWithWebServer::SessionIdTest(BrowserKind browser,
+                                                 const wchar_t* page,
+                                                 int privilege_mode,
+                                                 const char* expected_result) {
+  SetConfigInt(kEnableFirefoxPrivilegeMode, privilege_mode);
+  EXPECT_TRUE(LaunchBrowser(browser, page));
+  server_mock_.set_expected_result(expected_result);
+  server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
+                                           kPostedResultSubstring);
+  WaitForTestToComplete(kLongWaitTimeout);
+  ASSERT_EQ(expected_result, server_mock_.posted_result());
 }
 
 // MockWebServer methods
@@ -804,6 +821,16 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_Version) {
   VersionTest(FIREFOX, kVersionPage);
 }
 
+const wchar_t kSessionIdPage[] = L"sessionid.html";
+
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_SessionIdPrivilege) {
+  SessionIdTest(FIREFOX, kSessionIdPage, 1, "OK");
+}
+
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_SessionIdNoPrivilege) {
+  SessionIdTest(FIREFOX, kSessionIdPage, 0, "no sessionId");
+}
+
 const wchar_t kEventListenerPage[] = L"event_listener.html";
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_EventListener) {
@@ -1260,4 +1287,3 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
   EXPECT_EQ(1, response->get_request_count());
   EXPECT_EQ(1, response->post_request_count());
 }
-

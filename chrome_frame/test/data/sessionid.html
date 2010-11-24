@@ -1,0 +1,39 @@
+<html>
+<!-- This page is meant to load inside the host browser like IE/FF -->
+  <head>
+    <script type="text/javascript" src="chrome_frame_tester_helpers.js">
+    </script>
+    <script type="text/javascript">
+    function onLoad() {
+      document.ChromeFrame.addEventListener('readystatechanged',
+        function() {
+          if (document.ChromeFrame.readystate == 4) {  // READY_STATE_COMPLETED
+            var sessionId = document.ChromeFrame.sessionid;
+            appendStatus('Chrome frame sessionId: ' + sessionId);
+            if (sessionId == 1) {
+              onSuccess('sessionid', 1);
+            } else {
+              onFailure('sessionid', 1, 'no sessionId');
+            }
+          }
+      }, false);
+    }
+    </script>
+  </head>
+
+  <body onload="onLoad();">
+    <object id="ChromeFrame"
+        codebase="http://www.google.com"
+        classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
+        <embed id="ChromeFramePlugin" name="ChromeFrame"
+            type="application/chromeframe" privileged_mode="1"
+        </embed>
+    </object>
+    <br>
+    <br>
+    <p>Test for Chrome frame sessionid</p>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+  </body>
+</html>

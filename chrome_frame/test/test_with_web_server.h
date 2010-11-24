@@ -175,6 +175,10 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   // Test if chrome frame correctly reports its version.
   void VersionTest(BrowserKind browser, const wchar_t* page);
 
+  // Test if chrome frame correctly reports its session Id.
+  void SessionIdTest(BrowserKind browser, const wchar_t* page,
+                     int privilege_mode, const char* expected_result);
+
   // Closes all browsers in preparation for a test and during cleanup.
   void CloseAllBrowsers();
 

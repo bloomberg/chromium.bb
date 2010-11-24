@@ -33,6 +33,7 @@ extern const wchar_t kChromeFrameAccessibleMode[];
 extern const wchar_t kChromeFrameUnpinnedMode[];
 extern const wchar_t kAllowUnsafeURLs[];
 extern const wchar_t kEnableBuggyBhoIntercept[];
+extern const wchar_t kEnableFirefoxPrivilegeMode[];
 extern const wchar_t kChromeMimeType[];
 extern const wchar_t kChromeFrameAttachTabPattern[];
 extern const wchar_t kChromeFrameConfigKey[];
