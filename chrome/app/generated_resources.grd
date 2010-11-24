@@ -10360,6 +10360,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PROXY_PORT" desc="Label for the Port box.">
         Port
       </message>
+      <message name="IDS_PROXY_BYPASS" desc="Label for the proxy bypass list.">
+        Do not use the proxy settings for these hosts and domains:
+      </message>
 
       <!-- Accessibility strings, to be spoken -->
       <message name="IDS_CHROMEOS_ACC_BUTTON" desc="Label indicating that a control is a pushbutton.">

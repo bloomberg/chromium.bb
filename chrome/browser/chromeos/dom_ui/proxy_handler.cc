@@ -65,6 +65,8 @@ void ProxyHandler::GetLocalizedValues(
      l10n_util::GetStringUTF16(IDS_PROXY_REMOVE_HOST));
   localized_strings->SetString("proxyPort",
      l10n_util::GetStringUTF16(IDS_PROXY_PORT));
+  localized_strings->SetString("proxyBypass",
+     l10n_util::GetStringUTF16(IDS_PROXY_BYPASS));
 }
 
 } // namespace chromeos
