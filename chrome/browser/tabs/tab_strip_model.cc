@@ -477,6 +477,7 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
 }
 
 bool TabStripModel::IsTabPinned(int index) const {
+  DCHECK(ContainsIndex(index));
   return contents_data_[index]->pinned;
 }
 
@@ -961,7 +962,8 @@ void TabStripModel::ChangeSelectedContentsFrom(
   ObserverListBase<TabStripModelObserver>::Iterator it(observers_);
   TabStripModelObserver* obs;
   while ((obs = it.GetNext()) != NULL)
-    obs->TabSelectedAt(last_selected_contents, new_contents, selected_index_, user_gesture);
+    obs->TabSelectedAt(last_selected_contents, new_contents,
+                       selected_index_, user_gesture);
   /*
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
       TabSelectedAt(last_selected_contents, new_contents, selected_index_,

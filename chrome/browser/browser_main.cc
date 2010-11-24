@@ -115,6 +115,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/oom_priority_manager.h"
 #endif
 
 // TODO(port): several win-only methods have been pulled out of this, but
@@ -1562,9 +1563,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   bool record_search_engine = is_first_run && !profile->IsOffTheRecord();
 #endif
 
-    // ChildProcess:: is a misnomer unless you consider context.  Use
-    // of --wait-for-debugger only makes sense when Chrome itself is a
-    // child process (e.g. when launched by PyAuto).
+  // ChildProcess:: is a misnomer unless you consider context.  Use
+  // of --wait-for-debugger only makes sense when Chrome itself is a
+  // child process (e.g. when launched by PyAuto).
   if (parsed_command_line.HasSwitch(switches::kWaitForDebugger)) {
     ChildProcess::WaitForDebugger(L"Browser");
   }
@@ -1581,6 +1582,17 @@ int BrowserMain(const MainFunctionParams& parameters) {
        control->Launch(NULL, NULL);
     }
   }
+
+#if defined(OS_CHROMEOS)
+  // Run the Out of Memory priority manager while in this scope.  Wait
+  // until here to start so that we give the most amount of time for
+  // the other services to start up before we start adjusting the oom
+  // priority.  In reality, it doesn't matter much where in this scope
+  // this is started, but it must be started in this scope so it will
+  // also be terminated when this scope exits.
+  scoped_ptr<browser::OomPriorityManager> oom_priority_manager(
+      new browser::OomPriorityManager);
+#endif
 
   // Create the instance of the cloud print proxy service so that it can launch
   // the service process if needed. This is needed because the service process
