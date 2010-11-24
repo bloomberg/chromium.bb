@@ -614,6 +614,28 @@ pre_base_env.Replace(TARGET_FULLARCH=TARGET_NAME)
 pre_base_env.Replace(TARGET_ARCHITECTURE=DecodePlatform(TARGET_NAME)['arch'])
 pre_base_env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
 
+# NOTE there are intentionally no bits for build_x86 and target_x86.  Check for
+# both variants, instead.
+DeclareBit('build_x86_32', 'Building binaries for the x86-32 architecture',
+           exclusive_groups='build_arch')
+DeclareBit('build_x86_64', 'Building binaries for the x86-64 architecture',
+           exclusive_groups='build_arch')
+DeclareBit('build_arm', 'Building binaries for the ARM architecture',
+           exclusive_groups='build_arch')
+DeclareBit('target_x86_32', 'Tools being built will process x86-32 binaries',
+           exclusive_groups='target_arch')
+DeclareBit('target_x86_64', 'Tools being built will process x86-36 binaries',
+           exclusive_groups='target_arch')
+DeclareBit('target_arm', 'Tools being built will process ARM binaries',
+           exclusive_groups='target_arch')
+
+# Example: PlatformBit('build', 'x86-32') -> build_x86_32
+def PlatformBit(prefix, platform):
+  return "%s_%s" % (prefix, platform.replace('-', '_'))
+
+pre_base_env.SetBits(PlatformBit('build', BUILD_NAME))
+pre_base_env.SetBits(PlatformBit('target', TARGET_NAME))
+
 pre_base_env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
 if TARGET_NAME == 'arm' and not pre_base_env.Bit('bitcode'):
@@ -648,7 +670,7 @@ def FixupArmEnvironment():
 
 
 # Source setup bash scripts and glean the settings.
-if (pre_base_env['TARGET_ARCHITECTURE'] == 'arm' and
+if (pre_base_env.Bit('target_arm') and
     not pre_base_env.Bit('built_elsewhere') and
     ARGUMENTS.get('naclsdk_mode') != 'manual'):
   FixupArmEnvironment()
@@ -744,9 +766,7 @@ def DualLibrary(env, lib_name, *args, **kwargs):
   # Built static library as ususal.
   env.ComponentLibrary(lib_name, static_objs, **kwargs)
   # Build a static library using -fPIC for the .o's.
-  if (env['TARGET_ARCHITECTURE'] == 'x86' and
-      env['TARGET_SUBARCH'] == '64' and
-      env.Bit('linux')):
+  if env.Bit('target_x86_64') and env.Bit('linux'):
     env_shared = env.Clone(OBJSUFFIX='.os')
     env_shared.Append(CCFLAGS=['-fPIC'])
     env_shared.ComponentLibrary(lib_name + '_shared', shared_objs, **kwargs)
@@ -763,9 +783,7 @@ def DualObject(env, *args, **kwargs):
   # Built static library as ususal.
   ret = env.ComponentObject(*args, **kwargs)
   # Build a static library using -fPIC for the .o's.
-  if (env['TARGET_ARCHITECTURE'] == 'x86' and
-      env['TARGET_SUBARCH'] == '64' and
-      env.Bit('linux')):
+  if env.Bit('target_x86_64') and env.Bit('linux'):
     env_shared = env.Clone(OBJSUFFIX='.os')
     env_shared.Append(CCFLAGS=['-fPIC'])
     ret += env_shared.ComponentObject(*args, **kwargs)
@@ -775,20 +793,17 @@ def DualObject(env, *args, **kwargs):
 def AddDualLibrary(env):
   env.AddMethod(DualLibrary)
   env.AddMethod(DualObject)
-  env['SHARED_LIBS_SPECIAL'] = (
-      env['TARGET_ARCHITECTURE'] == 'x86' and
-      env['TARGET_SUBARCH'] == '64' and
-      env.Bit('linux'))
+  env['SHARED_LIBS_SPECIAL'] = env.Bit('target_x86_64') and env.Bit('linux')
 
 
 def InstallPlugin(target, source, env):
   Banner('Pluging Installation')
-  sb = 'USE_SANDBOX=0'
   # NOTE: sandbox settings are ignored for non-linux systems
   # TODO: we may want to enable this for more linux platforms
-  if (pre_base_env['BUILD_SUBARCH'] == '32' and
-      pre_base_env['BUILD_ARCHITECTURE'] == 'x86'):
+  if pre_base_env.Bit('build_x86_32'):
     sb = 'USE_SANDBOX=1'
+  else:
+    sb = 'USE_SANDBOX=0'
 
   deps =  [dep.abspath for dep in GetPluginPrerequsites()]
   command = env.subst(' '.join(INSTALL_COMMAND + ['MODE=INSTALL', sb] + deps))
@@ -843,7 +858,7 @@ def GetValidator(env, validator):
     return None
 
   if validator is None:
-    if env['BUILD_ARCHITECTURE'] == 'arm':
+    if env.Bit('build_arm'):
       validator = 'arm-ncval-core'
     else:
       validator = 'ncval'
@@ -1254,8 +1269,8 @@ else:
 def CheckPlatformPreconditions():
   "Check and fail fast if platform-specific preconditions are unmet."
 
-  if base_env['TARGET_ARCHITECTURE'] == 'arm':
-    if base_env['BUILD_ARCHITECTURE'] == 'x86':
+  if base_env.Bit('target_arm') and (base_env.Bit('build_x86_32') or
+                                     base_env.Bit('build_x86_64')):
       assert os.getenv('NACL_SDK_CC'), (
           "NACL_SDK_CC undefined. "
           "Source tools/llvm/setup_arm_untrusted_toolchain.sh.")
@@ -1326,16 +1341,11 @@ base_env.Append(
 # CheckPlatformPreconditions()
 
 # The ARM validator can be built for any target that doesn't use ELFCLASS64.
-if not (base_env['TARGET_ARCHITECTURE'] == 'x86' and
-        base_env['TARGET_SUBARCH'] == '64'):
+if not base_env.Bit('target_x86_64'):
   base_env.Append(
       BUILD_SCONSCRIPTS = [
         'src/trusted/validator_arm/build.scons',
       ])
-
-if base_env['TARGET_ARCHITECTURE'] not in ('arm', 'x86'):
-  Banner("unknown TARGET_ARCHITECTURE %s" % base_env['TARGET_ARCHITECTURE'])
-
 
 base_env.Replace(
     NACL_BUILD_FAMILY = 'TRUSTED',
@@ -1440,10 +1450,10 @@ def GenerateOptimizationLevels(env):
 
   return (debug_env, opt_env)
 
-if (base_env['BUILD_SUBARCH'] == '32'):
-  base_env['WINASM'] = 'as'
-else:
+if base_env.Bit('build_x86_64'):
   base_env['WINASM'] = 'x86_64-w64-mingw32-as.exe'
+else:
+  base_env['WINASM'] = 'as'
 
 
 # ----------------------------------------------------------
@@ -1476,7 +1486,7 @@ windows_env.Append(
 
 # This linker option allows us to ensure our builds are compatible with
 # Chromium, which uses it.
-if (windows_env['BUILD_SUBARCH'] == '32'):
+if windows_env.Bit('build_x86_32'):
   windows_env.Append(LINKFLAGS = "/safeseh")
 
 windows_env['ENV']['PATH'] = os.environ.get('PATH', '[]')
@@ -1572,7 +1582,7 @@ mac_env = unix_like_env.Clone(
     PLUGIN_SUFFIX = '.bundle',
 )
 
-if mac_env['BUILD_SUBARCH'] == '64':
+if mac_env.Bit('build_x86_64'):
   # OS X 10.5 was the first version to support x86-64.  We need to
   # specify 10.5 rather than 10.4 here otherwise building
   # get_plugin_dirname.mm gives the warning (converted to an error)
@@ -1643,22 +1653,19 @@ linux_env.Prepend(
     LIBS = ['rt'],
 )
 
-if linux_env['BUILD_ARCHITECTURE'] == 'x86':
-  if linux_env['BUILD_SUBARCH'] == '32':
-    linux_env.Prepend(
-        ASFLAGS = ['-m32', ],
-        CCFLAGS = ['-m32', ],
-        LINKFLAGS = ['-m32', '-L/usr/lib32'],
-        )
-
-  else:
-    assert linux_env['BUILD_SUBARCH'] == '64'
-    linux_env.Prepend(
-        ASFLAGS = ['-m64', ],
-        CCFLAGS = ['-m64', ],
-        LINKFLAGS = ['-m64', '-L/usr/lib64'],
-        )
-elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
+if linux_env.Bit('build_x86_32'):
+  linux_env.Prepend(
+      ASFLAGS = ['-m32', ],
+      CCFLAGS = ['-m32', ],
+      LINKFLAGS = ['-m32', '-L/usr/lib32'],
+      )
+elif linux_env.Bit('build_x86_64'):
+  linux_env.Prepend(
+      ASFLAGS = ['-m64', ],
+      CCFLAGS = ['-m64', ],
+      LINKFLAGS = ['-m64', '-L/usr/lib64'],
+      )
+elif linux_env.Bit('build_arm'):
   # NOTE: this hack allows us to propagate the emulator to the untrusted env
   # TODO(robertm): clean this up
   EMULATOR = os.getenv('ARM_EMU', '')
@@ -1743,10 +1750,10 @@ if nacl_env.Bit('running_on_valgrind'):
                   LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
                   LIBS = ['valgrind'])
 
-if nacl_env['BUILD_ARCHITECTURE'] == 'x86' and not nacl_env.Bit('bitcode'):
-  if nacl_env['BUILD_SUBARCH'] == '32':
+if not nacl_env.Bit('bitcode'):
+  if nacl_env.Bit('build_x86_32'):
     nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
-  elif nacl_env['BUILD_SUBARCH'] == '64':
+  elif nacl_env.Bit('build_x86_64'):
     nacl_env.Append(CCFLAGS = ['-m64'], LINKFLAGS = '-m64')
 
 if nacl_env.Bit('bitcode'):
@@ -1859,8 +1866,7 @@ if nacl_env.Bit('build_av_apps'):
       'tests/voronoi/nacl.scons',
       ])
 
-if (nacl_env['BUILD_SUBARCH'] == '32' and
-    nacl_env['BUILD_ARCHITECTURE'] == 'x86'):
+if nacl_env.Bit('build_x86_32'):
   nacl_env.Append(
       BUILD_SCONSCRIPTS = [
         'tools/tests/nacl.scons',
@@ -1962,13 +1968,13 @@ if nacl_extra_sdk_env.Bit('disable_nosys_linker_warnings'):
 
 # TODO(robertm): remove this work-around for an llvm debug info bug
 # http://code.google.com/p/nativeclient/issues/detail?id=235
-if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
+if nacl_extra_sdk_env.Bit('target_arm'):
   nacl_extra_sdk_env.FilterOut(CCFLAGS=['-g'])
 
 # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
 #                llvm-gcc is based on gcc 4.2 and has warning bug related
 #                class constructors
-if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
+if nacl_extra_sdk_env.Bit('target_arm'):
   nacl_extra_sdk_env.FilterOut(CCFLAGS = ['-Werror'])
   nacl_extra_sdk_env.Append(CFLAGS = werror_flags)
 
