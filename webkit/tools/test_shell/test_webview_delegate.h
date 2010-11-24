@@ -325,16 +325,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   void SetGeolocationPermission(bool allowed);
 
-  void ClearContextMenuData();
-
-  const WebKit::WebContextMenuData* last_context_menu_data() const {
-    return last_context_menu_data_.get();
-  }
-
-  MockSpellCheck* mock_spellcheck() {
-    return &mock_spellcheck_;
-  }
-
  private:
 
   // Called the title of the page changes.
@@ -412,7 +402,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   std::string GetResourceDescription(uint32 identifier);
 
   CapturedContextMenuEvents captured_context_menu_events_;
-  scoped_ptr<WebKit::WebContextMenuData> last_context_menu_data_;
 
   WebCursor current_cursor_;
 

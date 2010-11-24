@@ -6,7 +6,6 @@
 #define WEBKIT_TOOLS_TEST_SHELL_MOCK_SPELLCHECK_H_
 
 #include <map>
-#include <vector>
 
 #include "base/string16.h"
 
@@ -33,10 +32,6 @@ class MockSpellCheck {
                       int* misspelledOffset,
                       int* misspelledLength);
 
-  // Emulates suggestions for misspelled words.
-  // The suggestions are pushed to |suggestions| parameters.
-  void FillSuggestions(const string16& word,
-                       std::vector<string16>* suggestions);
  private:
   // Initialize the internal resources if we need to initialize it.
   // Initializing this object may take long time. To prevent from hurting
