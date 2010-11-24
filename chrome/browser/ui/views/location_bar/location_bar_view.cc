@@ -775,9 +775,7 @@ void LocationBarView::OnAutocompleteWillAccept() {
 
 bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
   InstantController* instant = delegate_->GetInstant();
-  if (!instant || !suggested_text_view_ ||
-      suggested_text_view_->size().IsEmpty() ||
-      suggested_text_view_->GetText().empty()) {
+  if (!instant || !HasValidSuggestText()) {
     return false;
   }
   location_entry_->model()->FinalizeInstantQuery(
@@ -1043,10 +1041,23 @@ std::string LocationBarView::GetClassName() const {
 }
 
 bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-  if (keyword_hint_view_->IsVisible() &&
-      views::FocusManager::IsTabTraversalKeyEvent(e)) {
-    // We want to receive tab key events when the hint is showing.
-    return true;
+  if (views::FocusManager::IsTabTraversalKeyEvent(e)) {
+    if (HasValidSuggestText()) {
+      // Return true so that the edit sees the tab and commits the suggestion.
+      return true;
+    }
+    InstantController* instant = delegate_->GetInstant();
+    if (instant && instant->IsCurrent()) {
+      // Tab while showing instant commits instant immediately.
+      instant->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
+      // Return true so that focus traversal isn't attempted. The edit ends
+      // up doing nothing in this case.
+      return true;
+    }
+    if (keyword_hint_view_->IsVisible() && !e.IsShiftDown()) {
+      // Return true so the edit gets the tab event and enters keyword mode.
+      return true;
+    }
   }
 
 #if defined(OS_WIN)
@@ -1235,4 +1246,9 @@ void LocationBarView::OnTemplateURLModelChanged() {
   template_url_model_->RemoveObserver(this);
   template_url_model_ = NULL;
   ShowFirstRunBubble(bubble_type_);
+}
+
+bool LocationBarView::HasValidSuggestText() {
+  return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
+      !suggested_text_view_->GetText().empty();
 }

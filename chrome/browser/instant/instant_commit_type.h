@@ -8,7 +8,7 @@
 
 // Enum describing the ways instant can be committed.
 enum InstantCommitType {
-  // The commit is the result of the user pressing enter.
+  // The commit is the result of the user pressing enter or tab.
   INSTANT_COMMIT_PRESSED_ENTER,
 
   // The commit is the result of focus being lost. This typically corresponds

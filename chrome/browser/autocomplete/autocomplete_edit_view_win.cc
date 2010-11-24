@@ -2004,6 +2004,8 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
         // Accept the keyword.
         ScopedFreeze freeze(this, GetTextObjectModel());
         model_->AcceptKeyword();
+      } else {
+        controller_->OnCommitSuggestedText(GetText());
       }
       return true;
     }

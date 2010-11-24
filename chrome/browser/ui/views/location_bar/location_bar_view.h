@@ -314,6 +314,9 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
+  // Returns true if the suggest text is valid.
+  bool HasValidSuggestText();
+
   // Current profile. Not owned by us.
   Profile* profile_;
 
