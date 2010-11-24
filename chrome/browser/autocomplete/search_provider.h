@@ -52,6 +52,11 @@ class SearchProvider : public AutocompleteProvider,
   }
 #endif
 
+  // Marks the instant query as done. If |text| is non-empty this changes the
+  // 'search what you typed' results text to |text|. This also marks the search
+  // provider as no longer needing to wait for the instant result.
+  void FinalizeInstantQuery(const std::wstring& text);
+
   // AutocompleteProvider
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes);
@@ -252,6 +257,9 @@ class SearchProvider : public AutocompleteProvider,
                                       int relevance,
                                       bool is_keyword);
 
+  // Updates the value of |done_| from the internal state.
+  void UpdateDone();
+
   // Should we query for suggest results immediately? This is normally false,
   // but may be set to true during testing.
   static bool query_suggest_immediately_;
@@ -294,6 +302,9 @@ class SearchProvider : public AutocompleteProvider,
 
   // Whether suggest_results_ is valid.
   bool have_suggest_results_;
+
+  // Has FinalizeInstantQuery been invoked since the last |Start|?
+  bool instant_finalized_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

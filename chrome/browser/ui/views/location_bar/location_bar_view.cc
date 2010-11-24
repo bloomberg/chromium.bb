@@ -412,10 +412,7 @@ void LocationBarView::OnCommitSuggestedText() {
   InstantController* instant = delegate_->GetInstant();
   DCHECK(instant);
   DCHECK(suggested_text_view_);
-  location_entry_->ReplaceSelection(
-      WideToUTF16(suggested_text_view_->GetText()));
-  // TODO(sky): We need to route the suggestion through InstantController so it
-  // doesn't fetch suggestions.
+  OnCommitSuggestedText(location_entry_->GetText());
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
@@ -783,9 +780,8 @@ bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
       suggested_text_view_->GetText().empty()) {
     return false;
   }
-  // TODO(sky): I may need to route this through InstantController so that we
-  // don't fetch suggestions for the new combined text.
-  location_entry_->SetUserText(typed_text + suggested_text_view_->GetText());
+  location_entry_->model()->FinalizeInstantQuery(
+      typed_text + suggested_text_view_->GetText());
   return true;
 }
 
@@ -846,6 +842,8 @@ void LocationBarView::OnChanged() {
   Layout();
   SchedulePaint();
 
+  // TODO(sky): code for updating instant is nearly identical on all platforms.
+  // It sould be pushed to a common place.
   InstantController* instant = delegate_->GetInstant();
   string16 suggested_text;
   if (update_instant_ && instant && GetTabContentsWrapper()) {
@@ -856,8 +854,11 @@ void LocationBarView::OnChanged() {
                       WideToUTF16(location_entry_->GetText()),
                       location_entry_->model()->UseVerbatimInstant(),
                       &suggested_text);
+      if (!instant->IsShowingInstant())
+        location_entry_->model()->FinalizeInstantQuery(std::wstring());
     } else {
       instant->DestroyPreviewContents();
+      location_entry_->model()->FinalizeInstantQuery(std::wstring());
     }
   }
 

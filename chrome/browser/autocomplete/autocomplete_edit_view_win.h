@@ -114,8 +114,6 @@ class AutocompleteEditViewWin
   virtual void SetWindowTextAndCaretPos(const std::wstring& text,
                                         size_t caret_pos);
 
-  virtual void ReplaceSelection(const string16& text);
-
   virtual void SetForcedQuery();
 
   virtual bool IsSelectAll();

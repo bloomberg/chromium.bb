@@ -10,6 +10,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -232,6 +233,13 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
 
   keyword->assign(keyword_hint);
   return true;
+}
+
+void AutocompletePopupModel::FinalizeInstantQuery(const std::wstring& text) {
+  if (IsOpen()) {
+    SearchProvider* search_provider = controller_->search_provider();
+    search_provider->FinalizeInstantQuery(text);
+  }
 }
 
 AutocompleteLog* AutocompletePopupModel::GetAutocompleteLog() {

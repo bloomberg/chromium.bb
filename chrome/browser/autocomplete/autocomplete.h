@@ -154,6 +154,7 @@ class AutocompleteResult;
 class AutocompleteController;
 class HistoryContentsProvider;
 class Profile;
+class SearchProvider;
 class TemplateURL;
 
 typedef std::vector<AutocompleteMatch> ACMatches;
@@ -537,6 +538,7 @@ class AutocompleteController : public ACProviderListener {
   explicit AutocompleteController(const ACProviders& providers)
       : providers_(providers),
         history_contents_provider_(NULL),
+        search_provider_(NULL),
         updated_latest_result_(false),
         delay_interval_has_passed_(false),
         have_committed_during_this_query_(false),
@@ -603,6 +605,8 @@ class AutocompleteController : public ACProviderListener {
   // This is used by the popup to ensure it's not showing an out-of-date query.
   void CommitIfQueryHasNeverBeenCommitted();
 
+  SearchProvider* search_provider() const { return search_provider_; }
+
   // Getters
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
@@ -649,6 +653,8 @@ class AutocompleteController : public ACProviderListener {
   ACProviders providers_;
 
   HistoryContentsProvider* history_contents_provider_;
+
+  SearchProvider* search_provider_;
 
   // Input passed to Start.
   AutocompleteInput input_;

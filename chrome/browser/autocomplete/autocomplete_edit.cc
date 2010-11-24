@@ -158,6 +158,10 @@ void AutocompleteEditModel::SetUserText(const std::wstring& text) {
   has_temporary_text_ = false;
 }
 
+void AutocompleteEditModel::FinalizeInstantQuery(const std::wstring& text) {
+  popup_->FinalizeInstantQuery(text);
+}
+
 void AutocompleteEditModel::GetDataForURLExport(GURL* url,
                                                 std::wstring* title,
                                                 SkBitmap* favicon) {

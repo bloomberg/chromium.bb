@@ -653,20 +653,6 @@ void AutocompleteEditViewWin::SetWindowTextAndCaretPos(const std::wstring& text,
   PlaceCaretAt(caret_pos);
 }
 
-void AutocompleteEditViewWin::ReplaceSelection(const string16& text) {
-  CHARRANGE selection;
-  GetSel(selection);
-  if (selection.cpMin == selection.cpMax && text.empty())
-    return;
-
-  const std::wstring w_text(UTF16ToWide(text));
-  ScopedFreeze freeze(this, GetTextObjectModel());
-  OnBeforePossibleChange();
-  ReplaceSel(w_text.c_str(), TRUE);
-  SetSelection(selection.cpMin, selection.cpMin + w_text.size());
-  OnAfterPossibleChange();
-}
-
 void AutocompleteEditViewWin::SetForcedQuery() {
   const std::wstring current_text(GetText());
   const size_t start = current_text.find_first_not_of(kWhitespaceWide);

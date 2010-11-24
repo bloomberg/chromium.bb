@@ -354,10 +354,6 @@ void AutocompleteEditViewMac::SetWindowTextAndCaretPos(const std::wstring& text,
   SetTextAndSelectedRange(text, NSMakeRange(caret_pos, caret_pos));
 }
 
-void AutocompleteEditViewMac::ReplaceSelection(const string16& text) {
-  NOTIMPLEMENTED();
-}
-
 void AutocompleteEditViewMac::SetForcedQuery() {
   // We need to do this first, else |SetSelectedRange()| won't work.
   FocusLocation(true);
@@ -478,10 +474,12 @@ void AutocompleteEditViewMac::SetSuggestText(const string16& suggest_text) {
 }
 
 bool AutocompleteEditViewMac::CommitSuggestText() {
-  bool success = (suggest_text_length_ > 0);
+  if (suggest_text_length_ == 0)
+    return false;
+
   suggest_text_length_ = 0;
-  SetText(GetText());
-  return success;
+  model()->FinalizeInstantQuery(GetText());
+  return true;
 }
 
 void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {

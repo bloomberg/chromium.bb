@@ -209,6 +209,9 @@ class AutocompleteEditModel : public NotificationObserver {
   // Sets the user_text_ to |text|.  Only the View should call this.
   void SetUserText(const std::wstring& text);
 
+  // Calls through to SearchProvider::FinalizeInstantQuery.
+  void FinalizeInstantQuery(const std::wstring& text);
+
   // Reverts the edit model back to its unedited state (permanent text showing,
   // no user input in progress).
   void Revert();

@@ -634,7 +634,8 @@ AutocompleteController::AutocompleteController(Profile* profile)
       delay_interval_has_passed_(false),
       have_committed_during_this_query_(false),
       done_(true) {
-  providers_.push_back(new SearchProvider(this, profile));
+  search_provider_ = new SearchProvider(this, profile);
+  providers_.push_back(search_provider_);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHistoryQuickProvider))
     providers_.push_back(new HistoryQuickProvider(this, profile));

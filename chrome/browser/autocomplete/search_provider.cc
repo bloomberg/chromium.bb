@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -59,12 +60,58 @@ void SearchProvider::Providers::Set(const TemplateURL* default_provider,
 SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Search"),
       suggest_results_pending_(0),
-      have_suggest_results_(false) {
+      instant_finalized_(false) {
+}
+
+void SearchProvider::FinalizeInstantQuery(const std::wstring& text) {
+  if (done_ || instant_finalized_)
+    return;
+
+  instant_finalized_ = true;
+  UpdateDone();
+
+  if (text.empty()) {
+    // We only need to update the listener if we're actually done.
+    if (done_)
+      listener_->OnProviderUpdate(false);
+    return;
+  }
+
+  // Remove any matches that are identical to |text|. We don't use the
+  // destination_url for comparison as it varies depending upon the index passed
+  // to TemplateURL::ReplaceSearchTerms.
+  for (ACMatches::iterator i = matches_.begin(); i != matches_.end();) {
+    if (((i->type == AutocompleteMatch::SEARCH_HISTORY) ||
+         (i->type == AutocompleteMatch::SEARCH_SUGGEST)) &&
+        (i->fill_into_edit == text)) {
+      ACMatches::iterator to_erase = i;
+      ++i;
+      matches_.erase(to_erase);
+    } else {
+      ++i;
+    }
+  }
+
+  // Add the new suggest result. We give it a rank higher than
+  // SEARCH_WHAT_YOU_TYPED so that it gets autocompleted.
+  int did_not_accept_default_suggestion = default_suggest_results_.empty() ?
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
+        TemplateURLRef::NO_SUGGESTION_CHOSEN;
+  MatchMap match_map;
+  AddMatchToMap(text, CalculateRelevanceForWhatYouTyped() + 1,
+                AutocompleteMatch::SEARCH_SUGGEST,
+                did_not_accept_default_suggestion, false, &match_map);
+  DCHECK_EQ(1u, match_map.size());
+  matches_.push_back(match_map.begin()->second);
+
+  listener_->OnProviderUpdate(true);
 }
 
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
   matches_.clear();
+
+  instant_finalized_ = input.synchronous_only();
 
   // Can't return search/suggest results for bogus input or without a profile.
   if (!profile_ || (input.type() == AutocompleteInput::INVALID)) {
@@ -494,9 +541,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 
   UpdateStarredStateOfMatches();
 
-  // We're done when there are no more suggest queries pending (this is set to 1
-  // when the timer is started).
-  done_ = suggest_results_pending_ == 0;
+  UpdateDone();
 }
 
 void SearchProvider::AddNavigationResultsToMatches(
@@ -760,4 +805,11 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   // inline-autocompletable?
 
   return match;
+}
+
+void SearchProvider::UpdateDone() {
+  // We're done when there are no more suggest queries pending (this is set to 1
+  // when the timer is started) and we're not waiting on instant.
+  done_ = ((suggest_results_pending_ == 0) &&
+           (instant_finalized_ || !InstantController::IsEnabled(profile_)));
 }
