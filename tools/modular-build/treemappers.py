@@ -10,7 +10,8 @@ import types
 
 # Do not add any more imports here!  This could lead to undeclared
 # dependencies, changes to which fail to trigger rebuilds.
-from dirtree import FileSnapshot, FileSnapshotInMemory, LazyDict
+from dirtree import (FileSnapshot, FileSnapshotInMemory, SymlinkSnapshot,
+                     LazyDict)
 
 
 def UnionIntoDict(input_tree, dest_dict, context=""):
@@ -92,23 +93,33 @@ def RemoveVersionControlDirs(tree):
 # TODO(mseaborn): Fix newlib to not output using this odd layout.
 def MungeMultilibDir(tree, arch, bits):
   libdir = tree.get(arch, {}).get("lib", {}).get(bits)
+  if isinstance(libdir, SymlinkSnapshot):
+    # Avoid clobbering the symlink created by Lib32Symlink().
+    return
   if libdir is not None:
     assert "lib" + bits not in tree[arch]
     del tree[arch]["lib"][bits]
     tree[arch]["lib" + bits] = libdir
 
 
-# This is a workaround for gcc, which installs libgcc_s.so.1 into
-# "nacl/lib32" instead of "nacl/lib", even though it is built with
-# "--disable-multilib".  However, the Scons build expects libraries to
-# be in "lib", so rename "lib32" to "lib".
-def RenameLib32ToLib(tree, arch, bits):
+# This is a workaround for gcc, which installs default-subarch
+# libraries (such as libgcc_s.so.1) into "nacl/lib32" (for
+# --target=nacl) or "nacl/lib64" (for --target=nacl64) rather than to
+# "nacl/lib".  However, the Scons build expects libraries to be in
+# "lib", so rename "lib32" or "lib64" to "lib".
+def RenameLibXXToLib(tree, arch, bits):
   libdir = tree.get(arch, {}).get("lib" + bits)
   if libdir is not None:
-    assert ("lib" not in tree[arch] or
-            tree[arch]["lib"].copy() == {})
+    UnionIntoDict(libdir, tree[arch].get("lib", {}))
     del tree[arch]["lib" + bits]
-    tree[arch]["lib"] = libdir
+
+
+def Lib32Symlink(arch):
+  # This is necessary for full-gcc to link libgcc_s.so, because it
+  # passes "-B" and thereby ignores the "nacl64/lib32" path.  The
+  # full-gcc build will only search "nacl64/lib/32" for libc.so, which
+  # libgcc_s.so is linked against.
+  return {arch: {"lib": {"32": SymlinkSnapshot("../lib32")}}}
 
 
 def LibraryPathVar():
@@ -141,7 +152,8 @@ def CombineInstallTrees(*trees):
   for tree in trees:
     MungeMultilibDir(tree, "nacl64", "32")
     MungeMultilibDir(tree, "nacl", "64")
-    RenameLib32ToLib(tree, "nacl", "32")
+    RenameLibXXToLib(tree, "nacl64", "64")
+    RenameLibXXToLib(tree, "nacl", "32")
   combined = UnionDir(*trees)
   AddEnvVarWrapperScripts(combined)
   return combined
@@ -215,7 +227,8 @@ def DummyLibrary(arch, name):
   # This text file works as a dummy (empty) library because ld treats
   # it as a linker script.
   dummy_lib = FileSnapshotInMemory("/* Intentionally empty */\n")
-  return {arch: {"lib": {"%s.so" % name: dummy_lib}}}
+  lib_dir = {"%s.so" % name: dummy_lib}
+  return {arch: {"lib": lib_dir, "lib32": lib_dir}}
 
 
 # When gcc is built, it checks whether libc provides <limits.h> in

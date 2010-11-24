@@ -112,6 +112,15 @@ def GetTargets():
   modules = {}
   module_list = []
 
+  # In principle we can build a multilib toolchain with either
+  # "--target=nacl" or "--target=nacl64", and it should only affect
+  # the default subarch.  In practice, the "--target" option affects
+  # install locations and there are various inconsistencies.
+  arch = "nacl64"
+  subarches = ["32", "64"]
+  # The default subarch usually goes into "lib".
+  subarch_to_libdir = {"32": "lib32", "64": "lib"}
+
   def MakeInstallPrefix(name, deps):
     return btarget.TreeMapper("%s-input" % name,
                               os.path.join(top_dir, "input-prefix", name),
@@ -130,13 +139,13 @@ def GetTargets():
         MakeInstallPrefix(name, deps), src[src_name], **kwargs)
     AddModule(name, module)
 
-  def AddSconsModule(name, deps, scons_args):
+  def AddSconsModule(name, deps, scons_args, **kwargs):
     module = btarget.SconsBuild(
         name,
         os.path.join(top_dir, "install", name),
         os.path.join(top_dir, "build", name),
         modules["nacl_src"],
-        MakeInstallPrefix(name, deps), scons_args)
+        MakeInstallPrefix(name, deps), scons_args, arch, **kwargs)
     AddModule(name, module)
 
   if sys.platform == "darwin":
@@ -154,11 +163,7 @@ def GetTargets():
   # be pulled in whenever gcc is declared as a dependency.
   gcc_libs = ["gmp", "mpfr"]
 
-  # TODO(mseaborn): Using "--target=nacl" is a temporary measure in
-  # order to get full-gcc to build against nacl-glibc.
-  arch = "nacl"
   common_gcc_options = [
-      "--disable-multilib", # See note for newlib.
       "--disable-libgomp",
       "--disable-libmudflap",
       "--disable-decimal-float",
@@ -201,10 +206,6 @@ def GetTargets():
   AddAutoconfModule(
       "newlib", "newlib2", deps=["binutils", "pre-gcc"] + gcc_libs,
       configure_opts=[
-          # TODO(mseaborn): "--disable-multilib" is a temporary
-          # measure because using "--target=nacl" on pre-gcc omits
-          # the ability to compile for 64-bit.
-          "--disable-multilib",
           "--disable-libgloss",
           "--enable-newlib-io-long-long",
           "--enable-newlib-io-c99-formats",
@@ -246,22 +247,21 @@ def GetTargets():
           "CFLAGS=-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
       make_cmd=["make", "all"])
 
-  # TODO(mseaborn): Add "64" back to the list.
-  for arch_bits in ["32"]:
+  for arch_bits in subarches:
     AddSconsModule(
         "libnacl_x86_%s" % arch_bits,
         deps=["binutils", "full-gcc", "newlib",
               "libnacl_headers", "nc_threads"] + gcc_libs,
         scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update",
-                    "platform=x86-%s" % arch_bits])
+                    "platform=x86-%s" % arch_bits],
+        libdir=subarch_to_libdir[arch_bits])
 
   # Note that ordering is significant in the dependencies: nc_threads
   # must come after newlib in order to override newlib's pthread.h.
-  # TODO(mseaborn): Add "libnacl_x86_64" back to the list.
   newlib_toolchain = MakeInstallPrefix(
       "newlib_toolchain",
       deps=["binutils", "full-gcc", "newlib", "nc_threads",
-            "libnacl_x86_32"] + gcc_libs)
+            "libnacl_x86_32", "libnacl_x86_64"] + gcc_libs)
 
   hello_c = """
 #include <stdio.h>
@@ -309,26 +309,36 @@ int main() {
       os.path.join(top_dir, "install", "dummy_libnosys"),
       treemappers.DummyLibrary, [], args=[arch, "libnosys"])
 
-  AddAutoconfModule(
-      "glibc", "glibc",
-      deps=["binutils", "pre-gcc", "readelf",
-            "dummy_libnacl", "dummy_libcrt_platform"] + gcc_libs,
-      explicitly_passed_deps=[src["linux_headers"]],
-      configure_opts=[
-          "--prefix=/%s" % arch,
-          "--host=i486-linux-gnu",
-          "CC=%s-gcc -m32" % arch,
-          ("CFLAGS=-march=i486 -pipe -fno-strict-aliasing -O2 "
-           "-mno-tls-direct-seg-refs -g"),
-          ("--with-headers=%s" %
-           os.path.join(src["linux_headers"].dest_path, "include")),
-          "--enable-kernel=2.2.0"],
-      # We need these settings because a lack of a crt1.o in the build
-      # environment causes the "forced unwind support" autoconf check
-      # to fail.  The alternative is to build against full-gcc,
-      # libnacl_nocpp and newlib.
-      configure_env=["libc_cv_forced_unwind=yes", "libc_cv_c_cleanup=yes"],
-      use_install_root=True)
+  subarch_to_glibc_arch = {"32": "i486-linux-gnu",
+                           "64": "x86_64-linux-gnu"}
+  subarch_to_glibc_extra_cflags = {"32": " -march=i486",
+                                   "64": ""}
+  for arch_bits in subarches:
+    AddAutoconfModule(
+        "glibc_%s" % arch_bits, "glibc",
+        deps=["binutils", "pre-gcc", "readelf",
+              "dummy_libnacl", "dummy_libcrt_platform"] + gcc_libs,
+        explicitly_passed_deps=[src["linux_headers"]],
+        configure_opts=[
+            "--prefix=/%s" % arch,
+            "--libdir=${exec_prefix}/%s" % subarch_to_libdir[arch_bits],
+            "--host=%s" % subarch_to_glibc_arch[arch_bits],
+            "CC=%s-gcc -m%s" % (arch, arch_bits),
+            ("CFLAGS=-pipe -fno-strict-aliasing -O2 "
+             "-mno-tls-direct-seg-refs -g"
+             + subarch_to_glibc_extra_cflags[arch_bits]),
+            ("--with-headers=%s" %
+             os.path.join(src["linux_headers"].dest_path, "include")),
+            "--enable-kernel=2.2.0"],
+        configure_env=[
+          # We need these settings because a lack of a crt1.o in the build
+          # environment causes the "forced unwind support" autoconf check
+          # to fail.  The alternative is to build against full-gcc,
+          # libnacl_nocpp and newlib.
+          "libc_cv_forced_unwind=yes", "libc_cv_c_cleanup=yes",
+          # glibc does not provide a configure option for setting this.
+          "libc_cv_slibdir=${exec_prefix}/%s" % subarch_to_libdir[arch_bits]],
+        use_install_root=True)
 
   # TODO(mseaborn): It would be better if installing linker scripts
   # did not require an ad-hoc rule.
@@ -352,21 +362,25 @@ int main() {
   modules["sys_include_alias"] = btarget.TreeMapper(
       "sys_include_alias",
       os.path.join(top_dir, "install", "sys_include_alias"),
-      treemappers.SysIncludeAlias, [modules["glibc"]], args=[arch])
+      treemappers.SysIncludeAlias, [modules["glibc_32"]], args=[arch])
+
+  modules["lib32_symlink"] = btarget.TreeMapper(
+      "lib32_symlink",
+      os.path.join(top_dir, "install", "lib32_symlink"),
+      treemappers.Lib32Symlink, [], args=[arch])
 
   AddAutoconfModule(
       "full-gcc-glibc", "gcc",
-      deps=["binutils", "glibc", "installed_linux_headers",
+      deps=["binutils", "glibc_32", "glibc_64", "installed_linux_headers",
             "dummy_libnacl", "dummy_libcrt_platform",
-            "linker_scripts", "sys_include_alias"] + gcc_libs,
+            "linker_scripts", "sys_include_alias", "lib32_symlink"] + gcc_libs,
       configure_opts=[
           "--disable-libmudflap",
           "--disable-decimal-float",
           "--disable-libssp",
           "--disable-libstdcxx-pch",
           "--enable-shared",
-          "--target=nacl",
-          "--disable-multilib", # TODO(mseaborn): Support 64-bit.
+          "--target=%s" % arch,
           "--enable-threads=posix",
           "--enable-tls",
           "--disable-libgomp",
@@ -376,16 +390,19 @@ int main() {
           "CFLAGS=-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
       make_cmd=["make", "all"])
 
+  # TODO(mseaborn): Extend the steps below to run against x86-64
+  # nacl-glibc.  Many tests currently pass only for x86-32 nacl-glibc.
   glibc_toolchain_deps = [
-      "binutils", "full-gcc-glibc", "glibc",
+      "binutils", "full-gcc-glibc", "glibc_32", "glibc_64",
       "dummy_libcrt_platform", "dummy_libnosys",
       "linker_scripts", "installed_linux_headers",
-      "installed_nacl_headers"] + gcc_libs
+      "installed_nacl_headers", "lib32_symlink"] + gcc_libs
   AddSconsModule(
       "nacl_libs_glibc",
       deps=glibc_toolchain_deps + ["libnacl_headers"],
       scons_args=["MODE=nacl_extra_sdk", "--nacl_glibc",
-                  "extra_sdk_update", "extra_sdk_update_header"])
+                  "extra_sdk_update", "extra_sdk_update_header"],
+      libdir="lib32")
   glibc_toolchain = MakeInstallPrefix(
       "glibc_toolchain", deps=glibc_toolchain_deps + ["nacl_libs_glibc"])
 
@@ -394,7 +411,7 @@ int main() {
       os.path.join(top_dir, "build", "hello_glibc"),
       glibc_toolchain,
       hello_c,
-      compiler=["nacl-gcc"])
+      compiler=["%s-gcc" % arch, "-m32"])
   module_list.append(modules["hello_glibc"])
 
   AddSconsModule(

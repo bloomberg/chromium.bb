@@ -397,15 +397,16 @@ def ExportHeaders(name, dest_dir, src_dir):
   return BuildTarget(name, dest_dir, DoBuild, args=[], deps=[src_dir])
 
 
-def SconsBuild(name, dest_dir, build_dir, src_dir, prefix_obj, scons_args):
+def SconsBuild(name, dest_dir, build_dir, src_dir, prefix_obj,
+               scons_args, arch, libdir="lib"):
   scons_cmd = [
       "./scons",
       "DESTINATION_ROOT=%s" % build_dir,
       "naclsdk_mode=custom:%s" % prefix_obj.dest_path,
       "extra_sdk_lib_destination=%s" % os.path.join(
-          dest_dir, "nacl", "lib"),
+          dest_dir, arch, libdir),
       "extra_sdk_include_destination=%s" % os.path.join(
-          dest_dir, "nacl", "include"),
+          dest_dir, arch, "include"),
       ] + scons_args
   def DoBuild(opts):
     pristine = not opts.allow_non_pristine or not os.path.exists(build_dir)
