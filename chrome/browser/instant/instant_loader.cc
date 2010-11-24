@@ -407,17 +407,25 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
                            const string16& user_text,
                            bool verbatim,
                            string16* suggested_text) {
-  if (url_ == url && verbatim == verbatim_)
+  // Strip leading ?.
+  string16 new_user_text =
+      !user_text.empty() && (UTF16ToWide(user_text)[0] == L'?') ?
+      user_text.substr(1) : user_text;
+
+  // If state hasn't changed, just reuse the last suggestion.
+  if (url_ == url && verbatim == verbatim_ && user_text_ == new_user_text &&
+      last_transition_type_ == transition_type) {
+    suggested_text->assign(last_suggestion_);
     return;
+  }
 
   DCHECK(!url.is_empty() && url.is_valid());
 
   last_transition_type_ = transition_type;
   url_ = url;
-  // Strip leading ?.
-  user_text_ = !user_text.empty() && (UTF16ToWide(user_text)[0] == L'?') ?
-      user_text.substr(1) : user_text;
+  user_text_ = new_user_text;
   verbatim_ = verbatim;
+  last_suggestion_.clear();
 
   bool created_preview_contents;
   if (preview_contents_.get() == NULL) {
@@ -480,7 +488,8 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
           complete_suggested_text_lower.size() > user_text_lower.size() &&
           !complete_suggested_text_lower.compare(0, user_text_lower.size(),
                                                  user_text_lower)) {
-        *suggested_text = complete_suggested_text_.substr(user_text_.size());
+        *suggested_text = last_suggestion_ =
+            complete_suggested_text_.substr(user_text_.size());
       }
     } else {
       // Load the instant URL. We don't reflect the url we load in url() as
@@ -616,6 +625,7 @@ void InstantLoader::SetCompleteSuggestedText(
   string16 user_text_lower = l10n_util::ToLower(user_text_);
   string16 complete_suggested_text_lower = l10n_util::ToLower(
       complete_suggested_text);
+  last_suggestion_.clear();
   if (user_text_lower.compare(0, user_text_lower.size(),
                               complete_suggested_text_lower,
                               0, user_text_lower.size())) {
@@ -626,9 +636,8 @@ void InstantLoader::SetCompleteSuggestedText(
   }
 
   complete_suggested_text_ = complete_suggested_text;
-  delegate_->SetSuggestedTextFor(
-      this,
-      complete_suggested_text_.substr(user_text_.size()));
+  last_suggestion_ = complete_suggested_text_.substr(user_text_.size());
+  delegate_->SetSuggestedTextFor(this, last_suggestion_);
 }
 
 void InstantLoader::PreviewPainted() {

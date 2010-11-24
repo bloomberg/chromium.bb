@@ -161,6 +161,8 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
                                const string16& user_text,
                                bool verbatim,
                                string16* suggested_text) {
+  suggested_text->clear();
+
   if (tab_contents != tab_contents_)
     DestroyPreviewContents();
 
@@ -169,20 +171,6 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
   tab_contents_ = tab_contents;
   commit_on_mouse_up_ = false;
   last_transition_type_ = match.transition;
-
-  const TemplateURL* template_url = GetTemplateURL(match);
-  TemplateURLID template_url_id = template_url ? template_url->id() : 0;
-  // Verbatim only makes sense if the search engines supports instant.
-  bool real_verbatim = template_url_id ? verbatim : false;
-
-  if (loader_manager_.get()) {
-    InstantLoader* active_loader = loader_manager_->active_loader();
-    if (active_loader->url() == url &&
-        active_loader->template_url_id() == template_url_id &&
-        (!template_url_id || active_loader->verbatim() == real_verbatim)) {
-      return;
-    }
-  }
 
   if (url.is_empty() || !url.is_valid() || !ShouldShowPreviewFor(match)) {
     DestroyPreviewContents();
@@ -194,6 +182,11 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
 
   if (!is_active_)
     delegate_->PrepareForInstant();
+
+  const TemplateURL* template_url = GetTemplateURL(match);
+  TemplateURLID template_url_id = template_url ? template_url->id() : 0;
+  // Verbatim only makes sense if the search engines supports instant.
+  bool real_verbatim = template_url_id ? verbatim : false;
 
   if (ShouldUpdateNow(template_url_id, match.destination_url)) {
     UpdateLoader(template_url, match.destination_url, match.transition,

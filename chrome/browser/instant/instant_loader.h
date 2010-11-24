@@ -162,6 +162,9 @@ class InstantLoader : public NotificationObserver {
   // The latest suggestion from the page.
   string16 complete_suggested_text_;
 
+  // The latest suggestion (suggested text less the user text).
+  string16 last_suggestion_;
+
   // See description above setter.
   gfx::Rect omnibox_bounds_;
 
