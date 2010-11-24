@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_AUTOFILL_MODEL_ASSOCIATOR_H_
-#define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_MODEL_ASSOCIATOR_H_
+#ifndef CHROME_BROWSER_SYNC_GLUE_AUTOFILL_MODEL_ASSOCIATOR2_H_
+#define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_MODEL_ASSOCIATOR2_H_
 #pragma once
 
 #include <map>
@@ -16,7 +16,6 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/autofill_model_associator2.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -43,14 +42,14 @@ extern const char kAutofillEntryNamespaceTag[];
 // * Algorithm to associate autofill model and sync model.
 // We do not check if we have local data before this run; we always
 // merge and sync.
-class AutofillModelAssociator
+class AutofillModelAssociator2
     : public PerDataTypeAssociatorInterface<std::string, std::string> {
  public:
   static syncable::ModelType model_type() { return syncable::AUTOFILL; }
-  AutofillModelAssociator(ProfileSyncService* sync_service,
+  AutofillModelAssociator2(ProfileSyncService* sync_service,
                           WebDatabase* web_database,
                           PersonalDataManager* data_manager);
-  virtual ~AutofillModelAssociator();
+  virtual ~AutofillModelAssociator2();
 
   // A task used by this class and the change processor to inform the
   // PersonalDataManager living on the UI thread that it needs to refresh.
@@ -100,11 +99,12 @@ class AutofillModelAssociator
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
   static std::string KeyToTag(const string16& name, const string16& value);
+  static std::string ProfileLabelToTag(const string16& label);
 
   static bool MergeTimestamps(const sync_pb::AutofillSpecifics& autofill,
                               const std::vector<base::Time>& timestamps,
                               std::vector<base::Time>* new_timestamps);
-  static bool FillProfileWithServerData(
+  static bool OverwriteProfileWithServerData(
       AutoFillProfile* merge_into,
       const sync_pb::AutofillProfileSpecifics& specifics);
 
@@ -114,18 +114,15 @@ class AutofillModelAssociator
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }
 
- protected:
-  // Is called to determine if we need to upgrade to the new
-  // autofillprofile2 data type. If so we need to sync up autofillprofile
-  // first to the latest available changes on the server and then upgrade
-  // to autofillprofile2.
-  virtual bool HasNotMigratedYet();
-
-  // Given a profile from sync db it tries to match the profile against
-  // one in web db. it ignores the guid and compares the actual data.
-  AutoFillProfile* FindCorrespondingNodeFromWebDB(
-      const sync_pb::AutofillProfileSpecifics& profile,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db);
+  // Compute and apply suffix to a label so that the resulting label is
+  // unique in the sync database.
+  // |new_non_unique_label| is the colliding label which is to be uniquified.
+  // |existing_unique_label| is the current label of the object, if any; this
+  // is treated as a unique label even if colliding.  If no such label is
+  // available, |existing_unique_label| may be empty.
+  static string16 MakeUniqueLabel(const string16& new_non_unique_label,
+                                  const string16& existing_unique_label,
+                                  sync_api::BaseTransaction* trans);
 
  private:
   typedef std::map<std::string, int64> AutofillToSyncIdMap;
@@ -159,8 +156,7 @@ class AutofillModelAssociator
   bool TraverseAndAssociateAllSyncNodes(
       sync_api::WriteTransaction* write_trans,
       const sync_api::ReadNode& autofill_root,
-      DataBundle* bundle,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db);
+      DataBundle* bundle);
 
   // Helper to persist any changes that occured during model association to
   // the WebDatabase.
@@ -177,8 +173,7 @@ class AutofillModelAssociator
   void AddNativeProfileIfNeeded(
       const sync_pb::AutofillProfileSpecifics& profile,
       DataBundle* bundle,
-      const sync_api::ReadNode& node,
-      const std::vector<AutoFillProfile*>& all_profiles_from_db);
+      const sync_api::ReadNode& node);
 
   // Helper to insert a sync node for the given AutoFillProfile (e.g. in
   // response to encountering a native profile that doesn't exist yet in the
@@ -208,9 +203,10 @@ class AutofillModelAssociator
   Lock abort_association_pending_lock_;
   bool abort_association_pending_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillModelAssociator);
+  DISALLOW_COPY_AND_ASSIGN(AutofillModelAssociator2);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_MODEL_ASSOCIATOR_H_
+#endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_MODEL_ASSOCIATOR2_H_
+

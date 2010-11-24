@@ -726,7 +726,7 @@ class Directory {
   // an account.  We keep this for each datatype.  It doesn't actually map
   // to any time scale; its name is an historical artifact.
   int64 last_download_timestamp(ModelType type) const;
-  void set_last_download_timestamp(ModelType type, int64 value);
+  virtual void set_last_download_timestamp(ModelType type, int64 value);
 
   // Find the model type or model types which have the least timestamp, and
   // return them along with the types having that timestamp.  This is done
@@ -773,11 +773,12 @@ class Directory {
       browser_sync::ChannelEventHandler<DirectoryChangeEvent>* observer);
 
  protected:  // for friends, mainly used by Entry constructors
-  EntryKernel* GetEntryByHandle(const int64 handle);
-  EntryKernel* GetEntryByHandle(const int64 metahandle, ScopedKernelLock* lock);
-  EntryKernel* GetEntryById(const Id& id);
+  virtual EntryKernel* GetEntryByHandle(int64 handle);
+  virtual EntryKernel* GetEntryByHandle(int64 metahandle,
+      ScopedKernelLock* lock);
+  virtual EntryKernel* GetEntryById(const Id& id);
   EntryKernel* GetEntryByServerTag(const std::string& tag);
-  EntryKernel* GetEntryByClientTag(const std::string& tag);
+  virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
   EntryKernel* GetRootEntry();
   bool ReindexId(EntryKernel* const entry, const Id& new_id);
   void ReindexParentId(EntryKernel* const entry, const Id& new_parent_id);
@@ -823,7 +824,7 @@ class Directory {
 
   // Find the first or last child in the positional ordering under a parent,
   // and return its id.  Returns a root Id if parent has no children.
-  Id GetFirstChildId(BaseTransaction* trans, const Id& parent_id);
+  virtual Id GetFirstChildId(BaseTransaction* trans, const Id& parent_id);
   Id GetLastChildId(BaseTransaction* trans, const Id& parent_id);
 
   // SaveChanges works by taking a consistent snapshot of the current Directory
@@ -1058,6 +1059,9 @@ class BaseTransaction {
   BaseTransaction(Directory* directory, const char* name,
                   const char* source_file, int line, WriterTag writer);
 
+  // For unit testing. Everything will be mocked out no point initializing.
+  explicit BaseTransaction(Directory* directory);
+
   void UnlockAndLog(OriginalEntries* entries);
   bool NotifyTransactionChangingAndEnding(OriginalEntries* entries);
   virtual void NotifyTransactionComplete();
@@ -1111,6 +1115,8 @@ class WriteTransaction : public BaseTransaction {
   // so that we can issue change notifications when the transaction
   // is done.
   OriginalEntries* const originals_;
+
+  explicit WriteTransaction(Directory *directory);
 
   DISALLOW_COPY_AND_ASSIGN(WriteTransaction);
 };

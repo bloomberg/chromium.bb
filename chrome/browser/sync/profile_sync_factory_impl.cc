@@ -7,8 +7,10 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/app_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
+#include "chrome/browser/sync/glue/autofill_change_processor2.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
+#include "chrome/browser/sync/glue/autofill_model_associator2.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -40,8 +42,10 @@
 
 using browser_sync::AppDataTypeController;
 using browser_sync::AutofillChangeProcessor;
+using browser_sync::AutofillChangeProcessor2;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;
+using browser_sync::AutofillModelAssociator2;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
@@ -172,16 +176,30 @@ ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
     WebDatabase* web_database,
     PersonalDataManager* personal_data,
     browser_sync::UnrecoverableErrorHandler* error_handler) {
-  AutofillModelAssociator* model_associator =
-      new AutofillModelAssociator(profile_sync_service,
-                                  web_database,
-                                  personal_data);
-  AutofillChangeProcessor* change_processor =
-      new AutofillChangeProcessor(model_associator,
-                                  web_database,
-                                  personal_data,
-                                  error_handler);
-  return SyncComponents(model_associator, change_processor);
+
+  if (command_line_->HasSwitch(switches::kEnableSyncNewAutofill)) {
+    AutofillModelAssociator* model_associator =
+        new AutofillModelAssociator(profile_sync_service,
+                                    web_database,
+                                    personal_data);
+    AutofillChangeProcessor* change_processor =
+        new AutofillChangeProcessor(model_associator,
+                                    web_database,
+                                    personal_data,
+                                    error_handler);
+    return SyncComponents(model_associator, change_processor);
+  } else {
+    AutofillModelAssociator2* model_associator =
+        new AutofillModelAssociator2(profile_sync_service,
+                                    web_database,
+                                    personal_data);
+    AutofillChangeProcessor2* change_processor =
+        new AutofillChangeProcessor2(model_associator,
+                                    web_database,
+                                    personal_data,
+                                    error_handler);
+    return SyncComponents(model_associator, change_processor);
+  }
 }
 
 ProfileSyncFactory::SyncComponents

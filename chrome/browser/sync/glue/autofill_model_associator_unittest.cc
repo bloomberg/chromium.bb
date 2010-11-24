@@ -26,15 +26,3 @@ TEST_F(AutofillModelAssociatorTest, KeyToTag) {
             AutofillModelAssociator::KeyToTag(UTF8ToUTF16(""),
                                               UTF8ToUTF16("|")));
 }
-
-TEST_F(AutofillModelAssociatorTest, ProfileLabelToTag) {
-  string16 label(ASCIIToUTF16("awesome_address"));
-  EXPECT_EQ("autofill_profile|awesome_address",
-            AutofillModelAssociator::ProfileLabelToTag(label));
-
-  EXPECT_EQ("autofill_profile|%7C%7C",
-            AutofillModelAssociator::ProfileLabelToTag(ASCIIToUTF16("||")));
-  EXPECT_NE(AutofillModelAssociator::KeyToTag(ASCIIToUTF16("autofill_profile"),
-                                              ASCIIToUTF16("home")),
-            AutofillModelAssociator::ProfileLabelToTag(ASCIIToUTF16("home")));
-}
