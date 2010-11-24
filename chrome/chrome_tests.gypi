@@ -1957,6 +1957,7 @@
         'browser/device_orientation/device_orientation_browsertest.cc',
         'browser/dom_ui/file_browse_browsertest.cc',
         'browser/dom_ui/mediaplayer_browsertest.cc',
+        'browser/download/download_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',

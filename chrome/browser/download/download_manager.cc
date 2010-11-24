@@ -414,6 +414,7 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
                                     info->suggested_path,
                                     &file_type_info, 0, FILE_PATH_LITERAL(""),
                                     owning_window, info);
+    FOR_EACH_OBSERVER(Observer, observers_, SelectFileDialogDisplayed());
   } else {
     // No prompting for download, just continue with the suggested name.
     CreateDownloadItem(info, info->suggested_path);

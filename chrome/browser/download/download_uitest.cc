@@ -33,26 +33,6 @@ namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
 
-#if defined(OS_WIN)
-// Checks if the volume supports Alternate Data Streams. This is required for
-// the Zone Identifier implementation.
-bool VolumeSupportsADS(const std::wstring path) {
-  wchar_t drive[MAX_PATH] = {0};
-  wcscpy_s(drive, MAX_PATH, path.c_str());
-
-  EXPECT_TRUE(PathStripToRootW(drive));
-
-  DWORD fs_flags = 0;
-  EXPECT_TRUE(GetVolumeInformationW(drive, NULL, 0, 0, NULL, &fs_flags, NULL,
-                                    0));
-
-  if (fs_flags & FILE_NAMED_STREAMS)
-    return true;
-
-  return false;
-}
-#endif  // defined(OS_WIN)
-
 class DownloadTest : public UITest {
  protected:
   DownloadTest() : UITest() {}
@@ -74,8 +54,8 @@ class DownloadTest : public UITest {
 
 #if defined(OS_WIN)
     // Check if the Zone Identifier is correctly set.
-    if (VolumeSupportsADS(file_on_client.value()))
-      CheckZoneIdentifier(file_on_client.value());
+    if (file_util::VolumeSupportsADS(file_on_client))
+      EXPECT_TRUE(file_util::HasInternetZoneIdentifier(file_on_client));
 #endif
 
     // Delete the client copy of the file.
@@ -134,47 +114,6 @@ class DownloadTest : public UITest {
     EXPECT_TRUE(file_util::DieFileDie(download_path, true));
     EXPECT_FALSE(file_util::PathExists(download_path));
   }
-
-#if defined(OS_WIN)
-  // Checks if the ZoneIdentifier is correctly set to "Internet" (3)
-  void CheckZoneIdentifier(const std::wstring full_path) {
-    std::wstring path = full_path + L":Zone.Identifier";
-
-    // This polling and sleeping here is a very bad pattern. But due to how
-    // Windows file semantics work it's really hard to do it other way. We are
-    // reading a file written by a different process, using a different handle.
-    // Windows does not guarantee that we will get the same contents even after
-    // the other process closes the handle, flushes the buffers, etc.
-    for (int i = 0; i < 20; i++) {
-      PlatformThread::Sleep(sleep_timeout_ms());
-
-      const DWORD kShare = FILE_SHARE_READ |
-                           FILE_SHARE_WRITE |
-                           FILE_SHARE_DELETE;
-      HANDLE file = CreateFile(path.c_str(), GENERIC_READ, kShare, NULL,
-                               OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-      if (file == INVALID_HANDLE_VALUE)
-        continue;
-
-      char buffer[100] = {0};
-      DWORD read = 0;
-      BOOL read_result = ReadFile(file, buffer, 100, &read, NULL);
-      CloseHandle(file);
-
-      if (!read_result)
-        continue;
-
-      const char kIdentifier[] = "[ZoneTransfer]\nZoneId=3";
-      if (read != arraysize(kIdentifier))
-        continue;
-
-      if (strcmp(kIdentifier, buffer) == 0)
-        return;
-    }
-
-    FAIL() << "Could not detect Internet ZoneIndentifier";
-  }
-#endif  // defined(OS_WIN)
 
   FilePath download_prefix_;
 };

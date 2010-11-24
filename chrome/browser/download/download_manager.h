@@ -85,6 +85,10 @@ class DownloadManager
     // from calling back to a stale pointer.
     virtual void ManagerGoingDown() {}
 
+    // Called immediately after the DownloadManager puts up a select file
+    // dialog.
+    virtual void SelectFileDialogDisplayed() {}
+
    protected:
     virtual ~Observer() {}
   };
