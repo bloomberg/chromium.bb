@@ -1579,8 +1579,6 @@ void ResourceMessageFilter::OnKeygenOnWorkerThread(
     const GURL& url,
     IPC::Message* reply_msg) {
   DCHECK(reply_msg);
-  // Verify we are on a worker thread.
-  DCHECK(!MessageLoop::current());
 
   // Generate a signed public key and challenge, then send it back.
   net::KeygenHandler keygen_handler(key_size_in_bits, challenge_string, url);
