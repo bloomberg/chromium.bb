@@ -1551,6 +1551,7 @@
         'browser/wrench_menu_model_unittest.cc',
         'common/bzip2_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
+        'common/chrome_paths_unittest.cc',
         'common/common_param_traits_unittest.cc',
         'common/content_settings_helper_unittest.cc',
         'common/deprecated/event_sys_unittest.cc',
