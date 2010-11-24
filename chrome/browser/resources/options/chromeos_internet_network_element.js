@@ -106,7 +106,7 @@ cr.define('options.internet', function() {
       iconURL: network[6],
       remembered: network[7],
       activation_state: network[8],
-      restricted: network[9],
+      needs_new_plan: network[9],
       connectable: network[10]
     };
     NetworkItem.decorate(el);
@@ -189,10 +189,7 @@ cr.define('options.internet', function() {
       if (!this.data.remembered) {
         var no_plan =
             this.data.networkType == NetworkItem.TYPE_CELLULAR &&
-            this.data.activation_state ==
-                NetworkItem.ACTIVATION_STATE_ACTIVATED &&
-            this.data.restricted &&
-            this.data.connected;
+            this.data.needs_new_plan;
         var show_activate =
           (this.data.networkType == NetworkItem.TYPE_CELLULAR &&
            this.data.activation_state !=
@@ -225,7 +222,8 @@ cr.define('options.internet', function() {
                              'activate']);
               }));
         }
-        if (this.data.connected) {
+        if (this.data.connected ||
+                this.data.networkType == NetworkItem.TYPE_CELLULAR) {
           buttonsDiv.appendChild(
               this.createButton_('options_button', 'options',
                                  function(e) {

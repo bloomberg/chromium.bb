@@ -197,15 +197,20 @@ cr.define('options', function() {
 
   InternetOptions.updateCellularPlans = function (data) {
     var page = $('detailsInternetPage');
-    if (data.needsPlan) {
-      page.setAttribute('nocellplan', true);
-      page.removeAttribute('hascellplan');
-    } else {
+    page.removeAttribute('cellplanloading');
+    if (data.plans && data.plans.length) {
       page.removeAttribute('nocellplan');
       page.setAttribute('hascellplan', true);
       $('planList').load(data.plans);
+    } else {
+      page.setAttribute('nocellplan', true);
+      page.removeAttribute('hascellplan');
     }
-    page.removeAttribute('cellplanloading');
+    if (!data.needsPlan) {
+      page.setAttribute('hasactiveplan', true);
+    } else {
+      page.removeAttribute('hasactiveplan');
+    }
   };
 
   InternetOptions.showPasswordEntry = function (data) {

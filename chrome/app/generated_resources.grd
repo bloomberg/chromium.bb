@@ -9364,7 +9364,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Loading cellular data plan information, please wait...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND" desc="In settings Internet options, the message displayed while cellular data plans are missing or could not be found.">
-        No active cellular plan found.
+        Plan information not available.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING" desc="In settings Internet options, the label for mobile plan remaining data info.">
         Data remaining:

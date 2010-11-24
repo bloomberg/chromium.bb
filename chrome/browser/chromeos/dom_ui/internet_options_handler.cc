@@ -447,6 +447,7 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
     plan_list->Append(CellularDataPlanToDictionary(*iter));
   }
   connection_plans.SetString("servicePath", cellular->service_path());
+  connection_plans.SetBoolean("needsPlan", cellular->needs_new_plan());
   connection_plans.Set("plans", plan_list);
   dom_ui_->CallJavascriptFunction(
       L"options.InternetOptions.updateCellularPlans", connection_plans);
@@ -840,7 +841,7 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
     const SkBitmap& icon, const std::string& name, bool connecting,
     bool connected, bool connectable, chromeos::ConnectionType connection_type,
     bool remembered, chromeos::ActivationState activation_state,
-    bool restricted_ip) {
+    bool needs_new_plan) {
   ListValue* network = new ListValue();
 
   int connection_state = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
@@ -852,8 +853,7 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
     connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
   std::string status = l10n_util::GetStringUTF8(connection_state);
   if (connection_type == chromeos::TYPE_CELLULAR) {
-    if (activation_state == chromeos::ACTIVATION_STATE_ACTIVATED &&
-        restricted_ip && connected) {
+    if (needs_new_plan) {
       status = l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL);
     } else if (activation_state != chromeos::ACTIVATION_STATE_ACTIVATED) {
       status.append(" / ");
@@ -881,8 +881,8 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
   // activation_state
   network->Append(Value::CreateIntegerValue(
                     static_cast<int>(activation_state)));
-  // restricted
-  network->Append(Value::CreateBooleanValue(restricted_ip));
+  // needs_new_plan
+  network->Append(Value::CreateBooleanValue(needs_new_plan));
   // connectable
   network->Append(Value::CreateBooleanValue(connectable));
   return network;
