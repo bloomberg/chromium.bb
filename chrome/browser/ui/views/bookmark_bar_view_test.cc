@@ -1355,4 +1355,5 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest16, DeleteMenu)
+// Disabled, http://crbug.com/64303.
+VIEW_TEST(BookmarkBarViewTest16, DISABLED_DeleteMenu)
