@@ -50,6 +50,30 @@ class PopupsTest(pyauto.PyUITest):
                      msg='Popup could not be launched');
     self.assertEqual('Popup Success!', self.GetActiveTabTitle(1))
 
+  def testPopupBlockerInIncognito(self):
+    """Verify popup blocking is enabled in incognito windows."""
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    file_url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+    self.NavigateToURL(file_url, 1, 0)
+    blocked_popups = self.GetBlockedPopupsInfo(tab_index=0, windex=1)
+    self.assertEqual(1, len(blocked_popups), msg='Popup not blocked')
+
+  def testLaunchBlockedPopupInIncognito(self):
+    """Verify that a blocked popup can be unblocked in incognito."""
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    file_url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), 'popup_blocker', 'popup-blocked-to-post-blank.html'))
+    self.NavigateToURL(file_url, 1, 0)
+    self.assertEqual(1, len(self.GetBlockedPopupsInfo(tab_index=0, windex=1)))
+    self.UnblockAndLaunchBlockedPopup(0, tab_index=0, windex=1)
+    # Verify that no more popups are blocked
+    self.assertFalse(self.GetBlockedPopupsInfo(tab_index=0, windex=1))
+    # Verify that popup window was created
+    self.assertEqual(3, self.GetBrowserWindowCount(),
+                     msg='Popup could not be launched');
+    self.assertEqual('Popup Success!', self.GetActiveTabTitle(2))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
