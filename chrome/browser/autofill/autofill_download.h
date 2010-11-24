@@ -25,6 +25,7 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
     REQUEST_QUERY,
     REQUEST_UPLOAD,
   };
+
   // An interface used to notify clients of AutoFillDownloadManager.
   // Notifications are *not* guaranteed to be called.
   class Observer {

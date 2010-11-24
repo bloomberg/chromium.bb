@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -78,6 +79,7 @@ bool AutoFillDownloadManager::StartQueryRequest(
     return false;
 
   request_data.request_type = AutoFillDownloadManager::REQUEST_QUERY;
+  autofill_metrics::LogServerQueryMetric(autofill_metrics::QUERY_SENT);
 
   return StartRequest(form_xml, request_data);
 }

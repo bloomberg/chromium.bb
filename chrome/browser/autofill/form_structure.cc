@@ -9,6 +9,7 @@
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
@@ -194,6 +195,9 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
 void FormStructure::ParseQueryResponse(const std::string& response_xml,
                                        const std::vector<FormStructure*>& forms,
                                        UploadRequired* upload_required) {
+  autofill_metrics::LogServerQueryMetric(
+      autofill_metrics::QUERY_RESPONSE_RECEIVED);
+
   // Parse the field types from the server response to the query.
   std::vector<AutoFillFieldType> field_types;
   AutoFillQueryXmlParser parse_handler(&field_types, upload_required);
@@ -202,16 +206,26 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   if (!parse_handler.succeeded())
     return;
 
+  autofill_metrics::LogServerQueryMetric(
+      autofill_metrics::QUERY_RESPONSE_PARSED);
+
+  bool heuristics_detected_fillable_field = false;
+  bool query_response_overrode_heuristics = false;
+
   // Copy the field types into the actual form.
   std::vector<AutoFillFieldType>::iterator current_type = field_types.begin();
   for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     FormStructure* form = *iter;
+
+    if (form->has_autofillable_field_)
+      heuristics_detected_fillable_field = true;
+
     form->has_credit_card_field_ = false;
     form->has_autofillable_field_ = false;
 
     for (std::vector<AutoFillField*>::iterator field = form->fields_.begin();
-         field != form->fields_.end(); ++field) {
+         field != form->fields_.end(); ++field, ++current_type) {
       // The field list is terminated by a NULL AutoFillField.
       if (!*field)
         break;
@@ -222,16 +236,30 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
         break;
 
       (*field)->set_server_type(*current_type);
+      if ((*field)->heuristic_type() != (*field)->server_type())
+        query_response_overrode_heuristics = true;
+
       AutoFillType autofill_type((*field)->type());
       if (autofill_type.group() == AutoFillType::CREDIT_CARD)
         form->has_credit_card_field_ = true;
       if (autofill_type.field_type() != UNKNOWN_TYPE)
         form->has_autofillable_field_ = true;
-      ++current_type;
     }
 
     form->UpdateAutoFillCount();
   }
+
+  autofill_metrics::ServerQueryMetricType metric_type;
+  if (query_response_overrode_heuristics) {
+    if (heuristics_detected_fillable_field) {
+      metric_type = autofill_metrics::QUERY_RESPONSE_OVERRODE_LOCAL_HEURISTICS;
+    } else {
+      metric_type = autofill_metrics::QUERY_RESPONSE_WITH_NO_LOCAL_HEURISTICS;
+    }
+  } else {
+    metric_type = autofill_metrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS;
+  }
+  autofill_metrics::LogServerQueryMetric(metric_type);
 }
 
 std::string FormStructure::FormSignature() const {

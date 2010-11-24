@@ -175,6 +175,8 @@
         'browser/autofill/autofill_ie_toolbar_import_win.h',
         'browser/autofill/autofill_manager.cc',
         'browser/autofill/autofill_manager.h',
+        'browser/autofill/autofill_metrics.cc',
+        'browser/autofill/autofill_metrics.h',
         'browser/autofill/autofill_profile.cc',
         'browser/autofill/autofill_profile.h',
         'browser/autofill/autofill_text_field_mac.h',
