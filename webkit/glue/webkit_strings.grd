@@ -370,6 +370,11 @@ below:
       <message name="IDS_PDF_LOADING_PROGRESS" desc="A message displayed on the PDF control to indicate loading progress.">
         Loading document: <ph name="PAGE_NUMBER">%d<ex>3</ex></ph>/<ph name="NUMBER_OF_PAGES">%d<ex>15</ex></ph> pages...
       </message>
+
+      <message name="IDS_PDF_PAGE_LOAD_FAILED" desc="A message displayed on the PDF control to indicate that the PDF document failed to load.">
+        Failed to load PDF document
+      </message>
+
     </messages>
   </release>
 </grit>
