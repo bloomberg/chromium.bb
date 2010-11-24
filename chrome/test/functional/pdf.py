@@ -43,7 +43,7 @@ class PDFTest(pyauto.PyUITest):
       # Some pdfs cause known crashes. Exclude them. crbug.com/63549
       if os.path.basename(pdf_file) in ('nullip.pdf', 'sample.pdf'):
         continue
-      url = self.GetFileURLForPath(os.path.join(pdf_files_path, pdf_file))
+      url = self.GetFileURLForPath(pdf_file)
       self.AppendTab(pyauto.GURL(url))
     for tab_index in range(1, len(pdf_files) + 1):
       self.ActivateTab(tab_index)
