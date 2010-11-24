@@ -291,11 +291,9 @@ class DownloadTest : public InProcessBrowserTest {
 // Test is believed good (non-flaky) in itself, but it
 // sometimes trips over underlying flakiness in the downloads
 // subsystem in in http://crbug.com/63237.  Until that bug is
-// fixed, this test should be considered flaky.
-// (Note that if 63237 does cause a failure, it'll be a timeout.
-// This isn't ideal, but getting stats on this tests failure is
-// worth the timeout test costs.)
-IN_PROC_BROWSER_TEST_F(DownloadTest, FLAKY_DownloadMimeType) {
+// fixed, this test should be considered flaky.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeType) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   ASSERT_TRUE(CreateAndSetDownloadsDirectory());
 
