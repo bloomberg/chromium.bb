@@ -701,8 +701,6 @@ class ExecutionQueue(object):
       """Runs in its own thread."""
       logging.debug('running(%s)' % self.item.name)
       work_queue = self.kwargs['work_queue']
-      # It's necessary to catch all exceptions.
-      # pylint: disable=W0703
       try:
         self.item.run(*self.args, **self.kwargs)
       except Exception:

@@ -27,6 +27,34 @@ DEFAULT_URL = 'https://chromium-status.appspot.com/breakpad'
 _REGISTERED = False
 
 
+def FormatException(e):
+  """Returns a human readable form of an exception.
+
+  Adds the maximum number of interesting information in the safest way."""
+  try:
+    out = repr(e)
+  except Exception:
+    out = ''
+  try:
+    out = str(e)
+    if isinstance(e, Exception):
+      # urllib exceptions, usually the HTTP headers.
+      if hasattr(e, 'headers'):
+        out += '\nHeaders: %s' % e.headers
+      if hasattr(e, 'url'):
+        out += '\nUrl: %s' % e.url
+      if hasattr(e, 'msg'):
+        out += '\nMsg: %s' % e.msg
+      # The web page in some urllib exceptions.
+      if hasattr(e, 'read') and callable(e.read):
+        out += '\nread(): %s' % e.read()
+      if hasattr(e, 'info') and callable(e.info):
+        out += '\ninfo(): %s' % e.info()
+  except Exception:
+    pass
+  return out
+
+
 def SendStack(last_tb, stack, url=None):
   """Sends the stack trace to the breakpad server."""
   if not url:
@@ -35,19 +63,13 @@ def SendStack(last_tb, stack, url=None):
   try:
     params = {
         'args': sys.argv,
-        'stack': stack,
+        'stack': stack[0:4096],
         'user': getpass.getuser(),
-        'exception': last_tb,
+        'exception': FormatException(last_tb),
         'host': socket.getfqdn(),
         'cwd': os.getcwd(),
     }
-    # No exception type(s) specified
     # pylint: disable=W0702
-    try:
-      # That may not always work.
-      params['exception'] = str(last_tb)
-    except:
-      pass
     print('\n'.join('  %s: %s' % (k, v[0:50]) for k, v in params.iteritems()))
     request = urllib.urlopen(url, urllib.urlencode(params))
     print(request.read())
