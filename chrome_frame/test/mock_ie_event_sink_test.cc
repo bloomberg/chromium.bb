@@ -179,6 +179,13 @@ MockIEEventSinkTest::MockIEEventSinkTest() : server_mock_(1337, L"127.0.0.1",
       .WillRepeatedly(SendFast("HTTP/1.1 404 Not Found", ""));
 }
 
+MockIEEventSinkTest::MockIEEventSinkTest(int port, const std::wstring& address,
+                                         const FilePath& root_dir)
+    : server_mock_(port, address, root_dir) {
+  EXPECT_CALL(server_mock_, Get(_, StrCaseEq(L"/favicon.ico"), _))
+      .WillRepeatedly(SendFast("HTTP/1.1 404 Not Found", ""));
+}
+
 void MockIEEventSinkTest::LaunchIEAndNavigate(const std::wstring& url) {
   LaunchIENavigateAndLoop(url, kChromeFrameLongNavigationTimeoutInSeconds);
 }

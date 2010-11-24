@@ -490,9 +490,6 @@ END_MSG_MAP()
     std::wstring wide_url = url_;
     GURL parsed_url(WideToUTF8(wide_url));
 
-    std::string scheme(parsed_url.scheme());
-    std::string host(parsed_url.host());
-
     // If Chrome-Frame is presently navigated to an extension page, navigating
     // the host to a url with scheme chrome-extension will fail, so we
     // point the host at http:local_host.  Note that this is NOT the URL
@@ -501,14 +498,18 @@ END_MSG_MAP()
     // be constructed in the new IE tab.
     if (parsed_url.SchemeIs("chrome-extension") &&
         is_privileged_) {
-      scheme = "http";
-      host = "local_host";
+      const char kScheme[] = "http";
+      const char kHost[] = "local_host";
+
+      GURL::Replacements r;
+      r.SetScheme(kScheme, url_parse::Component(0, sizeof(kScheme) -1));
+      r.SetHost(kHost, url_parse::Component(0, sizeof(kHost) - 1));
+      parsed_url = parsed_url.ReplaceComponents(r);
     }
 
     std::string url = base::StringPrintf(
-        "%hs://%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
-        scheme.c_str(),
-        host.c_str(),
+        "%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
+        parsed_url.GetOrigin().spec().c_str(),
         params.cookie,
         params.disposition,
         params.dimensions.x(),

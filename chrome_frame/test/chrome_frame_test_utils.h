@@ -139,6 +139,9 @@ IEVersion GetInstalledIEVersion();
 // Returns the folder for CF test data.
 FilePath GetTestDataFolder();
 
+// Returns the folder for Selenium core.
+FilePath GetSeleniumTestFolder();
+
 // Returns the path portion of the url.
 std::wstring GetPathFromUrl(const std::wstring& url);
 

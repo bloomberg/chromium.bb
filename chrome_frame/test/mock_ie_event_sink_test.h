@@ -275,6 +275,8 @@ class MockAccEventObserver : public AccEventObserver {
 class MockIEEventSinkTest {
  public:
   MockIEEventSinkTest();
+  MockIEEventSinkTest(int port, const std::wstring& address,
+                      const FilePath& root_dir);
 
   ~MockIEEventSinkTest() {
     // Detach manually here so that it occurs before |last_resort_close_ie_|

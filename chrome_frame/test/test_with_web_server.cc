@@ -354,7 +354,8 @@ void MockWebServer::SendResponseHelper(
 
   std::string headers, body;
   std::string content_type;
-  if (file_util::PathExists(file_path)) {
+  if (file_util::PathExists(file_path) &&
+      !file_util::DirectoryExists(file_path)) {
     FilePath mock_http_headers(file_path.value() + L".mock-http-headers");
     if (file_util::PathExists(mock_http_headers)) {
       headers = GetMockHttpHeaders(mock_http_headers);

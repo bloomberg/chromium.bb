@@ -454,6 +454,14 @@ FilePath GetTestDataFolder() {
   return test_dir;
 }
 
+FilePath GetSeleniumTestFolder() {
+  FilePath test_dir;
+  PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
+  test_dir = test_dir.Append(FILE_PATH_LITERAL("data"))
+      .Append(FILE_PATH_LITERAL("selenium_core"));
+  return test_dir;
+}
+
 std::wstring GetPathFromUrl(const std::wstring& url) {
   string16 url16 = WideToUTF16(url);
   GURL gurl = GURL(url16);

@@ -955,4 +955,68 @@ TEST_P(FullTabNavigationTest, RefreshContents) {
   LaunchIEAndNavigate(src_url);
 }
 
+class FullTabSeleniumTest
+    : public MockIEEventSinkTest, public testing::TestWithParam<CFInvocation> {
+ public:
+  FullTabSeleniumTest()
+      : MockIEEventSinkTest(1337, L"127.0.0.1", GetSeleniumTestFolder()) {}
+};
+
+ACTION(VerifySeleniumCoreTestResults) {
+  int num_tests = 0;
+  int failed_tests = 0;
+
+  swscanf(arg0, L"%d/%d", &num_tests, &failed_tests);
+
+  // Currently we run total 505 tests and 8 steps fail.
+  // TODO(amit): send results as JSON, diagnose and eliminate failures.
+  ASSERT_EQ(num_tests, 505) << "Expected to run: " << 505 << " tests." <<
+      " Actual number of tests run: " << num_tests;
+  ASSERT_LE(failed_tests, 8) << "Expected failures: " << 8 <<
+      " Actual failures: " << failed_tests;
+}
+
+// Tests refreshing causes a page load.
+TEST_F(FullTabSeleniumTest, Core) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::HttpHeader());
+  std::wstring url = GetTestUrl(L"core/TestRunner.html");
+
+  // Expectations for TestRunner.html
+  EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              testing::StartsWith(url)), _, _, _, _, _))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              testing::StartsWith(url))))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(ie_mock_, OnLoad(true, testing::StartsWith(url)))
+      .Times(testing::AnyNumber());
+
+  // Expectation for cookie test
+  EXPECT_CALL(ie_mock_, OnLoadError(testing::StartsWith(url)))
+      .Times(3);
+
+  // Expectations for popups
+  std::wstring attach_url_prefix = GetTestUrl(L"?attach_external_tab&");
+  EXPECT_CALL(ie_mock_, OnNewWindow3(_, _, _, _,
+                            testing::StartsWith(attach_url_prefix)))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(ie_mock_, OnNewBrowserWindow(_,
+                            testing::StartsWith(attach_url_prefix)))
+      .Times(testing::AnyNumber());
+
+  // At the end the tests will post us a message.  See _onTestSuiteComplete in
+  // ...\src\data\selenium_core\core\scripts\selenium-testrunner.js
+  EXPECT_CALL(ie_mock_, OnMessage(_, _, _))
+      .WillOnce(testing::DoAll(VerifySeleniumCoreTestResults(),
+                               CloseBrowserMock(&ie_mock_)));
+
+  // Selenium tests take longer to finish, lets give it 2 mins.
+  const int kSeleniumTestTimeout = 120;
+  LaunchIENavigateAndLoop(url, kSeleniumTestTimeout);
+}
+
+
 }  // namespace chrome_frame_test
