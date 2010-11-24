@@ -91,16 +91,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
 }
 
-// TODO(kochi): Flaky at r65757 and after on buildbot for ChromiumOS.
-// http://crosbug.com/9049
-#if defined(OS_CHROMEOS)
-#define MAYBE_Incognito FLAKY_Incognito
-#else
-#define MAYBE_Incognito Incognito
-#endif
-
 // Tests that the APIs in an incognito-enabled extension work properly.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Incognito) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
