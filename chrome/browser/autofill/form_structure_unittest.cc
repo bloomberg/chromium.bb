@@ -1287,6 +1287,62 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
             form_structure->field(4)->heuristic_type());
 }
 
+TEST(FormStructureTest, CVCCodeClash) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Card number"),
+                                               ASCIIToUTF16("ccnumber"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First name"),
+                                               ASCIIToUTF16("first_name"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last name"),
+                                               ASCIIToUTF16("last_name"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Expiration date"),
+                                               ASCIIToUTF16("ccexpiresmonth"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16(""),
+                                               ASCIIToUTF16("ccexpiresyear"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("cvc number"),
+                                               ASCIIToUTF16("csc"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->IsAutoFillable(true));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(6U, form_structure->field_count());
+  ASSERT_EQ(4U, form_structure->autofill_count());
+
+  // Card Number.
+  EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure->field(0)->heuristic_type());
+  // First name, taken as name on card.
+  EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(1)->heuristic_type());
+  // Last name is not merged.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+  // Expiration Date.
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, form_structure->field(3)->heuristic_type());
+  // Expiration Year.
+  EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+            form_structure->field(4)->heuristic_type());
+  // CVC code should not match.
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(5)->heuristic_type());
+}
+
 TEST(FormStructureTest, EncodeQueryRequest) {
   FormData form;
   form.method = ASCIIToUTF16("post");

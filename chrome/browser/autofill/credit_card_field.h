@@ -39,6 +39,9 @@ class CreditCardField : public FormField {
   AutoFillField* type_;  // Optional.  TODO(jhawkins): Parse the select control.
   AutoFillField* number_;  // Required.
 
+  // The 3-digit card verification number; we don't currently fill this.
+  AutoFillField* verification_;
+
   // Both required.  TODO(jhawkins): Parse the select control.
   AutoFillField* expiration_month_;
   AutoFillField* expiration_year_;

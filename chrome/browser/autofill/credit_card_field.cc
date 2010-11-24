@@ -88,6 +88,22 @@ CreditCardField* CreditCardField::Parse(
       }
     }
 
+    // We look for a card security code before we look for a credit
+    // card number and match the general term "number".  The security code
+    // has a plethora of names; we've seen "verification #",
+    // "verification number", "card identification number" and others listed
+    // in the |pattern| below.
+    if (is_ecml) {
+      pattern = GetEcmlPattern(kEcmlCardVerification);
+    } else {
+      pattern = ASCIIToUTF16("verification|card identification|cvn|"
+                             "security code|cvv code|cvc");
+    }
+
+    if (credit_card_field->verification_ == NULL &&
+        ParseText(&q, pattern, &credit_card_field->verification_))
+      continue;
+
     // TODO(jhawkins): Parse the type select control.
 
     if (is_ecml)
@@ -155,7 +171,11 @@ CreditCardField* CreditCardField::Parse(
   // On some pages, the user selects a card type using radio buttons
   // (e.g. test page Apple Store Billing.html).  We can't handle that yet,
   // so we treat the card type as optional for now.
-  if (credit_card_field->number_ &&
+  // The existence of a number or cvc in combination with expiration date is
+  // a strong enough signal that this is a credit card.  It is possible that
+  // the number and name were parsed in a separate part of the form.  So if
+  // the cvc and date were found independently they are returned.
+  if ((credit_card_field->number_ || credit_card_field->verification_) &&
       credit_card_field->expiration_month_ &&
       credit_card_field->expiration_year_) {
       *iter = q;
@@ -170,6 +190,7 @@ CreditCardField::CreditCardField()
       cardholder_last_(NULL),
       type_(NULL),
       number_(NULL),
+      verification_(NULL),
       expiration_month_(NULL),
       expiration_year_(NULL) {
 }
