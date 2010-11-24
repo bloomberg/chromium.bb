@@ -263,11 +263,7 @@ void RenderWidgetHost::WasRestored() {
   // could handle both the restore and resize at once. This isn't that big a
   // deal as RenderWidget::WasRestored delays updating, so that the resize from
   // WasResized is usually processed before the renderer is painted.
-  //
-  // NOTE: This is disabled on Mac because of 64113.
-#if !defined(OS_MACOSX)
   WasResized();
-#endif
 }
 
 void RenderWidgetHost::WasResized() {
@@ -304,6 +300,8 @@ void RenderWidgetHost::WasResized() {
       // Message was sent successfully, but we do not expect to receive an ACK,
       // so update current values right away.
       current_size_ = new_size;
+      // TODO(alekseys): send a message from renderer to ack a reserved rect
+      // changes only.
       current_reserved_rect_ = reserved_rect;
     }
   }
@@ -803,7 +801,6 @@ void RenderWidgetHost::OnMsgUpdateRect(
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
-  current_reserved_rect_ = params.resizer_rect;
 
   bool is_resize_ack =
       ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.flags);
@@ -815,6 +812,13 @@ void RenderWidgetHost::OnMsgUpdateRect(
     resize_ack_pending_ = false;
     in_flight_size_.SetSize(0, 0);
     in_flight_reserved_rect_.SetRect(0, 0, 0, 0);
+    // Update our knowledge of the RenderWidget's resizer rect.
+    // ViewMsg_Resize is acknowledged only when view size is actually changed,
+    // otherwise current_reserved_rect_ is updated immediately after sending
+    // ViewMsg_Resize to the RenderWidget and can be clobbered by
+    // OnMsgUpdateRect called for a paint that was initiated before the resize
+    // message was sent.
+    current_reserved_rect_ = params.resizer_rect;
   }
 
   bool is_repaint_ack =
