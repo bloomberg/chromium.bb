@@ -150,10 +150,9 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile,
       keep_alive_for_startup_(false),
       status_tray_(NULL),
       status_icon_(NULL) {
-  // If background mode or apps are disabled, just exit - don't listen for
-  // any notifications.
-  if (!command_line->HasSwitch(switches::kEnableBackgroundMode) ||
-      command_line->HasSwitch(switches::kDisableExtensions))
+  // If background mode is disabled, just exit - don't listen for any
+  // notifications.
+  if (!IsBackgroundModeEnabled(command_line))
     return;
 
   // Keep the browser alive until extensions are done loading - this is needed
@@ -552,3 +551,23 @@ Browser* BackgroundModeManager::GetBrowserWindow() {
 void BackgroundModeManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kLaunchOnStartupResetAllowed, false);
 }
+
+// static
+bool BackgroundModeManager::IsBackgroundModeEnabled(
+    const CommandLine* command_line) {
+
+  // Background mode is disabled if the appropriate flag is passed, or if
+  // extensions are disabled.
+  bool background_mode_enabled =
+      !command_line->HasSwitch(switches::kDisableBackgroundMode) &&
+      !command_line->HasSwitch(switches::kDisableExtensions);
+#if !defined(OS_WIN)
+  // BackgroundMode is enabled by default on windows. On other platforms, it
+  // is enabled via about:flags.
+  background_mode_enabled = background_mode_enabled &&
+      command_line->HasSwitch(switches::kEnableBackgroundMode);
+#endif
+
+  return background_mode_enabled;
+}
+

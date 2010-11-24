@@ -46,6 +46,8 @@ class BackgroundModeManager
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  static bool IsBackgroundModeEnabled(const CommandLine* command_line);
+
  private:
   friend class TestBackgroundModeManager;
   friend class BackgroundModeManagerTest;

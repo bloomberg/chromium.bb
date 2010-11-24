@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -134,11 +135,13 @@ PrefService* BackgroundPageTracker::GetPrefService() {
 }
 
 bool BackgroundPageTracker::IsEnabled() {
-  // BackgroundPageTracker is enabled if both extensions and background mode
-  // are enabled.
+  // Disable the background page tracker for unittests.
+  if (!g_browser_process->local_state())
+    return false;
+
+  // BackgroundPageTracker is enabled if background mode is enabled.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableBackgroundMode) &&
-         !command_line->HasSwitch(switches::kDisableExtensions);
+  return BackgroundModeManager::IsBackgroundModeEnabled(command_line);
 }
 
 void BackgroundPageTracker::Observe(NotificationType type,

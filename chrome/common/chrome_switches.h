@@ -55,6 +55,7 @@ extern const char kDisableAltWinstation[];
 extern const char kDisableApplicationCache[];
 extern const char kDisableAudio[];
 extern const char kDisableAuthNegotiateCnameLookup[];
+extern const char kDisableBackgroundMode[];
 extern const char kDisableBackgroundNetworking[];
 extern const char kDisableBackingStoreLimit[];
 extern const char kDisableConnectBackupJobs[];

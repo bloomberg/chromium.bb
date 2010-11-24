@@ -157,6 +157,11 @@ const char kDisableAudio[]                  = "disable-audio";
 const char kDisableAuthNegotiateCnameLookup[] =
     "disable-auth-negotiate-cname-lookup";
 
+// Disable background mode (background apps will not keep chrome running in the
+// background). This has priority over the kEnableBackgroundMode flag which is
+// settable via about:labs.
+const char kDisableBackgroundMode[] = "disable-background-mode";
+
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise
 // in the measurements.
@@ -390,7 +395,8 @@ const char kEnableAppLauncher[]             = "enable-app-launcher";
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
 // Enable background mode (background apps will keep chrome running in the
-// background and allow chrome to launch on startup).
+// background and allow chrome to launch on startup). Has no effect on Windows
+// because background mode is enabled there by default.
 const char kEnableBackgroundMode[] = "enable-background-mode";
 
 // Enables the benchmarking extensions.
