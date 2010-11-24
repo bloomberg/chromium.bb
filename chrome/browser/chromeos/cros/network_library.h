@@ -98,6 +98,7 @@ class Network {
   void set_state(ConnectionState state) { state_ = state; }
   void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_active(bool is_active) { is_active_ = is_active; }
+  void set_error(ConnectionError error) { error_ = error; }
 
   // Initialize the IP address field
   void InitIPAddress();
@@ -552,8 +553,9 @@ class NetworkLibrary {
   // TODO(joth): Add GetCellTowers to retrieve a CellTowerVector.
 
   // Connect to the specified wireless network with password.
-  // Returns false if the attempt fails immediately (e.g. passphrase too short).
-  virtual bool ConnectToWifiNetwork(const WifiNetwork* network,
+  // Returns false if the attempt fails immediately (e.g. passphrase too short)
+  // and sets network->error().
+  virtual bool ConnectToWifiNetwork(WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) = 0;

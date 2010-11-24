@@ -98,6 +98,9 @@ class WifiConfigView : public views::View,
   // Updates state of the "view password" button.
   void UpdateCanViewPassword();
 
+  // Updates the error text label.
+  void UpdateErrorLabel(bool failed);
+
   NetworkConfigView* parent_;
 
   bool other_network_;
@@ -117,6 +120,7 @@ class WifiConfigView : public views::View,
   views::Textfield* passphrase_textfield_;
   views::ImageButton* passphrase_visible_button_;
   views::Checkbox* autoconnect_checkbox_;
+  views::Label* error_label_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiConfigView);
 };

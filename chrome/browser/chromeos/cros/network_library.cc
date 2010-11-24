@@ -1036,7 +1036,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return true;
   }
 
-  virtual bool ConnectToWifiNetwork(const WifiNetwork* network,
+  virtual bool ConnectToWifiNetwork(WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) {
@@ -1061,6 +1061,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       NotifyNetworkManagerChanged();
       return true;
     } else {
+      // The only likely cause for an immediate failure is a badly formatted
+      // passphrase. TODO(stevenjb): get error information from libcros
+      // and call set_error correctly. crosbug.com/9538.
+      network->set_error(ERROR_BAD_PASSPHRASE);
       return false;  // Immediate failure.
     }
   }
@@ -1926,7 +1930,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
     return false;
   }
 
-  virtual bool ConnectToWifiNetwork(const WifiNetwork* network,
+  virtual bool ConnectToWifiNetwork(WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) {

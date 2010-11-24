@@ -49,7 +49,7 @@ class MockNetworkLibrary : public NetworkLibrary {
 
   MOCK_METHOD0(RequestWifiScan, void(void));
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
-  MOCK_METHOD4(ConnectToWifiNetwork, bool(const WifiNetwork*,
+  MOCK_METHOD4(ConnectToWifiNetwork, bool(WifiNetwork*,
                                           const std::string&,
                                           const std::string&,
                                           const std::string&));

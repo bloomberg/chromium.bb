@@ -9360,6 +9360,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_MORE_INFO" desc="In settings Internet options, the title for button for getting more information about the current cellular data plan.">
         More info...
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_CREDENTIALS" desc="In settings Internet options, the label for invalid passphrase or identity input.">
+        Password is too short or invalid.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME" desc="In settings Internet options, the label displayed next to cellular plan name.">
         Plan name:
       </message>

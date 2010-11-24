@@ -69,7 +69,8 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent,
       security_combobox_(NULL),
       passphrase_textfield_(NULL),
       passphrase_visible_button_(NULL),
-      autoconnect_checkbox_(NULL) {
+      autoconnect_checkbox_(NULL),
+      error_label_(NULL) {
   Init();
 }
 
@@ -84,7 +85,8 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
       security_combobox_(NULL),
       passphrase_textfield_(NULL),
       passphrase_visible_button_(NULL),
-      autoconnect_checkbox_(NULL) {
+      autoconnect_checkbox_(NULL),
+      error_label_(NULL) {
   Init();
 }
 
@@ -129,6 +131,29 @@ void WifiConfigView::UpdateCanViewPassword() {
       passphrase_textfield_->text().empty()) {
     // Once initial password has been deleted, it's safe to show field content.
     passphrase_visible_button_->SetVisible(true);
+  }
+}
+
+void WifiConfigView::UpdateErrorLabel(bool failed) {
+  static const int kNoError = -1;
+  int id = kNoError;
+  if (wifi_.get()) {
+    // Right now, only displaying bad_passphrase and bad_wepkey errors.
+    if (wifi_->error() == ERROR_BAD_PASSPHRASE)
+      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE;
+    else if (wifi_->error() == ERROR_BAD_WEPKEY)
+      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY;
+  }
+  if (id == kNoError && failed) {
+    // We don't know what the error was. For now assume bad identity or
+    // passphrase. See TODO comment in Login() and crosbug.com/9538.
+    id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_CREDENTIALS;
+  }
+  if (id != kNoError) {
+    error_label_->SetText(l10n_util::GetString(id));
+    error_label_->SetVisible(true);
+  } else {
+    error_label_->SetVisible(false);
   }
 }
 
@@ -211,22 +236,21 @@ bool WifiConfigView::Login() {
         sec, GetSSID(), GetPassphrase(),
         identity_string, certificate_path_,
         autoconnect_checkbox_ ? autoconnect_checkbox_->checked() : true);
-    // TODO(stevenjb): Modify libcros to set an error code and return 'false'
-    // only on an invalid password or other UI failure.
   } else {
     Save();
     connected = cros->ConnectToWifiNetwork(
         wifi_.get(), GetPassphrase(),
         identity_string, certificate_path_);
-    if (!connected) {
-      // Assume this failed due to an invalid password.
-      // TODO(stevenjb): Modify libcros to set an error code and return 'false'
-      // only on an invalid password or other recoverable failure.
-      wifi_->set_passphrase(std::string());
-      cros->SaveWifiNetwork(wifi_.get());
-    }
   }
-  return connected;
+  if (!connected) {
+    // Assume this failed due to an invalid password.
+    // TODO(stevenjb): Modify libcros to set an error code. Return 'false'
+    // only on invalid password or other recoverable failure. crosbug.com/9538.
+    // Update any error message and return false (keep dialog open).
+    UpdateErrorLabel(true);
+    return false;
+  }
+  return true;  // dialog will be closed
 }
 
 bool WifiConfigView::Save() {
@@ -417,22 +441,16 @@ void WifiConfigView::Init() {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
-  // Error label
-  // If there's an error, add an error message label.
-  // Right now, only displaying bad_passphrase and bad_wepkey errors.
-  if (wifi_.get() && (wifi_->error() == ERROR_BAD_PASSPHRASE ||
-      wifi_->error() == ERROR_BAD_WEPKEY)) {
-    layout->StartRow(0, column_view_set_id);
-    layout->SkipColumns(1);
-    int id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE;
-    if (wifi_->error() == ERROR_BAD_WEPKEY)
-      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY;
-    views::Label* label_error = new views::Label(l10n_util::GetString(id));
-    label_error->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    label_error->SetColor(SK_ColorRED);
-    layout->AddView(label_error);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  }
+  // Create an error label.
+  layout->StartRow(0, column_view_set_id);
+  layout->SkipColumns(1);
+  error_label_ = new views::Label();
+  error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  error_label_->SetColor(SK_ColorRED);
+  layout->AddView(error_label_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  // Set or hide the error text.
+  UpdateErrorLabel(false);
 
   // Autoconnect checkbox
   // Only show if this network is already remembered (a favorite).
