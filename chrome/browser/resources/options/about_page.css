@@ -23,3 +23,8 @@
 .update-icon.up-to-date {
   background-image: url('../../../app/theme/update_uptodate.png');
 }
+
+#channel-warning {
+  color: red;
+  font-weight: bold;
+}

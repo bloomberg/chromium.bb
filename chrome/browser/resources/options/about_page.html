@@ -20,13 +20,19 @@
   <div class="hidden" id="aboutPageMoreInfo">
     <section>
       <h3 i18n-content="channel"></h3>
-      <select id="channelSelect">
-        <!-- There is no "release" channel at this moment -->
-        <!-- <option value="release" i18n-content="release"></option> -->
-        <option value="beta-channel" i18n-content="beta"></option>
-        <option value="dev-channel" i18n-content="development"></option>
-        <option value="canary-channel" i18n-content="canary"></option>
-      </select>
+      <div>
+        <div>
+          <span id="channel-warning"
+                i18n-content="channel_warning_header"></span>
+          <span i18n-content="channel_warning_text"></span>
+        </div>
+        <select id="channelSelect">
+          <!-- There is no "release" channel at this moment -->
+          <!-- <option value="release" i18n-content="release"></option> -->
+          <option value="beta-channel" i18n-content="beta"></option>
+          <option value="dev-channel" i18n-content="development"></option>
+        </select>
+      </div>
     </section>
     <section>
       <h3 i18n-content="os"></h3>

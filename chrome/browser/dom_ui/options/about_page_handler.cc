@@ -81,6 +81,8 @@ const LocalizeEntry localize_table[] = {
     { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
     { "development", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
     { "canary", IDS_ABOUT_PAGE_CHANNEL_CANARY },
+    { "channel_warning_header", IDS_ABOUT_PAGE_CHANNEL_WARNING_HEADER },
+    { "channel_warning_text", IDS_ABOUT_PAGE_CHANNEL_WARNING_TEXT },
     { "user_agent", IDS_ABOUT_VERSION_USER_AGENT },
     { "command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
     { "aboutPage", IDS_ABOUT_PAGE_TITLE }
