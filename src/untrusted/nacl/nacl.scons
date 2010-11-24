@@ -14,34 +14,17 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 # object files.  Placing multiple definitions in one file may result in
 # object code bloat or possibly multiple definitions.
 
-sources_for_standard_interfaces = [
+sources = [
+    'av_wait.c',
     'clock.c',
     'close.c',
+    'dyncode_copy.c',
     '_exit.c',
     'fstat.c',
+    'gc_stub.c',
     'getdents.c',
     'getpid.c',
     'gettimeofday.c',
-    'lock.c',
-    'lseek.c',
-    'mmap.c',
-    'munmap.c',
-    'nanosleep.c',
-    'open.c',
-    'read.c',
-    'sbrk.c',
-    'sched_yield.c',
-    'stacktrace.c',
-    'stat.c',
-    'sysconf.c',
-    'tls.c',
-    'write.c',
-    ]
-
-sources_for_nacl_extensions = [
-    'av_wait.c',
-    'dyncode_copy.c',
-    'gc_stub.c',
     'imc_accept.c',
     'imc_connect.c',
     'imc_makeboundsock.c',
@@ -49,17 +32,26 @@ sources_for_nacl_extensions = [
     'imc_recvmsg.c',
     'imc_sendmsg.c',
     'imc_socketpair.c',
+    'lseek.c',
+    'mmap.c',
+    'munmap.c',
+    'nanosleep.c',
     'null.c',
+    'open.c',
+    'read.c',
+    'sbrk.c',
+    'sched_yield.c',
     'srpc_init.c',
     'srpc_wait.c',
+    'stacktrace.c',
+    'stat.c',
+    'sysconf.c',
+    'tls.c',
+    'write.c',
     ]
 
-if env.Bit('nacl_glibc'):
-  # For nacl-glibc, the standard interfaces are provided by glibc, so
-  # we do not build them here.
-  sources = sources_for_nacl_extensions
-else:
-  sources = sources_for_nacl_extensions + sources_for_standard_interfaces
+if not env.Bit('nacl_glibc'):
+  sources.append('lock.c')
 
 env.ComponentLibrary('libnacl', sources)
 

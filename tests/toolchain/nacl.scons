@@ -8,9 +8,10 @@ Import('env')
 # NOTE: This approach does not work for -lc because of tons of
 #       undefined symbols which would have to be stubbed out
 wa_env = env.Clone()
-if not wa_env.Bit('bitcode'):
+if not wa_env.Bit('bitcode') and not wa_env.Bit('nacl_glibc'):
   # NOTE: the pnacl linker does not understand '-Wl,-whole-archive'
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=943
+  # NOTE: This test does not build successfully with nacl-glibc yet.
   wa_env.Prepend(LINKFLAGS=['-Wl,-whole-archive',
                             '-lgcc',
                             '-lm',
