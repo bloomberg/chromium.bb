@@ -11,6 +11,8 @@ namespace remoting {
 namespace protocol {
 
 namespace {
+const int kInitialSequenceNumber = -1;
+
 // Recomended values from RTP spec.
 const int kMaxDropout = 3000;
 const int kMaxMisorder = 100;
@@ -24,7 +26,8 @@ RtpPacket::~RtpPacket() { }
 RtpReader::RtpReader()
     : max_sequence_number_(0),
       wrap_around_count_(0),
-      started_(false) {
+      start_sequence_number_(kInitialSequenceNumber),
+      total_packets_received_(0) {
 }
 
 RtpReader::~RtpReader() {
@@ -59,9 +62,9 @@ void RtpReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
 
   uint16 sequence_number = packet->header().sequence_number;
 
-  // Reset |max_sequence_number_| after we've received first packet.
-  if (!started_) {
-    started_ = true;
+  // Reset |start_sequence_number_| after we've received first packet.
+  if (start_sequence_number_ == kInitialSequenceNumber) {
+    start_sequence_number_ = sequence_number;
     max_sequence_number_ = sequence_number;
   }
 
@@ -83,7 +86,33 @@ void RtpReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
     max_sequence_number_ = sequence_number;
   }
 
+  ++total_packets_received_;
+
   on_message_callback_->Run(packet);
+}
+
+void RtpReader::GetReceiverReport(RtcpReceiverReport* report) {
+  int expected_packets = start_sequence_number_ >= 0 ?
+      1 + max_sequence_number_ - start_sequence_number_ : 0;
+  if (expected_packets > total_packets_received_) {
+    report->total_lost_packets = expected_packets - total_packets_received_;
+  } else {
+    report->total_lost_packets = 0;
+  }
+
+  double loss_fraction = expected_packets > 0 ?
+      report->total_lost_packets / expected_packets : 0.0L;
+  DCHECK_GE(loss_fraction, 0.0);
+  DCHECK_LE(loss_fraction, 1.0);
+  report->loss_fraction = static_cast<uint8>(255 * loss_fraction);
+
+  report->last_sequence_number = max_sequence_number_;
+
+  // TODO(sergeyu): Implement jitter calculation.
+  //
+  // TODO(sergeyu): Set last_sender_report_timestamp and
+  // last_sender_report_delay fields when sender reports are
+  // implemented.
 }
 
 }  // namespace protocol

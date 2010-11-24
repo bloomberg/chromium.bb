@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/session_config.h"
 
 class MessageLoop;

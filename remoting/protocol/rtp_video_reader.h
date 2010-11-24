@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_RTP_VIDEO_READER_H_
 #define REMOTING_PROTOCOL_RTP_VIDEO_READER_H_
 
+#include "base/time.h"
+#include "remoting/protocol/rtcp_writer.h"
 #include "remoting/protocol/rtp_reader.h"
 #include "remoting/protocol/video_reader.h"
 
@@ -49,10 +51,19 @@ class RtpVideoReader : public VideoReader {
                           PacketsQueue::iterator to);
   void ResetQueue();
 
+  // Helper method that sends RTCP receiver reports if enough time has
+  // passed since the last report. It is called from
+  // OnRtpPacket(). Interval between reports is defined by
+  // |kReceiverReportsIntervalMs|.
+  void SendReceiverReportIf();
+
   RtpReader rtp_reader_;
+  RtcpWriter rtcp_writer_;
 
   PacketsQueue packets_queue_;
   uint32 last_sequence_number_;
+
+  base::Time last_receiver_report_;
 
   // The stub that processes all received packets.
   VideoStub* video_stub_;

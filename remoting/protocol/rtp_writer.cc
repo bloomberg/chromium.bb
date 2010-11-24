@@ -76,11 +76,5 @@ int RtpWriter::GetPendingPackets() {
   return buffered_rtp_writer_->GetBufferChunks();
 }
 
-// Stop writing and drop pending data. Must be called from the same thread as
-// Init().
-void RtpWriter::Close() {
-  buffered_rtp_writer_->Close();
-}
-
 }  // namespace protocol
 }  // namespace remoting

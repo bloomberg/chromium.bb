@@ -20,6 +20,11 @@ const int kRtpBaseHeaderSize = 12;
 const uint8 kRtpVersionNumber = 2;
 const int kRtpMaxSources = 16;
 const int kBytesPerCSRC = 4;
+const int kRtcpBaseHeaderSize = 4;
+const int kRtcpReceiverReportSize = 28;
+const int kRtcpReceiverReportTotalSize =
+    kRtcpBaseHeaderSize + kRtcpReceiverReportSize;
+const int kRtcpReceiverReportPacketType = 201;
 }  // namespace
 
 static inline uint8 ExtractBits(uint8 byte, int bits_count, int shift) {
@@ -103,6 +108,94 @@ int UnpackRtpHeader(const uint8* buffer, int buffer_size, RtpHeader* header) {
   }
 
   return GetRtpHeaderSize(*header);
+}
+
+// RTCP receiver report:
+//
+// 0                   1                   2                   3
+// 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |V=2|P|   RC=1  |     PT=201    |             length            |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                         SSRC of sender                        |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                      SSRC of the reportee                     |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// | fraction lost |       cumulative number of packets lost       |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |           extended highest sequence number received           |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                      interarrival jitter                      |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                         last SR (LSR)                         |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                   delay since last SR (DLSR)                  |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+int GetRtcpReceiverReportSize(const RtcpReceiverReport& report) {
+  return kRtcpReceiverReportTotalSize;
+}
+
+void PackRtcpReceiverReport(const RtcpReceiverReport& report,
+                            uint8* buffer, int buffer_size) {
+  CHECK_GE(buffer_size, GetRtcpReceiverReportSize(report));
+
+  buffer[0] = (kRtpVersionNumber << 6) |
+      1 /* RC=1 */;
+  buffer[1] = kRtcpReceiverReportPacketType;
+  SetBE16(buffer + 2, kRtcpReceiverReportSize);
+
+  SetBE32(buffer + 4, report.receiver_ssrc);
+  SetBE32(buffer + 8, report.sender_ssrc);
+  SetBE32(buffer + 12, report.total_lost_packets & 0xFFFFFF);
+  buffer[12] = report.loss_fraction;
+  SetBE32(buffer + 16, report.last_sequence_number);
+  SetBE32(buffer + 20, report.jitter);
+  SetBE32(buffer + 24, report.last_sender_report_timestamp);
+  SetBE32(buffer + 28, report.last_sender_report_delay);
+}
+
+int UnpackRtcpReceiverReport(const uint8* buffer, int buffer_size,
+                             RtcpReceiverReport* report) {
+  if (buffer_size < kRtcpReceiverReportTotalSize) {
+    return -1;
+  }
+
+  int version = ExtractBits(buffer[0], 2, 6);
+  if (version != kRtpVersionNumber) {
+    return -1;
+  }
+
+  int report_count = ExtractBits(buffer[0], 5, 0);
+  if (report_count != 1) {
+    // Received RTCP packet with more than one report.  This isn't
+    // supported in the current implementation.
+    return -1;
+  }
+
+  int packet_type = buffer[1];
+  if (packet_type != kRtcpReceiverReportPacketType) {
+    // The packet isn't receiver report.
+    return -1;
+  }
+
+  int report_size = GetBE16(buffer + 2);
+  if (report_size != kRtcpReceiverReportSize) {
+    // Invalid size of the report.
+    return -1;
+  }
+
+  report->receiver_ssrc = GetBE32(buffer + 4);
+  report->sender_ssrc = GetBE32(buffer + 8);
+  report->loss_fraction = buffer[12];
+  report->total_lost_packets = GetBE32(buffer + 12) & 0xFFFFFF;
+  report->last_sequence_number = GetBE32(buffer + 16);
+  report->jitter = GetBE32(buffer + 20);
+  report->last_sender_report_timestamp = GetBE32(buffer + 24);
+  report->last_sender_report_delay = GetBE32(buffer + 28);
+
+  return kRtcpReceiverReportTotalSize;
 }
 
 // VP8 Payload Descriptor format:

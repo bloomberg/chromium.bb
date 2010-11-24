@@ -60,6 +60,8 @@ class RtpReader : public SocketReaderBase {
   // |socket|.
   void Init(net::Socket* socket, OnMessageCallback* on_message_callback);
 
+  void GetReceiverReport(RtcpReceiverReport* report);
+
  protected:
   friend class RtpVideoReaderTest;
 
@@ -70,7 +72,8 @@ class RtpReader : public SocketReaderBase {
 
   uint16 max_sequence_number_;
   uint16 wrap_around_count_;
-  bool started_;
+  int start_sequence_number_;
+  int total_packets_received_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpReader);
 };

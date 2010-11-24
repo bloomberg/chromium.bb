@@ -13,6 +13,7 @@ namespace protocol {
 
 namespace {
 const int kMaxPacketsInQueue = 1024;
+const int kReceiverReportsIntervalMs = 1000;
 }  // namespace
 
 RtpVideoReader::PacketsQueueEntry::PacketsQueueEntry()
@@ -31,6 +32,7 @@ RtpVideoReader::~RtpVideoReader() {
 void RtpVideoReader::Init(protocol::Session* session, VideoStub* video_stub) {
   rtp_reader_.Init(session->video_rtp_channel(),
                    NewCallback(this, &RtpVideoReader::OnRtpPacket));
+  rtcp_writer_.Init(session->video_rtcp_channel());
   video_stub_ = video_stub;
 }
 
@@ -167,6 +169,24 @@ void RtpVideoReader::RebuildVideoPacket(PacketsQueue::iterator first,
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
 
   video_stub_->ProcessVideoPacket(packet, new DeleteTask<VideoPacket>(packet));
+
+  SendReceiverReportIf();
+}
+
+void RtpVideoReader::SendReceiverReportIf() {
+  base::Time now = base::Time::Now();
+
+  // Send receiver report only if we haven't sent any bofore, or
+  // enough time has passed since the last report.
+  if (last_receiver_report_.is_null() ||
+      (now - last_receiver_report_).InMilliseconds() >
+      kReceiverReportsIntervalMs) {
+    RtcpReceiverReport report;
+    rtp_reader_.GetReceiverReport(&report);
+    rtcp_writer_.SendReport(report);
+
+    last_receiver_report_ = now;
+  }
 }
 
 }  // namespace protocol

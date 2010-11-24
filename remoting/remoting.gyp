@@ -386,6 +386,8 @@
         'protocol/protobuf_video_reader.h',
         'protocol/protobuf_video_writer.cc',
         'protocol/protobuf_video_writer.h',
+        'protocol/rtcp_writer.cc',
+        'protocol/rtcp_writer.h',
         'protocol/rtp_reader.cc',
         'protocol/rtp_reader.h',
         'protocol/rtp_utils.cc',

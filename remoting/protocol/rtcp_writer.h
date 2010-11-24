@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_RTP_WRITER_H_
-#define REMOTING_PROTOCOL_RTP_WRITER_H_
+#ifndef REMOTING_PROTOCOL_RTCP_WRITER_H_
+#define REMOTING_PROTOCOL_RTCP_WRITER_H_
 
 #include "net/socket/socket.h"
-#include "remoting/protocol/buffered_socket_writer.h"
-#include "remoting/protocol/rtp_utils.h"
 
 namespace remoting {
 
@@ -15,30 +13,31 @@ class CompoundBuffer;
 
 namespace protocol {
 
-class RtpWriter {
+class BufferedDatagramWriter;
+struct RtcpReceiverReport;
+
+class RtcpWriter {
  public:
-  RtpWriter();
-  virtual ~RtpWriter();
+  RtcpWriter();
+  virtual ~RtcpWriter();
 
   // Initializes the writer. Must be called on the thread the socket
   // belongs to.
   void Init(net::Socket* socket);
 
   // Sends next packet. The packet is mutated by
-  void SendPacket(uint32 timestamp, bool marker,
-                  const Vp8Descriptor& vp8_descriptor,
-                  const CompoundBuffer& payload);
+  void SendReport(const RtcpReceiverReport& report);
 
   // Returns number of packets queued in the buffer.
   int GetPendingPackets();
 
  private:
-  uint32 last_packet_number_;
+  scoped_refptr<BufferedDatagramWriter> buffered_rtcp_writer_;
 
-  scoped_refptr<BufferedDatagramWriter> buffered_rtp_writer_;
+  DISALLOW_COPY_AND_ASSIGN(RtcpWriter);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_RTP_WRITER_H_
+#endif  // REMOTING_PROTOCOL_RTCP_WRITER_H_
