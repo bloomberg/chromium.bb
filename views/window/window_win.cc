@@ -417,9 +417,7 @@ void WindowWin::UpdateWindowTitle() {
     window_title = window_delegate_->GetAccessibleWindowTitle();
   else
     window_title = window_delegate_->GetWindowTitle();
-  std::wstring localized_text;
-  if (base::i18n::AdjustStringForLocaleDirection(window_title, &localized_text))
-    window_title.assign(localized_text);
+  base::i18n::AdjustStringForLocaleDirection(&window_title);
   SetWindowText(GetNativeView(), window_title.c_str());
 
   // Also update the accessibility name.

@@ -97,7 +97,7 @@ std::wstring HungPagesTableModel::GetText(int row, int column_id) {
   // TODO(xji): Consider adding a special case if the title text is a URL,
   // since those should always have LTR directionality. Please refer to
   // http://crbug.com/6726 for more information.
-  base::i18n::AdjustStringForLocaleDirection(title, &title);
+  base::i18n::AdjustStringForLocaleDirection(&title);
   return title;
 }
 

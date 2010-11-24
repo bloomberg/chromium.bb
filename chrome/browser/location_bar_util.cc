@@ -35,7 +35,7 @@ std::wstring CalculateMinString(const std::wstring& description) {
   } else {
     min_string = description.substr(0, chop_index);
   }
-  base::i18n::AdjustStringForLocaleDirection(min_string, &min_string);
+  base::i18n::AdjustStringForLocaleDirection(&min_string);
   return min_string;
 }
 

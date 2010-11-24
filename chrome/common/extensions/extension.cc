@@ -1234,7 +1234,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     *error = errors::kInvalidName;
     return false;
   }
-  base::i18n::AdjustStringForLocaleDirection(localized_name, &localized_name);
+  base::i18n::AdjustStringForLocaleDirection(&localized_name);
   name_ = UTF16ToUTF8(localized_name);
 
   // Initialize description (if present).

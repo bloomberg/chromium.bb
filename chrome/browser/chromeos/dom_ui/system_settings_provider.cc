@@ -272,9 +272,8 @@ string16 SystemSettingsProvider::GetTimezoneName(
   string16 result(l10n_util::GetStringFUTF16(
       IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE, ASCIIToUTF16(offset_str),
       string16(name.getBuffer(), name.length()), GetExemplarCity(timezone)));
-  string16 rtl_safe_result = result;
-  base::i18n::AdjustStringForLocaleDirection(result, &rtl_safe_result);
-  return rtl_safe_result;
+  base::i18n::AdjustStringForLocaleDirection(&result);
+  return result;
 }
 
 string16 SystemSettingsProvider::GetTimezoneID(

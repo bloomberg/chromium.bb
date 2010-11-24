@@ -74,9 +74,7 @@ void NativeButton::SetLabel(const std::wstring& label) {
   // In order to overcome this problem, we mark the localized Hebrew strings as
   // RTL strings explicitly (using the appropriate Unicode formatting) so that
   // Windows displays the text correctly regardless of the HWND hierarchy.
-  std::wstring localized_label;
-  if (base::i18n::AdjustStringForLocaleDirection(label_, &localized_label))
-    label_ = localized_label;
+  base::i18n::AdjustStringForLocaleDirection(&label_);
 
   if (native_wrapper_)
     native_wrapper_->UpdateLabel();

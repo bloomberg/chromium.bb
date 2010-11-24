@@ -131,10 +131,7 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
   for (it = encodings->begin(); it != encodings->end(); ++it) {
     if (it->encoding_id) {
       std::wstring encoding = it->encoding_display_name;
-      std::wstring bidi_safe_encoding;
-      if (base::i18n::AdjustStringForLocaleDirection(encoding,
-                                                     &bidi_safe_encoding))
-        encoding.swap(bidi_safe_encoding);
+      base::i18n::AdjustStringForLocaleDirection(&encoding);
       menuItems->push_back(EncodingMenuItem(it->encoding_id,
                                             WideToUTF16(encoding)));
     } else {

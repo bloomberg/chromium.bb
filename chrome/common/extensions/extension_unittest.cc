@@ -383,7 +383,7 @@ TEST(ExtensionTest, InitFromValueValidNameInRTL) {
   EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
   EXPECT_EQ("", error);
   std::wstring localized_name(name);
-  base::i18n::AdjustStringForLocaleDirection(localized_name, &localized_name);
+  base::i18n::AdjustStringForLocaleDirection(&localized_name);
   EXPECT_EQ(localized_name, UTF8ToWide(extension.name()));
 
   // Strong RTL characters in name.
@@ -392,7 +392,7 @@ TEST(ExtensionTest, InitFromValueValidNameInRTL) {
   EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
   EXPECT_EQ("", error);
   localized_name = name;
-  base::i18n::AdjustStringForLocaleDirection(localized_name, &localized_name);
+  base::i18n::AdjustStringForLocaleDirection(&localized_name);
   EXPECT_EQ(localized_name, UTF8ToWide(extension.name()));
 
   // Reset locale.

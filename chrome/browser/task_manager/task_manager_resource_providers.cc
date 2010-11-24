@@ -149,7 +149,7 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
     // as LTR format, the concatenated result will be "!Yahoo! Mail: The best
     // web-based Email :BAT", in which the capital letters "BAT" stands for
     // the Hebrew word for "tab".
-    base::i18n::AdjustStringForLocaleDirection(tab_title, &tab_title);
+    base::i18n::AdjustStringForLocaleDirection(&tab_title);
   }
 
   return l10n_util::GetStringF(IDS_TASK_MANAGER_TAB_PREFIX, tab_title);
@@ -357,8 +357,7 @@ TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
   }
   // Ensure that the string has the appropriate direction markers (see comment
   // in TaskManagerTabContentsResource::GetTitle()).
-  base::i18n::AdjustStringForLocaleDirection(application_name_,
-                                             &application_name_);
+  base::i18n::AdjustStringForLocaleDirection(&application_name_);
 }
 
 TaskManagerBackgroundContentsResource::~TaskManagerBackgroundContentsResource(

@@ -370,9 +370,7 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
         DCHECK(info->item.cchTextMax);
 
         // Adjust the string direction if such adjustment is required.
-        std::wstring localized_text;
-        if (base::i18n::AdjustStringForLocaleDirection(text, &localized_text))
-          text.swap(localized_text);
+        base::i18n::AdjustStringForLocaleDirection(&text);
 
         wcsncpy_s(info->item.pszText, info->item.cchTextMax, text.c_str(),
                   _TRUNCATE);

@@ -312,20 +312,13 @@ std::wstring ImageBurnHandler::GetBurnProgressText(int64 total_burnt,
   std::wstring burnt_size =
       UTF16ToWideHack(FormatBytes(total_burnt, amount_units, true));
 
-  std::wstring burnt_size_localized;
-  if (base::i18n::AdjustStringForLocaleDirection(burnt_size,
-                                                 &burnt_size_localized)) {
-    burnt_size.assign(burnt_size_localized);
-  }
+  base::i18n::AdjustStringForLocaleDirection(&burnt_size);
 
   if (image_size) {
     amount_units = GetByteDisplayUnits(image_size);
     std::wstring total_text =
         UTF16ToWideHack(FormatBytes(image_size, amount_units, true));
-    std::wstring total_text_localized;
-    if (base::i18n::AdjustStringForLocaleDirection(total_text,
-                                                   &total_text_localized))
-    total_text.assign(total_text_localized);
+    base::i18n::AdjustStringForLocaleDirection(&total_text);
 
     return l10n_util::GetStringF(IDS_IMAGEBURN_BURN_PROGRESS,
                                  burnt_size,

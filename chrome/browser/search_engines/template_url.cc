@@ -578,11 +578,9 @@ TemplateURL::~TemplateURL() {
 }
 
 std::wstring TemplateURL::AdjustedShortNameForLocaleDirection() const {
-  std::wstring bidi_safe_short_name;
-  if (base::i18n::AdjustStringForLocaleDirection(short_name_,
-                                                 &bidi_safe_short_name))
-    return bidi_safe_short_name;
-  return short_name_;
+  std::wstring bidi_safe_short_name = short_name_;
+  base::i18n::AdjustStringForLocaleDirection(&bidi_safe_short_name);
+  return bidi_safe_short_name;
 }
 
 void TemplateURL::SetSuggestionsURL(const std::string& suggestions_url,

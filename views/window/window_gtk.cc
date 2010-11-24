@@ -207,9 +207,7 @@ void WindowGtk::UpdateWindowTitle() {
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
   std::wstring window_title = window_delegate_->GetWindowTitle();
-  std::wstring localized_text;
-  if (base::i18n::AdjustStringForLocaleDirection(window_title, &localized_text))
-    window_title.assign(localized_text);
+  base::i18n::AdjustStringForLocaleDirection(&window_title);
 
   gtk_window_set_title(GetNativeWindow(), WideToUTF8(window_title).c_str());
 }

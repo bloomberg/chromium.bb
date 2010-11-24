@@ -179,9 +179,7 @@ void DOMMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
     if (using_url_as_the_title) {
       base::i18n::WrapStringWithLTRFormatting(&title_to_set);
     } else {
-      bool success =
-          base::i18n::AdjustStringForLocaleDirection(title, &title_to_set);
-      DCHECK(success ? (title != title_to_set) : (title == title_to_set));
+      base::i18n::AdjustStringForLocaleDirection(&title_to_set);
     }
   }
   dictionary->SetString("title", title_to_set);

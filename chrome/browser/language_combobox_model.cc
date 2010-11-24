@@ -90,21 +90,11 @@ std::wstring LanguageList::GetLanguageNameAt(int index) const {
   // We must add directionality formatting to both the native name and the
   // locale name in order to avoid text rendering problems such as misplaced
   // parentheses or languages appearing in the wrong order.
-  std::wstring locale_name_localized;
-  std::wstring locale_name;
-  if (base::i18n::AdjustStringForLocaleDirection(locale_names_[index],
-                                                 &locale_name_localized))
-    locale_name.assign(locale_name_localized);
-  else
-    locale_name.assign(locale_names_[index]);
+  std::wstring locale_name = locale_names_[index];
+  base::i18n::AdjustStringForLocaleDirection(&locale_name);
 
-  std::wstring native_name_localized;
-  std::wstring native_name;
-  if (base::i18n::AdjustStringForLocaleDirection(it->second.native_name,
-                                                 &native_name_localized))
-    native_name.assign(native_name_localized);
-  else
-    native_name.assign(it->second.native_name);
+  std::wstring native_name = it->second.native_name;
+  base::i18n::AdjustStringForLocaleDirection(&native_name);
 
   // We used to have a localizable template here, but none of translators
   // changed the format. We also want to switch the order of locale_name

@@ -82,7 +82,7 @@ std::wstring PasswordsTableModel::GetText(int row,
     }
     case IDS_PASSWORDS_PAGE_VIEW_USERNAME_COLUMN: {  // Username.
       std::wstring username = GetPasswordFormAt(row)->username_value;
-      base::i18n::AdjustStringForLocaleDirection(username, &username);
+      base::i18n::AdjustStringForLocaleDirection(&username);
       return username;
     }
     default:

@@ -155,13 +155,11 @@ void NativeTextfieldWin::UpdateText() {
   std::wstring text = textfield_->text();
   // Adjusting the string direction before setting the text in order to make
   // sure both RTL and LTR strings are displayed properly.
-  std::wstring text_to_set;
-  if (!base::i18n::AdjustStringForLocaleDirection(text, &text_to_set))
-    text_to_set = text;
+  base::i18n::AdjustStringForLocaleDirection(&text);
   if (textfield_->style() & Textfield::STYLE_LOWERCASE)
-    text_to_set = l10n_util::ToLower(text_to_set);
-  SetWindowText(text_to_set.c_str());
-  UpdateAccessibleValue(text_to_set);
+    text = l10n_util::ToLower(text);
+  SetWindowText(text.c_str());
+  UpdateAccessibleValue(text);
 }
 
 void NativeTextfieldWin::AppendText(const string16& text) {

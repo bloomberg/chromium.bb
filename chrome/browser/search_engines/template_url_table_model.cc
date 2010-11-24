@@ -187,8 +187,7 @@ std::wstring TemplateURLTableModel::GetText(int row, int col_id) {
       // TODO(xji): Consider adding a special case if the short name is a URL,
       // since those should always be displayed LTR. Please refer to
       // http://crbug.com/6726 for more information.
-      base::i18n::AdjustStringForLocaleDirection(url_short_name,
-                                                 &url_short_name);
+      base::i18n::AdjustStringForLocaleDirection(&url_short_name);
       return (template_url_model_->GetDefaultSearchProvider() == &url) ?
           l10n_util::GetStringF(IDS_SEARCH_ENGINES_EDITOR_DEFAULT_ENGINE,
                                 url_short_name) : url_short_name;

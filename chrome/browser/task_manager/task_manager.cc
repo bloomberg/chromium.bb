@@ -500,7 +500,7 @@ string16 TaskManagerModel::GetMemCellText(int64 number) const {
   string16 str = base::FormatNumber(number / 1024);
 
   // Adjust number string if necessary.
-  base::i18n::AdjustStringForLocaleDirection(str, &str);
+  base::i18n::AdjustStringForLocaleDirection(&str);
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_MEM_CELL_TEXT, str);
 #else
   // System expectation is to show "100 KB", "200 MB", etc.

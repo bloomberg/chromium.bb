@@ -132,13 +132,11 @@ std::wstring PossibleURLModel::GetText(int row, int col_id) {
   }
 
   if (col_id == IDS_ASI_PAGE_COLUMN) {
-    const std::wstring& title = GetTitle(row);
+    std::wstring title = GetTitle(row);
     // TODO(xji): Consider adding a special case if the title text is a URL,
     // since those should always have LTR directionality. Please refer to
     // http://crbug.com/6726 for more information.
-    std::wstring localized_title;
-    if (base::i18n::AdjustStringForLocaleDirection(title, &localized_title))
-      return localized_title;
+    base::i18n::AdjustStringForLocaleDirection(&title);
     return title;
   }
 

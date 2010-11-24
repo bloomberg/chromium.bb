@@ -19,17 +19,18 @@ void DoDrawText(HDC hdc,
                 const std::wstring& text,
                 RECT* text_bounds,
                 int flags) {
-  std::wstring localized_text;
-  const wchar_t* string_ptr = text.c_str();
-  int string_size = static_cast<int>(text.length());
   // Only adjust string directionality if both of the following are true:
   // 1. The current locale is RTL.
   // 2. The string itself has RTL directionality.
+  const wchar_t* string_ptr = text.c_str();
+  int string_size = static_cast<int>(text.length());
+
+  std::wstring localized_text;
   if (flags & DT_RTLREADING) {
-    if (base::i18n::AdjustStringForLocaleDirection(text, &localized_text)) {
-      string_ptr = localized_text.c_str();
-      string_size = static_cast<int>(localized_text.length());
-    }
+    localized_text = text;
+    base::i18n::AdjustStringForLocaleDirection(&localized_text);
+    string_ptr = localized_text.c_str();
+    string_size = static_cast<int>(localized_text.length());
   }
 
   DrawText(hdc, string_ptr, string_size, text_bounds, flags);

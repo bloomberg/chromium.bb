@@ -82,7 +82,7 @@ string16 ChildProcessInfo::GetLocalizedTitle() const {
   // to avoid the wrong concatenation result similar to "!Yahoo! Mail: the
   // best web-based Email: NIGULP", in which "NIGULP" stands for the Hebrew
   // or Arabic word for "plugin".
-  base::i18n::AdjustStringForLocaleDirection(title, &title);
+  base::i18n::AdjustStringForLocaleDirection(&title);
 
   switch (type_) {
     case ChildProcessInfo::UTILITY_PROCESS:
