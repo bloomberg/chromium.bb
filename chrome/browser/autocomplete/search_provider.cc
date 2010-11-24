@@ -84,9 +84,7 @@ void SearchProvider::FinalizeInstantQuery(const std::wstring& text) {
     if (((i->type == AutocompleteMatch::SEARCH_HISTORY) ||
          (i->type == AutocompleteMatch::SEARCH_SUGGEST)) &&
         (i->fill_into_edit == text)) {
-      ACMatches::iterator to_erase = i;
-      ++i;
-      matches_.erase(to_erase);
+      i = matches_.erase(i);
     } else {
       ++i;
     }
