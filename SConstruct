@@ -27,12 +27,18 @@ Dir('tests/ppapi_tests').addRepository(Dir('#/../ppapi/tests'))
 # REPORT
 # ----------------------------------------------------------
 def PrintFinalReport():
-  if ARGUMENTS.get('target_stats', 0):
+  """This function is run just before scons exits and dumps various reports.
+  """
+  # Note, these global declarations are not strictly necessary
+  global pre_base_env
+  global CMD_COUNTER
+  global ENV_COUNTER
+
+  if pre_base_env.Bit('target_stats'):
     print
     print '*' * 70
     print 'COMMAND EXECUTION REPORT'
     print '*' * 70
-    print
     for k in sorted(CMD_COUNTER.keys()):
       print "%4d %s" % (CMD_COUNTER[k], k)
 
@@ -40,7 +46,6 @@ def PrintFinalReport():
     print '*' * 70
     print 'ENVIRONMENT USAGE REPORT'
     print '*' * 70
-    print
     for k in sorted(ENV_COUNTER.keys()):
       print "%4d  %s" % (ENV_COUNTER[k], k)
 
@@ -1210,7 +1215,13 @@ def GetPrintableEnvironmentName(env):
 
 CMD_COUNTER = {}
 ENV_COUNTER = {}
+
+
 if pre_base_env.Bit('target_stats'):
+  # target_stats and pp are incompatible as they both use the
+  # PRINT_CMD_LINE_FUNC hook
+  assert not pre_base_env.Bit('pp')
+
   def CommandStats(cmd, targets, source, env):
     cmd_name = GetPrintableCommandName(cmd)
     CMD_COUNTER[cmd_name] = CMD_COUNTER.get(cmd_name, 0) + 1
@@ -1223,6 +1234,9 @@ if pre_base_env.Bit('target_stats'):
 
 
 if pre_base_env.Bit('pp'):
+  # target_stats and pp are incompatible as they both use the
+  # PRINT_CMD_LINE_FUNC hook
+  assert not pre_base_env.Bit('target_stats')
   def CommandPrettyPrinter(cmd, targets, source, env):
     if not targets:
       return
