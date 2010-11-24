@@ -26,6 +26,20 @@ class BrowserTest(pyauto.PyUITest):
       info = self.GetBrowserInfo()
       pp.pprint(info)
 
+  def _GetUniqProcesses(self, total_tabs, renderer_processes):
+    """ Returns a count of uniq processes of opened tabs
+
+    Args:
+      total_tabs: opened tabs count
+      renderer_processes: opened renderers info data dictionary
+    """
+    pid_list = []
+    for tab_index in range(total_tabs):
+      pid = renderer_processes[tab_index]['renderer_pid']
+      if pid not in pid_list:
+        pid_list.append(pid)
+    return len(pid_list)
+
   def _VerifyUniqueRendererProcesses(self, browser_info):
     """Verify that each tab has a unique renderer process.
 
@@ -131,6 +145,35 @@ class BrowserTest(pyauto.PyUITest):
     flash_processes = self._GetFlashProcessesInfo()
     self.assertEqual(1, len(flash_processes))
     self.assertNotEqual(flash_process_id1, flash_processes[0]['pid'])
+
+  def testMaxProcess(self):
+    """Verify that opening 100 tabs doesn't create 100 child processes"""
+    total_tabs = 100
+    test_url = self.GetFileURLForDataPath('english_page.html')
+    # Opening tabs
+    for tab_index in range(total_tabs - 1):
+      self.AppendTab(pyauto.GURL(test_url))
+      tabs = self.GetBrowserInfo()['windows'][0]['tabs']
+      # For the first time we have 2 tabs opened, so sending the tab_index as +2
+      unique_renderers = self._GetUniqProcesses(len(tabs), tabs)
+      # We verify that opening a new tab should not create a new process after
+      # Chrome reaches to a maximum process limit.
+      if len(tabs) > unique_renderers:
+        return
+    # In case if we create 100 processes for 100 tabs, then we are failing.
+    self.fail(msg='Got 100 renderer processes')
+
+  def testKillAndRelodRenderer(self):
+    """Verify that reloading of renderer is possible,
+       after renderer is killed"""
+    test_url = self.GetFileURLForDataPath('english_page.html')
+    self.NavigateToURL(test_url)
+    pid1 = self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid']
+    self.Kill(pid1)
+    tab = self.GetBrowserWindow(0).GetTab(0)
+    tab.Reload()
+    pid2 = self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid']
+    self.assertNotEqual(pid1, pid2)
 
 
 if __name__ == '__main__':
