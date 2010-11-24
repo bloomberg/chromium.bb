@@ -200,6 +200,9 @@ class RenderWidgetHostViewGtkWidget {
     if (!host_view->is_showing_context_menu_)
       host_view->GetRenderWidgetHost()->Blur();
 
+    // Prevents us from stealing input context focus in OnGrabNotify() handler.
+    host_view->was_focused_before_grab_ = false;
+
     // Disable the GtkIMContext object.
     host_view->im_context_->OnFocusOut();
 

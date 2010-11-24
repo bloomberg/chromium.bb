@@ -455,13 +455,19 @@ void GtkIMContextWrapper::HandleCommit(const string16& text) {
 }
 
 void GtkIMContextWrapper::HandlePreeditStart() {
+  // Ignore preedit related signals triggered by CancelComposition() method.
+  if (suppress_next_commit_)
+    return;
   is_composing_text_ = true;
 }
 
 void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
                                                PangoAttrList* attrs,
                                                int cursor_position) {
-  suppress_next_commit_ = false;
+  // Ignore preedit related signals triggered by CancelComposition() method.
+  if (suppress_next_commit_)
+    return;
+
   // Don't set is_preedit_changed_ to false if there is no change, because
   // this handler might be called multiple times with the same data.
   is_preedit_changed_ = true;
