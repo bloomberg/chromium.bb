@@ -20,7 +20,7 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/common/chrome_switches.h"
 #include "jingle/notifier/listener/notification_constants.h"
 
@@ -32,7 +32,9 @@ using base::TimeTicks;
 
 namespace browser_sync {
 
+using sessions::SyncSession;
 using sessions::SyncSessionSnapshot;
+using sessions::SyncSourceInfo;
 
 // We use high values here to ensure that failure to receive poll updates from
 // the server doesn't result in rapid-fire polling from the client due to low
@@ -332,20 +334,19 @@ void SyncerThread::ThreadMainLoop() {
 
     // Handle a nudge, caused by either a notification or a local bookmark
     // event.  This will also update the source of the following SyncMain call.
-    syncable::ModelTypeBitSet last_nudge_types(vault_.pending_nudge_types_);
-    bool nudged = UpdateNudgeSource(throttled, continue_sync_cycle,
-                                    &initial_sync_for_thread);
-
     VLOG(1) << "Calling Sync Main at time " << Time::Now().ToInternalValue();
-    SyncMain(vault_.syncer_);
+    bool nudged = false;
+    scoped_ptr<SyncSession> session;
+    session.reset(SyncMain(vault_.syncer_,
+        throttled, continue_sync_cycle, &initial_sync_for_thread, &nudged));
 
     // Update timing information for how often these datatypes are triggering
     // nudges.
     base::TimeTicks now = TimeTicks::Now();
     for (size_t i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < last_nudge_types.size();
+         i < session->source().second.size();
          ++i) {
-      if (last_nudge_types[i]) {
+      if (session->source().second[i]) {
         syncable::PostTimeToTypeHistogram(syncable::ModelType(i),
                                           now - last_sync_time);
       }
@@ -518,7 +519,9 @@ void SyncerThread::ThreadMain() {
   Notify(SyncEngineEvent::SYNCER_THREAD_EXITING);
 }
 
-void SyncerThread::SyncMain(Syncer* syncer) {
+SyncSession* SyncerThread::SyncMain(Syncer* syncer, bool was_throttled,
+    bool continue_sync_cycle, bool* initial_sync_for_thread,
+    bool* was_nudged) {
   CHECK(syncer);
 
   // Since we are initiating a new session for which we are the delegate, we
@@ -526,15 +529,30 @@ void SyncerThread::SyncMain(Syncer* syncer) {
   // may need to use it.
   silenced_until_ = base::TimeTicks();
 
+  ModelSafeRoutingInfo routes;
+  std::vector<ModelSafeWorker*> workers;
+  session_context_->registrar()->GetModelSafeRoutingInfo(&routes);
+  session_context_->registrar()->GetWorkers(&workers);
+  SyncSourceInfo info(GetAndResetNudgeSource(was_throttled,
+      continue_sync_cycle, initial_sync_for_thread, was_nudged));
+  scoped_ptr<SyncSession> session;
+
   AutoUnlock unlock(lock_);
-  while (syncer->SyncShare(this) && silenced_until_.is_null())
-    VLOG(1) << "Looping in sync share";
-  VLOG(1) << "Done looping in sync share";
+  do {
+    session.reset(new SyncSession(session_context_.get(), this,
+                                  info, routes, workers));
+    VLOG(1) << "Calling SyncShare.";
+    syncer->SyncShare(session.get());
+  } while (session->HasMoreToSync() && silenced_until_.is_null());
+
+  VLOG(1) << "Done calling SyncShare.";
+  return session.release();
 }
 
-bool SyncerThread::UpdateNudgeSource(bool was_throttled,
-                                     bool continue_sync_cycle,
-                                     bool* initial_sync) {
+SyncSourceInfo SyncerThread::GetAndResetNudgeSource(bool was_throttled,
+                                                    bool continue_sync_cycle,
+                                                    bool* initial_sync,
+                                                    bool* was_nudged) {
   bool nudged = false;
   NudgeSource nudge_source = kUnknown;
   syncable::ModelTypeBitSet model_types;
@@ -555,12 +573,19 @@ bool SyncerThread::UpdateNudgeSource(bool was_throttled,
     vault_.pending_nudge_types_.reset();
     vault_.pending_nudge_time_ = base::TimeTicks();
   }
-  SetUpdatesSource(nudged, nudge_source, model_types, initial_sync);
-  return nudged;
+
+  *was_nudged = nudged;
+
+  // TODO(tim): Hack for bug 64136 to correctly tag continuations that result
+  // from syncer having more work to do.  This will be handled properly with
+  // the message loop based syncer thread, bug 26339.
+  return MakeSyncSourceInfo(nudged || nudge_source == kContinuation,
+      nudge_source, model_types, initial_sync);
 }
 
-void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
-    const syncable::ModelTypeBitSet& nudge_types, bool* initial_sync) {
+SyncSourceInfo SyncerThread::MakeSyncSourceInfo(bool nudged,
+    NudgeSource nudge_source, const syncable::ModelTypeBitSet& nudge_types,
+    bool* initial_sync) {
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source =
       sync_pb::GetUpdatesCallerInfo::UNKNOWN;
   if (*initial_sync) {
@@ -588,7 +613,7 @@ void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
         break;
     }
   }
-  vault_.syncer_->set_updates_source(updates_source, nudge_types);
+  return SyncSourceInfo(updates_source, nudge_types);
 }
 
 void SyncerThread::CreateSyncer(const std::string& dirname) {
@@ -598,7 +623,7 @@ void SyncerThread::CreateSyncer(const std::string& dirname) {
   // the syncer.
   CHECK(vault_.syncer_ == NULL);
   session_context_->set_account_name(dirname);
-  vault_.syncer_ = new Syncer(session_context_.get());
+  vault_.syncer_ = new Syncer();
   vault_field_changed_.Broadcast();
 }
 

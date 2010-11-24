@@ -84,8 +84,12 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   ModelSafeWorkerRegistrar* registrar() { return this; }
   // Lazily create a session.
   sessions::SyncSession* session() {
-    if (!session_.get())
-      session_.reset(new sessions::SyncSession(context(), delegate()));
+    if (!session_.get()) {
+      std::vector<ModelSafeWorker*> workers;
+      GetWorkers(&workers);
+      session_.reset(new sessions::SyncSession(context(), delegate(),
+          sessions::SyncSourceInfo(), routing_info_, workers));
+    }
     return session_.get();
   }
   void ClearSession() {

@@ -243,7 +243,17 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
-  void SyncMain(Syncer* syncer);
+  // Collect all local state required for a sync and build a SyncSession out of
+  // it, reset state for the next time, and performs the sync cycle.
+  // See |GetAndResetNudgeSource| for details on what 'reset' means.
+  // |was_nudged| is set to true if the session returned is fulfilling a nudge.
+  // Returns once the session is finished (HasMoreToSync returns false).  The
+  // caller owns the returned SyncSession.
+  sessions::SyncSession* SyncMain(Syncer* syncer,
+                                  bool was_throttled,
+                                  bool continue_sync_cycle,
+                                  bool* initial_sync_for_thread,
+                                  bool* was_nudged);
 
   // Calculates the next sync wait time and exponential backoff state.
   // last_poll_wait is the time duration of the previous polling timeout which
@@ -263,20 +273,24 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // Helper to above function, considers effect of user idle time.
   virtual int CalculateSyncWaitTime(int last_wait, int user_idle_ms);
 
-  // Sets the source value of the controlled syncer's updates_source value.
+  // Resets the source tracking state to a clean slate and returns the current
+  // state in a SyncSourceInfo.
   // The initial sync boolean is updated if read as a sentinel.  The following
   // two methods work in concert to achieve this goal.
   // If |was_throttled| was true, this still discards elapsed nudges, but we
   // treat the request as a periodic poll rather than a nudge from a source.
-  // TODO(timsteele/code reviewer): The first poll after a throttle period
-  // will appear as a periodic request.  Do we want to be more specific?
-  // Returns true if it determines a nudge actually occurred.
-  bool UpdateNudgeSource(bool was_throttled, bool continue_sync_cycle,
-                         bool* initial_sync);
-  void SetUpdatesSource(bool nudged,
-                        NudgeSource nudge_source,
-                        const syncable::ModelTypeBitSet& nudge_types,
-                        bool* initial_sync);
+  // Builds a SyncSourceInfo and returns whether a nudge occurred in the
+  // |was_nudged| parameter.
+  sessions::SyncSourceInfo GetAndResetNudgeSource(bool was_throttled,
+                                                  bool continue_sync_cycle,
+                                                  bool* initial_sync,
+                                                  bool* was_nudged);
+
+  sessions::SyncSourceInfo MakeSyncSourceInfo(
+      bool nudged,
+      NudgeSource nudge_source,
+      const syncable::ModelTypeBitSet& nudge_types,
+      bool* initial_sync);
 
   int UserIdleTime();
 

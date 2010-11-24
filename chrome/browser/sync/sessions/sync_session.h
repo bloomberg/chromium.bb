@@ -78,8 +78,11 @@ class SyncSession {
     virtual ~Delegate() {}
   };
 
-  // Creates a new SyncSession with mandatory context and delegate.
-  SyncSession(SyncSessionContext* context, Delegate* delegate);
+  SyncSession(SyncSessionContext* context,
+              Delegate* delegate,
+              SyncSourceInfo source,
+              const ModelSafeRoutingInfo& routing_info,
+              const std::vector<ModelSafeWorker*>& workers);
   ~SyncSession();
 
   // Builds a thread-safe and read-only copy of the current session state.
@@ -105,16 +108,10 @@ class SyncSession {
   // value is set to the SYNC_CYCLE_CONTINUATION value to signal that it has
   // been read.
   SyncSourceInfo TestAndSetSource();
-  void set_source(SyncSourceInfo source) {
-    source_ = source;
-  }
-  void set_source(sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-      syncable::ModelTypeBitSet model_types) {
-    source_ = SyncSourceInfo(source, model_types);
-  }
 
   const std::vector<ModelSafeWorker*>& workers() const { return workers_; }
   const ModelSafeRoutingInfo& routing_info() const { return routing_info_; }
+  const SyncSourceInfo& source() const { return source_; }
 
  private:
   // Extend the encapsulation boundary to utilities for internal member

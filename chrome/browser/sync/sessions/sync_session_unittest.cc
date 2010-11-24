@@ -26,10 +26,19 @@ class SyncSessionTest : public testing::Test,
   SyncSessionTest() : controller_invocations_allowed_(false) {
     GetModelSafeRoutingInfo(&routes_);
   }
+
+  SyncSession* MakeSession() {
+    return new SyncSession(context_.get(), this, SyncSourceInfo(), routes_,
+                           std::vector<ModelSafeWorker*>());
+  }  
+
   virtual void SetUp() {
     context_.reset(new SyncSessionContext(NULL, NULL, this,
         std::vector<SyncEngineEventListener*>()));
-    session_.reset(new SyncSession(context_.get(), this));
+    routes_.clear();
+    routes_[syncable::BOOKMARKS] = GROUP_UI;
+    routes_[syncable::AUTOFILL] = GROUP_UI;
+    session_.reset(MakeSession());
   }
   virtual void TearDown() {
     session_.reset();
@@ -58,8 +67,7 @@ class SyncSessionTest : public testing::Test,
   // ModelSafeWorkerRegistrar implementation.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
-    (*out)[syncable::BOOKMARKS] = GROUP_UI;
-    (*out)[syncable::AUTOFILL] = GROUP_UI;
+    out->swap(routes_);
   }
 
   StatusController* status() { return session_->status_controller(); }
@@ -106,18 +114,18 @@ TEST_F(SyncSessionTest, SetWriteTransaction) {
   session_.reset(NULL);
   context_.reset(new SyncSessionContext(NULL, db.manager(), this,
       std::vector<SyncEngineEventListener*>()));
-  session_.reset(new SyncSession(context_.get(), this));
+  session_.reset(MakeSession());
   context_->set_account_name(db.name());
   syncable::ScopedDirLookup dir(context_->directory_manager(),
                                 context_->account_name());
   ASSERT_TRUE(dir.good());
 
-  SyncSession session(context_.get(), this);
-  EXPECT_TRUE(NULL == session.write_transaction());
+  scoped_ptr<SyncSession> session(MakeSession());
+  EXPECT_TRUE(NULL == session->write_transaction());
   {
     WriteTransaction trans(dir, syncable::UNITTEST, __FILE__, __LINE__);
-    sessions::ScopedSetSessionWriteTransaction set_trans(&session, &trans);
-    EXPECT_TRUE(&trans == session.write_transaction());
+    sessions::ScopedSetSessionWriteTransaction set_trans(session.get(), &trans);
+    EXPECT_TRUE(&trans == session->write_transaction());
   }
   db.TearDown();
 }

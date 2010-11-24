@@ -9,16 +9,16 @@
 namespace browser_sync {
 namespace sessions {
 
-SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate)
-    : context_(context),
-      source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-              syncable::ModelTypeBitSet()),
-      write_transaction_(NULL),
-      delegate_(delegate) {
-  context_->registrar()->GetWorkers(
-      const_cast<std::vector<ModelSafeWorker*>*>(&workers_));
-  context_->registrar()->GetModelSafeRoutingInfo(
-      const_cast<ModelSafeRoutingInfo*>(&routing_info_));
+SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate,
+    SyncSourceInfo source,
+    const ModelSafeRoutingInfo& routing_info,
+    const std::vector<ModelSafeWorker*>& workers) :
+        context_(context),
+        source_(source),
+        write_transaction_(NULL),
+        delegate_(delegate),
+        workers_(workers),
+        routing_info_(routing_info) {
   status_controller_.reset(new StatusController(routing_info_));
 }
 
@@ -58,7 +58,8 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
 SyncSourceInfo SyncSession::TestAndSetSource() {
   SyncSourceInfo old_source = source_;
-  set_source(sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
+  source_ = SyncSourceInfo(
+      sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
       source_.second);
   return old_source;
 }
