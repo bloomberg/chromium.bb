@@ -6,10 +6,10 @@
 #define CHROME_INSTALLER_UTIL_CREATE_REG_KEY_WORK_ITEM_H__
 #pragma once
 
+#include <windows.h>
+
 #include <string>
 #include <vector>
-
-#include <windows.h>
 
 #include "chrome/installer/util/work_item.h"
 

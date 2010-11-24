@@ -89,6 +89,7 @@ WorkItemList* WorkItem::CreateWorkItemList() {
   return new WorkItemList();
 }
 
-std::wstring WorkItem::Dump() {
-  return std::wstring(L"Work Item");
+// static
+WorkItemList* WorkItem::CreateNoRollbackWorkItemList() {
+  return new NoRollbackWorkItemList();
 }

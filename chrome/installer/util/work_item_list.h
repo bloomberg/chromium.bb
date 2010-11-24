@@ -91,7 +91,7 @@ class WorkItemList : public WorkItem {
                           bool do_register,
                           bool user_level_registration);
 
- private:
+ protected:
   friend class WorkItem;
 
   typedef std::list<WorkItem*> WorkItems;
@@ -116,6 +116,23 @@ class WorkItemList : public WorkItem {
   // The list of executed WorkItems, in the reverse order of them being
   // executed.
   WorkItems executed_list_;
+};
+
+// A specialization of WorkItemList that executes items in the list on a
+// best-effort basis.  Failure of individual items to execute does not prevent
+// subsequent items from being executed.
+// Also, as the class name suggests, Rollback is not possible.
+class NoRollbackWorkItemList : public WorkItemList {
+ public:
+  virtual ~NoRollbackWorkItemList();
+
+  // Execute the WorkItems in the same order as they are added to the list.
+  // If a WorkItem fails, the function will return failure but all other
+  // WorkItems will still be executed.
+  virtual bool Do();
+
+  // Just does a NOTREACHED.
+  virtual void Rollback();
 };
 
 #endif  // CHROME_INSTALLER_UTIL_WORK_ITEM_LIST_H_

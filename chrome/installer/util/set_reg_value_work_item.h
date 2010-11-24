@@ -6,8 +6,10 @@
 #define CHROME_INSTALLER_UTIL_SET_REG_VALUE_WORK_ITEM_H__
 #pragma once
 
-#include <string>
 #include <windows.h>
+
+#include <string>
+
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that sets a registry value with REG_SZ or REG_DWORD

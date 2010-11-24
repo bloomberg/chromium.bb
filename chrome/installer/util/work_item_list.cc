@@ -31,7 +31,7 @@ bool WorkItemList::Do() {
     list_.pop_front();
     executed_list_.push_front(work_item);
     if (!work_item->Do()) {
-      LOG(ERROR) << "list execution failed";
+      LOG(ERROR) << "item execution failed";
       result = false;
       break;
     }
@@ -143,4 +143,34 @@ bool WorkItemList::AddSelfRegWorkItem(const std::wstring& dll_path,
       WorkItem::CreateSelfRegWorkItem(dll_path, do_register,
                                       user_level_registration));
   return AddWorkItem(item);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+NoRollbackWorkItemList::~NoRollbackWorkItemList() {
+}
+
+void NoRollbackWorkItemList::Rollback() {
+  NOTREACHED() << "Can't rollback a NoRollbackWorkItemList";
+}
+
+bool NoRollbackWorkItemList::Do() {
+  if (status_ != ADD_ITEM)
+    return false;
+
+  bool result = true;
+  while (!list_.empty()) {
+    WorkItem* work_item = list_.front();
+    list_.pop_front();
+    executed_list_.push_front(work_item);
+    if (!work_item->Do()) {
+      LOG(ERROR) << "NoRollbackWorkItemList: item execution failed.";
+      result = false;
+    }
+  }
+
+  if (result)
+    VLOG(1) << "NoRollbackWorkItemList: list execution succeeded";
+
+  status_ = LIST_EXECUTED;
+  return result;
 }

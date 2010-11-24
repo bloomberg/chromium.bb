@@ -5,6 +5,7 @@
 #include "chrome/installer/util/self_reg_work_item.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "chrome/installer/util/logging_installer.h"
 
 // Default registration export names.
@@ -27,33 +28,39 @@ SelfRegWorkItem::~SelfRegWorkItem() {
 
 bool SelfRegWorkItem::RegisterDll(bool do_register) {
   VLOG(1) << "COM " << (do_register ? "registration of " : "unregistration of ")
-      << dll_path_;
+          << dll_path_;
 
   HMODULE dll_module = ::LoadLibraryEx(dll_path_.c_str(), NULL,
                                        LOAD_WITH_ALTERED_SEARCH_PATH);
   bool success = false;
   if (NULL != dll_module) {
-    PROC register_server_func = NULL;
+    typedef HRESULT (WINAPI* RegisterFunc)();
+    RegisterFunc register_server_func = NULL;
     if (do_register) {
-      register_server_func = ::GetProcAddress(dll_module,
-          user_level_registration_ ? kUserRegistrationEntryPoint :
-                                     kDefaultRegistrationEntryPoint);
+      register_server_func = reinterpret_cast<RegisterFunc>(
+          ::GetProcAddress(dll_module, user_level_registration_ ?
+              kUserRegistrationEntryPoint : kDefaultRegistrationEntryPoint));
     } else {
-      register_server_func = ::GetProcAddress(dll_module,
-          user_level_registration_ ? kUserUnregistrationEntryPoint :
-                                     kDefaultUnregistrationEntryPoint);
+      register_server_func = reinterpret_cast<RegisterFunc>(
+          ::GetProcAddress(dll_module, user_level_registration_ ?
+              kUserUnregistrationEntryPoint :
+              kDefaultUnregistrationEntryPoint));
     }
 
     if (NULL != register_server_func) {
-      success = SUCCEEDED(register_server_func());
+      HRESULT hr = register_server_func();
+      success = SUCCEEDED(hr);
       if (!success) {
-        LOG(ERROR) << "Failed to " << (do_register ? "register" : "unregister")
-                   << " DLL at " << dll_path_.c_str();
+        PLOG(ERROR) << "Failed to " << (do_register ? "register" : "unregister")
+                    << " DLL at " << dll_path_.c_str() <<
+                    StringPrintf(" 0x%08X", hr);
       }
+    } else {
+      LOG(ERROR) << "COM registration export function not found";
     }
     ::FreeLibrary(dll_module);
   } else {
-    LOG(WARNING) << "Failed to load: " << dll_path_;
+    PLOG(WARNING) << "Failed to load: " << dll_path_;
   }
   return success;
 }

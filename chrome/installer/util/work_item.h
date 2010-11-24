@@ -107,6 +107,11 @@ class WorkItem {
   // a list of WorkItems.
   static WorkItemList* CreateWorkItemList();
 
+  // Create an empty WorkItemList that cannot be rolled back.
+  // Such a work item list executes all items on a best effort basis and does
+  // not abort execution if an item in the list fails.
+  static WorkItemList* CreateNoRollbackWorkItemList();
+
   // Perform the actions of WorkItem. Returns true if success, returns false
   // otherwise.
   // If the WorkItem is transactional, then Do() is done as a transaction.
@@ -122,9 +127,6 @@ class WorkItem {
   // Return true if the WorkItem is transactional, return false if
   // non-transactional.
   virtual bool IsTransactional() { return false; }
-
-  // For diagnostics.
-  virtual std::wstring Dump();
 
  protected:
   WorkItem();

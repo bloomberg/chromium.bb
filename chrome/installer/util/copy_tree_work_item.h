@@ -6,8 +6,9 @@
 #define CHROME_INSTALLER_UTIL_COPY_TREE_WORK_ITEM_H_
 #pragma once
 
-#include <string>
 #include <windows.h>
+
+#include <string>
 
 #include "base/file_path.h"
 #include "chrome/installer/util/work_item.h"
@@ -31,7 +32,7 @@ class CopyTreeWorkItem : public WorkItem {
  private:
   friend class WorkItem;
 
-  // See comments on corresponding member varibles for the semantics of
+  // See comments on corresponding member variables for the semantics of
   // arguments.
   // Notes on temp_path: to facilitate rollback, the caller needs to supply
   // a temporary directory to save the original files if they exist under

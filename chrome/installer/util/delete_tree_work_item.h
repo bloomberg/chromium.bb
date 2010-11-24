@@ -6,8 +6,9 @@
 #define CHROME_INSTALLER_UTIL_DELETE_TREE_WORK_ITEM_H_
 #pragma once
 
-#include <string>
 #include <windows.h>
+
+#include <string>
 
 #include "base/file_path.h"
 #include "chrome/installer/util/work_item.h"
