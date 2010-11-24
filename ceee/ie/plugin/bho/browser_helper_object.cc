@@ -107,9 +107,8 @@ BrowserHelperObject::BrowserHelperObject()
 }
 
 BrowserHelperObject::~BrowserHelperObject() {
-  if (broker_rpc_ != NULL) {
+  if (broker_rpc_ != NULL)
     broker_rpc_->Disconnect();
-  }
 
   TRACE_EVENT_END("ceee.bho", this, "");
 }
@@ -127,15 +126,16 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
 
   // From experience, we know the site may be set multiple times.
   // Let's ignore second and subsequent set or unset.
-  if (NULL != site && NULL != m_spUnkSite.p ||
-      NULL == site && NULL == m_spUnkSite.p) {
+  if (site != NULL&& m_spUnkSite.p != NULL ||
+      site == NULL && m_spUnkSite.p == NULL ) {
     LOG(WARNING) << "Duplicate call to SetSite, previous site "
                  << m_spUnkSite.p << " new site " << site;
     return S_OK;
   }
 
   if (NULL == site) {
-    mu::ScopedTimer metrics_timer("ceee/BHO.TearDown", broker_rpc_.get());
+    if (broker_rpc_ != NULL)
+      mu::ScopedTimer metrics_timer("ceee/BHO.TearDown", broker_rpc_.get());
 
     // We're being torn down.
     TearDown();
@@ -150,21 +150,6 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
     return hr;
 
   if (NULL != site) {
-    if (broker_rpc_ == NULL) {
-      // Unfortunately, we need to connect before taking performance. Including
-      // this call in our Timing would be useful. Unit tests make it
-      // complicated.
-      // TODO(hansl@chromium.org): Change initialization to be able to time
-      // this call too.
-      hr = ConnectRpcBrokerClient();
-      if (FAILED(hr) || !broker_rpc_->is_connected()) {
-        NOTREACHED() << "Couldn't connect to the RPC server.";
-        TearDown();
-        SuperSite::SetSite(NULL);
-      }
-    }
-
-    mu::ScopedTimer metrics_timer("ceee/BHO.Initialize", broker_rpc_.get());
     // We're being initialized.
     hr = Initialize(site);
 
@@ -267,9 +252,29 @@ WebProgressNotifier* BrowserHelperObject::CreateWebProgressNotifier() {
 HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   TRACE_EVENT_INSTANT("ceee.bho.initialize", this, "");
 
+  // We need to make sure the Broker is CoCreated BEFORE we try RPC to it.
+  HRESULT hr = GetBrokerRegistrar(&broker_registrar_);
+  DCHECK(SUCCEEDED(hr) && broker_registrar_) << "CoCreating Broker. " <<
+      com::LogHr(hr);
+  if (FAILED(hr) || !broker_registrar_)
+    return com::AlwaysError(hr);
+
+  // Unfortunately, we need to connect before taking performance. Including
+  // this call in our Timing would be useful. Unit tests make it
+  // complicated.
+  // TODO(hansl@chromium.org): Change initialization to be able to time
+  // this call too.
+  DCHECK(broker_rpc_ == NULL);
+  hr = ConnectRpcBrokerClient();
+  if (FAILED(hr) || !broker_rpc_->is_connected()) {
+    NOTREACHED() << "Couldn't connect to the RPC server.";
+    return com::AlwaysError(hr);
+  }
+  mu::ScopedTimer metrics_timer("ceee/BHO.Initialize", broker_rpc_.get());
+
   ie7_or_later_ = ie_util::GetIeVersion() > ie_util::IEVERSION_IE6;
 
-  HRESULT hr = InitializeChromeFrameHost();
+  hr = InitializeChromeFrameHost();
   DCHECK(SUCCEEDED(hr)) << "InitializeChromeFrameHost failed " <<
       com::LogHr(hr);
   if (FAILED(hr)) {
@@ -286,24 +291,20 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
     return hr;
 
   // Preemptively feed the broker with an executor in our thread.
-  hr = GetBrokerRegistrar(&broker_registrar_);
-  LOG_IF(ERROR, FAILED(hr)) << "Failed to create broker, hr=" <<
+  DCHECK(executor_ == NULL);
+  hr = CreateExecutor(&executor_);
+  LOG_IF(ERROR, FAILED(hr)) << "Failed to create Executor, hr=" <<
       com::LogHr(hr);
-  DCHECK(SUCCEEDED(hr)) << "CoCreating Broker. " << com::LogHr(hr);
+  DCHECK(SUCCEEDED(hr)) << "CoCreating Executor. " << com::LogHr(hr);
   if (SUCCEEDED(hr)) {
-    DCHECK(executor_ == NULL);
-    hr = CreateExecutor(&executor_);
-    LOG_IF(ERROR, FAILED(hr)) << "Failed to create Executor, hr=" <<
-        com::LogHr(hr);
-    DCHECK(SUCCEEDED(hr)) << "CoCreating Executor. " << com::LogHr(hr);
-    if (SUCCEEDED(hr)) {
-      // TODO(mad@chromium.org): Implement the proper manual/secure
-      // registration.
-      hr = broker_registrar_->RegisterTabExecutor(::GetCurrentThreadId(),
-                                                  executor_);
-      DCHECK(SUCCEEDED(hr)) << "Registering Executor. " << com::LogHr(hr);
-    }
+    // TODO(mad@chromium.org): Implement the proper manual/secure
+    // registration.
+    hr = broker_registrar_->RegisterTabExecutor(::GetCurrentThreadId(),
+                                                executor_);
+    DCHECK(SUCCEEDED(hr)) << "Registering Executor. " << com::LogHr(hr);
   }
+  if (FAILED(hr))
+    return hr;
 
   // We need the service provider for both the sink connections and
   // to get a handle to the tab window.
@@ -781,7 +782,8 @@ STDMETHODIMP_(void) BrowserHelperObject::OnBeforeNavigate2(
 
 void BrowserHelperObject::OnBeforeNavigate2Impl(
     const ScopedDispatchPtr& webbrowser_disp, const CComBSTR& url) {
-  mu::ScopedTimer metrics_timer("ceee/BHO.BeforeNavigate", broker_rpc_.get());
+  if (broker_rpc_ != NULL)
+    mu::ScopedTimer metrics_timer("ceee/BHO.BeforeNavigate", broker_rpc_.get());
 
   base::win::ScopedComPtr<IWebBrowser2> webbrowser;
   HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
@@ -846,7 +848,10 @@ STDMETHODIMP_(void) BrowserHelperObject::OnDocumentComplete(
 
 void BrowserHelperObject::OnDocumentCompleteImpl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
-  mu::ScopedTimer metrics_timer("ceee/BHO.DocumentComplete", broker_rpc_.get());
+  if (broker_rpc_ != NULL) {
+    mu::ScopedTimer metrics_timer("ceee/BHO.DocumentComplete",
+                                  broker_rpc_.get());
+  }
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
     (*iter)->OnDocumentComplete(webbrowser, url);
@@ -885,7 +890,10 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateComplete2(
 
 void BrowserHelperObject::OnNavigateComplete2Impl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
-  mu::ScopedTimer metrics_timer("ceee/BHO.NavigateComplete", broker_rpc_.get());
+  if (broker_rpc_ != NULL) {
+    mu::ScopedTimer metrics_timer("ceee/BHO.NavigateComplete",
+                                  broker_rpc_.get());
+  }
 
   HandleNavigateComplete(webbrowser, url);
 
@@ -936,7 +944,8 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateError(
 void BrowserHelperObject::OnNavigateErrorImpl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url,
     LONG status_code) {
-  mu::ScopedTimer metrics_timer("ceee/BHO.NavigateError", broker_rpc_.get());
+  if (broker_rpc_ != NULL)
+    mu::ScopedTimer metrics_timer("ceee/BHO.NavigateError", broker_rpc_.get());
 
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
