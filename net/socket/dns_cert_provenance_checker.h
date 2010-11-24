@@ -27,6 +27,8 @@ class DnsCertProvenanceChecker {
         const std::vector<std::string>& der_certs) = 0;
   };
 
+  virtual void Shutdown() = 0;
+
   virtual ~DnsCertProvenanceChecker();
 
   // DoAsyncVerification starts an asynchronous check for the given certificate

@@ -13,6 +13,7 @@
 #include <pk11pub.h>
 #include <sechash.h>
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -21,6 +22,7 @@
 #include "base/non_thread_safe.h"
 #include "base/pickle.h"
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "net/base/completion_callback.h"
 #include "net/base/dns_util.h"
 #include "net/base/dnsrr_resolver.h"
@@ -41,6 +43,40 @@ const uint8 kServerPublicKey[] = {
   0x23, 0xa6, 0xd8, 0x37, 0x55, 0x7c, 0x01, 0xbf, 0x18, 0xd8, 0x16, 0x9e, 0x66,
   0xdc, 0x49, 0xbf, 0x2e, 0x86, 0xe3, 0x99, 0xbd, 0xb3, 0x75, 0x25, 0x61, 0x04,
   0x6c, 0x2e, 0xfb, 0x32, 0x42, 0x27, 0xe4, 0x23, 0xea, 0xcd, 0x81, 0x62, 0xc1,
+};
+
+const unsigned kMaxUploadsPerSession = 10;
+
+// DnsCertLimits is a singleton class which keeps track of which hosts we have
+// uploaded reports for in this session. Since some users will be behind MITM
+// proxies, they would otherwise upload for every host and we don't wish to
+// spam the upload server.
+class DnsCertLimits {
+ public:
+  DnsCertLimits() { }
+
+  // HaveReachedMaxUploads returns true iff we have uploaded the maximum number
+  // of DNS certificate reports for this session.
+  bool HaveReachedMaxUploads() {
+    return uploaded_hostnames_.size() >= kMaxUploadsPerSession;
+  }
+
+  // HaveReachedMaxUploads returns true iff we have already uploaded a report
+  // about the given hostname in this session.
+  bool HaveUploadedForHostname(const std::string& hostname) {
+    return uploaded_hostnames_.count(hostname) > 0;
+  }
+
+  void DidUpload(const std::string& hostname) {
+    uploaded_hostnames_.insert(hostname);
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<DnsCertLimits>;
+
+  std::set<std::string> uploaded_hostnames_;
+
+  DISALLOW_COPY_AND_ASSIGN(DnsCertLimits);
 };
 
 // DnsCertProvenanceCheck performs the DNS lookup of the certificate. This
@@ -68,6 +104,12 @@ class DnsCertProvenanceCheck : public NonThreadSafe {
 
     if (der_certs_.empty())
       return;
+
+    DnsCertLimits* const limits = Singleton<DnsCertLimits>::get();
+    if (limits->HaveReachedMaxUploads() ||
+        limits->HaveUploadedForHostname(hostname_)) {
+      return;
+    }
 
     uint8 fingerprint[SHA1_LENGTH];
     SECStatus rv = HASH_HashBuf(
@@ -104,6 +146,7 @@ class DnsCertProvenanceCheck : public NonThreadSafe {
       LOG(ERROR) << "FAILED"
                  << " hostname:" << hostname_
                  << " domain:" << domain_;
+      Singleton<DnsCertLimits>::get()->DidUpload(hostname_);
       delegate_->OnDnsCertLookupFailed(hostname_, der_certs_);
     } else if (status == OK) {
       LOG(ERROR) << "GOOD"
@@ -115,7 +158,6 @@ class DnsCertProvenanceCheck : public NonThreadSafe {
 
     delete this;
   }
-
 
   const std::string hostname_;
   std::string domain_;

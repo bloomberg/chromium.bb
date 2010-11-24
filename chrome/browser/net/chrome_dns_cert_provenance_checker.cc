@@ -4,6 +4,11 @@
 
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 
+#include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
+#include "net/url_request/url_request.h"
+
 namespace {
 
 class ChromeDnsCertProvenanceChecker :
@@ -14,7 +19,13 @@ class ChromeDnsCertProvenanceChecker :
       net::DnsRRResolver* dnsrr_resolver,
       ChromeURLRequestContext* url_req_context)
       : dnsrr_resolver_(dnsrr_resolver),
-        url_req_context_(url_req_context) {
+        url_req_context_(url_req_context),
+        upload_url_("http://chromecertcheck.appspot.com/upload"),
+        delegate_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  }
+
+  ~ChromeDnsCertProvenanceChecker() {
+    DCHECK(inflight_requests_.empty());
   }
 
   // DnsCertProvenanceChecker interface
@@ -25,16 +36,74 @@ class ChromeDnsCertProvenanceChecker :
                                                  dnsrr_resolver_, this);
   }
 
+  virtual void Shutdown() {
+    STLDeleteContainerPointers(inflight_requests_.begin(),
+                               inflight_requests_.end());
+    inflight_requests_.clear();
+  }
+
   // DnsCertProvenanceChecker::Delegate interface
   virtual void OnDnsCertLookupFailed(
       const std::string& hostname,
       const std::vector<std::string>& der_certs) {
-    // Currently unimplemented.
+    const std::string report = BuildEncryptedReport(hostname, der_certs);
+
+    URLRequest* url_request(new URLRequest(upload_url_, &delegate_));
+    url_request->set_context(url_req_context_);
+    url_request->set_method("POST");
+    url_request->AppendBytesToUpload(report.data(), report.size());
+    net::HttpRequestHeaders headers;
+    headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                      "x-application/chrome-cert-provenance-report");
+    url_request->SetExtraRequestHeaders(headers);
+    inflight_requests_.insert(url_request);
+    url_request->Start();
   }
 
  private:
+  void RequestComplete(URLRequest* request) {
+    std::set<URLRequest*>::iterator i = inflight_requests_.find(request);
+    DCHECK(i != inflight_requests_.end());
+    delete *i;
+    inflight_requests_.erase(i);
+  }
+
+  // URLRequestDelegate is the delegate for the upload. Since this is a
+  // fire-and-forget operation, we don't care if there are any errors in the
+  // upload.
+  class URLRequestDelegate : public URLRequest::Delegate {
+   public:
+    explicit URLRequestDelegate(ChromeDnsCertProvenanceChecker* checker)
+        : checker_(checker) {
+    }
+
+    // Delegate implementation
+    void OnResponseStarted(URLRequest* request) {
+      const URLRequestStatus& status(request->status());
+      if (!status.is_success()) {
+        LOG(WARNING) << "Certificate upload failed"
+                     << " status:" << status.status()
+                     << " os_error:" << status.os_error();
+      } else if (request->GetResponseCode() != 200) {
+        LOG(WARNING) << "Certificate upload HTTP status: "
+                     << request->GetResponseCode();
+      }
+      checker_->RequestComplete(request);
+    }
+
+    void OnReadCompleted(URLRequest* request, int bytes_read) {
+      NOTREACHED();
+    }
+
+   private:
+    ChromeDnsCertProvenanceChecker* const checker_;
+  };
+
   net::DnsRRResolver* const dnsrr_resolver_;
   ChromeURLRequestContext* const url_req_context_;
+  const GURL upload_url_;
+  URLRequestDelegate delegate_;
+  std::set<URLRequest*> inflight_requests_;
 };
 
 }  // namespace

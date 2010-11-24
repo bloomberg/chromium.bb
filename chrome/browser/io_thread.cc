@@ -380,6 +380,11 @@ void IOThread::CleanUp() {
        url_request_context_getters.begin();
        it != url_request_context_getters.end(); ++it) {
     ChromeURLRequestContextGetter* getter = *it;
+    // Stop all pending certificate provenance check uploads
+    net::DnsCertProvenanceChecker* checker =
+        getter->GetURLRequestContext()->dns_cert_checker();
+    if (checker)
+      checker->Shutdown();
     getter->ReleaseURLRequestContext();
   }
 
