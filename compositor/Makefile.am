@@ -22,9 +22,9 @@ compositor_SOURCES =				\
 	drm.c					\
 	shm.c
 
-udevdir = $(sysconfdir)/udev
+udevrulesddir = $(sysconfdir)/udev/rules.d
 
-dist_udev_DATA =				\
+dist_udevrulesd_DATA =				\
 	70-wayland.rules
 
 BUILT_SOURCES =					\
