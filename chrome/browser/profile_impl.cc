@@ -51,6 +51,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/net_pref_observer.h"
+#include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
@@ -523,6 +524,9 @@ ProfileImpl::~ProfileImpl() {
 
   if (extensions_service_)
     extensions_service_->DestroyingProfile();
+
+  if (pref_proxy_config_tracker_)
+    pref_proxy_config_tracker_->DetachFromPrefService();
 
   // This causes the Preferences file to be written to disk.
   MarkAsCleanShutdown();
@@ -1318,3 +1322,10 @@ chromeos::ProxyConfigServiceImpl*
   return chromeos_proxy_config_service_impl_;
 }
 #endif  // defined(OS_CHROMEOS)
+
+PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
+  if (!pref_proxy_config_tracker_)
+    pref_proxy_config_tracker_ = new PrefProxyConfigTracker(GetPrefs());
+
+  return pref_proxy_config_tracker_;
+}

@@ -263,7 +263,7 @@
           ],
           'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'features': {'dynamic_refresh': 0},
+            'features': {'dynamic_refresh': 1},
             'example_value': 2,
           }
         },
@@ -272,7 +272,7 @@
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'features': {'dynamic_refresh': 0},
+            'features': {'dynamic_refresh': 1},
             'example_value': '123.123.123.123:8080',
           }
         },
@@ -281,7 +281,7 @@
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'features': {'dynamic_refresh': 0},
+            'features': {'dynamic_refresh': 1},
             'example_value': 'http://internal.site/example.pac'
           }
         },
@@ -290,7 +290,7 @@
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
           'annotations': {
-            'features': {'dynamic_refresh': 0},
+            'features': {'dynamic_refresh': 1},
             'example_value':
               'http://www.example1.com,'
               'http://www.example2.com,http://internalsite/',

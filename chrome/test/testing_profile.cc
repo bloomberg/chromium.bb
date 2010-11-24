@@ -27,6 +27,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
@@ -39,7 +40,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"
-#include "chrome/test/test_url_request_context_getter.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -110,6 +110,26 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
+};
+
+// Used to return a dummy context (normally the context is on the IO thread).
+// The one here can be run on the main test thread. Note that this can lead to
+// a leak if your test does not have a BrowserThread::IO in it because
+// URLRequestContextGetter is defined as a ReferenceCounted object with a
+// special trait that deletes it on the IO thread.
+class TestURLRequestContextGetter : public URLRequestContextGetter {
+ public:
+  virtual URLRequestContext* GetURLRequestContext() {
+    if (!context_)
+      context_ = new TestURLRequestContext();
+    return context_.get();
+  }
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
+    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  }
+
+ private:
+  scoped_refptr<URLRequestContext> context_;
 };
 
 class TestExtensionURLRequestContext : public URLRequestContext {
@@ -185,6 +205,8 @@ TestingProfile::~TestingProfile() {
     extensions_service_->DestroyingProfile();
     extensions_service_ = NULL;
   }
+  if (pref_proxy_config_tracker_.get())
+    pref_proxy_config_tracker_->DetachFromPrefService();
 }
 
 void TestingProfile::CreateFaviconService() {
@@ -468,6 +490,13 @@ DesktopNotificationService* TestingProfile::GetDesktopNotificationService() {
         this, NULL));
   }
   return desktop_notification_service_.get();
+}
+
+PrefProxyConfigTracker* TestingProfile::GetProxyConfigTracker() {
+  if (!pref_proxy_config_tracker_)
+    pref_proxy_config_tracker_ = new PrefProxyConfigTracker(GetPrefs());
+
+  return pref_proxy_config_tracker_;
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {

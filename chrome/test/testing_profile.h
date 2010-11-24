@@ -294,6 +294,8 @@ class TestingProfile : public Profile {
   }
 #endif  // defined(OS_CHROMEOS)
 
+  virtual PrefProxyConfigTracker* GetProxyConfigTracker();
+
   // Schedules a task on the history backend and runs a nested loop until the
   // task is processed.  This has the effect of blocking the caller until the
   // history service processes all pending requests.
@@ -403,6 +405,9 @@ class TestingProfile : public Profile {
   // For properly notifying the ExtensionsService when the profile
   // is disposed.
   scoped_refptr<ExtensionsService> extensions_service_;
+
+  // The proxy prefs tracker.
+  scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   // We use a temporary directory to store testing profile data.
   ScopedTempDir temp_dir_;

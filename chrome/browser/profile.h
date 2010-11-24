@@ -72,6 +72,7 @@ class PersonalDataManager;
 class PinnedTabService;
 class PrefService;
 class ExtensionInfoMap;
+class PrefProxyConfigTracker;
 class PromoCounter;
 class ProfileSyncService;
 class ProfileSyncFactory;
@@ -484,6 +485,10 @@ class Profile {
   virtual chromeos::ProxyConfigServiceImpl*
       GetChromeOSProxyConfigServiceImpl() = 0;
 #endif  // defined(OS_CHROMEOS)
+
+  // Returns the helper object that provides the proxy configuration service
+  // access to the the proxy configuration possibly defined by preferences.
+  virtual PrefProxyConfigTracker* GetProxyConfigTracker() = 0;
 
 #ifdef UNIT_TEST
   // Use with caution.  GetDefaultRequestContext may be called on any thread!

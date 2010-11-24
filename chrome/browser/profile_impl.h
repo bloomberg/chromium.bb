@@ -130,6 +130,8 @@ class ProfileImpl : public Profile,
   virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
 #endif  // defined(OS_CHROMEOS)
 
+  virtual PrefProxyConfigTracker* GetProxyConfigTracker();
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -279,6 +281,8 @@ class ProfileImpl : public Profile,
   scoped_refptr<chromeos::ProxyConfigServiceImpl>
       chromeos_proxy_config_service_impl_;
 #endif
+
+  scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

@@ -590,6 +590,10 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
+  virtual PrefProxyConfigTracker* GetProxyConfigTracker() {
+    return profile_->GetProxyConfigTracker();
+  }
+
  private:
   NotificationRegistrar registrar_;
 

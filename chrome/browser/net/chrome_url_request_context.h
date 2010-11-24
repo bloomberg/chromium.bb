@@ -388,9 +388,4 @@ class ChromeURLRequestContextFactory {
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextFactory);
 };
 
-// Creates a proxy configuration from proxy-related preferences fetched
-// from |pref_service|. The relevant preferences in |pref_service| are
-// initialized from the process' command line or by applicable proxy policies.
-net::ProxyConfig* CreateProxyConfig(const PrefService* pref_service);
-
 #endif  // CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_

@@ -2260,6 +2260,8 @@
         'browser/net/predictor.h',
         'browser/net/predictor_api.cc',
         'browser/net/predictor_api.h',
+        'browser/net/pref_proxy_config_service.cc',
+        'browser/net/pref_proxy_config_service.h',
         'browser/net/prerender_interceptor.cc',
         'browser/net/prerender_interceptor.h',
         'browser/net/referrer.cc',
