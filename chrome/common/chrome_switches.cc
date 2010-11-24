@@ -322,10 +322,6 @@ const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 // Disable syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
 
-// Enable the new autofill type.
-const char kEnableSyncNewAutofill[]     =
-    "enable-sync-new-autofill-data-type";
-
 // TabCloseableStateWatcher disallows closing of tabs and browsers under certain
 // situations on ChromeOS.  Some tests expect tabs or browsers to close, so we
 // need a switch to disable the watcher.

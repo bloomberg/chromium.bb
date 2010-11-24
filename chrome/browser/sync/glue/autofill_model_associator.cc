@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/guid.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
@@ -27,6 +26,9 @@ namespace browser_sync {
 
 const char kAutofillTag[] = "google_chrome_autofill";
 const char kAutofillEntryNamespaceTag[] = "autofill_entry|";
+const char kAutofillProfileNamespaceTag[] = "autofill_profile|";
+
+static const int kMaxNumAttemptsToFindUniqueLabel = 100;
 
 struct AutofillModelAssociator::DataBundle {
   std::set<AutofillKey> current_entries;
@@ -121,6 +123,87 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutofillEntries(
   return true;
 }
 
+bool AutofillModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
+    sync_api::WriteTransaction* write_trans,
+    const sync_api::ReadNode& autofill_root,
+    const std::vector<AutoFillProfile*>& all_profiles_from_db,
+    std::set<string16>* current_profiles,
+    std::vector<AutoFillProfile*>* updated_profiles) {
+  const std::vector<AutoFillProfile*>& profiles = all_profiles_from_db;
+  for (std::vector<AutoFillProfile*>::const_iterator ix = profiles.begin();
+       ix != profiles.end(); ++ix) {
+    string16 label((*ix)->Label());
+    std::string tag(ProfileLabelToTag(label));
+
+    sync_api::ReadNode node(write_trans);
+    if (node.InitByClientTagLookup(syncable::AUTOFILL, tag)) {
+      const sync_pb::AutofillSpecifics& autofill(node.GetAutofillSpecifics());
+      DCHECK(autofill.has_profile());
+      DCHECK_EQ(ProfileLabelToTag(UTF8ToUTF16(autofill.profile().label())),
+                tag);
+      int64 sync_id = node.GetId();
+      if (id_map_.find(tag) != id_map_.end()) {
+        // We just looked up something we already associated.  Move aside.
+        label = MakeUniqueLabel(label, string16(), write_trans);
+        if (label.empty()) {
+          return false;
+        }
+        tag = ProfileLabelToTag(label);
+        // TODO(dhollowa): Replace with |AutoFillProfile::set_guid|.
+        // http://crbug.com/58813
+        (*ix)->set_label(label);
+        if (!MakeNewAutofillProfileSyncNode(write_trans, autofill_root,
+                                            tag, **ix, &sync_id)) {
+          return false;
+        }
+        updated_profiles->push_back(*ix);
+      } else {
+        // Overwrite local with cloud state.
+        if (OverwriteProfileWithServerData(*ix, autofill.profile()))
+          updated_profiles->push_back(*ix);
+        sync_id = node.GetId();
+      }
+
+      Associate(&tag, sync_id);
+    } else {
+      int64 id;
+      if (!MakeNewAutofillProfileSyncNode(write_trans, autofill_root,
+                                          tag, **ix, &id)) {
+        return false;
+      }
+      Associate(&tag, id);
+    }
+    current_profiles->insert(label);
+  }
+  return true;
+}
+
+// static
+string16 AutofillModelAssociator::MakeUniqueLabel(
+    const string16& non_unique_label,
+    const string16& existing_unique_label,
+    sync_api::BaseTransaction* trans) {
+  if (!non_unique_label.empty() && non_unique_label == existing_unique_label) {
+    return existing_unique_label;
+  }
+  int unique_id = 1;  // Priming so we start by appending "2".
+  while (unique_id++ < kMaxNumAttemptsToFindUniqueLabel) {
+    string16 suffix(base::IntToString16(unique_id));
+    string16 unique_label = non_unique_label + suffix;
+    if (unique_label == existing_unique_label)
+      return unique_label;  // We'll use the one we already have.
+    sync_api::ReadNode node(trans);
+    if (node.InitByClientTagLookup(syncable::AUTOFILL,
+                                   ProfileLabelToTag(unique_label))) {
+      continue;
+    }
+    return unique_label;
+  }
+
+  LOG(ERROR) << "Couldn't create unique tag for autofill node. Srsly?!";
+  return string16();
+}
+
 bool AutofillModelAssociator::MakeNewAutofillProfileSyncNode(
     sync_api::WriteTransaction* trans, const sync_api::BaseNode& autofill_root,
     const std::string& tag, const AutoFillProfile& profile, int64* sync_id) {
@@ -182,15 +265,11 @@ bool AutofillModelAssociator::AssociateModels() {
     }
 
     if (!TraverseAndAssociateChromeAutofillEntries(&trans, autofill_root,
-        entries, &bundle.current_entries, &bundle.new_entries)) {
-      return false;
-    }
-
-    if (!TraverseAndAssociateAllSyncNodes(
-        &trans,
-        autofill_root,
-        &bundle,
-        profiles.get())) {
+            entries, &bundle.current_entries, &bundle.new_entries) ||
+        !TraverseAndAssociateChromeAutoFillProfiles(&trans, autofill_root,
+            profiles.get(), &bundle.current_profiles,
+            &bundle.updated_profiles) ||
+        !TraverseAndAssociateAllSyncNodes(&trans, autofill_root, &bundle)) {
       return false;
     }
   }
@@ -240,8 +319,7 @@ bool AutofillModelAssociator::SaveChangesToWebData(const DataBundle& bundle) {
 bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
     sync_api::WriteTransaction* write_trans,
     const sync_api::ReadNode& autofill_root,
-    DataBundle* bundle,
-    const std::vector<AutoFillProfile*>& all_profiles_from_db) {
+    DataBundle* bundle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   int64 sync_child_id = autofill_root.GetFirstChildId();
@@ -254,55 +332,16 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
     const sync_pb::AutofillSpecifics& autofill(
         sync_child.GetAutofillSpecifics());
 
-    if (autofill.has_value()) {
+    if (autofill.has_value())
       AddNativeEntryIfNeeded(autofill, bundle, sync_child);
-    } else if (autofill.has_profile() && HasNotMigratedYet()) {
-      // Ignore autofill profiles if we are not upgrading.
-      AddNativeProfileIfNeeded(
-          autofill.profile(),
-          bundle,
-          sync_child,
-          all_profiles_from_db);
-    } else {
+    else if (autofill.has_profile())
+      AddNativeProfileIfNeeded(autofill.profile(), bundle, sync_child);
+    else
       NOTREACHED() << "AutofillSpecifics has no autofill data!";
-    }
 
     sync_child_id = sync_child.GetSuccessorId();
   }
   return true;
-}
-
-// Define the functor to be used as the predicate in find_if call.
-struct CompareProfiles
-  : public std::binary_function<AutoFillProfile*, AutoFillProfile*, bool> {
-  bool operator() (AutoFillProfile* p1, AutoFillProfile* p2) const {
-    if (p1->Compare(*p2) == 0)
-      return true;
-    else
-      return false;
-  }
-};
-
-AutoFillProfile* AutofillModelAssociator::FindCorrespondingNodeFromWebDB(
-    const sync_pb::AutofillProfileSpecifics& profile,
-    const std::vector<AutoFillProfile*>& all_profiles_from_db) {
-  static std::string guid(guid::GenerateGUID());
-  AutoFillProfile p;
-  p.set_guid(guid);
-  if (!FillProfileWithServerData(&p, profile)) {
-    // Not a big deal. We encountered an error. Just say this profile does not
-    // exist.
-    LOG(ERROR) << " Profile could not be associated";
-    return NULL;
-  }
-
-  // Now instantiate the functor and call find_if.
-  std::vector<AutoFillProfile*>::const_iterator ix =
-      std::find_if(all_profiles_from_db.begin(),
-                   all_profiles_from_db.end(),
-                   std::bind2nd(CompareProfiles(), &p));
-
-  return (ix == all_profiles_from_db.end()) ? NULL : *ix;
 }
 
 void AutofillModelAssociator::AddNativeEntryIfNeeded(
@@ -325,26 +364,16 @@ void AutofillModelAssociator::AddNativeEntryIfNeeded(
 }
 
 void AutofillModelAssociator::AddNativeProfileIfNeeded(
-    const sync_pb::AutofillProfileSpecifics& profile,
-    DataBundle* bundle,
-    const sync_api::ReadNode& node,
-    const std::vector<AutoFillProfile*>& all_profiles_from_db) {
-
+    const sync_pb::AutofillProfileSpecifics& profile, DataBundle* bundle,
+    const sync_api::ReadNode& node) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-
-  scoped_ptr<AutoFillProfile> profile_in_web_db(FindCorrespondingNodeFromWebDB(
-      profile, all_profiles_from_db));
-
-  if (profile_in_web_db.get() != NULL) {
-    int64 sync_id = node.GetId();
-    std::string guid = profile_in_web_db->guid();
-    Associate(&guid, sync_id);
-    return;
-  } else {  // Create a new node.
-    std::string guid = guid::GenerateGUID();
-    Associate(&guid, node.GetId());
-    AutoFillProfile* p = new AutoFillProfile(guid);
-    FillProfileWithServerData(p, profile);
+  if (bundle->current_profiles.find(UTF8ToUTF16(profile.label())) ==
+      bundle->current_profiles.end()) {
+    std::string tag(ProfileLabelToTag(UTF8ToUTF16(profile.label())));
+    Associate(&tag, node.GetId());
+    AutoFillProfile* p = personal_data_->
+        CreateNewEmptyAutoFillProfileForDBThread(UTF8ToUTF16(profile.label()));
+    OverwriteProfileWithServerData(p, profile);
     bundle->new_profiles.push_back(p);
   }
 }
@@ -388,8 +417,7 @@ void AutofillModelAssociator::AbortAssociation() {
 
 const std::string*
 AutofillModelAssociator::GetChromeNodeFromSyncId(int64 sync_id) {
-  SyncIdToAutofillMap::const_iterator iter = id_map_inverse_.find(sync_id);
-  return iter == id_map_inverse_.end() ? NULL : &(iter->second);
+  return NULL;
 }
 
 bool AutofillModelAssociator::InitSyncNodeFromChromeId(
@@ -448,6 +476,12 @@ std::string AutofillModelAssociator::KeyToTag(const string16& name,
 }
 
 // static
+std::string AutofillModelAssociator::ProfileLabelToTag(const string16& label) {
+  std::string ns(kAutofillProfileNamespaceTag);
+  return ns + EscapePath(UTF16ToUTF8(label));
+}
+
+// static
 bool AutofillModelAssociator::MergeTimestamps(
     const sync_pb::AutofillSpecifics& autofill,
     const std::vector<base::Time>& timestamps,
@@ -485,7 +519,7 @@ bool MergeField(FormGroup* f, AutoFillFieldType t,
 }
 
 // static
-bool AutofillModelAssociator::FillProfileWithServerData(
+bool AutofillModelAssociator::OverwriteProfileWithServerData(
     AutoFillProfile* merge_into,
     const sync_pb::AutofillProfileSpecifics& specifics) {
   bool diff = false;
@@ -507,10 +541,6 @@ bool AutofillModelAssociator::FillProfileWithServerData(
   diff = MergeField(p, PHONE_HOME_WHOLE_NUMBER, s.phone_home_whole_number())
       || diff;
   return diff;
-}
-
-bool AutofillModelAssociator::HasNotMigratedYet() {
-  return true;
 }
 
 }  // namespace browser_sync

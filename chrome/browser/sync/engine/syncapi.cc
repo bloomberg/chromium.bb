@@ -83,7 +83,6 @@ using syncable::Directory;
 using syncable::DirectoryManager;
 using syncable::Entry;
 using syncable::SPECIFICS;
-using sync_pb::AutofillProfileSpecifics;
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -280,11 +279,6 @@ const sync_pb::AppSpecifics& BaseNode::GetAppSpecifics() const {
 const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
   DCHECK(GetModelType() == syncable::AUTOFILL);
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::autofill);
-}
-
-const AutofillProfileSpecifics& BaseNode::GetAutofillProfileSpecifics() const {
-  DCHECK_EQ(GetModelType(), syncable::AUTOFILL_PROFILE);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::autofill_profile);
 }
 
 const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
@@ -761,11 +755,6 @@ void WriteNode::MarkForSyncing() {
 ReadNode::ReadNode(const BaseTransaction* transaction)
     : entry_(NULL), transaction_(transaction) {
   DCHECK(transaction);
-}
-
-ReadNode::ReadNode() {
-  entry_ = NULL;
-  transaction_ = NULL;
 }
 
 ReadNode::~ReadNode() {
