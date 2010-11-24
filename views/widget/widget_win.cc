@@ -24,6 +24,7 @@
 #include "views/widget/drop_target_win.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
+#include "views/widget/widget_utils.h"
 #include "views/window/window_win.h"
 
 using app::ViewProp;
@@ -437,19 +438,7 @@ void* WidgetWin::GetNativeWindowProperty(const char* name) {
 }
 
 ThemeProvider* WidgetWin::GetThemeProvider() const {
-  Widget* widget = GetRootWidget();
-  if (widget && widget != this) {
-    // Attempt to get the theme provider, and fall back to the default theme
-    // provider if not found.
-    ThemeProvider* provider = widget->GetThemeProvider();
-    if (provider)
-      return provider;
-
-    provider = widget->GetDefaultThemeProvider();
-    if (provider)
-      return provider;
-  }
-  return default_theme_provider_.get();
+  return GetWidgetThemeProvider(this);
 }
 
 ThemeProvider* WidgetWin::GetDefaultThemeProvider() const {

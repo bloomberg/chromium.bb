@@ -26,6 +26,7 @@
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/widget/widget_delegate.h"
+#include "views/widget/widget_utils.h"
 #include "views/window/window_gtk.h"
 
 namespace {
@@ -811,7 +812,7 @@ void* WidgetGtk::GetNativeWindowProperty(const char* name) {
 }
 
 ThemeProvider* WidgetGtk::GetThemeProvider() const {
-  return default_theme_provider_.get();
+  return GetWidgetThemeProvider(this);
 }
 
 ThemeProvider* WidgetGtk::GetDefaultThemeProvider() const {
