@@ -22,3 +22,5 @@ BUG_KINUKO : fast/filesystem/read-directory.html = TEXT
 BUG_KINUKO : fast/filesystem/simple-persistent.html = TEXT
 BUG_KINUKO : fast/filesystem/simple-temporary.html = TEXT
 BUG_KINUKO : fast/filesystem/async-operations.html = TEXT
+
+BUG_LOISLO : fast/text/font-size-zero.html = TEXT
