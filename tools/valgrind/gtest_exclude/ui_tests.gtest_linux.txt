@@ -5,10 +5,6 @@ ChromeMainTest.AppLaunch
 MetricsServiceTest.CrashRenderers
 # See http://crbug.com/40584
 ExtensionProxyUITest.*
-# This doesn't pass under valgrind, because the valgrind helper prevents us
-# from properly SIGTERMing the browser process.
-# See http://crbug.com/42105
-BrowserTest.PosixSessionEnd
 # 4GB of RAM is not enough. See http://crbug.com/42921
 ResourceDispatcherTest.CrossSiteAfterCrash
 NewTabUITest.NTPHasThumbnails

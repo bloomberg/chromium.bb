@@ -57,3 +57,8 @@ LayoutPluginTester.NPObjectSetException
 # Fails on valgrind
 # http://crbug.com/61601
 GPUUITest.UITestCanLaunchWithOSMesa
+
+# This doesn't pass under valgrind, because the valgrind helper prevents us
+# from properly SIGTERMing the browser process.
+# See http://crbug.com/42105
+BrowserTest.PosixSessionEnd
