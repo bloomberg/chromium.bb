@@ -22,8 +22,10 @@
 namespace {
 
 // The minimum number of fields that must contain user data and have known types
-// before AutoFill will attempt to import the data into a profile.
-const int kMinImportSize = 3;
+// before AutoFill will attempt to import the data into a profile or a credit
+// card.
+const int kMinProfileImportSize = 3;
+const int kMinCreditCardImportSize = 2;
 
 template<typename T>
 class FormGroupGUIDMatchesFunctor {
@@ -208,7 +210,9 @@ bool PersonalDataManager::ImportFormData(
           string16 city_code;
           string16 country_code;
           PhoneNumber::ParsePhoneNumber(value,
-                                        &number, &city_code, &country_code);
+                                        &number,
+                                        &city_code,
+                                        &country_code);
           if (number.empty())
             continue;
 
@@ -255,13 +259,9 @@ bool PersonalDataManager::ImportFormData(
 
   // If the user did not enter enough information on the page then don't bother
   // importing the data.
-  if (importable_fields + importable_credit_card_fields < kMinImportSize)
-    return false;
-
-  if (importable_fields == 0)
+  if (importable_fields < kMinProfileImportSize)
     imported_profile_.reset();
-
-  if (importable_credit_card_fields == 0)
+  if (importable_credit_card_fields < kMinCreditCardImportSize)
     imported_credit_card_.reset();
 
   if (imported_credit_card_.get()) {
@@ -283,10 +283,12 @@ bool PersonalDataManager::ImportFormData(
     }
   }
 
-  // We always save imported profiles.
-  SaveImportedProfile();
+  if (imported_profile_.get()) {
+    // We always save imported profiles.
+    SaveImportedProfile();
+  }
 
-  return true;
+  return imported_profile_.get() || imported_credit_card_.get();
 }
 
 void PersonalDataManager::GetImportedFormData(AutoFillProfile** profile,
