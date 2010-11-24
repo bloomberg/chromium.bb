@@ -420,17 +420,17 @@ HRESULT BrowserHelperObject::InitializeChromeFrameHost() {
 }
 
 HRESULT BrowserHelperObject::OnCfReadyStateChanged(LONG state) {
-  // If EnsureTabId() returns false, the session_id isn't available.
-  // This means that the ExternalTab hasn't been created yet, which is certainly
-  // a bug. Calling this here will also ensure we call all the deferred calls if
-  // they haven't been called yet.
-  bool id_available = EnsureTabId();
-  if (!id_available) {
-    NOTREACHED();
-    return E_UNEXPECTED;
-  }
-
   if (state == READYSTATE_COMPLETE) {
+    // If EnsureTabId() returns false, the session_id isn't available.
+    // This means that the ExternalTab hasn't been created yet, which
+    // is certainly a bug. Calling this here will also ensure we call
+    // all the deferred calls if they haven't been called yet.
+    bool id_available = EnsureTabId();
+    if (!id_available) {
+      NOTREACHED();
+      return E_UNEXPECTED;
+    }
+
     extension_path_ = ceee_module_util::GetExtensionPath();
 
     if (ceee_module_util::IsCrxOrEmpty(extension_path_) &&
