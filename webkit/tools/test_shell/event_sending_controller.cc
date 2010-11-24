@@ -35,6 +35,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTouchPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
@@ -770,11 +771,59 @@ void EventSendingController::ReplaySavedEvents() {
   replaying_saved_events = false;
 }
 
+// Because actual context menu is implemented by the browser side,
+// this function does only what LayoutTests are expecting:
+// - Many test checks the count of items. So returning non-zero value
+//   makes sense.
+// - Some test compares the count before and after some action. So
+//   changing the count based on flags also makes sense. This function
+//   is doing such for some flags.
+// - Some test even checks actual string content. So providing it
+//   would be also helpful.
+static std::vector<WebString>
+MakeMenuItemStringsFor(const WebKit::WebContextMenuData* context_menu,
+                       MockSpellCheck* spellcheck) {
+  // These constants are based on Safari's context menu because tests
+  // are made for it.
+  static const char* kNonEditableMenuStrings[] = {
+      "Back", "Reload Page", "Open in Dashbaord", "<separator>",
+      "View Source", "Save Page As", "Print Page", "Inspect Element",
+      0 };
+  static const char* kEditableMenuStrings[] = {
+      "Cut", "Copy", "<separator>", "Paste", "Spelling and Grammar",
+      "Substitutions, Transformations", "Font", "Speech",
+      "Paragraph Direction", "<separator>", 0 };
+
+  // This is possible because mouse events are cancelleable.
+  if (!context_menu)
+    return std::vector<WebString>();
+
+  std::vector<WebString> strings;
+
+  if (context_menu->isEditable) {
+    for (const char** item = kEditableMenuStrings; *item; ++item)
+      strings.push_back(WebString::fromUTF8(*item));
+    std::vector<string16> suggestions;
+    spellcheck->FillSuggestions(context_menu->misspelledWord, &suggestions);
+    for (size_t i = 0; i < suggestions.size(); ++i)
+      strings.push_back(WebString(suggestions[i]));
+  } else {
+    for (const char** item = kNonEditableMenuStrings; *item; ++item)
+      strings.push_back(WebString::fromUTF8(*item));
+  }
+
+  return strings;
+}
+
 void EventSendingController::contextClick(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
   webview()->layout();
+
+  // Clears last context menu data because we need to know if the
+  // context menu be requested after following mouse events.
+  shell_->delegate()->ClearContextMenuData();
 
   UpdateClickCountForButton(WebMouseEvent::ButtonRight);
 
@@ -791,6 +840,12 @@ void EventSendingController::contextClick(
   webview()->handleInputEvent(event);
 
   pressed_button_ = WebMouseEvent::ButtonNone;
+
+  result->Set(WebKit::WebBindings::makeStringArray(
+      MakeMenuItemStringsFor(
+          shell_->delegate()->last_context_menu_data(),
+          shell_->delegate()->mock_spellcheck())));
+
 }
 
 void EventSendingController::scheduleAsynchronousClick(
