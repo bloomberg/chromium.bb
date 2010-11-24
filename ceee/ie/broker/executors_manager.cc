@@ -295,41 +295,85 @@ HRESULT ExecutorsManager::Terminate() {
   return S_OK;
 }
 
-void ExecutorsManager::SetTabIdForHandle(long tab_id, HWND handle) {
+void ExecutorsManager::SetTabIdForHandle(int tab_id, HWND handle) {
   AutoLock lock(lock_);
-  DCHECK(tab_id_map_.end() == tab_id_map_.find(tab_id));
-  DCHECK(handle_map_.end() == handle_map_.find(handle));
+  if (tab_id_map_.end() != tab_id_map_.find(tab_id) ||
+      handle_map_.end() != handle_map_.find(handle)) {
+    // Avoid double-setting of tab id -> handle mappings, which could otherwise
+    // lead to inconsistencies. In practice, this should never happen.
+    NOTREACHED();
+    return;
+  }
   if (handle == reinterpret_cast<HWND>(INVALID_HANDLE_VALUE) ||
       tab_id == kInvalidChromeSessionId) {
     NOTREACHED();
     return;
   }
+  // A tool band tab ID should not be registered with this function.
+  DCHECK(tool_band_id_map_.end() == tool_band_id_map_.find(tab_id));
 
   tab_id_map_[tab_id] = handle;
   handle_map_[handle] = tab_id;
 }
 
+void ExecutorsManager::SetTabToolBandIdForHandle(int tool_band_id,
+                                                 HWND handle) {
+  AutoLock lock(lock_);
+  if (tool_band_id_map_.end() != tool_band_id_map_.find(tool_band_id) ||
+      tool_band_handle_map_.end() != tool_band_handle_map_.find(handle)) {
+    // Avoid double-setting of tool band id -> handle mappings, which could
+    // otherwise lead to inconsistencies. In practice, this should never
+    // happen.
+    NOTREACHED();
+    return;
+  }
+  if (handle == reinterpret_cast<HWND>(INVALID_HANDLE_VALUE) ||
+      tool_band_id == kInvalidChromeSessionId) {
+    NOTREACHED();
+    return;
+  }
+  // A BHO tab ID should not be registered with this function.
+  DCHECK(tab_id_map_.end() == tab_id_map_.find(tool_band_id));
+
+  tool_band_id_map_[tool_band_id] = handle;
+  tool_band_handle_map_[handle] = tool_band_id;
+}
+
 void ExecutorsManager::DeleteTabHandle(HWND handle) {
   AutoLock lock(lock_);
   HandleMap::iterator handle_it = handle_map_.find(handle);
-  if(handle_map_.end() == handle_it) {
-    DCHECK(false);
-    return;
-  }
-
-  TabIdMap::iterator tab_id_it = tab_id_map_.find(handle_it->second);
-  if(tab_id_map_.end() == tab_id_it) {
-    DCHECK(false);
-    return;
-  }
-
+  DCHECK(handle_map_.end() != handle_it);
+  if (handle_map_.end() != handle_it) {
+    TabIdMap::iterator tab_id_it = tab_id_map_.find(handle_it->second);
+    DCHECK(tab_id_map_.end() != tab_id_it);
+    if (tab_id_map_.end() != tab_id_it) {
 #ifdef DEBUG
-  tab_id_map_[handle_it->second] = reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
-  handle_map_[handle] = kInvalidChromeSessionId;
+      tab_id_map_[handle_it->second] =
+          reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
+      handle_map_[handle] = kInvalidChromeSessionId;
 #else
-  tab_id_map_.erase(handle_it->second);
-  handle_map_.erase(handle);
+      tab_id_map_.erase(handle_it->second);
+      handle_map_.erase(handle);
 #endif  // DEBUG
+    }
+  }
+
+  handle_it = tool_band_handle_map_.find(handle);
+  if (tool_band_handle_map_.end() != handle_it) {
+    TabIdMap::iterator tool_band_id_it =
+        tool_band_id_map_.find(handle_it->second);
+    DCHECK(tool_band_id_map_.end() != tool_band_id_it);
+    if (tool_band_id_map_.end() != tool_band_id_it) {
+#ifdef DEBUG
+      tool_band_id_map_[handle_it->second] =
+          reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
+      tool_band_handle_map_[handle] = kInvalidChromeSessionId;
+#else
+      tool_band_id_map_.erase(handle_it->second);
+      tool_band_handle_map_.erase(handle);
+#endif  // DEBUG
+    }
+  }
 }
 
 HWND ExecutorsManager::GetTabHandleFromId(int tab_id) {
@@ -352,6 +396,16 @@ int ExecutorsManager::GetTabIdFromHandle(HWND tab_handle) {
   if (it == handle_map_.end())
     return kInvalidChromeSessionId;
   DCHECK(it->second != kInvalidChromeSessionId);  // Deleted? I hope not.
+  return it->second;
+}
+
+HWND ExecutorsManager::GetTabHandleFromToolBandId(int tool_band_id) {
+  AutoLock lock(lock_);
+  TabIdMap::const_iterator it = tool_band_id_map_.find(tool_band_id);
+
+  if (it == tool_band_id_map_.end())
+    return reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
+
   return it->second;
 }
 

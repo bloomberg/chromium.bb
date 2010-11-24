@@ -35,6 +35,7 @@
 // Registers the chrome.tab.* functions we handle.
 #define REGISTER_TAB_API_FUNCTIONS() \
   REGISTER_API_FUNCTION(GetTab); \
+  REGISTER_API_FUNCTION(GetCurrentTab); \
   REGISTER_API_FUNCTION(GetSelectedTab); \
   REGISTER_API_FUNCTION(GetAllTabsInWindow); \
   REGISTER_API_FUNCTION(CreateTab); \

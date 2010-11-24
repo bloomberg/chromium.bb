@@ -19,6 +19,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/win/rgs_helper.h"
 #include "ceee/ie/plugin/toolband/resource.h"
@@ -181,6 +182,14 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   // even though the bar will.
   HRESULT EnsureBhoIsAvailable();
 
+  // Gets the session ID of the Chrome Frame instance associated with the tool
+  // band.
+  virtual HRESULT GetSessionId(int* session_id);
+
+  // Sends the tool band's Chrome Frame session ID to the BHO, given the BHO as
+  // an IUnknown.
+  virtual HRESULT SendSessionIdToBho(IUnknown* bho);
+
  private:
   // Initializes the toolband to the given site.
   // Called from SetSite.
@@ -209,7 +218,7 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   virtual HRESULT CreateBhoInstance(IObjectWithSite** new_bho_instance);
 
   // The web browser that initialized this toolband.
-  CComPtr<IWebBrowser2> web_browser_;
+  ScopedComPtr<IWebBrowser2> web_browser_;
   // Our parent window, yielded by our site's IOleWindow.
   CWindow parent_window_;
   // Our band id, provided by GetBandInfo.

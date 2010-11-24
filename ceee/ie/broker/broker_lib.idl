@@ -40,7 +40,7 @@ interface ICeeeBroker : IUnknown {
 
 [
   object,
-  uuid(1821043a-a496-4d0e-9b50-1e0599237016),
+  uuid(FD0DFA82-AA64-43ef-8BFF-418941DEA26B),
   nonextensible,
   helpstring("ICeeeBrokerRegistrar Interface"),
   pointer_default(unique),
@@ -76,16 +76,24 @@ interface ICeeeBrokerRegistrar : IUnknown {
   // TODO(hansl@google.com): Remove this and implement it in
   //     RegisterTabExecutor. Make sure the Tab isn't registered before a TabId
   //     is available.
-  // Link a tab_id with a related BHO handle. There is a strict one to one
+  // Link a tab_id with a related BHO handle. There is a strict one-to-one
   // relation between tab_ids and handles.
   //
   // @param tab_id The Chrome TabId related to the tab.
   // @param handle The HWND of the BHO for this TabId.
   HRESULT SetTabIdForHandle([in] long tab_id, [in] CeeeWindowHandle handle);
+
+  // Link a tool band tab ID with a related BHO handle. There is a strict
+  // one-to-one relation between tab IDs and handles.
+  //
+  // @param tool_band_id The Chrome TabId related to the tab's tool band.
+  // @param handle The HWND of the BHO for this tab.
+  HRESULT SetTabToolBandIdForHandle([in] long tool_band_id,
+                                    [in] CeeeWindowHandle handle);
 };
 
 [
-  uuid(45B783D0-8040-49a6-A719-84E320AAB3C5),
+  uuid(7193CD84-54A1-46fb-A562-3EFB815F49BE),
   version(1.0),
   helpstring("CEEE Broker 1.0 Type Library")
 ]
@@ -94,7 +102,7 @@ library CeeeBrokerLib {
   interface ICeeePostman;
 
   [
-    uuid(6D88A70D-2218-4466-BBD6-87AB563811A2),
+    uuid(3E1AE932-28F6-4bfa-A831-D1E808CC4AF7),
     helpstring("CEEE Broker Class")
   ]
   coclass CeeeBroker {

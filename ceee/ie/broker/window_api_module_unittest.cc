@@ -11,6 +11,7 @@
 #include <iepmapi.h>
 #include <set>
 
+#include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "ceee/common/process_utils_win.h"
 #include "ceee/ie/broker/chrome_postman.h"
@@ -20,7 +21,6 @@
 #include "ceee/testing/utils/instance_count_mixin.h"
 #include "ceee/testing/utils/mock_com.h"
 #include "ceee/testing/utils/mock_window_utils.h"
-#include "ceee/testing/utils/mock_win32.h"
 #include "ceee/testing/utils/test_utils.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
@@ -208,9 +208,15 @@ int MockIterativeWindowApiResult::error_counter_ = 0;
 // Mock static functions defined in WindowApiResult.
 MOCK_STATIC_CLASS_BEGIN(MockWindowApiResultStatics)
   MOCK_STATIC_INIT_BEGIN(MockWindowApiResultStatics)
+    MOCK_STATIC_INIT2(WindowApiResult::IsTabWindowClass,
+                      IsTabWindowClass);
+    MOCK_STATIC_INIT2(WindowApiResult::IsIeFrameClass,
+                      IsIeFrameClass);
     MOCK_STATIC_INIT2(WindowApiResult::TopIeWindow,
                       TopIeWindow);
   MOCK_STATIC_INIT_END()
+  MOCK_STATIC1(bool, , IsTabWindowClass, HWND);
+  MOCK_STATIC1(bool, , IsIeFrameClass, HWND);
   MOCK_STATIC0(HWND, , TopIeWindow);
 MOCK_STATIC_CLASS_END(MockWindowApiResultStatics)
 
@@ -218,9 +224,9 @@ class WindowApiTests: public testing::Test {
  public:
   virtual void SetUp() {
     EXPECT_HRESULT_SUCCEEDED(testing::MockWindowExecutor::CreateInitialized(
-        &mock_window_executor_, &mock_window_executor_keeper_));
+        &mock_window_executor_, mock_window_executor_keeper_.Receive()));
     EXPECT_HRESULT_SUCCEEDED(testing::MockTabExecutor::CreateInitialized(
-        &mock_tab_executor_, &mock_tab_executor_keeper_));
+        &mock_tab_executor_, mock_tab_executor_keeper_.Receive()));
   }
 
   virtual void TearDown() {
@@ -233,15 +239,15 @@ class WindowApiTests: public testing::Test {
   void MockGetWindowExecutor(MockApiDispatcher* executor_owner) {
     EXPECT_CALL(*executor_owner, GetExecutor(_, _, NotNull())).
         WillRepeatedly(DoAll(
-            SetArgumentPointee<2>(mock_window_executor_keeper_.p),
-            AddRef(mock_window_executor_keeper_.p)));
+            SetArgumentPointee<2>(mock_window_executor_keeper_.get()),
+            AddRef(mock_window_executor_keeper_.get())));
   }
 
   void MockGetTabExecutor(MockApiDispatcher* executor_owner) {
     EXPECT_CALL(*executor_owner, GetExecutor(_, _, NotNull())).
         WillRepeatedly(DoAll(
-            SetArgumentPointee<2>(mock_tab_executor_keeper_.p),
-            AddRef(mock_tab_executor_keeper_.p)));
+            SetArgumentPointee<2>(mock_tab_executor_keeper_.get()),
+            AddRef(mock_tab_executor_keeper_.get())));
   }
 
   void WindowAlwaysHasThread() {
@@ -261,8 +267,8 @@ class WindowApiTests: public testing::Test {
   testing::MockWindowExecutor* mock_window_executor_;
   testing::MockTabExecutor* mock_tab_executor_;
   // To control the life span of the executors.
-  CComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
-  CComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
+  ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
+  ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
 
  private:
   class MockChromePostman : public ChromePostman {
@@ -554,20 +560,99 @@ TEST_F(WindowApiTests, GetWindowStraightline) {
   invocation.Execute(args_list, kRequestId);
 }
 
+TEST_F(WindowApiTests, GetCurrentWindowErrorHandling) {
+  testing::LogDisabler no_dchecks;
+  StrictMock<MockWindowInvocation<window_api::GetCurrentWindow>> invocation;
+  StrictMock<testing::MockWindowUtils> window_utils;
+  MockWindowApiResultStatics result_statics;
+  DictionaryValue associated_tab;
+
+  EXPECT_CALL(user32_, IsWindow(_)).WillRepeatedly(Return(FALSE));
+
+  // Bad args failure.
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  invocation.Execute(ListValue(), kRequestId, &associated_tab);
+
+  associated_tab.SetInteger(keys::kIdKey, 3);
+
+  // Bad window failures.
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, GetTabHandleFromToolBandId(3)).
+      WillOnce(Return(kRandomWindowHwnd));
+  EXPECT_CALL(window_utils, GetTopLevelParent(kRandomWindowHwnd)).
+      WillOnce(Return(kRandomWindowHwnd));
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+      GetTabIdFromHandle(kRandomWindowHwnd)).
+          WillOnce(Return(kRandomWindowId));
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  invocation.Execute(ListValue(), kRequestId, &associated_tab);
+
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, GetTabHandleFromToolBandId(3)).
+      WillOnce(Return(kRandomWindowHwnd));
+  EXPECT_CALL(window_utils, GetTopLevelParent(kRandomWindowHwnd)).
+      WillOnce(Return(kWindowHwnd));
+  EXPECT_CALL(result_statics, IsTabWindowClass(kRandomWindowHwnd)).
+      WillOnce(Return(FALSE));
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+      GetTabIdFromHandle(kRandomWindowHwnd)).
+          WillOnce(Return(kRandomWindowId));
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  invocation.Execute(ListValue(), kRequestId, &associated_tab);
+
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, GetTabHandleFromToolBandId(3)).
+      WillOnce(Return(kRandomWindowHwnd));
+  EXPECT_CALL(window_utils, GetTopLevelParent(kRandomWindowHwnd)).
+      WillOnce(Return(kWindowHwnd));
+  EXPECT_CALL(result_statics, IsTabWindowClass(kRandomWindowHwnd)).
+      WillOnce(Return(TRUE));
+  EXPECT_CALL(result_statics, IsIeFrameClass(kWindowHwnd)).
+      WillOnce(Return(FALSE));
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+      GetTabIdFromHandle(kRandomWindowHwnd)).
+          WillOnce(Return(kRandomWindowId));
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  invocation.Execute(ListValue(), kRequestId, &associated_tab);
+}
+
 TEST_F(WindowApiTests, GetCurrentWindowStraightline) {
   testing::LogDisabler no_dchecks;
 
-  EXPECT_CALL(user32_, IsWindow(_)).WillRepeatedly(Return(TRUE));
-
   StrictMock<MockWindowInvocation<window_api::GetCurrentWindow>> invocation;
-  invocation.AllocateNewResult(kRequestId);
   MockWindowApiResultStatics result_statics;
+  invocation.AllocateNewResult(kRequestId);
+
+  EXPECT_CALL(invocation.mock_api_dispatcher_, GetTabHandleFromToolBandId(3)).
+      WillOnce(Return(kRandomWindowHwnd));
+  StrictMock<testing::MockWindowUtils> window_utils;
+  EXPECT_CALL(window_utils, GetTopLevelParent(kRandomWindowHwnd)).
+      WillOnce(Return(kWindowHwnd));
+  EXPECT_CALL(result_statics, IsTabWindowClass(kRandomWindowHwnd)).
+      WillOnce(Return(TRUE));
+  EXPECT_CALL(result_statics, IsIeFrameClass(kWindowHwnd)).
+      WillOnce(Return(TRUE));
+  EXPECT_CALL(*invocation.invocation_result_,
+      CreateWindowValue(kWindowHwnd, false)).WillOnce(Return(true));
+  EXPECT_CALL(*invocation.invocation_result_, PostResult()).Times(1);
+  DictionaryValue associated_tab;
+  associated_tab.SetInteger(keys::kIdKey, 3);
+  invocation.Execute(ListValue(), kRequestId, &associated_tab);
+}
+
+TEST_F(WindowApiTests, GetCurrentWindowNoContext) {
+  testing::LogDisabler no_dchecks;
+  StrictMock<MockWindowInvocation<window_api::GetCurrentWindow>> invocation;
+  MockWindowApiResultStatics result_statics;
+
+  invocation.AllocateNewResult(kRequestId);
   EXPECT_CALL(result_statics, TopIeWindow()).WillOnce(Return(
       kRandomWindowHwnd));
   EXPECT_CALL(*invocation.invocation_result_, CreateWindowValue(
       kRandomWindowHwnd, _)).WillOnce(Return(true));
   EXPECT_CALL(*invocation.invocation_result_, PostResult()).Times(1);
-  invocation.Execute(ListValue(), kRequestId);
+  invocation.Execute(ListValue(), kRequestId, NULL);
 }
 
 TEST_F(WindowApiTests, GetLastFocusedWindowStraightline) {
@@ -643,10 +728,10 @@ TEST_F(WindowApiTests, CreateWindowErrorHandling) {
   CComObject<StrictMock<testing::MockIWebBrowser2>>* browser;
   CComObject<StrictMock<testing::MockIWebBrowser2>>::CreateInstance(&browser);
   DCHECK(browser != NULL);
-  CComPtr<IWebBrowser2> browser_keeper = browser;
+  ScopedComPtr<IWebBrowser2> browser_keeper(browser);
   EXPECT_CALL(mock_ie_create, CoCreateInstance(_, _, _, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<4>(browser_keeper.p),
-                     AddRef(browser_keeper.p), Return(S_OK)));
+      WillRepeatedly(DoAll(SetArgumentPointee<4>(browser_keeper.get()),
+                     AddRef(browser_keeper.get()), Return(S_OK)));
 
   EXPECT_CALL(*browser, get_HWND(NotNull())).WillRepeatedly(DoAll(
       SetArgumentPointee<0>(0), Return(S_OK)));
@@ -708,14 +793,14 @@ TEST_F(WindowApiTests, CreateWindowStraightline) {
   CComObject<StrictMock<testing::MockIWebBrowser2>>* browser;
   CComObject<StrictMock<testing::MockIWebBrowser2>>::CreateInstance(&browser);
   DCHECK(browser != NULL);
-  CComPtr<IWebBrowser2> browser_keeper = browser;
+  ScopedComPtr<IWebBrowser2> browser_keeper(browser);
   MockIeWindowCreation mock_ie_create;
   // TODO(mad@chromium.org): Test behavior with protected on too.
   EXPECT_CALL(mock_ie_create, IEIsProtectedModeURL(_)).
       WillRepeatedly(Return(S_FALSE));
   EXPECT_CALL(mock_ie_create, CoCreateInstance(_, _, _, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<4>(browser_keeper.p),
-                     AddRef(browser_keeper.p), Return(S_OK)));
+      WillRepeatedly(DoAll(SetArgumentPointee<4>(browser_keeper.get()),
+                     AddRef(browser_keeper.get()), Return(S_OK)));
   EXPECT_CALL(*browser, get_HWND(NotNull())).WillRepeatedly(DoAll(
       SetArgumentPointee<0>(0), Return(S_OK)));
   EXPECT_CALL(*browser, Navigate(_, _, _, _, _)).WillRepeatedly(Return(S_OK));

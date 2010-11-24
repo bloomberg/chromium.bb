@@ -10,6 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/json/json_reader.h"
+#include "base/scoped_comptr_win.h"
 #include "base/win/windows_version.h"
 #include "ceee/common/initializing_coclass.h"
 #include "ceee/ie/broker/api_dispatcher.h"
@@ -35,6 +36,7 @@ namespace {
 using tab_api::CreateTab;
 using tab_api::GetAllTabsInWindow;
 using tab_api::GetAllTabsInWindowResult;
+using tab_api::GetCurrentTab;
 using tab_api::GetSelectedTab;
 using tab_api::GetTab;
 using tab_api::MoveTab;
@@ -115,9 +117,9 @@ class TabApiTests: public testing::Test {
  public:
   virtual void SetUp() {
     EXPECT_HRESULT_SUCCEEDED(testing::MockTabExecutor::CreateInitialized(
-        &mock_tab_executor_, &mock_tab_executor_keeper_));
+        &mock_tab_executor_, mock_tab_executor_keeper_.Receive()));
     EXPECT_HRESULT_SUCCEEDED(testing::MockWindowExecutor::CreateInitialized(
-        &mock_window_executor_, &mock_window_executor_keeper_));
+        &mock_window_executor_, mock_window_executor_keeper_.Receive()));
   }
 
   virtual void TearDown() {
@@ -134,32 +136,32 @@ class TabApiTests: public testing::Test {
     // void** argument instead of an interface.
     EXPECT_CALL(*api_dispatcher, GetExecutor(window, _, NotNull())).
         WillRepeatedly(DoAll(
-            SetArgumentPointee<2>(mock_tab_executor_keeper_.p),
-            AddRef(mock_tab_executor_keeper_.p)));
+            SetArgumentPointee<2>(mock_tab_executor_keeper_.get()),
+            AddRef(mock_tab_executor_keeper_.get())));
   }
 
   void MockGetTabExecutorOnce(MockApiDispatcher* api_dispatcher, HWND window) {
     // We can't use CopyInterfaceToArgument here because GetExecutor takes a
     // void** argument instead of an interface.
     EXPECT_CALL(*api_dispatcher, GetExecutor(window, _, NotNull())).
-        WillOnce(DoAll(SetArgumentPointee<2>(mock_tab_executor_keeper_.p),
-                       AddRef(mock_tab_executor_keeper_.p)));
+        WillOnce(DoAll(SetArgumentPointee<2>(mock_tab_executor_keeper_.get()),
+                       AddRef(mock_tab_executor_keeper_.get())));
   }
 
   void MockGetWindowExecutorOnce(MockApiDispatcher* api_dispatcher,
                                  HWND window) {
     EXPECT_CALL(*api_dispatcher, GetExecutor(window, _, NotNull())).
         WillOnce(DoAll(
-            SetArgumentPointee<2>(mock_window_executor_keeper_.p),
-            AddRef(mock_window_executor_keeper_.p)));
+            SetArgumentPointee<2>(mock_window_executor_keeper_.get()),
+            AddRef(mock_window_executor_keeper_.get())));
   }
 
   void AlwaysMockGetWindowExecutor(MockApiDispatcher* api_dispatcher,
                                    HWND window) {
     EXPECT_CALL(*api_dispatcher, GetExecutor(window, _, NotNull())).
         WillRepeatedly(DoAll(
-            SetArgumentPointee<2>(mock_window_executor_keeper_.p),
-            AddRef(mock_window_executor_keeper_.p)));
+            SetArgumentPointee<2>(mock_window_executor_keeper_.get()),
+            AddRef(mock_window_executor_keeper_.get())));
   }
 
   StrictMock<testing::MockUser32> user32_;
@@ -177,8 +179,8 @@ class TabApiTests: public testing::Test {
   // one and only singleton to use all the time.
   CComObjectStackEx< StrictMock< MockChromePostman > > postman_;
   // To control the life span of the tab executor.
-  CComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
-  CComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
+  ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
+  ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
 };
 
 TEST_F(TabApiTests, CreateTabValueErrorHandling) {
@@ -537,6 +539,52 @@ TEST_F(TabApiTests, GetTab) {
   invocation.Execute(ListValue(), kRequestId);
 }
 
+TEST_F(TabApiTests, GetCurrentTab) {
+  testing::LogDisabler no_dchecks;
+
+  // Mocking IsTabWindowClass.
+  StrictMock<testing::MockWindowUtils> window_utils;
+  EXPECT_CALL(window_utils, IsWindowClass(kGoodTabWindow, _)).
+      WillRepeatedly(Return(true));
+  EXPECT_CALL(window_utils, IsWindowClass(kBadWindow, _)).
+      WillRepeatedly(Return(false));
+
+  StrictMock<MockApiInvocation<TabApiResult, MockTabApiResult, GetCurrentTab> >
+      invocation;
+
+  // Start with success--no context.
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(*invocation.invocation_result_, PostResult()).Times(1);
+  invocation.Execute(ListValue(), kRequestId, NULL);
+
+  // Now successfully get a current tab.
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, GetTabHandleFromToolBandId(3)).
+      WillOnce(Return(kGoodTabWindow));
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+      GetTabIdFromHandle(kGoodTabWindow)).WillOnce(Return(kGoodTabWindowId));
+  EXPECT_CALL(*invocation.invocation_result_,
+      CreateTabValue(kGoodTabWindowId, -1)).WillOnce(Return(true));
+  EXPECT_CALL(*invocation.invocation_result_, PostResult()).Times(1);
+  DictionaryValue associated_tab;
+  associated_tab.SetInteger(ext::kIdKey, 3);
+  invocation.Execute(ListValue(), kRequestId, &associated_tab);
+
+  // No more successful calls.
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, GetTabHandleFromToolBandId(3)).
+      WillOnce(Return(kBadWindow));
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+      GetTabIdFromHandle(kBadWindow)).WillOnce(Return(kBadWindowId));
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  invocation.Execute(ListValue(), kRequestId, &associated_tab);
+
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  associated_tab.Remove(ext::kIdKey, NULL);
+  invocation.Execute(ListValue(), kRequestId, &associated_tab);
+}
+
 TEST_F(TabApiTests, GetSelectedTab) {
   testing::LogDisabler no_dchecks;
   StrictMock<MockApiInvocation<TabApiResult, MockTabApiResult, GetSelectedTab> >
@@ -695,14 +743,14 @@ TEST_F(TabApiTests, GetAllTabsInWindow) {
   // Failing Executor.
   // The executor classes are already strict from their base class impl.
   testing::MockWindowExecutor* mock_window_executor;
-  CComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
+  ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
   EXPECT_HRESULT_SUCCEEDED(testing::MockWindowExecutor::CreateInitialized(
-      &mock_window_executor, &mock_window_executor_keeper_));
+      &mock_window_executor, mock_window_executor_keeper_.Receive()));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
               GetExecutor(kGoodFrameWindow, _, NotNull())).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(
-                               mock_window_executor_keeper_.p),
-                           AddRef(mock_window_executor_keeper_.p)));
+                               mock_window_executor_keeper_.get()),
+                           AddRef(mock_window_executor_keeper_.get())));
   EXPECT_CALL(*mock_window_executor, GetTabs(NotNull())).
       WillOnce(Return(E_FAIL));
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
@@ -1037,11 +1085,11 @@ TEST_F(TabApiTests, CreateTabExecute) {
   CComObject<StrictMock<testing::MockIWebBrowser2>>::CreateInstance(
       &browser);
   DCHECK(browser != NULL);
-  CComPtr<IWebBrowser2> browser_keeper = browser;
+  ScopedComPtr<IWebBrowser2> browser_keeper(browser);
   if (pre_vista) {
     EXPECT_CALL(mock_ie_util, GetWebBrowserForTopLevelIeHwnd(
         kGoodFrameWindow, _, NotNull())).WillRepeatedly(DoAll(
-            CopyInterfaceToArgument<2>(browser_keeper.p), Return(S_OK)));
+            CopyInterfaceToArgument<2>(browser_keeper.get()), Return(S_OK)));
     EXPECT_CALL(*browser, Navigate(_, _, _, _, _)).WillOnce(Return(E_FAIL));
   } else {
     AlwaysMockGetTabExecutor(&invocation.mock_api_dispatcher_, kGoodTabWindow);

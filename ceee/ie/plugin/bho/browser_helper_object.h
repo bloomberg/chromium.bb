@@ -48,6 +48,7 @@ class ATL_NO_VTABLE BrowserHelperObject
       public IFrameEventHandlerHost,
       public IExtensionPortMessagingProvider,
       public IChromeFrameHostEvents,
+      public ICeeeBho,
       public ToolBandVisibility,
       public WebBrowserEventsSource {
  public:
@@ -62,6 +63,7 @@ class ATL_NO_VTABLE BrowserHelperObject
   BEGIN_COM_MAP(BrowserHelperObject)
     COM_INTERFACE_ENTRY(IObjectWithSite)
     COM_INTERFACE_ENTRY(IPersist)
+    COM_INTERFACE_ENTRY(ICeeeBho)
     COM_INTERFACE_ENTRY_IID(IID_IFrameEventHandlerHost, IFrameEventHandlerHost)
   END_COM_MAP()
 
@@ -166,6 +168,11 @@ class ATL_NO_VTABLE BrowserHelperObject
   // receive notifications on the same thread.
   virtual void RegisterSink(Sink* sink);
   virtual void UnregisterSink(Sink* sink);
+  // @}
+
+  // @name ICeeeBho implementation
+  // @{
+  STDMETHOD(SetToolBandSessionId)(long session_id);
   // @}
 
  protected:

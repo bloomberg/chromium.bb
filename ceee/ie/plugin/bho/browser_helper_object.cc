@@ -557,7 +557,7 @@ bool BrowserHelperObject::EnsureTabId() {
   HRESULT hr = chrome_frame_host_->GetSessionId(&tab_id_);
   DCHECK(SUCCEEDED(hr));
   if (hr == S_FALSE) {
-    // The server returned false, the session_id isn't available yet
+    // The server returned false, the session_id isn't available yet.
     return false;
   }
 
@@ -1473,4 +1473,18 @@ void BrowserHelperObject::UnregisterSink(Sink* sink) {
                                                 sink);
   if (iter != sinks_.end())
     sinks_.erase(iter);
+}
+
+STDMETHODIMP BrowserHelperObject::SetToolBandSessionId(long session_id) {
+  CeeeWindowHandle handle = reinterpret_cast<CeeeWindowHandle>(tab_window_);
+  HRESULT hr = broker_registrar_->SetTabToolBandIdForHandle(session_id,
+                                                            handle);
+  if (FAILED(hr)) {
+    DCHECK(SUCCEEDED(hr)) << "An error occured when setting the toolband " <<
+        "tab ID: " << com::LogHr(hr);
+    return hr;
+  }
+  VLOG(2) << "ToolBandTabId(" << session_id << ") set for Handle(" << handle <<
+      ")";
+  return hr;
 }

@@ -15,9 +15,11 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
 #include "ceee/common/com_utils.h"
 #include "ceee/common/process_utils_win.h"
 #include "ceee/common/windows_constants.h"
@@ -119,9 +121,9 @@ bool WindowApiResult::UpdateWindowRect(HWND window,
 
   common_api::WindowInfo window_info;
   if (left != -1 || top != -1 || width  != -1 || height != -1) {
-    CComPtr<ICeeeWindowExecutor> executor;
+    ScopedComPtr<ICeeeWindowExecutor> executor;
     dispatcher->GetExecutor(window, IID_ICeeeWindowExecutor,
-                            reinterpret_cast<void**>(&executor));
+                            reinterpret_cast<void**>(executor.Receive()));
     if (executor == NULL) {
       LOG(WARNING) << "Failed to get an executor to update window.";
       PostError(api_module_constants::kInternalErrorError);
@@ -159,12 +161,44 @@ void GetWindow::Execute(const ListValue& args, int request_id) {
     result->PostResult();
 }
 
-void GetCurrentWindow::Execute(const ListValue& args, int request_id) {
-  // TODO(mad@chromium.org): We currently don't have access to the
-  // actual 'current' window from the point of view of the extension
-  // API caller.  Use the top window for now. bb2255140
+void GetCurrentWindow::Execute(const ListValue& args, int request_id,
+                               const DictionaryValue* associated_tab) {
   scoped_ptr<WindowApiResult> result(CreateApiResult(request_id));
-  if (result->CreateWindowValue(result->TopIeWindow(), false))
+  if (associated_tab == NULL) {
+    // The associated tab may validly be NULL, for instance if the API call
+    // originated from the background page. If this happens, simply return
+    // the top-level window instead.
+    if (result->CreateWindowValue(result->TopIeWindow(), false))
+      result->PostResult();
+    return;
+  }
+  int tool_band_id;
+  if (!associated_tab->GetInteger(ext::kIdKey, &tool_band_id)) {
+    result->PostError(api_module_constants::kInternalErrorError);
+    return;
+  }
+
+  ApiDispatcher* dispatcher = GetDispatcher();
+  DCHECK(dispatcher != NULL);
+  HWND tab_window = dispatcher->GetTabHandleFromToolBandId(tool_band_id);
+  // The window ID is just the window handle of the frame window, which is the
+  // top-level ancestor of this window.
+  HWND frame_window = window_utils::GetTopLevelParent(tab_window);
+  if (frame_window == tab_window ||
+      !result->IsTabWindowClass(tab_window) ||
+      !result->IsIeFrameClass(frame_window)) {
+    // If we couldn't get a valid parent frame window, then it must be because
+    // the frame window (and the tab then) has been closed by now or it lives
+    // under the hidden IE window.
+    DCHECK(!::IsWindow(tab_window) || window_utils::IsWindowClass(frame_window,
+        windows::kHiddenIeFrameWindowClass));
+    int tab_id = dispatcher->GetTabIdFromHandle(tab_window);
+    result->PostError(ExtensionErrorUtils::FormatErrorMessage(
+        ext::kTabNotFoundError, base::IntToString(tab_id)));
+    return;
+  }
+
+  if (result->CreateWindowValue(frame_window, false))
     result->PostResult();
 }
 
@@ -399,7 +433,7 @@ void CreateWindowFunc::Execute(const ListValue& args, int request_id) {
   }
 
   // Now we can Navigate to the requested url.
-  hr = web_browser->Navigate(CComBSTR(url.c_str()),
+  hr = web_browser->Navigate(base::win::ScopedBstr(url.c_str()),
                              &CComVariant(),  // unused flags
                              &CComVariant(L"_top"),  // Target frame
                              &CComVariant(),  // Unused POST DATA
@@ -466,9 +500,9 @@ void RemoveWindow::Execute(const ListValue& args, int request_id) {
     return;
   }
 
-  CComPtr<ICeeeWindowExecutor> executor;
+  ScopedComPtr<ICeeeWindowExecutor> executor;
   dispatcher->GetExecutor(window, IID_ICeeeWindowExecutor,
-                          reinterpret_cast<void**>(&executor));
+                          reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
     LOG(WARNING) << "Failed to get an executor to remove window.";
     result->PostError(api_module_constants::kInternalErrorError);

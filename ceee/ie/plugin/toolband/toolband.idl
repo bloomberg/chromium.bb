@@ -22,7 +22,7 @@ import "ocidl.idl";
   pointer_default(unique)
 ]
 // Native interface to content scripts. This interface is exposed to
-// ceee_boostrap.js, and is used to satisfy the same contract as
+// ceee_bootstrap.js, and is used to satisfy the same contract as
 // Chrome's native functions declared in event_bindings.js and
 // renderer_extension_bindings.js. Additionally this interface exposes
 // properties for the dispatch functions declared in the same files.
@@ -105,6 +105,22 @@ typedef struct  {
   double expiration_date;
   BSTR store_id;
 } CeeeCookieInfo;
+
+[
+  object,
+  uuid(58A708CC-2F8F-4d83-B1EF-54AA79FE0522),
+  nonextensible,
+  helpstring("ICeeeBho Interface"),
+  pointer_default(unique),
+  oleautomation
+]
+// Object provided to the tool band to pass information to the BHO.
+interface ICeeeBho : IUnknown {
+  // Sends the tool band's Chrome Frame session ID to the BHO.
+  //
+  // @param session_id The session ID of the toolband associated with the BHO.
+  HRESULT SetToolBandSessionId([in] long session_id);
+};
 
 [
   object,
@@ -326,7 +342,7 @@ interface ICeeeExecutorCreator : IUnknown {
 };
 
 [
-  uuid(7C09079D-F9CB-4E9E-9293-D224B071D8BA),
+  uuid(11230B2D-C7FF-46b4-B464-C46E9B0E551F),
   version(1.0),
   helpstring("Google CEEE 1.0 Type Library")
 ]
@@ -335,15 +351,19 @@ library ToolbandLib {
 
   // include type info in .tlb
   interface ICEEEContentScriptNativeApi;
+  interface ICeeeBho;
   interface ICeeeTabExecutor;
   interface ICeeeWindowExecutor;
+  interface ICeeeCookieExecutor;
+  interface ICeeeInfobarExecutor;
 
   [
-    uuid(E49EBDB7-CEC9-4014-A5F5-8D3C8F5997DC),
+    uuid(210F4C27-5109-4471-A903-4AB7FB90AE1F),
     helpstring("BrowserHelperObject Class")
   ]
   coclass BrowserHelperObject {
     [default] interface IUnknown;
+    interface ICeeeBho;
   };
   [
     uuid(2F1A2D6B-55F6-4B63-8C37-F698D28FDC2B),

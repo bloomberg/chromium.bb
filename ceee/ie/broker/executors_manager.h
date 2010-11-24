@@ -76,16 +76,26 @@ class ExecutorsManager {
   //         found).
   virtual HWND GetTabHandleFromId(int tab_id);
 
-  // Return a tab id associated with the HWND.
+  // Return a tab ID associated with the HWND.
   //
   // @param tab_handle The tab HWND.
-  // @return The corresponding tab id (or 0 if tab_handle isn't found).
+  // @return The corresponding tab ID (or 0 if tab_handle isn't found).
   virtual int GetTabIdFromHandle(HWND tab_handle);
 
-  // Register the relation between a tab_id and a HWND.
-  virtual void SetTabIdForHandle(long tab_id, HWND tab_handle);
+  // Register the relation between a tab ID and an HWND.
+  virtual void SetTabIdForHandle(int tab_id, HWND tab_handle);
 
-  // Unregister the HWND and its corresponding tab_id.
+  // Return a tab handle associated with the given tool band tab ID.
+  //
+  // @param tool_band_id The tab identifier for a tool band.
+  // @return The corresponding HWND (or INVALID_HANDLE_VALUE if tool_band_id
+  //         isn't found).
+  virtual HWND GetTabHandleFromToolBandId(int tool_band_id);
+
+  // Register the relation between a tool band tab ID and an HWND.
+  virtual void SetTabToolBandIdForHandle(int tool_band_id, HWND tab_handle);
+
+  // Unregister the HWND and its corresponding tab ID and tool band tab ID.
   virtual void DeleteTabHandle(HWND handle);
 
   // Traits for Singleton<ExecutorsManager> so that we can pass an argument
@@ -179,13 +189,19 @@ class ExecutorsManager {
   // Thread protected by ExecutorsManager::lock_.
   Tid2Event pending_registrations_;
 
-  // The mapping between a tab_id and the HWND of the window holding the BHO.
+  // The mapping between a tab ID and the HWND of the window holding the BHO.
   // In DEBUG, this mapping will grow over time since we don't remove it on
   // DeleteTabHandle. This is useful for debugging as we know if a mapping has
   // been deleted and is invalidly used.
   // Thread protected by ExecutorsManager::lock_.
   TabIdMap tab_id_map_;
   HandleMap handle_map_;
+
+  // The mapping between a tool band's tab ID and the HWND of the window
+  // holding the BHO.
+  // Thread protected by ExecutorsManager::lock_.
+  TabIdMap tool_band_id_map_;
+  HandleMap tool_band_handle_map_;
 
   // The handle to the thread running ThreadProc.
   CHandle thread_;
@@ -200,7 +216,7 @@ class ExecutorsManager {
   // ExecutorsManager::pending_registrations_ & tab_id_map_/handle_map_).
   Lock lock_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ExecutorsManager);
+  DISALLOW_COPY_AND_ASSIGN(ExecutorsManager);
 };
 
 #endif  // CEEE_IE_BROKER_EXECUTORS_MANAGER_H_

@@ -757,4 +757,22 @@ TEST_F(BrowserHelperObjectTest, IsHashChange) {
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
+TEST_F(BrowserHelperObjectTest, SetToolBandSessionId) {
+  CreateSite();
+  CreateBrowser();
+
+  ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
+  EXPECT_CALL(*(bho_->broker_), SetTabToolBandIdForHandle(kGoodTabId,
+        kGoodTabHandle)).WillOnce(Return(S_OK));
+  EXPECT_EQ(S_OK, bho_->SetToolBandSessionId(kGoodTabId));
+
+  EXPECT_CALL(*(bho_->broker_), SetTabToolBandIdForHandle(kGoodTabId,
+        kGoodTabHandle)).WillOnce(Return(E_FAIL));
+  EXPECT_EQ(E_FAIL, bho_->SetToolBandSessionId(kGoodTabId));
+
+  ExpectFireOnRemovedEvent();
+  ExpectFireOnUnmappedEvent();
+  ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
+}
+
 }  // namespace

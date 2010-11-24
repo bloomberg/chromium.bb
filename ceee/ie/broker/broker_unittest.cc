@@ -27,6 +27,10 @@ class MockExecutorsManager : public ExecutorsManager {
   MOCK_METHOD2(RegisterTabExecutor, HRESULT(ThreadId thread_id,
                                             IUnknown* executor));
   MOCK_METHOD1(RemoveExecutor, HRESULT(ThreadId thread_id));
+
+  MOCK_METHOD2(SetTabIdForHandle, void(int tab_id, HWND tab_handle));
+  MOCK_METHOD2(SetTabToolBandIdForHandle, void(int tool_band_id,
+                                               HWND tab_handle));
 };
 
 class TestBroker: public CeeeBroker {
@@ -72,6 +76,13 @@ TEST(CeeeBroker, All) {
   EXPECT_CALL(executors_manager, RemoveExecutor(0)).
       WillOnce(Return(S_OK));
   EXPECT_EQ(S_OK, broker->UnregisterExecutor(0));
+
+  HWND test_handle = reinterpret_cast<HWND>(100);
+  EXPECT_CALL(executors_manager, SetTabIdForHandle(99, test_handle));
+  EXPECT_EQ(S_OK, broker->SetTabIdForHandle(99, 100));
+
+  EXPECT_CALL(executors_manager, SetTabToolBandIdForHandle(99, test_handle));
+  EXPECT_EQ(S_OK, broker->SetTabToolBandIdForHandle(99, 100));
 }
 
 }  // namespace

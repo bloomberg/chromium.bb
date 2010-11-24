@@ -46,7 +46,8 @@ class GetWindow : public WindowApiResultCreator {
 
 class GetCurrentWindow : public WindowApiResultCreator {
  public:
-  virtual void Execute(const ListValue& args, int request_id);
+  virtual void Execute(const ListValue& args, int request_id,
+                       const DictionaryValue* associated_tab);
 };
 
 class GetLastFocusedWindow : public WindowApiResultCreator {

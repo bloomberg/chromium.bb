@@ -61,6 +61,8 @@ class ATL_NO_VTABLE CeeeBroker
   STDMETHOD(RegisterTabExecutor)(long thread_id, IUnknown* executor);
   STDMETHOD(UnregisterExecutor)(long thread_id);
   STDMETHOD(SetTabIdForHandle)(long tab_id, CeeeWindowHandle handle);
+  STDMETHOD(SetTabToolBandIdForHandle)(long tool_band_id,
+                                       CeeeWindowHandle handle);
   // @}
 
   // IExternalConnectionImpl overrides

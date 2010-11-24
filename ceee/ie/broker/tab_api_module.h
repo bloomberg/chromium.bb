@@ -59,6 +59,12 @@ class GetTab : public TabApiResultCreator {
   virtual void Execute(const ListValue& args, int request_id);
 };
 
+class GetCurrentTab : public TabApiResultCreator {
+ public:
+  virtual void Execute(const ListValue& args, int request_id,
+                       const DictionaryValue* associated_tab);
+};
+
 class GetSelectedTab : public TabApiResultCreator {
  public:
   virtual void Execute(const ListValue& args, int request_id);

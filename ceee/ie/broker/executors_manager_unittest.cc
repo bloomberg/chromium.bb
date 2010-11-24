@@ -22,6 +22,11 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
 
+const int kTabWindowId = 99;
+const int kTabWindowId2 = 88;
+const HWND kTabWindow = reinterpret_cast<HWND>(kTabWindowId + 1);
+const HWND kTabWindow2 = reinterpret_cast<HWND>(kTabWindowId2 + 1);
+
 // We mock the IUnknown interface to make sure we properly AddRef and
 // Release the executors in the manager's map.
 // TODO(mad@chromium.org): replace this with the MockExecutorIUnknown
@@ -659,6 +664,116 @@ TEST_F(ExecutorsManagerTests, ThreadProc) {
   EXPECT_CALL(executors_manager, WaitForMultipleObjects(2, _, FALSE, INFINITE)).
       WillOnce(Return(WAIT_FAILED));
   EXPECT_EQ(1, executors_manager.CallThreadProc());
+}
+
+TEST_F(ExecutorsManagerTests, SetTabIdForHandle) {
+  testing::LogDisabler no_logs;
+  TestingExecutorsManager executors_manager;
+
+  EXPECT_EQ(kInvalidChromeSessionId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
+  EXPECT_EQ(kTabWindowId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(kTabWindow,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  // Tab IDs or handles can only be mapped once.
+  executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow2);
+  EXPECT_EQ(kInvalidChromeSessionId,
+            executors_manager.GetTabIdFromHandle(kTabWindow2));
+  EXPECT_EQ(kTabWindowId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(kTabWindow,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  executors_manager.SetTabIdForHandle(kTabWindowId2, kTabWindow);
+  EXPECT_EQ(kTabWindowId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(kTabWindow,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromId(kTabWindowId2));
+  executors_manager.SetTabIdForHandle(kTabWindowId2, kTabWindow2);
+  EXPECT_EQ(kTabWindowId2,
+            executors_manager.GetTabIdFromHandle(kTabWindow2));
+  EXPECT_EQ(kTabWindow2,
+            executors_manager.GetTabHandleFromId(kTabWindowId2));
+}
+
+TEST_F(ExecutorsManagerTests, SetTabToolBandIdForHandle) {
+  testing::LogDisabler no_logs;
+  TestingExecutorsManager executors_manager;
+
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromToolBandId(kTabWindowId));
+  executors_manager.SetTabToolBandIdForHandle(kTabWindowId, kTabWindow);
+  EXPECT_EQ(kTabWindow,
+            executors_manager.GetTabHandleFromToolBandId(kTabWindowId));
+  // Tool band tab IDs or handles can only be mapped once.
+  executors_manager.SetTabToolBandIdForHandle(kTabWindowId, kTabWindow2);
+  EXPECT_EQ(kTabWindow,
+            executors_manager.GetTabHandleFromToolBandId(kTabWindowId));
+  executors_manager.SetTabToolBandIdForHandle(kTabWindowId2, kTabWindow);
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromToolBandId(kTabWindowId2));
+  executors_manager.SetTabToolBandIdForHandle(kTabWindowId2, kTabWindow2);
+  EXPECT_EQ(kTabWindow2,
+            executors_manager.GetTabHandleFromToolBandId(kTabWindowId2));
+}
+
+TEST_F(ExecutorsManagerTests, DeleteTabHandle) {
+  testing::LogDisabler no_logs;
+  TestingExecutorsManager executors_manager;
+
+  // Test deletion of a nonexistent window.
+  executors_manager.DeleteTabHandle(kTabWindow);
+  EXPECT_EQ(kInvalidChromeSessionId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
+  EXPECT_EQ(kTabWindowId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(kTabWindow,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  executors_manager.DeleteTabHandle(kTabWindow);
+  EXPECT_EQ(kInvalidChromeSessionId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  // Test deletion of a nonexistent window when another one exists.
+  executors_manager.SetTabIdForHandle(kTabWindowId2, kTabWindow2);
+  executors_manager.DeleteTabHandle(kTabWindow);
+  EXPECT_EQ(kInvalidChromeSessionId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  EXPECT_EQ(kTabWindowId2,
+            executors_manager.GetTabIdFromHandle(kTabWindow2));
+  EXPECT_EQ(kTabWindow2,
+            executors_manager.GetTabHandleFromId(kTabWindowId2));
+}
+
+TEST_F(ExecutorsManagerTests, DeleteTabHandleWithToolBandId) {
+  testing::LogDisabler no_logs;
+  TestingExecutorsManager executors_manager;
+
+  executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
+  executors_manager.SetTabToolBandIdForHandle(kTabWindowId2, kTabWindow);
+  EXPECT_EQ(kTabWindowId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(kTabWindow,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  EXPECT_EQ(kTabWindow,
+            executors_manager.GetTabHandleFromToolBandId(kTabWindowId2));
+  executors_manager.DeleteTabHandle(kTabWindow);
+  EXPECT_EQ(kInvalidChromeSessionId,
+            executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromId(kTabWindowId));
+  EXPECT_EQ(INVALID_HANDLE_VALUE,
+            executors_manager.GetTabHandleFromToolBandId(kTabWindowId2));
 }
 
 }  // namespace

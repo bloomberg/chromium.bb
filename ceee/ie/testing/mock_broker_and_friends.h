@@ -38,6 +38,8 @@ class MockBrokerRegistrarImpl : public ICeeeBrokerRegistrar {
                              HRESULT(long, IUnknown*));
   MOCK_METHOD2_WITH_CALLTYPE(__stdcall, SetTabIdForHandle,
                              HRESULT(long, CeeeWindowHandle));
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, SetTabToolBandIdForHandle,
+                             HRESULT(long, CeeeWindowHandle));
 };
 
 class MockBroker
@@ -240,6 +242,7 @@ class MockApiDispatcher : public ApiDispatcher {
   MOCK_METHOD2(FireEvent, void(BSTR event_name, BSTR event_args));
 
   MOCK_CONST_METHOD1(GetTabHandleFromId, HWND(int));
+  MOCK_CONST_METHOD1(GetTabHandleFromToolBandId, HWND(int));
   MOCK_CONST_METHOD1(GetWindowHandleFromId, HWND(int));
   MOCK_CONST_METHOD1(GetTabIdFromHandle, int(HWND));
   MOCK_CONST_METHOD1(GetWindowIdFromHandle, int(HWND));

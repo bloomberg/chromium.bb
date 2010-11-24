@@ -121,10 +121,22 @@ class ApiDispatcher {
     virtual ~Invocation() {}
 
     // Called when a request to invoke the execution of an API is received.
+    // When an invocation does not need to access the associated tab, it should
+    // subclass this version of the Execute function. All APIs must subclass
+    // one of the 2 Execute member functions.
     //
     // @param args The list value object for the arguments passed.
     // @param request_id The identifier of the request being executed.
-    virtual void Execute(const ListValue& args, int request_id) = 0;
+    virtual void Execute(const ListValue& args, int request_id);
+
+    // Called when a request to invoke the execution of an API is received.
+    // APIs that need the associated tab should implement this version of the
+    // Execute function directly; otherwise, this simply invokes the above
+    // version of Execute.
+    virtual void Execute(const ListValue& args, int request_id,
+                         const DictionaryValue* associated_tab) {
+      Execute(args, request_id);
+    }
 
    protected:
     // Unit test seam.
@@ -212,6 +224,13 @@ class ApiDispatcher {
   //         found).
   virtual HWND GetTabHandleFromId(int tab_id) const;
 
+  // Return a tab handle associated with the given tool band tab id.
+  //
+  // @param tool_band_id The tab identifier for a tool band.
+  // @return The corresponding HWND (or INVALID_HANDLE_VALUE if tool_band_id
+  //         isn't found).
+  virtual HWND GetTabHandleFromToolBandId(int tool_band_id) const;
+
   // Return a window handle associated with the id.
   //
   // @param window_id The window identifier.
@@ -230,9 +249,6 @@ class ApiDispatcher {
   // @param window_handle The window HWND.
   // @return The corresponding window id (or 0 if window_handle isn't found).
   virtual int GetWindowIdFromHandle(HWND window_handle) const;
-
-  // Register the relation between a tab_id and a HWND.
-  virtual void SetTabIdForHandle(long tab_id, HWND tab_handle);
 
   // Unregister the HWND and its corresponding tab_id.
   virtual void DeleteTabHandle(HWND handle);

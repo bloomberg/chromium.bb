@@ -64,6 +64,12 @@ void ApiDispatcher::HandleApiRequest(BSTR message_text, BSTR* response) {
     DCHECK(false);
     return;
   }
+
+  // The tab value is optional, and maybe NULL if the API call didn't originate
+  // from a tab context (e.g. the API call came from the background page).
+  DictionaryValue* associated_tab_value = NULL;
+  value->GetDictionary(keys::kAutomationTabJsonKey, &associated_tab_value);
+
   DLOG(INFO) << "Request: " << request_id << ", for: " << function_name;
   FactoryMap::const_iterator iter = factories_.find(function_name);
   DCHECK(iter != factories_.end());
@@ -73,7 +79,7 @@ void ApiDispatcher::HandleApiRequest(BSTR message_text, BSTR* response) {
 
   scoped_ptr<Invocation> invocation(iter->second());
   DCHECK(invocation.get());
-  invocation->Execute(*args_list, request_id);
+  invocation->Execute(*args_list, request_id, associated_tab_value);
 }
 
 void ApiDispatcher::FireEvent(const char* event_name, const char* event_args) {
@@ -149,6 +155,11 @@ HWND ApiDispatcher::GetTabHandleFromId(int tab_id) const {
       GetTabHandleFromId(tab_id);
 }
 
+HWND ApiDispatcher::GetTabHandleFromToolBandId(int tool_band_id) const {
+  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
+      GetTabHandleFromToolBandId(tool_band_id);
+}
+
 HWND ApiDispatcher::GetWindowHandleFromId(int window_id) const {
   return reinterpret_cast<HWND>(window_id);
 }
@@ -160,12 +171,6 @@ int ApiDispatcher::GetTabIdFromHandle(HWND tab_handle) const {
 
 int ApiDispatcher::GetWindowIdFromHandle(HWND window_handle) const {
   return reinterpret_cast<int>(window_handle);
-}
-
-
-void ApiDispatcher::SetTabIdForHandle(long tab_id, HWND handle) {
-  Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      SetTabIdForHandle(tab_id, handle);
 }
 
 void ApiDispatcher::DeleteTabHandle(HWND handle) {
@@ -203,6 +208,10 @@ void ApiDispatcher::RegisterEphemeralEventHandler(
     ephemeral_event_handlers_[event_name].push_back(
         EphemeralEventHandlerTuple(event_handler, user_data));
   }
+}
+
+void ApiDispatcher::Invocation::Execute(const ListValue& args, int request_id) {
+  NOTREACHED();
 }
 
 ApiDispatcher::InvocationResult::~InvocationResult() {

@@ -24,10 +24,12 @@
 namespace {
 
 using testing::_;
+using testing::DoAll;
 using testing::GetConnectionCount;
 using testing::InstanceCountMixin;
 using testing::MockDispatchEx;
 using testing::Return;
+using testing::SetArgumentPointee;
 using testing::StrEq;
 using testing::StrictMock;
 using testing::TestBrowser;
@@ -38,12 +40,17 @@ class MockCeeeBho
   : public CComObjectRootEx<CComSingleThreadModel>,
     public InitializingCoClass<MockCeeeBho>,
     public IObjectWithSiteImpl<MockCeeeBho>,
-    public IPersistImpl<MockCeeeBho> {
+    public IPersistImpl<MockCeeeBho>,
+    public ICeeeBho {
  public:
   BEGIN_COM_MAP(MockCeeeBho)
     COM_INTERFACE_ENTRY(IObjectWithSite)
     COM_INTERFACE_ENTRY(IPersist)
+    COM_INTERFACE_ENTRY(ICeeeBho)
   END_COM_MAP()
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, SetToolBandSessionId,
+                             HRESULT(long session_id));
 
   static const CLSID& WINAPI GetObjectCLSID() {
     // Required to make IPersistImpl work.
@@ -63,6 +70,9 @@ class TestingToolBand
       public InstanceCountMixin<TestingToolBand>,
       public InitializingCoClass<TestingToolBand> {
  public:
+  MOCK_METHOD1(SendSessionIdToBho, HRESULT(IUnknown*));
+  MOCK_METHOD1(GetSessionId, HRESULT(int*));
+
   HRESULT Initialize(TestingToolBand** self) {
     bho_counter_ = 0;
     *self = this;
@@ -71,6 +81,10 @@ class TestingToolBand
 
   HRESULT CallEnsureBhoIsAvailable() {
     return EnsureBhoIsAvailable();
+  }
+
+  HRESULT CallSendSessionIdToBho(IUnknown* bho) {
+    return ToolBand::SendSessionIdToBho(bho);
   }
 
   int bho_counter_;
@@ -443,6 +457,7 @@ TEST_F(BhoInToolBandTest, EnsureBhoCreatedWhenNeeded) {
   CComVariant variant_with_bho(mocked_bho_with_site);
   EXPECT_CALL(*browser_, GetProperty(StrEq(bho_class_id_text_), _)).
       WillOnce(SetArg1Variant(&variant_with_bho));
+  EXPECT_CALL(*tool_band_, SendSessionIdToBho(_)).WillOnce(Return(S_OK));
   ASSERT_HRESULT_SUCCEEDED(tool_band_->CallEnsureBhoIsAvailable());
   ASSERT_TRUE(mocked_bho->m_spUnkSite == NULL);
 
@@ -455,6 +470,7 @@ TEST_F(BhoInToolBandTest, EnsureBhoCreatedWhenNeeded) {
   // New bho should be dropped into the dropbox.
   EXPECT_CALL(*browser_, PutProperty(StrEq(bho_class_id_text_), _)).
       WillOnce(GetArg1Variant(&bho_dropbox));
+  EXPECT_CALL(*tool_band_, SendSessionIdToBho(_)).WillOnce(Return(S_OK));
   ASSERT_HRESULT_SUCCEEDED(tool_band_->CallEnsureBhoIsAvailable());
   ASSERT_EQ(bho_dropbox.vt, VT_UNKNOWN);
   ASSERT_TRUE(bho_dropbox.punkVal != NULL);
@@ -484,6 +500,26 @@ TEST_F(BhoInToolBandTest, BhoCreationErrorHandling) {
       WillOnce(SetArg1Variant(&weird_content));
   tool_band_->CallEnsureBhoIsAvailable();
   ASSERT_EQ(tool_band_->bho_counter_, 0);
+}
+
+TEST_F(ToolBandTest, SendSessionIdToBho) {
+  MockCeeeBho* mock_bho;
+  CComPtr<IObjectWithSite> mock_bho_with_site;
+  ASSERT_HRESULT_SUCCEEDED(
+      MockCeeeBho::CreateInitialized(&mock_bho, &mock_bho_with_site));
+  EXPECT_CALL(*tool_band_, GetSessionId(_)).WillOnce(DoAll(
+      SetArgumentPointee<0>(5), Return(S_OK)));
+  EXPECT_CALL(*mock_bho, SetToolBandSessionId(5)).WillOnce(Return(S_OK));
+  EXPECT_EQ(S_OK, tool_band_->CallSendSessionIdToBho(mock_bho_with_site));
+
+  // Test error handling.
+  EXPECT_CALL(*tool_band_, GetSessionId(_)).WillOnce(Return(E_FAIL));
+  EXPECT_EQ(E_FAIL, tool_band_->CallSendSessionIdToBho(mock_bho_with_site));
+
+  EXPECT_CALL(*tool_band_, GetSessionId(_)).WillOnce(DoAll(
+      SetArgumentPointee<0>(6), Return(S_OK)));
+  EXPECT_CALL(*mock_bho, SetToolBandSessionId(6)).WillOnce(Return(E_FAIL));
+  EXPECT_EQ(E_FAIL, tool_band_->CallSendSessionIdToBho(mock_bho_with_site));
 }
 
 }  // namespace

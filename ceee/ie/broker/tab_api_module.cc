@@ -20,10 +20,12 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/values.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "base/win/scoped_bstr.h"
 #include "base/win/windows_version.h"
 #include "ceee/ie/broker/api_module_constants.h"
 #include "ceee/ie/broker/api_module_util.h"
@@ -120,7 +122,7 @@ bool CeeeUnmapTabEventHandler(const std::string& input_args,
   return false;
 }
 
-}
+}  // namespace
 
 void RegisterInvocations(ApiDispatcher* dispatcher) {
 #define REGISTER_API_FUNCTION(func) do { dispatcher->RegisterInvocation(\
@@ -169,9 +171,9 @@ bool TabApiResult::CreateTabValue(int tab_id, long index) {
     return false;
   }
 
-  CComPtr<ICeeeTabExecutor> executor;
+  ScopedComPtr<ICeeeTabExecutor> executor;
   dispatcher->GetExecutor(tab_window, IID_ICeeeTabExecutor,
-                          reinterpret_cast<void**>(&executor));
+                          reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
     LOG(WARNING) << "Failed to get an executor to get tab info.";
     PostError(api_module_constants::kInternalErrorError);
@@ -233,9 +235,9 @@ bool TabApiResult::CreateTabValue(int tab_id, long index) {
   // so we can save an IPC call.
   if (index == -1) {
     // We need another executor to get the index from the frame window thread.
-    CComPtr<ICeeeWindowExecutor> executor;
+    ScopedComPtr<ICeeeWindowExecutor> executor;
     dispatcher->GetExecutor(frame_window, IID_ICeeeWindowExecutor,
-                            reinterpret_cast<void**>(&executor));
+                            reinterpret_cast<void**>(executor.Receive()));
     if (executor == NULL) {
       LOG(WARNING) << "Failed to get an executor to get tab index.";
       PostError(api_module_constants::kInternalErrorError);
@@ -399,6 +401,41 @@ void GetTab::Execute(const ListValue& args, int request_id) {
   }
 }
 
+void GetCurrentTab::Execute(const ListValue& args, int request_id,
+                            const DictionaryValue* associated_tab) {
+  // TODO(cindylau@chromium.org): This implementation of chrome.tabs.getCurrent
+  // assumes that the associated tab will be that of a tool band, since that is
+  // the only way we currently support running extension code in a tab context.
+  // If the way we associate tool bands to IE tabs/windows changes, and/or if
+  // we add other tab-related extension widgets (e.g. infobars, or directly
+  // loading extension pages in host browser tabs), we will need to revisit
+  // this implementation.
+  scoped_ptr<TabApiResult> result(CreateApiResult(request_id));
+  if (associated_tab == NULL) {
+    // The associated tab may validly be NULL, for instance if the API call
+    // originated from the background page.
+    result->PostResult();
+    return;
+  }
+  int tool_band_id;
+  if (!associated_tab->GetInteger(ext::kIdKey, &tool_band_id)) {
+    result->PostError(api_module_constants::kInternalErrorError);
+    return;
+  }
+
+  ApiDispatcher* dispatcher = GetDispatcher();
+  DCHECK(dispatcher != NULL);
+  HWND tab_window = dispatcher->GetTabHandleFromToolBandId(tool_band_id);
+  int tab_id = dispatcher->GetTabIdFromHandle(tab_window);
+  if (!result->IsTabWindowClass(tab_window)) {
+    result->PostError(ExtensionErrorUtils::FormatErrorMessage(
+        ext::kTabNotFoundError, base::IntToString(tab_id)));
+    return;
+  }
+  if (result->CreateTabValue(tab_id, -1))
+    result->PostResult();
+}
+
 void GetSelectedTab::Execute(const ListValue& args, int request_id) {
   scoped_ptr<TabApiResult> result(CreateApiResult(request_id));
 
@@ -491,7 +528,7 @@ bool GetAllTabsInWindowResult::Execute(BSTR tab_handles) {
 
   size_t num_values = tabs_list->GetSize();
   if (num_values % 2 != 0) {
-    // Values should come in pairs, one for the id and another one for the
+    // Values should come in pairs, one for the handle and another one for the
     // index.
     NOTREACHED() << "Invalid tabs list BSTR: " << tab_handles;
     PostError(api_module_constants::kInternalErrorError);
@@ -529,9 +566,9 @@ void GetAllTabsInWindow::Execute(const ListValue& args, int request_id) {
 
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher != NULL);
-  CComPtr<ICeeeWindowExecutor> executor;
+  ScopedComPtr<ICeeeWindowExecutor> executor;
   dispatcher->GetExecutor(frame_window, IID_ICeeeWindowExecutor,
-                          reinterpret_cast<void**>(&executor));
+                          reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
     LOG(WARNING) << "Failed to get an executor to get list of tabs.";
     result->PostError("Internal Error while getting all tabs in window.");
@@ -539,8 +576,8 @@ void GetAllTabsInWindow::Execute(const ListValue& args, int request_id) {
   }
 
   long num_tabs = 0;
-  CComBSTR tab_handles;
-  HRESULT hr = executor->GetTabs(&tab_handles);
+  base::win::ScopedBstr tab_handles;
+  HRESULT hr = executor->GetTabs(tab_handles.Receive());
   if (FAILED(hr)) {
     DCHECK(tab_handles == NULL);
     LOG(ERROR) << "Failed to get list of tabs for window: " << std::hex <<
@@ -590,16 +627,16 @@ void UpdateTab::Execute(const ListValue& args, int request_id) {
       return;
     }
 
-    CComPtr<ICeeeTabExecutor> executor;
+    ScopedComPtr<ICeeeTabExecutor> executor;
     dispatcher->GetExecutor(tab_window, IID_ICeeeTabExecutor,
-                            reinterpret_cast<void**>(&executor));
+                            reinterpret_cast<void**>(executor.Receive()));
     if (executor == NULL) {
       LOG(WARNING) << "Failed to get an executor to navigate tab.";
       result->PostError("Internal error trying to update tab.");
       return;
     }
-    HRESULT hr = executor->Navigate(CComBSTR(url.c_str()), 0,
-                                    CComBSTR(L"_top"));
+    HRESULT hr = executor->Navigate(base::win::ScopedBstr(url.c_str()), 0,
+                                    base::win::ScopedBstr(L"_top"));
     // Don't DCHECK here, see the comment at the bottom of
     // CeeeExecutor::Navigate().
     if (FAILED(hr)) {
@@ -620,10 +657,10 @@ void UpdateTab::Execute(const ListValue& args, int request_id) {
     // We only take action if the user wants to select the tab; this function
     // does not actually let you deselect a tab.
     if (selected) {
-      CComPtr<ICeeeWindowExecutor> frame_executor;
-      dispatcher->GetExecutor(window_utils::GetTopLevelParent(tab_window),
-                              IID_ICeeeWindowExecutor,
-                              reinterpret_cast<void**>(&frame_executor));
+      ScopedComPtr<ICeeeWindowExecutor> frame_executor;
+      dispatcher->GetExecutor(
+          window_utils::GetTopLevelParent(tab_window), IID_ICeeeWindowExecutor,
+          reinterpret_cast<void**>(frame_executor.Receive()));
       if (frame_executor == NULL) {
         LOG(WARNING) << "Failed to get a frame executor to select tab.";
         result->PostError("Internal error trying to select tab.");
@@ -663,10 +700,10 @@ void RemoveTab::Execute(const ListValue& args, int request_id) {
     return;
   }
 
-  CComPtr<ICeeeWindowExecutor> frame_executor;
+  ScopedComPtr<ICeeeWindowExecutor> frame_executor;
   dispatcher->GetExecutor(window_utils::GetTopLevelParent(tab_window),
                           IID_ICeeeWindowExecutor,
-                          reinterpret_cast<void**>(&frame_executor));
+                          reinterpret_cast<void**>(frame_executor.Receive()));
   if (frame_executor == NULL) {
     LOG(WARNING) << "Failed to get a frame executor to select tab.";
     result->PostError("Internal error trying to select tab.");
@@ -797,9 +834,9 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
   // So bb2284073 & bb2492252 might still occur there.
   std::wstring url_wstring = UTF8ToWide(url_string);
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    CComPtr<IWebBrowser2> browser;
+    ScopedComPtr<IWebBrowser2> browser;
     HRESULT hr = ie_util::GetWebBrowserForTopLevelIeHwnd(
-        frame_window, NULL, &browser);
+        frame_window, NULL, browser.Receive());
     DCHECK(SUCCEEDED(hr)) << "Can't get the browser for window: " <<
         frame_window;
     if (FAILED(hr)) {
@@ -808,7 +845,7 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
     }
 
     long flags = selected ? navOpenInNewTab : navOpenInBackgroundTab;
-    hr = browser->Navigate(CComBSTR(url_wstring.c_str()),
+    hr = browser->Navigate(base::win::ScopedBstr(url_wstring.c_str()),
                            &CComVariant(flags),
                            &CComVariant(L"_blank"),
                            &CComVariant(),  // Post data
@@ -827,9 +864,9 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
     DCHECK(success && existing_tab != NULL) <<
         "Can't find an existing tab for" << frame_window;
 
-    CComPtr<ICeeeTabExecutor> executor;
+    ScopedComPtr<ICeeeTabExecutor> executor;
     dispatcher->GetExecutor(existing_tab, IID_ICeeeTabExecutor,
-                            reinterpret_cast<void**>(&executor));
+                            reinterpret_cast<void**>(executor.Receive()));
     if (executor == NULL) {
       LOG(WARNING) << "Failed to get an executor to create a tab.";
       result->PostError("Internal error while trying to create tab.");
@@ -837,8 +874,8 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
     }
 
     long flags = selected ? navOpenInNewTab : navOpenInBackgroundTab;
-    HRESULT hr = executor->Navigate(CComBSTR(url_wstring.c_str()),
-                                    flags, CComBSTR(L"_blank"));
+    HRESULT hr = executor->Navigate(base::win::ScopedBstr(url_wstring.c_str()),
+                                    flags, base::win::ScopedBstr(L"_blank"));
     // We can DCHECK here because navigating to a new tab shouldn't fail as
     // described in the comment at the bottom of CeeeExecutor::Navigate().
     DCHECK(SUCCEEDED(hr)) << "Failed to create tab. " << com::LogHr(hr);
@@ -915,9 +952,9 @@ HRESULT CreateTab::ContinueExecution(const std::string& input_args,
     DCHECK(success) << "index_value->GetAsInteger()";
 
     HWND frame_window = window_utils::GetTopLevelParent(tab_window);
-    CComPtr<ICeeeWindowExecutor> frame_executor;
+    ScopedComPtr<ICeeeWindowExecutor> frame_executor;
     dispatcher->GetExecutor(frame_window, __uuidof(ICeeeWindowExecutor),
-                            reinterpret_cast<void**>(&frame_executor));
+                            reinterpret_cast<void**>(frame_executor.Receive()));
     if (frame_executor == NULL) {
       LOG(WARNING) << "Failed to get an executor for the frame.";
       result->PostError("Internal error while trying to move created tab.");
@@ -1032,9 +1069,9 @@ void MoveTab::Execute(const ListValue& args, int request_id) {
 
   HWND frame_window = window_utils::GetTopLevelParent(tab_window);
 
-  CComPtr<ICeeeWindowExecutor> frame_executor;
+  ScopedComPtr<ICeeeWindowExecutor> frame_executor;
   dispatcher->GetExecutor(frame_window, IID_ICeeeWindowExecutor,
-                          reinterpret_cast<void**>(&frame_executor));
+                          reinterpret_cast<void**>(frame_executor.Receive()));
   if (frame_executor == NULL) {
     LOG(WARNING) << "Failed to get an executor for the frame.";
     result->PostError("Internal Error while trying to move tab.");
@@ -1104,9 +1141,9 @@ ApiDispatcher::InvocationResult* TabsInsertCode::ExecuteImpl(
     return NULL;
   }
 
-  CComPtr<ICeeeTabExecutor> tab_executor;
+  ScopedComPtr<ICeeeTabExecutor> tab_executor;
   dispatcher->GetExecutor(tab_window, IID_ICeeeTabExecutor,
-                          reinterpret_cast<void**>(&tab_executor));
+                          reinterpret_cast<void**>(tab_executor.Receive()));
   if (tab_executor == NULL) {
     LOG(WARNING) << "Failed to get an executor for the frame.";
     result->PostError("Internal Error while trying to insert code in tab.");

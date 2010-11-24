@@ -251,7 +251,7 @@ HRESULT ToolBand::Initialize(IUnknown* site) {
   // the BHO. Also required to get navigate2 notification.
   hr = service_provider->QueryService(
       SID_SWebBrowserApp, IID_IWebBrowser2,
-      reinterpret_cast<void**>(&web_browser_));
+      reinterpret_cast<void**>(web_browser_.Receive()));
 
   DCHECK(SUCCEEDED(hr));
 
@@ -273,14 +273,14 @@ HRESULT ToolBand::Initialize(IUnknown* site) {
 }
 
 HRESULT ToolBand::InitializeAndShowWindow(IUnknown* site) {
-  CComPtr<IOleWindow> site_window;
-  HRESULT hr = site->QueryInterface(&site_window);
+  ScopedComPtr<IOleWindow> site_window;
+  HRESULT hr = site_window.QueryFrom(site);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get site window: " << com::LogHr(hr);
     return hr;
   }
 
-  DCHECK(NULL != site_window.p);
+  DCHECK(NULL != site_window.get());
   hr = site_window->GetWindow(&parent_window_.m_hWnd);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get parent window handle: " << com::LogHr(hr);
@@ -305,8 +305,8 @@ HRESULT ToolBand::Teardown() {
   if (IsWindow()) {
     // Teardown the ActiveX host window.
     CAxWindow host(m_hWnd);
-    CComPtr<IObjectWithSite> host_with_site;
-    HRESULT hr = host.QueryHost(&host_with_site);
+    ScopedComPtr<IObjectWithSite> host_with_site;
+    HRESULT hr = host.QueryHost(host_with_site.Receive());
     if (SUCCEEDED(hr))
       host_with_site->SetSite(NULL);
 
@@ -335,8 +335,8 @@ LRESULT ToolBand::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   GetUnknown()->AddRef();
 
   // Create a host window instance.
-  CComPtr<IAxWinHostWindow> host;
-  HRESULT hr = CAxHostWindow::CreateInstance(&host);
+  ScopedComPtr<IAxWinHostWindow> host;
+  HRESULT hr = CAxHostWindow::CreateInstance(host.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create ActiveX host window. " << com::LogHr(hr);
     return 1;
@@ -539,9 +539,9 @@ STDMETHODIMP_(void) ToolBand::OnCfGetEnabledExtensionsComplete(
     current_height_ = 0;
 
     // Ask IE to reload all info for this toolband.
-    CComPtr<IOleCommandTarget> cmd_target;
+    ScopedComPtr<IOleCommandTarget> cmd_target;
     HRESULT hr = GetSite(IID_IOleCommandTarget,
-                         reinterpret_cast<void**>(&cmd_target));
+                         reinterpret_cast<void**>(cmd_target.Receive()));
     if (SUCCEEDED(hr)) {
       CComVariant band_id(static_cast<int>(band_id_));
       hr = cmd_target->Exec(&CGID_DeskBand, DBID_BANDINFOCHANGED,
@@ -657,7 +657,10 @@ HRESULT ToolBand::EnsureBhoIsAvailable() {
     }
 #endif
     DVLOG(1) << "BHO already loaded";
-    return S_OK;
+    if (existing_bho.vt != VT_UNKNOWN || existing_bho.punkVal == NULL)
+      return E_FAIL;
+    else
+      return SendSessionIdToBho(existing_bho.punkVal);
   }
 
   ScopedComPtr<IObjectWithSite> bho;
@@ -675,12 +678,42 @@ HRESULT ToolBand::EnsureBhoIsAvailable() {
   }
 
   hr = web_browser_->PutProperty(bho_class_id_bstr, CComVariant(bho));
-  LOG_IF(ERROR, FAILED(hr)) << "Assigning BHO to the web browser failed.";
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Assigning BHO to the web browser failed." << com::LogHr(hr);
+    return hr;
+  }
   LOG_IF(INFO, SUCCEEDED(hr)) << "CEEE BHO has been created by the toolband.";
-  return hr;
+
+  return SendSessionIdToBho(bho);
 }
 
 HRESULT ToolBand::CreateBhoInstance(IObjectWithSite** new_bho_instance) {
   DCHECK(new_bho_instance != NULL && *new_bho_instance == NULL);
   return BrowserHelperObject::CreateInstance(new_bho_instance);
+}
+
+HRESULT ToolBand::GetSessionId(int* session_id) {
+  if (chrome_frame_) {
+    ScopedComPtr<IChromeFrameInternal> chrome_frame_internal_;
+    chrome_frame_internal_.QueryFrom(chrome_frame_);
+    if (chrome_frame_internal_) {
+      return chrome_frame_internal_->getSessionId(session_id);
+    }
+  }
+  NOTREACHED();
+  return E_UNEXPECTED;
+}
+
+HRESULT ToolBand::SendSessionIdToBho(IUnknown* bho) {
+  // Now send the tool band's session ID to the BHO.
+  ScopedComPtr<ICeeeBho> ceee_bho;
+  HRESULT hr = ceee_bho.QueryFrom(bho);
+  if (SUCCEEDED(hr)) {
+    int session_id = 0;
+    hr = GetSessionId(&session_id);
+    if (SUCCEEDED(hr)) {
+      return ceee_bho->SetToolBandSessionId(session_id);
+    }
+  }
+  return E_FAIL;
 }

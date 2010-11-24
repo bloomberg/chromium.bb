@@ -70,6 +70,17 @@ STDMETHODIMP CeeeBroker::SetTabIdForHandle(long tab_id,
   // TODO(mad@chromium.org): Add security check here.
   DCHECK(tab_id != kInvalidChromeSessionId &&
       handle != reinterpret_cast<CeeeWindowHandle>(INVALID_HANDLE_VALUE));
-  executors_manager_->SetTabIdForHandle(tab_id, reinterpret_cast<HWND>(handle));
+  executors_manager_->SetTabIdForHandle(
+      static_cast<int>(tab_id), reinterpret_cast<HWND>(handle));
+  return S_OK;
+}
+
+STDMETHODIMP CeeeBroker::SetTabToolBandIdForHandle(long tool_band_id,
+                                                   CeeeWindowHandle handle) {
+  // TODO(mad@chromium.org): Add security check here.
+  DCHECK(tool_band_id != kInvalidChromeSessionId &&
+      handle != reinterpret_cast<CeeeWindowHandle>(INVALID_HANDLE_VALUE));
+  executors_manager_->SetTabToolBandIdForHandle(
+      static_cast<int>(tool_band_id), reinterpret_cast<HWND>(handle));
   return S_OK;
 }
