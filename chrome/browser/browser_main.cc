@@ -202,8 +202,9 @@ void BrowserMainParts::EarlyInitialization() {
     net::SSLConfigService::DisableFalseStart();
   if (parsed_command_line().HasSwitch(switches::kAllowSSLMITMProxies))
     net::SSLConfigService::AllowMITMProxies();
-  if (parsed_command_line().HasSwitch(switches::kEnableSnapStart))
-    net::SSLConfigService::EnableSnapStart();
+  // Disabled to stop people playing with it.
+  // if (parsed_command_line().HasSwitch(switches::kEnableSnapStart))
+  //   net::SSLConfigService::EnableSnapStart();
   if (parsed_command_line().HasSwitch(
           switches::kEnableDNSCertProvenanceChecking)) {
     net::SSLConfigService::EnableDNSCertProvenanceChecking();

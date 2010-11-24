@@ -221,13 +221,6 @@ const Experiment kExperiments[] = {
     switches::kEnableConfirmToQuit
   },
   {
-    "snap-start",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_SNAP_START_NAME,
-    IDS_FLAGS_SNAP_START_DESCRIPTION,
-    kOsAll,
-    switches::kEnableSnapStart
-  },
-  {
     "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION,
