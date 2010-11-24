@@ -2790,6 +2790,18 @@ void TabContents::ShowModalHTMLDialog(const GURL& url, int width, int height,
   }
 }
 
+void TabContents::PasswordFormsFound(
+    const std::vector<webkit_glue::PasswordForm>& forms) {
+  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+                    PasswordFormsFound(forms));
+}
+
+void TabContents::PasswordFormsVisible(
+    const std::vector<webkit_glue::PasswordForm>& visible_forms) {
+  FOR_EACH_OBSERVER(WebNavigationObserver, web_navigation_observers_,
+                    PasswordFormsVisible(visible_forms));
+}
+
 // Checks to see if we should generate a keyword based on the OSDD, and if
 // necessary uses TemplateURLFetcher to download the OSDD and create a keyword.
 void TabContents::PageHasOSDD(
