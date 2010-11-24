@@ -6,6 +6,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend_mock.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -114,10 +115,10 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     EXPECT_CALL(delegate, HandlePolicyResponse(_))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     em::DevicePolicyRequest request;
-    request.set_policy_scope("chrome");
+    request.set_policy_scope(kChromePolicyScope);
     em::DevicePolicySettingRequest* setting_request =
         request.add_setting_request();
-    setting_request->set_key("policy");
+    setting_request->set_key(kChromeDevicePolicySettingKey);
     backend->ProcessPolicyRequest(token_, "testid", request, &delegate);
 
     MessageLoop::current()->Run();
@@ -165,10 +166,10 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     EXPECT_CALL(delegate, HandlePolicyResponse(_))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     em::DevicePolicyRequest request;
-    request.set_policy_scope("chrome");
+    request.set_policy_scope(kChromePolicyScope);
     em::DevicePolicySettingRequest* setting_request =
         request.add_setting_request();
-    setting_request->set_key("policy");
+    setting_request->set_key(kChromeDevicePolicySettingKey);
     backend->ProcessPolicyRequest(token_, "testid", request, &delegate);
 
     MessageLoop::current()->Run();

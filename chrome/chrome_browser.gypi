@@ -2441,6 +2441,8 @@
         # TODO(danno): Find a better way to include these files
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.cc',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_backend.pb.h',
+        'browser/policy/proto/device_management_constants.cc',
+        'browser/policy/proto/device_management_constants.h',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_local.pb.cc',
         '<(protoc_out_dir)/chrome/browser/policy/proto/device_management_local.pb.h',
         'browser/popup_blocked_animation.h',

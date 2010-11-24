@@ -12,6 +12,7 @@
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 
 using google::protobuf::RepeatedField;
@@ -222,6 +223,10 @@ DictionaryValue* DeviceManagementPolicyCache::DecodePolicy(
   for (setting = policy.setting().begin();
        setting != policy.setting().end();
        ++setting) {
+    // Wrong policy key? Skip.
+    if (setting->policy_key().compare(kChromeDevicePolicySettingKey) != 0)
+      continue;
+
     // No policy value? Skip.
     if (!setting->has_policy_value())
       continue;

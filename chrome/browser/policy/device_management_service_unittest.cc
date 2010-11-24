@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/message_loop.h"
 #include "base/string_split.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend_impl.h"
 #include "chrome/browser/policy/device_management_backend_mock.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/test_url_request_context_getter.h"
 #include "net/base/escape.h"
@@ -136,10 +139,10 @@ TEST_P(DeviceManagementServiceFailedRequestTest, PolicyRequest) {
   DevicePolicyResponseDelegateMock mock;
   EXPECT_CALL(mock, OnError(GetParam().expected_error_));
   em::DevicePolicyRequest request;
-  request.set_policy_scope("Chrome");
+  request.set_policy_scope(kChromePolicyScope);
   em::DevicePolicySettingRequest* setting_request =
       request.add_setting_request();
-  setting_request->set_key("policy");
+  setting_request->set_key(kChromeDevicePolicySettingKey);
   backend_->ProcessPolicyRequest(kDMToken, kDeviceId, request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
@@ -352,7 +355,7 @@ TEST_F(DeviceManagementServiceTest, PolicyRequest) {
   DevicePolicyResponseDelegateMock mock;
   em::DevicePolicyResponse expected_response;
   em::DevicePolicySetting* policy_setting = expected_response.add_setting();
-  policy_setting->set_policy_key("chrome-policy");
+  policy_setting->set_policy_key(kChromeDevicePolicySettingKey);
   policy_setting->set_watermark("fresh");
   em::GenericSetting* policy_value = policy_setting->mutable_policy_value();
   em::GenericNamedValue* named_value = policy_value->add_named_value();
@@ -368,10 +371,10 @@ TEST_F(DeviceManagementServiceTest, PolicyRequest) {
   EXPECT_CALL(mock, HandlePolicyResponse(MessageEquals(expected_response)));
 
   em::DevicePolicyRequest request;
-  request.set_policy_scope("chromeos/device");
+  request.set_policy_scope(kChromePolicyScope);
   em::DevicePolicySettingRequest* setting_request =
       request.add_setting_request();
-  setting_request->set_key("policy");
+  setting_request->set_key(kChromeDevicePolicySettingKey);
   setting_request->set_watermark("stale");
   backend_->ProcessPolicyRequest(kDMToken, kDeviceId, request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
@@ -431,10 +434,10 @@ TEST_F(DeviceManagementServiceTest, CancelPolicyRequest) {
   DevicePolicyResponseDelegateMock mock;
   EXPECT_CALL(mock, HandlePolicyResponse(_)).Times(0);
   em::DevicePolicyRequest request;
-  request.set_policy_scope("chromium");
+  request.set_policy_scope(kChromePolicyScope);
   em::DevicePolicySettingRequest* setting_request =
       request.add_setting_request();
-  setting_request->set_key("policy");
+  setting_request->set_key(kChromeDevicePolicySettingKey);
   setting_request->set_watermark("stale");
   backend_->ProcessPolicyRequest(kDMToken, kDeviceId, request, &mock);
   TestURLFetcher* fetcher = factory_.GetFetcherByID(0);

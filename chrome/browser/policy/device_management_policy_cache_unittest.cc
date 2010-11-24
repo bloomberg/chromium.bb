@@ -12,6 +12,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +26,7 @@ class DeviceManagementPolicyCacheTestBase : public testing::Test {
                        const std::string& name,
                        const std::string& value) {
     em::DevicePolicySetting* setting = policy->add_setting();
-    setting->set_policy_key("test");
+    setting->set_policy_key(kChromeDevicePolicySettingKey);
     em::GenericSetting* policy_value = setting->mutable_policy_value();
     em::GenericNamedValue* named_value = policy_value->add_named_value();
     named_value->set_name(name);

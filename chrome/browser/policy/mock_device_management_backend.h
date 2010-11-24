@@ -11,6 +11,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/policy/device_management_backend.h"
+#include "chrome/browser/policy/proto/device_management_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,7 +63,7 @@ ACTION(MockDeviceManagementBackendSucceedRegister) {
 ACTION_P2(MockDeviceManagementBackendSucceedBooleanPolicy, name, value) {
   em::DevicePolicyResponse response;
   em::DevicePolicySetting* setting = response.add_setting();
-  setting->set_policy_key("chrome-policy");
+  setting->set_policy_key(kChromeDevicePolicySettingKey);
   setting->set_watermark("fresh");
   em::GenericSetting* policy_value = setting->mutable_policy_value();
   em::GenericNamedValue* named_value = policy_value->add_named_value();

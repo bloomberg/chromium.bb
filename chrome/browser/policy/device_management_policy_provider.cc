@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_policy_cache.h"
+#include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -19,8 +20,6 @@
 
 namespace policy {
 
-const char kChromePolicyScope[] = "chromeos/device";
-const char kChromeDevicePolicySettingKey[] = "chrome-policy";
 const int64 kPolicyRefreshRateInMilliseconds = 3 * 60 * 60 * 1000;  // 3 hours
 const int64 kPolicyRefreshMaxEarlierInMilliseconds = 20 * 60 * 1000;  // 20 mins
 // These are the base values for delays before retrying after an error. They
