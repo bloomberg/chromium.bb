@@ -27,7 +27,7 @@ class RtpPacket {
   const CompoundBuffer& payload() const { return payload_; }
   CompoundBuffer* mutable_payload() { return &payload_; }
 
-  const uint32 extended_sequence_number() const {
+  uint32 extended_sequence_number() const {
     return extended_sequence_number_;
   }
   void set_extended_sequence_number(uint32 value) {
