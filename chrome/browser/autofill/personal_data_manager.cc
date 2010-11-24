@@ -614,35 +614,24 @@ bool PersonalDataManager::HasPassword() {
 
 const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
   // |profile_| is NULL in AutoFillManagerTest.
-  if (!profile_)
-    return web_profiles_.get();
-
-  bool auxiliary_profiles_enabled = profile_->GetPrefs()->GetBoolean(
-      prefs::kAutoFillAuxiliaryProfilesEnabled);
+  bool auxiliary_profiles_enabled = profile_ ? profile_->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled) : false;
+  if (!auxiliary_profiles_enabled)
+    return web_profiles();
 
 #if !defined(OS_MACOSX)
-  DCHECK(!auxiliary_profiles_enabled)
-      << "Auxiliary profiles supported on Mac only";
+  NOTREACHED() << "Auxiliary profiles supported on Mac only";
 #endif
 
-  if (auxiliary_profiles_enabled) {
-    profiles_.clear();
+  profiles_.clear();
 
-    // Populates |auxiliary_profiles_|.
-    LoadAuxiliaryProfiles();
+  // Populates |auxiliary_profiles_|.
+  LoadAuxiliaryProfiles();
 
-    profiles_.insert(profiles_.end(),
-        web_profiles_.begin(), web_profiles_.end());
-    profiles_.insert(profiles_.end(),
-        auxiliary_profiles_.begin(), auxiliary_profiles_.end());
-    return profiles_;
-  } else {
-    return web_profiles_.get();
-  }
-}
-
-const std::vector<AutoFillProfile*>& PersonalDataManager::web_profiles() {
-  return web_profiles_.get();
+  profiles_.insert(profiles_.end(), web_profiles_.begin(), web_profiles_.end());
+  profiles_.insert(profiles_.end(),
+      auxiliary_profiles_.begin(), auxiliary_profiles_.end());
+  return profiles_;
 }
 
 AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
