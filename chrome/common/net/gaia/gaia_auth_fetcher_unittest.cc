@@ -73,8 +73,6 @@ class GaiaAuthFetcherTest : public testing::Test {
   GURL client_login_source_;
   GURL issue_auth_token_source_;
   TestingProfile profile_;
- protected:
-  MessageLoop message_loop_;
 };
 
 class MockGaiaConsumer : public GaiaAuthConsumer {
