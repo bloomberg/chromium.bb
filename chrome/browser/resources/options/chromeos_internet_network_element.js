@@ -234,8 +234,9 @@ cr.define('options.internet', function() {
                              self.data.servicePath,
                              'options']);
               }));
-        } else if (!this.data.connecting) {
-          // connect button (if not ethernet and not showing activate button)
+        } else if (!this.data.connecting && this.data.connectable) {
+          // connect button (if not ethernet and not showing activate button
+          // and connectable)
           if (this.data.networkType != NetworkItem.TYPE_ETHERNET &&
               !show_activate && !no_plan) {
             buttonsDiv.appendChild(
