@@ -42,7 +42,7 @@ if env.IsRunningUnderValgrind():
 # NOTE: This acutally works on arm but the signal does not make it through the
 #       emulator. This code could be rewritten to catch the signal internally
 TEST_SUITES = ['small_tests']
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   TEST_SUITES = ['small_tests_arm_hw_only']
 
 sigpipe_tool_test_exe = env.ComponentProgram('sigpipe_tool_test',

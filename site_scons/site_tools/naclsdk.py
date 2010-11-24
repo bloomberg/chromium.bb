@@ -359,7 +359,7 @@ def generate(env):
     # if bitcode=1 use pnacl toolchain
     if env.Bit('bitcode'):
       _SetEnvForPnacl(env, env['TARGET_FULLARCH'])
-    elif env['TARGET_ARCHITECTURE'] == 'x86':
+    elif env.Bit('target_x86'):
       _SetEnvForX86Sdk(env, root)
     else:
       print "ERROR: unknown TARGET_ARCHITECTURE: ", env['TARGET_ARCHITECTURE']

@@ -102,7 +102,7 @@ env.Publish('srpc_bad_service.nexe', 'run', [])
 TEST_SUITES = ['small_tests']
 # TODO(robertm): research why srpc_basic and sysv_shm do not work on pnacl arm
 # "execv failed, args were: ... execv: Exec format error Open failed"
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   TEST_SUITES = ['small_tests_arm_hw_only']
 
 node = env.CommandSelLdrTestNacl(

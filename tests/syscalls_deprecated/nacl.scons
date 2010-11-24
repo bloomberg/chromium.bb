@@ -13,6 +13,3 @@ nacl_js_lib = env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')
 env.Publish('srpc_av.nexe', 'run', ['srpc_av.html', nacl_js_lib])
 env.AddPrebuiltBinaryToRepository(nexe)
 
-# TODO(dpolukhin): enable for x86-64 ASAP.
-if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '64':
-  Return()

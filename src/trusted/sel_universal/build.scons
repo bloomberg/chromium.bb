@@ -11,9 +11,8 @@ if env.CrossToolsBuild():
 
 
 # NOTE: Probably because of GetPluginDir()
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  if env.Bit('linux'):
-    env.Append(LIBS=['dl'])
+if env.Bit('linux') and env.Bit('target_x86'):
+  env.Append(LIBS=['dl'])
 
 
 
@@ -57,7 +56,7 @@ if ARGUMENTS.get('sdl', 'hermetic') == 'none':
   Return()
 
 # TODO(robertm): x86/64 has not been tested - it may just work
-if env['TARGET_SUBARCH'] == '64':
+if env.Bit('target_x86_64'):
   Return()
 
 def ReplicateDlls(sdl_dll):
@@ -72,7 +71,7 @@ def ReplicateDlls(sdl_dll):
             '${OBJ_ROOT}/Frameworks',
             '${OBJ_ROOT}/src/trusted/Frameworks']
     lib = '${SDL_DIR}/SDL.framework'
-  elif env.Bit('linux') and env['BUILD_ARCHITECTURE'] == 'x86':
+  elif env.Bit('linux') and env.Bit('build_x86'):
     dsts = ['${STAGING_DIR}', '.']
     if sdl_env['BUILD_SUBARCH'] == '32':
       lib = '${SDL_DIR}/lib/libSDL-1.2.so.0'
@@ -88,7 +87,7 @@ def ReplicateDlls(sdl_dll):
 
 def AddSdlRequirements(sdl_env, target):
   # TODO(robetrm): reinvestigate this
-  if sdl_env['TARGET_ARCHITECTURE'] == 'arm':
+  if sdl_env.Bit('target_arm'):
     return
   if ARGUMENTS.get('sdl', 'hermetic') == 'none':
     return

@@ -9,7 +9,7 @@
 Import('env')
 
 # BUG(adonovan): test is breaking on ARM.  Disable in haste...
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   Return()
 
 # Use pre-built "Hello, World!" executables for several architectures.

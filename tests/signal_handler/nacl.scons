@@ -9,7 +9,7 @@ Import('env')
 trusted_env = env.get('TRUSTED_ENV')
 if trusted_env is None:
   Return()
-if env['BUILD_ARCHITECTURE'] == 'arm':
+if env.Bit('build_arm'):
   # TODO(mseaborn): Enable this test.
   Return()
 

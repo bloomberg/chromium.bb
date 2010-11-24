@@ -111,7 +111,7 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               'eh_loop_break.cc']:
     tests = ['toolchain_tests', 'small_tests']
     # http://code.google.com/p/nativeclient/issues/detail?id=720
-    if e['TARGET_ARCHITECTURE'] == 'arm':
+    if e.Bit('target_arm'):
       # this test needs a lot more work for ARM and does not even compile
       if  src =='stack_frame.cc':
         continue

@@ -70,13 +70,13 @@ large_stack_args = ['-s', '0x400000', '-n', '4095', '-f' ]
 # test.
 #
 
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   # so far, only linux.  and the limit that we hit is one that is
   # imposed by our threading implementation, not by the OS.
   test_suites = ['small_tests_arm_hw_only']
   high_thread_count_nthreads = 4095
   platform_limits_known = True
-elif env['TARGET_ARCHITECTURE'] == 'x86':
+elif env.Bit('target_x86'):
   trusted_env = env.get('TRUSTED_ENV')
   if trusted_env:
     platform_limits_known = True

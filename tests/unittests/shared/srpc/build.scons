@@ -10,7 +10,7 @@ Import('env')
 TEST_SUITES = ['small_tests']
 
 # Do not run on qemu
-if env['TARGET_ARCHITECTURE'] == 'arm' or env.Bit('bitcode'):
+if env.Bit('target_arm') or env.Bit('bitcode'):
   TEST_SUITES = ['small_tests_arm_hw_only']
 
 

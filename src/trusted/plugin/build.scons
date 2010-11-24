@@ -92,9 +92,9 @@ common_inputs = [
     'utility.cc',
 ]
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
+if env.Bit('target_x86'):
   common_inputs += ['arch_x86/sandbox_isa.cc']
-elif env['TARGET_ARCHITECTURE'] == 'arm':
+elif env.Bit('target_arm'):
   common_inputs += ['arch_arm/sandbox_isa.cc']
 else:
   # Unrecognized architecture - this is a build failure.
@@ -221,25 +221,27 @@ else:
 # the .so.
 
 # Rather than link nacl_plugin_code statically, this unittest uses dlopen.
-if env['TARGET_ARCHITECTURE'] == 'x86' and env.Bit('linux'):
-  unittest = env.ComponentProgram('plugin_unittest',
-                                  'npapi/plugin_unittest.cc',
-                                  no_import_lib=True,
-                                  EXTRA_LIBS=['dl'])
-  node = env.CommandTest('plugin_unittest.out',
-                         command=[unittest, plugin])
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
-elif env['TARGET_ARCHITECTURE'] == 'x86' and env.Bit('mac'):
-  unittest = env.ComponentProgram('plugin_unittest',
-                                  'npapi/plugin_unittest.cc')
-  node = env.CommandTest('plugin_unittest.out',
-                         command=[unittest, exe])
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
+
+if env.Bit('target_x86'):
+  if env.Bit('linux'):
+    unittest = env.ComponentProgram('plugin_unittest',
+                                    'npapi/plugin_unittest.cc',
+                                    no_import_lib=True,
+                                    EXTRA_LIBS=['dl'])
+    node = env.CommandTest('plugin_unittest.out',
+                           command=[unittest, plugin])
+    env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
+  elif env.Bit('mac'):
+    unittest = env.ComponentProgram('plugin_unittest',
+                                    'npapi/plugin_unittest.cc')
+    node = env.CommandTest('plugin_unittest.out',
+                           command=[unittest, exe])
+    env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
 
 
 # This test fails to link in our ARM cross-compile environment because
 # the toolchain tarball lacks libraries, specifically libSM.so.6.
-if env['TARGET_ARCHITECTURE'] != 'arm':
+if not env.Bit('target_arm'):
   string_encoding_test = env.ComponentProgram(
       'string_encoding_test',
       ['string_encoding_test.cc',
@@ -338,7 +340,7 @@ if not ppapi_env.Bit('chrome'):
 # Rather than link ppNaClPlugin statically, this unittest uses the dynamic
 # library.  Note that these tests do not yet run on ARM.
 unittest_sources = ['ppapi/dylib_unittest.cc', 'ppapi/plugin_unittest.cc']
-if env['TARGET_ARCHITECTURE'] == 'x86':
+if env.Bit('target_x86'):
   if env.Bit('linux'):
     unittest = env.ComponentProgram('ppapi_plugin_unittest',
                                     unittest_sources,

@@ -23,7 +23,7 @@ env.Publish('npapi_geturl.nexe', 'run',
 
 
 # TODO(robertm): this may work already but needs to be tested
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   Return()
 
 # Run the example tests under Selenium.

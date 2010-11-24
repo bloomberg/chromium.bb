@@ -33,17 +33,15 @@ Import('env')
 if env.Bit('bitcode'):
    Return()
 
-if env['BUILD_ARCHITECTURE'] == 'x86':
-  LDFLAGS=['-m32']
-else:
-  LDFLAGS=[]
+if not env.Bit('build_x86_32'):
+  Return()
 
 env.Replace(
     # Ensure that these compilations use only SDK include files.
     CPPPATH=[],
     # Ensure that these compilations use only SDK include libraries, etc.
     # Only 32 bit libraries are supported by this test.
-    LINKFLAGS=LDFLAGS,
+    LINKFLAGS=['-m32'],
     )
 
 # Check that all the libraries were installed, a simple test builds and links.

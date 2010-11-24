@@ -9,7 +9,7 @@
 Import('env')
 
 # we do not have proper arm support and definitely no bitcode support
-if env['TARGET_ARCHITECTURE'] == 'arm' or env.Bit('bitcode'):
+if env.Bit('target_arm') or env.Bit('bitcode'):
   Return()
 
 sources = ['valgrind_interceptors.c']

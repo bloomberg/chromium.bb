@@ -30,7 +30,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_voronoi')
 env.Publish('voronoi.nexe', 'run', ['voronoi.html',])
 
 # TODO(robertm): enable this ASAP
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   Return()
 
 node = env.DemoSelLdrNacl('demo_voronoi', nexe, args=['-m4', '-d'])

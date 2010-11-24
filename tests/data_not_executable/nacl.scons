@@ -18,7 +18,7 @@ node = env.CommandSelLdrTestNacl(
 
 # This test does not work under qemu-arm because qemu-arm does not
 # support the NX page protection bit.
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   # This test also fails on ARM machines running Linux versions before
   # 2.6.32.9, which don't handle the fault properly.  The fault causes
   # the process to hang rather than receive a signal.

@@ -1,4 +1,4 @@
-# -*- python -*-
+# -* python -*-
 # Copyright 2009 The Native Client Authors.  All rights reserved.  Use
 # of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -30,9 +30,9 @@ if env.Bit('windows'):
 #  env.FilterOut(CCFLAGS=['-Wall'])
 
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
+if env.Bit('target_x86'):
   env.Append(LIBS=['ncvalidate'])
-elif env['TARGET_ARCHITECTURE'] == 'arm':
+elif env.Bit('target_arm'):
   env.Append(LIBS=['ncvalidate_arm_v2',
                    'arm_validator_core'])
 else:
@@ -100,36 +100,34 @@ ldr_inputs = [
     'elf_util.c',
 ]
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
+if env.Bit('target_x86_32'):
   ldr_inputs += [
       'arch/x86/nacl_ldt_x86.c',
+      'arch/x86_32/nacl_app_32.c',
+      'arch/x86_32/nacl_switch_32.S',
+      'arch/x86_32/nacl_switch_to_app_32.c',
+      'arch/x86_32/nacl_syscall_32.S',
+      'arch/x86_32/nacl_tls_32.c',
+      'arch/x86_32/sel_addrspace_x86_32.c',
+      'arch/x86_32/sel_ldr_x86_32.c',
+      'arch/x86_32/sel_rt_32.c',
+      'arch/x86_32/springboard.S',
+      'arch/x86_32/tramp_32.S',
       ]
-  if env['TARGET_SUBARCH'] == '32':
-    ldr_inputs += [
-        'arch/x86_32/nacl_app_32.c',
-        'arch/x86_32/nacl_switch_32.S',
-        'arch/x86_32/nacl_switch_to_app_32.c',
-        'arch/x86_32/nacl_syscall_32.S',
-        'arch/x86_32/nacl_tls_32.c',
-        'arch/x86_32/sel_addrspace_x86_32.c',
-        'arch/x86_32/sel_ldr_x86_32.c',
-        'arch/x86_32/sel_rt_32.c',
-        'arch/x86_32/springboard.S',
-        'arch/x86_32/tramp_32.S',
-        ]
-  elif env['TARGET_SUBARCH'] == '64':
-    ldr_inputs += [
-        'arch/x86_64/nacl_app_64.c',
-        'arch/x86_64/nacl_switch_64.S',
-        'arch/x86_64/nacl_switch_to_app_64.c',
-        'arch/x86_64/nacl_syscall_64.S',
-        'arch/x86_64/nacl_tls_64.c',
-        'arch/x86_64/sel_addrspace_x86_64.c',
-        'arch/x86_64/sel_ldr_x86_64.c',
-        'arch/x86_64/sel_rt_64.c',
-        'arch/x86_64/tramp_64.S',
-        ]
-elif env['BUILD_ARCHITECTURE'] == 'arm':
+elif env.Bit('target_x86_64'):
+  ldr_inputs += [
+      'arch/x86/nacl_ldt_x86.c',
+      'arch/x86_64/nacl_app_64.c',
+      'arch/x86_64/nacl_switch_64.S',
+      'arch/x86_64/nacl_switch_to_app_64.c',
+      'arch/x86_64/nacl_syscall_64.S',
+      'arch/x86_64/nacl_tls_64.c',
+      'arch/x86_64/sel_addrspace_x86_64.c',
+      'arch/x86_64/sel_ldr_x86_64.c',
+      'arch/x86_64/sel_rt_64.c',
+      'arch/x86_64/tramp_64.S',
+      ]
+elif env.Bit('build_arm'):
   ldr_inputs += [
     'arch/arm/nacl_app.c',
     'arch/arm/nacl_switch_to_app_arm.c',
@@ -163,12 +161,12 @@ elif env.Bit('linux'):
     'linux/sel_memory.c',
     'linux/nacl_thread_nice.c',
   ]
-  if env['BUILD_ARCHITECTURE'] == 'x86':
+  if env.Bit('build_x86'):
     ldr_inputs += [
       'linux/x86/nacl_ldt.c',
       'linux/x86/sel_segments.c',
     ]
-  elif env['BUILD_ARCHITECTURE'] == 'arm':
+  elif env.Bit('build_arm'):
     ldr_inputs += [
       'linux/arm/sel_segments.c',
     ]
@@ -179,28 +177,32 @@ elif env.Bit('linux'):
 #
 if env.Bit('windows'):
   ldr_inputs += ['win/nacl_signal.c']
-  if env['TARGET_SUBARCH'] == '32':
+  if env.Bit('target_x86_32'):
     ldr_inputs += ['win/nacl_signal_32.c']
-  else:
+  elif env.Bit('target_x86_64'):
     ldr_inputs += ['win/nacl_signal_64.c']
+  else:
+    raise Exception("Unsupported target")
 
 if env.Bit('linux'):
   ldr_inputs += ['posix/nacl_signal.c']
-  if env['TARGET_ARCHITECTURE'] == 'arm':
+  if env.Bit('target_arm'):
     ldr_inputs += ['linux/nacl_signal_arm.c']
-  elif env['TARGET_ARCHITECTURE'] == 'x86':
-    if env['TARGET_SUBARCH'] == '32':
-      ldr_inputs += ['linux/nacl_signal_32.c']
-    else:
-      ldr_inputs += ['linux/nacl_signal_64.c']
+  elif env.Bit('target_x86_32'):
+    ldr_inputs += ['linux/nacl_signal_32.c']
+  elif env.Bit('target_x86_64'):
+    ldr_inputs += ['linux/nacl_signal_64.c']
+  else:
+    raise Exception("Unsupported target")
 
 if env.Bit('mac'):
   ldr_inputs += ['posix/nacl_signal.c']
-  if env['TARGET_ARCHITECTURE'] == 'x86':
-    if env['TARGET_SUBARCH'] == '32':
-      ldr_inputs += ['osx/nacl_signal_32.c']
-    else:
-      ldr_inputs += ['osx/nacl_signal_64.c']
+  if env.Bit('target_x86_32'):
+    ldr_inputs += ['osx/nacl_signal_32.c']
+  elif env.Bit('target_x86_64'):
+    ldr_inputs += ['osx/nacl_signal_64.c']
+  else:
+    raise Exception("Unsupported target")
 
 
 # ----------------------------------------------------------
@@ -312,14 +314,14 @@ if sdl_mode != 'none' and sdl_mode != 'armlocal':
     sdl_dll += sdl_env.Replicate('$OBJ_ROOT/src/trusted/Frameworks',
                                  '$SDL_DIR/SDL.framework')
     sdl_env.AddPluginPrerequisite(['$SDL_DIR/SDL.framework'])
-  elif env.Bit('linux') and env['BUILD_ARCHITECTURE'] == 'x86':
-    if env['BUILD_SUBARCH'] == '32':
+  elif env.Bit('linux'):
+    if env.Bit('build_x86_32'):
       sdl_dll += sdl_env.Replicate('$STAGING_DIR',
                                    '$SDL_DIR/lib/libSDL-1.2.so.0')
       sdl_dll += sdl_env.Replicate('.',
                                    '$SDL_DIR/lib/libSDL-1.2.so.0')
       sdl_env.AddPluginPrerequisite(['$SDL_DIR/lib/libSDL-1.2.so.0'])
-    elif env['BUILD_SUBARCH'] == '64':
+    elif env.Bit('build_x86_64'):
       sdl_dll += sdl_env.Replicate('$STAGING_DIR',
                                    '$SDL_DIR/lib64/libSDL-1.2.so.0')
       sdl_dll += sdl_env.Replicate('.',
@@ -331,11 +333,11 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
 
 
-  if env['TARGET_ARCHITECTURE'] == 'x86':
+  if env.Bit('target_x86'):
     VALIDATOR_LIBS += ['ncopcode_utils', 'ncvalidate']
-    if env['TARGET_SUBARCH']=='64':
+    if env.Bit('target_x86_64'):
       VALIDATOR_LIBS += ['ncvalidate_sfi']
-  elif env['TARGET_ARCHITECTURE'] == 'arm':
+  elif env.Bit('target_arm'):
     VALIDATOR_LIBS += ['ncvalidate_arm_v2', 'arm_validator_core']
 
   # NOTE: uses sdl_env
@@ -361,7 +363,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
   env.AddPluginPrerequisite(SEL_LDR_NODE)
 
   # NOTE: we do not have segments on ARM
-  if env['BUILD_ARCHITECTURE'] == 'x86':
+  if env.Bit('build_x86'):
     env.ComponentProgram('nacl_ldt_unittest',
                          'nacl_ldt_unittest.c',
                          EXTRA_LIBS=['sel',
@@ -441,8 +443,10 @@ if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
   sdl_env.AddNodeToTestSuite(node, ['small_tests'], 'run_format_string_test')
 
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  arch_testdata_dir = 'testdata/x86_' + env['BUILD_SUBARCH']
+if env.Bit('target_x86_32'):
+  arch_testdata_dir = 'testdata/x86_32'
+elif env.Bit('target_x86_64'):
+  arch_testdata_dir = 'testdata/x86_64'
 else:
   arch_testdata_dir = 'testdata/' + env['TARGET_ARCHITECTURE']
 
@@ -478,7 +482,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1')
   # This test fails for arm on 32-bit machines running qemu.
   # So don't run it there.
-  if not (env['BUILD_ARCHITECTURE'] == 'arm' and
+  if not (env.Bit('build_arm') and
           'linux' in sys.platform and
           'i686' in platform.platform()):
     sdl_env.AddNodeToTestSuite(node, ['medium_tests'])
@@ -531,7 +535,7 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 
 # Test nacl_signal
 if (not env.get('COVERAGE_ENABLED') and
-    not env['TARGET_ARCHITECTURE'] == 'arm' and
+    not env.Bit('target_arm') and
     not env.IsRunningUnderValgrind()):
   nacl_signal_exe = env.ComponentProgram('nacl_signal_unittest',
                                          'nacl_signal_unittest.c',
@@ -564,7 +568,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                                           'gio',
                                                           ] + VALIDATOR_LIBS
                                                           + DEBUG_LIBS)
-  if env['TARGET_ARCHITECTURE'] == 'arm':
+  if env.Bit('target_arm'):
     params = [ '-n', '512', '-m', '2']
   else:
     params = []  # default
@@ -595,7 +599,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
       'gio_shm_unbounded_test.out',
       command=[gio_shm_unbounded_test_exe,])
   env.Requires(gio_shm_unbounded_test_exe, crt)
-  if env['TARGET_ARCHITECTURE'] == 'arm':
+  if env.Bit('target_arm'):
     env.AddNodeToTestSuite(node, ['large_tests_arm_hw_only'],
                            'run_gio_shm_unbounded_test')
   else:
@@ -692,7 +696,7 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 if not env.Bit('mac'):
   # Note that this test hangs in pthread_join() on ARM QEMU.
   TEST_SUITES = ['small_tests']
-  if env['TARGET_ARCHITECTURE'] == 'arm':
+  if env.Bit('target_arm'):
     TEST_SUITES = ['small_tests_arm_hw_only']
 
   nacl_tls_unittest = env.ComponentProgram('nacl_tls_unittest',
@@ -781,7 +785,7 @@ def AddIntegrationTest(test, location):
       )
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
+if env.Bit('target_x86'):
   RE_HELLO = '^(Hello, World!)$'
   RE_IDENT = '^\[[0-9,:.]*\] (e_ident\+1 = ELF)$'
 
@@ -838,9 +842,7 @@ def AddDeathTest(test, skip):
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  SUBARCH = env['BUILD_SUBARCH']
-
+if env.Bit('target_x86'):
   # built in tests/nullptr/
   node = env.CommandSelLdrTestNacl(
       'nullptr.out',
@@ -848,7 +850,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
       exit_status='untrusted_segfault')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
-  if SUBARCH == '32':
+  if env.Bit('build_x86_32'):
     skip = NOT_AVAIL_X86_32
   else:
     skip = NOT_AVAIL_X86_64

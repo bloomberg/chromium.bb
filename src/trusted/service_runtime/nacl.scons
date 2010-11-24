@@ -23,23 +23,21 @@ if env.Bit('nacl_glibc'):
 # PNaCl toolchain with x86 fails.  Comment out the following to expose
 # the issues.
 
-# if env.Bit('bitcode') and env['TARGET_ARCHITECTURE'] == 'x86':
+# if env.Bit('bitcode') and env.Bit('target_x86'):
 #   Return()
 
 # ----------------------------------------------------------
 # Tests that require a NaCl module
 # ----------------------------------------------------------
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  arch_dir = ('arch/' + env['TARGET_ARCHITECTURE'] +
-              '_' + env['TARGET_SUBARCH'])
-  nacl_text_pad_asm = (arch_dir +
-                       '/nacl_text_pad_test.S')
+if env.Bit('target_x86_32'):
+  nacl_text_pad_asm = 'arch/x86_32/nacl_text_pad_test.S'
   bundle_size = 32
-elif env['TARGET_ARCHITECTURE'] == 'arm':
-  arch_dir = 'arch/' + env['TARGET_ARCHITECTURE']
-  nacl_text_pad_asm = ( arch_dir +
-                       '/nacl_text_pad_test.S')
+elif env.Bit('target_x86_64'):
+  nacl_text_pad_asm = 'arch/x86_64/nacl_text_pad_test.S'
+  bundle_size = 32
+elif env.Bit('target_arm'):
+  nacl_text_pad_asm = 'arch/arm/nacl_text_pad_test.S'
   bundle_size = 16
 else:
   raise Exception('unknown architecture')
@@ -54,20 +52,17 @@ def NewAsmEnv(env, *alist, **kwarg):
                            ' -a ' + str(bundle_size) +
                            ' -h ${SCONSTRUCT_DIR}/src/include/nacl_elf.h' +
                            ' ${TARGET}')
-  if env['TARGET_ARCHITECTURE'] == 'x86':
-    if env['TARGET_SUBARCH'] == '32':
-      asm_env['LINKCOM'] = ('${LD} -melf_nacl -e _start -Ttext 0x20000' +
-                            ' ${RO_START} ${RW_START}' +
-                            ' -o ${TARGET} ${SOURCES}' +
-                            elf_patcher_addenda)
-    elif env['TARGET_SUBARCH'] == '64':
-      asm_env['LINKCOM'] = ('${LD} -melf64_nacl -e _start -Ttext 0x20000' +
-                            ' ${RO_START} ${RW_START}' +
-                            ' -o ${TARGET} ${SOURCES}' +
-                            elf_patcher_addenda)
-    else:
-      raise Exception('new subarchtecture for x86?!?')
-  elif env['TARGET_ARCHITECTURE'] == 'arm':
+  if env.Bit('target_x86_32'):
+    asm_env['LINKCOM'] = ('${LD} -melf_nacl -e _start -Ttext 0x20000' +
+                          ' ${RO_START} ${RW_START}' +
+                          ' -o ${TARGET} ${SOURCES}' +
+                          elf_patcher_addenda)
+  elif env.Bit('target_x86_64'):
+    asm_env['LINKCOM'] = ('${LD} -melf64_nacl -e _start -Ttext 0x20000' +
+                          ' ${RO_START} ${RW_START}' +
+                          ' -o ${TARGET} ${SOURCES}' +
+                          elf_patcher_addenda)
+  elif env.Bit('target_arm'):
     asm_env['LINKCOM'] = ('${LD} --native-client -e _start -Ttext 0x20000' +
                           ' -nostdlib -static' +
                           ' ${RO_START} ${RW_START} -o ${TARGET} ${SOURCES}' +
@@ -146,14 +141,14 @@ for text_end, variant in test_specs:
     # dynamic code can run.
 
     if (rodata_address is not None and rodata_address != 0 and
-        env['TARGET_ARCHITECTURE'] == 'arm'):
+        env.Bit('target_arm')):
       continue
 
     # arm assembler does not ensure there is enough space for
     # halt sled, and manually setting rodata's start location
     # is currently broken (moves text too).
     if (rodata_address == 0 and
-        env['TARGET_ARCHITECTURE'] == 'arm' and
+        env.Bit('target_arm') and
         variant == 'too_small'):
       expected_exit_status = 'sigabrt'
 

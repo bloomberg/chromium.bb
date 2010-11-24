@@ -34,10 +34,7 @@ Import('env')
 # TODO(neha): eliminate the need for the next line
 env.FilterOut(CCFLAGS=['-Wextra'])
 
-if env['BUILD_SUBARCH'] == '64':
-    Return()
-
-if env.Bit('linux') and env['BUILD_ARCHITECTURE'] == 'x86':
+if env.Bit('linux') and env.Bit('build_x86_32'):
     # ----------------------------------------------------------
     #
     # ----------------------------------------------------------

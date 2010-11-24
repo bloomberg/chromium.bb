@@ -43,7 +43,7 @@ env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 env.ComponentLibrary('nchelper', ['ncfileutil.c'])
 
 # Now build validator for x86
-if env['TARGET_ARCHITECTURE'] != 'x86':
+if not env.Bit('target_x86'):
   Return()
 
 # Create environment for command-line tools and testing, rather than

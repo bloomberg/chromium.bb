@@ -12,16 +12,17 @@ env.Append(CPPPATH=['${SOURCE_ROOT}/gdb_utils/src'])
 
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])
-  if env['TARGET_SUBARCH'] == '64':
+  if env.Bit('target_x86_64'):
     env.Append(CPPDEFINES=['WIN64'])
 
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   env.Append(CPPDEFINES=['GDB_RSP_ABI_ARM'])
-
-if env['TARGET_ARCHITECTURE'] == 'x86':
+elif env.Bit('target_x86'):
   env.Append(CPPDEFINES=['GDB_RSP_ABI_X86'])
-  if env['TARGET_SUBARCH'] == '64':
+  if env.Bit('target_x86_64'):
     env.Append(CPPDEFINES=['GDB_RSP_ABI_X86_64'])
+else:
+  raise Exception("Unknown target")
 
 rsp_sources = [
     'abi.cc',

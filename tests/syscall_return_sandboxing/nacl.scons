@@ -12,14 +12,11 @@ Import('env')
 
 # env's BUILD_ARCH, BUILD_SUBARCH controls what assembly files to use.
 def GetAssemblerFile(env):
-  if env['BUILD_ARCHITECTURE'] == 'x86':
-    if env['BUILD_SUBARCH'] == '32':
-      return 'sandboxed_x86_32.S'
-    elif env['BUILD_SUBARCH'] == '64':
-      return 'sandboxed_x86_64.S'
-    else:
-      raise Exception('unknown x86 subarchitecture')
-  elif env['BUILD_ARCHITECTURE'] == 'arm':
+  if env.Bit('build_x86_32'):
+    return 'sandboxed_x86_32.S'
+  elif env.Bit('build_x86_64'):
+    return 'sandboxed_x86_64.S'
+  elif env.Bit('build_arm'):
     return 'sandboxed_arm.S'
   else:
     raise Exception('unknown architecture')

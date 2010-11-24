@@ -23,7 +23,7 @@ env.Publish('npapi_runtime.nexe', 'run',
 
 
 # TODO(robertm): this may work already
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   Return()
 
 

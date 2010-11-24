@@ -616,8 +616,6 @@ pre_base_env.Replace(TARGET_FULLARCH=TARGET_NAME)
 pre_base_env.Replace(TARGET_ARCHITECTURE=DecodePlatform(TARGET_NAME)['arch'])
 pre_base_env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
 
-# NOTE there are intentionally no bits for build_x86 and target_x86.  Check for
-# both variants, instead.
 DeclareBit('build_x86_32', 'Building binaries for the x86-32 architecture',
            exclusive_groups='build_arch')
 DeclareBit('build_x86_64', 'Building binaries for the x86-64 architecture',
@@ -631,12 +629,22 @@ DeclareBit('target_x86_64', 'Tools being built will process x86-36 binaries',
 DeclareBit('target_arm', 'Tools being built will process ARM binaries',
            exclusive_groups='target_arch')
 
+# Shorthand for either the 32 or 64 bit version of x86.
+DeclareBit('build_x86', 'Building binaries for the x86 architecture')
+DeclareBit('target_x86', 'Tools being built will process x86 binaries')
+
 # Example: PlatformBit('build', 'x86-32') -> build_x86_32
 def PlatformBit(prefix, platform):
   return "%s_%s" % (prefix, platform.replace('-', '_'))
 
 pre_base_env.SetBits(PlatformBit('build', BUILD_NAME))
 pre_base_env.SetBits(PlatformBit('target', TARGET_NAME))
+
+if pre_base_env.Bit('build_x86_32') or pre_base_env.Bit('build_x86_64'):
+  pre_base_env.SetBits('build_x86')
+
+if pre_base_env.Bit('target_x86_32') or pre_base_env.Bit('target_x86_64'):
+  pre_base_env.SetBits('target_x86')
 
 pre_base_env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
@@ -1877,11 +1885,10 @@ if nacl_env.Bit('build_av_apps'):
       'tests/voronoi/nacl.scons',
       ])
 
-if nacl_env.Bit('build_x86_32'):
-  nacl_env.Append(
-      BUILD_SCONSCRIPTS = [
-        'tools/tests/nacl.scons',
-      ])
+nacl_env.Append(
+    BUILD_SCONSCRIPTS = [
+      'tools/tests/nacl.scons',
+    ])
 
 # ----------------------------------------------------------
 # Possibly install an sdk by downloading it

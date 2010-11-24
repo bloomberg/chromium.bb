@@ -10,7 +10,7 @@ if not env.Bit('bitcode'):
   Return()
 
 # we do not have llvm's ${DISASS} when we run on ARM boxes
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   Return()
 
 TESTS = ['small_structs_by_value.c',

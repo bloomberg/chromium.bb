@@ -20,10 +20,10 @@ else:
 
 LINK_FLAGS_MULTILIB = ['-nostdlib']
 
-if env['BUILD_ARCHITECTURE'] == 'x86' and not env.Bit('bitcode'):
-  if env['BUILD_SUBARCH'] == '32':
+if env.Bit('build_x86') and not env.Bit('bitcode'):
+  if env.Bit('build_x86_32'):
     LINK_FLAGS_MULTILIB.append('-m32')
-  elif env['BUILD_SUBARCH'] == '64':
+  elif env.Bit('build_x86_64'):
     LINK_FLAGS_MULTILIB.append('-m64')
   else:
     print "ERROR: unknown BUILD_SUBARCH: ", env['BUILD_SUBARCH']
@@ -36,7 +36,7 @@ env.Replace(LIBS=[],
 env.Append(CFLAGS='-Wno-long-long')
 
 # This setting will affect the barebones_regs.c test
-if env['BUILD_ARCHITECTURE'] == 'arm':
+if env.Bit('build_arm'):
   env.Append(CPPDEFINES='SMALL_REGS_TEST')
 
 
@@ -57,7 +57,7 @@ for basename in ['addr_modes',
                  'vaarg',
                  ]:
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=783
-  if env['BUILD_ARCHITECTURE'] == 'arm' and basename == 'vaarg': continue
+  if env.Bit('build_arm') and basename == 'vaarg': continue
 
 
   # TODO(kcc): the barebones tests confuse the current nacl-ified valgrind.
@@ -83,7 +83,7 @@ for basename in ['addr_modes',
 
 # a test that the validador can handle an empty segment after the last
 # real segment. The gold linker produces files this
-if env['BUILD_ARCHITECTURE'] == 'arm' and not env.Bit('bitcode'):
+if env.Bit('build_arm') and not env.Bit('bitcode'):
   nexe = '${SCONSTRUCT_DIR}/tests/prebuilt/arm/gold-barebones_hello_world.nexe'
   node = env.CommandSelLdrTestNacl(
       'gold-barebones_hello_world.out',

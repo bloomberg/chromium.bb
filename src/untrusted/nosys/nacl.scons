@@ -83,7 +83,7 @@ sources = ['access.c',
            'waitpid.c',
            'write.c']
 
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   sources.append('raise.c')
 
 

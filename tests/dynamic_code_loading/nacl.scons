@@ -15,7 +15,7 @@ def GetLinkFlag(env):
     # When using dynamic linking, the dynamic linker is responsible
     # for reserving this space rather than the executable.
     return ''
-  if env['TARGET_ARCHITECTURE'] == 'arm':
+  if env.Bit('target_arm'):
     # On ARM, we invoke the linker directly rather than via gcc.
     # TODO(mseaborn): Change driver script to accept -Wl args.
     return '--section-start=.rodata=0x1000000'
@@ -26,7 +26,7 @@ def GetLinkFlag(env):
 env.Append(LINKFLAGS=GetLinkFlag(env))
 
 def GetTemplate(env):
-  if env['TARGET_ARCHITECTURE'] == 'arm':
+  if env.Bit('target_arm'):
     return 'templates_arm.S'
   else:
     return 'templates_x86.S'

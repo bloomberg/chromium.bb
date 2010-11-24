@@ -12,7 +12,7 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('stack_alignment_test.nexe')])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_stack_alignment_test')
 
-if env['BUILD_ARCHITECTURE'] == 'x86' and not env.Bit('bitcode'):
+if env.Bit('build_x86') and not env.Bit('bitcode'):
   # This tests use of x86-specific SSE operations.
   env.ComponentProgram('sse_alignment_test.nexe', 'sse_alignment_test.c',
                        EXTRA_CFLAGS=['-msse2'], EXTRA_LIBS=['pthread'])

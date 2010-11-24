@@ -6,14 +6,14 @@
 Import('env')
 
 # TODO(mseaborn): Extend the ARM validator to support this.
-if env['TARGET_ARCHITECTURE'] != 'x86':
+if env.Bit('target_arm'):
   Return()
 
 # This is needed for #including "gen/..." files, which the header
 # files for the x86-64 validator use.
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 
-if env['TARGET_SUBARCH'] == '64':
+if env.Bit('target_x86_64'):
   validator_libs = ['ncvalidate_sfi', 'ncvalidate']
 else:
   validator_libs = ['ncvalidate']

@@ -11,7 +11,7 @@ if env.Bit('bitcode'):
   Return()
 
 # TODO(mseaborn): Extend the ARM validator to support this.
-if env['BUILD_ARCHITECTURE'] != 'x86':
+if env.Bit('build_arm'):
   Return()
 
 if 'TRUSTED_ENV' not in env:

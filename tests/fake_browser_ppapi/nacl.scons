@@ -8,7 +8,7 @@ Import('env')
 if 'TRUSTED_ENV' not in env:
   Return()
 
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if env.Bit('target_arm'):
   # The test fails in our ARM cross-compile/QEMU environment, but only
   # because the environment lacks libraries, which causes the dlopen()
   # to fail.
