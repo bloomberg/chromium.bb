@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,14 @@
 #if defined(ENABLE_BATTERY_MONITORING)
 #include "base/timer.h"
 #endif  // defined(ENABLE_BATTERY_MONITORING)
+
+#if defined(OS_MACOSX)
+#ifdef __OBJC__
+@class SystemMonitorBridge;
+#else
+class SystemMonitorBridge;
+#endif
+#endif
 
 // Class for monitoring various system-related subsystems
 // such as power management, network status, etc.
@@ -94,6 +102,11 @@ class SystemMonitor {
   void ProcessPowerMessage(PowerEvent event_id);
 
  private:
+#if defined(OS_MACOSX)
+  void PlatformInit();
+  void PlatformDestroy();
+#endif
+
   // Platform-specific method to check whether the system is currently
   // running on battery power.  Returns true if running on batteries,
   // false otherwise.
@@ -114,6 +127,10 @@ class SystemMonitor {
 
 #if defined(ENABLE_BATTERY_MONITORING)
   base::OneShotTimer<SystemMonitor> delayed_battery_check_;
+#endif
+
+#if defined(OS_MACOSX)
+  SystemMonitorBridge* system_monitor_bridge_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);

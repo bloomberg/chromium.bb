@@ -29,9 +29,15 @@ SystemMonitor::SystemMonitor()
       base::TimeDelta::FromMilliseconds(kDelayedBatteryCheckMs), this,
       &SystemMonitor::BatteryCheck);
 #endif  // defined(ENABLE_BATTERY_MONITORING)
+#if defined(OS_MACOSX)
+  PlatformInit();
+#endif
 }
 
 SystemMonitor::~SystemMonitor() {
+#if defined(OS_MACOSX)
+  PlatformDestroy();
+#endif
   DCHECK_EQ(this, g_system_monitor);
   g_system_monitor = NULL;
 }
@@ -78,18 +84,18 @@ void SystemMonitor::RemoveObserver(PowerObserver* obs) {
 }
 
 void SystemMonitor::NotifyPowerStateChange() {
-  VLOG(1) << L"PowerStateChange: " << (BatteryPower() ? L"On" : L"Off")
-          << L" battery";
+  VLOG(1) << "PowerStateChange: " << (BatteryPower() ? "On" : "Off")
+          << " battery";
   observer_list_->Notify(&PowerObserver::OnPowerStateChange, BatteryPower());
 }
 
 void SystemMonitor::NotifySuspend() {
-  VLOG(1) << L"Power Suspending";
+  VLOG(1) << "Power Suspending";
   observer_list_->Notify(&PowerObserver::OnSuspend);
 }
 
 void SystemMonitor::NotifyResume() {
-  VLOG(1) << L"Power Resuming";
+  VLOG(1) << "Power Resuming";
   observer_list_->Notify(&PowerObserver::OnResume);
 }
 

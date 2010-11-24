@@ -23,6 +23,7 @@
             'hi_res_timer_manager.h',
             'system_monitor.cc',
             'system_monitor.h',
+            'system_monitor_mac.mm',
             'system_monitor_posix.cc',
             'system_monitor_win.cc',
             'tree_model.h',
