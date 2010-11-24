@@ -68,6 +68,7 @@ def SendStack(last_tb, stack, url=None):
         'exception': FormatException(last_tb),
         'host': socket.getfqdn(),
         'cwd': os.getcwd(),
+        'version': sys.version,
     }
     # pylint: disable=W0702
     print('\n'.join('  %s: %s' % (k, v[0:50]) for k, v in params.iteritems()))
