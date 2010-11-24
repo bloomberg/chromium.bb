@@ -693,7 +693,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getProgramInfoLog(
   scoped_array<GLchar> log(new GLchar[logLength]);
   if (!log.get())
     return WebKit::WebString();
-  GLsizei returnedLogLength = 0;
+  GLsizei returnedLogLength;
   glGetProgramInfoLog(program, logLength, &returnedLogLength, log.get());
   DCHECK_EQ(logLength, returnedLogLength + 1);
   WebKit::WebString res =
@@ -716,7 +716,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getShaderInfoLog(
   scoped_array<GLchar> log(new GLchar[logLength]);
   if (!log.get())
     return WebKit::WebString();
-  GLsizei returnedLogLength = 0;
+  GLsizei returnedLogLength;
   glGetShaderInfoLog(shader, logLength, &returnedLogLength, log.get());
   DCHECK_EQ(logLength, returnedLogLength + 1);
   WebKit::WebString res =
@@ -734,7 +734,7 @@ WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getShaderSource(
   scoped_array<GLchar> log(new GLchar[logLength]);
   if (!log.get())
     return WebKit::WebString();
-  GLsizei returnedLogLength = 0;
+  GLsizei returnedLogLength;
   glGetShaderSource(shader, logLength, &returnedLogLength, log.get());
   DCHECK_EQ(logLength, returnedLogLength + 1);
   WebKit::WebString res =

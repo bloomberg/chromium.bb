@@ -81,15 +81,13 @@ static int GetShaderNumericVersion(int gl_major_version) {
   int shader_version = 0;
 
   if (gl_major_version == 1) {
-    const char *gl_extensions_string = (const char*)glGetString(GL_EXTENSIONS);
-    if (gl_extensions_string &&
-        strstr(gl_extensions_string, "GL_ARB_shading_language_100")) {
+    char *gl_extensions_string = (char*)glGetString(GL_EXTENSIONS);
+    if (strstr(gl_extensions_string, "GL_ARB_shading_language_100")) {
       gl_hlsl_major = 1;
       gl_hlsl_minor = 0;
     }
   } else if (gl_major_version > 1) {
-    const char *glsl_version_string =
-        (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+    char *glsl_version_string = (char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
     if (glsl_version_string)
       sscanf(glsl_version_string, "%u.%u", &gl_hlsl_major, &gl_hlsl_minor);
   }

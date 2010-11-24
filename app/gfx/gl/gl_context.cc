@@ -15,8 +15,7 @@ namespace gfx {
 
 std::string GLContext::GetExtensions() {
   DCHECK(IsCurrent());
-  const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-  return std::string(ext ? ext : "");
+  return std::string(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 }
 
 bool GLContext::HasExtension(const char* name) {

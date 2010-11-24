@@ -73,7 +73,7 @@ class CommonDecoder : public AsyncAPIInterface {
 
     // Sets the bucket data from a string. Strings are passed NULL terminated to
     // distinguish between empty string and no string.
-    void SetFromString(const char* str);
+    void SetFromString(const std::string& str);
 
     // Gets the bucket data as a string. Strings are passed NULL terminated to
     // distrinquish between empty string and no string. Returns False if there

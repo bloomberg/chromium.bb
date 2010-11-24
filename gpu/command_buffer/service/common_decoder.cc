@@ -35,16 +35,11 @@ bool CommonDecoder::Bucket::SetData(
   return false;
 }
 
-void CommonDecoder::Bucket::SetFromString(const char* str) {
+void CommonDecoder::Bucket::SetFromString(const std::string& str) {
   // Strings are passed NULL terminated to distinguish between empty string
   // and no string.
-  if (!str) {
-    SetSize(0);
-  } else {
-    size_t size = strlen(str) + 1;
-    SetSize(size);
-    SetData(str, 0, size);
-  }
+  SetSize(str.size() + 1);
+  SetData(str.c_str(), 0, str.size() + 1);
 }
 
 bool CommonDecoder::Bucket::GetAsString(std::string* str) {

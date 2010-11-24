@@ -47,7 +47,7 @@ GLuint LoadShader(GLenum type, const char* shaderSrc) {
   // Compile the shader
   glCompileShader(shader);
   // Check the compile status
-  GLint value = 0;
+  GLint value;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
   if (value == 0) {
     char buffer[1024];
@@ -100,7 +100,7 @@ void InitShaders() {
   // Link the program
   glLinkProgram(programObject);
   // Check the link status
-  GLint linked = 0;
+  GLint linked;
   glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
   if (linked == 0) {
     char buffer[1024];
