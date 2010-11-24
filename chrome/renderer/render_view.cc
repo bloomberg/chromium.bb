@@ -2611,6 +2611,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   BlockedPlugin* blocked_plugin =
       new BlockedPlugin(this,
                         frame,
+                        *group,
                         params,
                         webkit_preferences_,
                         resource_id,

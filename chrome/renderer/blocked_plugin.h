@@ -22,6 +22,7 @@ class BlockedPlugin : public CppBoundClass,
  public:
   BlockedPlugin(RenderView* render_view,
                 WebKit::WebFrame* frame,
+                const PluginGroup& info,
                 const WebKit::WebPluginParams& params,
                 const WebPreferences& settings,
                 int template_id,

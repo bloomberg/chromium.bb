@@ -50,7 +50,7 @@ p {
 #outer {
   width: 100%;
   height: 100%;
-  cursor: pointer;
+  cursor: crosshair;
   position: absolute;
   border: 1px black solid;
   -webkit-box-sizing: border-box;
@@ -66,7 +66,7 @@ FIXME: This causes flickering on hover.
 #inner {
   position: relative;
   top: 50%;
-  margin-top: -50px;
+  margin-top: -70px;
 }
 </style>
 </head>
@@ -76,6 +76,7 @@ FIXME: This causes flickering on hover.
 <div id="inner">
 <div><img id="plugin_icon" src="plugin_blocked.png" /></div>
 <h1 i18n-content="message">PLUGIN_LOAD</h1>
+<h1 id="name" i18n-content="name">PLUGIN_NAME</h1>
 <p id="debug"> </p>
 </div>
 </div>

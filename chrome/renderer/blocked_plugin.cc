@@ -31,6 +31,7 @@ static const char* const kBlockedPluginDataURL = "chrome://blockedplugindata/";
 
 BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              WebFrame* frame,
+                             const PluginGroup& info,
                              const WebPluginParams& params,
                              const WebPreferences& preferences,
                              int template_id,
@@ -46,6 +47,7 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
 
   DictionaryValue values;
   values.SetString("message", message);
+  values.SetString("name", info.GetGroupName());
 
   // "t" is the id of the templates root node.
   std::string html_data = jstemplate_builder::GetTemplatesHtml(
