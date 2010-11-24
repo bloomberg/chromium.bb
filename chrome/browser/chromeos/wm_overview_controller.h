@@ -86,6 +86,9 @@ class WmOverviewController : public BrowserList::Observer,
   // Used by the BrowserListeners to configure their snapshots.
   const gfx::Rect& monitor_bounds() const { return monitor_bounds_; }
 
+  // Start reloading snapshots if in overview mode.
+  void UpdateSnapshots();
+
   // Starts the delay timer, and once the delay is over, configures
   // any unconfigured snapshots one at a time until none are left to
   // be configured.
@@ -116,13 +119,6 @@ class WmOverviewController : public BrowserList::Observer,
   // shown are restored.
   void Hide(bool cancelled);
 
-  // Invoked by delay_timer_. Starts configure_timer_.
-  void StartConfiguring();
-
-  // Configure the next unconfigured snapshot window owned by any of
-  // the listeners.
-  void ConfigureNextUnconfiguredSnapshot();
-
   // Add browser listeners for all existing browsers, reusing any that
   // were already there.
   void AddAllBrowsers();
@@ -146,11 +142,18 @@ class WmOverviewController : public BrowserList::Observer,
   // See description above class for details.
   base::OneShotTimer<WmOverviewController> delay_timer_;
 
-  // See description above class for details.
-  base::RepeatingTimer<WmOverviewController> configure_timer_;
-
   // The current layout mode.
   LayoutMode layout_mode_;
+
+  // This flag is set whenever there is a pending |AskForSnapshot| to Chrome;
+  // This is used to prevent |UpdateSnapshots| from being called multiple times.
+  bool updating_snapshots_;
+
+  // These indices are used to track the last updated browser listener and tab
+  // content, They are used to implement update tab contents in a round-robin
+  // fashion.
+  int browser_listener_index_;  // index of the last updated browser listener.
+  int tab_contents_index_;      // index of the last updated tab contents.
 
   DISALLOW_COPY_AND_ASSIGN(WmOverviewController);
 };
