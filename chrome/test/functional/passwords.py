@@ -54,7 +54,8 @@ class PasswordTest(pyauto.PyUITest):
     # Wait until page completes loading.
     self.WaitUntil(
         lambda: self.GetDOMValue('document.readyState'), 'complete')
-    self.WaitForInfobarCount(1)
+    self.assertTrue(self.WaitForInfobarCount(1),
+                    'Did not get save password infobar')
     infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
     self.assertEqual(infobar[0]['type'], 'confirm_infobar')
     self.PerformActionOnInfobar('accept', infobar_index=0)

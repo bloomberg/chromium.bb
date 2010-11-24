@@ -44,6 +44,8 @@
     'ntp',
     'omnibox',
     'passwords',
+    # crbug.com/64269
+    '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
     'pdf',
     'plugins',
     # 'popups',  crbug.com/59208
