@@ -65,7 +65,7 @@ class FetchPrebuilt(object):
     self._pyautolib_so_url = '%s/%s' % (chrome_test_url,
                                         { 'linux': 'lib.target/_pyautolib.so',
                                           'mac': '_pyautolib.so',
-                                          'win': '_pyautolib.dll',
+                                          'win': '_pyautolib.pyd',
                                          }[self._options.platform])
 
   def Cleanup(self):
@@ -97,7 +97,7 @@ class FetchPrebuilt(object):
       pyautolib_so: os.path.join(self._outdir,
                                  { 'linux': '_pyautolib.so',
                                    'mac': '_pyautolib.so',
-                                   'win': '_pyautolib.dll'
+                                   'win': '_pyautolib.pyd'
                                   }[self._options.platform])
     }
     unzip_dir_contents = glob.glob(os.path.join(chrome_unzip_dir, '*'))
