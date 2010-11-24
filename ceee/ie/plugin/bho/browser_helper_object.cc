@@ -134,8 +134,7 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
   }
 
   if (NULL == site) {
-    if (broker_rpc_ != NULL)
-      mu::ScopedTimer metrics_timer("ceee/BHO.TearDown", broker_rpc_.get());
+    mu::ScopedTimer metrics_timer("ceee/BHO.TearDown", broker_rpc_.get());
 
     // We're being torn down.
     TearDown();
@@ -782,8 +781,7 @@ STDMETHODIMP_(void) BrowserHelperObject::OnBeforeNavigate2(
 
 void BrowserHelperObject::OnBeforeNavigate2Impl(
     const ScopedDispatchPtr& webbrowser_disp, const CComBSTR& url) {
-  if (broker_rpc_ != NULL)
-    mu::ScopedTimer metrics_timer("ceee/BHO.BeforeNavigate", broker_rpc_.get());
+  mu::ScopedTimer metrics_timer("ceee/BHO.BeforeNavigate", broker_rpc_.get());
 
   base::win::ScopedComPtr<IWebBrowser2> webbrowser;
   HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
@@ -848,10 +846,7 @@ STDMETHODIMP_(void) BrowserHelperObject::OnDocumentComplete(
 
 void BrowserHelperObject::OnDocumentCompleteImpl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
-  if (broker_rpc_ != NULL) {
-    mu::ScopedTimer metrics_timer("ceee/BHO.DocumentComplete",
-                                  broker_rpc_.get());
-  }
+  mu::ScopedTimer metrics_timer("ceee/BHO.DocumentComplete", broker_rpc_.get());
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
     (*iter)->OnDocumentComplete(webbrowser, url);
@@ -890,10 +885,7 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateComplete2(
 
 void BrowserHelperObject::OnNavigateComplete2Impl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
-  if (broker_rpc_ != NULL) {
-    mu::ScopedTimer metrics_timer("ceee/BHO.NavigateComplete",
-                                  broker_rpc_.get());
-  }
+  mu::ScopedTimer metrics_timer("ceee/BHO.NavigateComplete", broker_rpc_.get());
 
   HandleNavigateComplete(webbrowser, url);
 
@@ -944,8 +936,7 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateError(
 void BrowserHelperObject::OnNavigateErrorImpl(
     const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url,
     LONG status_code) {
-  if (broker_rpc_ != NULL)
-    mu::ScopedTimer metrics_timer("ceee/BHO.NavigateError", broker_rpc_.get());
+  mu::ScopedTimer metrics_timer("ceee/BHO.NavigateError", broker_rpc_.get());
 
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {

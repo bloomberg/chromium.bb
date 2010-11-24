@@ -28,8 +28,6 @@ class ScopedTimer {
   // Callers must ensure broker_rpc exceeds the life of this object.
   ScopedTimer(const std::string name, BrokerRpcClient* broker_rpc)
       : name_(name), broker_rpc_(broker_rpc), start_(base::TimeTicks::Now()) {
-    CHECK(broker_rpc) << "Invalid parameter.";
-
     if (name.length() == 0) {
       NOTREACHED() << "Histogram name shouldn't be empty.";
       broker_rpc_ = NULL;  // Ensure we don't call the broker_rpc.
