@@ -177,6 +177,11 @@ void NPP_URLNotify(NPP instance, const char *url, NPReason reason,
 
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   HANDLE_CRASHES;
+  if (!instance) {
+    // Our ActiveX wrapper calls us like this as a way of saying that what it
+    // really wants to call is NP_GetValue(). :/
+    return o3d::NP_GetValue(variable, value);
+  }
   PluginObject *obj = static_cast<PluginObject *>(instance->pdata);
   if (!obj) {
     return NPERR_INVALID_PARAM;
@@ -195,6 +200,8 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
     default: {
       NPError ret = PlatformNPPGetValue(obj, variable, value);
       if (ret == NPERR_INVALID_PARAM)
+        // TODO(tschmelcher): Do we still need to fall back to this now that we
+        // have the ActiveX special case above?
         ret = o3d::NP_GetValue(variable, value);
       return ret;
     }
