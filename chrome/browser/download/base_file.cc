@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "chrome/browser/browser_thread.h"
@@ -193,4 +194,10 @@ void BaseFile::Close() {
     file_stream_->Close();
     file_stream_.reset();
   }
+}
+
+std::string BaseFile::DebugString() const {
+  return base::StringPrintf("{ source_url_ = \"%s\" full_path_ = \"%s\" }",
+                            source_url_.spec().c_str(),
+                            full_path_.value().c_str());
 }

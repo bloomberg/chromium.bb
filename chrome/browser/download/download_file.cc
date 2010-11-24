@@ -4,7 +4,10 @@
 
 #include "chrome/browser/download/download_file.h"
 
+#include <string>
+
 #include "base/file_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
@@ -48,4 +51,19 @@ void DownloadFile::CancelDownloadRequest(ResourceDispatcherHost* rdh) {
 DownloadManager* DownloadFile::GetDownloadManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return download_manager_.get();
+}
+
+std::string DownloadFile::DebugString() const {
+  return base::StringPrintf("{"
+                            " full_path_ = " "\"%s\""
+                            " id_ = " "%d"
+                            " child_id_ = " "%d"
+                            " request_id_ = " "%d"
+                            " Base File = %s"
+                            " }",
+                            full_path_.value().c_str(),
+                            id_,
+                            child_id_,
+                            request_id_,
+                            BaseFile::DebugString().c_str());
 }

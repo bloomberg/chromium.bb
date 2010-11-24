@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/download/base_file.h"
@@ -34,6 +36,8 @@ class DownloadFile : public BaseFile {
 
   int id() const { return id_; }
   DownloadManager* GetDownloadManager();
+
+  virtual std::string DebugString() const;
 
  private:
   // The unique identifier for this download, assigned at creation by

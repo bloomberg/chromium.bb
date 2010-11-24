@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_DOWNLOAD_BASE_FILE_H_
 #pragma once
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
 #include "chrome/browser/power_save_blocker.h"
@@ -50,6 +52,8 @@ class BaseFile {
   bool path_renamed() const { return path_renamed_; }
   bool in_progress() const { return file_stream_ != NULL; }
   int64 bytes_so_far() const { return bytes_so_far_; }
+
+  virtual std::string DebugString() const;
 
  protected:
   bool Open();

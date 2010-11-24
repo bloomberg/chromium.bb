@@ -4,6 +4,11 @@
 
 #include "chrome/browser/history/download_create_info.h"
 
+#include <string>
+
+#include "base/format_macros.h"
+#include "base/stringprintf.h"
+
 DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
                                        const GURL& url,
                                        base::Time start_time,
@@ -45,3 +50,27 @@ DownloadCreateInfo::DownloadCreateInfo()
 
 DownloadCreateInfo::~DownloadCreateInfo() {
 }
+
+std::string DownloadCreateInfo::DebugString() const {
+  return base::StringPrintf("{"
+                            " url_ = \"%s\""
+                            " path = \"%s\""
+                            " received_bytes = %" PRId64
+                            " total_bytes = %" PRId64
+                            " child_id = %d"
+                            " render_view_id = %d"
+                            " request_id = %d"
+                            " download_id = %d"
+                            " prompt_user_for_save_location = %c"
+                            " }",
+                            url.spec().c_str(),
+                            path.value().c_str(),
+                            received_bytes,
+                            total_bytes,
+                            child_id,
+                            render_view_id,
+                            request_id,
+                            download_id,
+                            prompt_user_for_save_location ? 'T' : 'F');
+}
+

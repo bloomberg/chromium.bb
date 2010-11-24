@@ -222,6 +222,8 @@ class DownloadItem {
     return target_name_ != full_path_.BaseName();
   }
 
+  std::string DebugString(bool verbose) const;
+
  private:
   void Init(bool start_timer);
 

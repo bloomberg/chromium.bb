@@ -31,6 +31,8 @@ struct DownloadCreateInfo {
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
+  std::string DebugString() const;
+
   // DownloadItem fields
   FilePath path;
   GURL url;
@@ -73,4 +75,4 @@ struct DownloadCreateInfo {
   DownloadSaveInfo save_info;
 };
 
-#endif  // CHROME_BROWSER_HISTORY_DOWNLOAD_TYPES_H_
+#endif  // CHROME_BROWSER_HISTORY_DOWNLOAD_CREATE_INFO_H_

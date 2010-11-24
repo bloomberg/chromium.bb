@@ -64,6 +64,8 @@ class DownloadResourceHandler : public ResourceHandler {
 
   void CheckWriteProgress();
 
+  std::string DebugString() const;
+
  private:
   ~DownloadResourceHandler();
 

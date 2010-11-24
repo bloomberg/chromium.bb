@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -76,6 +77,7 @@ void DownloadFileManager::OnShutdown() {
 
 void DownloadFileManager::CreateDownloadFile(
     DownloadCreateInfo* info, DownloadManager* download_manager) {
+  VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<DownloadFile> download_file(
@@ -203,6 +205,7 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
 }
 
 void DownloadFileManager::OnResponseCompleted(int id, DownloadBuffer* buffer) {
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << id;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   delete buffer;
   DownloadFileMap::iterator it = downloads_.find(id);
@@ -235,10 +238,13 @@ void DownloadFileManager::OnResponseCompleted(int id, DownloadBuffer* buffer) {
 // run on the download thread. Since this message has been sent from the UI
 // thread, the download may have already completed and won't exist in our map.
 void DownloadFileManager::CancelDownload(int id) {
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << id;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DownloadFileMap::iterator it = downloads_.find(id);
   if (it != downloads_.end()) {
     DownloadFile* download = it->second;
+    VLOG(20) << __FUNCTION__ << "()"
+             << " download = " << download->DebugString();
     download->Cancel();
 
     if (download->path_renamed()) {
@@ -280,12 +286,15 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 void DownloadFileManager::OnIntermediateDownloadName(
     int id, const FilePath& full_path, DownloadManager* download_manager)
 {
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << id
+           << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DownloadFileMap::iterator it = downloads_.find(id);
   if (it == downloads_.end())
     return;
 
   DownloadFile* download = it->second;
+  VLOG(20) << __FUNCTION__ << "()" << " download = " << download->DebugString();
   if (!download->Rename(full_path, false /* is_final_rename */)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
@@ -306,12 +315,15 @@ void DownloadFileManager::OnIntermediateDownloadName(
 void DownloadFileManager::OnFinalDownloadName(
     int id, const FilePath& full_path, bool need_delete_crdownload,
     DownloadManager* download_manager) {
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << id
+           << " full_path = \"" << full_path.value() << "\""
+           << " need_delete_crdownload = " << need_delete_crdownload;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DownloadFile* download = GetDownloadFile(id);
   if (!download)
     return;
-
+  VLOG(20) << __FUNCTION__ << "()" << " download = " << download->DebugString();
   if (download->Rename(full_path, true /* is_final_rename */)) {
 #if defined(OS_MACOSX)
     // Done here because we only want to do this once; see

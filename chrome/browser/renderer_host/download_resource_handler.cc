@@ -4,7 +4,10 @@
 
 #include "chrome/browser/renderer_host/download_resource_handler.h"
 
+#include <string>
+
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_file_manager.h"
@@ -58,6 +61,8 @@ bool DownloadResourceHandler::OnRequestRedirected(int request_id,
 // Send the download creation information to the download thread.
 bool DownloadResourceHandler::OnResponseStarted(int request_id,
                                                 ResourceResponse* response) {
+  VLOG(20) << __FUNCTION__ << "()" << DebugString()
+           << " request_id = " << request_id;
   std::string content_disposition;
   request_->GetResponseHeaderByName("content-disposition",
                                     &content_disposition);
@@ -155,6 +160,10 @@ bool DownloadResourceHandler::OnResponseCompleted(
     int request_id,
     const URLRequestStatus& status,
     const std::string& security_info) {
+  VLOG(20) << __FUNCTION__ << "()" << DebugString()
+           << " request_id = " << request_id
+           << " status.status() = " << status.status()
+           << " status.os_error() = " << status.os_error();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(download_file_manager_,
@@ -215,4 +224,23 @@ void DownloadResourceHandler::StartPauseTimer() {
   if (!pause_timer_.IsRunning())
     pause_timer_.Start(base::TimeDelta::FromMilliseconds(kThrottleTimeMs), this,
                        &DownloadResourceHandler::CheckWriteProgress);
+}
+
+std::string DownloadResourceHandler::DebugString() const {
+  return base::StringPrintf("{"
+                            " url_ = " "\"%s\""
+                            " download_id_ = " "%d"
+                            " global_id_ = {"
+                            " child_id = " "%d"
+                            " request_id = " "%d"
+                            " }"
+                            " render_view_id_ = " "%d"
+                            " save_info_.file_path = " "\"%s\""
+                            " }",
+                            url_.spec().c_str(),
+                            download_id_,
+                            global_id_.child_id,
+                            global_id_.request_id,
+                            render_view_id_,
+                            save_info_.file_path.value().c_str());
 }
