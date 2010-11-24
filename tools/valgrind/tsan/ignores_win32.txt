@@ -3,13 +3,14 @@
 
 # We ignore security libraries for now since their instrumentation is very slow.
 # TODO(timurrrr): investigate whether we need to instrument them
-obj:*CRYPT32.dll*
-obj:*RPCRT4.dll*
+obj:*CRYPT32.dll
+obj:*RPCRT4.dll
 fun_r:*SHA256*
 fun_r:*BCryptGenerateSymmetricKey*
+fun_r:*CryptAcquireContext*
 
-obj:*WINHTTP.dll*
-obj:*imagehlp.dll*
+obj:*WINHTTP.dll
+obj:*imagehlp.dll
 
 # Use less detailed instrumentation of STL
 fun_hist:*std::*<*
