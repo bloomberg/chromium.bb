@@ -64,5 +64,3 @@ function test()
     result.onsuccess = setVersion;
     result.onerror = unexpectedErrorCallback;
 }
-
-test();

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-debug("Test IndexedDB's KeyPath.");
 
 function cursorSuccess()
 {
@@ -61,6 +60,7 @@ function setVersion()
 
 function test()
 {
+    debug("Test IndexedDB's KeyPath.");
     debug("Opening IndexedDB");
     result = webkitIndexedDB.open('name', 'description');
     result.onsuccess = setVersion;
