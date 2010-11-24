@@ -7802,6 +7802,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTSONLY_BUTTON" desc="The label of the 'configure fonts' button">
         Change font settings
       </message>
+      <message name="IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON" desc="The label of the 'Customize fonts' button">
+        Customize fonts
+      </message>
       <message name="IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL" desc="The label of the 'Default Zoom Level' select menu">
         Page zoom:
       </message>
