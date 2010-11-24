@@ -37,7 +37,7 @@ class BrowserTabStripController : public TabStripController,
                               BaseTab* tab) const;
   void ExecuteCommandForTab(TabStripModel::ContextMenuCommand command_id,
                             BaseTab* tab);
-  bool IsTabPinned(BaseTab* tab);
+  bool IsTabPinned(BaseTab* tab) const;
 
   // TabStripController implementation:
   virtual int GetCount() const;

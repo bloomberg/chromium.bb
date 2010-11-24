@@ -75,8 +75,12 @@ class BrowserTabStripController::TabContextMenuContents
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       menus::Accelerator* accelerator) {
-    return controller_->tabstrip_->GetWidget()->GetAccelerator(command_id,
-                                                               accelerator);
+    int browser_cmd;
+    return TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
+                                                             &browser_cmd) ?
+        controller_->tabstrip_->GetWidget()->GetAccelerator(browser_cmd,
+                                                            accelerator) :
+        false;
   }
   virtual void CommandIdHighlighted(int command_id) {
     controller_->StopHighlightTabsForCommand(last_command_, tab_);
@@ -169,7 +173,7 @@ void BrowserTabStripController::ExecuteCommandForTab(
     model_->ExecuteContextMenuCommand(model_index, command_id);
 }
 
-bool BrowserTabStripController::IsTabPinned(BaseTab* tab) {
+bool BrowserTabStripController::IsTabPinned(BaseTab* tab) const {
   return IsTabPinned(tabstrip_->GetModelIndexOfBaseTab(tab));
 }
 

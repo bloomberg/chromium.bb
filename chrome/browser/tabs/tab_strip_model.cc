@@ -10,6 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
@@ -793,6 +794,39 @@ void TabStripModel::Observe(NotificationType type,
     default:
       NOTREACHED();
   }
+}
+
+// static
+bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
+    int* browser_cmd) {
+  switch (cmd_id) {
+    case CommandNewTab:
+      *browser_cmd = IDC_NEW_TAB;
+      break;
+    case CommandReload:
+      *browser_cmd = IDC_RELOAD;
+      break;
+    case CommandDuplicate:
+      *browser_cmd = IDC_DUPLICATE_TAB;
+      break;
+    case CommandCloseTab:
+      *browser_cmd = IDC_CLOSE_TAB;
+      break;
+    case CommandRestoreTab:
+      *browser_cmd = IDC_RESTORE_TAB;
+      break;
+    case CommandBookmarkAllTabs:
+      *browser_cmd = IDC_BOOKMARK_ALL_TABS;
+      break;
+    case CommandUseVerticalTabs:
+      *browser_cmd = IDC_TOGGLE_VERTICAL_TABS;
+      break;
+    default:
+      *browser_cmd = 0;
+      return false;
+  }
+
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

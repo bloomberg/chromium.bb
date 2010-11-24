@@ -64,27 +64,10 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       menus::Accelerator* accelerator) {
-    int browser_command = 0;
-    switch (command_id) {
-      case TabStripModel::CommandNewTab:
-        browser_command = IDC_NEW_TAB;
-        break;
-      case TabStripModel::CommandReload:
-        browser_command = IDC_RELOAD;
-        break;
-      case TabStripModel::CommandCloseTab:
-        browser_command = IDC_CLOSE_TAB;
-        break;
-      case TabStripModel::CommandRestoreTab:
-        browser_command = IDC_RESTORE_TAB;
-        break;
-      case TabStripModel::CommandBookmarkAllTabs:
-        browser_command = IDC_BOOKMARK_ALL_TABS;
-        break;
-      default:
-        return false;
-    }
-
+    int browser_command;
+    if (!TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
+                                                           &browser_command))
+      return false;
     const menus::AcceleratorGtk* accelerator_gtk =
         Singleton<AcceleratorsGtk>()->GetPrimaryAcceleratorForCommand(
             browser_command);
@@ -101,34 +84,11 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
   }
 
   GtkWidget* GetImageForCommandId(int command_id) const {
-    int browser_cmd_id = 0;
-    switch (command_id) {
-      case TabStripModel::CommandNewTab:
-        browser_cmd_id = IDC_NEW_TAB;
-        break;
-
-      case TabStripModel::CommandReload:
-        browser_cmd_id = IDC_RELOAD;
-        break;
-
-      case TabStripModel::CommandCloseTab:
-        browser_cmd_id = IDC_CLOSE_TAB;
-        break;
-
-      case TabStripModel::CommandRestoreTab:
-        browser_cmd_id = IDC_RESTORE_TAB;
-        break;
-
-      case TabStripModel::CommandDuplicate:
-      case TabStripModel::CommandCloseOtherTabs:
-      case TabStripModel::CommandCloseTabsToRight:
-      case TabStripModel::CommandTogglePinned:
-      case TabStripModel::CommandBookmarkAllTabs:
-      case TabStripModel::CommandUseVerticalTabs:
-        return NULL;
-    }
-
-    return MenuGtk::Delegate::GetDefaultImageForCommandId(browser_cmd_id);
+    int browser_cmd_id;
+    return TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
+                                                             &browser_cmd_id) ?
+        MenuGtk::Delegate::GetDefaultImageForCommandId(browser_cmd_id) :
+        NULL;
   }
 
   // The context menu.

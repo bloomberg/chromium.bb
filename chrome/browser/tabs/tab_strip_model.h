@@ -411,6 +411,10 @@ class TabStripModel : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Convert a ContextMenuCommand into a browser command. Returns true if a
+  // corresponding browser command exists, false otherwise.
+  static bool ContextMenuCommandToBrowserCommand(int cmd_id, int* browser_cmd);
+
  private:
   // We cannot be constructed without a delegate.
   TabStripModel();
