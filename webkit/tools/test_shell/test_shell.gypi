@@ -215,8 +215,8 @@
         '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
+        '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
         '<(DEPTH)/tools/imagediff/image_diff.gyp:image_diff',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:copy_npapi_layout_test_plugin',
       ],
       'defines': [
         # Technically not a unit test but require functions available only to
