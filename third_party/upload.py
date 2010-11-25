@@ -188,7 +188,7 @@ class AbstractRpcServer(object):
     if (not self.host.startswith("http://") and
         not self.host.startswith("https://")):
       self.host = "http://" + self.host
-    assert re.match(r'^[a-z]+://[a-z0-9\.-_]+[a-z](|:[0-9]+)$', self.host), (
+    assert re.match(r'^[a-z]+://[a-z0-9\.-_]+(|:[0-9]+)$', self.host), (
         '%s is malformed' % host)
     self.host_override = host_override
     self.auth_function = auth_function
@@ -281,6 +281,7 @@ class AbstractRpcServer(object):
     tries = 0
     url = "%s/_ah/login?%s" % (host, urllib.urlencode(args))
     while tries < 3:
+      tries += 1
       req = self._CreateRequest(url)
       try:
         response = self.opener.open(req)
