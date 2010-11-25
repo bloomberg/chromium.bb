@@ -710,6 +710,11 @@
           14
         </message>
       </if>
+
+      <!-- The width of the default search engine dialog in characters -->
+      <message name="IDS_DEFAULT_SEARCH_WIDTH_CHARS" use_name_for_id="true">
+        82
+      </message>
     </messages>
   </release>
 </grit>

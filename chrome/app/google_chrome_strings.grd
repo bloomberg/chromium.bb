@@ -468,9 +468,6 @@ Chrome supports. -->
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT" desc="More compact text to show in the default browser query infobar.">
         Google Chrome isn't your default browser.
       </message>
-      <message name="IDS_DEFAULT_SEARCH_PROMPT" desc="The message displayed when javascript has asked to change the default search engine. This appears in a message box.">
-        Would you like to make <ph name="HOST">$1<ex>www.bing.com</ex></ph> your search engine in Google Chrome?
-      </message>
       <!-- Try Chrome Toast Dialog -->
       <message name="IDS_TRY_TOAST_HEADING" desc="Top line of the try-chrome-again dialog">
         There is a new version of Google Chrome available.

@@ -16,48 +16,73 @@
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 #endif
 
-class MessageBoxView;
+class PrefService;
 class TabContents;
 class TemplateURL;
 class TemplateURLModel;
 
+namespace gfx {
+class Canvas;
+}
+
 namespace views {
+class Button;
+class ImageView;
+class Label;
 class View;
 }
 
-// This class is responsible for displaying the contents of the default search
+// Responsible for displaying the contents of the default search
 // prompt for when InstallSearchProvider(url, true) is called.
-class DefaultSearchView : public ConstrainedDialogDelegate {
+class DefaultSearchView
+    : public views::View,
+      public views::ButtonListener,
+      public ConstrainedDialogDelegate {
  public:
+  // Takes ownership of |proposed_default_turl|.
   static void Show(TabContents* tab_contents,
-                   TemplateURL* default_url,
+                   TemplateURL* ,
                    TemplateURLModel* template_url_model);
 
+  virtual ~DefaultSearchView();
+
  protected:
+  // Overridden from views::View:
+  // Draws the gray background at the top of the dialog.
+  virtual void Paint(gfx::Canvas* canvas);
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
   // ConstrainedDialogDelegate:
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
   virtual std::wstring GetWindowTitle() const;
-  virtual void DeleteDelegate();
+  virtual views::View* GetInitiallyFocusedView();
   virtual views::View* GetContentsView();
-  virtual int GetDefaultDialogButton() const;
+  virtual int GetDialogButtons() const;
   virtual bool Accept();
 
  private:
+  // Takes ownership of |proposed_default_turl|.
   DefaultSearchView(TabContents* tab_contents,
-                    TemplateURL* default_url,
+                    TemplateURL* proposed_default_turl,
                     TemplateURLModel* template_url_model);
-  ~DefaultSearchView();
 
-  // The host name for the possible default search provider.
-  string16 DefaultHostName() const;
+  // Initializes the labels and controls in the view.
+  void SetupControls(PrefService* prefs);
 
-  // The possible new default url.
-  scoped_ptr<TemplateURL> default_url_;
+  // Image of browser search box with grey background and bubble arrow.
+  views::ImageView* background_image_;
+
+  // Button for the current default search engine.
+  views::View* default_provider_button_;
+
+  // Button for the newly proposed search engine.
+  views::View* proposed_provider_button_;
+
+  // The proposed new default search engine.
+  scoped_ptr<TemplateURL> proposed_turl_;
+
   TemplateURLModel* template_url_model_;
-
-  // The message box view whose commands we handle.
-  MessageBoxView* message_box_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchView);
 };

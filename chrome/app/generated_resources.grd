@@ -1205,15 +1205,24 @@ each locale. -->
         <ph name="ENGINE_NAME">$1<ex>Google</ex></ph> (Default)
       </message>
 
-      <message name="IDS_DEFAULT_SEARCH_PROMPT_TITLE" desc="The title of the default search engine dialog. This dialog asks if the user would like a new default search engine.">
+      <message name="IDS_DEFAULT_SEARCH_TITLE" desc="The title of the default search engine dialog. This dialog asks if the user would like to set a new default search engine.">
         Change Default Search Engine
       </message>
 
-      <message name="IDS_DEFAULT_SEARCH_PROMPT_OK" desc="The button which accepts a new default search engine. Displayed in the default search engine message box.">
-        Change it
+      <message name="IDS_DEFAULT_SEARCH_SUMMARY" desc="Text at the top of the dialog to explain why the dialog is displayed. Displayed in the default search engine dialog.">
+        <ph name="ENGINE_HOST_NAME">$1<ex>google.com</ex></ph> wants to be your search engine.
+       </message>
+      <message name="IDS_DEFAULT_SEARCH_LABEL_CURRENT" desc="The text above the button which keeps the current search engine. Displayed in the default search engine dialog.">
+        Current search engine:
       </message>
-      <message name="IDS_DEFAULT_SEARCH_PROMPT_CANCEL" desc="The button which rejects a new default search engine. Displayed in the default search engine message box.">
-        No, thanks
+      <message name="IDS_DEFAULT_SEARCH_LABEL_PROPOSED" desc="The text above the button which accepts a new default search engine. Displayed in the default search engine dialog.">
+        New search engine:
+      </message>
+      <message name="IDS_DEFAULT_SEARCH_PROMPT_PROPOSED" desc="The text below the button which accepts a new default search engine. Displayed in the default search engine dialog.">
+        Change to <ph name="ENGINE_NAME">$1<ex>Google</ex></ph>
+      </message>
+      <message name="IDS_DEFAULT_SEARCH_PROMPT_CURRENT" desc="The text below the button which keeps the current search engine. Displayed in the default search engine dialog.">
+        Keep using <ph name="ENGINE_NAME">$1<ex>Google</ex></ph>
       </message>
 
       <message name="IDS_TIME_SECS_DEFAULT"
