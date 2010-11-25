@@ -1136,17 +1136,10 @@ void LocationBarView::SetSuggestedText(const string16& input) {
       suggested_text_view_->SetText(UTF16ToWide(text));
       suggested_text_view_->SetFont(location_entry_->GetFont());
       AddChildView(suggested_text_view_);
-    } else if (suggested_text_view_->GetText() == UTF16ToWide(text)) {
-      return;
-    } else {
+    } else if (suggested_text_view_->GetText() != UTF16ToWide(text)) {
       suggested_text_view_->SetText(UTF16ToWide(text));
     }
-    // Only start the animation to commit the suggested text if the selection is
-    // at the end.
-    std::wstring::size_type start, end;
-    location_entry_->GetSelectionBounds(&start, &end);
-    if (start == end && start == location_entry_->GetText().size())
-      suggested_text_view_->StartAnimation();
+    suggested_text_view_->StartAnimation();
   } else if (suggested_text_view_) {
     delete suggested_text_view_;
     suggested_text_view_ = NULL;
