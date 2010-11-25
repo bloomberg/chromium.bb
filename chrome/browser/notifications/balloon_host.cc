@@ -90,9 +90,10 @@ const string16& BalloonHost::GetSource() const {
 }
 
 WebPreferences BalloonHost::GetWebkitPrefs() {
-  WebPreferences prefs;
-  prefs.allow_scripts_to_close_windows = true;
-  return prefs;
+  WebPreferences web_prefs =
+      RenderViewHostDelegateHelper::GetWebkitPrefs(GetProfile(), enable_dom_ui_);
+  web_prefs.allow_scripts_to_close_windows = true;
+  return web_prefs;
 }
 
 SiteInstance* BalloonHost::GetSiteInstance() const {
