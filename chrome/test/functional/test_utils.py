@@ -4,7 +4,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import email
 import os
+import smtplib
 
 import pyauto_functional
 import pyauto_utils
@@ -81,3 +83,58 @@ def VerifyGoogleAccountCredsFilled(test, username, password):
 def ClearPasswords(test):
   """Clear saved passwords."""
   test.ClearBrowsingData(['PASSWORDS'], 'EVERYTHING')
+
+
+def Shell2(cmd_string, bg=False):
+  """Run a shell command.
+
+  Args:
+    cmd_string: command to run
+    bg: should the process be run in background? Default: False
+
+  Returns:
+    Output, return code
+    """
+  if not cmd_string: return ('', 0)
+  if bg:
+    cmd_string += ' 1>/dev/null 2>&1 &'
+  proc = os.popen(cmd_string)
+  if bg: return ('Background process: %s' % cmd_string, 0)
+  out = proc.read()
+  retcode = proc.close()
+  if not retcode:  # Success
+    retcode = 0
+  return (out, retcode)
+
+
+def SendMail(send_from, send_to, subject, text, smtp, file_to_send=None):
+  """Send mail to all the group to notify about the crash and uploaded data.
+
+  Args:
+    send_from: from mail id.
+    send_to: to mail id.
+    subject: mail subject.
+    text: mail body.
+    smtp: The smtp to use.
+    file_to_send: attachments for the mail.
+  """
+  msg = email.MIMEMultipart.MIMEMultipart()
+  msg['From'] = send_from
+  msg['To'] = send_to
+  msg['Date'] = email.Utils.formatdate(localtime=True)
+  msg['Subject'] = subject
+
+  # To send multiple files in one message, introduce for loop here for files.
+  msg.attach(email.MIMEText.MIMEText(text))
+  part = email.MIMEBase.MIMEBase('application', 'octet-stream')
+  if file_to_send is not None:
+    part.set_payload(open(file_to_send,'rb').read())
+    email.Encoders.encode_base64(part)
+    part.add_header('Content-Disposition',
+                    'attachment; filename="%s"'
+                    % os.path.basename(file_to_send))
+    msg.attach(part)
+  smtp_obj = smtplib.SMTP(smtp)
+  smtp_obj.sendmail(send_from, send_to, msg.as_string())
+  smtp_obj.close()
+
