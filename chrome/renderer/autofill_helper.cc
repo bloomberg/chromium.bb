@@ -52,6 +52,7 @@ AutoFillHelper::AutoFillHelper(RenderView* render_view)
     : render_view_(render_view),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
+      display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
       suggestions_clear_index_(-1),
       suggestions_options_index_(-1) {
@@ -117,6 +118,10 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
     i.erase(i.begin());
     ids.erase(ids.begin());
   }
+
+  // If we were about to show a warning and we shouldn't, don't.
+  if (ids[0] < 0 && !display_warning_if_disabled_)
+    return;
 
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
@@ -282,13 +287,15 @@ void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
        element.selectionEnd() != static_cast<int>(value.length())))
     return;
 
-  QueryAutoFillSuggestions(element);
+  QueryAutoFillSuggestions(element, display_warning_if_disabled);
 }
 
-void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node) {
+void AutoFillHelper::QueryAutoFillSuggestions(
+    const WebNode& node, bool display_warning_if_disabled) {
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
   autofill_query_node_ = node;
+  display_warning_if_disabled_ = display_warning_if_disabled;
 
   const WebFormControlElement& element = node.toConst<WebFormControlElement>();
   webkit_glue::FormField field;

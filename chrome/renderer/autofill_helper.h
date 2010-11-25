@@ -116,7 +116,8 @@ class AutoFillHelper : public PageClickListener {
 
   // Queries the browser for Autocomplete and AutoFill suggestions for the given
   // |node|.
-  void QueryAutoFillSuggestions(const WebKit::WebNode& node);
+  void QueryAutoFillSuggestions(const WebKit::WebNode& node,
+                                bool display_warning_if_disabled);
 
   // Queries the AutoFillManager for form data for the form containing |node|.
   // |value| is the current text in the field, and |unique_id| is the selected
@@ -143,6 +144,9 @@ class AutoFillHelper : public PageClickListener {
 
   // The action to take when receiving AutoFill data from the AutoFillManager.
   AutoFillAction autofill_action_;
+
+  // Should we display a warning if autofill is disabled?
+  bool display_warning_if_disabled_;
 
   // Was the query node autofilled prior to previewing the form?
   bool was_query_node_autofilled_;
