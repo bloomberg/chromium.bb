@@ -29,6 +29,7 @@
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/session_with_id.h"
 #include "chrome/test/webdriver/commands/source_command.h"
+#include "chrome/test/webdriver/commands/speed_command.h"
 #include "chrome/test/webdriver/commands/title_command.h"
 #include "chrome/test/webdriver/commands/url_command.h"
 
@@ -65,6 +66,7 @@ void InitCallbacks(struct mg_context* ctx) {
   SetCallback<SourceCommand>(ctx,   "/session/*/source");
   SetCallback<TitleCommand>(ctx,    "/session/*/title");
   SetCallback<URLCommand>(ctx,      "/session/*/url");
+  SetCallback<SpeedCommand>(ctx,    "/session/*/speed");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be the last registered URI with the server.

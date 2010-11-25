@@ -62,6 +62,12 @@ class Session : private UITestBase {
     implicit_wait_ = timeout > 0 ? timeout : 0;
   }
 
+  typedef enum Speed { kSlow, kMedium, kFast, kUnknown };
+  inline Speed speed() { return speed_; }
+  inline void set_speed(Speed speed) {
+    speed_ = speed;
+  }
+
   inline const char* tmp_profile_dir() {
     return tmp_profile_dir_;
   };
@@ -86,6 +92,7 @@ class Session : private UITestBase {
   scoped_refptr<TabProxy> tab_;
 
   int implicit_wait_;
+  Speed speed_;
   ProfileDir tmp_profile_dir_;
 
   // The XPath to the frame within this session's active tab which all
