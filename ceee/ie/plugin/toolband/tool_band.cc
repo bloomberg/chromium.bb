@@ -316,6 +316,7 @@ HRESULT ToolBand::Teardown() {
   if (chrome_frame_) {
     ChromeFrameEvents::DispEventUnadvise(chrome_frame_);
   }
+  chrome_frame_window_ = NULL;
 
   if (web_browser_ && listening_to_browser_events_) {
     HostingBrowserEvents::DispEventUnadvise(web_browser_,
@@ -362,6 +363,16 @@ LRESULT ToolBand::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     LOG(ERROR) << "Failed to attach Chrome Frame to the host. " <<
         com::LogHr(hr);
     return 1;
+  }
+
+  // Get the GCF window and hide it for now.
+  CComQIPtr<IOleWindow> ole_window(chrome_frame_);
+  DCHECK(ole_window != NULL);
+  if (SUCCEEDED(ole_window->GetWindow(&chrome_frame_window_.m_hWnd))) {
+    // We hide the chrome frame window until onload in order to avoid
+    // seeing the "Aw Snap" that sometimes otherwise occurs during Chrome
+    // initialization.
+    chrome_frame_window_.ShowWindow(SW_HIDE);
   }
 
   // Hook up the chrome frame event listener.
@@ -556,6 +567,19 @@ STDMETHODIMP_(void) ToolBand::OnCfGetEnabledExtensionsComplete(
     }
   }
   directories.Detach();
+}
+
+STDMETHODIMP_(void) ToolBand::OnCfOnload(IDispatch* event) {
+  if (chrome_frame_window_.IsWindow()) {
+    VLOG(1) << "Showing the Chrome Frame window.";
+    chrome_frame_window_.ShowWindow(SW_SHOW);
+  }
+}
+
+STDMETHODIMP_(void) ToolBand::OnCfOnloadError(IDispatch* event) {
+  // Handle error the same way as OnLoad.
+  LOG(ERROR) << "Chrome Frame reports onload error";
+  OnCfOnload(event);
 }
 
 STDMETHODIMP_(void) ToolBand::OnIeNavigateComplete2(IDispatch* dispatch,

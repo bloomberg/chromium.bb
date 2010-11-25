@@ -91,6 +91,12 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
     SINK_ENTRY_INFO(0, DIID_DIChromeFrameEvents,
                     CF_EVENT_DISPID_ONMESSAGE,
                     OnCfMessage, &handler_type_idispatch_)
+    SINK_ENTRY_INFO(0, DIID_DIChromeFrameEvents,
+                    CF_EVENT_DISPID_ONLOAD,
+                    OnCfOnload, &handler_type_idispatch_)
+    SINK_ENTRY_INFO(0, DIID_DIChromeFrameEvents,
+                    CF_EVENT_DISPID_ONLOADERROR,
+                    OnCfOnloadError, &handler_type_idispatch_)
     SINK_ENTRY_INFO(1, DIID_DWebBrowserEvents2,
                     DISPID_NAVIGATECOMPLETE2,
                     OnIeNavigateComplete2, &handler_type_idispatch_variantref_)
@@ -103,7 +109,6 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
 
   BEGIN_MSG_MAP(ToolBand)
     MSG_WM_CREATE(OnCreate)
-    MSG_WM_PAINT(OnPaint)
     MSG_WM_SIZE(OnSize)
   END_MSG_MAP()
 
@@ -156,6 +161,8 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   STDMETHOD_(void, OnCfGetEnabledExtensionsComplete)(
       SAFEARRAY* extension_directories);
   STDMETHOD_(void, OnCfMessage)(IDispatch* event);
+  STDMETHOD_(void, OnCfOnload)(IDispatch* event);
+  STDMETHOD_(void, OnCfOnloadError)(IDispatch* event);
   STDMETHOD_(void, OnIeNavigateComplete2)(IDispatch* dispatch, VARIANT* url);
   // @}
 
@@ -231,8 +238,9 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   // The URL to our extension.
   std::string extension_url_;
 
-  // Our Chrome frame instance.
+  // Our Chrome frame instance and its window.
   CComPtr<IChromeFrame> chrome_frame_;
+  CWindow chrome_frame_window_;
 
   // Indicates whether CloseDW() is being called on this tool band.
   bool is_quitting_;
