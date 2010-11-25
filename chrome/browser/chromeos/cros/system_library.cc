@@ -19,7 +19,7 @@ class SystemLibraryImpl : public SystemLibrary {
     // Get Statistics
     UpdateMachineStatistics();
     // Get Timezone
-    std::string id = "US/Pacific";
+    std::string id = "America/Los_Angeles";
     if (CrosLibrary::Get()->EnsureLoaded()) {
       std::string timezone_id = chromeos::GetTimezoneID();
       if (timezone_id.empty()) {
