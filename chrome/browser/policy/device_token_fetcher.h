@@ -17,7 +17,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class TokenService;
+class Profile;
 
 namespace policy {
 
@@ -69,7 +69,7 @@ class DeviceTokenFetcher
   // obtains the authentication token from |token_service|. The fetcher stores
   // the device token to |token_path| once it's retrieved from the server.
   DeviceTokenFetcher(DeviceManagementBackend* backend,
-                     TokenService* token_service,
+                     Profile* profile,
                      const FilePath& token_path);
   virtual ~DeviceTokenFetcher() {}
 
@@ -112,6 +112,14 @@ class DeviceTokenFetcher
 
   // True if the device token has been fetched and is valid.
   bool IsTokenValid() const;
+
+ protected:
+  // Returns the email address of the currently logged-in user.
+  virtual std::string GetCurrentUser();
+
+  // Used to identify GOOGLE_SIGNIN_SUCCESSFUL notifications from the owning
+  // profile, and to query for the current username.
+  Profile* profile_; // weak
 
  private:
   friend class DeviceTokenFetcherTest;
@@ -185,7 +193,6 @@ class DeviceTokenFetcher
   ObserverList<Observer, true> observer_list_;
   FilePath token_path_;
   DeviceManagementBackend* backend_;  // weak
-  TokenService* token_service_;
   FetcherState state_;
   std::string device_token_;
   std::string device_id_;

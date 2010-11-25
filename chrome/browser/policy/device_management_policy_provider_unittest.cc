@@ -14,6 +14,8 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/policy_constants.h"
 #include "chrome/test/mock_notification_observer.h"
+#include "chrome/test/testing_device_token_fetcher.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kTestToken[] = "device_policy_provider_test_auth_token";
@@ -33,7 +35,7 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
   virtual ~DeviceManagementPolicyProviderTest() {}
 
   virtual void SetUp() {
-    EXPECT_TRUE(storage_dir_.CreateUniqueTempDir());
+    profile_.reset(new TestingProfile);
     CreateNewBackend();
     CreateNewProvider();
   }
@@ -43,19 +45,25 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
   }
 
   void CreateNewProvider() {
-    token_service_.reset(new TokenService);
     provider_.reset(new DeviceManagementPolicyProvider(
         ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
         backend_,
-        token_service_.get(),
-        storage_dir_.path()));
+        profile_.get()));
+    provider_->SetDeviceTokenFetcher(
+        new TestingDeviceTokenFetcher(backend_,
+                                      profile_.get(),
+                                      provider_->GetTokenPath()));
     loop_.RunAllPending();
   }
 
   void SimulateSuccessfulLoginAndRunPending() {
     loop_.RunAllPending();
-    token_service_->IssueAuthTokenForTest(
+    profile_->GetTokenService()->IssueAuthTokenForTest(
         GaiaConstants::kDeviceManagementService, kTestToken);
+    TestingDeviceTokenFetcher* fetcher =
+        static_cast<TestingDeviceTokenFetcher*>(
+            provider_->token_fetcher_.get());
+    fetcher->SimulateLogin(kTestManagedDomainUsername);
     loop_.RunAllPending();
   }
 
@@ -97,8 +105,7 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
   MessageLoop loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
-  ScopedTempDir storage_dir_;
-  scoped_ptr<TokenService> token_service_;
+  scoped_ptr<Profile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementPolicyProviderTest);
 };

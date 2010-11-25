@@ -120,6 +120,8 @@
         'test/test_switches.cc',
         'test/test_switches.h',
         'test/test_url_request_context_getter.h',
+        'test/testing_device_token_fetcher.cc',
+        'test/testing_device_token_fetcher.h',
         'test/testing_pref_service.cc',
         'test/testing_pref_service.h',
         'test/testing_profile.cc',

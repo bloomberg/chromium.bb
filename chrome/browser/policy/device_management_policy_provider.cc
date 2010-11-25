@@ -10,6 +10,7 @@
 #include "base/rand_util.h"
 #include "base/task.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_policy_cache.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
@@ -70,12 +71,11 @@ class DeviceManagementPolicyProvider::RefreshTask : public Task {
 DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
     const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
     DeviceManagementBackend* backend,
-    TokenService* token_service,
-    const FilePath& storage_dir)
+    Profile* profile)
     : ConfigurationPolicyProvider(policy_list),
       backend_(backend),
-      token_service_(token_service),
-      storage_dir_(GetOrCreateDeviceManagementDir(storage_dir)),
+      profile_(profile),
+      storage_dir_(GetOrCreateDeviceManagementDir(profile_->GetPath())),
       policy_request_pending_(false),
       refresh_task_pending_(false),
       policy_refresh_rate_ms_(kPolicyRefreshRateInMilliseconds),
@@ -137,7 +137,7 @@ void DeviceManagementPolicyProvider::OnNotManaged() {
 }
 
 void DeviceManagementPolicyProvider::Shutdown() {
-  token_service_ = NULL;
+  profile_ = NULL;
   if (token_fetcher_)
     token_fetcher_->Shutdown();
 }
@@ -155,11 +155,11 @@ void DeviceManagementPolicyProvider::Initialize() {
 }
 
 void DeviceManagementPolicyProvider::InitializeAfterIOThreadExists() {
-  const FilePath token_path = storage_dir_.Append(
-      FILE_PATH_LITERAL("Token"));
-  if (token_service_) {
-    token_fetcher_ =
-        new DeviceTokenFetcher(backend_.get(), token_service_, token_path);
+  if (profile_) {
+    if (!token_fetcher_) {
+      token_fetcher_ = new DeviceTokenFetcher(
+          backend_.get(), profile_, GetTokenPath());
+    }
     registrar_.Init(token_fetcher_);
     registrar_.AddObserver(this);
     token_fetcher_->StartFetching();
@@ -215,6 +215,16 @@ int64 DeviceManagementPolicyProvider::GetRefreshTaskDelay() {
   if (policy_refresh_max_earlier_ms_)
     delay -= base::RandGenerator(policy_refresh_max_earlier_ms_);
   return delay;
+}
+
+FilePath DeviceManagementPolicyProvider::GetTokenPath() {
+  return storage_dir_.Append(FILE_PATH_LITERAL("Token"));
+}
+
+void DeviceManagementPolicyProvider::SetDeviceTokenFetcher(
+    DeviceTokenFetcher* token_fetcher) {
+  DCHECK(!token_fetcher_);
+  token_fetcher_ = token_fetcher;
 }
 
 // static

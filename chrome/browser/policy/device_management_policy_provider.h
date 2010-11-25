@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 
+class Profile;
 class TokenService;
 
 namespace policy {
@@ -34,8 +35,7 @@ class DeviceManagementPolicyProvider
  public:
   DeviceManagementPolicyProvider(const PolicyDefinitionList* policy_list,
                                  DeviceManagementBackend* backend,
-                                 TokenService* token_service,
-                                 const FilePath& storage_dir);
+                                 Profile* profile);
 
   virtual ~DeviceManagementPolicyProvider();
 
@@ -90,6 +90,12 @@ class DeviceManagementPolicyProvider
   // Calculates when the next RefreshTask shall be executed.
   int64 GetRefreshTaskDelay();
 
+  // The path of the device token file.
+  FilePath GetTokenPath();
+
+  // Used only by tests.
+  void SetDeviceTokenFetcher(DeviceTokenFetcher* token_fetcher);
+
   // Provides the URL at which requests are sent to from the device management
   // backend.
   static std::string GetDeviceManagementURL();
@@ -114,7 +120,7 @@ class DeviceManagementPolicyProvider
   }
 
   scoped_ptr<DeviceManagementBackend> backend_;
-  TokenService* token_service_;  // weak
+  Profile* profile_;  // weak
   scoped_ptr<DeviceManagementPolicyCache> cache_;
   scoped_refptr<DeviceTokenFetcher> token_fetcher_;
   DeviceTokenFetcher::ObserverRegistrar registrar_;

@@ -7,9 +7,11 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
+#include "base/string_util.h"
 #include "chrome/browser/guid.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_details.h"
@@ -17,27 +19,73 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#else
+#include "chrome/browser/browser_signin.h"
+#endif
+
+namespace {
+
+// Domain names that are known not to be managed.
+// We don't register the device when such a user logs in.
+const char* kNonManagedDomains[] = {
+  "@googlemail.com",
+  "@gmail.com"
+};
+
+// Checks the domain part of the given username against the list of known
+// non-managed domain names. Returns false if |username| is empty or its
+// in a domain known not to be managed.
+bool CanBeInManagedDomain(const std::string& username) {
+  if (username.empty()) {
+    // This means incognito user in case of ChromiumOS and
+    // no logged-in user in case of Chromium (SigninService).
+    return false;
+  }
+  for (size_t i = 0; i < arraysize(kNonManagedDomains); i++) {
+    if (EndsWith(username, kNonManagedDomains[i], true)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
 namespace policy {
 
 namespace em = enterprise_management;
 
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementBackend* backend,
-    TokenService* token_service,
+    Profile* profile,
     const FilePath& token_path)
-    : token_path_(token_path),
+    : profile_(profile),
+      token_path_(token_path),
       backend_(backend),
-      token_service_(token_service),
       state_(kStateNotStarted),
       device_token_load_complete_event_(true, false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  auth_token_ = token_service_->GetTokenForService(
+  TokenService* token_service = profile_->GetTokenService();
+  auth_token_ = token_service->GetTokenForService(
       GaiaConstants::kDeviceManagementService);
 
   registrar_.Add(this,
                  NotificationType::TOKEN_AVAILABLE,
-                 Source<TokenService>(token_service_));
+                 Source<TokenService>(token_service));
+  // Register for the event of user login. The device management token won't
+  // be fetched until we know the domain of the currently logged in user.
+#if defined(OS_CHROMEOS)
+  registrar_.Add(this,
+                 NotificationType::LOGIN_USER_CHANGED,
+                 NotificationService::AllSources());
+#else
+  registrar_.Add(this,
+                 NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
+                 Source<Profile>(profile_));
+#endif
 }
 
 void DeviceTokenFetcher::Observe(NotificationType type,
@@ -45,7 +93,7 @@ void DeviceTokenFetcher::Observe(NotificationType type,
                                  const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (type == NotificationType::TOKEN_AVAILABLE) {
-    if (Source<TokenService>(source).ptr() == token_service_) {
+    if (Source<TokenService>(source).ptr() == profile_->GetTokenService()) {
       const TokenService::TokenAvailableDetails* token_details =
           Details<const TokenService::TokenAvailableDetails>(details).ptr();
       if (token_details->service() == GaiaConstants::kDeviceManagementService) {
@@ -55,9 +103,26 @@ void DeviceTokenFetcher::Observe(NotificationType type,
         }
       }
     }
+#if defined(OS_CHROMEOS)
+  } else if (type == NotificationType::LOGIN_USER_CHANGED) {
+    SendServerRequestIfPossible();
+#else
+  } else if (type == NotificationType::GOOGLE_SIGNIN_SUCCESSFUL) {
+    if (profile_ == Source<Profile>(source).ptr()) {
+      SendServerRequestIfPossible();
+    }
+#endif
   } else {
     NOTREACHED();
   }
+}
+
+std::string DeviceTokenFetcher::GetCurrentUser() {
+#if defined(OS_CHROMEOS)
+  return chromeos::UserManager::Get()->logged_in_user().email();
+#else
+  return profile_->GetBrowserSignin()->GetSignedInUsername();
+#endif
 }
 
 void DeviceTokenFetcher::HandleRegisterResponse(
@@ -121,7 +186,7 @@ void DeviceTokenFetcher::StartFetching() {
 }
 
 void DeviceTokenFetcher::Shutdown() {
-  token_service_ = NULL;
+  profile_ = NULL;
   backend_ = NULL;
 }
 
@@ -161,15 +226,21 @@ void DeviceTokenFetcher::MakeReadyToRequestDeviceToken() {
 
 void DeviceTokenFetcher::SendServerRequestIfPossible() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string username = GetCurrentUser();
   if (state_ == kStateReadyToRequestDeviceTokenFromServer
       && HasAuthToken()
-      && backend_) {
-    em::DeviceRegisterRequest register_request;
-    SetState(kStateRequestingDeviceTokenFromServer);
-    backend_->ProcessRegisterRequest(auth_token_,
-                                     GetDeviceID(),
-                                     register_request,
-                                     this);
+      && backend_
+      && !username.empty()) {
+    if (CanBeInManagedDomain(username)) {
+      em::DeviceRegisterRequest register_request;
+      SetState(kStateRequestingDeviceTokenFromServer);
+      backend_->ProcessRegisterRequest(auth_token_,
+                                       GetDeviceID(),
+                                       register_request,
+                                       this);
+    } else {
+      SetState(kStateNotManaged);
+    }
   }
 }
 

@@ -22,8 +22,7 @@ ProfilePolicyContext::ProfilePolicyContext(Profile* profile)
         new policy::DeviceManagementPolicyProvider(
             ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
             device_management_service_->CreateBackend(),
-            profile_->GetTokenService(),
-            profile_->GetPath()));
+            profile_));
   }
 }
 
