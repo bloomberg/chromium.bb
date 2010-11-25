@@ -341,6 +341,12 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
   return true;
 }
 
+void Checkpoint(const char* message, const base::TimeTicks& start_time) {
+  LOG(INFO) << message << " : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+}
+
 }  // namespace
 
 void RunMessageLoop() {
@@ -605,10 +611,14 @@ bool SendKeyPressSync(const Browser* browser,
                       bool shift,
                       bool alt,
                       bool command) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  Checkpoint("SendKeyPressSync", start_time);
+
   gfx::NativeWindow window = NULL;
   if (!GetNativeWindow(browser, &window))
     return false;
 
+  Checkpoint("SendKeyPressNotifyWhenDone", start_time);
   if (!ui_controls::SendKeyPressNotifyWhenDone(
           window, key, control, shift, alt, command,
           new MessageLoop::QuitTask())) {
@@ -618,7 +628,9 @@ bool SendKeyPressSync(const Browser* browser,
   // Run the message loop. It'll stop running when either the key was received
   // or the test timed out (in which case testing::Test::HasFatalFailure should
   // be set).
+  Checkpoint("Running loop", start_time);
   RunMessageLoop();
+  Checkpoint("Check if HasFatalFailure", start_time);
   return !testing::Test::HasFatalFailure();
 }
 
