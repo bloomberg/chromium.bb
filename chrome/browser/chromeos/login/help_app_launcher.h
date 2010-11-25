@@ -41,6 +41,9 @@ class HelpAppLauncher : public LoginHtmlDialog::Delegate {
   // TODO: Pass topic ID.
   void ShowHelpTopic(HelpTopic help_topic_id);
 
+  // Returns true if the dialog is currently open.
+  bool is_open() const { return dialog_.get() && dialog_->is_open(); }
+
  protected:
   // LoginHtmlDialog::Delegate implementation:
   virtual void OnDialogClosed() {}

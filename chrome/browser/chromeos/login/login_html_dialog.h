@@ -51,6 +51,8 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
 
   void set_url(const GURL& url) { url_ = url; }
 
+  bool is_open() const { return is_open_; }
+
  protected:
   // HtmlDialogUIDelegate implementation.
   virtual bool IsDialogModal() const { return true; }
@@ -79,6 +81,7 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
   Style style_;
   NotificationRegistrar notification_registrar_;
   BubbleFrameView* bubble_frame_view_;
+  bool is_open_;
 
   // Dialog display size.
   int width_;

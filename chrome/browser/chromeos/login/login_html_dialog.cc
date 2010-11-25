@@ -52,7 +52,8 @@ LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
       title_(title),
       url_(url),
       style_(style),
-      bubble_frame_view_(NULL) {
+      bubble_frame_view_(NULL),
+      is_open_(false) {
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());
   height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
@@ -85,6 +86,7 @@ void LoginHtmlDialog::Show() {
   }
   html_view->InitDialog();
   html_view->window()->Show();
+  is_open_ = true;
 }
 
 void LoginHtmlDialog::SetDialogSize(int width, int height) {
@@ -105,6 +107,7 @@ void LoginHtmlDialog::Observe(NotificationType type,
 // LoginHtmlDialog, protected:
 
 void LoginHtmlDialog::OnDialogClosed(const std::string& json_retval) {
+  is_open_ = false;
   notification_registrar_.RemoveAll();
   if (delegate_)
     delegate_->OnDialogClosed();

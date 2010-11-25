@@ -99,6 +99,7 @@ NetworkSelectionView* NetworkScreen::AllocateView() {
 // NetworkScreen, views::InfoBubbleDelegate implementation:
 
 void NetworkScreen::OnHelpLinkActivated() {
+  ClearErrors();
   if (!help_app_.get())
     help_app_.reset(new HelpAppLauncher(view()->GetNativeWindow()));
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_CONNECTIVITY);
@@ -142,20 +143,23 @@ void NetworkScreen::NotifyOnConnection() {
 
 void NetworkScreen::OnConnectionTimeout() {
   StopWaitingForConnection(network_id_);
-  // Show error bubble.
-  ClearErrors();
-  views::View* network_control = view()->GetNetworkControlView();
-  bubble_ = MessageBubble::Show(
-      network_control->GetWidget(),
-      network_control->GetScreenBounds(),
-      BubbleBorder::LEFT_TOP,
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
-      l10n_util::GetStringF(IDS_NETWORK_SELECTION_ERROR,
-                            l10n_util::GetString(IDS_PRODUCT_OS_NAME),
-                            UTF16ToWide(network_id_)),
-      l10n_util::GetString(IDS_NETWORK_SELECTION_ERROR_HELP),
-      this);
-  network_control->RequestFocus();
+  if (!view()->is_dialog_open() &&
+      !(help_app_.get() && help_app_->is_open())) {
+    // Show error bubble.
+    ClearErrors();
+    views::View* network_control = view()->GetNetworkControlView();
+    bubble_ = MessageBubble::Show(
+        network_control->GetWidget(),
+        network_control->GetScreenBounds(),
+        BubbleBorder::LEFT_TOP,
+        ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
+        l10n_util::GetStringF(IDS_NETWORK_SELECTION_ERROR,
+                              l10n_util::GetString(IDS_PRODUCT_OS_NAME),
+                              UTF16ToWide(network_id_)),
+        l10n_util::GetString(IDS_NETWORK_SELECTION_ERROR_HELP),
+        this);
+    network_control->RequestFocus();
+  }
 }
 
 void NetworkScreen::UpdateStatus(NetworkLibrary* network) {

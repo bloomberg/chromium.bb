@@ -428,6 +428,7 @@ bool NetworkSelectionView::IsContinueEnabled() const {
 // views::LinkController implementation:
 
 void NetworkSelectionView::LinkActivated(views::Link* source, int) {
+  delegate_->ClearErrors();
   if (source == proxy_settings_link_) {
     if (!proxy_settings_dialog_.get()) {
       proxy_settings_dialog_.reset(

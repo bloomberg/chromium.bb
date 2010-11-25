@@ -68,6 +68,11 @@ class NetworkSelectionView : public views::View,
   // views::LinkController implementation.
   virtual void LinkActivated(views::Link* source, int);
 
+  // Returns true if any dialog box is currently open?
+  bool is_dialog_open() const {
+    return proxy_settings_dialog_.get() && proxy_settings_dialog_->is_open();
+  }
+
  protected:
   // Overridden from views::View.
   virtual bool OnKeyPressed(const views::KeyEvent& e);
