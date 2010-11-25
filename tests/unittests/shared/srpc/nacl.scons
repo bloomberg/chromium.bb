@@ -1,0 +1,34 @@
+# -*- python -*-
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+Import('env')
+
+# NOTE: the arm emulator does not handle atomic ops properly
+TEST_SUITES = ['small_tests']
+
+# Do not run on qemu
+if env.Bit('target_arm') or env.Bit('bitcode'):
+  TEST_SUITES = ['small_tests_arm_hw_only']
+
+
+env.ComponentProgram('simple_srpc_test.nexe',
+                     ['simple_srpc_test.c'],
+                     EXTRA_LIBS=['srpc',
+                                 'google_nacl_imc_c',
+                                 'google_nacl_imc',
+                                 'google_nacl_platform',
+                                 'gio',
+                                 'pthread'])
+node = env.CommandSelLdrTestNacl(
+    'simple_srpc_test_nexe.out',
+    command=[env.File('simple_srpc_test.nexe')],
+    exit_status='0',
+    )
+env.AddNodeToTestSuite(node,
+                       TEST_SUITES,
+                       'run_simple_srpc_test_nexe')
+
+

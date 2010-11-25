@@ -4,11 +4,16 @@
  * be found in the LICENSE file.
  */
 
+#ifdef __native_client__
+#include <nacl/nacl_imc_c.h>
+#include <nacl/nacl_srpc.h>
+#include <nacl/nacl_threads.h>
+#else
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
-
+#endif
 
 #define TEST_NUM 42
 
@@ -32,40 +37,60 @@ static void handleGetNum(NaClSrpcRpc* rpc,
   done->Run(done);
 }
 
+struct ServiceThreadArgs {
+  NaClSrpcImcDescType desc;
+};
+
 void WINAPI serviceThread(void* arg) {
-  struct NaClDesc* desc;
+  struct ServiceThreadArgs* typedArg;
+  NaClSrpcImcDescType desc;
   NaClSrpcHandlerDesc handlers[] = {
     { "getNum::i", handleGetNum },
     { NULL, NULL }
   };
-  desc = (struct NaClDesc*) arg;
+  typedArg = (struct ServiceThreadArgs*) arg;
+  desc = typedArg->desc;
+  free(typedArg);
 
   if (!NaClSrpcServerLoop(desc, handlers, 0)) {
     failWithErrno("NaClSrpcServerLoop");
     exit(EXIT_FAILURE);
   }
+#ifdef __native_client__
+  close(desc);
+#else
   NaClDescUnref(desc);
+#endif
   NaClThreadExit();
 }
 
 int main(int argc, char* argv[]) {
   int result;
   NaClHandle pair[2];
+#ifdef __native_client__
+  int imc_desc[2];
+#else
   struct NaClDescImcDesc* imc_desc[2];
-  struct NaClDesc* peer[2];
+#endif
   struct NaClThread thr;
   NaClSrpcChannel channel;
   NaClSrpcError error;
+  struct ServiceThreadArgs* threadArg;
 
   UNREFERENCED_PARAMETER(argc);
   UNREFERENCED_PARAMETER(argv);
 
   NaClSrpcModuleInit();
-  NaClNrdAllModulesInit();
 
   if (0 != NaClSocketPair(pair)) {
     failWithErrno("SocketPair");
   }
+
+#ifdef __native_client__
+  imc_desc[0] = pair[0];
+  imc_desc[1] = pair[1];
+#else
+  NaClNrdAllModulesInit();
 
   imc_desc[0] = (struct NaClDescImcDesc*) calloc(1, sizeof(*imc_desc[0]));
   if (0 == imc_desc[0]) {
@@ -83,14 +108,19 @@ int main(int argc, char* argv[]) {
   if (!NaClDescImcDescCtor(imc_desc[1], pair[1])) {
     failWithErrno("NaClDescImcDescCtor");
   }
-  peer[0] = (struct NaClDesc*) imc_desc[0];
-  peer[1] = (struct NaClDesc*) imc_desc[1];
+#endif
 
-  if (!NaClThreadCreateJoinable(&thr, serviceThread, peer[0], 128*1024)) {
+  threadArg = (struct ServiceThreadArgs*) calloc(1, sizeof(*threadArg));
+  if (NULL == threadArg) {
+    failWithErrno("calloc for threadArg");
+  }
+  threadArg->desc = (NaClSrpcImcDescType)imc_desc[0];
+
+  if (!NaClThreadCreateJoinable(&thr, serviceThread, threadArg, 128*1024)) {
     failWithErrno("NaClThreadCtor");
   }
 
-  if (!NaClSrpcClientCtor(&channel, peer[1])) {
+  if (!NaClSrpcClientCtor(&channel, (NaClSrpcImcDescType) imc_desc[1])) {
     failWithErrno("NaClSrpcClientCtor");
   }
 
@@ -108,7 +138,11 @@ int main(int argc, char* argv[]) {
   }
 
   NaClSrpcDtor(&channel);
-  NaClDescUnref(peer[1]);
+#ifdef __native_client__
+  close(imc_desc[1]);
+#else
+  NaClDescUnref((NaClSrpcImcDescType)imc_desc[1]);
+#endif
 
   NaClThreadJoin(&thr);
 
