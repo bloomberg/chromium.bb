@@ -109,7 +109,8 @@ class TestingBrowserHelperObject
 
   virtual HRESULT CreateChromeFrameHost() {
     HRESULT hr = MockChromeFrameHost::CreateInitializedIID(
-        &mock_chrome_frame_host_, IID_IChromeFrameHost, &chrome_frame_host_);
+        &mock_chrome_frame_host_, IID_IChromeFrameHost,
+        chrome_frame_host_.Receive());
 
     // Neuter the functions we know are going to be called.
     if (SUCCEEDED(hr)) {
@@ -166,13 +167,13 @@ class TestingBrowserHelperObject
     BrowserHandlerMap::iterator end(browsers_.end());
 
     for (; it != end; ++it) {
-      CComQIPtr<IWebBrowser2> browser(it->first.m_T);
+      CComQIPtr<IWebBrowser2> browser(it->first);
       EXPECT_TRUE(browser != NULL);
       CComBSTR location_url;
       EXPECT_HRESULT_SUCCEEDED(browser->get_LocationURL(&location_url));
 
       if (0 == ::UrlCompare(url.c_str(), location_url, TRUE))
-        return static_cast<TestingFrameEventHandler*>(it->second.m_T.p);
+        return static_cast<TestingFrameEventHandler*>(it->second.get());
     }
 
     return NULL;
@@ -189,7 +190,7 @@ class TestingBrowserHelperObject
       ++count;
 
       FrameEventHandler* handler =
-          static_cast<FrameEventHandler*>(it->second.m_T.p);
+          static_cast<FrameEventHandler*>(it->second.get());
       std::wstring url(handler->browser_url());
       const std::wstring* resources_end = resources + num_frames;
       const std::wstring* found = std::find(resources, resources_end, url);

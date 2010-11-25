@@ -27,6 +27,7 @@ using testing::_;
 using testing::CopyBSTRToArgument;
 using testing::CopyInterfaceToArgument;
 using testing::DoAll;
+using testing::Exactly;
 using testing::GetConnectionCount;
 using testing::InstanceCountMixin;
 using testing::MockBrokerRpcClient;
@@ -548,8 +549,8 @@ TEST_F(BrowserHelperObjectTest, HandleNavigateComplete) {
   ASSERT_HRESULT_SUCCEEDED(
       TestBrowser::CreateInitialized(&browser2, &browser2_keeper));
   EXPECT_CALL(*bho_, GetParentBrowser(browser2, NotNull())).
-      WillOnce(DoAll(CopyInterfaceToArgument<1>(browser_keeper_),
-                     Return(S_OK)));
+      WillRepeatedly(DoAll(CopyInterfaceToArgument<1>(browser_keeper_),
+                           Return(S_OK)));
   TestFrameEventHandler* handler2;
   CComPtr<IFrameEventHandler> handler2_keeper;
   ASSERT_HRESULT_SUCCEEDED(
@@ -572,6 +573,34 @@ TEST_F(BrowserHelperObjectTest, HandleNavigateComplete) {
   ExpectTopBrowserNavigation(false, false);
   bho_->HandleNavigateComplete(browser_, CComBSTR(kUrl1));
 
+  ExpectFireOnRemovedEvent();
+  ExpectFireOnUnmappedEvent();
+  ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
+}
+
+TEST_F(BrowserHelperObjectTest, OnNavigationCompletedWithUnrelatedBrowser) {
+  CreateSite();
+  CreateBrowser();
+  CreateHandler();
+
+  // The site needs to return the top-level browser.
+  site_->browser_ = browser_;
+  ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
+
+  // Now navigate to an invalid frame (no parent).
+  TestBrowser* browser2;
+  CComPtr<IWebBrowser2> browser2_keeper;
+  ASSERT_HRESULT_SUCCEEDED(
+      TestBrowser::CreateInitialized(&browser2, &browser2_keeper));
+
+  EXPECT_CALL(*bho_, GetParentBrowser(browser2, NotNull())).
+      WillOnce(Return(E_FAIL));
+
+  EXPECT_CALL(*bho_,
+      CreateFrameEventHandler(browser2, browser_, NotNull())).
+          Times(Exactly(0));
+
+  bho_->HandleNavigateComplete(browser2, CComBSTR(kUrl1));
   ExpectFireOnRemovedEvent();
   ExpectFireOnUnmappedEvent();
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));

@@ -177,22 +177,26 @@ HRESULT BrowserHelperObject::GetParentBrowser(IWebBrowser2* browser,
   DCHECK(parent_browser != NULL && *parent_browser == NULL);
 
   // Get the parent object.
-  CComPtr<IDispatch> parent_disp;
-  HRESULT hr = browser->get_Parent(&parent_disp);
+  ScopedDispatchPtr parent_disp;
+  HRESULT hr = browser->get_Parent(parent_disp.Receive());
   if (FAILED(hr)) {
     // NO DCHECK, or even log here, the caller will handle and log the error.
     return hr;
   }
 
   // Then get the associated browser through the appropriate contortions.
-  CComQIPtr<IServiceProvider> parent_sp(parent_disp);
+  base::win::ScopedComPtr<IServiceProvider> parent_sp;
+  hr = parent_sp.QueryFrom(parent_disp);
+  if (FAILED(hr))
+    return hr;
+
   if (parent_sp == NULL)
     return E_NOINTERFACE;
 
-  CComPtr<IWebBrowser2> parent;
+  ScopedWebBrowser2Ptr parent;
   hr = parent_sp->QueryService(SID_SWebBrowserApp,
                                IID_IWebBrowser2,
-                               reinterpret_cast<void**>(&parent));
+                               parent.ReceiveVoid());
   if (FAILED(hr))
     return hr;
 
@@ -203,7 +207,7 @@ HRESULT BrowserHelperObject::GetParentBrowser(IWebBrowser2* browser,
     return E_FAIL;
 
   LOG(INFO) << "Child: " << std::hex << browser << " -> Parent: " <<
-      std::hex << parent.p;
+      std::hex << parent.get();
 
   *parent_browser = parent.Detach();
   return S_OK;
@@ -226,9 +230,8 @@ HRESULT BrowserHelperObject::CreateExecutor(IUnknown** executor) {
     DCHECK(executor_with_site != NULL)
         << "Executor must implement IObjectWithSite.";
     if (executor_with_site != NULL) {
-      CComPtr<IUnknown> bho_identity;
-      hr = QueryInterface(IID_IUnknown,
-                          reinterpret_cast<void**>(&bho_identity));
+      ScopedIUnkPtr bho_identity;
+      hr = QueryInterface(IID_IUnknown, bho_identity.ReceiveVoid());
       DCHECK(SUCCEEDED(hr)) << "QueryInterface for IUnknown failed!!!" <<
           com::LogHr(hr);
       if (SUCCEEDED(hr))
@@ -252,7 +255,7 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   TRACE_EVENT_INSTANT("ceee.bho.initialize", this, "");
 
   // We need to make sure the Broker is CoCreated BEFORE we try RPC to it.
-  HRESULT hr = GetBrokerRegistrar(&broker_registrar_);
+  HRESULT hr = GetBrokerRegistrar(broker_registrar_.Receive());
   DCHECK(SUCCEEDED(hr) && broker_registrar_) << "CoCreating Broker. " <<
       com::LogHr(hr);
   if (FAILED(hr) || !broker_registrar_)
@@ -291,7 +294,7 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
 
   // Preemptively feed the broker with an executor in our thread.
   DCHECK(executor_ == NULL);
-  hr = CreateExecutor(&executor_);
+  hr = CreateExecutor(executor_.Receive());
   LOG_IF(ERROR, FAILED(hr)) << "Failed to create Executor, hr=" <<
       com::LogHr(hr);
   DCHECK(SUCCEEDED(hr)) << "CoCreating Executor. " << com::LogHr(hr);
@@ -484,17 +487,16 @@ void BrowserHelperObject::StartExtension(const wchar_t* base_dir) {
   // earliest opportunity.
   BrowserHandlerMap::const_iterator it = browsers_.begin();
   for (; it != browsers_.end(); ++it) {
-    DCHECK(it->second.m_T != NULL);
-    it->second.m_T->RedoDoneInjections();
+    DCHECK(it->second != NULL);
+    it->second->RedoDoneInjections();
   }
 
   // Now we should know the extension id and can pass it to the executor.
   if (extension_id_.empty()) {
     LOG(ERROR) << "Have no extension id after loading the extension.";
   } else if (executor_ != NULL) {
-    CComPtr<ICeeeInfobarExecutor> infobar_executor;
-    HRESULT hr = executor_->QueryInterface(IID_ICeeeInfobarExecutor,
-        reinterpret_cast<void**>(&infobar_executor));
+    base::win::ScopedComPtr<ICeeeInfobarExecutor> infobar_executor;
+    HRESULT hr = infobar_executor.QueryFrom(executor_);
     DCHECK(SUCCEEDED(hr)) << "Failed to get ICeeeInfobarExecutor interface " <<
         com::LogHr(hr);
     if (SUCCEEDED(hr)) {
@@ -611,9 +613,9 @@ HRESULT BrowserHelperObject::GetTabWindow(IServiceProvider* service_provider) {
   // Initialize our executor to the right HWND
   if (executor_ == NULL)
     return E_POINTER;
-  CComPtr<ICeeeTabExecutor> tab_executor;
-  hr = executor_->QueryInterface(IID_ICeeeTabExecutor,
-      reinterpret_cast<void**>(&tab_executor));
+  base::win::ScopedComPtr<ICeeeTabExecutor> tab_executor;
+  hr = tab_executor.QueryFrom(executor_);
+
   if (SUCCEEDED(hr)) {
     CeeeWindowHandle handle = reinterpret_cast<CeeeWindowHandle>(tab_window_);
     hr = tab_executor->Initialize(handle);
@@ -624,8 +626,7 @@ HRESULT BrowserHelperObject::GetTabWindow(IServiceProvider* service_provider) {
 // Connect for notifications.
 HRESULT BrowserHelperObject::ConnectSinks(IServiceProvider* service_provider) {
   HRESULT hr = service_provider->QueryService(
-      SID_SWebBrowserApp, IID_IWebBrowser2,
-      reinterpret_cast<void**>(&web_browser_));
+      SID_SWebBrowserApp, IID_IWebBrowser2, web_browser_.ReceiveVoid());
   DCHECK(SUCCEEDED(hr)) << "Failed to get web browser " << com::LogHr(hr);
   if (FAILED(hr)) {
     return hr;
@@ -641,8 +642,8 @@ HRESULT BrowserHelperObject::ConnectSinks(IServiceProvider* service_provider) {
 }
 
 HRESULT BrowserHelperObject::CreateChromeFrameHost() {
-  return ChromeFrameHost::CreateInitializedIID(IID_IChromeFrameHost,
-                                               &chrome_frame_host_);
+  return ChromeFrameHost::CreateInitializedIID(chrome_frame_host_.iid(),
+                                               chrome_frame_host_.Receive());
 }
 
 HRESULT BrowserHelperObject::FireOnCreatedEvent(BSTR url) {
@@ -783,7 +784,7 @@ void BrowserHelperObject::OnBeforeNavigate2Impl(
     const ScopedDispatchPtr& webbrowser_disp, const CComBSTR& url) {
   mu::ScopedTimer metrics_timer("ceee/BHO.BeforeNavigate", broker_rpc_.get());
 
-  base::win::ScopedComPtr<IWebBrowser2> webbrowser;
+  ScopedWebBrowser2Ptr webbrowser;
   HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
   if (FAILED(hr)) {
     LOG(ERROR) << "OnBeforeNavigate2 failed to QI " << com::LogHr(hr);
@@ -799,12 +800,10 @@ void BrowserHelperObject::OnBeforeNavigate2Impl(
   // TODO(vadimb@google.com): Refactor this so that the executor can just
   // register self as WebBrowserEventsSource::Sink. Right now this is
   // problematic because the executor is COM object.
-  CComPtr<IWebBrowser2> parent_browser;
   if (executor_ != NULL && web_browser_ != NULL &&
-      web_browser_.IsEqualObject(webbrowser_disp)) {
-    CComPtr<ICeeeInfobarExecutor> infobar_executor;
-    HRESULT hr = executor_->QueryInterface(IID_ICeeeInfobarExecutor,
-        reinterpret_cast<void**>(&infobar_executor));
+      web_browser_.IsSameObject(webbrowser_disp)) {
+    base::win::ScopedComPtr<ICeeeInfobarExecutor> infobar_executor;
+    HRESULT hr = infobar_executor.QueryFrom(executor_);
     DCHECK(SUCCEEDED(hr)) << "Failed to get ICeeeInfobarExecutor interface " <<
         com::LogHr(hr);
     if (SUCCEEDED(hr)) {
@@ -862,6 +861,7 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateComplete2(
 
   ScopedWebBrowser2Ptr webbrowser;
   HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
+
   if (FAILED(hr)) {
     LOG(ERROR) << "OnNavigateComplete2 failed to QI " << com::LogHr(hr);
     return;
@@ -974,8 +974,8 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNewWindow3(
 }
 
 bool BrowserHelperObject::BrowserContainsChromeFrame(IWebBrowser2* browser) {
-  CComPtr<IDispatch> document_disp;
-  HRESULT hr = browser->get_Document(&document_disp);
+  ScopedDispatchPtr document_disp;
+  HRESULT hr = browser->get_Document(document_disp.Receive());
   if (FAILED(hr)) {
     // This should never happen.
     NOTREACHED() << "IWebBrowser2::get_Document failed " << com::LogHr(hr);
@@ -999,23 +999,33 @@ HRESULT BrowserHelperObject::AttachBrowserHandler(IWebBrowser2* webbrowser,
   // We're not attached yet, figure out whether we're attaching
   // to the top-level browser or a frame, and looukup the parentage
   // in the latter case.
-  CComPtr<IWebBrowser2> parent_browser;
+  ScopedWebBrowser2Ptr parent_browser;
   HRESULT hr = S_OK;
-  bool is_top_frame = web_browser_.IsEqualObject(webbrowser);
+  bool is_top_frame = web_browser_.IsSameObject(webbrowser);
+  bool attach_it = is_top_frame;
   if (!is_top_frame) {
-    // Not the top-level browser, so find the parent. If this fails,
-    // we assume webbrowser is orphaned, and will not attach to it.
+    // Not the top-level browser, so we will need to attach to a parent.
+    // However, even before doing that we will check if the web browser we are
+    // asked about does indeed belong to the tree rooted in web_browser_. If
+    // it doesn't the whole exercise doesn't have much point and we can bail out
+    // right now.
     // This can happen when a FRAME/IFRAME is removed from the DOM tree.
-    hr = GetParentBrowser(webbrowser, &parent_browser);
-    if (FAILED(hr))
-      LOG(WARNING) << "Failed to get parent browser " << com::LogHr(hr);
+    hr = VerifyBrowserInHierarchy(webbrowser, web_browser_);
+    attach_it = S_OK == hr;
+    LOG_IF(ERROR, FAILED(hr)) << "Could not verify browser's dependencies: " <<
+        com::LogHr(hr);
+    if (SUCCEEDED(hr) && attach_it) {
+      hr = GetParentBrowser(webbrowser, parent_browser.Receive());
+      if (FAILED(hr))
+        LOG(ERROR) << "Failed to get parent browser " << com::LogHr(hr);
+    }
   }
 
   // Attempt to attach to the web browser.
-  if (SUCCEEDED(hr)) {
+  if (SUCCEEDED(hr) && attach_it) {
     hr = CreateFrameEventHandler(webbrowser, parent_browser, handler);
     bool document_is_mshtml = SUCCEEDED(hr);
-    DCHECK(SUCCEEDED(hr) || hr == E_DOCUMENT_NOT_MSHTML) <<
+    DCHECK(SUCCEEDED(hr) || hr == E_DOCUMENT_NOT_MSHTML) <<  // An error?
         "Unexpected error creating a frame handler " << com::LogHr(hr);
 
     if (is_top_frame) {
@@ -1044,17 +1054,56 @@ HRESULT BrowserHelperObject::AttachBrowserHandler(IWebBrowser2* webbrowser,
   return hr;
 }
 
+HRESULT BrowserHelperObject::VerifyBrowserInHierarchy(
+    IWebBrowser2* webbrowser, IWebBrowser2* root_browser) {
+  DCHECK(web_browser_ != NULL);
+  // Somehow wastefully, we will visit the entire ancestry of the browser,
+  // up to its expected root. I possibly could go until a first browser with
+  // a handler is found, but it should be the same thing (which we check).
+  HRESULT hr = S_OK;
+
+  ScopedWebBrowser2Ptr next_to_query(webbrowser);
+  bool found_related_handlers = false;
+
+  while (next_to_query != NULL && SUCCEEDED(hr)) {
+    ScopedIUnkPtr browser_identity;
+    browser_identity.QueryFrom(next_to_query);
+    found_related_handlers |=
+        browsers_.find(browser_identity) != browsers_.end();
+    if (next_to_query.IsSameObject(root_browser)) {
+      return S_OK;
+    } else {
+      ScopedWebBrowser2Ptr retrieved_parent;
+      hr = GetParentBrowser(next_to_query, retrieved_parent.Receive());
+      if (SUCCEEDED(hr))
+        next_to_query = retrieved_parent;
+      else
+        next_to_query = NULL;
+    }
+  }
+
+  // We will find ourselves here after having traversed the entire branch
+  // without arriving at the expected root or when there was an error.
+  LOG_IF(ERROR, found_related_handlers) <<
+      "Found one or more handlers associated with browser"
+      "not belonging to handler tree.";
+  return SUCCEEDED(hr) || hr == E_FAIL ? S_FALSE : hr;
+}
+
 void BrowserHelperObject::HandleNavigateComplete(IWebBrowser2* webbrowser,
                                                  BSTR url) {
   // If the top-level document or a sub-frame is navigated, we'll already
   // be attached to the browser in question, so don't reattach.
   HRESULT hr = S_OK;
-  CComPtr<IFrameEventHandler> handler;
-  if (FAILED(GetBrowserHandler(webbrowser, &handler))) {
-    hr = AttachBrowserHandler(webbrowser, &handler);
+  ScopedFrameEventHandlerPtr handler;
+  if (FAILED(GetBrowserHandler(webbrowser, handler.Receive()))) {
+    hr = AttachBrowserHandler(webbrowser, handler.Receive());
 
-    DCHECK(SUCCEEDED(hr)) << "Failed to attach ourselves to the web browser " <<
-        com::LogHr(hr);
+    DCHECK(SUCCEEDED(hr))
+        << "Error when trying to attach a handler to the web browser " <<
+            com::LogHr(hr);
+    LOG_IF(INFO, S_FALSE == hr) <<
+        "Decided not to attach a handler to a frame with " << url;
   }
 
   bool is_hash_change = false;
@@ -1073,7 +1122,7 @@ void BrowserHelperObject::HandleNavigateComplete(IWebBrowser2* webbrowser,
   // SetUrl returns S_FALSE if the URL didn't change.
   if (SUCCEEDED(hr) && hr != S_FALSE) {
     // And we should only fire events for URL changes on the top frame.
-    if (web_browser_.IsEqualObject(webbrowser)) {
+    if (web_browser_.IsSameObject(webbrowser)) {
       // We can assume that we are NOT in a complete state when we get
       // a navigation complete.
       lower_bound_ready_state_ = READYSTATE_UNINITIALIZED;
@@ -1126,8 +1175,9 @@ HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
   DCHECK(browser);
   DCHECK(handler);
   // Get the identity unknown of the browser.
-  CComPtr<IUnknown> browser_identity;
-  HRESULT hr = browser->QueryInterface(&browser_identity);
+  ScopedIUnkPtr browser_identity;
+
+  HRESULT hr = browser_identity.QueryFrom(browser);
   DCHECK(SUCCEEDED(hr)) << "QueryInterface for IUnknown failed!!!" <<
       com::LogHr(hr);
   if (FAILED(hr))
@@ -1138,13 +1188,15 @@ HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
   // We shouldn't have a previous entry for any inserted browser.
   // map::insert().second is true iff an item was inserted.
   DCHECK(inserted.second);
+  LOG(INFO) << "Frame handler inserted: 0x" << std::hex <<
+      browser_identity << ", 0x" << std::hex << handler;
 
   // Now try and find a parent event handler for this browser.
   // If we have a parent browser, locate its handler
   // and notify it of the association.
   if (parent_browser) {
-    CComPtr<IFrameEventHandler> parent_handler;
-    hr = GetBrowserHandler(parent_browser, &parent_handler);
+    ScopedFrameEventHandlerPtr parent_handler;
+    hr = GetBrowserHandler(parent_browser, parent_handler.Receive());
 
     // Notify the parent of its new underling.
     if (parent_handler != NULL) {
@@ -1155,19 +1207,19 @@ HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
           com::LogHr(hr);
       // Lets see if we can find an ancestor up the chain of parent browsers
       // that we could connect to our existing hierarchy of handlers.
-      CComQIPtr<IWebBrowser2> grand_parent_browser;
-      hr = GetParentBrowser(parent_browser, &grand_parent_browser);
+      ScopedWebBrowser2Ptr grand_parent_browser;
+      hr = GetParentBrowser(parent_browser, grand_parent_browser.Receive());
       if (FAILED(hr))
         LOG(WARNING) << "Failed to get parent browser " << com::LogHr(hr);
       bool valid_grand_parent = (grand_parent_browser != NULL &&
-          !grand_parent_browser.IsEqualObject(parent_browser));
+          !grand_parent_browser.IsSameObject(parent_browser));
       DCHECK(valid_grand_parent) <<
           "Orphan handler without a valid grand parent!";
       LOG_IF(ERROR, !valid_grand_parent) << "Orphan handler: " << std::hex <<
           handler << ", with parent browser: " << std::hex << parent_browser;
       if (grand_parent_browser != NULL &&
-          !grand_parent_browser.IsEqualObject(parent_browser)) {
-        DCHECK(!web_browser_.IsEqualObject(parent_browser));
+          !grand_parent_browser.IsSameObject(parent_browser)) {
+        DCHECK(!web_browser_.IsSameObject(parent_browser));
         // We have a grand parent IWebBrowser2, so create a handler for the
         // parent we were given that doesn't have a handler already.
         CComBSTR parent_browser_url;
@@ -1175,7 +1227,7 @@ HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
         DLOG(INFO) << "Creating handler for parent browser: " << std::hex <<
             parent_browser << ", at URL: " << parent_browser_url;
         hr = CreateFrameEventHandler(parent_browser, grand_parent_browser,
-                                     &parent_handler);
+                                     parent_handler.Receive());
         // If we have a handler for the child, we must be able to create one for
         // the parent... And CreateFrameEventHandler should have attached it
         // to the parent by calling us again via IFrameEventHandler::Init...
@@ -1210,8 +1262,8 @@ HRESULT BrowserHelperObject::DetachBrowser(IWebBrowser2* browser,
                                            IWebBrowser2* parent_browser,
                                            IFrameEventHandler* handler) {
   // Get the identity unknown of the browser.
-  CComPtr<IUnknown> browser_identity;
-  HRESULT hr = browser->QueryInterface(&browser_identity);
+  ScopedIUnkPtr browser_identity;
+  HRESULT hr = browser_identity.QueryFrom(browser);
   DCHECK(SUCCEEDED(hr)) << "QueryInterface for IUnknown failed!!!" <<
       com::LogHr(hr);
   if (FAILED(hr))
@@ -1220,9 +1272,9 @@ HRESULT BrowserHelperObject::DetachBrowser(IWebBrowser2* browser,
   // If we have a parent browser, locate its handler
   // and notify it of the disassociation.
   if (parent_browser) {
-    CComPtr<IFrameEventHandler> parent_handler;
+    ScopedFrameEventHandlerPtr parent_handler;
 
-    hr = GetBrowserHandler(parent_browser, &parent_handler);
+    hr = GetBrowserHandler(parent_browser, parent_handler.Receive());
     LOG_IF(WARNING, FAILED(hr) || parent_handler == NULL) << "No Parent " <<
         "Handler" << com::LogHr(hr);
 
@@ -1238,13 +1290,15 @@ HRESULT BrowserHelperObject::DetachBrowser(IWebBrowser2* browser,
   if (it == browsers_.end())
     return E_FAIL;
 
+  LOG(INFO) << "Frame handler removed: 0x" << std::hex << it->first <<
+      ", 0x" << std::hex << it->second;
   browsers_.erase(it);
   return S_OK;
 }
 
 HRESULT BrowserHelperObject::GetTopLevelBrowser(IWebBrowser2** browser) {
   DCHECK(browser != NULL);
-  return web_browser_.CopyTo(browser);
+  return web_browser_.QueryInterface(browser);
 }
 
 HRESULT BrowserHelperObject::OnReadyStateChanged(READYSTATE ready_state) {
@@ -1254,8 +1308,8 @@ HRESULT BrowserHelperObject::OnReadyStateChanged(READYSTATE ready_state) {
   READYSTATE new_lowest_ready_state = READYSTATE_COMPLETE;
   BrowserHandlerMap::const_iterator it = browsers_.begin();
   for (; it != browsers_.end(); ++it) {
-    DCHECK(it->second.m_T != NULL);
-    READYSTATE this_ready_state = it->second.m_T->GetReadyState();
+    DCHECK(it->second != NULL);
+    READYSTATE this_ready_state = it->second->GetReadyState();
     if (this_ready_state < new_lowest_ready_state) {
       new_lowest_ready_state = this_ready_state;
     }
@@ -1316,16 +1370,16 @@ void BrowserHelperObject::InsertCodeImpl(
     BrowserHandlerMap browsers_copy(browsers_.begin(), browsers_.end());
     BrowserHandlerMap::const_iterator it = browsers_copy.begin();
     for (; it != browsers_copy.end(); ++it) {
-      DCHECK(it->second.m_T != NULL);
-      if (it->second.m_T != NULL) {
-        HRESULT hr = it->second.m_T->InsertCode(code, file, type);
+      DCHECK(it->second != NULL);
+      if (it->second != NULL) {
+        HRESULT hr = it->second->InsertCode(code, file, type);
         DCHECK(SUCCEEDED(hr)) << "IFrameEventHandler::InsertCode()" <<
             com::LogHr(hr);
       }
     }
   } else if (web_browser_ != NULL) {
-    CComPtr<IFrameEventHandler> handler;
-    HRESULT hr = GetBrowserHandler(web_browser_, &handler);
+    ScopedFrameEventHandlerPtr handler;
+    HRESULT hr = GetBrowserHandler(web_browser_, handler.Receive());
     DCHECK(SUCCEEDED(hr) && handler != NULL) << com::LogHr(hr);
 
     if (handler != NULL) {
@@ -1371,13 +1425,14 @@ HRESULT BrowserHelperObject::GetBrowserHandler(IWebBrowser2* webbrowser,
                                                IFrameEventHandler** handler) {
   DCHECK(webbrowser != NULL);
   DCHECK(handler != NULL && *handler == NULL);
-  CComPtr<IUnknown> browser_identity;
-  HRESULT hr = webbrowser->QueryInterface(&browser_identity);
+  ScopedIUnkPtr browser_identity;
+  HRESULT hr = browser_identity.QueryFrom(webbrowser);
   DCHECK(SUCCEEDED(hr)) << com::LogHr(hr);
 
   BrowserHandlerMap::iterator found(browsers_.find(browser_identity));
   if (found != browsers_.end()) {
-    found->second.m_T.CopyTo(handler);
+    found->second.QueryInterface(IID_IFrameEventHandler,
+                                 reinterpret_cast<void**>(handler));
     return S_OK;
   }
 

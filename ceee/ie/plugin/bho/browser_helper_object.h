@@ -12,6 +12,7 @@
 #include <exdisp.h>
 #include <exdispid.h>
 #include <deque>
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -176,15 +177,20 @@ class ATL_NO_VTABLE BrowserHelperObject
   // @}
 
  protected:
-  // Register proxy/stubs for executor interfaces.
-  virtual HRESULT RegisterProxies();
-  // Unregister proxy/stubs for executor interfaces.
-  virtual void UnregisterProxies();
-
   typedef base::win::ScopedComPtr<IContentScriptNativeApi, &GUID_NULL>
       ScopedContentScriptNativeApiPtr;
   typedef base::win::ScopedComPtr<IDispatch> ScopedDispatchPtr;
   typedef base::win::ScopedComPtr<IWebBrowser2> ScopedWebBrowser2Ptr;
+  typedef base::win::ScopedComPtr<IUnknown> ScopedIUnkPtr;
+  typedef base::win::ScopedComPtr<IFrameEventHandler, &IID_IFrameEventHandler>
+      ScopedFrameEventHandlerPtr;
+  typedef base::win::ScopedComPtr<IChromeFrameHost, &IID_IChromeFrameHost>
+      ScopedChromeFramePtr;
+
+  // Register proxy/stubs for executor interfaces.
+  virtual HRESULT RegisterProxies();
+  // Unregister proxy/stubs for executor interfaces.
+  virtual void UnregisterProxies();
 
   HRESULT OpenChannelToExtensionImpl(
       const ScopedContentScriptNativeApiPtr& instance,
@@ -315,22 +321,21 @@ class ATL_NO_VTABLE BrowserHelperObject
   static _ATL_FUNC_INFO handler_type_idispatchptr_boolptr_dword_2bstr_;
 
   // The top-level web browser (window) we're attached to. NULL before SetSite.
-  CComPtr<IWebBrowser2> web_browser_;
+  ScopedWebBrowser2Ptr web_browser_;
 
   // The Chrome Frame host handling a Chrome Frame instance for us.
-  CComPtr<IChromeFrameHost> chrome_frame_host_;
+  ScopedChromeFramePtr chrome_frame_host_;
 
   // The Broker Registrar we use to un/register executors for our thread.
-  CComPtr<ICeeeBrokerRegistrar> broker_registrar_;
+  base::win::ScopedComPtr<ICeeeBrokerRegistrar> broker_registrar_;
 
   // We keep a reference to the executor we registered so that we can
   // manually disconnect it, so it doesn't get called while we unregister it.
-  CComPtr<IUnknown> executor_;
+  ScopedIUnkPtr executor_;
 
   // Maintains a map from browser (top-level and sub-browsers) to the
   // attached FrameEventHandlers.
-  typedef std::map<CAdapt<CComPtr<IUnknown> >,
-                   CAdapt<CComPtr<IFrameEventHandler> > > BrowserHandlerMap;
+  typedef std::map<ScopedIUnkPtr, ScopedFrameEventHandlerPtr> BrowserHandlerMap;
   BrowserHandlerMap browsers_;
 
   // Initialized by LoadManifestFile() at
@@ -401,6 +406,11 @@ class ATL_NO_VTABLE BrowserHelperObject
   // Used during initialization to get the tab information from Chrome and
   // register ourselves with the broker.
   HRESULT RegisterTabInfo();
+
+  // Check if the first parameter belongs to the browser tree rooted at
+  // root_browser.
+  HRESULT VerifyBrowserInHierarchy(IWebBrowser2* webbrowser,
+                                   IWebBrowser2* root_browser);
 
   typedef std::deque<Task*> DeferredCallListType;
   DeferredCallListType deferred_tab_id_call_;
