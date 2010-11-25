@@ -134,6 +134,9 @@ class InstantLoader : public NotificationObserver {
   // Invoked from the timer to update the bounds of the omnibox.
   void ProcessBoundsChange();
 
+  // Creates and sets the preview TabContentsWrapper.
+  void CreatePreviewContents(TabContentsWrapper* tab_contents);
+
   InstantLoaderDelegate* delegate_;
 
   // If we're showing instant results this is the ID of the TemplateURL driving

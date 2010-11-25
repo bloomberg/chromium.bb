@@ -412,60 +412,31 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
       !user_text.empty() && (UTF16ToWide(user_text)[0] == L'?') ?
       user_text.substr(1) : user_text;
 
-  // If state hasn't changed, just reuse the last suggestion.
-  if (url_ == url && verbatim == verbatim_ && user_text_ == new_user_text &&
-      last_transition_type_ == transition_type) {
+  // We should preserve the transition type regardless of whether we're already
+  // showing the url.
+  last_transition_type_ = transition_type;
+
+  // If state hasn't changed, just reuse the last suggestion. If the user
+  // modifies the text of the omnibox in anyway the URL changes. We also need to
+  // update if verbatim changes and we're showing instant results. We have to be
+  // careful in checking user_text as in some situations InstantController
+  // passes in an empty string (when it knows the user_text won't matter).
+  if (url_ == url && (!template_url || verbatim == verbatim_)) {
     suggested_text->assign(last_suggestion_);
     return;
   }
 
   DCHECK(!url.is_empty() && url.is_valid());
 
-  last_transition_type_ = transition_type;
   url_ = url;
   user_text_ = new_user_text;
   verbatim_ = verbatim;
   last_suggestion_.clear();
 
-  bool created_preview_contents;
-  if (preview_contents_.get() == NULL) {
-    TabContents* new_contents =
-        new TabContents(
-            tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-    preview_contents_.reset(new TabContentsWrapper(new_contents));
-    new_contents->SetAllContentsBlocked(true);
-    // Propagate the max page id. That way if we end up merging the two
-    // NavigationControllers (which happens if we commit) none of the page ids
-    // will overlap.
-    int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
-    if (max_page_id != -1)
-      preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
+  bool created_preview_contents = preview_contents_.get() == NULL;
+  if (created_preview_contents)
+    CreatePreviewContents(tab_contents);
 
-    new_contents->set_delegate(preview_tab_contents_delegate_.get());
-
-    gfx::Rect tab_bounds;
-    tab_contents->view()->GetContainerBounds(&tab_bounds);
-    preview_contents_->view()->SizeContents(tab_bounds.size());
-
-#if defined(OS_MACOSX)
-    // If |preview_contents_| does not currently have a RWHV, we will call
-    // SetTakesFocusOnlyOnMouseDown() as a result of the
-    // RENDER_VIEW_HOST_CHANGED notification.
-    if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
-      preview_contents_->tab_contents()->GetRenderWidgetHostView()->
-          SetTakesFocusOnlyOnMouseDown(true);
-    }
-    registrar_.Add(
-        this,
-        NotificationType::RENDER_VIEW_HOST_CHANGED,
-        Source<NavigationController>(&preview_contents_->controller()));
-#endif
-
-    preview_contents_->tab_contents()->ShowContents();
-    created_preview_contents = true;
-  } else {
-    created_preview_contents = false;
-  }
   preview_tab_contents_delegate_->PrepareForNewLoad();
 
   if (template_url) {
@@ -721,4 +692,40 @@ void InstantLoader::ProcessBoundsChange() {
     preview_contents_->render_view_host()->SearchBoxResize(
         GetOmniboxBoundsInTermsOfPreview());
   }
+}
+
+void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
+  TabContents* new_contents =
+      new TabContents(
+          tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  preview_contents_.reset(new TabContentsWrapper(new_contents));
+  new_contents->SetAllContentsBlocked(true);
+  // Propagate the max page id. That way if we end up merging the two
+  // NavigationControllers (which happens if we commit) none of the page ids
+  // will overlap.
+  int32 max_page_id = tab_contents->tab_contents()->GetMaxPageID();
+  if (max_page_id != -1)
+    preview_contents_->controller().set_max_restored_page_id(max_page_id + 1);
+
+  new_contents->set_delegate(preview_tab_contents_delegate_.get());
+
+  gfx::Rect tab_bounds;
+  tab_contents->view()->GetContainerBounds(&tab_bounds);
+  preview_contents_->view()->SizeContents(tab_bounds.size());
+
+#if defined(OS_MACOSX)
+  // If |preview_contents_| does not currently have a RWHV, we will call
+  // SetTakesFocusOnlyOnMouseDown() as a result of the
+  // RENDER_VIEW_HOST_CHANGED notification.
+  if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
+    preview_contents_->tab_contents()->GetRenderWidgetHostView()->
+        SetTakesFocusOnlyOnMouseDown(true);
+  }
+  registrar_.Add(
+      this,
+      NotificationType::RENDER_VIEW_HOST_CHANGED,
+      Source<NavigationController>(&preview_contents_->controller()));
+#endif
+
+  preview_contents_->tab_contents()->ShowContents();
 }
