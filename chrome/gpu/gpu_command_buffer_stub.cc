@@ -113,6 +113,14 @@ void GpuCommandBufferStub::OnInitialize(
               NewCallback(this,
                           &GpuCommandBufferStub::SwapBuffersCallback));
         }
+#elif defined(OS_LINUX)
+        if (handle_) {
+          // Set up a pathway to allow the Gpu process to ask the browser
+          // for a window resize.
+          processor_->SetResizeCallback(
+              NewCallback(this,
+                          &GpuCommandBufferStub::ResizeCallback));
+        }
 #endif
       } else {
         processor_.reset();
@@ -202,5 +210,14 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
       renderer_id_, render_view_id_, handle_, processor_->GetSurfaceId()));
 }
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_LINUX)
+void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
+  ChildThread* gpu_thread = ChildThread::current();
+  bool result = false;
+  gpu_thread->Send(
+      new GpuHostMsg_ResizeXID(handle_, size, &result));
+}
+#endif  // defined(OS_LINUX)
 
 #endif  // ENABLE_GPU

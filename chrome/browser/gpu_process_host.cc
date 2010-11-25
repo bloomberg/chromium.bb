@@ -23,8 +23,11 @@
 #include "media/base/media_switches.h"
 
 #if defined(OS_LINUX)
+#include <gdk/gdkwindow.h>
+#include <gdk/gdkx.h>
 #include "app/x11_util.h"
 #include "gfx/gtk_native_view_id_manager.h"
+#include "gfx/size.h"
 #endif
 
 namespace {
@@ -168,6 +171,7 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_GetViewXID, OnGetViewXID)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_ResizeXID, OnResizeXID)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
                         OnAcceleratedSurfaceSetIOSurface)
@@ -221,7 +225,24 @@ void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
       NewRunnableFunction(&SendDelayedReply, reply_msg));
 }
 
-} // namespace
+void ResizeXIDDispatcher(unsigned long xid, gfx::Size size,
+    IPC::Message *reply_msg) {
+  GdkWindow* window = reinterpret_cast<GdkWindow*>(gdk_xid_table_lookup(xid));
+  if (window) {
+    Display* display = GDK_WINDOW_XDISPLAY(window);
+    gdk_window_resize(window, size.width(), size.height());
+    XSync(display, False);
+  }
+
+  GpuHostMsg_ResizeXID::WriteReplyParams(reply_msg, (window != NULL));
+
+  // Have to reply from IO thread.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&SendDelayedReply, reply_msg));
+}
+
+}  // namespace
 
 void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id,
                                   IPC::Message *reply_msg) {
@@ -229,6 +250,14 @@ void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&GetViewXIDDispatcher, id, reply_msg));
+}
+
+void GpuProcessHost::OnResizeXID(unsigned long xid, gfx::Size size,
+                                 IPC::Message *reply_msg) {
+  // Have to resize the window from UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(&ResizeXIDDispatcher, xid, size, reply_msg));
 }
 
 #elif defined(OS_MACOSX)

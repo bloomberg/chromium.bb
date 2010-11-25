@@ -985,6 +985,8 @@ void RenderWidgetHost::OnMsgGpuRenderingActivated(bool activated) {
 #if defined(OS_MACOSX)
   if (old_state != is_gpu_rendering_active_ && view_)
     view_->GpuRenderingStateDidChange();
+#elif defined(TOOLKIT_USES_GTK)
+  view_->AcceleratedCompositingActivated(activated);
 #endif
 }
 

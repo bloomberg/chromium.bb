@@ -1046,6 +1046,13 @@ bool RenderWidgetHostViewGtk::ContainsNativeView(
   return false;
 }
 
+void RenderWidgetHostViewGtk::AcceleratedCompositingActivated(bool activated) {
+  GtkPreserveWindow* widget =
+    reinterpret_cast<GtkPreserveWindow*>(view_.get());
+
+  gtk_preserve_window_delegate_resize(widget, activated);
+}
+
 void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (!host_)

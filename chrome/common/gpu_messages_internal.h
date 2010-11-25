@@ -81,6 +81,12 @@ IPC_BEGIN_MESSAGES(GpuHost)
   IPC_SYNC_MESSAGE_CONTROL1_1(GpuHostMsg_GetViewXID,
                               gfx::NativeViewId, /* view */
                               unsigned long /* xid */)
+
+  IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_ResizeXID,
+                              unsigned long, /* xid */
+                              gfx::Size, /* size */
+                              bool /* success */)
+
 #elif defined(OS_MACOSX)
   // This message, used on Mac OS X 10.6 and later (where IOSurface is
   // supported), is sent from the GPU process to the browser to indicate that a

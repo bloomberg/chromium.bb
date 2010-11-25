@@ -20,6 +20,10 @@ typedef struct _GtkPreserveWindowPrivate GtkPreserveWindowPrivate;
 struct _GtkPreserveWindowPrivate {
   // If true, don't create/destroy windows on realize/unrealize.
   gboolean preserve_window;
+
+  // Whether or not we delegate the resize of the GdkWindow
+  // to someone else.
+  gboolean delegate_resize;
 };
 
 G_DEFINE_TYPE(GtkPreserveWindow, gtk_preserve_window, GTK_TYPE_FIXED)
@@ -27,11 +31,14 @@ G_DEFINE_TYPE(GtkPreserveWindow, gtk_preserve_window, GTK_TYPE_FIXED)
 static void gtk_preserve_window_destroy(GtkObject* object);
 static void gtk_preserve_window_realize(GtkWidget* widget);
 static void gtk_preserve_window_unrealize(GtkWidget* widget);
+static void gtk_preserve_window_size_allocate(GtkWidget* widget,
+                                              GtkAllocation* allocation);
 
 static void gtk_preserve_window_class_init(GtkPreserveWindowClass *klass) {
   GtkWidgetClass* widget_class = reinterpret_cast<GtkWidgetClass*>(klass);
   widget_class->realize = gtk_preserve_window_realize;
   widget_class->unrealize = gtk_preserve_window_unrealize;
+  widget_class->size_allocate = gtk_preserve_window_size_allocate;
 
   GtkObjectClass* object_class = reinterpret_cast<GtkObjectClass*>(klass);
   object_class->destroy = gtk_preserve_window_destroy;
@@ -73,6 +80,11 @@ static void gtk_preserve_window_realize(GtkWidget* widget) {
                         widget->allocation.x,
                         widget->allocation.y);
     widget->style = gtk_style_attach(widget->style, widget->window);
+    gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
+
+    gint event_mask = gtk_widget_get_events(widget);
+    event_mask |= GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK;
+    gdk_window_set_events(widget->window, (GdkEventMask) event_mask);
     gdk_window_set_user_data(widget->window, widget);
 
     // Deprecated as of GTK 2.22. Used for compatibility.
@@ -152,13 +164,31 @@ void gtk_preserve_window_set_preserve(GtkPreserveWindow* window,
     attributes.visual = gtk_widget_get_visual(widget);
     attributes.colormap = gtk_widget_get_colormap(widget);
 
-    attributes.event_mask = gtk_widget_get_events(widget);
-    attributes.event_mask |= GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK;
-
     attributes_mask = GDK_WA_VISUAL | GDK_WA_COLORMAP;
     widget->window = gdk_window_new(
         gdk_get_default_root_window(), &attributes, attributes_mask);
   }
+}
+
+void gtk_preserve_window_size_allocate(GtkWidget* widget,
+                                       GtkAllocation* allocation) {
+  g_return_if_fail(GTK_IS_PRESERVE_WINDOW(widget));
+  GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
+
+  if (priv->delegate_resize) {
+    // Just update the state. Someone else will gdk_window_resize the
+    // associated GdkWindow.
+    widget->allocation = *allocation;
+  } else {
+    GTK_WIDGET_CLASS(gtk_preserve_window_parent_class)->size_allocate(
+        widget, allocation);
+  }
+}
+
+void gtk_preserve_window_delegate_resize(GtkPreserveWindow* widget,
+                                         gboolean delegate) {
+  GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
+  priv->delegate_resize = delegate;
 }
 
 G_END_DECLS

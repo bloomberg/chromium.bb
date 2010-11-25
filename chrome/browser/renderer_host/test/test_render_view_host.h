@@ -126,6 +126,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) { }
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) { }
+  virtual void AcceleratedCompositingActivated(bool activated) { }
 #endif
 
   virtual bool ContainsNativeView(gfx::NativeView native_view) const {

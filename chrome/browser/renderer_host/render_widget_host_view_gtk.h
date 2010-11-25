@@ -86,6 +86,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
   virtual void SetVisuallyDeemphasized(bool deemphasized);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
+  virtual void AcceleratedCompositingActivated(bool activated);
 
   gfx::NativeView native_view() const { return view_.get(); }
 

@@ -145,6 +145,10 @@ void GPUProcessor::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   decoder_->ResizeOffscreenFrameBuffer(size);
 }
 
+void GPUProcessor::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
+  decoder_->SetResizeCallback(callback);
+}
+
 void GPUProcessor::SetSwapBuffersCallback(
     Callback0::Type* callback) {
   wrapped_swap_buffers_callback_.reset(callback);

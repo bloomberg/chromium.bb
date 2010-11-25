@@ -677,6 +677,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
   virtual ContextGroup* GetContextGroup() { return group_.get(); }
 
+  virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id);
@@ -1424,6 +1425,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<Texture> offscreen_saved_color_texture_;
   GLenum offscreen_saved_color_format_;
 
+  scoped_ptr<Callback1<gfx::Size>::Type> resize_callback_;
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
 
   // The last error message set.
@@ -2422,6 +2424,10 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   return true;
 }
 
+void GLES2DecoderImpl::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
+  resize_callback_.reset(callback);
+}
+
 void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
 }
@@ -2552,8 +2558,14 @@ void GLES2DecoderImpl::DoCopyTextureToParentTextureCHROMIUM(
 }
 
 void GLES2DecoderImpl::DoResizeCHROMIUM(GLuint width, GLuint height) {
-  gfx::Size size(width, height);
-  context_->SetSize(size);
+#if defined(OS_LINUX)
+  // Make sure that we are done drawing to the back buffer before resizing.
+  glFinish();
+#endif
+  if (resize_callback_.get()) {
+    gfx::Size size(width, height);
+    resize_callback_->Run(size);
+  }
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {

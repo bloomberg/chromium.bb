@@ -87,6 +87,10 @@ class GPUProcessor : public CommandBufferEngine {
   virtual uint64 GetSurfaceId();
 #endif
 
+  // Sets a callback that is called when a glResizeCHROMIUM command
+  // is processed.
+  virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
+
   // Sets a callback which is called when a SwapBuffers command is processed.
   // Must be called after Initialize().
   // It is not defined on which thread this callback is called.

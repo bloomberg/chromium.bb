@@ -233,6 +233,7 @@ class RenderWidgetHostView {
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
+  virtual void AcceleratedCompositingActivated(bool activated) = 0;
 #endif
 
   // Toggles visual muting of the render view area. This is on when a

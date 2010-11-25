@@ -89,6 +89,10 @@ class GLES2Decoder : public CommonDecoder {
   // Gets the associated ContextGroup
   virtual ContextGroup* GetContextGroup() = 0;
 
+  // Sets a callback which is called when a glResizeCHROMIUM command
+  // is processed.
+  virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback) = 0;
+
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
 

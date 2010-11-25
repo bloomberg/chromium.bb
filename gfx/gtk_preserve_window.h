@@ -53,6 +53,12 @@ gboolean gtk_preserve_window_get_preserve(GtkPreserveWindow* widget);
 void gtk_preserve_window_set_preserve(GtkPreserveWindow* widget,
                                       gboolean value);
 
+// Whether or not someone else will gdk_window_resize the GdkWindow associated
+// with this widget (needed by the GPU process to synchronize resizing
+// with swapped between front and back buffer).
+void gtk_preserve_window_delegate_resize(GtkPreserveWindow* widget,
+                                         gboolean delegate);
+
 G_END_DECLS
 
 #endif  // GFX_GTK_PRESERVE_WINDOW_H_
