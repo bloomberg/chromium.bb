@@ -169,7 +169,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   @staticmethod
   def DataDir():
     """Returns the path to the data dir chrome/test/data."""
-    return os.path.join(os.path.dirname(__file__), os.pardir, "data")
+    return os.path.normpath(
+        os.path.join(os.path.dirname(__file__), os.pardir, "data"))
 
   @staticmethod
   def GetFileURLForPath(path):

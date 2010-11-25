@@ -42,8 +42,8 @@ class ImportsTest(pyauto.PyUITest):
     if pyauto.PyUITest.IsMac():
       self._firefox_profiles_path = os.path.join(
           os.environ['HOME'], 'Library','Application Support','Firefox')
-      self._firefox_test_profile = os.path.join(
-          pyauto.PyUITest.DataDir(), 'import', 'firefox', 'macwin.zip')
+      self._firefox_test_profile = os.path.abspath(os.path.join(
+          pyauto.PyUITest.DataDir(), 'import', 'firefox', 'macwin.zip'))
       self._safari_profiles_path = os.path.join(
           os.environ['HOME'], 'Library', 'Safari')
       # Don't import passwords to avoid Keychain popups. See crbug.com/49378.
@@ -51,13 +51,13 @@ class ImportsTest(pyauto.PyUITest):
     elif pyauto.PyUITest.IsWin():
       self._firefox_profiles_path = os.path.join(
           os.getenv('APPDATA'), 'Mozilla', 'Firefox')
-      self._firefox_test_profile = os.path.join(
-          pyauto.PyUITest.DataDir(), 'import', 'firefox', 'macwin.zip')
-    else:
+      self._firefox_test_profile = os.path.abspath(os.path.join(
+          pyauto.PyUITest.DataDir(), 'import', 'firefox', 'macwin.zip'))
+    else:  # Linux
       self._firefox_profiles_path = os.path.join(
           os.environ['HOME'], '.mozilla', 'firefox')
-      self._firefox_test_profile = os.path.join(
-          pyauto.PyUITest.DataDir(), 'import', 'firefox', 'linux.zip')
+      self._firefox_test_profile = os.path.abspath(os.path.join(
+          pyauto.PyUITest.DataDir(), 'import', 'firefox', 'linux.zip'))
 
     # Expected items for tests.
     self._history_items = ['Google', 'Google News', u'Google \ub3c4\uc11c']
