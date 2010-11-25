@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/mime_registry_dispatcher.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/renderer_host/file_utilities_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
@@ -300,6 +302,8 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
                           OnWorkerContextClosed);
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
                           OnForwardToWorker)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(WorkerProcessHostMsg_AllowDatabase,
+                                      OnAllowDatabase)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP_EX()
   }
@@ -523,6 +527,36 @@ void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
 
 void WorkerProcessHost::OnForwardToWorker(const IPC::Message& message) {
   WorkerService::GetInstance()->ForwardMessage(message, this);
+}
+
+void WorkerProcessHost::OnAllowDatabase(const GURL& url,
+                                        const string16& name,
+                                        const string16& display_name,
+                                        unsigned long estimated_size,
+                                        IPC::Message* reply_msg) {
+  ContentSetting content_setting =
+      request_context_->host_content_settings_map()->GetContentSetting(
+          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+
+  bool allowed = content_setting != CONTENT_SETTING_BLOCK;
+
+  // Find the worker instance and forward the message to all attached documents.
+  for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
+    if (i->worker_route_id() != reply_msg->routing_id())
+      continue;
+    const WorkerDocumentSet::DocumentInfoSet& documents =
+        i->worker_document_set()->documents();
+    for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
+         documents.begin(); doc != documents.end(); ++doc) {
+      CallRenderViewHostContentSettingsDelegate(
+          doc->renderer_id(), doc->render_view_route_id(),
+          &RenderViewHostDelegate::ContentSettings::OnWebDatabaseAccessed,
+          url, name, display_name, estimated_size, !allowed);
+    }
+    break;
+  }
+  WorkerProcessHostMsg_AllowDatabase::WriteReplyParams(reply_msg, allowed);
+  Send(reply_msg);
 }
 
 void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,

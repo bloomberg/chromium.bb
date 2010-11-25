@@ -77,11 +77,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
   virtual bool allowDatabase(WebKit::WebFrame* frame,
                              const WebKit::WebString& name,
                              const WebKit::WebString& display_name,
-                             unsigned long estimated_size) {
-    // TODO(jochen): Check content settings whether access to web databases is
-    // allowed.
-    return true;
-  }
+                             unsigned long estimated_size);
 
   virtual void openFileSystem(WebKit::WebFileSystem::Type type,
                               long long size,

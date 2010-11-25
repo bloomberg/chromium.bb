@@ -17,13 +17,17 @@
 #include "chrome/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_logging.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWorker.h"
 
 using WebKit::WebApplicationCacheHost;
+using WebKit::WebFrame;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMessagePortChannelArray;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
@@ -122,6 +126,23 @@ WebApplicationCacheHost* WebWorkerClientProxy::createApplicationCacheHost(
   // value when creating nested dedicated workers in createWorker.
   appcache_host_id_ = host->host_id();
   return host;
+}
+
+bool WebWorkerClientProxy::allowDatabase(WebFrame* frame,
+                                         const WebString& name,
+                                         const WebString& display_name,
+                                         unsigned long estimated_size) {
+  WebSecurityOrigin origin = frame->securityOrigin();
+  if (origin.isEmpty())
+    return false;
+
+  bool result;
+  if (!Send(new WorkerProcessHostMsg_AllowDatabase(route_id_,
+      GURL(origin.toString().utf8()), name, display_name, estimated_size,
+      &result)))
+    return false;
+
+  return result;
 }
 
 void WebWorkerClientProxy::openFileSystem(

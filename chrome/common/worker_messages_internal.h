@@ -75,6 +75,15 @@ IPC_BEGIN_MESSAGES(WorkerProcessHost)
   IPC_MESSAGE_CONTROL2(WorkerProcessHostMsg_SendQueuedMessages,
                        int /* message_port_id */,
                        std::vector<QueuedMessage> /* queued_messages */)
+
+  // Sent by the worker process to check whether access to web databases is
+  // granted by content settings.
+  IPC_SYNC_MESSAGE_ROUTED4_1(WorkerProcessHostMsg_AllowDatabase,
+                             GURL /* origin url */,
+                             string16 /* database name */,
+                             string16 /* database display name */,
+                             unsigned long /* estimated size */,
+                             bool /* result */)
 IPC_END_MESSAGES(WorkerProcessHost)
 
 //-----------------------------------------------------------------------------

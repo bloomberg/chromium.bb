@@ -195,6 +195,15 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   void OnCancelCreateDedicatedWorker(int route_id);
   void OnForwardToWorker(const IPC::Message& message);
 
+  // Checks the content settings whether access to web databases is enabled and
+  // relays the WebDatabaseAccessed message to all documents attached to a
+  // worker.
+  void OnAllowDatabase(const GURL& url,
+                       const string16& name,
+                       const string16& display_name,
+                       unsigned long estimated_size,
+                       IPC::Message* reply_msg);
+
   Instances instances_;
 
   scoped_refptr<ChromeURLRequestContext> request_context_;
