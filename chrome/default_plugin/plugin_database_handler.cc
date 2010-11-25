@@ -131,9 +131,8 @@ int32 PluginDatabaseHandler::Write(NPStream* stream, int32 offset,
         }
       }
 
-      DVLOG(1) << "Failed to create plugins file " << plugins_file_
-               << " Error " << ::GetLastError();
-      NOTREACHED();
+      DLOG(ERROR) << "Failed to create plugins file " << plugins_file_
+                  << " Error " << ::GetLastError();
       return 0;
     }
   }
