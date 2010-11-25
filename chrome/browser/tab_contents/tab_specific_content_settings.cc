@@ -94,9 +94,10 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
 }
 
 void TabSpecificContentSettings::OnCookieAccessed(
-    const GURL& url, const std::string& cookie_line, bool blocked_by_policy) {
-  net::CookieOptions options;
-  options.set_include_httponly();
+    const GURL& url,
+    const std::string& cookie_line,
+    const net::CookieOptions& options,
+    bool blocked_by_policy) {
   if (blocked_by_policy) {
     blocked_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);

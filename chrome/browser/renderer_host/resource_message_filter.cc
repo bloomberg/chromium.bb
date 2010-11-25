@@ -1750,10 +1750,10 @@ SetCookieCompletion::~SetCookieCompletion() {}
 void SetCookieCompletion::RunWithParams(const Tuple1<int>& params) {
   int result = params.a;
   bool blocked_by_policy = true;
+  net::CookieOptions options;
   if (result == net::OK ||
       result == net::OK_FOR_SESSION_ONLY) {
     blocked_by_policy = false;
-    net::CookieOptions options;
     if (result == net::OK_FOR_SESSION_ONLY)
       options.set_force_session();
     context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
@@ -1763,7 +1763,7 @@ void SetCookieCompletion::RunWithParams(const Tuple1<int>& params) {
     CallRenderViewHostContentSettingsDelegate(
         render_process_id_, render_view_id_,
         &RenderViewHostDelegate::ContentSettings::OnCookieAccessed,
-        url_, cookie_line_, blocked_by_policy);
+        url_, cookie_line_, options, blocked_by_policy);
   }
   delete this;
 }

@@ -319,6 +319,7 @@ class TestDelegate : public URLRequest::Delegate {
 
   virtual void OnSetCookie(URLRequest* request,
                            const std::string& cookie_line,
+                           const net::CookieOptions& options,
                            bool blocked_by_policy) {
     if (blocked_by_policy) {
       blocked_set_cookie_count_++;

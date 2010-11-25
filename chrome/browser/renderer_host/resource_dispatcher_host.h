@@ -216,6 +216,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
                                      net::X509Certificate* cert);
   virtual void OnSetCookie(URLRequest* request,
                            const std::string& cookie_line,
+                           const net::CookieOptions& options,
                            bool blocked_by_policy);
   virtual void OnResponseStarted(URLRequest* request);
   virtual void OnReadCompleted(URLRequest* request, int bytes_read);

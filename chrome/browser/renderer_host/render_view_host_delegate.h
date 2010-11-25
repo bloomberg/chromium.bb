@@ -70,6 +70,10 @@ namespace IPC {
 class Message;
 }
 
+namespace net {
+class CookieOptions;
+}
+
 namespace webkit_glue {
 struct FormData;
 class FormField;
@@ -392,6 +396,7 @@ class RenderViewHostDelegate {
     // OnContentBlocked.
     virtual void OnCookieAccessed(const GURL& url,
                                   const std::string& cookie_line,
+                                  const net::CookieOptions& options,
                                   bool blocked_by_policy) = 0;
 
     // Called when a specific indexed db factory in the current page was

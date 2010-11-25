@@ -10,6 +10,7 @@
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/test/testing_profile.h"
+#include "net/base/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ContentSettingImageModelTest : public RenderViewHostTestHarness {
@@ -57,7 +58,9 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   EXPECT_EQ(0, content_setting_image_model->get_icon());
   EXPECT_EQ(std::string(), content_setting_image_model->get_tooltip());
 
-  content_settings->OnCookieAccessed(GURL("http://google.com"), "A=B", false);
+  net::CookieOptions options;
+  content_settings->OnCookieAccessed(
+      GURL("http://google.com"), "A=B", options, false);
   content_setting_image_model->UpdateFromTabContents(&tab_contents);
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_NE(0, content_setting_image_model->get_icon());

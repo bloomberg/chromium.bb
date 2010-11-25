@@ -1080,6 +1080,7 @@ void ResourceDispatcherHost::OnSSLCertificateError(
 
 void ResourceDispatcherHost::OnSetCookie(URLRequest* request,
                                          const std::string& cookie_line,
+                                         const net::CookieOptions& options,
                                          bool blocked_by_policy) {
   VLOG(1) << "OnSetCookie: " << request->url().spec();
 
@@ -1090,7 +1091,7 @@ void ResourceDispatcherHost::OnSetCookie(URLRequest* request,
   CallRenderViewHostContentSettingsDelegate(
       render_process_id, render_view_id,
       &RenderViewHostDelegate::ContentSettings::OnCookieAccessed,
-      request->url(), cookie_line, blocked_by_policy);
+      request->url(), cookie_line, options, blocked_by_policy);
 }
 
 void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {
