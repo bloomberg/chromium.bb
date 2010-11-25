@@ -173,15 +173,15 @@ void ShellBrowserTestBase::TearDown() {
   host_.Release();
   browser_.Release();
 
+  // Finally blow away the host window.
+  if (IsWindow())
+    DestroyWindow();
+
   // Should have retained no objects past this point.
   EXPECT_EQ(0, InstanceCountMixinBase::all_instance_count());
   if (InstanceCountMixinBase::all_instance_count() > 0) {
     InstanceCountMixinBase::LogLeakedInstances();
   }
-
-  // Finally blow away the host window.
-  if (IsWindow())
-    DestroyWindow();
 }
 
 bool ShellBrowserTestBase::NavigateBrowser(const std::wstring& url) {
