@@ -222,17 +222,8 @@ cr.define('options.internet', function() {
                              'activate']);
               }));
         }
-        if (this.data.connected ||
-                this.data.networkType == NetworkItem.TYPE_CELLULAR) {
-          buttonsDiv.appendChild(
-              this.createButton_('options_button', 'options',
-                                 function(e) {
-                chrome.send('buttonClickCallback',
-                            [String(self.data.networkType),
-                             self.data.servicePath,
-                             'options']);
-              }));
-        } else if (!this.data.connecting && this.data.connectable) {
+        if (!this.data.connected && !this.data.connecting &&
+            this.data.connectable) {
           // connect button (if not ethernet and not showing activate button
           // and connectable)
           if (this.data.networkType != NetworkItem.TYPE_ETHERNET &&
@@ -246,6 +237,17 @@ cr.define('options.internet', function() {
                                'connect']);
                 }));
           }
+        }
+        if (this.data.connected ||
+            this.data.networkType == NetworkItem.TYPE_CELLULAR) {
+          buttonsDiv.appendChild(
+              this.createButton_('options_button', 'options',
+                                 function(e) {
+                chrome.send('buttonClickCallback',
+                            [String(self.data.networkType),
+                             self.data.servicePath,
+                             'options']);
+              }));
         }
       } else {
         // Put "Forget this network" button.
