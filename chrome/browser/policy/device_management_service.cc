@@ -19,6 +19,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/policy/device_management_backend_impl.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "webkit/glue/webkit_glue.h"
 
 namespace policy {
 
@@ -31,6 +32,10 @@ class DeviceManagementRequestContext : public URLRequestContext {
  public:
   explicit DeviceManagementRequestContext(URLRequestContext* base_context);
   virtual ~DeviceManagementRequestContext();
+
+ private:
+  // Overriden from URLRequestContext.
+  virtual const std::string& GetUserAgent(const GURL& url) const;
 };
 
 DeviceManagementRequestContext::DeviceManagementRequestContext(
@@ -58,6 +63,11 @@ DeviceManagementRequestContext::DeviceManagementRequestContext(
 DeviceManagementRequestContext::~DeviceManagementRequestContext() {
   delete http_transaction_factory_;
   delete http_auth_handler_factory_;
+}
+
+const std::string& DeviceManagementRequestContext::GetUserAgent(
+    const GURL& url) const {
+  return webkit_glue::GetUserAgent(url);
 }
 
 // Request context holder.
