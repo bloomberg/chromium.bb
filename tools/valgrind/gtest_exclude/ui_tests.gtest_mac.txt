@@ -52,6 +52,7 @@ NPAPITesterBase.Arguments
 NPAPITesterBase.GetJavaScriptURL
 NPAPITesterBase.GetJavaScriptURL2
 NPAPITesterBase.GetURL
+NPAPITesterBase.GetURLRedirectNotification
 NPAPITesterBase.ManyPlugins
 NPAPITesterBase.NPObjectProxy
 NPAPITesterBase.PluginThreadAsyncCall
