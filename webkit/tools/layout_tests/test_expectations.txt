@@ -17,6 +17,10 @@ BUG_JPARENT WIN DEBUG : inspector/styles-disable-then-delete.html = TIMEOUT
 // (72440; 72514] range
 BUG_ANTON LINUX DEBUG : fast/ruby/nested-ruby.html = CRASH PASS
 
+// Rebaseline tool wasn't working for these tests.
+BUG64394 MAC : svg/W3C-SVG-1.1/struct-image-10-t.svg = IMAGE
+BUG64395 MAC : tables/mozilla/bugs/bug14929.html = IMAGE
+
 // Need rebaseline.
 BUG_KINUKO : fast/filesystem/read-directory.html = TEXT
 BUG_KINUKO : fast/filesystem/simple-persistent.html = TEXT
