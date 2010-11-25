@@ -5,23 +5,37 @@
 #ifndef PPAPI_C_DEV_PPB_AUDIO_TRUSTED_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_TRUSTED_DEV_H_
 
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_AUDIO_TRUSTED_DEV_INTERFACE "PPB_AudioTrusted(Dev);0.1"
+#define PPB_AUDIO_TRUSTED_DEV_INTERFACE "PPB_AudioTrusted(Dev);0.2"
 
-// This interface is used to get access to the audio buffer and a socket on
-// which the client can block until the audio is ready to accept more data.
-// This interface should be used by NaCl to implement the Audio interface.
+// This interface is to be used by proxy implementations.  All
+// functions should be called from the main thread only.  The
+// resource returned is an Audio resource; most of the PPB_Audio_Dev
+// interface is also usable on this resource.
 struct PPB_AudioTrusted_Dev {
-  // Returns a Buffer object that has the audio buffer.
-  PP_Resource (*GetBuffer)(PP_Resource audio);
+  // Returns an audio resource.
+  PP_Resource (*CreateTrusted)(PP_Instance instance);
 
-  // Returns a select()-able/Wait()-able OS-specific descriptor. The browser
-  // will put a byte on the socket each time the buffer is ready to be filled.
-  // The plugin can then implement its own audio thread using select()/poll() to
-  // block until the browser is ready to receive data.
-  int (*GetOSDescriptor)(PP_Resource audio);
+  // Opens a paused audio interface, used by trusted side of proxy.
+  // Returns PP_ERROR_WOULD_BLOCK on success, and invokes
+  // the |create_callback| asynchronously to complete.
+  // As this function should always be invoked from the main thread,
+  // do not use the blocking variant of PP_CompletionCallback.
+  int32_t (*Open)(PP_Resource audio, PP_Resource config,
+                  struct PP_CompletionCallback create_callback);
+
+  // Get the sync socket.  Use once Open has completed.
+  // Returns PP_OK on success.
+  int32_t (*GetSyncSocket)(PP_Resource audio, int* sync_socket);
+
+  // Get the shared memory interface.  Use once Open has completed.
+  // Returns PP_OK on success.
+  int32_t (*GetSharedMemory)(PP_Resource audio,
+                             int* shm_handle,
+                             int32_t* shm_size);
 };
 
 #endif  // PPAPI_C_DEV_PPB_AUDIO_TRUSTED_DEV_H_
-

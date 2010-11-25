@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ppapi/c/dev/ppb_audio_dev.h"
 #include "ppapi/c/dev/ppb_audio_trusted_dev.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "webkit/glue/plugins/pepper_common.h"
 
 namespace pepper {
@@ -77,13 +78,15 @@ const PPB_AudioConfig_Dev ppb_audioconfig = {
 // PPB_Audio -------------------------------------------------------------------
 
 PP_Resource Create(PP_Instance instance_id, PP_Resource config_id,
-                   PPB_Audio_Callback callback, void* user_data) {
+                   PPB_Audio_Callback user_callback, void* user_data) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
-  // TODO(neb): Require callback to be present for untrusted plugins.
-  scoped_refptr<Audio> audio(new Audio(instance->module()));
-  if (!audio->Init(instance->delegate(), config_id, callback, user_data))
+  if (!user_callback)
+    return 0;
+  scoped_refptr<Audio> audio(new Audio(instance->module(), instance_id));
+  if (!audio->Init(instance->delegate(), config_id,
+                   user_callback, user_data))
     return 0;
   return audio->GetReference();
 }
@@ -118,19 +121,50 @@ const PPB_Audio_Dev ppb_audio = {
 
 // PPB_AudioTrusted ------------------------------------------------------------
 
-PP_Resource GetBuffer(PP_Resource audio_id) {
-  // TODO(neb): Implement me!
-  return 0;
+PP_Resource CreateTrusted(PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return 0;
+  scoped_refptr<Audio> audio(new Audio(instance->module(), instance_id));
+  return audio->GetReference();
 }
 
-int GetOSDescriptor(PP_Resource audio_id) {
-  // TODO(neb): Implement me!
-  return -1;
+int32_t Open(PP_Resource audio_id,
+             PP_Resource config_id,
+             PP_CompletionCallback created) {
+  scoped_refptr<Audio> audio = Resource::GetAs<Audio>(audio_id);
+  if (!audio)
+    return PP_ERROR_BADRESOURCE;
+  if (!created.func)
+    return PP_ERROR_BADARGUMENT;
+  PP_Instance instance_id = audio->pp_instance();
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return PP_ERROR_FAILED;
+  return audio->Open(instance->delegate(), config_id, created);
+}
+
+int32_t GetSyncSocket(PP_Resource audio_id, int* sync_socket) {
+  scoped_refptr<Audio> audio = Resource::GetAs<Audio>(audio_id);
+  if (audio)
+    return audio->GetSyncSocket(sync_socket);
+  return PP_ERROR_BADRESOURCE;
+}
+
+int32_t GetSharedMemory(PP_Resource audio_id,
+                        int* shm_handle,
+                        int32_t* shm_size) {
+  scoped_refptr<Audio> audio = Resource::GetAs<Audio>(audio_id);
+  if (audio)
+    return audio->GetSharedMemory(shm_handle, shm_size);
+  return PP_ERROR_BADRESOURCE;
 }
 
 const PPB_AudioTrusted_Dev ppb_audiotrusted = {
-  &GetBuffer,
-  &GetOSDescriptor
+  &CreateTrusted,
+  &Open,
+  &GetSyncSocket,
+  &GetSharedMemory,
 };
 
 }  // namespace
@@ -165,24 +199,37 @@ AudioConfig* AudioConfig::AsAudioConfig() {
 
 // Audio -----------------------------------------------------------------------
 
-Audio::Audio(PluginModule* module)
+Audio::Audio(PluginModule* module, PP_Instance instance_id)
     : Resource(module),
       playing_(false),
+      pp_instance_(instance_id),
+      audio_(NULL),
       socket_(NULL),
       shared_memory_(NULL),
       shared_memory_size_(0),
       callback_(NULL),
-      user_data_(NULL) {
+      user_data_(NULL),
+      create_callback_pending_(false) {
+  create_callback_ = PP_MakeCompletionCallback(NULL, NULL);
 }
 
 Audio::~Audio() {
   // Calling ShutDown() makes sure StreamCreated cannot be called anymore.
   audio_->ShutDown();
+  audio_ = NULL;
+
   // Closing the socket causes the thread to exit - wait for it.
   socket_->Close();
   if (audio_thread_.get()) {
     audio_thread_->Join();
     audio_thread_.reset();
+  }
+
+  // If the completion callback hasn't fired yet, do so here
+  // with an error condition.
+  if (create_callback_pending_) {
+    PP_RunCompletionCallback(&create_callback_, PP_ERROR_ABORTED);
+    create_callback_pending_ = false;
   }
   // Shared memory destructor will unmap the memory automatically.
 }
@@ -199,19 +246,73 @@ Audio* Audio::AsAudio() {
   return this;
 }
 
-bool Audio::Init(PluginDelegate* plugin_delegate, PP_Resource config_id,
+bool Audio::Init(PluginDelegate* plugin_delegate,
+                 PP_Resource config_id,
                  PPB_Audio_Callback callback, void* user_data) {
-  CHECK(!audio_.get());
+  CHECK(!audio_);
   config_ = Resource::GetAs<AudioConfig>(config_id);
   if (!config_)
     return false;
   callback_ = callback;
   user_data_ = user_data;
-  // When the stream is created, we'll get called back in StreamCreated().
-  audio_.reset(plugin_delegate->CreateAudio(config_->sample_rate(),
-                                            config_->sample_frame_count(),
-                                            this));
-  return audio_.get() != NULL;
+
+  // When the stream is created, we'll get called back on StreamCreated().
+  audio_ = plugin_delegate->CreateAudio(config_->sample_rate(),
+                                        config_->sample_frame_count(),
+                                        this);
+  return audio_ != NULL;
+}
+
+int32_t Audio::Open(PluginDelegate* plugin_delegate,
+                    PP_Resource config_id,
+                    PP_CompletionCallback create_callback) {
+  DCHECK(!audio_);
+  config_ = Resource::GetAs<AudioConfig>(config_id);
+  if (!config_)
+    return PP_ERROR_BADRESOURCE;
+
+  // When the stream is created, we'll get called back on StreamCreated().
+  audio_ = plugin_delegate->CreateAudio(config_->sample_rate(),
+                                        config_->sample_frame_count(),
+                                        this);
+  if (!audio_)
+    return PP_ERROR_FAILED;
+
+  // At this point, we are guaranteeing ownership of the completion
+  // callback.  Audio promises to fire the completion callback
+  // once and only once.
+  create_callback_ = create_callback;
+  create_callback_pending_ = true;
+  return PP_ERROR_WOULDBLOCK;
+}
+
+int32_t Audio::GetSyncSocket(int* sync_socket) {
+  if (socket_ != NULL) {
+#if defined(OS_POSIX)
+    *sync_socket = socket_->handle();
+#elif defined(OS_WIN)
+    *sync_socket = reinterpret_cast<int>(socket_->handle());
+#else
+    #error "Platform not supported."
+#endif
+    return PP_OK;
+  }
+  return PP_ERROR_FAILED;
+}
+
+int32_t Audio::GetSharedMemory(int* shm_handle, int32_t* shm_size) {
+  if (shared_memory_ != NULL) {
+#if defined(OS_POSIX)
+    *shm_handle = shared_memory_->handle().fd;
+#elif defined(OS_WIN)
+    *shm_handle = reinterpret_cast<int>(shared_memory_->handle());
+#else
+    #error "Platform not supported."
+#endif
+    *shm_size = shared_memory_size_;
+    return PP_OK;
+  }
+  return PP_ERROR_FAILED;
 }
 
 bool Audio::StartPlayback() {
@@ -250,8 +351,17 @@ void Audio::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = shared_memory_size;
 
+  // Trusted side of proxy can specify a callback to recieve handles.
+  if (create_callback_pending_) {
+    PP_RunCompletionCallback(&create_callback_, 0);
+    create_callback_pending_ = false;
+  }
+
+  // Trusted, non-proxy audio will invoke buffer filling callback on a
+  // dedicated thread, see Audio::Run() below.
   if (callback_) {
     shared_memory_->Map(shared_memory_size_);
+
     // In common case StartPlayback() was called before StreamCreated().
     if (playing_) {
       audio_thread_.reset(new base::DelegateSimpleThread(this,
@@ -277,4 +387,3 @@ void Audio::Run() {
 }
 
 }  // namespace pepper
-

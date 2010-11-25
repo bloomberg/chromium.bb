@@ -13,6 +13,7 @@
 #include "ppapi/c/dev/ppb_audio_dev.h"
 #include "ppapi/c/dev/ppb_audio_config_dev.h"
 #include "ppapi/c/dev/ppb_audio_trusted_dev.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
@@ -46,18 +47,31 @@ class Audio : public Resource,
               public PluginDelegate::PlatformAudio::Client,
               public base::DelegateSimpleThread::Delegate {
  public:
-  explicit Audio(PluginModule* module);
+  explicit Audio(PluginModule* module, PP_Instance instance_id);
   virtual ~Audio();
 
   static const PPB_Audio_Dev* GetInterface();
   static const PPB_AudioTrusted_Dev* GetTrustedInterface();
 
-  bool Init(PluginDelegate* plugin_delegate, PP_Resource config_id,
-            PPB_Audio_Callback callback, void* user_data);
+  bool Init(PluginDelegate* plugin_delegate,
+            PP_Resource config_id,
+            PPB_Audio_Callback user_callback, void* user_data);
+
+  int32_t Open(PluginDelegate* plugin_delegate,
+               PP_Resource config_id,
+               PP_CompletionCallback create_callback);
 
   PP_Resource GetCurrentConfiguration() {
     return config_->GetReference();
   }
+
+  PP_Instance pp_instance() {
+    return pp_instance_;
+  }
+
+  int32_t GetSyncSocket(int* sync_socket);
+
+  int32_t GetSharedMemory(int* shm_handle, int32_t* shm_size);
 
   bool StartPlayback();
 
@@ -83,8 +97,11 @@ class Audio : public Resource,
   // AudioConfig used for creating this Audio object.
   scoped_refptr<AudioConfig> config_;
 
+  // Instance id
+  PP_Instance pp_instance_;
+
   // PluginDelegate audio object that we delegate audio IPC through.
-  scoped_ptr<PluginDelegate::PlatformAudio> audio_;
+  PluginDelegate::PlatformAudio* audio_;
 
   // Socket used to notify us when audio is ready to accept new samples. This
   // pointer is created in StreamCreated().
@@ -106,9 +123,14 @@ class Audio : public Resource,
 
   // User data pointer passed verbatim to the callback function.
   void* user_data_;
+
+  // Is a create callback pending to fire?
+  bool create_callback_pending_;
+
+  // Trusted callback invoked from StreamCreated.
+  PP_CompletionCallback create_callback_;
 };
 
 }  // namespace pepper
 
 #endif  // WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_AUDIO_H_
-

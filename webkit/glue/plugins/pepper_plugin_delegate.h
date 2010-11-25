@@ -129,8 +129,6 @@ class PluginDelegate {
                                  base::SyncSocket::Handle socket) = 0;
     };
 
-    virtual ~PlatformAudio() {}
-
     // Starts the playback. Returns false on error or if called before the
     // stream is created or after the stream is closed.
     virtual bool StartPlayback() = 0;
@@ -142,6 +140,9 @@ class PluginDelegate {
     // Closes the stream. Make sure to call this before the object is
     // destructed.
     virtual void ShutDown() = 0;
+
+   protected:
+    virtual ~PlatformAudio() {}
   };
 
   class PlatformVideoDecoder {

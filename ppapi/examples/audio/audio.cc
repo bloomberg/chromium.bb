@@ -6,6 +6,7 @@
 #include <limits>
 
 #include "ppapi/cpp/dev/audio_dev.h"
+#include "ppapi/cpp/dev/audio_config_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 
@@ -17,6 +18,7 @@ const double frequency_r = 1000;
 // This sample frequency is guaranteed to work.
 const PP_AudioSampleRate_Dev sample_frequency = PP_AUDIOSAMPLERATE_44100;
 const uint32_t sample_count = 4096;
+uint32_t obtained_sample_count = 0;
 
 class MyInstance : public pp::Instance {
  public:
@@ -26,16 +28,16 @@ class MyInstance : public pp::Instance {
   }
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    audio_ = pp::Audio_Dev(
-        *this, pp::AudioConfig_Dev(sample_frequency, sample_count),
-        SineWaveCallback, this);
+    pp::AudioConfig_Dev config;
+    obtained_sample_count = pp::AudioConfig_Dev::RecommendSampleFrameCount(
+        sample_count);
+    config = pp::AudioConfig_Dev(sample_frequency, obtained_sample_count);
+    audio_ = pp::Audio_Dev(*this, config, SineWaveCallback, this);
     return audio_.StartPlayback();
   }
 
  private:
-  static void SineWaveCallback(void* samples,
-                               size_t buffer_size_in_bytes,
-                               void* thiz) {
+  static void SineWaveCallback(void* samples, size_t num_bytes, void* thiz) {
     const double th_l = 2 * 3.141592653589 * frequency_l / sample_frequency;
     const double th_r = 2 * 3.141592653589 * frequency_r / sample_frequency;
 
@@ -43,12 +45,10 @@ class MyInstance : public pp::Instance {
     size_t t = reinterpret_cast<MyInstance*>(thiz)->audio_time_;
 
     uint16_t* buf = reinterpret_cast<uint16_t*>(samples);
-    for (size_t buffer_index = 0u;
-         buffer_index < buffer_size_in_bytes;
-         buffer_index += 2) {
-      *buf++ = static_cast<uint16_t>(std::sin(th_l * t)
+    for (size_t sample = 0; sample < obtained_sample_count; ++sample) {
+      *buf++ = static_cast<uint16_t>(sin(th_l * t)
           * std::numeric_limits<uint16_t>::max());
-      *buf++ = static_cast<uint16_t>(std::sin(th_r * t++)
+      *buf++ = static_cast<uint16_t>(sin(th_r * t++)
           * std::numeric_limits<uint16_t>::max());
     }
     reinterpret_cast<MyInstance*>(thiz)->audio_time_ = t;

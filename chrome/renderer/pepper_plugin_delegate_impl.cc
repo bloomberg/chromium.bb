@@ -123,10 +123,12 @@ class PlatformContext3DImpl : public pepper::PluginDelegate::PlatformContext3D {
 
 class PlatformAudioImpl
     : public pepper::PluginDelegate::PlatformAudio,
-      public AudioMessageFilter::Delegate {
+      public AudioMessageFilter::Delegate,
+      public base::RefCountedThreadSafe<PlatformAudioImpl> {
  public:
   explicit PlatformAudioImpl(scoped_refptr<AudioMessageFilter> filter)
-      : client_(NULL), filter_(filter), stream_id_(0) {
+      : client_(NULL), filter_(filter), stream_id_(0),
+        main_message_loop_(MessageLoop::current()) {
     DCHECK(filter_);
   }
 
@@ -176,6 +178,8 @@ class PlatformAudioImpl
   scoped_refptr<AudioMessageFilter> filter_;
   // Our ID on the MessageFilter.
   int32 stream_id_;
+
+  MessageLoop* main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAudioImpl);
 };
@@ -297,7 +301,15 @@ void PlatformAudioImpl::OnLowLatencyCreated(
 #endif
   DCHECK(length);
 
-  client_->StreamCreated(handle, length, socket_handle);
+  if (MessageLoop::current() == main_message_loop_) {
+    if (client_) {
+      client_->StreamCreated(handle, length, socket_handle);
+    }
+  } else {
+    main_message_loop_->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &PlatformAudioImpl::OnLowLatencyCreated,
+                          handle, socket_handle, length));
+  }
 }
 
 void PlatformAudioImpl::ShutDown() {
@@ -309,6 +321,10 @@ void PlatformAudioImpl::ShutDown() {
   filter_->RemoveDelegate(stream_id_);
   stream_id_ = 0;
   client_ = NULL;
+
+  // Release on the IO thread so that we avoid race problems with
+  // OnLowLatencyCreated.
+  filter_->message_loop()->ReleaseSoon(FROM_HERE, this);
 }
 
 // Implements the VideoDecoder.
@@ -560,9 +576,11 @@ void PepperPluginDelegateImpl::SelectedFindResultChanged(int identifier,
 pepper::PluginDelegate::PlatformAudio* PepperPluginDelegateImpl::CreateAudio(
     uint32_t sample_rate, uint32_t sample_count,
     pepper::PluginDelegate::PlatformAudio::Client* client) {
-  scoped_ptr<PlatformAudioImpl> audio(
+  scoped_refptr<PlatformAudioImpl> audio(
       new PlatformAudioImpl(render_view_->audio_message_filter()));
   if (audio->Initialize(sample_rate, sample_count, client)) {
+
+    // Also note ReleaseSoon invoked in PlatformAudioImpl::ShutDown().
     return audio.release();
   } else {
     return NULL;
