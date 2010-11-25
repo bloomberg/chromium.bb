@@ -112,9 +112,6 @@ class BalloonHost : public RenderViewHostDelegate,
                                       const std::string& value);
   virtual void ClearInspectorSettings();
 
-  // Called when the render view has painted.
-  void RenderWidgetHostDidPaint();
-
  protected:
   virtual ~BalloonHost();
   // Must override in platform specific implementations.
