@@ -88,9 +88,7 @@ std::string OfflineLoadPage::GetHTMLContents() {
       kMaxBlankPeriod -
       NetworkStateNotifier::GetOfflineDuration().InMilliseconds());
   // Set the timeout to show the page.
-  strings.SetString("on_load",
-                    WideToUTF16Hack(base::StringPrintf(L"startTimer(%ld)",
-                                                        time_to_wait)));
+  strings.SetInteger("timeToWait", static_cast<int>(time_to_wait));
   // Button labels
   SetString(&strings, "load_button", IDS_OFFLINE_LOAD_BUTTON);
   SetString(&strings, "cancel_button", IDS_OFFLINE_CANCEL_BUTTON);

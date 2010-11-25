@@ -18,29 +18,28 @@ body {
       color-stop(0.50, rgb(255,255,255))
   );
   height: 100%;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
-}
-
-#spacer {
-  -webkit-box-flex: 0.5;
+  -webkit-box-pack: center;
+  visibility: hidden;
 }
 
 #error {
   margin-top: 150px;
-  font-size: 24px;
-  -webkit-box-flex: 1;
+  font-size: 16px;
   display: -webkit-box;
+  width : 800px;
+  max-width: 80%;
   -webkit-box-orient: horizontal;
-  max-width : 800px;
-  width: 80%;
 }
 
 #error img {
-  margin-right: 10px;
   vertical-align: middle;
+  width: 96px;
+  height: 96px;
+  -webkit-margin-end: 10px;
   -webkit-box-flex: 0;
 }
 
@@ -49,20 +48,11 @@ body {
   -webkit-box-flex: 1;
 }
 
-#heading  {
-  font-weight: bold;
-}
-
-#msg {
-  font-size: 16px;
-}
-
-#msg_box a {
-  font-size: 16px;
-}
-
 </style>
+<script src="shared/js/local_strings.js"></script>
 <script>
+var localStrings = new LocalStrings();
+
 function sendCommand(cmd) {
   window.domAutomationController.setAutomationId(1);
   window.domAutomationController.send(cmd);
@@ -71,21 +61,18 @@ function sendCommand(cmd) {
 function showPage() {
   document.body.style.visibility = 'visible';
 }
-// Start the timer to show the page.
-function startTimer(time) {
-  // wait 2.5 seconds before showing 'load now', 'go back' button.
-  setTimeout('showPage()', time);
-}
+document.addEventListener('DOMContentLoaded', function() {
+  var timeToWait = localStrings.getString('timeToWait');
+  window.setTimeout(showPage, timeToWait);
+});
 </script>
 </head>
 
-<body oncontextmenu="return false;" jsvalues="onload:on_load">
-<div id="spacer"> </div>
-<div id="error" jsvalues=".title:url">
-  <img i18n-values=".src:icon;.style.display:display_icon"
-       width="96"  height="96">
+<body oncontextmenu="return false;">
+<div id="error" i18n-values=".title:url">
+  <img i18n-values=".src:icon;.style.display:display_icon">
   <div id="msg_box">
-    <div id="headling" i18n-values=".innerText:heading"></div>
+    <h3 i18n-content="heading"></h3>
     <div id="msg" i18n-values=".innerHTML:msg"></div>
 
     <button id="continue_button" i18n-content="load_button"
@@ -101,6 +88,5 @@ function startTimer(time) {
     </a>
   </div>
 </div>
-<div id="spacer"> </div>
 </body>
 </html>
