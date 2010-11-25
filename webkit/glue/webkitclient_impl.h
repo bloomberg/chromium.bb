@@ -52,6 +52,11 @@ class WebKitClientImpl : public WebKit::WebKitClient {
       WebKit::WebLocalizedString::Name name);
   virtual WebKit::WebString queryLocalizedString(
       WebKit::WebLocalizedString::Name name, int numeric_value);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name, const WebKit::WebString& value);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name,
+      const WebKit::WebString& value1, const WebKit::WebString& value2);
   virtual void suddenTerminationChanged(bool enabled) { }
   virtual double currentTime();
   virtual void setSharedTimerFiredFunction(void (*func)());

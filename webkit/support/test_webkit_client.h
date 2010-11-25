@@ -47,6 +47,13 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebData loadResource(const char* name);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name, const WebKit::WebString& value);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name,
+      const WebKit::WebString& value1, const WebKit::WebString& value2);
   virtual WebKit::WebString defaultLocale();
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path, unsigned quota);

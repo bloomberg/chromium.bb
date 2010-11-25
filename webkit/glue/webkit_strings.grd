@@ -297,6 +297,93 @@ below:
         1024 (Medium Grade)
       </message>
 
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE" desc="Heading or short sentence shown when a file upload control in a web page requires one or more files selected, but the user didn't specify any files.">
+        Please select one or more files.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH" desc="Heading or short sentence shown when a form control in a web page requires specific type such as email address or URL, but the specified value does not comform to the type.">
+        Invalid value.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL" desc="Heading or short sentence shown there is a field which accepts multiple e-mail addresses and a user specified a value which is not a comma-separated e-mail addresses.">
+        Please enter a comma separated list of email addresses.
+      </message>
+      <message name="IDS_FORM_VALIDATION_RANGE_UNDERFLOW" desc="Heading or short sentence shown when a form control value in a web page needs to be larger than or equal to a minimum value specified by the page author, but a user specified a too small value.">
+        Value must be greater than or equal to <ph name="MINIMUM">$1<ex>0</ex></ph>.
+      </message>
+      <message name="IDS_FORM_VALIDATION_RANGE_OVERFLOW" desc="Heading or short sentence shown when a form control value in a web page needs to be smaller than or equal to a maximum value specified by the page author, but a user specified a too large value.">
+        Value must be less than or equal to <ph name="MAXIMUM">$1<ex>100</ex></ph>.
+      </message>
+      <message name="IDS_FORM_VALIDATION_STEP_MISMATCH" desc="Heading or short sentence shown when a form control value in a web page should be aligned to a step value specified by the page author, but a user speficified non-aligned value. e.g. A number type field, minimum value is 0, and step value is 4. If A user-specified value is not a multiple of 4, this warning message is shown.">
+        Invalid value.
+      </message>
+
+<!-- The following IDS_FORM_VALIDATION_* messages were taken from Mozilla's dom.properties file.
+
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1/GPL 2.0/LGPL 2.1
+#
+# The contents of this file are subject to the Mozilla Public License Version
+# 1.1 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is mozilla.org code.
+#
+# The Initial Developer of the Original Code is
+# Netscape Communications Corporation.
+# Portions created by the Initial Developer are Copyright (C) 2001
+# the Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#   Mitch <mstoltz@netscape.com> (original author)
+#   Ehsan Akhgari <ehsan.akhgari@gmail.com>
+#
+# Alternatively, the contents of this file may be used under the terms of
+# either of the GNU General Public License Version 2 or later (the "GPL"),
+# or the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+# in which case the provisions of the GPL or the LGPL are applicable instead
+# of those above. If you wish to allow use of your version of this file only
+# under the terms of either the GPL or the LGPL, and not to allow others to
+# use your version of this file under the terms of the MPL, indicate your
+# decision by deleting the provisions above and replace them with the notice
+# and other provisions required by the GPL or the LGPL. If you do not delete
+# the provisions above, a recipient may use your version of this file under
+# the terms of any one of the MPL, the GPL or the LGPL.
+#
+# ***** END LICENSE BLOCK *****
+-->
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING" desc="Heading or short sentence shown when a text form control in a web page requires a value, but the user didn't specify any value.">
+        Please fill out this field.
+      </message>
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_CHECKBOX" desc="Heading or short sentence shown when a checkbox control in a web page requires to be checked, but the user didn't check it.">
+        Please check this box if you want to proceed.
+      </message>
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_FILE" desc="Heading or short sentence shown when a file upload control in a web page requires a file selected, but the user didn't specify any file.">
+        Please select a file.
+      </message>
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_RADIO" desc="Heading or short sentence shown when a radio button of a radio button group in a web page requires to be selected, but the user selected nothing.">
+        Please select one of these options.
+      </message>
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_SELECT" desc="Heading or short sentence shown when a value of a menu-list control in a web page requires to be selected, but the user selected nothing.">
+        Please select an item in the list.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL" desc="Heading or short sentence shown when there is an email field in a form and a user specified a value which doesn't look like an e-mail address.">
+        Please enter an email address.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_URL" desc="Heading or short sentence shown when there is a URL field in a form and a user specified a value which doesn't look like a URL.">
+        Please enter a URL.
+      </message>
+      <message name="IDS_FORM_VALIDATION_PATTERN_MISMATCH" desc="Heading or short sentence shown when a form control value needs to satisfy a pattern specified by the page author, but a user specified unmatched value.">
+        Please match the requested format.
+      </message>
+      <message name="IDS_FORM_VALIDATION_TOO_LONG" desc="Heading or short sentence shown when a form control in a web page needs to be shoter than a length specified by the page author, but a user specified long value.">
+        Please shorten this text to <ph name="MAX_CHARACTERS">$2<ex>100</ex></ph> characters or less (you are currently using <ph name="CURRENT_LENGTH">$1<ex>101</ex></ph> characters).
+      </message>
+
       <message name="IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG" desc="Message displayed by the default plugin in its main window">
         <ph name="PLUGIN">$1<ex>Realplayer</ex></ph> plug-in is not installed
       </message>

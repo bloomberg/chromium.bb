@@ -156,10 +156,36 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_KEYGEN_HIGH_GRADE_KEY;
     case WebLocalizedString::KeygenMenuMediumGradeKeySize:
       return IDS_KEYGEN_MED_GRADE_KEY;
-    // TODO(tkent): Remove default: when we merge the next
-    // WebLocalizedString.h change.
-    default:
-      break;
+    case WebLocalizedString::ValidationValueMissing:
+      return IDS_FORM_VALIDATION_VALUE_MISSING;
+    case WebLocalizedString::ValidationValueMissingForCheckbox:
+      return IDS_FORM_VALIDATION_VALUE_MISSING_CHECKBOX;
+    case WebLocalizedString::ValidationValueMissingForFile:
+      return IDS_FORM_VALIDATION_VALUE_MISSING_FILE;
+    case WebLocalizedString::ValidationValueMissingForMultipleFile:
+      return IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE;
+    case WebLocalizedString::ValidationValueMissingForRadio:
+      return IDS_FORM_VALIDATION_VALUE_MISSING_RADIO;
+    case WebLocalizedString::ValidationValueMissingForSelect:
+      return IDS_FORM_VALIDATION_VALUE_MISSING_SELECT;
+    case WebLocalizedString::ValidationTypeMismatch:
+      return IDS_FORM_VALIDATION_TYPE_MISMATCH;
+    case WebLocalizedString::ValidationTypeMismatchForEmail:
+      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL;
+    case WebLocalizedString::ValidationTypeMismatchForMultipleEmail:
+      return IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL;
+    case WebLocalizedString::ValidationTypeMismatchForURL:
+      return IDS_FORM_VALIDATION_TYPE_MISMATCH_URL;
+    case WebLocalizedString::ValidationPatternMismatch:
+      return IDS_FORM_VALIDATION_PATTERN_MISMATCH;
+    case WebLocalizedString::ValidationTooLong:
+      return IDS_FORM_VALIDATION_TOO_LONG;
+    case WebLocalizedString::ValidationRangeUnderflow:
+      return IDS_FORM_VALIDATION_RANGE_UNDERFLOW;
+    case WebLocalizedString::ValidationRangeOverflow:
+      return IDS_FORM_VALIDATION_RANGE_OVERFLOW;
+    case WebLocalizedString::ValidationStepMismatch:
+      return IDS_FORM_VALIDATION_STEP_MISMATCH;
   }
   return -1;
 }
@@ -311,12 +337,30 @@ WebString WebKitClientImpl::queryLocalizedString(
 
 WebString WebKitClientImpl::queryLocalizedString(
     WebLocalizedString::Name name, int numeric_value) {
+  return queryLocalizedString(name, base::IntToString16(numeric_value));
+}
+
+WebString WebKitClientImpl::queryLocalizedString(
+    WebLocalizedString::Name name, const WebString& value) {
   int message_id = ToMessageID(name);
   if (message_id < 0)
     return WebString();
-  return ReplaceStringPlaceholders(GetLocalizedString(message_id),
-                                   base::IntToString16(numeric_value),
-                                   NULL);
+  return ReplaceStringPlaceholders(GetLocalizedString(message_id), value, NULL);
+}
+
+WebString WebKitClientImpl::queryLocalizedString(
+    WebLocalizedString::Name name,
+    const WebString& value1,
+    const WebString& value2) {
+  int message_id = ToMessageID(name);
+  if (message_id < 0)
+    return WebString();
+  std::vector<string16> values;
+  values.reserve(2);
+  values.push_back(value1);
+  values.push_back(value2);
+  return ReplaceStringPlaceholders(
+      GetLocalizedString(message_id), values, NULL);
 }
 
 double WebKitClientImpl::currentTime() {

@@ -104,6 +104,13 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
   virtual WebKit::WebData loadResource(const char* name);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name, const WebKit::WebString& value);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name,
+      const WebKit::WebString& value1, const WebKit::WebString& value2);
 
   virtual WebKit::WebString defaultLocale() {
     return ASCIIToUTF16("en-US");
