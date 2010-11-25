@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 
@@ -332,6 +333,13 @@ std::string Network::GetErrorString() const {
       break;
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
+}
+
+std::string Network::GetBaseServicePath() const {
+  size_t idx = service_path_.find_last_of('/');
+  if (idx == std::string::npos)
+    return service_path_;
+  return service_path_.substr(idx + 1);
 }
 
 void Network::InitIPAddress() {
@@ -1058,6 +1066,15 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         wifi->set_connecting(true);
         wifi_ = wifi;
       }
+      // If we are not the owner, and we are providing a password,
+      // flag the network to be forgotten if we connect to it.
+      // TODO(stevenjb): Remove this once flimflam handles profiles correctly.
+      if (!UserManager::Get()->current_user_is_owner()) {
+        if (!password.empty() || !certpath.empty()) {
+          std::string path = network->GetBaseServicePath();
+          networks_to_forget_.insert(path);
+        }
+      }
       NotifyNetworkManagerChanged();
       return true;
     } else {
@@ -1496,7 +1513,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                  << " fav=" << service->favorite
                  << " auto=" << service->auto_connect;
         if (service->type == TYPE_WIFI) {
-          remembered_wifi_networks_.push_back(new WifiNetwork(service));
+          WifiNetwork* wifi = new WifiNetwork(service);
+          remembered_wifi_networks_.push_back(wifi);
+          // If we are not the owner, we may need to forget this network.
+          std::string path = wifi->GetBaseServicePath();
+          std::set<std::string>::iterator iter =
+              networks_to_forget_.find(path);
+          if (iter != networks_to_forget_.end()) {
+            ForgetWifiNetwork(wifi->service_path());
+            networks_to_forget_.erase(iter);
+          }
         }
       }
     }
@@ -1864,6 +1890,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // Delayed task to retrieve the network information.
   CancelableTask* update_task_;
+
+  // List of networks to forget when not the owner.
+  std::set<std::string> networks_to_forget_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImpl);
 };
