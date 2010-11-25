@@ -319,12 +319,15 @@ class BrowserHelperObjectTest: public testing::Test {
     }
   }
 
-  void ExpectFireOnRemovedEvent() {
-    EXPECT_CALL(bho_->mock_tab_events_funnel_, OnRemoved(_));
+  // Take the number of times the call is expected as input.
+  void ExpectFireOnRemovedEvent(int times) {
+    EXPECT_CALL(bho_->mock_tab_events_funnel_, OnRemoved(_)).Times(times);
   }
 
-  void ExpectFireOnUnmappedEvent() {
-    EXPECT_CALL(bho_->mock_tab_events_funnel_, OnTabUnmapped(_, _));
+  // Take the number of times the call is expected as input.
+  void ExpectFireOnUnmappedEvent(int times) {
+    EXPECT_CALL(bho_->mock_tab_events_funnel_, OnTabUnmapped(_, _)).
+        Times(times);
   }
 
   static const wchar_t* kUrl1;
@@ -424,8 +427,10 @@ TEST_F(BrowserHelperObjectTest, SetSiteWithBrowserSucceeds) {
       IID_IUnknown, reinterpret_cast<void**>(&set_site)));
   ASSERT_TRUE(set_site == site_keeper_);
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  // No teardown events are fired because neither the create event nor the tab
+  // ID mapping occurred.
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 
   // And check that the connection was severed.
@@ -455,8 +460,43 @@ TEST_F(BrowserHelperObjectTest, OnNavigateCompleteHandled) {
   ExpectTopBrowserNavigation(true, true);
   browser_->FireOnNavigateComplete(browser_, &CComVariant(kUrl1));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(1);
+  ExpectFireOnUnmappedEvent(1);
+  ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
+}
+
+TEST_F(BrowserHelperObjectTest, OnNavigateCompleteChromeFrameTab) {
+  CreateSite();
+  CreateBrowser();
+  CreateHandler();
+  ExpectChromeFrameGetSessionId();
+
+  // The site needs to return the top-level browser.
+  site_->browser_ = browser_;
+
+  ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
+
+  // First navigate once without Chrome Frame tab.
+  EXPECT_CALL(*bho_, CreateFrameEventHandler(browser_, NULL, NotNull())).
+      WillOnce(DoAll(CopyInterfaceToArgument<2>(handler_keeper_),
+                     Return(S_OK)));
+  EXPECT_CALL(*bho_, BrowserContainsChromeFrame(browser_)).
+      WillOnce(Return(false));
+  ExpectHandleNavigation(handler_, true);
+  ExpectTopBrowserNavigation(true, true);
+  browser_->FireOnNavigateComplete(browser_, &CComVariant(kUrl1));
+
+  // Now navigate with Chrome Frame.
+  EXPECT_CALL(*bho_, CreateFrameEventHandler(browser_, NULL, NotNull())).
+      WillOnce(DoAll(CopyInterfaceToArgument<2>(handler_keeper_),
+                     Return(S_OK)));
+  EXPECT_CALL(*bho_, BrowserContainsChromeFrame(browser_)).
+      WillOnce(Return(true));
+  ExpectFireOnRemovedEvent(1);
+  ExpectHandleNavigation(handler_, true);
+  browser_->FireOnNavigateComplete(browser_, &CComVariant(kUrl1));
+
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -486,8 +526,8 @@ TEST_F(BrowserHelperObjectTest, RenavigationNotifiesUrl) {
               OnUpdated(_, StrEq(kUrl1), READYSTATE_UNINITIALIZED)).Times(1);
   browser_->FireOnNavigateComplete(browser_, &CComVariant(kUrl1));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(1);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -514,8 +554,10 @@ TEST_F(BrowserHelperObjectTest, OnNavigateCompleteUnhandled) {
   // Non-BSTR url parameter.
   browser_->FireOnNavigateComplete(browser_, &CComVariant(non_browser));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  // No teardown events are fired because neither the create event nor the tab
+  // ID mapping occurred.
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -573,8 +615,8 @@ TEST_F(BrowserHelperObjectTest, HandleNavigateComplete) {
   ExpectTopBrowserNavigation(false, false);
   bho_->HandleNavigateComplete(browser_, CComBSTR(kUrl1));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(1);
+  ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -601,8 +643,8 @@ TEST_F(BrowserHelperObjectTest, OnNavigationCompletedWithUnrelatedBrowser) {
           Times(Exactly(0));
 
   bho_->HandleNavigateComplete(browser2, CComBSTR(kUrl1));
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -657,8 +699,10 @@ TEST_F(BrowserHelperObjectTest, AttachOrphanedBrowser) {
   EXPECT_HRESULT_SUCCEEDED(bho_->AttachBrowser(browser3, browser3_parent,
                                                handler3));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  // No teardown events are fired because neither the create event nor the tab
+  // ID mapping occurred.
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -682,11 +726,34 @@ TEST_F(BrowserHelperObjectTest, IFrameEventHandlerHost) {
   // But not twice.
   EXPECT_HRESULT_FAILED(bho_->DetachBrowser(browser_, NULL, handler_));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 
   // TODO(siggi@chromium.org): test hierarchial attach/detach/TearDown.
+}
+
+TEST_F(BrowserHelperObjectTest, IFrameEventHandlerHostReadyStateChanged) {
+  CreateSite();
+  CreateBrowser();
+  CreateHandler();
+  ExpectChromeFrameGetSessionId();
+
+  ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
+  ASSERT_TRUE(BhoHasSite());
+  ASSERT_HRESULT_SUCCEEDED(bho_->AttachBrowser(browser_, NULL, handler_));
+
+  ExpectHandleNavigation(handler_, true);
+  ExpectTopBrowserNavigation(true, true);
+  browser_->FireOnNavigateComplete(browser_, &CComVariant(kUrl1));
+
+  EXPECT_CALL(bho_->mock_tab_events_funnel_,
+              OnUpdated(_, NULL, READYSTATE_COMPLETE)).Times(1);
+  ASSERT_HRESULT_SUCCEEDED(bho_->OnReadyStateChanged(READYSTATE_LOADING));
+
+  ExpectFireOnRemovedEvent(1);
+  ExpectFireOnUnmappedEvent(1);
+  ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
 TEST_F(BrowserHelperObjectTest, InsertCode) {
@@ -706,8 +773,8 @@ TEST_F(BrowserHelperObjectTest, InsertCode) {
   ASSERT_HRESULT_SUCCEEDED(bho_->InsertCode(code, file, FALSE,
                                             kCeeeTabCodeTypeCss));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -746,8 +813,8 @@ TEST_F(BrowserHelperObjectTest, InsertCodeAllFrames) {
   ASSERT_HRESULT_SUCCEEDED(bho_->InsertCode(code, file, TRUE,
                                             kCeeeTabCodeTypeJs));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -781,8 +848,8 @@ TEST_F(BrowserHelperObjectTest, IsHashChange) {
   EXPECT_FALSE(bho_->CallIsHashChange(url3, url6));
   EXPECT_FALSE(bho_->CallIsHashChange(url5, url6));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -799,8 +866,8 @@ TEST_F(BrowserHelperObjectTest, SetToolBandSessionId) {
         kGoodTabHandle)).WillOnce(Return(E_FAIL));
   EXPECT_EQ(E_FAIL, bho_->SetToolBandSessionId(kGoodTabId));
 
-  ExpectFireOnRemovedEvent();
-  ExpectFireOnUnmappedEvent();
+  ExpectFireOnRemovedEvent(0);
+  ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 

@@ -646,34 +646,68 @@ HRESULT BrowserHelperObject::CreateChromeFrameHost() {
                                                chrome_frame_host_.Receive());
 }
 
-HRESULT BrowserHelperObject::FireOnCreatedEvent(BSTR url) {
+void BrowserHelperObject::FireOnCreatedEvent(BSTR url) {
   DCHECK(url != NULL);
   DCHECK(tab_window_ != NULL);
   DCHECK(!fired_on_created_event_);
+  // Avoid sending double-creation events. Also only fire the event if we're
+  // NOT in full-tab mode, because by design, extensions are not supposed to be
+  // aware of full-tab Chrome Frame tabs.
+  if (fired_on_created_event_ || full_tab_chrome_frame_)
+    return;
+
   HRESULT hr = tab_events_funnel().OnCreated(tab_window_, url,
       lower_bound_ready_state_ == READYSTATE_COMPLETE);
   fired_on_created_event_ = SUCCEEDED(hr);
-  DCHECK(SUCCEEDED(hr)) << "Failed to fire the tab.onCreated event " <<
+  DCHECK(SUCCEEDED(hr)) << "Failed to fire the tabs.onCreated event " <<
       com::LogHr(hr);
-  return hr;
 }
 
-HRESULT BrowserHelperObject::FireOnRemovedEvent() {
+void BrowserHelperObject::FireOnUpdatedEvent(BSTR url,
+                                             READYSTATE ready_state) {
   DCHECK(tab_window_ != NULL);
-  HRESULT hr =
-      tab_events_funnel().OnRemoved(tab_window_);
-  DCHECK(SUCCEEDED(hr)) << "Failed to fire the tab.onRemoved event " <<
+  DCHECK(fired_on_created_event_);
+  // Only fire the event if the creation event was already fired for the
+  // tab.
+  if (!fired_on_created_event_)
+    return;
+
+  // The onCreated event should not have been fired if we are in full-tab mode.
+  DCHECK(!full_tab_chrome_frame_);
+  HRESULT hr = tab_events_funnel().OnUpdated(tab_window_, url, ready_state);
+  DCHECK(SUCCEEDED(hr)) << "Failed to fire the tabs.onUpdated event " <<
       com::LogHr(hr);
-  return hr;
 }
 
-HRESULT BrowserHelperObject::FireOnUnmappedEvent() {
+void BrowserHelperObject::FireOnRemovedEvent() {
   DCHECK(tab_window_ != NULL);
-  DCHECK(tab_id_ != kInvalidChromeSessionId);
+  // Only fire the event if the creation event was already fired for the
+  // tab.
+  if (!fired_on_created_event_)
+    return;
+
+  // The onCreated event should not have been fired if we are in full-tab mode.
+  DCHECK(!full_tab_chrome_frame_);
+  HRESULT hr = tab_events_funnel().OnRemoved(tab_window_);
+  DCHECK(SUCCEEDED(hr)) << "Failed to fire the tabs.onRemoved event " <<
+      com::LogHr(hr);
+  // We've now negated the onCreated event, as far as extensions are
+  // concerned.
+  fired_on_created_event_ = false;
+}
+
+void BrowserHelperObject::FireOnUnmappedEvent() {
+  DCHECK(tab_window_ != NULL);
+  // Only send the event to the broker if the tab ID was actually mapped to
+  // begin with. This may not happen if the BHO is being torn down before the
+  // Chrome Frame instance was ready to provide a session ID.
+  if (tab_id_ == kInvalidChromeSessionId)
+    return;
+
   HRESULT hr = tab_events_funnel().OnTabUnmapped(tab_window_, tab_id_);
   DCHECK(SUCCEEDED(hr)) << "Failed to fire the ceee.onTabUnmapped event " <<
       com::LogHr(hr);
-  return hr;
+  tab_id_ = kInvalidChromeSessionId;
 }
 
 void BrowserHelperObject::CloseAll(IContentScriptNativeApi* instance) {
@@ -997,7 +1031,7 @@ bool BrowserHelperObject::BrowserContainsChromeFrame(IWebBrowser2* browser) {
 HRESULT BrowserHelperObject::AttachBrowserHandler(IWebBrowser2* webbrowser,
     IFrameEventHandler** handler) {
   // We're not attached yet, figure out whether we're attaching
-  // to the top-level browser or a frame, and looukup the parentage
+  // to the top-level browser or a frame, and lookup the parentage
   // in the latter case.
   ScopedWebBrowser2Ptr parent_browser;
   HRESULT hr = S_OK;
@@ -1033,18 +1067,21 @@ HRESULT BrowserHelperObject::AttachBrowserHandler(IWebBrowser2* webbrowser,
       bool is_chrome_frame = BrowserContainsChromeFrame(webbrowser);
 
       if (is_chrome_frame) {
-        fired_on_created_event_ = true;
+        // We have navigated to a full tab Chrome Frame page. If the previous
+        // page was an IE tab, then the FireOnRemovedEvent call below will send
+        // out a tabs.onRemoved event so that extensions will believe the tab
+        // is dead.
+        FireOnRemovedEvent();
+        // The code must preserve an invariant: If full_tab_chrome_frame_ is
+        // true, then fired_on_created_event_ must always be false, because
+        // we never want to fire events when in full-tab mode.
+        DCHECK(!fired_on_created_event_);
         full_tab_chrome_frame_ = true;
-        // Send a tabs.onRemoved event to make the extension believe the tab is
-        // dead.
-        hr = FireOnRemovedEvent();
-        DCHECK(SUCCEEDED(hr));
       } else if (document_is_mshtml) {
         // We know it's MSHTML. We check if the last page was chrome frame.
         if (full_tab_chrome_frame_) {
-          // This will send a tabs.onCreated event later to balance the
-          // onRemoved event above.
-          fired_on_created_event_ = false;
+          // Check that the invariant described above has been preserved.
+          DCHECK(!fired_on_created_event_);
           full_tab_chrome_frame_ = false;
         }
       }
@@ -1130,29 +1167,18 @@ void BrowserHelperObject::HandleNavigateComplete(IWebBrowser2* webbrowser,
       // At this point, we should have all the tab windows created,
       // including the proper lower bound ready state set just before,
       // so setup the tab info if it has not been set yet.
-      if (!fired_on_created_event_) {
-        hr = FireOnCreatedEvent(url);
-        DCHECK(SUCCEEDED(hr)) << "Failed to fire tab created event " <<
-            com::LogHr(hr);
-      }
+      if (!fired_on_created_event_)
+        FireOnCreatedEvent(url);
 
       // The onUpdate event usually gets fired after the onCreated,
       // which is fired from FireOnCreatedEvent above.
-      DCHECK(tab_window_ != NULL);
-      hr = tab_events_funnel().OnUpdated(tab_window_, url,
-                                         lower_bound_ready_state_);
-      DCHECK(SUCCEEDED(hr)) << "Failed to fire tab updated event " <<
-          com::LogHr(hr);
+      FireOnUpdatedEvent(url, lower_bound_ready_state_);
 
       // If this is a hash change, we manually fire the OnUpdated for the
       // complete ready state as we don't receive ready state notifications
       // for hash changes.
-      if (is_hash_change) {
-        hr = tab_events_funnel().OnUpdated(tab_window_, url,
-                                           READYSTATE_COMPLETE);
-        DCHECK(SUCCEEDED(hr)) << "Failed to fire tab updated event " <<
-            com::LogHr(hr);
-      }
+      if (is_hash_change)
+        FireOnUpdatedEvent(url, READYSTATE_COMPLETE);
     }
   }
 }
@@ -1315,8 +1341,27 @@ HRESULT BrowserHelperObject::OnReadyStateChanged(READYSTATE ready_state) {
     }
   }
 
-  return HandleReadyStateChanged(lower_bound_ready_state_,
-                                 new_lowest_ready_state);
+  if (EnsureTabId() == false) {
+    deferred_tab_id_call_.push_back(NewRunnableMethod(
+        this, &BrowserHelperObject::OnReadyStateChangedImpl,
+        lower_bound_ready_state_, new_lowest_ready_state));
+  } else {
+    OnReadyStateChangedImpl(lower_bound_ready_state_, new_lowest_ready_state);
+  }
+  return S_OK;
+}
+
+void BrowserHelperObject::OnReadyStateChangedImpl(READYSTATE old_state,
+                                                  READYSTATE new_state) {
+  if (old_state == new_state)
+    return;
+
+  // Remember the new lowest ready state as our current one.
+  lower_bound_ready_state_ = new_state;
+
+  // Fire the event if the new ready state got us to or away from complete.
+  if (old_state == READYSTATE_COMPLETE || new_state == READYSTATE_COMPLETE)
+    FireOnUpdatedEvent(NULL, new_state);
 }
 
 HRESULT BrowserHelperObject::GetReadyState(READYSTATE* ready_state) {
@@ -1391,21 +1436,6 @@ void BrowserHelperObject::InsertCodeImpl(
   }
 }
 
-HRESULT BrowserHelperObject::HandleReadyStateChanged(READYSTATE old_state,
-                                                     READYSTATE new_state) {
-  if (old_state == new_state)
-    return S_OK;
-
-  // Remember the new lowest ready state as our current one.
-  lower_bound_ready_state_ = new_state;
-
-  if (old_state == READYSTATE_COMPLETE || new_state == READYSTATE_COMPLETE) {
-    // The new ready state got us to or away from complete, so fire the event.
-    DCHECK(tab_window_ != NULL);
-    return tab_events_funnel().OnUpdated(tab_window_, NULL, new_state);
-  }
-  return S_OK;
-}
 
 HRESULT BrowserHelperObject::GetMatchingUserScriptsCssContent(
     const GURL& url, bool require_all_frames, std::string* css_content) {

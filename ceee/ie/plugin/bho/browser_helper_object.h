@@ -209,6 +209,7 @@ class ATL_NO_VTABLE BrowserHelperObject
   void OnNavigateErrorImpl(const ScopedWebBrowser2Ptr& webbrowser,
                            const CComBSTR& url,
                            LONG status_code);
+  void OnReadyStateChangedImpl(READYSTATE old_state, READYSTATE new_state);
   void InsertCodeImpl(const CComBSTR& code,
                       const CComBSTR& file,
                       bool all_frames,
@@ -221,8 +222,6 @@ class ATL_NO_VTABLE BrowserHelperObject
                             IFrameEventHandler** handler);
 
   virtual void HandleNavigateComplete(IWebBrowser2* webbrowser, BSTR url);
-  virtual HRESULT HandleReadyStateChanged(READYSTATE old_state,
-                                          READYSTATE new_state);
 
   // Unit testing seam to create the frame event handler.
   virtual HRESULT CreateFrameEventHandler(IWebBrowser2* browser,
@@ -273,13 +272,16 @@ class ATL_NO_VTABLE BrowserHelperObject
   virtual TabEventsFunnel& tab_events_funnel() { return tab_events_funnel_; }
 
   // Fires the tab.onCreated event via the tab event funnel.
-  virtual HRESULT FireOnCreatedEvent(BSTR url);
+  virtual void FireOnCreatedEvent(BSTR url);
+
+  // Fires the tab.onUpdated event via the tab event funnel.
+  virtual void FireOnUpdatedEvent(BSTR url, READYSTATE ready_state);
 
   // Fires the tab.onRemoved event via the tab event funnel.
-  virtual HRESULT FireOnRemovedEvent();
+  virtual void FireOnRemovedEvent();
 
   // Fires the private message to unmap a tab to its BHO.
-  virtual HRESULT FireOnUnmappedEvent();
+  virtual void FireOnUnmappedEvent();
 
   // Loads our manifest and initialize our librarian.
   virtual void LoadManifestFile(const std::wstring& base_dir);
