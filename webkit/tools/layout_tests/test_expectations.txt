@@ -21,6 +21,8 @@ BUG_ANTON LINUX DEBUG : fast/ruby/nested-ruby.html = CRASH PASS
 BUG64394 MAC : svg/W3C-SVG-1.1/struct-image-10-t.svg = IMAGE
 BUG64395 MAC : tables/mozilla/bugs/bug14929.html = IMAGE
 
+BUG_THAKIS MAC : fast/repaint/block-layout-inline-children-replaced.html = IMAGE PASS
+
 // Need rebaseline.
 BUG_KINUKO : fast/filesystem/read-directory.html = TEXT
 BUG_KINUKO : fast/filesystem/simple-persistent.html = TEXT
