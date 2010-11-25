@@ -240,8 +240,9 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
   // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
   // requests them.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      id(), profile->GetPath().Append(
-          fileapi::FileSystemPathManager::kFileSystemDirectory),
+      id(),
+      fileapi::FileSystemPathManager::GetFileSystemCommonRootDirectory(
+          profile->GetPath()),
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_CREATE |
       base::PLATFORM_FILE_OPEN_ALWAYS |

@@ -210,8 +210,8 @@ class FileSystemPathManagerTest : public testing::Test {
 
   FilePath data_path() { return data_dir_->path(); }
   FilePath file_system_path() {
-    return data_dir_->path().Append(
-        FileSystemPathManager::kFileSystemDirectory);
+    return FileSystemPathManager::GetFileSystemCommonRootDirectory(
+        data_dir_->path());
   }
 
  private:
