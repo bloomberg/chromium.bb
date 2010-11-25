@@ -7,7 +7,6 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"
-#include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/net/service_url_request_context.h"
@@ -16,15 +15,14 @@
 
 CloudPrintURLFetcher::CloudPrintURLFetcher()
     : delegate_(NULL),
-      protect_entry_(NULL),
       num_retries_(0) {
 }
 
 void CloudPrintURLFetcher::StartGetRequest(const GURL& url,
                                            Delegate* delegate,
                                            const std::string& auth_token,
-                                           const std::string& retry_policy) {
-  StartRequestHelper(url, URLFetcher::GET, delegate, auth_token, retry_policy,
+                                           int max_retries) {
+  StartRequestHelper(url, URLFetcher::GET, delegate, auth_token, max_retries,
                      std::string(), std::string());
 }
 
@@ -32,10 +30,10 @@ void CloudPrintURLFetcher::StartPostRequest(
     const GURL& url,
     Delegate* delegate,
     const std::string& auth_token,
-    const std::string& retry_policy,
+    int max_retries,
     const std::string& post_data_mime_type,
     const std::string& post_data) {
-  StartRequestHelper(url, URLFetcher::POST, delegate, auth_token, retry_policy,
+  StartRequestHelper(url, URLFetcher::POST, delegate, auth_token, max_retries,
                      post_data_mime_type, post_data);
 }
 
@@ -88,23 +86,23 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
   }
   // Retry the request if needed.
   if (action == RETRY_REQUEST) {
-    int64 back_off_time =
-        protect_entry_->UpdateBackoff(URLFetcherProtectEntry::FAILURE);
+    // If the response code is greater than or equal to 500, then the back-off
+    // period has been increased at the network level; otherwise, explicitly
+    // call ReceivedContentWasMalformed() to count the current request as a
+    // failure and increase the back-off period.
+    if (response_code < 500)
+      request_->ReceivedContentWasMalformed();
+
     ++num_retries_;
-    int max_retries = protect_entry_->max_retries();
-    if ((-1 != max_retries) && (num_retries_ > max_retries)) {
+    if ((-1 != source->max_retries()) &&
+        (num_retries_ > source->max_retries())) {
       // Retry limit reached. Give up.
       delegate_->OnRequestGiveUp();
     } else {
       // Either no retry limit specified or retry limit has not yet been
       // reached. Try again.
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          NewRunnableMethod(this, &CloudPrintURLFetcher::StartRequestNow),
-          back_off_time);
+      request_->Start();
     }
-  } else {
-    protect_entry_->UpdateBackoff(URLFetcherProtectEntry::SUCCESS);
   }
 }
 
@@ -113,7 +111,7 @@ void CloudPrintURLFetcher::StartRequestHelper(
     URLFetcher::RequestType request_type,
     Delegate* delegate,
     const std::string& auth_token,
-    const std::string& retry_policy,
+    int max_retries,
     const std::string& post_data_mime_type,
     const std::string& post_data) {
   DCHECK(delegate);
@@ -121,6 +119,7 @@ void CloudPrintURLFetcher::StartRequestHelper(
   request_->set_request_context(GetRequestContextGetter());
   // Since we implement our own retry logic, disable the retry in URLFetcher.
   request_->set_automatically_retry_on_5xx(false);
+  request_->set_max_retries(max_retries);
   delegate_ = delegate;
   std::string headers = "Authorization: GoogleLogin auth=";
   headers += auth_token;
@@ -130,16 +129,7 @@ void CloudPrintURLFetcher::StartRequestHelper(
   if (request_type == URLFetcher::POST) {
     request_->set_upload_data(post_data_mime_type, post_data);
   }
-  // Initialize the retry policy for this request.
-  protect_entry_ =
-      URLFetcherProtectManager::GetInstance()->Register(retry_policy);
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &CloudPrintURLFetcher::StartRequestNow),
-      protect_entry_->UpdateBackoff(URLFetcherProtectEntry::SEND));
-}
 
-void CloudPrintURLFetcher::StartRequestNow() {
   request_->Start();
 }
 

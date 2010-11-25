@@ -91,7 +91,7 @@ void PrinterJobHandler::Start() {
         request_->StartGetRequest(
             CloudPrintHelpers::GetUrlForPrinterDelete(
                 cloud_print_server_url_, printer_info_cloud_.printer_id),
-            this, auth_token_, kCloudPrintAPIRetryPolicy);
+            this, auth_token_, kCloudPrintAPIMaxRetryCount);
       }
       if (!task_in_progress_ && printer_update_pending_) {
         printer_update_pending_ = false;
@@ -107,7 +107,7 @@ void PrinterJobHandler::Start() {
             CloudPrintHelpers::GetUrlForJobFetch(
                 cloud_print_server_url_, printer_info_cloud_.printer_id,
                 job_fetch_reason_),
-            this, auth_token_, kCloudPrintAPIRetryPolicy);
+            this, auth_token_, kCloudPrintAPIMaxRetryCount);
         last_job_fetch_time_ = base::TimeTicks::Now();
         VLOG(1) << "Last job fetch time for printer "
                 << printer_info_.printer_name.c_str() << " is "
@@ -214,7 +214,7 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
     request_->StartPostRequest(
         CloudPrintHelpers::GetUrlForPrinterUpdate(
             cloud_print_server_url_, printer_info_cloud_.printer_id),
-        this, auth_token_, kCloudPrintAPIRetryPolicy, mime_type, post_data);
+        this, auth_token_, kCloudPrintAPIMaxRetryCount, mime_type, post_data);
     ret = true;
   }
   return ret;
@@ -355,7 +355,7 @@ PrinterJobHandler::HandleJobMetadataResponse(
         request_->StartGetRequest(GURL(print_ticket_url.c_str()),
                                   this,
                                   auth_token_,
-                                  kCloudPrintAPIRetryPolicy);
+                                  kCloudPrintAPIMaxRetryCount);
       }
     }
   }
@@ -379,7 +379,7 @@ PrinterJobHandler::HandlePrintTicketResponse(const URLFetcher* source,
     request_->StartGetRequest(GURL(print_data_url_.c_str()),
                               this,
                               auth_token_,
-                              kJobDataRetryPolicy);
+                              kJobDataMaxRetryCount);
   } else {
     // The print ticket was not valid. We are done here.
     FailedFetchingJobData();
@@ -527,7 +527,7 @@ void PrinterJobHandler::UpdateJobStatus(cloud_print::PrintJobStatus status,
                                                       status),
           this,
           auth_token_,
-          kCloudPrintAPIRetryPolicy);
+          kCloudPrintAPIMaxRetryCount);
     }
   }
 }

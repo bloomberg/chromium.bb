@@ -18,7 +18,6 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -112,13 +111,6 @@ GoogleURLTracker::GoogleURLTracker()
 
   net::NetworkChangeNotifier::AddObserver(this);
 
-  // Configure to max_retries at most kMaxRetries times for 5xx errors.
-  URLFetcherProtectEntry* protect =
-      URLFetcherProtectManager::GetInstance()->Register(
-          GURL(kSearchDomainCheckURL).host());
-  static const int kMaxRetries = 5;
-  protect->SetMaxRetries(kMaxRetries);
-
   MessageLoop::current()->PostTask(FROM_HERE,
                                    runnable_method_factory_.NewRunnableMethod(
                                    &GoogleURLTracker::QueueWakeupTask));
@@ -211,6 +203,11 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE |
                            net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->set_request_context(Profile::GetDefaultRequestContext());
+
+  // Configure to max_retries at most kMaxRetries times for 5xx errors.
+  static const int kMaxRetries = 5;
+  fetcher_->set_max_retries(kMaxRetries);
+
   fetcher_->Start();
 }
 

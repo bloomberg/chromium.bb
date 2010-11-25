@@ -15,7 +15,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
@@ -118,8 +117,6 @@ class CloudPrintProxyBackend::Core
     const std::string& cloud_print_xmpp_token,
     const std::string& email);
   void NotifyAuthenticationFailed();
-
-  URLFetcherProtectEntry* CreateDefaultRetryPolicy();
 
   // Starts a new printer registration process.
   void StartRegistration();
@@ -357,34 +354,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
 
   proxy_id_ = proxy_id;
 
-  // Register the request retry policies for cloud print APIs and job data
-  // requests.
-  URLFetcherProtectManager::GetInstance()->Register(
-      kCloudPrintAPIRetryPolicy, CreateDefaultRetryPolicy());
-  URLFetcherProtectManager::GetInstance()->Register(
-      kJobDataRetryPolicy, CreateDefaultRetryPolicy())->SetMaxRetries(
-          kJobDataMaxRetryCount);
-
   StartRegistration();
-}
-
-URLFetcherProtectEntry*
-CloudPrintProxyBackend::Core::CreateDefaultRetryPolicy() {
-  // Times are in milliseconds.
-  const int kSlidingWindowPeriod = 2000;
-  const int kMaxSendThreshold = 20;
-  const int kMaxRetries = -1;
-  const int kInitialTimeout = 100;
-  const double kMultiplier = 2.0;
-  const int kConstantFactor = 100;
-  const int kMaximumTimeout = 5*60*1000;
-  return new URLFetcherProtectEntry(kSlidingWindowPeriod,
-                                    kMaxSendThreshold,
-                                    kMaxRetries,
-                                    kInitialTimeout,
-                                    kMultiplier,
-                                    kConstantFactor,
-                                    kMaximumTimeout);
 }
 
 void CloudPrintProxyBackend::Core::StartRegistration() {
@@ -444,7 +414,7 @@ void CloudPrintProxyBackend::Core::GetRegisteredPrinters() {
       &CloudPrintProxyBackend::Core::HandlePrinterListResponse;
   request_ = new CloudPrintURLFetcher;
   request_->StartGetRequest(printer_list_url, this, auth_token_,
-                            kCloudPrintAPIRetryPolicy);
+                            kCloudPrintAPIMaxRetryCount);
 }
 
 void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
@@ -511,7 +481,7 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
           &CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse;
       request_ = new CloudPrintURLFetcher;
       request_->StartPostRequest(register_url, this, auth_token_,
-                                 kCloudPrintAPIRetryPolicy, mime_type,
+                                 kCloudPrintAPIMaxRetryCount, mime_type,
                                  post_data);
 
     } else {

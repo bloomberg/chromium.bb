@@ -7,14 +7,14 @@
 #include "base/ref_counted.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
-#include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/test/test_server.h"
-#include "net/url_request/url_request_unittest.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_throttler_manager.h"
+#include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -69,10 +69,10 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
 class CloudPrintURLFetcherTest : public testing::Test,
                                  public CloudPrintURLFetcher::Delegate {
  public:
-  CloudPrintURLFetcherTest() : fetcher_(NULL) { }
+  CloudPrintURLFetcherTest() : max_retries_(0), fetcher_(NULL) { }
 
   // Creates a URLFetcher, using the program's main thread to do IO.
-  virtual void CreateFetcher(const GURL& url, const std::string& retry_policy);
+  virtual void CreateFetcher(const GURL& url, int max_retries);
 
   // CloudPrintURLFetcher::Delegate
   virtual CloudPrintURLFetcher::ResponseAction HandleRawResponse(
@@ -113,7 +113,7 @@ class CloudPrintURLFetcherTest : public testing::Test,
   // a UI thread, we dispatch a worker thread to do so.
   MessageLoopForIO io_loop_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
-  std::string retry_policy_;
+  int max_retries_;
   Time start_time_;
   scoped_refptr<CloudPrintURLFetcher> fetcher_;
 };
@@ -188,12 +188,11 @@ class CloudPrintURLFetcherRetryBackoffTest : public CloudPrintURLFetcherTest {
 };
 
 
-void CloudPrintURLFetcherTest::CreateFetcher(const GURL& url,
-                                             const std::string& retry_policy) {
+void CloudPrintURLFetcherTest::CreateFetcher(const GURL& url, int max_retries) {
   fetcher_ = new TestCloudPrintURLFetcher(io_message_loop_proxy());
-  retry_policy_ = retry_policy;
+  max_retries_ = max_retries;
   start_time_ = Time::Now();
-  fetcher_->StartGetRequest(url, this, "", retry_policy_);
+  fetcher_->StartGetRequest(url, this, "", max_retries_);
 }
 
 CloudPrintURLFetcher::ResponseAction
@@ -265,10 +264,10 @@ CloudPrintURLFetcherOverloadTest::HandleRawData(const URLFetcher* source,
   const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
   response_count_++;
   if (response_count_ < 20) {
-    fetcher_->StartGetRequest(url, this, "", retry_policy_);
+    fetcher_->StartGetRequest(url, this, "", max_retries_);
   } else {
     // We have already sent 20 requests continuously. And we expect that
-    // it takes more than 1 second due to the overload pretection settings.
+    // it takes more than 1 second due to the overload protection settings.
     EXPECT_TRUE(Time::Now() - start_time_ >= one_second);
     io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
@@ -297,7 +296,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
   ASSERT_TRUE(test_server.Start());
   SetHandleRawResponse(true);
 
-  CreateFetcher(test_server.GetURL("echo"), "DummyRetryPolicy");
+  CreateFetcher(test_server.GetURL("echo"), 0);
   MessageLoop::current()->Run();
 }
 
@@ -307,7 +306,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, FLAKY_HandleRawData) {
   ASSERT_TRUE(test_server.Start());
 
   SetHandleRawData(true);
-  CreateFetcher(test_server.GetURL("echo"), "DummyRetryPolicy");
+  CreateFetcher(test_server.GetURL("echo"), 0);
   MessageLoop::current()->Run();
 }
 
@@ -319,15 +318,16 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
-  std::string retry_policy = "OverloadTestPolicy";
-  URLFetcherProtectManager* manager = URLFetcherProtectManager::GetInstance();
-  URLFetcherProtectEntry* entry =
-      new URLFetcherProtectEntry(200, 3, 11, 1, 2.0, 0, 256);
-  manager->Register(retry_policy, entry);
+  scoped_refptr<net::URLRequestThrottlerEntry> entry(
+      new net::URLRequestThrottlerEntry(200, 3, 1, 0, 2.0, 0.0, 256));
+  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
+      url, entry);
 
-  CreateFetcher(url, retry_policy);
+  CreateFetcher(url, 11);
 
   MessageLoop::current()->Run();
+
+  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=62758
@@ -341,15 +341,16 @@ TEST_F(CloudPrintURLFetcherRetryBackoffTest, FLAKY_GiveUp) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
-  std::string retry_policy = "BackoffTestPolicy";
-  URLFetcherProtectManager* manager = URLFetcherProtectManager::GetInstance();
-  URLFetcherProtectEntry* entry =
-      new URLFetcherProtectEntry(200, 3, 11, 1, 2.0, 0, 256);
-  manager->Register(retry_policy, entry);
+  scoped_refptr<net::URLRequestThrottlerEntry> entry(
+      new net::URLRequestThrottlerEntry(200, 3, 1, 0, 2.0, 0.0, 256));
+  net::URLRequestThrottlerManager::GetInstance()->OverrideEntryForTests(
+      url, entry);
 
-  CreateFetcher(url, retry_policy);
+  CreateFetcher(url, 11);
 
   MessageLoop::current()->Run();
+
+  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 }  // namespace.

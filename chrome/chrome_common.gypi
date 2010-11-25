@@ -458,8 +458,6 @@
         'common/net/socket_stream.h',
         'common/net/url_fetcher.cc',
         'common/net/url_fetcher.h',
-        'common/net/url_fetcher_protect.cc',
-        'common/net/url_fetcher_protect.h',
         'common/net/url_request_context_getter.cc',
         'common/net/url_request_context_getter.h',
         'common/net/url_request_intercept_job.cc',

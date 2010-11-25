@@ -63,7 +63,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"

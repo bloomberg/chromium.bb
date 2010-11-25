@@ -13,16 +13,13 @@
 
 class DictionaryValue;
 class GURL;
-class URLFetcherProtectEntry;
 class URLRequestStatus;
 
 // A wrapper around URLFetcher for CloudPrint. URLFetcher applies retry logic
 // only on HTTP response codes >= 500. In the cloud print case, we want to
 // retry on all network errors. In addition, we want to treat non-JSON responses
 // (for all CloudPrint APIs that expect JSON responses) as errors and they
-// must also be retried. Also URLFetcher uses the host name of the URL as the
-// key for applying the retry policy. In our case, we want to apply one global
-// policy for many requests (not necessarily scoped by hostname).
+// must also be retried.
 class CloudPrintURLFetcher
     : public base::RefCountedThreadSafe<CloudPrintURLFetcher>,
       public URLFetcher::Delegate {
@@ -80,11 +77,11 @@ class CloudPrintURLFetcher
   void StartGetRequest(const GURL& url,
                        Delegate* delegate,
                        const std::string& auth_token,
-                       const std::string& retry_policy);
+                       int max_retries);
   void StartPostRequest(const GURL& url,
                         Delegate* delegate,
                         const std::string& auth_token,
-                        const std::string& retry_policy,
+                        int max_retries,
                         const std::string& post_data_mime_type,
                         const std::string& post_data);
 
@@ -103,14 +100,12 @@ class CloudPrintURLFetcher
                           URLFetcher::RequestType request_type,
                           Delegate* delegate,
                           const std::string& auth_token,
-                          const std::string& retry_policy,
+                          int max_retries,
                           const std::string& post_data_mime_type,
                           const std::string& post_data);
-  void StartRequestNow();
 
   scoped_ptr<URLFetcher> request_;
   Delegate* delegate_;
-  URLFetcherProtectEntry* protect_entry_;
   int num_retries_;
 };
 

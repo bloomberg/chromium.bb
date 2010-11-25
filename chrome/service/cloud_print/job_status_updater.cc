@@ -62,7 +62,7 @@ void JobStatusUpdater::UpdateStatus() {
       request_->StartGetRequest(
           CloudPrintHelpers::GetUrlForJobStatusUpdate(
               cloud_print_server_url_, job_id_, last_job_details_),
-          this, auth_token_, kCloudPrintAPIRetryPolicy);
+          this, auth_token_, kCloudPrintAPIMaxRetryCount);
     }
   }
 }
