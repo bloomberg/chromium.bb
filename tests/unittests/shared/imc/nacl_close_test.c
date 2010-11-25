@@ -5,8 +5,11 @@
  */
 
 #include <stdio.h>
-
+#ifdef __native_client__
+#include <nacl/nacl_imc_c.h>
+#else
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#endif
 
 
 /* Writes the last error message to the standard error. */

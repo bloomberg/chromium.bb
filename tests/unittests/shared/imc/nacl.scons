@@ -1,0 +1,50 @@
+# -*- python -*-
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+env.ComponentProgram('nacl_close_test.nexe',
+                     ['nacl_close_test.c'],
+                     EXTRA_LIBS=['google_nacl_imc_c',
+                                 'google_nacl_imc',
+                                 'google_nacl_platform',
+                                 'gio'])
+node = env.CommandSelLdrTestNacl(
+    'nacl_close_test_nexe.out',
+    command=[env.File('nacl_close_test.nexe')],
+    exit_status='0')
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
+                       'run_nacl_close_test_nexe')
+
+env.ComponentProgram('double_nacl_close_test.nexe',
+                     ['double_nacl_close_test.c'],
+                     EXTRA_LIBS=['google_nacl_imc_c',
+                                 'google_nacl_imc',
+                                 'google_nacl_platform',
+                                 'gio'])
+node = env.CommandSelLdrTestNacl(
+    'double_nacl_close_test_nexe.out',
+    command=[env.File('double_nacl_close_test.nexe')],
+    exit_status='0')
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
+                       'run_double_nacl_close_test_nexe')
+
+
+env.ComponentProgram('nacl_create_memory_object_test.nexe',
+                     ['nacl_create_memory_object_test.c'],
+                     EXTRA_LIBS=['google_nacl_imc_c',
+                                 'google_nacl_imc',
+                                 'google_nacl_platform',
+                                 'gio'])
+node = env.CommandSelLdrTestNacl(
+    'nacl_create_memory_object_test_nexe.out',
+    command=[env.File('nacl_create_memory_object_test.nexe')],
+    exit_status='0')
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
+                       'run_nacl_create_memory_object_test_nexe')
+

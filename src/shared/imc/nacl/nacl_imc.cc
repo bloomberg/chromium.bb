@@ -73,7 +73,10 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   return imc_recvmsg(handle, reinterpret_cast<NaClImcMsgHdr*>(message), flags);
 }
 
-Handle CreateMemoryObject(size_t length) {
+Handle CreateMemoryObject(size_t length, bool executable) {
+  if (executable) {
+    return -1;  // Will never work with NaCl and should never be invoked.
+  }
   return imc_mem_obj_create(length);
 }
 
