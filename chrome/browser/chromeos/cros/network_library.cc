@@ -1463,6 +1463,15 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         cellular_->service_path() : std::string();
     bool prev_cellular_connected = cellular_ ?
         cellular_->connected() : false;
+    std::vector<CellularDataPlan> prev_cellular_data_plans;
+    if (cellular_) {
+      const CellularDataPlanVector& plans = cellular_->GetDataPlans();
+      for (CellularDataPlanVector::const_iterator iter = plans.begin();
+           iter != plans.end();
+           ++iter) {
+        prev_cellular_data_plans.push_back(**iter);
+      }
+    }
 
     ClearNetworks();
 
@@ -1541,10 +1550,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     for (size_t i = 0; i < cellular_networks_.size(); i++) {
       if (cellular_networks_[i]->connecting_or_connected()) {
         cellular_ = cellular_networks_[i];
-        // If new cellular, then request update of the data plan list.
-        if ((cellular_networks_[i]->service_path() !=
-                 prev_cellular_service_path) ||
-            (!prev_cellular_connected && cellular_networks_[i]->connected())) {
+        // If refreshing previous cellular, then copy over prev data plans.
+        if (cellular_->service_path() == prev_cellular_service_path) {
+          for (std::vector<CellularDataPlan>::iterator iter =
+                   prev_cellular_data_plans.begin();
+               iter != prev_cellular_data_plans.end();
+               ++iter) {
+            cellular_->data_plans_.push_back(new CellularDataPlan(*iter));
+          }
+        } else if (!prev_cellular_connected && cellular_->connected()) {
+          // If new cellular, then request update of the data plan list.
           RefreshCellularDataPlans(cellular_);
         }
         break;  // There is only one connected or connecting cellular network.
