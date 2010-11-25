@@ -86,45 +86,6 @@ void UnblockPipe(HANDLE handle, bool* unblocked) {
   *unblocked = true;
 }
 
-// Given a file handle, reads into |buffer| until |bytes_max| bytes
-// has been read or an error has been encountered.  Returns
-// true if the read was successful.
-bool ReadData(HANDLE fd, DWORD bytes_max, uint8* buffer) {
-  base::Thread thread("test_server_watcher");
-  if (!thread.Start())
-    return false;
-
-  // Prepare a timeout in case the server fails to start.
-  bool unblocked = false;
-  thread.message_loop()->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(UnblockPipe, fd, &unblocked),
-      TestTimeouts::action_max_timeout_ms());
-
-  DWORD bytes_read = 0;
-  while (bytes_read < bytes_max) {
-    DWORD num_bytes;
-    if (!ReadFile(fd, buffer + bytes_read, bytes_max - bytes_read,
-                  &num_bytes, NULL)) {
-      PLOG(ERROR) << "ReadFile failed";
-      return false;
-    }
-    if (num_bytes <= 0) {
-      LOG(ERROR) << "ReadFile returned invalid byte count: " << num_bytes;
-      return false;
-    }
-    bytes_read += num_bytes;
-  }
-
-  thread.Stop();
-  // If the timeout kicked in, abort.
-  if (unblocked) {
-    LOG(ERROR) << "Timeout exceeded for ReadData";
-    return false;
-  }
-
-  return true;
-}
-
 }  // namespace
 
 namespace net {
@@ -185,19 +146,44 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
 }
 
 bool TestServer::WaitToStart() {
-  ScopedHandle read_fd(child_read_fd_.Take());
-  ScopedHandle write_fd(child_write_fd_.Take());
-
-  uint32 server_data_len = 0;
-  if (!ReadData(read_fd.Get(), sizeof(server_data_len),
-                reinterpret_cast<uint8*>(&server_data_len)))
-    return false;
-  std::string server_data(server_data_len, '\0');
-  if (!ReadData(read_fd.Get(), server_data_len,
-                reinterpret_cast<uint8*>(&server_data[0])))
+  base::Thread thread("test_server_watcher");
+  if (!thread.Start())
     return false;
 
-  return ParseServerData(server_data);
+  // Prepare a timeout in case the server fails to start.
+  bool unblocked = false;
+  thread.message_loop()->PostDelayedTask(FROM_HERE,
+      NewRunnableFunction(UnblockPipe, child_write_fd_.Get(), &unblocked),
+      TestTimeouts::action_max_timeout_ms());
+
+  // Try to read two bytes from the pipe indicating the ephemeral port number.
+  uint16 port;
+  uint8* buffer = reinterpret_cast<uint8*>(&port);
+  DWORD bytes_read = 0;
+  DWORD bytes_max = sizeof(port);
+  while (bytes_read < bytes_max) {
+    DWORD num_bytes;
+    if (!ReadFile(child_read_fd_, buffer + bytes_read, bytes_max - bytes_read,
+                  &num_bytes, NULL))
+      break;
+    if (num_bytes <= 0)
+      break;
+    bytes_read += num_bytes;
+  }
+  thread.Stop();
+  child_read_fd_.Close();
+  child_write_fd_.Close();
+
+  // If we hit the timeout, fail.
+  if (unblocked)
+    return false;
+
+  // If not enough bytes were read, fail.
+  if (bytes_read < bytes_max)
+    return false;
+
+  host_port_pair_.set_port(port);
+  return true;
 }
 
 bool TestServer::CheckCATrusted() {
