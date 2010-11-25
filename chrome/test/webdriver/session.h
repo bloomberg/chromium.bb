@@ -62,7 +62,7 @@ class Session : private UITestBase {
     implicit_wait_ = timeout > 0 ? timeout : 0;
   }
 
-  typedef enum Speed { kSlow, kMedium, kFast, kUnknown };
+  enum Speed { kSlow, kMedium, kFast, kUnknown };
   inline Speed speed() { return speed_; }
   inline void set_speed(Speed speed) {
     speed_ = speed;
