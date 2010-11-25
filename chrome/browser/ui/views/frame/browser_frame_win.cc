@@ -96,11 +96,6 @@ void BrowserFrameWin::UpdateThrobber(bool running) {
   browser_frame_view_->UpdateThrobber(running);
 }
 
-void BrowserFrameWin::ContinueDraggingDetachedTab() {
-  // Send the message directly, so that the window is positioned appropriately.
-  SendMessage(GetNativeWindow(), WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(0, 0));
-}
-
 ThemeProvider* BrowserFrameWin::GetThemeProviderForFrame() const {
   // This is implemented for a different interface than GetThemeProvider is,
   // but they mean the same things.

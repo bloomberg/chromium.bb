@@ -1171,11 +1171,6 @@ void BrowserView::ShowCreateShortcutsDialog(TabContents* tab_contents) {
   browser::ShowCreateShortcutsDialog(GetNativeHandle(), tab_contents);
 }
 
-void BrowserView::ContinueDraggingDetachedTab(const gfx::Rect& tab_bounds) {
-  tabstrip_->SetDraggedTabBounds(0, tab_bounds);
-  frame_->ContinueDraggingDetachedTab();
-}
-
 void BrowserView::UserChangedTheme() {
   frame_->GetWindow()->FrameTypeChanged();
 }

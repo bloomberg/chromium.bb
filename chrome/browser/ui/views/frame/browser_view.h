@@ -304,7 +304,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ConfirmBrowserCloseWithPendingDownloads();
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window);
-  virtual void ContinueDraggingDetachedTab(const gfx::Rect& tab_bounds);
   virtual void UserChangedTheme();
   virtual int GetExtraRenderViewHeight() const;
   virtual void TabContentsFocused(TabContents* source);

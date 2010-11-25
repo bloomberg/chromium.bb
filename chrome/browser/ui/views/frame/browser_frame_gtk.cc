@@ -78,10 +78,6 @@ void BrowserFrameGtk::UpdateThrobber(bool running) {
   browser_frame_view_->UpdateThrobber(running);
 }
 
-void BrowserFrameGtk::ContinueDraggingDetachedTab() {
-  NOTIMPLEMENTED();
-}
-
 ThemeProvider* BrowserFrameGtk::GetThemeProviderForFrame() const {
   // This is implemented for a different interface than GetThemeProvider is,
   // but they mean the same things.

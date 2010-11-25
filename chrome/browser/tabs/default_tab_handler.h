@@ -32,9 +32,6 @@ class DefaultTabHandler : public TabHandler,
       const gfx::Rect& window_bounds,
       const DockInfo& dock_info,
       bool maximize);
-  virtual void ContinueDraggingDetachedTab(TabContentsWrapper* contents,
-                                           const gfx::Rect& window_bounds,
-                                           const gfx::Rect& tab_bounds);
   virtual int GetDragActions() const;
   virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,

@@ -53,16 +53,6 @@ class TabStripModelDelegate {
                                               const DockInfo& dock_info,
                                               bool maximize) = 0;
 
-  // Creates a new Browser object and window containing the specified
-  // |contents|, and continues a drag operation that began within the source
-  // window's tab strip. |window_bounds| are the bounds of the source window in
-  // screen coordinates, used to place the new window, and |tab_bounds| are the
-  // bounds of the dragged Tab view in the source window, in screen coordinates,
-  // used to place the new Tab in the new window.
-  virtual void ContinueDraggingDetachedTab(TabContentsWrapper* contents,
-                                           const gfx::Rect& window_bounds,
-                                           const gfx::Rect& tab_bounds) = 0;
-
   // Determines what drag actions are possible for the specified strip.
   virtual int GetDragActions() const = 0;
 

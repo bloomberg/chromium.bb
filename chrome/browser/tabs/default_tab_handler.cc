@@ -55,15 +55,6 @@ Browser* DefaultTabHandler::CreateNewStripWithContents(
                                                             maximize);
 }
 
-void DefaultTabHandler::ContinueDraggingDetachedTab(
-    TabContentsWrapper* contents,
-    const gfx::Rect& window_bounds,
-    const gfx::Rect& tab_bounds) {
-  delegate_->AsBrowser()->ContinueDraggingDetachedTab(contents,
-                                                      window_bounds,
-                                                      tab_bounds);
-}
-
 int DefaultTabHandler::GetDragActions() const {
   return delegate_->AsBrowser()->GetDragActions();
 }

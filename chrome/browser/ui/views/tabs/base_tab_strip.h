@@ -16,7 +16,6 @@
 
 class BaseTab;
 class DraggedTabController;
-class TabStrip;
 class TabStripController;
 class ThemeProvider;
 
@@ -45,11 +44,6 @@ class BaseTabStrip : public views::View,
   // in the window caption area of the browser window.
   virtual bool IsPositionInWindowCaption(const gfx::Point& point) = 0;
 
-  // Sets the bounds of the tab at the specified |tab_index|. |tab_bounds| are
-  // in TabStrip coordinates.
-  virtual void SetDraggedTabBounds(int tab_index,
-                                   const gfx::Rect& tab_bounds) = 0;
-
   // Updates the loading animations displayed by tabs in the tabstrip to the
   // next frame.
   void UpdateLoadingAnimations();
@@ -57,9 +51,6 @@ class BaseTabStrip : public views::View,
   // Returns true if Tabs in this TabStrip are currently changing size or
   // position.
   virtual bool IsAnimating() const;
-
-  // Returns this object as a TabStrip if it is one.
-  virtual TabStrip* AsTabStrip() = 0;
 
   // Starts highlighting the tab at the specified index.
   virtual void StartHighlight(int model_index) = 0;

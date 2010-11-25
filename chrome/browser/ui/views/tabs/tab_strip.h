@@ -59,9 +59,6 @@ class TabStrip : public BaseTabStrip,
   virtual int GetPreferredHeight();
   virtual void SetBackgroundOffset(const gfx::Point& offset);
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
-  virtual void SetDraggedTabBounds(int tab_index,
-                                   const gfx::Rect& tab_bounds);
-  virtual TabStrip* AsTabStrip();
   virtual void PrepareForCloseAt(int model_index);
   virtual void RemoveTabAt(int model_index);
   virtual void SelectTabAt(int old_model_index, int new_model_index);

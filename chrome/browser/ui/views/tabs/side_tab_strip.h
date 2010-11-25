@@ -22,9 +22,6 @@ class SideTabStrip : public BaseTabStrip {
   virtual int GetPreferredHeight();
   virtual void SetBackgroundOffset(const gfx::Point& offset);
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
-  virtual void SetDraggedTabBounds(int tab_index,
-                                   const gfx::Rect& tab_bounds);
-  virtual TabStrip* AsTabStrip();
 
   virtual void StartHighlight(int model_index);
   virtual void StopAllHighlighting();

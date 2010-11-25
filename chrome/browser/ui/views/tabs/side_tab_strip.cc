@@ -100,14 +100,6 @@ bool SideTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   return GetViewForPoint(point) == this;
 }
 
-void SideTabStrip::SetDraggedTabBounds(int tab_index,
-                                       const gfx::Rect& tab_bounds) {
-}
-
-TabStrip* SideTabStrip::AsTabStrip() {
-  return NULL;
-}
-
 void SideTabStrip::StartHighlight(int model_index) {
 }
 

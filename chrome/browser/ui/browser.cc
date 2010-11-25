@@ -2403,18 +2403,6 @@ Browser* Browser::CreateNewStripWithContents(
   return browser;
 }
 
-void Browser::ContinueDraggingDetachedTab(TabContentsWrapper* contents,
-                                          const gfx::Rect& window_bounds,
-                                          const gfx::Rect& tab_bounds) {
-  Browser* browser = new Browser(TYPE_NORMAL, profile_);
-  browser->set_override_bounds(window_bounds);
-  browser->CreateBrowserWindow();
-  browser->tabstrip_model()->AppendTabContents(contents, true);
-  browser->LoadingStateChanged(contents->tab_contents());
-  browser->window()->Show();
-  browser->window()->ContinueDraggingDetachedTab(tab_bounds);
-}
-
 int Browser::GetDragActions() const {
   return TabStripModelDelegate::TAB_TEAROFF_ACTION | (tab_count() > 1 ?
       TabStripModelDelegate::TAB_MOVE_ACTION : 0);

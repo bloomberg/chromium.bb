@@ -195,13 +195,6 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   return false;
 }
 
-void TabStrip::SetDraggedTabBounds(int tab_index, const gfx::Rect& tab_bounds) {
-}
-
-TabStrip* TabStrip::AsTabStrip() {
-  return this;
-}
-
 void TabStrip::PrepareForCloseAt(int model_index) {
   if (!in_tab_close_ && IsAnimating()) {
     // Cancel any current animations. We do this as remove uses the current

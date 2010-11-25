@@ -42,7 +42,6 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
-  virtual void ContinueDraggingDetachedTab();
   virtual ThemeProvider* GetThemeProviderForFrame() const;
   virtual bool AlwaysUseNativeFrame() const;
   virtual views::View* GetFrameView() const;
