@@ -30,9 +30,12 @@
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/proxy_config_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/preconnect.h"
+#include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -48,6 +51,7 @@
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_store.h"
+#include "net/proxy/proxy_config_service.h"
 #include "net/url_request/url_request_context.h"
 #include "views/widget/widget_gtk.h"
 
@@ -64,6 +68,31 @@ const char kGuestModeLoggingLevel[] = "1";
 
 // Format of command line switch.
 const char kSwitchFormatString[] = " --%s=\"%s\"";
+
+// Resets the proxy configuration service for the default request context.
+class ResetDefaultProxyConfigServiceTask : public Task {
+ public:
+  ResetDefaultProxyConfigServiceTask(
+      net::ProxyConfigService* proxy_config_service)
+      : proxy_config_service_(proxy_config_service) {}
+  virtual ~ResetDefaultProxyConfigServiceTask() {}
+
+  // Task override.
+  virtual void Run() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
+    DCHECK(getter);
+    if (getter) {
+      getter->GetURLRequestContext()->proxy_service()->ResetConfigService(
+          proxy_config_service_.release());
+    }
+  }
+
+ private:
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResetDefaultProxyConfigServiceTask);
+};
 
 }  // namespace
 
@@ -161,6 +190,28 @@ void LoginUtilsImpl::CompleteLogin(
   // will process the notification that the UserManager sends out.
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
   btl->AddLoginTimeMarker("UserProfileGotten", false);
+
+  // Change the proxy configuration service of the default request context to
+  // use the preference configuration from the logged-in profile. This ensures
+  // that requests done through the default context use the proxy configuration
+  // provided by configuration policy.
+  //
+  // Note: Many of the clients of the default request context should probably be
+  // fixed to use the request context of the profile they are associated with.
+  // This includes preconnect, autofill, metrics service to only name a few;
+  // see http://code.google.com/p/chromium/issues/detail?id=64339 for details.
+  //
+  // TODO(mnissler) Revisit when support for device-specific policy arrives, at
+  // which point the default request context can directly be managed through
+  // device policy.
+  net::ProxyConfigService* proxy_config_service =
+      new PrefProxyConfigService(
+          profile->GetProxyConfigTracker(),
+          new chromeos::ProxyConfigService(
+              profile->GetChromeOSProxyConfigServiceImpl()));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          new ResetDefaultProxyConfigServiceTask(
+                              proxy_config_service));
 
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is
