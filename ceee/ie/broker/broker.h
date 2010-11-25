@@ -71,6 +71,7 @@ class ATL_NO_VTABLE CeeeBroker
 
  protected:
   // A pointer to single instance objects, or seams set for unittests.
+  // TODO(mad@chromium.org): We should now use ExecutorsManager::test_instance_.
   ExecutorsManager * executors_manager_;
   ApiDispatcher* api_dispatcher_;
 };

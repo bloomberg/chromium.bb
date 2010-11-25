@@ -98,7 +98,7 @@ TEST(WindowEventsFunnelTest, OnWindowCreated) {
   EXPECT_CALL(window_events_funnel, SendEvent(_, _)).Times(0);
   // We return the HRESULT conversion of GetLastError.
   ::SetLastError(ERROR_INVALID_ACCESS);
-  EXPECT_HRESULT_FAILED(window_events_funnel.OnCreated(window_id));
+  EXPECT_HRESULT_FAILED(window_events_funnel.OnCreated(window));
   ::SetLastError(ERROR_SUCCESS);
 
   RECT window_rect = {1, 2, 3, 4};
@@ -128,7 +128,7 @@ TEST(WindowEventsFunnelTest, OnWindowCreated) {
   EXPECT_CALL(window_events_funnel, SendEvent(StrEq(
       ext_event_names::kOnWindowCreated), ValuesEqual(dict.get()))).
       WillOnce(Return(S_OK));
-  EXPECT_HRESULT_SUCCEEDED(window_events_funnel.OnCreated(window_id));
+  EXPECT_HRESULT_SUCCEEDED(window_events_funnel.OnCreated(window));
 }
 
 TEST(WindowEventsFunnelTest, OnFocusChanged) {
@@ -145,12 +145,13 @@ TEST(WindowEventsFunnelTest, OnFocusChanged) {
 TEST(WindowEventsFunnelTest, OnWindowRemoved) {
   TestWindowEventsFunnel window_events_funnel;
   int window_id = 42;
+  HWND window = reinterpret_cast<HWND>(window_id);
 
   scoped_ptr<Value> args(Value::CreateIntegerValue(window_id));
   EXPECT_CALL(window_events_funnel, SendEvent(
       StrEq(ext_event_names::kOnWindowRemoved), ValuesEqual(args.get()))).
       WillOnce(Return(S_OK));
-  EXPECT_HRESULT_SUCCEEDED(window_events_funnel.OnRemoved(window_id));
+  EXPECT_HRESULT_SUCCEEDED(window_events_funnel.OnRemoved(window));
 }
 
 }  // namespace

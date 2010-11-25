@@ -26,6 +26,7 @@
 #include "ceee/common/window_utils.h"
 #include "ceee/ie/broker/api_module_constants.h"
 #include "ceee/ie/broker/api_module_util.h"
+#include "ceee/ie/broker/executors_manager.h"
 #include "ceee/ie/broker/tab_api_module.h"
 #include "ceee/ie/common/ie_util.h"
 #include "ceee/ie/common/api_registration.h"
@@ -649,25 +650,56 @@ void GetAllWindows::Execute(const ListValue& args, int request_id) {
     }
   }
 
+  FillResult(result.get(), populate_tabs);
+  if (result->IsEmpty()) {
+    // Seems we don't have a single window that is ready, so we must wait for
+    // a new one to be created.
+    ApiDispatcher* dispatcher = GetDispatcher();
+    DCHECK(dispatcher != NULL);
+    result->SetValue(ext::kPopulateKey,
+                     Value::CreateBooleanValue(populate_tabs));
+    DCHECK(dispatcher != NULL);
+    dispatcher->RegisterEphemeralEventHandler(ext_event_names::kOnWindowCreated,
+                                              GetAllWindows::ContinueExecution,
+                                              result.release());
+  } else {
+    result->FlushAllPosts();
+  }
+}
+
+void GetAllWindows::FillResult(IterativeWindowApiResult* result,
+                               bool populate_tabs) {
   std::set<HWND> ie_frame_windows;
   window_utils::FindTopLevelWindows(windows::kIeFrameWindowClass,
                                     &ie_frame_windows);
-  if (ie_frame_windows.empty()) {
-    result->FlushAllPosts();
-    return;
+  if (!ie_frame_windows.empty()) {
+    std::set<HWND>::const_iterator iter = ie_frame_windows.begin();
+    for (; iter != ie_frame_windows.end(); ++iter) {
+      if (ExecutorsManager::IsKnownWindow(*iter) &&
+          result->CreateWindowValue(*iter, populate_tabs)) {
+        result->PostResult();
+      }
+    }
   }
+}
 
-  std::set<HWND>::const_iterator iter = ie_frame_windows.begin();
-  for (; iter != ie_frame_windows.end(); ++iter) {
-    if (result->CreateWindowValue(*iter, populate_tabs))
-      result->PostResult();
-  }
+HRESULT GetAllWindows::ContinueExecution(
+    const std::string& input_args,
+    ApiDispatcher::InvocationResult* user_data,
+    ApiDispatcher* dispatcher) {
+  scoped_ptr<IterativeWindowApiResult>
+      result(static_cast<IterativeWindowApiResult*>(user_data));
 
-  DCHECK(!result->IsEmpty());
+  const Value* populate_value = result->GetValue(ext::kPopulateKey);
+  bool populate_tabs = false;
+  bool success = populate_value->GetAsBoolean(&populate_tabs);
+  DCHECK(success) << "Failed to retrieve populate tabs that we saved ourselves";
+
+  FillResult(result.get(), populate_tabs);
   if (result->IsEmpty())  // This is an error!
     result->PostError(api_module_constants::kInternalErrorError);
-
   result->FlushAllPosts();
+  return S_OK;
 }
 
 }  // namespace window_api

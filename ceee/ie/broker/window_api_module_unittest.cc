@@ -227,6 +227,14 @@ class WindowApiTests: public testing::Test {
         &mock_window_executor_, mock_window_executor_keeper_.Receive()));
     EXPECT_HRESULT_SUCCEEDED(testing::MockTabExecutor::CreateInitialized(
         &mock_tab_executor_, mock_tab_executor_keeper_.Receive()));
+    if (!testing::MockExecutorsManager::test_instance_) {
+      // To be freed at exit by Singleton class.
+      testing::MockExecutorsManager::test_instance_ =
+          new StrictMock<testing::MockExecutorsManager>;
+    }
+    executors_manager_ =
+        reinterpret_cast<StrictMock<testing::MockExecutorsManager>*>(
+            testing::MockExecutorsManager::test_instance_);
   }
 
   virtual void TearDown() {
@@ -270,6 +278,8 @@ class WindowApiTests: public testing::Test {
   ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
   ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
 
+  // Lifespan controlled by Singleton template.
+  StrictMock<testing::MockExecutorsManager>* executors_manager_;
  private:
   class MockChromePostman : public ChromePostman {
    public:
@@ -1016,6 +1026,10 @@ TEST_F(WindowApiTests, GetAllWindowsStraightline) {
     StrictMock<MockIterativeWindowInvocation<window_api::GetAllWindows> >
         invocation;
     invocation.AllocateNewResult(kRequestId);
+    EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(kWindow1)).
+        WillOnce(Return(true));
+    EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(kWindow2)).
+        WillOnce(Return(true));
     EXPECT_CALL(*invocation.invocation_result_, CreateWindowValue(
                 kWindow1, values[i].populate)).WillOnce(Return(true));
     EXPECT_CALL(*invocation.invocation_result_, CreateWindowValue(

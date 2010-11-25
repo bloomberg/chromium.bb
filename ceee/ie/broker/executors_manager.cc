@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "ceee/ie/broker/broker_module_util.h"
+#include "ceee/ie/broker/common_api_module.h"
 #include "ceee/common/com_utils.h"
 
 namespace {
@@ -37,6 +38,7 @@ const size_t ExecutorsManager::kUpdateHandleIndexOffset = 1;
 const size_t ExecutorsManager::kLastHandleIndexOffset =
     kUpdateHandleIndexOffset;
 const size_t ExecutorsManager::kExtraHandles = kLastHandleIndexOffset + 1;
+ExecutorsManager* ExecutorsManager::test_instance_ = NULL;
 
 ExecutorsManager::ExecutorsManager(bool no_thread)
     : update_threads_list_gate_(::CreateEvent(NULL, FALSE, FALSE, NULL)),
@@ -64,6 +66,35 @@ ExecutorsManager::ExecutorsManager(bool no_thread)
                                        kTimeOut);
     DCHECK(result == WAIT_OBJECT_0);
   }
+}
+
+bool ExecutorsManager::IsKnownWindow(HWND window) {
+  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
+      IsKnownWindowImpl(window);
+}
+
+bool ExecutorsManager::IsKnownWindowImpl(HWND window) {
+  AutoLock lock(lock_);
+  return handle_map_.find(window) != handle_map_.end() ||
+      frame_window_families_.find(window) != frame_window_families_.end();
+}
+
+HWND ExecutorsManager::FindTabChild(HWND window) {
+  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
+      FindTabChildImpl(window);
+}
+
+HWND ExecutorsManager::FindTabChildImpl(HWND window) {
+  if (!common_api::CommonApiResult::IsIeFrameClass(window))
+    return NULL;
+
+  AutoLock lock(lock_);
+  FrameTabsMap::iterator it = frame_window_families_.find(window);
+  if (it == frame_window_families_.end())
+    return NULL;
+
+  DCHECK(!it->second.empty());
+  return it->second.front();
 }
 
 HRESULT ExecutorsManager::RegisterTabExecutor(ThreadId thread_id,
@@ -296,24 +327,41 @@ HRESULT ExecutorsManager::Terminate() {
 }
 
 void ExecutorsManager::SetTabIdForHandle(int tab_id, HWND handle) {
-  AutoLock lock(lock_);
-  if (tab_id_map_.end() != tab_id_map_.find(tab_id) ||
-      handle_map_.end() != handle_map_.find(handle)) {
-    // Avoid double-setting of tab id -> handle mappings, which could otherwise
-    // lead to inconsistencies. In practice, this should never happen.
-    NOTREACHED();
-    return;
-  }
-  if (handle == reinterpret_cast<HWND>(INVALID_HANDLE_VALUE) ||
-      tab_id == kInvalidChromeSessionId) {
-    NOTREACHED();
-    return;
-  }
-  // A tool band tab ID should not be registered with this function.
-  DCHECK(tool_band_id_map_.end() == tool_band_id_map_.find(tab_id));
+  // It's safer to do this outside of the lock...
+  HWND frame_window = window_utils::GetTopLevelParent(handle);
+  DCHECK(common_api::CommonApiResult::IsIeFrameClass(frame_window));
+  bool send_on_create = false;
+  {
+    AutoLock lock(lock_);
+    if (tab_id_map_.end() != tab_id_map_.find(tab_id) ||
+        handle_map_.end() != handle_map_.find(handle)) {
+      // Avoid double-setting of tab id -> handle mappings, which could
+      // otherwise lead to inconsistencies.
+      // In practice, this should never happen.
+      NOTREACHED();
+      return;
+    }
+    if (handle == reinterpret_cast<HWND>(INVALID_HANDLE_VALUE) ||
+        tab_id == kInvalidChromeSessionId) {
+      NOTREACHED();
+      return;
+    }
+    // A tool band tab ID should not be registered with this function.
+    DCHECK(tool_band_id_map_.end() == tool_band_id_map_.find(tab_id));
 
-  tab_id_map_[tab_id] = handle;
-  handle_map_[handle] = tab_id;
+    tab_id_map_[tab_id] = handle;
+    handle_map_[handle] = tab_id;
+
+    // If this is the first time we see a handle that has this frame_window
+    // as a parent, then we will want to send a windows.onCreated notification.
+    send_on_create = (frame_window_families_.find(frame_window) ==
+                      frame_window_families_.end());
+    frame_window_families_[frame_window].push_back(handle);
+  }
+
+  // Safer to send notifications outside the lock.
+  if (send_on_create)
+    windows_events_funnel().OnCreated(frame_window);
 }
 
 void ExecutorsManager::SetTabToolBandIdForHandle(int tool_band_id,
@@ -340,40 +388,79 @@ void ExecutorsManager::SetTabToolBandIdForHandle(int tool_band_id,
 }
 
 void ExecutorsManager::DeleteTabHandle(HWND handle) {
-  AutoLock lock(lock_);
-  HandleMap::iterator handle_it = handle_map_.find(handle);
-  DCHECK(handle_map_.end() != handle_it);
-  if (handle_map_.end() != handle_it) {
-    TabIdMap::iterator tab_id_it = tab_id_map_.find(handle_it->second);
-    DCHECK(tab_id_map_.end() != tab_id_it);
-    if (tab_id_map_.end() != tab_id_it) {
-#ifdef DEBUG
-      tab_id_map_[handle_it->second] =
-          reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
-      handle_map_[handle] = kInvalidChromeSessionId;
-#else
-      tab_id_map_.erase(handle_it->second);
-      handle_map_.erase(handle);
-#endif  // DEBUG
-    }
-  }
+  // It's safer to do this outside the lock.
+  HWND frame_window = window_utils::GetTopLevelParent(handle);
+  // There are cases where it's too late to get the parent,
+  // so we will need to dig for it deeper later.
+  if (!common_api::CommonApiResult::IsIeFrameClass(frame_window))
+    frame_window = NULL;
 
-  handle_it = tool_band_handle_map_.find(handle);
-  if (tool_band_handle_map_.end() != handle_it) {
-    TabIdMap::iterator tool_band_id_it =
-        tool_band_id_map_.find(handle_it->second);
-    DCHECK(tool_band_id_map_.end() != tool_band_id_it);
-    if (tool_band_id_map_.end() != tool_band_id_it) {
+  bool send_on_removed = false;
+  AutoLock lock(lock_);
+  {
+    HandleMap::iterator handle_it = handle_map_.find(handle);
+    DCHECK(handle_map_.end() != handle_it);
+    if (handle_map_.end() != handle_it) {
+      TabIdMap::iterator tab_id_it = tab_id_map_.find(handle_it->second);
+      DCHECK(tab_id_map_.end() != tab_id_it);
+      if (tab_id_map_.end() != tab_id_it) {
 #ifdef DEBUG
-      tool_band_id_map_[handle_it->second] =
-          reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
-      tool_band_handle_map_[handle] = kInvalidChromeSessionId;
+        tab_id_map_[handle_it->second] =
+            reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
+        handle_map_[handle] = kInvalidChromeSessionId;
 #else
-      tool_band_id_map_.erase(handle_it->second);
-      tool_band_handle_map_.erase(handle);
+        tab_id_map_.erase(handle_it->second);
+        handle_map_.erase(handle);
 #endif  // DEBUG
+      }
     }
-  }
+
+    handle_it = tool_band_handle_map_.find(handle);
+    if (tool_band_handle_map_.end() != handle_it) {
+      TabIdMap::iterator tool_band_id_it =
+          tool_band_id_map_.find(handle_it->second);
+      DCHECK(tool_band_id_map_.end() != tool_band_id_it);
+      if (tool_band_id_map_.end() != tool_band_id_it) {
+#ifdef DEBUG
+        tool_band_id_map_[handle_it->second] =
+            reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
+        tool_band_handle_map_[handle] = kInvalidChromeSessionId;
+#else
+        tool_band_id_map_.erase(handle_it->second);
+        tool_band_handle_map_.erase(handle);
+#endif  // DEBUG
+      }
+    }
+
+    if (!frame_window) {
+      // We didn't get a valid frame window above, we must find the child.
+      FrameTabsMap::iterator frame_it = frame_window_families_.begin();
+      bool found = false;
+      for (; !found && frame_it != frame_window_families_.end(); ++frame_it) {
+        std::list<HWND>::iterator tab_it = frame_it->second.begin();
+        for (; tab_it != frame_it->second.end(); ++tab_it) {
+          if (*tab_it == handle) {
+            frame_window = frame_it->first;
+            frame_it->second.remove(handle);
+            found = true;
+            // We must break here, we can't rely on found since the ++tab_it
+            // is done before the condition is evaluated and we just removed it.
+            break;
+          }
+        }
+      }
+    } else {
+      frame_window_families_[frame_window].remove(handle);
+    }
+    if (frame_window && frame_window_families_[frame_window].empty()) {
+      frame_window_families_.erase(frame_window);
+      send_on_removed = true;
+    }
+  }  // End of lock
+
+  // Safer to send notifications outside of our lock.
+  if (send_on_removed)
+    windows_events_funnel().OnRemoved(frame_window);
 }
 
 HWND ExecutorsManager::GetTabHandleFromId(int tab_id) {
@@ -392,7 +479,6 @@ HWND ExecutorsManager::GetTabHandleFromId(int tab_id) {
 int ExecutorsManager::GetTabIdFromHandle(HWND tab_handle) {
   AutoLock lock(lock_);
   HandleMap::const_iterator it = handle_map_.find(tab_handle);
-  DCHECK(it != handle_map_.end());
   if (it == handle_map_.end())
     return kInvalidChromeSessionId;
   DCHECK(it->second != kInvalidChromeSessionId);  // Deleted? I hope not.

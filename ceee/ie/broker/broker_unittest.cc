@@ -16,23 +16,6 @@ namespace {
 
 using testing::Return;
 
-// Lets us test protected members and mock certain calls.
-class MockExecutorsManager : public ExecutorsManager {
- public:
-  // true for no thread.
-  MockExecutorsManager() : ExecutorsManager(true) {
-  }
-  MOCK_METHOD2(RegisterWindowExecutor, HRESULT(ThreadId thread_id,
-                                               IUnknown* executor));
-  MOCK_METHOD2(RegisterTabExecutor, HRESULT(ThreadId thread_id,
-                                            IUnknown* executor));
-  MOCK_METHOD1(RemoveExecutor, HRESULT(ThreadId thread_id));
-
-  MOCK_METHOD2(SetTabIdForHandle, void(int tab_id, HWND tab_handle));
-  MOCK_METHOD2(SetTabToolBandIdForHandle, void(int tool_band_id,
-                                               HWND tab_handle));
-};
-
 class TestBroker: public CeeeBroker {
  public:
   // Prevents the instantiation of the ExecutorsManager, ApiDispatcher
@@ -41,6 +24,7 @@ class TestBroker: public CeeeBroker {
     return S_OK;
   }
   // Set our own ExecutorsManager mock.
+  // TODO(mad@chromium.org): We should now use ExecutorsManager::test_instance_.
   void SetExecutorsManager(ExecutorsManager* executors_manager) {
     executors_manager_ = executors_manager;
   }
@@ -56,7 +40,7 @@ TEST(CeeeBroker, All) {
   CComObject<TestBroker>::CreateInstance(&broker);
   CComPtr<TestBroker> broker_keeper(broker);
 
-  MockExecutorsManager executors_manager;
+  testing::MockExecutorsManager executors_manager;
   broker->SetExecutorsManager(&executors_manager);
 
   testing::MockApiDispatcher api_dispatcher;

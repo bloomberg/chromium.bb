@@ -33,22 +33,22 @@ LRESULT CALLBACK WindowEventsFunnelWindowProc(HWND hwnd, UINT message,
                                               WPARAM wparam, LPARAM lparam) {
   if (message == kShellHookMessage) {
     switch (wparam) {
-      case HSHELL_WINDOWCREATED: {
-        if (window_utils::IsWindowClass(reinterpret_cast<HWND>(lparam),
-                                        windows::kIeFrameWindowClass)) {
-          WindowEventsFunnel window_events_funnel;
-          window_events_funnel.OnCreated(lparam);
-        }
-        break;
-      }
-      case HSHELL_WINDOWDESTROYED: {
-        if (window_utils::IsWindowClass(reinterpret_cast<HWND>(lparam),
-                                        windows::kIeFrameWindowClass)) {
-          WindowEventsFunnel window_events_funnel;
-          window_events_funnel.OnRemoved(lparam);
-        }
-        break;
-      }
+//       case HSHELL_WINDOWCREATED: {
+//         if (window_utils::IsWindowClass(reinterpret_cast<HWND>(lparam),
+//                                         windows::kIeFrameWindowClass)) {
+//           WindowEventsFunnel window_events_funnel;
+//           window_events_funnel.OnCreated(lparam);
+//         }
+//         break;
+//       }
+//       case HSHELL_WINDOWDESTROYED: {
+//         if (window_utils::IsWindowClass(reinterpret_cast<HWND>(lparam),
+//                                         windows::kIeFrameWindowClass)) {
+//           WindowEventsFunnel window_events_funnel;
+//           window_events_funnel.OnRemoved(lparam);
+//         }
+//         break;
+//       }
       case HSHELL_WINDOWACTIVATED: {
         if (window_utils::IsWindowClass(reinterpret_cast<HWND>(lparam),
                                         windows::kIeFrameWindowClass)) {
@@ -117,8 +117,7 @@ HRESULT WindowEventsFunnel::SendEvent(const char* event_name,
   return S_OK;
 }
 
-HRESULT WindowEventsFunnel::OnCreated(int window_id) {
-  HWND window = reinterpret_cast<HWND>(window_id);
+HRESULT WindowEventsFunnel::OnCreated(HWND window) {
   RECT window_rect;
   if (!::GetWindowRect(window, &window_rect)) {
     DWORD we = ::GetLastError();
@@ -127,7 +126,7 @@ HRESULT WindowEventsFunnel::OnCreated(int window_id) {
   }
 
   scoped_ptr<DictionaryValue> dict(new DictionaryValue());
-  dict->SetInteger(keys::kIdKey, window_id);
+  dict->SetInteger(keys::kIdKey, reinterpret_cast<int>(window));
   dict->SetBoolean(keys::kFocusedKey,
       (window == window_utils::GetTopLevelParent(::GetForegroundWindow())));
   dict->SetInteger(keys::kLeftKey, window_rect.left);
@@ -147,7 +146,8 @@ HRESULT WindowEventsFunnel::OnFocusChanged(int window_id) {
   return SendEvent(ext_event_names::kOnWindowFocusedChanged, *args.get());
 }
 
-HRESULT WindowEventsFunnel::OnRemoved(int window_id) {
-  scoped_ptr<Value> args(Value::CreateIntegerValue(window_id));
+HRESULT WindowEventsFunnel::OnRemoved(HWND window) {
+  scoped_ptr<Value> args(Value::CreateIntegerValue(
+      reinterpret_cast<int>(window)));
   return SendEvent(ext_event_names::kOnWindowRemoved, *args.get());
 }

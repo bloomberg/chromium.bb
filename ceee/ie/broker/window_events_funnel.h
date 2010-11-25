@@ -27,16 +27,16 @@ class WindowEventsFunnel {
   static void Terminate();
 
   // Sends the windows.onCreated event to Chrome.
-  // @param window_id The identifier of the window that was created.
-  virtual HRESULT OnCreated(int window_id);
+  // @param window The HWND of the window that was created.
+  virtual HRESULT OnCreated(HWND window);
 
   // Sends the windows.onFocusChanged event to Chrome.
   // @param window_id The identifier of the window that received the focus.
   virtual HRESULT OnFocusChanged(int window_id);
 
   // Sends the windows.onRemoved event to Chrome.
-  // @param window_id The identifier of the window that was removed.
-  virtual HRESULT OnRemoved(int window_id);
+  // @param window The HWND of the window that was removed.
+  virtual HRESULT OnRemoved(HWND window);
 
  protected:
   // Send the given event to Chrome.

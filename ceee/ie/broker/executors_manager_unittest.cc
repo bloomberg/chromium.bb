@@ -7,8 +7,11 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "ceee/ie/broker/common_api_module.h"
 #include "ceee/ie/broker/executors_manager.h"
+#include "ceee/ie/testing/mock_broker_and_friends.h"
 #include "ceee/testing/utils/mock_win32.h"
+#include "ceee/testing/utils/mock_window_utils.h"
 #include "ceee/testing/utils/test_utils.h"
 #include "ceee/testing/utils/nt_internals.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,11 +24,13 @@ using testing::DoAll;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
+using testing::StrictMock;
 
 const int kTabWindowId = 99;
 const int kTabWindowId2 = 88;
 const HWND kTabWindow = reinterpret_cast<HWND>(kTabWindowId + 1);
 const HWND kTabWindow2 = reinterpret_cast<HWND>(kTabWindowId2 + 1);
+const HWND kFrameWindow = reinterpret_cast<HWND>(kTabWindowId2 + 42);
 
 // We mock the IUnknown interface to make sure we properly AddRef and
 // Release the executors in the manager's map.
@@ -157,10 +162,16 @@ class TestingExecutorsManager : public ExecutorsManager {
     return (executors_.find(thread_id) != executors_.end());
   }
 
+  virtual WindowEventsFunnel& windows_events_funnel() {
+    return mock_window_events_funnel_;
+  }
+
   IUnknown* current_executor_;
   HANDLE current_handle_;
   ThreadId current_thread_id_;
-  MockExecutorCreator executor_creator_;
+  StrictMock<MockExecutorCreator> executor_creator_;
+  StrictMock<testing::MockWindowEventsFunnel> mock_window_events_funnel_;
+
   static const ThreadId kThreadId;
   static const HWND kWindowHwnd;
   static const CeeeWindowHandle kWindowHandle;
@@ -666,14 +677,34 @@ TEST_F(ExecutorsManagerTests, ThreadProc) {
   EXPECT_EQ(1, executors_manager.CallThreadProc());
 }
 
+// Mock static functions defined in CommonApiResult.
+MOCK_STATIC_CLASS_BEGIN(MockCommonApiResultStatics)
+  MOCK_STATIC_INIT_BEGIN(MockCommonApiResultStatics)
+    MOCK_STATIC_INIT2(common_api::CommonApiResult::IsIeFrameClass,
+                      IsIeFrameClass);
+  MOCK_STATIC_INIT_END()
+  MOCK_STATIC1(bool, , IsIeFrameClass, HWND);
+MOCK_STATIC_CLASS_END(MockCommonApiResultStatics)
+
+
 TEST_F(ExecutorsManagerTests, SetTabIdForHandle) {
   testing::LogDisabler no_logs;
   TestingExecutorsManager executors_manager;
+  StrictMock<testing::MockWindowUtils> window_utils;
+  EXPECT_CALL(window_utils, GetTopLevelParent(_)).
+      WillRepeatedly(Return(kFrameWindow));
+  StrictMock<MockCommonApiResultStatics> mock_common;
+  EXPECT_CALL(mock_common, IsIeFrameClass(kFrameWindow)).
+      WillRepeatedly(Return(true));
 
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId));
+
+  // The first time we get a child of the frame window set, we notify.
+  EXPECT_CALL(executors_manager.mock_window_events_funnel_,
+              OnCreated(kFrameWindow)).Times(1);
   executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
   EXPECT_EQ(kTabWindowId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
@@ -725,6 +756,13 @@ TEST_F(ExecutorsManagerTests, SetTabToolBandIdForHandle) {
 TEST_F(ExecutorsManagerTests, DeleteTabHandle) {
   testing::LogDisabler no_logs;
   TestingExecutorsManager executors_manager;
+  StrictMock<testing::MockWindowUtils> window_utils;
+  EXPECT_CALL(window_utils, GetTopLevelParent(_)).
+      WillRepeatedly(Return(kFrameWindow));
+  StrictMock<MockCommonApiResultStatics> mock_common;
+  // We return FALSE to force a lookup for the parent.
+  EXPECT_CALL(mock_common, IsIeFrameClass(kFrameWindow)).
+      WillRepeatedly(Return(false));
 
   // Test deletion of a nonexistent window.
   executors_manager.DeleteTabHandle(kTabWindow);
@@ -732,17 +770,25 @@ TEST_F(ExecutorsManagerTests, DeleteTabHandle) {
             executors_manager.GetTabIdFromHandle(kTabWindow));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId));
+  EXPECT_CALL(executors_manager.mock_window_events_funnel_,
+              OnCreated(kFrameWindow)).Times(1);
   executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
   EXPECT_EQ(kTabWindowId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
   EXPECT_EQ(kTabWindow,
             executors_manager.GetTabHandleFromId(kTabWindowId));
+
+  // The last time we remove a child of the frame window set, we notify.
+  EXPECT_CALL(executors_manager.mock_window_events_funnel_,
+              OnRemoved(kFrameWindow)).Times(1);
   executors_manager.DeleteTabHandle(kTabWindow);
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId));
   // Test deletion of a nonexistent window when another one exists.
+  EXPECT_CALL(executors_manager.mock_window_events_funnel_,
+              OnCreated(kFrameWindow)).Times(1);
   executors_manager.SetTabIdForHandle(kTabWindowId2, kTabWindow2);
   executors_manager.DeleteTabHandle(kTabWindow);
   EXPECT_EQ(kInvalidChromeSessionId,
@@ -758,7 +804,15 @@ TEST_F(ExecutorsManagerTests, DeleteTabHandle) {
 TEST_F(ExecutorsManagerTests, DeleteTabHandleWithToolBandId) {
   testing::LogDisabler no_logs;
   TestingExecutorsManager executors_manager;
+  StrictMock<testing::MockWindowUtils> window_utils;
+  EXPECT_CALL(window_utils, GetTopLevelParent(_)).
+      WillRepeatedly(Return(kFrameWindow));
+  StrictMock<MockCommonApiResultStatics> mock_common;
+  EXPECT_CALL(mock_common, IsIeFrameClass(kFrameWindow)).
+      WillRepeatedly(Return(true));
 
+  EXPECT_CALL(executors_manager.mock_window_events_funnel_,
+              OnCreated(kFrameWindow)).Times(1);
   executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
   executors_manager.SetTabToolBandIdForHandle(kTabWindowId2, kTabWindow);
   EXPECT_EQ(kTabWindowId,
@@ -767,6 +821,9 @@ TEST_F(ExecutorsManagerTests, DeleteTabHandleWithToolBandId) {
             executors_manager.GetTabHandleFromId(kTabWindowId));
   EXPECT_EQ(kTabWindow,
             executors_manager.GetTabHandleFromToolBandId(kTabWindowId2));
+  // The last time we remove a child of the frame window set, we notify.
+  EXPECT_CALL(executors_manager.mock_window_events_funnel_,
+              OnRemoved(kFrameWindow)).Times(1);
   executors_manager.DeleteTabHandle(kTabWindow);
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow));

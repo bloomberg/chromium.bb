@@ -29,6 +29,7 @@
 #include "base/win/windows_version.h"
 #include "ceee/ie/broker/api_module_constants.h"
 #include "ceee/ie/broker/api_module_util.h"
+#include "ceee/ie/broker/executors_manager.h"
 #include "ceee/ie/common/api_registration.h"
 #include "ceee/ie/common/constants.h"
 #include "ceee/ie/common/ie_util.h"
@@ -81,6 +82,8 @@ bool ConvertTabIdEventHandler(const std::string& input_args,
   HWND tab_window = reinterpret_cast<HWND>(tab_handle);
   int tab_id = dispatcher->GetTabIdFromHandle(tab_window);
   DCHECK(tab_id != kInvalidChromeSessionId);
+  if (tab_id == kInvalidChromeSessionId)
+    return false;
   input_list->Set(0, Value::CreateIntegerValue(tab_id));
 
   if (AddTabParam) {
@@ -454,7 +457,8 @@ void GetSelectedTab::Execute(const ListValue& args, int request_id) {
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher != NULL);
   if (!window_utils::FindDescendentWindow(
-      frame_window, windows::kIeTabWindowClass, true, &selected_tab)) {
+      frame_window, windows::kIeTabWindowClass, true, &selected_tab) ||
+      !ExecutorsManager::IsKnownWindow(selected_tab)) {
     if (specified) {
       int frame_window_id = dispatcher->GetWindowIdFromHandle(frame_window);
       // We remember the frame window if it was specified so that we only
@@ -542,12 +546,14 @@ bool GetAllTabsInWindowResult::Execute(BSTR tab_handles) {
   value_.reset(new ListValue());
   num_values /= 2;
   for (size_t index = 0; index < num_values; ++index) {
-    int tab_handle = 0;
-    tabs_list->GetInteger(index * 2, &tab_handle);
+    int tab_value = 0;
+    tabs_list->GetInteger(index * 2, &tab_value);
     int tab_index = -1;
     tabs_list->GetInteger(index * 2 + 1, &tab_index);
-    int tab_id = dispatcher->GetTabIdFromHandle(
-        reinterpret_cast<HWND>(tab_handle));
+    HWND tab_handle = reinterpret_cast<HWND>(tab_value);
+    if (!ExecutorsManager::IsKnownWindow(tab_handle))
+      continue;
+    int tab_id = dispatcher->GetTabIdFromHandle(tab_handle);
     DCHECK(tab_id != kInvalidChromeSessionId);
     if (!CreateTabValue(tab_id, tab_index)) {
       return false;
@@ -858,11 +864,13 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
   } else {
     // To create a new tab, we find an existing tab in the desired window (there
     // is always at least one), and use it to navigate to a new tab.
-    HWND existing_tab = NULL;
-    bool success = window_utils::FindDescendentWindow(
-        frame_window, windows::kIeTabWindowClass, false, &existing_tab);
-    DCHECK(success && existing_tab != NULL) <<
-        "Can't find an existing tab for" << frame_window;
+    HWND existing_tab = ExecutorsManager::FindTabChild(frame_window);
+    DCHECK(existing_tab != NULL) << "Can't find an existing tab for" <<
+        frame_window;
+    if (existing_tab == NULL) {
+      result->PostError("Internal error while trying to create tab.");
+      return;
+    }
 
     ScopedComPtr<ICeeeTabExecutor> executor;
     dispatcher->GetExecutor(existing_tab, IID_ICeeeTabExecutor,
@@ -1008,7 +1016,8 @@ bool CreateTab::EventHandler(const std::string& input_args,
     return false;
   }
 
-  // Get the complete tab info from the tab_handle coming from IE
+  // Get the complete tab info from the tab_handle coming from IE.
+  // Yes, this is actually a tab handle and not an ID that's in the dict.
   int tab_handle = reinterpret_cast<int>(INVALID_HANDLE_VALUE);
   bool success = input_dict->GetInteger(ext::kIdKey, &tab_handle);
   DCHECK(success) << "Couldn't get the tab ID key from the input args.";

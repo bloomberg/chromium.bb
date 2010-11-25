@@ -10,6 +10,8 @@
 
 #include "ceee/ie/broker/api_dispatcher.h"
 #include "ceee/ie/broker/broker_rpc_client.h"
+#include "ceee/ie/broker/executors_manager.h"
+#include "ceee/ie/broker/window_events_funnel.h"
 #include "ceee/ie/plugin/bho/cookie_events_funnel.h"
 #include "ceee/ie/plugin/bho/tab_events_funnel.h"
 #include "ceee/ie/plugin/bho/webnavigation_events_funnel.h"
@@ -140,6 +142,28 @@ class MockTabExecutor
   }
 };
 
+// Lets us test protected members and mock certain calls.
+class MockExecutorsManager : public ExecutorsManager {
+ public:
+  // true for no thread.
+  MockExecutorsManager() : ExecutorsManager(true) {
+  }
+  // Publicized to get/set the instance to be used a the singleton.
+  using ExecutorsManager::test_instance_;
+  MOCK_METHOD2(RegisterWindowExecutor, HRESULT(ThreadId thread_id,
+                                               IUnknown* executor));
+  MOCK_METHOD2(RegisterTabExecutor, HRESULT(ThreadId thread_id,
+                                            IUnknown* executor));
+  MOCK_METHOD1(RemoveExecutor, HRESULT(ThreadId thread_id));
+
+  MOCK_METHOD2(SetTabIdForHandle, void(int tab_id, HWND tab_handle));
+  MOCK_METHOD2(SetTabToolBandIdForHandle, void(int tool_band_id,
+                                               HWND tab_handle));
+
+  MOCK_METHOD1(IsKnownWindowImpl, bool(HWND));
+  MOCK_METHOD1(FindTabChildImpl, HWND(HWND));
+};
+
 class MockTabEventsFunnel : public TabEventsFunnel {
  public:
   MOCK_METHOD4(OnMoved, HRESULT(HWND tab, int window_id, int from_index,
@@ -150,6 +174,13 @@ class MockTabEventsFunnel : public TabEventsFunnel {
   MOCK_METHOD3(OnUpdated, HRESULT(HWND tab, BSTR url,
                                   READYSTATE ready_state));
   MOCK_METHOD2(OnTabUnmapped, HRESULT(HWND tab, int tab_id));
+};
+
+class MockWindowEventsFunnel : public WindowEventsFunnel {
+ public:
+  MOCK_METHOD1(OnCreated, HRESULT(HWND));
+  MOCK_METHOD1(OnFocusChanged, HRESULT(int));
+  MOCK_METHOD1(OnRemoved, HRESULT(HWND));
 };
 
 class MockCeeeCookieExecutorImpl : public ICeeeCookieExecutor {

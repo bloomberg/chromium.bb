@@ -18,6 +18,7 @@
 #include "ceee/common/windows_constants.h"
 #include "ceee/ie/broker/api_module_constants.h"
 #include "ceee/ie/broker/api_module_util.h"
+#include "ceee/ie/broker/executors_manager.h"
 #include "ceee/ie/broker/window_api_module.h"
 #include "ceee/ie/common/api_registration.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
@@ -61,10 +62,8 @@ HRESULT CookieApiResult::GetCookieInfo(
     CookieInfo* cookie_info) {
   // Get a tab window child of the cookie store window, so that we can properly
   // access session cookies.
-  HWND tab_window = NULL;
-  if (!window_utils::FindDescendentWindow(
-          window, windows::kIeTabWindowClass, false, &tab_window) ||
-      tab_window == NULL) {
+  HWND tab_window = ExecutorsManager::FindTabChild(window);
+  if (tab_window == NULL) {
     PostError("Failed to get tab window for a given cookie store.");
     return E_FAIL;
   }
@@ -186,10 +185,12 @@ bool CookieApiResult::AppendToTabIdList(HWND window, ListValue* tab_ids) {
     return false;
   }
   for (size_t i = 0; i < num_values; i += 2) {
-    int tab_handle = 0;
-    tabs_list->GetInteger(i, &tab_handle);
-    int tab_id = dispatcher->GetTabIdFromHandle(
-        reinterpret_cast<HWND>(tab_handle));
+    int tab_value = 0;
+    tabs_list->GetInteger(i, &tab_value);
+    HWND tab_handle = reinterpret_cast<HWND>(tab_value);
+    if (!ExecutorsManager::IsKnownWindow(tab_handle))
+      continue;
+    int tab_id = dispatcher->GetTabIdFromHandle(tab_handle);
     tab_ids->Append(Value::CreateIntegerValue(tab_id));
   }
   return true;
@@ -206,6 +207,8 @@ void CookieApiResult::FindAllProcessesAndWindows(
 
   WindowSet::const_iterator iter = ie_frame_windows.begin();
   for (; iter != ie_frame_windows.end(); ++iter) {
+    if (!ExecutorsManager::IsKnownWindow(*iter))
+      continue;
     DWORD process_id = 0;
     // Skip over windows with no thread.
     if (::GetWindowThreadProcessId(*iter, &process_id) == 0)
@@ -235,6 +238,9 @@ HWND CookieApiResult::GetWindowFromStoreId(const std::string& store_id,
   WindowSet::const_iterator iter = ie_frame_windows.begin();
   for (; iter != ie_frame_windows.end(); ++iter) {
     DWORD process_id = 0;
+    if (!ExecutorsManager::IsKnownWindow(*iter))
+      continue;
+
     if (::GetWindowThreadProcessId(*iter, &process_id) != 0 &&
         process_id == store_process_id) {
       if (allow_unregistered_store)

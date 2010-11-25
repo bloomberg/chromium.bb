@@ -212,6 +212,17 @@ MOCK_STATIC_CLASS_BEGIN(MockWindowApiResultStatics)
 MOCK_STATIC_CLASS_END(MockWindowApiResultStatics)
 
 class CookieApiTests: public testing::Test {
+ public:
+  virtual void SetUp() {
+    if (!testing::MockExecutorsManager::test_instance_) {
+      // To be freed at exit by Singleton class.
+      testing::MockExecutorsManager::test_instance_ =
+          new StrictMock<testing::MockExecutorsManager>;
+    }
+    executors_manager_ =
+        reinterpret_cast<StrictMock<testing::MockExecutorsManager>*>(
+            testing::MockExecutorsManager::test_instance_);
+  }
  protected:
   template <class T> void ExpectInvalidArguments(
       StrictMock<MockApiInvocation<CookieApiResult,
@@ -226,6 +237,8 @@ class CookieApiTests: public testing::Test {
   }
 
   StrictMock<testing::MockUser32> user32_;
+  // Lifespan controlled by Singleton template.
+  StrictMock<testing::MockExecutorsManager>* executors_manager_;
 };
 
 TEST_F(CookieApiTests, RegisterInvocations) {
@@ -284,20 +297,14 @@ TEST_F(CookieApiTests, GetCookieInfo) {
   StrictMock<testing::MockWindowUtils> window_utils;
 
   // Test no tab windows found.
-  EXPECT_CALL(window_utils, FindDescendentWindow(_, _, _, _))
-      .WillOnce(Return(false));
-  EXPECT_CALL(result, PostError(_)).Times(1);
-  EXPECT_HRESULT_FAILED(result.CallGetCookieInfo("helloworld", "foo",
-                                                 test_frame_window, NULL));
-  // Test invalid tab window.
-  EXPECT_CALL(window_utils, FindDescendentWindow(_, _, _, _)).WillOnce(
-      DoAll(SetArgumentPointee<3>(HWND(NULL)), Return(true)));
+  EXPECT_CALL(*executors_manager_, FindTabChildImpl(test_frame_window)).
+      WillOnce(Return(reinterpret_cast<HWND>(NULL)));
   EXPECT_CALL(result, PostError(_)).Times(1);
   EXPECT_HRESULT_FAILED(result.CallGetCookieInfo("helloworld", "foo",
                                                  test_frame_window, NULL));
 
-  EXPECT_CALL(window_utils, FindDescendentWindow(_, _, _, _)).WillRepeatedly(
-      DoAll(SetArgumentPointee<3>(test_tab_window), Return(true)));
+  EXPECT_CALL(*executors_manager_, FindTabChildImpl(test_frame_window)).
+      WillRepeatedly(Return(test_tab_window));
 
   // Test failed executor access.
   EXPECT_CALL(result.mock_api_dispatcher_,
@@ -333,6 +340,8 @@ TEST_F(CookieApiTests, GetCookieInfo) {
 
 TEST_F(CookieApiTests, GetWindowFromStoreId) {
   MockCookieApiResult result(CookieApiResult::kNoRequestId);
+  EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(_)).
+      WillRepeatedly(Return(true));
 
   EXPECT_CALL(result, PostError(_)).Times(1);
   EXPECT_EQ((HWND)NULL,
@@ -374,6 +383,8 @@ TEST_F(CookieApiTests, CreateCookieStoreValue) {
   testing::LogDisabler no_dchecks;
   MockCookieApiResult result(CookieApiResult::kNoRequestId);
   CookieApiResult::WindowSet windows;
+  EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(_)).
+      WillRepeatedly(Return(true));
 
   // Test empty window set.
   EXPECT_CALL(result, PostError(_)).Times(1);
@@ -457,6 +468,8 @@ TEST_F(CookieApiTests, FindAllProcessesAndWindowsNoWindows) {
 
 TEST_F(CookieApiTests, FindAllProcessesAndWindowsMultipleProcesses) {
   testing::LogDisabler no_dchecks;
+  EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(_)).
+      WillRepeatedly(Return(true));
 
   std::set<HWND> test_windows(kAllWindows, kAllWindows + kNumWindows);
   test_windows.insert(kBadWindows[0]);
@@ -557,6 +570,8 @@ TEST_F(CookieApiTests, GetCookiesTopIeWindowIsDefaultCookieStore) {
 
 TEST_F(CookieApiTests, GetAllCookieStores) {
   testing::LogDisabler no_dchecks;
+  EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(_)).
+      WillRepeatedly(Return(true));
 
   MockCookieApiResultStatics result_statics;
   CookieApiResult::ProcessWindowMap all_windows;

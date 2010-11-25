@@ -120,6 +120,14 @@ class TabApiTests: public testing::Test {
         &mock_tab_executor_, mock_tab_executor_keeper_.Receive()));
     EXPECT_HRESULT_SUCCEEDED(testing::MockWindowExecutor::CreateInitialized(
         &mock_window_executor_, mock_window_executor_keeper_.Receive()));
+    if (!testing::MockExecutorsManager::test_instance_) {
+      // To be freed at exit by Singleton class.
+      testing::MockExecutorsManager::test_instance_ =
+          new StrictMock<testing::MockExecutorsManager>;
+    }
+    executors_manager_ =
+        reinterpret_cast<StrictMock<testing::MockExecutorsManager>*>(
+            testing::MockExecutorsManager::test_instance_);
   }
 
   virtual void TearDown() {
@@ -168,6 +176,8 @@ class TabApiTests: public testing::Test {
   // The executor classes are already strict from their base class impl.
   testing::MockTabExecutor* mock_tab_executor_;
   testing::MockWindowExecutor* mock_window_executor_;
+  // Lifespan controlled by Singleton template.
+  StrictMock<testing::MockExecutorsManager>* executors_manager_;
 
  private:
   class MockChromePostman : public ChromePostman {
@@ -607,7 +617,8 @@ TEST_F(TabApiTests, GetSelectedTab) {
   EXPECT_CALL(window_utils, FindDescendentWindow(
       kGoodFrameWindow, _, _, NotNull())).
           WillOnce(DoAll(SetArgumentPointee<3>(kGoodTabWindow), Return(true)));
-
+  EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(kGoodTabWindow)).
+      WillOnce(Return(true));
   EXPECT_CALL(*invocation.invocation_result_,
               CreateTabValue(kGoodTabWindowId, _)).WillOnce(Return(true));
   EXPECT_CALL(*invocation.invocation_result_, PostResult()).Times(1);
@@ -670,6 +681,8 @@ TEST_F(TabApiTests, GetAllTabsInWindowResult) {
       WillOnce(Return(true));
   EXPECT_CALL(invocation_result.mock_api_dispatcher_,
       GetTabIdFromHandle(kGoodTabWindow)).WillOnce(Return(kGoodTabWindowId));
+  EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(kGoodTabWindow)).
+      WillOnce(Return(true));
   {
     std::wostringstream args;
     args << L"[" << kGoodTabWindowHandle << L"," << index << L"]";
@@ -699,6 +712,8 @@ TEST_F(TabApiTests, GetAllTabsInWindowResult) {
       const id_map_struct& item = test_id_map[i];
       EXPECT_CALL(invocation_result.mock_api_dispatcher_,
           GetTabIdFromHandle(item.handle)).WillOnce(Return(item.id));
+      EXPECT_CALL(*executors_manager_, IsKnownWindowImpl(item.handle)).
+          WillOnce(Return(true));
       EXPECT_CALL(invocation_result, CreateTabValue(item.id, item.value)).
           InSequence(seq).WillOnce(Return(true));
       if (i)
@@ -1066,9 +1081,8 @@ TEST_F(TabApiTests, CreateTabExecute) {
     EXPECT_CALL(mock_ie_util, GetWebBrowserForTopLevelIeHwnd(
         kGoodFrameWindow, _, NotNull())).WillOnce(Return(E_FAIL));
   } else {
-    EXPECT_CALL(mock_window_utils, FindDescendentWindow(
-        kGoodFrameWindow, _, _, NotNull())).WillRepeatedly(
-            DoAll(SetArgumentPointee<3>(kGoodTabWindow), Return(true)));
+    EXPECT_CALL(*executors_manager_, FindTabChildImpl(kGoodFrameWindow)).
+        WillRepeatedly(Return(kGoodTabWindow));
     EXPECT_CALL(invocation.mock_api_dispatcher_,
         GetExecutor(kGoodTabWindow, _, _)).
             WillOnce(SetArgumentPointee<2>(static_cast<void*>(NULL)));

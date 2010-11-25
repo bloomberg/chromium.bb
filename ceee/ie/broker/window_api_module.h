@@ -90,6 +90,10 @@ class RemoveWindow : public WindowApiResultCreator {
 class GetAllWindows : public ApiResultCreator<IterativeWindowApiResult> {
  public:
   virtual void Execute(const ListValue& args, int request_id);
+  static void FillResult(IterativeWindowApiResult* result, bool populate_tabs);
+  static HRESULT ContinueExecution(const std::string& input_args,
+                                   ApiDispatcher::InvocationResult* user_data,
+                                   ApiDispatcher* dispatcher);
 };
 
 }  // namespace window_api

@@ -12,9 +12,12 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <map>
+#include <list>
 
 #include "base/lock.h"
 #include "base/singleton.h"
+#include "ceee/common/window_utils.h"
+#include "ceee/ie/broker/window_events_funnel.h"
 
 #include "toolband.h"  // NOLINT
 
@@ -32,6 +35,13 @@ class ExecutorsManager {
 
   // To avoid lint errors, even though we are only virtual for unittests.
   virtual ~ExecutorsManager() {}
+
+  // Temporary until we have a better structure to recognize known windows.
+  // TODO(mad@chromium.org): Find a better structure.
+  static bool IsKnownWindow(HWND window);
+  virtual bool IsKnownWindowImpl(HWND window);
+  static HWND FindTabChild(HWND window);
+  virtual HWND FindTabChildImpl(HWND window);
 
   // Adds a new executor to the map associated to the given thread_id.
   //
@@ -102,7 +112,10 @@ class ExecutorsManager {
   // to the constructor.
   struct SingletonTraits : public DefaultSingletonTraits<ExecutorsManager> {
     static ExecutorsManager* New() {
-      return new ExecutorsManager(false);  // By default, we want a thread.
+      if (test_instance_)
+        return test_instance_;
+      else
+        return new ExecutorsManager(false);  // By default, we want a thread.
     }
   };
 
@@ -203,6 +216,11 @@ class ExecutorsManager {
   TabIdMap tool_band_id_map_;
   HandleMap tool_band_handle_map_;
 
+  // Temporary to remember which Frame window we've heard of before.
+  // TODO(mad@chromium.org): Find a better structure.
+  typedef std::map<HWND, std::list<HWND>> FrameTabsMap;
+  FrameTabsMap frame_window_families_;
+
   // The handle to the thread running ThreadProc.
   CHandle thread_;
 
@@ -215,6 +233,15 @@ class ExecutorsManager {
   // To protect the access to the maps (ExecutorsManager::executors_ &
   // ExecutorsManager::pending_registrations_ & tab_id_map_/handle_map_).
   Lock lock_;
+
+  // Test seam.
+  WindowEventsFunnel windows_events_funnel_;
+  virtual WindowEventsFunnel& windows_events_funnel() {
+    return windows_events_funnel_;
+  }
+
+  // Test seam too.
+  static ExecutorsManager* test_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecutorsManager);
 };
