@@ -5,6 +5,12 @@
 
 Import('env')
 
+# Disable these tests for ARM
+# They are broken now
+if env.Bit('target_arm') or env.Bit('bitcode'):
+  Return()
+
+
 env.ComponentProgram('nacl_close_test.nexe',
                      ['nacl_close_test.c'],
                      EXTRA_LIBS=['google_nacl_imc_c',

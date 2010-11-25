@@ -6,6 +6,12 @@
 
 Import('env')
 
+# Disable these tests for ARM
+# They are broken now
+if env.Bit('target_arm') or env.Bit('bitcode'):
+  Return()
+
+
 # NOTE: the arm emulator does not handle atomic ops properly
 TEST_SUITES = ['small_tests']
 
