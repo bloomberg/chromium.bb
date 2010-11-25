@@ -220,10 +220,11 @@ class AbstractRpcServer(object):
       req.add_header(key, value)
     return req
 
-  def _GetAuthToken(self, email, password):
+  def _GetAuthToken(self, host, email, password):
     """Uses ClientLogin to authenticate the user, returning an auth token.
 
     Args:
+      host:     Host to get a token against.
       email:    The user's email address
       password: The user's password
 
@@ -235,7 +236,7 @@ class AbstractRpcServer(object):
       The authentication token returned by ClientLogin.
     """
     account_type = self.account_type
-    if self.host.endswith(".google.com"):
+    if host.endswith(".google.com"):
       # Needed for use inside Google.
       account_type = "HOSTED"
     req = self._CreateRequest(
@@ -318,7 +319,7 @@ class AbstractRpcServer(object):
     for i in range(3):
       credentials = self.auth_function()
       try:
-        auth_token = self._GetAuthToken(credentials[0], credentials[1])
+        auth_token = self._GetAuthToken(host, credentials[0], credentials[1])
       except ClientLoginError, e:
         if e.reason == "BadAuthentication":
           print >>sys.stderr, "Invalid username or password."
