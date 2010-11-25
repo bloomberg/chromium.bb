@@ -28,3 +28,5 @@ BUG_KINUKO : fast/filesystem/read-directory.html = TEXT
 BUG_KINUKO : fast/filesystem/simple-persistent.html = TEXT
 BUG_KINUKO : fast/filesystem/simple-temporary.html = TEXT
 BUG_KINUKO : fast/filesystem/async-operations.html = TEXT
+
+BUG64401 WIN : fast/filesystem/op-copy.html = TEXT
