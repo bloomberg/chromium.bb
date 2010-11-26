@@ -644,6 +644,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The Omnibox keyword for this extension, or empty if there is none.
   std::string omnibox_keyword_;
 
+  FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
+                           UpdateExtensionPreservesLocation);
   FRIEND_TEST_ALL_PREFIXES(ExtensionTest, LoadPageActionHelper);
   FRIEND_TEST_ALL_PREFIXES(ExtensionTest, InitFromValueInvalid);
   FRIEND_TEST_ALL_PREFIXES(ExtensionTest, InitFromValueValid);

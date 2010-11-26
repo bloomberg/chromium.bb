@@ -666,8 +666,8 @@ void ExtensionsService::UpdateExtension(const std::string& id,
   PendingExtensionMap::const_iterator it = pending_extensions_.find(id);
   bool is_pending_extension = (it != pending_extensions_.end());
 
-  if (!is_pending_extension &&
-      !GetExtensionByIdInternal(id, true, true)) {
+  const Extension* extension = GetExtensionByIdInternal(id, true, true);
+  if (!is_pending_extension && !extension) {
     LOG(WARNING) << "Will not update extension " << id
                  << " because it is not installed or pending";
     // Delete extension_path since we're not creating a CrxInstaller
@@ -691,6 +691,8 @@ void ExtensionsService::UpdateExtension(const std::string& id,
   installer->set_expected_id(id);
   if (is_pending_extension)
     installer->set_install_source(it->second.install_source);
+  else if (extension)
+    installer->set_install_source(extension->location());
   installer->set_delete_source(true);
   installer->set_original_url(download_url);
   installer->InstallCrx(extension_path);

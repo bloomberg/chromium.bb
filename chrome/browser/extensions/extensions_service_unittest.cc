@@ -1547,6 +1547,31 @@ TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesState) {
   EXPECT_TRUE(service_->IsIncognitoEnabled(good2));
 }
 
+// Tests that updating preserves extension location.
+TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesLocation) {
+  InitializeEmptyExtensionsService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+
+  FilePath path = extensions_path.AppendASCII("good.crx");
+
+  InstallExtension(path, true);
+  const Extension* good = service_->extensions()->at(0);
+
+  ASSERT_EQ("1.0.0.0", good->VersionString());
+  ASSERT_EQ(good_crx, good->id());
+
+  // Simulate non-internal location.
+  const_cast<Extension*>(good)->location_ = Extension::EXTERNAL_PREF;
+
+  path = extensions_path.AppendASCII("good2.crx");
+  UpdateExtension(good_crx, path, ENABLED);
+  const Extension* good2 = service_->extensions()->at(0);
+  ASSERT_EQ("1.0.0.1", good2->version()->GetString());
+  EXPECT_EQ(good2->location(), Extension::EXTERNAL_PREF);
+}
+
 // Test adding a pending extension.
 TEST_F(ExtensionsServiceTest, AddPendingExtension) {
   InitializeEmptyExtensionsService();
