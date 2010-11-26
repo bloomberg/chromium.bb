@@ -35,12 +35,13 @@ int RendererWebIDBTransactionImpl::mode() const
 }
 
 WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
-    const WebString& name)
+    const WebString& name,
+    WebKit::WebExceptionCode& ec)
 {
   int object_store_id;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBTransactionObjectStore(
-          idb_transaction_id_, name, &object_store_id));
+          idb_transaction_id_, name, &object_store_id, &ec));
   if (!object_store_id)
     return NULL;
   return new RendererWebIDBObjectStoreImpl(object_store_id);

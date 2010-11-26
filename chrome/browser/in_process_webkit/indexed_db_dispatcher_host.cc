@@ -1136,10 +1136,11 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnObjectStore(
   if (!idb_transaction)
     return;
 
-  WebIDBObjectStore* object_store = idb_transaction->objectStore(name);
+  WebExceptionCode ec = 0;
+  WebIDBObjectStore* object_store = idb_transaction->objectStore(name, ec);
   int32 object_id = object_store ? parent_->Add(object_store) : 0;
   ViewHostMsg_IDBTransactionObjectStore::WriteReplyParams(
-      reply_msg, object_id);
+      reply_msg, object_id, ec);
   parent_->Send(reply_msg);
 }
 

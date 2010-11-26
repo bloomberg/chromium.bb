@@ -21,7 +21,8 @@ class RendererWebIDBTransactionImpl : public WebKit::WebIDBTransaction {
   virtual ~RendererWebIDBTransactionImpl();
 
   virtual int mode() const;
-  virtual WebKit::WebIDBObjectStore* objectStore(const WebKit::WebString& name);
+  virtual WebKit::WebIDBObjectStore* objectStore(const WebKit::WebString& name,
+                                                 WebKit::WebExceptionCode&);
   virtual void abort();
   virtual void didCompleteTaskEvents();
   virtual void setCallbacks(WebKit::WebIDBTransactionCallbacks*);

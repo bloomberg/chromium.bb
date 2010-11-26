@@ -110,15 +110,17 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
     unsigned short mode,
     unsigned long timeout,
     WebExceptionCode& ec) {
-  std::vector<string16> object_stores(names.length());
-  for (unsigned int i = 0; i < names.length(); ++i) {
+  std::vector<string16> object_stores;
+  object_stores.reserve(names.length());
+  for (unsigned int i = 0; i < names.length(); ++i)
     object_stores.push_back(names.item(i));
-  }
 
   int transaction_id;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBDatabaseTransaction(
           idb_database_id_, object_stores, mode,
           timeout, &transaction_id, &ec));
+  if (!transaction_id)
+    return NULL;
   return new RendererWebIDBTransactionImpl(transaction_id);
 }

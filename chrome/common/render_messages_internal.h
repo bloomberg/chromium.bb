@@ -2641,10 +2641,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32 /* idb_cursor_id */)
 
   // IDBTransaction::ObjectStore message.
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_IDBTransactionObjectStore,
+  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_IDBTransactionObjectStore,
                               int32, /* transaction_id */
                               string16, /* name */
-                              int32 /* object_store_id */)
+                              int32, /* object_store_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBTransaction::mode() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBTransactionMode,
