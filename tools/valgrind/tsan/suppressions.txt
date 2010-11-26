@@ -116,6 +116,13 @@
   fun:base::RefCounted<net::NetLog::EventParameters>::*
 }
 
+{
+  bug_64501
+  ThreadSanitizer:Race
+  ...
+  fun:base::RefCounted<net::URLRequestThrottlerEntryInterface>::*
+}
+
 ############################
 # Benign races
 {
