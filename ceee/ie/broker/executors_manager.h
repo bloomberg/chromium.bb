@@ -79,12 +79,24 @@ class ExecutorsManager {
   // Terminates the usage of the map by freeing our resources.
   virtual HRESULT Terminate();
 
+  // Return whether a tab ID is valid.
+  //
+  // @param tab_id The tab identifier.
+  // @return True if the tab ID exists in the tab ID map.
+  virtual bool IsTabIdValid(int tab_id);
+
   // Return a tab handle associated with the id.
   //
   // @param tab_id The tab identifier.
   // @return The corresponding HWND (or INVALID_HANDLE_VALUE if tab_id isn't
   //         found).
   virtual HWND GetTabHandleFromId(int tab_id);
+
+  // Return whether a tab handle is valid.
+  //
+  // @param tab_handle The tab handle.
+  // @return True if the tab handle exists in the tab handle map.
+  virtual bool IsTabHandleValid(HWND tab_handle);
 
   // Return a tab ID associated with the HWND.
   //

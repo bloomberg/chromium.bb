@@ -390,6 +390,12 @@ void GetTab::Execute(const ListValue& args, int request_id) {
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher != NULL);
 
+  if (!dispatcher->IsTabIdValid(tab_id)) {
+    result->PostError(ExtensionErrorUtils::FormatErrorMessage(
+        ext::kTabNotFoundError, base::IntToString(tab_id)));
+    return;
+  }
+
   HWND tab_window = dispatcher->GetTabHandleFromId(tab_id);
   if (!result->IsTabWindowClass(tab_window)) {
     result->PostError(ExtensionErrorUtils::FormatErrorMessage(
@@ -607,6 +613,13 @@ void UpdateTab::Execute(const ListValue& args, int request_id) {
 
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher != NULL);
+
+  if (!dispatcher->IsTabIdValid(tab_id)) {
+    result->PostError(ExtensionErrorUtils::FormatErrorMessage(
+        ext::kTabNotFoundError, base::IntToString(tab_id)));
+    return;
+  }
+
   HWND tab_window = dispatcher->GetTabHandleFromId(tab_id);
   if (!result->IsTabWindowClass(tab_window)) {
     result->PostError(ExtensionErrorUtils::FormatErrorMessage(
@@ -699,6 +712,13 @@ void RemoveTab::Execute(const ListValue& args, int request_id) {
 
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher != NULL);
+
+  if (!dispatcher->IsTabIdValid(tab_id)) {
+    result->PostError(ExtensionErrorUtils::FormatErrorMessage(
+        ext::kTabNotFoundError, base::IntToString(tab_id)));
+    return;
+  }
+
   HWND tab_window = dispatcher->GetTabHandleFromId(tab_id);
   if (!result->IsTabWindowClass(tab_window)) {
     result->PostError(ExtensionErrorUtils::FormatErrorMessage(
@@ -1049,6 +1069,13 @@ void MoveTab::Execute(const ListValue& args, int request_id) {
 
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher != NULL);
+
+  if (!dispatcher->IsTabIdValid(tab_id)) {
+    result->PostError(ExtensionErrorUtils::FormatErrorMessage(
+        ext::kTabNotFoundError, base::IntToString(tab_id)));
+    return;
+  }
+
   HWND tab_window = dispatcher->GetTabHandleFromId(tab_id);
   if (!result->IsTabWindowClass(tab_window)) {
     result->PostError(ExtensionErrorUtils::FormatErrorMessage(
@@ -1143,6 +1170,13 @@ ApiDispatcher::InvocationResult* TabsInsertCode::ExecuteImpl(
 
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher != NULL);
+
+  if (!dispatcher->IsTabIdValid(*tab_id)) {
+    result->PostError(ExtensionErrorUtils::FormatErrorMessage(
+        ext::kTabNotFoundError, base::IntToString(*tab_id)));
+    return NULL;
+  }
+
   HWND tab_window = dispatcher->GetTabHandleFromId(*tab_id);
   if (!TabApiResult::IsTabWindowClass(tab_window)) {
     result->PostError(ExtensionErrorUtils::FormatErrorMessage(

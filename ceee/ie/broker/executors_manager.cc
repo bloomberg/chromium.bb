@@ -463,6 +463,16 @@ void ExecutorsManager::DeleteTabHandle(HWND handle) {
     windows_events_funnel().OnRemoved(frame_window);
 }
 
+bool ExecutorsManager::IsTabIdValid(int tab_id) {
+  AutoLock lock(lock_);
+  TabIdMap::const_iterator it = tab_id_map_.find(tab_id);
+#ifdef DEBUG
+  return it != tab_id_map_.end() && it->second != INVALID_HANDLE_VALUE;
+#else
+  return it != tab_id_map_.end();
+#endif
+}
+
 HWND ExecutorsManager::GetTabHandleFromId(int tab_id) {
   AutoLock lock(lock_);
   TabIdMap::const_iterator it = tab_id_map_.find(tab_id);
@@ -474,6 +484,16 @@ HWND ExecutorsManager::GetTabHandleFromId(int tab_id) {
   // Deleted? I hope not.
   DCHECK(it->second != reinterpret_cast<HWND>(INVALID_HANDLE_VALUE));
   return it->second;
+}
+
+bool ExecutorsManager::IsTabHandleValid(HWND tab_handle) {
+  AutoLock lock(lock_);
+  HandleMap::const_iterator it = handle_map_.find(tab_handle);
+#ifdef DEBUG
+  return it != handle_map_.end() && it->second != kInvalidChromeSessionId;
+#else
+  return it != handle_map_.end();
+#endif
 }
 
 int ExecutorsManager::GetTabIdFromHandle(HWND tab_handle) {

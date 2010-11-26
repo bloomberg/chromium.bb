@@ -534,6 +534,8 @@ TEST_F(TabApiTests, GetTab) {
   EXPECT_CALL(*invocation.invocation_result_,
               CreateTabValue(kGoodTabWindowId, _)).WillOnce(Return(true));
   EXPECT_CALL(*invocation.invocation_result_, PostResult()).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(good_args, kRequestId);
@@ -541,9 +543,18 @@ TEST_F(TabApiTests, GetTab) {
   // No more successful calls.
   invocation.AllocateNewResult(kRequestId);
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(false));
+  invocation.Execute(good_args, kRequestId);
+
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kBadWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kBadWindowId)).WillOnce(Return(kBadWindow));
   invocation.Execute(bad_window, kRequestId);
+
   invocation.AllocateNewResult(kRequestId);
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
   invocation.Execute(ListValue(), kRequestId);
@@ -833,6 +844,8 @@ TEST_F(TabApiTests, UpdateTab) {
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
   invocation.Execute(empty_list, kRequestId);
 
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(_))
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kBadWindowId)).WillRepeatedly(Return(kBadWindow));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
@@ -945,6 +958,8 @@ TEST_F(TabApiTests, RemoveTabExecute) {
 
   list_args.Append(Value::CreateIntegerValue(kGoodTabWindowId));
   EXPECT_CALL(*invocation.invocation_result_, PostError(_));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(list_args, kRequestId);
@@ -958,6 +973,8 @@ TEST_F(TabApiTests, RemoveTabExecute) {
               GetExecutor(kGoodFrameWindow, _, NotNull())).
       WillOnce(SetArgumentPointee<2>(static_cast<void*>(NULL)));
   EXPECT_CALL(*invocation.invocation_result_, PostError(_));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(list_args, kRequestId);
@@ -969,6 +986,8 @@ TEST_F(TabApiTests, RemoveTabExecute) {
   EXPECT_CALL(*mock_window_executor_, RemoveTab(kGoodTabWindowHandle)).
       WillOnce(Return(E_FAIL));
   EXPECT_CALL(*invocation.invocation_result_, PostError(_));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(list_args, kRequestId);
@@ -981,6 +1000,8 @@ TEST_F(TabApiTests, RemoveTabExecute) {
     StrEq(ext_event_names::kOnTabRemoved),
     RemoveTab::ContinueExecution,
     invocation.invocation_result_.get()));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   // This will cause the invocation result to be released at the end of the
@@ -1259,6 +1280,8 @@ TEST_F(TabApiTests, MoveTab) {
   EXPECT_TRUE(good_args.Insert(0, Value::CreateIntegerValue(kGoodTabWindowId)));
   EXPECT_CALL(window_utils, IsWindowClass(kGoodTabWindow, _)).
       WillOnce(Return(false));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
@@ -1270,6 +1293,8 @@ TEST_F(TabApiTests, MoveTab) {
       WillRepeatedly(Return(true));
   EXPECT_TRUE(good_args.Insert(1, Value::CreateNullValue()));
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(good_args, kRequestId);
@@ -1279,6 +1304,8 @@ TEST_F(TabApiTests, MoveTab) {
   good_args.Remove(1, NULL);
   good_args_dict->SetInteger(ext::kWindowIdKey, kBadWindowId);
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(good_args, kRequestId);
@@ -1288,6 +1315,8 @@ TEST_F(TabApiTests, MoveTab) {
   good_args_dict->Remove(ext::kWindowIdKey, NULL);
   good_args_dict->SetBoolean(ext::kIndexKey, false);
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(good_args, kRequestId);
@@ -1300,6 +1329,8 @@ TEST_F(TabApiTests, MoveTab) {
   EXPECT_CALL(invocation.mock_api_dispatcher_,
               GetExecutor(kGoodFrameWindow, _, _)).
       WillOnce(SetArgumentPointee<2>(static_cast<void*>(NULL)));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
@@ -1313,6 +1344,8 @@ TEST_F(TabApiTests, MoveTab) {
       MoveTab(reinterpret_cast<CeeeWindowHandle>(kGoodTabWindow), kTabIndex)).
       WillOnce(Return(E_FAIL));
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(good_args, kRequestId);
@@ -1326,6 +1359,8 @@ TEST_F(TabApiTests, MoveTab) {
               CreateTabValue(kGoodTabWindowId, kTabIndex)).
               WillOnce(Return(true));
   EXPECT_CALL(*invocation.invocation_result_, PostResult()).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.Execute(good_args, kRequestId);
@@ -1391,6 +1426,8 @@ TEST_F(TabApiTests, TabsInsertCode) {
       WillOnce(Return(false));
   invocation.AllocateNewResult(kRequestId);
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   EXPECT_EQ(NULL, invocation.CallExecuteImpl(
@@ -1404,6 +1441,8 @@ TEST_F(TabApiTests, TabsInsertCode) {
       WillOnce(SetArgumentPointee<2>(static_cast<void*>(NULL)));
   invocation.AllocateNewResult(kRequestId);
   EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   EXPECT_EQ(NULL, invocation.CallExecuteImpl(
@@ -1414,6 +1453,8 @@ TEST_F(TabApiTests, TabsInsertCode) {
   EXPECT_CALL(*mock_tab_executor_,
               InsertCode(_, _, false, kCeeeTabCodeTypeCss)).
       WillOnce(Return(E_FAIL));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.AllocateNewResult(kRequestId);
@@ -1427,6 +1468,8 @@ TEST_F(TabApiTests, TabsInsertCode) {
   EXPECT_CALL(*mock_tab_executor_,
               InsertCode(_, _, false, kCeeeTabCodeTypeCss)).
       WillRepeatedly(Return(S_OK));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.AllocateNewResult(kRequestId);
@@ -1439,6 +1482,8 @@ TEST_F(TabApiTests, TabsInsertCode) {
   good_args_dict->SetBoolean(ext::kAllFramesKey, true);
   EXPECT_CALL(*mock_tab_executor_, InsertCode(_, _, true,
       kCeeeTabCodeTypeJs)).WillOnce(Return(S_OK));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, IsTabIdValid(kGoodTabWindowId)).
+      WillOnce(Return(true));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
   invocation.AllocateNewResult(kRequestId);

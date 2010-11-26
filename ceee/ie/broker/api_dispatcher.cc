@@ -149,6 +149,10 @@ void ApiDispatcher::GetExecutor(HWND window, REFIID iid, void** executor) {
       window << ". In thread: " << thread_id << ". " << com::LogHr(hr);
 }
 
+bool ApiDispatcher::IsTabIdValid(int tab_id) const {
+  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
+      IsTabIdValid(tab_id);
+}
 
 HWND ApiDispatcher::GetTabHandleFromId(int tab_id) const {
   return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
@@ -162,6 +166,11 @@ HWND ApiDispatcher::GetTabHandleFromToolBandId(int tool_band_id) const {
 
 HWND ApiDispatcher::GetWindowHandleFromId(int window_id) const {
   return reinterpret_cast<HWND>(window_id);
+}
+
+bool ApiDispatcher::IsTabHandleValid(HWND tab_handle) const {
+  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
+      IsTabHandleValid(tab_handle);
 }
 
 int ApiDispatcher::GetTabIdFromHandle(HWND tab_handle) const {

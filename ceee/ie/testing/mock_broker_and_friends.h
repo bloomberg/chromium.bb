@@ -272,6 +272,7 @@ class MockApiDispatcher : public ApiDispatcher {
   MOCK_METHOD3(GetExecutor, void(HWND, REFIID, void**));
   MOCK_METHOD2(FireEvent, void(BSTR event_name, BSTR event_args));
 
+  MOCK_CONST_METHOD1(IsTabIdValid, bool(int));
   MOCK_CONST_METHOD1(GetTabHandleFromId, HWND(int));
   MOCK_CONST_METHOD1(GetTabHandleFromToolBandId, HWND(int));
   MOCK_CONST_METHOD1(GetWindowHandleFromId, HWND(int));

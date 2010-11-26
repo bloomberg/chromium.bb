@@ -217,6 +217,12 @@ class ApiDispatcher {
   // @param executor Where to return the requested executor interface pointer.
   virtual void GetExecutor(HWND window, REFIID iid, void** executor);
 
+  // Return whether a tab ID is valid.
+  //
+  // @param tab_id The tab identifier.
+  // @return True if the tab ID exists in the tab ID map.
+  virtual bool IsTabIdValid(int tab_id) const;
+
   // Return a tab handle associated with the id.
   //
   // @param tab_id The tab identifier.
@@ -237,6 +243,12 @@ class ApiDispatcher {
   // @return The corresponding HWND (or INVALID_HANDLE_VALUE if window_id isn't
   //         found).
   virtual HWND GetWindowHandleFromId(int window_id) const;
+
+  // Return whether a tab handle is valid.
+  //
+  // @param tab_handle The tab handle.
+  // @return True if the tab handle exists in the tab handle map.
+  virtual bool IsTabHandleValid(HWND tab_handle) const;
 
   // Return a tab id associated with the HWND.
   //

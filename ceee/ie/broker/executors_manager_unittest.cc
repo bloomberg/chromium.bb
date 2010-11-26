@@ -697,8 +697,10 @@ TEST_F(ExecutorsManagerTests, SetTabIdForHandle) {
   EXPECT_CALL(mock_common, IsIeFrameClass(kFrameWindow)).
       WillRepeatedly(Return(true));
 
+  EXPECT_FALSE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_FALSE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId));
 
@@ -706,28 +708,38 @@ TEST_F(ExecutorsManagerTests, SetTabIdForHandle) {
   EXPECT_CALL(executors_manager.mock_window_events_funnel_,
               OnCreated(kFrameWindow)).Times(1);
   executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
+  EXPECT_TRUE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kTabWindowId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_TRUE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(kTabWindow,
             executors_manager.GetTabHandleFromId(kTabWindowId));
   // Tab IDs or handles can only be mapped once.
   executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow2);
+  EXPECT_FALSE(executors_manager.IsTabHandleValid(kTabWindow2));
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow2));
+  EXPECT_TRUE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kTabWindowId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_TRUE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(kTabWindow,
             executors_manager.GetTabHandleFromId(kTabWindowId));
   executors_manager.SetTabIdForHandle(kTabWindowId2, kTabWindow);
+  EXPECT_TRUE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kTabWindowId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_TRUE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(kTabWindow,
             executors_manager.GetTabHandleFromId(kTabWindowId));
+  EXPECT_FALSE(executors_manager.IsTabIdValid(kTabWindowId2));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId2));
   executors_manager.SetTabIdForHandle(kTabWindowId2, kTabWindow2);
+  EXPECT_TRUE(executors_manager.IsTabHandleValid(kTabWindow2));
   EXPECT_EQ(kTabWindowId2,
             executors_manager.GetTabIdFromHandle(kTabWindow2));
+  EXPECT_TRUE(executors_manager.IsTabIdValid(kTabWindowId2));
   EXPECT_EQ(kTabWindow2,
             executors_manager.GetTabHandleFromId(kTabWindowId2));
 }
@@ -766,15 +778,19 @@ TEST_F(ExecutorsManagerTests, DeleteTabHandle) {
 
   // Test deletion of a nonexistent window.
   executors_manager.DeleteTabHandle(kTabWindow);
+  EXPECT_FALSE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_FALSE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId));
   EXPECT_CALL(executors_manager.mock_window_events_funnel_,
               OnCreated(kFrameWindow)).Times(1);
   executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
+  EXPECT_TRUE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kTabWindowId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_TRUE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(kTabWindow,
             executors_manager.GetTabHandleFromId(kTabWindowId));
 
@@ -782,8 +798,10 @@ TEST_F(ExecutorsManagerTests, DeleteTabHandle) {
   EXPECT_CALL(executors_manager.mock_window_events_funnel_,
               OnRemoved(kFrameWindow)).Times(1);
   executors_manager.DeleteTabHandle(kTabWindow);
+  EXPECT_FALSE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_FALSE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId));
   // Test deletion of a nonexistent window when another one exists.
@@ -791,12 +809,16 @@ TEST_F(ExecutorsManagerTests, DeleteTabHandle) {
               OnCreated(kFrameWindow)).Times(1);
   executors_manager.SetTabIdForHandle(kTabWindowId2, kTabWindow2);
   executors_manager.DeleteTabHandle(kTabWindow);
+  EXPECT_FALSE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_FALSE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId));
+  EXPECT_TRUE(executors_manager.IsTabHandleValid(kTabWindow2));
   EXPECT_EQ(kTabWindowId2,
             executors_manager.GetTabIdFromHandle(kTabWindow2));
+  EXPECT_TRUE(executors_manager.IsTabIdValid(kTabWindowId2));
   EXPECT_EQ(kTabWindow2,
             executors_manager.GetTabHandleFromId(kTabWindowId2));
 }
@@ -815,8 +837,10 @@ TEST_F(ExecutorsManagerTests, DeleteTabHandleWithToolBandId) {
               OnCreated(kFrameWindow)).Times(1);
   executors_manager.SetTabIdForHandle(kTabWindowId, kTabWindow);
   executors_manager.SetTabToolBandIdForHandle(kTabWindowId2, kTabWindow);
+  EXPECT_TRUE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kTabWindowId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_TRUE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(kTabWindow,
             executors_manager.GetTabHandleFromId(kTabWindowId));
   EXPECT_EQ(kTabWindow,
@@ -825,8 +849,10 @@ TEST_F(ExecutorsManagerTests, DeleteTabHandleWithToolBandId) {
   EXPECT_CALL(executors_manager.mock_window_events_funnel_,
               OnRemoved(kFrameWindow)).Times(1);
   executors_manager.DeleteTabHandle(kTabWindow);
+  EXPECT_FALSE(executors_manager.IsTabHandleValid(kTabWindow));
   EXPECT_EQ(kInvalidChromeSessionId,
             executors_manager.GetTabIdFromHandle(kTabWindow));
+  EXPECT_FALSE(executors_manager.IsTabIdValid(kTabWindowId));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
             executors_manager.GetTabHandleFromId(kTabWindowId));
   EXPECT_EQ(INVALID_HANDLE_VALUE,
