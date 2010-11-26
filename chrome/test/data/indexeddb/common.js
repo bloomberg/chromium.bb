@@ -50,7 +50,7 @@ function deleteAllObjectStores(db)
 {
   objectStores = db.objectStoreNames;
   for (var i = 0; i < objectStores.length; ++i)
-    db.removeObjectStore(objectStores[i]);
+    db.deleteObjectStore(objectStores[i]);
 }
 
 // The following functions are based on

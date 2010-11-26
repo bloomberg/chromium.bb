@@ -11,7 +11,7 @@ function recordNotFound()
 
   debug('Removing an index');
   try {
-    objectStore.removeIndex('fname_index');
+    objectStore.deleteIndex('fname_index');
   } catch(e) {
     fail(e);
   }
@@ -35,7 +35,7 @@ function getSuccess()
   shouldBe("event.result.lname", "'Doe'");
   shouldBe("event.result.id", "1");
 
-  var result = objectStore.remove(1);
+  var result = objectStore.delete(1);
   result.onsuccess = removeSuccess;
   result.onerror = unexpectedErrorCallback;
 }

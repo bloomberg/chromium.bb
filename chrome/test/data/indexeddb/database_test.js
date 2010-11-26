@@ -16,7 +16,7 @@ function populateObjectStore()
   shouldBe('db.objectStoreNames[0]', '"employees"');
 
   debug('Deleting an object store.');
-  db.removeObjectStore('employees');
+  db.deleteObjectStore('employees');
   shouldBe('db.objectStoreNames.length', '0');
 
   done();
