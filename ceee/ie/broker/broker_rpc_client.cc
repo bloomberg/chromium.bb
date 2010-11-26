@@ -146,8 +146,11 @@ HRESULT BrokerRpcClient::SendUmaHistogramTimes(const char* name, int sample) {
   } RpcEndExcept
 }
 
-HRESULT BrokerRpcClient::SendUmaHistogramData(
-    const char* name, int sample, int min, int max, int bucket_count) {
+HRESULT BrokerRpcClient::SendUmaHistogramData(const char* name,
+                                              int sample,
+                                              int min,
+                                              int max,
+                                              int bucket_count) {
   RpcTryExcept {
     BrokerRpcClient_SendUmaHistogramData(
         binding_handle_, name, sample, min, max, bucket_count);

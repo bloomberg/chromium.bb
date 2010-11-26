@@ -34,8 +34,11 @@ class BrokerRpcClient {
   // Adds UMA to histograms on the server side. Either performance timings or
   // generic histogram.
   virtual HRESULT SendUmaHistogramTimes(const char* name, int sample);
-  virtual HRESULT SendUmaHistogramData(
-      const char* name, int sample, int min, int max, int bucket_count);
+  virtual HRESULT SendUmaHistogramData(const char* name,
+                                       int sample,
+                                       int min,
+                                       int max,
+                                       int bucket_count);
   // @}
 
  private:
