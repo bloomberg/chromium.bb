@@ -181,6 +181,7 @@ void DeviceManagementPolicyProvider::SendPolicyRequest() {
     em::DevicePolicySettingRequest* setting =
         policy_request.add_setting_request();
     setting->set_key(kChromeDevicePolicySettingKey);
+    setting->set_watermark("");
     backend_->ProcessPolicyRequest(token_fetcher_->GetDeviceToken(),
                                    token_fetcher_->GetDeviceID(),
                                    policy_request, this);

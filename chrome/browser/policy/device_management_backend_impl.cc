@@ -34,7 +34,7 @@ namespace {
 
 const char kValueAgent[] = "%s enterprise management client version %s (%s)";
 
-const char kPostContentType[] = "application/octet-stream";
+const char kPostContentType[] = "application/protobuf";
 
 const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
 const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
@@ -182,7 +182,8 @@ void DeviceManagementJobBase::HandleResponse(const URLRequestStatus& status,
   // Check service error code.
   switch (response.error()) {
     case em::DeviceManagementResponse::SUCCESS:
-      break;
+      OnResponse(response);
+      return;
     case em::DeviceManagementResponse::DEVICE_MANAGEMENT_NOT_SUPPORTED:
       OnError(DeviceManagementBackend::kErrorServiceManagementNotSupported);
       return;
@@ -195,14 +196,14 @@ void DeviceManagementJobBase::HandleResponse(const URLRequestStatus& status,
     case em::DeviceManagementResponse::ACTIVATION_PENDING:
       OnError(DeviceManagementBackend::kErrorServiceActivationPending);
       return;
-    default:
-      // This should be caught by the protobuf decoder.
-      NOTREACHED();
-      OnError(DeviceManagementBackend::kErrorResponseDecoding);
+    case em::DeviceManagementResponse::POLICY_NOT_FOUND:
+      OnError(DeviceManagementBackend::kErrorServicePolicyNotFound);
       return;
   }
 
-  OnResponse(response);
+  // This should be caught by the protobuf decoder.
+  NOTREACHED();
+  OnError(DeviceManagementBackend::kErrorResponseDecoding);
 }
 
 GURL DeviceManagementJobBase::GetURL(

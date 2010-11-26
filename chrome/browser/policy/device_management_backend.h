@@ -39,6 +39,8 @@ class DeviceManagementBackend : NonThreadSafe {
     kErrorServiceManagementTokenInvalid,
     // Service error: Activation pending.
     kErrorServiceActivationPending,
+    // Service error: Policy not found.
+    kErrorServicePolicyNotFound,
   };
 
   class DeviceRegisterResponseDelegate {
