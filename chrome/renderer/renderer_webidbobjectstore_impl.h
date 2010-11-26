@@ -53,7 +53,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
   // Transfers ownership of the WebIDBIndex to the caller.
   WebKit::WebIDBIndex* index(const WebKit::WebString& name,
                              WebKit::WebExceptionCode& ec);
-  void removeIndex(const WebKit::WebString& name,
+  void deleteIndex(const WebKit::WebString& name,
                    const WebKit::WebIDBTransaction& transaction,
                    WebKit::WebExceptionCode& ec);
 

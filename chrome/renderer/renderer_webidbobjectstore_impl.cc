@@ -135,7 +135,7 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::index(
   return new RendererWebIDBIndexImpl(idb_index_id);
 }
 
-void RendererWebIDBObjectStoreImpl::removeIndex(
+void RendererWebIDBObjectStoreImpl::deleteIndex(
     const WebString& name,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {

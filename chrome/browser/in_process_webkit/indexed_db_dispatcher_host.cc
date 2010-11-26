@@ -886,7 +886,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemoveIndex(
     return;
 
   WebExceptionCode ec = 0;
-  idb_object_store->removeIndex(name, *idb_transaction, ec);
+  idb_object_store->deleteIndex(name, *idb_transaction, ec);
   ViewHostMsg_IDBObjectStoreRemoveIndex::WriteReplyParams(reply_msg, ec);
   parent_->Send(reply_msg);
 }
