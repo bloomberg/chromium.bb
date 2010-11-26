@@ -23,6 +23,7 @@ class Throbber;
 namespace chromeos {
 
 class SignoutView;
+class PodImageView;
 
 class UserView : public views::View,
                  public views::LinkController,
@@ -40,7 +41,7 @@ class UserView : public views::View,
   };
 
   // Creates UserView for login screen (|is_login| == true) or screen locker.
-  // On login screen this will have addition menu with user specific actions.
+  // On login screen this will have remove button.
   // On screen locker it will have sign out button. |need_background| is needed
   // to show image with transparent areas.
   UserView(Delegate* delegate, bool is_login, bool need_background);
@@ -50,7 +51,7 @@ class UserView : public views::View,
   virtual void OnLocaleChanged();
 
   // Sets the user's image.
-  void SetImage(const SkBitmap& image);
+  void SetImage(const SkBitmap& image, const SkBitmap& image_hot);
 
   // Sets tooltip over the image.
   void SetTooltipText(const std::wstring& text);
@@ -74,14 +75,11 @@ class UserView : public views::View,
 
  private:
   void Init(bool need_background);
-  void BuildMenu();
 
   Delegate* delegate_;
 
   SignoutView* signout_view_;
-
-  // For editing the password.
-  views::ImageView* image_view_;
+  PodImageView* image_view_;
 
   views::Throbber* throbber_;
 

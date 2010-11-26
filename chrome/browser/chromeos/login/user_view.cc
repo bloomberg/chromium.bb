@@ -12,7 +12,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/background.h"
-#include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -210,10 +209,37 @@ class RemoveButton : public views::TextButton {
   DISALLOW_COPY_AND_ASSIGN(RemoveButton);
 };
 
+class PodImageView : public views::ImageView {
+ public:
+  PodImageView() { }
+
+  void SetImage(const SkBitmap& image, const SkBitmap& image_hot) {
+    image_ = image;
+    image_hot_ = image_hot;
+    views::ImageView::SetImage(image_);
+  }
+
+ protected:
+  // Overridden from View:
+  virtual void OnMouseEntered(const views::MouseEvent& event) {
+    views::ImageView::SetImage(image_hot_);
+  }
+
+  virtual void OnMouseExited(const views::MouseEvent& event) {
+    views::ImageView::SetImage(image_);
+  }
+
+ private:
+  SkBitmap image_;
+  SkBitmap image_hot_;
+
+  DISALLOW_COPY_AND_ASSIGN(PodImageView);
+};
+
 UserView::UserView(Delegate* delegate, bool is_login, bool need_background)
     : delegate_(delegate),
       signout_view_(NULL),
-      image_view_(new views::ImageView()),
+      image_view_(new PodImageView()),
       throbber_(CreateDefaultSmoothedThrobber()),
       remove_button_(NULL) {
   DCHECK(delegate);
@@ -258,13 +284,13 @@ void UserView::Init(bool need_background) {
   AddChildView(remove_button_);
 }
 
-void UserView::SetImage(const SkBitmap& image) {
+void UserView::SetImage(const SkBitmap& image, const SkBitmap& image_hot) {
   int desired_size = std::min(image.width(), image.height());
   // Desired size is not preserved if it's greater than 75% of kUserImageSize.
   if (desired_size * 4 > 3 * kUserImageSize)
     desired_size = kUserImageSize;
   image_view_->SetImageSize(gfx::Size(desired_size, desired_size));
-  image_view_->SetImage(image);
+  image_view_->SetImage(image, image_hot);
 }
 
 void UserView::SetTooltipText(const std::wstring& text) {

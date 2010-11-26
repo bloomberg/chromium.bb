@@ -91,7 +91,7 @@ using login::kTextColor;
 using login::kUserImageSize;
 
 // static
-const int UserController::kPadding = 20;
+const int UserController::kPadding = 30;
 
 // Max size needed when an entry is not selected.
 const int UserController::kUnselectedSize = 100;
@@ -286,7 +286,7 @@ void UserController::Observe(
     return;
 
   user_.set_image(user->image());
-  user_view_->SetImage(user_.image());
+  user_view_->SetImage(user_.image(), user_.image());
 }
 
 void UserController::Login() {
@@ -376,14 +376,16 @@ WidgetGtk* UserController::CreateControlsWindow(
 WidgetGtk* UserController::CreateImageWindow(int index) {
   user_view_ = new UserView(this, true, !is_new_user_);
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (is_guest_) {
-    user_view_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_LOGIN_GUEST));
+    SkBitmap* image = rb.GetBitmapNamed(IDR_LOGIN_GUEST);
+    user_view_->SetImage(*image, *image);
   } else if (is_new_user_) {
-    user_view_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_LOGIN_ADD_USER));
+    SkBitmap* image = rb.GetBitmapNamed(IDR_LOGIN_ADD_USER);
+    SkBitmap* image_hover = rb.GetBitmapNamed(IDR_LOGIN_ADD_USER_HOVER);
+    user_view_->SetImage(*image, *image_hover);
   } else {
-    user_view_->SetImage(user_.image());
+    user_view_->SetImage(user_.image(), user_.image());
   }
 
   WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
@@ -402,10 +404,13 @@ void UserController::CreateBorderWindow(int index,
                                         int controls_height) {
   // New user login controls window is much higher than existing user's controls
   // window so window manager will place the control instead of image window.
-  int width = kBorderSize * 2 + controls_width;
-  int height = kBorderSize * 2 + controls_height;
-  if (!is_new_user_)
-    height += kBorderSize + kUserImageSize;
+  // New user will have 0 size border.
+  int width = controls_width;
+  int height = controls_height;
+  if (!is_new_user_) {
+    width += kBorderSize * 2;
+    height += 3 * kBorderSize + kUserImageSize;
+  }
 
   border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   border_window_->MakeTransparent();

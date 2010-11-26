@@ -105,7 +105,7 @@ void ScreenLockView::Init() {
 
   // User icon.
   UserManager::User user = screen_locker_->user();
-  user_view_->SetImage(user.image());
+  user_view_->SetImage(user.image(), user.image());
 
   // User name.
   std::wstring text = UTF8ToWide(user.GetDisplayName());
@@ -204,7 +204,7 @@ void ScreenLockView::Observe(
   UserManager::User* user = Details<UserManager::User>(details).ptr();
   if (screen_locker_->user().email() != user->email())
     return;
-  user_view_->SetImage(user->image());
+  user_view_->SetImage(user->image(), user->image());
 }
 
 void ScreenLockView::ViewHierarchyChanged(bool is_add,
