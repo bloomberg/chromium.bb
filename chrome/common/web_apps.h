@@ -19,7 +19,7 @@ class WebDocument;
 class WebFrame;
 }
 
-class DictionaryValue;
+class Value;
 
 // Structure used when installing a web page as an app.
 struct WebApplicationInfo {
@@ -100,7 +100,7 @@ bool ParseWebAppFromWebDocument(WebKit::WebFrame* frame,
 // Parses |web_app| information out of |definition|. Returns true on success, or
 // false and |error| on failure. This function assumes that |web_app| has a
 // valid manifest_url.
-bool ParseWebAppFromDefinitionFile(const DictionaryValue& definition,
+bool ParseWebAppFromDefinitionFile(Value* definition,
                                    WebApplicationInfo* web_app,
                                    string16* error);
 

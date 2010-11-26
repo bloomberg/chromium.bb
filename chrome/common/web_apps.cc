@@ -205,7 +205,7 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
   return true;
 }
 
-bool ParseWebAppFromDefinitionFile(const DictionaryValue& definition,
+bool ParseWebAppFromDefinitionFile(Value* definition_value,
                                    WebApplicationInfo* web_app,
                                    string16* error) {
   CHECK(web_app->manifest_url.is_valid());
@@ -230,17 +230,22 @@ bool ParseWebAppFromDefinitionFile(const DictionaryValue& definition,
   // and for forward compat with ourselves.
   validator.set_default_allow_additional_properties(true);
 
-  if (!validator.Validate(const_cast<DictionaryValue*>(&definition))) {
+  if (!validator.Validate(definition_value)) {
     *error = UTF8ToUTF16(
         validator.errors()[0].path + ": " + validator.errors()[0].message);
     return false;
   }
 
+  // This must be true because the schema requires the root value to be a
+  // dictionary.
+  CHECK(definition_value->IsType(Value::TYPE_DICTIONARY));
+  DictionaryValue* definition = static_cast<DictionaryValue*>(definition_value);
+
   // Parse launch URL. It must be a valid URL in the same origin as the
   // manifest.
   std::string app_url_string;
   GURL app_url;
-  CHECK(definition.GetString("launch_url", &app_url_string));
+  CHECK(definition->GetString("launch_url", &app_url_string));
   if (!(app_url = web_app->manifest_url.Resolve(app_url_string)).is_valid() ||
       app_url.GetOrigin() != web_app->manifest_url.GetOrigin()) {
     *error = UTF8ToUTF16(WebApplicationInfo::kInvalidLaunchURL);
@@ -250,7 +255,7 @@ bool ParseWebAppFromDefinitionFile(const DictionaryValue& definition,
   // Parse out the permissions if present.
   std::vector<std::string> permissions;
   ListValue* permissions_value = NULL;
-  if (definition.GetList("permissions", &permissions_value)) {
+  if (definition->GetList("permissions", &permissions_value)) {
     for (size_t i = 0; i < permissions_value->GetSize(); ++i) {
       std::string permission;
       CHECK(permissions_value->GetString(i, &permission));
@@ -261,7 +266,7 @@ bool ParseWebAppFromDefinitionFile(const DictionaryValue& definition,
   // Parse out the URLs if present.
   std::vector<GURL> urls;
   ListValue* urls_value = NULL;
-  if (definition.GetList("urls", &urls_value)) {
+  if (definition->GetList("urls", &urls_value)) {
     for (size_t i = 0; i < urls_value->GetSize(); ++i) {
       std::string url_string;
       GURL url;
@@ -280,7 +285,7 @@ bool ParseWebAppFromDefinitionFile(const DictionaryValue& definition,
   // Parse out the icons if present.
   std::vector<WebApplicationInfo::IconInfo> icons;
   DictionaryValue* icons_value = NULL;
-  if (definition.GetDictionary("icons", &icons_value)) {
+  if (definition->GetDictionary("icons", &icons_value)) {
     for (DictionaryValue::key_iterator iter = icons_value->begin_keys();
          iter != icons_value->end_keys(); ++iter) {
       // Ignore unknown properties. Better for forward compat.
@@ -308,9 +313,9 @@ bool ParseWebAppFromDefinitionFile(const DictionaryValue& definition,
     }
   }
 
-  CHECK(definition.GetString("name", &web_app->title));
-  definition.GetString("description", &web_app->description);
-  definition.GetString("launch_container", &web_app->launch_container);
+  CHECK(definition->GetString("name", &web_app->title));
+  definition->GetString("description", &web_app->description);
+  definition->GetString("launch_container", &web_app->launch_container);
   web_app->app_url = app_url;
   web_app->urls = urls;
   web_app->permissions = permissions;

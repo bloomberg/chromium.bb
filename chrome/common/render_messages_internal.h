@@ -1913,6 +1913,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int32 /* page_id */,
                       WebApplicationInfo)
 
+  // Sent by the renderer to implement chrome.app.installApplication().
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_InstallApplication,
+                      WebApplicationInfo)
+
   // Provides the result from running OnMsgShouldClose.  |proceed| matches the
   // return value of the the frame's shouldClose method (which includes the
   // onbeforeunload handler): true if the user decided to proceed with leaving

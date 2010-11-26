@@ -797,11 +797,8 @@ void AutomationProvider::InstallExtension(const FilePath& crx_path,
                                              AutomationMsg_InstallExtension::ID,
                                              reply_message);
 
-    const FilePath& install_dir = service->install_directory();
     scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(install_dir,
-                         service,
-                         NULL));  // silent install, no UI
+        new CrxInstaller(service, NULL));  // silent install, no UI
     installer->set_allow_privilege_increase(true);
     installer->InstallCrx(crx_path);
   } else {
@@ -870,10 +867,7 @@ void AutomationProvider::InstallExtensionAndGetHandle(
 
     ExtensionInstallUI* client =
         (with_ui ? new ExtensionInstallUI(profile_) : NULL);
-    scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(service->install_directory(),
-                         service,
-                         client));
+    scoped_refptr<CrxInstaller> installer(new CrxInstaller(service, client));
     installer->set_allow_privilege_increase(true);
     installer->InstallCrx(crx_path);
   } else {

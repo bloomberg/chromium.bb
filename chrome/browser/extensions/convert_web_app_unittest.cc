@@ -132,7 +132,7 @@ TEST(ExtensionFromWebApp, Basic) {
 
   EXPECT_EQ(web_app.icons.size(), extension->icons().map().size());
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
-    EXPECT_EQ(StringPrintf("_icons/%i.png", web_app.icons[i].width),
+    EXPECT_EQ(StringPrintf("icons/%i.png", web_app.icons[i].width),
               extension->icons().Get(web_app.icons[i].width,
                                      ExtensionIconSet::MATCH_EXACTLY));
     ExtensionResource resource = extension->GetIconResource(

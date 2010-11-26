@@ -868,6 +868,7 @@ class TabContents : public PageNavigator,
   virtual void OnCrashedWorker();
   virtual void OnDidGetApplicationInfo(int32 page_id,
                                        const WebApplicationInfo& info);
+  virtual void OnInstallApplication(const WebApplicationInfo& info);
   virtual void OnDisabledOutdatedPlugin(const string16& name,
                                         const GURL& update_url);
   virtual void OnPageContents(const GURL& url,
