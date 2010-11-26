@@ -130,7 +130,7 @@ def CheckUnittestsRan(input_api, output_api, committing):
   # But only if there were IE files modified, since we only have unit tests
   # for CEEE IE.
   files = []
-  ie_paths_re = re.compile('ceee[\\/](ie|common)[\\/]')
+  ie_paths_re = re.compile('ceee[\\\\/](ie|common)[\\\\/]')
   for f in input_api.AffectedFiles(include_deletes = False):
     path = f.LocalPath()
     if (ie_paths_re.match(path)):
