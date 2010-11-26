@@ -29,6 +29,7 @@
         'chrome_resources',
         'chrome_strings',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/policy/proto/device_management_proto.gyp:device_management_proto_cpp',
         'theme_resources',
         '../base/base.gyp:test_support_base',
         '../skia/skia.gyp:skia',
