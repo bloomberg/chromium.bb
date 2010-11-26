@@ -2342,6 +2342,24 @@
                 "description": "Pass 'bubble' to give the pop-up window a bubble-chrome border, including an arrow pointing at the relative-to point.  Pass 'rectangle' to give the pop-up a rectangular black border with drop-shadow.  Default behaviour is to pass 'bubble'.",
                 "optional": true,
                 "enum": ["bubble", "rectangle"]
+              },
+              "maxSize": {
+                "type": "object",
+                "optional": true,
+                "properties": {
+                  "width": {
+                    "type": "integer",
+                    "description": "The maximal width to which the popup will resize.  If not present, the popup will be no wider than 800 pixels.  The popup will widen to no larger than the minimum of the width parameter and the width of the screen.",
+                    "optional": true,
+                    "minimum": 32
+                  },
+                  "height": {
+                    "type": "integer",
+                    "description": "The maximal height to which the popup will resize.  If not present, the popup will be no taller than 600 pixels.  The popup will grow to no taller than than the minimum of the height parameter and the width of the screen.",
+                    "optional": true,
+                    "minimum": 32
+                  }
+                }
               }
             }
           },

@@ -513,6 +513,18 @@ var chrome = chrome || {};
               type: "string",
               optional: true,
               enum: ["bubble", "rectangle"]
+            },
+            maxSize: {
+              type: "object",
+              optional: true,
+              properties: {
+                width: {
+                  type: "integer", optional: true, minimum: 32
+                },
+                height: {
+                  type: "integer", optional: true, minimum: 32
+                }
+              }
             }
           }
         },
@@ -523,7 +535,8 @@ var chrome = chrome || {};
                           {
                             domAnchor: getAbsoluteRect(showDetails.relativeTo),
                             giveFocus: showDetails.giveFocus,
-                            borderStyle: showDetails.borderStyle
+                            borderStyle: showDetails.borderStyle,
+                            maxSize: showDetails.maxSize
                           },
                           callback],
                          internalSchema);

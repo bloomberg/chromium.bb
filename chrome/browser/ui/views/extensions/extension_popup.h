@@ -48,6 +48,11 @@ class ExtensionPopup : public BrowserBubble,
     // Chrome-Frame.  See extension_popup_api.cc.
     virtual void ExtensionHostCreated(ExtensionHost* host) {}
 
+    // Called immediately after a popup is created, but before the hosted
+    // extension has loaded and before the popup has been displayed.  Use to
+    // finalize configuration of |popup|.
+    virtual void ExtensionPopupCreated(ExtensionPopup* popup) {}
+
     // Called when the ExtensionPopup is resized.  Note that the popup may have
     // an empty bounds, if a popup is repositioned before the hosted content
     // has loaded.
@@ -95,6 +100,13 @@ class ExtensionPopup : public BrowserBubble,
                               bool inspect_with_devtools,
                               PopupChrome chrome,
                               Observer* observer);
+
+  // Assigns the maximal width and height, respectively, to which the popup
+  // may expand.  If these routines are not called, the popup will resize to
+  // no larger than |kMaxWidth| x |kMaxHeight|.  Note that the popup will
+  // never expand to larger than the dimensions of the screen.
+  void set_max_width(int width) { max_size_.set_width(width); }
+  void set_max_height(int height) { max_size_.set_height(height); }
 
   // Closes the ExtensionPopup (this will cause the delegate
   // ExtensionPopupIsClosing and ExtensionPopupClosed to fire.
@@ -202,6 +214,9 @@ class ExtensionPopup : public BrowserBubble,
 
   // The type of chrome associated with the popup window.
   PopupChrome popup_chrome_;
+
+  // The maximal size to which the popup may expand.
+  gfx::Size max_size_;
 
   // The observer of this popup.
   Observer* observer_;

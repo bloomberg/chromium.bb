@@ -5,6 +5,13 @@
 // created tabs/views may find this view.
 var TESTING_TOKEN = true;
 
+// Constant storing the maximal size to which the popup may expand in the
+// following tests:  popupRectangleMaxBoundsSizing, popupChromeMaxBoundsSizing
+var MAXIMAL_POPUP_SIZE = {
+  "width": 320,
+  "height": 240
+};
+
 var globalValue = "I am not 42.";
 
 // Some helper functions that track the focus state of a form on the toolbar.
@@ -16,6 +23,10 @@ function onFormFocused() {
 function onFormBlurred() {
   formFocused = false;
 }
+
+// Global variable accessed by tests that run in popup views to indicate which
+// suite of tests to execute.
+var currentTest = null;
 
 // Callback that validates popup repositioning, and is invoked during execution
 // of the following tests:
@@ -30,6 +41,16 @@ function onWindowMoveCompleted(offset, initialSize, movedSize) {
       initialSize.top + offset.y == movedSize.top &&
       initialSize.left + offset.x == movedSize.left,
       "Popup repositioned incorrectly after browser move.");
+}
+
+// Callback invoked upon completion of popup bounds validation tests.
+// |newSize| is the size of the popup window after a resize operation.
+function onPopupWindowResizeCompleted(newSize) {
+  // Note, we do not test for equality because the popup chrome may slightly
+  // boost the size of the popup.  For example, the rectangle chrome adds
+  // a pixel to the dimensions of the popup.
+  chrome.test.assertTrue(newSize.width - MAXIMAL_POPUP_SIZE.width <= 2);
+  chrome.test.assertTrue(newSize.height - MAXIMAL_POPUP_SIZE.height <= 2);
 }
 
 // Assert function used by tests executed in separate extension views.
@@ -211,6 +232,7 @@ window.onload = function() {
         "relativeTo": document.getElementById("anchorHere")
       };
 
+      currentTest = "doSizingValidation";
       chrome.experimental.popup.show("dom_ui_popup_sizing.html",
                                      showDetails);
     },
@@ -225,6 +247,37 @@ window.onload = function() {
         "borderStyle": "rectangle"
       };
 
+      currentTest = "doSizingValidation";
+      chrome.experimental.popup.show("dom_ui_popup_sizing.html",
+                                     showDetails);
+    },
+    function popupChromeMaxBoundsSizing() {
+      // Ensure that the test waits until the popup is dismissed.
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed);
+
+      // Ensure that popups with a chrome border are repositioned and sized
+      // correctly.
+      var showDetails = {
+        "relativeTo": document.getElementById("anchorHere"),
+        "maxSize": MAXIMAL_POPUP_SIZE
+      };
+
+      currentTest = "doMaximalBoundsValidation";
+      chrome.experimental.popup.show("dom_ui_popup_sizing.html",
+                                     showDetails);
+    },
+    function popupRectangleMaxBoundsSizing() {
+      // Ensure that the test waits until the popup is dismissed.
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed);
+
+      // Ensure that popups with a rectangle border respects the maximal bounds.
+      var showDetails = {
+        "relativeTo": document.getElementById("anchorHere"),
+        "borderStyle": "rectangle",
+        "maxSize": MAXIMAL_POPUP_SIZE
+      };
+
+      currentTest = "doMaximalBoundsValidation";
       chrome.experimental.popup.show("dom_ui_popup_sizing.html",
                                      showDetails);
     },

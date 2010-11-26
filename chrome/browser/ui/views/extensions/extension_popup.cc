@@ -15,6 +15,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/window_sizer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -22,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
+
 
 #if defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
@@ -34,9 +36,10 @@
 
 using views::Widget;
 
-// The minimum/maximum dimensions of the popup.
+// The minimum, and default maximum dimensions of the popup.
 // The minimum is just a little larger than the size of the button itself.
-// The maximum is an arbitrary number that should be smaller than most screens.
+// The default maximum is an arbitrary number that should be smaller than most
+// screens.
 const int ExtensionPopup::kMinWidth = 25;
 const int ExtensionPopup::kMinHeight = 25;
 const int ExtensionPopup::kMaxWidth = 800;
@@ -76,6 +79,7 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
       border_(NULL),
       border_view_(NULL),
       popup_chrome_(chrome),
+      max_size_(kMaxWidth, kMaxHeight),
       observer_(observer),
       anchor_position_(arrow_location),
       instance_lifetime_(new InternalRefCounter()){
@@ -289,9 +293,19 @@ void ExtensionPopup::Observe(NotificationType type,
 void ExtensionPopup::OnExtensionPreferredSizeChanged(ExtensionView* view) {
   // Constrain the size to popup min/max.
   gfx::Size sz = view->GetPreferredSize();
+
+  // Enforce that the popup never resizes to larger than the working monitor
+  // bounds.
+  scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_provider(
+      WindowSizer::CreateDefaultMonitorInfoProvider());
+  gfx::Rect monitor_bounds(
+      monitor_provider->GetMonitorWorkAreaMatching(relative_to_));
+
+  int max_width = std::min(max_size_.width(), monitor_bounds.width());
+  int max_height = std::min(max_size_.height(), monitor_bounds.height());
   view->SetBounds(view->x(), view->y(),
-      std::max(kMinWidth, std::min(kMaxWidth, sz.width())),
-      std::max(kMinHeight, std::min(kMaxHeight, sz.height())));
+      std::max(kMinWidth, std::min(max_width, sz.width())),
+      std::max(kMinHeight, std::min(max_height, sz.height())));
 
   // If popup_chrome_ == RECTANGLE_CHROME, the border is drawn in the client
   // area of the ExtensionView, rather than in a window which sits behind it.
@@ -386,6 +400,9 @@ ExtensionPopup* ExtensionPopup::Show(
                                              arrow_location, activate_on_show,
                                              inspect_with_devtools, chrome,
                                              observer);
+
+  if (observer)
+    observer->ExtensionPopupCreated(popup);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.

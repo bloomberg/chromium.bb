@@ -57,6 +57,7 @@ const char kLeftKey[] = "left";
 const char kGiveFocusKey[] = "giveFocus";
 const char kDomAnchorKey[] = "domAnchor";
 const char kBorderStyleKey[] = "borderStyle";
+const char kMaxSizeKey[] = "maxSize";
 
 // chrome enumeration values
 const char kRectangleChrome[] = "rectangle";
@@ -107,8 +108,13 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
                            public base::RefCounted<ExtensionPopupHost>,
                            public NotificationObserver {
  public:
-  explicit ExtensionPopupHost(ExtensionFunctionDispatcher* dispatcher)
-      : dispatcher_(dispatcher), popup_(NULL) {
+  // Pass |max_popup_size| to specify the maximal size to which the popup
+  // will expand.  A width or height of 0 will result in the popup making use
+  // of the default max width or height, respectively: ExtensionPopup:kMaxWidth,
+  // and ExtensionPopup::kMaxHeight.
+  explicit ExtensionPopupHost(ExtensionFunctionDispatcher* dispatcher,
+                              const gfx::Size& max_popup_size)
+      : dispatcher_(dispatcher), popup_(NULL), max_popup_size_(max_popup_size) {
     AddRef();  // Balanced in DispatchPopupClosedEvent().
     views::FocusManager::GetWidgetFocusManager()->AddFocusChangeListener(this);
   }
@@ -177,6 +183,16 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
     }
   }
 
+  virtual void ExtensionPopupCreated(ExtensionPopup* popup) {
+    // The popup has been created, but not yet displayed, so install the max
+    // size overrides before the first positioning.
+    if (max_popup_size_.width())
+      popup->set_max_width(max_popup_size_.width());
+
+    if (max_popup_size_.height())
+      popup->set_max_height(max_popup_size_.height());
+  }
+
   virtual void ExtensionPopupResized(ExtensionPopup* popup) {
     // Reposition the location of the arrow on the popup so that the popup
     // better fits on the working monitor.
@@ -214,16 +230,6 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
       if (!updated_monitor_bounds.Contains(flipped_bounds))
         popup->SetArrowPosition(previous_location);
     }
-  }
-
-  virtual void DispatchPopupClosedEvent() {
-    if (dispatcher_) {
-      PopupEventRouter::OnPopupClosed(
-          dispatcher_->profile(),
-          dispatcher_->render_view_host()->routing_id());
-      dispatcher_ = NULL;
-    }
-    Release();  // Balanced in ctor.
   }
 
   // Overridden from views::WidgetFocusChangeListener
@@ -323,12 +329,25 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
     return delegate ? delegate->GetAutomationResourceRoutingDelegate() : NULL;
   }
 
+  void DispatchPopupClosedEvent() {
+    if (dispatcher_) {
+      PopupEventRouter::OnPopupClosed(
+          dispatcher_->profile(),
+          dispatcher_->render_view_host()->routing_id());
+      dispatcher_ = NULL;
+    }
+    Release();  // Balanced in ctor.
+  }
+
   // A pointer to the dispatcher that handled the request that opened this
   // popup view.
   ExtensionFunctionDispatcher* dispatcher_;
 
   // A pointer to the popup.
   ExtensionPopup* popup_;
+
+  // The maximal size to which the popup is permitted to expand.
+  gfx::Size max_popup_size_;
 
   NotificationRegistrar registrar_;
 
@@ -406,6 +425,21 @@ bool PopupShowFunction::RunImpl() {
                                                          &give_focus));
   }
 
+  int max_width = 0;
+  int max_height = 0;
+  if (show_details->HasKey(kMaxSizeKey)) {
+    DictionaryValue* max_size = NULL;
+    EXTENSION_FUNCTION_VALIDATE(show_details->GetDictionary(kMaxSizeKey,
+                                                            &max_size));
+
+    if (max_size->HasKey(kWidthKey))
+      EXTENSION_FUNCTION_VALIDATE(max_size->GetInteger(kWidthKey, &max_width));
+
+    if (max_size->HasKey(kHeightKey))
+      EXTENSION_FUNCTION_VALIDATE(max_size->GetInteger(kHeightKey,
+                                                       &max_height));
+  }
+
 #if defined(TOOLKIT_VIEWS)
   // The default behaviour is to provide the bubble-chrome to the popup.
   ExtensionPopup::PopupChrome chrome = ExtensionPopup::BUBBLE_CHROME;
@@ -456,7 +490,8 @@ bool PopupShowFunction::RunImpl() {
   BubbleBorder::ArrowLocation arrow_location = BubbleBorder::TOP_LEFT;
 
   // ExtensionPopupHost manages it's own lifetime.
-  ExtensionPopupHost* popup_host = new ExtensionPopupHost(dispatcher());
+  ExtensionPopupHost* popup_host =
+      new ExtensionPopupHost(dispatcher(), gfx::Size(max_width, max_height));
   popup_ = ExtensionPopup::Show(url,
                                 GetCurrentBrowser(),
                                 dispatcher()->profile(),
