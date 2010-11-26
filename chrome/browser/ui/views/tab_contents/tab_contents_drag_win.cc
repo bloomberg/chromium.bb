@@ -13,7 +13,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/drag_download_file.h"
@@ -247,14 +247,14 @@ void TabContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
   if (drop_data.url.SchemeIs(chrome::kJavaScriptScheme)) {
     // We don't want to allow javascript URLs to be dragged to the desktop,
     // but we do want to allow them to be added to the bookmarks bar
-    // (bookmarklets). So we create a fake bookmark entry (BookmarkDragData
+    // (bookmarklets). So we create a fake bookmark entry (BookmarkNodeData
     // object) which explorer.exe cannot handle, and write the entry to data.
-    BookmarkDragData::Element bm_elt;
+    BookmarkNodeData::Element bm_elt;
     bm_elt.is_url = true;
     bm_elt.url = drop_data.url;
     bm_elt.title = drop_data.url_title;
 
-    BookmarkDragData bm_drag_data;
+    BookmarkNodeData bm_drag_data;
     bm_drag_data.elements.push_back(bm_elt);
 
     // Pass in NULL as the profile so that the bookmark always adds the url

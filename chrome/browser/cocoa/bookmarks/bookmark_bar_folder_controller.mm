@@ -1137,7 +1137,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // http://crbug.com/35966
 - (BOOL)dragBookmarkData:(id<NSDraggingInfo>)info {
   BOOL dragged = NO;
-  std::vector<const BookmarkNode*> nodes([self retrieveBookmarkDragDataNodes]);
+  std::vector<const BookmarkNode*> nodes([self retrieveBookmarkNodeData]);
   if (nodes.size()) {
     BOOL copy = !([info draggingSourceOperationMask] & NSDragOperationMove);
     NSPoint dropPoint = [info draggingLocation];
@@ -1152,9 +1152,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // TODO(mrossetti,jrg): Identical to the same function in BookmarkBarController.
 // http://crbug.com/35966
-- (std::vector<const BookmarkNode*>)retrieveBookmarkDragDataNodes {
+- (std::vector<const BookmarkNode*>)retrieveBookmarkNodeData {
   std::vector<const BookmarkNode*> dragDataNodes;
-  BookmarkDragData dragData;
+  BookmarkNodeData dragData;
   if(dragData.ReadFromDragClipboard()) {
     BookmarkModel* bookmarkModel = [self bookmarkModel];
     Profile* profile = bookmarkModel->profile();

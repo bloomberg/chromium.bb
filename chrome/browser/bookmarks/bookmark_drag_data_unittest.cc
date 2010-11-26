@@ -8,16 +8,16 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class BookmarkDragDataTest : public testing::Test {
+class BookmarkNodeDataTest : public testing::Test {
  public:
-  BookmarkDragDataTest()
+  BookmarkNodeDataTest()
       : ui_thread_(BrowserThread::UI, &loop_),
         file_thread_(BrowserThread::FILE, &loop_) { }
 
@@ -36,30 +36,30 @@ OSExchangeData::Provider* CloneProvider(const OSExchangeData& data) {
 
 }  // namespace
 
-// Makes sure BookmarkDragData is initially invalid.
-TEST_F(BookmarkDragDataTest, InitialState) {
-  BookmarkDragData data;
+// Makes sure BookmarkNodeData is initially invalid.
+TEST_F(BookmarkNodeDataTest, InitialState) {
+  BookmarkNodeData data;
   EXPECT_FALSE(data.is_valid());
 }
 
-// Makes sure reading bogus data leaves the BookmarkDragData invalid.
-TEST_F(BookmarkDragDataTest, BogusRead) {
+// Makes sure reading bogus data leaves the BookmarkNodeData invalid.
+TEST_F(BookmarkNodeDataTest, BogusRead) {
   OSExchangeData data;
-  BookmarkDragData drag_data;
+  BookmarkNodeData drag_data;
   EXPECT_FALSE(drag_data.Read(OSExchangeData(CloneProvider(data))));
   EXPECT_FALSE(drag_data.is_valid());
 }
 
-// Writes a URL to the clipboard and make sure BookmarkDragData can correctly
+// Writes a URL to the clipboard and make sure BookmarkNodeData can correctly
 // read it.
-TEST_F(BookmarkDragDataTest, JustURL) {
+TEST_F(BookmarkNodeDataTest, JustURL) {
   const GURL url("http://google.com");
   const std::wstring title(L"title");
 
   OSExchangeData data;
   data.SetURL(url, title);
 
-  BookmarkDragData drag_data;
+  BookmarkNodeData drag_data;
   EXPECT_TRUE(drag_data.Read(OSExchangeData(CloneProvider(data))));
   EXPECT_TRUE(drag_data.is_valid());
   ASSERT_EQ(1, drag_data.elements.size());
@@ -69,7 +69,7 @@ TEST_F(BookmarkDragDataTest, JustURL) {
   EXPECT_EQ(0, drag_data.elements[0].children.size());
 }
 
-TEST_F(BookmarkDragDataTest, URL) {
+TEST_F(BookmarkNodeDataTest, URL) {
   // Write a single node representing a URL to the clipboard.
   TestingProfile profile;
   profile.CreateBookmarkModel(false);
@@ -80,7 +80,7 @@ TEST_F(BookmarkDragDataTest, URL) {
   GURL url(GURL("http://foo.com"));
   const string16 title(ASCIIToUTF16("blah"));
   const BookmarkNode* node = model->AddURL(root, 0, title, url);
-  BookmarkDragData drag_data(node);
+  BookmarkNodeData drag_data(node);
   EXPECT_TRUE(drag_data.is_valid());
   ASSERT_EQ(1, drag_data.elements.size());
   EXPECT_TRUE(drag_data.elements[0].is_url);
@@ -91,7 +91,7 @@ TEST_F(BookmarkDragDataTest, URL) {
 
   // Now read the data back in.
   OSExchangeData data2(CloneProvider(data));
-  BookmarkDragData read_data;
+  BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(1, read_data.elements.size());
@@ -113,7 +113,7 @@ TEST_F(BookmarkDragDataTest, URL) {
 }
 
 // Tests writing a group to the clipboard.
-TEST_F(BookmarkDragDataTest, Group) {
+TEST_F(BookmarkNodeDataTest, Group) {
   TestingProfile profile;
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
@@ -124,7 +124,7 @@ TEST_F(BookmarkDragDataTest, Group) {
   const BookmarkNode* g11 = model->AddGroup(g1, 0, ASCIIToUTF16("g11"));
   const BookmarkNode* g12 = model->AddGroup(g1, 0, ASCIIToUTF16("g12"));
 
-  BookmarkDragData drag_data(g12);
+  BookmarkNodeData drag_data(g12);
   EXPECT_TRUE(drag_data.is_valid());
   ASSERT_EQ(1, drag_data.elements.size());
   EXPECT_EQ(g12->GetTitle(), WideToUTF16Hack(drag_data.elements[0].title));
@@ -135,7 +135,7 @@ TEST_F(BookmarkDragDataTest, Group) {
 
   // Now read the data back in.
   OSExchangeData data2(CloneProvider(data));
-  BookmarkDragData read_data;
+  BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(1, read_data.elements.size());
@@ -152,7 +152,7 @@ TEST_F(BookmarkDragDataTest, Group) {
 }
 
 // Tests reading/writing a folder with children.
-TEST_F(BookmarkDragDataTest, GroupWithChild) {
+TEST_F(BookmarkNodeDataTest, GroupWithChild) {
   TestingProfile profile;
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
@@ -166,18 +166,18 @@ TEST_F(BookmarkDragDataTest, GroupWithChild) {
 
   model->AddURL(group, 0, title, url);
 
-  BookmarkDragData drag_data(group);
+  BookmarkNodeData drag_data(group);
 
   OSExchangeData data;
   drag_data.Write(&profile, &data);
 
   // Now read the data back in.
   OSExchangeData data2(CloneProvider(data));
-  BookmarkDragData read_data;
+  BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   ASSERT_EQ(1, read_data.elements.size());
   ASSERT_EQ(1, read_data.elements[0].children.size());
-  const BookmarkDragData::Element& read_child =
+  const BookmarkNodeData::Element& read_child =
       read_data.elements[0].children[0];
 
   EXPECT_TRUE(read_child.is_url);
@@ -191,7 +191,7 @@ TEST_F(BookmarkDragDataTest, GroupWithChild) {
 }
 
 // Tests reading/writing of multiple nodes.
-TEST_F(BookmarkDragDataTest, MultipleNodes) {
+TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   TestingProfile profile;
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
@@ -209,24 +209,24 @@ TEST_F(BookmarkDragDataTest, MultipleNodes) {
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(group);
   nodes.push_back(url_node);
-  BookmarkDragData drag_data(nodes);
+  BookmarkNodeData drag_data(nodes);
   OSExchangeData data;
   drag_data.Write(&profile, &data);
 
   // Read the data back in.
   OSExchangeData data2(CloneProvider(data));
-  BookmarkDragData read_data;
+  BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(2, read_data.elements.size());
   ASSERT_EQ(1, read_data.elements[0].children.size());
 
-  const BookmarkDragData::Element& read_group = read_data.elements[0];
+  const BookmarkNodeData::Element& read_group = read_data.elements[0];
   EXPECT_FALSE(read_group.is_url);
   EXPECT_EQ(L"g1", read_group.title);
   EXPECT_EQ(1, read_group.children.size());
 
-  const BookmarkDragData::Element& read_url = read_data.elements[1];
+  const BookmarkNodeData::Element& read_url = read_data.elements[1];
   EXPECT_TRUE(read_url.is_url);
   EXPECT_EQ(title, WideToUTF16Hack(read_url.title));
   EXPECT_EQ(0, read_url.children.size());

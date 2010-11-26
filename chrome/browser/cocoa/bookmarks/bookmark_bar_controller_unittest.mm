@@ -160,7 +160,7 @@
   dragDataNode_ = node;
 }
 
-- (std::vector<const BookmarkNode*>)retrieveBookmarkDragDataNodes {
+- (std::vector<const BookmarkNode*>)retrieveBookmarkNodeData {
   std::vector<const BookmarkNode*> dragDataNodes;
   if(dragDataNode_) {
     dragDataNodes.push_back(dragDataNode_);

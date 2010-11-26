@@ -8,7 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -109,7 +109,7 @@ bool BookmarkMenuController::GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) {
   *formats = OSExchangeData::URL;
-  custom_formats->insert(BookmarkDragData::GetBookmarkCustomFormat());
+  custom_formats->insert(BookmarkNodeData::GetBookmarkCustomFormat());
   return true;
 }
 
@@ -224,7 +224,7 @@ void BookmarkMenuController::WriteDragData(MenuItemView* sender,
   UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragFromFolder"),
                             profile_);
 
-  BookmarkDragData drag_data(menu_id_to_node_map_[sender->GetCommand()]);
+  BookmarkNodeData drag_data(menu_id_to_node_map_[sender->GetCommand()]);
   drag_data.Write(profile_, data);
 }
 

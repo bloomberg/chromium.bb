@@ -5,7 +5,7 @@
 #import "chrome/browser/cocoa/web_drop_target.h"
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -83,7 +83,7 @@ using WebKit::WebDragOperationsMask;
   // If the tab is showing the boomark manager, send BookmarkDrag events
   RenderViewHostDelegate::BookmarkDrag* dragDelegate =
       tabContents_->GetBookmarkDragDelegate();
-  BookmarkDragData dragData;
+  BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDragEnter(dragData);
 
@@ -144,7 +144,7 @@ using WebKit::WebDragOperationsMask;
   // If the tab is showing the boomark manager, send BookmarkDrag events
   RenderViewHostDelegate::BookmarkDrag* dragDelegate =
       tabContents_->GetBookmarkDragDelegate();
-  BookmarkDragData dragData;
+  BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDragOver(dragData);
   return current_operation_;
@@ -174,7 +174,7 @@ using WebKit::WebDragOperationsMask;
   // If the tab is showing the boomark manager, send BookmarkDrag events
   RenderViewHostDelegate::BookmarkDrag* dragDelegate =
       tabContents_->GetBookmarkDragDelegate();
-  BookmarkDragData dragData;
+  BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDrop(dragData);
 

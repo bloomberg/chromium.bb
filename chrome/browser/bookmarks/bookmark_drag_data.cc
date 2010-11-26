@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/basictypes.h"
@@ -18,13 +18,13 @@
 #include "chrome/browser/browser_process.h"
 #include "net/base/escape.h"
 
-const char* BookmarkDragData::kClipboardFormatString =
+const char* BookmarkNodeData::kClipboardFormatString =
     "chromium/x-bookmark-entries";
 
-BookmarkDragData::Element::Element() : is_url(false), id_(0) {
+BookmarkNodeData::Element::Element() : is_url(false), id_(0) {
 }
 
-BookmarkDragData::Element::Element(const BookmarkNode* node)
+BookmarkNodeData::Element::Element(const BookmarkNode* node)
     : is_url(node->is_url()),
       url(node->GetURL()),
       title(node->GetTitle()),
@@ -33,10 +33,10 @@ BookmarkDragData::Element::Element(const BookmarkNode* node)
     children.push_back(Element(node->GetChild(i)));
 }
 
-BookmarkDragData::Element::~Element() {
+BookmarkNodeData::Element::~Element() {
 }
 
-void BookmarkDragData::Element::WriteToPickle(Pickle* pickle) const {
+void BookmarkNodeData::Element::WriteToPickle(Pickle* pickle) const {
   pickle->WriteBool(is_url);
   pickle->WriteString(url.spec());
   pickle->WriteString16(title);
@@ -50,7 +50,7 @@ void BookmarkDragData::Element::WriteToPickle(Pickle* pickle) const {
   }
 }
 
-bool BookmarkDragData::Element::ReadFromPickle(Pickle* pickle,
+bool BookmarkNodeData::Element::ReadFromPickle(Pickle* pickle,
                                                void** iterator) {
   std::string url_spec;
   if (!pickle->ReadBool(iterator, &is_url) ||
@@ -77,35 +77,35 @@ bool BookmarkDragData::Element::ReadFromPickle(Pickle* pickle,
 
 #if defined(TOOLKIT_VIEWS)
 // static
-OSExchangeData::CustomFormat BookmarkDragData::GetBookmarkCustomFormat() {
+OSExchangeData::CustomFormat BookmarkNodeData::GetBookmarkCustomFormat() {
   static OSExchangeData::CustomFormat format;
   static bool format_valid = false;
 
   if (!format_valid) {
     format_valid = true;
     format = OSExchangeData::RegisterCustomFormat(
-        BookmarkDragData::kClipboardFormatString);
+        BookmarkNodeData::kClipboardFormatString);
   }
   return format;
 }
 #endif
 
-BookmarkDragData::BookmarkDragData() {
+BookmarkNodeData::BookmarkNodeData() {
 }
 
-BookmarkDragData::BookmarkDragData(const BookmarkNode* node) {
+BookmarkNodeData::BookmarkNodeData(const BookmarkNode* node) {
   elements.push_back(Element(node));
 }
 
-BookmarkDragData::BookmarkDragData(
+BookmarkNodeData::BookmarkNodeData(
     const std::vector<const BookmarkNode*>& nodes) {
   ReadFromVector(nodes);
 }
 
-BookmarkDragData::~BookmarkDragData() {
+BookmarkNodeData::~BookmarkNodeData() {
 }
 
-bool BookmarkDragData::ReadFromVector(
+bool BookmarkNodeData::ReadFromVector(
     const std::vector<const BookmarkNode*>& nodes) {
   Clear();
 
@@ -118,7 +118,7 @@ bool BookmarkDragData::ReadFromVector(
   return true;
 }
 
-bool BookmarkDragData::ReadFromTuple(const GURL& url, const string16& title) {
+bool BookmarkNodeData::ReadFromTuple(const GURL& url, const string16& title) {
   Clear();
 
   if (!url.is_valid())
@@ -135,7 +135,7 @@ bool BookmarkDragData::ReadFromTuple(const GURL& url, const string16& title) {
 }
 
 #if !defined(OS_MACOSX)
-void BookmarkDragData::WriteToClipboard(Profile* profile) const {
+void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
   ScopedClipboardWriter scw(g_browser_process->clipboard());
 
   // If there is only one element and it is a URL, write the URL to the
@@ -160,7 +160,7 @@ void BookmarkDragData::WriteToClipboard(Profile* profile) const {
   scw.WritePickledData(pickle, kClipboardFormatString);
 }
 
-bool BookmarkDragData::ReadFromClipboard() {
+bool BookmarkNodeData::ReadFromClipboard() {
   std::string data;
   Clipboard* clipboard = g_browser_process->clipboard();
   clipboard->ReadData(kClipboardFormatString, &data);
@@ -188,32 +188,32 @@ bool BookmarkDragData::ReadFromClipboard() {
   return false;
 }
 
-bool BookmarkDragData::ClipboardContainsBookmarks() {
+bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return g_browser_process->clipboard()->IsFormatAvailableByString(
-      BookmarkDragData::kClipboardFormatString, Clipboard::BUFFER_STANDARD);
+      BookmarkNodeData::kClipboardFormatString, Clipboard::BUFFER_STANDARD);
 }
 #else
-void BookmarkDragData::WriteToClipboard(Profile* profile) const {
+void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
   bookmark_pasteboard_helper_mac::WriteToClipboard(elements, profile_path_);
 }
 
-bool BookmarkDragData::ReadFromClipboard() {
+bool BookmarkNodeData::ReadFromClipboard() {
   return bookmark_pasteboard_helper_mac::ReadFromClipboard(elements,
                                                            &profile_path_);
 }
 
-bool BookmarkDragData::ReadFromDragClipboard() {
+bool BookmarkNodeData::ReadFromDragClipboard() {
   return bookmark_pasteboard_helper_mac::ReadFromDragClipboard(elements,
                                                                &profile_path_);
 }
 
-bool BookmarkDragData::ClipboardContainsBookmarks() {
+bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return bookmark_pasteboard_helper_mac::ClipboardContainsBookmarks();
 }
 #endif  // !defined(OS_MACOSX)
 
 #if defined(TOOLKIT_VIEWS)
-void BookmarkDragData::Write(Profile* profile, OSExchangeData* data) const {
+void BookmarkNodeData::Write(Profile* profile, OSExchangeData* data) const {
   DCHECK(data);
 
   // If there is only one element and it is a URL, write the URL to the
@@ -232,7 +232,7 @@ void BookmarkDragData::Write(Profile* profile, OSExchangeData* data) const {
   data->SetPickledData(GetBookmarkCustomFormat(), data_pickle);
 }
 
-bool BookmarkDragData::Read(const OSExchangeData& data) {
+bool BookmarkNodeData::Read(const OSExchangeData& data) {
   elements.clear();
 
   profile_path_.clear();
@@ -256,7 +256,7 @@ bool BookmarkDragData::Read(const OSExchangeData& data) {
 }
 #endif
 
-void BookmarkDragData::WriteToPickle(Profile* profile, Pickle* pickle) const {
+void BookmarkNodeData::WriteToPickle(Profile* profile, Pickle* pickle) const {
   FilePath path = profile ? profile->GetPath() : FilePath();
   FilePath::WriteStringTypeToPickle(pickle, path.value());
   pickle->WriteSize(elements.size());
@@ -265,7 +265,7 @@ void BookmarkDragData::WriteToPickle(Profile* profile, Pickle* pickle) const {
     elements[i].WriteToPickle(pickle);
 }
 
-bool BookmarkDragData::ReadFromPickle(Pickle* pickle) {
+bool BookmarkNodeData::ReadFromPickle(Pickle* pickle) {
   void* data_iterator = NULL;
   size_t element_count;
   if (FilePath::ReadStringTypeFromPickle(pickle, &data_iterator,
@@ -284,7 +284,7 @@ bool BookmarkDragData::ReadFromPickle(Pickle* pickle) {
   return true;
 }
 
-std::vector<const BookmarkNode*> BookmarkDragData::GetNodes(
+std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
     Profile* profile) const {
   std::vector<const BookmarkNode*> nodes;
 
@@ -303,24 +303,24 @@ std::vector<const BookmarkNode*> BookmarkDragData::GetNodes(
   return nodes;
 }
 
-const BookmarkNode* BookmarkDragData::GetFirstNode(Profile* profile) const {
+const BookmarkNode* BookmarkNodeData::GetFirstNode(Profile* profile) const {
   std::vector<const BookmarkNode*> nodes = GetNodes(profile);
   return nodes.size() == 1 ? nodes[0] : NULL;
 }
 
-void BookmarkDragData::Clear() {
+void BookmarkNodeData::Clear() {
   profile_path_.clear();
   elements.clear();
 }
 
-void BookmarkDragData::SetOriginatingProfile(Profile* profile) {
+void BookmarkNodeData::SetOriginatingProfile(Profile* profile) {
   DCHECK(profile_path_.empty());
 
   if (profile)
     profile_path_ = profile->GetPath().value();
 }
 
-bool BookmarkDragData::IsFromProfile(Profile* profile) const {
+bool BookmarkNodeData::IsFromProfile(Profile* profile) const {
   // An empty path means the data is not associated with any profile.
   return !profile_path_.empty() && profile_path_ == profile->GetPath().value();
 }

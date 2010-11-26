@@ -2399,7 +2399,7 @@
     "nodoc": true,
     "types": [
       {
-        "id": "BookmarkDragDataElement",
+        "id": "BookmarkNodeDataElement",
         "nodoc": true,
         "type": "object",
         "properties": {
@@ -2420,12 +2420,12 @@
           },
           "children": {
             "type": "array",
-            "items": {"$ref": "BookmarkDragDataElement"}
+            "items": {"$ref": "BookmarkNodeDataElement"}
           }
         }
       },
       {
-        "id": "BookmarkDragData",
+        "id": "BookmarkNodeData",
         "nodoc": true,
         "type": "object",
         "description": "Information about the drag and drop data for use with drag and drop events.",
@@ -2433,7 +2433,7 @@
           "sameProfile": {"type": "boolean"},
           "elements": {
             "type": "array",
-            "items": {"$ref": "BookmarkDragDataElement"}
+            "items": {"$ref": "BookmarkNodeDataElement"}
           }
         }
       }
@@ -2588,7 +2588,7 @@
         "type": "function",
         "description": "Fired when dragging bookmarks over the document",
         "parameters": [
-          {"$ref": "BookmarkDragData"}
+          {"$ref": "BookmarkNodeData"}
         ]
       },
       {
@@ -2596,7 +2596,7 @@
         "type": "function",
         "description": "Fired when the drag and drop leaves the document",
         "parameters": [
-          {"$ref": "BookmarkDragData"}
+          {"$ref": "BookmarkNodeData"}
         ]
       },
       {
@@ -2604,7 +2604,7 @@
         "type": "function",
         "description": "Fired when the user drops bookmarks on the document",
         "parameters": [
-          {"$ref": "BookmarkDragData"}
+          {"$ref": "BookmarkNodeData"}
         ]
       }
     ]

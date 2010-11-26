@@ -25,7 +25,7 @@
 
 class AutomationResourceRoutingDelegate;
 class BackgroundContents;
-struct BookmarkDragData;
+struct BookmarkNodeData;
 class BookmarkNode;
 struct ContextMenuParams;
 class FilePath;
@@ -585,10 +585,10 @@ class RenderViewHostDelegate {
 
   class BookmarkDrag {
    public:
-    virtual void OnDragEnter(const BookmarkDragData& data) = 0;
-    virtual void OnDragOver(const BookmarkDragData& data) = 0;
-    virtual void OnDragLeave(const BookmarkDragData& data) = 0;
-    virtual void OnDrop(const BookmarkDragData& data) = 0;
+    virtual void OnDragEnter(const BookmarkNodeData& data) = 0;
+    virtual void OnDragOver(const BookmarkNodeData& data) = 0;
+    virtual void OnDragLeave(const BookmarkNodeData& data) = 0;
+    virtual void OnDrop(const BookmarkNodeData& data) = 0;
 
    protected:
     virtual ~BookmarkDrag() {}

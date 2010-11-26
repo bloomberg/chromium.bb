@@ -9,7 +9,7 @@
 
 @class BookmarkBarFolderController;
 @class BookmarkButton;
-struct BookmarkDragData;
+struct BookmarkNodeData;
 class BookmarkModel;
 class BookmarkNode;
 @class BrowserWindowController;
@@ -97,7 +97,7 @@ class ThemeProvider;
 // Determine if the drag pasteboard has any drag data of type
 // kBookmarkDictionaryListPboardType and, if so, return those elements
 // otherwise return an empty vector.
-- (std::vector<const BookmarkNode*>)retrieveBookmarkDragDataNodes;
+- (std::vector<const BookmarkNode*>)retrieveBookmarkNodeData;
 
 // Return YES if we should show the drop indicator, else NO.  In some
 // cases (e.g. hover open) we don't want to show the drop indicator.

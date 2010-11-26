@@ -17,7 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
@@ -1429,7 +1429,7 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
 
   if (write_url) {
     string16 text16(WideToUTF16(text));
-    BookmarkDragData data;
+    BookmarkNodeData data;
     data.ReadFromTuple(url, text16);
     data.WriteToClipboard(NULL);
 

@@ -10,7 +10,7 @@
 #include <set>
 
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/views/bookmark_context_menu.h"
 #include "gfx/native_widget_types.h"
 #include "views/controls/menu/menu_delegate.h"
@@ -173,7 +173,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   views::MenuItemView* menu_;
 
   // Data for the drop.
-  BookmarkDragData drop_data_;
+  BookmarkNodeData drop_data_;
 
   // Used when a context menu is shown.
   scoped_ptr<BookmarkContextMenu> context_menu_;

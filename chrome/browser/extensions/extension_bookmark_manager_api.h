@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_MANAGER_API_H_
 #pragma once
 
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
-struct BookmarkDragData;
+struct BookmarkNodeData;
 class ListValue;
 class Profile;
 class TabContents;
@@ -25,27 +25,27 @@ class ExtensionBookmarkManagerEventRouter
   virtual ~ExtensionBookmarkManagerEventRouter();
 
   // RenderViewHostDelegate::BookmarkDrag interface
-  virtual void OnDragEnter(const BookmarkDragData& data);
-  virtual void OnDragOver(const BookmarkDragData& data);
-  virtual void OnDragLeave(const BookmarkDragData& data);
-  virtual void OnDrop(const BookmarkDragData& data);
+  virtual void OnDragEnter(const BookmarkNodeData& data);
+  virtual void OnDragOver(const BookmarkNodeData& data);
+  virtual void OnDragLeave(const BookmarkNodeData& data);
+  virtual void OnDrop(const BookmarkNodeData& data);
 
   // The bookmark drag and drop data. This gets set after a drop was done on
   // the page. This returns NULL if no data is available.
-  const BookmarkDragData* GetBookmarkDragData();
+  const BookmarkNodeData* GetBookmarkNodeData();
 
   // Clears the drag and drop data.
-  void ClearBookmarkDragData();
+  void ClearBookmarkNodeData();
 
  private:
   // Helper to actually dispatch an event to extension listeners.
   void DispatchEvent(const char* event_name, const ListValue* args);
 
-  void DispatchDragEvent(const BookmarkDragData& data, const char* event_name);
+  void DispatchDragEvent(const BookmarkNodeData& data, const char* event_name);
 
   Profile* profile_;
   TabContents* tab_contents_;
-  BookmarkDragData bookmark_drag_data_;
+  BookmarkNodeData bookmark_drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBookmarkManagerEventRouter);
 };

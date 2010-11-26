@@ -11,7 +11,7 @@
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -84,7 +84,7 @@ class WebDragDestGtk {
 
   // The bookmark data for the current tab. This will be empty if there is not
   // a native bookmark drag (or we haven't gotten the data from the source yet).
-  BookmarkDragData bookmark_drag_data_;
+  BookmarkNodeData bookmark_drag_data_;
 
   ScopedRunnableMethodFactory<WebDragDestGtk> method_factory_;
 

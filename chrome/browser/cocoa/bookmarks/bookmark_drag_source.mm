@@ -12,7 +12,7 @@
 
 - (id)initWithContentsView:(TabContentsViewCocoa*)contentsView
                   dropData:
-                      (const std::vector<BookmarkDragData::Element>&)dropData
+                      (const std::vector<BookmarkNodeData::Element>&)dropData
                    profile:(Profile*)profile
                 pasteboard:(NSPasteboard*)pboard
          dragOperationMask:(NSDragOperation)dragOperationMask {

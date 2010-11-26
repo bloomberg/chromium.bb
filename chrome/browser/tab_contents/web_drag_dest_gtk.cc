@@ -9,7 +9,7 @@
 #include "app/gtk_dnd_util.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -28,11 +28,11 @@ namespace {
 // gtk_dnd_util::CHROME_BOOKMARK_ITEM. See
 // bookmark_utils::WriteBookmarksToSelection() for details.
 // For Views, bookmark drag data is encoded in the same format, and
-// associated with a custom format. See BookmarkDragData::Write() for
+// associated with a custom format. See BookmarkNodeData::Write() for
 // details.
 GdkAtom GetBookmarkTargetAtom() {
 #if defined(TOOLKIT_VIEWS)
-  return BookmarkDragData::GetBookmarkCustomFormat();
+  return BookmarkNodeData::GetBookmarkCustomFormat();
 #else
   return gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM);
 #endif

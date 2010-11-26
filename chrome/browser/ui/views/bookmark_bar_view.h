@@ -9,7 +9,7 @@
 #include <set>
 
 #include "app/animation_delegate.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/bookmark_bar_instructions_view.h"
@@ -352,7 +352,7 @@ class BookmarkBarView : public DetachableToolbarView,
                             const gfx::Point& press_pt,
                             const gfx::Point& p);
 
-  // Writes a BookmarkDragData for node to data.
+  // Writes a BookmarkNodeData for node to data.
   void WriteDragData(const BookmarkNode* node, OSExchangeData* data);
 
   // ViewMenuDelegate method. Ends up creating a BookmarkMenuController to
@@ -408,7 +408,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // Returns the drop operation and index for the drop based on the event
   // and data. Returns DragDropTypes::DRAG_NONE if not a valid location.
   int CalculateDropOperation(const views::DropTargetEvent& event,
-                             const BookmarkDragData& data,
+                             const BookmarkNodeData& data,
                              int* index,
                              bool* drop_on,
                              bool* is_over_overflow,

@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/cocoa/web_contents_drag_source.h"
 
 // A class that handles tracking and event processing for a drag and drop
@@ -12,7 +12,7 @@
 @interface BookmarkDragSource : WebContentsDragSource {
  @private
   // Our drop data. Should only be initialized once.
-  std::vector<BookmarkDragData::Element> dropData_;
+  std::vector<BookmarkNodeData::Element> dropData_;
 
   Profile* profile_;
 }
@@ -22,7 +22,7 @@
 // with data types appropriate for dropData.
 - (id)initWithContentsView:(TabContentsViewCocoa*)contentsView
                   dropData:
-                      (const std::vector<BookmarkDragData::Element>&)dropData
+                      (const std::vector<BookmarkNodeData::Element>&)dropData
                    profile:(Profile*)profile
                 pasteboard:(NSPasteboard*)pboard
          dragOperationMask:(NSDragOperation)dragOperationMask;

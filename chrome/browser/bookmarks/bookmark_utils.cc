@@ -13,7 +13,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #if defined(OS_MACOSX)
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"

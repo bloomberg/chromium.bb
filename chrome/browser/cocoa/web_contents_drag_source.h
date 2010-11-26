@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 
 @class TabContentsViewCocoa;
 

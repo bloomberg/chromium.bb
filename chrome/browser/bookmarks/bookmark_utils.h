@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/history/snippet.h"
 #include "gfx/native_widget_types.h"

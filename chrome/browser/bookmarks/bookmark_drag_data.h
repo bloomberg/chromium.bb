@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_DRAG_DATA_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_DRAG_DATA_H_
+#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_NODE_DATA_H_
+#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_NODE_DATA_H_
 #pragma once
 
 #include <vector>
@@ -20,28 +20,25 @@ class BookmarkNode;
 class Pickle;
 class Profile;
 
-// TODO(mrossetti): Rename BookmarkDragData to BookmarkNodeData, update comment.
-// See: http://crbug.com/37891
-
-// BookmarkDragData is used to represent the following:
+// BookmarkNodeData is used to represent the following:
 //
 // . A single URL.
 // . A single node from the bookmark model.
 // . A set of nodes from the bookmark model.
 //
-// BookmarkDragData is used by bookmark related views to represent a dragged
+// BookmarkNodeData is used by bookmark related views to represent a dragged
 // bookmark or bookmarks.
 //
 // Typical usage when writing data for a drag is:
-//   BookmarkDragData data(node_user_is_dragging);
+//   BookmarkNodeData data(node_user_is_dragging);
 //   data.Write(os_exchange_data_for_drag);
 //
 // Typical usage to read is:
-//   BookmarkDragData data;
+//   BookmarkNodeData data;
 //   if (data.Read(os_exchange_data))
 //     // data is valid, contents are in elements.
 
-struct BookmarkDragData {
+struct BookmarkNodeData {
   // Element represents a single node.
   struct Element {
     Element();
@@ -64,7 +61,7 @@ struct BookmarkDragData {
       return id_;
     }
    private:
-    friend struct BookmarkDragData;
+    friend struct BookmarkNodeData;
 
     // For reading/writing this Element.
     void WriteToPickle(Pickle* pickle) const;
@@ -74,17 +71,17 @@ struct BookmarkDragData {
     int64 id_;
   };
 
-  BookmarkDragData();
+  BookmarkNodeData();
 
 #if defined(TOOLKIT_VIEWS)
   static OSExchangeData::CustomFormat GetBookmarkCustomFormat();
 #endif
 
-  // Created a BookmarkDragData populated from the arguments.
-  explicit BookmarkDragData(const BookmarkNode* node);
-  explicit BookmarkDragData(const std::vector<const BookmarkNode*>& nodes);
+  // Created a BookmarkNodeData populated from the arguments.
+  explicit BookmarkNodeData(const BookmarkNode* node);
+  explicit BookmarkNodeData(const std::vector<const BookmarkNode*>& nodes);
 
-  ~BookmarkDragData();
+  ~BookmarkNodeData();
 
   // Reads bookmarks from the given vector.
   bool ReadFromVector(const std::vector<const BookmarkNode*>& nodes);
@@ -156,7 +153,7 @@ struct BookmarkDragData {
   // The actual elements written to the clipboard.
   std::vector<Element> elements;
 
-  // The MIME type for the clipboard format for BookmarkDragData.
+  // The MIME type for the clipboard format for BookmarkNodeData.
   static const char* kClipboardFormatString;
 
   static bool ClipboardContainsBookmarks();
@@ -166,9 +163,4 @@ struct BookmarkDragData {
   FilePath::StringType profile_path_;
 };
 
-// TODO(tfarina): Remove this when we finish renaming all the remaining entries.
-// This is a temporary hack, to make it possible to convert all the entries in
-// small chunks. See crbug.com/37891 for context.
-typedef BookmarkDragData BookmarkNodeData;
-
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_DRAG_DATA_H_
+#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_NODE_DATA_H_
