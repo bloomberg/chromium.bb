@@ -217,4 +217,36 @@ TEST_F(DeviceManagementPolicyProviderTest, RefreshPolicies) {
   SimulateSuccessfulLoginAndRunPending();
 }
 
+// The client should try to re-register the device if the device server reports
+// back that it doesn't recognize the device token on a policy request.
+TEST_F(DeviceManagementPolicyProviderTest, DeviceNotFound) {
+  InSequence s;
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailPolicy(
+          DeviceManagementBackend::kErrorServiceDeviceNotFound));
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
+  SimulateSuccessfulLoginAndRunPending();
+}
+
+// The client should try to re-register the device if the device server reports
+// back that the device token is invalid on a policy request.
+TEST_F(DeviceManagementPolicyProviderTest, InvalidTokenOnPolicyRequest) {
+  InSequence s;
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailPolicy(
+          DeviceManagementBackend::kErrorServiceManagementTokenInvalid));
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
+  SimulateSuccessfulLoginAndRunPending();
+}
+
 }  // namespace policy

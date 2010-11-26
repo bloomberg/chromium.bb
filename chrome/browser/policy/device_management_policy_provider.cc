@@ -107,14 +107,21 @@ void DeviceManagementPolicyProvider::HandlePolicyResponse(
 void DeviceManagementPolicyProvider::OnError(
     DeviceManagementBackend::ErrorCode code) {
   policy_request_pending_ = false;
-  LOG(WARNING) << "Could not provide policy from the device manager (error = "
-               << code << "), will retry in "
-               << (policy_refresh_error_delay_ms_/1000) << " seconds.";
-  ScheduleRefreshTask(policy_refresh_error_delay_ms_);
-  policy_refresh_error_delay_ms_ *= 2;
-  if (policy_refresh_rate_ms_ &&
-      policy_refresh_rate_ms_ < policy_refresh_error_delay_ms_) {
-    policy_refresh_error_delay_ms_ = policy_refresh_rate_ms_;
+  if (code == DeviceManagementBackend::kErrorServiceDeviceNotFound ||
+      code == DeviceManagementBackend::kErrorServiceManagementTokenInvalid) {
+    LOG(WARNING) << "The device token was either invalid or unknown to the "
+                 << "device manager, re-registering device.";
+    token_fetcher_->Restart();
+  } else {
+    LOG(WARNING) << "Could not provide policy from the device manager (error = "
+                 << code << "), will retry in "
+                 << (policy_refresh_error_delay_ms_/1000) << " seconds.";
+    ScheduleRefreshTask(policy_refresh_error_delay_ms_);
+    policy_refresh_error_delay_ms_ *= 2;
+    if (policy_refresh_rate_ms_ &&
+        policy_refresh_rate_ms_ < policy_refresh_error_delay_ms_) {
+      policy_refresh_error_delay_ms_ = policy_refresh_rate_ms_;
+    }
   }
 }
 
