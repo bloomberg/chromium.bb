@@ -155,6 +155,7 @@
         '../../base/base.gyp:base',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
+        '../testing/sidestep/sidestep.gyp:sidestep',
         '../testing/utils/test_utils.gyp:test_utils',
       ],
       'libraries': [

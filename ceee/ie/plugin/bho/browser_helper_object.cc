@@ -102,8 +102,6 @@ BrowserHelperObject::BrowserHelperObject()
       thread_id_(::GetCurrentThreadId()),
       full_tab_chrome_frame_(false) {
   TRACE_EVENT_BEGIN("ceee.bho", this, "");
-  // Only the first call to this function really does anything.
-  CookieAccountant::GetInstance()->PatchWininetFunctions();
 }
 
 BrowserHelperObject::~BrowserHelperObject() {
@@ -114,7 +112,16 @@ BrowserHelperObject::~BrowserHelperObject() {
 }
 
 HRESULT BrowserHelperObject::FinalConstruct() {
-  return S_OK;
+  if (ceee_module_util::GetOptionToolbandIsHidden()) {
+    // Patching wininet when BHO could not be created considered pointless.
+    LOG(INFO) <<
+        "Refused to instantiate the BHO when the visual component is hidden.";
+    return E_FAIL;
+  } else {
+    // Only the first call to this function really does anything.
+    CookieAccountant::GetInstance()->PatchWininetFunctions();
+    return S_OK;
+  }
 }
 
 void BrowserHelperObject::FinalRelease() {

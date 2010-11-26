@@ -9,6 +9,7 @@
 #include <shlguid.h>
 
 #include "ceee/common/initializing_coclass.h"
+#include "ceee/ie/common/mock_ceee_module_util.h"
 #include "ceee/ie/testing/mock_broker_and_friends.h"
 #include "ceee/ie/testing/mock_browser_and_friends.h"
 #include "ceee/ie/testing/mock_chrome_frame_host.h"
@@ -175,6 +176,10 @@ class BrowserHelperObjectTest: public testing::Test {
 
   virtual void SetUp() {
     // Create the instance to test.
+    // Force required registry state to prevent flakiness.
+    StrictMock<testing::MockCeeeModuleUtils> ceee_module_utils;
+    EXPECT_CALL(ceee_module_utils, GetOptionToolbandIsHidden())
+        .WillOnce(Return(false));
     ASSERT_HRESULT_SUCCEEDED(
         TestingBrowserHelperObject::CreateInitialized(&bho_, &bho_with_site_));
     bho_with_site_ = bho_;
@@ -200,14 +205,16 @@ class BrowserHelperObjectTest: public testing::Test {
   }
 
   virtual void TearDown() {
-    bho_->executor_ = NULL;
-    bho_->executor_keeper_.Release();
+    if (bho_ != NULL) {  // To match failure modes of SetUp.
+      bho_->executor_ = NULL;
+      bho_->executor_keeper_.Release();
 
-    bho_->broker_ = NULL;
-    bho_->broker_keeper_.Release();
+      bho_->broker_ = NULL;
+      bho_->broker_keeper_.Release();
 
-    bho_ = NULL;
-    bho_with_site_.Release();
+      bho_ = NULL;
+      bho_with_site_.Release();
+    }
 
     site_ = NULL;
     site_keeper_.Release();
@@ -869,6 +876,27 @@ TEST_F(BrowserHelperObjectTest, SetToolBandSessionId) {
   ExpectFireOnRemovedEvent(0);
   ExpectFireOnUnmappedEvent(0);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
+}
+
+TEST(BrowserHelperObjectLifeCycleTest, NoBhoForInvisibleToolband) {
+  StrictMock<testing::MockCeeeModuleUtils> ceee_module_utils;
+    EXPECT_CALL(ceee_module_utils, GetOptionToolbandIsHidden())
+        .WillOnce(Return(false));
+
+  TestingBrowserHelperObject* bho;
+  base::win::ScopedComPtr<IObjectWithSite> bho_with_site;
+  ASSERT_HRESULT_SUCCEEDED(
+      TestingBrowserHelperObject::CreateInitialized(&bho,
+          bho_with_site.Receive()));
+  bho_with_site.Release();
+  bho = NULL;
+
+  EXPECT_CALL(ceee_module_utils, GetOptionToolbandIsHidden())
+        .WillOnce(Return(true));
+  ASSERT_HRESULT_FAILED(
+      TestingBrowserHelperObject::CreateInitialized(&bho,
+          bho_with_site.Receive()));
+  ASSERT_EQ(0, testing::InstanceCountMixinBase::all_instance_count());
 }
 
 }  // namespace

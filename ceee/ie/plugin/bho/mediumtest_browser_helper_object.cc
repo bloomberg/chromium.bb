@@ -9,6 +9,7 @@
 #include <shlguid.h>
 #include "base/utf_string_conversions.h"
 #include "ceee/ie/common/ceee_module_util.h"
+#include "ceee/ie/common/mock_ceee_module_util.h"
 #include "ceee/ie/plugin/bho/browser_helper_object.h"
 #include "ceee/ie/testing/mediumtest_ie_common.h"
 #include "ceee/ie/testing/mock_broker_and_friends.h"
@@ -302,7 +303,9 @@ class BrowserHelperObjectTest: public ShellBrowserTestImpl<BrowserEventSink> {
 
   virtual void SetUp() {
     Super::SetUp();
-
+    StrictMock<testing::MockCeeeModuleUtils> ceee_module_utils;
+    EXPECT_CALL(ceee_module_utils, GetOptionToolbandIsHidden())
+        .WillRepeatedly(Return(false));
     // Never torn down as other threads in the test may need it after
     // teardown.
     ScriptHost::set_default_debug_application(&debug_app);
@@ -335,21 +338,23 @@ class BrowserHelperObjectTest: public ShellBrowserTestImpl<BrowserEventSink> {
   }
 
   virtual void TearDown() {
-    EXPECT_CALL(*bho_->mock_tab_events_funnel(), OnRemoved(_));
-    EXPECT_CALL(*bho_->mock_tab_events_funnel(), OnTabUnmapped(_, _));
-    ASSERT_HRESULT_SUCCEEDED(bho_keeper_->SetSite(NULL));
+    if (bho_ != NULL) {  // To match SetUp failure modes.
+      EXPECT_CALL(*bho_->mock_tab_events_funnel(), OnRemoved(_));
+      EXPECT_CALL(*bho_->mock_tab_events_funnel(), OnTabUnmapped(_, _));
+      ASSERT_HRESULT_SUCCEEDED(bho_keeper_->SetSite(NULL));
+
+      bho_->executor_ = NULL;
+      bho_->executor_keeper_.Release();
+
+      bho_->broker_ = NULL;
+      bho_->broker_keeper_.Release();
+
+      bho_ = NULL;
+      bho_keeper_.Release();
+    }
 
     site_ = NULL;
     site_keeper_.Release();
-
-    bho_->executor_ = NULL;
-    bho_->executor_keeper_.Release();
-
-    bho_->broker_ = NULL;
-    bho_->broker_keeper_.Release();
-
-    bho_ = NULL;
-    bho_keeper_.Release();
 
     Super::TearDown();
   }
