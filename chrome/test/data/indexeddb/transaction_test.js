@@ -65,7 +65,7 @@ function onSetVersion()
 
   debug('Creating object store.');
   deleteAllObjectStores(db);
-  var objectStore = db.createObjectStore('employees', 'id');
+  var objectStore = db.createObjectStore('employees', {keyPath: 'id'});
 }
 
 function setVersion()

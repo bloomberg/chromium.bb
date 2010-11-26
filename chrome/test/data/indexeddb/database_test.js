@@ -6,18 +6,18 @@ function populateObjectStore()
 {
   debug('Populating object store');
   deleteAllObjectStores(db);
-  window.objectStore = db.createObjectStore('employees', 'id');
+  window.objectStore = db.createObjectStore('employees', {keyPath: 'id'});
   shouldBe("objectStore.name", "'employees'");
   shouldBe("objectStore.keyPath", "'id'");
 
   shouldBe('db.name', '"name"');
   shouldBe('db.version', '"1.0"');
-  shouldBe('db.objectStores.length', '1');
-  shouldBe('db.objectStores[0]', '"employees"');
+  shouldBe('db.objectStoreNames.length', '1');
+  shouldBe('db.objectStoreNames[0]', '"employees"');
 
   debug('Deleting an object store.');
   db.removeObjectStore('employees');
-  shouldBe('db.objectStores.length', '0');
+  shouldBe('db.objectStoreNames.length', '0');
 
   done();
 }

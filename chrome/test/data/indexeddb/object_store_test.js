@@ -53,7 +53,7 @@ function populateObjectStore()
 {
   debug('Populating object store');
   deleteAllObjectStores(db);
-  window.objectStore = db.createObjectStore('employees', 'id');
+  window.objectStore = db.createObjectStore('employees', {keyPath: 'id'});
   shouldBe("objectStore.name", "'employees'");
   shouldBe("objectStore.keyPath", "'id'");
 

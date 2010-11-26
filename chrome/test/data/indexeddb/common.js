@@ -48,7 +48,7 @@ function unexpectedErrorCallback()
 
 function deleteAllObjectStores(db)
 {
-  objectStores = db.objectStores;
+  objectStores = db.objectStoreNames;
   for (var i = 0; i < objectStores.length; ++i)
     db.removeObjectStore(objectStores[i]);
 }

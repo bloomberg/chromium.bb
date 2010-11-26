@@ -20,8 +20,8 @@ function cursorSuccess()
 function openCursor()
 {
     debug("Opening cursor #" + count);
-    keyRange = webkitIDBKeyRange.leftBound("myKey" + count);
-    result = objectStore.openCursor(keyRange);
+    keyRange = webkitIDBKeyRange.lowerBound("myKey" + count);
+    result = objectStore.openCursor({range: keyRange});
     result.onsuccess = cursorSuccess;
     result.onerror = unexpectedErrorCallback;
 }
@@ -44,7 +44,7 @@ function createObjectStore()
 {
     debug('createObjectStore');
     deleteAllObjectStores(db);
-    window.objectStore = db.createObjectStore('test', 'keyPath');
+    window.objectStore = db.createObjectStore('test', {keyPath: 'keyPath'});
     count = 0;
     populateObjectStore();
 }
