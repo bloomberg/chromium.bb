@@ -16,6 +16,8 @@ except ImportError:
   raise
 
 import datetime
+import logging
+import optparse
 import os.path
 import subprocess
 import sys
@@ -72,7 +74,6 @@ class TestRunner(object):
     self._saved_autohides = None
     self._solution = win32com.client.GetObject(solution)
     self._dte = self._GetDte(self._solution)
-
     self._EnsureVisible()
 
   def __del__(self):
@@ -101,10 +102,10 @@ class TestRunner(object):
     for i in range(0, 10):
       try:
         return solution.DTE
-      except pythoncom.com_error, e:
-        # Sleep for 2 seconds
-        print 'Exception from solution.DTE "%s", retrying: ' % str(e)
-        time.sleep(2.0)
+      except pythoncom.com_error:
+        # Sleep for 10 seconds between attempts.
+        logging.exception('Exception getting DTE, retrying')
+        time.sleep(10.0)
 
     # Final try, pass the exception to the caller on failure here.
     return solution.DTE
@@ -120,7 +121,9 @@ class TestRunner(object):
     '''
     builder = self._solution.SolutionBuild
     for project in self._projects:
-      print 'Building project "%s" in "%s" configuration' % (project, config)
+      logging.info('Building project "%s" in "%s" configuration',
+                   project,
+                   config)
       wait_for_build = True
       # See http://goo.gl/Dy8x for documentation on this method.
       builder.BuildProject(config, project, wait_for_build)
@@ -183,13 +186,46 @@ class TestRunner(object):
     return failures
 
 
+def GetOptionParser():
+  '''Creates and returns an option parser for this script.'''
+  parser = optparse.OptionParser(usage='%prog [options]')
+  parser.add_option('-s', '--solution',
+                    dest='solution',
+                    default=_CHROME_SOLUTION,
+                    help='''\
+Use a specific solution file. The solution file can be provided either as
+a path to an existing solution file, or as a basename, in which case the
+solution with that name is assumed to exist in the chrome directory.\
+''')
+
+  return parser
+
+
 def Main():
   if not ctypes.windll.shell32.IsUserAnAdmin():
     print ("Please run the smoke tests in an admin prompt "
            "(or AppVerifier won't work).")
     return 1
 
-  runner = TestRunner(_CHROME_SOLUTION, _PROJECTS_TO_BUILD, _TESTS_TO_RUN)
+  parser = GetOptionParser()
+  (options, args) = parser.parse_args()
+  if args:
+    parser.error('This script takes no arguments')
+
+  solution = options.solution
+  # If the solution is a path to an existing file, we use it as-is.
+  if not os.path.exists(solution):
+    # Otherwise we assume it's the base name for a file in the
+    # in the same directory as our default solution file.
+    solution = os.path.join(os.path.dirname(_CHROME_SOLUTION), solution)
+    solution = solution + '.sln'
+
+  # Make the path absolute
+  solution = os.path.abspath(solution)
+
+  runner = TestRunner(solution,
+                      _PROJECTS_TO_BUILD,
+                      _TESTS_TO_RUN)
 
   failures = 0
   for config in _CONFIGURATIONS:
