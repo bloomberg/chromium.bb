@@ -140,7 +140,6 @@ void ExtensionPortManager::OnPortMessage(BSTR message) {
       // TODO(siggi@chromium.org): This can happen legitimately on a
       //    race between connect and document unload. We should
       //    probably respond with a close port message here.
-      NOTREACHED();
       LOG(ERROR) << "No such connection id " << connection_id;
       return;
     }

@@ -47,6 +47,10 @@ HRESULT ContentScriptNativeApi::TearDown() {
   on_port_connect_.Release();
   on_port_disconnect_.Release();
   on_port_message_.Release();
+
+  // Make sure all our open and in-progress ports are closed.
+  if (messaging_provider_ != NULL)
+    messaging_provider_->CloseAll(this);
   messaging_provider_.Release();
 
   return S_OK;
@@ -73,6 +77,8 @@ STDMETHODIMP ContentScriptNativeApi::OpenChannelToExtension(BSTR source_id,
                                                             long* port_id) {
   // TODO(siggi@chromium.org): handle connecting to other extensions.
   // TODO(siggi@chromium.org): check for the correct source_id here.
+  DCHECK(messaging_provider_ != NULL);
+
   if (0 != wcscmp(com::ToString(source_id), com::ToString(target_id)))
     return E_UNEXPECTED;
 
@@ -130,7 +136,9 @@ STDMETHODIMP ContentScriptNativeApi::PortRelease(long port_id) {
 }
 
 STDMETHODIMP ContentScriptNativeApi::PostMessage(long port_id, BSTR msg) {
-  LocalPortMap::iterator it(local_ports_.find(port_id));
+    LocalPortMap::iterator it(local_ports_.find(port_id));
+  DCHECK(messaging_provider_ != NULL);
+
   // TODO(siggi@chromium.org): should I expect to get messages to
   // defunct port ids?
   DCHECK(it != local_ports_.end());
@@ -189,6 +197,13 @@ STDMETHODIMP ContentScriptNativeApi::put_onPortMessage(IDispatch* callback) {
 
 void ContentScriptNativeApi::OnChannelOpened(int cookie,
                                              int port_id) {
+  // We've observed post-teardown notifications.
+  // TODO(siggi): These shouldn't occur, figure out why this is happening.
+  if (messaging_provider_ == NULL) {
+    LOG(ERROR) << "Received OnChannelOpened after teardown";
+    return;
+  }
+
   // The cookie is our local port ID.
   LocalPortId local_id = cookie;
   LocalPortMap::iterator it(local_ports_.find(local_id));
@@ -203,7 +218,7 @@ void ContentScriptNativeApi::OnChannelOpened(int cookie,
   remote_to_local_port_id_[port.remote_id] = port.local_id;
 
   // Flush pending messages on this port.
-  if (port.pending_messages.size() > 0) {
+  if (!port.pending_messages.empty()) {
     MessageList::iterator it(port.pending_messages.begin());
     MessageList::iterator end(port.pending_messages.end());
 

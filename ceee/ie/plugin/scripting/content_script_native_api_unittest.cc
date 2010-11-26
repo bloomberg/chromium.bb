@@ -52,6 +52,7 @@ class MockIExtensionPortMessagingProvider
 
 class TestingContentScriptNativeApi
     : public ContentScriptNativeApi,
+      public InstanceCountMixin<TestingContentScriptNativeApi>,
       public InitializingCoClass<TestingContentScriptNativeApi> {
  public:
   // Disambiguate.
@@ -204,6 +205,9 @@ TEST_F(ContentScriptNativeApiTest, OnPostMessage) {
 
   function_->ExpectInvoke(DISPID_VALUE, kWideMsg2, local_port_id2);
   api_->OnPostMessage(kRemotePortId2, kMsg2);
+
+  EXPECT_CALL(*mock_provider, CloseAll(api_));
+  api_->TearDown();
 }
 
 }  // namespace
