@@ -168,7 +168,6 @@ void ExtensionPortManager::OnPortMessage(BSTR message) {
 
     ConnectedPortMap::iterator it(connected_ports_.find(port_id));
     if (it == connected_ports_.end()) {
-      NOTREACHED();
       LOG(ERROR) << "No such port " << port_id;
       return;
     }
