@@ -615,6 +615,9 @@ const CellularDataPlan* CellularNetwork::GetSignificantDataPlan() const {
 }
 
 CellularNetwork::DataLeft CellularNetwork::GetDataLeft() const {
+  // If we need a new plan, then there's no data.
+  if (needs_new_plan())
+    return DATA_NONE;
   const CellularDataPlan* plan = GetSignificantDataPlan();
   if (!plan)
     return DATA_NORMAL;
