@@ -391,7 +391,7 @@ class MockWebRequestEventsFunnel : public WebRequestEventsFunnel {
 
 class MockBrokerRpcClient : public BrokerRpcClient {
  public:
-  MOCK_METHOD0(Connect, HRESULT());
+  MOCK_METHOD1(Connect, HRESULT(bool));
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(is_connected, bool());
   MOCK_METHOD2(FireEvent, HRESULT(const char*, const char*));

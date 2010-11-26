@@ -236,6 +236,7 @@ class ATL_NO_VTABLE BrowserHelperObject
                                    IWebBrowser2** parent_browser);
 
   // Unit testing seam to create the broker registrar.
+  // Release registrar ASAP. Cached reference may block broker from release.
   virtual HRESULT GetBrokerRegistrar(ICeeeBrokerRegistrar** broker);
 
   // Unit testing seam to create an executor.
@@ -314,6 +315,12 @@ class ATL_NO_VTABLE BrowserHelperObject
   virtual HRESULT AttachBrowserHandler(IWebBrowser2* webbrowser,
                                        IFrameEventHandler** handler);
 
+  // Helpers to call function in registrar with following release of broker.
+  HRESULT RegisterTabExecutor(DWORD thread_id, IUnknown* executor);
+  HRESULT UnregisterExecutor(DWORD thread_id);
+  HRESULT SetTabIdForHandle(int tool_band_id, long tab_handle);
+  HRESULT SetTabToolBandIdForHandle(int tool_band_id, long tab_handle);
+
   // Function info objects describing our message handlers.
   // Effectively const but can't make const because of silly ATL macro problem.
   static _ATL_FUNC_INFO handler_type_idispatch_5variantptr_boolptr_;
@@ -327,9 +334,6 @@ class ATL_NO_VTABLE BrowserHelperObject
 
   // The Chrome Frame host handling a Chrome Frame instance for us.
   ScopedChromeFramePtr chrome_frame_host_;
-
-  // The Broker Registrar we use to un/register executors for our thread.
-  base::win::ScopedComPtr<ICeeeBrokerRegistrar> broker_registrar_;
 
   // We keep a reference to the executor we registered so that we can
   // manually disconnect it, so it doesn't get called while we unregister it.

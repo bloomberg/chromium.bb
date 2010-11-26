@@ -42,10 +42,7 @@ HRESULT EventsFunnel::SendEventToBroker(const char* event_name,
     broker_rpc_client_.reset(new BrokerRpcClient());
     if (!broker_rpc_client_.get())
       return E_OUTOFMEMORY;
-    HRESULT hr = BrokerRpcClient::StartServer();
-    if (FAILED(hr))
-      return hr;
-    hr = broker_rpc_client_->Connect();
+    HRESULT hr = broker_rpc_client_->Connect(true);
     // Don't reset broker_rpc_client_. See comment in *h file.
     if (FAILED(hr))
       return hr;

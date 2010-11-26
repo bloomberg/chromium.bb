@@ -9,6 +9,7 @@
 #include <atlbase.h>
 #include "base/lock.h"
 #include "base/logging.h"
+#include "base/win/scoped_comptr.h"
 #include "broker_lib.h"  // NOLINT
 #include "broker_rpc_lib.h"  // NOLINT
 #include "ceee/common/com_utils.h"
@@ -57,18 +58,20 @@ void BrokerRpcClient::ReleaseContext() {
   } RpcEndExcept
 }
 
-HRESULT BrokerRpcClient::StartServer() {
-  // TODO(vitalybuka@google.com): Start broker without COM after the last
-  // COM interface is removed.
-  CComPtr<ICeeeBrokerRegistrar> broker;
-  HRESULT hr = broker.CoCreateInstance(CLSID_CeeeBroker);
-  LOG_IF(ERROR, FAILED(hr)) << "Failed to create broker. " << com::LogHr(hr);
-  return hr;
-}
-
-HRESULT BrokerRpcClient::Connect() {
+HRESULT BrokerRpcClient::Connect(bool start_server) {
   if (is_connected())
     return S_OK;
+
+  // Keep alive until RPC is connected.
+  base::win::ScopedComPtr<ICeeeBrokerRegistrar> broker;
+  if (start_server) {
+    // TODO(vitalybuka@google.com): Start broker without COM after the last
+    // COM interface is removed.
+    HRESULT hr = broker.CreateInstance(CLSID_CeeeBroker);
+    LOG_IF(ERROR, FAILED(hr)) << "Failed to create broker. " << com::LogHr(hr);
+    if (FAILED(hr))
+      return hr;
+  }
 
   std::wstring end_point = GetRpcEndPointAddress();
   std::wstring protocol = kRpcProtocol;
@@ -130,7 +133,7 @@ HRESULT BrokerRpcClient::FireEvent(const char* event_name,
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
     LogRpcException("RPC error in FireEvent", RpcExceptionCode());
   } RpcEndExcept
-  return RPC_E_FAULT;
+    return RPC_E_FAULT;
 }
 
 bool BrokerRpcClient::SendUmaHistogramTimes(BSTR event_name, int sample) {
@@ -147,7 +150,7 @@ bool BrokerRpcClient::SendUmaHistogramData(BSTR event_name, int sample,
                                            int min, int max, int bucket_count) {
   RpcTryExcept {
     BrokerRpcClient_SendUmaHistogramData(binding_handle_, event_name, sample,
-        min, max, bucket_count);
+                                         min, max, bucket_count);
     return true;
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
     LogRpcException("RPC error in SendUmaHistogramData", RpcExceptionCode());

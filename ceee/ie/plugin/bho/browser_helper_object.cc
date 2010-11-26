@@ -213,12 +213,17 @@ HRESULT BrowserHelperObject::GetParentBrowser(IWebBrowser2* browser,
   return S_OK;
 }
 
-HRESULT BrowserHelperObject::GetBrokerRegistrar(
-    ICeeeBrokerRegistrar** broker) {
-  // This is a singleton and will not create a new one.
-  return ::CoCreateInstance(CLSID_CeeeBroker, NULL, CLSCTX_ALL,
-                            IID_ICeeeBrokerRegistrar,
-                            reinterpret_cast<void**>(broker));
+HRESULT BrowserHelperObject::GetBrokerRegistrar(ICeeeBrokerRegistrar** broker) {
+  DCHECK(broker);
+  if (broker == NULL)
+    return E_INVALIDARG;
+  HRESULT hr = ::CoCreateInstance(CLSID_CeeeBroker, NULL, CLSCTX_ALL,
+                                  IID_ICeeeBrokerRegistrar,
+                                  reinterpret_cast<void**>(broker));
+  DCHECK(SUCCEEDED(hr) && *broker) << "CoCreating Broker. " << com::LogHr(hr);
+  if (FAILED(hr) || *broker == NULL)
+    return com::AlwaysError(hr);
+  return hr;
 }
 
 HRESULT BrowserHelperObject::CreateExecutor(IUnknown** executor) {
@@ -251,15 +256,45 @@ WebProgressNotifier* BrowserHelperObject::CreateWebProgressNotifier() {
   return SUCCEEDED(hr) ? web_progress_notifier.release() : NULL;
 }
 
+HRESULT BrowserHelperObject::RegisterTabExecutor(DWORD thread_id,
+                                                 IUnknown* executor) {
+  base::win::ScopedComPtr<ICeeeBrokerRegistrar> registrar;
+  HRESULT hr = GetBrokerRegistrar(registrar.Receive());
+  if (FAILED(hr))
+    return hr;
+  // TODO(mad@chromium.org): Implement the proper manual/secure
+  // registration.
+  return registrar->RegisterTabExecutor(thread_id, executor);
+}
+
+HRESULT BrowserHelperObject::UnregisterExecutor(DWORD thread_id) {
+  base::win::ScopedComPtr<ICeeeBrokerRegistrar> registrar;
+  HRESULT hr = GetBrokerRegistrar(registrar.Receive());
+  if (FAILED(hr))
+    return hr;
+  return registrar->UnregisterExecutor(thread_id);
+}
+
+HRESULT BrowserHelperObject::SetTabToolBandIdForHandle(int tool_band_id,
+                                                       long tab_handle) {
+  base::win::ScopedComPtr<ICeeeBrokerRegistrar> registrar;
+  HRESULT hr = GetBrokerRegistrar(registrar.Receive());
+  if (FAILED(hr))
+    return hr;
+  return registrar->SetTabToolBandIdForHandle(tool_band_id, tab_handle);
+}
+
+HRESULT BrowserHelperObject::SetTabIdForHandle(int tool_band_id,
+                                               long tab_handle) {
+  base::win::ScopedComPtr<ICeeeBrokerRegistrar> registrar;
+  HRESULT hr = GetBrokerRegistrar(registrar.Receive());
+  if (FAILED(hr))
+    return hr;
+  return registrar->SetTabIdForHandle(tool_band_id, tab_handle);
+}
+
 HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   TRACE_EVENT_INSTANT("ceee.bho.initialize", this, "");
-
-  // We need to make sure the Broker is CoCreated BEFORE we try RPC to it.
-  HRESULT hr = GetBrokerRegistrar(broker_registrar_.Receive());
-  DCHECK(SUCCEEDED(hr) && broker_registrar_) << "CoCreating Broker. " <<
-      com::LogHr(hr);
-  if (FAILED(hr) || !broker_registrar_)
-    return com::AlwaysError(hr);
 
   // Unfortunately, we need to connect before taking performance. Including
   // this call in our Timing would be useful. Unit tests make it
@@ -267,7 +302,7 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   // TODO(hansl@chromium.org): Change initialization to be able to time
   // this call too.
   DCHECK(broker_rpc_ == NULL);
-  hr = ConnectRpcBrokerClient();
+  HRESULT hr = ConnectRpcBrokerClient();
   if (FAILED(hr) || !broker_rpc_->is_connected()) {
     NOTREACHED() << "Couldn't connect to the RPC server.";
     return com::AlwaysError(hr);
@@ -294,19 +329,16 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
 
   // Preemptively feed the broker with an executor in our thread.
   DCHECK(executor_ == NULL);
-  hr = CreateExecutor(executor_.Receive());
-  LOG_IF(ERROR, FAILED(hr)) << "Failed to create Executor, hr=" <<
-      com::LogHr(hr);
+  base::win::ScopedComPtr<IUnknown> executor;
+  hr = CreateExecutor(executor.Receive());
   DCHECK(SUCCEEDED(hr)) << "CoCreating Executor. " << com::LogHr(hr);
-  if (SUCCEEDED(hr)) {
-    // TODO(mad@chromium.org): Implement the proper manual/secure
-    // registration.
-    hr = broker_registrar_->RegisterTabExecutor(::GetCurrentThreadId(),
-                                                executor_);
-    DCHECK(SUCCEEDED(hr)) << "Registering Executor. " << com::LogHr(hr);
-  }
   if (FAILED(hr))
     return hr;
+  hr = RegisterTabExecutor(::GetCurrentThreadId(), executor);
+  DCHECK(SUCCEEDED(hr)) << "Registering Executor. " << com::LogHr(hr);
+  if (FAILED(hr))
+    return hr;
+  executor_ = executor;
 
   // We need the service provider for both the sink connections and
   // to get a handle to the tab window.
@@ -365,21 +397,18 @@ HRESULT BrowserHelperObject::TearDown() {
 
   // Unregister our executor so that the broker don't have to rely
   // on the thread dying to release it and confuse COM in trying to release it.
-  if (broker_registrar_ != NULL) {
-    DCHECK(executor_ != NULL);
+  if (executor_ != NULL) {
     // Manually disconnect executor_,
     // so it doesn't get called while we unregister it below.
     HRESULT hr = ::CoDisconnectObject(executor_, 0);
+    executor_.Release();
     DCHECK(SUCCEEDED(hr)) << "Couldn't disconnect Executor. " << com::LogHr(hr);
 
     // TODO(mad@chromium.org): Implement the proper manual/secure
     // unregistration.
-    hr = broker_registrar_->UnregisterExecutor(::GetCurrentThreadId());
+    hr = UnregisterExecutor(::GetCurrentThreadId());
     DCHECK(SUCCEEDED(hr)) << "Unregistering Executor. " << com::LogHr(hr);
-  } else {
-    DCHECK(executor_ == NULL);
   }
-  executor_.Release();
 
   if (web_browser_)
     DispEventUnadvise(web_browser_, &DIID_DWebBrowserEvents2);
@@ -570,7 +599,7 @@ bool BrowserHelperObject::EnsureTabId() {
   }
 
   CeeeWindowHandle handle = reinterpret_cast<CeeeWindowHandle>(tab_window_);
-  hr = broker_registrar_->SetTabIdForHandle(tab_id_, handle);
+  hr = SetTabIdForHandle(tab_id_, handle);
   if (FAILED(hr)) {
     DCHECK(SUCCEEDED(hr)) << "An error occured when setting the tab_id: " <<
         com::LogHr(hr);
@@ -1192,7 +1221,7 @@ HRESULT BrowserHelperObject::CreateFrameEventHandler(
 
 HRESULT BrowserHelperObject::ConnectRpcBrokerClient() {
   broker_rpc_.reset(new BrokerRpcClient);
-  return broker_rpc_->Connect();
+  return broker_rpc_->Connect(true);
 }
 
 HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
@@ -1553,8 +1582,7 @@ void BrowserHelperObject::UnregisterSink(Sink* sink) {
 
 STDMETHODIMP BrowserHelperObject::SetToolBandSessionId(long session_id) {
   CeeeWindowHandle handle = reinterpret_cast<CeeeWindowHandle>(tab_window_);
-  HRESULT hr = broker_registrar_->SetTabToolBandIdForHandle(session_id,
-                                                            handle);
+  HRESULT hr = SetTabToolBandIdForHandle(session_id, handle);
   if (FAILED(hr)) {
     DCHECK(SUCCEEDED(hr)) << "An error occured when setting the toolband " <<
         "tab ID: " << com::LogHr(hr);

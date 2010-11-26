@@ -17,7 +17,7 @@ class BrokerRpcClient {
   virtual ~BrokerRpcClient();
 
   // Initialize connection with server.
-  virtual HRESULT Connect();
+  virtual HRESULT Connect(bool start_server);
 
   // Relese connection with server
   virtual void Disconnect();
@@ -40,9 +40,6 @@ class BrokerRpcClient {
                                     int min, int max,
                                     int bucket_count);
   // @}
-
-  // Starts new CEEE broker if nessesary.
-  static HRESULT StartServer();
 
  private:
   void LockContext();
