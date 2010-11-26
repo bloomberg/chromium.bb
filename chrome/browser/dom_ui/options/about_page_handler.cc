@@ -368,9 +368,13 @@ void AboutPageHandler::UpdateStatus(
       break;
   }
   if (message.size()) {
-    scoped_ptr<Value> version_string(Value::CreateStringValue(message));
+    scoped_ptr<Value> update_message(Value::CreateStringValue(message));
+    // "Checking for update..." needs to be shown for a while, so users
+    // can read it, hence insert delay for this.
+    scoped_ptr<Value> insert_delay(Value::CreateBooleanValue(
+        status.status == chromeos::UPDATE_STATUS_CHECKING_FOR_UPDATE));
     dom_ui_->CallJavascriptFunction(L"AboutPage.updateStatusCallback",
-                                    *version_string);
+                                    *update_message, *insert_delay);
 
     scoped_ptr<Value> enabled_value(Value::CreateBooleanValue(enabled));
     dom_ui_->CallJavascriptFunction(L"AboutPage.updateEnableCallback",

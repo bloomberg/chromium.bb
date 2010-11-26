@@ -6,6 +6,12 @@ cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
 
   /**
+   * The number of milliseconds used for showing a message.
+   * @type {number}
+   */
+  const MESSAGE_DELAY_MS = 1000;  // 1 sec.
+
+  /**
    * Encapsulated handling of about page.
    */
   function AboutPage() {
@@ -17,6 +23,19 @@ cr.define('options', function() {
   AboutPage.prototype = {
     // Inherit AboutPage from OptionsPage.
     __proto__: OptionsPage.prototype,
+
+    /**
+     * The queue is used for updating the status message with delay, like:
+     * [["Check for update...", 1000], ["Chrome OS is up to date", 0]]
+     * @type {!Array.<!Array>}
+     */
+    statusMessageQueue_: [],
+
+    /**
+     * True if the status message queue flush started.
+     * @type {boolean}
+     */
+    statusMessageQueueFlushStarted_: false,
 
     // Initialize AboutPage.
     initializePage: function() {
@@ -51,8 +70,46 @@ cr.define('options', function() {
       $('osVersion1').textContent = versionString;
     },
 
-    updateStatus_: function(message) {
+    /**
+     * Updates the status message like "Checking for update...".
+     * @param {string} message The message to be shown.
+     * @param {boolean} insertDelay show the message for a while.
+     * @private
+     */
+    updateStatus_: function(message, insertDelay) {
+      // Add the message to the queue with delay if needed.
+      // The delay is inserted so users can read the message.
+      var delayMs = insertDelay ? MESSAGE_DELAY_MS : 0;
+      this.statusMessageQueue_.push([message, delayMs]);
+      // Start the periodic flusher if not started.
+      if (this.statusMessageQueueFlushStarted_ == false) {
+        this.flushStatusMessageQueuePeriodically_();
+      }
+    },
+
+    /**
+     * Flushes the status message queue periodically using a timer.
+     * @private
+     */
+    flushStatusMessageQueuePeriodically_: function() {
+      // Stop the periodic flusher if the queue becomes empty.
+      if (this.statusMessageQueue_.length == 0) {
+        this.statusMessageQueueFlushStarted_ = false;
+        return;
+      }
+      this.statusMessageQueueFlushStarted_ = true;
+
+      // Update the status message.
+      var pair = this.statusMessageQueue_.shift();
+      var message = pair[0];
+      var delayMs = pair[1];
       $('updateStatus').textContent = message;
+
+      // Schedule the next flush with delay as needed.
+      var self = this;
+      window.setTimeout(
+          function() { self.flushStatusMessageQueuePeriodically_() },
+          delayMs);
     },
 
     updateEnable_: function(enable) {
@@ -84,8 +141,8 @@ cr.define('options', function() {
     AboutPage.getInstance().updateOSVersion_(versionString);
   };
 
-  AboutPage.updateStatusCallback = function(message) {
-    AboutPage.getInstance().updateStatus_(message);
+  AboutPage.updateStatusCallback = function(message, insertDelay) {
+    AboutPage.getInstance().updateStatus_(message, insertDelay);
   };
 
   AboutPage.updateEnableCallback = function(enable) {
