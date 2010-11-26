@@ -250,7 +250,8 @@ class GritNode(base.Node):
     elif t == 'js_map_format':
       from grit.format import js_map_format
       return js_map_format.TopLevel()
-    elif t in ('adm', 'plist', 'plist_strings', 'admx', 'adml', 'doc', 'json'):
+    elif t in ('adm', 'plist', 'plist_strings', 'admx', 'adml', 'doc', 'json',
+        'reg'):
       from grit.format.policy_templates import template_formatter
       return template_formatter.TemplateFormatter(t)
     else:

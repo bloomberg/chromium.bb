@@ -10,7 +10,8 @@ templates and will be translated for each locale. -->
     <output filename="app/policy/windows/admx/en-US/chrome.adml" type="adml" lang="en" />
     <output filename="app/policy/common/html/chrome_policy_list.html" type="doc" lang="en" />
     <output filename="app/policy/windows/adm/en-US/chrome.adm" type="adm" lang="en" />
-    <output filename="app/policy/linux/chrome.json" type="json" lang="en" />
+    <output filename="app/policy/linux/examples/chrome.json" type="json" lang="en" />
+    <output filename="app/policy/windows/examples/chrome.reg" type="reg" lang="en" />
 
     <if expr="os == 'darwin'">
       <output filename="app/policy/mac/app-Manifest.plist" type="plist" lang="en" />

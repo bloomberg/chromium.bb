@@ -3,7 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-'''Unit tests for grit.format.policy_templates.writers.json_writer'''
+
+'''Unit tests for grit.format.policy_templates.writers.reg_writer'''
 
 
 import os
@@ -16,14 +17,16 @@ import unittest
 from grit.format.policy_templates.writers import writer_unittest_common
 
 
-class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
-  '''Unit tests for JsonWriter.'''
+class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
+  '''Unit tests for RegWriter.'''
+
+  NEWLINE='\r\n'
 
   def CompareOutputs(self, output, expected_output):
-    '''Compares the output of the json_writer with its expected output.
+    '''Compares the output of the reg_writer with its expected output.
 
     Args:
-      output: The output of the json writer as returned by grit.
+      output: The output of the reg writer as returned by grit.
       expected_output: The expected output.
 
     Raises:
@@ -40,8 +43,8 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  "policy_definitions": [],'
         '  "placeholders": [],'
         '}', '<messages></messages>')
-    output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'json', 'en')
-    expected_output = '{\n}'
+    output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'reg', 'en')
+    expected_output = 'Windows Registry Editor Version 5.00'
     self.CompareOutputs(output, expected_output)
 
   def testMainPolicy(self):
@@ -52,7 +55,7 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "MainPolicy",'
         '      "type": "main",'
-        '      "supported_on": ["chrome.linux:8-"],'
+        '      "supported_on": ["chrome.win:8-"],'
         '      "annotations": {'
         '        "example_value": True'
         '      }'
@@ -64,11 +67,12 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  <message name="IDS_POLICY_MAINPOLICY_CAPTION"></message>'
         '  <message name="IDS_POLICY_MAINPOLICY_DESC"></message>'
         '</messages>')
-    output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'json', 'en')
-    expected_output = (
-        '{\n'
-        '  "MainPolicy": true\n'
-        '}')
+    output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'reg', 'en')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Google\\Chrome]',
+        '"MainPolicy"=dword:1'])
     self.CompareOutputs(output, expected_output)
 
   def testStringPolicy(self):
@@ -79,9 +83,9 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '    {'
         '      "name": "StringPolicy",'
         '      "type": "string",'
-        '      "supported_on": ["chrome.linux:8-"],'
+        '      "supported_on": ["chrome.win:8-"],'
         '      "annotations": {'
-        '        "example_value": "hello, world!"'
+        '        "example_value": "hello, world! \\\" \\\\"'
         '      }'
         '    },'
         '  ],'
@@ -91,11 +95,12 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  <message name="IDS_POLICY_STRINGPOLICY_CAPTION"></message>'
         '  <message name="IDS_POLICY_STRINGPOLICY_DESC"></message>'
         '</messages>')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
-    expected_output = (
-        '{\n'
-        '  "StringPolicy": "hello, world!"\n'
-        '}')
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'reg', 'en')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
+        '"StringPolicy"="hello, world! \\\" \\\\"'])
     self.CompareOutputs(output, expected_output)
 
   def testEnumPolicy(self):
@@ -110,7 +115,7 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '        {"name": "ProxyServerDisabled", "value": 0},'
         '        {"name": "ProxyServerAutoDetect", "value": 1},'
         '      ],'
-        '      "supported_on": ["chrome.linux:8-"],'
+        '      "supported_on": ["chrome.win:8-"],'
         '      "annotations": {'
         '        "example_value": 1'
         '      }'
@@ -126,11 +131,12 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">'
         '  </message>'
         '</messages>')
-    output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'json', 'en')
-    expected_output = (
-        '{\n'
-        '  "EnumPolicy": 1\n'
-        '}')
+    output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'reg', 'en')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Google\\Chrome]',
+        '"EnumPolicy"=dword:1'])
     self.CompareOutputs(output, expected_output)
 
   def testListPolicy(self):
@@ -154,21 +160,22 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  <message name="IDS_POLICY_LISTPOLICY_CAPTION"></message>'
         '  <message name="IDS_POLICY_LISTPOLICY_LABEL"></message>'
         '</messages>')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
-    expected_output = (
-        '{\n'
-        '  "ListPolicy": ["foo", "bar"]\n'
-        '}')
-    self.CompareOutputs(output, expected_output)
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'reg', 'en')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium\\ListPolicy]',
+        '"1"="foo"',
+        '"2"="bar"'])
 
   def testNonSupportedPolicy(self):
-    # Tests a policy that is not supported on Linux, so it shouldn't
-    # be included in the JSON file.
+    # Tests a policy that is not supported on Windows, so it shouldn't
+    # be included in the .REG file.
     grd = self.PrepareTest(
         '{'
         '  "policy_definitions": ['
         '    {'
-        '      "name": "NonLinuxPolicy",'
+        '      "name": "NonWindowsPolicy",'
         '      "type": "list",'
         '      "supported_on": ["chrome.mac:8-"],'
         '      "annotations": {'
@@ -179,11 +186,12 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  "placeholders": [],'
         '}',
         '<messages>'
-        '  <message name="IDS_POLICY_NONLINUXPOLICY_CAPTION"></message>'
-        '  <message name="IDS_POLICY_NONLINUXPOLICY_DESC"></message>'
+        '  <message name="IDS_POLICY_NONWINDOWSPOLICY_CAPTION"></message>'
+        '  <message name="IDS_POLICY_NONWINDOWSPOLICY_DESC"></message>'
         '</messages>')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
-    expected_output = '{\n}'
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'reg', 'en')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00'])
     self.CompareOutputs(output, expected_output)
 
   def testPolicyGroup(self):
@@ -197,14 +205,14 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '      "policies": [{'
         '        "name": "Policy1",'
         '        "type": "list",'
-        '        "supported_on": ["chrome.linux:8-"],'
+        '        "supported_on": ["chrome.win:8-"],'
         '        "annotations": {'
         '          "example_value": ["a", "b"]'
         '        }'
         '      },{'
         '        "name": "Policy2",'
         '        "type": "string",'
-        '        "supported_on": ["chrome.linux:8-"],'
+        '        "supported_on": ["chrome.win:8-"],'
         '        "annotations": {'
         '          "example_value": "c"'
         '        }'
@@ -221,12 +229,16 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  <message name="IDS_POLICY_POLICY1_CAPTION"></message>'
         '  <message name="IDS_POLICY_POLICY2_CAPTION"></message>'
         '</messages>')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
-    expected_output = (
-        '{\n'
-        '  "Policy1": ["a", "b"],\n'
-        '  "Policy2": "c"\n'
-        '}')
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'reg', 'en')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium\\Policy1]',
+        '"1"="a"',
+        '"2"="b"',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
+        '"Policy2"="c"'])
     self.CompareOutputs(output, expected_output)
 
 

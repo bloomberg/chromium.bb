@@ -12,7 +12,6 @@ import sys
 import unittest
 
 
-from grit.format.policy_templates.writers import admx_writer
 from xml.dom import minidom
 
 
