@@ -57,8 +57,7 @@ const SkColor kManualRebootLabelColor = 0xFFAA0000;
 namespace chromeos {
 
 UpdateView::UpdateView(chromeos::ScreenObserver* observer)
-    : escape_accelerator_(app::VKEY_ESCAPE, false, false, false),
-      installing_updates_label_(NULL),
+    : installing_updates_label_(NULL),
       reboot_label_(NULL),
       manual_reboot_label_(NULL),
       progress_bar_(NULL),
@@ -103,10 +102,6 @@ void UpdateView::Init() {
 
 void UpdateView::Reset() {
   progress_bar_->SetProgress(0);
-#if !defined(OFFICIAL_BUILD)
-  ResetAccelerators();
-  AddAccelerator(escape_accelerator_);
-#endif
 }
 
 void UpdateView::UpdateLocalizedStrings() {
@@ -195,19 +190,6 @@ void UpdateView::Layout() {
   escape_to_skip_label_->SetY(kEscapeToSkipLabelY);
 #endif
   SchedulePaint();
-}
-
-bool UpdateView::AcceleratorPressed(const views::Accelerator& a) {
-#if !defined(OFFICIAL_BUILD)
-  RemoveAccelerator(escape_accelerator_);
-  if (a.GetKeyCode() == app::VKEY_ESCAPE) {
-    if (controller_ != NULL) {
-      controller_->CancelUpdate();
-    }
-    return true;
-  }
-#endif
-  return false;
 }
 
 void UpdateView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {

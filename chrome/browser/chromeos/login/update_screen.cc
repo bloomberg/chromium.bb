@@ -159,9 +159,10 @@ void UpdateScreen::StartUpdate() {
 }
 
 void UpdateScreen::CancelUpdate() {
-#if !defined(OFFICIAL_BUILD)
-  ExitUpdate();
-#endif
+  // Screen has longer lifetime than it's view.
+  // View is deleted after wizard proceeds to the next screen.
+  if (view())
+    ExitUpdate();
 }
 
 void UpdateScreen::ExitUpdate() {

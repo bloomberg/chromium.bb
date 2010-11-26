@@ -50,7 +50,6 @@ class UpdateView : public views::View {
 
   // views::View implementation:
   virtual void Layout();
-  virtual bool AcceleratorPressed(const views::Accelerator& a);
 
  protected:
   // views::View implementation:

@@ -98,6 +98,9 @@ class WizardController : public chromeos::ScreenObserver,
   void OwnBackground(views::Widget* background_widget,
                      chromeos::BackgroundView* background_view);
 
+  // Skips OOBE update screen if it's currently shown.
+  void CancelOOBEUpdate();
+
   // Lazy initializers and getters for screens.
   chromeos::NetworkScreen* GetNetworkScreen();
   chromeos::LoginScreen* GetLoginScreen();

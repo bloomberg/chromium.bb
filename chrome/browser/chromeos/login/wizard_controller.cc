@@ -84,8 +84,12 @@ class ContentView : public views::View {
   ContentView()
       : accel_enable_accessibility_(
             chromeos::WizardAccessibilityHelper::GetAccelerator()) {
-    AddAccelerator(accel_enable_accessibility_);
-#if !defined(OFFICIAL_BUILD)
+#if defined(OFFICIAL_BUILD)
+    accel_cancel_update_ =  views::Accelerator(app::VKEY_ESCAPE,
+                                               true, true, true);
+#else
+    accel_cancel_update_ =  views::Accelerator(app::VKEY_ESCAPE,
+                                               false, false, false);
     accel_account_screen_ = views::Accelerator(app::VKEY_A,
                                                false, true, true);
     accel_login_screen_ = views::Accelerator(app::VKEY_L,
@@ -108,6 +112,8 @@ class ContentView : public views::View {
     AddAccelerator(accel_eula_screen_);
     AddAccelerator(accel_register_screen_);
 #endif
+    AddAccelerator(accel_enable_accessibility_);
+    AddAccelerator(accel_cancel_update_);
   }
 
   ~ContentView() {
@@ -124,7 +130,9 @@ class ContentView : public views::View {
 
     if (accel == accel_enable_accessibility_) {
       chromeos::WizardAccessibilityHelper::GetInstance()->EnableAccessibility(
-          controller->contents());
+          controller->contents()); }
+    else if (accel == accel_cancel_update_) {
+      controller->CancelOOBEUpdate();
 #if !defined(OFFICIAL_BUILD)
     } else if (accel == accel_account_screen_) {
       controller->ShowAccountScreen();
@@ -169,6 +177,7 @@ class ContentView : public views::View {
   views::Accelerator accel_register_screen_;
 #endif
   views::Accelerator accel_enable_accessibility_;
+  views::Accelerator accel_cancel_update_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
@@ -320,6 +329,13 @@ void WizardController::OwnBackground(
   DCHECK(!background_widget_);
   background_widget_ = background_widget;
   background_view_ = background_view;
+}
+
+void WizardController::CancelOOBEUpdate() {
+  if (update_screen_.get() &&
+      update_screen_.get() == current_screen_) {
+    GetUpdateScreen()->CancelUpdate();
+  }
 }
 
 chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
