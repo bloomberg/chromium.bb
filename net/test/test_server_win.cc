@@ -75,15 +75,18 @@ bool LaunchTestServerAsJob(const CommandLine& cmdline,
   return true;
 }
 
-void UnblockPipe(HANDLE handle, bool* unblocked) {
-  static const char kUnblock[] = "UNBLOCK";
+// Writes |size| bytes to |handle| and sets |*unblocked| to true.
+// Used as a crude timeout mechanism by ReadData().
+void UnblockPipe(HANDLE handle, DWORD size, bool* unblocked) {
+  std::string unblock_data(size, '\0');
   // Unblock the ReadFile in TestServer::WaitToStart by writing to the pipe.
   // Make sure the call succeeded, otherwise we are very likely to hang.
   DWORD bytes_written = 0;
-  LOG(WARNING) << "Timeout reached; unblocking pipe";
-  CHECK(WriteFile(handle, kUnblock, arraysize(kUnblock), &bytes_written,
+  LOG(WARNING) << "Timeout reached; unblocking pipe by writing "
+               << size << " bytes";
+  CHECK(WriteFile(handle, unblock_data.data(), size, &bytes_written,
                   NULL));
-  CHECK_EQ(arraysize(kUnblock), bytes_written);
+  CHECK_EQ(size, bytes_written);
   *unblocked = true;
 }
 
@@ -98,8 +101,9 @@ bool ReadData(HANDLE read_fd, HANDLE write_fd,
 
   // Prepare a timeout in case the server fails to start.
   bool unblocked = false;
-  thread.message_loop()->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(UnblockPipe, write_fd, &unblocked),
+  thread.message_loop()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableFunction(UnblockPipe, write_fd, bytes_max, &unblocked),
       TestTimeouts::action_max_timeout_ms());
 
   DWORD bytes_read = 0;
