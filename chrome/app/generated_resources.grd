@@ -6544,7 +6544,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       	The development channel is where ideas get tested, but can be very unstable at times. Please proceed with caution.
       </message>
       <message name="IDS_ABOUT_PAGE_CHECK_NOW" desc="Button title for checking for updates now.">
-      	Check For Update
+      	Check for update
       </message>
 
 
