@@ -83,6 +83,16 @@ bool GpuChannel::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+#if defined(OS_MACOSX)
+void GpuChannel::AcceleratedSurfaceBuffersSwapped(
+    int32 route_id, uint64 swap_buffers_count) {
+  GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
+  if (stub == NULL)
+    return;
+  stub->AcceleratedSurfaceBuffersSwapped(swap_buffers_count);
+}
+#endif
+
 void GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateViewCommandBuffer,

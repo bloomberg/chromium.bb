@@ -172,7 +172,11 @@ void TestRenderWidgetHostView::AcceleratedSurfaceSetTransportDIB(
 }
 
 void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window, uint64 surface_id) {
+    gfx::PluginWindowHandle window,
+    uint64 surface_id,
+    int renderer_id,
+    int32 route_id,
+    uint64 swap_buffers_count) {
 }
 
 void TestRenderWidgetHostView::GpuRenderingStateDidChange() {

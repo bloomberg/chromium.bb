@@ -308,11 +308,15 @@ class BuffersSwappedDispatcher : public Task {
       int32 renderer_id,
       int32 render_view_id,
       gfx::PluginWindowHandle window,
-      uint64 surface_id)
+      uint64 surface_id,
+      int32 route_id,
+      uint64 swap_buffers_count)
       : renderer_id_(renderer_id),
         render_view_id_(render_view_id),
         window_(window),
-        surface_id_(surface_id) {
+        surface_id_(surface_id),
+        route_id_(route_id),
+        swap_buffers_count_(swap_buffers_count) {
   }
 
   void Run() {
@@ -323,7 +327,14 @@ class BuffersSwappedDispatcher : public Task {
     RenderWidgetHostView* view = host->view();
     if (!view)
       return;
-    view->AcceleratedSurfaceBuffersSwapped(window_, surface_id_);
+    view->AcceleratedSurfaceBuffersSwapped(
+        // Parameters needed to swap the IOSurface.
+        window_,
+        surface_id_,
+        // Parameters needed to formulate an acknowledgment.
+        renderer_id_,
+        route_id_,
+        swap_buffers_count_);
   }
 
  private:
@@ -331,6 +342,8 @@ class BuffersSwappedDispatcher : public Task {
   int32 render_view_id_;
   gfx::PluginWindowHandle window_;
   uint64 surface_id_;
+  int32 route_id_;
+  uint64 swap_buffers_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BuffersSwappedDispatcher);
 };
@@ -338,14 +351,20 @@ class BuffersSwappedDispatcher : public Task {
 }  // namespace
 
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
-    int32 renderer_id,
-    int32 render_view_id,
-    gfx::PluginWindowHandle window,
-    uint64 surface_id) {
+    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       new BuffersSwappedDispatcher(
-          renderer_id, render_view_id, window, surface_id));
+          // These are the parameters needed to look up the IOSurface
+          // on this side.
+          params.renderer_id,
+          params.render_view_id,
+          params.window,
+          params.surface_id,
+          // These are additional parameters needed to formulate an
+          // acknowledgment.
+          params.route_id,
+          params.swap_buffers_count));
 }
 #endif
 

@@ -124,6 +124,8 @@ void AcceleratedSurface::AllocateRenderBuffers(GLenum target,
     glBindTexture(target, texture_);
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // Generate and bind the framebuffer object.
     glGenFramebuffersEXT(1, &fbo_);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
@@ -220,6 +222,8 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
     glBindTexture(target, texture_);
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   }
 
   // Allocate a new IOSurface, which is the GPU resource that can be

@@ -117,8 +117,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       int32 width,
       int32 height,
       TransportDIB::Handle transport_dib);
-  virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
-                                                uint64 surface_id);
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      gfx::PluginWindowHandle window,
+      uint64 surface_id,
+      int renderer_id,
+      int32 route_id,
+      uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange();
 #endif
   virtual void SetVisuallyDeemphasized(bool deemphasized) { }

@@ -60,6 +60,11 @@ class GpuChannel : public IPC::Channel::Listener,
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
 
+#if defined(OS_MACOSX)
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      int32 route_id, uint64 swap_buffers_count);
+#endif
+
  private:
   void OnControlMessageReceived(const IPC::Message& msg);
 

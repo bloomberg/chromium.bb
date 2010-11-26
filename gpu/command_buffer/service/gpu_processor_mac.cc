@@ -99,10 +99,21 @@ uint64 GPUProcessor::GetSurfaceId() {
   return surface_->GetSurfaceId();
 }
 
+uint64 GPUProcessor::swap_buffers_count() const {
+  return swap_buffers_count_;
+}
+
+void GPUProcessor::set_acknowledged_swap_buffers_count(
+    uint64 acknowledged_swap_buffers_count) {
+  acknowledged_swap_buffers_count_ = acknowledged_swap_buffers_count;
+}
+
 void GPUProcessor::WillSwapBuffers() {
   DCHECK(decoder_.get());
   DCHECK(decoder_->GetGLContext());
   DCHECK(decoder_->GetGLContext()->IsCurrent());
+
+  ++swap_buffers_count_;
 
   if (surface_.get()) {
     surface_->SwapBuffers();

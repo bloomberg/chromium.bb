@@ -61,6 +61,10 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnSynchronize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo,
                         OnCollectGraphicsInfo)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
+                        OnAcceleratedSurfaceBuffersSwappedACK)
+#endif
     IPC_MESSAGE_HANDLER(GpuMsg_Crash,
                         OnCrash)
     IPC_MESSAGE_HANDLER(GpuMsg_Hang,
@@ -106,6 +110,17 @@ void GpuThread::OnSynchronize() {
 void GpuThread::OnCollectGraphicsInfo() {
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
+
+#if defined(OS_MACOSX)
+void GpuThread::OnAcceleratedSurfaceBuffersSwappedACK(
+    int renderer_id, int32 route_id, uint64 swap_buffers_count) {
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+  if (iter == gpu_channels_.end())
+    return;
+  scoped_refptr<GpuChannel> channel = iter->second;
+  channel->AcceleratedSurfaceBuffersSwapped(route_id, swap_buffers_count);
+}
+#endif
 
 void GpuThread::OnCrash() {
   // Good bye, cruel world.

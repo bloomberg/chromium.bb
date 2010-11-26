@@ -35,6 +35,10 @@ class GpuThread : public ChildThread {
   void OnEstablishChannel(int renderer_id);
   void OnSynchronize();
   void OnCollectGraphicsInfo();
+#if defined(OS_MACOSX)
+  void OnAcceleratedSurfaceBuffersSwappedACK(
+      int renderer_id, int32 route_id, uint64 swap_buffers_count);
+#endif
   void OnCrash();
   void OnHang();
 

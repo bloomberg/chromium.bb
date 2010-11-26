@@ -34,6 +34,12 @@ const int32 kCommandBufferSize = 1024 * 1024;
 // creation attributes.
 const int32 kTransferBufferSize = 1024 * 1024;
 
+// TODO(kbr) / TODO(apatrick): determine the best number of pending frames
+// in the general case. On Mac OS X it seems we really want this to be 1,
+// because otherwise the renderer process produces frames that do not
+// actually reach the screen.
+const int kMaxFramesPending = 1;
+
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
  public:
@@ -132,6 +138,8 @@ class Context : public base::SupportsWeakPtr<Context> {
   gpu::gles2::GLES2Implementation* gles2_implementation_;
   gfx::Size size_;
 
+  int32 swap_buffer_tokens_[kMaxFramesPending];
+
   Error last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
@@ -147,6 +155,8 @@ Context::Context(GpuChannelHost* channel, Context* parent)
       gles2_implementation_(NULL),
       last_error_(SUCCESS) {
   DCHECK(channel);
+  for (int i = 0; i < kMaxFramesPending; ++i)
+    swap_buffer_tokens_[i] = -1;
 }
 
 Context::~Context() {
@@ -376,7 +386,18 @@ bool Context::SwapBuffers() {
   if (command_buffer_->GetLastState().error != gpu::error::kNoError)
     return false;
 
+  // Throttle until there are not too many frames pending.
+  if (swap_buffer_tokens_[0] != -1) {
+    gles2_helper_->WaitForToken(swap_buffer_tokens_[0]);
+  }
+
   gles2_implementation_->SwapBuffers();
+
+  // Insert a new token to throttle against for this frame.
+  for (int i = 0; i < kMaxFramesPending - 1; ++i)
+    swap_buffer_tokens_[i] = swap_buffer_tokens_[i + 1];
+  swap_buffer_tokens_[kMaxFramesPending - 1] = gles2_helper_->InsertToken();
+
   return true;
 }
 

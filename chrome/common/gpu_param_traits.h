@@ -31,6 +31,17 @@ struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params {
 
   GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params();
 };
+
+struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params {
+  int32 renderer_id;
+  int32 render_view_id;
+  gfx::PluginWindowHandle window;
+  uint64 surface_id;
+  int32 route_id;
+  uint64 swap_buffers_count;
+
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params();
+};
 #endif
 
 namespace IPC {
@@ -38,6 +49,14 @@ namespace IPC {
 template <>
 struct ParamTraits<GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params> {
   typedef GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params> {
+  typedef GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

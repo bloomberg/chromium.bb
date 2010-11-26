@@ -205,9 +205,25 @@ void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
 }
 
 void GpuCommandBufferStub::SwapBuffersCallback() {
+  OnSwapBuffers();
   ChildThread* gpu_thread = ChildThread::current();
-  gpu_thread->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(
-      renderer_id_, render_view_id_, handle_, processor_->GetSurfaceId()));
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+  params.renderer_id = renderer_id_;
+  params.render_view_id = render_view_id_;
+  params.window = handle_;
+  params.surface_id = processor_->GetSurfaceId();
+  params.route_id = route_id();
+#if defined(OS_MACOSX)
+  params.swap_buffers_count = processor_->swap_buffers_count();
+#endif
+  gpu_thread->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+}
+
+void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
+    uint64 swap_buffers_count) {
+  processor_->set_acknowledged_swap_buffers_count(swap_buffers_count);
+  // Wake up the GpuProcessor to start doing work again.
+  processor_->ScheduleProcessCommands();
 }
 #endif  // defined(OS_MACOSX)
 

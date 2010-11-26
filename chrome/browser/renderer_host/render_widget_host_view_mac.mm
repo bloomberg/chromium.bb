@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/cocoa/rwhvm_editcommand_helper.h"
 #import "chrome/browser/cocoa/view_id_util.h"
+#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/backing_store_mac.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -33,6 +34,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/edit_command.h"
+#include "chrome/common/gpu_messages.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "skia/ext/platform_canvas.h"
@@ -170,8 +172,21 @@ void DisablePasswordInput() {
   RenderWidgetHostViewMac* renderWidgetHostView_;  // weak
   gfx::PluginWindowHandle pluginHandle_;  // weak
 
-  // True if the backing IO surface was updated since we last painted.
-  BOOL surfaceWasSwapped_;
+  // The number of swap buffers calls that have been requested by the
+  // GPU process, or a monotonically increasing number of calls to
+  // updateSwapBuffersCount:fromRenderer:routeId: if the update came
+  // from an accelerated plugin.
+  uint64 swapBuffersCount_;
+  // The number of swap buffers calls that have been processed by the
+  // display link thread. This is only used with the GPU process
+  // update path.
+  volatile uint64 acknowledgedSwapBuffersCount_;
+
+  // Auxiliary information needed to formulate an acknowledgment to
+  // the GPU process. These are constant after the first message.
+  // These are both zero for updates coming from a plugin process.
+  volatile int rendererId_;
+  volatile int32 routeId_;
 
   // Cocoa methods can only be called on the main thread, so have a copy of the
   // view's size, since it's required on the displaylink thread.
@@ -186,6 +201,15 @@ void DisablePasswordInput() {
                          pluginHandle:(gfx::PluginWindowHandle)pluginHandle;
 - (void)drawView;
 
+// Updates the number of swap buffers calls that have been requested.
+// This is currently called with non-zero values only in response to
+// updates from the GPU process. For accelerated plugins, all zeros
+// are passed, and the view takes this as a hint that no flow control
+// or acknowledgment of the swap buffers are desired.
+- (void)updateSwapBuffersCount:(uint64)count
+                  fromRenderer:(int)rendererId
+                       routeId:(int32)routeId;
+
 // NSViews autorelease subviews when they die. The RWHVMac gets destroyed when
 // RHWVCocoa gets dealloc'd, which means the AcceleratedPluginView child views
 // can be around a little longer than the RWHVMac. This is called when the
@@ -193,14 +217,10 @@ void DisablePasswordInput() {
 - (void)onRenderWidgetHostViewGone;
 
 // This _must_ be atomic, since it's accessed from several threads.
-@property BOOL surfaceWasSwapped;
-
-// This _must_ be atomic, since it's accessed from several threads.
 @property NSSize cachedSize;
 @end
 
 @implementation AcceleratedPluginView
-@synthesize surfaceWasSwapped = surfaceWasSwapped_;
 @synthesize cachedSize = cachedSize_;
 
 - (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime {
@@ -208,11 +228,22 @@ void DisablePasswordInput() {
   // called from a background thread.
   base::mac::ScopedNSAutoreleasePool pool;
 
-  if (![self surfaceWasSwapped])
+  bool sendAck = (rendererId_ != 0 || routeId_ != 0);
+  uint64 currentSwapBuffersCount = swapBuffersCount_;
+  if (currentSwapBuffersCount == acknowledgedSwapBuffersCount_) {
     return kCVReturnSuccess;
+  }
 
   [self drawView];
-  [self setSurfaceWasSwapped:NO];
+
+  acknowledgedSwapBuffersCount_ = currentSwapBuffersCount;
+  if (sendAck && renderWidgetHostView_) {
+    renderWidgetHostView_->AcknowledgeSwapBuffers(
+        rendererId_,
+        routeId_,
+        acknowledgedSwapBuffersCount_);
+  }
+
   return kCVReturnSuccess;
 }
 
@@ -235,6 +266,10 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     renderWidgetHostView_ = r;
     pluginHandle_ = pluginHandle;
     cachedSize_ = NSZeroSize;
+    swapBuffersCount_ = 0;
+    acknowledgedSwapBuffersCount_ = 0;
+    rendererId_ = 0;
+    routeId_ = 0;
 
     [self setAutoresizingMask:NSViewMaxXMargin|NSViewMinYMargin];
 
@@ -290,7 +325,23 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   }
 
   CGLFlushDrawable(cglContext_);
+  CGLSetCurrentContext(0);
   CGLUnlockContext(cglContext_);
+}
+
+- (void)updateSwapBuffersCount:(uint64)count
+                  fromRenderer:(int)rendererId
+                       routeId:(int32)routeId {
+  if (rendererId == 0 && routeId == 0) {
+    // This notification is coming from a plugin process, for which we
+    // don't have flow control implemented right now. Fake up a swap
+    // buffers count so that we can at least skip useless renders.
+    ++swapBuffersCount_;
+  } else {
+    rendererId_ = rendererId;
+    routeId_ = routeId;
+    swapBuffersCount_ = count;
+  }
 }
 
 - (void)onRenderWidgetHostViewGone {
@@ -340,6 +391,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   NSSize size = [self frame].size;
   glViewport(0, 0, size.width, size.height);
 
+  CGLSetCurrentContext(0);
   CGLUnlockContext(cglContext_);
   globalFrameDidChangeCGLLockCount_--;
 
@@ -938,7 +990,11 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window, uint64 surface_id) {
+    gfx::PluginWindowHandle window,
+    uint64 surface_id,
+    int renderer_id,
+    int32 route_id,
+    uint64 swap_buffers_count) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PluginViewMap::iterator it = plugin_views_.find(window);
   DCHECK(plugin_views_.end() != it);
@@ -953,7 +1009,9 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   // The surface is hidden until its first paint, to not show gargabe.
   if (plugin_container_manager_.SurfaceShouldBeVisible(window))
     [view setHidden:NO];
-  [view setSurfaceWasSwapped:YES];
+  [view updateSwapBuffersCount:swap_buffers_count
+                  fromRenderer:renderer_id
+                       routeId:route_id];
 }
 
 void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
@@ -986,6 +1044,43 @@ void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
     UpdateRootGpuViewVisibility(false);
     needs_gpu_visibility_update_after_repaint_ = false;
   }
+}
+
+namespace {
+class BuffersSwappedAcknowledger : public Task {
+ public:
+  BuffersSwappedAcknowledger(
+      int renderer_id,
+      int32 route_id,
+      uint64 swap_buffers_count)
+      : renderer_id_(renderer_id),
+        route_id_(route_id),
+        swap_buffers_count_(swap_buffers_count) {
+  }
+
+  void Run() {
+    GpuProcessHost::Get()->Send(
+        new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
+            renderer_id_, route_id_, swap_buffers_count_));
+  }
+
+ private:
+  int renderer_id_;
+  int32 route_id_;
+  uint64 swap_buffers_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(BuffersSwappedAcknowledger);
+};
+}  // anonymous namespace
+
+void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
+    int renderer_id,
+    int32 route_id,
+    uint64 swap_buffers_count) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      new BuffersSwappedAcknowledger(
+          renderer_id, route_id, swap_buffers_count));
 }
 
 void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {

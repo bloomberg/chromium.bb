@@ -31,6 +31,15 @@ GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params::
           identifier(0) {
 }
 
+GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params::
+    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params()
+        : renderer_id(0),
+          render_view_id(0),
+          window(NULL),
+          surface_id(0),
+          route_id(0),
+          swap_buffers_count(0) {
+}
 #endif
 
 namespace IPC {
@@ -78,6 +87,46 @@ void ParamTraits<GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params> ::Log(
   l->append(")");
 }
 
+void ParamTraits<GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params> ::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, p.renderer_id);
+  WriteParam(m, p.render_view_id);
+  WriteParam(m, p.window);
+  WriteParam(m, p.surface_id);
+  WriteParam(m, p.route_id);
+  WriteParam(m, p.swap_buffers_count);
+}
+
+bool ParamTraits<GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params> ::Read(
+    const Message* m,
+    void** iter,
+    param_type* p) {
+  return ReadParam(m, iter, &p->renderer_id) &&
+      ReadParam(m, iter, &p->render_view_id) &&
+      ReadParam(m, iter, &p->window) &&
+      ReadParam(m, iter, &p->surface_id) &&
+      ReadParam(m, iter, &p->route_id) &&
+      ReadParam(m, iter, &p->swap_buffers_count);
+}
+
+void ParamTraits<GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params> ::Log(
+     const param_type& p,
+     std::string* l) {
+  l->append("(");
+  LogParam(p.renderer_id, l);
+  l->append(", ");
+  LogParam(p.render_view_id, l);
+  l->append(", ");
+  LogParam(p.window, l);
+  l->append(", ");
+  LogParam(p.surface_id, l);
+  l->append(", ");
+  LogParam(p.route_id, l);
+  l->append(", ");
+  LogParam(p.swap_buffers_count, l);
+  l->append(")");
+}
 #endif  // if defined(OS_MACOSX)
 
 void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {

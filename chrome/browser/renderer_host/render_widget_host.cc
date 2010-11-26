@@ -1062,7 +1062,11 @@ void RenderWidgetHost::OnAcceleratedSurfaceSetTransportDIB(
 void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window, uint64 surface_id) {
   if (view_) {
-    view_->AcceleratedSurfaceBuffersSwapped(window, surface_id);
+    // This code path could be updated to implement flow control for
+    // updating of accelerated plugins as well. However, if we add support
+    // for composited plugins then this is not necessary.
+    view_->AcceleratedSurfaceBuffersSwapped(window, surface_id,
+                                            0, 0, 0);
   }
 }
 #elif defined(OS_POSIX)

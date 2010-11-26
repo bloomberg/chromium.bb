@@ -61,6 +61,9 @@ class GPUProcessor : public CommandBufferEngine {
 
   virtual void ProcessCommands();
 
+  // Helper which causes a call to ProcessCommands to be scheduled later.
+  void ScheduleProcessCommands();
+
   // Implementation of CommandBufferEngine.
   virtual Buffer GetSharedMemoryBuffer(int32 shm_id);
   virtual void set_token(int32 token);
@@ -85,6 +88,15 @@ class GPUProcessor : public CommandBufferEngine {
       Callback1<TransportDIB::Id>::Type* deallocator);
   // Returns the id of the current IOSurface, or 0.
   virtual uint64 GetSurfaceId();
+  // To prevent the GPU process from overloading the browser process,
+  // we need to track the number of swap buffers calls issued and
+  // acknowledged per on-screen (IOSurface-backed) context, and keep
+  // the GPU from getting too far ahead of the browser. Note that this
+  // is also predicated on a flow control mechanism between the
+  // renderer and GPU processes.
+  uint64 swap_buffers_count() const;
+  void set_acknowledged_swap_buffers_count(
+      uint64 acknowledged_swap_buffers_count);
 #endif
 
   // Sets a callback that is called when a glResizeCHROMIUM command
@@ -126,6 +138,8 @@ class GPUProcessor : public CommandBufferEngine {
 
 #if defined(OS_MACOSX)
   scoped_ptr<AcceleratedSurface> surface_;
+  uint64 swap_buffers_count_;
+  uint64 acknowledged_swap_buffers_count_;
 #endif
 
   ScopedRunnableMethodFactory<GPUProcessor> method_factory_;

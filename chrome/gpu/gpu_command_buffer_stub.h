@@ -51,6 +51,11 @@ class GpuCommandBufferStub
 
   int32 route_id() const { return route_id_; }
 
+#if defined(OS_MACOSX)
+  // Called only by the GpuChannel.
+  void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
+#endif
+
  private:
   // Message handlers:
   void OnInitialize(int32 size, base::SharedMemoryHandle* ring_buffer);

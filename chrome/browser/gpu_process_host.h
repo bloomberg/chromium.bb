@@ -15,6 +15,7 @@
 #include "gfx/native_widget_types.h"
 
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
+struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 class GPUInfo;
 class ResourceMessageFilter;
 
@@ -90,10 +91,8 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
 #elif defined(OS_MACOSX)
   void OnAcceleratedSurfaceSetIOSurface(
       const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
-  void OnAcceleratedSurfaceBuffersSwapped(int32 renderer_id,
-                                          int32 render_view_id,
-                                          gfx::PluginWindowHandle window,
-                                          uint64 surface_id);
+  void OnAcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
 
   // Sends the response for establish channel request to the renderer.
