@@ -53,6 +53,42 @@ class OrphanedTestServerFilter : public base::ProcessFilter {
   DISALLOW_COPY_AND_ASSIGN(OrphanedTestServerFilter);
 };
 
+// Given a file descriptor, reads into |buffer| until |bytes_max|
+// bytes has been read or an error has been encountered.  Returns true
+// if the read was successful.  |remaining_time| is used as a timeout.
+bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
+              base::TimeDelta* remaining_time) {
+  ssize_t bytes_read = 0;
+  base::Time previous_time = base::Time::Now();
+  while (bytes_read < bytes_max) {
+    struct pollfd poll_fds[1];
+
+    poll_fds[0].fd = fd;
+    poll_fds[0].events = POLLIN | POLLPRI;
+    poll_fds[0].revents = 0;
+
+    int rv = HANDLE_EINTR(poll(poll_fds, 1,
+                               remaining_time->InMilliseconds()));
+    if (rv != 1) {
+      LOG(ERROR) << "Failed to poll for the child file descriptor.";
+      return false;
+    }
+
+    base::Time current_time = base::Time::Now();
+    base::TimeDelta elapsed_time_cycle = current_time - previous_time;
+    DCHECK(elapsed_time_cycle.InMilliseconds() >= 0);
+    *remaining_time -= elapsed_time_cycle;
+    previous_time = current_time;
+
+    ssize_t num_bytes = HANDLE_EINTR(read(fd, buffer + bytes_read,
+                                          bytes_max - bytes_read));
+    if (num_bytes <= 0)
+      return false;
+    bytes_read += num_bytes;
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace net {
@@ -98,43 +134,19 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
 }
 
 bool TestServer::WaitToStart() {
-  uint16 port;
-  uint8* buffer = reinterpret_cast<uint8*>(&port);
-  ssize_t bytes_read = 0;
-  ssize_t bytes_max = sizeof(port);
+  file_util::ScopedFD child_fd_closer(child_fd_closer_.release());
+
   base::TimeDelta remaining_time = base::TimeDelta::FromMilliseconds(
       TestTimeouts::action_max_timeout_ms());
-  base::Time previous_time = base::Time::Now();
-  while (bytes_read < bytes_max) {
-    struct pollfd poll_fds[1];
 
-    poll_fds[0].fd = child_fd_;
-    poll_fds[0].events = POLLIN | POLLPRI;
-    poll_fds[0].revents = 0;
-
-    int rv = HANDLE_EINTR(poll(poll_fds, 1, remaining_time.InMilliseconds()));
-    if (rv != 1) {
-      LOG(ERROR) << "Failed to poll for the child file descriptor.";
-      return false;
-    }
-
-    base::Time current_time = base::Time::Now();
-    base::TimeDelta elapsed_time_cycle = current_time - previous_time;
-    DCHECK(elapsed_time_cycle.InMilliseconds() >= 0);
-    remaining_time -= elapsed_time_cycle;
-    previous_time = current_time;
-
-    ssize_t num_bytes = HANDLE_EINTR(read(child_fd_, buffer + bytes_read,
-                                          bytes_max - bytes_read));
-    if (num_bytes <= 0)
-      break;
-    bytes_read += num_bytes;
+  // Try to read two bytes from the pipe indicating the ephemeral port number.
+  uint16 port = 0;
+  if (!ReadData(child_fd_, sizeof(port),
+                reinterpret_cast<uint8*>(&port), &remaining_time)) {
+    LOG(ERROR) << "Could not read port";
+    return false;
   }
 
-  // We don't need the FD anymore.
-  child_fd_closer_.reset(NULL);
-  if (bytes_read < bytes_max)
-    return false;
   host_port_pair_.set_port(port);
   return true;
 }
