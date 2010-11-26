@@ -1294,3 +1294,10 @@
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
    fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
 }
+{
+   bug_64463
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   fun:_ZN3net12CertVerifier7RequestC2EPS0_PNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
+}
