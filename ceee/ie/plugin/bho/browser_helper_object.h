@@ -34,6 +34,7 @@
 #include "ceee/ie/plugin/scripting/userscripts_librarian.h"
 #include "ceee/ie/plugin/scripting/content_script_native_api.h"
 #include "ceee/ie/plugin/toolband/resource.h"
+
 #include "broker_lib.h"  // NOLINT
 #include "toolband.h"  // NOLINT
 
@@ -56,7 +57,7 @@ class ATL_NO_VTABLE BrowserHelperObject
   DECLARE_REGISTRY_RESOURCEID_EX(IDR_BROWSERHELPEROBJECT)
   BEGIN_REGISTRY_MAP(BrowserHelperObject)
     REGMAP_UUID("CLSID", CLSID_BrowserHelperObject)
-    REGMAP_RESOURCE("NAME", IDS_CEEE_NAME)
+    REGMAP_RESOURCE("NAME", IDS_CEEE_BHO_NAME)
   END_REGISTRY_MAP()
 
   DECLARE_NOT_AGGREGATABLE(BrowserHelperObject)

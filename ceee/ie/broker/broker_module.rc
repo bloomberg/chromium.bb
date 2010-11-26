@@ -52,13 +52,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Google Inc."
-            VALUE "FileDescription", "Internet Explorer User Broker for Google CEEE"
+            VALUE "CompanyName", COMPANY_FULLNAME_STRING
+            VALUE "FileDescription", CEEE_PRODUCT_FULLNAME_STRING " Broker"
             VALUE "FileVersion", CHROME_VERSION_STRING
             VALUE "LegalCopyright", COPYRIGHT_STRING
             VALUE "InternalName", "ceee_broker.exe"
             VALUE "OriginalFilename", "ceee_broker.exe"
-            VALUE "ProductName", "Google Chrome Extensions Execution Environment"
+            VALUE "ProductName", CEEE_PRODUCT_FULLNAME_STRING
             VALUE "ProductVersion", CHROME_VERSION_STRING
         END
     END
@@ -86,6 +86,7 @@ IDR_BROKER                REGISTRY                "broker.rgs"
 STRINGTABLE
 BEGIN
     IDS_PROJNAME            "ceee_broker"
+    IDS_CEEE_BROKER_NAME    CEEE_PRODUCT_FULLNAME_STRING " Broker"
 END
 
 #endif    // English (U.S.) resources

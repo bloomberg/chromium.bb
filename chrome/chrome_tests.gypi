@@ -28,8 +28,8 @@
         'renderer',
         'chrome_resources',
         'chrome_strings',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'browser/policy/proto/device_management_proto.gyp:device_management_proto_cpp',
+        'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'theme_resources',
         '../base/base.gyp:test_support_base',
         '../skia/skia.gyp:skia',
@@ -384,7 +384,7 @@
           ],
           'dependencies': [
             '../app/app.gyp:app_resources',
-            'chrome.gyp:chrome_dll_version',
+            'chrome.gyp:chrome_version_header',
             'chrome.gyp:crash_service',  # run time dependency
             'chrome.gyp:installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
@@ -401,6 +401,7 @@
             '../webkit/glue/resources/zoom_out.cur',
 
             'app/chrome_dll.rc',
+            'app/chrome_dll_version.rc',
             'test/data/resource.rc',
 
             # TODO:  It would be nice to have these pulled in
@@ -694,7 +695,7 @@
         'test/webdriver/commands/session_with_id.h',
         'test/webdriver/commands/session_with_id.cc',
         'test/webdriver/commands/source_command.h',
-        'test/webdriver/commands/source_command.cc',        
+        'test/webdriver/commands/source_command.cc',
         'test/webdriver/commands/speed_command.h',
         'test/webdriver/commands/speed_command.cc',
         'test/webdriver/commands/title_command.h',
@@ -997,7 +998,6 @@
       },
       'sources': [
         'app/breakpad_mac_stubs.mm',
-        'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
@@ -1800,7 +1800,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_header',
             'installer_util_strings',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
@@ -1817,6 +1817,9 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'sources': [
+            'app/chrome_dll.rc',
+            'app/chrome_dll_version.rc',
+
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in
             # their various targets (net.gyp:net_resources, etc.),
@@ -1853,7 +1856,6 @@
           },
         }, { # else: OS != "win"
           'sources!': [
-            'app/chrome_dll.rc',
             'browser/accessibility/browser_accessibility_win_unittest.cc',
             'browser/bookmarks/bookmark_codec_unittest.cc',
             'browser/bookmarks/bookmark_drag_data_unittest.cc',
@@ -1918,10 +1920,6 @@
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'app/breakpad_mac_stubs.mm',
-        'app/chrome_command_ids.h',
-        'app/chrome_dll.rc',
-        'app/chrome_dll_resource.h',
-        'app/chrome_dll_version.rc.version',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/browser_browsertest.cc',
         'browser/browsing_data_database_helper_browsertest.cc',
@@ -2134,9 +2132,12 @@
         }],
         ['OS=="win"', {
           'sources': [
+            'app/chrome_command_ids.h',
+            'app/chrome_dll_resource.h',
+            'app/chrome_dll.rc',
+            'app/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -2148,7 +2149,7 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_header',
             'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
@@ -2170,10 +2171,6 @@
           }
         }, { # else: OS != "win"
           'sources!': [
-            'app/chrome_command_ids.h',
-            'app/chrome_dll.rc',
-            'app/chrome_dll_resource.h',
-            'app/chrome_dll_version.rc.version',
             'browser/extensions/extension_popup_apitest.cc',
             'browser/extensions/extension_rlz_apitest.cc',
             # TODO(jam): http://crbug.com/15101 These tests fail on Linux and
@@ -2268,7 +2265,6 @@
       ],
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
-        'app/chrome_dll.rc',
         'browser/safe_browsing/safe_browsing_test.cc',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
@@ -2277,14 +2273,15 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_header',
             'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
+            'app/chrome_dll.rc',
+            'app/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -2731,10 +2728,6 @@
       # TODO(phajdan.jr): Only temporary, to make transition easier.
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
-        'app/chrome_command_ids.h',
-        'app/chrome_dll.rc',
-        'app/chrome_dll_resource.h',
-        'app/chrome_dll_version.rc.version',
         'browser/autofill/autofill_common_test.cc',
         'browser/autofill/autofill_common_test.h',
         'browser/password_manager/password_form_data.cc',
@@ -2786,7 +2779,6 @@
         'test/ui_test_utils_linux.cc',
         'test/ui_test_utils_mac.mm',
         'test/ui_test_utils_win.cc',
-        'test/data/resource.rc',
       ],
       'conditions': [
         # Plugin code.
@@ -2816,9 +2808,13 @@
         }],
         ['OS=="win"', {
           'sources': [
+            'app/chrome_command_ids.h',
+            'app/chrome_dll.rc',
+            'app/chrome_dll_resource.h',
+            'app/chrome_dll_version.rc',
+            'test/data/resource.rc',
             '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
           ],
@@ -2826,7 +2822,7 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
-            'chrome_dll_version',
+            'chrome_version_header',
             'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
@@ -2846,12 +2842,6 @@
               },
             },
           },
-        }, { # else: OS != "win"
-          'sources!': [
-            'app/chrome_dll.rc',
-            'app/chrome_dll_version.rc.version',
-            'test/data/resource.rc',
-          ],
         }],
         ['toolkit_views==1', {
           'dependencies': [

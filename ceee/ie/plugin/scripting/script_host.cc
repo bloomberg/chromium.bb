@@ -13,7 +13,10 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/stringize_macros.h"
 #include "ceee/common/com_utils.h"
+
+#include "version.h"  // NOLINT
 
 #ifndef CMDID_SCRIPTSITE_URL
 
@@ -523,7 +526,7 @@ STDMETHODIMP ScriptHost::OnScriptErrorDebug(IActiveScriptErrorDebug* err,
   // TODO(ericdingle@chromium.org): internationalization
   int ret = ::MessageBox(
       NULL, L"A script error occured. Do you want to debug?",
-      L"Google Chrome Extensions Execution Environment",
+      TO_L_STRING(CEEE_PRODUCT_FULLNAME_STRING),
       MB_ICONERROR | MB_SETFOREGROUND | MB_TASKMODAL | MB_YESNO);
   *enter_debugger = (ret == IDYES);
   *call_on_script_err_when_continuing = FALSE;

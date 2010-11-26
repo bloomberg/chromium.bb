@@ -77,7 +77,7 @@
               'dependencies': [
                 # On Windows, link the dependencies (libraries) that make
                 # up actual Chromium functionality into this .dll.
-                'chrome_dll_version',
+                'chrome_version_header',
                 'chrome_resources',
                 'installer_util_strings',
                 'worker',
@@ -94,7 +94,7 @@
                 'app/chrome_dll.rc',
                 'app/chrome_dll_resource.h',
                 'app/chrome_main.cc',
-                '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+                'app/chrome_dll_version.rc',
 
                 '../webkit/glue/resources/aliasb.cur',
                 '../webkit/glue/resources/cell.cur',
@@ -123,6 +123,10 @@
                 # if we still need them and/or how to update to gyp.
                 #'app/check_dependents.bat',
                 #'app/chrome.dll.deps',
+              ],
+              'include_dirs': [
+                # For version.h
+                '<(SHARED_INTERMEDIATE_DIR)',
               ],
               'msvs_settings': {
                 'VCLinkerTool': {
@@ -560,10 +564,12 @@
           },
           'include_dirs': [
             '..',
+            # For version.h
+            '<(SHARED_INTERMEDIATE_DIR)',
           ],
           'dependencies': [
+            'chrome_version_header',
             '<@(nacl_win64_dependencies)',
-            'chrome_dll_version',
             'nacl_win64',
           ],
           'defines': [
@@ -572,10 +578,11 @@
           'sources': [
             'app/chrome_command_ids.h',
             'app/chrome_dll_resource.h',
+            'app/chrome_dll_version.rc',
             'app/chrome_main.cc',
+
             'browser/renderer_host/render_process_host_dummy.cc',
             'common/googleurl_dummy.cc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
 
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in

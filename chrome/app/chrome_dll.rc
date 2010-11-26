@@ -160,8 +160,6 @@ BEGIN
     "\0"
 END
 
-#else     // APSTUDIO_INVOKED
-#include "chrome_dll_version.rc"
 #endif    // APSTUDIO_INVOKED
 
 /////////////////////////////////////////////////////////////////////////////

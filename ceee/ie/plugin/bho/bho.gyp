@@ -26,6 +26,7 @@
         '../../../../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
         # For the vtable patching stuff...
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_frame_ie',
+        '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
       ],
       'sources': [
         'browser_helper_object.cc',
@@ -78,7 +79,7 @@
         '../../../../chrome/common/extensions/extension_resource.h',
       ],
       'include_dirs': [
-        # For chrome_tab.h
+        # For chrome_tab.h and version.h
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'libraries': [

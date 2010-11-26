@@ -1678,61 +1678,9 @@
           ],
         },
         {
-          'target_name': 'chrome_dll_version',
-          'type': 'none',
-          #'msvs_guid': '414D4D24-5D65-498B-A33F-3A29AD3CDEDC',
-          'dependencies': [
-            '../build/util/build_util.gyp:lastchange',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version',
-            ],
-          },
-          'actions': [
-            {
-              'action_name': 'version',
-              'variables': {
-                'lastchange_path':
-                  '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
-                'template_input_path': 'app/chrome_dll_version.rc.version',
-              },
-              'conditions': [
-                [ 'branding == "Chrome"', {
-                  'variables': {
-                     'branding_path': 'app/theme/google_chrome/BRANDING',
-                  },
-                }, { # else branding!="Chrome"
-                  'variables': {
-                     'branding_path': 'app/theme/chromium/BRANDING',
-                  },
-                }],
-              ],
-              'inputs': [
-                '<(template_input_path)',
-                '<(version_path)',
-                '<(branding_path)',
-                '<(lastchange_path)',
-              ],
-              'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
-              ],
-              'action': [
-                'python',
-                '<(version_py_path)',
-                '-f', '<(version_path)',
-                '-f', '<(branding_path)',
-                '-f', '<(lastchange_path)',
-                '<(template_input_path)',
-                '<@(_outputs)',
-              ],
-              'message': 'Generating version information in <(_outputs)'
-            },
-          ],
-        },
-        {
           'target_name': 'chrome_version_header',
           'type': 'none',
+          'hard_dependency': 1,
           'dependencies': [
             '../build/util/build_util.gyp:lastchange',
           ],

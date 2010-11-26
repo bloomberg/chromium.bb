@@ -16,12 +16,13 @@
       'type': 'static_library',
       'dependencies': [
         'javascript_bindings',
-        '../../common/common.gyp:ie_common',
-        '../../common/common.gyp:ie_common_settings',
-        '../toolband/toolband.gyp:toolband_idl',
-        '../../../../base/base.gyp:base',
-        '../../../../ceee/common/common.gyp:ceee_common',
-        '../../../../ceee/common/common.gyp:initializing_coclass',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/ceee/common/common.gyp:ceee_common',
+        '<(DEPTH)/ceee/common/common.gyp:initializing_coclass',
+        '<(DEPTH)/ceee/ie/common/common.gyp:ie_common',
+        '<(DEPTH)/ceee/ie/common/common.gyp:ie_common_settings',
+        '<(DEPTH)/ceee/ie/plugin/toolband/toolband.gyp:toolband_idl',
+        '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
       ],
       'sources': [
         'base.js',
@@ -37,6 +38,10 @@
         'userscripts_librarian.cc',
         'userscripts_librarian.h',
         'userscripts_docs.h',
+      ],
+      'include_dirs': [
+        # For version.h
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
     },
     {
