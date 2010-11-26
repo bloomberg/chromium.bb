@@ -84,14 +84,6 @@ struct FindModule {
 // Entries without any Description, Signer info, or Location will never be
 // marked as confirmed bad (only as suspicious).
 const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
-  // Test DLLs, to demonstrate the feature. Will be removed soon.
-  {     // apphelp.dll, "%systemroot%\\system32\\"
-    "f5fda581", "23d01d5b", "", "", "", NONE
-  }, {  // rsaenh.dll, "%systemroot%\\system32\\", "Microsoft Windows"
-    "6af212cb", "23d01d5b", "7b47bf79", "", "",
-        static_cast<RecommendedAction>(UPDATE | DISABLE | SEE_LINK)
-  },
-
   // NOTE: Please keep this list sorted by dll name, then location.
 
   // foldersizecolumn.dll.
