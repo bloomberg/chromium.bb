@@ -397,6 +397,7 @@ TEST_F(RendererExtensionBindingsTest, OnDisconnect) {
 
   // A 'SUCCESS' log signals success.
   EXPECT_CALL(*api_, Log(StrEq(L"info"), StrEq(L"SUCCESS"))).Times(1);
+  EXPECT_CALL(*api_, CloseChannel(kPortId));
 
   EXPECT_HRESULT_SUCCEEDED(api_->CallOnPortDisconnect(kPortId));
 }

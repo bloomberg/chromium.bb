@@ -402,6 +402,7 @@ TEST_F(ContentScriptManagerTest, ScriptInitializationOnUrlMatch) {
 
   // The script host needs to be shut down on teardown.
   EXPECT_CALL(*script_host_, Close()).Times(1);
+  EXPECT_CALL(*frame_host_, CloseAll(_)).Times(1);
   ASSERT_HRESULT_SUCCEEDED(manager.TearDown());
 }
 
@@ -458,6 +459,7 @@ TEST_F(ContentScriptManagerTest, ExecuteScript) {
 
   // The script host needs to be shut down on teardown.
   EXPECT_CALL(*script_host_, Close()).Times(1);
+  EXPECT_CALL(*frame_host_, CloseAll(_)).Times(1);
   ASSERT_HRESULT_SUCCEEDED(manager.TearDown());
 }
 
