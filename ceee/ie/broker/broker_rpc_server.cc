@@ -135,12 +135,11 @@ void BrokerRpcServer_FireEvent(
 }
 
 void BrokerRpcServer_SendUmaHistogramTimes(handle_t binding_handle,
-                                           BSTR event_name,
+                                           const char* name,
                                            int sample) {
   // We can't unfortunately use the HISTOGRAM_*_TIMES here because they use
   // static variables to save time.
   AutoLock lock(g_metrics_lock);
-  std::string name(CW2A(event_name).m_psz);
   scoped_refptr<base::Histogram> counter =
       base::Histogram::FactoryTimeGet(name,
           base::TimeDelta::FromMilliseconds(1),
@@ -152,14 +151,13 @@ void BrokerRpcServer_SendUmaHistogramTimes(handle_t binding_handle,
 }
 
 void BrokerRpcServer_SendUmaHistogramData(handle_t binding_handle,
-                                          BSTR event_name,
+                                          const char* name,
                                           int sample,
                                           int min, int max,
                                           int bucket_count) {
   // We can't unfortunately use the HISTOGRAM_*_COUNT here because they use
   // static variables to save time.
   AutoLock lock(g_metrics_lock);
-  std::string name(CW2A(event_name).m_psz);
   scoped_refptr<base::Histogram> counter =
       base::Histogram::FactoryGet(name, min, max, bucket_count,
           base::Histogram::kUmaTargetedHistogramFlag);

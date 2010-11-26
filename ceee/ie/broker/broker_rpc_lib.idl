@@ -31,13 +31,15 @@ void FireEvent(
     [in] handle_t binding_handle,
     [in, string] const char* event_name,
     [in, string] const char* event_args);
+
 void SendUmaHistogramTimes(
     [in] handle_t binding_handle,
-    [in] BSTR event_name,
+    [in, string] const char* name,
     [in] int sample);
+
 void SendUmaHistogramData(
     [in] handle_t binding_handle,
-    [in] BSTR event_name,
+    [in, string] const char* name,
     [in] int sample,
     [in] int min,
     [in] int max,

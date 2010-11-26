@@ -132,28 +132,28 @@ HRESULT BrokerRpcClient::FireEvent(const char* event_name,
     return S_OK;
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
     LogRpcException("RPC error in FireEvent", RpcExceptionCode());
-  } RpcEndExcept
     return RPC_E_FAULT;
+  } RpcEndExcept
 }
 
-bool BrokerRpcClient::SendUmaHistogramTimes(BSTR event_name, int sample) {
+HRESULT BrokerRpcClient::SendUmaHistogramTimes(const char* name, int sample) {
   RpcTryExcept {
-    BrokerRpcClient_SendUmaHistogramTimes(binding_handle_, event_name, sample);
-    return true;
+    BrokerRpcClient_SendUmaHistogramTimes(binding_handle_, name, sample);
+    return S_OK;
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
     LogRpcException("RPC error in SendUmaHistogramTimes", RpcExceptionCode());
+    return RPC_E_FAULT;
   } RpcEndExcept
-  return false;
 }
 
-bool BrokerRpcClient::SendUmaHistogramData(BSTR event_name, int sample,
-                                           int min, int max, int bucket_count) {
+HRESULT BrokerRpcClient::SendUmaHistogramData(
+    const char* name, int sample, int min, int max, int bucket_count) {
   RpcTryExcept {
-    BrokerRpcClient_SendUmaHistogramData(binding_handle_, event_name, sample,
-                                         min, max, bucket_count);
-    return true;
+    BrokerRpcClient_SendUmaHistogramData(
+        binding_handle_, name, sample, min, max, bucket_count);
+    return S_OK;
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
     LogRpcException("RPC error in SendUmaHistogramData", RpcExceptionCode());
+    return RPC_E_FAULT;
   } RpcEndExcept
-  return false;
 }

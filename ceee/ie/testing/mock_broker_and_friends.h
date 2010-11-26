@@ -395,8 +395,8 @@ class MockBrokerRpcClient : public BrokerRpcClient {
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(is_connected, bool());
   MOCK_METHOD2(FireEvent, HRESULT(const char*, const char*));
-  MOCK_METHOD2(SendUmaHistogramTimes, bool(BSTR, int));
-  MOCK_METHOD5(SendUmaHistogramData, bool(BSTR, int, int, int, int));
+  MOCK_METHOD2(SendUmaHistogramTimes, HRESULT(const char*, int));
+  MOCK_METHOD5(SendUmaHistogramData, HRESULT(const char*, int, int, int, int));
 };
 
 

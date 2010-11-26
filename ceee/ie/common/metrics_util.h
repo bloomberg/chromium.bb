@@ -35,10 +35,9 @@ class ScopedTimer {
   }
   ~ScopedTimer() {
     if (broker_rpc_) {
-      base::win::ScopedBstr name(CA2W(name_.c_str()).m_psz);
       base::TimeDelta delta = base::TimeTicks::Now() - start_;
-      if (!broker_rpc_->SendUmaHistogramTimes(
-              name, static_cast<int>(delta.InMilliseconds()))) {
+      if (FAILED(broker_rpc_->SendUmaHistogramTimes(
+              name_.c_str(), static_cast<int>(delta.InMilliseconds())))) {
         NOTREACHED() << "An error happened during RPC.";
       }
     }
