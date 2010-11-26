@@ -603,6 +603,12 @@ bool RenderWidgetHostViewViews::ContainsNativeView(
   return false;
 }
 
+void RenderWidgetHostViewViews::AcceleratedCompositingActivated(bool activated) {
+  // TODO(anicolao): figure out if we need something here
+  if (activated)
+    NOTIMPLEMENTED();
+}
+
 WebKit::WebMouseEvent RenderWidgetHostViewViews::WebMouseEventFromViewsEvent(
     const views::MouseEvent& event) {
   WebKit::WebMouseEvent wmevent;
