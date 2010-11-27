@@ -48,7 +48,7 @@ void CheckAsyncIidRegistered(const IID& iid, const IID& async_iid) {
   bool success = com::GuidToString(iid, &iid_str);
   DCHECK(success);
   std::wstring key_name = base::StringPrintf(
-      L"Interface\\%ls\\AsynchronousInterface", iid_str);
+      L"Interface\\%ls\\AsynchronousInterface", iid_str.c_str());
 
   base::win::RegKey key;
   if (key.Open(HKEY_CLASSES_ROOT, key_name.c_str(), KEY_READ)) {
