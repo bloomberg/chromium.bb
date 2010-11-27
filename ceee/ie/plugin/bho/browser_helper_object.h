@@ -419,6 +419,8 @@ class ATL_NO_VTABLE BrowserHelperObject
   HRESULT VerifyBrowserInHierarchy(IWebBrowser2* webbrowser,
                                    IWebBrowser2* root_browser);
 
+  void ReportAddonLoadTime(const char* addon_name, const CLSID& addon_id);
+
   typedef std::deque<Task*> DeferredCallListType;
   DeferredCallListType deferred_tab_id_call_;
 };

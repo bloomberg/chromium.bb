@@ -17,6 +17,8 @@ class BrokerRpcClient {
   virtual ~BrokerRpcClient();
 
   // Initialize connection with server.
+  // @param start_server if true method will try to start server if it is
+  // not started yet. Usually only tests pass false here.
   virtual HRESULT Connect(bool start_server);
 
   // Relese connection with server

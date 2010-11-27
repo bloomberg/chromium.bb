@@ -128,12 +128,37 @@ void BrowserHelperObject::FinalRelease() {
   web_browser_.Release();
 }
 
+void BrowserHelperObject::ReportAddonLoadTime(const char* addon_name,
+                                              const CLSID& addon_id) {
+  int time = ie_util::GetAverageAddonLoadTimeMs(addon_id);
+  if (time == ie_util::kInvalidTime)
+    return;
+  DCHECK(ie_util::GetIeVersion() >= ie_util::IEVERSION_IE8);
+
+  std::string counter_name = "ceee/AddonLoadTime.";
+  counter_name += addon_name;
+  counter_name += ".IE";
+  switch (ie_util::GetIeVersion()) {
+  case ie_util::IEVERSION_IE8:
+    counter_name += '8';
+    break;
+  case ie_util::IEVERSION_IE9:
+    counter_name += '9';
+    break;
+  default:
+    counter_name += 'x';
+    break;
+  }
+  if (broker_rpc_.get())
+    broker_rpc_->SendUmaHistogramTimes(counter_name.c_str(), time);
+}
+
 STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
   typedef IObjectWithSiteImpl<BrowserHelperObject> SuperSite;
 
   // From experience, we know the site may be set multiple times.
   // Let's ignore second and subsequent set or unset.
-  if (site != NULL&& m_spUnkSite.p != NULL ||
+  if (site != NULL && m_spUnkSite.p != NULL ||
       site == NULL && m_spUnkSite.p == NULL ) {
     LOG(WARNING) << "Duplicate call to SetSite, previous site "
                  << m_spUnkSite.p << " new site " << site;
@@ -142,6 +167,12 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
 
   if (NULL == site) {
     mu::ScopedTimer metrics_timer("ceee/BHO.TearDown", broker_rpc_.get());
+
+    // TODO(vitalybuka@chromium.org): switch to sampling when we have enough
+    // users.
+    ReportAddonLoadTime("BH0", CLSID_BrowserHelperObject);
+    ReportAddonLoadTime("ChromeFrameBHO", CLSID_ChromeFrameBHO);
+    ReportAddonLoadTime("Toolband", CLSID_ToolBand);
 
     // We're being torn down.
     TearDown();

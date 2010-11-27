@@ -131,4 +131,81 @@ bool GetIEIsInPrivateBrowsing() {
   return is_inprivate;
 }
 
+int GetAverageAddonLoadTimeMs(const CLSID& addon_id) {
+  if (GetIeVersion() < IEVERSION_IE8)
+    return kInvalidTime;
+
+  std::wstring addon_id_str;
+  if (!com::GuidToString(addon_id, &addon_id_str)) {
+    NOTREACHED();
+    return kInvalidTime;
+  }
+
+  std::wstring key_name =
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Ext\\Stats\\";
+  key_name += addon_id_str;
+  key_name += L"\\iexplore";
+
+  base::win::RegKey stats_key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
+  if (!stats_key.Valid()) {
+    LOG(ERROR) << "Missing stats key: " << key_name;
+    return kInvalidTime;
+  }
+
+  DWORD load_time = 0;
+  if (GetIeVersion() < IEVERSION_IE9) {
+    if (!stats_key.ReadValueDW(L"LoadTime", &load_time)) {
+      LOG(ERROR) << "Can't read LoadTime.";
+      return kInvalidTime;
+    }
+  } else {
+    DWORD count = 0;
+    int32 values[100];
+    DWORD data_size = sizeof(values);
+    DWORD data_type = REG_NONE;
+
+    if (!stats_key.ReadValue(L"LoadTimeArray", &values, &data_size,
+                             &data_type)) {
+      LOG(ERROR) << "Can't read LoadTime.";
+      return kInvalidTime;
+    }
+
+    if (data_type != REG_BINARY) {
+      LOG(ERROR) << "Unexpected data type:" << data_type;
+      return kInvalidTime;
+    }
+
+    if (data_size % sizeof(values[0]) != 0) {
+      LOG(ERROR) << "Unexpected data length:" << data_size;
+      return kInvalidTime;
+    }
+
+    data_size /= sizeof(values[0]);
+
+    for (DWORD i = 0; i < data_size; ++i) {
+      // Unused values are filled with negative values.
+      if (values[i] >= 0) {
+        load_time += values[i];
+        ++count;
+      }
+    }
+
+    if (count < 2) {
+      // IE9 shows performance warning only after second run.
+      LOG(INFO) << "Not enough data.";
+      return kInvalidTime;
+    }
+    load_time /= count;
+  }
+
+  if (load_time < 0) {
+    LOG(ERROR) << "Invalid time:" << load_time;
+    return kInvalidTime;
+  }
+
+  LOG(INFO) << "Average add-on " << addon_id_str << "load time: " <<
+      load_time << "ms";
+  return load_time;
+}
+
 }  // namespace ie_util

@@ -40,6 +40,12 @@ IeVersion GetIeVersion();
 // Returns true if IE is in InPrivate mode.
 bool GetIEIsInPrivateBrowsing();
 
+const int kInvalidTime = -1;
+// Returns average add-on load time measured by IE. Returns kInvalidTime if time
+// cannot be calculated.
+// @param addon_id is class id which you can find in IE add-on manager.
+int GetAverageAddonLoadTimeMs(const CLSID& addon_id);
+
 }  // namespace ie_util
 
 #endif  // CEEE_IE_COMMON_IE_UTIL_H_
