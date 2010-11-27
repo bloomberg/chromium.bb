@@ -15,11 +15,12 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "ceee/common/com_utils.h"
 #include "ceee/common/process_utils_win.h"
 #include "ceee/common/windows_constants.h"
@@ -122,7 +123,7 @@ bool WindowApiResult::UpdateWindowRect(HWND window,
 
   common_api::WindowInfo window_info;
   if (left != -1 || top != -1 || width  != -1 || height != -1) {
-    ScopedComPtr<ICeeeWindowExecutor> executor;
+    base::win::ScopedComPtr<ICeeeWindowExecutor> executor;
     dispatcher->GetExecutor(window, IID_ICeeeWindowExecutor,
                             reinterpret_cast<void**>(executor.Receive()));
     if (executor == NULL) {
@@ -373,8 +374,8 @@ void CreateWindowFunc::Execute(const ListValue& args, int request_id) {
 
   // Now we can create a new web browser and be sure it will be the one that is
   // kept (as well as its window) once we navigate.
-  CComPtr<IWebBrowser2> web_browser;
-  HRESULT hr = web_browser.CoCreateInstance(ie_clsid, NULL, class_context);
+  base::win::ScopedComPtr<IWebBrowser2> web_browser;
+  HRESULT hr = web_browser.CreateInstance(ie_clsid, NULL, class_context);
   DCHECK(SUCCEEDED(hr)) << "Can't CoCreate IE! " << com::LogHr(hr);
   if (FAILED(hr)) {
     result->PostError(api_module_constants::kInternalErrorError);
@@ -434,11 +435,12 @@ void CreateWindowFunc::Execute(const ListValue& args, int request_id) {
   }
 
   // Now we can Navigate to the requested url.
-  hr = web_browser->Navigate(base::win::ScopedBstr(url.c_str()),
-                             &CComVariant(),  // unused flags
-                             &CComVariant(L"_top"),  // Target frame
-                             &CComVariant(),  // Unused POST DATA
-                             &CComVariant());  // Unused Headers
+  hr = web_browser->Navigate(
+      base::win::ScopedBstr(url.c_str()),
+      const_cast<VARIANT*>(&base::win::ScopedVariant()),  // unused flags
+      const_cast<VARIANT*>(&base::win::ScopedVariant(L"_top")),  // Target
+      const_cast<VARIANT*>(&base::win::ScopedVariant()),  // Unused POST DATA
+      const_cast<VARIANT*>(&base::win::ScopedVariant()));  // Unused Headers
   DCHECK(SUCCEEDED(hr)) << "Can't Navigate IE to " << url << com::LogHr(hr);
   if (FAILED(hr)) {
     result->PostError(api_module_constants::kInternalErrorError);
@@ -501,7 +503,7 @@ void RemoveWindow::Execute(const ListValue& args, int request_id) {
     return;
   }
 
-  ScopedComPtr<ICeeeWindowExecutor> executor;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> executor;
   dispatcher->GetExecutor(window, IID_ICeeeWindowExecutor,
                           reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
@@ -606,22 +608,11 @@ bool RemoveWindow::EventHandler(const std::string& input_args,
   DCHECK(success) << "Couldn't get an int window Id from input args.";
   if (!success)
     return false;
-  // The hook may call us before the window has completely disappeared so we
-  // must delay the execution until the window is completely gone.
-  // TODO(mad@chromium.org): Find a way to do this without blocking
-  // all other ApiDispatching.
-  HWND window = dispatcher->GetWindowHandleFromId(window_id);
-  int waited_ms = 0;
-  while (waited_ms < kMaxDelayMs && ::IsWindow(window)) {
-    ::SleepEx(kDelayMs, TRUE);  // Alertable.
-    waited_ms += kDelayMs;
-  }
-  DCHECK(waited_ms < kMaxDelayMs);
-  if (waited_ms < kMaxDelayMs) {
-    return true;
-  } else {
-    return false;
-  }
+  // We now get the notification from the executors manager as soon as we have
+  // no more BHOs in the given window, so we can assume it will die soon even
+  // if it's not quite dead yet.
+  VLOG(2) << "Sending window removal notification for ID: " << window_id;
+  return true;
 }
 
 void GetAllWindows::Execute(const ListValue& args, int request_id) {
