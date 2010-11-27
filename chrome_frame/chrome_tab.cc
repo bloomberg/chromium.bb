@@ -511,7 +511,7 @@ STDAPI DllRegisterServer() {
                 BHO_CLSID | BHO_REGISTRATION;
 
   if (UtilIsPersistentNPAPIMarkerSet()) {
-    flags |= IDR_CHROMEFRAME_NPAPI;
+    flags |= NPAPI_PLUGIN;
   }
 
   HRESULT hr = CustomRegistration(flags, TRUE, true);
@@ -534,7 +534,7 @@ STDAPI DllRegisterUserServer() {
                 BHO_CLSID | BHO_REGISTRATION;
 
   if (UtilIsPersistentNPAPIMarkerSet()) {
-    flags |= IDR_CHROMEFRAME_NPAPI;
+    flags |= NPAPI_PLUGIN;
   }
 
   HRESULT hr = CustomRegistration(flags, TRUE, false);
