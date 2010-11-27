@@ -234,6 +234,9 @@ x11_compositor_create(struct wl_display *display, int width, int height);
 struct wlsc_compositor *
 drm_compositor_create(struct wl_display *display, int connector);
 
+struct wlsc_compositor *
+wayland_compositor_create(struct wl_display *display, int width, int height);
+
 void
 screenshooter_create(struct wlsc_compositor *ec);
 

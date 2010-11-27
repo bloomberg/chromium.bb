@@ -32,6 +32,11 @@
 #include "wayland-server-protocol.h"
 #include "compositor.h"
 
+/* The plan here is to generate a random anonymous socket name and
+ * advertise that through a service on the session dbus.
+ */
+static const char *option_socket_name = "wayland";
+
 static const char *option_background = "background.jpg";
 static const char *option_geometry = "1024x640";
 static int option_connector = 0;
@@ -43,6 +48,8 @@ static const GOptionEntry option_entries[] = {
 	  &option_connector, "KMS connector" },
 	{ "geometry", 'g', 0, G_OPTION_ARG_STRING,
 	  &option_geometry, "Geometry" },
+	{ "socket", 's', 0, G_OPTION_ARG_STRING,
+	  &option_socket_name, "Socket Name" },
 	{ NULL }
 };
 
@@ -1011,6 +1018,7 @@ input_device_attach(struct wl_client *client,
 		return;
 	if (device->pointer_focus == NULL)
 		return;
+
 	if (device->pointer_focus->base.client != client &&
 	    !(&device->pointer_focus->base == &wl_grab_surface &&
 	      device->grab_surface->base.client == client))
@@ -1435,10 +1443,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	return 0;
 }
 
-/* The plan here is to generate a random anonymous socket name and
- * advertise that through a service on the session dbus.
- */
-static const char socket_name[] = "\0wayland";
 
 int main(int argc, char *argv[])
 {
@@ -1447,6 +1451,8 @@ int main(int argc, char *argv[])
 	GError *error = NULL;
 	GOptionContext *context;
 	int width, height;
+	char *socket_name;
+	int socket_name_size;
 
 	g_type_init(); /* GdkPixbuf needs this, it seems. */
 
@@ -1464,7 +1470,9 @@ int main(int argc, char *argv[])
 
 	display = wl_display_create();
 
-	if (getenv("DISPLAY"))
+	if (getenv("WAYLAND_DISPLAY"))
+		ec = wayland_compositor_create(display, width, height);
+	else if (getenv("DISPLAY"))
 		ec = x11_compositor_create(display, width, height);
 	else
 		ec = drm_compositor_create(display, option_connector);
@@ -1474,10 +1482,14 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (wl_display_add_socket(display, socket_name, sizeof socket_name)) {
+	socket_name_size = 1 + asprintf(&socket_name, "%c%s", '\0',
+					option_socket_name);
+
+	if (wl_display_add_socket(display, socket_name, socket_name_size)) {
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
 	}
+	free(socket_name);
 
 	wl_display_run(display);
 

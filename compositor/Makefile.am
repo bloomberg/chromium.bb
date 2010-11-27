@@ -9,6 +9,7 @@ AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 
 compositor_LDADD =					\
 	$(top_builddir)/wayland/libwayland-server.la	\
+	$(top_builddir)/wayland/libwayland-client.la	\
 	$(COMPOSITOR_LIBS)
 
 compositor_SOURCES =				\
@@ -16,6 +17,7 @@ compositor_SOURCES =				\
 	compositor.h				\
 	compositor-drm.c			\
 	compositor-x11.c			\
+	compositor-wayland.c			\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
