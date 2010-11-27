@@ -520,7 +520,6 @@ class XmppServer(asyncore.dispatcher):
     self._socket_map = socket_map
     self._socket_map[self.fileno()] = self
     self._connections = set()
-    print 'XMPP server running at %s' % AddrString(addr)
 
   def handle_accept(self):
     (sock, addr) = self.accept()
