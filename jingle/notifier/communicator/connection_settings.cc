@@ -40,7 +40,7 @@ ConnectionSettingsList::~ConnectionSettingsList() {}
 
 void ConnectionSettingsList::AddPermutations(const std::string& hostname,
                                              const std::vector<uint32>& iplist,
-                                             int16 port,
+                                             uint16 port,
                                              bool special_port_magic,
                                              bool try_ssltcp_first) {
   // randomize the list. This ensures the iplist isn't always

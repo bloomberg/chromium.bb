@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
@@ -47,7 +48,7 @@ class ConnectionSettingsList {
 
   void AddPermutations(const std::string& hostname,
                        const std::vector<uint32>& iplist,
-                       int16 port,
+                       uint16 port,
                        bool special_port_magic,
                        bool try_ssltcp_first);
  private:

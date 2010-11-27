@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -14,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
+#include "base/values.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/encryptor.h"
@@ -138,17 +140,6 @@ void LiveSyncTest::SetUp() {
   // can run, we need to set the --sync-notification-method to "p2p".
   if (!cl->HasSwitch(switches::kSyncNotificationMethod))
     cl->AppendSwitchASCII(switches::kSyncNotificationMethod, "p2p");
-
-  // TODO(akalin): Delete this block of code once a local python notification
-  // server is implemented.
-  // The chrome sync builders are behind a firewall that blocks port 5222, the
-  // default port for XMPP notifications. This causes the tests to spend up to a
-  // minute waiting for a connection on port 5222 before they fail over to port
-  // 443, the default SSL/TCP port. This switch causes the tests to use port 443
-  // by default, without having to try port 5222.
-  if (!cl->HasSwitch(switches::kSyncTrySsltcpFirstForXmpp)) {
-    cl->AppendSwitch(switches::kSyncTrySsltcpFirstForXmpp);
-  }
 
   // TODO(sync): Remove this once sessions sync is enabled by default.
   if (!cl->HasSwitch(switches::kEnableSyncSessions)) {
@@ -332,8 +323,25 @@ bool LiveSyncTest::SetUpLocalPythonTestServer() {
   cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
   VLOG(1) << "Started local python test server at " << sync_service_url;
 
-  // TODO(akalin): Set the kSyncNotificationHost switch here once a local python
-  // notification server is implemented.
+  int xmpp_port = 0;
+  if (!sync_server_.server_data().GetInteger("xmpp_port", &xmpp_port)) {
+    LOG(ERROR) << "Could not find valid xmpp_port value";
+    return false;
+  }
+  if ((xmpp_port <= 0) || (xmpp_port > kuint16max)) {
+    LOG(ERROR) << "Invalid xmpp port: " << xmpp_port;
+    return false;
+  }
+
+  net::HostPortPair xmpp_host_port_pair(sync_server_.host_port_pair());
+  xmpp_host_port_pair.set_port(xmpp_port);
+
+  if (!cl->HasSwitch(switches::kSyncNotificationHost)) {
+    cl->AppendSwitchASCII(switches::kSyncNotificationHost,
+                          xmpp_host_port_pair.ToString());
+    // The local XMPP server only supports insecure connections.
+    cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);
+  }
 
   return true;
 }

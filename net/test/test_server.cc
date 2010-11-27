@@ -189,6 +189,11 @@ const HostPortPair& TestServer::host_port_pair() const {
   return host_port_pair_;
 }
 
+const DictionaryValue& TestServer::server_data() const {
+  DCHECK(started_);
+  return *server_data_;
+}
+
 std::string TestServer::GetScheme() const {
   switch (type_) {
     case TYPE_FTP:
@@ -391,9 +396,9 @@ bool TestServer::ParseServerData(const std::string& server_data) {
                << json_reader.GetErrorMessage();
     return false;
   }
-  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+  server_data_.reset(static_cast<DictionaryValue*>(value.release()));
   int port = 0;
-  if (!dict->GetInteger("port", &port)) {
+  if (!server_data_->GetInteger("port", &port)) {
     LOG(ERROR) << "Could not find port value";
     return false;
   }
