@@ -397,7 +397,7 @@ bool TestServer::ParseServerData(const std::string& server_data) {
     LOG(ERROR) << "Could not find port value";
     return false;
   }
-  if ((port <= 0) || (port >= kuint16max)) {
+  if ((port <= 0) || (port > kuint16max)) {
     LOG(ERROR) << "Invalid port value: " << port;
     return false;
   }
