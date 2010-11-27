@@ -8,6 +8,7 @@
 
 #include <atlcomcli.h>
 #include <exdisp.h>  // IWebBrowser2
+#include <iepmapi.h>
 
 #include "base/logging.h"
 #include "base/win/registry.h"
@@ -129,6 +130,15 @@ bool GetIEIsInPrivateBrowsing() {
 
   inprivate_status_cached = true;
   return is_inprivate;
+}
+
+HRESULT GetIEIsInProtectedMode(bool* is_protected_mode) {
+  DCHECK(is_protected_mode);
+  BOOL is_protected_mode_local = FALSE;
+  HRESULT hr = ::IEIsProtectedModeProcess(&is_protected_mode_local);
+  if (SUCCEEDED(hr))
+    *is_protected_mode = !!is_protected_mode_local;
+  return hr;
 }
 
 int GetAverageAddonLoadTimeMs(const CLSID& addon_id) {

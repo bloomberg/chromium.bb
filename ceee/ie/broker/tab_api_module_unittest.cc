@@ -300,6 +300,7 @@ TEST_F(TabApiTests, CreateTabValue) {
     // GetTabInfo which we mock below...
     tab_info.url = ::SysAllocString(CA2W(tests[i].url).m_psz);
     tab_info.title = ::SysAllocString(CA2W(tests[i].title).m_psz);
+    tab_info.protected_mode = FALSE;
 
     if (strcmp(tests[i].status, ext::kStatusValueLoading) == 0)
       tab_info.status = kCeeeTabStatusLoading;

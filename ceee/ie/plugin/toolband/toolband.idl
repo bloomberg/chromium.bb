@@ -74,6 +74,7 @@ typedef struct tagCeeeTabInfo {
   BSTR title;
   CeeeTabStatus status;
   BSTR fav_icon_url;
+  BOOL protected_mode;
 } CeeeTabInfo;
 
 typedef enum tagCeeeTabCodeType {

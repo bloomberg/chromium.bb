@@ -16,8 +16,10 @@
 #include "base/string_tokenizer.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "ceee/common/com_utils.h"
 #include "ceee/ie/broker/cookie_api_module.h"
 #include "ceee/ie/common/ceee_module_util.h"
+#include "ceee/ie/common/ie_util.h"
 
 namespace {
 
@@ -187,6 +189,15 @@ void CookieAccountant::SetScriptCookieStoreId(cookie_api::CookieInfo* cookie) {
   DCHECK_NE(process_id, DWORD(0));
   std::ostringstream store_id_stream;
   store_id_stream << process_id;
+  // If this is a Protected Mode process, the cookie store ID is different.
+  bool is_protected_mode = false;
+  HRESULT hr = ie_util::GetIEIsInProtectedMode(&is_protected_mode);
+  DCHECK(SUCCEEDED(hr)) << "Unexpected failure while checking the " <<
+      "protected mode setting for IE tab process " << process_id << ". " <<
+      com::LogHr(hr);
+  if (SUCCEEDED(hr) && is_protected_mode) {
+    store_id_stream << cookie_api::kProtectedModeStoreIdSuffix;
+  }
   // The broker is responsible for checking that the store ID is registered.
   cookie->store_id =
       ::SysAllocString(ASCIIToWide(store_id_stream.str()).c_str());

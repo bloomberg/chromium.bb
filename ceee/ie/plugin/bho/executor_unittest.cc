@@ -306,9 +306,11 @@ MOCK_STATIC_CLASS_END(MockWinInet)
 MOCK_STATIC_CLASS_BEGIN(MockIeUtil)
   MOCK_STATIC_INIT_BEGIN(MockIeUtil)
     MOCK_STATIC_INIT2(ie_util::GetIeVersion, GetIeVersion);
+    MOCK_STATIC_INIT2(ie_util::GetIEIsInProtectedMode, GetIEIsInProtectedMode);
   MOCK_STATIC_INIT_END()
 
   MOCK_STATIC0(ie_util::IeVersion, , GetIeVersion);
+  MOCK_STATIC1(HRESULT, , GetIEIsInProtectedMode, bool*);
 MOCK_STATIC_CLASS_END(MockIeUtil)
 
 class TestingExecutor
@@ -700,6 +702,7 @@ TEST_F(ExecutorTests, RemoveWindow) {
 
 TEST_F(ExecutorTests, GetTabInfo) {
   testing::LogDisabler no_dchecks;
+  MockIeUtil mock_ie_util;
   MockSite();
   executor_->set_id(kGoodWindow);
 
@@ -740,12 +743,15 @@ TEST_F(ExecutorTests, GetTabInfo) {
       WillOnce(DoAll(CopyBSTRToArgument<0>(kUrl1), Return(S_OK)));
   EXPECT_CALL(*browser_, get_LocationName(NotNull())).
       WillOnce(DoAll(CopyBSTRToArgument<0>(kTitle1), Return(S_OK)));
+  EXPECT_CALL(mock_ie_util, GetIEIsInProtectedMode(NotNull())).
+      WillOnce(DoAll(SetArgumentPointee<0>(true), Return(S_OK)));
 
   tab_info.Clear();
   EXPECT_HRESULT_SUCCEEDED(executor_->GetTabInfo(&tab_info));
   EXPECT_STREQ(kUrl1, tab_info.url);
   EXPECT_STREQ(kTitle1, tab_info.title);
   EXPECT_EQ(kCeeeTabStatusComplete, tab_info.status);
+  EXPECT_TRUE(!!tab_info.protected_mode);
 
   // With other values
   RepeatedlyRunningInThisWindowThread(kOtherGoodWindow);
@@ -757,12 +763,15 @@ TEST_F(ExecutorTests, GetTabInfo) {
       WillOnce(DoAll(CopyBSTRToArgument<0>(kUrl2), Return(S_OK)));
   EXPECT_CALL(*browser_, get_LocationName(NotNull())).
       WillOnce(DoAll(CopyBSTRToArgument<0>(kTitle2), Return(S_OK)));
+  EXPECT_CALL(mock_ie_util, GetIEIsInProtectedMode(NotNull())).
+      WillOnce(DoAll(SetArgumentPointee<0>(false), Return(S_OK)));
 
   tab_info.Clear();
   EXPECT_HRESULT_SUCCEEDED(executor_->GetTabInfo(&tab_info));
   EXPECT_STREQ(kUrl2, tab_info.url);
   EXPECT_STREQ(kTitle2, tab_info.title);
   EXPECT_EQ(kCeeeTabStatusLoading, tab_info.status);
+  EXPECT_FALSE(!!tab_info.protected_mode);
 }
 
 TEST_F(ExecutorTests, GetTabIndex) {
@@ -1050,7 +1059,6 @@ TEST_F(ExecutorTests, GetCookieValueFlagsByIeVersion) {
       .WillOnce(Return(ie_util::IEVERSION_IE9));
   executor_->set_cookie_data(L"HELLOWORLD=1234567890");
   EXPECT_EQ(S_OK, executor_->CallGetCookieValue(url, name, &value));
-
 }
 
 TEST_F(ExecutorTests, GetCookie) {

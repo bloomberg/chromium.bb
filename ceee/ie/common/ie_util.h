@@ -40,6 +40,12 @@ IeVersion GetIeVersion();
 // Returns true if IE is in InPrivate mode.
 bool GetIEIsInPrivateBrowsing();
 
+// Checks whether IE is in protected mode. This provides a test seam, because
+// IEIsProtectedModeProcess has an ambiguous function type that Sidestep can't
+// figure out. Sets the output parameter is_protected_mode if the check
+// succeeds.
+HRESULT GetIEIsInProtectedMode(bool* is_protected_mode);
+
 const int kInvalidTime = -1;
 // Returns average add-on load time measured by IE. Returns kInvalidTime if time
 // cannot be calculated.

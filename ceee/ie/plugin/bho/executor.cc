@@ -419,7 +419,7 @@ HRESULT CeeeExecutor::Initialize(CeeeWindowHandle hwnd) {
     return hr;
   }
 
-  // If this is tab window then create the infobab manager.
+  // If this is tab window then create the infobar manager.
   // TODO(mad@chromium.org): We are starting to need to have different classes
   // for the different executors.
   if (window_utils::GetTopLevelParent(hwnd_) != hwnd_)
@@ -633,6 +633,12 @@ STDMETHODIMP CeeeExecutor::GetTabInfo(CeeeTabInfo* tab_info) {
   // there is a <link rel="icon" ...> tag, so we could parse this out
   // of the IHTMLDocument2::get_links() collection.
   tab_info->fav_icon_url = NULL;
+  bool is_protected_mode = false;
+  HRESULT protected_mode_hr =
+      ie_util::GetIEIsInProtectedMode(&is_protected_mode);
+  if (SUCCEEDED(protected_mode_hr)) {
+    tab_info->protected_mode = is_protected_mode ? TRUE : FALSE;
+  }
   return S_OK;
 }
 

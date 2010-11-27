@@ -1247,6 +1247,7 @@ TabInfo::TabInfo() {
   title = NULL;
   status = kCeeeTabStatusLoading;
   fav_icon_url = NULL;
+  protected_mode = FALSE;
 }
 
 TabInfo::~TabInfo() {
@@ -1263,6 +1264,7 @@ void TabInfo::Clear() {
   fav_icon_url = NULL;
 
   status = kCeeeTabStatusLoading;
+  protected_mode = FALSE;
 }
 
 }  // namespace tab_api
