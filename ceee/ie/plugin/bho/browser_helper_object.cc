@@ -1144,6 +1144,9 @@ HRESULT BrowserHelperObject::AttachBrowserHandler(IWebBrowser2* webbrowser,
         // we never want to fire events when in full-tab mode.
         DCHECK(!fired_on_created_event_);
         full_tab_chrome_frame_ = true;
+        // If this is chrome frame, we don't attach a handler, but this is not
+        // a true error. Update return code.
+        hr = S_FALSE;
       } else if (document_is_mshtml) {
         // We know it's MSHTML. We check if the last page was chrome frame.
         if (full_tab_chrome_frame_) {
@@ -1276,8 +1279,12 @@ HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
   if (FAILED(hr))
     return hr;
 
+  // TODO(motek@google.com): Straighten this out. In this scenario, handler gets
+  // inserted even if the function fails. While this may be warranted, it seems
+  // unusual and thus should be revisited.
   std::pair<BrowserHandlerMap::iterator, bool> inserted =
       browsers_.insert(std::make_pair(browser_identity, handler));
+
   // We shouldn't have a previous entry for any inserted browser.
   // map::insert().second is true iff an item was inserted.
   DCHECK(inserted.second);
@@ -1291,32 +1298,35 @@ HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
     ScopedFrameEventHandlerPtr parent_handler;
     hr = GetBrowserHandler(parent_browser, parent_handler.Receive());
 
-    // Notify the parent of its new underling.
-    if (parent_handler != NULL) {
-      hr = parent_handler->AddSubHandler(handler);
-      DCHECK(SUCCEEDED(hr)) << "AddSubHandler()" << com::LogHr(hr);
-    } else {
+    // In certain circumstances we may get notifications for child frames before
+    // receiving any news of the parent frame. This would lead to FAILED(hr),
+    // an unusual but not impossible situation. We will try to recover by
+    // creating handlers for ancestral browser nodes.
+    if (FAILED(hr) || parent_handler == NULL) {
       LOG(INFO) << "Received an orphan handler: " << std::hex << handler <<
           com::LogHr(hr);
       // Lets see if we can find an ancestor up the chain of parent browsers
       // that we could connect to our existing hierarchy of handlers.
       ScopedWebBrowser2Ptr grand_parent_browser;
       hr = GetParentBrowser(parent_browser, grand_parent_browser.Receive());
-      if (FAILED(hr))
-        LOG(WARNING) << "Failed to get parent browser " << com::LogHr(hr);
-      bool valid_grand_parent = (grand_parent_browser != NULL &&
-          !grand_parent_browser.IsSameObject(parent_browser));
-      DCHECK(valid_grand_parent) <<
-          "Orphan handler without a valid grand parent!";
-      LOG_IF(ERROR, !valid_grand_parent) << "Orphan handler: " << std::hex <<
+
+      // At this point there are two valid outcomes: either we have retrieved
+      // a valid grandparent browser or the parent is the top browser.
+      // The latter situation is somehow unusual, but we do observe it sometimes
+      // when the target web site requested chrome frame or/and the moon has
+      // this reddish hue...
+      bool valid_grand_parent =
+          SUCCEEDED(hr) && grand_parent_browser != NULL &&
+          !grand_parent_browser.IsSameObject(parent_browser);
+      LOG_IF(WARNING, !valid_grand_parent) << "Orphan handler: " << std::hex <<
           handler << ", with parent browser: " << std::hex << parent_browser;
-      if (grand_parent_browser != NULL &&
-          !grand_parent_browser.IsSameObject(parent_browser)) {
-        DCHECK(!web_browser_.IsSameObject(parent_browser));
+
+      base::win::ScopedBstr parent_browser_url;
+      parent_browser->get_LocationURL(parent_browser_url.Receive());
+      if (valid_grand_parent) {
         // We have a grand parent IWebBrowser2, so create a handler for the
         // parent we were given that doesn't have a handler already.
-        CComBSTR parent_browser_url;
-        parent_browser->get_LocationURL(&parent_browser_url);
+        DCHECK(!web_browser_.IsSameObject(parent_browser));
         DLOG(INFO) << "Creating handler for parent browser: " << std::hex <<
             parent_browser << ", at URL: " << parent_browser_url;
         hr = CreateFrameEventHandler(parent_browser, grand_parent_browser,
@@ -1325,23 +1335,34 @@ HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
         // the parent... And CreateFrameEventHandler should have attached it
         // to the parent by calling us again via IFrameEventHandler::Init...
         DCHECK(SUCCEEDED(hr) && parent_handler != NULL) << com::LogHr(hr);
-        if (FAILED(hr) || parent_handler == NULL)
-          return hr;
-
-        // When we create a handler, we must set its URL.
-        hr = parent_handler->SetUrl(parent_browser_url);
-        DCHECK(SUCCEEDED(hr)) << "Handler::SetUrl()" << com::LogHr(hr);
-        if (FAILED(hr))
-          return hr;
-
-        // And now that we have a fully created parent handler, we can add
-        // the handler that looked orphan, to its newly created parent.
-        hr = parent_handler->AddSubHandler(handler);
-        DCHECK(SUCCEEDED(hr)) << "AddSubHandler()" << com::LogHr(hr);
+      } else if (web_browser_.IsSameObject(parent_browser)) {
+        // We can create a handler for the parent_browser without specifying its
+        // parental node (the grandparent) only when adding the handler for the
+        // web_browser_ instance itself.
+        hr = CreateFrameEventHandler(parent_browser, NULL,
+            parent_handler.Receive());
+        DCHECK(SUCCEEDED(hr) && parent_handler != NULL) << com::LogHr(hr);
       } else {
         // No grand parent for the orphan handler?
         return E_UNEXPECTED;
       }
+
+      if (SUCCEEDED(hr) && parent_handler != NULL) {
+        // When we create a handler, we must set its URL.
+        hr = parent_handler->SetUrl(parent_browser_url);
+        DCHECK(SUCCEEDED(hr)) << "Handler::SetUrl()" << com::LogHr(hr);
+      }
+
+      if (FAILED(hr))
+          return hr;
+    }
+
+    // Notify the parent of its new underling.
+    if (SUCCEEDED(hr) && parent_handler != NULL) {
+      hr = parent_handler->AddSubHandler(handler);
+      DCHECK(SUCCEEDED(hr)) << "AddSubHandler()" << com::LogHr(hr);
+    } else {
+      return hr;
     }
   }
 
