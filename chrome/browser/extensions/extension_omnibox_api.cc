@@ -5,10 +5,14 @@
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 
 #include "base/json/json_writer.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/notification_service.h"
 
 namespace events {
@@ -31,6 +35,23 @@ const char kSuggestionDescriptionStyles[] = "descriptionStyles";
 const char kDescriptionStylesType[] = "type";
 const char kDescriptionStylesOffset[] = "offset";
 const char kDescriptionStylesLength[] = "length";
+
+PropertyAccessor<ExtensionOmniboxSuggestion>& GetPropertyAccessor() {
+  return *Singleton< PropertyAccessor<ExtensionOmniboxSuggestion> >::get();
+}
+
+// Returns the suggestion object set by the extension via the
+// omnibox.setDefaultSuggestion call, or NULL if it was never set.
+const ExtensionOmniboxSuggestion* GetDefaultSuggestionForExtension(
+    Profile* profile, const std::string& extension_id) {
+  const Extension* extension =
+      profile->GetExtensionsService()->GetExtensionById(extension_id, false);
+  if (!extension)
+    return NULL;
+  return GetPropertyAccessor().GetProperty(
+      profile->GetExtensionsService()->GetPropertyBag(extension));
+}
+
 };  // namespace
 
 // static
@@ -120,6 +141,32 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
   return true;
 }
 
+bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
+  ExtensionOmniboxSuggestion suggestion;
+  DictionaryValue* suggestion_value;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &suggestion_value));
+  EXTENSION_FUNCTION_VALIDATE(suggestion_value->GetString(
+      kSuggestionDescription, &suggestion.description));
+
+  if (suggestion_value->HasKey(kSuggestionDescriptionStyles)) {
+    ListValue* styles;
+    EXTENSION_FUNCTION_VALIDATE(
+        suggestion_value->GetList(kSuggestionDescriptionStyles, &styles));
+    EXTENSION_FUNCTION_VALIDATE(suggestion.ReadStylesFromValue(*styles));
+  } else {
+    suggestion.description_styles.clear();
+    suggestion.description_styles.push_back(
+        ACMatchClassification(0, ACMatchClassification::NONE));
+  }
+
+  // Store the suggestion in the extension's runtime data.
+  GetPropertyAccessor().SetProperty(
+      profile_->GetExtensionsService()->GetPropertyBag(GetExtension()),
+      suggestion);
+
+  return true;
+}
+
 ExtensionOmniboxSuggestion::ExtensionOmniboxSuggestion() {}
 
 ExtensionOmniboxSuggestion::~ExtensionOmniboxSuggestion() {}
@@ -161,7 +208,7 @@ bool ExtensionOmniboxSuggestion::ReadStylesFromValue(
       styles[j] |= type_class;
   }
 
-  // Step 2: Convert the vector into continous runs of common styles.
+  // Step 2: Convert the vector into continuous runs of common styles.
   for (size_t i = 0; i < styles.size(); ++i) {
     if (i == 0 || styles[i] != styles[i-1])
       description_styles.push_back(ACMatchClassification(i, styles[i]));
@@ -173,3 +220,38 @@ bool ExtensionOmniboxSuggestion::ReadStylesFromValue(
 ExtensionOmniboxSuggestions::ExtensionOmniboxSuggestions() : request_id(0) {}
 
 ExtensionOmniboxSuggestions::~ExtensionOmniboxSuggestions() {}
+
+void ApplyDefaultSuggestionForExtensionKeyword(
+    Profile* profile,
+    const TemplateURL* keyword,
+    const string16& remaining_input,
+    AutocompleteMatch* match) {
+  DCHECK(keyword->IsExtensionKeyword());
+  const ExtensionOmniboxSuggestion* suggestion =
+      GetDefaultSuggestionForExtension(profile, keyword->GetExtensionId());
+  if (!suggestion)
+    return;  // fall back to the universal default
+
+  const string16 kPlaceholderText(ASCIIToUTF16("%s"));
+  const string16 kReplacementText(ASCIIToUTF16("<input>"));
+
+  string16 description = suggestion->description;
+  ACMatchClassifications& description_styles = match->contents_class;
+  description_styles = suggestion->description_styles;
+
+  // Replace "%s" with the user's input and adjust the style offsets to the
+  // new length of the description.
+  size_t placeholder(suggestion->description.find(kPlaceholderText, 0));
+  if (placeholder != string16::npos) {
+    string16 replacement =
+        remaining_input.empty() ? kReplacementText : remaining_input;
+    description.replace(placeholder, kPlaceholderText.length(), replacement);
+
+    for (size_t i = 0; i < description_styles.size(); ++i) {
+      if (description_styles[i].offset > placeholder)
+        description_styles[i].offset += replacement.length() - 2;
+    }
+  }
+
+  match->contents.assign(UTF16ToWide(description));
+}

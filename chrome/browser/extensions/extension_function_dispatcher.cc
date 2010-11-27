@@ -253,6 +253,7 @@ void FactoryRegistry::ResetFunctions() {
 
   // Omnibox.
   RegisterFunction<OmniboxSendSuggestionsFunction>();
+  RegisterFunction<OmniboxSetDefaultSuggestionFunction>();
 
   // Proxies.
   RegisterFunction<UseCustomProxySettingsFunction>();

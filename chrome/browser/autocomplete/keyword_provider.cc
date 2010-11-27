@@ -215,6 +215,10 @@ void KeywordProvider::Start(const AutocompleteInput& input,
         EnterExtensionKeywordMode(template_url->GetExtensionId());
       keyword_mode_toggle.StayInKeywordMode();
 
+      ApplyDefaultSuggestionForExtensionKeyword(profile_, template_url,
+                                                WideToUTF16(remaining_input),
+                                                &matches_[0]);
+
       if (minimal_changes) {
         // If the input hasn't significantly changed, we can just use the
         // suggestions from last time. We need to readjust the relevance to

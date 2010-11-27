@@ -3977,6 +3977,37 @@
         ]
       },
       {
+        "name": "setDefaultSuggestion",
+        "type": "function",
+        "description": "Sets the description and styling for the default suggestion. The default suggestion is the text that is displayed in the first suggestion row underneath the URL bar.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "suggestion",
+            "description": "A partial SuggestResult object, without the 'content' parameter. See SuggestResult for a description of the parameters.",
+            "properties": {
+	          "description": {
+	            "type": "string",
+	            "minLength": 1,
+                    "description": "The text to display in the default suggestion. The placeholder string '%s' can be included and will be replaced with the user's input."
+	          },
+	          "descriptionStyles": {
+	            "type": "array",
+	            "optional": true,
+	            "items": {
+	              "type": "object",
+	              "properties": {
+	                "type": {"type": "string", "enum": ["url", "match", "dim"]},
+	                "offset": {"type": "integer"},
+	                "length": {"type": "integer", "optional": true}
+	              }
+	            }
+	          }
+            }
+          }
+        ]
+      },
+      {
         "name": "styleUrl",
         "type": "function",
         "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",

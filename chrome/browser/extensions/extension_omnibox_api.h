@@ -45,6 +45,12 @@ class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("omnibox.sendSuggestions");
 };
 
+class OmniboxSetDefaultSuggestionFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("omnibox.setDefaultSuggestion");
+};
+
 struct ExtensionOmniboxSuggestion {
   ExtensionOmniboxSuggestion();
   ~ExtensionOmniboxSuggestion();
@@ -74,5 +80,13 @@ struct ExtensionOmniboxSuggestions {
   // This class is passed around by pointer.
   DISALLOW_COPY_AND_ASSIGN(ExtensionOmniboxSuggestions);
 };
+
+// If the extension has set a custom default suggestion via
+// omnibox.setDefaultSuggestion, apply that to |match|. Otherwise, do nothing.
+void ApplyDefaultSuggestionForExtensionKeyword(
+    Profile* profile,
+    const TemplateURL* keyword,
+    const string16& remaining_input,
+    AutocompleteMatch* match);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_

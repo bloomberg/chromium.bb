@@ -33,6 +33,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/property_bag.h"
 
 class ExtensionsServiceBackend;
 class ExtensionToolbarModel;
@@ -203,6 +204,9 @@ class ExtensionsService
   // being upgraded.
   bool IsBeingUpgraded(const Extension* extension);
   void SetBeingUpgraded(const Extension* extension, bool value);
+
+  // Getter for the extension's runtime data PropertyBag.
+  PropertyBag* GetPropertyBag(const Extension* extension);
 
   // Initialize and start all installed extensions.
   void Init();
@@ -440,6 +444,9 @@ class ExtensionsService
 
     // True while the extension is being upgraded.
     bool being_upgraded;
+
+    // Generic bag of runtime data that users can associate with extensions.
+    PropertyBag property_bag;
 
     ExtensionRuntimeData();
     ~ExtensionRuntimeData();

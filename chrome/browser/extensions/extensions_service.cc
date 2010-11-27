@@ -1994,3 +1994,7 @@ void ExtensionsService::SetBeingUpgraded(const Extension* extension,
                                          bool value) {
   extension_runtime_data_[extension->id()].being_upgraded = value;
 }
+
+PropertyBag* ExtensionsService::GetPropertyBag(const Extension* extension) {
+  return &extension_runtime_data_[extension->id()].property_bag;
+}
