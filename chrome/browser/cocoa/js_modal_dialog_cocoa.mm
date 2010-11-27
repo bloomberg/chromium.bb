@@ -191,8 +191,10 @@ void JSModalDialogCocoa::ActivateAppModalDialog() {
 
 void JSModalDialogCocoa::CloseAppModalDialog() {
   DCHECK([alert_ isKindOfClass:[NSAlert class]]);
+
+  // Note: the call below will delete |this|,
+  // see JavaScriptAppModalDialogHelper's alertDidEnd.
   [NSApp endSheet:[alert_ window]];
-  alert_ = NULL;
 }
 
 void JSModalDialogCocoa::AcceptAppModalDialog() {

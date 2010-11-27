@@ -197,14 +197,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   EXPECT_EQ(WideToUTF16(test_title), tab_title);
 }
 
-#if defined(OS_MACOSX)
-// Test is crashing on Mac, see http://crbug.com/29424.
-#define MAYBE_JavascriptAlertActivatesTab DISABLED_JavascriptAlertActivatesTab
-#else
-#define MAYBE_JavascriptAlertActivatesTab JavascriptAlertActivatesTab
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
