@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "ceee/testing/utils/test_utils.h"
+#include "gtest/gtest.h"
 
 namespace testing {
 
@@ -171,5 +172,45 @@ void WriteVariant(const VARIANT& var, ::std::ostream* os) {
 }
 
 }  // namespace testing::internal
+
+static const wchar_t kReplacementRoot[] =
+    L"Software\\Google\\TestingScopedRegistryOverride";
+static const wchar_t kHKCUReplacement[] =
+    L"Software\\Google\\TestingScopedRegistryOverride\\HKCU";
+static const wchar_t kHKLMReplacement[] =
+    L"Software\\Google\\TestingScopedRegistryOverride\\HKLM";
+
+ScopedRegistryOverride::ScopedRegistryOverride() {
+  Override();
+}
+
+void ScopedRegistryOverride::Override() {
+  // Wipe the keys we redirect to.
+  // This gives us a stable run, even in the presence of previous
+  // crashes or failures.
+  LSTATUS err = SHDeleteKey(HKEY_CURRENT_USER, kReplacementRoot);
+  ASSERT_TRUE(err == ERROR_SUCCESS || err == ERROR_FILE_NOT_FOUND);
+
+  // Create the keys we're redirecting HKCU and HKLM to.
+  ASSERT_TRUE(hkcu_.Create(HKEY_CURRENT_USER, kHKCUReplacement, KEY_READ));
+  ASSERT_TRUE(hklm_.Create(HKEY_CURRENT_USER, kHKLMReplacement, KEY_READ));
+
+  // Switch keys.
+  ASSERT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(HKEY_CURRENT_USER,
+                                                  hkcu_.Handle()));
+  ASSERT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(HKEY_LOCAL_MACHINE,
+                                                  hklm_.Handle()));
+}
+
+ScopedRegistryOverride::~ScopedRegistryOverride() {
+  // Undo the redirection.
+  EXPECT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(HKEY_CURRENT_USER, NULL));
+  EXPECT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(HKEY_LOCAL_MACHINE, NULL));
+
+  // Close our handles and delete the temp keys we redirected to.
+  hkcu_.Close();
+  hklm_.Close();
+  EXPECT_EQ(ERROR_SUCCESS, SHDeleteKey(HKEY_CURRENT_USER, kReplacementRoot));
+}
 
 }  // namespace testing

@@ -13,6 +13,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/win/registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace testing {
@@ -282,6 +283,21 @@ inline Matcher<DISPPARAMS*> DispParamArgEq(const VARIANT& var) {
 ACTION_P(AddRef, p) {
   p->AddRef();
 }
+
+// Temporarily overrides registry keys.
+class ScopedRegistryOverride {
+ public:
+  ScopedRegistryOverride();
+  ~ScopedRegistryOverride();
+
+ private:
+  void Override();
+
+  base::win::RegKey hkcu_;
+  base::win::RegKey hklm_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedRegistryOverride);
+};
 
 }  // namespace testing
 

@@ -34,13 +34,6 @@ using testing::SetArgumentPointee;
 using testing::StrictMock;
 using testing::Return;
 
-const wchar_t* kReplacementRoot =
-  L"Software\\Google\\InstallUtilUnittest";
-const wchar_t* kHKCUReplacement =
-  L"Software\\Google\\InstallUtilUnittest\\HKCU";
-const wchar_t* kHKLMReplacement =
-  L"Software\\Google\\InstallUtilUnittest\\HKLM";
-
 MOCK_STATIC_CLASS_BEGIN(MockProcessWinUtils)
   MOCK_STATIC_INIT_BEGIN(MockProcessWinUtils)
     MOCK_STATIC_INIT2(process_utils_win::IsCurrentProcessUacElevated,
@@ -50,44 +43,22 @@ MOCK_STATIC_CLASS_BEGIN(MockProcessWinUtils)
   MOCK_STATIC1(HRESULT, , IsCurrentProcessUacElevated, bool*);
 MOCK_STATIC_CLASS_END(MockProcessWinUtils)
 
-
 class CeeeModuleUtilTest : public testing::Test {
- protected:
+ public:
   static const DWORD kFalse = 0;
   static const DWORD kTrue = 1;
   static const DWORD kInvalid = 5;
 
+ protected:
   virtual void SetUp() {
-    // Wipe the keys we redirect to.
-    // This gives us a stable run, even in the presence of previous
-    // crashes or failures.
-    LSTATUS err = SHDeleteKey(HKEY_CURRENT_USER, kReplacementRoot);
-    EXPECT_TRUE(err == ERROR_SUCCESS || err == ERROR_FILE_NOT_FOUND);
-
-    // Create the keys we're redirecting HKCU and HKLM to.
-    ASSERT_TRUE(hkcu_.Create(HKEY_CURRENT_USER, kHKCUReplacement, KEY_READ));
-    ASSERT_TRUE(hklm_.Create(HKEY_CURRENT_USER, kHKLMReplacement, KEY_READ));
-
-    // And do the switcharoo.
-    ASSERT_EQ(ERROR_SUCCESS,
-      ::RegOverridePredefKey(HKEY_CURRENT_USER, hkcu_.Handle()));
-    ASSERT_EQ(ERROR_SUCCESS,
-      ::RegOverridePredefKey(HKEY_LOCAL_MACHINE, hklm_.Handle()));
+    registry_override_.reset(new testing::ScopedRegistryOverride());
   }
 
   virtual void TearDown() {
-    // Undo the redirection.
-    EXPECT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(HKEY_CURRENT_USER, NULL));
-    EXPECT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(HKEY_LOCAL_MACHINE, NULL));
-
-    // Close our handles and delete the temp keys we redirected to.
-    hkcu_.Close();
-    hklm_.Close();
-    EXPECT_EQ(ERROR_SUCCESS, SHDeleteKey(HKEY_CURRENT_USER, kReplacementRoot));
+    registry_override_.reset();
   }
 
-  base::win::RegKey hkcu_;
-  base::win::RegKey hklm_;
+  scoped_ptr<testing::ScopedRegistryOverride> registry_override_;
 };
 
 // Mock PathService::Get that is used to look up files.
