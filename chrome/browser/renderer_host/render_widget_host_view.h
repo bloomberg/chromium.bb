@@ -246,6 +246,12 @@ class RenderWidgetHostView {
   virtual void AcceleratedCompositingActivated(bool activated) = 0;
 #endif
 
+#if defined(OS_WIN)
+  virtual gfx::PluginWindowHandle CreateCompositorHostWindow() = 0;
+  virtual void WillWmDestroy() = 0;
+  virtual void ShowCompositorHostWindow(bool show) = 0;
+#endif
+
   // Toggles visual muting of the render view area. This is on when a
   // constrained window is showing.
   virtual void SetVisuallyDeemphasized(bool deemphasized) = 0;

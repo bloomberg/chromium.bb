@@ -113,6 +113,16 @@ IPC_BEGIN_MESSAGES(GpuHost)
   // should cause the browser to redraw the compositor's contents.
   IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                        GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
+#elif defined(OS_WIN)
+  // Create and get the HWND for the compositor window
+  IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateCompositorHostWindow,
+                              int32, /* renderer_id */
+                              int32, /* render_view_id */
+                              gfx::PluginWindowHandle /* compositor_host_id */)
+
+  IPC_MESSAGE_CONTROL2(GpuHostMsg_ScheduleComposite,
+                       int32, /* renderer_id */
+                       int32 /* render_view_id */)
 #endif
 
 IPC_END_MESSAGES(GpuHost)

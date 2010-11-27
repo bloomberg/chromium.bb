@@ -745,7 +745,7 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
   if (!is_hidden_) {
     std::vector<gfx::Rect> rects(copy_rects);
 
-    // Because the findbar might be open, we cannot use scrollRect:by: here.  For
+    // Because the findbar might be open, we cannot use scrollRect:by: here. For
     // now, simply mark all of scroll rect as dirty.
     if (!scroll_rect.IsEmpty())
       rects.push_back(scroll_rect);
@@ -1019,8 +1019,8 @@ void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
   // Plugins are destroyed on page navigate. The compositor layer on the other
   // hand is created on demand and then stays alive until its renderer process
   // dies (usually on cross-domain navigation). Instead, only a flag
-  // |is_gpu_rendering_active()| is flipped when the compositor output should be
-  // shown/hidden.
+  // |is_accelerated_compositing_active()| is flipped when the compositor output
+  // should be shown/hidden.
   // Show/hide the view belonging to the compositor here.
   plugin_container_manager_.set_gpu_rendering_active(show_gpu_widget);
 
@@ -1085,9 +1085,9 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
 
 void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (GetRenderWidgetHost()->is_gpu_rendering_active()) {
+  if (GetRenderWidgetHost()->is_accelerated_compositing_active()) {
     UpdateRootGpuViewVisibility(
-        GetRenderWidgetHost()->is_gpu_rendering_active());
+        GetRenderWidgetHost()->is_accelerated_compositing_active());
   } else {
     needs_gpu_visibility_update_after_repaint_ = true;
   }
@@ -1685,7 +1685,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   const gfx::Rect damagedRect([self flipNSRectToRect:dirtyRect]);
 
-  if (renderWidgetHostView_->render_widget_host_->is_gpu_rendering_active()) {
+  if (renderWidgetHostView_->render_widget_host_->
+      is_accelerated_compositing_active()) {
     gfx::Rect gpuRect;
 
     gfx::PluginWindowHandle root_handle =

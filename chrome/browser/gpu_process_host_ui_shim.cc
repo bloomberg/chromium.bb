@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/gpu_messages.h"
 
@@ -105,6 +106,15 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
   child_process_logging::SetGpuInfo(gpu_info);
 }
 
+void GpuProcessHostUIShim::OnScheduleComposite(int renderer_id,
+    int render_view_id) {
+  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
+                                                render_view_id);
+  if (!host) {
+    return;
+  }
+  host->ScheduleComposite();
+}
 void GpuProcessHostUIShim::OnControlMessageReceived(
     const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
@@ -112,6 +122,10 @@ void GpuProcessHostUIShim::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_ScheduleComposite,
+                        OnScheduleComposite);
+#endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }

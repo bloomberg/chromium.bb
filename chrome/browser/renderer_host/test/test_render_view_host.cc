@@ -181,6 +181,17 @@ void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
 
 void TestRenderWidgetHostView::GpuRenderingStateDidChange() {
 }
+#elif defined(OS_WIN)
+gfx::PluginWindowHandle TestRenderWidgetHostView::CreateCompositorHostWindow(
+  ) {
+    return gfx::kNullPluginWindow;
+}
+
+void TestRenderWidgetHostView::WillWmDestroy() {
+}
+
+void TestRenderWidgetHostView::ShowCompositorHostWindow(bool show) {
+}
 #endif
 
 TestRenderViewHostFactory::TestRenderViewHostFactory(

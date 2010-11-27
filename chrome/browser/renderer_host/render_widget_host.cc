@@ -77,7 +77,7 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       routing_id_(routing_id),
       is_loading_(false),
       is_hidden_(false),
-      is_gpu_rendering_active_(false),
+      is_accelerated_compositing_active_(false),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
       mouse_move_pending_(false),
@@ -157,8 +157,8 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
                         OnMsgImeUpdateTextInputState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
                         OnMsgImeCancelComposition)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GpuRenderingActivated,
-                        OnMsgGpuRenderingActivated)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidActivateAcceleratedCompositing,
+                        OnMsgDidActivateAcceleratedCompositing)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
@@ -232,7 +232,7 @@ void RenderWidgetHost::WasRestored() {
   // the backing store exists.
   bool needs_repainting;
   if (needs_repainting_on_restore_ || !backing_store ||
-      is_gpu_rendering_active()) {
+      is_accelerated_compositing_active()) {
     needs_repainting = true;
     needs_repainting_on_restore_ = false;
   } else {
@@ -402,8 +402,9 @@ void RenderWidgetHost::DonePaintingToBackingStore() {
 }
 
 void RenderWidgetHost::ScheduleComposite() {
-  DCHECK(!is_hidden_ || !is_gpu_rendering_active_) <<
-      "ScheduleCompositeAndSync called while hidden!";
+  if (is_hidden_ || !is_accelerated_compositing_active_) {
+      return;
+  }
 
   // Send out a request to the renderer to paint the view if required.
   if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_) {
@@ -658,7 +659,7 @@ void RenderWidgetHost::RendererExited() {
   current_size_.SetSize(0, 0);
   current_reserved_rect_.SetRect(0, 0, 0, 0);
   is_hidden_ = false;
-  is_gpu_rendering_active_ = false;
+  is_accelerated_compositing_active_ = false;
 
   if (view_) {
     view_->RenderViewGone();
@@ -832,7 +833,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
   DCHECK(!params.bitmap_rect.IsEmpty());
   DCHECK(!params.view_size.IsEmpty());
 
-  if (!is_gpu_rendering_active_) {
+  if (!is_accelerated_compositing_active_) {
     const size_t size = params.bitmap_rect.height() *
         params.bitmap_rect.width() * 4;
     TransportDIB* dib = process_->GetTransportDIB(params.bitmap);
@@ -879,7 +880,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
     // which attempts to move the plugin windows and in the process could
     // dispatch other window messages which could cause the view to be
     // destroyed.
-    if (view_ && !is_gpu_rendering_active_) {
+    if (view_ && !is_accelerated_compositing_active_) {
       view_being_painted_ = true;
       view_->DidUpdateBackingStore(params.scroll_rect, params.dx, params.dy,
                                    params.copy_rects);
@@ -977,14 +978,16 @@ void RenderWidgetHost::OnMsgImeCancelComposition() {
     view_->ImeCancelComposition();
 }
 
-void RenderWidgetHost::OnMsgGpuRenderingActivated(bool activated) {
+void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
 #if defined(OS_MACOSX)
-  bool old_state = is_gpu_rendering_active_;
+  bool old_state = is_accelerated_compositing_active_;
 #endif
-  is_gpu_rendering_active_ = activated;
+  is_accelerated_compositing_active_ = activated;
 #if defined(OS_MACOSX)
-  if (old_state != is_gpu_rendering_active_ && view_)
+  if (old_state != is_accelerated_compositing_active_ && view_)
     view_->GpuRenderingStateDidChange();
+#elif defined(OS_WIN)
+  view_->ShowCompositorHostWindow(is_accelerated_compositing_active_);
 #elif defined(TOOLKIT_USES_GTK)
   view_->AcceleratedCompositingActivated(activated);
 #endif
@@ -1089,7 +1092,6 @@ void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
     NOTIMPLEMENTED();
   }
 }
-
 #endif
 
 void RenderWidgetHost::PaintBackingStoreRect(

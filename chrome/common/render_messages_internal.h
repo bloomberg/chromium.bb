@@ -1315,10 +1315,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
                       ViewHostMsg_UpdateRect_Params)
 
-  // Sent by the renderer when GPU compositing is enabled or disabled to notify
-  // the browser whether or not is should do paiting.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_GpuRenderingActivated,
-                      bool /* true if the GPU process renders to window */)
+  // Sent by the renderer when accelerated compositing is enabled or disabled to
+  // notify the browser whether or not is should do painting.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DidActivateAcceleratedCompositing,
+                      bool /* true if the accelerated compositor is actve */)
 
   // Acknowledges receipt of a ViewMsg_HandleInputEvent message.
   // Payload is a WebInputEvent::Type which is the type of the event, followed

@@ -14,6 +14,10 @@
 
 using gpu::Buffer;
 
+#if defined(OS_WIN)
+#define kCompositorWindowOwner L"CompositorWindowOwner"
+#endif
+
 GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
     gfx::PluginWindowHandle handle,
@@ -38,10 +42,124 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       render_view_id_(render_view_id) {
 }
 
+#if defined(OS_WIN)
+static LRESULT CALLBACK CompositorWindowProc(
+    HWND hwnd,
+    UINT message,
+    WPARAM wparam,
+    LPARAM lparam) {
+  switch (message) {
+    case WM_ERASEBKGND:
+      return 0;
+    case WM_DESTROY:
+      RemoveProp(hwnd, kCompositorWindowOwner);
+      return 0;
+    case WM_PAINT: {
+      PAINTSTRUCT paint;
+      HDC dc = BeginPaint(hwnd, &paint);
+      if (dc) {
+        HANDLE h = GetProp(hwnd, kCompositorWindowOwner);
+        if (h) {
+          GpuCommandBufferStub* stub =
+              reinterpret_cast<GpuCommandBufferStub*>(h);
+          stub->OnCompositorWindowPainted();
+        }
+        EndPaint(hwnd, &paint);
+      }
+      break;
+    }
+    default:
+      return DefWindowProc(hwnd, message, wparam, lparam);
+  }
+  return 0;
+}
+
+bool GpuCommandBufferStub::CreateCompositorWindow() {
+  DCHECK(handle_ != gfx::kNullPluginWindow);
+
+  // Ask the browser to create the the host window.
+  ChildThread* gpu_thread = ChildThread::current();
+  gfx::PluginWindowHandle host_window_id = gfx::kNullPluginWindow;
+    gpu_thread->Send(new GpuHostMsg_CreateCompositorHostWindow(
+        renderer_id_,
+        render_view_id_,
+        &host_window_id));
+  if (host_window_id == gfx::kNullPluginWindow)
+    return false;
+  HWND host_window = static_cast<HWND>(host_window_id);
+
+  // Create the compositor window itself.
+  DCHECK(host_window);
+  static ATOM window_class = 0;
+  if (!window_class) {
+    WNDCLASSEX wcex;
+    wcex.cbSize         = sizeof(wcex);
+    wcex.style          = 0;
+    wcex.lpfnWndProc    = CompositorWindowProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = GetModuleHandle(NULL);
+    wcex.hIcon          = 0;
+    wcex.hCursor        = 0;
+    wcex.hbrBackground  = NULL;
+    wcex.lpszMenuName   = 0;
+    wcex.lpszClassName  = L"CompositorWindowClass";
+    wcex.hIconSm        = 0;
+    window_class = RegisterClassEx(&wcex);
+    DCHECK(window_class);
+  }
+
+  HWND compositor_window = CreateWindowEx(
+      WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
+      MAKEINTATOM(window_class),
+      0,
+      WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
+      0, 0,
+      0, 0,
+      host_window,
+      0,
+      GetModuleHandle(NULL),
+      0);
+  if (!compositor_window) {
+    compositor_window_ = gfx::kNullPluginWindow;
+    return false;
+  }
+  SetProp(compositor_window, kCompositorWindowOwner,
+      reinterpret_cast<HANDLE>(this));
+
+  RECT parent_rect;
+  GetClientRect(host_window, &parent_rect);
+
+  UINT flags = SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
+      SWP_NOACTIVATE | SWP_DEFERERASE | SWP_SHOWWINDOW;
+  SetWindowPos(compositor_window,
+      NULL,
+      0, 0,
+      parent_rect.right - parent_rect.left,
+      parent_rect.bottom - parent_rect.top,
+      flags);
+  compositor_window_ = static_cast<gfx::PluginWindowHandle>(compositor_window);
+  return true;
+}
+
+void GpuCommandBufferStub::OnCompositorWindowPainted() {
+  ChildThread* gpu_thread = ChildThread::current();
+  gpu_thread->Send(new GpuHostMsg_ScheduleComposite(
+      renderer_id_, render_view_id_));
+}
+#endif  // defined(OS_WIN)
+
+
 GpuCommandBufferStub::~GpuCommandBufferStub() {
   if (processor_.get()) {
     processor_->Destroy();
   }
+#if defined(OS_WIN)
+  if (compositor_window_) {
+    DestroyWindow(static_cast<HWND>(compositor_window_));
+    compositor_window_ = NULL;
+  }
+#endif
 }
 
 void GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
@@ -79,6 +197,21 @@ void GpuCommandBufferStub::OnInitialize(
 
   command_buffer_.reset(new gpu::CommandBufferService);
 
+  // Create the child window, if needed
+#if defined(OS_WIN)
+  gfx::PluginWindowHandle output_window_handle;
+  if (handle_) {
+    if (!CreateCompositorWindow()) {
+      return;
+    }
+    output_window_handle = compositor_window_;
+  } else {
+    output_window_handle = handle_;
+  }
+#else
+  gfx::PluginWindowHandle output_window_handle = handle_;
+#endif
+
   // Initialize the CommandBufferService and GPUProcessor.
   if (command_buffer_->Initialize(size)) {
     Buffer buffer = command_buffer_->GetRingBuffer();
@@ -87,7 +220,7 @@ void GpuCommandBufferStub::OnInitialize(
           parent_ ? parent_->processor_.get() : NULL;
       processor_.reset(new gpu::GPUProcessor(command_buffer_.get(), NULL));
       if (processor_->Initialize(
-          handle_,
+          output_window_handle,
           initial_size_,
           allowed_extensions_.c_str(),
           requested_attribs_,
@@ -113,10 +246,10 @@ void GpuCommandBufferStub::OnInitialize(
               NewCallback(this,
                           &GpuCommandBufferStub::SwapBuffersCallback));
         }
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_WIN)
         if (handle_) {
-          // Set up a pathway to allow the Gpu process to ask the browser
-          // for a window resize.
+          // Set up a pathway for resizing the output window at the right time
+          // relative to other GL commands.
           processor_->SetResizeCallback(
               NewCallback(this,
                           &GpuCommandBufferStub::ResizeCallback));
@@ -227,13 +360,21 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
 }
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_LINUX)
 void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
+  if (handle_ == gfx::kNullPluginWindow)
+    return;
+
+#if defined(OS_LINUX)
   ChildThread* gpu_thread = ChildThread::current();
   bool result = false;
   gpu_thread->Send(
       new GpuHostMsg_ResizeXID(handle_, size, &result));
+#elif defined(OS_WIN)
+  HWND hwnd = static_cast<HWND>(compositor_window_);
+  UINT swp_flags = SWP_NOSENDCHANGING | SWP_NOOWNERZORDER | SWP_NOCOPYBITS |
+    SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE;
+  SetWindowPos(hwnd, NULL, 0, 0, size.width(), size.height(), swp_flags);
+#endif
 }
-#endif  // defined(OS_LINUX)
 
 #endif  // ENABLE_GPU

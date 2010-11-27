@@ -62,7 +62,7 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
 
   // Message handlers.
   void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
-
+  void OnScheduleComposite(int32 renderer_id, int32 render_view_id);
   void OnControlMessageReceived(const IPC::Message& message);
 
   int last_routing_id_;

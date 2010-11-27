@@ -486,8 +486,13 @@ TabContents::~TabContents() {
 #if defined(OS_WIN)
   // If we still have a window handle, destroy it. GetNativeView can return
   // NULL if this contents was part of a window that closed.
-  if (GetNativeView())
+  if (GetNativeView()) {
+    RenderViewHost* host = render_view_host();
+    if (host && host->view()) {
+      host->view()->WillWmDestroy();
+    }
     ::DestroyWindow(GetNativeView());
+  }
 #endif
 
   // OnCloseStarted isn't called in unit tests.

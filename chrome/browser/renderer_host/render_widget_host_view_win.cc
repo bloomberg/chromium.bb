@@ -281,6 +281,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 
 RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
     : render_widget_host_(widget),
+      compositor_host_window_(NULL),
       track_mouse_leave_(false),
       ime_notification_(false),
       capture_enter_key_(false),
@@ -382,6 +383,13 @@ void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {
   UINT swp_flags = SWP_NOSENDCHANGING | SWP_NOOWNERZORDER | SWP_NOCOPYBITS |
       SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE;
   SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
+  if (compositor_host_window_) {
+    ::SetWindowPos(compositor_host_window_,
+        NULL,
+        0, 0,
+        size.width(), size.height(),
+        SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
+  }
   render_widget_host_->WasResized();
   EnsureTooltip();
 }
@@ -709,6 +717,26 @@ void RenderWidgetHostViewWin::RenderViewGone() {
   DestroyWindow();
 }
 
+static BOOL CALLBACK AddChildWindowToVector(HWND hwnd, LPARAM lparam) {
+  std::vector<HWND>* vector = reinterpret_cast<std::vector<HWND>*>(lparam);
+  vector->push_back(hwnd);
+  return TRUE;
+}
+
+void RenderWidgetHostViewWin::WillWmDestroy() {
+  if (!compositor_host_window_)
+    return;
+
+  std::vector<HWND> all_child_windows;
+  ::EnumChildWindows(compositor_host_window_, AddChildWindowToVector,
+      reinterpret_cast<LPARAM>(&all_child_windows));
+  if (all_child_windows.size()) {
+    DCHECK(all_child_windows.size() == 1);
+    ::ShowWindow(all_child_windows[0], SW_HIDE);
+    ::SetParent(all_child_windows[0], NULL);
+  }
+}
+
 void RenderWidgetHostViewWin::WillDestroyRenderWidget(RenderWidgetHost* rwh) {
   if (rwh == render_widget_host_)
     render_widget_host_ = NULL;
@@ -722,6 +750,7 @@ void RenderWidgetHostViewWin::Destroy() {
   // OnFinalMessage();
   close_on_deactivate_ = false;
   being_destroyed_ = true;
+  WillWmDestroy();
   DestroyWindow();
 }
 
@@ -849,7 +878,7 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   // If the GPU process is rendering directly into the View,
   // call the compositor directly.
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
-  if (render_widget_host->is_gpu_rendering_active()) {
+  if (render_widget_host->is_accelerated_compositing_active()) {
     // We initialize paint_dc here so that BeginPaint()/EndPaint()
     // get called to validate the region.
     CPaintDC paint_dc(m_hWnd);
@@ -1455,6 +1484,136 @@ void RenderWidgetHostViewWin::Observe(NotificationType type,
   // clear the BrowserAccessibilityManager, because the renderer is
   // dead and any accessibility information we have is now stale.
   browser_accessibility_manager_.reset(NULL);
+}
+
+// Looks through the children windows of the CompositorHostWindow. If the
+// compositor child window is found, its size is checked against the host
+// window's size. If the child is smaller in either dimensions, we fill
+// the host window with white to avoid unseemly cracks.
+static void PaintCompositorHostWindow(HWND hWnd) {
+  PAINTSTRUCT paint;
+  BeginPaint(hWnd, &paint);
+
+  std::vector<HWND> child_windows;
+  EnumChildWindows(hWnd, AddChildWindowToVector,
+      reinterpret_cast<LPARAM>(&child_windows));
+
+  if (child_windows.size()) {
+    HWND child = child_windows[0];
+
+    RECT host_rect, child_rect;
+    GetClientRect(hWnd, &host_rect);
+    if (GetClientRect(child, &child_rect)) {
+      if (child_rect.right < host_rect.right ||
+         child_rect.bottom != host_rect.bottom) {
+          FillRect(paint.hdc, &host_rect,
+              static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
+      }
+    }
+  }
+  EndPaint(hWnd, &paint);
+}
+
+// WndProc for the compositor host window. We use this instead of Default so
+// we can drop WM_PAINT and WM_ERASEBKGD messages on the floor.
+static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
+                                                 WPARAM wParam, LPARAM lParam) {
+  switch (message) {
+  case WM_ERASEBKGND:
+    return 0;
+  case WM_DESTROY:
+    return 0;
+  case WM_PAINT:
+    PaintCompositorHostWindow(hWnd);
+    return 0;
+  default:
+    return DefWindowProc(hWnd, message, wParam, lParam);
+  }
+}
+
+// Creates a HWND within the RenderWidgetHostView that will serve as a host
+// for a HWND that the GPU process will create. The host window is used
+// to Z-position the GPU's window relative to other plugin windows.
+gfx::PluginWindowHandle RenderWidgetHostViewWin::CreateCompositorHostWindow() {
+  DCHECK(!compositor_host_window_);
+  static ATOM window_class = 0;
+  if (!window_class) {
+    WNDCLASSEX wcex;
+    wcex.cbSize         = sizeof(WNDCLASSEX);
+    wcex.style          = 0;
+    wcex.lpfnWndProc    = CompositorHostWindowProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = GetModuleHandle(NULL);
+    wcex.hIcon          = 0;
+    wcex.hCursor        = 0;
+    wcex.hbrBackground  = NULL;
+    wcex.lpszMenuName   = 0;
+    wcex.lpszClassName  = L"CompositorHostWindowClass";
+    wcex.hIconSm        = 0;
+    window_class = RegisterClassEx(&wcex);
+    DCHECK(window_class);
+  }
+
+  compositor_host_window_ = CreateWindowEx(
+    WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
+    MAKEINTATOM(window_class), 0,
+    WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
+    0, 0, 0, 0, m_hWnd, 0, GetModuleHandle(NULL), 0);
+  DCHECK(compositor_host_window_);
+
+  // We need to not just "WM_SHOW" the new indow, but reparent it
+  // below any existing plugin existing windows.
+  ShowCompositorHostWindow(true);
+
+  return static_cast<gfx::PluginWindowHandle>(compositor_host_window_);
+}
+
+void RenderWidgetHostViewWin::ShowCompositorHostWindow(bool show) {
+  // When we first create the compositor, we will get a show request from
+  // the renderer before we have gotten the create request from the GPU. In this
+  // case, simply ignore the show request.
+  if (compositor_host_window_ == NULL)
+    return;
+
+  if (show) {
+    UINT flags = SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
+      SWP_NOACTIVATE | SWP_DEFERERASE | SWP_SHOWWINDOW;
+    gfx::Rect rect = GetViewBounds();
+    ::SetWindowPos(compositor_host_window_, NULL, 0, 0,
+        rect.width(), rect.height(),
+        flags);
+
+    // Get all the child windows of this view, including the compositor window.
+    std::vector<HWND> all_child_windows;
+    ::EnumChildWindows(m_hWnd, AddChildWindowToVector,
+        reinterpret_cast<LPARAM>(&all_child_windows));
+
+    // Build a list of just the plugin window handles
+    std::vector<HWND> plugin_windows;
+    bool compositor_host_window_found = false;
+    for (size_t i = 0; i < all_child_windows.size(); ++i) {
+      if (all_child_windows[i] != compositor_host_window_)
+        plugin_windows.push_back(all_child_windows[i]);
+      else
+        compositor_host_window_found = true;
+    }
+    DCHECK(compositor_host_window_found);
+
+    // Set all the plugin windows to be "after" the compositor window.
+    // When the compositor window is created, gets placed above plugins.
+    for (size_t i = 0; i < plugin_windows.size(); ++i) {
+      HWND next;
+      if (i + 1 < plugin_windows.size())
+        next = plugin_windows[i+1];
+      else
+        next = compositor_host_window_;
+      ::SetWindowPos(plugin_windows[i], next, 0, 0, 0, 0,
+          SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+    }
+  } else {
+    ::ShowWindow(compositor_host_window_, SW_HIDE);
+  }
 }
 
 void RenderWidgetHostViewWin::SetAccessibilityFocus(int acc_obj_id) {

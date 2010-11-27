@@ -133,6 +133,10 @@ void GpuChannel::OnCreateViewCommandBuffer(
       GetProp(view, chrome::kChromiumRendererIdProperty));
   if (view_renderer_id != renderer_id_)
     return;
+
+  // Note, we don't actually render into the view HWND. Instead, inside
+  // the GpuCommandBufferStub, we will create a child window within the view
+  // HWND into which we will render.
   handle = view;
 #elif defined(OS_LINUX)
   ChildThread* gpu_thread = ChildThread::current();

@@ -350,7 +350,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
   // Don't do any painting if the GPU process is rendering directly
   // into the View.
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
-  if (render_widget_host->is_gpu_rendering_active()) {
+  if (render_widget_host->is_accelerated_compositing_active()) {
     return;
   }
 
@@ -603,7 +603,8 @@ bool RenderWidgetHostViewViews::ContainsNativeView(
   return false;
 }
 
-void RenderWidgetHostViewViews::AcceleratedCompositingActivated(bool activated) {
+void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
+    bool activated) {
   // TODO(anicolao): figure out if we need something here
   if (activated)
     NOTIMPLEMENTED();

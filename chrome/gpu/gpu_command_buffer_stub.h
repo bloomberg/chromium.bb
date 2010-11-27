@@ -51,6 +51,11 @@ class GpuCommandBufferStub
 
   int32 route_id() const { return route_id_; }
 
+#if defined(OS_WIN)
+  // Called only by the compositor window's window proc
+  void OnCompositorWindowPainted();
+#endif
+
 #if defined(OS_MACOSX)
   // Called only by the GpuChannel.
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
@@ -75,11 +80,12 @@ class GpuCommandBufferStub
 #if defined(OS_MACOSX)
   void OnSetWindowSize(const gfx::Size& size);
   void SwapBuffersCallback();
+#elif defined(OS_WIN)
+  bool CreateCompositorWindow();
+  HWND compositor_window_;
 #endif
 
-#if defined(OS_LINUX)
   void ResizeCallback(gfx::Size size);
-#endif
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they

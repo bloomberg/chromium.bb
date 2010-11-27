@@ -124,6 +124,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       int32 route_id,
       uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange();
+#elif defined(OS_WIN)
+  virtual gfx::PluginWindowHandle CreateCompositorHostWindow();
+  virtual void WillWmDestroy();
+  virtual void ShowCompositorHostWindow(bool show);
 #endif
   virtual void SetVisuallyDeemphasized(bool deemphasized) { }
 

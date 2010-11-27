@@ -523,8 +523,7 @@ void RenderWidget::DoDeferredUpdate() {
     dib_id = current_paint_buf_->id();
   } else {  // Accelerated compositing path
     // Begin painting.
-    bool finish = next_paint_is_resize_ack();
-    webwidget_->composite(finish);
+    webwidget_->composite(false);
   }
 
   // sending an ack to browser process that the paint is complete...
@@ -628,7 +627,7 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 
 void RenderWidget::didActivateAcceleratedCompositing(bool active) {
   is_accelerated_compositing_active_ = active;
-  Send(new ViewHostMsg_GpuRenderingActivated(
+  Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
     routing_id_, is_accelerated_compositing_active_));
 }
 

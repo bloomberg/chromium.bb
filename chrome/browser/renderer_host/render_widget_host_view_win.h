@@ -154,6 +154,7 @@ class RenderWidgetHostViewWin
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
       const std::vector<gfx::Rect>& copy_rects);
   virtual void RenderViewGone();
+  virtual void WillWmDestroy();  // called by TabContents before DestroyWindow
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh);
   virtual void Destroy();
   virtual void SetTooltipText(const std::wstring& tooltip_text);
@@ -161,6 +162,10 @@ class RenderWidgetHostViewWin
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void SetVisuallyDeemphasized(bool deemphasized);
+
+  virtual gfx::PluginWindowHandle CreateCompositorHostWindow();
+  virtual void ShowCompositorHostWindow(bool show);
+
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
 
@@ -264,6 +269,9 @@ class RenderWidgetHostViewWin
 
   // The associated Model.
   RenderWidgetHost* render_widget_host_;
+
+  // When we are doing accelerated compositing
+  HWND compositor_host_window_;
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
