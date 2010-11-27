@@ -1425,7 +1425,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	if (d == NULL)
 		return NULL;
 
-	d->display = wl_display_create(socket_name, sizeof socket_name);
+	d->display = wl_display_connect(socket_name, sizeof socket_name);
 	if (d->display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return NULL;

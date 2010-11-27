@@ -329,7 +329,7 @@ static const struct wl_display_listener display_listener = {
 };
 
 WL_EXPORT struct wl_display *
-wl_display_create(const char *name, size_t name_size)
+wl_display_connect(const char *name, size_t name_size)
 {
 	struct wl_display *display;
 	struct sockaddr_un addr;
