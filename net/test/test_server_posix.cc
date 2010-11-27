@@ -139,15 +139,27 @@ bool TestServer::WaitToStart() {
   base::TimeDelta remaining_time = base::TimeDelta::FromMilliseconds(
       TestTimeouts::action_max_timeout_ms());
 
-  // Try to read two bytes from the pipe indicating the ephemeral port number.
-  uint16 port = 0;
-  if (!ReadData(child_fd_, sizeof(port),
-                reinterpret_cast<uint8*>(&port), &remaining_time)) {
-    LOG(ERROR) << "Could not read port";
+  uint32 server_data_len = 0;
+  if (!ReadData(child_fd_, sizeof(server_data_len),
+                reinterpret_cast<uint8*>(&server_data_len),
+                &remaining_time)) {
+    LOG(ERROR) << "Could not read server_data_len";
+    return false;
+  }
+  std::string server_data(server_data_len, '\0');
+  if (!ReadData(child_fd_, server_data_len,
+                reinterpret_cast<uint8*>(&server_data[0]),
+                &remaining_time)) {
+    LOG(ERROR) << "Could not read server_data (" << server_data_len
+               << " bytes)";
     return false;
   }
 
-  host_port_pair_.set_port(port);
+  if (!ParseServerData(server_data)) {
+    LOG(ERROR) << "Could not parse server_data: " << server_data;
+    return false;
+  }
+
   return true;
 }
 

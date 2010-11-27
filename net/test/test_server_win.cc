@@ -194,15 +194,25 @@ bool TestServer::WaitToStart() {
   ScopedHandle read_fd(child_read_fd_.Take());
   ScopedHandle write_fd(child_write_fd_.Take());
 
-  // Try to read two bytes from the pipe indicating the ephemeral port number.
-  uint16 port = 0;
-  if (!ReadData(read_fd.Get(), write_fd.Get(), sizeof(port),
-                reinterpret_cast<uint8*>(&port))) {
-    LOG(ERROR) << "Could not read port";
+  uint32 server_data_len = 0;
+  if (!ReadData(read_fd.Get(), write_fd.Get(), sizeof(server_data_len),
+                reinterpret_cast<uint8*>(&server_data_len))) {
+    LOG(ERROR) << "Could not read server_data_len";
+    return false;
+  }
+  std::string server_data(server_data_len, '\0');
+  if (!ReadData(read_fd.Get(), write_fd.Get(), server_data_len,
+                reinterpret_cast<uint8*>(&server_data[0]))) {
+    LOG(ERROR) << "Could not read server_data (" << server_data_len
+               << " bytes)";
     return false;
   }
 
-  host_port_pair_.set_port(port);
+  if (!ParseServerData(server_data)) {
+    LOG(ERROR) << "Could not parse server_data: " << server_data;
+    return false;
+  }
+
   return true;
 }
 

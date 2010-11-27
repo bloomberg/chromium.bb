@@ -17,11 +17,14 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/json/json_reader.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/host_port_pair.h"
@@ -375,6 +378,30 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
       command_line->AppendSwitchASCII(kBulkCipherSwitch, "3des");
   }
 
+  return true;
+}
+
+bool TestServer::ParseServerData(const std::string& server_data) {
+  VLOG(1) << "Server data: " << server_data;
+  base::JSONReader json_reader;
+  scoped_ptr<Value> value(json_reader.JsonToValue(server_data, true, false));
+  if (!value.get() ||
+      !value->IsType(Value::TYPE_DICTIONARY)) {
+    LOG(ERROR) << "Could not parse server data: "
+               << json_reader.GetErrorMessage();
+    return false;
+  }
+  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+  int port = 0;
+  if (!dict->GetInteger("port", &port)) {
+    LOG(ERROR) << "Could not find port value";
+    return false;
+  }
+  if ((port <= 0) || (port >= kuint16max)) {
+    LOG(ERROR) << "Invalid port value: " << port;
+    return false;
+  }
+  host_port_pair_.set_port(port);
   return true;
 }
 
