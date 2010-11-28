@@ -24,6 +24,7 @@
 #define _WAYLAND_GLIB_H_
 
 #include <glib/gmain.h>
+#include <wayland-client.h>
 
 GSource *wl_glib_source_new(struct wl_display *display);
 

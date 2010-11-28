@@ -23,6 +23,9 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
+#include <glib.h>
+#include <wayland-client.h>
+
 struct window;
 
 struct rectangle {
