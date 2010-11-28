@@ -17,11 +17,11 @@
 
 namespace net {
 class AuthChallengeInfo;
-}
+class URLRequest;
+}  // namespace net
 
 class ConstrainedWindow;
 class GURL;
-class URLRequest;
 
 // This is the base implementation for the OS-specific classes that route
 // authentication info to the URLRequest that needs it. These functions must
@@ -30,13 +30,13 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
                      public LoginModelObserver,
                      public NotificationObserver {
  public:
-  LoginHandler(net::AuthChallengeInfo* auth_info, URLRequest* request);
+  LoginHandler(net::AuthChallengeInfo* auth_info, net::URLRequest* request);
   virtual ~LoginHandler();
 
   // Builds the platform specific LoginHandler. Used from within
   // CreateLoginPrompt() which creates tasks.
   static LoginHandler* Create(net::AuthChallengeInfo* auth_info,
-                              URLRequest* request);
+                              net::URLRequest* request);
 
   // Initializes the underlying platform specific view.
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
@@ -125,7 +125,7 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
 
   // The request that wants login data.
   // This should only be accessed on the IO loop.
-  URLRequest* request_;
+  net::URLRequest* request_;
 
   // The PasswordForm sent to the PasswordManager. This is so we can refer to it
   // when later notifying the password manager if the credentials were accepted
@@ -200,11 +200,11 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 // caller must invoke OnRequestCancelled() on this LoginHandler before
 // destroying the URLRequest.
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
-                                URLRequest* request);
+                                net::URLRequest* request);
 
 // Helper to remove the ref from an URLRequest to the LoginHandler.
 // Should only be called from the IO thread, since it accesses an URLRequest.
-void ResetLoginHandlerForRequest(URLRequest* request);
+void ResetLoginHandlerForRequest(net::URLRequest* request);
 
 // Get the signon_realm under which the identity should be saved.
 std::string GetSignonRealm(const GURL& url,

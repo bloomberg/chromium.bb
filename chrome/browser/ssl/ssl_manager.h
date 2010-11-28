@@ -24,7 +24,10 @@ class ResourceDispatcherHost;
 class ResourceRedirectDetails;
 class ResourceRequestDetails;
 class SSLPolicy;
+
+namespace net {
 class URLRequest;
+}  // namespace net
 
 // The SSLManager SSLManager controls the SSL UI elements in a TabContents.  It
 // listens for various events that influence when these elements should or
@@ -43,7 +46,7 @@ class SSLManager : public NotificationObserver {
   //
   // Called on the IO thread.
   static void OnSSLCertificateError(ResourceDispatcherHost* resource_dispatcher,
-                                    URLRequest* request,
+                                    net::URLRequest* request,
                                     int cert_error,
                                     net::X509Certificate* cert);
 

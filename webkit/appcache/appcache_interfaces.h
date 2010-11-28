@@ -12,7 +12,9 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 
+namespace net {
 class URLRequest;
+}  // namespace net
 
 namespace appcache {
 
@@ -141,7 +143,7 @@ extern const char kHttpHEADMethod[];
 
 bool IsSchemeSupported(const GURL& url);
 bool IsMethodSupported(const std::string& method);
-bool IsSchemeAndMethodSupported(const URLRequest* request);
+bool IsSchemeAndMethodSupported(const net::URLRequest* request);
 
 extern const FilePath::CharType kAppCacheDatabaseName[];
 

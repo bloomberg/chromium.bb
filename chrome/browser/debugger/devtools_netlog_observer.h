@@ -11,8 +11,11 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
-class IOThread;
+namespace net {
 class URLRequest;
+}  // namespace net
+
+class IOThread;
 struct ResourceResponse;
 
 // DevToolsNetLogObserver watches the NetLog event stream and collects the
@@ -35,7 +38,7 @@ class DevToolsNetLogObserver: public ChromeNetLog::Observer {
   // Must be called on the IO thread. May return NULL if no observers
   // are active.
   static DevToolsNetLogObserver* GetInstance();
-  static void PopulateResponseInfo(URLRequest*, ResourceResponse*);
+  static void PopulateResponseInfo(net::URLRequest*, ResourceResponse*);
 
  private:
   typedef base::hash_map<uint32, scoped_refptr<ResourceInfo> >

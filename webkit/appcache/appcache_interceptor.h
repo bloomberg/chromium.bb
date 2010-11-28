@@ -40,10 +40,10 @@ class AppCacheInterceptor : public URLRequest::Interceptor {
 
  protected:
   // URLRequest::Interceptor overrides
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request);
-  virtual URLRequestJob* MaybeInterceptResponse(URLRequest* request);
-  virtual URLRequestJob* MaybeInterceptRedirect(URLRequest* request,
-                                                const GURL& location);
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
+  virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
+  virtual net::URLRequestJob* MaybeInterceptRedirect(net::URLRequest* request,
+                                                     const GURL& location);
 
  private:
   friend struct DefaultSingletonTraits<AppCacheInterceptor>;
@@ -55,8 +55,9 @@ class AppCacheInterceptor : public URLRequest::Interceptor {
   AppCacheInterceptor();
   virtual ~AppCacheInterceptor();
 
-  static void SetHandler(URLRequest* request, AppCacheRequestHandler* handler);
-  static AppCacheRequestHandler* GetHandler(URLRequest* request);
+  static void SetHandler(net::URLRequest* request,
+                         AppCacheRequestHandler* handler);
+  static AppCacheRequestHandler* GetHandler(net::URLRequest* request);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheInterceptor);
 };

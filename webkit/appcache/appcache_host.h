@@ -16,7 +16,9 @@
 #include "webkit/appcache/appcache_storage.h"
 #include "webkit/glue/resource_type.h"
 
+namespace net {
 class URLRequest;
+}  // namespace net
 
 namespace appcache {
 
@@ -72,7 +74,7 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // Support for loading resources out of the appcache.
   // May return NULL if the request isn't subject to retrieval from an appache.
   AppCacheRequestHandler* CreateRequestHandler(
-      URLRequest* request, ResourceType::Type resource_type);
+      net::URLRequest* request, ResourceType::Type resource_type);
 
   // Support for devtools inspecting appcache resources.
   void GetResourceList(std::vector<AppCacheResourceInfo>* resource_infos);

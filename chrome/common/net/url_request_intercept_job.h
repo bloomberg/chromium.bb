@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,18 +14,21 @@
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/notification_registrar.h"
 
-class ChromePluginLib;
+namespace net {
 class URLRequest;
+}  // namespace net
+
+class ChromePluginLib;
 
 // A request job that handles network requests intercepted by a Chrome plugin.
-class URLRequestInterceptJob
-    : public URLRequestJob, public NotificationObserver {
+class URLRequestInterceptJob : public net::URLRequestJob,
+                               public NotificationObserver {
  public:
   static URLRequestInterceptJob* FromCPRequest(CPRequest* request) {
     return ScopableCPRequest::GetData<URLRequestInterceptJob*>(request);
   }
 
-  URLRequestInterceptJob(URLRequest* request, ChromePluginLib* plugin,
+  URLRequestInterceptJob(net::URLRequest* request, ChromePluginLib* plugin,
                          ScopableCPRequest* cprequest);
   virtual ~URLRequestInterceptJob();
 

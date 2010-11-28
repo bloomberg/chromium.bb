@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,11 @@
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
-class ResourceDispatcherHost;
+namespace net {
 class URLRequest;
+}  // namespace net
+
+class ResourceDispatcherHost;
 class URLRequestStatus;
 struct DownloadBuffer;
 
@@ -24,7 +27,7 @@ struct DownloadBuffer;
 class X509UserCertResourceHandler : public ResourceHandler {
  public:
   X509UserCertResourceHandler(ResourceDispatcherHost* host,
-                              URLRequest* request,
+                              net::URLRequest* request,
                               int render_process_host_id, int render_view_id);
 
   bool OnUploadProgress(int request_id, uint64 position, uint64 size);
@@ -60,7 +63,7 @@ class X509UserCertResourceHandler : public ResourceHandler {
 
   GURL url_;
   ResourceDispatcherHost* host_;
-  URLRequest* request_;
+  net::URLRequest* request_;
   size_t content_length_;
   scoped_ptr<DownloadBuffer> buffer_;
   scoped_refptr<net::IOBuffer> read_buffer_;

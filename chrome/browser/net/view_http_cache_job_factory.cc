@@ -16,7 +16,7 @@
 namespace {
 
 // A job subclass that dumps an HTTP cache entry.
-class ViewHttpCacheJob : public URLRequestJob {
+class ViewHttpCacheJob : public net::URLRequestJob {
  public:
   explicit ViewHttpCacheJob(URLRequest* request)
       : URLRequestJob(request), data_offset_(0), cancel_(false), busy_(false),

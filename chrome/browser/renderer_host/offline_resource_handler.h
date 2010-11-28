@@ -14,7 +14,10 @@
 
 class MessageLoop;
 class ResourceDispatcherHost;
+
+namespace net {
 class URLRequest;
+}  // namespace net
 
 // Used to show an offline interstitial page when the network is not available.
 class OfflineResourceHandler : public ResourceHandler,
@@ -24,7 +27,7 @@ class OfflineResourceHandler : public ResourceHandler,
                          int host_id,
                          int render_view_id,
                          ResourceDispatcherHost* rdh,
-                         URLRequest* request);
+                         net::URLRequest* request);
   ~OfflineResourceHandler() {}
 
   // ResourceHandler implementation:
@@ -63,7 +66,7 @@ class OfflineResourceHandler : public ResourceHandler,
   int process_host_id_;
   int render_view_id_;
   ResourceDispatcherHost* rdh_;
-  URLRequest* request_;
+  net::URLRequest* request_;
 
   // The state for deferred load quest.
   int deferred_request_id_;

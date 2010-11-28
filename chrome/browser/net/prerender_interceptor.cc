@@ -34,12 +34,13 @@ PrerenderInterceptor::~PrerenderInterceptor() {
   URLRequest::UnregisterRequestInterceptor(this);
 }
 
-URLRequestJob* PrerenderInterceptor::MaybeIntercept(URLRequest* request) {
+net::URLRequestJob* PrerenderInterceptor::MaybeIntercept(
+    net::URLRequest* request) {
   return NULL;
 }
 
-URLRequestJob* PrerenderInterceptor::MaybeInterceptResponse(
-    URLRequest* request) {
+net::URLRequestJob* PrerenderInterceptor::MaybeInterceptResponse(
+    net::URLRequest* request) {
   // TODO(gavinp): unfortunately, we can't figure out the origin
   // of this request here on systems where the referrer is blocked by
   // configuration.

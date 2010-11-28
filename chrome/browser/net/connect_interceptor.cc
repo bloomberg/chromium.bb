@@ -17,7 +17,8 @@ ConnectInterceptor::~ConnectInterceptor() {
   URLRequest::UnregisterRequestInterceptor(this);
 }
 
-URLRequestJob* ConnectInterceptor::MaybeIntercept(URLRequest* request) {
+net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
+    net::URLRequest* request) {
   // Learn what URLs are likely to be needed during next startup.
   // Pass actual URL, rather than WithEmptyPath, as we often won't need to do
   // the canonicalization.
@@ -48,12 +49,13 @@ URLRequestJob* ConnectInterceptor::MaybeIntercept(URLRequest* request) {
   return NULL;
 }
 
-URLRequestJob* ConnectInterceptor::MaybeInterceptResponse(URLRequest* request) {
+net::URLRequestJob* ConnectInterceptor::MaybeInterceptResponse(
+    net::URLRequest* request) {
   return NULL;
 }
 
-URLRequestJob* ConnectInterceptor::MaybeInterceptRedirect(
-    URLRequest* request,
+net::URLRequestJob* ConnectInterceptor::MaybeInterceptRedirect(
+    net::URLRequest* request,
     const GURL& location) {
   return NULL;
 }

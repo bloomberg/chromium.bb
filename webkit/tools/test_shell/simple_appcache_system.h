@@ -20,7 +20,11 @@ class WebApplicationCacheHostClient;
 }
 class SimpleBackendProxy;
 class SimpleFrontendProxy;
+
+namespace net {
 class URLRequest;
+}  // namespace net
+
 class URLRequestContext;
 
 // A class that composes the constituent parts of an appcache system
@@ -63,7 +67,7 @@ class SimpleAppCacheSystem {
   }
 
   // Called by SimpleResourceLoaderBridge to hook into resource loads.
-  static void SetExtraRequestInfo(URLRequest* request,
+  static void SetExtraRequestInfo(net::URLRequest* request,
                                   int host_id,
                                   ResourceType::Type resource_type) {
     if (instance_)
@@ -71,9 +75,9 @@ class SimpleAppCacheSystem {
   }
 
   // Called by SimpleResourceLoaderBridge extract extra response bits.
-  static void GetExtraResponseInfo(URLRequest* request,
-                            int64* cache_id,
-                            GURL* manifest_url) {
+  static void GetExtraResponseInfo(net::URLRequest* request,
+                                   int64* cache_id,
+                                   GURL* manifest_url) {
     if (instance_)
       instance_->GetExtraResponseBits(request, cache_id, manifest_url);
   }
@@ -116,10 +120,10 @@ class SimpleAppCacheSystem {
   void CleanupIOThread();
   WebKit::WebApplicationCacheHost* CreateCacheHostForWebKit(
       WebKit::WebApplicationCacheHostClient* client);
-  void SetExtraRequestBits(URLRequest* request,
+  void SetExtraRequestBits(net::URLRequest* request,
                            int host_id,
                            ResourceType::Type resource_type);
-  void GetExtraResponseBits(URLRequest* request,
+  void GetExtraResponseBits(net::URLRequest* request,
                             int64* cache_id,
                             GURL* manifest_url);
 

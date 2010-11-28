@@ -16,7 +16,7 @@
 
 class URLRequestSlowDownloadJob : public URLRequestJob {
  public:
-  explicit URLRequestSlowDownloadJob(URLRequest* request);
+  explicit URLRequestSlowDownloadJob(net::URLRequest* request);
 
   // Timer callback, used to check to see if we should finish our download and
   // send the second chunk.
@@ -28,8 +28,8 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   virtual void GetResponseInfo(net::HttpResponseInfo* info);
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
 
-  static URLRequestJob* Factory(URLRequest* request,
-                                const std::string& scheme);
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme);
 
   // Test URLs.
   static const char kUnknownSizeUrl[];

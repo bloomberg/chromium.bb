@@ -17,9 +17,12 @@ class FilePath;
 class GURL;
 class MessageLoop;
 class RefCountedMemory;
-class URLRequest;
 class URLRequestChromeJob;
+
+namespace net {
+class URLRequest;
 class URLRequestJob;
+}  // namespace net
 
 // To serve dynamic data off of chrome: URLs, implement the
 // ChromeURLDataManager::DataSource interface and register your handler
@@ -114,7 +117,8 @@ class ChromeURLDataManager {
   void AddFileSource(const std::string& source_name, const FilePath& path);
   void RemoveFileSource(const std::string& source_name);
 
-  static URLRequestJob* Factory(URLRequest* request, const std::string& scheme);
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme);
 
  private:
   friend class URLRequestChromeJob;

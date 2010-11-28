@@ -19,12 +19,14 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
+namespace net {
 class URLRequest;
+}  // namespace net
 
 // Details about a resource request notification.
 class ResourceRequestDetails {
  public:
-  ResourceRequestDetails(const URLRequest* request, int cert_id);
+  ResourceRequestDetails(const net::URLRequest* request, int cert_id);
 
   virtual ~ResourceRequestDetails();
 
@@ -61,7 +63,7 @@ class ResourceRequestDetails {
 // Details about a redirection of a resource request.
 class ResourceRedirectDetails : public ResourceRequestDetails {
  public:
-  ResourceRedirectDetails(const URLRequest* request,
+  ResourceRedirectDetails(const net::URLRequest* request,
                           int cert_id,
                           const GURL& new_url);
   virtual ~ResourceRedirectDetails();

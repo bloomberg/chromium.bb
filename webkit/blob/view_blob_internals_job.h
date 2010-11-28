@@ -9,7 +9,9 @@
 
 #include "net/url_request/url_request_simple_job.h"
 
+namespace net {
 class URLRequest;
+}  // namespace net
 
 namespace webkit_blob {
 
@@ -20,7 +22,7 @@ class BlobStorageController;
 // state of blob registry.
 class ViewBlobInternalsJob : public URLRequestSimpleJob {
  public:
-  ViewBlobInternalsJob(URLRequest* request,
+  ViewBlobInternalsJob(net::URLRequest* request,
                        BlobStorageController* blob_storage_controller);
 
   virtual void Start();

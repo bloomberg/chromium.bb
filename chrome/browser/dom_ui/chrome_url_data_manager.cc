@@ -39,7 +39,7 @@
 // resource requests asynchronously.
 // It hands off URL requests to ChromeURLDataManager, which asynchronously
 // calls back once the data is available.
-class URLRequestChromeJob : public URLRequestJob {
+class URLRequestChromeJob : public net::URLRequestJob {
  public:
   explicit URLRequestChromeJob(URLRequest* request);
 

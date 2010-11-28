@@ -6,15 +6,17 @@
 #define CHROME_BROWSER_NET_VIEW_BLOB_INTERNALS_JOB_FACTORY_H_
 #pragma once
 
-class GURL;
+namespace net {
 class URLRequest;
 class URLRequestJob;
+}  // namespace net
+
+class GURL;
 
 class ViewBlobInternalsJobFactory {
  public:
   static bool IsSupportedURL(const GURL& url);
-  static URLRequestJob* CreateJobForRequest(URLRequest* request);
+  static net::URLRequestJob* CreateJobForRequest(net::URLRequest* request);
 };
 
 #endif  // CHROME_BROWSER_NET_VIEW_BLOB_INTERNALS_JOB_FACTORY_H_
-

@@ -23,10 +23,10 @@ class ConnectInterceptor : public URLRequest::Interceptor {
  protected:
   // URLRequest::Interceptor overrides
   // Learn about referrers, and optionally preconnect based on history.
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request);
-  virtual URLRequestJob* MaybeInterceptResponse(URLRequest* request);
-  virtual URLRequestJob* MaybeInterceptRedirect(URLRequest* request,
-                                                const GURL& location);
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
+  virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
+  virtual net::URLRequestJob* MaybeInterceptRedirect(net::URLRequest* request,
+                                                     const GURL& location);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectInterceptor);

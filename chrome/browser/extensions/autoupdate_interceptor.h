@@ -22,7 +22,7 @@ class AutoUpdateInterceptor
 
   // When computing matches, this ignores query parameters (since the autoupdate
   // fetch code appends a bunch of them to manifest fetches).
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request);
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
 
   // When requests for |url| arrive, respond with the contents of |path|. The
   // hostname of |url| must be "localhost" to avoid DNS lookups, and the scheme

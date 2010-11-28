@@ -18,7 +18,10 @@
 class ResourceDispatcherHost;
 class SSLCertErrorHandler;
 class TabContents;
+
+namespace net {
 class URLRequest;
+}  // namespace net
 
 // An SSLErrorHandler carries information from the IO thread to the UI thread
 // and is dispatched to the appropriate SSLManager when it arrives on the
@@ -88,7 +91,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   // Construct on the IO thread.
   SSLErrorHandler(ResourceDispatcherHost* resource_dispatcher_host,
-                  URLRequest* request,
+                  net::URLRequest* request,
                   ResourceType::Type resource_type,
                   const std::string& frame_origin,
                   const std::string& main_frame_origin);

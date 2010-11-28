@@ -8,9 +8,12 @@
 
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 
-class GURL;
+namespace net {
 class URLRequest;
 class URLRequestJob;
+}  // namespace net
+
+class GURL;
 
 // A DataSource for chrome://resources/ URLs.
 class SharedResourcesDataSource : public ChromeURLDataManager::DataSource {

@@ -14,11 +14,14 @@
 #include "chrome/browser/chromeos/login/web_page_screen.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
 
+namespace net {
+class URLRequest;
+class URLRequestJob;
+}  // namespace net
+
 class GURL;
 class Profile;
 class SiteContents;
-class URLRequest;
-class URLRequestJob;
 class WizardScreenDelegate;
 
 namespace chromeos {
@@ -74,8 +77,8 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   static void set_registration_host_page_url(const GURL& url);
 
   // Handler factory for URLRequestFilter::AddHostnameHandler.
-  static URLRequestJob* Factory(URLRequest* request,
-                                const std::string& scheme);
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme);
 
  private:
   // ViewScreen implementation:

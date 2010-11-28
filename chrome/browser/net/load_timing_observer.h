@@ -13,7 +13,10 @@
 #include "net/base/net_log.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
+namespace net {
 class URLRequest;
+}  // namespace net
+
 struct ResourceResponse;
 
 // LoadTimingObserver watches the NetLog event stream and collects the network
@@ -52,7 +55,7 @@ class LoadTimingObserver : public ChromeNetLog::Observer {
                           net::NetLog::EventPhase phase,
                           net::NetLog::EventParameters* params);
 
-  static void PopulateTimingInfo(URLRequest* request,
+  static void PopulateTimingInfo(net::URLRequest* request,
                                  ResourceResponse* response);
 
  private:

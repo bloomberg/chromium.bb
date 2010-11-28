@@ -17,10 +17,10 @@ namespace appcache {
 
 // A URLRequestJob derivative that knows how to return a response stored
 // in the appcache.
-class AppCacheURLRequestJob : public URLRequestJob,
+class AppCacheURLRequestJob : public net::URLRequestJob,
                               public AppCacheStorage::Delegate {
  public:
-  explicit AppCacheURLRequestJob(URLRequest* request,
+  explicit AppCacheURLRequestJob(net::URLRequest* request,
                                  AppCacheStorage* storage);
   virtual ~AppCacheURLRequestJob();
 

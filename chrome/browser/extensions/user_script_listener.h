@@ -13,9 +13,12 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+namespace net {
+class URLRequest;
+}  // namespace net
+
 class Extension;
 class URLPattern;
-class URLRequest;
 struct GlobalRequestID;
 
 // This class handles delaying of resource loads that depend on unloaded user
@@ -38,7 +41,7 @@ class UserScriptListener
 
   // ResourceQueueDelegate:
   virtual bool ShouldDelayRequest(
-      URLRequest* request,
+      net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
       const GlobalRequestID& request_id);
   virtual void WillShutdownResourceQueue();

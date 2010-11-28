@@ -26,8 +26,8 @@ class PrerenderInterceptor : public URLRequest::Interceptor {
   // URLRequest::Interceptor overrides.  We only care about
   // MaybeInterceptResponse, but must capture MaybeIntercept since
   // it is pure virtual.
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request);
-  virtual URLRequestJob* MaybeInterceptResponse(URLRequest* request);
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
+  virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
 
  private:
   friend class PrerenderInterceptorTest;

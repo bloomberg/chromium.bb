@@ -14,7 +14,10 @@
 
 class DownloadResourceHandler;
 class ResourceDispatcherHost;
+
+namespace net {
 class URLRequest;
+}  // namespace net
 
 // DownloadThrottlingResourceHandler is used to determine if a download should
 // be allowed. When a DownloadThrottlingResourceHandler is created it pauses the
@@ -29,7 +32,7 @@ class DownloadThrottlingResourceHandler
       public DownloadRequestLimiter::Callback {
  public:
   DownloadThrottlingResourceHandler(ResourceDispatcherHost* host,
-                                    URLRequest* request,
+                                    net::URLRequest* request,
                                     const GURL& url,
                                     int render_process_host_id,
                                     int render_view_id,
@@ -63,7 +66,7 @@ class DownloadThrottlingResourceHandler
   void CopyTmpBufferToDownloadHandler();
 
   ResourceDispatcherHost* host_;
-  URLRequest* request_;
+  net::URLRequest* request_;
   GURL url_;
   int render_process_host_id_;
   int render_view_id_;

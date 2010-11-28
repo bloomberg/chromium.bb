@@ -23,9 +23,9 @@ struct PlatformFileInfo;
 namespace webkit_blob {
 
 // A request job that handles reading blob URLs.
-class BlobURLRequestJob : public URLRequestJob {
+class BlobURLRequestJob : public net::URLRequestJob {
  public:
-  BlobURLRequestJob(URLRequest* request,
+  BlobURLRequestJob(net::URLRequest* request,
                     BlobData* blob_data,
                     base::MessageLoopProxy* resolving_message_loop_proxy);
   virtual ~BlobURLRequestJob();

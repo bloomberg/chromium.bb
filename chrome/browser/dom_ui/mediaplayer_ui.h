@@ -75,13 +75,13 @@ class MediaPlayer : public NotificationObserver,
   // Always returns NULL because we don't want to attempt a redirect
   // before seeing the detected mime type of the request.
   // Implementation of URLRequest::Interceptor.
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request);
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
 
   // Determines if the requested document can be viewed by the
   // MediaPlayer.  If it can, returns a URLRequestJob that
   // redirects the browser to the view URL.
   // Implementation of URLRequest::Interceptor.
-  virtual URLRequestJob* MaybeInterceptResponse(URLRequest* request);
+  virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
 
   // Used to detect when the mediaplayer is closed.
   void Observe(NotificationType type,

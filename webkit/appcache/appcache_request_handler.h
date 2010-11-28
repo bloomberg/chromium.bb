@@ -10,8 +10,10 @@
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/glue/resource_type.h"
 
+namespace net {
 class URLRequest;
 class URLRequestJob;
+}  // namespace net
 
 namespace appcache {
 
@@ -22,17 +24,17 @@ class AppCacheURLRequestJob;
 // given the opportunity to hijack the request along the way. Callers
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.
-class AppCacheRequestHandler : public URLRequest::UserData,
+class AppCacheRequestHandler : public net::URLRequest::UserData,
                                public AppCacheHost::Observer,
                                public AppCacheStorage::Delegate  {
  public:
   virtual ~AppCacheRequestHandler();
 
   // These are called on each request intercept opportunity.
-  AppCacheURLRequestJob* MaybeLoadResource(URLRequest* request);
-  AppCacheURLRequestJob* MaybeLoadFallbackForRedirect(URLRequest* request,
+  AppCacheURLRequestJob* MaybeLoadResource(net::URLRequest* request);
+  AppCacheURLRequestJob* MaybeLoadFallbackForRedirect(net::URLRequest* request,
                                                       const GURL& location);
-  AppCacheURLRequestJob* MaybeLoadFallbackForResponse(URLRequest* request);
+  AppCacheURLRequestJob* MaybeLoadFallbackForResponse(net::URLRequest* request);
 
   void GetExtraResponseInfo(int64* cache_id, GURL* manifest_url);
 
@@ -68,7 +70,7 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   // Main-resource loading -------------------------------------
   // Frame and SharedWorker main resources are handled here.
 
-  void MaybeLoadMainResource(URLRequest* request);
+  void MaybeLoadMainResource(net::URLRequest* request);
 
   // AppCacheStorage::Delegate methods
   virtual void OnMainResponseFound(
@@ -80,7 +82,7 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   // Sub-resource loading -------------------------------------
   // Dedicated worker and all manner of sub-resources are handled here.
 
-  void MaybeLoadSubResource(URLRequest* request);
+  void MaybeLoadSubResource(net::URLRequest* request);
   void ContinueMaybeLoadSubResource();
 
   // AppCacheHost::Observer override

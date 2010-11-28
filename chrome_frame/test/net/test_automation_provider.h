@@ -7,9 +7,12 @@
 #include <string>
 #include "chrome/browser/automation/automation_provider.h"
 
-class TestAutomationResourceMessageFilter;
+namespace net {
 class URLRequest;
 class URLRequestJob;
+}  // namespace net
+
+class TestAutomationResourceMessageFilter;
 
 // Callback interface for TestAutomationProvider.
 class TestAutomationProviderDelegate {
@@ -37,8 +40,8 @@ class TestAutomationProvider
   virtual bool Send(IPC::Message* msg);
 
   // Protocol factory for handling http/https requests over automation.
-  static URLRequestJob* Factory(URLRequest* request,
-                                const std::string& scheme);
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme);
 
   // Call to instantiate and initialize a new instance of
   // TestAutomationProvider.

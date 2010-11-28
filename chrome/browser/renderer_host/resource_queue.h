@@ -11,8 +11,11 @@
 
 #include "base/basictypes.h"
 
-class ResourceDispatcherHostRequestInfo;
+namespace net {
 class URLRequest;
+}  // namespace net
+
+class ResourceDispatcherHostRequestInfo;
 struct GlobalRequestID;
 
 // Makes decisions about delaying or not each URLRequest in the queue.
@@ -23,7 +26,7 @@ class ResourceQueueDelegate {
   // point. To start the delayed request, ResourceQueue::StartDelayedRequest
   // should be used.
   virtual bool ShouldDelayRequest(
-      URLRequest* request,
+      net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
       const GlobalRequestID& request_id) = 0;
 
@@ -59,7 +62,7 @@ class ResourceQueue {
 
   // Takes care to start the |request| after all delegates allow that. If no
   // delegate demands delaying the request it will be started immediately.
-  void AddRequest(URLRequest* request,
+  void AddRequest(net::URLRequest* request,
                   const ResourceDispatcherHostRequestInfo& request_info);
 
   // Tells the queue that the URLRequest object associated with |request_id|
@@ -73,7 +76,7 @@ class ResourceQueue {
                            const GlobalRequestID& request_id);
 
  private:
-  typedef std::map<GlobalRequestID, URLRequest*> RequestMap;
+  typedef std::map<GlobalRequestID, net::URLRequest*> RequestMap;
   typedef std::map<GlobalRequestID, DelegateSet> InterestedDelegatesMap;
 
   // The registered delegates. Will not change after the queue has been

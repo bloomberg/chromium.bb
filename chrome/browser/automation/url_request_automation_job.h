@@ -25,7 +25,7 @@ struct AutomationURLResponse;
 
 // URLRequestJob implementation that loads the resources using
 // automation.
-class URLRequestAutomationJob : public URLRequestJob {
+class URLRequestAutomationJob : public net::URLRequestJob {
  public:
   URLRequestAutomationJob(URLRequest* request, int tab, int request_id,
                           AutomationResourceMessageFilter* filter,

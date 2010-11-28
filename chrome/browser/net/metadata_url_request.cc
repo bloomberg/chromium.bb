@@ -17,7 +17,7 @@
 
 namespace {
 
-class MetadataRequestHandler : public URLRequestJob {
+class MetadataRequestHandler : public net::URLRequestJob {
  public:
   explicit MetadataRequestHandler(URLRequest* request);
 

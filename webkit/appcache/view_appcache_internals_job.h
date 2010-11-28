@@ -10,7 +10,9 @@
 #include "net/url_request/url_request_simple_job.h"
 #include "webkit/appcache/appcache_service.h"
 
+namespace net {
 class URLRequest;
+}  // namespace net
 
 namespace appcache {
 
@@ -19,7 +21,7 @@ namespace appcache {
 class ViewAppCacheInternalsJob : public URLRequestSimpleJob {
  public:
   // Stores handle to appcache service for getting information.
-  ViewAppCacheInternalsJob(URLRequest* request, AppCacheService* service);
+  ViewAppCacheInternalsJob(net::URLRequest* request, AppCacheService* service);
 
   // Fetches the AppCache Info and calls StartAsync after it is done.
   virtual void Start();

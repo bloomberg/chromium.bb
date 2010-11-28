@@ -12,9 +12,9 @@
 #include "net/base/ssl_cert_request_info.h"
 
 namespace net {
-class X509Certificate;
-}
 class URLRequest;
+class X509Certificate;
+}  // namespace net
 
 // This class handles the approval and selection of a certificate for SSL client
 // authentication by the user.
@@ -24,7 +24,7 @@ class SSLClientAuthHandler
     : public base::RefCountedThreadSafe<SSLClientAuthHandler,
                                         BrowserThread::DeleteOnIOThread> {
  public:
-  SSLClientAuthHandler(URLRequest* request,
+  SSLClientAuthHandler(net::URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info);
 
   // Asks the user to select a certificate and resumes the URL request with that
@@ -55,7 +55,7 @@ class SSLClientAuthHandler
   void DoCertificateSelected(net::X509Certificate* cert);
 
   // The URLRequest that triggered this client auth.
-  URLRequest* request_;
+  net::URLRequest* request_;
 
   // The certs to choose from.
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;

@@ -297,11 +297,13 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   const Extension* GetResourceExtension(int index) const;
 
   // JobObserver methods:
-  void OnJobAdded(URLRequestJob* job);
-  void OnJobRemoved(URLRequestJob* job);
-  void OnJobDone(URLRequestJob* job, const URLRequestStatus& status);
-  void OnJobRedirect(URLRequestJob* job, const GURL& location, int status_code);
-  void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count);
+  void OnJobAdded(net::URLRequestJob* job);
+  void OnJobRemoved(net::URLRequestJob* job);
+  void OnJobDone(net::URLRequestJob* job, const URLRequestStatus& status);
+  void OnJobRedirect(net::URLRequestJob* job,
+                     const GURL& location,
+                     int status_code);
+  void OnBytesRead(net::URLRequestJob* job, const char* buf, int byte_count);
 
   void AddResourceProvider(TaskManager::ResourceProvider* provider);
   void RemoveResourceProvider(TaskManager::ResourceProvider* provider);

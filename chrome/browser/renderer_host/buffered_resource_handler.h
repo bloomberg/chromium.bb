@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,14 +12,17 @@
 
 class MessageLoop;
 class ResourceDispatcherHost;
+
+namespace net {
 class URLRequest;
+}  // namespace net
 
 // Used to buffer a request until enough data has been received.
 class BufferedResourceHandler : public ResourceHandler {
  public:
   BufferedResourceHandler(ResourceHandler* handler,
                           ResourceDispatcherHost* host,
-                          URLRequest* request);
+                          net::URLRequest* request);
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
@@ -79,7 +82,7 @@ class BufferedResourceHandler : public ResourceHandler {
   scoped_refptr<ResourceHandler> real_handler_;
   scoped_refptr<ResourceResponse> response_;
   ResourceDispatcherHost* host_;
-  URLRequest* request_;
+  net::URLRequest* request_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   scoped_refptr<net::IOBuffer> my_buffer_;
   int read_buffer_size_;

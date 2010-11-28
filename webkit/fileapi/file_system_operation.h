@@ -20,8 +20,11 @@ namespace base {
 class Time;
 }
 
-class GURL;
+namespace net {
 class URLRequest;
+}  // namespace net
+
+class GURL;
 class URLRequestContext;
 
 namespace fileapi {
@@ -150,7 +153,7 @@ class FileSystemOperation {
   // These are all used only by Write().
   friend class FileWriterDelegate;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
-  scoped_ptr<URLRequest> blob_request_;
+  scoped_ptr<net::URLRequest> blob_request_;
   FileSystemOperation* cancel_operation_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);

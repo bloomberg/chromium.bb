@@ -10,9 +10,9 @@
 #include "base/ref_counted.h"
 
 namespace net {
+class URLRequest;
 class X509Certificate;
 }
-class URLRequest;
 
 // This class handles adding a newly-generated client cert. It ensures there's a
 // private key for the cert, displays the cert to the user, and adds it upon
@@ -20,7 +20,7 @@ class URLRequest;
 // It is self-owned and deletes itself when finished.
 class SSLAddCertHandler : public base::RefCountedThreadSafe<SSLAddCertHandler> {
  public:
-  SSLAddCertHandler(URLRequest* request, net::X509Certificate* cert,
+  SSLAddCertHandler(net::URLRequest* request, net::X509Certificate* cert,
                     int render_process_host_id, int render_view_id);
 
   net::X509Certificate* cert()  { return cert_; }
