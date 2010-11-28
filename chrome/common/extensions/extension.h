@@ -163,6 +163,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // still accepted as meaning the same thing as kUnlimitedStoragePermission.
   static const char kOldUnlimitedStoragePermission[];
 
+  // Valid schemes for web extent URLPatterns.
+  static const int kValidWebExtentSchemes;
+
   // Returns true if the string is one of the known hosted app permissions (see
   // kHostedAppPermissionNames).
   static bool IsHostedAppPermission(const std::string& permission);
@@ -250,8 +253,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       std::string* output, bool is_public);
 
   // Determine whether |new_extension| has increased privileges compared to
-  // |old_extension|.
-  static bool IsPrivilegeIncrease(const Extension* old_extension,
+  // its previously granted permissions, specified by |granted_apis|,
+  // |granted_extent| and |granted_full_access|.
+  static bool IsPrivilegeIncrease(const bool granted_full_access,
+                                  const std::set<std::string>& granted_apis,
+                                  const ExtensionExtent& granted_extent,
                                   const Extension* new_extension);
 
   // Given an extension and icon size, read it if present and decode it into
@@ -301,6 +307,13 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   static bool HasApiPermission(const std::set<std::string>& api_permissions,
                                const std::string& function_name);
 
+  // Whether the |effective_host_permissions| and |api_permissions| include
+  // effective access to all hosts. See the non-static version of the method
+  // for more details.
+  static bool HasEffectiveAccessToAllHosts(
+      const ExtensionExtent& effective_host_permissions,
+      const std::set<std::string>& api_permissions);
+
   bool HasApiPermission(const std::string& function_name) const {
     return HasApiPermission(this->api_permissions(), function_name);
   }
@@ -324,6 +337,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // permission that effectively grants access to all hosts (e.g. proxy,
   // network, etc.)
   bool HasEffectiveAccessToAllHosts() const;
+
+  // Whether the extension effectively has all permissions (for example, by
+  // having an NPAPI plugin).
+  bool HasFullPermissions() const;
 
   // Returns the Homepage URL for this extension. If homepage_url was not
   // specified in the manifest, this returns the Google Gallery URL. For

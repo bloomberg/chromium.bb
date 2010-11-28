@@ -1,0 +1,9 @@
+{
+   "content_scripts": [ {
+      "js": [ "test.js" ],
+      "matches": [ "http://*.google.com/*", "https://*.google.com/*", "http://www.example.com/*" ]
+   } ],
+   "name": "Unknown Permissions Test",
+   "permissions": [ "tabs", "blah" ],
+   "version": "1"
+}

@@ -19,6 +19,28 @@
 using base::Time;
 using base::TimeDelta;
 
+static void AddPattern(ExtensionExtent* extent, const std::string& pattern) {
+  int schemes = URLPattern::SCHEME_ALL;
+  extent->AddPattern(URLPattern(schemes, pattern));
+}
+
+static void AssertEqualExtents(ExtensionExtent* extent1,
+                               ExtensionExtent* extent2) {
+  std::vector<URLPattern> patterns1 = extent1->patterns();
+  std::vector<URLPattern> patterns2 = extent2->patterns();
+  std::set<std::string> strings1;
+  EXPECT_EQ(patterns1.size(), patterns2.size());
+
+  for (size_t i = 0; i < patterns1.size(); ++i)
+    strings1.insert(patterns1.at(i).GetAsString());
+
+  std::set<std::string> strings2;
+  for (size_t i = 0; i < patterns2.size(); ++i)
+    strings2.insert(patterns2.at(i).GetAsString());
+
+  EXPECT_EQ(strings1, strings2);
+}
+
 // Base class for tests.
 class ExtensionPrefsTest : public testing::Test {
  public:
@@ -145,6 +167,106 @@ class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsEscalatePermissions, EscalatePermissions) {}
 
+// Tests the AddGrantedPermissions / GetGrantedPermissions functions.
+class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    extension_id_ = prefs_.AddExtensionAndReturnId("test");
+
+    api_perm_set1_.insert("tabs");
+    api_perm_set1_.insert("bookmarks");
+    api_perm_set1_.insert("something_random");
+
+    api_perm_set2_.insert("history");
+    api_perm_set2_.insert("unknown2");
+
+    AddPattern(&host_perm_set1_, "http://*.google.com/*");
+    AddPattern(&host_perm_set1_, "http://example.com/*");
+
+    AddPattern(&host_perm_set2_, "https://*.google.com/*");
+    // with duplicate:
+    AddPattern(&host_perm_set2_, "http://*.google.com/*");
+
+    std::set_union(api_perm_set1_.begin(), api_perm_set1_.end(),
+                   api_perm_set2_.begin(), api_perm_set2_.end(),
+                   std::inserter(api_permissions_, api_permissions_.end()));
+
+    AddPattern(&host_permissions_, "http://*.google.com/*");
+    AddPattern(&host_permissions_, "http://example.com/*");
+    AddPattern(&host_permissions_, "https://*.google.com/*");
+
+    std::set<std::string> empty_set;
+    std::set<std::string> api_perms;
+    bool full_access = false;
+    ExtensionExtent host_perms;
+    ExtensionExtent empty_extent;
+
+    // Make sure both granted api and host permissions start empty.
+    EXPECT_FALSE(prefs()->GetGrantedPermissions(
+        extension_id_, &full_access, &api_perms, &host_perms));
+
+    EXPECT_TRUE(api_perms.empty());
+    EXPECT_TRUE(host_perms.is_empty());
+
+    // Add part of the api permissions.
+    prefs()->AddGrantedPermissions(
+        extension_id_, false, api_perm_set1_, empty_extent);
+    EXPECT_TRUE(prefs()->GetGrantedPermissions(
+        extension_id_, &full_access, &api_perms, &host_perms));
+    EXPECT_EQ(api_perm_set1_, api_perms);
+    EXPECT_TRUE(host_perms.is_empty());
+    EXPECT_FALSE(full_access);
+    host_perms.ClearPaths();
+    api_perms.clear();
+
+    // Add part of the host permissions.
+    prefs()->AddGrantedPermissions(
+        extension_id_, false, empty_set, host_perm_set1_);
+    EXPECT_TRUE(prefs()->GetGrantedPermissions(
+        extension_id_, &full_access, &api_perms, &host_perms));
+    EXPECT_FALSE(full_access);
+    EXPECT_EQ(api_perm_set1_, api_perms);
+    AssertEqualExtents(&host_perm_set1_, &host_perms);
+    host_perms.ClearPaths();
+    api_perms.clear();
+
+    // Add the rest of both the api and host permissions.
+    prefs()->AddGrantedPermissions(extension_id_,
+                                   true,
+                                   api_perm_set2_,
+                                   host_perm_set2_);
+
+    EXPECT_TRUE(prefs()->GetGrantedPermissions(
+        extension_id_, &full_access, &api_perms, &host_perms));
+    EXPECT_TRUE(full_access);
+    EXPECT_EQ(api_permissions_, api_perms);
+    AssertEqualExtents(&host_permissions_, &host_perms);
+  }
+
+  virtual void Verify() {
+    std::set<std::string> api_perms;
+    ExtensionExtent host_perms;
+    bool full_access;
+
+    EXPECT_TRUE(prefs()->GetGrantedPermissions(
+        extension_id_, &full_access, &api_perms, &host_perms));
+    EXPECT_EQ(api_permissions_, api_perms);
+    EXPECT_TRUE(full_access);
+    AssertEqualExtents(&host_permissions_, &host_perms);
+  }
+
+ private:
+  std::string extension_id_;
+  std::set<std::string> api_perm_set1_;
+  std::set<std::string> api_perm_set2_;
+  ExtensionExtent host_perm_set1_;
+  ExtensionExtent host_perm_set2_;
+
+
+  std::set<std::string> api_permissions_;
+  ExtensionExtent host_permissions_;
+};
+TEST_F(ExtensionPrefsGrantedPermissions, GrantedPermissions) {}
 
 // Tests the GetVersionString function.
 class ExtensionPrefsVersionString : public ExtensionPrefsTest {

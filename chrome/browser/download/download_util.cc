@@ -252,7 +252,6 @@ void OpenChromeExtension(Profile* profile,
       download_item.url(), download_item.referrer_url());
   installer->set_original_mime_type(download_item.original_mime_type());
   installer->set_apps_require_extension_mime_type(true);
-  installer->set_allow_privilege_increase(true);
   installer->set_original_url(download_item.url());
   installer->set_is_gallery_install(is_gallery_download);
   installer->InstallCrx(download_item.full_path());

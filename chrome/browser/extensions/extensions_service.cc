@@ -347,8 +347,9 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   // prefs.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(frontend_, &ExtensionsService::OnExtensionInstalled,
-                        extension, true));
+      NewRunnableMethod(frontend_,
+                        &ExtensionsService::OnExtensionInstalled,
+                        extension));
 }
 
 void ExtensionsServiceBackend::ReportExtensionLoadError(
@@ -644,7 +645,6 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
   scoped_refptr<CrxInstaller> installer(
       new CrxInstaller(this,  // frontend
                        NULL));  // no client (silent install)
-  installer->set_allow_privilege_increase(true);
   installer->InstallCrx(extension_path);
 }
 
@@ -943,6 +943,27 @@ void ExtensionsService::DisableExtension(const std::string& extension_id) {
   UpdateActiveExtensionsInCrashReporter();
 }
 
+void ExtensionsService::GrantPermissions(const Extension* extension) {
+  CHECK(extension);
+
+  // We only maintain the granted permissions prefs for INTERNAL extensions.
+  CHECK(extension->location() == Extension::INTERNAL);
+
+  ExtensionExtent effective_hosts = extension->GetEffectiveHostPermissions();
+  extension_prefs_->AddGrantedPermissions(extension->id(),
+                                          extension->HasFullPermissions(),
+                                          extension->api_permissions(),
+                                          effective_hosts);
+}
+
+void ExtensionsService::GrantPermissionsAndEnableExtension(
+    const Extension* extension) {
+  CHECK(extension);
+  GrantPermissions(extension);
+  extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
+  EnableExtension(extension->id());
+}
+
 void ExtensionsService::LoadExtension(const FilePath& extension_path) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -975,7 +996,7 @@ void ExtensionsService::LoadComponentExtensions() {
       return;
     }
 
-    OnExtensionLoaded(extension, false);  // Don't allow privilege increase.
+    OnExtensionLoaded(extension);
   }
 }
 
@@ -1120,7 +1141,6 @@ void ExtensionsService::LoadAllExtensions() {
                            browser_action_count);
 }
 
-
 void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
                                                bool write_to_prefs) {
   std::string error;
@@ -1147,7 +1167,7 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
   if (write_to_prefs)
     extension_prefs_->UpdateManifest(extension);
 
-  OnExtensionLoaded(extension, true);
+  OnExtensionLoaded(extension);
 
   if (Extension::IsExternalLocation(info.extension_location)) {
     BrowserThread::PostTask(
@@ -1523,8 +1543,7 @@ void ExtensionsService::OnLoadedInstalledExtensions() {
       NotificationService::NoDetails());
 }
 
-void ExtensionsService::OnExtensionLoaded(const Extension* extension,
-                                          bool allow_privilege_increase) {
+void ExtensionsService::OnExtensionLoaded(const Extension* extension) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
 
@@ -1535,63 +1554,29 @@ void ExtensionsService::OnExtensionLoaded(const Extension* extension,
   if (disabled_extension_paths_.erase(extension->id()) > 0)
     EnableExtension(extension->id());
 
-  // TODO(aa): Need to re-evaluate this branch. Does this still make sense now
-  // that extensions are enabled by default?
-  if (extensions_enabled() ||
-      extension->is_theme() ||
-      extension->location() == Extension::LOAD ||
-      extension->location() == Extension::COMPONENT ||
-      Extension::IsExternalLocation(extension->location())) {
-    const Extension* old = GetExtensionByIdInternal(extension->id(),
-                                                    true, true);
-    if (old) {
-      // CrxInstaller should have guaranteed that we aren't downgrading.
-      CHECK(extension->version()->CompareTo(*(old->version())) >= 0);
+  // Check if the extension's privileges have changed and disable the extension
+  // if necessary.
+  DisableIfPrivilegeIncrease(extension);
 
-      bool allow_silent_upgrade =
-          allow_privilege_increase || !Extension::IsPrivilegeIncrease(
-              old, extension);
+  switch (extension_prefs_->GetExtensionState(extension->id())) {
+    case Extension::ENABLED:
+      extensions_.push_back(scoped_extension);
 
-      // Extensions get upgraded if silent upgrades are allowed, otherwise
-      // they get disabled.
-      if (allow_silent_upgrade) {
-        SetBeingUpgraded(old, true);
-        SetBeingUpgraded(extension, true);
-      }
+      NotifyExtensionLoaded(extension);
 
-      // To upgrade an extension in place, unload the old one and
-      // then load the new one.
-      UnloadExtension(old->id());
-      old = NULL;
-
-      if (!allow_silent_upgrade) {
-        // Extension has changed permissions significantly. Disable it. We
-        // send a notification below.
-        extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
-        extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
-      }
-    }
-
-    switch (extension_prefs_->GetExtensionState(extension->id())) {
-      case Extension::ENABLED:
-        extensions_.push_back(scoped_extension);
-
-        NotifyExtensionLoaded(extension);
-
-        ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
-            extension->GetChromeURLOverrides());
-        break;
-      case Extension::DISABLED:
-        disabled_extensions_.push_back(scoped_extension);
-        NotificationService::current()->Notify(
-            NotificationType::EXTENSION_UPDATE_DISABLED,
-            Source<Profile>(profile_),
-            Details<const Extension>(extension));
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+      ExtensionDOMUI::RegisterChromeURLOverrides(
+          profile_, extension->GetChromeURLOverrides());
+      break;
+    case Extension::DISABLED:
+      disabled_extensions_.push_back(scoped_extension);
+      NotificationService::current()->Notify(
+          NotificationType::EXTENSION_UPDATE_DISABLED,
+          Source<Profile>(profile_),
+          Details<const Extension>(extension));
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
   SetBeingUpgraded(extension, false);
@@ -1609,6 +1594,86 @@ void ExtensionsService::OnExtensionLoaded(const Extension* extension,
   }
 }
 
+void ExtensionsService::DisableIfPrivilegeIncrease(const Extension* extension) {
+  // We keep track of all permissions the user has granted each extension.
+  // This allows extensions to gracefully support backwards compatibility
+  // by including unknown permissions in their manifests. When the user
+  // installs the extension, only the recognized permissions are recorded.
+  // When the unknown permissions become recognized (e.g., through browser
+  // upgrade), we can prompt the user to accept these new permissions.
+  // Extensions can also silently upgrade to less permissions, and then
+  // silently upgrade to a version that adds these permissions back.
+  //
+  // For example, pretend that Chrome 10 includes a permission "omnibox"
+  // for an API that adds suggestions to the omnibox. An extension can
+  // maintain backwards compatibility while still having "omnibox" in the
+  // manifest. If a user installs the extension on Chrome 9, the browser
+  // will record the permissions it recognized, not including "omnibox."
+  // When upgrading to Chrome 10, "omnibox" will be recognized and Chrome
+  // will disable the extension and prompt the user to approve the increase
+  // in privileges. The extension could then release a new version that
+  // removes the "omnibox" permission. When the user upgrades, Chrome will
+  // still remember that "omnibox" had been granted, so that if the
+  // extension once again includes "omnibox" in an upgrade, the extension
+  // can upgrade without requiring this user's approval.
+  const Extension* old = GetExtensionByIdInternal(extension->id(),
+                                                  true, true);
+  bool granted_full_access;
+  std::set<std::string> granted_apis;
+  ExtensionExtent granted_extent;
+
+  bool is_extension_upgrade = old != NULL;
+  bool is_privilege_increase = false;
+
+  // We only record the granted permissions for INTERNAL extensions, since
+  // they can't silently increase privileges.
+  if (extension->location() == Extension::INTERNAL) {
+    // Add all the recognized permissions if the granted permissions list
+    // hasn't been initialized yet.
+    if (!extension_prefs_->GetGrantedPermissions(extension->id(),
+                                                 &granted_full_access,
+                                                 &granted_apis,
+                                                 &granted_extent)) {
+      GrantPermissions(extension);
+      CHECK(extension_prefs_->GetGrantedPermissions(extension->id(),
+                                                    &granted_full_access,
+                                                    &granted_apis,
+                                                    &granted_extent));
+    }
+
+    // Here, we check if an extension's privileges have increased in a manner
+    // that requires the user's approval. This could occur because the browser
+    // upgraded and recognized additional privileges, or an extension upgrades
+    // to a version that requires additional privileges.
+    is_privilege_increase = Extension::IsPrivilegeIncrease(
+        granted_full_access, granted_apis, granted_extent, extension);
+  }
+
+  if (is_extension_upgrade) {
+    // CrxInstaller should have guaranteed that we aren't downgrading.
+    CHECK(extension->version()->CompareTo(*(old->version())) >= 0);
+
+    // Extensions get upgraded if the privileges are allowed to increase or
+    // the privileges haven't increased.
+    if (!is_privilege_increase) {
+      SetBeingUpgraded(old, true);
+      SetBeingUpgraded(extension, true);
+    }
+
+    // To upgrade an extension in place, unload the old one and
+    // then load the new one.
+    UnloadExtension(old->id());
+    old = NULL;
+  }
+
+  // Extension has changed permissions significantly. Disable it. A
+  // notification should be sent by the caller.
+  if (is_privilege_increase) {
+    extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
+    extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
+  }
+}
+
 void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
   std::set<std::string> extension_ids;
   for (size_t i = 0; i < extensions_.size(); ++i) {
@@ -1620,8 +1685,7 @@ void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
   child_process_logging::SetActiveExtensions(extension_ids);
 }
 
-void ExtensionsService::OnExtensionInstalled(const Extension* extension,
-                                             bool allow_privilege_increase) {
+void ExtensionsService::OnExtensionInstalled(const Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ensure extension is deleted unless we transfer ownership.
@@ -1763,7 +1827,7 @@ void ExtensionsService::OnExtensionInstalled(const Extension* extension,
   }
 
   // Transfer ownership of |extension| to OnExtensionLoaded.
-  OnExtensionLoaded(scoped_extension, allow_privilege_increase);
+  OnExtensionLoaded(scoped_extension);
 }
 
 const Extension* ExtensionsService::GetExtensionByIdInternal(
@@ -1881,7 +1945,6 @@ void ExtensionsService::OnExternalExtensionFileFound(
                        NULL));  // no client (silent install)
   installer->set_install_source(location);
   installer->set_expected_id(id);
-  installer->set_allow_privilege_increase(true);
   installer->InstallCrx(path);
 }
 
