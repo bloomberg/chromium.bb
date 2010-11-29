@@ -1093,6 +1093,11 @@ private:
   [tabContentsArray_ replaceObjectAtIndex:index withObject:newController];
 
   [delegate_ onReplaceTabWithContents:newContents->tab_contents()];
+
+  // Fake a tab changed notification to force tab titles and favicons to update.
+  [self tabChangedWithContents:newContents
+                       atIndex:modelIndex
+                    changeType:TabStripModelObserver::ALL];
 }
 
 // Remove all knowledge about this tab and its associated controller, and remove
