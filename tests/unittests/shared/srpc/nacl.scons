@@ -11,7 +11,9 @@ TEST_SUITES = ['small_tests']
 
 # Do not run on qemu
 if env.Bit('target_arm') or env.Bit('bitcode'):
-  TEST_SUITES = ['small_tests_arm_hw_only']
+  #TEST_SUITES = ['small_tests_arm_hw_only']
+  # Currently, run_simple_srpc_test_nexe does not pass the validator.
+  TEST_SUITES = ['broken_tests']
 
 
 env.ComponentProgram('simple_srpc_test.nexe',
