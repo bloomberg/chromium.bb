@@ -469,7 +469,7 @@
         'chrome_mesa',
         'default_plugin/default_plugin.gyp:default_plugin',
         '../ppapi/ppapi.gyp:ppapi_tests',
-        '../webkit/support/webkit_support.gyp:copy_npapi_layout_test_plugin',
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
       ],
       'include_dirs': [
         '..',

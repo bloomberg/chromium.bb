@@ -72,39 +72,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'copy_npapi_layout_test_plugin',
-      'type': 'none',
-      'dependencies': [
-        'npapi_layout_test_plugin',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/plugins',
-              'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
-            },
-          ],
-        }],
-        ['OS=="mac"', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/plugins/',
-              'files': ['<(PRODUCT_DIR)/TestNetscapePlugIn.plugin/'],
-            },
-          ]
-        }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/plugins',
-              'files': ['<(PRODUCT_DIR)/libnpapi_layout_test_plugin.so'],
-            },
-          ],
-        }],
-      ],
-    },
   ],
 }
 
