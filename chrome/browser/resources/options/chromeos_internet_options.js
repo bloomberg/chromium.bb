@@ -211,6 +211,13 @@ cr.define('options', function() {
     } else {
       page.removeAttribute('hasactiveplan');
     }
+
+    // Nudge webkit so that it redraws the details overlay page.
+    // See http://crosbug.com/9616 for details.
+    // Webkit bug: https://bugs.webkit.org/show_bug.cgi?id=50176
+    var dummy = page.ownerDocument.createTextNode(' ');
+    page.appendChild(dummy);
+    page.removeChild(dummy);
   };
 
   InternetOptions.showPasswordEntry = function (data) {
