@@ -19,33 +19,56 @@ ConnectInterceptor::~ConnectInterceptor() {
 
 net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
     net::URLRequest* request) {
-  // Learn what URLs are likely to be needed during next startup.
-  // Pass actual URL, rather than WithEmptyPath, as we often won't need to do
-  // the canonicalization.
-  LearnAboutInitialNavigation(request->url());
+  GURL request_scheme_host(request->url().GetWithEmptyPath());
 
-  bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
-  if (is_subresource && !request->referrer().empty()) {
-    // Learn about our referring URL, for use in the future.
-    GURL referring_url(GURL(request->referrer()).GetWithEmptyPath());
-    GURL request_url(request->url().GetWithEmptyPath());
-    if (referring_url == request_url) {
+  // Learn what URLs are likely to be needed during next startup.
+  LearnAboutInitialNavigation(request_scheme_host);
+
+  bool redirected_host = false;
+  if (request->referrer().empty()) {
+    if (request->url() != request->original_url()) {
+      // This request was completed with a redirect.
+      GURL original_scheme_host(request->original_url().GetWithEmptyPath());
+      if (request_scheme_host != original_scheme_host) {
+        redirected_host = true;
+        // Don't learn from redirects that take path as an argument, but do
+        // learn from short-hand typing entries, such as "cnn.com" redirects to
+        // "www.cnn.com".  We can't just check for has_path(), as a mere "/"
+        // will count as a path, so we check that the path is at most a "/"
+        // (1 character long) to decide the redirect is "definitive" and has no
+        // significant path.
+        // TODO(jar): It may be ok to learn from all redirects, as the adaptive
+        // system will not respond until several identical redirects have taken
+        // place.  Hence a use of a path (that changes) wouldn't really be
+        // learned from anyway.
+        if (request->original_url().path().length() <= 1) {
+          // TODO(jar): These definite redirects could be learned much faster.
+          LearnFromNavigation(original_scheme_host, request_scheme_host);
+        }
+      }
+    }
+  } else {
+    GURL referring_scheme_host = GURL(request->referrer()).GetWithEmptyPath();
+    if (referring_scheme_host == request_scheme_host) {
       // There is nothing to learn about preconnections when the referrer is
       // already the site needed in the request URL.  Similarly, we've already
-      // made any/all predictions when we navigated to the referring_url, so we
+      // made any/all predictions when we navigated to the referring host, so we
       // can bail out here. This will also avoid useless boosting of the number
       // of times we navigated to this site, which was already accounted for by
       // the navigation to the referrering_url.
       return NULL;
     }
-    LearnFromNavigation(referring_url, request_url);
+    bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
+    // Learn about our referring URL, for use in the future.
+    if (is_subresource)
+      LearnFromNavigation(referring_scheme_host, request_scheme_host);
   }
 
-  // Subresources for main frames usually get loaded when we detected the main
-  // frame - way back in RenderViewHost::Navigate.  So only use subresource
-  // prediction here for subframes.
-  if (request->load_flags() & net::LOAD_SUB_FRAME)
-    PredictFrameSubresources(request->url().GetWithEmptyPath());
+  // Subresources for main frames usually get predicted when we detected the
+  // main frame request - way back in RenderViewHost::Navigate.  So only handle
+  // predictions now for subresources or for redirected hosts.
+  if ((request->load_flags() & net::LOAD_SUB_FRAME) || redirected_host)
+    PredictFrameSubresources(request_scheme_host);
   return NULL;
 }
 
