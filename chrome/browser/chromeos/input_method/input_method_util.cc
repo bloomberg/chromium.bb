@@ -220,7 +220,7 @@ const struct EnglishToResouceId {
   { "Sweden", IDS_STATUSBAR_LAYOUT_SWEDEN },
   { "Netherlands", IDS_STATUSBAR_LAYOUT_NETHERLANDS },
   { "Latin American", IDS_STATUSBAR_LAYOUT_LATIN_AMERICAN },
-  { "Latvia", IDS_STATUSBAR_LAYOUT_LATVIA },
+  { "Latvia - Apostrophe (') variant", IDS_STATUSBAR_LAYOUT_LATVIA },
   { "Canada", IDS_STATUSBAR_LAYOUT_CANADA },
   { "Canada - English", IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH },
   { "Israel", IDS_STATUSBAR_LAYOUT_ISRAEL },
