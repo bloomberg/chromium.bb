@@ -231,6 +231,18 @@ void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
   DOMUI::RenderViewCreated(render_view_host);
 }
 
+void OptionsUI::DidBecomeActiveForReusedRenderView() {
+  // When the renderer is re-used (e.g., for back/forward navigation within
+  // options), the handlers are torn down and rebuilt, so are no longer
+  // initialized, but the web page's DOM may remain intact, in which case onload
+  // won't fire to initilize the handlers. To make sure initialization always
+  // happens, call reinitializeCore (which is a no-op unless the DOM was already
+  // initialized).
+  CallJavascriptFunction(L"OptionsPage.reinitializeCore");
+
+  DOMUI::DidBecomeActiveForReusedRenderView();
+}
+
 // static
 RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().

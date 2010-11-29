@@ -42,6 +42,17 @@ class DOMUI {
   // page.
   virtual void RenderViewReused(RenderViewHost* render_view_host) {}
 
+  // Called when this becomes the active DOMUI instance for a re-used
+  // RenderView; this is the point at which this DOMUI instance will receive
+  // DOM messages instead of the previous DOMUI instance.
+  //
+  // If a DOMUI instance has code that is usually triggered from a JavaScript
+  // onload handler, this should be overridden to check to see if the web page's
+  // DOM is still intact (e.g., due to a back/forward navigation that remains
+  // within the same page), and if so trigger that code manually since onload
+  // won't be run in that case.
+  virtual void DidBecomeActiveForReusedRenderView() {}
+
   // Called from TabContents.
   virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 

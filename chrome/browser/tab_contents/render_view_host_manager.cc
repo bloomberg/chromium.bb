@@ -495,6 +495,8 @@ void RenderViewHostManager::CommitPending() {
 
   // Next commit the DOM UI, if any.
   dom_ui_.swap(pending_dom_ui_);
+  if (dom_ui_.get() && pending_dom_ui_.get() && !pending_render_view_host_)
+    dom_ui_->DidBecomeActiveForReusedRenderView();
   pending_dom_ui_.reset();
 
   // It's possible for the pending_render_view_host_ to be NULL when we aren't
