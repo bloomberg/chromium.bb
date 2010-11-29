@@ -35,7 +35,11 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
     EXPECT_EQ(L"DV", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
-    InputMethodDescriptor desc("xkb:us:altgr-intl:eng", "US intl", "us", "eng");
+    InputMethodDescriptor desc("xkb:us:altgr-intl:eng", "US extd", "us", "eng");
+    EXPECT_EQ(L"EXTD", InputMethodMenu::GetTextForIndicator(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:us:intl:eng", "US intl", "us", "eng");
     EXPECT_EQ(L"INTL", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
