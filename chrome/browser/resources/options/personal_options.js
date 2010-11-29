@@ -73,9 +73,15 @@ cr.define('options', function() {
             chrome.send('themesSetGTK');
           };
         }
-      }
-      else {
+      } else {
         chrome.send('loadAccountPicture');
+      }
+      // Disable the screen lock checkbox for the guest mode.
+      if (cr.commandLine.options['--bwsi']) {
+        var enableScreenLock = $('enable-screen-lock');
+        enableScreenLock.disabled = true;
+        // Mark that this is manually disabled. See also pref_ui.js.
+        enableScreenLock.manually_disabled = true;
       }
     },
 
