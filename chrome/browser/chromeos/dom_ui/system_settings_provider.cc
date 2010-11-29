@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "grit/generated_resources.h"
 #include "unicode/calendar.h"
 #include "unicode/timezone.h"
@@ -194,6 +195,10 @@ SystemSettingsProvider::~SystemSettingsProvider() {
 }
 
 void SystemSettingsProvider::DoSet(const std::string& path, Value* in_value) {
+  // Only the owner can change the time zone.
+  if (!OwnershipService::GetSharedInstance()->CurrentUserIsOwner())
+    return;
+
   if (path == kSystemTimezone) {
     string16 value;
     if (!in_value || !in_value->IsType(Value::TYPE_STRING) ||
