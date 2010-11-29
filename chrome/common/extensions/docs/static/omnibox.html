@@ -1,3 +1,5 @@
+<div id="pageData-name" class="pageData">Omnibox</div>
+
 <!-- BEGIN AUTHORED CONTENT -->
 <p>
 The omnibox API allows you to register a
@@ -6,7 +8,7 @@ which is also known as the omnibox.
 </p>
 
 <p>
-<img src="images/omnibox.png" width="480" height="300"
+<img src="images/omnibox.png" width="300" height="150"
   alt="A screenshot showing suggestions related to the keyword 'Chromium Search'"/>
 </p>
 
@@ -31,11 +33,12 @@ and can take action.
 <h2 id="manifest">Manifest</h2>
 
 <p>
-To use the omnibox API, your manifest must
-declare the "experimental" permission and
-specify an <code>omnibox_keyword</code> field. You should also
+You must include an <code>omnibox</code> <code>keyword</code> field
+in the <a href="manifest.html">manifest</a> 
+to use the omnibox API.
+You should also
 specify a 16x16-pixel icon, which will be
-displayed in the omnibox when suggesting users
+displayed in the address bar when suggesting that users
 enter keyword mode.
 </p>
 
@@ -46,22 +49,23 @@ For example:
 <pre>{
   "name": "Aaron's omnibox extension",
   "version": "1.0",
-  <b>"permissions": ["experimental"],</b>
-  <b>"omnibox_keyword": "aaron",</b>
+  <b>"omnibox": { "keyword" : "aaron" },</b>
   <b>"icons": {</b>
     <b>"16": "16-full-color.png"</b>
   <b>},</b>
   "background_page": "background.html"
 }</pre>
 
-<p><b class="note">Note:</b> Google Chrome
-automatically creates a greyscale version of
+<p class="note">
+<strong>Note:</strong>
+Chrome automatically creates a grayscale version of
 your 16x16-pixel icon. You should provide
 a full-color version so that it can also be
 used in other situations that require color.
 For example, the <a href="contextMenus.html"
 >context menus API</a> also uses a 16x16-pixel
 icon, but it is displayed in color.
+</p>
 
 
 <h2 id="examples">Examples</h2>
