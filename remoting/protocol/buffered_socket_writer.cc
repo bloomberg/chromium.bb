@@ -24,9 +24,11 @@ BufferedSocketWriterBase::~BufferedSocketWriterBase() { }
 
 void BufferedSocketWriterBase::Init(net::Socket* socket,
                                     WriteFailedCallback* callback) {
+  // TODO(garykac) Save copy of WriteFailedCallback.
   AutoLock auto_lock(lock_);
   message_loop_ = MessageLoop::current();
   socket_ = socket;
+  DCHECK(socket_);
 }
 
 bool BufferedSocketWriterBase::Write(

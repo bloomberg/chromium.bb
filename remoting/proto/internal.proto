@@ -15,13 +15,8 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting;
 
-// Defines the message that is sent from the client to the host.
-// Only one of the optional messages should be present.
+// TODO(garykac) This is dead, remove remaining references and delete.
 message ChromotingClientMessage {
   optional KeyEvent key_event = 1;
-  optional MouseSetPositionEvent mouse_set_position_event = 2;
-  optional MouseMoveEvent mouse_move_event = 3;
-  optional MouseWheelEvent mouse_wheel_event = 4;
-  optional MouseDownEvent mouse_down_event = 5;
-  optional MouseUpEvent mouse_up_event = 6;
+  optional MouseEvent mouse_event = 2;
 }

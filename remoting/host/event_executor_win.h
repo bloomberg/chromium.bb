@@ -15,11 +15,7 @@
 
 namespace remoting {
 
-class KeyEvent;
-class MouseDownEvent;
-class MouseSetPositionEvent;
-class MouseUpEvent;
-class MouseWheelEvent;
+class EventExecutorWinPimpl;
 
 // A class to generate events on Windows.
 class EventExecutorWin : public protocol::InputStub {
@@ -31,11 +27,8 @@ class EventExecutorWin : public protocol::InputStub {
   virtual void InjectMouseEvent(const MouseEvent* event, Task* done);
 
  private:
-  void HandleMouseSetPosition(const MouseSetPositionEvent& event);
-  void HandleMouseWheel(const MouseWheelEvent& event);
-  void HandleMouseButtonDown(const MouseDownEvent& event);
-  void HandleMouseButtonUp(const MouseUpEvent& event);
-  void HandleKey(const KeyEvent& event);
+  void HandleKey(const KeyEvent* event);
+  void HandleMouse(const MouseEvent* event);
 
   MessageLoop* message_loop_;
   Capturer* capturer_;

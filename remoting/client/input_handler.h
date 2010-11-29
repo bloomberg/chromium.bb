@@ -37,15 +37,6 @@ class InputHandler {
   ChromotingView* view_;
 
  private:
-  // True if we should send the next mouse position as an absolute value rather
-  // than a relative value. After sending a single absolute mouse position,
-  // it will automatically switch back to sending relative mouse deltas.
-  bool send_absolute_mouse_;
-
-  // Current (x,y) position of mouse pointer.
-  // This is the last value that we sent to the host.
-  int mouse_x_, mouse_y_;
-
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
 

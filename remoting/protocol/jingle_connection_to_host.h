@@ -52,12 +52,11 @@ class JingleConnectionToHost : public ConnectionToHost,
                        const std::string& auth_token,
                        const std::string& host_jid,
                        HostEventCallback* event_callback,
+                       ClientStub* client_stub,
                        VideoStub* video_stub);
   virtual void Disconnect();
 
   virtual const SessionConfig* config();
-
-  virtual void SendEvent(const ChromotingClientMessage& msg);
 
   // JingleClient::Callback interface.
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
@@ -96,7 +95,6 @@ class JingleConnectionToHost : public ConnectionToHost,
   scoped_refptr<protocol::Session> session_;
 
   MessageReader control_reader_;
-  EventStreamWriter event_writer_;
   scoped_ptr<VideoReader> video_reader_;
 
   HostEventCallback* event_callback_;

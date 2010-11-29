@@ -206,11 +206,6 @@ class EventExecutorLinuxPimpl {
   void HandleKey(const KeyEvent* key_event);
 
  private:
-  void HandleMouseSetPosition(const MouseSetPositionEvent& position_event);
-  void HandleMouseMove(const MouseMoveEvent& move_event);
-  void HandleMouseWheel(const MouseWheelEvent& wheel_event);
-  void HandleMouseButtonDown(const MouseDownEvent& mouse_down_event);
-  void HandleMouseButtonUp(const MouseUpEvent& mouse_up_event);
   void DeinitXlib();
 
   // Reference to containing class so we can access friend functions.
@@ -290,75 +285,6 @@ bool EventExecutorLinuxPimpl::Init() {
   return true;
 }
 
-void EventExecutorLinuxPimpl::HandleMouse(
-    const MouseEvent* mouse_event) {
-  if (mouse_event->has_set_position()) {
-    HandleMouseSetPosition(mouse_event->set_position());
-  } else if (mouse_event->has_wheel()) {
-    HandleMouseWheel(mouse_event->wheel());
-  } else if (mouse_event->has_down()) {
-    HandleMouseButtonDown(mouse_event->down());
-  } else if (mouse_event->has_up()) {
-    HandleMouseButtonUp(mouse_event->up());
-  }
-}
-
-void EventExecutorLinuxPimpl::HandleMouseSetPosition(
-    const MouseSetPositionEvent& position_event) {
-  if (position_event.x() < 0 || position_event.y() < 0 ||
-      position_event.x() > width_ || position_event.y() > height_) {
-    // A misbehaving client may send these. Drop events that are out of range.
-    // TODO(ajwong): How can we log this sanely? We don't want to DOS the server
-    // with a misbehaving client by logging like crazy.
-    return;
-  }
-
-  VLOG(3) << "Moving mouse to " << position_event.x()
-          << "," << position_event.y();
-  XTestFakeMotionEvent(display_, DefaultScreen(display_),
-                       position_event.x(), position_event.y(),
-                       CurrentTime);
-}
-void EventExecutorLinuxPimpl::HandleMouseMove(
-    const MouseMoveEvent& move_event) {
-  NOTIMPLEMENTED() << "We shouldn't be using relative moves.";
-}
-
-void EventExecutorLinuxPimpl::HandleMouseWheel(
-    const MouseWheelEvent& wheel_event) {
-  NOTIMPLEMENTED() << "No scroll wheel support yet.";
-}
-
-void EventExecutorLinuxPimpl::HandleMouseButtonDown(
-    const MouseDownEvent& mouse_down_event) {
-  int button_number = MouseButtonToX11ButtonNumber(mouse_down_event.button());
-
-  if (button_number < 0) {
-    LOG(WARNING) << "Ignoring unknown button type: "
-                 << mouse_down_event.button();
-    return;
-  }
-
-  VLOG(3) << "Button " << mouse_down_event.button()
-          << " received, sending down " << button_number;
-  XTestFakeButtonEvent(display_, button_number, True, CurrentTime);
-}
-
-void EventExecutorLinuxPimpl::HandleMouseButtonUp(
-    const MouseUpEvent& mouse_up_event) {
-  int button_number = MouseButtonToX11ButtonNumber(mouse_up_event.button());
-
-  if (button_number < 0) {
-    LOG(WARNING) << "Ignoring unknown button type: "
-                 << mouse_up_event.button();
-    return;
-  }
-
-  VLOG(3) << "Button " << mouse_up_event.button()
-          << " received, sending up " << button_number;
-  XTestFakeButtonEvent(display_, button_number, False, CurrentTime);
-}
-
 void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
   // TODO(ajwong): This will only work for QWERTY keyboards.
   int keysym = ChromotocolKeycodeToX11Keysym(key_event->key());
@@ -380,6 +306,43 @@ void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
   XTestFakeKeyEvent(display_, keycode, key_event->pressed(), CurrentTime);
+}
+
+void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
+  if (event->has_x() && event->has_y()) {
+    if (event->x() < 0 || event->y() < 0 ||
+        event->x() > width_ || event->y() > height_) {
+      // A misbehaving client may send these. Drop events that are out of range.
+      // TODO(ajwong): How can we log this sanely? We don't want to DOS the
+      // server with a misbehaving client by logging like crazy.
+      return;
+    }
+
+    VLOG(3) << "Moving mouse to " << event->x()
+            << "," << event->y();
+    XTestFakeMotionEvent(display_, DefaultScreen(display_),
+                         event->x(), event->y(),
+                         CurrentTime);
+  }
+
+  if (event->has_button() && event->has_button_down()) {
+    int button_number = MouseButtonToX11ButtonNumber(event->button());
+
+    if (button_number < 0) {
+      LOG(WARNING) << "Ignoring unknown button type: "
+                   << event->button();
+      return;
+    }
+
+    VLOG(3) << "Button " << event->button()
+            << " received, sending down " << button_number;
+    XTestFakeButtonEvent(display_, button_number, event->button_down(),
+                         CurrentTime);
+  }
+
+  if (event->has_wheel_offset_x() && event->has_wheel_offset_y()) {
+    NOTIMPLEMENTED() << "No scroll wheel support yet.";
+  }
 }
 
 void EventExecutorLinuxPimpl::DeinitXlib() {

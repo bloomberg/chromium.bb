@@ -365,6 +365,7 @@
         'protocol/client_stub.h',
         'protocol/connection_to_client.cc',
         'protocol/connection_to_client.h',
+        'protocol/connection_to_host.cc',
         'protocol/connection_to_host.h',
         'protocol/host_control_message_handler.h',
         'protocol/host_event_message_handler.h',

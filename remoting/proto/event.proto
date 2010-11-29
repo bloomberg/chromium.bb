@@ -18,35 +18,6 @@ message KeyEvent {
   required bool pressed = 2;
 }
 
-// Sets the absolute position of the mouse cursor.
-// dimension of the screen area.
-// NEXT ID: 3
-message MouseSetPositionEvent {
-  required int32 x = 1;
-  required int32 y = 2;
-
-  // Windows sets absolute mouse pointer positions as a relative value to
-  // the screen size. So pass the screen size to make this calculation easier.
-  optional int32 width = 3;
-  optional int32 height = 4;
-}
-
-// Adjust the position of the mouse cursor by an offset.
-// NEXT ID: 3
-message MouseMoveEvent {
-  required int32 offset_x = 1;
-  required int32 offset_y = 2;
-}
-
-// Motion of the mouse wheel.
-// TODO(garykac): What are units here? How many units correspond to a single
-// wheel click? On Windows, one click (WHEEL_DELTA) is 120 wheel units.
-// NEXT ID: 3
-message MouseWheelEvent {
-  required int32 offset_x = 1;
-  required int32 offset_y = 2;
-}
-
 enum MouseButton {
   MouseButtonUndefined = 0;
   MouseButtonLeft = 1;
@@ -54,31 +25,19 @@ enum MouseButton {
   MouseButtonRight = 3;
 }
 
-// Mouse button is pressed down.
-// NEXT ID: 2
-message MouseDownEvent {
-  required MouseButton button = 1;
-}
-
-// Mouse button is released.
-// NEXT ID: 2
-message MouseUpEvent {
-  required MouseButton button = 1;
-}
-
 // Defines a mouse event message on the event channel. 
 message MouseEvent {
   // Mouse position information.
-  optional MouseSetPositionEvent set_position = 1;
+  optional int32 x = 1;
+  optional int32 y = 2;
 
   // Mouse wheel information.
-  optional MouseWheelEvent wheel = 2;
+  optional int32 wheel_offset_x = 3;
+  optional int32 wheel_offset_y = 4;
 
-  // Mouse down event.
-  optional MouseDownEvent down = 3;
-
-  // Mouse up event.
-  optional MouseUpEvent up = 4;
+  // Mouse button event.
+  optional MouseButton button = 5;
+  optional bool button_down = 6;
 }
 
 // Defines an event message on the event channel.

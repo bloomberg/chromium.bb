@@ -20,8 +20,6 @@ class Socket;
 namespace remoting {
 
 class ChromotocolConnection;
-class ChromotingClientMessage;
-class ChromotingHostMessage;
 class MessageReader;
 
 namespace internal {

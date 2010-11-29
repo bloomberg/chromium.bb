@@ -12,12 +12,18 @@
 #include "base/task.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_view.h"
+#include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/video_stub.h"
 
 class MessageLoop;
 
 namespace remoting {
+
+namespace protocol {
+class NotifyResolutionRequest;
+}  // namespace protocol
 
 class ClientContext;
 class InputHandler;
@@ -25,6 +31,7 @@ class RectangleUpdateDecoder;
 
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
 class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
+                         public protocol::ClientStub,
                          public protocol::VideoStub {
  public:
   // Objects passed in are not owned by this class.
@@ -56,6 +63,10 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   virtual void OnConnectionOpened(protocol::ConnectionToHost* conn);
   virtual void OnConnectionClosed(protocol::ConnectionToHost* conn);
   virtual void OnConnectionFailed(protocol::ConnectionToHost* conn);
+
+  // ClientStub implementation.
+  virtual void NotifyResolution(const protocol::NotifyResolutionRequest* msg,
+                                Task* done);
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);

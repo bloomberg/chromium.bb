@@ -43,7 +43,7 @@ class EventStreamWriter : public StreamWriterBase {
  public:
   // Sends the |message| or returns false if called before Init().
   // Can be called on any thread.
-  bool SendMessage(const ChromotingClientMessage& message);
+  bool SendMessage(const EventMessage& message);
 };
 
 class ControlStreamWriter : public StreamWriterBase {

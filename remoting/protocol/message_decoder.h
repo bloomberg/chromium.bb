@@ -16,13 +16,6 @@
 
 namespace remoting {
 
-class ChromotingClientMessage;
-class ChromotingHostMessage;
-class ClientControlMessage;
-class ClientEventMessage;
-class HostControlMessage;
-class HostEventMessage;
-
 // MessageDecoder uses CompoundBuffer to decode bytes into protocol
 // buffer messages. This can be used to decode bytes received from the
 // network.

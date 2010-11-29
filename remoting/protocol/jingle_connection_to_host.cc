@@ -9,6 +9,8 @@
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
+#include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/input_sender.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
@@ -29,6 +31,7 @@ void JingleConnectionToHost::Connect(const std::string& username,
                                      const std::string& auth_token,
                                      const std::string& host_jid,
                                      HostEventCallback* event_callback,
+                                     ClientStub* client_stub,
                                      VideoStub* video_stub) {
   event_callback_ = event_callback;
   video_stub_ = video_stub;
@@ -52,7 +55,6 @@ void JingleConnectionToHost::Disconnect() {
   }
 
   control_reader_.Close();
-  event_writer_.Close();
   video_reader_->Close();
 
   if (session_) {
@@ -126,11 +128,6 @@ const SessionConfig* JingleConnectionToHost::config() {
   return session_->config();
 }
 
-void JingleConnectionToHost::SendEvent(const ChromotingClientMessage& msg) {
-  // This drops the message if we are not connected yet.
-  event_writer_.SendMessage(msg);
-}
-
 // JingleClient::Callback interface.
 void JingleConnectionToHost::OnStateChange(JingleClient* client,
                                          JingleClient::State state) {
@@ -173,9 +170,9 @@ void JingleConnectionToHost::OnSessionStateChange(
       control_reader_.Init<ControlMessage>(
           session_->control_channel(),
           NewCallback(this, &JingleConnectionToHost::OnControlMessage));
-      event_writer_.Init(session_->event_channel());
       video_reader_.reset(VideoReader::Create(session_->config()));
       video_reader_->Init(session_, video_stub_);
+      input_stub_.reset(new InputSender(session_->event_channel()));
       event_callback_->OnConnectionOpened(this);
       break;
 

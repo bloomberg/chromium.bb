@@ -10,7 +10,6 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/input_handler.h"
 #include "remoting/client/rectangle_update_decoder.h"
-#include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/session_config.h"
 
@@ -46,7 +45,7 @@ void ChromotingClient::Start() {
   }
 
   connection_->Connect(config_.username, config_.auth_token, config_.host_jid,
-                       this, this);
+                       this, this, this);
 
   if (!view_->Initialize()) {
     ClientDone();
@@ -213,6 +212,14 @@ void ChromotingClient::Initialize() {
 
   // Schedule the input handler to process the event queue.
   input_handler_->Initialize();
+}
+
+////////////////////////////////////////////////////////////////////////////
+// ClientStub control channel interface.
+void ChromotingClient::NotifyResolution(
+    const protocol::NotifyResolutionRequest* msg,
+    Task* done) {
+  // TODO(garykac): Implement this.
 }
 
 }  // namespace remoting
