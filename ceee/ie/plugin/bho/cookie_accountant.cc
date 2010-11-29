@@ -192,9 +192,11 @@ void CookieAccountant::SetScriptCookieStoreId(cookie_api::CookieInfo* cookie) {
   // If this is a Protected Mode process, the cookie store ID is different.
   bool is_protected_mode = false;
   HRESULT hr = ie_util::GetIEIsInProtectedMode(&is_protected_mode);
-  DCHECK(SUCCEEDED(hr)) << "Unexpected failure while checking the " <<
-      "protected mode setting for IE tab process " << process_id << ". " <<
-      com::LogHr(hr);
+  // E_NOTIMPL might occur when IE protected mode is disabled, or for IE6 or
+  // Windows XP. Those are not errors, so we shouldn't assert here.
+  DCHECK(SUCCEEDED(hr) || hr == E_NOTIMPL) << "Unexpected failure while " <<
+      "checking the protected mode setting for IE tab process " << process_id <<
+      ". " << com::LogHr(hr);
   if (SUCCEEDED(hr) && is_protected_mode) {
     store_id_stream << cookie_api::kProtectedModeStoreIdSuffix;
   }
