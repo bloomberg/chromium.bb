@@ -768,6 +768,10 @@ templates and will be translated for each locale. -->
              desc="Appears at the top of the policy summary table, over the column of short policy descriptions, in the generated policy documentation">
       Description
     </message>
+    <message name="IDS_POLICY_DOC_FEATURE_DYNAMIC_REFRESH"
+             desc="The name of the feature that indicates for a given policy that changes to it are respected by Chrome without a browser restart">
+      Dynamic Policy Refresh
+    </message>
     <!-- End of generated documentation messages  -->
     </messages>
   </release>

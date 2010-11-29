@@ -159,9 +159,9 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     policy = {
       'type': 'enum',
       'items': [
-        {'value': '0', 'caption': 'Disable foo'},
-        {'value': '2', 'caption': 'Solve your problem'},
-        {'value': '5', 'caption': 'Enable bar'},
+        {'value': 0, 'caption': 'Disable foo'},
+        {'value': 2, 'caption': 'Solve your problem'},
+        {'value': 5, 'caption': 'Enable bar'},
       ],
       'desc': '''This policy disables foo, except in case of bar.
 See http://policy-explanation.example.com for more details.
@@ -203,11 +203,26 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     self.writer._AddListExample(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
-      '''<root><dl style="style_dd dl;"><dt>Windows:</dt><dd style="style_.monospace;style_.pre;">MockKey\\PolicyName\\0 = &quot;Foo&quot;
-MockKey\\PolicyName\\1 = &quot;Bar&quot;</dd><dt>Linux:</dt><dd style="style_.monospace;">[&quot;Foo&quot;, &quot;Bar&quot;]</dd><dt>Mac:</dt><dd style="style_.monospace;style_.pre;">&lt;array&gt;
-  &lt;string&gt;Foo&lt;/string&gt;
-  &lt;string&gt;Bar&lt;/string&gt;
-&lt;/array&gt;</dd></dl></root>''')
+      '<root>'
+        '<dl style="style_dd dl;">'
+          '<dt>Windows:</dt>'
+          '<dd style="style_.monospace;style_.pre;">'
+            'MockKey\\PolicyName\\1 = &quot;Foo&quot;\n'
+            'MockKey\\PolicyName\\2 = &quot;Bar&quot;'
+          '</dd>'
+          '<dt>Linux:</dt>'
+          '<dd style="style_.monospace;">'
+            '[&quot;Foo&quot;, &quot;Bar&quot;]'
+          '</dd>'
+          '<dt>Mac:</dt>'
+          '<dd style="style_.monospace;style_.pre;">'
+            '&lt;array&gt;\n'
+            '  &lt;string&gt;Foo&lt;/string&gt;\n'
+            '  &lt;string&gt;Bar&lt;/string&gt;\n'
+            '&lt;/array&gt;'
+          '</dd>'
+        '</dl>'
+      '</root>')
 
   def testBoolExample(self):
     # Test representation of boolean example values.
@@ -311,7 +326,7 @@ MockKey\\PolicyName\\1 = &quot;Bar&quot;</dd><dt>Linux:</dt><dd style="style_.mo
         '</ul>'
       '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
-        '<dd>Dynamic Policy Refresh: _test_not_supported</dd>'
+        '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
       '<dt style="style_dt;">_test_description</dt><dd>TestPolicyDesc</dd>'
       '<dt style="style_dt;">_test_example_value</dt>'
         '<dd>0x00000000 (Windows), false (Linux), &lt;false /&gt; (Mac)</dd>'
@@ -405,7 +420,7 @@ MockKey\\PolicyName\\1 = &quot;Bar&quot;</dd><dt>Linux:</dt><dd style="style_.mo
               '</ul>'
             '</dd>'
             '<dt style="style_dt;">_test_supported_features</dt>'
-            '<dd>Dynamic Policy Refresh: _test_not_supported</dd>'
+            '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
             '<dt style="style_dt;">_test_description</dt>'
             '<dd>PolicyDesc</dd>'
             '<dt style="style_dt;">_test_example_value</dt>'

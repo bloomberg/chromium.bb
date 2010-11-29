@@ -171,7 +171,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddElement(parent, 'dt', {}, 'Windows:')
     win = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
     win_text = []
-    cnt = 0
+    cnt = 1
     for item in example_value:
       win_text.append(
           '%s\\%s\\%d = "%s"' %
@@ -484,7 +484,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     }
     # Human-readable names of supported features.
     self._FEATURE_MAP = {
-      'dynamic_refresh': 'Dynamic Policy Refresh'
+      'dynamic_refresh': self._GetLocalizedMessage('feature_dynamic_refresh')
     }
     # Human-readable names of types.
     self._TYPE_MAP = {
