@@ -123,27 +123,6 @@ class ExtensionPrefs {
   // the client's.
   void SetLastPingDay(const std::string& extension_id, const base::Time& time);
 
-  // Gets the permissions (|api_permissions|, |host_extent| and |full_access|)
-  // granted to the extension with |extension_id|. |full_access| will be true
-  // if the extension has all effective permissions (like from an NPAPI plugin).
-  // Returns false if the granted permissions haven't been initialized yet.
-  // TODO(jstritar): Refractor the permissions into a class that encapsulates
-  // all granted permissions, can be initialized from preferences or
-  // a manifest file, and can be compared to each other.
-  bool GetGrantedPermissions(const std::string& extension_id,
-                             bool* full_access,
-                             std::set<std::string>* api_permissions,
-                             ExtensionExtent* host_extent);
-
-  // Adds the specified |api_permissions|, |host_extent| and |full_access|
-  // to the granted permissions for extension with |extension_id|.
-  // |full_access| should be set to true if the extension effectively has all
-  // permissions (such as by having an NPAPI plugin).
-  void AddGrantedPermissions(const std::string& extension_id,
-                             const bool full_access,
-                             const std::set<std::string>& api_permissions,
-                             const ExtensionExtent& host_extent);
-
   // Similar to the 2 above, but for the extensions blacklist.
   base::Time BlacklistLastPingDay() const;
   void SetBlacklistLastPingDay(const base::Time& time);
@@ -243,7 +222,7 @@ class ExtensionPrefs {
   void DeleteExtensionPrefs(const std::string& id);
 
   // Reads a boolean pref from |ext| with key |pref_key|.
-  // Return false if the value is false or |pref_key| does not exist.
+  // Return false if the value is false or kPrefBlacklist does not exist.
   bool ReadBooleanFromPref(DictionaryValue* ext, const std::string& pref_key);
 
   // Reads a boolean pref |pref_key| from extension with id |extension_id|.
@@ -259,24 +238,6 @@ class ExtensionPrefs {
   bool ReadExtensionPrefInteger(const std::string& extension_id,
                                 const std::string& pref_key,
                                 int* out_value);
-
-  // Reads a list pref |pref_key| from extension with id | extension_id|.
-  bool ReadExtensionPrefList(const std::string& extension_id,
-                             const std::string& pref_key,
-                             ListValue** out_value);
-
-  // Reads a list pref |pref_key| as a string set from the extension with
-  // id |extension_id|.
-  bool ReadExtensionPrefStringSet(const std::string& extension_id,
-                                  const std::string& pref_key,
-                                  std::set<std::string>* result);
-
-  // Adds the |added_values| to the value of |pref_key| for the extension
-  // with id |extension_id| (the new value will be the union of the existing
-  // value and |added_values|).
-  void AddToExtensionPrefStringSet(const std::string& extension_id,
-                                   const std::string& pref_key,
-                                   const std::set<std::string>& added_values);
 
   // Ensures and returns a mutable dictionary for extension |id|'s prefs.
   DictionaryValue* GetOrCreateExtensionPref(const std::string& id);

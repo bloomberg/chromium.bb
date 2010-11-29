@@ -294,7 +294,7 @@ TEST_F(ExtensionManifestTest, OptionsPageInApps) {
                      errors::kInvalidOptionsPageExpectUrlInPackage);
 }
 
-TEST_F(ExtensionManifestTest, AllowUnrecognizedPermissions) {
+TEST_F(ExtensionManifestTest, DisallowExtensionPermissions) {
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
       LoadManifestFile("valid_app.json", &error));
@@ -308,11 +308,13 @@ TEST_F(ExtensionManifestTest, AllowUnrecognizedPermissions) {
     permissions->Clear();
     permissions->Append(p);
     std::string message_name = base::StringPrintf("permission-%s", name);
-
-    // Extensions are allowed to contain unrecognized API permissions,
-    // so there shouldn't be any errors.
-    scoped_refptr<Extension> extension;
-    extension = LoadAndExpectSuccess(manifest.get(), message_name);
+    if (Extension::IsHostedAppPermission(name)) {
+      scoped_refptr<Extension> extension;
+      extension = LoadAndExpectSuccess(manifest.get(), message_name);
+    } else {
+      LoadAndExpectError(manifest.get(), message_name,
+                         errors::kInvalidPermission);
+    }
   }
 }
 
