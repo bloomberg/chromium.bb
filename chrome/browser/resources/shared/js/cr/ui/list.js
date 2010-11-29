@@ -33,14 +33,19 @@ cr.define('cr.ui', function() {
   /**
    * Creates an item (dataModel.item(0)) and measures its height.
    * @param {!List} list The list to create the item for.
+   * @param {ListItem=} opt_item The list item to use to do the measuring. If
+   *     this is not provided an item will be created based on the first value
+   *     in the model.
    * @return {number} The height of the item, taking margins into account.
    */
-  function measureItem(list) {
+  function measureItem(list, opt_item) {
     var dataModel = list.dataModel;
     if (!dataModel || !dataModel.length)
       return 0;
-    var item = list.createItem(dataModel.item(0));
-    list.appendChild(item);
+    var item = opt_item || list.createItem(dataModel.item(0));
+    if (!opt_item)
+      list.appendChild(item);
+
     var cs = getComputedStyle(item);
     var mt = parseFloat(cs.marginTop);
     var mb = parseFloat(cs.marginBottom);
@@ -55,7 +60,8 @@ cr.define('cr.ui', function() {
       h += mt + mb;
     }
 
-    list.removeChild(item);
+    if (!opt_item)
+      list.removeChild(item);
     return Math.max(0, h);
   }
 
@@ -446,9 +452,8 @@ cr.define('cr.ui', function() {
       var scrollTop = this.scrollTop;
       var clientHeight = this.clientHeight;
 
-      if (!this.itemHeight_) {
+      if (!this.itemHeight_)
         this.itemHeight_ = measureItem(this);
-      }
 
       var itemHeight = this.itemHeight_;
 
@@ -475,10 +480,11 @@ cr.define('cr.ui', function() {
 
       var sm = this.selectionModel;
       var leadIndex = sm.leadIndex;
+      var listItem;
 
       for (var y = firstIndex; y < lastIndex; y++) {
         var dataItem = dataModel.item(y);
-        var listItem = cachedItems[y] || this.createItem(dataItem);
+        listItem = cachedItems[y] || this.createItem(dataItem);
         if (y == leadIndex) {
           listItem.lead = true;
         }
@@ -499,6 +505,21 @@ cr.define('cr.ui', function() {
       this.cachedItems_ = newCachedItems;
 
       console.timeEnd('redraw');
+
+      // Measure again in case the item height has change due to a page zoom.
+      //
+      // The measure above is only done the first time but this measure is done
+      // after every redraw. It is done in a timeout so it will not trigger
+      // a reflow (which made the redraw speed 3 times slower on my system).
+      // By using a timeout the measuring will happen later when there is no
+      // need for a reflow.
+      if (listItem) {
+        var list = this;
+        window.setTimeout(function() {
+          if (listItem.parentNode == list)
+            list.itemHeight_ = measureItem(list, listItem);
+        });
+      }
     },
 
     /**
