@@ -7,6 +7,7 @@
 #pragma once
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -40,8 +41,11 @@ class TemplateURL;
 class InstantController : public InstantLoaderDelegate {
  public:
   // Variations of instant support.
+  // TODO(sky): nuke these when we decide the default behavior.
   enum Type {
     // NOTE: these values are persisted to prefs. Don't change them!
+
+    FIRST_TYPE = 0,
 
     // Search results are shown for the best guess of what we think the user was
     // planning on typing.
@@ -50,7 +54,10 @@ class InstantController : public InstantLoaderDelegate {
     // Search results are shown for exactly what was typed.
     VERBATIM_TYPE,
 
-    LAST_TYPE = VERBATIM_TYPE,
+    // Variant of predictive that does not auto-complete after a delay.
+    PREDICTIVE_NO_AUTO_COMPLETE_TYPE,
+
+    LAST_TYPE = PREDICTIVE_NO_AUTO_COMPLETE_TYPE
   };
 
   InstantController(Profile* profile, InstantDelegate* delegate);
@@ -196,6 +203,14 @@ class InstantController : public InstantLoaderDelegate {
   // if non TemplateURL should be used.
   const TemplateURL* GetTemplateURL(const AutocompleteMatch& match);
 
+  // If instant is enabled for the specified profile the type of instant is set
+  // in |type| and true is returned. Otherwise returns false.
+  static bool GetType(Profile* profile, Type* type);
+
+  // Returns a string description for the currently enabled type. This is used
+  // for histograms.
+  static std::string GetTypeString(Profile* profile);
+
   InstantDelegate* delegate_;
 
   // The TabContents last passed to |Update|.
@@ -227,7 +242,7 @@ class InstantController : public InstantLoaderDelegate {
   // URL last pased to ScheduleUpdate.
   GURL scheduled_url_;
 
-  const Type type_;
+  Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

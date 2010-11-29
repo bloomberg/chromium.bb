@@ -4,6 +4,7 @@
 
 #include "chrome/browser/instant/instant_controller.h"
 
+#include "build/build_config.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -28,12 +29,6 @@
 // Number of ms to delay between loading urls.
 static const int kUpdateDelayMS = 200;
 
-static InstantController::Type GetType(Profile* profile) {
-  return InstantController::IsEnabled(profile,
-                                      InstantController::PREDICTIVE_TYPE) ?
-      InstantController::PREDICTIVE_TYPE : InstantController::VERBATIM_TYPE;
-}
-
 InstantController::InstantController(Profile* profile,
                                      InstantDelegate* delegate)
     : delegate_(delegate),
@@ -41,7 +36,9 @@ InstantController::InstantController(Profile* profile,
       is_active_(false),
       commit_on_mouse_up_(false),
       last_transition_type_(PageTransition::LINK),
-      type_(GetType(profile)) {
+      type_(FIRST_TYPE) {
+  bool enabled = GetType(profile, &type_);
+  DCHECK(enabled);
   PrefService* service = profile->GetPrefs();
   if (service) {
     // kInstantWasEnabledOnce was added after instant, set it now to make sure
@@ -77,41 +74,27 @@ void InstantController::RecordMetrics(Profile* profile) {
     } else {
       base::TimeDelta delta =
           base::Time::Now() - base::Time::FromInternalValue(enable_time);
-      std::string name = IsEnabled(profile, PREDICTIVE_TYPE) ?
-          "Instant.EnabledTime.Predictive" : "Instant.EnabledTime.Verbatim";
+      std::string name = "Instant.EnabledTime. " + GetTypeString(profile);
+      // Can't use histogram macros as name isn't constant.
       // Histogram from 1 hour to 30 days.
-      UMA_HISTOGRAM_CUSTOM_COUNTS(name, delta.InHours(), 1, 30 * 24, 50);
+      scoped_refptr<base::Histogram> counter =
+          base::Histogram::FactoryGet(name, 1, 30 * 24, 50,
+              base::Histogram::kUmaTargetedHistogramFlag);
+      counter->Add(delta.InHours());
     }
   }
 }
 
 // static
 bool InstantController::IsEnabled(Profile* profile) {
-  return IsEnabled(profile, PREDICTIVE_TYPE) ||
-      IsEnabled(profile, VERBATIM_TYPE);
+  Type type;
+  return GetType(profile, &type);
 }
 
 // static
 bool InstantController::IsEnabled(Profile* profile, Type type) {
-  // CommandLine takes precedence.
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (type == PREDICTIVE_TYPE &&
-      cl->HasSwitch(switches::kEnablePredictiveInstant)) {
-    return true;
-  }
-  if (type == VERBATIM_TYPE &&
-      cl->HasSwitch(switches::kEnableVerbatimInstant)) {
-    return true;
-  }
-
-  // Then prefs.
-  PrefService* prefs = profile->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kInstantEnabled))
-    return false;
-
-  Type pref_type = prefs->GetInteger(prefs::kInstantType) ==
-      static_cast<int>(PREDICTIVE_TYPE) ? PREDICTIVE_TYPE : VERBATIM_TYPE;
-  return pref_type == type;
+  Type enabled_type;
+  return GetType(profile, &enabled_type) && type == enabled_type;
 }
 
 // static
@@ -124,36 +107,42 @@ void InstantController::Enable(Profile* profile) {
   if (!service)
     return;
 
+  // Randomly pick a type. We're doing this to get feedback as to which variant
+  // folks prefer.
+#if defined(TOOLKIT_VIEWS)
+  int max_type = LAST_TYPE;
+#else
+  int max_type = VERBATIM_TYPE;
+#endif
+  service->SetInteger(prefs::kInstantType,
+                      base::RandInt(static_cast<int>(FIRST_TYPE), max_type));
   service->SetBoolean(prefs::kInstantEnabled, true);
   service->SetBoolean(prefs::kInstantConfirmDialogShown, true);
   service->SetInt64(prefs::kInstantEnabledTime,
                     base::Time::Now().ToInternalValue());
   service->SetBoolean(prefs::kInstantEnabledOnce, true);
-  // Randomly pick a type. We're doing this to get feedback as to which variant
-  // folks prefer.
-  service->SetInteger(prefs::kInstantType,
-                      base::RandInt(static_cast<int>(PREDICTIVE_TYPE),
-                                    static_cast<int>(LAST_TYPE)));
 }
 
 // static
 void InstantController::Disable(Profile* profile) {
   PrefService* service = profile->GetPrefs();
-  if (!service)
+  if (!service || !IsEnabled(profile))
     return;
-
-  service->SetBoolean(prefs::kInstantEnabled, false);
 
   int64 enable_time = service->GetInt64(prefs::kInstantEnabledTime);
-  if (!enable_time)
-    return;
+  if (enable_time) {
+    base::TimeDelta delta =
+        base::Time::Now() - base::Time::FromInternalValue(enable_time);
+    std::string name = "Instant.TimeToDisable." + GetTypeString(profile);
+    // Can't use histogram macros as name isn't constant.
+    // Histogram from 1 minute to 10 days.
+    scoped_refptr<base::Histogram> counter =
+       base::Histogram::FactoryGet(name, 1, 60 * 24 * 10, 50,
+                                   base::Histogram::kUmaTargetedHistogramFlag);
+    counter->Add(delta.InMinutes());
+  }
 
-  base::TimeDelta delta =
-      base::Time::Now() - base::Time::FromInternalValue(enable_time);
-  std::string name = IsEnabled(profile, PREDICTIVE_TYPE) ?
-      "Instant.TimeToDisable.Predictive" : "Instant.TimeToDisable.Verbatim";
-  // histogram from 1 minute to 10 days.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, delta.InMinutes(), 1, 60 * 24 * 10, 50);
+  service->SetBoolean(prefs::kInstantEnabled, false);
 }
 
 void InstantController::Update(TabContentsWrapper* tab_contents,
@@ -520,4 +509,59 @@ const TemplateURL* InstantController::GetTemplateURL(
     return template_url;
   }
   return NULL;
+}
+
+// static
+bool InstantController::GetType(Profile* profile, Type* type) {
+  *type = FIRST_TYPE;
+  // CommandLine takes precedence.
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kEnablePredictiveInstant)) {
+    *type = PREDICTIVE_TYPE;
+    return true;
+  }
+  if (cl->HasSwitch(switches::kEnableVerbatimInstant)) {
+    *type = VERBATIM_TYPE;
+    return true;
+  }
+
+  // There is no switch for PREDICTIVE_NO_AUTO_COMPLETE_TYPE.
+
+  // Then prefs.
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kInstantEnabled))
+    return false;
+
+  int int_value = prefs->GetInteger(prefs::kInstantType);
+  if (int_value < FIRST_TYPE || int_value > LAST_TYPE) {
+    // Make sure the value is legal.
+    int_value = FIRST_TYPE;
+  }
+#if !defined(TOOLKIT_VIEWS)
+  // PREDICTIVE_NO_AUTO_COMPLETE_TYPE only makes sense on views.
+  if (int_value == PREDICTIVE_NO_AUTO_COMPLETE_TYPE)
+    int_value = PREDICTIVE_TYPE;
+#endif
+  *type = static_cast<Type>(int_value);
+  return true;
+}
+
+// static
+std::string InstantController::GetTypeString(Profile* profile) {
+  Type type;
+  if (!GetType(profile, &type)) {
+    NOTREACHED();
+    return std::string();
+  }
+  switch (type) {
+    case PREDICTIVE_TYPE:
+      return "Predictive";
+    case VERBATIM_TYPE:
+      return "Verbatim";
+    case PREDICTIVE_NO_AUTO_COMPLETE_TYPE:
+      return "PredictiveNoAutoComplete";
+    default:
+      NOTREACHED();
+      return std::string();
+  }
 }
