@@ -47,7 +47,7 @@ class SSLClientCertificateSelector : public ConstrainedDialogDelegate {
 
   // ConstrainedDialogDelegate implementation:
   virtual GtkWidget* GetWidgetRoot() { return root_widget_.get(); }
-  virtual void DeleteDelegate() { delete this; }
+  virtual void DeleteDelegate();
 
  private:
   void PopulateCerts();
@@ -186,6 +186,14 @@ void SSLClientCertificateSelector::Show() {
   window_ = parent_->CreateConstrainedDialog(this);
 }
 
+void SSLClientCertificateSelector::DeleteDelegate() {
+  if (delegate_) {
+    // The dialog was closed by escape key.
+    delegate_->CertificateSelected(NULL);
+  }
+  delete this;
+}
+
 void SSLClientCertificateSelector::PopulateCerts() {
   std::vector<std::string> nicknames;
   x509_certificate_model::GetNicknameStringsFromCertList(
@@ -315,6 +323,7 @@ void SSLClientCertificateSelector::OnViewClicked(GtkWidget* button) {
 
 void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
   delegate_->CertificateSelected(NULL);
+  delegate_ = NULL;
   DCHECK(window_);
   window_->CloseConstrainedWindow();
 }
@@ -322,6 +331,7 @@ void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
 void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
   net::X509Certificate* cert = GetSelectedCert();
   delegate_->CertificateSelected(cert);
+  delegate_ = NULL;
   DCHECK(window_);
   window_->CloseConstrainedWindow();
 }
