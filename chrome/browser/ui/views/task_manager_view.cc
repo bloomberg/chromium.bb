@@ -660,7 +660,8 @@ void TaskManagerView::ShowContextMenu(views::View* source,
       this, views::Menu::TOPLEFT, source->GetWidget()->GetNativeView()));
   for (std::vector<TableColumn>::iterator i =
        columns_.begin(); i != columns_.end(); ++i) {
-    menu->AppendMenuItem(i->id, i->title, views::Menu::CHECKBOX);
+    menu->AppendMenuItem(i->id, l10n_util::GetString(i->id),
+        views::Menu::CHECKBOX);
   }
   menu->RunMenuAt(p.x(), p.y());
 }
