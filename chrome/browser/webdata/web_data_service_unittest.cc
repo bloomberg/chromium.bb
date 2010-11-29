@@ -143,7 +143,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
                                name,
                                value,
                                string16(),
-                               0));
+                               0,
+                               false));
   }
 
   string16 name1_;

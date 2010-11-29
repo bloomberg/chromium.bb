@@ -46,7 +46,8 @@ TEST_F(FaxFieldTest, ParseOneLineFax) {
                                                ASCIIToUTF16("faxnumber"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("fax1")));
   list_.push_back(NULL);
   iter_ = list_.begin();

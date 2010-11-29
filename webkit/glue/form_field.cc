@@ -20,13 +20,15 @@ using WebKit::WebVector;
 namespace webkit_glue {
 
 FormField::FormField()
-    : max_length_(0) {
+    : max_length_(0),
+      is_autofilled_(false) {
 }
 
 // TODO(jhawkins): This constructor should probably be deprecated and the
 // functionality moved to FormManager.
 FormField::FormField(WebFormControlElement element)
-    : max_length_(0) {
+    : max_length_(0),
+      is_autofilled_(false) {
   name_ = element.nameForAutofill();
 
   // TODO(jhawkins): Extract the field label.  For now we just use the field
@@ -38,6 +40,7 @@ FormField::FormField(WebFormControlElement element)
     const WebInputElement& input_element = element.toConst<WebInputElement>();
     value_ = input_element.value();
     max_length_ = input_element.size();
+    is_autofilled_ = input_element.isAutofilled();
   } else if (form_control_type_ == ASCIIToUTF16("select-one")) {
     WebSelectElement select_element = element.to<WebSelectElement>();
     value_ = select_element.value();
@@ -58,12 +61,14 @@ FormField::FormField(const string16& label,
                      const string16& name,
                      const string16& value,
                      const string16& form_control_type,
-                     int max_length)
+                     int max_length,
+                     bool is_autofilled)
   : label_(label),
     name_(name),
     value_(value),
     form_control_type_(form_control_type),
-    max_length_(max_length) {
+    max_length_(max_length),
+    is_autofilled_(is_autofilled) {
 }
 
 FormField::~FormField() {

@@ -59,6 +59,7 @@
 
 using base::TimeDelta;
 using webkit_glue::FormData;
+using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::PasswordFormFillData;
@@ -1700,8 +1701,9 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   }
 }
 
-void RenderViewHost::OnQueryFormFieldAutoFill(
-    int query_id, bool field_autofilled, const webkit_glue::FormField& field) {
+void RenderViewHost::OnQueryFormFieldAutoFill(int query_id,
+                                              const FormData& form,
+                                              const FormField& field) {
   ResetAutoFillState(query_id);
 
   // We first query the autofill delegate for suggestions. We keep track of the
@@ -1709,9 +1711,8 @@ void RenderViewHost::OnQueryFormFieldAutoFill(
   // suggestions.
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
-  if (autofill_delegate) {
-    autofill_delegate->GetAutoFillSuggestions(field_autofilled, field);
-  }
+  if (autofill_delegate)
+    autofill_delegate->GetAutoFillSuggestions(form, field);
 
   // Now query the Autocomplete delegate for suggestions. These will be combined
   // with the saved autofill suggestions in |AutocompleteSuggestionsReturned()|.
@@ -1759,13 +1760,14 @@ void RenderViewHost::OnShowAutoFillDialog() {
 
 void RenderViewHost::OnFillAutoFillFormData(int query_id,
                                             const FormData& form,
+                                            const FormField& field,
                                             int unique_id) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
   if (!autofill_delegate)
     return;
 
-  autofill_delegate->FillAutoFillFormData(query_id, form, unique_id);
+  autofill_delegate->FillAutoFillFormData(query_id, form, field, unique_id);
 }
 
 void RenderViewHost::OnDidFillAutoFillFormData() {

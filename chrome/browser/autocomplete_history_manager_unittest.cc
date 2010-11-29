@@ -58,7 +58,8 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
                                   ASCIIToUTF16("ccnum"),
                                   ASCIIToUTF16("4012888888881881"),
                                   ASCIIToUTF16("text"),
-                                  20);
+                                  20,
+                                  false);
   form.fields.push_back(valid_cc);
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
@@ -81,7 +82,8 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
                                     ASCIIToUTF16("ccnum"),
                                     ASCIIToUTF16("4580123456789012"),
                                     ASCIIToUTF16("text"),
-                                    20);
+                                    20,
+                                    false);
   form.fields.push_back(invalid_cc);
 
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(1);
@@ -101,7 +103,8 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
                              ASCIIToUTF16("ssn"),
                              ASCIIToUTF16("078-05-1120"),
                              ASCIIToUTF16("text"),
-                             20);
+                             20,
+                             false);
   form.fields.push_back(ssn);
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);

@@ -104,12 +104,14 @@ class PasswordManagerAutocompleteTests : public testing::Test {
                                                 string16(),
                                                 username1_,
                                                 string16(),
-                                                0));
+                                                0,
+                                                false));
     data_.basic_data.fields.push_back(FormField(string16(),
                                                 string16(),
                                                 password1_,
                                                 string16(),
-                                                0));
+                                                0,
+                                                false));
     data_.additional_logins[username2_] = password2_;
 
     username_delegate_ = new TestWebInputElementDelegate();

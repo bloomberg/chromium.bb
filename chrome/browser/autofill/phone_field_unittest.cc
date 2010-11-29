@@ -46,7 +46,8 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
                                                ASCIIToUTF16("phone"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -64,7 +65,8 @@ TEST_F(PhoneFieldTest, ParseOneLinePhoneEcml) {
                                                ASCIIToUTF16(kEcmlShipToPhone),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -82,14 +84,16 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
                                                ASCIIToUTF16("area code"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                ASCIIToUTF16("phone"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -111,14 +115,16 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlShipTo) {
                                  ASCIIToUTF16(kEcmlShipToPostalCode),
                                  string16(),
                                  ASCIIToUTF16("text"),
-                                 0),
+                                 0,
+                                 false),
           ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                ASCIIToUTF16(kEcmlShipToPhone),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -140,14 +146,16 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlBillTo) {
                                  ASCIIToUTF16(kEcmlBillToPostalCode),
                                  string16(),
                                  ASCIIToUTF16("text"),
-                                 0),
+                                 0,
+                                 false),
           ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
                                                ASCIIToUTF16(kEcmlBillToPhone),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("phone1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -168,28 +176,32 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
                                                ASCIIToUTF16("dayphone1"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("-"),
                                                ASCIIToUTF16("dayphone2"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("prefix1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("-"),
                                                ASCIIToUTF16("dayphone3"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("suffix1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("ext.:"),
                                                ASCIIToUTF16("dayphone4"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("ext1")));
   list_.push_back(NULL);
   iter_ = list_.begin();
@@ -216,21 +228,24 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
                                                ASCIIToUTF16("area"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(string16(),
                                                ASCIIToUTF16("prefix"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("prefix1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(string16(),
                                                ASCIIToUTF16("suffix"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0),
+                                               0,
+                                               false),
                         ASCIIToUTF16("suffix1")));
   list_.push_back(NULL);
   iter_ = list_.begin();

@@ -76,10 +76,10 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
 
     fill_data_.basic_data.fields.push_back(
         FormField(string16(), ASCIIToUTF16(kUsernameName),
-                  username1_, string16(), 0));
+                  username1_, string16(), 0, false));
     fill_data_.basic_data.fields.push_back(
         FormField(string16(), ASCIIToUTF16(kPasswordName),
-                  password1_, string16(), 0));
+                  password1_, string16(), 0, false));
     fill_data_.additional_logins[username2_] = password2_;
     fill_data_.additional_logins[username3_] = password3_;
 

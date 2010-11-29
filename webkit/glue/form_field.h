@@ -21,7 +21,8 @@ class FormField {
             const string16& name,
             const string16& value,
             const string16& form_control_type,
-            int max_length);
+            int max_length,
+            bool is_autofilled);
   virtual ~FormField();
 
   const string16& label() const { return label_; }
@@ -29,6 +30,8 @@ class FormField {
   const string16& value() const { return value_; }
   const string16& form_control_type() const { return form_control_type_; }
   int max_length() const { return max_length_; }
+  bool is_autofilled() const { return is_autofilled_; }
+
   // Returns option string for elements for which they make sense (select-one,
   // for example) for the rest of elements return an empty array.
   const std::vector<string16>& option_strings() const {
@@ -42,6 +45,7 @@ class FormField {
     form_control_type_ = form_control_type;
   }
   void set_max_length(int max_length) { max_length_ = max_length; }
+  void set_autofilled(bool is_autofilled) { is_autofilled_ = is_autofilled; }
   void set_option_strings(const std::vector<string16>& strings) {
     option_strings_ = strings;
   }
@@ -63,6 +67,7 @@ class FormField {
   string16 value_;
   string16 form_control_type_;
   int max_length_;
+  bool is_autofilled_;
   std::vector<string16> option_strings_;
 };
 

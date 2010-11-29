@@ -1038,19 +1038,22 @@ TEST_F(RenderViewTest, SendForms) {
                 ASCIIToUTF16("firstname"),
                 string16(),
                 ASCIIToUTF16("text"),
-                kDefaultMaxLength))) << forms[0].fields[0];
+                kDefaultMaxLength,
+                false))) << forms[0].fields[0];
   EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("middlename"),
                 string16(),
                 ASCIIToUTF16("text"),
-                kDefaultMaxLength))) << forms[0].fields[1];
+                kDefaultMaxLength,
+                false))) << forms[0].fields[1];
   EXPECT_TRUE(forms[0].fields[2].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("lastname"),
                 string16(),
                 ASCIIToUTF16("hidden"),
-                0))) << forms[0].fields[2];
+                0,
+                false))) << forms[0].fields[2];
 
   // Verify that |didAcceptAutoFillSuggestion()| sends the expected number of
   // fields.
@@ -1081,19 +1084,22 @@ TEST_F(RenderViewTest, SendForms) {
                 ASCIIToUTF16("firstname"),
                 string16(),
                 ASCIIToUTF16("text"),
-                kDefaultMaxLength))) << form2.fields[0];
+                kDefaultMaxLength,
+                false))) << form2.fields[0];
   EXPECT_TRUE(form2.fields[1].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("middlename"),
                 string16(),
                 ASCIIToUTF16("text"),
-                kDefaultMaxLength))) << form2.fields[1];
+                kDefaultMaxLength,
+                false))) << form2.fields[1];
   EXPECT_TRUE(form2.fields[2].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("lastname"),
                 string16(),
                 ASCIIToUTF16("hidden"),
-                0))) << form2.fields[2];
+                0,
+                false))) << form2.fields[2];
 }
 
 TEST_F(RenderViewTest, FillFormElement) {
@@ -1122,13 +1128,15 @@ TEST_F(RenderViewTest, FillFormElement) {
                 ASCIIToUTF16("firstname"),
                 string16(),
                 ASCIIToUTF16("text"),
-                kDefaultMaxLength))) << forms[0].fields[0];
+                kDefaultMaxLength,
+                false))) << forms[0].fields[0];
   EXPECT_TRUE(forms[0].fields[1].StrictlyEqualsHack(
       FormField(string16(),
                 ASCIIToUTF16("middlename"),
                 string16(),
                 ASCIIToUTF16("text"),
-                kDefaultMaxLength))) << forms[0].fields[1];
+                kDefaultMaxLength,
+                false))) << forms[0].fields[1];
 
   // Verify that |didAcceptAutoFillSuggestion()| sets the value of the expected
   // field.

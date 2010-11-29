@@ -50,10 +50,11 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // RenderViewHostDelegate::AutoFill implementation:
   virtual void FormSubmitted(const webkit_glue::FormData& form);
   virtual void FormsSeen(const std::vector<webkit_glue::FormData>& forms);
-  virtual bool GetAutoFillSuggestions(bool field_autofilled,
+  virtual bool GetAutoFillSuggestions(const webkit_glue::FormData& form,
                                       const webkit_glue::FormField& field);
   virtual bool FillAutoFillFormData(int query_id,
                                     const webkit_glue::FormData& form,
+                                    const webkit_glue::FormField& field,
                                     int unique_id);
   virtual void ShowAutoFillDialog();
 
@@ -106,6 +107,21 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   void UnpackGUIDs(int id, std::string* cc_guid, std::string* profile_guid);
 
  private:
+  // Fills |host| with the RenderViewHost for this tab.
+  // Returns false if AutoFill is disabled or if the host is unavailable.
+  bool GetHost(const std::vector<AutoFillProfile*>& profiles,
+               const std::vector<CreditCard*>& credit_cards,
+               RenderViewHost** host) WARN_UNUSED_RESULT;
+
+  // Fills |form_structure| and |autofill_field| with the cached elements
+  // corresponding to |form| and |field|. Returns false if the cached elements
+  // were not found.
+  bool FindCachedFormAndField(
+      const webkit_glue::FormData& form,
+      const webkit_glue::FormField& field,
+      FormStructure** form_structure,
+      AutoFillField** autofill_field) WARN_UNUSED_RESULT;
+
   // Returns a list of values from the stored profiles that match |type| and the
   // value of |field| and returns the labels of the matching profiles. |labels|
   // is filled with the Profile label.
@@ -190,6 +206,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressAndCreditCardForm);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAutoFilledForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillPhoneNumber);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesRemoveField);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesAddField);

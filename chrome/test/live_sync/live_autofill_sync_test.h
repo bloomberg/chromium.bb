@@ -168,7 +168,8 @@ class LiveAutofillSyncTest : public LiveSyncTest {
                                  (*i).name(),
                                  (*i).value(),
                                  string16(),
-                                 0));
+                                 0,
+                                 false));
     }
 
     WaitableEvent done_event(false, false);

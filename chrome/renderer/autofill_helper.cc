@@ -34,18 +34,6 @@ namespace {
 // (so to avoid sending long strings through IPC).
 const size_t kMaximumTextSizeForAutoFill = 1000;
 
-
-// |node| must correspond to a form field.
-// Returns true if |node| is auto-filled.
-bool NodeIsAutoFilled(const WebKit::WebNode& node) {
-  const WebFormControlElement& element =
-      reinterpret_cast<const WebFormControlElement&>(node);
-
-  WebInputElement input_element =
-      const_cast<WebFormControlElement&>(element).to<WebInputElement>();
-  return input_element.isAutofilled();
-}
-
 }  // namespace
 
 AutoFillHelper::AutoFillHelper(RenderView* render_view)
@@ -58,8 +46,8 @@ AutoFillHelper::AutoFillHelper(RenderView* render_view)
       suggestions_options_index_(-1) {
 }
 
-void AutoFillHelper::RemoveAutocompleteSuggestion(
-    const WebKit::WebString& name, const WebKit::WebString& value) {
+void AutoFillHelper::RemoveAutocompleteSuggestion(const WebString& name,
+                                                  const WebString& value) {
   // The index of clear & options will have shifted down.
   if (suggestions_clear_index_ != -1)
     suggestions_clear_index_--;
@@ -192,6 +180,8 @@ void AutoFillHelper::FormDataFilled(int query_id,
 
 void AutoFillHelper::DidSelectAutoFillSuggestion(const WebNode& node,
                                                  int unique_id) {
+  DCHECK_GE(unique_id, 0);
+
   DidClearAutoFillSelection(node);
   FillAutoFillFormData(node, unique_id, AUTOFILL_PREVIEW);
 }
@@ -303,20 +293,13 @@ void AutoFillHelper::QueryAutoFillSuggestions(
   autofill_query_node_ = node;
   display_warning_if_disabled_ = display_warning_if_disabled;
 
-  const WebFormControlElement& element = node.toConst<WebFormControlElement>();
+  webkit_glue::FormData form;
   webkit_glue::FormField field;
-  FormManager::WebFormControlElementToFormField(
-      element, FormManager::EXTRACT_VALUE, &field);
+  if (!FindFormAndFieldForNode(node, &form, &field))
+    return;
 
-  // WebFormControlElementToFormField does not scrape the DOM for the field
-  // label, so find the label here.
-  // TODO(jhawkins): Add form and field identities so we can use the cached form
-  // data in FormManager.
-  field.set_label(FormManager::LabelForElement(element));
-
-  bool field_autofilled = NodeIsAutoFilled(node);
   render_view_->Send(new ViewHostMsg_QueryFormFieldAutoFill(
-      render_view_->routing_id(), autofill_query_id_, field_autofilled, field));
+      render_view_->routing_id(), autofill_query_id_, form, field));
 }
 
 void AutoFillHelper::FillAutoFillFormData(const WebNode& node,
@@ -326,15 +309,14 @@ void AutoFillHelper::FillAutoFillFormData(const WebNode& node,
   autofill_query_id_ = query_counter++;
 
   webkit_glue::FormData form;
-  const WebInputElement element = node.toConst<WebInputElement>();
-  if (!form_manager_.FindFormWithFormControlElement(
-          element, FormManager::REQUIRE_NONE, &form))
+  webkit_glue::FormField field;
+  if (!FindFormAndFieldForNode(node, &form, &field))
     return;
 
   autofill_action_ = action;
-  was_query_node_autofilled_ = element.isAutofilled();
+  was_query_node_autofilled_ = field.is_autofilled();
   render_view_->Send(new ViewHostMsg_FillAutoFillFormData(
-      render_view_->routing_id(), autofill_query_id_, form, unique_id));
+      render_view_->routing_id(), autofill_query_id_, form, field, unique_id));
 }
 
 void AutoFillHelper::SendForms(WebFrame* frame) {
@@ -359,4 +341,26 @@ void AutoFillHelper::SendForms(WebFrame* frame) {
     render_view_->Send(new ViewHostMsg_FormsSeen(render_view_->routing_id(),
                                                  forms));
   }
+}
+
+bool AutoFillHelper::FindFormAndFieldForNode(const WebNode& node,
+                                             webkit_glue::FormData* form,
+                                             webkit_glue::FormField* field) {
+  const WebInputElement& element = node.toConst<WebInputElement>();
+  if (!form_manager_.FindFormWithFormControlElement(element,
+                                                    FormManager::REQUIRE_NONE,
+                                                    form))
+    return false;
+
+  FormManager::WebFormControlElementToFormField(element,
+                                                FormManager::EXTRACT_VALUE,
+                                                field);
+
+  // WebFormControlElementToFormField does not scrape the DOM for the field
+  // label, so find the label here.
+  // TODO(jhawkins): Add form and field identities so we can use the cached form
+  // data in FormManager.
+  field->set_label(FormManager::LabelForElement(element));
+
+  return true;
 }

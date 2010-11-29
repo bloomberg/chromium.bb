@@ -311,6 +311,7 @@ void FormManager::WebFormControlElementToFormField(
   if (element.formControlType() == WebString::fromUTF8("text")) {
     const WebInputElement& input_element = element.toConst<WebInputElement>();
     field->set_max_length(input_element.maxLength());
+    field->set_autofilled(input_element.isAutofilled());
   }
 
   if (!(extract_mask & EXTRACT_VALUE))

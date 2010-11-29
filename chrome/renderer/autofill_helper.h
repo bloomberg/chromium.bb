@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/renderer/form_manager.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
@@ -129,6 +130,13 @@ class AutoFillHelper : public PageClickListener {
 
   // Scans the given frame for forms and sends them up to the browser.
   void SendForms(WebKit::WebFrame* frame);
+
+  // Fills |form| and |field| with the FormData and FormField corresponding to
+  // |node|. Returns true if the data was found; and false otherwise.
+  bool FindFormAndFieldForNode(
+      const WebKit::WebNode& node,
+      webkit_glue::FormData* form,
+      webkit_glue::FormField* field) WARN_UNUSED_RESULT;
 
   // Weak reference.
   RenderView* render_view_;
