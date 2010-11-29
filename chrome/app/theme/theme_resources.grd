@@ -491,8 +491,8 @@
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
         <include name="IDR_INCOGNITO_GUY" file="incognito_guy.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
-        <include name="IDR_LOGIN_DEFAULT_USER_1" file="login_default_blue.png" type="BINDATA" />
-        <include name="IDR_LOGIN_DEFAULT_USER_2" file="login_default_green.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_1" file="login_default_green.png" type="BINDATA" />
+        <include name="IDR_LOGIN_DEFAULT_USER_2" file="login_default_blue.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_3" file="login_default_yellow.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_4" file="login_default_red.png" type="BINDATA" />
         <include name="IDR_LOGIN_GUEST" file="login_guest.png" type="BINDATA" />

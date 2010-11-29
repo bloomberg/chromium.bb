@@ -45,14 +45,16 @@ const char kIncognitoUser[] = "";
 
 // Special pathes to default user images.
 const char* kDefaultImageNames[] = {
-    "default:blue",
+    "default:gray",
     "default:green",
+    "default:blue",
     "default:yellow",
     "default:red",
 };
 
 // Resource IDs of default user images.
 const int kDefaultImageResources[] = {
+  IDR_LOGIN_DEFAULT_USER,
   IDR_LOGIN_DEFAULT_USER_1,
   IDR_LOGIN_DEFAULT_USER_2,
   IDR_LOGIN_DEFAULT_USER_3,
