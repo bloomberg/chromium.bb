@@ -1,57 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <protocol name="wayland">
 
+  <!-- The core global object. This is a special singleton object.
+       It is used for internal wayland protocol features. -->
   <interface name="display" version="1">
+    <!-- sync is an just an echo, which will reply with a sync event.
+         Since requests are handled in-order, this can be used as a
+         barrier to ensure all previous requests have ben handled.
+         The key argument can be used to correlate between multiple
+         sync invocations. -->
     <request name="sync">
       <arg name="key" type="uint"/>
     </request>
 
+    <!-- Request notification when the next frame is displayed.
+         Useful for throttling redrawing operations, and driving
+         animations.  The notification will only be posted for one
+         frame unless requested again. -->
     <request name="frame">
       <arg name="key" type="uint"/>
     </request>
 
+    <!-- A request addressed a non-existent object id. This is
+         tyipcally a fatal error. -->
     <event name="invalid_object">
       <arg name="object_id" type="uint"/>
     </event>
 
+    <!-- A request tried to invoke an opcode out of range.  This is
+         typically a fatal error. -->
     <event name="invalid_method">
       <arg name="object_id" type="uint"/>
       <arg name="opcode" type="uint"/>
     </event>
 
+    <!-- A request has failed due to an out of memory error. -->
     <event name="no_memory"/>
 
+    <!-- Notify the client of global objects. These are objects that
+         are created by the server. Globals are published on the
+         initial client connection sequence, upon device hotplugs,
+         device disconnects, reconfiguration or other events.  The
+         server will always announce an object before the object sends
+         out events. -->
     <event name="global">
       <arg name="id" type="new_id" interface="object"/>
       <arg name="name" type="string"/>
       <arg name="version" type="uint"/>
     </event>
 
+    <!-- Internal, deprecated, and will be changed.  This is an object
+         IDs range that is used by the client to allocate object IDs
+         in "new_id" type arguments.  The server sends range
+         allocations to the client before the next range is about to
+         be depleted. -->
     <event name="range">
       <arg name="base" type="uint"/>
     </event>
 
+    <!-- A reply to the sync request.  All requests made before the
+         "sync" request that had the same key as the one present in
+         this event have been processed by the server. -->
     <event name="sync">
       <arg name="key" type="uint"/>
     </event>
 
+    <!-- A reply to the frame request.  The key is the one used in the
+         request.  time is in millisecond units, and denotes the time
+         when the frame was posted on the display. time can be used to
+         estimaate frame rate, determine how much to advance
+         animatiosn and compoensate for jitter-->
     <event name="frame">
       <arg name="key" type="uint"/>
       <arg name="time" type="uint"/>
     </event>
   </interface>
 
+
+  <!-- A compositor. This object is a global.  The compositor is in
+       charge of combining the contents of multiple surfaces into one
+       displayable output. -->
   <interface name="compositor" version="1">
+    <!-- Factory request for a surface objects. A surface is akin to a
+         window. -->
     <request name="create_surface">
       <arg name="id" type="new_id" interface="surface"/>
     </request>
   </interface>
 
+
+  <!-- drm support. This object is created by the server and published
+       using the display's global event. -->
   <interface name="drm" version="1">
-    <!-- dri2 auth and create buffer -->
+    <!-- Call this request with the magic received from drmGetMagic().
+         It will be passed on to the drmAuthMagic() or
+         DRIAuthConnection() call.  This authentication must be
+         completed before create_buffer could be used. -->
     <request name="authenticate">
       <arg name="id" type="uint"/>
     </request>
 
+    <!-- Create a wayland buffer for the named DRM buffer.  The DRM
+         surface must have a name using the flink ioctl -->
     <request name="create_buffer">
       <arg name="id" type="new_id" interface="buffer"/>
       <arg name="name" type="uint"/>
@@ -61,14 +111,28 @@
       <arg name="visual" type="object" interface="visual"/>
     </request>
 
+    <!-- Notification of the path of the drm device which is used by
+         the server.  The client should use this device for creating
+         local buffers.  Only buffers created from this device should
+         be be passed to the server using this drm object's
+         create_buffer request. -->
     <event name="device">
       <arg name="name" type="string"/>
     </event>
 
+    <!-- Raised if the authenticate request succeeded -->
     <event name="authenticated"/>
   </interface>
 
+
+  <!-- Shared memory support -->
   <interface name="shm" version="1">
+    <!-- Transfer a shm buffer to the server.  The allocated buffer
+         would include at least stride * height bytes starting at the
+         beginning of fd.  The file descriptor is transferred over the
+         socket using AF_UNIX magical features. width, height, stride
+         and visual describe the respective properties of the pixel
+         data contained in the buffer. -->
     <request name="create_buffer">
       <arg name="id" type="new_id" interface="buffer"/>
       <arg name="fd" type="fd"/>
@@ -79,7 +143,12 @@
     </request>
   </interface>
 
+
+  <!-- A pixel buffer. Created using the drm, shm or similar objects.
+       It has a size, visual and contents, but not a location on the
+       screen -->
   <interface name="buffer" version="1">
+    <!-- Abandon a buffer.  This will invalidate the object id. -->
     <request name="destroy" type="destructor"/>
   </interface>
 
@@ -113,6 +182,7 @@
       <arg name="height" type="int"/>
     </event>
   </interface>
+
 
   <interface name="drag" version="1">
     <!-- Add an offered mime type.  Can be called several times to
@@ -184,7 +254,7 @@
     </event>
 
     <!-- Similar to device::motion.  Sent to potential target surfaces
-	 as the drag pointer moves around in the surface. -->
+         as the drag pointer moves around in the surface. -->
     <event name="motion">
       <arg name="time" type="uint"/>
       <arg name="x" type="int"/>
@@ -200,13 +270,20 @@
     <event name="drop"/>
   </interface>
 
+
+  <!-- A surface. This is an image that is displayed on the screen.
+       It has a location, size and pixel contents. Similar to a window. -->
   <interface name="surface" version="1">
+    <!-- Deletes the surface and invalidates its object id. -->
     <request name="destroy" type="destructor"/>
 
+    <!-- Copy the contents of a buffer into this surface. -->
     <request name="attach">
       <arg name="buffer" type="object" interface="buffer"/>
     </request>
 
+    <!-- Set the location on the screen that this surface will
+         be displayed. -->
     <request name="map">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -214,6 +291,12 @@
       <arg name="height" type="int"/>
     </request>
 
+    <!-- Notify the server that the attached buffer's contents have
+         changed, and request a redraw. The arguments allow you to
+         damage only a part of the surface, but the server may ignore
+         it and redraw the entire contents of the surface.  To
+         describe a more complicated area of damage, use this request
+         several times. -->
     <request name="damage">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -222,7 +305,16 @@
     </request>
   </interface>
 
+
+  <!-- A group of keyboards and pointer devices (mice, for
+       example). This object is published as a global during start up,
+       or when such a device is hot plugged.  A input_device group
+       typically has a pointer and maintains a keyboard_focus and a
+       pointer_focus.  -->
   <interface name="input_device" version="1">
+    <!-- Set the pointer's image.  This request only takes effect if
+         the pointer focus for this device is one of the requesting
+         clients surfaces.  -->
     <request name="attach">
       <arg name="time" type="uint"/>
       <arg name="buffer" type="object" interface="buffer"/>
@@ -230,6 +322,9 @@
       <arg name="hotspot_y" type="int"/>
     </request>
 
+    <!-- Notification of pointer location change.
+         x,y are the absolute location on the screen.
+         surface_[xy] are the location relative to the focused surface. -->
     <event name="motion">
       <arg name="time" type="uint"/>
       <arg name="x" type="int"/>
@@ -238,18 +333,26 @@
       <arg name="surface_y" type="int"/>
     </event>
 
+    <!-- Mouse button click and release notifications.  The location
+         of the click is given by the last motion or pointer_focus
+         event. -->
     <event name="button">
       <arg name="time" type="uint"/>
       <arg name="button" type="uint"/>
       <arg name="state" type="uint"/>
     </event>
 
+    <!-- Keyboard press. -->
     <event name="key">
       <arg name="time" type="uint"/>
       <arg name="key" type="uint"/>
       <arg name="state" type="uint"/>
     </event>
 
+    <!-- Notification that this input device's pointer is focused on
+         certain surface. When an input_device enters a surface, the
+         pointer image is undefined and a client should respond to
+         this event by setting an apropriate pointer image. -->
     <event name="pointer_focus">
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="surface"/>
@@ -266,13 +369,26 @@
     </event>
   </interface>
 
+
+  <!-- An output describes part of the compositor geometry.  The
+       compositor work in the 'compositor coordinate system' and an
+       output corresponds to rectangular area in that space that is
+       actually visible.  This typically corresponds to a monitor that
+       displays part of the compositor space.  This object is
+       published as global during start up, or when a screen is hot
+       plugged.  -->
   <interface name="output" version="1">
+    <!-- Notification about the screen size. -->
     <event name="geometry">
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>
   </interface>
 
-  <interface name="visual" version="1" />
+
+  <!-- A visual is the pixel format.  The different visuals are
+       currently only identified by the order they are advertised by
+       the 'global' events.  We need something better.  -->
+  <interface name="visual" version="1"/>
 
 </protocol>
