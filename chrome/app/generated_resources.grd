@@ -8167,8 +8167,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_SYNC_OPTION" desc="The label of a button allowing the user to choose to disable sync when an extension is believed to be causing sync problems preventing sync operation.">
         Disable Sync
       </message>
-      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_EXTENSION_DISABLED" desc="A message shown on a dialog when an extension has been disabled due to problems arising from interactions with sync.">
-        <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> has been disabled. If you stop syncing your bookmarks, you can re-enable this extension on the extensions page, accessible through the Tools menu.
+      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_EXTENSION_DISABLED" desc="A message shown on a dialog when an extension or app has been disabled due to problems arising from interactions with sync.">
+        <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> has been disabled. If you stop syncing your bookmarks, you can re-enable it on the extensions page, accessible through the Tools menu.
       </message>
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_SYNC_DISABLED" desc="A message shown on a dialog when bookmark sync has been disabled due to problems arising from interactions with sync.">
         Bookmark sync has been disabled on this computer. If you uninstall <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> you can re-enable Bookmark Sync by choosing "Set up sync..." in the Tools menu.
