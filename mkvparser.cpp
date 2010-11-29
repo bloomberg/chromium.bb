@@ -976,8 +976,9 @@ long long Segment::ParseHeaders()
     //inner (level 1) elements.
     long long total, available;
 
-    long hr = m_pReader->Length(&total, &available);
-    assert(hr >= 0);
+    const int status = m_pReader->Length(&total, &available);
+    assert(status == 0);
+    assert(total >= 0);
     assert(available <= total);
 
     const long long stop = m_start + m_size;
@@ -1064,7 +1065,8 @@ long long Segment::ParseHeaders()
         }
         else if (id == 0x014D9B74)  //SeekHead ID
         {
-            ParseSeekHead(pos, size);
+            if (available >= total)
+                ParseSeekHead(pos, size);
         }
 
         m_pos = pos + size;  //consume payload
