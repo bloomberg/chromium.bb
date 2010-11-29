@@ -607,6 +607,7 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
   // upper-left corner pinned. If the new size is valid, this is a popup whose
   // superview is another RenderWidgetHostViewCocoa, but even if it's directly
   // in a TabContentsViewCocoa, they're both BaseViews.
+  DCHECK([[cocoa_view_ superview] isKindOfClass:[BaseView class]]);
   gfx::Rect rect =
       [(BaseView*)[cocoa_view_ superview] flipNSRectToRect:[cocoa_view_ frame]];
   rect.set_width(size.width());
@@ -630,11 +631,10 @@ void RenderWidgetHostViewMac::MovePluginWindows(
        ++iter) {
     webkit_glue::WebPluginGeometry geom = *iter;
 
-    PluginViewMap::iterator it = plugin_views_.find(geom.window);
-    DCHECK(plugin_views_.end() != it);
-    if (plugin_views_.end() == it) {
+    AcceleratedPluginView* view = ViewForPluginWindowHandle(geom.window);
+    DCHECK(view);
+    if (!view)
       continue;
-    }
 
     if (geom.rects_valid) {
       gfx::Rect rect = geom.window_rect;
@@ -645,15 +645,15 @@ void RenderWidgetHostViewMac::MovePluginWindows(
         rect.set_height(geom.clip_rect.height());
       }
       NSRect new_rect([cocoa_view_ flipRectToNSRect:rect]);
-      [it->second setFrame:new_rect];
-      [it->second setNeedsDisplay:YES];
+      [view setFrame:new_rect];
+      [view setNeedsDisplay:YES];
     }
 
     plugin_container_manager_.SetPluginContainerGeometry(geom);
 
     BOOL visible =
         plugin_container_manager_.SurfaceShouldBeVisible(geom.window);
-    [it->second setHidden:!visible];
+    [view setHidden:!visible];
   }
 }
 
@@ -951,6 +951,15 @@ void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
 }
 
+AcceleratedPluginView* RenderWidgetHostViewMac::ViewForPluginWindowHandle(
+    gfx::PluginWindowHandle window) {
+  PluginViewMap::iterator it = plugin_views_.find(window);
+  DCHECK(plugin_views_.end() != it);
+  if (plugin_views_.end() == it)
+    return nil;
+  return it->second;
+}
+
 void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
     gfx::PluginWindowHandle window,
     int32 width,
@@ -996,16 +1005,13 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     int32 route_id,
     uint64 swap_buffers_count) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PluginViewMap::iterator it = plugin_views_.find(window);
-  DCHECK(plugin_views_.end() != it);
-  if (plugin_views_.end() == it) {
+  AcceleratedPluginView* view = ViewForPluginWindowHandle(window);
+  DCHECK(view);
+  if (!view)
     return;
-  }
-  DCHECK([it->second isKindOfClass:[AcceleratedPluginView class]]);
 
   plugin_container_manager_.SetSurfaceWasPaintedTo(window, surface_id);
-  AcceleratedPluginView* view =
-      static_cast<AcceleratedPluginView*>(it->second);
+
   // The surface is hidden until its first paint, to not show gargabe.
   if (plugin_container_manager_.SurfaceShouldBeVisible(window))
     [view setHidden:NO];
@@ -1027,15 +1033,12 @@ void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
   gfx::PluginWindowHandle root_handle =
       plugin_container_manager_.root_container_handle();
   if (root_handle != gfx::kNullPluginWindow) {
-    PluginViewMap::iterator it = plugin_views_.find(root_handle);
-    DCHECK(plugin_views_.end() != it);
-    if (plugin_views_.end() == it) {
-      return;
-    }
+    AcceleratedPluginView* view = ViewForPluginWindowHandle(root_handle);
+    DCHECK(view);
     bool visible =
         plugin_container_manager_.SurfaceShouldBeVisible(root_handle);
-    [[it->second window] disableScreenUpdatesUntilFlush];
-    [it->second setHidden:!visible];
+    [[view window] disableScreenUpdatesUntilFlush];
+    [view setHidden:!visible];
   }
 }
 
@@ -1692,13 +1695,12 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     gfx::PluginWindowHandle root_handle =
        renderWidgetHostView_->plugin_container_manager_.root_container_handle();
     if (root_handle != gfx::kNullPluginWindow) {
-      RenderWidgetHostViewMac::PluginViewMap::iterator it =
-          renderWidgetHostView_->plugin_views_.find(root_handle);
-      DCHECK(it != renderWidgetHostView_->plugin_views_.end());
-      if (it != renderWidgetHostView_->plugin_views_.end() &&
-          ![it->second isHidden]) {
-        NSRect frame = [it->second frame];
-        frame.size = [it->second cachedSize];
+      AcceleratedPluginView* view =
+          renderWidgetHostView_->ViewForPluginWindowHandle(root_handle);
+      DCHECK(view);
+      if (view && ![view isHidden]) {
+        NSRect frame = [view frame];
+        frame.size = [view cachedSize];
         gpuRect = [self flipNSRectToRect:frame];
       }
     }

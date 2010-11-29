@@ -1447,6 +1447,7 @@
         'browser/renderer_host/gtk_im_context_wrapper_unittest.cc',
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/render_widget_host_unittest.cc',
+        'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
         'browser/renderer_host/resource_dispatcher_host_unittest.cc',
         'browser/renderer_host/resource_queue_unittest.cc',
         'browser/renderer_host/test/render_view_host_unittest.cc',
