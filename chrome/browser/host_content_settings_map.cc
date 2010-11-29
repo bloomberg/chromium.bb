@@ -205,6 +205,7 @@ std::string HostContentSettingsMap::Pattern::CanonicalizePattern() const {
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     : profile_(profile),
       block_third_party_cookies_(false),
+      is_block_third_party_cookies_managed_(false),
       is_off_the_record_(profile_->IsOffTheRecord()),
       updating_preferences_(false) {
   PrefService* prefs = profile_->GetPrefs();
@@ -223,6 +224,8 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // Read misc. global settings.
   block_third_party_cookies_ =
       prefs->GetBoolean(prefs::kBlockThirdPartyCookies);
+  is_block_third_party_cookies_managed_ =
+      prefs->IsManagedPreference(prefs::kBlockThirdPartyCookies);
   block_nonsandboxed_plugins_ =
       prefs->GetBoolean(prefs::kBlockNonsandboxedPlugins);
 
@@ -833,6 +836,9 @@ void HostContentSettingsMap::Observe(NotificationType type,
       AutoLock auto_lock(lock_);
       block_third_party_cookies_ = profile_->GetPrefs()->GetBoolean(
           prefs::kBlockThirdPartyCookies);
+      is_block_third_party_cookies_managed_ =
+          profile_->GetPrefs()->IsManagedPreference(
+              prefs::kBlockThirdPartyCookies);
     } else if (prefs::kBlockNonsandboxedPlugins == *name) {
       AutoLock auto_lock(lock_);
       block_nonsandboxed_plugins_ = profile_->GetPrefs()->GetBoolean(
