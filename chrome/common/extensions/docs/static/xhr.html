@@ -36,12 +36,6 @@ xhr.open("GET", chrome.extension.getURL('/config_resources/config.json'), true);
 xhr.send();
 </pre>
 
-<p class="caution">
-<b>Bug note:</b>
-Until <a href="http://crbug.com/41024">bug 41024</a> is fixed,
-the preceding code won't work.
-</p>
-
 <p>If the extension attempts to use a security origin other than itself,
 say http://www.google.com,
 the browser disallows it

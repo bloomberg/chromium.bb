@@ -115,7 +115,7 @@
           {
             "type": "string",
             "name": "path",
-            "description": "A path to a resource within an extension expressed relative to it's install directory."
+            "description": "A path to a resource within an extension expressed relative to its install directory."
           }
         ],
         "returns": {
@@ -2885,7 +2885,7 @@
               "parentId": {
                 "type": "integer",
                 "optional": true,
-                "description": "Note: you cannot change an item to be a child of one of it's own descendants."
+                "description": "Note: You cannot change an item to be a child of one of its own descendants."
               },
               "documentUrlPatterns": {
                 "type": "array",
