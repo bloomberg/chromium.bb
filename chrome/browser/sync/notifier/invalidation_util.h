@@ -28,6 +28,8 @@ bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
 
 std::string ObjectIdToString(const invalidation::ObjectId& object_id);
 
+std::string ObjectIdPToString(const invalidation::ObjectIdP& object_id);
+
 std::string StatusToString(const invalidation::Status& status);
 
 std::string InvalidationToString(

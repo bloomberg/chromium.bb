@@ -24,6 +24,7 @@
       'target_name': 'cacheinvalidation_proto',
       'type': 'none',
       'sources': [
+        '<(proto_dir_root)/google/cacheinvalidation/internal.proto',
         '<(proto_dir_root)/google/cacheinvalidation/ticl_persistence.proto',
         '<(proto_dir_root)/google/cacheinvalidation/types.proto',
       ],
@@ -64,6 +65,8 @@
       'target_name': 'cacheinvalidation',
       'type': '<(library)',
       'sources': [
+        '<(protoc_out_dir)/<(proto_dir_relpath)/internal.pb.h',
+        '<(protoc_out_dir)/<(proto_dir_relpath)/internal.pb.cc',
         '<(protoc_out_dir)/<(proto_dir_relpath)/ticl_persistence.pb.h',
         '<(protoc_out_dir)/<(proto_dir_relpath)/ticl_persistence.pb.cc',
         '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.h',
@@ -85,6 +88,7 @@
         'files/src/google/cacheinvalidation/invalidation-client-impl.h',
         'files/src/google/cacheinvalidation/invalidation-client.cc',
         'files/src/google/cacheinvalidation/invalidation-client.h',
+        'files/src/google/cacheinvalidation/invalidation-types.h',
         'files/src/google/cacheinvalidation/log-macro.h',
         'files/src/google/cacheinvalidation/network-manager.cc',
         'files/src/google/cacheinvalidation/network-manager.h',
@@ -92,6 +96,8 @@
         'files/src/google/cacheinvalidation/persistence-manager.h',
         'files/src/google/cacheinvalidation/persistence-utils.cc',
         'files/src/google/cacheinvalidation/persistence-utils.h',
+        'files/src/google/cacheinvalidation/proto-converter.cc',
+        'files/src/google/cacheinvalidation/proto-converter.h',
         'files/src/google/cacheinvalidation/registration-update-manager.cc',
         'files/src/google/cacheinvalidation/registration-update-manager.h',
         'files/src/google/cacheinvalidation/session-manager.cc',
