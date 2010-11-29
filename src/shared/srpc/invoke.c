@@ -147,12 +147,12 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
  * The first phase is the args[] vector construction.
  */
 #define SCALAR_ARG(arg, field, va, impl_type) \
-    (arg)->u.field = va_arg(in_va, impl_type)
+    (arg)->u.field = va_arg(va, impl_type)
 #define ARRAY_ARG(arg, field, array_name, va, impl_type) \
-    (arg)->u.field.count = va_arg(in_va, uint32_t);         \
-    (arg)->u.field.array_name = va_arg(in_va, impl_type)
+    (arg)->u.field.count = va_arg(va, uint32_t);         \
+    (arg)->u.field.array_name = va_arg(va, impl_type)
 #define BOOL_ARG(arg, field, va, impl_type) \
-    (arg)->u.bval = (va_arg(in_va, impl_type) != 0)
+    (arg)->u.bval = (va_arg(va, impl_type) != 0)
 
 /*
  * The second phase is the rets[] vector construction before invocation.
@@ -161,8 +161,8 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
     (arg)->u.field = (impl_type) 0;               \
     SKIP(va, impl_type *)
 #define ARRAY_RETINIT(arg, field, array_name, va, impl_type) \
-    (arg)->u.field.count = *va_arg(in_va, uint32_t*);         \
-    (arg)->u.field.array_name = va_arg(in_va, impl_type)
+    (arg)->u.field.count = *va_arg(va, uint32_t*);         \
+    (arg)->u.field.array_name = va_arg(va, impl_type)
 #define BOOL_RETINIT(arg, field, va, impl_type) \
     SKIP(va, impl_type *)
 
