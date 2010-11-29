@@ -30,12 +30,16 @@ def RunGit(command):
   logging.info('Returned "%s"' % out)
   return out
 
+def GetOverrideShortBranchName():
+  """Returns the user-configured override branch name, if any."""
+  override_config_name = 'chromium.sync-branch'
+  return RunGit(['config', '--get', override_config_name])
+
 def GetGClientBranchName():
   """Returns the name of the magic branch that lets us know that DEPS is
   managing the update cycle."""
   # Is there an override branch specified?
-  overide_config_name = 'chromium.sync-branch'
-  override_branch_name = RunGit(['config', '--get', overide_config_name])
+  override_branch_name = GetOverrideShortBranchName()
   if not override_branch_name:
     return 'refs/heads/gclient' # No override, so return the default branch.
 
@@ -101,6 +105,16 @@ def FindSVNRev(target_rev):
   print "Something has likely gone horribly wrong."
   return None
 
+def GetRemote():
+  branch = GetOverrideShortBranchName()
+  if not branch:
+    branch = 'gclient'
+
+  remote = RunGit(['config', '--get', 'branch.' + branch + '.remote'])
+  if remote:
+    return remote
+  return 'origin'
+
 def UpdateGClientBranch(webkit_rev, magic_gclient_branch):
   """Update the magic gclient branch to point at |webkit_rev|.
 
@@ -108,7 +122,8 @@ def UpdateGClientBranch(webkit_rev, magic_gclient_branch):
   target = FindSVNRev(webkit_rev)
   if not target:
     print "r%s not available; fetching." % webkit_rev
-    subprocess.check_call(['git', 'fetch'], shell=(os.name == 'nt'))
+    subprocess.check_call(['git', 'fetch', GetRemote()],
+                          shell=(os.name == 'nt'))
     target = FindSVNRev(webkit_rev)
   if not target:
     print "ERROR: Couldn't map r%s to a git revision." % webkit_rev
