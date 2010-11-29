@@ -180,6 +180,9 @@ deps = {
 
   "src/third_party/libsrtp/src":
     "/trunk/deps/third_party/libsrtp@60080",
+
+  "src/third_party/yasm/source/patched-yasm":
+    "/trunk/deps/third_party/yasm/patched-yasm@50870",
 }
 
 
@@ -240,10 +243,6 @@ deps_os = {
     "src/third_party/WebKit/WebKitLibraries":
       Var("webkit_trunk") + "/WebKitLibraries@" + Var("webkit_revision"),
 
-    # TODO(ajwong): Move this into the OS-independent block.
-    "src/third_party/yasm/source/patched-yasm":
-      "/trunk/deps/third_party/yasm/patched-yasm@50870",
-
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
 
@@ -261,10 +260,6 @@ deps_os = {
 
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@58316",
-
-    # TODO(ajwong): Move this into the OS-independent block.
-    "src/third_party/yasm/source/patched-yasm":
-      "/trunk/deps/third_party/yasm/patched-yasm@50870",
 
     "src/third_party/swig/linux":
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
