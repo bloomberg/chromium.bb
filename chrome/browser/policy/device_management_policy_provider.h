@@ -56,6 +56,10 @@ class DeviceManagementPolicyProvider
   // server and no response or error has yet been received.
   bool IsPolicyRequestPending() const { return policy_request_pending_; }
 
+  bool waiting_for_initial_policies() const {
+    return waiting_for_initial_policies_;
+  }
+
   // Tells the provider that the passed in token service reference is about to
   // become invalid.
   void Shutdown();
@@ -66,11 +70,27 @@ class DeviceManagementPolicyProvider
 
   friend class DeviceManagementPolicyProviderTest;
 
+  // More configurable constructor for use by test cases.
+  DeviceManagementPolicyProvider(const PolicyDefinitionList* policy_list,
+                                 DeviceManagementBackend* backend,
+                                 Profile* profile,
+                                 int64 policy_refresh_rate_ms,
+                                 int64 policy_refresh_max_earlier_ms,
+                                 int64 policy_refresh_error_delay_ms,
+                                 int64 token_fetch_error_delay_ms,
+                                 int64 unmanaged_device_refresh_rate_ms);
+
   // Called by constructors to perform shared initialization. Initialization
   // requiring the IOThread must not be performed directly in this method,
   // rather must be deferred until the IOThread is fully initialized. This is
   // the case in InitializeAfterIOThreadExists.
-  void Initialize();
+  void Initialize(DeviceManagementBackend* backend,
+                  Profile* profile,
+                  int64 policy_refresh_rate_ms,
+                  int64 policy_refresh_max_earlier_ms,
+                  int64 policy_refresh_error_delay_ms,
+                  int64 token_fetch_error_delay_ms,
+                  int64 unmanaged_device_refresh_rate_ms);
 
   // Called by a deferred task posted to the UI thread to complete the portion
   // of initialization that requires the IOThread.
@@ -90,6 +110,11 @@ class DeviceManagementPolicyProvider
   // Calculates when the next RefreshTask shall be executed.
   int64 GetRefreshTaskDelay();
 
+  void StopWaitingForInitialPolicies();
+
+  // Send a CLOUD_POLICY_UPDATE notification.
+  void NotifyCloudPolicyUpdate() const;
+
   // The path of the device token file.
   FilePath GetTokenPath();
 
@@ -105,20 +130,6 @@ class DeviceManagementPolicyProvider
   static FilePath GetOrCreateDeviceManagementDir(
       const FilePath& user_data_dir);
 
-  // Give unit tests the ability to override timeout settings.
-  void set_policy_refresh_rate_ms(int64 policy_refresh_rate_ms) {
-    policy_refresh_rate_ms_ = policy_refresh_rate_ms;
-  }
-  void set_policy_refresh_max_earlier_ms(int64 policy_refresh_max_earlier_ms) {
-    policy_refresh_max_earlier_ms_ = policy_refresh_max_earlier_ms;
-  }
-  void set_policy_refresh_error_delay_ms(int64 policy_refresh_error_delay_ms) {
-    policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms;
-  }
-  void set_token_fetch_error_delay_ms(int64 token_fetch_error_delay_ms) {
-    token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
-  }
-
   scoped_ptr<DeviceManagementBackend> backend_;
   Profile* profile_;  // weak
   scoped_ptr<DeviceManagementPolicyCache> cache_;
@@ -127,10 +138,12 @@ class DeviceManagementPolicyProvider
   FilePath storage_dir_;
   bool policy_request_pending_;
   bool refresh_task_pending_;
+  bool waiting_for_initial_policies_;
   int64 policy_refresh_rate_ms_;
   int64 policy_refresh_max_earlier_ms_;
   int64 policy_refresh_error_delay_ms_;
   int64 token_fetch_error_delay_ms_;
+  int64 unmanaged_device_refresh_rate_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementPolicyProvider);
 };
