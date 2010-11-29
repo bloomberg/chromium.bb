@@ -29,16 +29,11 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
     assert(pReader);
     assert(pos >= 0);
 
-    long long total, available;
-
-    long hr = pReader->Length(&total, &available);
-    assert(hr >= 0);
-    assert(pos < available);
-    assert((available - pos) >= 1);  //assume here max u-int len is 8
-
+#if 0
     unsigned char b;
 
-    hr = pReader->Read(pos, 1, &b);
+    int hr = pReader->Read(pos, 1, &b);
+
     if (hr < 0)
         return hr;
 
@@ -86,10 +81,11 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
         b = 0;             //0000 0000
     }
 
-    assert((available - pos) >= len);
+    //assert((available - pos) >= len);
 
     long long result = b;
     ++pos;
+
     for (long i = 1; i < len; ++i)
     {
         hr = pReader->Read(pos, 1, &b);
@@ -106,6 +102,66 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
     }
 
     return result;
+#else
+    int status;
+
+#ifdef _DEBUG
+    long long total, available;
+    status = pReader->Length(&total, &available);
+    assert(status >= 0);
+    assert(total > 0);
+    assert(available <= total);
+    assert(pos < available);
+    assert((available - pos) >= 1);  //assume here max u-int len is 8
+#endif
+
+    unsigned char b;
+
+    status = pReader->Read(pos, 1, &b);
+
+    if (status < 0)  //error
+        return status;
+
+    if (status > 0)  //interpreted as "underflow"
+        return E_BUFFER_NOT_FULL;
+
+    if (b == 0)  //we can't handle u-int values larger than 8 bytes
+        return E_FILE_FORMAT_INVALID;
+
+    unsigned char m = 0x80;
+    len = 1;
+
+    while (!(b & m))
+    {
+        m >>= 1;
+        ++len;
+    }
+
+#ifdef _DEBUG
+    assert((available - pos) >= len);
+#endif
+
+    long long result = b & (~m);
+    ++pos;
+
+    for (int i = 1; i < len; ++i)
+    {
+        status = pReader->Read(pos, 1, &b);
+
+        if (status < 0)
+            return status;
+
+        if (status > 0)
+            return E_BUFFER_NOT_FULL;
+
+        result <<= 8;
+        result |= b;
+
+        ++pos;
+    }
+
+    return result;
+#endif
 }
 
 long long mkvparser::GetUIntLength(
@@ -928,9 +984,7 @@ long long Segment::ParseHeaders()
     assert(stop <= total);
     assert(m_pos <= stop);
 
-    bool bQuit = false;
-
-    while ((m_pos < stop) && !bQuit)
+    while (m_pos < stop)
     {
         long long pos = m_pos;
 
@@ -951,6 +1005,9 @@ long long Segment::ParseHeaders()
 
         if (id < 0)  //error
             return id;
+
+        if (id == 0x0F43B675)  //Cluster ID
+            break;
 
         pos += len;  //consume ID
 
@@ -1009,13 +1066,8 @@ long long Segment::ParseHeaders()
         {
             ParseSeekHead(pos, size);
         }
-        else if (id == 0x0F43B675)  //Cluster ID
-        {
-            bQuit = true;
-        }
 
-        if (!bQuit)
-            m_pos = pos + size;  //consume payload
+        m_pos = pos + size;  //consume payload
     }
 
     assert(m_pos <= stop);
@@ -1194,6 +1246,9 @@ long Segment::LoadCluster()
         if (result < 0)  //error
             return static_cast<long>(result);
 
+        if (result > 0)
+            return E_BUFFER_NOT_FULL;
+
         if ((pos + len) > stop)
             return E_FILE_FORMAT_INVALID;
 
@@ -1210,6 +1265,9 @@ long Segment::LoadCluster()
 
         if (result < 0)  //error
             return static_cast<long>(result);
+
+        if (result > 0)
+            return E_BUFFER_NOT_FULL;
 
         if ((pos + len) > stop)
             return E_FILE_FORMAT_INVALID;
@@ -1231,6 +1289,16 @@ long Segment::LoadCluster()
 
         if ((pos + size) > stop)
             return E_FILE_FORMAT_INVALID;
+
+        long long total, avail;
+
+        const int status = m_pReader->Length(&total, &avail);
+        assert(status == 0);
+        assert(total >= 0);
+        assert(avail <= total);
+
+        if ((pos + size) > avail)
+            return E_BUFFER_NOT_FULL;
 
         if (id == 0x0C53BB6B)  //Cues ID
         {
