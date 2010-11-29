@@ -76,6 +76,10 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
                                       provider_->GetTokenPath()));
   }
 
+  FilePath GetTokenPath() const {
+    return provider_->GetTokenPath();
+  }
+
   void SimulateSuccessfulLoginAndRunPending() {
     loop_.RunAllPending();
     profile_->GetTokenService()->IssueAuthTokenForTest(
@@ -264,6 +268,28 @@ TEST_F(DeviceManagementPolicyProviderTest, InvalidTokenOnPolicyRequest) {
   EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
   SimulateSuccessfulLoginAndRunPending();
+}
+
+// If the client is successfully managed, but the admin stops managing the
+// device, the client should notice and throw away the device token and id.
+TEST_F(DeviceManagementPolicyProviderTest, DeviceNoLongerManaged) {
+  InSequence s;
+  CreateNewProvider(0, 0, 0, 0, 1000 * 1000);
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedRegister());
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy, true));
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailPolicy(
+          DeviceManagementBackend::kErrorServiceManagementNotSupported));
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendFailRegister(
+          DeviceManagementBackend::kErrorServiceManagementNotSupported));
+  SimulateSuccessfulLoginAndRunPending();
+  FilePath token_path(GetTokenPath());
+  EXPECT_FALSE(file_util::PathExists(token_path));
 }
 
 // This test tests three things (see numbered comments below):

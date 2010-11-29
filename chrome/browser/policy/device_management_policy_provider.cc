@@ -138,6 +138,10 @@ void DeviceManagementPolicyProvider::OnError(
     LOG(WARNING) << "The device token was either invalid or unknown to the "
                  << "device manager, re-registering device.";
     token_fetcher_->Restart();
+  } else if (code ==
+             DeviceManagementBackend::kErrorServiceManagementNotSupported) {
+    VLOG(1) << "The device is no longer managed, resetting device token.";
+    token_fetcher_->Restart();
   } else {
     LOG(WARNING) << "Could not provide policy from the device manager (error = "
                  << code << "), will retry in "
