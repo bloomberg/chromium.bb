@@ -15,3 +15,7 @@ UnloadTest.CrossSiteInfiniteUnloadSync
 LocaleTestsDa.TestStart
 LocaleTestsHe.TestStart
 LocaleTestsZhTw.TestStart
+
+# These tests fail due to timeouts, see http://crbug.com/64619
+OptionsUITest.LoadOptionsByURL
+OptionsUITest.CommandOpensOptionsTab
