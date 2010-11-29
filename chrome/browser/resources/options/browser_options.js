@@ -130,17 +130,15 @@ cr.define('options', function() {
      * @param {string} statusString Description of the current default state.
      * @param {boolean} isDefault Whether or not the browser is currently
      *     default.
+     * @param {boolean} canBeDefault Whether or not the browser can be default.
      */
-    updateDefaultBrowserState_: function(statusString, isDefault) {
+    updateDefaultBrowserState_: function(statusString, isDefault,
+                                         canBeDefault) {
       var label = $('defaultBrowserState');
       label.textContent = statusString;
-      if (isDefault) {
-        label.classList.add('current');
-      } else {
-        label.classList.remove('current');
-      }
 
-      $('defaultBrowserUseAsDefaultButton').disabled = isDefault;
+      $('defaultBrowserUseAsDefaultButton').disabled = !canBeDefault ||
+                                                       isDefault;
     },
 
     /**
@@ -286,8 +284,11 @@ cr.define('options', function() {
      * @private
      */
     updateHomepageControlStates_: function() {
-      $('homepageURL').disabled = !this.isHomepageURLFieldEnabled_();
-      $('homepageURL').value = this.homepage_pref_.value;
+      var homepageField = $('homepageURL');
+      homepageField.disabled = !this.isHomepageURLFieldEnabled_();
+      homepageField.value = this.homepage_pref_.value;
+      homepageField.style.backgroundImage = url('chrome://favicon/' +
+                                                this.homepage_pref_.value);
       var disableChoice = !this.isHomepageChoiceEnabled_();
       $('homepageUseURLButton').disabled = disableChoice;
       $('homepageUseNTPButton').disabled = disableChoice;
@@ -397,10 +398,12 @@ cr.define('options', function() {
     },
   };
 
-  BrowserOptions.updateDefaultBrowserState = function(statusString, isDefault) {
+  BrowserOptions.updateDefaultBrowserState = function(statusString, isDefault,
+                                                      canBeDefault) {
     if (!cr.isChromeOS) {
       BrowserOptions.getInstance().updateDefaultBrowserState_(statusString,
-                                                              isDefault);
+                                                              isDefault,
+                                                              canBeDefault);
     }
   };
 

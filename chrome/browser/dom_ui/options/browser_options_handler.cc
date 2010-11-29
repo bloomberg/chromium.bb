@@ -197,9 +197,13 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
   scoped_ptr<Value> is_default(Value::CreateBooleanValue(
       status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT));
 
+  scoped_ptr<Value> can_be_default(Value::CreateBooleanValue(
+      status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
+      status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT));
+
   dom_ui_->CallJavascriptFunction(
       L"BrowserOptions.updateDefaultBrowserState",
-      *(status_string.get()), *(is_default.get()));
+      *(status_string.get()), *(is_default.get()), *(can_be_default.get()));
 }
 
 void BrowserOptionsHandler::OnTemplateURLModelChanged() {

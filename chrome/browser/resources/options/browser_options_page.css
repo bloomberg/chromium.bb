@@ -3,7 +3,19 @@
   height: 100px;
 }
 
+#customHomePageGroup {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+#customHomePageGroup > div {
+  -webkit-padding-start: 1ex;
+  -webkit-box-flex: 1;
+}
+
 #homepageURL {
+  box-sizing: border-box;
+  padding-top: 3px;
   width: 100%;
 }
 
@@ -27,16 +39,12 @@
   -webkit-margin-start: 10px;
 }
 
+#defaultBrowserState {
+  margin-top: 6px;
+}
+
 #instantOption {
   margin-bottom: 0px;
-}
-
-#defaultBrowserState {
-  color: #880000;
-}
-
-#defaultBrowserState.current {
-  color: #008800;
 }
 
 #instantConfirmText {

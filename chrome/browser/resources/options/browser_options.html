@@ -40,13 +40,15 @@
             value="true" metric="Options_Homepage_IsNewTabPage">
         <span i18n-content="homepageUseNewTab"></span>
       </label>
-      <label class="radio">
-        <input type="radio" name="homepage" id="homepageUseURLButton"
-            value="false" metric="Options_Homepage_IsNewTabPage">
-        <span i18n-content="homepageUseURL"></span>
-      </label>
-      <div class="suboption">
-        <input id="homepageURL" type="url">
+      <div id="customHomePageGroup">
+        <label class="radio">
+          <input type="radio" name="homepage" id="homepageUseURLButton"
+              value="false" metric="Options_Homepage_IsNewTabPage">
+          <span i18n-content="homepageUseURL"></span>
+        </label>
+        <div>
+          <input id="homepageURL" class="favicon-cell" type="url">
+        </div>
       </div>
     </div>
   </section>
@@ -93,10 +95,10 @@
   <section>
     <h3 i18n-content="defaultBrowserGroupName"></h3>
     <div>
-      <div id="defaultBrowserState"
-          i18n-content="defaultBrowserUnknown"></div>
       <button id="defaultBrowserUseAsDefaultButton"
           i18n-content="defaultBrowserUseAsDefault"></button>
+      <div id="defaultBrowserState"
+          i18n-content="defaultBrowserUnknown"></div>
     </div>
   </section>
 </if>
