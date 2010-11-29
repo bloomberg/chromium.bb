@@ -31,11 +31,11 @@ subdirs = [
 search_path = [os.path.join(nacl_src, subdir) for subdir in subdirs]
 
 
-def FindFile(name):
+def FindFile(name, sha1):
   for dir_path in search_path:
     filename = os.path.join(dir_path, name)
     if os.path.exists(filename):
-      return filename
+      return dirtree.FileWithExpectedHash(filename, sha1)
   raise Exception("Couldn't find %r in %r" % (name, search_path))
 
 
@@ -44,7 +44,7 @@ def PatchGlob(name):
   patches = sorted(glob.glob(path))
   if len(patches) == 0:
     raise AssertionError("No patches found matching %r" % path)
-  return patches
+  return [dirtree.FileWithLazyHash(patch_file) for patch_file in patches]
 
 
 def ParseKeyValueFile(filename):
@@ -78,22 +78,36 @@ def GetSources(dest_dir):
         "%s-src" % name, os.path.join(dest_dir, name), url, commit_id)
 
   revisions = ParseKeyValueFile(os.path.join(nacl_dir, "tools/REVISIONS"))
-  AddSource("gmp", dirtree.TarballTree(FindFile("gmp-4.3.1.tar.bz2")))
-  AddSource("mpfr", dirtree.TarballTree(FindFile("mpfr-2.4.1.tar.bz2")))
+  AddSource("gmp",
+            dirtree.TarballTree(
+                FindFile("gmp-4.3.1.tar.bz2",
+                         sha1="acbd1edc61230b1457e9742136994110e4f381b2")))
+  AddSource("mpfr",
+            dirtree.TarballTree(
+                FindFile("mpfr-2.4.1.tar.bz2",
+                         sha1="1f965793526cafefb30cda64cebf3712cb75b488")))
   AddSource("binutils",
             dirtree.PatchedTree(
-                dirtree.TarballTree(FindFile("binutils-2.20.1.tar.bz2")),
+                dirtree.TarballTree(
+                    FindFile("binutils-2.20.1.tar.bz2",
+                             sha1="fd2ba806e6f3a55cee453cb25c86991b26a75dee")),
                 PatchGlob("binutils-2.20.1"), strip=2))
   AddSource("gcc",
             dirtree.PatchedTree(
                 dirtree.MultiTarballTree(
-                    [FindFile("gcc-core-4.4.3.tar.bz2"),
-                     FindFile("gcc-g++-4.4.3.tar.bz2"),
-                     FindFile("gcc-testsuite-4.4.3.tar.bz2")]),
+                    [FindFile("gcc-core-4.4.3.tar.bz2",
+                              sha1="039f19e642d0967af7772b26d42fd0c25bf62edc"),
+                     FindFile("gcc-g++-4.4.3.tar.bz2",
+                              sha1="42c3600263f81dfd51c4849786ac1c23e3a84715"),
+                     FindFile("gcc-testsuite-4.4.3.tar.bz2",
+                              sha1="30b1183203506112fb42df2a30e49e7a32ce2754"),
+                     ]),
                 PatchGlob("gcc-4.4.3"), strip=2))
   AddSource("newlib",
             dirtree.PatchedTree(
-                dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
+                dirtree.TarballTree(
+                    FindFile("newlib-1.18.0.tar.gz",
+                             sha1="a47d3b8a508304143334b36bdb5b33786a61ce94")),
                 PatchGlob("newlib-1.18.0"), strip=2))
   # For a discussion of why nacl-glibc uses these headers, see
   # http://code.google.com/p/nativeclient/issues/detail?id=671

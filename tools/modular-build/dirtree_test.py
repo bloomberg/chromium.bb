@@ -117,12 +117,13 @@ class DirTreeTests(TempDirTestCase):
     subprocess.check_call(["tar", "-cf", tar_file, "foo-1.0"],
                           cwd=temp_dir)
 
-    tree = dirtree.TarballTree(tar_file)
+    tree = dirtree.TarballTree(dirtree.FileWithLazyHash(tar_file))
     dest_dir = self._RealizeTree(tree)
     self.assertEquals(os.listdir(dest_dir), ["README"])
     self._CheckGetId(tree)
 
-    tree = dirtree.MultiTarballTree([tar_file, tar_file])
+    tree = dirtree.MultiTarballTree([dirtree.FileWithLazyHash(tar_file),
+                                     dirtree.FileWithLazyHash(tar_file)])
     dest_dir = self._RealizeTree(tree)
     self.assertEquals(os.listdir(dest_dir), ["README"])
     self._CheckGetId(tree)
@@ -138,7 +139,7 @@ class DirTreeTests(TempDirTestCase):
     rc = subprocess.call(["diff", "-urN", "a", "b"],
                          stdout=open(diff_file, "w"), cwd=temp_dir)
     self.assertEquals(rc, 1)
-    tree = dirtree.PatchedTree(tree1, [diff_file])
+    tree = dirtree.PatchedTree(tree1, [dirtree.FileWithLazyHash(diff_file)])
     result_dir = self._RealizeTree(tree)
     rc = subprocess.call(["diff", "-urN",
                           os.path.join(temp_dir, "b"), result_dir])
@@ -149,14 +150,34 @@ class DirTreeTests(TempDirTestCase):
     self.assertRaises(
         subprocess.CalledProcessError,
         lambda: self._RealizeTree(
-            dirtree.PatchedTree(tree2, [diff_file])))
+            dirtree.PatchedTree(
+                tree2, [dirtree.FileWithLazyHash(diff_file)])))
 
     # Check that patch doesn't ask questions if the patch fails to
     # apply because a file is missing.
     self.assertRaises(
         subprocess.CalledProcessError,
         lambda: self._RealizeTree(
-            dirtree.PatchedTree(dirtree.EmptyTree(), [diff_file])))
+            dirtree.PatchedTree(
+                dirtree.EmptyTree(), [dirtree.FileWithLazyHash(diff_file)])))
+
+  def test_file_with_hash_objects(self):
+    temp_file = os.path.join(self.MakeTempDir(), "test-file")
+    dirtree.WriteFile(temp_file, "some contents\n")
+    file_hash = dirtree.HashFile(temp_file)
+
+    file_obj = dirtree.FileWithLazyHash(temp_file)
+    self.assertEquals(file_obj.GetHash(), file_hash)
+    self.assertEquals(file_obj.GetPath(), temp_file)
+
+    file_obj = dirtree.FileWithExpectedHash(temp_file, file_hash)
+    self.assertEquals(file_obj.GetHash(), file_hash)
+    self.assertEquals(file_obj.GetPath(), temp_file)
+    # Check that GetPath() rejects the file if the file does not have
+    # the expected contents.
+    dirtree.WriteFile(temp_file, "unexpected contents\n")
+    self.assertEquals(file_obj.GetHash(), file_hash)
+    self.assertRaises(dirtree.HashMismatchError, lambda: file_obj.GetPath())
 
 
 if __name__ == "__main__":

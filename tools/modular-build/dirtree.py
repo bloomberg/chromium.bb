@@ -64,6 +64,51 @@ def MkdirP(dir_path):
   subprocess.check_call(["mkdir", "-p", dir_path])
 
 
+class HashMismatchError(Exception):
+
+  pass
+
+
+# This is intended for large files whose hashes stay fixed (such as
+# tarballs), so that it is easy to include the hash in the build
+# description.  This means the file does not have to be read on
+# startup.
+class FileWithExpectedHash(object):
+
+  def __init__(self, filename, file_hash):
+    self._filename = filename
+    self._file_hash = file_hash
+
+  def GetPath(self):
+    # We check the file against the expected hash at the point we use
+    # the file.  Since we are typically about to untar the file, the
+    # extra file read is cheap, and leaves the file in the cache.
+    actual_hash = HashFile(self._filename)
+    if actual_hash != self._file_hash:
+      raise HashMismatchError(
+          "File %r had hash %r instead of the expected hash, %r"
+          % (self._filename, actual_hash, self._file_hash))
+    return self._filename
+
+  def GetHash(self):
+    return self._file_hash
+
+
+# This is intended for files that are small and so cheap to hash (such
+# as patch files), but which we do not want to list in the build
+# description because they often change.
+class FileWithLazyHash(object):
+
+  def __init__(self, filename):
+    self._filename = filename
+
+  def GetPath(self):
+    return self._filename
+
+  def GetHash(self):
+    return HashFile(self._filename)
+
+
 class DirTree(object):
 
   # WriteTree(dest_dir) makes a fresh copy of the tree in dest_dir.
@@ -86,14 +131,15 @@ class EmptyTree(DirTree):
 
 class TarballTree(DirTree):
 
-  def __init__(self, tar_path):
-    self._tar_path = tar_path
+  def __init__(self, tar_file):
+    self._tar_file = tar_file
 
   def WriteTree(self, dest_dir):
     # Tarballs normally contain a single top-level directory with
     # a name like foo-module-1.2.3.  We strip this off.
     assert os.listdir(dest_dir) == []
-    subprocess.check_call(["tar", "-C", dest_dir, "-xf", self._tar_path])
+    subprocess.check_call(["tar", "-C", dest_dir, "-xf",
+                           self._tar_file.GetPath()])
     tar_name = GetOne(os.listdir(dest_dir))
     for leafname in os.listdir(os.path.join(dest_dir, tar_name)):
       os.rename(os.path.join(dest_dir, tar_name, leafname),
@@ -101,20 +147,20 @@ class TarballTree(DirTree):
     os.rmdir(os.path.join(dest_dir, tar_name))
 
   def GetId(self):
-    return ["TarballTree", HashFile(self._tar_path)]
+    return ["TarballTree", self._tar_file.GetHash()]
 
 
 # This handles gcc, where two source tarballs must be unpacked on top
 # of each other.
 class MultiTarballTree(DirTree):
 
-  def __init__(self, tar_paths):
-    self._tar_paths = tar_paths
+  def __init__(self, tar_files):
+    self._tar_files = tar_files
 
   def WriteTree(self, dest_dir):
     assert os.listdir(dest_dir) == []
-    for tar_file in self._tar_paths:
-      subprocess.check_call(["tar", "-C", dest_dir, "-xf", tar_file])
+    for tar_file in self._tar_files:
+      subprocess.check_call(["tar", "-C", dest_dir, "-xf", tar_file.GetPath()])
     tar_name = GetOne(os.listdir(dest_dir))
     for leafname in os.listdir(os.path.join(dest_dir, tar_name)):
       os.rename(os.path.join(dest_dir, tar_name, leafname),
@@ -123,7 +169,7 @@ class MultiTarballTree(DirTree):
 
   def GetId(self):
     return ["MultiTarballTree",
-            [HashFile(tar_path) for tar_path in self._tar_paths]]
+            [tar_file.GetHash() for tar_file in self._tar_files]]
 
 
 class PatchedTree(DirTree):
@@ -137,11 +183,11 @@ class PatchedTree(DirTree):
     self._orig_tree.WriteTree(dest_dir)
     for patch_file in self._patch_files:
       subprocess.check_call(["patch", "--forward", "--batch", "-d", dest_dir,
-                             "-p%i" % self._strip, "-i", patch_file])
+                             "-p%i" % self._strip, "-i", patch_file.GetPath()])
 
   def GetId(self):
     return ["PatchedTree", self._orig_tree.GetId(),
-            [HashFile(patch_file) for patch_file in self._patch_files]]
+            [patch_file.GetHash() for patch_file in self._patch_files]]
 
 
 class CopyTree(DirTree):
