@@ -26,8 +26,8 @@ const struct ExtraLanguage {
   // The code "fil" comes from app/l10_util.cc.
   { "fil", "xkb:us::eng" },  // For Filipino, use US keyboard layout.
   // The code "es-419" comes from app/l10_util.cc.
-  // For Spanish in Latin America, use Spanish keyboard layout.
-  { "es-419", "xkb:es::spa" },
+  // For Spanish in Latin America, use Latin American keyboard layout.
+  { "es-419", "xkb:latam::spa" },
 };
 // TODO(yusukes): Move |kExtraLanguages| to input_method_util.cc.
 

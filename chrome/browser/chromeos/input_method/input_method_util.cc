@@ -219,6 +219,7 @@ const struct EnglishToResouceId {
   { "Norway", IDS_STATUSBAR_LAYOUT_NORWAY },
   { "Sweden", IDS_STATUSBAR_LAYOUT_SWEDEN },
   { "Netherlands", IDS_STATUSBAR_LAYOUT_NETHERLANDS },
+  { "Latin American", IDS_STATUSBAR_LAYOUT_LATIN_AMERICAN },
   { "Latvia", IDS_STATUSBAR_LAYOUT_LATVIA },
   { "Canada", IDS_STATUSBAR_LAYOUT_CANADA },
   { "Canada - English", IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH },
