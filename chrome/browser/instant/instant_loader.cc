@@ -108,24 +108,36 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
 };
 
 // PaintObserver implementation. When the RenderWidgetHost paints itself this
-// notifies InstantLoader, which makes the TabContents active.
+// notifies the TabContentsDelegateImpl which ultimately notifies InstantLoader
+// and shows the preview.
+// The ownership of this class is tricky. It's created and
+// tracked by TabContentsDelegateImpl, but owned by RenderWidgetHost. When
+// deleted this notifies the TabContentsDelegateImpl so that it can clean
+// up appropriately.
 class InstantLoader::PaintObserverImpl
     : public RenderWidgetHost::PaintObserver {
  public:
-  explicit PaintObserverImpl(InstantLoader* loader) : loader_(loader) {
+  PaintObserverImpl(TabContentsDelegateImpl* delegate,
+                    RenderWidgetHost* rwh)
+      : delegate_(delegate),
+        rwh_(rwh) {
+    rwh_->set_paint_observer(this);
   }
 
-  virtual void RenderWidgetHostWillPaint(RenderWidgetHost* rwh) {
+  ~PaintObserverImpl();
+
+  // Deletes this object by resetting the PaintObserver on the RenderWidgetHost.
+  void Destroy() {
+    rwh_->set_paint_observer(NULL);
   }
 
-  virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh) {
-    loader_->PreviewPainted();
-    rwh->set_paint_observer(NULL);
-    // WARNING: we've been deleted.
-  }
+  virtual void RenderWidgetHostWillPaint(RenderWidgetHost* rwh) {}
+
+  virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh);
 
  private:
-  InstantLoader* loader_;
+  TabContentsDelegateImpl* delegate_;
+  RenderWidgetHost* rwh_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintObserverImpl);
 };
@@ -134,7 +146,7 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
  public:
   explicit TabContentsDelegateImpl(InstantLoader* loader)
       : loader_(loader),
-        installed_paint_observer_(false),
+        paint_observer_(NULL),
         waiting_for_new_page_(true),
         is_mouse_down_from_activate_(false),
         user_typed_before_load_(false) {
@@ -145,13 +157,25 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
     user_typed_before_load_ = false;
     waiting_for_new_page_ = true;
     add_page_vector_.clear();
+    DestroyPaintObserver();
   }
 
   // Invoked when removed as the delegate. Gives a chance to do any necessary
   // cleanup.
   void Reset() {
-    installed_paint_observer_ = false;
     is_mouse_down_from_activate_ = false;
+    DestroyPaintObserver();
+  }
+
+  // Invoked when the preview paints. Invokes PreviewPainted on the loader.
+  void PreviewPainted() {
+    loader_->PreviewPainted();
+  }
+
+  // Invoked when the PaintObserverImpl is deleted.
+  void PaintObserverDestroyed(PaintObserverImpl* observer) {
+    if (observer == paint_observer_)
+      paint_observer_ = NULL;
   }
 
   bool is_mouse_down_from_activate() const {
@@ -193,15 +217,15 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
                               PageTransition::Type transition) {}
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {
-    if (!installed_paint_observer_ && source->controller().entry_count()) {
+    if (!loader_->ready() && !paint_observer_ &&
+        source->controller().entry_count()) {
       // The load has been committed. Install an observer that waits for the
       // first paint then makes the preview active. We wait for the load to be
       // committed before waiting on paint as there is always an initial paint
       // when a new renderer is created from the resize so that if we showed the
       // preview after the first paint we would end up with a white rect.
-      installed_paint_observer_ = true;
-      source->GetRenderWidgetHostView()->GetRenderWidgetHost()->
-          set_paint_observer(new PaintObserverImpl(loader_));
+      paint_observer_ = new PaintObserverImpl(this,
+          source->GetRenderWidgetHostView()->GetRenderWidgetHost());
     }
   }
   virtual void AddNewContents(TabContents* source,
@@ -229,11 +253,7 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
     if (!loader_->ready()) {
       // A constrained window shown for an auth may not paint. Show the preview
       // contents.
-      if (installed_paint_observer_) {
-        source->GetRenderWidgetHostView()->GetRenderWidgetHost()->
-            set_paint_observer(NULL);
-      }
-      installed_paint_observer_ = true;
+      DestroyPaintObserver();
       loader_->ShowPreview();
     }
   }
@@ -359,11 +379,22 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
       loader_->CommitInstantLoader();
   }
 
+  // If the PaintObserver is non-null Destroy is invoked on it.
+  void DestroyPaintObserver() {
+    if (paint_observer_) {
+      paint_observer_->Destroy();
+      // Destroy should result in invoking PaintObserverDestroyed and NULLing
+      // out paint_observer_.
+      DCHECK(!paint_observer_);
+    }
+  }
+
   InstantLoader* loader_;
 
-  // Has the paint observer been installed? See comment in
-  // NavigationStateChanged for details on this.
-  bool installed_paint_observer_;
+  // Used to listen for paint so that we know when to show the preview. See
+  // comment in NavigationStateChanged for details on this.
+  // Ownership of this is tricky, see comment above PaintObserverImpl class.
+  PaintObserverImpl* paint_observer_;
 
   // Used to cache data that needs to be added to history. Normally entries are
   // added to history as the user types, but for instant we only want to add the
@@ -384,6 +415,22 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
 };
 
+InstantLoader::PaintObserverImpl::~PaintObserverImpl() {
+  delegate_->PaintObserverDestroyed(this);
+}
+
+void InstantLoader::PaintObserverImpl::RenderWidgetHostDidPaint(
+    RenderWidgetHost* rwh) {
+  TabContentsDelegateImpl* delegate = delegate_;
+  // Set the paint observer to NULL, which deletes us. Showing the preview may
+  // reset the paint observer, and delete us. By resetting the delegate first we
+  // know we've been deleted and can deal correctly.
+  rwh->set_paint_observer(NULL);
+  // WARNING: we've been deleted.
+  if (delegate)
+    delegate->PreviewPainted();
+}
+
 InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
     : delegate_(delegate),
       template_url_id_(id),
@@ -395,9 +442,11 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
 InstantLoader::~InstantLoader() {
   registrar_.RemoveAll();
 
+  preview_tab_contents_delegate_->Reset();
+
   // Delete the TabContents before the delegate as the TabContents holds a
   // reference to the delegate.
-  preview_contents_.reset(NULL);
+  preview_contents_.reset();
 }
 
 void InstantLoader::Update(TabContentsWrapper* tab_contents,
