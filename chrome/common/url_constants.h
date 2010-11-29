@@ -148,6 +148,7 @@ extern const char kBlobViewInternalsURL[];
 // Cloud Print dialog URL components.
 extern const char kCloudPrintResourcesURL[];
 extern const char kCloudPrintResourcesHost[];
+extern const char kCloudPrintSetupHost[];
 
 // Network related URLs.
 extern const char kNetworkViewCacheURL[];

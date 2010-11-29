@@ -84,7 +84,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
 
   // Use static Run method to get an instance.
   CloudPrintSetupFlow(const std::string& args, Profile* profile,
-                      Delegate* delegate);
+                      Delegate* delegate, bool setup_done);
 
   // Called CloudPrintSetupMessageHandler when a DOM is attached. This method
   // is called when the HTML page is fully loaded. We then operate on this
@@ -96,6 +96,11 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   void OnUserSubmittedAuth(const std::string& user,
                            const std::string& password,
                            const std::string& captcha);
+
+  // Called by CloudPrintSetupMessageHandler when the user clicks on various
+  // pieces of UI during setup.
+  void OnUserClickedLearnMore();
+  void OnUserClickedPrintTestPage();
 
   // The following methods control which iframe is visible.
   void ShowGaiaLogin(const DictionaryValue& args);
@@ -117,6 +122,9 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   scoped_ptr<GaiaAuthFetcher> authenticator_;
   std::string login_;
   std::string lsid_;
+
+  // Are we in the done state?
+  bool setup_done_;
 
   // Handle to the ServiceProcessControl which talks to the service process.
   ServiceProcessControl* process_control_;

@@ -20,13 +20,15 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_message_handler.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_source.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/remoting/remoting_resources_source.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/browser_dialogs.h"
 #endif  // defined(TOOLKIT_GTK)
@@ -36,10 +38,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
 #include "gfx/font.h"
+
+#include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
 
-static const wchar_t kLoginIFrameXPath[] = L"//iframe[@id='login']";
-static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='done']";
+static const wchar_t kGaiaLoginIFrameXPath[] = L"//iframe[@id='gaialogin']";
+static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='setupdone']";
 
 ////////////////////////////////////////////////////////////////////////////////
 // CloudPrintSetupFlow implementation.
@@ -49,21 +53,21 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
     Profile* profile, Delegate* delegate, gfx::NativeWindow parent_window) {
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
-  args.SetString("iframeToShow", "login");
   args.SetString("user", "");
   args.SetInteger("error", 0);
   args.SetBoolean("editable_user", true);
 
+  bool setup_done = false;
   if (profile->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
-      !profile->GetPrefs()->GetString(prefs::kCloudPrintEmail).empty()) {
-    args.SetString("iframeToShow", "done");
-  }
+      !profile->GetPrefs()->GetString(prefs::kCloudPrintEmail).empty())
+    setup_done = true;
+  args.SetString("pageToShow", setup_done ? "setupdone" : "cloudprintsetup");
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
   CloudPrintSetupFlow* flow = new CloudPrintSetupFlow(json_args, profile,
-                                                      delegate);
+                                                      delegate, setup_done);
   // We may not always have a browser. This can happen when we are being
   // invoked in the context of a "token expired" notfication. If we don't have
   // a brower, use the underlying dialog system to show the dialog without
@@ -86,9 +90,11 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
 
 CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
                                          Profile* profile,
-                                         Delegate* delegate)
+                                         Delegate* delegate,
+                                         bool setup_done)
     : dom_ui_(NULL),
       dialog_start_args_(args),
+      setup_done_(setup_done),
       process_control_(NULL),
       delegate_(delegate) {
   // TODO(hclam): The data source should be added once.
@@ -97,7 +103,7 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
-                        make_scoped_refptr(new RemotingResourcesSource())));
+                        make_scoped_refptr(new CloudPrintSetupSource())));
 }
 
 CloudPrintSetupFlow::~CloudPrintSetupFlow() {
@@ -111,7 +117,7 @@ void CloudPrintSetupFlow::Focus() {
 ///////////////////////////////////////////////////////////////////////////////
 // HtmlDialogUIDelegate implementation.
 GURL CloudPrintSetupFlow::GetDialogContentURL() const {
-  return GURL("chrome://remotingresources/setup");
+  return GURL("chrome://cloudprintsetup/setupflow");
 }
 
 void CloudPrintSetupFlow::GetDOMMessageHandlers(
@@ -129,11 +135,17 @@ void CloudPrintSetupFlow::GetDialogSize(gfx::Size* size) const {
       UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
-  // TODO(pranavk) Replace the following SYNC resources with REMOTING Resources.
-  *size = gfx::GetLocalizedContentsSizeForFont(
-      IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS,
-      IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES,
-      approximate_web_font);
+  if (setup_done_) {
+    *size = gfx::GetLocalizedContentsSizeForFont(
+        IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_WIDTH_CHARS,
+        IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_HEIGHT_LINES,
+        approximate_web_font);
+  } else {
+    *size = gfx::GetLocalizedContentsSizeForFont(
+        IDS_CLOUD_PRINT_SETUP_WIZARD_WIDTH_CHARS,
+        IDS_CLOUD_PRINT_SETUP_WIZARD_HEIGHT_LINES,
+        approximate_web_font);
+  }
 }
 
 // A callback to notify the delegate that the dialog closed.
@@ -204,33 +216,46 @@ void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
   authenticator_.reset(
       new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
                           profile_->GetRequestContext()));
+
   authenticator_->StartClientLogin(user, password,
                                    GaiaConstants::kCloudPrintService,
                                    "", captcha,
                                    GaiaAuthFetcher::HostedAccountsAllowed);
 }
 
+void CloudPrintSetupFlow::OnUserClickedLearnMore() {
+  dom_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintLearnMoreURL(),
+                                   GURL(), NEW_FOREGROUND_TAB,
+                                   PageTransition::LINK);
+}
+
+void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
+  dom_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintTestPageURL(),
+                                   GURL(), NEW_FOREGROUND_TAB,
+                                   PageTransition::LINK);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Helper methods for showing contents of the DOM UI
 void CloudPrintSetupFlow::ShowGaiaLogin(const DictionaryValue& args) {
   if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showGaiaLoginIframe");
+    dom_ui_->CallJavascriptFunction(L"cloudprint.showSetupLogin");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
   std::wstring javascript = std::wstring(L"showGaiaLogin") +
       L"(" + UTF8ToWide(json) + L");";
-  ExecuteJavascriptInIFrame(kLoginIFrameXPath, javascript);
+  ExecuteJavascriptInIFrame(kGaiaLoginIFrameXPath, javascript);
 }
 
 void CloudPrintSetupFlow::ShowGaiaSuccessAndSettingUp() {
-  ExecuteJavascriptInIFrame(kLoginIFrameXPath,
+  ExecuteJavascriptInIFrame(kGaiaLoginIFrameXPath,
                             L"showGaiaSuccessAndSettingUp();");
 }
 
 void CloudPrintSetupFlow::ShowGaiaFailed(const GoogleServiceAuthError& error) {
   DictionaryValue args;
-  args.SetString("iframeToShow", "login");
+  args.SetString("pageToShow", "cloudprintsetup");
   args.SetString("user", "");
   args.SetInteger("error", error.state());
   args.SetBoolean("editable_user", true);
@@ -239,14 +264,31 @@ void CloudPrintSetupFlow::ShowGaiaFailed(const GoogleServiceAuthError& error) {
 }
 
 void CloudPrintSetupFlow::ShowSetupDone() {
-  std::wstring message = l10n_util::GetString(IDS_CLOUD_PRINT_SETUP_DONE);
-  std::wstring javascript = L"setMessage('" + message + L"');";
+  setup_done_ = true;
+  std::wstring product_name = l10n_util::GetString(IDS_PRODUCT_NAME);
+  std::wstring message = l10n_util::GetStringF(IDS_CLOUD_PRINT_SETUP_DONE,
+                                               product_name,
+                                               UTF8ToWide(login_));
+  std::wstring javascript = L"cloudprint.setMessage('" + message + L"');";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showSetupDone");
+  if (dom_ui_) {
+    PrefService* prefs = profile_->GetPrefs();
+    gfx::Font approximate_web_font(
+        UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
+        prefs->GetInteger(prefs::kWebKitDefaultFontSize));
+    gfx::Size done_size = gfx::GetLocalizedContentsSizeForFont(
+        IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_WIDTH_CHARS,
+        IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_HEIGHT_LINES,
+        approximate_web_font);
 
-  ExecuteJavascriptInIFrame(kDoneIframeXPath, L"onPageShown();");
+    FundamentalValue new_width(done_size.width());
+    FundamentalValue new_height(done_size.height());
+    dom_ui_->CallJavascriptFunction(L"cloudprint.showSetupDone",
+                                    new_width, new_height);
+  }
+
+  ExecuteJavascriptInIFrame(kDoneIframeXPath, L"cloudprint.onPageShown();");
 }
 
 void CloudPrintSetupFlow::ExecuteJavascriptInIFrame(

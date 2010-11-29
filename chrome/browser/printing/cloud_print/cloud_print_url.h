@@ -18,6 +18,11 @@ class CloudPrintURL {
   GURL GetCloudPrintServiceDialogURL();
   GURL GetCloudPrintServiceManageURL();
 
+  // These aren't derived from the service, but it makes sense to keep all the
+  // URLs together, and this gives the unit tests access for testing.
+  static GURL GetCloudPrintLearnMoreURL();
+  static GURL GetCloudPrintTestPageURL();
+
  private:
   void RegisterPreferences();
 

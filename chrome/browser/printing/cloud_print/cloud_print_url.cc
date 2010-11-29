@@ -13,6 +13,10 @@
 #include "googleurl/src/gurl.h"
 
 const char kDefaultCloudPrintServiceURL[] = "https://www.google.com/cloudprint";
+const char kLearnMoreURL[] =
+    "http://www.google.com/support/cloudprint";
+const char kTestPageURL[] =
+    "http://www.google.com/landing/cloudprint/enable.html?print=true";
 
 void CloudPrintURL::RegisterPreferences() {
   DCHECK(profile_);
@@ -58,4 +62,14 @@ GURL CloudPrintURL::GetCloudPrintServiceManageURL() {
   GURL cloud_print_manage_url = cloud_print_service_url.ReplaceComponents(
       replacements);
   return cloud_print_manage_url;
+}
+
+GURL CloudPrintURL::GetCloudPrintLearnMoreURL() {
+  GURL cloud_print_learn_more_url(kLearnMoreURL);
+  return cloud_print_learn_more_url;
+}
+
+GURL CloudPrintURL::GetCloudPrintTestPageURL() {
+  GURL cloud_print_learn_more_url(kTestPageURL);
+  return cloud_print_learn_more_url;
 }

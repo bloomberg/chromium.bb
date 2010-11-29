@@ -1,0 +1,31 @@
+body {
+  background: #FFFFFF;
+  margin: 10px 15px;
+  -webkit-user-select: none;
+}
+
+.cloudprint-signup {
+  width: 60%;
+}
+
+.cloudprint-login {
+  width: 40%;
+}
+
+.cloudprint-header {
+  font-weight: bold;
+}
+
+.cloudprint-item-header {
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.cloudprint-item-explain {
+  font-size: 0.9em;
+}
+
+.cloudprint-item-image {
+  text-align: center;
+  padding: 8px;
+}

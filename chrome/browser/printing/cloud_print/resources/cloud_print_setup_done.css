@@ -1,0 +1,44 @@
+body {
+  background: #FFFFFF;
+  margin: 10px 15px;
+  -webkit-user-select: none;
+}
+
+.cloudprint-success-header {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.cloudprint-success-image {
+  text-align: center;
+  margin: 20px;
+}
+
+#message {
+  font-weight: bold;
+}
+
+.cloudprint-success-footer {
+  position: fixed;
+  font-size: 1.2em;
+  right: 0px;
+  bottom: 0px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+html[dir='rtl'] .cloudprint-success-footer {
+  text-align: left;
+  left: 0px;
+  bottom: 0px;
+  margin-left: 20px;
+}
+
+.button {
+  min-width: 87px;
+  min-height: 26px;
+}
+
+html[os='mac'].button {
+  font-size: 12pt;
+}

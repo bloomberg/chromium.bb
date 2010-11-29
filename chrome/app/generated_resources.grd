@@ -5397,8 +5397,35 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE" desc="Title of the cloud print setup dialog.">
         Set up <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
       </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_HEADER" desc="Intro line of the cloud print setup dialog.">
+        Access and share your printers online with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_EXPLAIN" desc="Explanation of the cloud print setup dialog.">
+        <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> is built on the idea that printing can be more intuitive, accessible, and useful. Using <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> you can make your printers available to you from any <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> enabled web or mobile app.
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_ANYWHERE_HEADER" desc="Intro line about printing from anywhere.">
+        Print from anywhere
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_ANYWHERE_EXPLAIN" desc="Explanation about printing from anywhere.">
+        Access your printers from any computer or smart phone. <ph name="BEGIN_LINK">&lt;a href="#" onclick="cloudprint.learnMore()"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_PRINTER_HEADER" desc="Intro line about printer management.">
+        Manage your printer
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_PRINTER_EXPLAIN" desc="Explanation about printer management.">
+        Review your print jobs and printer status online.
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_SHARING_HEADER" desc="Intro line about printer management.">
+        Shared access
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_SHARING_EXPLAIN" desc="Explanation about printer management.">
+        Share and control access to your printers with any Google account.
+      </message>
       <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Message on completed set up of cloud print.">
-        You have successfully enabled <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>!
+        You have successfully enabled <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>!  <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has registered the printers on this machine with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> enabled web or mobile app!
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_TEST_PAGE" desc="Label on button for printing a test page.">
+        Print a Test Page
       </message>
 
       <!-- Print Preview -->
@@ -11162,7 +11189,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     <!-- Cloud Print Strings -->
     <message name="IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE" desc="The message to display when the cloud print token has expired.">
-      The credentials used to share your printers have expired. Please click here to re-enter your username and password.
+      The credentials used to share your printers to  <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> have expired. Please click here to re-enter your username and password.
     </message>
 
     </messages>

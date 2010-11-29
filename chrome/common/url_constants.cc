@@ -153,6 +153,7 @@ const char kBlobViewInternalsURL[] = "chrome://blob-internals/";
 
 const char kCloudPrintResourcesURL[] = "chrome://cloudprintresources/";
 const char kCloudPrintResourcesHost[] = "cloudprintresources";
+const char kCloudPrintSetupHost[] = "cloudprintsetup";
 
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";

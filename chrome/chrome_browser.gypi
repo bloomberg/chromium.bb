@@ -2512,6 +2512,8 @@
         'browser/printing/cloud_print/cloud_print_setup_flow.h',
         'browser/printing/cloud_print/cloud_print_setup_message_handler.cc',
         'browser/printing/cloud_print/cloud_print_setup_message_handler.h',
+        'browser/printing/cloud_print/cloud_print_setup_source.cc',
+        'browser/printing/cloud_print/cloud_print_setup_source.h',
         'browser/printing/cloud_print/cloud_print_url.cc',
         'browser/printing/cloud_print/cloud_print_url.h',
         'browser/process_info_snapshot_mac.cc',

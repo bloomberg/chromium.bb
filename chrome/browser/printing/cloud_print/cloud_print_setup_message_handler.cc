@@ -19,6 +19,10 @@ DOMMessageHandler* CloudPrintSetupMessageHandler::Attach(DOMUI* dom_ui) {
 void CloudPrintSetupMessageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("SubmitAuth",
       NewCallback(this, &CloudPrintSetupMessageHandler::HandleSubmitAuth));
+  dom_ui_->RegisterMessageCallback("PrintTestPage",
+      NewCallback(this, &CloudPrintSetupMessageHandler::HandlePrintTestPage));
+  dom_ui_->RegisterMessageCallback("LearnMore",
+      NewCallback(this, &CloudPrintSetupMessageHandler::HandleLearnMore));
 }
 
 void CloudPrintSetupMessageHandler::HandleSubmitAuth(const ListValue* args) {
@@ -44,4 +48,14 @@ void CloudPrintSetupMessageHandler::HandleSubmitAuth(const ListValue* args) {
   // Pass the information to the flow.
   if (flow_)
     flow_->OnUserSubmittedAuth(username, password, captcha);
+}
+
+void CloudPrintSetupMessageHandler::HandlePrintTestPage(const ListValue* args) {
+  if (flow_)
+    flow_->OnUserClickedPrintTestPage();
+}
+
+void CloudPrintSetupMessageHandler::HandleLearnMore(const ListValue* args) {
+  if (flow_)
+    flow_->OnUserClickedLearnMore();
 }

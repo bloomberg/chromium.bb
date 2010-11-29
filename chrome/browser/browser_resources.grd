@@ -64,6 +64,9 @@ without changes to the corresponding grd file. etaa -->
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_REMOTING_SETUP_FLOW_HTML" file="remoting\resources\remoting_setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_REMOTING_SETUP_DONE_HTML" file="remoting\resources\remoting_setup_done.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CLOUD_PRINT_SETUP_FLOW_HTML" file="printing\cloud_print\resources\cloud_print_setup_flow.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CLOUD_PRINT_SETUP_LOGIN_HTML" file="printing\cloud_print\resources\cloud_print_setup_login.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="printing\cloud_print\resources\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TEXTFIELDS_HTML" file="resources\textfields.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
       <include name="IDR_BUGREPORT_HTML" file="resources\bug_report.html" flattenhtml="true" type="BINDATA" />

@@ -112,7 +112,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return NULL;
 
   if (url.host() == chrome::kChromeUISyncResourcesHost ||
-      url.host() == chrome::kChromeUIRemotingResourcesHost)
+      url.host() == chrome::kChromeUIRemotingResourcesHost ||
+      url.host() == chrome::kCloudPrintSetupHost)
     return &NewDOMUI<HtmlDialogUI>;
 
   // Special case the new tab page. In older versions of Chrome, the new tab

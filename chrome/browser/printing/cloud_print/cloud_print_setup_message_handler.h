@@ -28,6 +28,8 @@ class CloudPrintSetupMessageHandler : public DOMMessageHandler {
 
   // Callbacks from the page.
   void HandleSubmitAuth(const ListValue* args);
+  void HandlePrintTestPage(const ListValue* args);
+  void HandleLearnMore(const ListValue* args);
 
  private:
   CloudPrintSetupFlow* flow_;

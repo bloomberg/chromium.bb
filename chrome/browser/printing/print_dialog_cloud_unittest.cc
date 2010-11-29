@@ -186,6 +186,22 @@ TEST_F(CloudPrintURLTest, CheckDefaultURLs) {
   EXPECT_THAT(manage_url, Not(HasSubstr("/client/")));
   EXPECT_THAT(manage_url, Not(HasSubstr("cloudprint/cloudprint")));
   EXPECT_THAT(manage_url, HasSubstr("/manage"));
+
+  GURL learn_more_url = CloudPrintURL::GetCloudPrintLearnMoreURL();
+  std::string learn_more_path = learn_more_url.spec();
+  EXPECT_THAT(learn_more_path, HasSubstr("www.google.com"));
+  EXPECT_THAT(learn_more_path, HasSubstr("/support/"));
+  EXPECT_THAT(learn_more_path, HasSubstr("/cloudprint"));
+  EXPECT_TRUE(learn_more_url.has_path());
+  EXPECT_FALSE(learn_more_url.has_query());
+
+  GURL test_page_url = CloudPrintURL::GetCloudPrintTestPageURL();
+  std::string test_page_path = test_page_url.spec();
+  EXPECT_THAT(test_page_path, HasSubstr("www.google.com"));
+  EXPECT_THAT(test_page_path, HasSubstr("/landing/"));
+  EXPECT_THAT(test_page_path, HasSubstr("/cloudprint/"));
+  EXPECT_TRUE(test_page_url.has_path());
+  EXPECT_TRUE(test_page_url.has_query());
 }
 
 // Testing for CloudPrintDataSender needs a mock DOMUI.
