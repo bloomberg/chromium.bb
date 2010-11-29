@@ -24,21 +24,24 @@ TEST(ShouldRegisterCeee, FalseUnlessRegsvr32OrCommandLine) {
   // process name for the unit test process does not satisfy
   // either condition.
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterCeee());
+  ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
 }
 
 TEST(ShouldRegisterCeee, TrueIfRegsvr32) {
   testing::PathServiceOverrider override(base::FILE_EXE,
       FilePath(L"c:\\windows\\system32\\regsvr32.exe"));
   ASSERT_TRUE(ceee_install_utils::ShouldRegisterCeee());
+  ASSERT_TRUE(ceee_install_utils::ShouldRegisterFfCeee());
 }
 
 TEST(ShouldRegisterCeee, FalseIfRegsvr32NotLastPathComponent) {
   testing::PathServiceOverrider override(base::FILE_EXE,
     FilePath(L"c:\\windows\\regsvr32.exe\\foobar.exe"));
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterCeee());
+  ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
 }
 
-TEST(ShouldRegisterCeee, TrueIfBothFlagsOnCommandLine) {
+TEST(ShouldRegisterCeee, TrueIfBothFlagsPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine()).WillOnce(
       Return(const_cast<wchar_t*>(
@@ -46,7 +49,18 @@ TEST(ShouldRegisterCeee, TrueIfBothFlagsOnCommandLine) {
   ASSERT_TRUE(ceee_install_utils::ShouldRegisterCeee());
 }
 
-TEST(ShouldRegisterCeee, FalseIfOneFlagOnCommandLine) {
+TEST(ShouldRegisterFfCeee, TrueIfAllFlagsPresent) {
+  testing::MockKernel32 kernel32;
+  EXPECT_CALL(kernel32, GetCommandLine()).Times(2).WillRepeatedly(
+      Return(const_cast<wchar_t*>(
+          L"mini_installer.exe --enable-ceee --chrome-frame "
+          L"--enable-ff-ceee")));
+  EXPECT_TRUE(ceee_install_utils::ShouldRegisterFfCeee());
+  // Check this as well just in case.
+  ASSERT_TRUE(ceee_install_utils::ShouldRegisterCeee());
+}
+
+TEST(ShouldRegisterCeee, FalseIfOneFlagPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine())
     .WillOnce(Return(const_cast<wchar_t*>(
@@ -57,7 +71,21 @@ TEST(ShouldRegisterCeee, FalseIfOneFlagOnCommandLine) {
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterCeee());
 }
 
-TEST(ShouldRegisterCeee, FalseIfInvertedFlagOnCommandLine) {
+TEST(ShouldRegisterFfCeee, FalseIfOnlyTwoFlagsPresent) {
+  testing::MockKernel32 kernel32;
+  EXPECT_CALL(kernel32, GetCommandLine())
+    .WillOnce(Return(const_cast<wchar_t*>(
+        L"mini_installer.exe --enable-ceee --chrome-frame")))
+    .WillOnce(Return(const_cast<wchar_t*>(
+        L"mini_installer.exe --chrome-frame --enable-ff-ceee")))
+    .WillOnce(Return(const_cast<wchar_t*>(
+        L"mini_installer.exe --enable-ceee --enable-ff-ceee")));
+  ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
+  ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
+  ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
+}
+
+TEST(ShouldRegisterCeee, FalseIfInvertedFlagPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine()).WillOnce(
     Return(const_cast<wchar_t*>(
@@ -65,12 +93,30 @@ TEST(ShouldRegisterCeee, FalseIfInvertedFlagOnCommandLine) {
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterCeee());
 }
 
-TEST(ShouldRegisterCeee, FalseIfBogusFlagOnCommandLine) {
+TEST(ShouldRegisterFfCeee, FalseIfInvertedFlagPresent) {
+  testing::MockKernel32 kernel32;
+  EXPECT_CALL(kernel32, GetCommandLine()).WillOnce(
+    Return(const_cast<wchar_t*>(
+        L"mini_installer.exe --enable-ceee --noenable-ff-ceee "
+        L"--chrome-frame")));
+  ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
+}
+
+TEST(ShouldRegisterCeee, FalseIfBogusFlagPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine()).WillOnce(
     Return(const_cast<wchar_t*>(
         L"mini_installer.exe --enable-ceeez --chrome-frame")));
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterCeee());
+}
+
+TEST(ShouldRegisterFfCeee, FalseIfBogusFlagPresent) {
+  testing::MockKernel32 kernel32;
+  EXPECT_CALL(kernel32, GetCommandLine()).WillOnce(
+    Return(const_cast<wchar_t*>(
+        L"mini_installer.exe --enable-ceee --enable-ff-ceeez "
+        L"--chrome-frame")));
+  ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
 }
 
 namespace dll_register_server_test {

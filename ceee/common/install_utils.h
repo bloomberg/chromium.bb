@@ -35,6 +35,12 @@ namespace ceee_install_utils {
 // regsvr32 (i.e. it's a developer that explicitly wants to register).
 bool ShouldRegisterCeee();
 
+// Returns true if the --enable-ff-ceee flag was passed to the process
+// that loaded this DLL in addition to the --enable-ceee flag, or if
+// the process loading the DLL is regsvr32 (i.e. it's a developer that
+// explicitly wants to register).
+bool ShouldRegisterFfCeee();
+
 }  // namespace ceee_install_utils
 
 #endif  // CEEE_COMMON_INSTALL_UTILS_H_

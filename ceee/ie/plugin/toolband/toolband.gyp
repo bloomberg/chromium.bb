@@ -14,11 +14,12 @@
       'target_name': 'ceee_ie_lib',
       'type': 'static_library',
       'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/ceee/common/common.gyp:ceee_common',
+        '<(DEPTH)/ceee/common/common.gyp:initializing_coclass',
+        '<(DEPTH)/ceee/ie/common/common.gyp:ie_common_settings',
+        '<(DEPTH)/chrome/chrome.gyp:installer_util',
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
-        '../../common/common.gyp:ie_common_settings',
-        '../../../../base/base.gyp:base',
-        '../../../../ceee/common/common.gyp:ceee_common',
-        '../../../../ceee/common/common.gyp:initializing_coclass',
       ],
       'sources': [
         'tool_band.cc',
@@ -37,21 +38,21 @@
       'target_name': 'ceee_ie',
       'type': 'shared_library',
       'dependencies': [
-        '../../broker/broker.gyp:broker_rpc_idl',
-        '../../broker/broker.gyp:broker_rpc_lib',
         'ceee_ie_lib',
         'ie_toolband_common',
         'toolband_proxy_lib',
         'toolband_idl',
-        '../bho/bho.gyp:bho',
-        '../scripting/scripting.gyp:scripting',
-        '../scripting/scripting.gyp:javascript_bindings',
-        '../../common/common.gyp:ie_common_settings',
-        '../../common/common.gyp:ie_guids',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
         '<(DEPTH)/ceee/common/common.gyp:ceee_common',
         '<(DEPTH)/ceee/common/common.gyp:initializing_coclass',
+        '<(DEPTH)/ceee/ie/broker/broker.gyp:broker_rpc_idl',
+        '<(DEPTH)/ceee/ie/broker/broker.gyp:broker_rpc_lib',
+        '<(DEPTH)/ceee/ie/common/common.gyp:ie_common_settings',
+        '<(DEPTH)/ceee/ie/common/common.gyp:ie_guids',
+        '<(DEPTH)/ceee/ie/plugin/bho/bho.gyp:bho',
+        '<(DEPTH)/ceee/ie/plugin/scripting/scripting.gyp:scripting',
+        '<(DEPTH)/ceee/ie/plugin/scripting/scripting.gyp:javascript_bindings',
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
       ],
@@ -87,11 +88,11 @@
       'target_name': 'ie_toolband_common',
       'type': 'static_library',
       'dependencies': [
-        '../../../../chrome_frame/crash_reporting/'
-            'crash_reporting.gyp:crash_report',
-        '../../../../base/base.gyp:base',
-        '../../../../breakpad/breakpad.gyp:breakpad_handler',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
+        '<(DEPTH)/chrome_frame/crash_reporting/'
+            'crash_reporting.gyp:crash_report',
       ],
       'sources': [
         'toolband_module_reporting.cc',
@@ -106,8 +107,8 @@
       'target_name': 'toolband_idl',
       'type': 'none',
       'sources': [
-        '../../broker/broker_lib.idl',
         'toolband.idl',
+        '<(DEPTH)/ceee/ie/broker/broker_lib.idl',
       ],
       'msvs_settings': {
         'VCMIDLTool': {
@@ -135,8 +136,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/toolband_dlldata.c',
       ],
       'dependencies': [
-        '../../../../base/base.gyp:base',
         'toolband_idl',
+        '<(DEPTH)/base/base.gyp:base',
       ],
       'defines': [
         # This define adds ToolbandProxy as a prefix to the generated

@@ -349,26 +349,35 @@ STDAPI DllRegisterServerImpl(void) {
   // In case of error, we abort the rest of registration - we're in bad
   // shape anyway.
   if (SUCCEEDED(hr)) {
-    hr = CallDllEntryPoint(kChromeFrameDllName, "RegisterNPAPIPlugin");
-    DCHECK(SUCCEEDED(hr)) << "Could not register CF with FF" << com::LogHr(hr);
-  }
-
-  if (SUCCEEDED(hr)) {
     hr = RegisterIeBroker(true);
     DCHECK(SUCCEEDED(hr)) << "Could not register CEEE IE Broker" <<
         com::LogHr(hr);
   }
 
-  if (SUCCEEDED(hr)) {
-    hr = ExtractOrDeleteFirefoxCeee(_AtlBaseModule.GetModuleInstance(),
-                                    true);
-    DCHECK(SUCCEEDED(hr)) << "Unable to extract CEEE for FF" << com::LogHr(hr);
-  }
+  // We only check for the --enable-ff-ceee flag here, and not at
+  // unregistration time; when unregistering, the Firefox-related
+  // unregistration code is written such that it will not give an
+  // error when no unregistration was necessary, so it's safe to
+  // always try.
+  if (ceee_install_utils::ShouldRegisterFfCeee()) {
+    if (SUCCEEDED(hr)) {
+      hr = CallDllEntryPoint(kChromeFrameDllName, "RegisterNPAPIPlugin");
+      DCHECK(SUCCEEDED(hr)) << "Could not register CF with FF" <<
+          com::LogHr(hr);
+    }
 
-  if (SUCCEEDED(hr)) {
-    hr = RegisterFirefoxCeee(true);
-    DCHECK(SUCCEEDED(hr)) << "Could not register CEEE with FF"
-        << com::LogHr(hr);
+    if (SUCCEEDED(hr)) {
+      hr = ExtractOrDeleteFirefoxCeee(_AtlBaseModule.GetModuleInstance(),
+                                      true);
+      DCHECK(SUCCEEDED(hr)) << "Unable to extract CEEE for FF" <<
+          com::LogHr(hr);
+    }
+
+    if (SUCCEEDED(hr)) {
+      hr = RegisterFirefoxCeee(true);
+      DCHECK(SUCCEEDED(hr)) << "Could not register CEEE with FF"
+          << com::LogHr(hr);
+    }
   }
 
   if (SUCCEEDED(hr)) {
@@ -385,6 +394,9 @@ CEEE_DEFINE_DLL_REGISTER_SERVER()
 // Removes entries from the system registry.
 STDAPI DllUnregisterServer(void) {
   // We always allow unregistration, even if no --enable-ceee install flag.
+  //
+  // We also always unregister Firefox components, regardless of whether the
+  // --enable-ff-ceee flag is set; unregistration is idempotent.
 
   HRESULT combined_result = S_OK;
   HRESULT hr = _AtlModule.DllUnregisterServer(FALSE);
@@ -394,13 +406,13 @@ STDAPI DllUnregisterServer(void) {
 
   // In case of error, we continue with the rest of unregistration, to
   // clean up as much as possible.
-  hr = CallDllEntryPoint(kChromeFrameDllName, "UnregisterNPAPIPlugin");
-  DCHECK(SUCCEEDED(hr)) << "Could not unregister CF with FF" << com::LogHr(hr);
-  AggregateComError(hr, &combined_result);
-
   hr = RegisterIeBroker(false);
   DCHECK(SUCCEEDED(hr)) << "Could not unregister CEEE IE Broker" <<
       com::LogHr(hr);
+  AggregateComError(hr, &combined_result);
+
+  hr = CallDllEntryPoint(kChromeFrameDllName, "UnregisterNPAPIPlugin");
+  DCHECK(SUCCEEDED(hr)) << "Could not unregister CF with FF" << com::LogHr(hr);
   AggregateComError(hr, &combined_result);
 
   hr = RegisterFirefoxCeee(false);

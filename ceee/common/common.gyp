@@ -51,9 +51,9 @@
       'type': 'static_library',
       'dependencies': [
         'initializing_coclass',
-        '../../base/base.gyp:base',
-        '../../testing/gmock.gyp:gmock',
-        '../../third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
       ],
       'msvs_guid': '4BAB6049-29A7-47C2-A754-14CA3FBF5BD9',
       'sources': [
@@ -92,12 +92,13 @@
       ],
       'dependencies': [
         'ceee_common',
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/ceee/testing/sidestep/sidestep.gyp:sidestep',
-        '../testing/utils/test_utils.gyp:test_utils',
-        '../../base/base.gyp:base',
-        '../../testing/gmock.gyp:gmock',
-        '../../testing/gtest.gyp:gtest',
-        '../../third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/ceee/testing/utils/test_utils.gyp:test_utils',
+        '<(DEPTH)/chrome/chrome.gyp:installer_util',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
       ],
     }
   ]
