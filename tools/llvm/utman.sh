@@ -122,7 +122,7 @@ readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
 # Current milestones in each repo
 # hg-update-stable  uses these
 readonly LLVM_REV=f934df6ac3d6
-readonly LLVM_GCC_REV=23dec9379730
+readonly LLVM_GCC_REV=eae2a60ee5be
 readonly NEWLIB_REV=d0ac50acf303
 readonly BINUTILS_REV=a5b54c0cc733
 
