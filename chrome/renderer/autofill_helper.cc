@@ -104,8 +104,14 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
       v.assign(1,
                l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
     } else {
-      v.assign(1,
-               l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FIELD_DISABLED));
+      // TODO(isherman): We will not reach here if autocomplete is disabled for
+      // both the form and the field. I think we need changes to the WebKit API
+      // to handle that case properly.
+
+      // If autocomplete is disabled at the field level, this may be because the
+      // website author wishes to display a custom popup via JavaScript. To
+      // accommodate this, do not show a warning (or any popup) in this case.
+      return;
     }
     l.assign(1, string16());
     i.assign(1, string16());
