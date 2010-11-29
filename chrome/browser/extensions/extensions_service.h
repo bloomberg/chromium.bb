@@ -277,6 +277,15 @@ class ExtensionsService
   void EnableExtension(const std::string& extension_id);
   void DisableExtension(const std::string& extension_id);
 
+  // Updates the |extension|'s granted permissions lists to include all
+  // permissions in the |extension|'s manifest.
+  void GrantPermissions(const Extension* extension);
+
+  // Updates the |extension|'s granted permissions lists to include all
+  // permissions in the |extension|'s manifest and re-enables the
+  // extension.
+  void GrantPermissionsAndEnableExtension(const Extension* extension);
+
   // Load the extension from the directory |extension_path|.
   void LoadExtension(const FilePath& extension_path);
 
@@ -351,18 +360,20 @@ class ExtensionsService
   virtual void OnLoadedInstalledExtensions();
 
   // Called when an extension has been loaded.
-  void OnExtensionLoaded(const Extension* extension,
-                         bool allow_privilege_increase);
+  void OnExtensionLoaded(const Extension* extension);
 
   // Called by the backend when an extension has been installed.
-  void OnExtensionInstalled(const Extension* extension,
-                            bool allow_privilege_increase);
+  void OnExtensionInstalled(const Extension* extension);
 
   // Called by the backend when an external extension is found.
   void OnExternalExtensionFileFound(const std::string& id,
                                     const std::string& version,
                                     const FilePath& path,
                                     Extension::Location location);
+
+  // Checks if the privileges requested by |extension| have increased, and if
+  // so, disables the extension and prompts the user to approve the change.
+  void DisableIfPrivilegeIncrease(const Extension* extension);
 
   // Go through each extensions in pref, unload blacklisted extensions
   // and update the blacklist state in pref.

@@ -72,6 +72,7 @@ const char* const good_crx = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char* const page_action = "obcimlgaoabeegjmmpldobjndiealpln";
 const char* const theme_crx = "iamefpfkojoapidjnbafmgkgncegbkad";
 const char* const theme2_crx = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
+const char* const permissions_crx = "eagpmdpfmaekmmcejjbmjoecnejeiiin";
 
 struct ExtensionsOrder {
   bool operator()(const Extension* a, const Extension* b) {
@@ -96,6 +97,28 @@ static std::vector<std::string> GetErrors() {
   std::stable_sort(ret_val.begin(), ret_val.end());
 
   return ret_val;
+}
+
+static void AddPattern(ExtensionExtent* extent, const std::string& pattern) {
+  int schemes = URLPattern::SCHEME_ALL;
+  extent->AddPattern(URLPattern(schemes, pattern));
+}
+
+static void AssertEqualExtents(ExtensionExtent* extent1,
+                               ExtensionExtent* extent2) {
+  std::vector<URLPattern> patterns1 = extent1->patterns();
+  std::vector<URLPattern> patterns2 = extent2->patterns();
+  std::set<std::string> strings1;
+  EXPECT_EQ(patterns1.size(), patterns2.size());
+
+  for (size_t i = 0; i < patterns1.size(); ++i)
+    strings1.insert(patterns1.at(i).GetAsString());
+
+  std::set<std::string> strings2;
+  for (size_t i = 0; i < patterns2.size(); ++i)
+    strings2.insert(patterns2.at(i).GetAsString());
+
+  EXPECT_EQ(strings1, strings2);
 }
 
 }  // namespace
@@ -458,19 +481,37 @@ class ExtensionsServiceTest
                             Extension::Location location);
 
   void PackAndInstallExtension(const FilePath& dir_path,
+                               const FilePath& pem_path,
                                bool should_succeed) {
     FilePath crx_path;
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &crx_path));
     crx_path = crx_path.AppendASCII("temp.crx");
-    FilePath pem_path = crx_path.DirName().AppendASCII("temp.pem");
+
+    // Use the existing pem key, if provided.
+    FilePath pem_output_path;
+    if (pem_path.value().empty()) {
+      pem_output_path = crx_path.DirName().AppendASCII("temp.pem");
+      ASSERT_TRUE(file_util::Delete(pem_output_path, false));
+    } else {
+      ASSERT_TRUE(file_util::PathExists(pem_path));
+    }
 
     ASSERT_TRUE(file_util::Delete(crx_path, false));
-    ASSERT_TRUE(file_util::Delete(pem_path, false));
+
     scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
-    ASSERT_TRUE(creator->Run(dir_path, crx_path, FilePath(), pem_path));
+    ASSERT_TRUE(creator->Run(dir_path,
+                             crx_path,
+                             pem_path,
+                             pem_output_path));
+
     ASSERT_TRUE(file_util::PathExists(crx_path));
 
     InstallExtension(crx_path, should_succeed);
+  }
+
+  void PackAndInstallExtension(const FilePath& dir_path,
+                               bool should_succeed) {
+      PackAndInstallExtension(dir_path, FilePath(), should_succeed);
   }
 
   void InstallExtension(const FilePath& path,
@@ -654,6 +695,19 @@ class ExtensionsServiceTest
     EXPECT_EQ(expected_val, val) << msg;
   }
 
+  void SetPref(const std::string& extension_id,
+               const std::string& pref_path,
+               Value* value,
+               const std::string& msg) {
+    const DictionaryValue* dict =
+        profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
+    ASSERT_TRUE(dict != NULL) << msg;
+    DictionaryValue* pref = NULL;
+    ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
+    EXPECT_TRUE(pref != NULL) << msg;
+    pref->Set(pref_path, value);
+  }
+
   void SetPrefInteg(const std::string& extension_id,
                     const std::string& pref_path,
                     int value) {
@@ -664,13 +718,46 @@ class ExtensionsServiceTest
     msg += " = ";
     msg += base::IntToString(value);
 
+    SetPref(extension_id, pref_path, Value::CreateIntegerValue(value), msg);
+  }
+
+  void SetPrefBool(const std::string& extension_id,
+                   const std::string& pref_path,
+                   bool value) {
+    std::string msg = " while setting: ";
+    msg += extension_id + " " + pref_path;
+    msg += " = ";
+    msg += (value ? "true" : "false");
+
+    SetPref(extension_id, pref_path, Value::CreateBooleanValue(value), msg);
+  }
+
+  void ClearPref(const std::string& extension_id,
+                 const std::string& pref_path) {
+    std::string msg = " while clearing: ";
+    msg += extension_id + " " + pref_path;
+
     const DictionaryValue* dict =
         profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL) << msg;
     DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
     EXPECT_TRUE(pref != NULL) << msg;
-    pref->SetInteger(pref_path, value);
+    pref->Remove(pref_path, NULL);
+  }
+
+  void SetPrefStringSet(const std::string& extension_id,
+                        const std::string& pref_path,
+                        const std::set<std::string>& value) {
+    std::string msg = " while setting: ";
+    msg += extension_id + " " + pref_path;
+
+    ListValue* list_value = new ListValue();
+    for (std::set<std::string>::const_iterator iter = value.begin();
+         iter != value.end(); ++iter)
+      list_value->Append(Value::CreateStringValue(*iter));
+
+    SetPref(extension_id, pref_path, list_value, msg);
   }
 
  protected:
@@ -1005,6 +1092,227 @@ TEST_F(ExtensionsServiceTest, InstallUserScript) {
   installed_ = NULL;
   loaded_.clear();
   ExtensionErrorReporter::GetInstance()->ClearErrors();
+}
+
+// This tests that the granted permissions preferences are correctly set when
+// installing an extension.
+TEST_F(ExtensionsServiceTest, GrantedPermissions) {
+  InitializeEmptyExtensionsService();
+  FilePath path;
+  FilePath pem_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions")
+      .AppendASCII("permissions");
+
+  pem_path = path.AppendASCII("unknown.pem");
+  path = path.AppendASCII("unknown");
+
+  ASSERT_TRUE(file_util::PathExists(pem_path));
+  ASSERT_TRUE(file_util::PathExists(path));
+
+  ExtensionPrefs* prefs = service_->extension_prefs();
+
+  std::set<std::string> expected_api_perms;
+  std::set<std::string> known_api_perms;
+  bool full_access;
+  ExtensionExtent expected_host_perms;
+  ExtensionExtent known_host_perms;
+
+  // Make sure there aren't any granted permissions before the
+  // extension is installed.
+  EXPECT_FALSE(prefs->GetGrantedPermissions(
+      permissions_crx, &full_access, &known_api_perms, &known_host_perms));
+  EXPECT_TRUE(known_api_perms.empty());
+  EXPECT_TRUE(known_host_perms.is_empty());
+
+  PackAndInstallExtension(path, pem_path, true);
+
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, service_->extensions()->size());
+  std::string extension_id = service_->extensions()->at(0)->id();
+  EXPECT_EQ(permissions_crx, extension_id);
+
+
+  // Verify that the valid API permissions have been recognized.
+  expected_api_perms.insert("tabs");
+
+  AddPattern(&expected_host_perms, "http://*.google.com/*");
+  AddPattern(&expected_host_perms, "https://*.google.com/*");
+  AddPattern(&expected_host_perms, "http://www.example.com/*");
+
+  EXPECT_TRUE(prefs->GetGrantedPermissions(extension_id,
+                                           &full_access,
+                                           &known_api_perms,
+                                           &known_host_perms));
+
+  EXPECT_EQ(expected_api_perms, known_api_perms);
+  EXPECT_FALSE(full_access);
+  AssertEqualExtents(&expected_host_perms, &known_host_perms);
+}
+
+#if !defined(OS_CHROMEOS)
+// Tests that the granted permissions full_access bit gets set correctly when
+// an extension contains an NPAPI plugin. Don't run this test on Chrome OS
+// since it won't load plugin extensions from the profile directory.
+TEST_F(ExtensionsServiceTest, GrantedFullAccessPermissions) {
+  InitializeEmptyExtensionsService();
+
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII(good1)
+      .AppendASCII("2");
+
+  ASSERT_TRUE(file_util::PathExists(path));
+
+  PackAndInstallExtension(path, true);
+
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  const Extension* extension = service_->extensions()->at(0);
+  std::string extension_id = extension->id();
+  ExtensionPrefs* prefs = service_->extension_prefs();
+
+  bool full_access;
+  std::set<std::string> api_permissions;
+  ExtensionExtent host_permissions;
+  EXPECT_TRUE(prefs->GetGrantedPermissions(
+      extension_id, &full_access, &api_permissions, &host_permissions));
+
+  EXPECT_TRUE(full_access);
+  EXPECT_TRUE(api_permissions.empty());
+  EXPECT_TRUE(host_permissions.is_empty());
+}
+#endif
+
+// Tests that the extension is disabled when permissions are missing from
+// the extension's granted permissions preferences. (This simulates updating
+// the browser to a version which recognizes more permissions).
+TEST_F(ExtensionsServiceTest, GrantedAPIAndHostPermissions) {
+  InitializeEmptyExtensionsService();
+
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions")
+      .AppendASCII("permissions")
+      .AppendASCII("unknown");
+
+  ASSERT_TRUE(file_util::PathExists(path));
+
+  PackAndInstallExtension(path, true);
+
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  const Extension* extension = service_->extensions()->at(0);
+  std::string extension_id = extension->id();
+
+  ExtensionPrefs* prefs = service_->extension_prefs();
+
+  std::set<std::string> expected_api_permissions;
+  ExtensionExtent expected_host_permissions;
+
+  expected_api_permissions.insert("tabs");
+  AddPattern(&expected_host_permissions, "http://*.google.com/*");
+  AddPattern(&expected_host_permissions, "https://*.google.com/*");
+  AddPattern(&expected_host_permissions, "http://www.example.com/*");
+
+  std::set<std::string> api_permissions;
+  std::set<std::string> host_permissions;
+
+  // Test that the extension is disabled when an API permission is missing from
+  // the extension's granted api permissions preference. (This simulates
+  // updating the browser to a version which recognizes a new API permission).
+  host_permissions.insert("http://*.google.com/*");
+  host_permissions.insert("https://*.google.com/*");
+  host_permissions.insert("http://www.example.com/*");
+
+  SetPrefBool(extension_id, "granted_permissions.initialized", true);
+  SetPrefStringSet(extension_id, "granted_permissions.api", api_permissions);
+  SetPrefStringSet(extension_id, "granted_permissions.host", host_permissions);
+
+  service_->ReloadExtensions();
+
+  ASSERT_TRUE(prefs->GetExtensionState(extension_id) == Extension::DISABLED);
+  ASSERT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
+
+  // Now grant and re-enable the extension, making sure the prefs are updated.
+  service_->GrantPermissionsAndEnableExtension(extension);
+
+  ASSERT_TRUE(prefs->GetExtensionState(extension_id) == Extension::ENABLED);
+  ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
+
+  std::set<std::string> current_api_permissions;
+  ExtensionExtent current_host_permissions;
+  bool current_full_access;
+
+  ASSERT_TRUE(prefs->GetGrantedPermissions(extension_id,
+                                           &current_full_access,
+                                           &current_api_permissions,
+                                           &current_host_permissions));
+
+  ASSERT_FALSE(current_full_access);
+  ASSERT_EQ(expected_api_permissions, current_api_permissions);
+  AssertEqualExtents(&expected_host_permissions, &current_host_permissions);
+
+  // Tests that the extension is disabled when a host permission is missing from
+  // the extension's granted host permissions preference. (This simulates
+  // updating the browser to a version which recognizes additional host
+  // permissions).
+  api_permissions.clear();
+  host_permissions.clear();
+  current_api_permissions.clear();
+  current_host_permissions.ClearPaths();
+
+  api_permissions.insert("tabs");
+  host_permissions.insert("http://*.google.com/*");
+  host_permissions.insert("https://*.google.com/*");
+
+  SetPrefBool(extension_id, "granted_permissions.initialized", true);
+  SetPrefStringSet(extension_id, "granted_permissions.api", api_permissions);
+  SetPrefStringSet(extension_id, "granted_permissions.host", host_permissions);
+
+  service_->ReloadExtensions();
+
+  ASSERT_TRUE(prefs->GetExtensionState(extension_id) == Extension::DISABLED);
+  ASSERT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
+
+  // Now grant and re-enable the extension, making sure the prefs are updated.
+  service_->GrantPermissionsAndEnableExtension(extension);
+
+  ASSERT_TRUE(prefs->GetExtensionState(extension_id) == Extension::ENABLED);
+  ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
+
+  ASSERT_TRUE(prefs->GetGrantedPermissions(extension_id,
+                                           &current_full_access,
+                                           &current_api_permissions,
+                                           &current_host_permissions));
+
+  ASSERT_FALSE(current_full_access);
+  ASSERT_EQ(expected_api_permissions, current_api_permissions);
+  AssertEqualExtents(&expected_host_permissions, &current_host_permissions);
+
+  // Tests that the granted permissions preferences are initialized when
+  // migrating from the old pref schema.
+  current_api_permissions.clear();
+  current_host_permissions.ClearPaths();
+
+  ClearPref(extension_id, "granted_permissions");
+
+  service_->ReloadExtensions();
+
+  ASSERT_TRUE(prefs->GetExtensionState(extension_id) == Extension::ENABLED);
+  ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
+
+  ASSERT_TRUE(prefs->GetGrantedPermissions(extension_id,
+                                           &current_full_access,
+                                           &current_api_permissions,
+                                           &current_host_permissions));
+
+  ASSERT_FALSE(current_full_access);
+  ASSERT_EQ(expected_api_permissions, current_api_permissions);
+  AssertEqualExtents(&expected_host_permissions, &current_host_permissions);
 }
 
 // Test Packaging and installing an extension.
