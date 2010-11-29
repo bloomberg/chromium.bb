@@ -76,6 +76,18 @@ std::string GetLanguageCodeFromDescriptor(
 // "pinyin"            => ""
 std::string GetKeyboardLayoutName(const std::string& input_method_id);
 
+// Gets the ID for the keyboard overlay from the given input method ID.
+// If the ID is invalid, an empty string will be returned.
+//
+// Examples:
+//
+// "xkb:us::eng"       => "en_US"
+// "xkb:us:dvorak:eng" => "en_US_dvorak"
+// "xkb:gb::eng"       => "en_GB"
+// "pinyin"            => "zh_CN"
+// "mozc"              => "ja"
+std::string GetKeyboardOverlayId(const std::string& input_method_id);
+
 // Converts an input method ID to a language code of the IME. Returns "Eng"
 // when |input_method_id| is unknown.
 // Example: "hangul" => "ko"

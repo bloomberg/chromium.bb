@@ -136,6 +136,78 @@ TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
   EXPECT_EQ("us", GetKeyboardLayoutName("xkb:us:dvorak:eng"));
 }
 
+TEST(InputMethodUtilTest, GetKeyboardOverlayId) {
+  // Invalid IDs
+  EXPECT_EQ("", GetKeyboardOverlayId(""));
+  EXPECT_EQ("", GetKeyboardOverlayId("aaa"));
+
+  // Valid IDs
+  EXPECT_EQ("nl", GetKeyboardOverlayId("xkb:nl::nld"));
+  EXPECT_EQ("nl", GetKeyboardOverlayId("xkb:be::nld"));
+  EXPECT_EQ("fr", GetKeyboardOverlayId("xkb:fr::fra"));
+  EXPECT_EQ("fr", GetKeyboardOverlayId("xkb:be::fra"));
+  EXPECT_EQ("fr_CA", GetKeyboardOverlayId("xkb:ca::fra"));
+  EXPECT_EQ("fr", GetKeyboardOverlayId("xkb:ch:fr:fra"));
+  EXPECT_EQ("de", GetKeyboardOverlayId("xkb:de::ger"));
+  EXPECT_EQ("de", GetKeyboardOverlayId("xkb:be::ger"));
+  EXPECT_EQ("de", GetKeyboardOverlayId("xkb:ch::ger"));
+  EXPECT_EQ("en_US", GetKeyboardOverlayId("mozc"));
+  EXPECT_EQ("ja", GetKeyboardOverlayId("mozc-jp"));
+  EXPECT_EQ("en_US_dvorak", GetKeyboardOverlayId("mozc-dv"));
+  EXPECT_EQ("ja", GetKeyboardOverlayId("xkb:jp::jpn"));
+  EXPECT_EQ("ru", GetKeyboardOverlayId("xkb:ru::rus"));
+  EXPECT_EQ("ru", GetKeyboardOverlayId("xkb:ru:phonetic:rus"));
+  EXPECT_EQ("th", GetKeyboardOverlayId("m17n:th:kesmanee"));
+  EXPECT_EQ("th", GetKeyboardOverlayId("m17n:th:pattachote"));
+  EXPECT_EQ("th", GetKeyboardOverlayId("m17n:th:tis820"));
+  EXPECT_EQ("zh_TW", GetKeyboardOverlayId("chewing"));
+  EXPECT_EQ("zh_TW", GetKeyboardOverlayId("m17n:zh:cangjie"));
+  EXPECT_EQ("zh_TW", GetKeyboardOverlayId("m17n:zh:quick"));
+  EXPECT_EQ("vi", GetKeyboardOverlayId("m17n:vi:tcvn"));
+  EXPECT_EQ("vi", GetKeyboardOverlayId("m17n:vi:telex"));
+  EXPECT_EQ("vi", GetKeyboardOverlayId("m17n:vi:viqr"));
+  EXPECT_EQ("vi", GetKeyboardOverlayId("m17n:vi:vni"));
+  EXPECT_EQ("en_US", GetKeyboardOverlayId("xkb:us::eng"));
+  EXPECT_EQ("en_US", GetKeyboardOverlayId("xkb:us:intl:eng"));
+  EXPECT_EQ("en_US", GetKeyboardOverlayId("xkb:us:altgr-intl:eng"));
+  EXPECT_EQ("en_US_dvorak", GetKeyboardOverlayId("xkb:us:dvorak:eng"));
+  EXPECT_EQ("ko", GetKeyboardOverlayId("hangul"));
+  EXPECT_EQ("zh_CN", GetKeyboardOverlayId("pinyin"));
+  EXPECT_EQ("ar", GetKeyboardOverlayId("m17n:ar:kbd"));
+  EXPECT_EQ("hi", GetKeyboardOverlayId("m17n:hi:itrans"));
+  EXPECT_EQ("ar", GetKeyboardOverlayId("m17n:fa:isiri"));
+  EXPECT_EQ("pt_BR", GetKeyboardOverlayId("xkb:br::por"));
+  EXPECT_EQ("bg", GetKeyboardOverlayId("xkb:bg::bul"));
+  EXPECT_EQ("bg", GetKeyboardOverlayId("xkb:bg:phonetic:bul"));
+  EXPECT_EQ("ca", GetKeyboardOverlayId("xkb:ca:eng:eng"));
+  EXPECT_EQ("cs", GetKeyboardOverlayId("xkb:cz::cze"));
+  EXPECT_EQ("et", GetKeyboardOverlayId("xkb:ee::est"));
+  EXPECT_EQ("es", GetKeyboardOverlayId("xkb:es::spa"));
+  EXPECT_EQ("ca", GetKeyboardOverlayId("xkb:es:cat:cat"));
+  EXPECT_EQ("da", GetKeyboardOverlayId("xkb:dk::dan"));
+  EXPECT_EQ("el", GetKeyboardOverlayId("xkb:gr::gre"));
+  EXPECT_EQ("iw", GetKeyboardOverlayId("xkb:il::heb"));
+  EXPECT_EQ("ko", GetKeyboardOverlayId("xkb:kr:kr104:kor"));
+  EXPECT_EQ("es_419", GetKeyboardOverlayId("xkb:latam::spa"));
+  EXPECT_EQ("lt", GetKeyboardOverlayId("xkb:lt::lit"));
+  EXPECT_EQ("lv", GetKeyboardOverlayId("xkb:lv:apostrophe:lav"));
+  EXPECT_EQ("hr", GetKeyboardOverlayId("xkb:hr::scr"));
+  EXPECT_EQ("en_GB", GetKeyboardOverlayId("xkb:gb:extd:eng"));
+  EXPECT_EQ("fi", GetKeyboardOverlayId("xkb:fi::fin"));
+  EXPECT_EQ("hu", GetKeyboardOverlayId("xkb:hu::hun"));
+  EXPECT_EQ("it", GetKeyboardOverlayId("xkb:it::ita"));
+  EXPECT_EQ("no", GetKeyboardOverlayId("xkb:no::nob"));
+  EXPECT_EQ("pl", GetKeyboardOverlayId("xkb:pl::pol"));
+  EXPECT_EQ("pt_PT", GetKeyboardOverlayId("xkb:pt::por"));
+  EXPECT_EQ("ro", GetKeyboardOverlayId("xkb:ro::rum"));
+  EXPECT_EQ("sv", GetKeyboardOverlayId("xkb:se::swe"));
+  EXPECT_EQ("sk", GetKeyboardOverlayId("xkb:sk::slo"));
+  EXPECT_EQ("sl", GetKeyboardOverlayId("xkb:si::slv"));
+  EXPECT_EQ("sr", GetKeyboardOverlayId("xkb:rs::srp"));
+  EXPECT_EQ("tr", GetKeyboardOverlayId("xkb:tr::tur"));
+  EXPECT_EQ("uk", GetKeyboardOverlayId("xkb:ua::ukr"));
+}
+
 TEST(InputMethodUtilTest, GetLanguageDisplayNameFromCode) {
   EXPECT_EQ(L"Finnish", GetLanguageDisplayNameFromCode("fi"));
 }

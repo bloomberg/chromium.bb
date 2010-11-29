@@ -59,7 +59,7 @@ var IDENTIFIER_TO_CLASS = {
   '38': 'is-alt'
 };
 
-var languageCode = 'en_US';
+var keyboardOverlayId = 'en_US';
 
 /**
  * Returns layouts data.
@@ -76,18 +76,17 @@ function getShortcutData() {
 }
 
 /**
- * Returns the language code of the system.
+ * Returns the keyboard overlay ID.
  */
-function getLanguageCode() {
-  // TODO(mazda): Retrieve the language code from the system.
-  return languageCode;
+function getKeyboardOverlayId() {
+  return keyboardOverlayId
 }
 
 /**
  * Returns keyboard glyph data.
  */
 function getKeyboardGlyphData() {
-  return keyboardOverlayData['keyboardGlyph'][getLanguageCode()];
+  return keyboardOverlayData['keyboardGlyph'][getKeyboardOverlayId()];
 }
 
 /**
@@ -308,6 +307,9 @@ function update(e) {
  * A callback furnction for the onkeydown event.
  */
 function keydown(e) {
+  if (!getKeyboardOverlayId()) {
+    return;
+  }
   update(e);
 }
 
@@ -315,6 +317,9 @@ function keydown(e) {
  * A callback furnction for the onkeyup event.
  */
 function keyup(e) {
+  if (!getKeyboardOverlayId()) {
+    return;
+  }
   update();
 }
 
@@ -399,6 +404,18 @@ function initLayout() {
 function init() {
   document.addEventListener('keydown', keydown);
   document.addEventListener('keyup', keyup);
+  chrome.send('getKeyboardOverlayId');
+}
+
+/**
+ * Initializes the global keyboad overlay ID and the layout of keys.
+ * Called after sending the 'getKeyboardOverlayId' message.
+ */
+function initKeyboardOverlayId(overlayId) {
+  keyboardOverlayId = overlayId;
+  while(document.body.firstChild) {
+    document.body.removeChild(document.body.firstChild);
+  }
   initLayout();
   update();
 }

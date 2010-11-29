@@ -28,12 +28,86 @@
 
 namespace {
 
+// Mapping from input method ID to keyboard overlay ID, which specifies the
+// layout and the glyphs of the keyboard overlay.
+// TODO(mazda): Move this list to whitelist.txt (http://crosbug.com/9682)
+const struct InputMethodIdToKeyboardOverlayId {
+  const char* input_method_id;
+  const char* keyboard_overlay_id;
+} kInputMethodIdToKeyboardOverlayId[] = {
+  { "xkb:nl::nld", "nl" },
+  { "xkb:be::nld", "nl" },
+  { "xkb:fr::fra", "fr" },
+  { "xkb:be::fra", "fr" },
+  { "xkb:ca::fra", "fr_CA" },
+  { "xkb:ch:fr:fra", "fr" },
+  { "xkb:de::ger", "de" },
+  { "xkb:be::ger", "de" },
+  { "xkb:ch::ger", "de" },
+  { "mozc", "en_US" },
+  { "mozc-jp", "ja" },
+  { "mozc-dv", "en_US_dvorak" },
+  { "xkb:jp::jpn", "ja" },
+  { "xkb:ru::rus", "ru" },
+  { "xkb:ru:phonetic:rus", "ru" },
+  { "m17n:th:kesmanee", "th" },
+  { "m17n:th:pattachote", "th" },
+  { "m17n:th:tis820", "th" },
+  { "chewing", "zh_TW" },
+  { "m17n:zh:cangjie", "zh_TW" },
+  { "m17n:zh:quick", "zh_TW" },
+  { "m17n:vi:tcvn", "vi" },
+  { "m17n:vi:telex", "vi" },
+  { "m17n:vi:viqr", "vi" },
+  { "m17n:vi:vni", "vi" },
+  { "xkb:us::eng", "en_US" },
+  { "xkb:us:intl:eng", "en_US" },
+  { "xkb:us:altgr-intl:eng", "en_US" },
+  { "xkb:us:dvorak:eng", "en_US_dvorak" },
+  { "hangul", "ko" },
+  { "pinyin", "zh_CN" },
+  { "m17n:ar:kbd", "ar" },
+  { "m17n:hi:itrans", "hi" },
+  { "m17n:fa:isiri", "ar" },
+  { "xkb:br::por", "pt_BR" },
+  { "xkb:bg::bul", "bg" },
+  { "xkb:bg:phonetic:bul", "bg" },
+  { "xkb:ca:eng:eng", "ca" },
+  { "xkb:cz::cze", "cs" },
+  { "xkb:ee::est", "et" },
+  { "xkb:es::spa", "es" },
+  { "xkb:es:cat:cat", "ca" },
+  { "xkb:dk::dan", "da" },
+  { "xkb:gr::gre", "el" },
+  { "xkb:il::heb", "iw" },
+  { "xkb:kr:kr104:kor", "ko" },
+  { "xkb:latam::spa", "es_419" },
+  { "xkb:lt::lit", "lt" },
+  { "xkb:lv:apostrophe:lav", "lv" },
+  { "xkb:hr::scr", "hr" },
+  { "xkb:gb:extd:eng", "en_GB" },
+  { "xkb:fi::fin", "fi" },
+  { "xkb:hu::hun", "hu" },
+  { "xkb:it::ita", "it" },
+  { "xkb:no::nob", "no" },
+  { "xkb:pl::pol", "pl" },
+  { "xkb:pt::por", "pt_PT" },
+  { "xkb:ro::rum", "ro" },
+  { "xkb:se::swe", "sv" },
+  { "xkb:sk::slo", "sk" },
+  { "xkb:si::slv", "sl" },
+  { "xkb:rs::srp", "sr" },
+  { "xkb:tr::tur", "tr" },
+  { "xkb:ua::ukr", "uk" },
+};
+
 // Map from language code to associated input method IDs, etc.
 typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
 struct IdMaps {
   scoped_ptr<LanguageCodeToIdsMap> language_code_to_ids;
   scoped_ptr<std::map<std::string, std::string> > id_to_language_code;
   scoped_ptr<std::map<std::string, std::string> > id_to_display_name;
+  scoped_ptr<std::map<std::string, std::string> > id_to_keyboard_overlay_id;
 
   void ReloadMaps() {
     chromeos::InputMethodLibrary* library =
@@ -48,6 +122,7 @@ struct IdMaps {
     language_code_to_ids->clear();
     id_to_language_code->clear();
     id_to_display_name->clear();
+    id_to_keyboard_overlay_id->clear();
 
     // Build the id to descriptor map for handling kExtraLanguages later.
     typedef std::map<std::string,
@@ -63,6 +138,13 @@ struct IdMaps {
       // Remember the pair.
       id_to_descriptor_map.insert(
           std::make_pair(input_method.id, &input_method));
+    }
+
+    for (size_t i = 0; i < arraysize(kInputMethodIdToKeyboardOverlayId); ++i) {
+      InputMethodIdToKeyboardOverlayId id_pair =
+          kInputMethodIdToKeyboardOverlayId[i];
+      id_to_keyboard_overlay_id->insert(
+          std::make_pair(id_pair.input_method_id, id_pair.keyboard_overlay_id));
     }
 
     // Go through the languages listed in kExtraLanguages.
@@ -83,7 +165,8 @@ struct IdMaps {
  private:
   IdMaps() : language_code_to_ids(new LanguageCodeToIdsMap),
              id_to_language_code(new std::map<std::string, std::string>),
-             id_to_display_name(new std::map<std::string, std::string>) {
+             id_to_display_name(new std::map<std::string, std::string>),
+             id_to_keyboard_overlay_id(new std::map<std::string, std::string>) {
     ReloadMaps();
   }
 
@@ -236,14 +319,14 @@ const size_t kNumEntries = arraysize(kEnglishToResourceIdArray);
 //
 // See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for details.
 const char* kIso639VariantMapping[][2] = {
-  {"cze", "ces"},
-  {"ger", "deu"},
-  {"gre", "ell"},
+  { "cze", "ces" },
+  { "ger", "deu" },
+  { "gre", "ell" },
   // "scr" is not a ISO 639 code. For some reason, evdev.xml uses "scr" as
   // the language code for Croatian.
-  {"scr", "hrv"},
-  {"rum", "ron"},
-  {"slo", "slk"},
+  { "scr", "hrv" },
+  { "rum", "ron" },
+  { "slo", "slk" },
 };
 
 // The comparator is used for sorting language codes by their
@@ -468,6 +551,14 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
   std::vector<std::string> splitted_id;
   base::SplitString(input_method_id, ':', &splitted_id);
   return (splitted_id.size() > 1) ? splitted_id[1] : "";
+}
+
+std::string GetKeyboardOverlayId(const std::string& input_method_id) {
+  const std::map<std::string, std::string>& id_map =
+      *(Singleton<IdMaps>::get()->id_to_keyboard_overlay_id);
+  std::map<std::string, std::string>::const_iterator iter =
+      id_map.find(input_method_id);
+  return (iter == id_map.end() ? "" : iter->second);
 }
 
 std::string GetInputMethodDisplayNameFromId(

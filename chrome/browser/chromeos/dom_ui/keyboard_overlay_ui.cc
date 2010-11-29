@@ -10,15 +10,16 @@
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "cros/chromeos_input_method.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#endif
 
 class KeyboardOverlayUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -53,6 +54,10 @@ class KeyboardOverlayHandler
   virtual void RegisterMessages();
 
  private:
+  // Called when the page requires the keyboard overaly ID corresponding to the
+  // current input method or keyboard layout during initialization.
+  void GetKeyboardOverlayId(const ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayHandler);
 };
 
@@ -258,6 +263,20 @@ DOMMessageHandler* KeyboardOverlayHandler::Attach(DOMUI* dom_ui) {
 }
 
 void KeyboardOverlayHandler::RegisterMessages() {
+  DCHECK(dom_ui_);
+  dom_ui_->RegisterMessageCallback("getKeyboardOverlayId",
+      NewCallback(this, &KeyboardOverlayHandler::GetKeyboardOverlayId));
+}
+
+void KeyboardOverlayHandler::GetKeyboardOverlayId(const ListValue* args) {
+  const chromeos::InputMethodLibrary* library =
+      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
+  const chromeos::InputMethodDescriptor& descriptor =
+      library->current_input_method();
+  const std::string keyboard_overlay_id =
+      chromeos::input_method::GetKeyboardOverlayId(descriptor.id);
+  StringValue param(keyboard_overlay_id);
+  dom_ui_->CallJavascriptFunction(L"initKeyboardOverlayId", param);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
