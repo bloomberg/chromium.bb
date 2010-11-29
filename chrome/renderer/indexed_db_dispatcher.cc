@@ -160,9 +160,10 @@ void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBIndexOpenCursor_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
-  params.left_key_.Set(idb_key_range.left());
-  params.right_key_.Set(idb_key_range.right());
-  params.key_flags_ = idb_key_range.flags();
+  params.lower_key_.Set(idb_key_range.lower());
+  params.upper_key_.Set(idb_key_range.upper());
+  params.lower_open_ = idb_key_range.lowerOpen();
+  params.upper_open_ = idb_key_range.upperOpen();
   params.direction_ = direction;
   params.idb_index_id_ = idb_index_id;
   params.transaction_id_ = TransactionId(transaction);
@@ -184,9 +185,10 @@ void IndexedDBDispatcher::RequestIDBIndexOpenKeyCursor(
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
   // TODO(jorlow): We really should just create a Chromium abstraction for
   //               KeyRange rather than doing it ad-hoc like this.
-  params.left_key_.Set(idb_key_range.left());
-  params.right_key_.Set(idb_key_range.right());
-  params.key_flags_ = idb_key_range.flags();
+  params.lower_key_.Set(idb_key_range.lower());
+  params.upper_key_.Set(idb_key_range.upper());
+  params.lower_open_ = idb_key_range.lowerOpen();
+  params.upper_open_ = idb_key_range.upperOpen();
   params.direction_ = direction;
   params.idb_index_id_ = idb_index_id;
   params.transaction_id_ = TransactionId(transaction);
@@ -293,9 +295,10 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBObjectStoreOpenCursor_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
-  params.left_key_.Set(idb_key_range.left());
-  params.right_key_.Set(idb_key_range.right());
-  params.flags_ = idb_key_range.flags();
+  params.lower_key_.Set(idb_key_range.lower());
+  params.upper_key_.Set(idb_key_range.upper());
+  params.lower_open_ = idb_key_range.lowerOpen();
+  params.upper_open_ = idb_key_range.upperOpen();
   params.direction_ = direction;
   params.idb_object_store_id_ = idb_object_store_id;
   params.transaction_id_ = TransactionId(transaction);

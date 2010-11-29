@@ -597,7 +597,8 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
   WebExceptionCode ec = 0;
   idb_index->openObjectCursor(
-      WebIDBKeyRange(params.left_key_, params.right_key_, params.key_flags_),
+      WebIDBKeyRange(params.lower_key_, params.upper_key_, params.lower_open_,
+                     params.upper_open_),
       params.direction_, callbacks.release(), *idb_transaction, ec);
   ViewHostMsg_IDBIndexOpenObjectCursor::WriteReplyParams(reply_msg, ec);
   parent_->Send(reply_msg);
@@ -619,7 +620,8 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenKeyCursor(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
   WebExceptionCode ec = 0;
   idb_index->openKeyCursor(
-      WebIDBKeyRange(params.left_key_, params.right_key_, params.key_flags_),
+      WebIDBKeyRange(params.lower_key_, params.upper_key_, params.lower_open_,
+                     params.upper_open_),
       params.direction_, callbacks.release(), *idb_transaction, ec);
   ViewHostMsg_IDBIndexOpenKeyCursor::WriteReplyParams(reply_msg, ec);
   parent_->Send(reply_msg);
@@ -899,7 +901,8 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnOpenCursor(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
   WebExceptionCode ec = 0;
   idb_object_store->openCursor(
-      WebIDBKeyRange(params.left_key_, params.right_key_, params.flags_),
+      WebIDBKeyRange(params.lower_key_, params.upper_key_, params.lower_open_,
+                     params.upper_open_),
       params.direction_, callbacks.release(), *idb_transaction, ec);
   ViewHostMsg_IDBObjectStoreOpenCursor::WriteReplyParams(reply_msg, ec);
   parent_->Send(reply_msg);
