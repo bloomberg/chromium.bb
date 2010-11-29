@@ -29,9 +29,9 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // modules of interest and may or may not be loaded in the process at the
   // time of scan.
   enum ModuleType {
-    LOADED_MODULE,
-    SHELL_EXTENSION,
-    WINSOCK_MODULE_REGISTRATION,
+    LOADED_MODULE               = 1 << 0,
+    SHELL_EXTENSION             = 1 << 1,
+    WINSOCK_MODULE_REGISTRATION = 1 << 2,
   };
 
   // The blacklist status of the module. Suspected Bad modules have been
@@ -96,8 +96,8 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
     const char* filename;
     const char* location;
     const char* desc_or_signer;
-    const char* version_from;
-    const char* version_to;
+    const char* version_from;  // Version where conflict started.
+    const char* version_to;    // First version that works.
     RecommendedAction help_tip;
   };
 

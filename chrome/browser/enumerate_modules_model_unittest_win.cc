@@ -160,9 +160,19 @@ const struct MatchingEntryList {
     kStandardModule,
     { kMatchName, kMatchLocation, kMatchSignature,
       kEmpty, kVersionHigh, ModuleEnumerator::SEE_LINK }
+  }, {  // Matches: Name, Location, Version lower is inclusive => Confirmed.
+    ModuleEnumerator::CONFIRMED_BAD,
+    kStandardModule,
+    { kMatchName, kMatchLocation, kMatchSignature,
+      "1.0", "2.0", ModuleEnumerator::SEE_LINK }
+  }, {  // Matches: Name, Location, Version higher is exclusive => No match.
+    ModuleEnumerator::NOT_MATCHED,
+    kStandardModule,
+    { kMatchName, kMatchLocation, kEmpty,
+      "0.0", "1.0", ModuleEnumerator::SEE_LINK }
   }, {  // All empty fields doesn't produce a match.
     ModuleEnumerator::NOT_MATCHED,
-    {kType, kStatus, L"", L"", L"", L"", L""},
+    { kType, kStatus, L"", L"", L"", L"", L""},
     { "a.dll", "", "", "", "", ModuleEnumerator::SEE_LINK }
   },
 };

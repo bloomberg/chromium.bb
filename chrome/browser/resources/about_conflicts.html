@@ -128,11 +128,20 @@ html[dir=rtl] #top {
 }
 
 .suspected-bad {
-  color: orange;
+  color: #DD7700;
 }
 
 .confirmed-bad {
   color: red;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.extra-info-text {
+  margin-top: -1em;
+  margin-bottom: 1em;
 }
 </style>
 <script>
@@ -230,62 +239,52 @@ html[dir=rtl] #top {
         <div i18n-content="modulesNoneLoaded">NO_MODULES_ARE_AVAILABLE</div>
       </div>
 
-      <div jsdisplay="moduleList.length > 0">
-      <div class="module" jsselect="moduleList">
-        <table width="100%" cellpadding="0" cellspacing="0">
-        <tr class="module-loaded">
-        <td valign="top">
-          <table cellpadding="2" cellspacing="0">
-            <tr>
-              <td colspan="2"><span class="module-name" dir="ltr"
-                                   jscontent="name">NAME</span>
-                              <span dir="ltr"
-                                    jsdisplay="type_description.length > 0"
-                              >(<span dir="ltr"
-                                      jscontent="type_description">MODULE_TYPE</span
-                              >)</span>
-              </td>
-            </tr>
-            <tr>
-              <td width="75"><span i18n-content="headerSoftware" /></td>
-              <td><span dir="ltr" jsvalues=".innerHTML:description"></span>
-                  <span dir="ltr" jsdisplay="version.length > 0"> - </span>
-                  <span dir="ltr" jscontent="version">VERSION</span></td>
-            </tr>
-            <tr jsdisplay="digital_signer.length > 0">
-              <td><span i18n-content="headerSignedBy" /></td>
-              <td><span dir="ltr" jscontent="digital_signer">SIGNER</span></td>
-            </tr>
-            <tr>
-              <td><span i18n-content="headerLocation" /></td>
-              <td><span dir="ltr"
-                        jscontent="location">LOCATION</span><span
-                            dir="ltr" jscontent="name">NAME</span></td>
-            </tr>
-            <tr jsdisplay="status == 2 || status == 3">
-              <td><span i18n-content="headerWarning" /></td>
-              <td><span jsdisplay="status == 2"
-                        i18n-content="moduleSuspectedBad"
-                        class="suspected-bad">SUSPECTED_BAD</span>
-                  <span jsdisplay="status == 3"
-                        i18n-content="moduleConfirmedBad"
-                        class="confirmed-bad">CONFIRMED_BAD</span>
-                  <a jsdisplay="help_url.length > 0"
-                     jsvalues=".href:help_url"><span
-                         i18n-content="helpCenterLink">HELP_CENTER</span></a>
-              </td>
-            </tr>
-            <tr jsdisplay="possibleResolution.length > 0">
-              <td><span i18n-content="headerHelpTip" /></td>
-              <td><span
-                  jscontent="possibleResolution">POSSIBLE_RESOLUTION</span></td>
-            </tr>
-          </table>
-
-        </td>
-        </tr>
+      <div jsdisplay="moduleList.length &gt; 0">
+      <table width="100%" cellpadding="0" cellspacing="0">
+      <tr class="module-loaded">
+      <td valign="top">
+        <table cellpadding="2" cellspacing="0" border="0">
+          <tr jsselect="moduleList">
+            <td valign="top">
+              <span dir="ltr"
+                    jsvalues=".innerHTML:description" class="nowrap"></span>
+              <div jsdisplay="status == 2 || status == 3"
+                   class="extra-info-text"><br>
+                <span jsdisplay="status == 2"
+                      i18n-content="moduleSuspectedBad"
+                      class="suspected-bad">SUSPECTED_BAD</span>
+                <span jsdisplay="status == 3"
+                      i18n-content="moduleConfirmedBad"
+                      class="confirmed-bad">CONFIRMED_BAD</span>
+                <a jsdisplay="help_url.length &gt; 0"
+                   jsvalues=".href:help_url"><span
+                      i18n-content="helpCenterLink">HELP_CENTER</span></a>
+                <span jsdisplay="possibleResolution.length &gt; 0"><br>
+                  <span jscontent="possibleResolution"
+                      >POSSIBLE_RESOLUTION</span>
+                </span>
+              </div>
+            </td>
+            <td valign="top"><span dir="ltr" jscontent="digital_signer"
+                                   class="nowrap">SIGNER</span></td>
+            <td valign="top"><span dir="ltr" jscontent="version"
+                                   class="nowrap">VERSION</span></td>
+            <td valign="top">
+              <span class="nowrap">
+                <span dir="ltr" jscontent="location">LOCATION</span><strong
+                    ><span dir="ltr" jscontent="name">NAME</span></strong>
+                <span dir="ltr"
+                      jsdisplay="type_description.length &gt; 0"
+                    >(<span dir="ltr"
+                            jscontent="type_description">MODULE_TYPE</span
+                    >)</span>
+              </span>
+            </td>
+          </tr>
         </table>
-      </div>
+      </td>
+      </tr>
+      </table>
       </div>
     </div>
   </div>

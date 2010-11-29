@@ -4217,10 +4217,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Learn more
       </message>
       <message name="IDS_CONFLICTS_CHECK_WARNING_PREFIX" desc="Warning label prefix on the compatibility page">
-        Warning:
-      </message>
-      <message name="IDS_CONFLICTS_CHECK_VERSION_STRING" desc="The version string to show on the compatibility page">
-        Version <ph name="VERSION">$1<ex>1.2.3.4</ex></ph>.
+        Warning
       </message>
       <message name="IDS_CONFLICTS_CHECK_INVESTIGATING" desc="A label on the compatibility page saying we are investigating.">
         We are currently investigating this issue.
@@ -4244,19 +4241,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Unable to detect any modules loaded.
       </message>
       <message name="IDS_CONFLICTS_HEADER_SOFTWARE" desc="The 'Software:' header for each module item in the list">
-        Software:
+        Software
       </message>
       <message name="IDS_CONFLICTS_HEADER_SIGNED_BY" desc="The 'Signed by:' header for each module item in the list">
-        Signed by:
+        Signed by
       </message>
       <message name="IDS_CONFLICTS_HEADER_LOCATION" desc="The 'Location:' header for each module item in the list">
-        Location:
+        Location
       </message>
       <message name="IDS_CONFLICTS_HEADER_WARNING" desc="The 'Warning:' header for each module item in the list">
-        Warning:
+        Warning
       </message>
       <message name="IDS_CONFLICTS_HEADER_HELP_TIP" desc="The 'Help tip:' header for each module item in the list">
-        Help tip:
+        Help tip
+      </message>
+      <message name="IDS_CONFLICTS_NOT_LOADED_YET" desc="Shown next to a module that has not been loaded into memory yet">
+        Not loaded yet
       </message>
       <message name="IDS_HELP_CENTER_VIEW_CONFLICTS" desc="The url of the Help center article for the View Conflicts page">
         http://www.google.com/support/chrome/bin/answer.py?answer=666386&amp;hl=[GRITLANGCODE]&amp;n=<ph name="NAME">$1<ex>Hash</ex></ph>&amp;l=<ph name="LOCATION">$2<ex>Hash</ex></ph>&amp;d=<ph name="DESC">$3<ex>Hash</ex></ph>&amp;s=<ph name="SIGNER">$4<ex>Hash</ex></ph>

@@ -37,12 +37,13 @@ static const int kModuleCheckDelayMs = 60 * 1000;
 static const wchar_t kRegPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved";
 
-// A sort method that sorts by ModuleType ordinal (loaded module at the top),
-// then by full name (including path).
+// A sort method that sorts by bad modules first, then by full name (including
+// path).
 static bool ModuleSort(const ModuleEnumerator::Module& a,
                        const ModuleEnumerator::Module& b) {
-  if (a.type != b.type)
-    return a.type < b.type;
+  if (a.status != b.status)
+    return a.status > b.status;
+
   if (a.location == b.location)
     return a.name < b.name;
 
@@ -61,10 +62,8 @@ struct FindModule {
  public:
   explicit FindModule(const ModuleEnumerator::Module& x)
     : module(x) {}
-  // Coverity issue 13896.
   bool operator()(const ModuleEnumerator::Module& module_in) const {
-    return (module.type == module_in.type) &&
-           (module.location == module_in.location) &&
+    return (module.location == module_in.location) &&
            (module.name == module_in.name);
   }
 
@@ -91,7 +90,7 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
 
   // idmmbc.dll, "%programfiles%\\internet download manager\\", "Tonec Inc.".
   // See: http://crbug.com/26892/.
-  {"b8dce5c3", "94541bf5", "d33ad640", "", "", NONE},
+  {"b8dce5c3", "94541bf5", "d33ad640", "", "6.03", UPDATE},
 
   // imon.dll.  See: http://crbug.com/21715.
   {"8f42f22e", "", "", "", "", NONE},
@@ -194,7 +193,7 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
           module_version->CompareTo(*version_min.get()) < 0);
       bool too_high = version_max.get() &&
           (!module_version.get() ||
-          module_version->CompareTo(*version_max.get()) > 0);
+          module_version->CompareTo(*version_max.get()) >= 0);
       version_ok = !too_low && !too_high;
     }
 
@@ -251,6 +250,9 @@ void ModuleEnumerator::ScanOnFileThread() {
   PreparePathMappings();
 
   base::TimeTicks checkpoint = base::TimeTicks::Now();
+
+  // Enumerating loaded modules must happen first since the other types of
+  // modules check for duplication against the loaded modules.
   EnumerateLoadedModules();
   HISTOGRAM_TIMES("Conflicts.EnumerateLoadedModules",
                   base::TimeTicks::Now() - checkpoint);
@@ -403,10 +405,12 @@ void ModuleEnumerator::AddToListWithoutDuplicating(const Module& module) {
   iter = std::find_if(enumerated_modules_->begin(),
                       enumerated_modules_->end(),
                       FindModule(module));
-  if (iter != enumerated_modules_->end())
+  if (iter != enumerated_modules_->end()) {
     iter->duplicate_count++;
-  else
+    iter->type = static_cast<ModuleType>(iter->type | module.type);
+  } else {
     enumerated_modules_->push_back(module);
+  }
 }
 
 void ModuleEnumerator::PreparePathMappings() {
@@ -613,25 +617,28 @@ ListValue* EnumerateModulesModel::GetModuleList() {
        module != enumerated_modules_.end(); ++module) {
     DictionaryValue* data = new DictionaryValue();
     data->SetInteger("type", module->type);
-    switch (module->type) {
-      case ModuleEnumerator::SHELL_EXTENSION:
-        data->SetString("type_description", ASCIIToWide("Shell Extension"));
-        break;
-      case ModuleEnumerator::WINSOCK_MODULE_REGISTRATION:
-        data->SetString("type_description", ASCIIToWide("Winsock"));
-        break;
-      default:
-        data->SetString("type_description", ASCIIToWide(""));
-        break;
+    string16 type_string;
+    if ((module->type & ModuleEnumerator::LOADED_MODULE) == 0) {
+      // Module is not loaded, denote type of module.
+      if (module->type & ModuleEnumerator::SHELL_EXTENSION)
+        type_string = ASCIIToWide("Shell Extension");
+      if (module->type & ModuleEnumerator::WINSOCK_MODULE_REGISTRATION) {
+        if (!type_string.empty())
+          type_string += ASCIIToWide(", ");
+        type_string += ASCIIToWide("Winsock");
+      }
+      // Must be one of the above type.
+      DCHECK(!type_string.empty());
+      type_string += ASCIIToWide(" -- ");
+      type_string += l10n_util::GetStringUTF16(IDS_CONFLICTS_NOT_LOADED_YET);
     }
+    data->SetString("type_description", type_string);
     data->SetInteger("status", module->status);
     data->SetString("location", module->location);
     data->SetString("name", module->name);
     data->SetString("product_name", module->product_name);
     data->SetString("description", module->description);
-    data->SetString("version", module->version.empty() ? ASCIIToWide("") :
-        l10n_util::GetStringF(IDS_CONFLICTS_CHECK_VERSION_STRING,
-                   module->version));
+    data->SetString("version", module->version);
     data->SetString("digital_signer", module->digital_signer);
 
     // Figure out the possible resolution help string.
