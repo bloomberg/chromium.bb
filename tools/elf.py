@@ -280,7 +280,7 @@ phdr_type = {
     'hiproc':       0x7fffffff,
     # linux / gnu binutils
     'tls':                   7,
-    'gnu_eh_frame': 0x64743550,
+    'gnu_eh_frame': 0x6474e550,
     'gnu_stack':    0x6474e551,
     'gnu_relro':    0x6474e552,
 }
@@ -310,66 +310,78 @@ def _struct_pos(struct_definition, member):
   return -1
 
 
-
 class ElfException(exceptions.Exception):
   pass
 
 
-
 class Ehdr(object):
+  """class reprsenting an ELF Ehdr"""
   pass
-
 
 
 class Phdr(object):
-  pass
+  """class reprsenting an ELF Phdr"""
+  def TypeName(self):
+    return phdr_type_name.get(self.type, '@unknown@')
+
+  def __str__(self):
+    return '%-15s %8x %8x %8x %8x %8x %4x %8x' % (self.TypeName(),
+                                                  self.offset,
+                                                  self.vaddr,
+                                                  self.paddr,
+                                                  self.filesz,
+                                                  self.memsz,
+                                                  self.flags,
+                                                  self.align)
 
 
-
-def _MakeXhdr(proto, unpacked, member_and_type):
-  for (elt, elt_type) in member_and_type:
+def _MakeXhdr(proto, unpacked, member_and_type, wordsize):
+  proto.__dict__['wordsize'] = wordsize
+  for elt, elt_type in member_and_type:
     proto.__dict__[elt] = unpacked[_struct_pos(member_and_type, elt)]
   return proto
 
 
-def _MakeEhdr(unpacked, member_and_type):
-  return _MakeXhdr(Ehdr(), unpacked, member_and_type)
+def _ExtractElfPhdr(data, offset, wordsize):
+  """Extract an ELF phdr from data"""
+  # convert rawdata to tuple
+  phdr = struct.unpack_from(phdr_format_map[wordsize], data, offset)
+  # populate class members from tuple
+  return _MakeXhdr(Phdr(), phdr, phdr_member_and_type_map[wordsize], wordsize)
 
-def _MakePhdr(unpacked, member_and_type):
-  return _MakeXhdr(Phdr(), unpacked, member_and_type)
 
+def _ExtractElfEhdr(data, offset, wordsize):
+  """Extract an ELF ehdr from data"""
+  # convert rawdata to tuple
+  ehdr = struct.unpack_from(ehdr_format_map[wordsize], data, offset)
+  # populate class members from tuple
+  return _MakeXhdr(Ehdr(), ehdr, ehdr_member_and_type, wordsize)
+
+
+def _ExtractWordSize(data):
+  """Extract an ELF wordsize from data"""
+  if data[:len(ehdr_ident_mag)] != ehdr_ident_mag:
+    raise ElfException('bad ELF ident string')
+  elf_class = ord(data[ehdr_ident['class']])
+  if elf_class > len(ehdr_ident_class) or ehdr_ident_class[elf_class] is None:
+    raise ElfException('bad ELF class')
+  return ehdr_ident_class[elf_class]
 
 
 class Elf:
+  """Class for parsing ELF headers in an excutable"""
   def __init__(self, elf_str):
     self.elf_str = elf_str
-
-    if elf_str[:len(ehdr_ident_mag)] != ehdr_ident_mag:
-      raise ElfException('bad ELF ident string')
-    elf_class = ord(elf_str[ehdr_ident['class']])
-    if (elf_class > len(ehdr_ident_class) or
-        ehdr_ident_class[elf_class] is None):
-      raise ElfException('bad ELF class')
-    self.wordsize = ehdr_ident_class[elf_class]
-    ehdr_format = ehdr_format_map[self.wordsize]
-
-    ehdr = struct.unpack_from(ehdr_format, self.elf_str)
-    self.ehdr = _MakeEhdr(ehdr, ehdr_member_and_type)
-
-    if self.ehdr.phentsize < struct.calcsize(
-        phdr_format_map[self.wordsize]):
+    self.wordsize = _ExtractWordSize(elf_str)
+    self.ehdr = _ExtractElfEhdr(self.elf_str, 0, self.wordsize)
+    if self.ehdr.phentsize < struct.calcsize(phdr_format_map[self.wordsize]):
       raise ElfException('program header size too small')
 
   def PhdrList(self):
     pos = self.ehdr.phoff
     size = self.ehdr.phentsize
-    phdr_list = []
-    for i in range(self.ehdr.phnum):
-      phdr = struct.unpack_from(phdr_format_map[self.wordsize],
-                                self.elf_str,
-                                offset = pos + i * size)
-      phdr_list.append(_MakePhdr(phdr, phdr_member_and_type_map[self.wordsize]))
-    return phdr_list
+    return [_ExtractElfPhdr(self.elf_str, pos + i * size, self.wordsize)
+            for i in range(self.ehdr.phnum)]
 
 
 
