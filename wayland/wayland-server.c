@@ -305,7 +305,7 @@ static void
 display_sync(struct wl_client *client,
 	       struct wl_display *display, uint32_t key)
 {
-	wl_client_post_event(client, &display->base, WL_DISPLAY_SYNC, key);
+	wl_client_post_event(client, &display->base, WL_DISPLAY_KEY, key, 0);
 }
 
 static void
@@ -421,7 +421,7 @@ wl_display_post_frame(struct wl_display *display, uint32_t time)
 
 	wl_list_for_each_safe(listener, next, &display->frame_list, link) {
 		wl_client_post_event(listener->client, &display->base,
-				     WL_DISPLAY_FRAME, listener->key, time);
+				     WL_DISPLAY_KEY, listener->key, time);
 		wl_resource_destroy(&listener->resource, listener->client);
 	}
 }

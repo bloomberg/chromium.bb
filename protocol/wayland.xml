@@ -58,19 +58,12 @@
       <arg name="base" type="uint"/>
     </event>
 
-    <!-- A reply to the sync request.  All requests made before the
-         "sync" request that had the same key as the one present in
-         this event have been processed by the server. -->
-    <event name="sync">
-      <arg name="key" type="uint"/>
-    </event>
-
-    <!-- A reply to the frame request.  The key is the one used in the
-         request.  time is in millisecond units, and denotes the time
-         when the frame was posted on the display. time can be used to
-         estimaate frame rate, determine how much to advance
-         animatiosn and compoensate for jitter-->
-    <event name="frame">
+    <!-- A reply to the frame or sync request.  The key is the one
+         used in the request.  time is in millisecond units, and
+         denotes the time when the frame was posted on the
+         display. time can be used to estimaate frame rate, determine
+         how much to advance animations and compensate for jitter. -->
+    <event name="key">
       <arg name="key" type="uint"/>
       <arg name="time" type="uint"/>
     </event>

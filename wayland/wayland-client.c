@@ -292,38 +292,31 @@ display_handle_range(void *data,
 }
 
 static void
-display_handle_sync(void *data, struct wl_display *display, uint32_t key)
+display_handle_key(void *data,
+		   struct wl_display *display, uint32_t key, uint32_t time)
 {
-	struct wl_sync_handler *handler;
+	struct wl_sync_handler *sync_handler;
+	struct wl_frame_handler *frame_handler;
 
-	handler = container_of(display->sync_list.next,
-			       struct wl_sync_handler, link);
-	if (handler->key != key) {
-		fprintf(stderr, "unsolicited sync event, client gone?\n");
+	sync_handler = container_of(display->sync_list.next,
+				    struct wl_sync_handler, link);
+	if (sync_handler->key == key) {
+		wl_list_remove(&sync_handler->link);
+		sync_handler->func(sync_handler->data);
+		free(sync_handler);
 		return;
 	}
 
-	wl_list_remove(&handler->link);
-	handler->func(handler->data);
-	free(handler);
-}
-
-static void
-display_handle_frame(void *data,
-		     struct wl_display *display, uint32_t key, uint32_t time)
-{
-	struct wl_frame_handler *handler;
-
-	handler = container_of(display->frame_list. next,
-			       struct wl_frame_handler, link);
-	if (handler->key != key) {
-		fprintf(stderr, "unsolicited frame event, client gone?\n");
+	frame_handler = container_of(display->frame_list. next,
+				     struct wl_frame_handler, link);
+	if (frame_handler->key == key) {
+		wl_list_remove(&frame_handler->link);
+		frame_handler->func(frame_handler->data, time);
+		free(frame_handler);
 		return;
 	}
 
-	wl_list_remove(&handler->link);
-	handler->func(handler->data, time);
-	free(handler);
+	fprintf(stderr, "unsolicited sync event, client gone?\n");
 }
 
 static const struct wl_display_listener display_listener = {
@@ -332,8 +325,7 @@ static const struct wl_display_listener display_listener = {
 	display_handle_no_memory,
 	display_handle_global,
 	display_handle_range,
-	display_handle_sync,
-	display_handle_frame
+	display_handle_key
 };
 
 WL_EXPORT struct wl_display *
