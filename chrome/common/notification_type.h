@@ -1291,10 +1291,6 @@ class NotificationType {
     // that the policy subsystem uses to fetch policy from the cloud.
     DEVICE_TOKEN_AVAILABLE,
 
-    // This notification is sent whenever cloud policies are fetched and
-    // updated. The detail of this notification is not used.
-    CLOUD_POLICY_UPDATE,
-
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

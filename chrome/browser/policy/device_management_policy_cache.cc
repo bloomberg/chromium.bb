@@ -25,12 +25,7 @@ class PersistPolicyTask : public Task {
  public:
   PersistPolicyTask(const FilePath& path,
                     const em::DevicePolicyResponse* policy,
-                    const base::Time& timestamp,
-                    const bool is_device_unmanaged)
-      : path_(path),
-        policy_(policy),
-        timestamp_(timestamp),
-        is_device_unmanaged_(is_device_unmanaged) {}
+                    const base::Time& timestamp);
 
  private:
   // Task override.
@@ -39,16 +34,20 @@ class PersistPolicyTask : public Task {
   const FilePath path_;
   scoped_ptr<const em::DevicePolicyResponse> policy_;
   const base::Time timestamp_;
-  const bool is_device_unmanaged_;
 };
+
+PersistPolicyTask::PersistPolicyTask(const FilePath& path,
+                                     const em::DevicePolicyResponse* policy,
+                                     const base::Time& timestamp)
+    : path_(path),
+      policy_(policy),
+      timestamp_(timestamp) {
+}
 
 void PersistPolicyTask::Run() {
   std::string data;
   em::CachedDevicePolicyResponse cached_policy;
-  if (policy_.get())
-    cached_policy.mutable_policy()->CopyFrom(*policy_);
-  if (is_device_unmanaged_)
-    cached_policy.set_unmanaged(true);
+  cached_policy.mutable_policy()->CopyFrom(*policy_);
   cached_policy.set_timestamp(timestamp_.ToInternalValue());
   if (!cached_policy.SerializeToString(&data)) {
     LOG(WARNING) << "Failed to serialize policy data";
@@ -66,8 +65,7 @@ DeviceManagementPolicyCache::DeviceManagementPolicyCache(
     const FilePath& backing_file_path)
     : backing_file_path_(backing_file_path),
       policy_(new DictionaryValue),
-      fresh_policy_(false),
-      is_device_unmanaged_(false) {
+      fresh_policy_(false) {
 }
 
 void DeviceManagementPolicyCache::LoadPolicyFromFile() {
@@ -97,7 +95,6 @@ void DeviceManagementPolicyCache::LoadPolicyFromFile() {
                  << ", file is from the future.";
     return;
   }
-  is_device_unmanaged_ = cached_policy.unmanaged();
 
   // Decode and swap in the new policy information.
   scoped_ptr<DictionaryValue> value(DecodePolicy(cached_policy.policy()));
@@ -111,10 +108,9 @@ void DeviceManagementPolicyCache::LoadPolicyFromFile() {
 
 bool DeviceManagementPolicyCache::SetPolicy(
     const em::DevicePolicyResponse& policy) {
-  is_device_unmanaged_ = false;
   DictionaryValue* value = DeviceManagementPolicyCache::DecodePolicy(policy);
   const bool new_policy_differs = !(value->Equals(policy_.get()));
-  base::Time now(base::Time::NowFromSystemTime());
+  base::Time now(base::Time::Now());
   {
     AutoLock lock(lock_);
     policy_.reset(value);
@@ -127,35 +123,14 @@ bool DeviceManagementPolicyCache::SetPolicy(
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      new PersistPolicyTask(backing_file_path_, policy_copy, now, false));
+      new PersistPolicyTask(backing_file_path_, policy_copy,
+                            base::Time::NowFromSystemTime()));
   return new_policy_differs;
 }
 
 DictionaryValue* DeviceManagementPolicyCache::GetPolicy() {
   AutoLock lock(lock_);
   return static_cast<DictionaryValue*>(policy_->DeepCopy());
-}
-
-void DeviceManagementPolicyCache::SetDeviceUnmanaged(bool is_device_unmanaged) {
-  if (is_device_unmanaged_ == is_device_unmanaged)
-    return;
-
-  is_device_unmanaged_ = is_device_unmanaged;
-  base::Time now(base::Time::NowFromSystemTime());
-  DictionaryValue* empty = new DictionaryValue();
-  {
-    AutoLock lock(lock_);
-    policy_.reset(empty);
-    last_policy_refresh_time_ = now;
-  }
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      new PersistPolicyTask(backing_file_path_,
-                            (is_device_unmanaged ? NULL
-                                : new em::DevicePolicyResponse()),
-                            now,
-                            is_device_unmanaged_));
 }
 
 // static
