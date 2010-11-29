@@ -83,6 +83,7 @@ CrxInstaller::CrxInstaller(ExtensionsService* frontend,
       install_source_(Extension::INTERNAL),
       extensions_enabled_(frontend->extensions_enabled()),
       delete_source_(false),
+      allow_privilege_increase_(false),
       is_gallery_install_(false),
       create_app_shortcut_(false),
       frontend_(frontend),
@@ -432,7 +433,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
-  frontend_->OnExtensionInstalled(extension_);
+  frontend_->OnExtensionInstalled(extension_, allow_privilege_increase_);
   extension_ = NULL;
 
   // We're done. We don't post any more tasks to ourselves so we are deleted

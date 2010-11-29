@@ -48,11 +48,6 @@ void CompareLists(const std::vector<std::string>& expected,
   }
 }
 
-static void AddPattern(ExtensionExtent* extent, const std::string& pattern) {
-  int schemes = URLPattern::SCHEME_ALL;
-  extent->AddPattern(URLPattern(schemes, pattern));
-}
-
 }
 
 class ExtensionTest : public testing::Test {
@@ -257,10 +252,9 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermission));
 
-  // We allow unknown API permissions, so this will be valid until we better
-  // distinguish between API and host permissions.
   permissions->Set(0, Value::CreateStringValue("www.google.com"));
-  EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermission));
 
   // Multiple page actions are not allowed.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
@@ -333,11 +327,10 @@ TEST(ExtensionTest, InitFromValueValid) {
   ListValue* permissions = new ListValue;
   permissions->Set(0, Value::CreateStringValue("file:///C:/foo.txt"));
   input_value.Set(keys::kPermissions, permissions);
-
-  // We allow unknown API permissions, so this will be valid until we better
-  // distinguish between API and host permissions.
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_FALSE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermission));
   input_value.Remove(keys::kPermissions, NULL);
+  error.clear();
 
   // Test with an options page.
   input_value.SetString(keys::kOptionsPage, "options.html");
@@ -823,60 +816,29 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
 TEST(ExtensionTest, IsPrivilegeIncrease) {
   const struct {
     const char* base_name;
-    // Increase these sizes if you have more than 10.
-    const char* granted_apis[10];
-    const char* granted_hosts[10];
-    bool full_access;
     bool expect_success;
   } kTests[] = {
-    { "allhosts1", {NULL}, {"http://*/", NULL}, false,
-      false },  // all -> all
-    { "allhosts2", {NULL}, {"http://*/", NULL}, false,
-      false },  // all -> one
-    { "allhosts3", {NULL}, {NULL}, false, true },  // one -> all
-    { "hosts1", {NULL},
-      {"http://www.google.com/", "http://www.reddit.com/", NULL}, false,
-      false },  // http://a,http://b -> http://a,http://b
-    { "hosts2", {NULL},
-      {"http://www.google.com/", "http://www.reddit.com/", NULL}, false,
-      false },  // http://a,http://b -> https://a,http://*.b
-    { "hosts3", {NULL},
-      {"http://www.google.com/", "http://www.reddit.com/", NULL}, false,
-      false },  // http://a,http://b -> http://a
-    { "hosts4", {NULL},
-      {"http://www.google.com/", NULL}, false,
-      true },  // http://a -> http://a,http://b
-    { "hosts5", {"tabs", "notifications", NULL},
-      {"http://*.example.com/", "http://*.example.com/*",
-       "http://*.example.co.uk/*", "http://*.example.com.au/*",
-       NULL}, false,
-      false },  // http://a,b,c -> http://a,b,c + https://a,b,c
-    { "hosts6", {"tabs", "notifications", NULL},
-      {"http://*.example.com/", "http://*.example.com/*", NULL}, false,
-      false },  // http://a.com -> http://a.com + http://a.co.uk
-    { "permissions1", {"tabs", NULL},
-      {NULL}, false, false },  // tabs -> tabs
-    { "permissions2", {"tabs", NULL},
-      {NULL}, false, true },  // tabs -> tabs,bookmarks
-    { "permissions3", {NULL},
-      {"http://*/*", NULL},
-      false, true },  // http://a -> http://a,tabs
-    { "permissions5", {"bookmarks", NULL},
-      {NULL}, false, true },  // bookmarks -> bookmarks,history
+    { "allhosts1", false },  // all -> all
+    { "allhosts2", false },  // all -> one
+    { "allhosts3", true },  // one -> all
+    { "hosts1", false },  // http://a,http://b -> http://a,http://b
+    { "hosts2", false },  // http://a,http://b -> https://a,http://*.b
+    { "hosts3", false },  // http://a,http://b -> http://a
+    { "hosts4", true },  // http://a -> http://a,http://b
+    { "hosts5", false },  // http://a,b,c -> http://a,b,c + https://a,b,c
+    { "hosts6", false },  // http://a.com -> http://a.com + http://a.co.uk
+    { "permissions1", false },  // tabs -> tabs
+    { "permissions2", true },  // tabs -> tabs,bookmarks
+    { "permissions3", true },  // http://a -> http://a,tabs
+    { "permissions5", true },  // bookmarks -> bookmarks,history
 #if !defined(OS_CHROMEOS)  // plugins aren't allowed in ChromeOS
-    { "permissions4", {NULL},
-      {NULL}, true, false },  // plugin -> plugin,tabs
-    { "plugin1", {NULL},
-      {NULL}, true, false },  // plugin -> plugin
-    { "plugin2", {NULL},
-      {NULL}, true, false },  // plugin -> none
-    { "plugin3", {NULL},
-      {NULL}, false, true },  // none -> plugin
+    { "permissions4", false },  // plugin -> plugin,tabs
+    { "plugin1", false },  // plugin -> plugin
+    { "plugin2", false },  // plugin -> none
+    { "plugin3", true },  // none -> plugin
 #endif
-    { "storage", {NULL},
-      {NULL}, false, false },  // none -> storage
-    { "notifications", {NULL},
-      {NULL}, false, false }  // none -> notifications
+    { "storage", false },  // none -> storage
+    { "notifications", false }  // none -> notifications
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
@@ -887,22 +849,13 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
         LoadManifest("allow_silent_upgrade",
                      std::string(kTests[i].base_name) + "_new.json"));
 
-    std::set<std::string> granted_apis;
-    for (size_t j = 0; kTests[i].granted_apis[j] != NULL; ++j)
-      granted_apis.insert(kTests[i].granted_apis[j]);
-
-    ExtensionExtent granted_hosts;
-    for (size_t j = 0; kTests[i].granted_hosts[j] != NULL; ++j)
-      AddPattern(&granted_hosts, kTests[i].granted_hosts[j]);
-
+    EXPECT_TRUE(old_extension.get()) << kTests[i].base_name << "_old.json";
     EXPECT_TRUE(new_extension.get()) << kTests[i].base_name << "_new.json";
-    if (!new_extension.get())
+    if (!old_extension.get() || !new_extension.get())
       continue;
 
     EXPECT_EQ(kTests[i].expect_success,
-              Extension::IsPrivilegeIncrease(kTests[i].full_access,
-                                             granted_apis,
-                                             granted_hosts,
+              Extension::IsPrivilegeIncrease(old_extension.get(),
                                              new_extension.get()))
         << kTests[i].base_name;
   }
