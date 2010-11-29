@@ -563,7 +563,6 @@ void HistogramSender::TransmitHistogram(const Histogram& histogram) {
   }
 
   // Snapshot now contains only a delta to what we've already_logged.
-  DCHECK_EQ(snapshot.TotalCount(), snapshot.redundant_count());
   if (snapshot.redundant_count() > 0) {
     TransmitHistogramDelta(histogram, snapshot);
     // Add new data into our running total.
