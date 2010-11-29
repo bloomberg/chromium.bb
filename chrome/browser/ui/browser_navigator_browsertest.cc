@@ -19,7 +19,8 @@
 
 namespace {
 
-class BrowserNavigatorTest : public InProcessBrowserTest {
+class BrowserNavigatorTest : public InProcessBrowserTest,
+                             public NotificationObserver {
  protected:
   GURL GetGoogleURL() const {
     return GURL("http://www.google.com/");
@@ -66,6 +67,20 @@ class BrowserNavigatorTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnableTabbedOptions);
   }
+
+  void Observe(NotificationType type, const NotificationSource& source,
+               const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+        ++this->created_tab_contents_count_;
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  size_t created_tab_contents_count_;
 };
 
 // This test verifies that when a navigation occurs within a tab, the tab count
@@ -85,12 +100,25 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   GURL url("http://www.google.com/");
   GURL singleton_url1("http://maps.google.com/");
+
+  // Register for a notification if an additional tab_contents was instantiated.
+  // Opening a Singleton tab that is already open should not be opening a new
+  // tab nor be creating a new TabContents object
+  NotificationRegistrar registrar;
+
+  // As the registrar object goes out of scope, this will get unregistered
+  registrar.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+                NotificationService::AllSources());
+
   browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);
   browser()->AddSelectedTabWithURL(url, PageTransition::LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(2, browser()->selected_index());
+
+  unsigned int previous_tab_contents_count =
+      created_tab_contents_count_ = 0;
 
   // Navigate to singleton_url1.
   browser::NavigateParams p(MakeNavigateParams());
@@ -101,6 +129,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   // The middle tab should now be selected.
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(1, browser()->selected_index());
+
+  // No tab contents should have been created
+  EXPECT_EQ(previous_tab_contents_count,
+            created_tab_contents_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,

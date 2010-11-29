@@ -413,8 +413,11 @@ BugReportHandler::BugReportHandler(TabContents* tab)
 
 BugReportHandler::~BugReportHandler() {
   // Just in case we didn't send off bug_report_ to SendReport
-  if (bug_report_)
+  if (bug_report_) {
+    // If we're deleting the report object, cancel feedback collection first
+    CancelFeedbackCollection();
     delete bug_report_;
+  }
 }
 
 void BugReportHandler::ClobberScreenshotsSource() {
@@ -660,7 +663,6 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
 }
 
 void BugReportHandler::HandleCancel(const ListValue*) {
-  CancelFeedbackCollection();
   CloseFeedbackTab();
 }
 

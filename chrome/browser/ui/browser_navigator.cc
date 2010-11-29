@@ -357,9 +357,12 @@ void Navigate(NavigateParams* params) {
   bool user_initiated = base_transition == PageTransition::TYPED ||
                         base_transition == PageTransition::AUTO_BOOKMARK;
 
+  // Check if this is a singleton tab that already exists
+  int singleton_index = GetIndexOfSingletonTab(params);
+
   // If no target TabContents was specified, we need to construct one if we are
-  // supposed to target a new tab.
-  if (!params->target_contents) {
+  // supposed to target a new tab; unless it's a singleton that already exists.
+  if (!params->target_contents && singleton_index < 0) {
     if (params->disposition != CURRENT_TAB) {
       TabContents* source_contents = params->source_contents ?
           params->source_contents->tab_contents() : NULL;
@@ -413,8 +416,6 @@ void Navigate(NavigateParams* params) {
         params->transition,
         user_initiated);
   } else {
-    // The navigation occurred in some other tab.
-    int singleton_index = GetIndexOfSingletonTab(params);
     if (params->disposition == SINGLETON_TAB && singleton_index >= 0) {
       TabContents* target = params->browser->GetTabContentsAt(singleton_index);
 
