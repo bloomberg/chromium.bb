@@ -26,8 +26,12 @@ TEST_F(BookmarkFolderAppleScriptTest, BookmarkFolders) {
 
   EXPECT_EQ(2U, [bookmarkFolders count]);
 
-  EXPECT_NSEQ(@"f1", [[bookmarkFolders objectAtIndex:0] title]);
-  EXPECT_NSEQ(@"f2", [[bookmarkFolders objectAtIndex:1] title]);
+  BookmarkFolderAppleScript* f1 = [bookmarkFolders objectAtIndex:0];
+  BookmarkFolderAppleScript* f2 = [bookmarkFolders objectAtIndex:1];
+  EXPECT_NSEQ(@"f1", [f1 title]);
+  EXPECT_NSEQ(@"f2", [f2 title]);
+  EXPECT_EQ(2, [[f1 index] intValue]);
+  EXPECT_EQ(4, [[f2 index] intValue]);
 
   for (BookmarkFolderAppleScript* bookmarkFolder in bookmarkFolders) {
     EXPECT_EQ([bookmarkFolder container], bookmarkBar_.get());
@@ -93,9 +97,15 @@ TEST_F(BookmarkFolderAppleScriptTest, BookmarkItems) {
 
   EXPECT_EQ(3U, [bookmarkItems count]);
 
-  EXPECT_NSEQ(@"a", [[bookmarkItems objectAtIndex:0] title]);
-  EXPECT_NSEQ(@"d", [[bookmarkItems objectAtIndex:1] title]);
-  EXPECT_NSEQ(@"h", [[bookmarkItems objectAtIndex:2] title]);
+  BookmarkItemAppleScript* i1 = [bookmarkItems objectAtIndex:0];
+  BookmarkItemAppleScript* i2 = [bookmarkItems objectAtIndex:1];
+  BookmarkItemAppleScript* i3 = [bookmarkItems objectAtIndex:2];
+  EXPECT_NSEQ(@"a", [i1 title]);
+  EXPECT_NSEQ(@"d", [i2 title]);
+  EXPECT_NSEQ(@"h", [i3 title]);
+  EXPECT_EQ(1, [[i1 index] intValue]);
+  EXPECT_EQ(3, [[i2 index] intValue]);
+  EXPECT_EQ(5, [[i3 index] intValue]);
 
   for (BookmarkItemAppleScript* bookmarkItem in bookmarkItems) {
     EXPECT_EQ([bookmarkItem container], bookmarkBar_.get());

@@ -37,6 +37,9 @@ class BookmarkNode;
 - (NSString*)title;
 - (void)setTitle:(NSString*)aTitle;
 
+// Returns the index with respect to its parent bookmark folder.
+- (NSNumber*)index;
+
 // Returns the bookmark model of the browser, returns NULL if there is an error.
 - (BookmarkModel*)bookmarkModel;
 

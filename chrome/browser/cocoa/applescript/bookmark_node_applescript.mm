@@ -102,6 +102,13 @@
   model->SetTitle(bookmarkNode_, base::SysNSStringToUTF16(aTitle));
 }
 
+- (NSNumber*)index {
+  const BookmarkNode* parent = bookmarkNode_->GetParent();
+  int index = parent->IndexOfChild(bookmarkNode_);
+  // NOTE: AppleScript is 1-Based.
+  return [NSNumber numberWithInt:index+1];
+}
+
 - (BookmarkModel*)bookmarkModel {
   AppController* appDelegate = [NSApp delegate];
 
