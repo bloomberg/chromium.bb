@@ -4,5 +4,5 @@ vars = {
 
 deps = {
   "src/third_party/cros":
-    Var("chromium_git") + "/cros.git@d486ce93",
+    Var("chromium_git") + "/cros.git@82f15fd9",
 }
