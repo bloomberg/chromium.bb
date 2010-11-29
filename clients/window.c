@@ -161,6 +161,9 @@ struct surface_data {
 	struct wl_buffer *buffer;
 };
 
+#define MULT(_d,c,a,t) \
+	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
+
 #ifdef HAVE_CAIRO_GL
 
 struct drm_surface_data {
@@ -281,9 +284,6 @@ display_create_drm_surface_from_file(struct display *display,
 		end = p + rect->width * 4;
 		while (p < end) {
 			unsigned int t;
-
-#define MULT(_d,c,a,t) \
-	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
 
 			MULT(p[0], p[0], p[3], t);
 			MULT(p[1], p[1], p[3], t);
