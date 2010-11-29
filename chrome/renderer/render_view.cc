@@ -2860,7 +2860,12 @@ WebApplicationCacheHost* RenderView::createApplicationCacheHost(
       RenderThread::current()->appcache_dispatcher()->backend_proxy());
 }
 
+// TODO(jochen): remove after roll.
 WebCookieJar* RenderView::cookieJar() {
+  return &cookie_jar_;
+}
+
+WebCookieJar* RenderView::cookieJar(WebFrame* frame) {
   return &cookie_jar_;
 }
 
