@@ -8,6 +8,7 @@
 #include "app/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/win_util.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
@@ -16,6 +17,12 @@
 namespace ui_controls {
 
 namespace {
+
+void Checkpoint(const char* message, const base::TimeTicks& start_time) {
+  LOG(INFO) << message << " : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+}
 
 // InputDispatcher ------------------------------------------------------------
 
@@ -71,12 +78,25 @@ LRESULT CALLBACK MouseHook(int n_code, WPARAM w_param, LPARAM l_param) {
 
 // Callback from hook when a key message is received.
 LRESULT CALLBACK KeyHook(int n_code, WPARAM w_param, LPARAM l_param) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  char msg[512];
+  base::snprintf(msg, 512, "KeyHook starts: %d", n_code);
+  Checkpoint(msg, start_time);
+
   HHOOK next_hook = next_hook_;
+  base::snprintf(msg, 512, "n_code == HC_ACTION: %d, %d",
+          l_param, !!(l_param & (1 << 30)));
+  Checkpoint(msg, start_time);
   if (n_code == HC_ACTION) {
     DCHECK(current_dispatcher_);
-    if (l_param & (1 << 30))  // Only send on key up.
+    if (l_param & (1 << 30)) {  // Only send on key up.
+      Checkpoint("MatchingMessageFound", start_time);
       current_dispatcher_->MatchingMessageFound();
+    } else {
+      Checkpoint("Not key up", start_time);
+    }
   }
+  Checkpoint("KeyHook ends, calling next hook.", start_time);
   return CallNextHookEx(next_hook, n_code, w_param, l_param);
 }
 
@@ -159,12 +179,6 @@ bool SendKeyEvent(app::KeyboardCode key, bool up) {
     return false;
 
   return true;
-}
-
-void Checkpoint(const char* message, const base::TimeTicks& start_time) {
-  LOG(INFO) << message << " : "
-            << (base::TimeTicks::Now() - start_time).InMilliseconds()
-            << " ms" << std::flush;
 }
 
 bool SendKeyPressImpl(app::KeyboardCode key,
