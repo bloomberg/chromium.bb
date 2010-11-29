@@ -9,55 +9,51 @@
 #define CHROME_BROWSER_NET_PRECONNECT_H_
 #pragma once
 
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/net/url_info.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/completion_callback.h"
+#include "net/base/net_log.h"
 #include "net/http/http_request_info.h"
 #include "net/http/stream_factory.h"
-#include "net/socket/client_socket_handle.h"
-#include "net/socket/tcp_client_socket_pool.h"
-#include "net/url_request/url_request_context.h"
 
 namespace net {
 
 class ProxyInfo;
 struct SSLConfig;
 
-}
+}  // namespace net
 
 namespace chrome_browser_net {
 
-class Preconnect : public net::StreamRequest::Delegate {
+class Preconnect {
  public:
   // Try to preconnect.  Typically motivated by OMNIBOX to reach search service.
+  // |count| may be used to request more than one connection be established in
+  // parallel.
   static void PreconnectOnUIThread(const GURL& url,
-                                   UrlInfo::ResolutionMotivation motivation);
+                                   UrlInfo::ResolutionMotivation motivation,
+                                   int count);
 
   // Try to preconnect.  Typically used by predictor when a subresource probably
-  // needs a connection.
+  // needs a connection. |count| may be used to request more than one connection
+  // be established in parallel.
   static void PreconnectOnIOThread(const GURL& url,
-                                   UrlInfo::ResolutionMotivation motivation);
-
-  // StreamRequestDelegate interface
-  virtual void OnStreamReady(net::HttpStream* stream);
-  virtual void OnStreamFailed(int status);
-  virtual void OnCertificateError(int status, const net::SSLInfo& ssl_info);
-  virtual void OnNeedsProxyAuth(const net::HttpResponseInfo& proxy_response,
-                                net::HttpAuthController* auth_controller);
-  virtual void OnNeedsClientAuth(net::SSLCertRequestInfo* cert_info);
+                                   UrlInfo::ResolutionMotivation motivation,
+                                   int count);
 
  private:
-  friend class base::RefCountedThreadSafe<Preconnect>;
-
   explicit Preconnect(UrlInfo::ResolutionMotivation motivation);
   virtual ~Preconnect();
 
-  // Request actual connection.
-  void Connect(const GURL& url);
+  void OnPreconnectComplete(int error_code);
 
-  // Generally either LEARNED_REFERAL_MOTIVATED or OMNIBOX_MOTIVATED to indicate
-  // why we were trying to do a preconnection.
+  // Request actual connection, via interface that tags request as needed for
+  // preconnect only (so that they can be merged with connections needed for
+  // navigations).
+  void Connect(const GURL& url, int count);
+
+  // Generally either LEARNED_REFERAL_MOTIVATED, OMNIBOX_MOTIVATED or
+  // EARLY_LOAD_MOTIVATED to indicate why we were trying to do a preconnection.
   const UrlInfo::ResolutionMotivation motivation_;
 
   // HttpRequestInfo used for connecting.
@@ -75,9 +71,11 @@ class Preconnect : public net::StreamRequest::Delegate {
   // Our preconnect.
   scoped_ptr<net::StreamRequest> stream_request_;
 
+  net::CompletionCallbackImpl<Preconnect> io_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(Preconnect);
 };
 
-}  // chrome_browser_net
+}  // namespace chrome_browser_net
 
 #endif  // CHROME_BROWSER_NET_PRECONNECT_H_
