@@ -193,6 +193,8 @@ const struct EnglishToResouceId {
   { "Romania", IDS_STATUSBAR_LAYOUT_ROMANIA },
   { "USA", IDS_STATUSBAR_LAYOUT_USA },
   { "USA - International (AltGr dead keys)",
+    IDS_STATUSBAR_LAYOUT_USA_EXTENDED },
+  { "USA - International (with dead keys)",
     IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL },
   { "Lithuania", IDS_STATUSBAR_LAYOUT_LITHUANIA },
   { "United Kingdom - Extended - Winkeys",

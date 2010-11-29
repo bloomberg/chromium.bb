@@ -82,8 +82,9 @@ const struct {
   const char* indicator_text;
 } kMappingFromIdToIndicatorText[] = {
   // To distinguish from "xkb:us::eng"
-  { "xkb:us:altgr-intl:eng", "INTL" },
+  { "xkb:us:altgr-intl:eng", "EXTD" },
   { "xkb:us:dvorak:eng", "DV" },
+  { "xkb:us:intl:eng", "INTL" },
   // To distinguish from "xkb:jp::jpn"
   { "mozc", "\xe3\x81\x82" },  // U+3042, Japanese Hiragana letter A in UTF-8.
   { "mozc-dv", "\xe3\x81\x82" },
