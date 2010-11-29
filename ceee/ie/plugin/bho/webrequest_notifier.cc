@@ -29,9 +29,10 @@ const char kInternetReadFileFunctionName[] = "InternetReadFile";
 }  // namespace
 
 WebRequestNotifier::WebRequestNotifier()
-    : internet_status_callback_stub_(NULL),
-      start_count_(0),
-      initialize_state_(NOT_INITIALIZED) {
+        : internet_status_callback_stub_(NULL),
+          start_count_(0),
+          initialize_state_(NOT_INITIALIZED),
+          webrequest_events_funnel_(new BrokerRpcClient) {
 }
 
 WebRequestNotifier::~WebRequestNotifier() {

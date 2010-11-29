@@ -33,6 +33,7 @@ class ScopedTimer {
       broker_rpc_ = NULL;  // Ensure we don't call the broker_rpc.
     }
   }
+
   ~ScopedTimer() {
     if (broker_rpc_) {
       base::TimeDelta delta = base::TimeTicks::Now() - start_;
@@ -41,6 +42,11 @@ class ScopedTimer {
         NOTREACHED() << "An error happened during RPC.";
       }
     }
+  }
+
+  void Drop() {
+    // Something happened and we should not log.
+    broker_rpc_ = NULL;
   }
 
  protected:

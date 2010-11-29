@@ -15,12 +15,6 @@
 #include "ceee/ie/common/ceee_module_util.h"
 
 
-EventsFunnel::EventsFunnel() {
-}
-
-EventsFunnel::~EventsFunnel() {
-}
-
 HRESULT EventsFunnel::SendEvent(const char* event_name,
                                 const Value& event_args) {
   // Event arguments for FireEventToBroker always need to be stored in a list.
@@ -38,14 +32,13 @@ HRESULT EventsFunnel::SendEvent(const char* event_name,
 
 HRESULT EventsFunnel::SendEventToBroker(const char* event_name,
                                         const char* event_args) {
-  if (!broker_rpc_client_.get()) {
-    broker_rpc_client_.reset(new BrokerRpcClient());
-    if (!broker_rpc_client_.get())
-      return E_OUTOFMEMORY;
-    HRESULT hr = broker_rpc_client_->Connect(true);
-    // Don't reset broker_rpc_client_. See comment in *h file.
-    if (FAILED(hr))
-      return hr;
+  DCHECK(broker_client_);
+  if (broker_client_) {
+    return broker_client_->FireEvent(event_name, event_args);
+  } else {
+    // Someone must be told...
+    LOG(WARNING) << "Fired event without receiver: name :\"" << event_name <<
+        "\", args: \"" << event_args << "\".";
+    return S_FALSE;
   }
-  return broker_rpc_client_->FireEvent(event_name, event_args);
 }

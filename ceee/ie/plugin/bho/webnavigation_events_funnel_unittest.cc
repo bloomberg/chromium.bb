@@ -27,6 +27,7 @@ MATCHER_P(ValuesEqual, value, "") {
 
 class TestWebNavigationEventsFunnel : public WebNavigationEventsFunnel {
  public:
+  TestWebNavigationEventsFunnel() {}
   MOCK_METHOD2(SendEvent, HRESULT(const char*, const Value&));
 };
 

@@ -27,7 +27,8 @@ _ATL_FUNC_INFO InfobarBrowserWindow::handler_type_bstr_i4_=
 _ATL_FUNC_INFO InfobarBrowserWindow::handler_type_void_=
     { CC_STDCALL, VT_EMPTY, 0, { } };
 
-InfobarBrowserWindow::InfobarBrowserWindow() : delegate_(NULL) {
+InfobarBrowserWindow::InfobarBrowserWindow()
+    : delegate_(NULL), infobar_events_funnel_(new InfobarEventsFunnel) {
 }
 
 InfobarBrowserWindow::~InfobarBrowserWindow() {
@@ -82,7 +83,9 @@ STDMETHODIMP_(void) InfobarBrowserWindow::OnCfClose() {
     delegate_->OnBrowserWindowClose();
 }
 
-HRESULT InfobarBrowserWindow::Initialize(BSTR url, Delegate* delegate) {
+HRESULT InfobarBrowserWindow::Initialize(BSTR url, Delegate* delegate,
+                                         IEventSender* event_sender) {
+  infobar_events_funnel_.reset(new InfobarEventsFunnel(event_sender));
   set_delegate(delegate);
   SetUrl(url);
 

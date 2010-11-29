@@ -41,8 +41,10 @@ class MockInfobarDelegate : public infobar_api::InfobarWindow::Delegate {
 
 class MockInfobarWindow : public infobar_api::InfobarWindow {
  public:
+  // Unfortunately, until we have a full link from BHO to Infobar, it's no use
+  // to use a mock RpcClient here. So we use NULL instead.
   MockInfobarWindow(infobar_api::InfobarType type, Delegate* delegate)
-    : infobar_api::InfobarWindow(type, delegate) {}
+    : infobar_api::InfobarWindow(type, delegate, NULL) {}
   MOCK_METHOD2(InternalCreate, HWND(HWND, DWORD));
   MOCK_METHOD2(Show, HRESULT(int, bool));
   MOCK_METHOD0(Hide, HRESULT());
@@ -67,7 +69,7 @@ class TestingInfobarManager : public infobar_api::InfobarManager {
   };
 
   explicit TestingInfobarManager(HWND tab_window)
-      : infobar_api::InfobarManager(tab_window) {
+      : infobar_api::InfobarManager(tab_window, NULL) {
   }
 
   MockInfobarWindow* GetInfobarWindow(infobar_api::InfobarType type) {

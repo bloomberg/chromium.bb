@@ -123,11 +123,11 @@ class ATL_NO_VTABLE InfobarBrowserWindow
   // @}
 
   // Initializes the browser window to the given site.
-  HRESULT Initialize(BSTR url, Delegate* delegate);
+  HRESULT Initialize(BSTR url, Delegate* delegate, IEventSender* event_sender);
 
   // Unit test seam.
   virtual InfobarEventsFunnel& infobar_events_funnel() {
-    return infobar_events_funnel_;
+    return *infobar_events_funnel_.get();
   }
 
  protected:
@@ -141,7 +141,7 @@ class ATL_NO_VTABLE InfobarBrowserWindow
 
  private:
   // The funnel for sending infobar events to the broker.
-  InfobarEventsFunnel infobar_events_funnel_;
+  scoped_ptr<InfobarEventsFunnel> infobar_events_funnel_;
 
   // Our Chrome frame instance.
   CComPtr<IChromeFrame> chrome_frame_;

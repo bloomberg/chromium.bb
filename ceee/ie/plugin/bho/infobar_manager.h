@@ -20,7 +20,7 @@ namespace infobar_api {
 class InfobarManager : public InfobarWindow::Delegate,
                        public WebBrowserEventsSource::Sink {
  public:
-  explicit InfobarManager(HWND tab_window);
+  InfobarManager(HWND tab_window, IEventSender* event_sender);
 
   // Shows the infobar of the specified type and navigates it to the specified
   // URL.
@@ -62,6 +62,9 @@ class InfobarManager : public InfobarWindow::Delegate,
 
   // Infobar windows.
   scoped_ptr<InfobarWindow> infobars_[END_OF_INFOBAR_TYPE];
+
+  // Passed to the InfobarWindow during initialization.
+  IEventSender* event_sender_;
 
   // ContainerWindow callbacks.
   // Callback for WM_NCCALCSIZE.

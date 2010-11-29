@@ -10,8 +10,17 @@
 #include <wtypes.h>
 #include "base/basictypes.h"
 
-// Class provides comunication with BrokerRpcServer.
-class BrokerRpcClient {
+// Interface for sending events.
+class IEventSender {
+ public:
+  virtual ~IEventSender() {}
+  virtual HRESULT FireEvent(const char* event_name,
+                            const char* event_args) = 0;
+};
+
+
+// Class provides communication with BrokerRpcServer.
+class BrokerRpcClient : public IEventSender {
  public:
   BrokerRpcClient();
   virtual ~BrokerRpcClient();

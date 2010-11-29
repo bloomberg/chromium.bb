@@ -100,14 +100,13 @@ BrowserHelperObject::BrowserHelperObject()
       lower_bound_ready_state_(READYSTATE_UNINITIALIZED),
       ie7_or_later_(false),
       thread_id_(::GetCurrentThreadId()),
-      full_tab_chrome_frame_(false) {
+      full_tab_chrome_frame_(false),
+      broker_client_queue_(this),
+      tab_events_funnel_(broker_client()) {
   TRACE_EVENT_BEGIN("ceee.bho", this, "");
 }
 
 BrowserHelperObject::~BrowserHelperObject() {
-  if (broker_rpc_ != NULL)
-    broker_rpc_->Disconnect();
-
   TRACE_EVENT_END("ceee.bho", this, "");
 }
 
@@ -125,6 +124,9 @@ HRESULT BrowserHelperObject::FinalConstruct() {
 }
 
 void BrowserHelperObject::FinalRelease() {
+  // Need to disconnect outside of destructor, because we use a virtual method
+  // for unit testing.
+  broker_rpc().Disconnect();
   web_browser_.Release();
 }
 
@@ -149,8 +151,7 @@ void BrowserHelperObject::ReportAddonLoadTime(const char* addon_name,
     counter_name += 'x';
     break;
   }
-  if (broker_rpc_.get())
-    broker_rpc_->SendUmaHistogramTimes(counter_name.c_str(), time);
+  broker_rpc().SendUmaHistogramTimes(counter_name.c_str(), time);
 }
 
 STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
@@ -166,7 +167,7 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
   }
 
   if (NULL == site) {
-    mu::ScopedTimer metrics_timer("ceee/BHO.TearDown", broker_rpc_.get());
+    mu::ScopedTimer metrics_timer("ceee/BHO.TearDown", &broker_rpc());
 
     // TODO(vitalybuka@chromium.org): switch to sampling when we have enough
     // users.
@@ -288,7 +289,9 @@ HRESULT BrowserHelperObject::CreateExecutor(IUnknown** executor) {
 WebProgressNotifier* BrowserHelperObject::CreateWebProgressNotifier() {
   scoped_ptr<WebProgressNotifier> web_progress_notifier(
       new WebProgressNotifier());
-  HRESULT hr = web_progress_notifier->Initialize(this, tab_window_,
+  HRESULT hr = web_progress_notifier->Initialize(this,
+                                                 broker_client(),
+                                                 tab_window_,
                                                  web_browser_);
 
   return SUCCEEDED(hr) ? web_progress_notifier.release() : NULL;
@@ -333,19 +336,15 @@ HRESULT BrowserHelperObject::SetTabIdForHandle(int tool_band_id,
 
 HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   TRACE_EVENT_INSTANT("ceee.bho.initialize", this, "");
+  mu::ScopedTimer metrics_timer("ceee/BHO.Initialize", &broker_rpc());
 
-  // Unfortunately, we need to connect before taking performance. Including
-  // this call in our Timing would be useful. Unit tests make it
-  // complicated.
-  // TODO(hansl@chromium.org): Change initialization to be able to time
-  // this call too.
-  DCHECK(broker_rpc_ == NULL);
   HRESULT hr = ConnectRpcBrokerClient();
-  if (FAILED(hr) || !broker_rpc_->is_connected()) {
+  if (FAILED(hr) || !broker_rpc().is_connected()) {
+    // Cancel the logging. The BrokerRpcClient isn't ready.
+    metrics_timer.Drop();
     NOTREACHED() << "Couldn't connect to the RPC server.";
     return com::AlwaysError(hr);
   }
-  mu::ScopedTimer metrics_timer("ceee/BHO.Initialize", broker_rpc_.get());
 
   ie7_or_later_ = ie_util::GetIeVersion() > ie_util::IEVERSION_IE6;
 
@@ -646,12 +645,12 @@ bool BrowserHelperObject::EnsureTabId() {
   }
   VLOG(2) << "TabId(" << tab_id_ << ") set for Handle(" << handle << ")";
 
-  // Call back all the methods we deferred. In order, please.
-  while (!deferred_tab_id_call_.empty()) {
+  // Call back all the events we deferred. In order, please.
+  while (!deferred_events_call_.empty()) {
     // We pop here so that if an error happens in the call we don't recall the
     // faulty method. This has the side-effect of losing events.
-    DeferredCallListType::value_type call = deferred_tab_id_call_.front();
-    deferred_tab_id_call_.pop_front();
+    DeferredCallListType::value_type call = deferred_events_call_.front();
+    deferred_events_call_.pop_front();
     call->Run();
     delete call;
   }
@@ -784,22 +783,25 @@ void BrowserHelperObject::CloseAll(IContentScriptNativeApi* instance) {
 HRESULT BrowserHelperObject::OpenChannelToExtension(
     IContentScriptNativeApi* instance, const std::string& extension,
     const std::string& channel_name, int cookie) {
-  ScopedContentScriptNativeApiPtr scoped_instance(instance);
+  ScopedContentScriptNativeApiPtr instance_ptr(instance);
+  // Here we cheat a bit. Since we want to make sure port connection are done
+  // in order of regular events, we queue the task with a call to
+  // OpenChannelToExtension, as if it was a regular deferred event. If the
+  // tab_id is available, we of course call the method directly.
   if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
+    deferred_events_call_.push_back(NewRunnableMethod(
         this, &BrowserHelperObject::OpenChannelToExtensionImpl,
-        scoped_instance, extension, channel_name, cookie));
-    return S_OK;
+        instance_ptr, extension, channel_name, cookie));
+    VLOG(2) << "Deferred OpenChannelToExtension";
+    return S_FALSE;
   } else {
-    return OpenChannelToExtensionImpl(scoped_instance,
-                                      extension,
-                                      channel_name,
+    return OpenChannelToExtensionImpl(instance_ptr, extension, channel_name,
                                       cookie);
   }
 }
 
 HRESULT BrowserHelperObject::OpenChannelToExtensionImpl(
-    const ScopedContentScriptNativeApiPtr& instance,
+    ScopedContentScriptNativeApiPtr instance,
     const std::string& extension,
     const std::string& channel_name,
     int cookie) {
@@ -822,30 +824,30 @@ HRESULT BrowserHelperObject::OpenChannelToExtensionImpl(
 
 HRESULT BrowserHelperObject::PostMessage(int port_id,
                                          const std::string& message) {
-  return extension_port_manager_.PostMessage(port_id, message);
+  // As with OpenChannelToExtension, we cheat by deferring actual calls to
+  // PostMessage, in order for those calls to be synchronized with queued
+  // events.
+  if (EnsureTabId() == false) {
+    deferred_events_call_.push_back(NewRunnableMethod(
+        this, &BrowserHelperObject::PostMessageImpl,
+        port_id, message));
+    VLOG(2) << "Deferred PostMessage(" << port_id << ", \"" << message << "\")";
+    return S_FALSE;
+  } else {
+    return PostMessageImpl(port_id, message);
+  }
+}
+
+HRESULT BrowserHelperObject::PostMessageImpl(int port_id,
+                                             const std::string& message) {
+    return extension_port_manager_.PostMessage(port_id, message);
 }
 
 HRESULT BrowserHelperObject::OnCfPrivateMessage(BSTR msg,
                                                 BSTR origin,
                                                 BSTR target) {
-  // OnPortMessage uses tab_id_, so we need to check here.
-  if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnCfPrivateMessageImpl,
-        CComBSTR(msg), CComBSTR(origin), CComBSTR(target)));
-    return S_OK;
-  } else {
-    OnCfPrivateMessageImpl(msg, origin, target);
-  }
-
-  return S_OK;
-}
-
-void BrowserHelperObject::OnCfPrivateMessageImpl(const CComBSTR& msg,
-                                                 const CComBSTR& origin,
-                                                 const CComBSTR& target) {
   const wchar_t* start = com::ToString(target);
-  const wchar_t* end = start + target.Length();
+  const wchar_t* end = start + SysStringLen(target);
   if (LowerCaseEqualsASCII(start, end, ext::kAutomationPortRequestTarget) ||
       LowerCaseEqualsASCII(start, end, ext::kAutomationPortResponseTarget)) {
     extension_port_manager_.OnPortMessage(msg);
@@ -853,6 +855,7 @@ void BrowserHelperObject::OnCfPrivateMessageImpl(const CComBSTR& msg,
     LOG(ERROR) << "Unexpected message: '" << msg << "' to invalid target: "
         << target;
   }
+  return S_OK;
 }
 
 STDMETHODIMP_(void) BrowserHelperObject::OnBeforeNavigate2(
@@ -869,21 +872,7 @@ STDMETHODIMP_(void) BrowserHelperObject::OnBeforeNavigate2(
     return;
   }
 
-  DCHECK(V_VT(url) == VT_BSTR);
-  CComBSTR url_bstr(url->bstrVal);
-  if (EnsureTabId() == false) {
-    VARIANT* null_param = NULL;
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnBeforeNavigate2Impl,
-        ScopedDispatchPtr(webbrowser_disp), url_bstr));
-  } else {
-    OnBeforeNavigate2Impl(ScopedDispatchPtr(webbrowser_disp), url_bstr);
-  }
-}
-
-void BrowserHelperObject::OnBeforeNavigate2Impl(
-    const ScopedDispatchPtr& webbrowser_disp, const CComBSTR& url) {
-  mu::ScopedTimer metrics_timer("ceee/BHO.BeforeNavigate", broker_rpc_.get());
+  mu::ScopedTimer metrics_timer("ceee/BHO.BeforeNavigate", &broker_rpc());
 
   ScopedWebBrowser2Ptr webbrowser;
   HRESULT hr = webbrowser.QueryFrom(webbrowser_disp);
@@ -892,9 +881,10 @@ void BrowserHelperObject::OnBeforeNavigate2Impl(
     return;
   }
 
+  base::win::ScopedBstr bstr_url(url->bstrVal);
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
-    (*iter)->OnBeforeNavigate(webbrowser, url);
+    (*iter)->OnBeforeNavigate(webbrowser, bstr_url);
   }
 
   // Notify the infobar executor on the event but only for the main browser.
@@ -908,7 +898,7 @@ void BrowserHelperObject::OnBeforeNavigate2Impl(
     DCHECK(SUCCEEDED(hr)) << "Failed to get ICeeeInfobarExecutor interface " <<
         com::LogHr(hr);
     if (SUCCEEDED(hr)) {
-      infobar_executor->OnTopFrameBeforeNavigate(url);
+      infobar_executor->OnTopFrameBeforeNavigate(bstr_url);
     }
   }
 }
@@ -932,24 +922,11 @@ STDMETHODIMP_(void) BrowserHelperObject::OnDocumentComplete(
     return;
   }
 
-  DCHECK(V_VT(url) == VT_BSTR);
   CComBSTR url_bstr(url->bstrVal);
-
-  if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnDocumentCompleteImpl,
-        webbrowser, url_bstr));
-  } else {
-    OnDocumentCompleteImpl(webbrowser, url_bstr);
-  }
-}
-
-void BrowserHelperObject::OnDocumentCompleteImpl(
-    const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
-  mu::ScopedTimer metrics_timer("ceee/BHO.DocumentComplete", broker_rpc_.get());
+  mu::ScopedTimer metrics_timer("ceee/BHO.DocumentComplete", &broker_rpc());
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
-    (*iter)->OnDocumentComplete(webbrowser, url);
+    (*iter)->OnDocumentComplete(webbrowser, url_bstr);
   }
 }
 
@@ -973,26 +950,13 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateComplete2(
     return;
   }
 
-  DCHECK(V_VT(url) == VT_BSTR);
-  CComBSTR url_bstr(url->bstrVal);
-  if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnNavigateComplete2Impl,
-            webbrowser, url_bstr));
-  } else {
-    BrowserHelperObject::OnNavigateComplete2Impl(webbrowser, url_bstr);
-  }
-}
-
-void BrowserHelperObject::OnNavigateComplete2Impl(
-    const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url) {
-  mu::ScopedTimer metrics_timer("ceee/BHO.NavigateComplete", broker_rpc_.get());
-
-  HandleNavigateComplete(webbrowser, url);
+  mu::ScopedTimer metrics_timer("ceee/BHO.NavigateComplete", &broker_rpc());
+  base::win::ScopedBstr url_bstr(url->bstrVal);
+  HandleNavigateComplete(webbrowser, url_bstr);
 
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
-       iter != sinks_.end(); ++iter) {
-    (*iter)->OnNavigateComplete(webbrowser, url);
+    iter != sinks_.end(); ++iter) {
+      (*iter)->OnNavigateComplete(webbrowser, url_bstr);
   }
 }
 
@@ -1021,27 +985,11 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateError(
     return;
   }
 
-  DCHECK(V_VT(url) == VT_BSTR);
-  CComBSTR url_bstr(url->bstrVal);
-  DCHECK(V_VT(status_code) == VT_I4);
-  LONG status = status_code->lVal;
-  if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnNavigateErrorImpl,
-        webbrowser, url_bstr, status));
-  } else {
-    OnNavigateErrorImpl(webbrowser, url_bstr, status);
-  }
-}
-
-void BrowserHelperObject::OnNavigateErrorImpl(
-    const ScopedWebBrowser2Ptr& webbrowser, const CComBSTR& url,
-    LONG status_code) {
-  mu::ScopedTimer metrics_timer("ceee/BHO.NavigateError", broker_rpc_.get());
-
+  mu::ScopedTimer metrics_timer("ceee/BHO.NavigateError", &broker_rpc());
+  base::win::ScopedBstr url_bstr(url->bstrVal);
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
        iter != sinks_.end(); ++iter) {
-    (*iter)->OnNavigateError(webbrowser, url, status_code);
+    (*iter)->OnNavigateError(webbrowser, url_bstr, status_code->lVal);
   }
 }
 
@@ -1261,8 +1209,7 @@ HRESULT BrowserHelperObject::CreateFrameEventHandler(
 }
 
 HRESULT BrowserHelperObject::ConnectRpcBrokerClient() {
-  broker_rpc_.reset(new BrokerRpcClient);
-  return broker_rpc_->Connect(true);
+  return broker_rpc().Connect(true);
 }
 
 HRESULT BrowserHelperObject::AttachBrowser(IWebBrowser2* browser,
@@ -1429,20 +1376,10 @@ HRESULT BrowserHelperObject::OnReadyStateChanged(READYSTATE ready_state) {
     }
   }
 
-  if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::OnReadyStateChangedImpl,
-        lower_bound_ready_state_, new_lowest_ready_state));
-  } else {
-    OnReadyStateChangedImpl(lower_bound_ready_state_, new_lowest_ready_state);
-  }
-  return S_OK;
-}
-
-void BrowserHelperObject::OnReadyStateChangedImpl(READYSTATE old_state,
-                                                  READYSTATE new_state) {
+  READYSTATE old_state = lower_bound_ready_state_;
+  READYSTATE new_state = new_lowest_ready_state;
   if (old_state == new_state)
-    return;
+    return S_OK;
 
   // Remember the new lowest ready state as our current one.
   lower_bound_ready_state_ = new_state;
@@ -1450,6 +1387,7 @@ void BrowserHelperObject::OnReadyStateChangedImpl(READYSTATE old_state,
   // Fire the event if the new ready state got us to or away from complete.
   if (old_state == READYSTATE_COMPLETE || new_state == READYSTATE_COMPLETE)
     FireOnUpdatedEvent(NULL, new_state);
+  return S_OK;
 }
 
 HRESULT BrowserHelperObject::GetReadyState(READYSTATE* ready_state) {
@@ -1481,20 +1419,6 @@ HRESULT BrowserHelperObject::GetExtensionPortMessagingProvider(
 
 HRESULT BrowserHelperObject::InsertCode(BSTR code, BSTR file, BOOL all_frames,
                                         CeeeTabCodeType type) {
-  if (EnsureTabId() == false) {
-    deferred_tab_id_call_.push_back(NewRunnableMethod(
-        this, &BrowserHelperObject::InsertCodeImpl,
-        CComBSTR(code), CComBSTR(file), all_frames == TRUE, type));
-  } else {
-    InsertCodeImpl(code, file, all_frames == TRUE, type);
-  }
-
-  return S_OK;
-}
-
-void BrowserHelperObject::InsertCodeImpl(
-    const CComBSTR& code, const CComBSTR& file, bool all_frames,
-    CeeeTabCodeType type) {
   // If all_frames is false, we execute only in the top level frame.  Otherwise
   // we do the top level frame as well as all the inner frames.
   if (all_frames) {
@@ -1522,8 +1446,8 @@ void BrowserHelperObject::InsertCodeImpl(
       // extension.  Clean this up once we support multiple extensions.
     }
   }
+  return S_OK;
 }
-
 
 HRESULT BrowserHelperObject::GetMatchingUserScriptsCssContent(
     const GURL& url, bool require_all_frames, std::string* css_content) {
@@ -1650,4 +1574,23 @@ STDMETHODIMP BrowserHelperObject::SetToolBandSessionId(long session_id) {
   VLOG(2) << "ToolBandTabId(" << session_id << ") set for Handle(" << handle <<
       ")";
   return hr;
+}
+
+HRESULT BrowserHelperObject::SendEventToBroker(const char* event_name,
+                                               const char* event_args) {
+  if (EnsureTabId() == false) {
+    deferred_events_call_.push_back(NewRunnableMethod(
+        this, &BrowserHelperObject::SendEventToBrokerImpl,
+        std::string(event_name), std::string(event_args)));
+    VLOG(2) << "Deferred SendEventToBroker. Name: \"" << event_name <<
+      "\", args: \"" << event_args << "\".";
+    return S_FALSE;
+  } else {
+    return SendEventToBrokerImpl(event_name, event_args);
+  }
+}
+
+HRESULT BrowserHelperObject::SendEventToBrokerImpl(
+    const std::string& event_name, const std::string& event_args) {
+  return broker_rpc().FireEvent(event_name.c_str(), event_args.c_str());
 }

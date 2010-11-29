@@ -143,8 +143,8 @@ class InfobarManager::ContainerWindow
   DISALLOW_COPY_AND_ASSIGN(ContainerWindow);
 };
 
-InfobarManager::InfobarManager(HWND tab_window)
-    : tab_window_(tab_window) {
+InfobarManager::InfobarManager(HWND tab_window, IEventSender* event_sender)
+    : tab_window_(tab_window), event_sender_(event_sender) {
 }
 
 HRESULT InfobarManager::Show(InfobarType type, int max_height,
@@ -284,7 +284,8 @@ void InfobarManager::LazyInitialize(InfobarType type) {
   // Note that when InfobarManager is being initialized the IE has not created
   // the tab. Therefore we cannot find the container window here and have to
   // pass interface for a function that finds windows to be called later.
-  infobars_[type].reset(InfobarWindow::CreateInfobar(type, this));
+  infobars_[type].reset(InfobarWindow::CreateInfobar(type, this,
+                                                     event_sender_));
 }
 
 InfobarManager::ContainerWindowInterface* InfobarManager::CreateContainerWindow(

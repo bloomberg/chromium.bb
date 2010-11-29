@@ -54,6 +54,7 @@ WebProgressNotifier::~WebProgressNotifier() {
 
 HRESULT WebProgressNotifier::Initialize(
     WebBrowserEventsSource* web_browser_events_source,
+    IEventSender* client,
     HWND tab_window,
     IWebBrowser2* main_browser) {
   if (web_browser_events_source == NULL || tab_window == NULL ||
@@ -76,6 +77,7 @@ HRESULT WebProgressNotifier::Initialize(
 
   web_browser_events_source_ = web_browser_events_source;
   web_browser_events_source_->RegisterSink(this);
+  webnavigation_events_funnel_.reset(new WebNavigationEventsFunnel(client));
 
   window_message_source_.reset(CreateWindowMessageSource());
   if (window_message_source_ == NULL) {
@@ -332,8 +334,6 @@ void WebProgressNotifier::OnHandleMessage(
 }
 
 WebNavigationEventsFunnel* WebProgressNotifier::webnavigation_events_funnel() {
-  if (!webnavigation_events_funnel_.get())
-    webnavigation_events_funnel_.reset(new WebNavigationEventsFunnel());
   return webnavigation_events_funnel_.get();
 }
 

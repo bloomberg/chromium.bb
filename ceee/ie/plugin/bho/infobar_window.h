@@ -42,7 +42,8 @@ class InfobarWindow : public InfobarBrowserWindow::Delegate,
     virtual void OnWindowClose(InfobarType type) = 0;
   };
 
-  static InfobarWindow* CreateInfobar(InfobarType type, Delegate* delegate);
+  static InfobarWindow* CreateInfobar(InfobarType type, Delegate* delegate,
+                                      IEventSender* event_sender);
   ~InfobarWindow();
 
   // Implementation of InfobarBrowserWindow::Delegate.
@@ -113,8 +114,13 @@ class InfobarWindow : public InfobarBrowserWindow::Delegate,
   // The Chrome Frame host handling a Chrome Frame instance for us.
   CComPtr<IInfobarBrowserWindow> chrome_frame_host_;
 
+  // The event sender object, where the InfobarEventsFunnel will send its
+  // events.
+  IEventSender* event_sender_;
+
   // Constructor.
-  InfobarWindow(InfobarType type, Delegate* delegate);
+  InfobarWindow(InfobarType type, Delegate* delegate,
+                IEventSender* event_sender);
 
   // If show is true, shrinks IE content window and shows the infobar
   // either at the top or at the bottom. Otherwise, hides the infobar and

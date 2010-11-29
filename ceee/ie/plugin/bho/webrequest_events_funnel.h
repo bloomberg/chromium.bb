@@ -19,6 +19,8 @@
 class WebRequestEventsFunnel : public EventsFunnel {
  public:
   WebRequestEventsFunnel() {}
+  explicit WebRequestEventsFunnel(IEventSender* client)
+      : EventsFunnel(client) {}
 
   // Sends the webRequest.onBeforeRedirect event to the broker.
   // @param request_id The ID of the request.

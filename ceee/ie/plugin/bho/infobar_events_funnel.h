@@ -13,6 +13,7 @@
 class InfobarEventsFunnel : public EventsFunnel {
  public:
   InfobarEventsFunnel() {}
+  explicit InfobarEventsFunnel(IEventSender* client) : EventsFunnel(client) {}
 
   // Sends the infobar.onDocumentComplete event to the Broker.
   virtual HRESULT OnDocumentComplete();

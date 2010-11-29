@@ -180,7 +180,7 @@ class WebProgressNotifierTestFixture : public testing::Test {
 
     web_progress_notifier_.reset(new TestWebProgressNotifier());
     ASSERT_HRESULT_SUCCEEDED(web_progress_notifier_->Initialize(
-        web_browser_events_source_.get(), reinterpret_cast<HWND>(1024),
+        web_browser_events_source_.get(), NULL, reinterpret_cast<HWND>(1024),
         web_browser_));
   }
 

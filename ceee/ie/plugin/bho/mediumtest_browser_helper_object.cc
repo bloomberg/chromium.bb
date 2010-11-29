@@ -27,6 +27,7 @@ namespace {
 
 using testing::_;
 using testing::AnyNumber;
+using testing::AtMost;
 using testing::BrowserEventSinkBase;
 using testing::GetTestUrl;
 using testing::DoAll;
@@ -88,7 +89,7 @@ class TestingBrowserHelperObject
   WebProgressNotifier* CreateWebProgressNotifier() {
     scoped_ptr<WebProgressNotifier> web_progress_notifier(
         new TestingWebProgressNotifier());
-    HRESULT hr = web_progress_notifier->Initialize(this, tab_window_,
+    HRESULT hr = web_progress_notifier->Initialize(this, NULL, tab_window_,
                                                    web_browser_);
     return SUCCEEDED(hr) ? web_progress_notifier.release() : NULL;
   }
@@ -132,21 +133,27 @@ class TestingBrowserHelperObject
           .WillOnce(Return(S_OK));
 
       EXPECT_CALL(*mock_chrome_frame_host_, GetSessionId(NotNull()))
+          .Times(AtMost(1))
           .WillOnce(DoAll(SetArgumentPointee<0>(44), Return(S_OK)));
+      // We expect 0 or 1 calls, but not more. Some tests don't generate calls
+      // to events; those won't call SetTabIdForHandle.
       EXPECT_CALL(*broker_, SetTabIdForHandle(44, _))
+          .Times(AtMost(1))
           .WillOnce(Return(S_OK));
     }
 
     return hr;
   }
 
+  virtual BrokerRpcClient& broker_rpc() {
+    return mock_broker_rpc_client_;
+  }
+
   virtual HRESULT ConnectRpcBrokerClient() {
-    MockBrokerRpcClient* rpc_client = new MockBrokerRpcClient();
-    EXPECT_CALL(*rpc_client, is_connected()).WillOnce(Return(true));
-    EXPECT_CALL(*rpc_client, SendUmaHistogramTimes(_, _))
+    EXPECT_CALL(mock_broker_rpc_client_, is_connected()).WillOnce(Return(true));
+    EXPECT_CALL(mock_broker_rpc_client_, SendUmaHistogramTimes(_, _))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*rpc_client, Disconnect()).Times(1);
-    broker_rpc_.reset(rpc_client);
+    EXPECT_CALL(mock_broker_rpc_client_, Disconnect()).Times(1);
     return S_OK;
   }
 
@@ -235,10 +242,12 @@ class TestingBrowserHelperObject
   testing::MockBroker* broker_;
   CComPtr<ICeeeBrokerRegistrar> broker_keeper_;
 
+  MockBrokerRpcClient mock_broker_rpc_client_;
+
  private:
   class TestingWebProgressNotifier : public WebProgressNotifier {
    public:
-    class TesingNavigationEventsFunne : public WebNavigationEventsFunnel {
+    class TestingNavigationEventsFunnel : public WebNavigationEventsFunnel {
      public:
       HRESULT SendEventToBroker(const char*, const char*) {
         return S_OK;
@@ -246,11 +255,10 @@ class TestingBrowserHelperObject
     };
 
     virtual WebNavigationEventsFunnel* webnavigation_events_funnel() {
-      if (!webnavigation_events_funnel_.get())
-        webnavigation_events_funnel_.reset(new TesingNavigationEventsFunne());
-
-      return webnavigation_events_funnel_.get();
+      return &webnavigation_events_funnel_;
     }
+
+    TestingNavigationEventsFunnel webnavigation_events_funnel_;
   };
 
   MockChromeFrameHost* mock_chrome_frame_host_;
@@ -340,7 +348,8 @@ class BrowserHelperObjectTest: public ShellBrowserTestImpl<BrowserEventSink> {
   virtual void TearDown() {
     if (bho_ != NULL) {  // To match SetUp failure modes.
       EXPECT_CALL(*bho_->mock_tab_events_funnel(), OnRemoved(_));
-      EXPECT_CALL(*bho_->mock_tab_events_funnel(), OnTabUnmapped(_, _));
+      EXPECT_CALL(*bho_->mock_tab_events_funnel(), OnTabUnmapped(_, _))
+          .Times(AtMost(1));
       ASSERT_HRESULT_SUCCEEDED(bho_keeper_->SetSite(NULL));
 
       bho_->executor_ = NULL;

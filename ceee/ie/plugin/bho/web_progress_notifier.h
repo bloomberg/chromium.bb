@@ -30,6 +30,7 @@ class WebProgressNotifier : public WebBrowserEventsSource::Sink,
 
   HRESULT Initialize(
       WebBrowserEventsSource* web_browser_events_source,
+      IEventSender* client,
       HWND tab_window,
       IWebBrowser2* main_browser);
   void TearDown();

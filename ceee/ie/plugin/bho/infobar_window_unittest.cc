@@ -55,10 +55,12 @@ class MockInfobarWindowDelegate : public infobar_api::InfobarWindow::Delegate {
 
 class TestingInfobarWindow : public infobar_api::InfobarWindow {
  public:
+  // Until we have a real use of BrokerRpc, we just pass a NULL pointer to
+  // InfobarWindow.
   TestingInfobarWindow(infobar_api::InfobarType type,
                        InfobarWindow::Delegate* delegate,
                        MockInfobarBrowserWindow* browser_window)
-      : infobar_api::InfobarWindow(type, delegate) {
+      : infobar_api::InfobarWindow(type, delegate, NULL) {
     chrome_frame_host_ = browser_window;
   }
 };

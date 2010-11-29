@@ -49,7 +49,10 @@ class CookieAccountant {
  protected:
   // Exposed to subclasses mainly for unit testing purposes; production code
   // should use the ProductionCookieAccountant class instead.
-  CookieAccountant() {}
+  // Since this class has one instance per window, not per tab, we cannot
+  // queue the events sent to the broker. They don't need to be sent to the BHO
+  // because they don't need tab_id anyway.
+  CookieAccountant() : cookie_events_funnel_(new BrokerRpcClient) {}
   virtual ~CookieAccountant();
 
   // Records the modification or creation of a cookie. Fires off a

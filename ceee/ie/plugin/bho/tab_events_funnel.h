@@ -9,12 +9,15 @@
 
 #include <ocidl.h>  // for READYSTATE
 
+#include "base/ref_counted.h"
 #include "ceee/ie/plugin/bho/events_funnel.h"
 
 // Implements a set of methods to send tab related events to the Broker.
 class TabEventsFunnel : public EventsFunnel {
  public:
   TabEventsFunnel() {}
+
+  explicit TabEventsFunnel(IEventSender* client) : EventsFunnel(client) {}
 
   // Sends the tabs.onMoved event to the Broker.
   // @param tab_handle The HWND of the tab that moved.

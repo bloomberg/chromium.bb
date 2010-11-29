@@ -193,29 +193,12 @@ class ATL_NO_VTABLE BrowserHelperObject
   // Unregister proxy/stubs for executor interfaces.
   virtual void UnregisterProxies();
 
-  HRESULT OpenChannelToExtensionImpl(
-      const ScopedContentScriptNativeApiPtr& instance,
-      const std::string& extension, const std::string& channel_name,
-      int cookie);
-  void OnBeforeNavigate2Impl(const ScopedDispatchPtr& webbrowser_disp,
-                             const CComBSTR& url);
-
-  void OnCfPrivateMessageImpl(const CComBSTR& msg,
-                              const CComBSTR& origin,
-                              const CComBSTR& target);
-  void OnDocumentCompleteImpl(const ScopedWebBrowser2Ptr& webbrowser,
-                              const CComBSTR& url);
-  void OnNavigateComplete2Impl(const ScopedWebBrowser2Ptr& webbrowser,
-                               const CComBSTR& url);
-  void OnNavigateErrorImpl(const ScopedWebBrowser2Ptr& webbrowser,
-                           const CComBSTR& url,
-                           LONG status_code);
-  void OnReadyStateChangedImpl(READYSTATE old_state, READYSTATE new_state);
-  void InsertCodeImpl(const CComBSTR& code,
-                      const CComBSTR& file,
-                      bool all_frames,
-                      CeeeTabCodeType type);
-
+  // Implement the real call for OpenChannelToExtension and PostMessage.
+  HRESULT OpenChannelToExtensionImpl(ScopedContentScriptNativeApiPtr instance,
+                                     const std::string& extension,
+                                     const std::string& channel_name,
+                                     int cookie);
+  HRESULT PostMessageImpl(int port_id, const std::string& message);
 
   // Finds the handler attached to webbrowser.
   // @returns S_OK if handler is found.
@@ -272,6 +255,12 @@ class ATL_NO_VTABLE BrowserHelperObject
 
   // Accessor so that we can mock it in unit tests.
   virtual TabEventsFunnel& tab_events_funnel() { return tab_events_funnel_; }
+
+  // Accessor so that we can mock it in unit tests.
+  virtual IEventSender* broker_client() { return &broker_client_queue_; }
+
+  // Accessor so that we can mock it in unit tests.
+  virtual BrokerRpcClient& broker_rpc() { return broker_rpc_; }
 
   // Fires the tab.onCreated event via the tab event funnel.
   virtual void FireOnCreatedEvent(BSTR url);
@@ -366,9 +355,6 @@ class ATL_NO_VTABLE BrowserHelperObject
   // Extension port messaging and management is delegated to this.
   ExtensionPortManager extension_port_manager_;
 
-  // Used to dispatch tab events back to Chrome.
-  TabEventsFunnel tab_events_funnel_;
-
   // Remember the tab window handle so that we can use it.
   HWND tab_window_;
 
@@ -403,7 +389,7 @@ class ATL_NO_VTABLE BrowserHelperObject
   bool full_tab_chrome_frame_;
 
   // The RPC client used to communicate with the broker.
-  scoped_ptr<BrokerRpcClient> broker_rpc_;
+  BrokerRpcClient broker_rpc_;
 
  private:
   // The BHO registers proxy/stubs for the CEEE executor on initialization.
@@ -419,10 +405,51 @@ class ATL_NO_VTABLE BrowserHelperObject
   HRESULT VerifyBrowserInHierarchy(IWebBrowser2* webbrowser,
                                    IWebBrowser2* root_browser);
 
+  // Send metrics histograms about the average load time of IE addons.
   void ReportAddonLoadTime(const char* addon_name, const CLSID& addon_id);
 
+  // This class is used as a replacement for the BrokerRpcClient for the
+  // event funnels contained inside a BHO. When sending an event, this will
+  // forward it to the BHO which will queue it until the tab_id is available,
+  // then simply forward all events directly to the Broker in the order they
+  // were sent to this queue. We don't do the whole queueing here for
+  // simplicity.
+  // TODO(hansl@chromium.org): This should be a generic class in base. Really
+  // useful elsewhere in CEEE and maybe elsewhere.
+  class BrokerEventQueue : public IEventSender {
+   public:
+    explicit BrokerEventQueue(BrowserHelperObject* bho) : bho_(bho) {}
+
+    // If the BHO outlived the queue, we send it the events.
+    HRESULT FireEvent(const char* event_name, const char* event_args) {
+      if (bho_) {
+        return bho_->SendEventToBroker(event_name, event_args);
+      }
+      return S_OK;
+    }
+
+   private:
+    BrowserHelperObject* bho_;
+    DISALLOW_COPY_AND_ASSIGN(BrokerEventQueue);
+  };
+
+  // This either calls its Impl or queues the call for later, when we have a
+  // tab_id.
+  HRESULT SendEventToBroker(const char* event_name, const char* event_args);
+
+  // Sends the event to the broker, for real, without delay, right now.
+  HRESULT SendEventToBrokerImpl(const std::string& event_name,
+                                const std::string& event_args);
+
+  // List of calls to send to the broker.
   typedef std::deque<Task*> DeferredCallListType;
-  DeferredCallListType deferred_tab_id_call_;
+  DeferredCallListType deferred_events_call_;
+
+  // This is passed to every funnel so they use the queue for sending events.
+  BrokerEventQueue broker_client_queue_;
+
+  // Used to dispatch tab events back to Chrome.
+  TabEventsFunnel tab_events_funnel_;
 };
 
 #endif  // CEEE_IE_PLUGIN_BHO_BROWSER_HELPER_OBJECT_H_

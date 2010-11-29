@@ -174,6 +174,8 @@ class MockTabEventsFunnel : public TabEventsFunnel {
   MOCK_METHOD3(OnUpdated, HRESULT(HWND tab, BSTR url,
                                   READYSTATE ready_state));
   MOCK_METHOD2(OnTabUnmapped, HRESULT(HWND tab, int tab_id));
+
+  MOCK_METHOD2(SendEventToBroker, HRESULT(const char*, const char*));
 };
 
 class MockWindowEventsFunnel : public WindowEventsFunnel {

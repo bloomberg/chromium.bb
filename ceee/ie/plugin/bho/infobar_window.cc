@@ -30,19 +30,23 @@ const int kInfobarDefaultHeight = 39;
 namespace infobar_api {
 
 InfobarWindow* InfobarWindow::CreateInfobar(InfobarType type,
-                                            Delegate* delegate) {
+                                            Delegate* delegate,
+                                            IEventSender* event_sender) {
   DCHECK(delegate);
-  return NULL == delegate ? NULL : new InfobarWindow(type, delegate);
+  return NULL == delegate ? NULL : new InfobarWindow(type, delegate,
+      event_sender);
 }
 
-InfobarWindow::InfobarWindow(InfobarType type, Delegate* delegate)
+InfobarWindow::InfobarWindow(InfobarType type, Delegate* delegate,
+                             IEventSender* event_sender)
     : type_(type),
       delegate_(delegate),
       show_(false),
       target_height_(1),
       current_height_(1),
       sliding_infobar_(false),
-      timer_id_(0) {
+      timer_id_(0),
+      event_sender_(event_sender) {
   DCHECK(delegate);
 }
 
@@ -275,7 +279,7 @@ LRESULT InfobarWindow::OnTimer(UINT_PTR nIDEvent) {
 
 LRESULT InfobarWindow::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   InitializingCoClass<InfobarBrowserWindow>::CreateInitialized(
-      CComBSTR(url_.c_str()), this, &chrome_frame_host_);
+      CComBSTR(url_.c_str()), this, event_sender_, &chrome_frame_host_);
 
   if (chrome_frame_host_) {
     chrome_frame_host_->CreateAndShowWindow(m_hWnd);

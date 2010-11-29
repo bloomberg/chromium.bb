@@ -109,13 +109,15 @@ class TestingBrowserHelperObject
     return S_OK;
   }
 
+  virtual BrokerRpcClient& broker_rpc() {
+    return mock_broker_rpc_client_;
+  }
+
   virtual HRESULT ConnectRpcBrokerClient() {
-    MockBrokerRpcClient* rpc_client = new MockBrokerRpcClient();
-    EXPECT_CALL(*rpc_client, is_connected()).WillOnce(Return(true));
-    EXPECT_CALL(*rpc_client, SendUmaHistogramTimes(_, _))
+    EXPECT_CALL(mock_broker_rpc_client_, is_connected()).WillOnce(Return(true));
+    EXPECT_CALL(mock_broker_rpc_client_, SendUmaHistogramTimes(_, _))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*rpc_client, Disconnect()).Times(1);
-    broker_rpc_.reset(rpc_client);
+    EXPECT_CALL(mock_broker_rpc_client_, Disconnect()).Times(1);
     return S_OK;
   }
 
@@ -159,6 +161,7 @@ class TestingBrowserHelperObject
   StrictMock<testing::MockTabEventsFunnel> mock_tab_events_funnel_;
   MockChromeFrameHost* mock_chrome_frame_host_;
   CComPtr<IChromeFrameHost> mock_chrome_frame_host_keeper_;
+  MockBrokerRpcClient mock_broker_rpc_client_;
 
   testing::MockExecutorIUnknown* executor_;
   CComPtr<IUnknown> executor_keeper_;
@@ -193,6 +196,9 @@ class BrowserHelperObjectTest: public testing::Test {
         &bho_->executor_, &bho_->executor_keeper_));
     ASSERT_HRESULT_SUCCEEDED(testing::MockBroker::CreateInitialized(
         &bho_->broker_, &bho_->broker_keeper_));
+
+    // At the start of a test we shouldn't have a tab_id.
+    bho_->SetTabId(kInvalidChromeSessionId);
 
     // We always go beyond Chrome Frame start, broker reg and event funnel init.
     // TODO(mad@chromium.org): Also cover failure cases from those.
@@ -264,25 +270,26 @@ class BrowserHelperObjectTest: public testing::Test {
     return false;
   }
 
+  void ChromeFrameStarted() {
+    // If we expect chrome to start, we have a tab_id.
+    bho_->SetTabId(kGoodTabId);
+  }
+
   void ExpectChromeFrameStart() {
     EXPECT_CALL(*(bho_->mock_chrome_frame_host_), SetEventSink(_)).
         Times(1);
     EXPECT_CALL(*(bho_->mock_chrome_frame_host_), SetChromeProfileName(_)).
         Times(1);
     EXPECT_CALL(*(bho_->mock_chrome_frame_host_), StartChromeFrame()).
-        WillOnce(Return(S_OK));
+        WillOnce(DoAll(InvokeWithoutArgs(this,
+            &BrowserHelperObjectTest::ChromeFrameStarted),
+            Return(S_OK)));
   }
 
   CComBSTR CreateTabInfo(int tab_id) {
     std::ostringstream iss;
     iss << L"{\"id\":" << tab_id << L"}";
     return CComBSTR(iss.str().c_str());
-  }
-  void ExpectChromeFrameGetSessionId() {
-    EXPECT_CALL(*(bho_->mock_chrome_frame_host_), GetSessionId(NotNull())).
-        WillOnce(DoAll(SetArgumentPointee<0>(kGoodTabId), Return(S_OK)));
-    EXPECT_CALL(*(bho_->broker_), SetTabIdForHandle(kGoodTabId,
-        kGoodTabHandle)).WillOnce(Return(S_OK));
   }
 
   void ExpectChromeFrameTearDown() {
@@ -434,10 +441,9 @@ TEST_F(BrowserHelperObjectTest, SetSiteWithBrowserSucceeds) {
       IID_IUnknown, reinterpret_cast<void**>(&set_site)));
   ASSERT_TRUE(set_site == site_keeper_);
 
-  // No teardown events are fired because neither the create event nor the tab
-  // ID mapping occurred.
+  // No OnRemoved isn't fired because the create event didn't occur.
   ExpectFireOnRemovedEvent(0);
-  ExpectFireOnUnmappedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 
   // And check that the connection was severed.
@@ -451,7 +457,6 @@ TEST_F(BrowserHelperObjectTest, OnNavigateCompleteHandled) {
   CreateSite();
   CreateBrowser();
   CreateHandler();
-  ExpectChromeFrameGetSessionId();
 
   // The site needs to return the top-level browser.
   site_->browser_ = browser_;
@@ -476,7 +481,6 @@ TEST_F(BrowserHelperObjectTest, OnNavigateCompleteChromeFrameTab) {
   CreateSite();
   CreateBrowser();
   CreateHandler();
-  ExpectChromeFrameGetSessionId();
 
   // The site needs to return the top-level browser.
   site_->browser_ = browser_;
@@ -511,7 +515,6 @@ TEST_F(BrowserHelperObjectTest, RenavigationNotifiesUrl) {
   CreateSite();
   CreateBrowser();
   CreateHandler();
-  ExpectChromeFrameGetSessionId();
 
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
 
@@ -561,10 +564,9 @@ TEST_F(BrowserHelperObjectTest, OnNavigateCompleteUnhandled) {
   // Non-BSTR url parameter.
   browser_->FireOnNavigateComplete(browser_, &CComVariant(non_browser));
 
-  // No teardown events are fired because neither the create event nor the tab
-  // ID mapping occurred.
+  // No OnRemoved isn't fired because the create event didn't occur.
   ExpectFireOnRemovedEvent(0);
-  ExpectFireOnUnmappedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -623,7 +625,7 @@ TEST_F(BrowserHelperObjectTest, HandleNavigateComplete) {
   bho_->HandleNavigateComplete(browser_, CComBSTR(kUrl1));
 
   ExpectFireOnRemovedEvent(1);
-  ExpectFireOnUnmappedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -651,7 +653,7 @@ TEST_F(BrowserHelperObjectTest, OnNavigationCompletedWithUnrelatedBrowser) {
 
   bho_->HandleNavigateComplete(browser2, CComBSTR(kUrl1));
   ExpectFireOnRemovedEvent(0);
-  ExpectFireOnUnmappedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -706,10 +708,9 @@ TEST_F(BrowserHelperObjectTest, AttachOrphanedBrowser) {
   EXPECT_HRESULT_SUCCEEDED(bho_->AttachBrowser(browser3, browser3_parent,
                                                handler3));
 
-  // No teardown events are fired because neither the create event nor the tab
-  // ID mapping occurred.
+  // No OnRemoved isn't fired because the create event didn't occur.
   ExpectFireOnRemovedEvent(0);
-  ExpectFireOnUnmappedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -733,8 +734,9 @@ TEST_F(BrowserHelperObjectTest, IFrameEventHandlerHost) {
   // But not twice.
   EXPECT_HRESULT_FAILED(bho_->DetachBrowser(browser_, NULL, handler_));
 
+  // No OnRemoved isn't fired because the create event didn't occur.
   ExpectFireOnRemovedEvent(0);
-  ExpectFireOnUnmappedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 
   // TODO(siggi@chromium.org): test hierarchial attach/detach/TearDown.
@@ -744,7 +746,6 @@ TEST_F(BrowserHelperObjectTest, IFrameEventHandlerHostReadyStateChanged) {
   CreateSite();
   CreateBrowser();
   CreateHandler();
-  ExpectChromeFrameGetSessionId();
 
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
   ASSERT_TRUE(BhoHasSite());
@@ -767,7 +768,6 @@ TEST_F(BrowserHelperObjectTest, InsertCode) {
   CreateSite();
   CreateBrowser();
   CreateHandler();
-  ExpectChromeFrameGetSessionId();
 
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
   ASSERT_TRUE(BhoHasSite());
@@ -789,7 +789,6 @@ TEST_F(BrowserHelperObjectTest, InsertCodeAllFrames) {
   CreateSite();
   CreateBrowser();
   CreateHandler();
-  ExpectChromeFrameGetSessionId();
 
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
   ASSERT_TRUE(BhoHasSite());
@@ -856,7 +855,7 @@ TEST_F(BrowserHelperObjectTest, IsHashChange) {
   EXPECT_FALSE(bho_->CallIsHashChange(url5, url6));
 
   ExpectFireOnRemovedEvent(0);
-  ExpectFireOnUnmappedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 
@@ -874,7 +873,7 @@ TEST_F(BrowserHelperObjectTest, SetToolBandSessionId) {
   EXPECT_EQ(E_FAIL, bho_->SetToolBandSessionId(kGoodTabId));
 
   ExpectFireOnRemovedEvent(0);
-  ExpectFireOnUnmappedEvent(0);
+  ExpectFireOnUnmappedEvent(1);
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(NULL));
 }
 

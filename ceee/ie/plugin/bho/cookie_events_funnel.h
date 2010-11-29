@@ -14,6 +14,8 @@
 class CookieEventsFunnel : public EventsFunnel {
  public:
   CookieEventsFunnel() {}
+  explicit CookieEventsFunnel(IEventSender* client)
+      : EventsFunnel(client) {}
 
   // Sends the cookies.onChanged event to the Broker.
   // @param removed True if the cookie was removed vs. set.

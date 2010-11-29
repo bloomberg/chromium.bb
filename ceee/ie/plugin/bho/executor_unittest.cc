@@ -83,7 +83,7 @@ class TestingMockExecutorCreatorTeardown
 
 class MockInfobarManager : public infobar_api::InfobarManager {
  public:
-  MockInfobarManager() : InfobarManager(kGoodWindow) {}
+  MockInfobarManager() : InfobarManager(kGoodWindow, NULL) {}
   MOCK_METHOD4(Show, HRESULT(infobar_api::InfobarType, int,
                              const std::wstring&, bool));
   MOCK_METHOD1(Hide, HRESULT(infobar_api::InfobarType));

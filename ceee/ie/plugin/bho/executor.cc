@@ -422,8 +422,13 @@ HRESULT CeeeExecutor::Initialize(CeeeWindowHandle hwnd) {
   // If this is tab window then create the infobar manager.
   // TODO(mad@chromium.org): We are starting to need to have different classes
   // for the different executors.
+  // TODO(hansl@chromium.org): We might not need to have an Executor for
+  // Infobar. In any case, the construction below should have a reference to
+  // a BHO and its EventSender so we don't create Infobars before the tab_id
+  // is ready.
   if (window_utils::GetTopLevelParent(hwnd_) != hwnd_)
-    infobar_manager_.reset(new infobar_api::InfobarManager(hwnd_));
+    infobar_manager_.reset(
+        new infobar_api::InfobarManager(hwnd_, new BrokerRpcClient));
 
   return S_OK;
 }

@@ -18,6 +18,8 @@
 class WebNavigationEventsFunnel : public EventsFunnel {
  public:
   WebNavigationEventsFunnel() {}
+  explicit WebNavigationEventsFunnel(IEventSender* client)
+      : EventsFunnel(client) {}
 
   // Sends the webNavigation.onBeforeNavigate event to the Broker.
   // @param tab_handle The window handle of the tab in which the navigation is
