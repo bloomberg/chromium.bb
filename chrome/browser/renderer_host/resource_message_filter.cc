@@ -56,7 +56,6 @@
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/ui_thread_helpers.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -88,6 +87,7 @@
 #include "chrome/browser/chromeos/plugin_selection_policy.h"
 #endif
 #if defined(OS_MACOSX)
+#include "chrome/browser/cocoa/task_helpers.h"
 #include "chrome/common/font_descriptor_mac.h"
 #include "chrome/common/font_loader_mac.h"
 #endif
@@ -1196,10 +1196,14 @@ void ResourceMessageFilter::OnDidZoomURL(const IPC::Message& message,
                                          double zoom_level,
                                          bool remember,
                                          const GURL& url) {
-  ui_thread_helpers::PostTaskWhileRunningMenu(FROM_HERE,
-      NewRunnableMethod(
-          this, &ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread,
-          zoom_level, remember, url, id(), message.routing_id()));
+  Task* task = NewRunnableMethod(this,
+      &ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread, zoom_level,
+      remember, url, id(), message.routing_id());
+#if defined(OS_MACOSX)
+  cocoa_utils::PostTaskInEventTrackingRunLoopMode(FROM_HERE, task);
+#else
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
+#endif
 }
 
 void ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread(
