@@ -48,9 +48,9 @@ function unexpectedErrorCallback()
 
 function deleteAllObjectStores(db)
 {
-  objectStores = db.objectStoreNames;
-  for (var i = 0; i < objectStores.length; ++i)
-    db.deleteObjectStore(objectStores[i]);
+  objectStoreNames = db.objectStoreNames;
+  for (var i = 0; i < objectStoreNames.length; ++i)
+    db.deleteObjectStore(objectStoreNames[i]);
 }
 
 // The following functions are based on

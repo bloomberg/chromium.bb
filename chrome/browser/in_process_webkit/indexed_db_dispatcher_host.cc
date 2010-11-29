@@ -132,7 +132,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBDatabaseName::ID:
     case ViewHostMsg_IDBDatabaseDescription::ID:
     case ViewHostMsg_IDBDatabaseVersion::ID:
-    case ViewHostMsg_IDBDatabaseObjectStores::ID:
+    case ViewHostMsg_IDBDatabaseObjectStoreNames::ID:
     case ViewHostMsg_IDBDatabaseCreateObjectStore::ID:
     case ViewHostMsg_IDBDatabaseRemoveObjectStore::ID:
     case ViewHostMsg_IDBDatabaseSetVersion::ID:
@@ -365,8 +365,8 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseDescription,
                                     OnDescription)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseVersion, OnVersion)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseObjectStores,
-                                    OnObjectStores)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseObjectStoreNames,
+                                    OnObjectStoreNames)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseCreateObjectStore,
                                     OnCreateObjectStore)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseRemoveObjectStore,
@@ -408,21 +408,21 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnVersion(
       &map_, object_id, reply_msg, &WebIDBDatabase::version);
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObjectStores(
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObjectStoreNames(
     int32 idb_database_id, IPC::Message* reply_msg) {
   WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
       &map_, idb_database_id, reply_msg,
-      ViewHostMsg_IDBDatabaseObjectStores::ID);
+      ViewHostMsg_IDBDatabaseObjectStoreNames::ID);
   if (!idb_database)
     return;
 
-  WebDOMStringList web_object_stores = idb_database->objectStores();
+  WebDOMStringList web_object_stores = idb_database->objectStoreNames();
   std::vector<string16> object_stores;
   object_stores.reserve(web_object_stores.length());
   for (unsigned i = 0; i < web_object_stores.length(); ++i)
     object_stores.push_back(web_object_stores.item(i));
-  ViewHostMsg_IDBDatabaseObjectStores::WriteReplyParams(reply_msg,
-                                                        object_stores);
+  ViewHostMsg_IDBDatabaseObjectStoreNames::WriteReplyParams(reply_msg,
+                                                            object_stores);
   parent_->Send(reply_msg);
 }
 

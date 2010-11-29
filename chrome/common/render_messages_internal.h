@@ -2483,10 +2483,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int32, /* idb_database_id */
                               string16 /* vesion */)
 
-  // WebIDBDatabase::objectStores() message.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseObjectStores,
+  // WebIDBDatabase::objectStoreNames() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseObjectStoreNames,
                               int32, /* idb_database_id */
-                              std::vector<string16> /* objectStores */)
+                              std::vector<string16> /* objectStoreNames */)
 
   // WebIDBDatabase::createObjectStore() message.
   IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_IDBDatabaseCreateObjectStore,

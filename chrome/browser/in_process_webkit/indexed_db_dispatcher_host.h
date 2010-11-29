@@ -101,7 +101,7 @@ class IndexedDBDispatcherHost
     void OnName(int32 idb_database_id, IPC::Message* reply_msg);
     void OnDescription(int32 idb_database_id, IPC::Message* reply_msg);
     void OnVersion(int32 idb_database_id, IPC::Message* reply_msg);
-    void OnObjectStores(int32 idb_database_id, IPC::Message* reply_msg);
+    void OnObjectStoreNames(int32 idb_database_id, IPC::Message* reply_msg);
     void OnCreateObjectStore(
         const ViewHostMsg_IDBDatabaseCreateObjectStore_Params& params,
         IPC::Message* reply_msg);

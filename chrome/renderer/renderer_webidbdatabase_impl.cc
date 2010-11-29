@@ -52,10 +52,10 @@ WebString RendererWebIDBDatabaseImpl::version() const {
   return result;
 }
 
-WebDOMStringList RendererWebIDBDatabaseImpl::objectStores() const {
+WebDOMStringList RendererWebIDBDatabaseImpl::objectStoreNames() const {
   std::vector<string16> result;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBDatabaseObjectStores(idb_database_id_, &result));
+      new ViewHostMsg_IDBDatabaseObjectStoreNames(idb_database_id_, &result));
   WebDOMStringList webResult;
   for (std::vector<string16>::const_iterator it = result.begin();
        it != result.end(); ++it) {
