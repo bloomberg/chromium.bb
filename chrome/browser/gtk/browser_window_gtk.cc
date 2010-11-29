@@ -546,8 +546,7 @@ void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
   int image_name = GetThemeFrameResource();
   CairoCachedSurface* surface = theme_provider->GetUnthemedSurfaceNamed(
       image_name, widget);
-  surface->SetSource(
-      cr, 0, UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
+  surface->SetSource(cr, 0, GetVerticalOffset());
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REFLECT);
   cairo_rectangle(cr, event->area.x, event->area.y,
                   event->area.width, event->area.height);
@@ -565,9 +564,7 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
   CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
       image_name, widget);
   if (event->area.y < surface->Height()) {
-    int offset = (IsMaximized() || (!UseCustomFrame())) ?
-                 -kCustomFrameBackgroundVerticalOffset : 0;
-    surface->SetSource(cr, 0, offset);
+    surface->SetSource(cr, 0, GetVerticalOffset());
 
     // The frame background isn't tiled vertically.
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
@@ -581,9 +578,14 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
     CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
         IsActive() ? IDR_THEME_FRAME_OVERLAY
         : IDR_THEME_FRAME_OVERLAY_INACTIVE, widget);
-    theme_overlay->SetSource(cr, 0, 0);
+    theme_overlay->SetSource(cr, 0, GetVerticalOffset());
     cairo_paint(cr);
   }
+}
+
+int BrowserWindowGtk::GetVerticalOffset() {
+  return (IsMaximized() || (!UseCustomFrame())) ?
+      -kCustomFrameBackgroundVerticalOffset : 0;
 }
 
 int BrowserWindowGtk::GetThemeFrameResource() {

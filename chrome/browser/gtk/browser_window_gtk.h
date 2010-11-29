@@ -298,6 +298,11 @@ class BrowserWindowGtk : public BrowserWindow,
   // Draws the normal custom frame using theme_frame.
   void DrawCustomFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
 
+  // The background frame image needs to be offset by the size of the top of
+  // the window to the top of the tabs when the full skyline isn't displayed
+  // for some reason.
+  int GetVerticalOffset();
+
   // Returns which frame image we should use based on the window's current
   // activation state / incognito state.
   int GetThemeFrameResource();
