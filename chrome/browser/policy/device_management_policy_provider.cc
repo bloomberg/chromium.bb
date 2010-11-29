@@ -21,12 +21,19 @@
 
 namespace policy {
 
+namespace em = enterprise_management;
+
 const int64 kPolicyRefreshRateInMilliseconds = 3 * 60 * 60 * 1000;  // 3 hours
 const int64 kPolicyRefreshMaxEarlierInMilliseconds = 20 * 60 * 1000;  // 20 mins
 // These are the base values for delays before retrying after an error. They
 // will be doubled each time they are used.
 const int64 kPolicyRefreshErrorDelayInMilliseconds = 3 * 1000;  // 3 seconds
 const int64 kDeviceTokenRefreshErrorDelayInMilliseconds = 3 * 1000;
+// For unmanaged devices, check once per day whether they're still unmanaged.
+const int64 kPolicyRefreshUnmanagedDeviceInMilliseconds = 24 * 60 * 60 * 1000;
+
+const FilePath::StringType kDeviceTokenFilename = FILE_PATH_LITERAL("Token");
+const FilePath::StringType kPolicyFilename = FILE_PATH_LITERAL("Policy");
 
 // Ensures that the portion of the policy provider implementation that requires
 // the IOThread is deferred until the IOThread is fully initialized. The policy
@@ -72,17 +79,33 @@ DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
     const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
     DeviceManagementBackend* backend,
     Profile* profile)
-    : ConfigurationPolicyProvider(policy_list),
-      backend_(backend),
-      profile_(profile),
-      storage_dir_(GetOrCreateDeviceManagementDir(profile_->GetPath())),
-      policy_request_pending_(false),
-      refresh_task_pending_(false),
-      policy_refresh_rate_ms_(kPolicyRefreshRateInMilliseconds),
-      policy_refresh_max_earlier_ms_(kPolicyRefreshMaxEarlierInMilliseconds),
-      policy_refresh_error_delay_ms_(kPolicyRefreshErrorDelayInMilliseconds),
-      token_fetch_error_delay_ms_(kDeviceTokenRefreshErrorDelayInMilliseconds) {
-  Initialize();
+    : ConfigurationPolicyProvider(policy_list) {
+  Initialize(backend,
+             profile,
+             kPolicyRefreshRateInMilliseconds,
+             kPolicyRefreshMaxEarlierInMilliseconds,
+             kPolicyRefreshErrorDelayInMilliseconds,
+             kDeviceTokenRefreshErrorDelayInMilliseconds,
+             kPolicyRefreshUnmanagedDeviceInMilliseconds);
+}
+
+DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
+    const PolicyDefinitionList* policy_list,
+    DeviceManagementBackend* backend,
+    Profile* profile,
+    int64 policy_refresh_rate_ms,
+    int64 policy_refresh_max_earlier_ms,
+    int64 policy_refresh_error_delay_ms,
+    int64 token_fetch_error_delay_ms,
+    int64 unmanaged_device_refresh_rate_ms)
+    : ConfigurationPolicyProvider(policy_list) {
+  Initialize(backend,
+             profile,
+             policy_refresh_rate_ms,
+             policy_refresh_max_earlier_ms,
+             policy_refresh_error_delay_ms,
+             token_fetch_error_delay_ms,
+             unmanaged_device_refresh_rate_ms);
 }
 
 DeviceManagementPolicyProvider::~DeviceManagementPolicyProvider() {}
@@ -102,6 +125,9 @@ void DeviceManagementPolicyProvider::HandlePolicyResponse(
   // Reset the error delay since policy fetching succeeded this time.
   policy_refresh_error_delay_ms_ = kPolicyRefreshErrorDelayInMilliseconds;
   ScheduleRefreshTask(GetRefreshTaskDelay());
+  // Update this provider's internal waiting state, but don't notify anyone
+  // else yet (that's done by the PrefValueStore that receives the policy).
+  waiting_for_initial_policies_ = false;
 }
 
 void DeviceManagementPolicyProvider::OnError(
@@ -123,11 +149,13 @@ void DeviceManagementPolicyProvider::OnError(
       policy_refresh_error_delay_ms_ = policy_refresh_rate_ms_;
     }
   }
+  StopWaitingForInitialPolicies();
 }
 
 void DeviceManagementPolicyProvider::OnTokenSuccess() {
   if (policy_request_pending_)
     return;
+  cache_->SetDeviceUnmanaged(false);
   SendPolicyRequest();
 }
 
@@ -137,10 +165,14 @@ void DeviceManagementPolicyProvider::OnTokenError() {
   token_fetch_error_delay_ms_ *= 2;
   if (token_fetch_error_delay_ms_ > policy_refresh_rate_ms_)
     token_fetch_error_delay_ms_ = policy_refresh_rate_ms_;
+  StopWaitingForInitialPolicies();
 }
 
 void DeviceManagementPolicyProvider::OnNotManaged() {
   VLOG(1) << "This device is not managed.";
+  cache_->SetDeviceUnmanaged(true);
+  ScheduleRefreshTask(unmanaged_device_refresh_rate_ms_);
+  StopWaitingForInitialPolicies();
 }
 
 void DeviceManagementPolicyProvider::Shutdown() {
@@ -149,16 +181,56 @@ void DeviceManagementPolicyProvider::Shutdown() {
     token_fetcher_->Shutdown();
 }
 
-void DeviceManagementPolicyProvider::Initialize() {
-  const FilePath policy_path = storage_dir_.Append(
-      FILE_PATH_LITERAL("Policy"));
+void DeviceManagementPolicyProvider::Initialize(
+    DeviceManagementBackend* backend,
+    Profile* profile,
+    int64 policy_refresh_rate_ms,
+    int64 policy_refresh_max_earlier_ms,
+    int64 policy_refresh_error_delay_ms,
+    int64 token_fetch_error_delay_ms,
+    int64 unmanaged_device_refresh_rate_ms) {
+  backend_.reset(backend);
+  profile_ = profile;
+  storage_dir_ = GetOrCreateDeviceManagementDir(profile_->GetPath());
+  policy_request_pending_ = false;
+  refresh_task_pending_ = false;
+  waiting_for_initial_policies_ = true;
+  policy_refresh_rate_ms_ = policy_refresh_rate_ms;
+  policy_refresh_max_earlier_ms_ = policy_refresh_max_earlier_ms;
+  policy_refresh_error_delay_ms_ = policy_refresh_error_delay_ms;
+  token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
+  unmanaged_device_refresh_rate_ms_ = unmanaged_device_refresh_rate_ms;
+
+  const FilePath policy_path = storage_dir_.Append(kPolicyFilename);
   cache_.reset(new DeviceManagementPolicyCache(policy_path));
   cache_->LoadPolicyFromFile();
 
-  // Defer initialization that requires the IOThread until after the IOThread
-  // has been initialized.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new InitializeAfterIOThreadExistsTask(AsWeakPtr()));
+  if (cache_->is_device_unmanaged()) {
+    // This is a non-first login on an unmanaged device.
+    waiting_for_initial_policies_ = false;
+    // Defer token_fetcher_ initialization until this device should ask for
+    // a device token again.
+    base::Time unmanaged_timestamp = cache_->last_policy_refresh_time();
+    int64 delay = unmanaged_device_refresh_rate_ms_ -
+        (base::Time::NowFromSystemTime().ToInternalValue() -
+            unmanaged_timestamp.ToInternalValue());
+    if (delay < 0)
+      delay = 0;
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE,
+        new InitializeAfterIOThreadExistsTask(AsWeakPtr()),
+        delay);
+  } else {
+    if (file_util::PathExists(
+        storage_dir_.Append(kDeviceTokenFilename))) {
+      // This is a non-first login on a managed device.
+      waiting_for_initial_policies_ = false;
+    }
+    // Defer initialization that requires the IOThread until after the IOThread
+    // has been initialized.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            new InitializeAfterIOThreadExistsTask(AsWeakPtr()));
+  }
 }
 
 void DeviceManagementPolicyProvider::InitializeAfterIOThreadExists() {
@@ -174,18 +246,19 @@ void DeviceManagementPolicyProvider::InitializeAfterIOThreadExists() {
 }
 
 void DeviceManagementPolicyProvider::SendPolicyRequest() {
-  if (!policy_request_pending_) {
-    policy_request_pending_ = true;
-    em::DevicePolicyRequest policy_request;
-    policy_request.set_policy_scope(kChromePolicyScope);
-    em::DevicePolicySettingRequest* setting =
-        policy_request.add_setting_request();
-    setting->set_key(kChromeDevicePolicySettingKey);
-    setting->set_watermark("");
-    backend_->ProcessPolicyRequest(token_fetcher_->GetDeviceToken(),
-                                   token_fetcher_->GetDeviceID(),
-                                   policy_request, this);
-  }
+  if (policy_request_pending_)
+    return;
+
+  policy_request_pending_ = true;
+  em::DevicePolicyRequest policy_request;
+  policy_request.set_policy_scope(kChromePolicyScope);
+  em::DevicePolicySettingRequest* setting =
+      policy_request.add_setting_request();
+  setting->set_key(kChromeDevicePolicySettingKey);
+  setting->set_watermark("");
+  backend_->ProcessPolicyRequest(token_fetcher_->GetDeviceToken(),
+                                 token_fetcher_->GetDeviceID(),
+                                 policy_request, this);
 }
 
 void DeviceManagementPolicyProvider::RefreshTaskExecute() {
@@ -226,13 +299,27 @@ int64 DeviceManagementPolicyProvider::GetRefreshTaskDelay() {
 }
 
 FilePath DeviceManagementPolicyProvider::GetTokenPath() {
-  return storage_dir_.Append(FILE_PATH_LITERAL("Token"));
+  return storage_dir_.Append(kDeviceTokenFilename);
 }
 
 void DeviceManagementPolicyProvider::SetDeviceTokenFetcher(
     DeviceTokenFetcher* token_fetcher) {
   DCHECK(!token_fetcher_);
   token_fetcher_ = token_fetcher;
+}
+
+void DeviceManagementPolicyProvider::StopWaitingForInitialPolicies() {
+  waiting_for_initial_policies_ = false;
+  // Send a CLOUD_POLICY_UPDATE notification to unblock ChromeOS logins that
+  // are waiting for an initial policy fetch to complete.
+  NotifyCloudPolicyUpdate();
+}
+
+void DeviceManagementPolicyProvider::NotifyCloudPolicyUpdate() const {
+    NotificationService::current()->Notify(
+       NotificationType::CLOUD_POLICY_UPDATE,
+       Source<DeviceManagementPolicyProvider>(this),
+       NotificationService::NoDetails());
 }
 
 // static
