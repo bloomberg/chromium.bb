@@ -96,15 +96,25 @@ cr.define('options', function() {
         $('startupPages').redraw();
       });
 
-      // Initialize control enabled states.
-      Preferences.getInstance().addEventListener('session.restore_on_startup',
-          this.updateCustomStartupPageControlStates_.bind(this));
-      Preferences.getInstance().addEventListener('homepage_is_newtabpage',
-          this.handleHomepageIsNewTabPageChange_.bind(this));
-      Preferences.getInstance().addEventListener('homepage',
-          this.handleHomepageChange_.bind(this));
+      // Check if we are in the guest mode.
+      if (cr.commandLine.options['--bwsi']) {
+        // Disable input and button elements under the startup section.
+        var elements = $('startupSection').querySelectorAll('input, button');
+        for (var i = 0; i < elements.length; i++) {
+          elements[i].disabled = true;
+          elements[i].manually_disabled = true;
+        }
+      } else {
+        // Initialize control enabled states.
+        Preferences.getInstance().addEventListener('session.restore_on_startup',
+            this.updateCustomStartupPageControlStates_.bind(this));
+        Preferences.getInstance().addEventListener('homepage_is_newtabpage',
+            this.handleHomepageIsNewTabPageChange_.bind(this));
+        Preferences.getInstance().addEventListener('homepage',
+            this.handleHomepageChange_.bind(this));
 
-      this.updateCustomStartupPageControlStates_();
+        this.updateCustomStartupPageControlStates_();
+      }
 
       // Remove Windows-style accelerators from button labels.
       // TODO(stuartmorgan): Remove this once the strings are updated.
@@ -412,4 +422,3 @@ cr.define('options', function() {
   };
 
 });
-
