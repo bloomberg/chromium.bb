@@ -7,16 +7,18 @@
 #include "ceee/ie/plugin/bho/extension_port_manager.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/win/scoped_bstr.h"
 #include "ceee/ie/common/chrome_frame_host.h"
 #include "ceee/ie/plugin/scripting/content_script_native_api.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 
 namespace ext = extension_automation_constants;
 
-ExtensionPortManager::ExtensionPortManager() {
+ExtensionPortManager::ExtensionPortManager() : next_connection_id_(0) {
 }
 
 ExtensionPortManager::~ExtensionPortManager() {
@@ -186,6 +188,7 @@ HRESULT ExtensionPortManager::PostMessageToHost(const std::string& message,
                                                 const std::string& target) {
   // Post our message through the ChromeFrameHost. We allow queueing,
   // because we don't synchronize to the destination extension loading.
-  return chrome_frame_host_->PostMessage(CComBSTR(message.c_str()),
-                                         CComBSTR(target.c_str()));
+  return chrome_frame_host_->PostMessage(
+      base::win::ScopedBstr(ASCIIToWide(message).c_str()),
+      base::win::ScopedBstr(ASCIIToWide(target).c_str()));
 }
