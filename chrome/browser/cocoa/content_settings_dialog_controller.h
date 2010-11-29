@@ -92,4 +92,11 @@ class Profile;
 @property(nonatomic) NSInteger pluginsEnabledIndex;
 @property(nonatomic) NSInteger geolocationSettingIndex;
 @property(nonatomic) NSInteger notificationsSettingIndex;
+
+@property(nonatomic, readonly) BOOL blockThirdPartyCookiesManaged;
+@property(nonatomic, readonly) BOOL cookieSettingsManaged;
+@property(nonatomic, readonly) BOOL imagesSettingsManaged;
+@property(nonatomic, readonly) BOOL javaScriptSettingsManaged;
+@property(nonatomic, readonly) BOOL pluginsSettingsManaged;
+@property(nonatomic, readonly) BOOL popupsSettingsManaged;
 @end

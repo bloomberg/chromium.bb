@@ -216,6 +216,9 @@ class HostContentSettingsMap
 
   // This setting trumps any host-specific settings.
   bool BlockThirdPartyCookies() const { return block_third_party_cookies_; }
+  bool IsBlockThirdPartyCookiesManaged() const {
+    return is_block_third_party_cookies_managed_;
+  }
 
   // Sets whether we block all third-party cookies. This method must not be
   // invoked on an off-the-record map.
@@ -325,6 +328,7 @@ class HostContentSettingsMap
 
   // Misc global settings.
   bool block_third_party_cookies_;
+  bool is_block_third_party_cookies_managed_;
   bool block_nonsandboxed_plugins_;
 
   // Used around accesses to the settings objects to guarantee thread safety.
