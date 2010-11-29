@@ -3077,7 +3077,7 @@
    fun:_ZN3net17InitProxyResolver14DoSetPacScriptEv
    fun:_ZN3net17InitProxyResolver6DoLoopEi
    ...
-   fun:_ZN10URLRequest15ResponseStartedEv
+   fun:_ZN3net10URLRequest15ResponseStartedEv
 }
 {
    bug_60653
