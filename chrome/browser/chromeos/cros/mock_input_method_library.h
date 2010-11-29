@@ -36,6 +36,7 @@ class MockInputMethodLibrary : public InputMethodLibrary {
   MOCK_METHOD0(StartInputMethodProcesses, void(void));
   MOCK_METHOD0(StopInputMethodProcesses, void(void));
   MOCK_METHOD1(SetDeferImeStartup, void(bool));
+  MOCK_METHOD1(SetEnableAutoImeShutdown, void(bool));
 };
 
 }  // namespace chromeos

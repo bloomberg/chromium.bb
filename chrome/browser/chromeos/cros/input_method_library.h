@@ -102,6 +102,11 @@ class InputMethodLibrary {
   // specificed, or defered until a non-default method is activated.
   virtual void SetDeferImeStartup(bool defer) = 0;
 
+  // Controls whether the IME process is stopped when all non-default preload
+  // engines are removed.
+  virtual void SetEnableAutoImeShutdown(bool enable) = 0;
+
+
   virtual const InputMethodDescriptor& previous_input_method() const = 0;
   virtual const InputMethodDescriptor& current_input_method() const = 0;
 

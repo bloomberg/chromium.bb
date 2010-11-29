@@ -58,6 +58,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         should_launch_ime_(false),
         ime_connected_(false),
         defer_ime_startup_(false),
+        enable_auto_ime_shutdown_(true),
         should_change_input_method_(false),
         ibus_daemon_process_id_(0),
         candidate_window_process_id_(0) {
@@ -195,7 +196,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
             value.string_list_value.size() == 1 &&
             value.string_list_value[0] ==
             chromeos::GetHardwareKeyboardLayoutName()) {
-          StopInputMethodProcesses();
+          if (enable_auto_ime_shutdown_)
+            StopInputMethodProcesses();
         } else if (!defer_ime_startup_) {
           StartInputMethodProcesses();
         }
@@ -510,6 +512,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     defer_ime_startup_ = defer;
   }
 
+  void SetEnableAutoImeShutdown(bool enable) {
+    enable_auto_ime_shutdown_ = enable;
+  }
+
   // NotificationObserver implementation:
   void Observe(NotificationType type,
                const NotificationSource& source,
@@ -560,6 +566,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // If true, we'll defer the startup until a non-default method is
   // activated.
   bool defer_ime_startup_;
+  bool enable_auto_ime_shutdown_;
   // The ID of the current input method (ex. "mozc").
   std::string current_input_method_id_;
   // True if we should change the input method once the queue of the
@@ -637,6 +644,7 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
   virtual void StartInputMethodProcesses() {}
   virtual void StopInputMethodProcesses() {}
   virtual void SetDeferImeStartup(bool defer) {}
+  virtual void SetEnableAutoImeShutdown(bool enable) {}
 
  private:
   // Creates realistic input method descriptors that can be used for

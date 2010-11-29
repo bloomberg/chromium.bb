@@ -149,6 +149,9 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       if (should_add_hardware_keyboard) {
         value.string_list_value.push_back(hardware_keyboard);
       }
+      // We don't want to shut down the IME, even if the hardware layout is the
+      // only IME left.
+      language->SetEnableAutoImeShutdown(false);
       language->SetImeConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
@@ -165,6 +168,7 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       chromeos::ImeConfigValue value;
       value.type = chromeos::ImeConfigValue::kValueTypeStringList;
       value.string_list_value = saved_active_input_method_list_;
+      language->SetEnableAutoImeShutdown(true);
       language->SetImeConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
