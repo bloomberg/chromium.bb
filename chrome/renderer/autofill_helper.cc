@@ -79,32 +79,7 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
   std::vector<int> ids(unique_ids);
   int separator_index = -1;
 
-  const WebInputElement& element =
-      autofill_query_node_.toConst<WebInputElement>();
-
-  if (!element.autoComplete()) {
-    // If autofill is disabled and we had suggestions, show a warning instead.
-    webkit_glue::FormData form;
-    bool autocomplete_enabled_for_form =
-        form_manager_.FindFormWithFormControlElement(
-            element, FormManager::REQUIRE_AUTOCOMPLETE, &form);
-    if (!autocomplete_enabled_for_form) {
-      v.assign(1,
-               l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
-    } else {
-      // TODO(isherman): We will not reach here if autocomplete is disabled for
-      // both the form and the field. I think we need changes to the WebKit API
-      // to handle that case properly.
-
-      // If autocomplete is disabled at the field level, this may be because the
-      // website author wishes to display a custom popup via JavaScript. To
-      // accommodate this, do not show a warning (or any popup) in this case.
-      return;
-    }
-    l.assign(1, string16());
-    i.assign(1, string16());
-    ids.assign(1, -1);
-  } else if (ids[0] < 0 && ids.size() > 1) {
+  if (ids[0] < 0 && ids.size() > 1) {
     // If we received a warning instead of suggestions from autofill but regular
     // suggestions from autocomplete, don't show the autofill warning.
     v.erase(v.begin());
@@ -260,10 +235,8 @@ void AutoFillHelper::ShowSuggestions(const WebInputElement& element,
                                      bool requires_caret_at_end,
                                      bool display_warning_if_disabled) {
   if (!element.isEnabledFormControl() || !element.isTextField() ||
-      element.isPasswordField() || element.isReadOnly())
-    return;
-
-  if (!element.autoComplete() && !display_warning_if_disabled)
+      element.isPasswordField() || element.isReadOnly() ||
+      !element.autoComplete())
     return;
 
   // If the field has no name, then we won't have values.
