@@ -77,7 +77,35 @@ void *wl_hash_table_lookup(struct wl_hash_table *ht, uint32_t hash);
 int wl_hash_table_insert(struct wl_hash_table *ht, uint32_t hash, void *data);
 void wl_hash_table_remove(struct wl_hash_table *ht, uint32_t hash);
 
-
+/**
+ * wl_list - linked list
+ *
+ * The list head is of "struct wl_list" type, and must be initialized
+ * using wl_list_init().  All entries in the list must be of the same
+ * type.  The item type must have a "struct wl_list" member. This
+ * member will be initialized by wl_list_insert(). There is no need to
+ * call wl_list_init() on the individual item. To query if the list is
+ * empty in O(1), use wl_list_empty().
+ *
+ * Let's call the list reference "struct wl_list foo_list", the item type as
+ * "item_t", and the item member as "struct wl_list link". The following code
+ *
+ * The following code will initialize a list:
+ *
+ *	wl_list_init(foo_list);
+ *	wl_list_insert(foo_list, item1);	Pushes item1 at the head
+ *	wl_list_insert(foo_list, item2);	Pushes item2 at the head
+ *	wl_list_insert(item2, item3);   	Pushes item3 after item2
+ *
+ * The list now looks like [item2, item3, item1]
+ *
+ * Will iterate the list in ascending order:
+ *
+ *	item_t *item;
+ *	wl_list_for_each(item, foo_list, link) {
+ *		Do_something_with_item(item);
+ *	}
+ */
 struct wl_list {
 	struct wl_list *prev;
 	struct wl_list *next;
