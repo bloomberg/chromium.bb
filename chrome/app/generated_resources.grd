@@ -5929,11 +5929,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-        can’t display the webpage because your computer isn’t connected to the Internet.
+        can't display the webpage because your computer isn't connected to the Internet.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Template for the summary of the error page when the network connection failed, on platforms with instructions.">
         <ph name="ERROR_DESCRIPTION_TEXT">
-          $1<ex>Google Chrome can’t display the webpage because your computer isn’t connected to the Internet.</ex>
+          $1<ex>Google Chrome can't display the webpage because your computer isn't connected to the Internet.</ex>
         </ph>
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
         You can try to diagnose the problem by taking the following steps:
@@ -5990,9 +5990,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Summary in the error page when the server has a weak Diffie-Hellman public key">
         This error can occur when connecting to a secure (HTTPS) server. It
         means that the server is trying to setup a secure connection but, due to
-        a disastrous misconfiguration, the connection wouldn’t be secure at all!
+        a disastrous misconfiguration, the connection wouldn't be secure at all!
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph> In this case the
-        server needs to be fixed. Chrome won’t use insecure connections in order
+        server needs to be fixed. Chrome won't use insecure connections in order
         to protect your privacy.
       </message>
 
@@ -8916,13 +8916,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Do you want to install <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>?
       </message>
       <message name="IDS_INSTALL_FROM_DMG_PROMPT" desc="Prompt asking whether to install from the disk image.  Mac-only.">
-        You’re running <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from its disk image. Installing it on your computer lets you run it without the disk image, and ensures it will be kept up to date.
+        You're running <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from its disk image. Installing it on your computer lets you run it without the disk image, and ensures it will be kept up to date.
       </message>
       <message name="IDS_INSTALL_FROM_DMG_YES" desc="Button to approve installation from the disk image.  Mac-only.">
         Install
       </message>
       <message name="IDS_INSTALL_FROM_DMG_NO" desc="Button to cancel installation from the disk image.  Mac-only.">
-        Don’t Install
+        Don't Install
       </message>
       <message name="IDS_INSTALL_FROM_DMG_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when installing from the disk image.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be installed.
@@ -8931,7 +8931,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Installation failed.
       </message>
       <message name="IDS_INSTALL_FROM_DMG_ERROR" desc="Error dialog message to be displayed when installation from the disk image fails.  Mac-only.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn’t complete installation, but will continue to run from its disk image.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn't complete installation, but will continue to run from its disk image.
       </message>
 
       <!-- Update from disk image -->
@@ -8939,13 +8939,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Do you want to update <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>?
       </message>
       <message name="IDS_UPDATE_FROM_DMG_PROMPT" desc="Prompt asking whether to update from the disk image.  Mac-only.">
-        You’re running <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from its disk image. If you update the installed copy, you can run it without the disk image in the future.
+        You're running <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from its disk image. If you update the installed copy, you can run it without the disk image in the future.
       </message>
       <message name="IDS_UPDATE_FROM_DMG_YES" desc="Button to approve update from the disk image.  Mac-only.">
         Update
       </message>
       <message name="IDS_UPDATE_FROM_DMG_NO" desc="Button to cancel update from the disk image.  Mac-only.">
-        Don’t Update
+        Don't Update
       </message>
       <message name="IDS_UPDATE_FROM_DMG_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when updating from the disk image.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be updated.
@@ -8954,7 +8954,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Update failed.
       </message>
       <message name="IDS_UPDATE_FROM_DMG_ERROR" desc="Error dialog message to be displayed when update from the disk image fails.  Mac-only.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn’t update the installed copy, but will continue to run from its disk image.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn't update the installed copy, but will continue to run from its disk image.
       </message>
     </if>
 
