@@ -775,13 +775,12 @@ void NetworkMenu::ShowWifi(const WifiNetwork* wifi, bool focus_login) const {
 void NetworkMenu::ShowCellular(const CellularNetwork* cellular,
                                bool focus_login) const {
   DCHECK(cellular);
-  if (use_settings_ui_ &&
-      (MenuUI::IsEnabled() || cellular->connected() ||
-          cellular->connecting())) {
+  // We should always use settings UI for cellular network because native UI
+  // is not complete and only settings UI version has full implementation.
+  if (use_settings_ui_)
     ShowTabbedNetworkSettings(cellular);
-  } else {
+  else
     ShowNetworkConfigView(new NetworkConfigView(cellular), focus_login);
-  }
 }
 
 void NetworkMenu::ActivateCellular(const CellularNetwork* cellular) const {
