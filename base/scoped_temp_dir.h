@@ -38,7 +38,7 @@ class ScopedTempDir {
   bool Set(const FilePath& path);
 
   // Deletes the temporary directory wrapped by this object.
-  void Delete();
+  bool Delete();
 
   // Caller takes ownership of the temporary directory so it won't be destroyed
   // when this object goes out of scope.

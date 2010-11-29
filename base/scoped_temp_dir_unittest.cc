@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,7 +79,7 @@ TEST(ScopedTempDir, MultipleInvocations) {
   ScopedTempDir dir;
   EXPECT_TRUE(dir.CreateUniqueTempDir());
   EXPECT_FALSE(dir.CreateUniqueTempDir());
-  dir.Delete();
+  EXPECT_TRUE(dir.Delete());
   EXPECT_TRUE(dir.CreateUniqueTempDir());
   EXPECT_FALSE(dir.CreateUniqueTempDir());
   ScopedTempDir other_dir;
@@ -87,3 +88,23 @@ TEST(ScopedTempDir, MultipleInvocations) {
   EXPECT_FALSE(dir.CreateUniqueTempDir());
   EXPECT_FALSE(other_dir.CreateUniqueTempDir());
 }
+
+#if defined(OS_WIN)
+TEST(ScopedTempDir, LockedTempDir) {
+  ScopedTempDir dir;
+  EXPECT_TRUE(dir.CreateUniqueTempDir());
+  int file_flags = base::PLATFORM_FILE_CREATE_ALWAYS |
+                   base::PLATFORM_FILE_WRITE;
+  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
+  FilePath file_path(dir.path().Append(FILE_PATH_LITERAL("temp")));
+  base::PlatformFile file = base::CreatePlatformFile(file_path, file_flags,
+                                                     NULL, &error_code);
+  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+  EXPECT_EQ(base::PLATFORM_FILE_OK, error_code);
+  EXPECT_FALSE(dir.Delete());  // We should not be able to delete.
+  EXPECT_FALSE(dir.path().empty());  // We should still have a valid path.
+  EXPECT_TRUE(base::ClosePlatformFile(file));
+  // Now, we should be able to delete.
+  EXPECT_TRUE(dir.Delete());
+}
+#endif  // defined(OS_WIN)

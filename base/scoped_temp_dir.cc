@@ -11,7 +11,8 @@ ScopedTempDir::ScopedTempDir() {
 }
 
 ScopedTempDir::~ScopedTempDir() {
-  Delete();
+  if (!path_.empty() && !Delete())
+    LOG(WARNING) << "Could not delete temp dir in dtor.";
 }
 
 bool ScopedTempDir::CreateUniqueTempDir() {
@@ -57,10 +58,19 @@ bool ScopedTempDir::Set(const FilePath& path) {
   return true;
 }
 
-void ScopedTempDir::Delete() {
-  if (!path_.empty() && !file_util::Delete(path_, true))
+bool ScopedTempDir::Delete() {
+  if (path_.empty())
+    return false;
+
+  bool ret = file_util::Delete(path_, true);
+  if (ret) {
+    // We only clear the path if deleted the directory.
+    path_.clear();
+  } else {
     LOG(ERROR) << "ScopedTempDir unable to delete " << path_.value();
-  path_.clear();
+  }
+
+  return ret;
 }
 
 FilePath ScopedTempDir::Take() {
