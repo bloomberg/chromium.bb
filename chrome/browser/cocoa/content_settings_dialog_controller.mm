@@ -46,11 +46,7 @@ ContentSettingsDialogController* g_instance = nil;
 
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed.
-- (void)prefChanged:(const std::string&)prefName;
-
-// Callback when content settings are changed.
-- (void)contentSettingsChanged:
-    (HostContentSettingsMap::ContentSettingsDetails*)details;
+- (void)prefChanged:(std::string*)prefName;
 
 @end
 
@@ -67,21 +63,8 @@ class PrefObserverBridge : public NotificationObserver {
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (disabled_)
-      return;
-
-    // This is currently used by most notifications.
-    std::string* detail = Details<std::string>(details).ptr();
-    if (type == NotificationType::PREF_CHANGED && detail != NULL) {
-      [controller_ prefChanged:*detail];
-    }
-
-    // This is sent when the "is managed" state changes.
-    // TODO(markusheintz): Move all content settings to this notification.
-    if (type == NotificationType::CONTENT_SETTINGS_CHANGED) {
-      HostContentSettingsMap::ContentSettingsDetails* details =
-        Details<HostContentSettingsMap::ContentSettingsDetails>(details).ptr();
-      [controller_ contentSettingsChanged:details];
+    if (!disabled_ && type == NotificationType::PREF_CHANGED) {
+      [controller_ prefChanged:Details<std::string>(details).ptr()];
     }
   }
 
@@ -95,7 +78,7 @@ class PrefObserverBridge : public NotificationObserver {
 };
 
 // A C++ utility class to disable notifications for PrefsObserverBridge.
-// The intended usage is to create this on the stack.
+// The intended usage is to create on the stack.
 class PrefObserverDisabler {
  public:
   PrefObserverDisabler(PrefObserverBridge *bridge) : bridge_(bridge) {
@@ -283,11 +266,6 @@ class PrefObserverDisabler {
   }
 }
 
-- (BOOL)cookieSettingsManaged {
-  return profile_->GetHostContentSettingsMap()->IsDefaultContentSettingManaged(
-      CONTENT_SETTINGS_TYPE_COOKIES);
-}
-
 - (BOOL)blockThirdPartyCookies {
   HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
   return settingsMap->BlockThirdPartyCookies();
@@ -298,11 +276,6 @@ class PrefObserverDisabler {
   ContentSettingsDialogControllerInternal::PrefObserverDisabler
       disabler(observer_.get());
   settingsMap->SetBlockThirdPartyCookies(value);
-}
-
-- (BOOL)blockThirdPartyCookiesManaged {
-  HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
-  return settingsMap->IsBlockThirdPartyCookiesManaged();
 }
 
 - (BOOL)clearSiteDataOnExit {
@@ -432,11 +405,6 @@ class PrefObserverDisabler {
   return enabled ? kContentSettingsEnabledIndex : kContentSettingsDisabledIndex;
 }
 
-- (BOOL)imagesSettingsManaged {
-  return profile_->GetHostContentSettingsMap()->IsDefaultContentSettingManaged(
-      CONTENT_SETTINGS_TYPE_IMAGES);
-}
-
 - (void)setJavaScriptEnabledIndex:(NSInteger)value {
   ContentSetting setting = value == kContentSettingsEnabledIndex ?
       CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
@@ -452,11 +420,6 @@ class PrefObserverDisabler {
       settingsMap->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT) ==
       CONTENT_SETTING_ALLOW;
   return enabled ? kContentSettingsEnabledIndex : kContentSettingsDisabledIndex;
-}
-
-- (BOOL)javaScriptSettingsManaged {
-  return profile_->GetHostContentSettingsMap()->IsDefaultContentSettingManaged(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 }
 
 - (void)setPluginsEnabledIndex:(NSInteger)value {
@@ -500,11 +463,6 @@ class PrefObserverDisabler {
   }
 }
 
-- (BOOL)pluginsSettingsManaged {
-  return profile_->GetHostContentSettingsMap()->IsDefaultContentSettingManaged(
-      CONTENT_SETTINGS_TYPE_PLUGINS);
-}
-
 - (void)setPopupsEnabledIndex:(NSInteger)value {
   ContentSetting setting = value == kContentSettingsEnabledIndex ?
       CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
@@ -520,11 +478,6 @@ class PrefObserverDisabler {
       settingsMap->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS) ==
       CONTENT_SETTING_ALLOW;
   return enabled ? kContentSettingsEnabledIndex : kContentSettingsDisabledIndex;
-}
-
-- (BOOL)popupsSettingsManaged {
-  return profile_->GetHostContentSettingsMap()->IsDefaultContentSettingManaged(
-      CONTENT_SETTINGS_TYPE_POPUPS);
 }
 
 - (void)setGeolocationSettingIndex:(NSInteger)value {
@@ -585,22 +538,22 @@ class PrefObserverDisabler {
 
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed and should not be NULL.
-- (void)prefChanged:(const std::string&)prefName {
-  if (prefName == prefs::kClearSiteDataOnExit) {
+- (void)prefChanged:(std::string*)prefName {
+  DCHECK(prefName);
+  if (!prefName) return;
+  if (*prefName == prefs::kClearSiteDataOnExit) {
     [self willChangeValueForKey:@"clearSiteDataOnExit"];
     [self didChangeValueForKey:@"clearSiteDataOnExit"];
   }
-  if (prefName == prefs::kBlockThirdPartyCookies) {
+  if (*prefName == prefs::kBlockThirdPartyCookies) {
     [self willChangeValueForKey:@"blockThirdPartyCookies"];
     [self didChangeValueForKey:@"blockThirdPartyCookies"];
-    [self willChangeValueForKey:@"blockThirdPartyCookiesManaged"];
-    [self didChangeValueForKey:@"blockThirdPartyCookiesManaged"];
   }
-  if (prefName == prefs::kBlockNonsandboxedPlugins) {
+  if (*prefName == prefs::kBlockNonsandboxedPlugins) {
     [self willChangeValueForKey:@"pluginsEnabledIndex"];
     [self didChangeValueForKey:@"pluginsEnabledIndex"];
   }
-  if (prefName == prefs::kDefaultContentSettings) {
+  if (*prefName == prefs::kDefaultContentSettings) {
     // We don't know exactly which setting has changed, so we'll tickle all
     // of the properties that apply to kDefaultContentSettings.  This will
     // keep the UI up-to-date.
@@ -614,33 +567,15 @@ class PrefObserverDisabler {
     [self didChangeValueForKey:@"pluginsEnabledIndex"];
     [self willChangeValueForKey:@"popupsEnabledIndex"];
     [self didChangeValueForKey:@"popupsEnabledIndex"];
-
-    // Updates the "Enable" state of the radio groups and the exception buttons.
-    [self willChangeValueForKey:@"cookieSettingsManaged"];
-    [self didChangeValueForKey:@"cookieSettingsManaged"];
-    [self willChangeValueForKey:@"imagesSettingsManaged"];
-    [self didChangeValueForKey:@"imagesSettingsManaged"];
-    [self willChangeValueForKey:@"javaScriptSettingsManaged"];
-    [self didChangeValueForKey:@"javaScriptSettingsManaged"];
-    [self willChangeValueForKey:@"pluginsSettingsManaged"];
-    [self didChangeValueForKey:@"pluginsSettingsManaged"];
-    [self willChangeValueForKey:@"popupsSettingsManaged"];
-    [self didChangeValueForKey:@"popupsSettingsManaged"];
   }
-  if (prefName == prefs::kGeolocationDefaultContentSetting) {
+  if (*prefName == prefs::kGeolocationDefaultContentSetting) {
     [self willChangeValueForKey:@"geolocationSettingIndex"];
     [self didChangeValueForKey:@"geolocationSettingIndex"];
   }
-  if (prefName == prefs::kDesktopNotificationDefaultContentSetting) {
+  if (*prefName == prefs::kDesktopNotificationDefaultContentSetting) {
     [self willChangeValueForKey:@"notificationsSettingIndex"];
     [self didChangeValueForKey:@"notificationsSettingIndex"];
   }
-}
-
-- (void)contentSettingsChanged:
-    (HostContentSettingsMap::ContentSettingsDetails*)details {
-  [self prefChanged:prefs::kBlockNonsandboxedPlugins];
-  [self prefChanged:prefs::kDefaultContentSettings];
 }
 
 @end
