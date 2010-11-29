@@ -523,7 +523,10 @@ void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
 CairoCachedSurface* GtkThemeProvider::GetSurfaceNamed(
     int id,
     GtkWidget* widget_on_display) {
-  return GetSurfaceNamedImpl(id, GetPixbufNamed(id), widget_on_display);
+  return GetSurfaceNamedImpl(id,
+                             &per_display_surfaces_,
+                             GetPixbufNamed(id),
+                             widget_on_display);
 }
 
 CairoCachedSurface* GtkThemeProvider::GetRTLEnabledSurfaceNamed(
@@ -534,7 +537,9 @@ CairoCachedSurface* GtkThemeProvider::GetRTLEnabledSurfaceNamed(
   // location calls this function with a resource ID, and another place calls
   // GetSurfaceNamed() with the same ID, they'll correctly get different
   // surfaces in RTL mode.
-  return GetSurfaceNamedImpl(-id, GetRTLEnabledPixbufNamed(id),
+  return GetSurfaceNamedImpl(-id,
+                             &per_display_surfaces_,
+                             GetRTLEnabledPixbufNamed(id),
                              widget_on_display);
 }
 
@@ -542,6 +547,7 @@ CairoCachedSurface* GtkThemeProvider::GetUnthemedSurfaceNamed(
     int id,
     GtkWidget* widget_on_display) {
   return GetSurfaceNamedImpl(id,
+      &per_display_unthemed_surfaces_,
       ResourceBundle::GetSharedInstance().GetPixbufNamed(id),
       widget_on_display);
 }
@@ -1055,10 +1061,11 @@ void GtkThemeProvider::GetSelectedEntryForegroundHSL(
 
 CairoCachedSurface* GtkThemeProvider::GetSurfaceNamedImpl(
     int id,
+    PerDisplaySurfaceMap* display_surface_map,
     GdkPixbuf* pixbuf,
     GtkWidget* widget_on_display) {
   GdkDisplay* display = gtk_widget_get_display(widget_on_display);
-  CairoCachedSurfaceMap& surface_map = per_display_surfaces_[display];
+  CairoCachedSurfaceMap& surface_map = (*display_surface_map)[display];
 
   // Check to see if we already have the pixbuf in the cache.
   CairoCachedSurfaceMap::const_iterator found = surface_map.find(id);

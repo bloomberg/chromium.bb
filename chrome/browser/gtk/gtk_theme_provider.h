@@ -226,6 +226,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
 
   // Implements GetXXXSurfaceNamed(), given the appropriate pixbuf to use.
   CairoCachedSurface* GetSurfaceNamedImpl(int id,
+                                          PerDisplaySurfaceMap* surface_map,
                                           GdkPixbuf* pixbuf,
                                           GtkWidget* widget_on_display);
 
