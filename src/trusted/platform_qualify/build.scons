@@ -40,7 +40,7 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
   env.Append(LIBS = ['platform_qual_lib', 'ncvalidate'])
   # TODO(bradchen): need to fix vcpuid to use intrinsics rather than inline
   # assembly code. (Issue 440)
-  if env['TARGET_SUBARCH'] == '64' and env.Bit('windows'):
+  if env.Bit('target_x86_64') and env.Bit('windows'):
     env.Append(LIBS = ['platform_qual_lib',
                        'ncvalidate'])
   else:

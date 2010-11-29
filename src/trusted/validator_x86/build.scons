@@ -152,7 +152,7 @@ NCVALIDATE_SOURCES = ['nacl_cpuid.c',
                                     'nccopycode.c',
                                     'nccopycode_stores.S'
                                     ]
-if env['TARGET_SUBARCH']=='64':
+if env.Bit('target_x86_64'):
   NCVALIDATE_SOURCES = NCVALIDATE_SOURCES + ncopcode_desc_o
 
 env.ComponentLibrary('ncvalidate', NCVALIDATE_SOURCES)
@@ -189,7 +189,7 @@ env.Command(
      (env['TARGET_SUBARCH'], ncv_decodetab_h, ncv_disasmtab_h)])
 
 # TODO(gregoryd): use nc_opcode_table64.h on all 64-bit platforms.
-if env['TARGET_SUBARCH'] == '64' and env.Bit('windows'):
+if env.Bit('target_x86_64') and env.Bit('windows'):
   ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table64.h')
 else:
   ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table.h')
@@ -203,9 +203,9 @@ env.Command(
 
 # ======================================================================
 # Decoder unittests
-if test_env['TARGET_SUBARCH'] == '32':
+if test_env.Bit('target_x86_32'):
   # TODO(kschimpf): remove this when the validator builds as 64-bits.
-  if test_env['BUILD_SUBARCH'] == '32':
+  if test_env.Bit('build_x86_32'):
     ncdecode_tests = test_env.ComponentProgram('ncdecode_tests',
                                                ['ncdecode_tests.c'],
                                                EXTRA_LIBS=['ncvalidate',
@@ -239,7 +239,7 @@ env.Requires(ncdis, crt)
 
 # ======================================================================
 # Valiator unittests
-if test_env['TARGET_SUBARCH'] == '32':
+if test_env.Bit('target_x86_32'):
   ncval_tests = test_env.ComponentProgram('ncval_tests',
                                           ['ncval_tests.c'],
                                           EXTRA_LIBS=['ncvalidate', 'nchelper'])
@@ -253,7 +253,7 @@ if test_env['TARGET_SUBARCH'] == '32':
   test_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'])
 
 # ======================================================================
-if test_env['TARGET_SUBARCH'] == '32':
+if test_env.Bit('target_x86_32'):
   nacl_cpuid = test_env.ComponentProgram('nacl_cpuid',
                                          ['nacl_cpuid_test.c'],
                                          EXTRA_LIBS=['ncvalidate'])
@@ -305,7 +305,7 @@ def __AddTest(test, base, ext, command, groups):
 # ======================================================================
 # Decoder vs objdump tests
 # TODO: add tests using the toolchain binaries in the sdk
-if test_env.Bit('linux') and test_env['TARGET_SUBARCH'] == '32':
+if test_env.Bit('linux') and test_env.Bit('target_x86_32'):
   test = 'discmp'
   ext = 'nexe'
   for base in __GoldenBases(ext):
@@ -390,7 +390,7 @@ test_env.Requires(ncval, crt)
 # TODO: add tests using binaries produced by nacl.scons files
 # TODO: consider comparing the actual output (not just exit codes)
 # Validate tests
-if env['TARGET_SUBARCH'] == '32':
+if env.Bit('target_x86_32'):
   test = 'validate'
   ext = 'nexe'
   for base in __GoldenBases(ext):
@@ -428,7 +428,7 @@ __AddNcDisTests(False)
 # Run tests using ncval --use_iter, on test files. Assume that write sandbox tests
 # use extension 'val' while read/write sandbox tests use extention 'rval'.
 def __AddNcvalSfiTests(test_readwrite):
-  if env['TARGET_SUBARCH'] == '64':
+  if env.Bit('target_x86_64'):
     test = 'ncval64_hex'
     if test_readwrite:
       ext = 'rval'
@@ -452,7 +452,7 @@ __AddNcvalSfiTests(False)
 
 # Run tests using ncval --use_iter=false on test files.
 def __AddNcvalSegmentTests():
-  if env['TARGET_SUBARCH'] == '32':
+  if env.Bit('target_x86_32'):
     test = 'ncval32_hex'
     ext = 'nval'
     for base in __GoldenBases(ext):
@@ -474,7 +474,7 @@ __AddNcvalSegmentTests()
 # sval implies to use the SFI model, while snval implies use of the
 # (32 bit) segment model. The input file uses extension hex.
 def __AddNcValStuboutTests(use_sfi):
-  if (env['TARGET_SUBARCH'] == '32') or use_sfi:
+  if env.Bit('target_x86_32') or use_sfi:
     test = 'ncval_stubout'
     options = ['--hex_text=-', '--stubout']
     if use_sfi:
@@ -517,7 +517,7 @@ __AddModeledInstsTest()
 
 # Run test to show that --max_errors=-1 works in 32 bit mode.
 def __AddNegMaxErrors():
-  if env['TARGET_SUBARCH'] == '32':
+  if env.Bit('target_x86_32'):
     test = 'neg_max_errs'
     base = 'ret'
     ext = 'nval'

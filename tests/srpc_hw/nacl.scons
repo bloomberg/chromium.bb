@@ -19,7 +19,7 @@ env.AddPrebuiltBinaryToRepository(nexe)
 
 
 # TODO(dpolukhin): enable for x86-64 ASAP.
-if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '64':
+if env.Bit('target_x86_64'):
   Return()
 
 node = env.BrowserTester(

@@ -18,7 +18,7 @@ env.Append(CPPPATH=['${SOURCE_ROOT}/gdb_utils/src'])
 DEBUG_LIBS = ['gdb_rsp','debug_stub']
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])
-  if env['TARGET_SUBARCH'] == '64':
+  if env.Bit('target_x86_64'):
     env.Append(CPPDEFINES=['WIN64'])
 
 
@@ -100,7 +100,7 @@ ldr_inputs = [
     'elf_util.c',
 ]
 
-if env.Bit('target_x86_32'):
+if env.Bit('build_x86_32'):
   ldr_inputs += [
       'arch/x86/nacl_ldt_x86.c',
       'arch/x86_32/nacl_app_32.c',
@@ -114,7 +114,7 @@ if env.Bit('target_x86_32'):
       'arch/x86_32/springboard.S',
       'arch/x86_32/tramp_32.S',
       ]
-elif env.Bit('target_x86_64'):
+elif env.Bit('build_x86_64'):
   ldr_inputs += [
       'arch/x86/nacl_ldt_x86.c',
       'arch/x86_64/nacl_app_64.c',

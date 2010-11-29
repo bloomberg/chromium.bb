@@ -73,9 +73,9 @@ def ReplicateDlls(sdl_dll):
     lib = '${SDL_DIR}/SDL.framework'
   elif env.Bit('linux') and env.Bit('build_x86'):
     dsts = ['${STAGING_DIR}', '.']
-    if sdl_env['BUILD_SUBARCH'] == '32':
+    if sdl_env.Bit('build_x86_32'):
       lib = '${SDL_DIR}/lib/libSDL-1.2.so.0'
-    elif sdl_env['BUILD_SUBARCH'] == '64':
+    elif sdl_env.Bit('build_x86_64'):
       lib = '${SDL_DIR}/lib64/libSDL-1.2.so.0'
 
   assert dsts

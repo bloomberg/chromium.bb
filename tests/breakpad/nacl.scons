@@ -35,9 +35,6 @@ nexe = env.ComponentProgram('breakpad.nexe',
                             'breakpad.c',
                             EXTRA_LIBS=['pthread'],
                             )
-env['TARGET_PLATFORM'] = (env['TARGET_ARCHITECTURE'] +
-                         '-' +
-                         env['TARGET_SUBARCH'])
 
 env.AppendENVPath('PATH',os.environ['PATH'])
 print env['ENV']['PATH']
