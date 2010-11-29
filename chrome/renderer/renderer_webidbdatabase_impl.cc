@@ -38,13 +38,6 @@ WebString RendererWebIDBDatabaseImpl::name() const {
   return result;
 }
 
-WebString RendererWebIDBDatabaseImpl::description() const {
-  string16 result;
-  RenderThread::current()->Send(
-      new ViewHostMsg_IDBDatabaseDescription(idb_database_id_, &result));
-  return result;
-}
-
 WebString RendererWebIDBDatabaseImpl::version() const {
   string16 result;
   RenderThread::current()->Send(

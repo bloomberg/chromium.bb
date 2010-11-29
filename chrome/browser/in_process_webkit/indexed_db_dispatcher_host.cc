@@ -130,7 +130,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBCursorDestroyed::ID:
     case ViewHostMsg_IDBFactoryOpen::ID:
     case ViewHostMsg_IDBDatabaseName::ID:
-    case ViewHostMsg_IDBDatabaseDescription::ID:
     case ViewHostMsg_IDBDatabaseVersion::ID:
     case ViewHostMsg_IDBDatabaseObjectStoreNames::ID:
     case ViewHostMsg_IDBDatabaseCreateObjectStore::ID:
@@ -362,8 +361,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::DatabaseDispatcherHost,
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseName, OnName)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseDescription,
-                                    OnDescription)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseVersion, OnVersion)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseObjectStoreNames,
                                     OnObjectStoreNames)
@@ -393,13 +390,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnName(
     int32 object_id, IPC::Message* reply_msg) {
   parent_->SyncGetter<string16, ViewHostMsg_IDBDatabaseName>(
       &map_, object_id, reply_msg, &WebIDBDatabase::name);
-}
-
-// TODO(hans): Delete this?
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDescription(
-    int32 object_id, IPC::Message* reply_msg) {
-  parent_->SyncGetter<string16, ViewHostMsg_IDBDatabaseDescription>(
-      &map_, object_id, reply_msg, &WebIDBDatabase::description);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnVersion(

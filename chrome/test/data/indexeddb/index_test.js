@@ -154,7 +154,7 @@ function test()
   }
 
   debug('Connecting to indexedDB');
-  var result = indexedDB.open('name', 'description');
+  var result = indexedDB.open('name');
   result.onsuccess = setVersion;
   result.onerror = unexpectedErrorCallback;
 }

@@ -62,7 +62,7 @@ function test()
 {
     debug("Test IndexedDB's KeyPath.");
     debug("Opening IndexedDB");
-    result = webkitIndexedDB.open('name', 'description');
+    result = webkitIndexedDB.open('name');
     result.onsuccess = setVersion;
     result.onerror = unexpectedErrorCallback;
 }

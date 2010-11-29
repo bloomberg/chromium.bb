@@ -2473,11 +2473,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int32, /* idb_database_id */
                               string16 /* name */)
 
-  // WebIDBDatabase::description() message.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseDescription,
-                              int32, /* idb_database_id */
-                              string16 /* description */)
-
   // WebIDBDatabase::version() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseVersion,
                               int32, /* idb_database_id */

@@ -60,7 +60,7 @@ function setVersion()
 
 function test()
 {
-    result = webkitIndexedDB.open('name', 'description');
+    result = webkitIndexedDB.open('name');
     result.onsuccess = setVersion;
     result.onerror = unexpectedErrorCallback;
 }

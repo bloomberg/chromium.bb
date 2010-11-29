@@ -99,7 +99,6 @@ class IndexedDBDispatcherHost
     void Send(IPC::Message* message);
 
     void OnName(int32 idb_database_id, IPC::Message* reply_msg);
-    void OnDescription(int32 idb_database_id, IPC::Message* reply_msg);
     void OnVersion(int32 idb_database_id, IPC::Message* reply_msg);
     void OnObjectStoreNames(int32 idb_database_id, IPC::Message* reply_msg);
     void OnCreateObjectStore(

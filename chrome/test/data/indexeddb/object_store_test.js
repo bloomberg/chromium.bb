@@ -80,7 +80,7 @@ function setVersion()
 function test()
 {
   debug('Connecting to indexedDB');
-  var result = webkitIndexedDB.open('name', 'description');
+  var result = webkitIndexedDB.open('name');
   result.onsuccess = setVersion;
   result.onerror = unexpectedErrorCallback;
 }
