@@ -365,7 +365,7 @@ bool JingleSessionManager::ParseContent(
       if (!ParseChannelConfig(child, false, &channel_config))
         return false;
       config->mutable_control_configs()->push_back(channel_config);
-      child = element->NextNamed(control_tag);
+      child = child->NextNamed(control_tag);
     }
 
     // <event> tags.
@@ -376,7 +376,7 @@ bool JingleSessionManager::ParseContent(
       if (!ParseChannelConfig(child, false, &channel_config))
         return false;
       config->mutable_event_configs()->push_back(channel_config);
-      child = element->NextNamed(event_tag);
+      child = child->NextNamed(event_tag);
     }
 
     // <video> tags.
@@ -387,7 +387,7 @@ bool JingleSessionManager::ParseContent(
       if (!ParseChannelConfig(child, true, &channel_config))
         return false;
       config->mutable_video_configs()->push_back(channel_config);
-      child = element->NextNamed(video_tag);
+      child = child->NextNamed(video_tag);
     }
 
     // <initial-resolution> tag.
