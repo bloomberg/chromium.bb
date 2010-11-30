@@ -146,8 +146,14 @@ void SetDestTargetList(GtkWidget* dest, const int* target_codes) {
 
 void WriteURLWithName(GtkSelectionData* selection_data,
                       const GURL& url,
-                      const string16& title,
+                      string16 title,
                       int type) {
+  if (title.empty()) {
+    // We prefer to not have empty titles. Set it to the filename extracted
+    // from the URL.
+    title = UTF8ToUTF16(url.ExtractFileName());
+  }
+
   switch (type) {
     case TEXT_PLAIN: {
       gtk_selection_data_set_text(selection_data, url.spec().c_str(),

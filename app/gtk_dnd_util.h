@@ -64,7 +64,7 @@ void SetDestTargetList(GtkWidget* dest, const int* target_codes);
 // Write a URL to the selection in the given type.
 void WriteURLWithName(GtkSelectionData* selection_data,
                       const GURL& url,
-                      const string16& title,
+                      string16 title,
                       int type);
 
 // Extracts data of type CHROME_NAMED_URL from |selection_data| into
