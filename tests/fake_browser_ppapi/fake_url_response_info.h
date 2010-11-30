@@ -17,7 +17,7 @@
 
 namespace fake_browser_ppapi {
 
-// Implements the PPB_URLResponse_Info_Dev interface.
+// Implements the PPB_URLResponse_Info interface.
 class URLResponseInfo : public Resource {
  public:
   explicit URLResponseInfo(PP_Module module_id)

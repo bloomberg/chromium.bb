@@ -30,7 +30,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 
 PP_Bool SetProperty(PP_Resource request,
                     PP_URLRequestProperty property,
-                 struct PP_Var value) {
+                    struct PP_Var value) {
   UNREFERENCED_PARAMETER(request);
   UNREFERENCED_PARAMETER(property);
   UNREFERENCED_PARAMETER(value);
