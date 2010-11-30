@@ -21,9 +21,15 @@ function getAppsCallback(data) {
   var appsPromoPing = PING_WEBSTORE_LAUNCH_PREFIX + '+' + data.showPromo;
   var webStoreEntry;
 
-  // Hide the app window menu option on platforms that do not support it.
+  // Hide menu options that are not supported on the OS or windowing system.
+
+  // The "Launch as Window" menu option.
   $('apps-launch-type-window-menu-item').style.display =
       (data.disableAppWindowLaunch ? 'none' : 'inline');
+
+  // The "Create App Shortcut" menu option.
+  $('apps-create-shortcut-command-menu-item').style.display =
+      (data.disableCreateAppShortcut ? 'none' : 'inline');
 
   appsMiniview.textContent = '';
   appsSectionContent.textContent = '';
@@ -217,6 +223,9 @@ var apps = (function() {
         break;
       case 'apps-uninstall-command':
         chrome.send('uninstallApp', [currentApp['id']]);
+        break;
+      case 'apps-create-shortcut-command':
+        chrome.send('createAppShortcut', [currentApp['id']]);
         break;
       case 'apps-launch-type-pinned':
       case 'apps-launch-type-regular':

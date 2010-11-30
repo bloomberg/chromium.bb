@@ -14,6 +14,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/codec/png_codec.h"
@@ -29,6 +31,7 @@
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/window/window.h"
+
 
 #if defined(OS_WIN)
 #include "base/win_util.h"
@@ -188,21 +191,28 @@ void AppInfoView::Paint(gfx::Canvas* canvas) {
       inner_rect, SkIntToScalar(1.5), SkIntToScalar(1.5), inner_paint);
 }
 
-};  // namespace
+}  // namespace
 
 namespace browser {
 
-void ShowCreateShortcutsDialog(gfx::NativeWindow parent_window,
-                               TabContents* tab_contents) {
+void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
+                                     TabContents* tab_contents) {
   views::Window::CreateChromeWindow(parent_window, gfx::Rect(),
-      new CreateApplicationShortcutView(tab_contents))->Show();
+      new CreateUrlApplicationShortcutView(tab_contents))->Show();
 }
 
-};  // namespace browser
+void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
+                                        Profile* profile,
+                                        const Extension* app) {
+  views::Window::CreateChromeWindow(parent_window, gfx::Rect(),
+      new CreateChromeApplicationShortcutView(profile, app))->Show();
+}
 
-class CreateApplicationShortcutView::IconDownloadCallbackFunctor {
+}  // namespace browser
+
+class CreateUrlApplicationShortcutView::IconDownloadCallbackFunctor {
  public:
-  explicit IconDownloadCallbackFunctor(CreateApplicationShortcutView* owner)
+  explicit IconDownloadCallbackFunctor(CreateUrlApplicationShortcutView* owner)
       : owner_(owner) {
   }
 
@@ -217,31 +227,15 @@ class CreateApplicationShortcutView::IconDownloadCallbackFunctor {
   }
 
  private:
-  CreateApplicationShortcutView* owner_;
+  CreateUrlApplicationShortcutView* owner_;
 };
 
-CreateApplicationShortcutView::CreateApplicationShortcutView(
-    TabContents* tab_contents)
-    : tab_contents_(tab_contents),
-      pending_download_(NULL) {
-  Init();
-}
+CreateApplicationShortcutView::CreateApplicationShortcutView(Profile* profile)
+    : profile_(profile) {}
 
-CreateApplicationShortcutView::~CreateApplicationShortcutView() {
-  if (pending_download_)
-    pending_download_->Cancel();
-}
+CreateApplicationShortcutView::~CreateApplicationShortcutView() {}
 
-void CreateApplicationShortcutView::Init() {
-  // Prepare data
-  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
-
-  const WebApplicationInfo& app_info = tab_contents_->web_app_info();
-  if (!app_info.icons.empty()) {
-    web_app::GetIconsInfo(app_info, &unprocessed_icons_);
-    FetchIcon();
-  }
-
+void CreateApplicationShortcutView::InitControls() {
   // Create controls
   app_info_ = new AppInfoView(shortcut_info_.title, shortcut_info_.description,
                               shortcut_info_.favicon);
@@ -249,11 +243,9 @@ void CreateApplicationShortcutView::Init() {
       l10n_util::GetString(IDS_CREATE_SHORTCUTS_LABEL));
   create_shortcuts_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
-  Profile* profile = tab_contents_->profile();
-
   desktop_check_box_ = AddCheckbox(
       l10n_util::GetString(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX),
-      profile->GetPrefs()->GetBoolean(prefs::kWebAppCreateOnDesktop));
+      profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateOnDesktop));
 
   menu_check_box_ = NULL;
   quick_launch_check_box_ = NULL;
@@ -261,17 +253,17 @@ void CreateApplicationShortcutView::Init() {
 #if defined(OS_WIN)
   menu_check_box_ = AddCheckbox(
       l10n_util::GetString(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX),
-      profile->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
+      profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
 
   quick_launch_check_box_ = AddCheckbox(
       (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
         l10n_util::GetString(IDS_PIN_TO_TASKBAR_CHKBOX) :
         l10n_util::GetString(IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
-      profile->GetPrefs()->GetBoolean(prefs::kWebAppCreateInQuickLaunchBar));
+      profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInQuickLaunchBar));
 #elif defined(OS_LINUX)
   menu_check_box_ = AddCheckbox(
       l10n_util::GetString(IDS_CREATE_SHORTCUTS_MENU_CHKBOX),
-      profile->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
+      profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
 #endif
 
   // Layout controls
@@ -367,9 +359,8 @@ std::wstring CreateApplicationShortcutView::GetWindowTitle() const {
 }
 
 bool CreateApplicationShortcutView::Accept() {
-  if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK)) {
+  if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK))
     return false;
-  }
 
   shortcut_info_.create_on_desktop = desktop_check_box_->checked();
   shortcut_info_.create_in_applications_menu = menu_check_box_ == NULL ? false :
@@ -384,15 +375,12 @@ bool CreateApplicationShortcutView::Accept() {
   shortcut_info_.create_in_quick_launch_bar = false;
 #endif
 
-  web_app::CreateShortcut(tab_contents_->profile()->GetPath(),
+  web_app::CreateShortcut(profile_->GetPath(),
                           shortcut_info_,
                           NULL);
-
-  tab_contents_->SetAppIcon(shortcut_info_.favicon);
-  if (tab_contents_->delegate())
-    tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
   return true;
 }
+
 
 views::View* CreateApplicationShortcutView::GetContentsView() {
   return this;
@@ -406,14 +394,59 @@ views::Checkbox* CreateApplicationShortcutView::AddCheckbox(
   return checkbox;
 }
 
-void CreateApplicationShortcutView::FetchIcon() {
+void CreateApplicationShortcutView::ButtonPressed(views::Button* sender,
+                                                  const views::Event& event) {
+  if (sender == desktop_check_box_)
+    profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateOnDesktop,
+        desktop_check_box_->checked() ? true : false);
+  else if (sender == menu_check_box_)
+    profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateInAppsMenu,
+        menu_check_box_->checked() ? true : false);
+  else if (sender == quick_launch_check_box_)
+    profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateInQuickLaunchBar,
+        quick_launch_check_box_->checked() ? true : false);
+
+  // When no checkbox is checked we should not have the action button enabled.
+  GetDialogClientView()->UpdateDialogButtons();
+}
+
+CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
+    TabContents* tab_contents)
+    : CreateApplicationShortcutView(tab_contents->profile()),
+      tab_contents_(tab_contents),
+      pending_download_(NULL)  {
+
+  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
+  const WebApplicationInfo& app_info = tab_contents_->web_app_info();
+  if (!app_info.icons.empty()) {
+    web_app::GetIconsInfo(app_info, &unprocessed_icons_);
+    FetchIcon();
+  }
+
+  InitControls();
+}
+
+CreateUrlApplicationShortcutView::~CreateUrlApplicationShortcutView() {
+  if (pending_download_)
+    pending_download_->Cancel();
+}
+
+bool CreateUrlApplicationShortcutView::Accept() {
+  if (!CreateApplicationShortcutView::Accept())
+    return false;
+
+  tab_contents_->SetAppIcon(shortcut_info_.favicon);
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
+  return true;
+}
+
+void CreateUrlApplicationShortcutView::FetchIcon() {
   // There should only be fetch job at a time.
   DCHECK(pending_download_ == NULL);
 
-  if (unprocessed_icons_.empty()) {
-    // No icons to fetch.
+  if (unprocessed_icons_.empty())  // No icons to fetch.
     return;
-  }
 
   pending_download_ = new IconDownloadCallbackFunctor(this);
   DCHECK(pending_download_);
@@ -427,25 +460,8 @@ void CreateApplicationShortcutView::FetchIcon() {
   unprocessed_icons_.pop_back();
 }
 
-void CreateApplicationShortcutView::ButtonPressed(views::Button* sender,
-                                                  const views::Event& event) {
-  Profile* profile = tab_contents_->profile();
-  if (sender == desktop_check_box_)
-    profile->GetPrefs()->SetBoolean(prefs::kWebAppCreateOnDesktop,
-        desktop_check_box_->checked() ? true : false);
-  else if (sender == menu_check_box_)
-    profile->GetPrefs()->SetBoolean(prefs::kWebAppCreateInAppsMenu,
-        menu_check_box_->checked() ? true : false);
-  else if (sender == quick_launch_check_box_)
-    profile->GetPrefs()->SetBoolean(prefs::kWebAppCreateInQuickLaunchBar,
-        quick_launch_check_box_->checked() ? true : false);
-
-  // When no checkbox is checked we should not have the action button enabled.
-  GetDialogClientView()->UpdateDialogButtons();
-}
-
-void CreateApplicationShortcutView::OnIconDownloaded(bool errored,
-                                                     const SkBitmap& image) {
+void CreateUrlApplicationShortcutView::OnIconDownloaded(bool errored,
+                                                        const SkBitmap& image) {
   pending_download_ = NULL;
 
   if (!errored && !image.isNull()) {
@@ -455,3 +471,56 @@ void CreateApplicationShortcutView::OnIconDownloaded(bool errored,
     FetchIcon();
   }
 }
+
+CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
+    Profile* profile,
+    const Extension* app) :
+      CreateApplicationShortcutView(profile),
+      app_(app),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+
+  shortcut_info_.extension_id = UTF8ToUTF16(app_->id());
+  shortcut_info_.url = GURL(app_->launch_web_url());
+  shortcut_info_.title = UTF8ToUTF16(app_->name());
+  shortcut_info_.description = UTF8ToUTF16(app_->description());
+
+  // The icon will be resized to |max_size|.
+  const gfx::Size max_size(kAppIconSize, kAppIconSize);
+
+  // Look for an icon.  If there is no icon at the ideal size,
+  // we will resize whatever we can get.  Making a large icon smaller
+  // is prefered to making a small icon larger, so look for a larger
+  // icon first:
+  ExtensionResource icon_resource = app_->GetIconResource(
+      kAppIconSize,
+      ExtensionIconSet::MATCH_BIGGER);
+
+  // If no icon exists that is the desired size or larger, get the
+  // largest icon available:
+  if (icon_resource.empty()) {
+    icon_resource = app_->GetIconResource(
+        kAppIconSize,
+        ExtensionIconSet::MATCH_SMALLER);
+  }
+
+  tracker_.LoadImage(app_,
+                     icon_resource,
+                     max_size,
+                     ImageLoadingTracker::DONT_CACHE);
+
+  InitControls();
+}
+
+CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
+
+// Called by tracker_ when the app's icon is loaded.
+void CreateChromeApplicationShortcutView::OnImageLoaded(
+    SkBitmap* image, ExtensionResource resource, int index) {
+  if (image->isNull()) {
+    NOTREACHED() << "Corrupt image in profile?";
+    return;
+  }
+  shortcut_info_.favicon = *image;
+  static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
+}
+

@@ -14,6 +14,7 @@ namespace switches {
 // pick up an automatic update, be sure to add it to this list.
 const char* const kSwitchesToRemoveOnAutorestart[] = {
   switches::kApp,
+  switches::kAppId,
   switches::kFirstRun,
   switches::kImport,
   switches::kImportFromFile,

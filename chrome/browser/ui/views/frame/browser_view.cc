@@ -1167,8 +1167,13 @@ void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
   browser::ShowHtmlDialogView(parent, browser_.get()->profile(), delegate);
 }
 
-void BrowserView::ShowCreateShortcutsDialog(TabContents* tab_contents) {
-  browser::ShowCreateShortcutsDialog(GetNativeHandle(), tab_contents);
+void BrowserView::ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) {
+  browser::ShowCreateWebAppShortcutsDialog(GetNativeHandle(), tab_contents);
+}
+
+void BrowserView::ShowCreateChromeAppShortcutsDialog(Profile* profile,
+                                                     const Extension* app) {
+  browser::ShowCreateChromeAppShortcutsDialog(GetNativeHandle(), profile, app);
 }
 
 void BrowserView::UserChangedTheme() {

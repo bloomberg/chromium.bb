@@ -549,7 +549,13 @@ bool BrowserWindowCocoa::HandleKeyboardEventInternal(NSEvent* event) {
   return [event_window redispatchKeyEvent:event];
 }
 
-void BrowserWindowCocoa::ShowCreateShortcutsDialog(TabContents* tab_contents) {
+void BrowserWindowCocoa::ShowCreateWebAppShortcutsDialog(
+    TabContents* tab_contents) {
+  NOTIMPLEMENTED();
+}
+
+void BrowserWindowCocoa::ShowCreateChromeAppShortcutsDialog(
+    Profile* profile, const Extension* app) {
   NOTIMPLEMENTED();
 }
 

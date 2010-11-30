@@ -232,6 +232,8 @@ if ('mode' in hashParams) {
 <command id="apps-launch-command">
 <command id="apps-options-command" i18n-values=".label:appoptions">
 <command id="apps-uninstall-command" i18n-values=".label:appuninstall">
+<command id="apps-create-shortcut-command"
+    i18n-values=".label:appcreateshortcut">
 <command id="apps-launch-type-pinned" i18n-values=".label:applaunchtypepinned"
     launch-type="0">
 <command id="apps-launch-type-regular" i18n-values=".label:applaunchtyperegular"
@@ -257,6 +259,8 @@ if ('mode' in hashParams) {
   <hr>
   <button command="#apps-options-command"></button>
   <button command="#apps-uninstall-command"></button>
+  <button id="apps-create-shortcut-command-menu-item"
+      command="#apps-create-shortcut-command"></button>
 </menu>
 
 </body>

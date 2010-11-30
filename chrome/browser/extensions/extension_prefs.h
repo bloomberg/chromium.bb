@@ -158,8 +158,20 @@ class ExtensionPrefs {
   bool AllowFileAccess(const std::string& extension_id);
   void SetAllowFileAccess(const std::string& extension_id, bool allow);
 
-  ExtensionPrefs::LaunchType GetLaunchType(const std::string& extension_id);
+  // Get the launch type preference.  If no preference is set, return
+  // |default_pref_value|.
+  LaunchType GetLaunchType(const std::string& extension_id,
+                           LaunchType default_pref_value);
+
   void SetLaunchType(const std::string& extension_id, LaunchType launch_type);
+
+  // Find the right launch container based on the launch type.
+  // If |extension|'s prefs do not have a launch type set, then
+  // use |default_pref_value|.
+  extension_misc::LaunchContainer GetLaunchContainer(
+      const Extension* extension,
+      LaunchType default_pref_value);
+
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved

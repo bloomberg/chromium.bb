@@ -36,6 +36,8 @@ namespace views {
 class Window;
 }
 
+class Extension;
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow interface
 //  An interface implemented by the "view" of the Browser window.
@@ -295,7 +297,11 @@ class BrowserWindow {
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) = 0;
 
   // Shows the create web app shortcut dialog box.
-  virtual void ShowCreateShortcutsDialog(TabContents* tab_contents) = 0;
+  virtual void ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) = 0;
+
+  // Shows the create chrome app shortcut dialog box.
+  virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
+                                                  const Extension* app) = 0;
 
   // Clipboard commands applied to the whole browser window.
   virtual void Cut() = 0;

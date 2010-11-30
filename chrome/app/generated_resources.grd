@@ -7517,6 +7517,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Text for the button that takes the user to the options of an app.">
         Options
       </message>
+      <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
+               desc="Text for the button that creates an app shortcut.">
+        Create shortcut
+      </message>
       <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                desc="Text for the button that opens the app in a pinned tab.">
         Open as pinned tab

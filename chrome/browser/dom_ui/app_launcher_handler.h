@@ -67,6 +67,9 @@ class AppLauncherHandler
   // Callback for the "hideAppPromo" message.
   void HandleHideAppsPromo(const ListValue* args);
 
+  // Callback for the "createAppShortcut" message.
+  void HandleCreateAppShortcut(const ListValue* args);
+
  private:
   // Records a web store launch in the appropriate histograms. |promo_active|
   // specifies if the web store promotion was active.

@@ -15,6 +15,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -31,24 +33,29 @@ const int kDescriptionLabelHeightLines = 3;
 }  // namespace
 
 // static
-void CreateApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
-                                               TabContents* tab_contents) {
-  new CreateApplicationShortcutsDialogGtk(parent, tab_contents);
+void CreateWebApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
+                                                  TabContents* tab_contents) {
+  new CreateWebApplicationShortcutsDialogGtk(parent, tab_contents);
 }
 
+void CreateChromeApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
+                                                     const Extension* app) {
+  new CreateChromeApplicationShortcutsDialogGtk(parent, app);
+}
+
+
 CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
-    GtkWindow* parent,
-    TabContents* tab_contents)
-    : tab_contents_(tab_contents),
-      error_dialog_(NULL) {
+    GtkWindow* parent)
+  : parent_(parent),
+    error_dialog_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Will be balanced by Release later.
   AddRef();
+}
 
-  // Get shortcut information now, it's needed for our UI.
-  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
-
+void CreateApplicationShortcutsDialogGtk::CreateIconPixBuf(
+    const SkBitmap& bitmap) {
   // Prepare the icon. Try to scale it if it's too small, otherwise it would
   // look weird.
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&shortcut_info_.favicon);
@@ -56,7 +63,7 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
   int pixbuf_height = gdk_pixbuf_get_height(pixbuf);
   if (pixbuf_width == pixbuf_height && pixbuf_width < kIconPreviewSizePixels) {
     // Only scale the pixbuf if it's a square (for simplicity).
-    // Generally it should be square, if it's a favicon.
+    // Generally it should be square, if it's a favicon or app icon.
     // Use the highest quality interpolation. The scaling is
     // going to have low quality anyway, because the initial image
     // is likely small.
@@ -68,7 +75,9 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
   } else {
     favicon_pixbuf_ = pixbuf;
   }
+}
 
+void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
   // Build the dialog.
   create_dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_TITLE).c_str(),
@@ -171,8 +180,7 @@ void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
              &CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
              shortcut_info_));
 
-    if (tab_contents_->delegate())
-      tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
+    OnCreatedShortcut();
   } else {
     Release();
   }
@@ -252,4 +260,66 @@ void CreateApplicationShortcutsDialogGtk::OnToggleCheckbox(GtkWidget* sender) {
   gtk_dialog_set_response_sensitive(GTK_DIALOG(create_dialog_),
                                     GTK_RESPONSE_ACCEPT,
                                     can_accept);
+}
+
+CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
+    GtkWindow* parent,
+    TabContents* tab_contents)
+  : CreateApplicationShortcutsDialogGtk(parent),
+    tab_contents_(tab_contents) {
+
+  // Get shortcut information now, it's needed for our UI.
+  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
+  CreateIconPixBuf(shortcut_info_.favicon);
+
+  CreateDialogBox(parent);
+}
+
+void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
+}
+
+CreateChromeApplicationShortcutsDialogGtk::
+    CreateChromeApplicationShortcutsDialogGtk(
+        GtkWindow* parent,
+        const Extension* app)
+      : CreateApplicationShortcutsDialogGtk(parent),
+        app_(app),
+        ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this))  {
+
+  // Get shortcut information now, it's needed for our UI.
+  shortcut_info_.extension_id = UTF8ToUTF16(app_->id());
+  shortcut_info_.url = GURL(app_->launch_web_url());
+  shortcut_info_.title = UTF8ToUTF16(app_->name());
+  shortcut_info_.description = UTF8ToUTF16(app_->description());
+
+  // Get the icon.
+  const gfx::Size max_size(kIconPreviewSizePixels, kIconPreviewSizePixels);
+  ExtensionResource icon_resource = app_->GetIconResource(
+      kIconPreviewSizePixels, ExtensionIconSet::MATCH_BIGGER);
+
+  // If no icon exists that is the desired size or larger, get the
+  // largest icon available:
+  if (icon_resource.empty())
+    icon_resource = app_->GetIconResource(
+        kIconPreviewSizePixels, ExtensionIconSet::MATCH_SMALLER);
+
+  tracker_.LoadImage(app_,
+                     icon_resource,
+                     max_size,
+                     ImageLoadingTracker::DONT_CACHE);
+}
+
+// Called by tracker_ when the app's icon is loaded.
+void CreateChromeApplicationShortcutsDialogGtk::OnImageLoaded(
+    SkBitmap* image, ExtensionResource resource, int index) {
+  if (image->isNull()) {
+    NOTREACHED() << "Corrupt image in profile?";
+    return;
+  }
+  shortcut_info_.favicon = *image;
+
+  CreateIconPixBuf(*image);
+  CreateDialogBox(parent_);
 }

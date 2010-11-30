@@ -610,7 +610,8 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   DCHECK(extensions_service);
 
   ExtensionPrefs::LaunchType launch_type =
-      extensions_service->extension_prefs()->GetLaunchType(extension->id());
+      extensions_service->extension_prefs()->GetLaunchType(
+          extension->id(), ExtensionPrefs::LAUNCH_REGULAR);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
   int add_type = TabStripModel::ADD_SELECTED;
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)
@@ -3130,7 +3131,7 @@ void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
 
   switch (pending_web_app_action_) {
     case CREATE_SHORTCUT: {
-      window()->ShowCreateShortcutsDialog(current_tab);
+      window()->ShowCreateWebAppShortcutsDialog(current_tab);
       break;
     }
     case UPDATE_SHORTCUT: {

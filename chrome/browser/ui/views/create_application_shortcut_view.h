@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "views/controls/label.h"
 #include "views/view.h"
@@ -20,21 +21,25 @@ class Label;
 class Window;
 };  // namespace views
 
+class Extension;
 class MessageLoop;
 class Profile;
 class TabContents;
 
-// CreateShortcutView implements a dialog that asks user where to create
-// the shortcut for given web app.
+// CreateShortcutViewCommon implements a dialog that asks user where to create
+// the shortcut for given web app.  There are two variants of this dialog:
+// Shortcuts that load a URL in an app-like window, and shortcuts that load
+// a chrome app (the kind you see under "apps" on the new tabs page) in an app
+// window.  These are implemented as subclasses of CreateShortcutViewCommon.
 class CreateApplicationShortcutView : public views::View,
                                       public views::DialogDelegate,
                                       public views::ButtonListener {
  public:
-  explicit CreateApplicationShortcutView(TabContents* tab_contents);
+  explicit CreateApplicationShortcutView(Profile* profile);
   virtual ~CreateApplicationShortcutView();
 
   // Initialize the controls on the dialog.
-  void Init();
+  void InitControls();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -56,19 +61,12 @@ class CreateApplicationShortcutView : public views::View,
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
- private:
+ protected:
   // Adds a new check-box as a child to the view.
   views::Checkbox* AddCheckbox(const std::wstring& text, bool checked);
 
-  // Fetch the largest unprocessed icon.
-  // The first largest icon downloaded and decoded successfully will be used.
-  void FetchIcon();
-
-  // Callback of icon download.
-  void OnIconDownloaded(bool errored, const SkBitmap& image);
-
-  // TabContents of the page that we want to create shortcut.
-  TabContents* tab_contents_;
+  // Profile in which the shortcuts will be created.
+  Profile* profile_;
 
   // UI elements on the dialog.
   views::View* app_info_;
@@ -80,14 +78,60 @@ class CreateApplicationShortcutView : public views::View,
   // Target shortcut info.
   ShellIntegration::ShortcutInfo shortcut_info_;
 
-  // Unprocessed icons from the WebApplicationInfo passed in.
-  web_app::IconInfoList unprocessed_icons_;
+  DISALLOW_COPY_AND_ASSIGN(CreateApplicationShortcutView);
+};
+
+// Create an application shortcut pointing to a URL.
+class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
+ public:
+  explicit CreateUrlApplicationShortcutView(TabContents* tab_contents);
+  virtual ~CreateUrlApplicationShortcutView();
+
+  virtual bool Accept();
+
+ private:
+  // Fetch the largest unprocessed icon.
+  // The first largest icon downloaded and decoded successfully will be used.
+  void FetchIcon();
+
+  // Callback of icon download.
+  void OnIconDownloaded(bool errored, const SkBitmap& image);
+
+  // The tab whose URL is being turned into an app.
+  TabContents* tab_contents_;
 
   // Pending app icon download tracked by us.
   class IconDownloadCallbackFunctor;
   IconDownloadCallbackFunctor* pending_download_;
 
-  DISALLOW_COPY_AND_ASSIGN(CreateApplicationShortcutView);
+  // Unprocessed icons from the WebApplicationInfo passed in.
+  web_app::IconInfoList unprocessed_icons_;
+
+  DISALLOW_COPY_AND_ASSIGN(CreateUrlApplicationShortcutView);
 };
+
+// Create an application shortcut pointing to a chrome application.
+class CreateChromeApplicationShortcutView
+   : public CreateApplicationShortcutView,
+     public ImageLoadingTracker::Observer {
+ public:
+  explicit CreateChromeApplicationShortcutView(Profile* profile,
+                                               const Extension* app);
+  virtual ~CreateChromeApplicationShortcutView();
+
+  // Implement ImageLoadingTracker::Observer.  |tracker_| is used to
+  // load the app's icon.  This method recieves the icon, and adds
+  // it to the "Create Shortcut" dailog box.
+  virtual void OnImageLoaded(SkBitmap* image,
+                             ExtensionResource resource,
+                             int index);
+
+ private:
+  const Extension* app_;
+  ImageLoadingTracker tracker_;
+
+  DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutView);
+};
+
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CREATE_APPLICATION_SHORTCUT_VIEW_H_

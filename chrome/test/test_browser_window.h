@@ -58,7 +58,9 @@ class TestBrowserWindow : public BrowserWindow {
     return false;
   }
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
-  virtual void ShowCreateShortcutsDialog(TabContents* tab_contents) {}
+  virtual void ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) {}
+  virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
+                                                  const Extension* app) {}
 #if defined(TOOLKIT_VIEWS)
   virtual void ToggleCompactNavigationBar() {}
 #endif  // defined(TOOLKIT_VIEWS)

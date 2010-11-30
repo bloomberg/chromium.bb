@@ -56,6 +56,7 @@ class StatusBubbleViews;
 class TabStripModel;
 class ToolbarView;
 class ZoomMenuModel;
+class Extension;
 
 #if defined(OS_WIN)
 class AeroPeekManager;
@@ -315,7 +316,9 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
+  virtual void ShowCreateWebAppShortcutsDialog(TabContents* tab_contents);
+  virtual void ShowCreateChromeAppShortcutsDialog(Profile*,
+                                                  const Extension* app);
   virtual void Cut();
   virtual void Copy();
   virtual void Paste();

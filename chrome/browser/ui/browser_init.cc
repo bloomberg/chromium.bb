@@ -620,8 +620,25 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   // extension is external, and has not yet been installed.
   // TODO(skerner): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
-  if (!app_id.empty())
-    return Browser::OpenApplication(profile, app_id, NULL) != NULL;
+  if (!app_id.empty()) {
+    ExtensionsService* extensions_service = profile->GetExtensionsService();
+    const Extension* extension =
+        extensions_service->GetExtensionById(app_id, false);
+
+    // The extension with |app_id| may have been uninstalled.
+    if (!extension)
+      return false;
+
+    // Look at prefs to find the container in which an app should launch.
+    // If no preference is set, launch in a window.
+    extension_misc::LaunchContainer launch_container =
+        extensions_service->extension_prefs()->GetLaunchContainer(
+            extension, ExtensionPrefs::LAUNCH_WINDOW);
+
+    TabContents* app_window = Browser::OpenApplication(
+        profile, extension, launch_container, NULL);
+    return (app_window != NULL);
+  }
 
   if (url_string.empty())
     return false;

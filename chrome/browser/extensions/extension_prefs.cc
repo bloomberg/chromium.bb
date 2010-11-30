@@ -564,25 +564,46 @@ void ExtensionPrefs::SetAllowFileAccess(const std::string& extension_id,
 }
 
 ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
-    const std::string& extension_id) {
-  int value;
+    const std::string& extension_id,
+    ExtensionPrefs::LaunchType default_pref_value) {
+  int value = -1;
+  LaunchType result = LAUNCH_REGULAR;
+
   if (ReadExtensionPrefInteger(extension_id, kPrefLaunchType, &value) &&
      (value == LAUNCH_PINNED ||
       value == LAUNCH_REGULAR ||
       value == LAUNCH_FULLSCREEN ||
       value == LAUNCH_WINDOW)) {
-
-#if defined(OS_MACOSX)
+    result = static_cast<LaunchType>(value);
+  } else {
+    result = default_pref_value;
+  }
+  #if defined(OS_MACOSX)
     // App windows are not yet supported on mac.  Pref sync could make
     // the launch type LAUNCH_WINDOW, even if there is no UI to set it
     // on mac.
-    if (value == LAUNCH_WINDOW)
-      return LAUNCH_REGULAR;
-#endif
-    return static_cast<LaunchType>(value);
-  }
+    if (result == LAUNCH_WINDOW)
+      result = LAUNCH_REGULAR;
+  #endif
 
-  return LAUNCH_REGULAR;
+  return result;
+}
+
+extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
+    const Extension* extension,
+    ExtensionPrefs::LaunchType default_pref_value) {
+  extension_misc::LaunchContainer launch_container =
+      extension->launch_container();
+
+  ExtensionPrefs::LaunchType prefs_launch_type =
+      GetLaunchType(extension->id(), default_pref_value);
+
+  // If the user chose to open in a window, then launch in one.
+  if (prefs_launch_type == ExtensionPrefs::LAUNCH_WINDOW)
+    return extension_misc::LAUNCH_WINDOW;
+
+  // Otherwise, use the container the extension chose.
+  return launch_container;
 }
 
 void ExtensionPrefs::SetLaunchType(const std::string& extension_id,

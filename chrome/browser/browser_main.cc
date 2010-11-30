@@ -1177,6 +1177,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // (first run) UI.
     if (!first_run_ui_bypass &&
         (parsed_command_line.HasSwitch(switches::kApp) ||
+         parsed_command_line.HasSwitch(switches::kAppId) ||
          parsed_command_line.HasSwitch(switches::kNoFirstRun)))
       first_run_ui_bypass = true;
   }
