@@ -1808,11 +1808,13 @@ void AutocompleteEditViewGtk::HandleDeleteRange(GtkTextBuffer* buffer,
 void AutocompleteEditViewGtk::HandleMarkSetAlways(GtkTextBuffer* buffer,
                                                   GtkTextIter* location,
                                                   GtkTextMark* mark) {
-  if (mark == instant_mark_)
+  if (mark == instant_mark_ || !instant_mark_)
     return;
 
   GtkTextIter new_iter = *location;
   ValidateTextBufferIter(&new_iter);
+
+  static guint signal_id = g_signal_lookup("mark-set", GTK_TYPE_TEXT_BUFFER);
 
   // "mark-set" signal is actually emitted after the mark's location is already
   // set, so if the location is beyond the instant anchor, we need to move the
@@ -1820,9 +1822,30 @@ void AutocompleteEditViewGtk::HandleMarkSetAlways(GtkTextBuffer* buffer,
   // signal handlers from being called twice, we need to stop signal emission
   // before moving the mark again.
   if (gtk_text_iter_compare(&new_iter, location)) {
-    static guint signal_id = g_signal_lookup("mark-set", GTK_TYPE_TEXT_BUFFER);
     g_signal_stop_emission(buffer, signal_id, 0);
     gtk_text_buffer_move_mark(buffer, mark, &new_iter);
+    return;
+  }
+
+  if (mark != gtk_text_buffer_get_insert(text_buffer_) &&
+      mark != gtk_text_buffer_get_selection_bound(text_buffer_)) {
+    return;
+  }
+
+  // See issue http://crbug.com/63860
+  GtkTextIter insert;
+  GtkTextIter selection_bound;
+  gtk_text_buffer_get_iter_at_mark(buffer, &insert,
+                                   gtk_text_buffer_get_insert(buffer));
+  gtk_text_buffer_get_iter_at_mark(buffer, &selection_bound,
+                                   gtk_text_buffer_get_selection_bound(buffer));
+
+  GtkTextIter end;
+  gtk_text_buffer_get_iter_at_mark(text_buffer_, &end, instant_mark_);
+
+  if (gtk_text_iter_compare(&insert, &end) > 0 ||
+      gtk_text_iter_compare(&selection_bound, &end) > 0) {
+    g_signal_stop_emission(buffer, signal_id, 0);
   }
 }
 
