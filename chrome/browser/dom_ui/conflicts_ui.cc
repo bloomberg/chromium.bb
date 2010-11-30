@@ -15,6 +15,8 @@
 #include "base/values.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
+#include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -192,6 +194,9 @@ void ConflictsDOMHandler::Observe(NotificationType type,
 ///////////////////////////////////////////////////////////////////////////////
 
 ConflictsUI::ConflictsUI(TabContents* contents) : DOMUI(contents) {
+  UserMetrics::RecordAction(
+      UserMetricsAction("ViewAboutConflicts"), contents->profile());
+
   AddMessageHandler((new ConflictsDOMHandler())->Attach(this));
 
   ConflictsUIHTMLSource* html_source = new ConflictsUIHTMLSource();
