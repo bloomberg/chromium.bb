@@ -73,8 +73,12 @@ function addClosedMenuFooter(menu, sectionId, mask, opt_section) {
   var span = document.createElement('span');
   var a = span.appendChild(document.createElement('a'));
   a.href = '';
-  a.textContent =
-      localStrings.getString(getSectionMenuButtonTextId(sectionId));
+  if (cr.isChromeOS) {
+    a.textContent = localStrings.getString('expandMenu');
+  } else {
+    a.textContent =
+        localStrings.getString(getSectionMenuButtonTextId(sectionId));
+  }
   a.className = 'item';
   a.addEventListener(
       'click',
@@ -433,6 +437,8 @@ function layoutSections() {
     if (section == expandedSection)
       y += expandedSectionHeight;
   }
+  if (cr.isChromeOS)
+    $('closed-sections-bar').style.top = y + 'px';
 
   updateAttributionDisplay(y);
 }

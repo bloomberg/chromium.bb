@@ -7567,6 +7567,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Text for the button that opens the app full screen.">
         Open full screen
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_NEW_TAB_CLOSE_MENU_EXPAND" desc="Text for the closed section menu footer that will restore the section.">
+          Expand
+        </message>
+      </if>
 
       <!-- Offline page  -->
       <if expr="pp_ifdef('chromeos')">

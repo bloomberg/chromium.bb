@@ -93,7 +93,13 @@ void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {
 
 // static
 void ShownSectionsHandler::RegisterUserPrefs(PrefService* pref_service) {
+#if defined(OS_CHROMEOS)
+  // Default to have expanded APPS and all other secions are minimized.
+  pref_service->RegisterIntegerPref(prefs::kNTPShownSections,
+                                    APPS | MINIMIZED_THUMB | MINIMIZED_RECENT);
+#else
   pref_service->RegisterIntegerPref(prefs::kNTPShownSections, THUMB);
+#endif
 }
 
 // static

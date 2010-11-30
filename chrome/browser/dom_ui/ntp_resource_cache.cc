@@ -336,6 +336,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_1));
   localized_strings.SetString("appspromotext2",
       l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_2));
+#if defined(OS_CHROMEOS)
+  localized_strings.SetString("expandMenu",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));
+#endif
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.

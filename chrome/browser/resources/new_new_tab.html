@@ -288,12 +288,13 @@ i18nTemplate.process(document, templateData);
 <script src="ntp/apps.js"></script>
 
 <script>
-cr.ui.decorate('menu', cr.ui.Menu);
-cr.ui.decorate('command', cr.ui.Command);
-cr.ui.decorate('button[menu]', cr.ui.MenuButton);
-</script>
+  cr.ui.decorate('menu', cr.ui.Menu);
+  cr.ui.decorate('command', cr.ui.Command);
+  cr.ui.decorate('button[menu]', cr.ui.MenuButton);
 
-<script>
+  if (cr.isChromeOS)
+    $('closed-sections-bar').setAttribute('chromeos', true);
+
   initializeLogin();
 
   initializeSection('apps', MINIMIZED_APPS, Section.APPS);
