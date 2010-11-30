@@ -13,7 +13,7 @@
 
 DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
     ResourceDispatcherHost* host,
-    URLRequest* request,
+    net::URLRequest* request,
     const GURL& url,
     int render_process_host_id,
     int render_view_id,

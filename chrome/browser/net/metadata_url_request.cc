@@ -19,9 +19,10 @@ namespace {
 
 class MetadataRequestHandler : public net::URLRequestJob {
  public:
-  explicit MetadataRequestHandler(URLRequest* request);
+  explicit MetadataRequestHandler(net::URLRequest* request);
 
-  static URLRequestJob* Factory(URLRequest* request, const std::string& scheme);
+  static URLRequestJob* Factory(net::URLRequest* request,
+                                const std::string& scheme);
 
   // URLRequestJob implementation.
   virtual void Start();
@@ -39,7 +40,7 @@ class MetadataRequestHandler : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(MetadataRequestHandler);
 };
 
-MetadataRequestHandler::MetadataRequestHandler(URLRequest* request)
+MetadataRequestHandler::MetadataRequestHandler(net::URLRequest* request)
     : URLRequestJob(request),
       data_offset_(0) {
   parsed = false;
@@ -48,7 +49,7 @@ MetadataRequestHandler::MetadataRequestHandler(URLRequest* request)
 MetadataRequestHandler::~MetadataRequestHandler() {
 }
 
-URLRequestJob* MetadataRequestHandler::Factory(URLRequest* request,
+URLRequestJob* MetadataRequestHandler::Factory(net::URLRequest* request,
                                                const std::string& scheme) {
   return new MetadataRequestHandler(request);
 }
@@ -125,7 +126,7 @@ void MetadataRequestHandler::StartAsync() {
 
 void RegisterMetadataURLRequestHandler() {
 #if defined(OS_CHROMEOS)
-  URLRequest::RegisterProtocolFactory(chrome::kMetadataScheme,
-                                      &MetadataRequestHandler::Factory);
+  net::URLRequest::RegisterProtocolFactory(chrome::kMetadataScheme,
+                                           &MetadataRequestHandler::Factory);
 #endif
 }

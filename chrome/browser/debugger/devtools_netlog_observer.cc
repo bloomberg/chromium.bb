@@ -126,7 +126,7 @@ DevToolsNetLogObserver* DevToolsNetLogObserver::GetInstance() {
 }
 
 // static
-void DevToolsNetLogObserver::PopulateResponseInfo(URLRequest* request,
+void DevToolsNetLogObserver::PopulateResponseInfo(net::URLRequest* request,
                                                   ResourceResponse* response) {
   if (!(request->load_flags() & net::LOAD_REPORT_RAW_HEADERS))
     return;

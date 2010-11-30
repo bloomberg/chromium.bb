@@ -29,7 +29,8 @@ FileWriterDelegate::FileWriterDelegate(
 FileWriterDelegate::~FileWriterDelegate() {
 }
 
-void FileWriterDelegate::Start(base::PlatformFile file, URLRequest* request) {
+void FileWriterDelegate::Start(base::PlatformFile file,
+                               net::URLRequest* request) {
   file_ = file;
   request_ = request;
   file_stream_.reset(
@@ -41,30 +42,30 @@ void FileWriterDelegate::Start(base::PlatformFile file, URLRequest* request) {
 }
 
 void FileWriterDelegate::OnReceivedRedirect(
-    URLRequest* request, const GURL& new_url, bool* defer_redirect) {
+    net::URLRequest* request, const GURL& new_url, bool* defer_redirect) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
 void FileWriterDelegate::OnAuthRequired(
-    URLRequest* request, net::AuthChallengeInfo* auth_info) {
+    net::URLRequest* request, net::AuthChallengeInfo* auth_info) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
 void FileWriterDelegate::OnCertificateRequested(
-    URLRequest* request, net::SSLCertRequestInfo* cert_request_info) {
+    net::URLRequest* request, net::SSLCertRequestInfo* cert_request_info) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
 void FileWriterDelegate::OnSSLCertificateError(
-    URLRequest* request, int cert_error, net::X509Certificate* cert) {
+    net::URLRequest* request, int cert_error, net::X509Certificate* cert) {
   NOTREACHED();
   OnError(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
-void FileWriterDelegate::OnResponseStarted(URLRequest* request) {
+void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request_, request);
   if (!request->status().is_success()) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);
@@ -78,7 +79,8 @@ void FileWriterDelegate::OnResponseStarted(URLRequest* request) {
   Read();
 }
 
-void FileWriterDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
+void FileWriterDelegate::OnReadCompleted(net::URLRequest* request,
+                                         int bytes_read) {
   DCHECK_EQ(request_, request);
   if (!request->status().is_success()) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);

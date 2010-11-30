@@ -703,9 +703,9 @@ const char kHomePage[]                      = "homepage";
 //    "MAP * baz, EXCLUDE www.google.com" --> Remaps everything to "baz",
 //                                            except for "www.google.com".
 //
-// These mappings apply to the endpoint host in a URLRequest (the TCP connect
-// and host resolver in a direct connection, and the CONNECT in an http proxy
-// connection, and the endpoint host in a SOCKS proxy connection).
+// These mappings apply to the endpoint host in a net::URLRequest (the TCP
+// connect and host resolver in a direct connection, and the CONNECT in an http
+// proxy connection, and the endpoint host in a SOCKS proxy connection).
 const char kHostRules[]                     = "host-rules";
 
 // The maximum number of concurrent host resolve requests (i.e. DNS) to allow.

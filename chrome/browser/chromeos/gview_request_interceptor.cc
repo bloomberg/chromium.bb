@@ -33,24 +33,25 @@ static const char* const supported_mime_type_list[] = {
 static const char* const kGViewUrlPrefix = "http://docs.google.com/gview?url=";
 
 GViewRequestInterceptor::GViewRequestInterceptor() {
-  URLRequest::RegisterRequestInterceptor(this);
+  net::URLRequest::RegisterRequestInterceptor(this);
   for (size_t i = 0; i < arraysize(supported_mime_type_list); ++i) {
     supported_mime_types_.insert(supported_mime_type_list[i]);
   }
 }
 
 GViewRequestInterceptor::~GViewRequestInterceptor() {
-  URLRequest::UnregisterRequestInterceptor(this);
+  net::URLRequest::UnregisterRequestInterceptor(this);
 }
 
-URLRequestJob* GViewRequestInterceptor::MaybeIntercept(URLRequest* request) {
+URLRequestJob* GViewRequestInterceptor::MaybeIntercept(
+    net::URLRequest* request) {
   // Don't attempt to intercept here as we want to wait until the mime
   // type is fully determined.
   return NULL;
 }
 
 URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
-    URLRequest* request) {
+    net::URLRequest* request) {
   // Do not intercept this request if it is a download.
   if (request->load_flags() & net::LOAD_IS_DOWNLOAD) {
     return NULL;
@@ -79,7 +80,8 @@ URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
   return NULL;
 }
 
-URLRequest::Interceptor* GViewRequestInterceptor::GetGViewRequestInterceptor() {
+net::URLRequest::Interceptor*
+GViewRequestInterceptor::GetGViewRequestInterceptor() {
   return Singleton<GViewRequestInterceptor>::get();
 }
 

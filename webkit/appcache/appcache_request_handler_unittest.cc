@@ -73,16 +73,16 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   class MockURLRequestJob : public URLRequestJob {
    public:
-    MockURLRequestJob(URLRequest* request, int response_code)
+    MockURLRequestJob(net::URLRequest* request, int response_code)
         : URLRequestJob(request), response_code_(response_code) {}
     virtual void Start() {}
     virtual int GetResponseCode() const { return response_code_; }
     int response_code_;
   };
 
-  class MockURLRequest : public URLRequest {
+  class MockURLRequest : public net::URLRequest {
    public:
-    explicit MockURLRequest(const GURL& url) : URLRequest(url, NULL) {}
+    explicit MockURLRequest(const GURL& url) : net::URLRequest(url, NULL) {}
 
     void SimulateResponseCode(int http_response_code) {
       mock_factory_job_ = new MockURLRequestJob(this, http_response_code);
@@ -94,7 +94,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     }
   };
 
-  static URLRequestJob* MockHttpJobFactory(URLRequest* request,
+  static URLRequestJob* MockHttpJobFactory(net::URLRequest* request,
                                            const std::string& scheme) {
     if (mock_factory_job_) {
       URLRequestJob* temp = mock_factory_job_;
@@ -133,7 +133,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    orig_http_factory_ = URLRequest::RegisterProtocolFactory(
+    orig_http_factory_ = net::URLRequest::RegisterProtocolFactory(
         "http", MockHttpJobFactory);
     mock_service_.reset(new MockAppCacheService);
     mock_frontend_.reset(new MockFrontend);
@@ -148,7 +148,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   void TearDownTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
     DCHECK(!mock_factory_job_);
-    URLRequest::RegisterProtocolFactory("http", orig_http_factory_);
+    net::URLRequest::RegisterProtocolFactory("http", orig_http_factory_);
     orig_http_factory_ = NULL;
     job_ = NULL;
     handler_.reset();
@@ -665,7 +665,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   scoped_ptr<MockURLRequest> request_;
   scoped_ptr<AppCacheRequestHandler> handler_;
   scoped_refptr<AppCacheURLRequestJob> job_;
-  URLRequest::ProtocolFactory* orig_http_factory_;
+  net::URLRequest::ProtocolFactory* orig_http_factory_;
 
   static scoped_ptr<base::Thread> io_thread_;
   static URLRequestJob* mock_factory_job_;

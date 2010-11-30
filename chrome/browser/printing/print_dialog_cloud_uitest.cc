@@ -55,7 +55,7 @@ class TestData {
 // whether it starts and finishes.
 class SimpleTestJob : public URLRequestTestJob {
  public:
-  explicit SimpleTestJob(URLRequest* request)
+  explicit SimpleTestJob(net::URLRequest* request)
       : URLRequestTestJob(request, test_headers(),
                           Singleton<TestData>()->GetTestData(), true) {}
 
@@ -128,13 +128,13 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   }
 
   // Must be static for handing into AddHostnameHandler.
-  static URLRequest::ProtocolFactory Factory;
+  static net::URLRequest::ProtocolFactory Factory;
 
   class AutoQuitDelegate : public TestDelegate {
    public:
     AutoQuitDelegate() {}
 
-    virtual void OnResponseCompleted(URLRequest* request) {
+    virtual void OnResponseCompleted(net::URLRequest* request) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               new MessageLoop::QuitTask());
     }
@@ -196,7 +196,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   AutoQuitDelegate delegate_;
 };
 
-URLRequestJob* PrintDialogCloudTest::Factory(URLRequest* request,
+URLRequestJob* PrintDialogCloudTest::Factory(net::URLRequest* request,
                                              const std::string& scheme) {
   if (Singleton<TestController>()->use_delegate())
     request->set_delegate(Singleton<TestController>()->delegate());

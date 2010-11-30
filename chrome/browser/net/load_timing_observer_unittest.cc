@@ -81,7 +81,7 @@ void AddEndSocketEntries(LoadTimingObserver& observer, uint32 id) {
 
 }  // namespace
 
-// Test that URLRequest with no load timing flag is not processed.
+// Test that net::URLRequest with no load timing flag is not processed.
 TEST(LoadTimingObserverTest, NoLoadTimingEnabled) {
   LoadTimingObserver observer;
 

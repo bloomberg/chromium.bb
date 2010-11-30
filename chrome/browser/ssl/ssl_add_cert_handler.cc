@@ -14,7 +14,7 @@
 #include "net/base/x509_certificate.h"
 #include "net/url_request/url_request.h"
 
-SSLAddCertHandler::SSLAddCertHandler(URLRequest* request,
+SSLAddCertHandler::SSLAddCertHandler(net::URLRequest* request,
                                      net::X509Certificate* cert,
                                      int render_process_host_id,
                                      int render_view_id)

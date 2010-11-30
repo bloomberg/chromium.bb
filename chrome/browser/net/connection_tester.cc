@@ -223,7 +223,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
 
 // TestRunner is a helper class for running an individual experiment. It can
 // be deleted any time after it is started, and this will abort the request.
-class ConnectionTester::TestRunner : public URLRequest::Delegate {
+class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
  public:
   // |tester| must remain alive throughout the TestRunner's lifetime.
   // |tester| will be notified of completion.
@@ -233,9 +233,9 @@ class ConnectionTester::TestRunner : public URLRequest::Delegate {
   // it is done.
   void Run(const Experiment& experiment);
 
-  // URLRequest::Delegate implementation.
-  virtual void OnResponseStarted(URLRequest* request);
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read);
+  // Overridden from net::URLRequest::Delegate:
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
   // TODO(eroman): handle cases requiring authentication.
 
  private:
@@ -244,18 +244,18 @@ class ConnectionTester::TestRunner : public URLRequest::Delegate {
 
   // Starts reading the response's body (and keeps reading until an error or
   // end of stream).
-  void ReadBody(URLRequest* request);
+  void ReadBody(net::URLRequest* request);
 
   // Called when the request has completed (for both success and failure).
-  void OnResponseCompleted(URLRequest* request);
+  void OnResponseCompleted(net::URLRequest* request);
 
   ConnectionTester* tester_;
-  scoped_ptr<URLRequest> request_;
+  scoped_ptr<net::URLRequest> request_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRunner);
 };
 
-void ConnectionTester::TestRunner::OnResponseStarted(URLRequest* request) {
+void ConnectionTester::TestRunner::OnResponseStarted(net::URLRequest* request) {
   if (!request->status().is_success()) {
     OnResponseCompleted(request);
     return;
@@ -265,7 +265,7 @@ void ConnectionTester::TestRunner::OnResponseStarted(URLRequest* request) {
   ReadBody(request);
 }
 
-void ConnectionTester::TestRunner::OnReadCompleted(URLRequest* request,
+void ConnectionTester::TestRunner::OnReadCompleted(net::URLRequest* request,
                                                    int bytes_read) {
   if (bytes_read <= 0) {
     OnResponseCompleted(request);
@@ -276,7 +276,7 @@ void ConnectionTester::TestRunner::OnReadCompleted(URLRequest* request,
   ReadBody(request);
 }
 
-void ConnectionTester::TestRunner::ReadBody(URLRequest* request) {
+void ConnectionTester::TestRunner::ReadBody(net::URLRequest* request) {
   // Read the response body |kReadBufferSize| bytes at a time.
   scoped_refptr<net::IOBuffer> unused_buffer(
       new net::IOBuffer(kReadBufferSize));
@@ -289,7 +289,8 @@ void ConnectionTester::TestRunner::ReadBody(URLRequest* request) {
   }
 }
 
-void ConnectionTester::TestRunner::OnResponseCompleted(URLRequest* request) {
+void ConnectionTester::TestRunner::OnResponseCompleted(
+    net::URLRequest* request) {
   int result = net::OK;
   if (!request->status().is_success()) {
     DCHECK_NE(net::ERR_IO_PENDING, request->status().os_error());
@@ -310,7 +311,7 @@ void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
   }
 
   // Fetch a request using the experimental context.
-  request_.reset(new URLRequest(experiment.url, this));
+  request_.reset(new net::URLRequest(experiment.url, this));
   request_->set_context(context);
   request_->Start();
 }

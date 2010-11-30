@@ -42,7 +42,7 @@ void URLRequestSlowDownloadJob::AddUrlHandler() {
 }
 
 /*static */
-URLRequestJob* URLRequestSlowDownloadJob::Factory(URLRequest* request,
+URLRequestJob* URLRequestSlowDownloadJob::Factory(net::URLRequest* request,
     const std::string& scheme) {
   URLRequestSlowDownloadJob* job = new URLRequestSlowDownloadJob(request);
   if (request->url().spec() != kFinishDownloadUrl)
@@ -60,7 +60,7 @@ void URLRequestSlowDownloadJob::FinishPendingRequests() {
   kPendingRequests.clear();
 }
 
-URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(URLRequest* request)
+URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
   : URLRequestJob(request),
     first_download_size_remaining_(kFirstDownloadSize),
     should_finish_download_(false),

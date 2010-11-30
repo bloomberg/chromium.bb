@@ -21,8 +21,9 @@ class GURL;
 // This allows us to warn on leaked jobs and also allows an observer to track
 // what is happening, for example, for the network status monitor.
 //
-// NOTE: URLRequest is single-threaded, so this class should only be used on
-// the same thread where all of the application's URLRequest calls are made.
+// NOTE: net::URLRequest is single-threaded, so this class should only be used
+// onthe same thread where all of the application's net::URLRequest calls are
+// made.
 //
 class URLRequestJobTracker {
  public:
@@ -62,7 +63,7 @@ class URLRequestJobTracker {
   ~URLRequestJobTracker();
 
   // adds or removes an observer from the list.  note, these methods should
-  // only be called on the same thread where URLRequest objects are used.
+  // only be called on the same thread where net::URLRequest objects are used.
   void AddObserver(JobObserver* observer) {
     observers_.AddObserver(observer);
   }

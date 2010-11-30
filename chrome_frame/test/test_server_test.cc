@@ -90,10 +90,10 @@ class URLRequestTestContext : public URLRequestContext {
   }
 };
 
-class TestURLRequest : public URLRequest {
+class TestURLRequest : public net::URLRequest {
  public:
   TestURLRequest(const GURL& url, Delegate* delegate)
-      : URLRequest(url, delegate) {
+      : net::URLRequest(url, delegate) {
     set_context(new URLRequestTestContext());
   }
 };

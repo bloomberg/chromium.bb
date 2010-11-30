@@ -39,13 +39,17 @@ static const char* const kFilteredHeaderStrings[] = {
 int URLRequestAutomationJob::instance_count_ = 0;
 bool URLRequestAutomationJob::is_protocol_factory_registered_ = false;
 
-URLRequest::ProtocolFactory* URLRequestAutomationJob::old_http_factory_
+net::URLRequest::ProtocolFactory* URLRequestAutomationJob::old_http_factory_
     = NULL;
-URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
+net::URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
     = NULL;
 
-URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
-    int request_id, AutomationResourceMessageFilter* filter, bool is_pending)
+URLRequestAutomationJob::URLRequestAutomationJob(
+    net::URLRequest* request,
+    int tab,
+    int request_id,
+    AutomationResourceMessageFilter* filter,
+    bool is_pending)
     : URLRequestJob(request),
       id_(0),
       tab_(tab),
@@ -73,18 +77,18 @@ bool URLRequestAutomationJob::EnsureProtocolFactoryRegistered() {
 
   if (!is_protocol_factory_registered_) {
     old_http_factory_ =
-        URLRequest::RegisterProtocolFactory("http",
-                                            &URLRequestAutomationJob::Factory);
+        net::URLRequest::RegisterProtocolFactory(
+            "http", &URLRequestAutomationJob::Factory);
     old_https_factory_ =
-        URLRequest::RegisterProtocolFactory("https",
-                                            &URLRequestAutomationJob::Factory);
+        net::URLRequest::RegisterProtocolFactory(
+            "https", &URLRequestAutomationJob::Factory);
     is_protocol_factory_registered_ = true;
   }
 
   return true;
 }
 
-URLRequestJob* URLRequestAutomationJob::Factory(URLRequest* request,
+URLRequestJob* URLRequestAutomationJob::Factory(net::URLRequest* request,
                                                 const std::string& scheme) {
   bool scheme_is_http = request->url().SchemeIs("http");
   bool scheme_is_https = request->url().SchemeIs("https");

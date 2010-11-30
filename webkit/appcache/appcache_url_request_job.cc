@@ -20,7 +20,7 @@
 namespace appcache {
 
 AppCacheURLRequestJob::AppCacheURLRequestJob(
-    URLRequest* request, AppCacheStorage* storage)
+    net::URLRequest* request, AppCacheStorage* storage)
     : URLRequestJob(request), storage_(storage),
       has_been_started_(false), has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),

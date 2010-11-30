@@ -343,7 +343,7 @@ void IOThread::Init() {
 
 void IOThread::CleanUp() {
   // Step 1: Kill all things that might be holding onto
-  // URLRequest/URLRequestContexts.
+  // net::URLRequest/URLRequestContexts.
 
 #if defined(USE_NSS)
   net::ShutdownOCSP();
@@ -437,12 +437,12 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
   // anything else can reference it.
   BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
 
-  // URLRequest instances must NOT outlive the IO thread.
+  // net::URLRequest instances must NOT outlive the IO thread.
   //
   // To allow for URLRequests to be deleted from
   // MessageLoop::DestructionObserver this check has to happen after CleanUp
   // (which runs before DestructionObservers).
-  base::debug::LeakTracker<URLRequest>::CheckForLeaks();
+  base::debug::LeakTracker<net::URLRequest>::CheckForLeaks();
 }
 
 // static

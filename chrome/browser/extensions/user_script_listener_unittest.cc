@@ -97,7 +97,7 @@ ResourceDispatcherHostRequestInfo* CreateRequestInfo(int request_id) {
 // starts and finishes.
 class SimpleTestJob : public URLRequestTestJob {
  public:
-  explicit SimpleTestJob(URLRequest* request)
+  explicit SimpleTestJob(net::URLRequest* request)
     : URLRequestTestJob(request, test_headers(), kTestData, true) {}
  private:
   ~SimpleTestJob() {}
@@ -105,14 +105,14 @@ class SimpleTestJob : public URLRequestTestJob {
 
 class UserScriptListenerTest
     : public ExtensionsServiceTestBase,
-      public URLRequest::Interceptor {
+      public net::URLRequest::Interceptor {
  public:
   UserScriptListenerTest() {
-    URLRequest::RegisterRequestInterceptor(this);
+    net::URLRequest::RegisterRequestInterceptor(this);
   }
 
   ~UserScriptListenerTest() {
-    URLRequest::UnregisterRequestInterceptor(this);
+    net::URLRequest::UnregisterRequestInterceptor(this);
   }
 
   virtual void SetUp() {
@@ -135,13 +135,13 @@ class UserScriptListenerTest
     MessageLoop::current()->RunAllPending();
   }
 
-  // URLRequest::Interceptor
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request) {
+  // net::URLRequest::Interceptor
+  virtual URLRequestJob* MaybeIntercept(net::URLRequest* request) {
     return new SimpleTestJob(request);
   }
 
  protected:
-  TestURLRequest* StartTestRequest(URLRequest::Delegate* delegate,
+  TestURLRequest* StartTestRequest(net::URLRequest::Delegate* delegate,
                                    const std::string& url) {
     TestURLRequest* request = new TestURLRequest(GURL(url), delegate);
     scoped_ptr<ResourceDispatcherHostRequestInfo> rdh_info(

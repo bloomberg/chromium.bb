@@ -102,7 +102,7 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
                                                ResourceResponse* response,
                                                bool* defer) {
   *defer = true;
-  URLRequest* request = rdh_->GetURLRequest(
+  net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(process_id_, request_id));
   LoadTimingObserver::PopulateTimingInfo(request, response);
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
@@ -117,7 +117,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // renderer will be able to set these precisely at the time the
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
-  URLRequest* request = rdh_->GetURLRequest(
+  net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(process_id_, request_id));
 
   LoadTimingObserver::PopulateTimingInfo(request, response);

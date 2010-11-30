@@ -23,7 +23,7 @@ OfflineResourceHandler::OfflineResourceHandler(
     int host_id,
     int route_id,
     ResourceDispatcherHost* rdh,
-    URLRequest* request)
+    net::URLRequest* request)
     : next_handler_(handler),
       process_host_id_(host_id),
       render_view_id_(route_id),

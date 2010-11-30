@@ -35,7 +35,7 @@ PluginDownloadUrlHelper::~PluginDownloadUrlHelper() {
 
 void PluginDownloadUrlHelper::InitiateDownload(
     URLRequestContext* request_context) {
-  download_file_request_ = new URLRequest(GURL(download_url_), this);
+  download_file_request_ = new net::URLRequest(GURL(download_url_), this);
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(
       download_source_child_unique_id_, download_file_request_);
   download_file_request_->set_context(request_context);
@@ -43,21 +43,21 @@ void PluginDownloadUrlHelper::InitiateDownload(
 }
 
 void PluginDownloadUrlHelper::OnAuthRequired(
-    URLRequest* request,
+    net::URLRequest* request,
     net::AuthChallengeInfo* auth_info) {
-  URLRequest::Delegate::OnAuthRequired(request, auth_info);
+  net::URLRequest::Delegate::OnAuthRequired(request, auth_info);
   DownloadCompletedHelper(false);
 }
 
 void PluginDownloadUrlHelper::OnSSLCertificateError(
-    URLRequest* request,
+    net::URLRequest* request,
     int cert_error,
     net::X509Certificate* cert) {
-  URLRequest::Delegate::OnSSLCertificateError(request, cert_error, cert);
+  net::URLRequest::Delegate::OnSSLCertificateError(request, cert_error, cert);
   DownloadCompletedHelper(false);
 }
 
-void PluginDownloadUrlHelper::OnResponseStarted(URLRequest* request) {
+void PluginDownloadUrlHelper::OnResponseStarted(net::URLRequest* request) {
   if (!download_file_->IsOpen()) {
     // This is safe because once the temp file has been safely created, an
     // attacker can't drop a symlink etc into place.
@@ -91,7 +91,7 @@ void PluginDownloadUrlHelper::OnResponseStarted(URLRequest* request) {
   }
 }
 
-void PluginDownloadUrlHelper::OnReadCompleted(URLRequest* request,
+void PluginDownloadUrlHelper::OnReadCompleted(net::URLRequest* request,
                                               int bytes_read) {
   DCHECK(download_file_->IsOpen());
 
@@ -129,7 +129,7 @@ void PluginDownloadUrlHelper::OnReadCompleted(URLRequest* request,
   }
 }
 
-void PluginDownloadUrlHelper::OnDownloadCompleted(URLRequest* request) {
+void PluginDownloadUrlHelper::OnDownloadCompleted(net::URLRequest* request) {
   bool success = true;
   if (!request->status().is_success()) {
     success = false;

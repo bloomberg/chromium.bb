@@ -142,7 +142,7 @@ void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
 }
 
 // static
-URLRequestJob* RegistrationScreen::Factory(URLRequest* request,
+URLRequestJob* RegistrationScreen::Factory(net::URLRequest* request,
                                            const std::string& scheme) {
   VLOG(1) << "Handling url: " << request->url().spec().c_str();
   return new URLRequestAboutJob(request);

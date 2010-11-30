@@ -29,7 +29,7 @@ class UpdateJobInfo;
 class HostNotifier;
 
 // Application cache Update algorithm and state.
-class AppCacheUpdateJob : public URLRequest::Delegate,
+class AppCacheUpdateJob : public net::URLRequest::Delegate,
                           public AppCacheStorage::Delegate,
                           public AppCacheHost::Observer {
  public:
@@ -49,7 +49,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // in different tabs.
   typedef std::vector<AppCacheHost*> PendingHosts;
   typedef std::map<GURL, PendingHosts> PendingMasters;
-  typedef std::map<GURL, URLRequest*> PendingUrlFetches;
+  typedef std::map<GURL, net::URLRequest*> PendingUrlFetches;
   typedef std::map<int64, GURL> LoadingResponses;
 
   static const int kRerunDelayMs = 1000;
@@ -91,14 +91,14 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
     scoped_refptr<AppCacheResponseInfo> existing_response_info;
   };
 
-  UpdateJobInfo* GetUpdateJobInfo(URLRequest* request);
+  UpdateJobInfo* GetUpdateJobInfo(net::URLRequest* request);
 
-  // Methods for URLRequest::Delegate.
-  void OnResponseStarted(URLRequest* request);
-  void OnReadCompleted(URLRequest* request, int bytes_read);
-  void OnReceivedRedirect(URLRequest* request,
-                          const GURL& new_url,
-                          bool* defer_redirect);
+  // Overridden from net::URLRequest::Delegate:
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+  virtual void OnReceivedRedirect(net::URLRequest* request,
+                                  const GURL& new_url,
+                                  bool* defer_redirect);
   // TODO(jennb): any other delegate callbacks to handle? certificate?
 
   // Methods for AppCacheStorage::Delegate.
@@ -121,33 +121,33 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
 
   // Add extra conditional HTTP headers to the request based on the
   // currently cached response headers.
-  void AddConditionalHeaders(URLRequest* request,
+  void AddConditionalHeaders(net::URLRequest* request,
                              const net::HttpResponseInfo* info);
 
-  void OnResponseCompleted(URLRequest* request);
+  void OnResponseCompleted(net::URLRequest* request);
 
   // Retries a 503 request with retry-after header of 0.
   // Returns true if request should be retried and deletes original request.
-  bool RetryRequest(URLRequest* request);
+  bool RetryRequest(net::URLRequest* request);
 
-  void ReadResponseData(URLRequest* request);
+  void ReadResponseData(net::URLRequest* request);
 
   // Returns false if response data is processed asynchronously, in which
   // case ReadResponseData will be invoked when it is safe to continue
   // reading more response data from the request.
-  bool ConsumeResponseData(URLRequest* request,
+  bool ConsumeResponseData(net::URLRequest* request,
                            UpdateJobInfo* info,
                            int bytes_read);
-  void OnWriteResponseComplete(int result, URLRequest* request,
+  void OnWriteResponseComplete(int result, net::URLRequest* request,
                                UpdateJobInfo* info);
 
-  void HandleManifestFetchCompleted(URLRequest* request);
+  void HandleManifestFetchCompleted(net::URLRequest* request);
   void ContinueHandleManifestFetchCompleted(bool changed);
 
-  void HandleUrlFetchCompleted(URLRequest* request);
-  void HandleMasterEntryFetchCompleted(URLRequest* request);
+  void HandleUrlFetchCompleted(net::URLRequest* request);
+  void HandleMasterEntryFetchCompleted(net::URLRequest* request);
 
-  void HandleManifestRefetchCompleted(URLRequest* request);
+  void HandleManifestRefetchCompleted(net::URLRequest* request);
   void OnManifestInfoWriteComplete(int result);
   void OnManifestDataWriteComplete(int result);
 
@@ -252,7 +252,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   LoadingResponses loading_responses_;
 
   // Keep track of pending URL requests so we can cancel them if necessary.
-  URLRequest* manifest_url_request_;
+  net::URLRequest* manifest_url_request_;
   PendingUrlFetches pending_url_fetches_;
 
   // Temporary storage of manifest response data for parsing and comparison.

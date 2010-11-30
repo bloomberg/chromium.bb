@@ -35,10 +35,10 @@ TestAutomationProvider::TestAutomationProvider(
   // ensure that we don't inadvarently end up handling http requests which
   // we don't expect. The initial chrome frame page for the network tests
   // issues http requests which our test factory should not handle.
-  URLRequest::RegisterProtocolFactory("http",
-                                      TestAutomationProvider::Factory);
-  URLRequest::RegisterProtocolFactory("https",
-                                      TestAutomationProvider::Factory);
+  net::URLRequest::RegisterProtocolFactory("http",
+                                           TestAutomationProvider::Factory);
+  net::URLRequest::RegisterProtocolFactory("https",
+                                           TestAutomationProvider::Factory);
   automation_resource_message_filter_ =
       new TestAutomationResourceMessageFilter(this);
   g_provider_instance_ = this;
@@ -69,7 +69,7 @@ bool TestAutomationProvider::Send(IPC::Message* msg) {
   return AutomationProvider::Send(msg);
 }
 
-URLRequestJob* TestAutomationProvider::Factory(URLRequest* request,
+URLRequestJob* TestAutomationProvider::Factory(net::URLRequest* request,
                                                const std::string& scheme) {
   if (CFTestsDisabled())
     return NULL;

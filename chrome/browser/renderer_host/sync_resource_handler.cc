@@ -39,7 +39,7 @@ bool SyncResourceHandler::OnRequestRedirected(int request_id,
                                               const GURL& new_url,
                                               ResourceResponse* response,
                                               bool* defer) {
-  URLRequest* request = rdh_->GetURLRequest(
+  net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(process_id_, request_id));
   LoadTimingObserver::PopulateTimingInfo(request, response);
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
@@ -56,7 +56,7 @@ bool SyncResourceHandler::OnRequestRedirected(int request_id,
 
 bool SyncResourceHandler::OnResponseStarted(int request_id,
                                             ResourceResponse* response) {
-  URLRequest* request = rdh_->GetURLRequest(
+  net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(process_id_, request_id));
   LoadTimingObserver::PopulateTimingInfo(request, response);
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
@@ -114,5 +114,5 @@ void SyncResourceHandler::OnRequestClosed() {
 
   result_message_->set_reply_error();
   receiver_->Send(result_message_);
-  receiver_ = NULL;  // URLRequest is gone, and perhaps also the receiver.
+  receiver_ = NULL;  // net::URLRequest is gone, and perhaps also the receiver.
 }

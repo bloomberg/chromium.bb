@@ -46,7 +46,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
 
   NavigateAndCommit(url1);
   controller().LoadURL(url2, GURL(), 0);
-  // Simulate the ClosePage call which is normally sent by the URLRequest.
+  // Simulate the ClosePage call which is normally sent by the net::URLRequest.
   rvh()->ClosePage(true, 0, 0);
   // Needed so that navigations are not suspended on the RVH. Normally handled
   // by way of ViewHostMsg_ShouldClose_ACK.

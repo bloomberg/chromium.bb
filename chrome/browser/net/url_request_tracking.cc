@@ -13,7 +13,7 @@ namespace {
 // PID.
 const void* kOriginProcessUniqueIDKey = 0;
 
-class UniqueIDData : public URLRequest::UserData {
+class UniqueIDData : public net::URLRequest::UserData {
  public:
   explicit UniqueIDData(int id) : id_(id) {}
   virtual ~UniqueIDData() {}
@@ -31,12 +31,12 @@ class UniqueIDData : public URLRequest::UserData {
 
 namespace chrome_browser_net {
 
-void SetOriginProcessUniqueIDForRequest(int id, URLRequest* request) {
+void SetOriginProcessUniqueIDForRequest(int id, net::URLRequest* request) {
   // The request will take ownership.
   request->SetUserData(&kOriginProcessUniqueIDKey, new UniqueIDData(id));
 }
 
-int GetOriginProcessUniqueIDForRequest(const URLRequest* request) {
+int GetOriginProcessUniqueIDForRequest(const net::URLRequest* request) {
   const UniqueIDData* data = static_cast<const UniqueIDData*>(
       request->GetUserData(&kOriginProcessUniqueIDKey));
   if (!data)

@@ -18,7 +18,7 @@ namespace {
 // A job subclass that dumps an HTTP cache entry.
 class ViewHttpCacheJob : public net::URLRequestJob {
  public:
-  explicit ViewHttpCacheJob(URLRequest* request)
+  explicit ViewHttpCacheJob(net::URLRequest* request)
       : URLRequestJob(request), data_offset_(0), cancel_(false), busy_(false),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             callback_(this, &ViewHttpCacheJob::OnIOComplete)) {}
@@ -124,6 +124,6 @@ bool ViewHttpCacheJobFactory::IsSupportedURL(const GURL& url) {
 
 // Static.
 URLRequestJob* ViewHttpCacheJobFactory::CreateJobForRequest(
-    URLRequest* request) {
+    net::URLRequest* request) {
   return new ViewHttpCacheJob(request);
 }

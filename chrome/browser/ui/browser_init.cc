@@ -782,7 +782,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     // This avoids us getting into an infinite loop asking ourselves to open
     // a URL, should the handler be (incorrectly) configured to be us. Anyone
     // asking us to open such a URL should really ask the handler directly.
-    if (!process_startup && !URLRequest::IsHandledURL(tabs[i].url))
+    if (!process_startup && !net::URLRequest::IsHandledURL(tabs[i].url))
       continue;
 
     int add_types = first_tab ? TabStripModel::ADD_SELECTED :

@@ -27,7 +27,7 @@ class BlobData;
 
 // Holds the data ResourceDispatcherHost associates with each request.
 // Retrieve this data by calling ResourceDispatcherHost::InfoForRequest.
-class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
+class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
  public:
   // This will take a reference to the handler.
   ResourceDispatcherHostRequestInfo(

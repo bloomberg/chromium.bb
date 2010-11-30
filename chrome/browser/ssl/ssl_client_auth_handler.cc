@@ -11,7 +11,7 @@
 #include "net/url_request/url_request.h"
 
 SSLClientAuthHandler::SSLClientAuthHandler(
-    URLRequest* request,
+    net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info)
     : request_(request),
       cert_request_info_(cert_request_info) {
@@ -39,7 +39,7 @@ void SSLClientAuthHandler::SelectCertificate() {
   // If the RVH does not exist by the time this task gets run, then the task
   // will be dropped and the scoped_refptr to SSLClientAuthHandler will go
   // away, so we do not leak anything. The destructor takes care of ensuring
-  // the URLRequest always gets a response.
+  // the net::URLRequest always gets a response.
   CallRenderViewHostSSLDelegate(
       render_process_host_id, render_view_host_id,
       &RenderViewHostDelegate::SSL::ShowClientCertificateRequestDialog,

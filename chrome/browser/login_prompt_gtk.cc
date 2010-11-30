@@ -30,13 +30,13 @@ using webkit_glue::PasswordForm;
 // LoginHandlerGtk
 
 // This class simply forwards the authentication from the LoginView (on
-// the UI thread) to the URLRequest (on the I/O thread).
+// the UI thread) to the net::URLRequest (on the I/O thread).
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
 class LoginHandlerGtk : public LoginHandler,
                         public ConstrainedWindowGtkDelegate {
  public:
-  LoginHandlerGtk(net::AuthChallengeInfo* auth_info, URLRequest* request)
+  LoginHandlerGtk(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
         username_entry_(NULL),
         password_entry_(NULL),
@@ -194,6 +194,6 @@ void LoginHandlerGtk::OnPromptHierarchyChanged(GtkWidget* sender,
 
 // static
 LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
-                                   URLRequest* request) {
+                                   net::URLRequest* request) {
   return new LoginHandlerGtk(auth_info, request);
 }

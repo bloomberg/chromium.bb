@@ -184,15 +184,16 @@ class ResourceDispatcherHostTest : public testing::Test,
     DCHECK(!test_fixture_);
     test_fixture_ = this;
     ChildProcessSecurityPolicy::GetInstance()->Add(0);
-    URLRequest::RegisterProtocolFactory("test",
-                                        &ResourceDispatcherHostTest::Factory);
+    net::URLRequest::RegisterProtocolFactory(
+        "test",
+        &ResourceDispatcherHostTest::Factory);
     EnsureTestSchemeIsAllowed();
   }
 
   virtual void TearDown() {
-    URLRequest::RegisterProtocolFactory("test", NULL);
+    net::URLRequest::RegisterProtocolFactory("test", NULL);
     if (!scheme_.empty())
-      URLRequest::RegisterProtocolFactory(scheme_, old_factory_);
+      net::URLRequest::RegisterProtocolFactory(scheme_, old_factory_);
 
     DCHECK(test_fixture_ == this);
     test_fixture_ = NULL;
@@ -250,12 +251,12 @@ class ResourceDispatcherHostTest : public testing::Test,
     DCHECK(scheme_.empty());
     DCHECK(!old_factory_);
     scheme_ = scheme;
-    old_factory_ = URLRequest::RegisterProtocolFactory(
-                       scheme_, &ResourceDispatcherHostTest::Factory);
+    old_factory_ = net::URLRequest::RegisterProtocolFactory(
+        scheme_, &ResourceDispatcherHostTest::Factory);
   }
 
   // Our own URLRequestJob factory.
-  static URLRequestJob* Factory(URLRequest* request,
+  static URLRequestJob* Factory(net::URLRequest* request,
                                 const std::string& scheme) {
     if (test_fixture_->response_headers_.empty()) {
       return new URLRequestTestJob(request);
@@ -273,7 +274,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   std::string response_headers_;
   std::string response_data_;
   std::string scheme_;
-  URLRequest::ProtocolFactory* old_factory_;
+  net::URLRequest::ProtocolFactory* old_factory_;
   ResourceType::Type resource_type_;
   static ResourceDispatcherHostTest* test_fixture_;
 };
@@ -651,7 +652,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 
 // Test the private helper method "CalculateApproximateMemoryCost()".
 TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
-  URLRequest req(GURL("http://www.google.com"), NULL);
+  net::URLRequest req(GURL("http://www.google.com"), NULL);
   EXPECT_EQ(4427, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
 
   // Add 9 bytes of referrer.

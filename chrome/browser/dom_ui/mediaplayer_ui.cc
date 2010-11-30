@@ -538,7 +538,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
   mediaplayer_browser_->window()->Show();
 }
 
-URLRequestJob* MediaPlayer::MaybeIntercept(URLRequest* request) {
+URLRequestJob* MediaPlayer::MaybeIntercept(net::URLRequest* request) {
   // Don't attempt to intercept here as we want to wait until the mime
   // type is fully determined.
   return NULL;
@@ -553,7 +553,7 @@ static const char* const supported_mime_type_list[] = {
 };
 
 URLRequestJob* MediaPlayer::MaybeInterceptResponse(
-    URLRequest* request) {
+    net::URLRequest* request) {
   // Do not intercept this request if it is a download.
   if (request->load_flags() & net::LOAD_IS_DOWNLOAD) {
     return NULL;

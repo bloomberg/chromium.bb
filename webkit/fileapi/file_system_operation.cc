@@ -141,7 +141,8 @@ void FileSystemOperation::Write(
 #endif
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(this, offset));
-  blob_request_.reset(new URLRequest(blob_url, file_writer_delegate_.get()));
+  blob_request_.reset(
+      new net::URLRequest(blob_url, file_writer_delegate_.get()));
   blob_request_->set_context(url_request_context);
   base::FileUtilProxy::CreateOrOpen(
       proxy_,

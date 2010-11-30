@@ -31,7 +31,7 @@ bool URLFetcher::g_interception_enabled = false;
 
 class URLFetcher::Core
     : public base::RefCountedThreadSafe<URLFetcher::Core>,
-      public URLRequest::Delegate {
+      public net::URLRequest::Delegate {
  public:
   // For POST requests, set |content_type| to the MIME type of the content
   // and set |content| to the data to upload.  |flags| are flags to apply to
@@ -57,9 +57,9 @@ class URLFetcher::Core
   // Reports that the received content was malformed.
   void ReceivedContentWasMalformed();
 
-  // URLRequest::Delegate implementation.
-  virtual void OnResponseStarted(URLRequest* request);
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read);
+  // Overridden from net::URLRequest::Delegate:
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
   URLFetcher::Delegate* delegate() const { return delegate_; }
 
@@ -113,7 +113,7 @@ class URLFetcher::Core
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
                                      // The message loop proxy for the thread
                                      // on which the request IO happens.
-  scoped_ptr<URLRequest> request_;   // The actual request this wraps
+  scoped_ptr<net::URLRequest> request_;   // The actual request this wraps
   int load_flags_;                   // Flags for the load operation
   int response_code_;                // HTTP status code for the request
   std::string data_;                 // Results of the request
@@ -264,7 +264,7 @@ void URLFetcher::Core::CancelAll() {
   g_registry.Get().CancelAll();
 }
 
-void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
+void URLFetcher::Core::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request, request_.get());
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (request_->status().is_success()) {
@@ -282,7 +282,8 @@ void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
   OnReadCompleted(request_.get(), bytes_read);
 }
 
-void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
+void URLFetcher::Core::OnReadCompleted(net::URLRequest* request,
+                                       int bytes_read) {
   DCHECK(request == request_);
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
@@ -328,7 +329,7 @@ void URLFetcher::Core::StartURLRequest() {
   DCHECK(!request_.get());
 
   g_registry.Get().AddURLFetcherCore(this);
-  request_.reset(new URLRequest(original_url_, this));
+  request_.reset(new net::URLRequest(original_url_, this));
   int flags = request_->load_flags() | load_flags_;
   if (!g_interception_enabled) {
     flags = flags | net::LOAD_DISABLE_INTERCEPT;

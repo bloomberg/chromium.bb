@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_RENDERER_HOST_GLOBAL_REQUEST_ID_H_
 #pragma once
 
-// Uniquely identifies a URLRequest.
+// Uniquely identifies a net::URLRequest.
 struct GlobalRequestID {
   GlobalRequestID() : child_id(-1), request_id(-1) {
   }

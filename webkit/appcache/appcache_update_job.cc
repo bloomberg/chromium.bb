@@ -23,8 +23,8 @@ static const size_t kMaxConcurrentUrlFetches = 2;
 static const int kMax503Retries = 3;
 
 // Extra info associated with requests for use during response processing.
-// This info is deleted when the URLRequest is deleted.
-class UpdateJobInfo :  public URLRequest::UserData {
+// This info is deleted when the net::URLRequest is deleted.
+class UpdateJobInfo :  public net::URLRequest::UserData {
  public:
   enum RequestType {
     MANIFEST_FETCH,
@@ -45,7 +45,7 @@ class UpdateJobInfo :  public URLRequest::UserData {
 
   void SetUpResponseWriter(AppCacheResponseWriter* writer,
                            AppCacheUpdateJob* update,
-                           URLRequest* request) {
+                           net::URLRequest* request) {
     DCHECK(!response_writer_.get());
     response_writer_.reset(writer);
     update_job_ = update;
@@ -67,7 +67,7 @@ class UpdateJobInfo :  public URLRequest::UserData {
   // Info needed to write responses to storage and process callbacks.
   scoped_ptr<AppCacheResponseWriter> response_writer_;
   AppCacheUpdateJob* update_job_;
-  URLRequest* request_;
+  net::URLRequest* request_;
   net::CompletionCallbackImpl<UpdateJobInfo> write_callback_;
 };
 
@@ -174,7 +174,7 @@ AppCacheUpdateJob::~AppCacheUpdateJob() {
   policy_callback_->Cancel();
 }
 
-UpdateJobInfo* AppCacheUpdateJob::GetUpdateJobInfo(URLRequest* request) {
+UpdateJobInfo* AppCacheUpdateJob::GetUpdateJobInfo(net::URLRequest* request) {
   return static_cast<UpdateJobInfo*>(request->GetUserData(this));
 }
 
@@ -287,7 +287,7 @@ void AppCacheUpdateJob::HandleCacheFailure(const std::string& error_message) {
 
 void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
   DCHECK(!manifest_url_request_);
-  manifest_url_request_ = new URLRequest(manifest_url_, this);
+  manifest_url_request_ = new net::URLRequest(manifest_url_, this);
   UpdateJobInfo::RequestType fetch_type = is_first_fetch ?
       UpdateJobInfo::MANIFEST_FETCH : UpdateJobInfo::MANIFEST_REFETCH;
   manifest_url_request_->SetUserData(this, new UpdateJobInfo(fetch_type));
@@ -316,7 +316,7 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
 }
 
 void AppCacheUpdateJob::AddConditionalHeaders(
-    URLRequest* request, const net::HttpResponseInfo* info) {
+    net::URLRequest* request, const net::HttpResponseInfo* info) {
   DCHECK(request && info);
   net::HttpRequestHeaders extra_headers;
 
@@ -341,7 +341,7 @@ void AppCacheUpdateJob::AddConditionalHeaders(
     request->SetExtraRequestHeaders(extra_headers);
 }
 
-void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
+void AppCacheUpdateJob::OnResponseStarted(net::URLRequest *request) {
   if (request->status().is_success() &&
       (request->GetResponseCode() / 100) == 2) {
     // Write response info to storage for URL fetches. Wait for async write
@@ -365,7 +365,7 @@ void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
   }
 }
 
-void AppCacheUpdateJob::ReadResponseData(URLRequest* request) {
+void AppCacheUpdateJob::ReadResponseData(net::URLRequest* request) {
   if (internal_state_ == CACHE_FAILURE || internal_state_ == CANCELLED ||
       internal_state_ == COMPLETED) {
     return;
@@ -377,7 +377,8 @@ void AppCacheUpdateJob::ReadResponseData(URLRequest* request) {
   OnReadCompleted(request, bytes_read);
 }
 
-void AppCacheUpdateJob::OnReadCompleted(URLRequest* request, int bytes_read) {
+void AppCacheUpdateJob::OnReadCompleted(net::URLRequest* request,
+                                        int bytes_read) {
   bool data_consumed = true;
   if (request->status().is_success() && bytes_read > 0) {
     UpdateJobInfo* info = GetUpdateJobInfo(request);
@@ -400,7 +401,7 @@ void AppCacheUpdateJob::OnReadCompleted(URLRequest* request, int bytes_read) {
     OnResponseCompleted(request);
 }
 
-bool AppCacheUpdateJob::ConsumeResponseData(URLRequest* request,
+bool AppCacheUpdateJob::ConsumeResponseData(net::URLRequest* request,
                                             UpdateJobInfo* info,
                                             int bytes_read) {
   DCHECK_GT(bytes_read, 0);
@@ -424,7 +425,7 @@ bool AppCacheUpdateJob::ConsumeResponseData(URLRequest* request,
 }
 
 void AppCacheUpdateJob::OnWriteResponseComplete(int result,
-                                                URLRequest* request,
+                                                net::URLRequest* request,
                                                 UpdateJobInfo* info) {
   if (result < 0) {
     request->Cancel();
@@ -435,7 +436,7 @@ void AppCacheUpdateJob::OnWriteResponseComplete(int result,
   ReadResponseData(request);
 }
 
-void AppCacheUpdateJob::OnReceivedRedirect(URLRequest* request,
+void AppCacheUpdateJob::OnReceivedRedirect(net::URLRequest* request,
                                            const GURL& new_url,
                                            bool* defer_redirect) {
   // Redirect is not allowed by the update process.
@@ -443,7 +444,7 @@ void AppCacheUpdateJob::OnReceivedRedirect(URLRequest* request,
   OnResponseCompleted(request);
 }
 
-void AppCacheUpdateJob::OnResponseCompleted(URLRequest* request) {
+void AppCacheUpdateJob::OnResponseCompleted(net::URLRequest* request) {
   // Retry for 503s where retry-after is 0.
   if (request->status().is_success() &&
       request->GetResponseCode() == 503 &&
@@ -472,7 +473,7 @@ void AppCacheUpdateJob::OnResponseCompleted(URLRequest* request) {
   delete request;
 }
 
-bool AppCacheUpdateJob::RetryRequest(URLRequest* request) {
+bool AppCacheUpdateJob::RetryRequest(net::URLRequest* request) {
   UpdateJobInfo* info = GetUpdateJobInfo(request);
   if (info->retry_503_attempts_ >= kMax503Retries) {
     return false;
@@ -482,7 +483,7 @@ bool AppCacheUpdateJob::RetryRequest(URLRequest* request) {
     return false;
 
   const GURL& url = request->original_url();
-  URLRequest* retry = new URLRequest(url, this);
+  net::URLRequest* retry = new net::URLRequest(url, this);
   UpdateJobInfo* retry_info = new UpdateJobInfo(info->type_);
   retry_info->retry_503_attempts_ = info->retry_503_attempts_ + 1;
   retry_info->existing_entry_ = info->existing_entry_;
@@ -514,7 +515,7 @@ bool AppCacheUpdateJob::RetryRequest(URLRequest* request) {
   return true;
 }
 
-void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
+void AppCacheUpdateJob::HandleManifestFetchCompleted(net::URLRequest* request) {
   DCHECK(internal_state_ == FETCH_MANIFEST);
   manifest_url_request_ = NULL;
 
@@ -621,7 +622,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   MaybeCompleteUpdate();  // if not done, continues when async fetches complete
 }
 
-void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
+void AppCacheUpdateJob::HandleUrlFetchCompleted(net::URLRequest* request) {
   DCHECK(internal_state_ == DOWNLOADING);
   UpdateJobInfo* info = GetUpdateJobInfo(request);
 
@@ -684,7 +685,8 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
   MaybeCompleteUpdate();
 }
 
-void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
+void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(
+    net::URLRequest* request) {
   DCHECK(internal_state_ == NO_UPDATE || internal_state_ == DOWNLOADING);
 
   // TODO(jennb): Handle downloads completing during cache failure when update
@@ -767,7 +769,8 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
   MaybeCompleteUpdate();
 }
 
-void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
+void AppCacheUpdateJob::HandleManifestRefetchCompleted(
+    net::URLRequest* request) {
   DCHECK(internal_state_ == REFETCH_MANIFEST);
   manifest_url_request_ = NULL;
 
@@ -1021,7 +1024,7 @@ void AppCacheUpdateJob::FetchUrls() {
       }
 
       // Send URL request for the resource.
-      URLRequest* request = new URLRequest(url_to_fetch.url, this);
+      net::URLRequest* request = new net::URLRequest(url_to_fetch.url, this);
       request->SetUserData(this, info);
       request->set_context(service_->request_context());
       request->set_load_flags(
@@ -1136,7 +1139,7 @@ void AppCacheUpdateJob::FetchMasterEntries() {
       }
     } else {
       // Send URL request for the master entry.
-      URLRequest* request = new URLRequest(url, this);
+      net::URLRequest* request = new net::URLRequest(url, this);
       request->SetUserData(this,
           new UpdateJobInfo(UpdateJobInfo::MASTER_ENTRY_FETCH));
       request->set_context(service_->request_context());

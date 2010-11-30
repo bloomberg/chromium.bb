@@ -28,7 +28,7 @@ class URLRequest;
 // UI thread.  Subclasses should override the OnDispatched/OnDispatchFailed
 // methods to implement the actions that should be taken on the UI thread.
 // These methods can call the different convenience methods ContinueRequest/
-// CancelRequest to perform any required action on the URLRequest the
+// CancelRequest to perform any required action on the net::URLRequest the
 // ErrorHandler was created with.
 //
 // IMPORTANT NOTE:
@@ -41,7 +41,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
  public:
   virtual SSLCertErrorHandler* AsSSLCertErrorHandler() { return NULL; }
 
-  // Find the appropriate SSLManager for the URLRequest and begin handling
+  // Find the appropriate SSLManager for the net::URLRequest and begin handling
   // this error.
   //
   // Call on UI thread.
@@ -63,24 +63,24 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // called from the UI thread.
   TabContents* GetTabContents();
 
-  // Cancels the associated URLRequest.
+  // Cancels the associated net::URLRequest.
   // This method can be called from OnDispatchFailed and OnDispatched.
   void CancelRequest();
 
-  // Continue the URLRequest ignoring any previous errors.  Note that some
+  // Continue the net::URLRequest ignoring any previous errors.  Note that some
   // errors cannot be ignored, in which case this will result in the request
   // being canceled.
   // This method can be called from OnDispatchFailed and OnDispatched.
   void ContinueRequest();
 
-  // Cancels the associated URLRequest and mark it as denied.  The renderer
+  // Cancels the associated net::URLRequest and mark it as denied.  The renderer
   // processes such request in a special manner, optionally replacing them
   // with alternate content (typically frames content is replaced with a
   // warning message).
   // This method can be called from OnDispatchFailed and OnDispatched.
   void DenyRequest();
 
-  // Does nothing on the URLRequest but ensures the current instance ref
+  // Does nothing on the net::URLRequest but ensures the current instance ref
   // count is decremented appropriately.  Subclasses that do not want to
   // take any specific actions in their OnDispatched/OnDispatchFailed should
   // call this.
@@ -107,7 +107,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Should only be accessed on the UI thread.
   SSLManager* manager_;  // Our manager.
 
-  // The id of the URLRequest associated with this object.
+  // The id of the net::URLRequest associated with this object.
   // Should only be accessed from the IO thread.
   GlobalRequestID request_id_;
 
@@ -150,7 +150,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // This read-only member can be accessed on any thread.
   const std::string main_frame_origin_;
 
-  // A flag to make sure we notify the URLRequest exactly once.
+  // A flag to make sure we notify the net::URLRequest exactly once.
   // Should only be accessed on the IO thread
   bool request_has_been_notified_;
 

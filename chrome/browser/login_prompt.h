@@ -24,8 +24,8 @@ class ConstrainedWindow;
 class GURL;
 
 // This is the base implementation for the OS-specific classes that route
-// authentication info to the URLRequest that needs it. These functions must
-// be implemented in a thread safe manner.
+// authentication info to the net::URLRequest that needs it. These functions
+// must be implemented in a thread safe manner.
 class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
                      public LoginModelObserver,
                      public NotificationObserver {
@@ -138,7 +138,7 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
   // This should only be accessed on the UI loop.
   PasswordManager* password_manager_;
 
-  // Cached from the URLRequest, in case it goes NULL on us.
+  // Cached from the net::URLRequest, in case it goes NULL on us.
   int render_process_host_id_;
   int tab_contents_id_;
 
@@ -192,18 +192,19 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 
 // Prompts the user for their username and password.  This is designed to
 // be called on the background (I/O) thread, in response to
-// URLRequest::Delegate::OnAuthRequired.  The prompt will be created
+// net::URLRequest::Delegate::OnAuthRequired.  The prompt will be created
 // on the main UI thread via a call to UI loop's InvokeLater, and will send the
-// credentials back to the URLRequest on the calling thread.
+// credentials back to the net::URLRequest on the calling thread.
 // A LoginHandler object (which lives on the calling thread) is returned,
 // which can be used to set or cancel authentication programmatically.  The
 // caller must invoke OnRequestCancelled() on this LoginHandler before
-// destroying the URLRequest.
+// destroying the net::URLRequest.
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
                                 net::URLRequest* request);
 
-// Helper to remove the ref from an URLRequest to the LoginHandler.
-// Should only be called from the IO thread, since it accesses an URLRequest.
+// Helper to remove the ref from an net::URLRequest to the LoginHandler.
+// Should only be called from the IO thread, since it accesses an
+// net::URLRequest.
 void ResetLoginHandlerForRequest(net::URLRequest* request);
 
 // Get the signon_realm under which the identity should be saved.

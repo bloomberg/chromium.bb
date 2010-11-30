@@ -259,9 +259,9 @@ class ResourceLoaderBridge {
   // within webkit. The Peer and it's bridge should have identical lifetimes
   // as they represent each end of a communication channel.
   //
-  // These callbacks mirror URLRequest::Delegate and the order and conditions
-  // in which they will be called are identical. See url_request.h for more
-  // information.
+  // These callbacks mirror net::URLRequest::Delegate and the order and
+  // conditions in which they will be called are identical. See url_request.h
+  // for more information.
   class Peer {
    public:
     virtual ~Peer() {}

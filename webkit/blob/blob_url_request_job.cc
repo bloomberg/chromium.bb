@@ -40,7 +40,7 @@ static const char* kHTTPRequestedRangeNotSatisfiableText =
 static const char* kHTTPInternalErrorText = "Internal Server Error";
 
 BlobURLRequestJob::BlobURLRequestJob(
-    URLRequest* request,
+    net::URLRequest* request,
     BlobData* blob_data,
     base::MessageLoopProxy* file_thread_proxy)
     : URLRequestJob(request),

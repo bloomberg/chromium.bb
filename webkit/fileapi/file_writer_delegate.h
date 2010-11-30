@@ -20,28 +20,28 @@ namespace fileapi {
 
 class FileSystemOperation;
 
-class FileWriterDelegate : public URLRequest::Delegate {
+class FileWriterDelegate : public net::URLRequest::Delegate {
  public:
   FileWriterDelegate(
       FileSystemOperation* write_operation,
       int64 offset);
   virtual ~FileWriterDelegate();
 
-  void Start(base::PlatformFile file, URLRequest* request);
+  void Start(base::PlatformFile file, net::URLRequest* request);
   base::PlatformFile file() {
     return file_;
   }
 
   virtual void OnReceivedRedirect(
-      URLRequest* request, const GURL& new_url, bool* defer_redirect);
+      net::URLRequest* request, const GURL& new_url, bool* defer_redirect);
   virtual void OnAuthRequired(
-      URLRequest* request, net::AuthChallengeInfo* auth_info);
+      net::URLRequest* request, net::AuthChallengeInfo* auth_info);
   virtual void OnCertificateRequested(
-      URLRequest* request, net::SSLCertRequestInfo* cert_request_info);
+      net::URLRequest* request, net::SSLCertRequestInfo* cert_request_info);
   virtual void OnSSLCertificateError(
-      URLRequest* request, int cert_error, net::X509Certificate* cert);
-  virtual void OnResponseStarted(URLRequest* request);
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read);
+      net::URLRequest* request, int cert_error, net::X509Certificate* cert);
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
  private:
   void Read();
@@ -60,7 +60,7 @@ class FileWriterDelegate : public URLRequest::Delegate {
   int bytes_read_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_ptr<net::FileStream> file_stream_;
-  URLRequest* request_;
+  net::URLRequest* request_;
   base::ScopedCallbackFactory<FileWriterDelegate> callback_factory_;
   ScopedRunnableMethodFactory<FileWriterDelegate> method_factory_;
 };

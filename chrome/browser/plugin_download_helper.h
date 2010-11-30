@@ -18,7 +18,7 @@
 // The PluginDownloadUrlHelper is used to handle one download URL request
 // from the plugin. Each download request is handled by a new instance
 // of this class.
-class PluginDownloadUrlHelper : public URLRequest::Delegate {
+class PluginDownloadUrlHelper : public net::URLRequest::Delegate {
   static const int kDownloadFileBufferSize = 32768;
  public:
   // The delegate receives notification about the status of downloads
@@ -38,27 +38,27 @@ class PluginDownloadUrlHelper : public URLRequest::Delegate {
 
   void InitiateDownload(URLRequestContext* request_context);
 
-  // URLRequest::Delegate
-  virtual void OnAuthRequired(URLRequest* request,
+  // net::URLRequest::Delegate
+  virtual void OnAuthRequired(net::URLRequest* request,
                               net::AuthChallengeInfo* auth_info);
-  virtual void OnSSLCertificateError(URLRequest* request,
+  virtual void OnSSLCertificateError(net::URLRequest* request,
                                      int cert_error,
                                      net::X509Certificate* cert);
-  virtual void OnResponseStarted(URLRequest* request);
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read);
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
-  void OnDownloadCompleted(URLRequest* request);
+  void OnDownloadCompleted(net::URLRequest* request);
 
  protected:
   void DownloadCompletedHelper(bool success);
 
   // The download file request initiated by the plugin.
-  URLRequest* download_file_request_;
+  net::URLRequest* download_file_request_;
   // Handle to the downloaded file.
   scoped_ptr<net::FileStream> download_file_;
   // The full path of the downloaded file.
   FilePath download_file_path_;
-  // The buffer passed off to URLRequest::Read.
+  // The buffer passed off to net::URLRequest::Read.
   scoped_refptr<net::IOBuffer> download_file_buffer_;
   // TODO(port): this comment doesn't describe the situation on Posix.
   // The window handle for sending the WM_COPYDATA notification,

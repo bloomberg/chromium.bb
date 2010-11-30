@@ -29,13 +29,13 @@ using webkit_glue::PasswordForm;
 // LoginHandlerMac
 
 // This class simply forwards the authentication from the LoginView (on
-// the UI thread) to the URLRequest (on the I/O thread).
+// the UI thread) to the net::URLRequest (on the I/O thread).
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
 class LoginHandlerMac : public LoginHandler,
                         public ConstrainedWindowMacDelegateCustomSheet {
  public:
-  LoginHandlerMac(net::AuthChallengeInfo* auth_info, URLRequest* request)
+  LoginHandlerMac(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
         sheet_controller_(nil) {
   }
@@ -117,7 +117,7 @@ class LoginHandlerMac : public LoginHandler,
 
 // static
 LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
-                                   URLRequest* request) {
+                                   net::URLRequest* request) {
   return new LoginHandlerMac(auth_info, request);
 }
 

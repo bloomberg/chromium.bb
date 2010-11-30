@@ -26,7 +26,7 @@ void URLRequestFailedDnsJob::AddUrlHandler() {
 }
 
 /*static */
-URLRequestJob* URLRequestFailedDnsJob::Factory(URLRequest* request,
+URLRequestJob* URLRequestFailedDnsJob::Factory(net::URLRequest* request,
     const std::string& scheme) {
   return new URLRequestFailedDnsJob(request);
 }

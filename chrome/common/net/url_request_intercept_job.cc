@@ -25,7 +25,7 @@ using base::TimeDelta;
 // URLRequestInterceptJob
 //
 
-URLRequestInterceptJob::URLRequestInterceptJob(URLRequest* request,
+URLRequestInterceptJob::URLRequestInterceptJob(net::URLRequest* request,
                                                ChromePluginLib* plugin,
                                                ScopableCPRequest* cprequest)
     : URLRequestJob(request),

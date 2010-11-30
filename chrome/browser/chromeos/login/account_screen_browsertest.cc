@@ -62,7 +62,7 @@ static void QuitUIMessageLoop() {
 static bool inspector_called = false;  // had to use global flag as
                                        // InspectorHook() doesn't have context.
 
-static URLRequestJob* InspectorHook(URLRequest* request,
+static URLRequestJob* InspectorHook(net::URLRequest* request,
                                     const std::string& scheme) {
   VLOG(1) << "Intercepted: " << request->url() << ", scheme: " << scheme;
 

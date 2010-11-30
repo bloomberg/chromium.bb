@@ -30,7 +30,7 @@ class PrerenderInterceptorTest : public testing::Test {
   net::TestServer test_server_;
   GURL gurl_;
   GURL last_intercepted_gurl_;
-  scoped_ptr<URLRequest> req_;
+  scoped_ptr<net::URLRequest> req_;
 
  private:
   void SetLastInterceptedGurl(const GURL& url);

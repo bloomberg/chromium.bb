@@ -26,7 +26,7 @@ DownloadResourceHandler::DownloadResourceHandler(
     int request_id,
     const GURL& url,
     DownloadFileManager* download_file_manager,
-    URLRequest* request,
+    net::URLRequest* request,
     bool save_as,
     const DownloadSaveInfo& save_info)
     : download_id_(-1),

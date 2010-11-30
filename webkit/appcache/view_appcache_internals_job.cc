@@ -152,7 +152,7 @@ struct ManifestURLComparator {
 namespace appcache {
 
 ViewAppCacheInternalsJob::ViewAppCacheInternalsJob(
-    URLRequest* request,
+    net::URLRequest* request,
     AppCacheService* service) : URLRequestSimpleJob(request),
                                 appcache_service_(service) {
 }

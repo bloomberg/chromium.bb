@@ -27,14 +27,14 @@ struct AutomationURLResponse;
 // automation.
 class URLRequestAutomationJob : public net::URLRequestJob {
  public:
-  URLRequestAutomationJob(URLRequest* request, int tab, int request_id,
+  URLRequestAutomationJob(net::URLRequest* request, int tab, int request_id,
                           AutomationResourceMessageFilter* filter,
                           bool is_pending);
 
   // Register our factory for HTTP/HTTPs requests.
   static bool EnsureProtocolFactoryRegistered();
 
-  static URLRequest::ProtocolFactory Factory;
+  static net::URLRequest::ProtocolFactory Factory;
 
   // URLRequestJob methods.
   virtual void Start();
@@ -110,8 +110,8 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   static bool is_protocol_factory_registered_;
   // The previous HTTP/HTTPs protocol factories. We pass unhandled
   // requests off to these factories
-  static URLRequest::ProtocolFactory* old_http_factory_;
-  static URLRequest::ProtocolFactory* old_https_factory_;
+  static net::URLRequest::ProtocolFactory* old_http_factory_;
+  static net::URLRequest::ProtocolFactory* old_https_factory_;
 
   // Set to true if the job is waiting for the external host to connect to the
   // automation channel, which will be used for routing the network requests to

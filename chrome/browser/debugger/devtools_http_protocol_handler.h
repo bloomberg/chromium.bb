@@ -19,7 +19,7 @@ class TabContents;
 
 class DevToolsHttpProtocolHandler
     : public HttpListenSocket::Delegate,
-      public URLRequest::Delegate,
+      public net::URLRequest::Delegate,
       public base::RefCountedThreadSafe<DevToolsHttpProtocolHandler> {
  public:
   explicit DevToolsHttpProtocolHandler(int port);
@@ -51,14 +51,14 @@ class DevToolsHttpProtocolHandler
                                     const std::string& data);
   virtual void OnCloseUI(HttpListenSocket* socket);
 
-  // URLRequest::Delegate implementation.
-  virtual void OnResponseStarted(URLRequest* request);
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read);
+  // net::URLRequest::Delegate implementation.
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
   void Init();
   void Teardown();
-  void Bind(URLRequest* request, HttpListenSocket* socket);
-  void RequestCompleted(URLRequest* request);
+  void Bind(net::URLRequest* request, HttpListenSocket* socket);
+  void RequestCompleted(net::URLRequest* request);
 
   void Send200(HttpListenSocket* socket,
                const std::string& data,
@@ -73,13 +73,13 @@ class DevToolsHttpProtocolHandler
 
   int port_;
   scoped_refptr<HttpListenSocket> server_;
-  typedef std::map<URLRequest*, HttpListenSocket*>
+  typedef std::map<net::URLRequest*, HttpListenSocket*>
       RequestToSocketMap;
   RequestToSocketMap request_to_socket_io_;
-  typedef std::map<HttpListenSocket*, std::set<URLRequest*> >
+  typedef std::map<HttpListenSocket*, std::set<net::URLRequest*> >
       SocketToRequestsMap;
   SocketToRequestsMap socket_to_requests_io_;
-  typedef std::map<URLRequest*, scoped_refptr<net::IOBuffer> >
+  typedef std::map<net::URLRequest*, scoped_refptr<net::IOBuffer> >
       BuffersMap;
   BuffersMap request_to_buffer_io_;
   typedef std::map<HttpListenSocket*, DevToolsClientHost*>

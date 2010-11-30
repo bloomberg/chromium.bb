@@ -42,7 +42,8 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
   scoped_refptr<URLRequestContext> context_;
 };
 
-class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
+class ChromePluginTest : public testing::Test,
+                         public net::URLRequest::Delegate {
  public:
   ChromePluginTest()
       : io_thread_(BrowserThread::IO, &message_loop_),
@@ -62,17 +63,18 @@ class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
   // is NULL, the request is expected to fail.
   void RunTest(const GURL& url, const TestResponsePayload* expected_payload);
 
-  // URLRequest::Delegate implementations
-  virtual void OnResponseStarted(URLRequest* request);
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read);
+  // net::URLRequest::Delegate implementations
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
-  // Helper called when the URLRequest is done.
+  // Helper called when the net::URLRequest is done.
   void OnURLRequestComplete();
 
   // testing::Test
   virtual void SetUp() {
     LoadPlugin();
-    URLRequest::RegisterProtocolFactory("test", &URLRequestTestJob::Factory);
+    net::URLRequest::RegisterProtocolFactory("test",
+                                             &URLRequestTestJob::Factory);
 
     // We need to setup a default request context in order to issue HTTP
     // requests.
@@ -81,7 +83,7 @@ class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
   }
   virtual void TearDown() {
     UnloadPlugin();
-    URLRequest::RegisterProtocolFactory("test", NULL);
+    net::URLRequest::RegisterProtocolFactory("test", NULL);
 
     Profile::set_default_request_context(NULL);
 
@@ -96,9 +98,9 @@ class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
   MessageLoopForIO message_loop_;
   BrowserThread io_thread_;
 
-  // Note: we use URLRequest (instead of URLFetcher) because this allows the
-  // request to be intercepted.
-  scoped_ptr<URLRequest> request_;
+  // Note: we use net::URLRequest (instead of URLFetcher) because this allows
+  // the request to be intercepted.
+  scoped_ptr<net::URLRequest> request_;
   scoped_refptr<net::IOBuffer> response_buffer_;
   std::string response_data_;
 
@@ -166,14 +168,14 @@ void ChromePluginTest::RunTest(const GURL& url,
   expected_payload_ = expected_payload;
 
   response_data_.clear();
-  request_.reset(new URLRequest(url, this));
+  request_.reset(new net::URLRequest(url, this));
   request_->set_context(new TestURLRequestContext());
   request_->Start();
 
   MessageLoop::current()->Run();
 }
 
-void ChromePluginTest::OnResponseStarted(URLRequest* request) {
+void ChromePluginTest::OnResponseStarted(net::URLRequest* request) {
   DCHECK(request == request_);
 
   int bytes_read = 0;
@@ -182,7 +184,8 @@ void ChromePluginTest::OnResponseStarted(URLRequest* request) {
   OnReadCompleted(request_.get(), bytes_read);
 }
 
-void ChromePluginTest::OnReadCompleted(URLRequest* request, int bytes_read) {
+void ChromePluginTest::OnReadCompleted(net::URLRequest* request,
+                                       int bytes_read) {
   DCHECK(request == request_);
 
   do {

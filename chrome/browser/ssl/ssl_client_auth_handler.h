@@ -19,7 +19,7 @@ class X509Certificate;
 // This class handles the approval and selection of a certificate for SSL client
 // authentication by the user.
 // It is self-owned and deletes itself when the UI reports the user selection or
-// when the URLRequest is cancelled.
+// when the net::URLRequest is cancelled.
 class SSLClientAuthHandler
     : public base::RefCountedThreadSafe<SSLClientAuthHandler,
                                         BrowserThread::DeleteOnIOThread> {
@@ -54,7 +54,7 @@ class SSLClientAuthHandler
   // Called on the IO thread.
   void DoCertificateSelected(net::X509Certificate* cert);
 
-  // The URLRequest that triggered this client auth.
+  // The net::URLRequest that triggered this client auth.
   net::URLRequest* request_;
 
   // The certs to choose from.

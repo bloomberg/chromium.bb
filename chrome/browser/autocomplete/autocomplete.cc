@@ -148,13 +148,13 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (parts->scheme.is_nonempty() &&
       (parsed_scheme != L"http") && (parsed_scheme != L"https")) {
     // See if we know how to handle the URL internally.
-    if (URLRequest::IsHandledProtocol(WideToASCII(parsed_scheme)))
+    if (net::URLRequest::IsHandledProtocol(WideToASCII(parsed_scheme)))
       return URL;
 
     // There are also some schemes that we convert to other things before they
     // reach the renderer or else the renderer handles internally without
-    // reaching the URLRequest logic.  We thus won't catch these above, but we
-    // should still claim to handle them.
+    // reaching the net::URLRequest logic.  We thus won't catch these above, but
+    // we should still claim to handle them.
     if (LowerCaseEqualsASCII(parsed_scheme, chrome::kViewSourceScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, chrome::kJavaScriptScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, chrome::kDataScheme))

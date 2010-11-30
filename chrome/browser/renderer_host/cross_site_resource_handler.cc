@@ -59,7 +59,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(int request_id,
 
   // Look up the request and associated info.
   GlobalRequestID global_id(render_process_host_id_, request_id);
-  URLRequest* request = rdh_->GetURLRequest(global_id);
+  net::URLRequest* request = rdh_->GetURLRequest(global_id);
   if (!request) {
     DLOG(WARNING) << "Request wasn't found";
     return false;
@@ -141,7 +141,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
 
   // Find the request for this response.
   GlobalRequestID global_id(render_process_host_id_, request_id_);
-  URLRequest* request = rdh_->GetURLRequest(global_id);
+  net::URLRequest* request = rdh_->GetURLRequest(global_id);
   if (!request) {
     DLOG(WARNING) << "Resuming a request that wasn't found";
     return;
@@ -189,7 +189,7 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
 
   // Store this handler on the ExtraRequestInfo, so that RDH can call our
   // ResumeResponse method when the close ACK is received.
-  URLRequest* request = rdh_->GetURLRequest(global_id);
+  net::URLRequest* request = rdh_->GetURLRequest(global_id);
   if (!request) {
     DLOG(WARNING) << "Cross site response for a request that wasn't found";
     return;

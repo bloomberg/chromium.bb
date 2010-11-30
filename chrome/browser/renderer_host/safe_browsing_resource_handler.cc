@@ -177,7 +177,7 @@ void SafeBrowsingResourceHandler::StartDisplayingBlockingPage(
 
   // Grab the original url of this request as well.
   GURL original_url;
-  URLRequest* request = rdh_->GetURLRequest(
+  net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(render_process_host_id_, deferred_request_id_));
   if (request)
     original_url = request->original_url();

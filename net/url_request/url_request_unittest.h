@@ -179,17 +179,17 @@ class TestURLRequestContext : public URLRequestContext {
 
 //-----------------------------------------------------------------------------
 
-class TestURLRequest : public URLRequest {
+class TestURLRequest : public net::URLRequest {
  public:
   TestURLRequest(const GURL& url, Delegate* delegate)
-      : URLRequest(url, delegate) {
+      : net::URLRequest(url, delegate) {
     set_context(new TestURLRequestContext());
   }
 };
 
 //-----------------------------------------------------------------------------
 
-class TestDelegate : public URLRequest::Delegate {
+class TestDelegate : public net::URLRequest::Delegate {
  public:
   TestDelegate()
       : cancel_in_rr_(false),
@@ -213,7 +213,7 @@ class TestDelegate : public URLRequest::Delegate {
         buf_(new net::IOBuffer(kBufferSize)) {
   }
 
-  virtual void OnReceivedRedirect(URLRequest* request, const GURL& new_url,
+  virtual void OnReceivedRedirect(net::URLRequest* request, const GURL& new_url,
                                   bool* defer_redirect) {
     received_redirect_count_++;
     if (quit_on_redirect_) {
@@ -224,7 +224,7 @@ class TestDelegate : public URLRequest::Delegate {
     }
   }
 
-  virtual void OnResponseStarted(URLRequest* request) {
+  virtual void OnResponseStarted(net::URLRequest* request) {
     // It doesn't make sense for the request to have IO pending at this point.
     DCHECK(!request->status().is_io_pending());
 
@@ -247,7 +247,7 @@ class TestDelegate : public URLRequest::Delegate {
     }
   }
 
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read) {
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
     // It doesn't make sense for the request to have IO pending at this point.
     DCHECK(!request->status().is_io_pending());
 
@@ -283,12 +283,13 @@ class TestDelegate : public URLRequest::Delegate {
       request->Cancel();
   }
 
-  virtual void OnResponseCompleted(URLRequest* request) {
+  virtual void OnResponseCompleted(net::URLRequest* request) {
     if (quit_on_complete_)
       MessageLoop::current()->Quit();
   }
 
-  void OnAuthRequired(URLRequest* request, net::AuthChallengeInfo* auth_info) {
+  void OnAuthRequired(net::URLRequest* request,
+                      net::AuthChallengeInfo* auth_info) {
     if (!username_.empty() || !password_.empty()) {
       request->SetAuth(username_, password_);
     } else {
@@ -296,7 +297,7 @@ class TestDelegate : public URLRequest::Delegate {
     }
   }
 
-  virtual void OnSSLCertificateError(URLRequest* request,
+  virtual void OnSSLCertificateError(net::URLRequest* request,
                                      int cert_error,
                                      net::X509Certificate* cert) {
     // The caller can control whether it needs all SSL requests to go through,
@@ -309,7 +310,7 @@ class TestDelegate : public URLRequest::Delegate {
       request->Cancel();
   }
 
-  virtual void OnGetCookies(URLRequest* request, bool blocked_by_policy) {
+  virtual void OnGetCookies(net::URLRequest* request, bool blocked_by_policy) {
     if (blocked_by_policy) {
       blocked_get_cookies_count_++;
       if (cancel_in_getcookiesblocked_)
@@ -317,7 +318,7 @@ class TestDelegate : public URLRequest::Delegate {
     }
   }
 
-  virtual void OnSetCookie(URLRequest* request,
+  virtual void OnSetCookie(net::URLRequest* request,
                            const std::string& cookie_line,
                            const net::CookieOptions& options,
                            bool blocked_by_policy) {

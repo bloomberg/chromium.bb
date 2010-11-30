@@ -11,7 +11,7 @@
 
 SSLCertErrorHandler::SSLCertErrorHandler(
     ResourceDispatcherHost* rdh,
-    URLRequest* request,
+    net::URLRequest* request,
     ResourceType::Type resource_type,
     const std::string& frame_origin,
     const std::string& main_frame_origin,

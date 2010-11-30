@@ -56,7 +56,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     AppCacheURLRequestJobTest* test_;
   };
 
-  class MockURLRequestDelegate : public URLRequest::Delegate {
+  class MockURLRequestDelegate : public net::URLRequest::Delegate {
    public:
     explicit MockURLRequestDelegate(AppCacheURLRequestJobTest* test)
         : test_(test),
@@ -65,7 +65,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
           kill_after_amount_received_(0), kill_with_io_pending_(false) {
     }
 
-    virtual void OnResponseStarted(URLRequest* request) {
+    virtual void OnResponseStarted(net::URLRequest* request) {
       amount_received_ = 0;
       did_receive_headers_ = false;
       if (request->status().is_success()) {
@@ -78,7 +78,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
       }
     }
 
-    virtual void OnReadCompleted(URLRequest* request, int bytes_read) {
+    virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
       if (bytes_read > 0) {
         amount_received_ += bytes_read;
 
@@ -102,7 +102,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
       }
     }
 
-    void ReadSome(URLRequest* request) {
+    void ReadSome(net::URLRequest* request) {
       DCHECK(amount_received_ + kBlockSize <= kNumBlocks * kBlockSize);
       scoped_refptr<IOBuffer> wrapped_buffer(
           new net::WrappedIOBuffer(received_data_->data() + amount_received_));
@@ -124,7 +124,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     bool kill_with_io_pending_;
   };
 
-  static URLRequestJob* MockHttpJobFactory(URLRequest* request,
+  static URLRequestJob* MockHttpJobFactory(net::URLRequest* request,
                                            const std::string& scheme) {
     if (mock_factory_job_) {
       URLRequestJob* temp = mock_factory_job_;
@@ -186,7 +186,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
     DCHECK(task_stack_.empty());
-    orig_http_factory_ = URLRequest::RegisterProtocolFactory(
+    orig_http_factory_ = net::URLRequest::RegisterProtocolFactory(
         "http", MockHttpJobFactory);
     url_request_delegate_.reset(new MockURLRequestDelegate(this));
     storage_delegate_.reset(new MockStorageDelegate(this));
@@ -204,7 +204,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
   void TearDownTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
-    URLRequest::RegisterProtocolFactory("http", orig_http_factory_);
+    net::URLRequest::RegisterProtocolFactory("http", orig_http_factory_);
     orig_http_factory_ = NULL;
     request_.reset();
     url_request_delegate_.reset();
@@ -393,7 +393,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   // Basic -------------------------------------------------------------------
   void Basic() {
     AppCacheStorage* storage = service_->storage();
-    URLRequest request(GURL("http://blah/"), NULL);
+    net::URLRequest request(GURL("http://blah/"), NULL);
     scoped_refptr<AppCacheURLRequestJob> job;
 
     // Create an instance and see that it looks as expected.
@@ -415,7 +415,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   // DeliveryOrders -----------------------------------------------------
   void DeliveryOrders() {
     AppCacheStorage* storage = service_->storage();
-    URLRequest request(GURL("http://blah/"), NULL);
+    net::URLRequest request(GURL("http://blah/"), NULL);
     scoped_refptr<AppCacheURLRequestJob> job;
 
     // Create an instance, give it a delivery order and see that
@@ -456,7 +456,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     AppCacheStorage* storage = service_->storage();
     request_.reset(
-        new URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
+        new net::URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
@@ -488,7 +488,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     AppCacheStorage* storage = service_->storage();
     request_.reset(
-        new URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
+        new net::URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
@@ -517,7 +517,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void DeliverSmallAppCachedResponse() {
     // This test has several async steps.
     // 1. Write a small response to response storage.
-    // 2. Use URLRequest to retrieve it.
+    // 2. Use net::URLRequest to retrieve it.
     // 3. Verify we received what we expected to receive.
 
     PushNextTask(NewRunnableMethod(
@@ -534,7 +534,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void RequestAppCachedResource(bool start_after_delivery_orders) {
     AppCacheStorage* storage = service_->storage();
     request_.reset(
-        new URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
+        new net::URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
@@ -585,7 +585,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void DeliverLargeAppCachedResponse() {
     // This test has several async steps.
     // 1. Write a large response to response storage.
-    // 2. Use URLRequest to retrieve it.
+    // 2. Use net::URLRequest to retrieve it.
     // 3. Verify we received what we expected to receive.
 
     PushNextTask(NewRunnableMethod(
@@ -628,7 +628,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void DeliverPartialResponse() {
     // This test has several async steps.
     // 1. Write a small response to response storage.
-    // 2. Use URLRequest to retrieve it a subset using a range request
+    // 2. Use net::URLRequest to retrieve it a subset using a range request
     // 3. Verify we received what we expected to receive.
     PushNextTask(NewRunnableMethod(
        this, &AppCacheURLRequestJobTest::VerifyDeliverPartialResponse));
@@ -643,7 +643,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void MakeRangeRequest() {
     AppCacheStorage* storage = service_->storage();
     request_.reset(
-        new URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
+        new net::URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
 
     // Request a range, the 3 middle chars out of 'Hello'
     net::HttpRequestHeaders extra_headers;
@@ -692,7 +692,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void CancelRequest() {
     // This test has several async steps.
     // 1. Write a large response to response storage.
-    // 2. Use URLRequest to retrieve it.
+    // 2. Use net::URLRequest to retrieve it.
     // 3. Cancel the request after data starts coming in.
 
     PushNextTask(NewRunnableMethod(
@@ -720,7 +720,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void CancelRequestWithIOPending() {
     // This test has several async steps.
     // 1. Write a large response to response storage.
-    // 2. Use URLRequest to retrieve it.
+    // 2. Use net::URLRequest to retrieve it.
     // 3. Cancel the request after data starts coming in.
 
     PushNextTask(NewRunnableMethod(
@@ -766,8 +766,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   int writer_deletion_count_down_;
   bool write_callback_was_called_;
 
-  URLRequest::ProtocolFactory* orig_http_factory_;
-  scoped_ptr<URLRequest> request_;
+  net::URLRequest::ProtocolFactory* orig_http_factory_;
+  scoped_ptr<net::URLRequest> request_;
   scoped_ptr<MockURLRequestDelegate> url_request_delegate_;
 
   static scoped_ptr<base::Thread> io_thread_;

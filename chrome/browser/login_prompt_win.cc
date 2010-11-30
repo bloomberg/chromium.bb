@@ -26,13 +26,13 @@ using webkit_glue::PasswordForm;
 // LoginHandlerWin
 
 // This class simply forwards the authentication from the LoginView (on
-// the UI thread) to the URLRequest (on the I/O thread).
+// the UI thread) to the net::URLRequest (on the I/O thread).
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
 class LoginHandlerWin : public LoginHandler,
                         public ConstrainedDialogDelegate {
  public:
-  LoginHandlerWin(net::AuthChallengeInfo* auth_info, URLRequest* request)
+  LoginHandlerWin(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request) {
   }
 
@@ -142,6 +142,6 @@ class LoginHandlerWin : public LoginHandler,
 
 // static
 LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
-                                   URLRequest* request) {
+                                   net::URLRequest* request) {
   return new LoginHandlerWin(auth_info, request);
 }

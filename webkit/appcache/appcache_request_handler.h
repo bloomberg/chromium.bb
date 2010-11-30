@@ -19,8 +19,8 @@ namespace appcache {
 
 class AppCacheURLRequestJob;
 
-// An instance is created for each URLRequest. The instance survives all
-// http transactions involved in the processing of its URLRequest, and is
+// An instance is created for each net::URLRequest. The instance survives all
+// http transactions involved in the processing of its net::URLRequest, and is
 // given the opportunity to hijack the request along the way. Callers
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.

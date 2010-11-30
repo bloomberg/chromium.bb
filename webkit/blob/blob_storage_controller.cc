@@ -129,7 +129,7 @@ void BlobStorageController::ResolveBlobReferencesInUploadData(
           break;
         case webkit_blob::BlobData::TYPE_FILE:
           // TODO(michaeln): Ensure that any temp files survive till the
-          // URLRequest is done with the upload.
+          // net::URLRequest is done with the upload.
           iter->SetToFilePathRange(
               item.file_path(),
               item.offset(),

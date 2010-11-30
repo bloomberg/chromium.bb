@@ -19,11 +19,10 @@ bool ViewAppCacheInternalsJobFactory::IsSupportedURL(const GURL& url) {
 
 // static.
 URLRequestJob* ViewAppCacheInternalsJobFactory::CreateJobForRequest(
-    URLRequest* request) {
+    net::URLRequest* request) {
   URLRequestContext* context = request->context();
   ChromeURLRequestContext* chrome_request_context =
       reinterpret_cast<ChromeURLRequestContext*>(context);
   return new appcache::ViewAppCacheInternalsJob(
       request, chrome_request_context->appcache_service());
 }
-

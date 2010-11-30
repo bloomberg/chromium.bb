@@ -52,7 +52,7 @@ bool IsSchemeSupported(const GURL& url) {
   // TODO(michaeln): It would be really nice if this could optionally work for
   // file urls too to help web developers experiment and test their apps,
   // perhaps enabled via a cmd line flag or some other developer tool setting.
-  // Unfortunately file scheme URLRequest don't produce the same signalling
+  // Unfortunately file scheme net::URLRequest don't produce the same signalling
   // (200 response codes, headers) as http URLRequests, so this doesn't work
   // just yet.
   // supported |= url.SchemeIsFile();
@@ -64,7 +64,7 @@ bool IsMethodSupported(const std::string& method) {
   return (method == kHttpGETMethod) || (method == kHttpHEADMethod);
 }
 
-bool IsSchemeAndMethodSupported(const URLRequest* request) {
+bool IsSchemeAndMethodSupported(const net::URLRequest* request) {
   return IsSchemeSupported(request->url()) &&
          IsMethodSupported(request->method());
 }

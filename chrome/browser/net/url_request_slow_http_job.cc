@@ -19,7 +19,7 @@ const int URLRequestSlowHTTPJob::kDelayMs = 1000;
 using base::TimeDelta;
 
 /* static */
-URLRequestJob* URLRequestSlowHTTPJob::Factory(URLRequest* request,
+URLRequestJob* URLRequestSlowHTTPJob::Factory(net::URLRequest* request,
                                               const std::string& scheme) {
   return new URLRequestSlowHTTPJob(request,
                                    GetOnDiskPath(base_path_, request, scheme));
@@ -44,7 +44,7 @@ GURL URLRequestSlowHTTPJob::GetMockUrl(const FilePath& path) {
   return GURL(url);
 }
 
-URLRequestSlowHTTPJob::URLRequestSlowHTTPJob(URLRequest* request,
+URLRequestSlowHTTPJob::URLRequestSlowHTTPJob(net::URLRequest* request,
                                              const FilePath& file_path)
     : URLRequestMockHTTPJob(request, file_path) { }
 

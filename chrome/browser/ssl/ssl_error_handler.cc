@@ -14,7 +14,7 @@
 #include "net/url_request/url_request.h"
 
 SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
-                                 URLRequest* request,
+                                 net::URLRequest* request,
                                  ResourceType::Type resource_type,
                                  const std::string& frame_origin,
                                  const std::string& main_frame_origin)
@@ -39,7 +39,7 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
     NOTREACHED();
 
   // This makes sure we don't disappear on the IO thread until we've given an
-  // answer to the URLRequest.
+  // answer to the net::URLRequest.
   //
   // Release in CompleteCancelRequest, CompleteContinueRequest, or
   // CompleteTakeNoAction.
@@ -119,14 +119,15 @@ void SSLErrorHandler::TakeNoAction() {
 void SSLErrorHandler::CompleteCancelRequest(int error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // It is important that we notify the URLRequest only once.  If we try to
-  // notify the request twice, it may no longer exist and |this| might have
+  // It is important that we notify the net::URLRequest only once.  If we try
+  // to notify the request twice, it may no longer exist and |this| might have
   // already have been deleted.
   DCHECK(!request_has_been_notified_);
   if (request_has_been_notified_)
     return;
 
-  URLRequest* request = resource_dispatcher_host_->GetURLRequest(request_id_);
+  net::URLRequest* request =
+      resource_dispatcher_host_->GetURLRequest(request_id_);
   if (request) {
     // The request can be NULL if it was cancelled by the renderer (as the
     // result of the user navigating to a new page from the location bar).
@@ -146,14 +147,15 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
 void SSLErrorHandler::CompleteContinueRequest() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // It is important that we notify the URLRequest only once.  If we try to
+  // It is important that we notify the net::URLRequest only once. If we try to
   // notify the request twice, it may no longer exist and |this| might have
   // already have been deleted.
   DCHECK(!request_has_been_notified_);
   if (request_has_been_notified_)
     return;
 
-  URLRequest* request = resource_dispatcher_host_->GetURLRequest(request_id_);
+  net::URLRequest* request =
+      resource_dispatcher_host_->GetURLRequest(request_id_);
   if (request) {
     // The request can be NULL if it was cancelled by the renderer (as the
     // result of the user navigating to a new page from the location bar).
@@ -169,7 +171,7 @@ void SSLErrorHandler::CompleteContinueRequest() {
 void SSLErrorHandler::CompleteTakeNoAction() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // It is important that we notify the URLRequest only once.  If we try to
+  // It is important that we notify the net::URLRequest only once. If we try to
   // notify the request twice, it may no longer exist and |this| might have
   // already have been deleted.
   DCHECK(!request_has_been_notified_);

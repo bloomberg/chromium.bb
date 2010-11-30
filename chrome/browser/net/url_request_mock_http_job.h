@@ -16,14 +16,14 @@ class FilePath;
 
 class URLRequestMockHTTPJob : public URLRequestFileJob {
  public:
-  URLRequestMockHTTPJob(URLRequest* request, const FilePath& file_path);
+  URLRequestMockHTTPJob(net::URLRequest* request, const FilePath& file_path);
 
   virtual bool GetMimeType(std::string* mime_type) const;
   virtual bool GetCharset(std::string* charset);
   virtual void GetResponseInfo(net::HttpResponseInfo* info);
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
 
-  static URLRequest::ProtocolFactory Factory;
+  static net::URLRequest::ProtocolFactory Factory;
 
   // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler(const FilePath& base_path);
@@ -39,7 +39,7 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   virtual ~URLRequestMockHTTPJob() { }
 
   static FilePath GetOnDiskPath(const FilePath& base_path,
-                                URLRequest* request,
+                                net::URLRequest* request,
                                 const std::string& scheme);
 
  private:

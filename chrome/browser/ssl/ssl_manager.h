@@ -42,7 +42,7 @@ class SSLManager : public NotificationObserver {
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager
   // will adjust the security UI and either call |Cancel| or
-  // |ContinueDespiteLastError| on the URLRequest.
+  // |ContinueDespiteLastError| on the net::URLRequest.
   //
   // Called on the IO thread.
   static void OnSSLCertificateError(ResourceDispatcherHost* resource_dispatcher,

@@ -41,7 +41,7 @@
 // calls back once the data is available.
 class URLRequestChromeJob : public net::URLRequestJob {
  public:
-  explicit URLRequestChromeJob(URLRequest* request);
+  explicit URLRequestChromeJob(net::URLRequest* request);
 
   // URLRequestJob implementation.
   virtual void Start();
@@ -86,7 +86,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
 // URLRequestChromeFileJob is a URLRequestJob that acts like a file:// URL
 class URLRequestChromeFileJob : public URLRequestFileJob {
  public:
-  URLRequestChromeFileJob(URLRequest* request, const FilePath& path);
+  URLRequestChromeFileJob(net::URLRequest* request, const FilePath& path);
 
  private:
   virtual ~URLRequestChromeFileJob();
@@ -102,10 +102,10 @@ void RegisterURLRequestChromeJob() {
   }
 
   SharedResourcesDataSource::Register();
-  URLRequest::RegisterProtocolFactory(chrome::kChromeDevToolsScheme,
-                                      &ChromeURLDataManager::Factory);
-  URLRequest::RegisterProtocolFactory(chrome::kChromeUIScheme,
-                                      &ChromeURLDataManager::Factory);
+  net::URLRequest::RegisterProtocolFactory(chrome::kChromeDevToolsScheme,
+                                           &ChromeURLDataManager::Factory);
+  net::URLRequest::RegisterProtocolFactory(chrome::kChromeUIScheme,
+                                           &ChromeURLDataManager::Factory);
 }
 
 void UnregisterURLRequestChromeJob() {
@@ -264,7 +264,7 @@ void ChromeURLDataManager::RemoveRequest(URLRequestChromeJob* job) {
 void ChromeURLDataManager::DataAvailable(
     RequestID request_id,
     scoped_refptr<RefCountedMemory> bytes) {
-  // Forward this data on to the pending URLRequest, if it exists.
+  // Forward this data on to the pending net::URLRequest, if it exists.
   PendingRequestMap::iterator i = pending_requests_.find(request_id);
   if (i != pending_requests_.end()) {
     // We acquire a reference to the job so that it doesn't disappear under the
@@ -318,7 +318,7 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
       base::i18n::IsRTL() ? "rtl" : "ltr");
 }
 
-URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
+URLRequestJob* ChromeURLDataManager::Factory(net::URLRequest* request,
                                              const std::string& scheme) {
   // Try first with a file handler
   FilePath path;
@@ -341,7 +341,7 @@ URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
   return new URLRequestChromeJob(request);
 }
 
-URLRequestChromeJob::URLRequestChromeJob(URLRequest* request)
+URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request)
     : URLRequestJob(request),
       data_offset_(0),
       pending_buf_size_(0) {
@@ -427,7 +427,7 @@ void URLRequestChromeJob::StartAsync() {
   }
 }
 
-URLRequestChromeFileJob::URLRequestChromeFileJob(URLRequest* request,
+URLRequestChromeFileJob::URLRequestChromeFileJob(net::URLRequest* request,
                                                  const FilePath& path)
     : URLRequestFileJob(request, path) {
 }

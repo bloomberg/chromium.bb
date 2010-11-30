@@ -237,7 +237,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     DISALLOW_COPY_AND_ASSIGN(SocketTracker);
   };
 
-  // Specialization of SourceTracker for handling URLRequest/SocketStream.
+  // Specialization of SourceTracker for handling net::URLRequest/SocketStream.
   class RequestTracker : public SourceTracker {
    public:
     static const size_t kMaxNumSources;

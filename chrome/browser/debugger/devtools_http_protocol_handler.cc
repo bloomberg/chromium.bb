@@ -108,7 +108,8 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
   }
 
   // Proxy static files from chrome://devtools/*.
-  URLRequest* request = new URLRequest(GURL("chrome:/" + info.path), this);
+  net::URLRequest* request = new net::URLRequest(
+      GURL("chrome:/" + info.path), this);
   Bind(request, socket);
   request->set_context(
       Profile::GetDefaultRequestContext()->GetURLRequestContext());
@@ -144,9 +145,9 @@ void DevToolsHttpProtocolHandler::OnClose(HttpListenSocket* socket) {
   SocketToRequestsMap::iterator it = socket_to_requests_io_.find(socket);
   if (it != socket_to_requests_io_.end()) {
     // Dispose delegating socket.
-    for (std::set<URLRequest*>::iterator it2 = it->second.begin();
+    for (std::set<net::URLRequest*>::iterator it2 = it->second.begin();
          it2 != it->second.end(); ++it2) {
-      URLRequest* request = *it2;
+      net::URLRequest* request = *it2;
       request->Cancel();
       request_to_socket_io_.erase(request);
       request_to_buffer_io_.erase(request);
@@ -273,7 +274,7 @@ void DevToolsHttpProtocolHandler::OnCloseUI(HttpListenSocket* socket) {
   socket_to_client_host_ui_.erase(socket);
 }
 
-void DevToolsHttpProtocolHandler::OnResponseStarted(URLRequest* request) {
+void DevToolsHttpProtocolHandler::OnResponseStarted(net::URLRequest* request) {
   RequestToSocketMap::iterator it = request_to_socket_io_.find(request);
   if (it == request_to_socket_io_.end())
     return;
@@ -307,7 +308,7 @@ void DevToolsHttpProtocolHandler::OnResponseStarted(URLRequest* request) {
   OnReadCompleted(request, bytes_read);
 }
 
-void DevToolsHttpProtocolHandler::OnReadCompleted(URLRequest* request,
+void DevToolsHttpProtocolHandler::OnReadCompleted(net::URLRequest* request,
                                                   int bytes_read) {
   RequestToSocketMap::iterator it = request_to_socket_io_.find(request);
   if (it == request_to_socket_io_.end())
@@ -341,21 +342,21 @@ void DevToolsHttpProtocolHandler::Teardown() {
   server_ = NULL;
 }
 
-void DevToolsHttpProtocolHandler::Bind(URLRequest* request,
+void DevToolsHttpProtocolHandler::Bind(net::URLRequest* request,
                                        HttpListenSocket* socket) {
   request_to_socket_io_[request] = socket;
   SocketToRequestsMap::iterator it = socket_to_requests_io_.find(socket);
   if (it == socket_to_requests_io_.end()) {
-    std::pair<HttpListenSocket*, std::set<URLRequest*> > value(
+    std::pair<HttpListenSocket*, std::set<net::URLRequest*> > value(
         socket,
-        std::set<URLRequest*>());
+        std::set<net::URLRequest*>());
     it = socket_to_requests_io_.insert(value).first;
   }
   it->second.insert(request);
   request_to_buffer_io_[request] = new net::IOBuffer(kBufferSize);
 }
 
-void DevToolsHttpProtocolHandler::RequestCompleted(URLRequest* request) {
+void DevToolsHttpProtocolHandler::RequestCompleted(net::URLRequest* request) {
   RequestToSocketMap::iterator it = request_to_socket_io_.find(request);
   if (it == request_to_socket_io_.end())
     return;

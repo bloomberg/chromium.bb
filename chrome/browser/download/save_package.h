@@ -256,7 +256,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   SavedItemMap saved_success_items_;
 
   // The request context which provides application-specific context for
-  // URLRequest instances.
+  // net::URLRequest instances.
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
 
   // Non-owning pointer for handling file writing on the file thread.

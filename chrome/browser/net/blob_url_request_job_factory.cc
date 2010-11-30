@@ -15,7 +15,7 @@
 
 namespace {
 
-URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
+URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
                                         const std::string& scheme) {
   scoped_refptr<webkit_blob::BlobData> data;
   ResourceDispatcherHostRequestInfo* info =
@@ -37,6 +37,6 @@ URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
 }
 
 void RegisterBlobURLRequestJobFactory() {
-  URLRequest::RegisterProtocolFactory(chrome::kBlobScheme,
+  net::URLRequest::RegisterProtocolFactory(chrome::kBlobScheme,
                                       &BlobURLRequestJobFactory);
 }

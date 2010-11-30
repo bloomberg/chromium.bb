@@ -847,11 +847,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_SAVELINKAS:
       return params_.link_url.is_valid() &&
-             URLRequest::IsHandledURL(params_.link_url);
+             net::URLRequest::IsHandledURL(params_.link_url);
 
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
       return params_.src_url.is_valid() &&
-             URLRequest::IsHandledURL(params_.src_url);
+             net::URLRequest::IsHandledURL(params_.src_url);
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
       // The images shown in the most visited thumbnails do not currently open
@@ -895,7 +895,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return (params_.media_flags &
               WebContextMenuData::MediaCanSave) &&
              params_.src_url.is_valid() &&
-             URLRequest::IsHandledURL(params_.src_url);
+             net::URLRequest::IsHandledURL(params_.src_url);
 
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
       return true;

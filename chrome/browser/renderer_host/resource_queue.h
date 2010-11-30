@@ -18,7 +18,7 @@ class URLRequest;
 class ResourceDispatcherHostRequestInfo;
 struct GlobalRequestID;
 
-// Makes decisions about delaying or not each URLRequest in the queue.
+// Makes decisions about delaying or not each net::URLRequest in the queue.
 // All methods are called on the IO thread.
 class ResourceQueueDelegate {
  public:
@@ -65,8 +65,8 @@ class ResourceQueue {
   void AddRequest(net::URLRequest* request,
                   const ResourceDispatcherHostRequestInfo& request_info);
 
-  // Tells the queue that the URLRequest object associated with |request_id|
-  // is no longer valid.
+  // Tells the queue that the net::URLRequest object associated with
+  // |request_id| is no longer valid.
   void RemoveRequest(const GlobalRequestID& request_id);
 
   // A delegate should call StartDelayedRequest when it wants to allow the
@@ -83,8 +83,8 @@ class ResourceQueue {
   // initialized.
   DelegateSet delegates_;
 
-  // Stores URLRequest objects associated with each GlobalRequestID. This helps
-  // decoupling the queue from ResourceDispatcherHost.
+  // Stores net::URLRequest objects associated with each GlobalRequestID. This
+  // helps decoupling the queue from ResourceDispatcherHost.
   RequestMap requests_;
 
   // Maps a GlobalRequestID to the set of delegates that want to prevent the

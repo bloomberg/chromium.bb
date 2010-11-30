@@ -4,8 +4,7 @@
 
 #include "chrome/browser/renderer_host/resource_request_details.h"
 
-
-ResourceRequestDetails::ResourceRequestDetails(const URLRequest* request,
+ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
                                                int cert_id)
     : url_(request->url()),
       original_url_(request->original_url()),
@@ -44,7 +43,7 @@ ResourceRequestDetails::ResourceRequestDetails(const URLRequest* request,
 
 ResourceRequestDetails::~ResourceRequestDetails() {}
 
-ResourceRedirectDetails::ResourceRedirectDetails(const URLRequest* request,
+ResourceRedirectDetails::ResourceRedirectDetails(const net::URLRequest* request,
                                                  int cert_id,
                                                  const GURL& new_url)
     : ResourceRequestDetails(request, cert_id),

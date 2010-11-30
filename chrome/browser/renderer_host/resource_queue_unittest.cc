@@ -100,7 +100,7 @@ class NeverDelayingDelegate : public ResourceQueueDelegate {
   }
 
   virtual bool ShouldDelayRequest(
-      URLRequest* request,
+      net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
       const GlobalRequestID& request_id) {
     return false;
@@ -120,7 +120,7 @@ class AlwaysDelayingDelegate : public ResourceQueueDelegate {
   }
 
   virtual bool ShouldDelayRequest(
-      URLRequest* request,
+      net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
       const GlobalRequestID& request_id) {
     delayed_requests_.push_back(request_id);
@@ -151,7 +151,8 @@ class AlwaysDelayingDelegate : public ResourceQueueDelegate {
   DISALLOW_COPY_AND_ASSIGN(AlwaysDelayingDelegate);
 };
 
-class ResourceQueueTest : public testing::Test, public URLRequest::Delegate {
+class ResourceQueueTest : public testing::Test,
+                          public net::URLRequest::Delegate {
  public:
   ResourceQueueTest()
       : response_started_count_(0),
@@ -160,14 +161,14 @@ class ResourceQueueTest : public testing::Test, public URLRequest::Delegate {
         io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
-  virtual void OnResponseStarted(URLRequest* request) {
+  virtual void OnResponseStarted(net::URLRequest* request) {
     response_started_count_++;
     // We're not going to do anything more with the request. Cancel it now
     // to avoid leaking URLRequestJob.
     request->Cancel();
   }
 
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read) {
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
   }
 
  protected:
@@ -192,7 +193,7 @@ TEST_F(ResourceQueueTest, NeverDelayingDelegate) {
   NeverDelayingDelegate delegate;
   InitializeQueue(&queue, &delegate);
 
-  URLRequest request(GURL(kTestUrl), this);
+  net::URLRequest request(GURL(kTestUrl), this);
   scoped_ptr<ResourceDispatcherHostRequestInfo> request_info(GetRequestInfo(0));
   EXPECT_EQ(0, response_started_count_);
   queue.AddRequest(&request, *request_info.get());
@@ -208,7 +209,7 @@ TEST_F(ResourceQueueTest, AlwaysDelayingDelegate) {
   AlwaysDelayingDelegate delegate(&queue);
   InitializeQueue(&queue, &delegate);
 
-  URLRequest request(GURL(kTestUrl), this);
+  net::URLRequest request(GURL(kTestUrl), this);
   scoped_ptr<ResourceDispatcherHostRequestInfo> request_info(GetRequestInfo(0));
   EXPECT_EQ(0, response_started_count_);
   queue.AddRequest(&request, *request_info.get());
@@ -227,7 +228,7 @@ TEST_F(ResourceQueueTest, AlwaysDelayingDelegateAfterShutdown) {
   AlwaysDelayingDelegate delegate(&queue);
   InitializeQueue(&queue, &delegate);
 
-  URLRequest request(GURL(kTestUrl), this);
+  net::URLRequest request(GURL(kTestUrl), this);
   scoped_ptr<ResourceDispatcherHostRequestInfo> request_info(GetRequestInfo(0));
   EXPECT_EQ(0, response_started_count_);
   queue.AddRequest(&request, *request_info.get());
@@ -248,7 +249,7 @@ TEST_F(ResourceQueueTest, TwoDelegates) {
   NeverDelayingDelegate never_delaying_delegate;
   InitializeQueue(&queue, &always_delaying_delegate, &never_delaying_delegate);
 
-  URLRequest request(GURL(kTestUrl), this);
+  net::URLRequest request(GURL(kTestUrl), this);
   scoped_ptr<ResourceDispatcherHostRequestInfo> request_info(GetRequestInfo(0));
   EXPECT_EQ(0, response_started_count_);
   queue.AddRequest(&request, *request_info.get());
@@ -267,7 +268,7 @@ TEST_F(ResourceQueueTest, RemoveRequest) {
   AlwaysDelayingDelegate delegate(&queue);
   InitializeQueue(&queue, &delegate);
 
-  URLRequest request(GURL(kTestUrl), this);
+  net::URLRequest request(GURL(kTestUrl), this);
   scoped_ptr<ResourceDispatcherHostRequestInfo> request_info(GetRequestInfo(0));
   GlobalRequestID request_id(request_info->child_id(),
                              request_info->request_id());

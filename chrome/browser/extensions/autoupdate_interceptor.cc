@@ -15,7 +15,7 @@
 // code relies on.
 class AutoUpdateTestRequestJob : public URLRequestTestJob {
  public:
-  AutoUpdateTestRequestJob(URLRequest* request,
+  AutoUpdateTestRequestJob(net::URLRequest* request,
     const std::string& response_data) : URLRequestTestJob(
     request, URLRequestTestJob::test_headers(), response_data, true) {}
   virtual int GetResponseCode() const { return 200; }
@@ -26,15 +26,14 @@ class AutoUpdateTestRequestJob : public URLRequestTestJob {
 
 
 AutoUpdateInterceptor::AutoUpdateInterceptor() {
-  URLRequest::RegisterRequestInterceptor(this);
+  net::URLRequest::RegisterRequestInterceptor(this);
 }
 
 AutoUpdateInterceptor::~AutoUpdateInterceptor() {
-  URLRequest::UnregisterRequestInterceptor(this);
+  net::URLRequest::UnregisterRequestInterceptor(this);
 }
 
-
-URLRequestJob* AutoUpdateInterceptor::MaybeIntercept(URLRequest* request) {
+URLRequestJob* AutoUpdateInterceptor::MaybeIntercept(net::URLRequest* request) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (request->url().scheme() != "http" ||
       request->url().host() != "localhost") {

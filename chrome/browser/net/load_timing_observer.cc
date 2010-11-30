@@ -82,7 +82,7 @@ void LoadTimingObserver::OnAddEntry(net::NetLog::EventType type,
 }
 
 // static
-void LoadTimingObserver::PopulateTimingInfo(URLRequest* request,
+void LoadTimingObserver::PopulateTimingInfo(net::URLRequest* request,
                                             ResourceResponse* response) {
   if (!(request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING))
     return;

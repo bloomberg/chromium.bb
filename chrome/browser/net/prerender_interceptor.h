@@ -18,12 +18,12 @@ namespace chrome_browser_net {
 // The PrerenderInterceptor watches prefetch requests, and when
 // they are for type text/html, notifies the prerendering
 // system about the fetch so it may consider the URL.
-class PrerenderInterceptor : public URLRequest::Interceptor {
+class PrerenderInterceptor : public net::URLRequest::Interceptor {
  public:
   PrerenderInterceptor();
   virtual ~PrerenderInterceptor();
 
-  // URLRequest::Interceptor overrides.  We only care about
+  // net::URLRequest::Interceptor overrides.  We only care about
   // MaybeInterceptResponse, but must capture MaybeIntercept since
   // it is pure virtual.
   virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);

@@ -34,7 +34,7 @@ void UserScriptListener::ShutdownMainThread() {
 }
 
 bool UserScriptListener::ShouldDelayRequest(
-    URLRequest* request,
+    net::URLRequest* request,
     const ResourceDispatcherHostRequestInfo& request_info,
     const GlobalRequestID& request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

@@ -21,17 +21,17 @@ PrerenderInterceptor::PrerenderInterceptor()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
         callback_(NewCallback(this,
                               &PrerenderInterceptor::PrerenderDispatch))) {
-  URLRequest::RegisterRequestInterceptor(this);
+  net::URLRequest::RegisterRequestInterceptor(this);
 }
 
 PrerenderInterceptor::PrerenderInterceptor(
     PrerenderInterceptorCallback* callback)
-  : callback_(callback) {
-  URLRequest::RegisterRequestInterceptor(this);
+    : callback_(callback) {
+  net::URLRequest::RegisterRequestInterceptor(this);
 }
 
 PrerenderInterceptor::~PrerenderInterceptor() {
-  URLRequest::UnregisterRequestInterceptor(this);
+  net::URLRequest::UnregisterRequestInterceptor(this);
 }
 
 net::URLRequestJob* PrerenderInterceptor::MaybeIntercept(

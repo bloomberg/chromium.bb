@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -12,9 +12,9 @@
 
 class URLRequestMockLinkDoctorJob : public URLRequestMockHTTPJob {
  public:
-  explicit URLRequestMockLinkDoctorJob(URLRequest* request);
+  explicit URLRequestMockLinkDoctorJob(net::URLRequest* request);
 
-  static URLRequest::ProtocolFactory Factory;
+  static net::URLRequest::ProtocolFactory Factory;
 
   // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler();

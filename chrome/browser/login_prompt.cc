@@ -30,9 +30,10 @@ using webkit_glue::PasswordForm;
 
 class LoginHandlerImpl;
 
-// Helper to remove the ref from an URLRequest to the LoginHandler.
-// Should only be called from the IO thread, since it accesses an URLRequest.
-void ResetLoginHandlerForRequest(URLRequest* request) {
+// Helper to remove the ref from an net::URLRequest to the LoginHandler.
+// Should only be called from the IO thread, since it accesses an
+// net::URLRequest.
+void ResetLoginHandlerForRequest(net::URLRequest* request) {
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
   if (!info)
@@ -69,7 +70,7 @@ std::string GetSignonRealm(const GURL& url,
 // LoginHandler
 
 LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
-                           URLRequest* request)
+                           net::URLRequest* request)
     : handled_auth_(false),
       dialog_(NULL),
       auth_info_(auth_info),
@@ -351,7 +352,7 @@ void LoginHandler::CloseContentsDeferred() {
 
 // This task is run on the UI thread and creates a constrained window with
 // a LoginView to prompt the user.  The response will be sent to LoginHandler,
-// which then routes it to the URLRequest on the I/O thread.
+// which then routes it to the net::URLRequest on the I/O thread.
 class LoginDialogTask : public Task {
  public:
   LoginDialogTask(const GURL& request_url,
@@ -426,7 +427,7 @@ class LoginDialogTask : public Task {
     handler_->SetPasswordForm(dialog_form);
   }
 
-  // The url from the URLRequest initiating the auth challenge.
+  // The url from the net::URLRequest initiating the auth challenge.
   GURL request_url_;
 
   // Info about who/where/what is asking for authentication.
@@ -443,7 +444,7 @@ class LoginDialogTask : public Task {
 // Public API
 
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
-                                URLRequest* request) {
+                                net::URLRequest* request) {
   LoginHandler* handler = LoginHandler::Create(auth_info, request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, new LoginDialogTask(

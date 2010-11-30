@@ -70,7 +70,7 @@ class MockJobObserver : public URLRequestJobTracker::JobObserver {
 // async reads, in order to exercise the real async read codepath.
 class URLRequestJobTrackerTestJob : public URLRequestJob {
  public:
-  URLRequestJobTrackerTestJob(URLRequest* request, bool async_reads)
+  URLRequestJobTrackerTestJob(net::URLRequest* request, bool async_reads)
       : URLRequestJob(request), async_reads_(async_reads) {}
 
   void Start() {
@@ -151,7 +151,7 @@ MATCHER_P2(MemEq, other, len, "") {
 class URLRequestJobTrackerTest : public PlatformTest {
  protected:
   static void SetUpTestCase() {
-    URLRequest::RegisterProtocolFactory("test", &Factory);
+    net::URLRequest::RegisterProtocolFactory("test", &Factory);
   }
 
   virtual void SetUp() {
@@ -184,7 +184,7 @@ class URLRequestJobTrackerTest : public PlatformTest {
   void Fetch(const GURL& url) {
     TestDelegate d;
     {
-      URLRequest request(url, &d);
+      net::URLRequest request(url, &d);
       request.Start();
       MessageLoop::current()->RunAllPending();
     }
@@ -196,12 +196,12 @@ class URLRequestJobTrackerTest : public PlatformTest {
     EXPECT_STREQ(kBasic, d.data_received().c_str());
   }
 
-  static URLRequest::ProtocolFactory Factory;
+  static net::URLRequest::ProtocolFactory Factory;
   static bool g_async_reads;
 };
 
 // static
-URLRequestJob* URLRequestJobTrackerTest::Factory(URLRequest* request,
+URLRequestJob* URLRequestJobTrackerTest::Factory(net::URLRequest* request,
                                                  const std::string& scheme) {
   return new URLRequestJobTrackerTestJob(request, g_async_reads);
 }

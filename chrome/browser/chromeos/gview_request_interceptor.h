@@ -18,7 +18,7 @@ namespace chromeos {
 // document types (such as PDF) and redirect the request to the Google
 // Document Viewer, including the document's original URL as a
 // parameter.
-class GViewRequestInterceptor : public URLRequest::Interceptor {
+class GViewRequestInterceptor : public net::URLRequest::Interceptor {
  public:
   GViewRequestInterceptor();
   virtual ~GViewRequestInterceptor();
@@ -33,7 +33,7 @@ class GViewRequestInterceptor : public URLRequest::Interceptor {
   virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
 
   // Singleton accessor.
-  static URLRequest::Interceptor* GetGViewRequestInterceptor();
+  static net::URLRequest::Interceptor* GetGViewRequestInterceptor();
 
  private:
   // The list of supported mime types.

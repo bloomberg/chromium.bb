@@ -14,7 +14,7 @@
 
 class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
  public:
-  URLRequestMockNetErrorJob(URLRequest* request,
+  URLRequestMockNetErrorJob(net::URLRequest* request,
                             const std::vector<int>& errors,
                             net::X509Certificate* ssl_cert,
                             const FilePath& file_path);
@@ -39,7 +39,7 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
  private:
   ~URLRequestMockNetErrorJob();
 
-  static URLRequest::ProtocolFactory Factory;
+  static net::URLRequest::ProtocolFactory Factory;
 
   void StartAsync();
 

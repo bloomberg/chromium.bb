@@ -54,10 +54,10 @@ using base::TimeDelta;
 // intercept the request.
 // NOTE: All methods must be called on the IO thread.
 class PluginRequestInterceptor
-    : public PluginHelper, public URLRequest::Interceptor {
+    : public PluginHelper, public net::URLRequest::Interceptor {
  public:
   static URLRequestJob* UninterceptedProtocolHandler(
-      URLRequest* request, const std::string& scheme) {
+      net::URLRequest* request, const std::string& scheme) {
     // This will get called if a plugin failed to intercept a request for a
     // protocol it has registered.  In that case, we return NULL and the request
     // will result in an error.
@@ -66,17 +66,17 @@ class PluginRequestInterceptor
 
   explicit PluginRequestInterceptor(ChromePluginLib* plugin)
       : PluginHelper(plugin) {
-    URLRequest::RegisterRequestInterceptor(this);
+    net::URLRequest::RegisterRequestInterceptor(this);
   }
 
   virtual ~PluginRequestInterceptor() {
-    URLRequest::UnregisterRequestInterceptor(this);
+    net::URLRequest::UnregisterRequestInterceptor(this);
 
     // Unregister our protocols.
     for (HandledProtocolList::iterator it = registered_protocols_.begin();
          it != registered_protocols_.end(); ++it) {
-      URLRequest::ProtocolFactory* factory =
-          URLRequest::RegisterProtocolFactory(*it, NULL);
+      net::URLRequest::ProtocolFactory* factory =
+          net::URLRequest::RegisterProtocolFactory(*it, NULL);
       DCHECK(factory == UninterceptedProtocolHandler);
     }
   }
@@ -87,17 +87,17 @@ class PluginRequestInterceptor
     std::string lower_scheme = StringToLowerASCII(scheme);
     handled_protocols_.insert(lower_scheme);
 
-    // Only add a protocol factory if the URLRequest doesn't already handle
+    // Only add a protocol factory if the net::URLRequest doesn't already handle
     // it.  If we fail to intercept, the request will be treated as an error.
-    if (!URLRequest::IsHandledProtocol(lower_scheme)) {
+    if (!net::URLRequest::IsHandledProtocol(lower_scheme)) {
       registered_protocols_.insert(lower_scheme);
-      URLRequest::RegisterProtocolFactory(lower_scheme,
+      net::URLRequest::RegisterProtocolFactory(lower_scheme,
                                           &UninterceptedProtocolHandler);
     }
   }
 
-  // URLRequest::Interceptor
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request) {
+  // net::URLRequest::Interceptor
+  virtual URLRequestJob* MaybeIntercept(net::URLRequest* request) {
     // TODO(darin): This DCHECK fails in the unit tests because our interceptor
     // is being persisted across unit tests.  As a result, each time we get
     // poked on a different thread, but never from more than one thread at a
@@ -143,9 +143,10 @@ class PluginRequestInterceptor
 };
 
 // This class manages a network request made by the plugin, also acting as
-// the URLRequest delegate.
+// the net::URLRequest delegate.
 // NOTE: All methods must be called on the IO thread.
-class PluginRequestHandler : public PluginHelper, public URLRequest::Delegate {
+class PluginRequestHandler : public PluginHelper,
+                             public net::URLRequest::Delegate {
  public:
   static PluginRequestHandler* FromCPRequest(CPRequest* request) {
     return ScopableCPRequest::GetData<PluginRequestHandler*>(request);
@@ -162,15 +163,15 @@ class PluginRequestHandler : public PluginHelper, public URLRequest::Delegate {
       context = Profile::GetDefaultRequestContext()->GetURLRequestContext();
 
     GURL gurl(cprequest_->url);
-    request_.reset(new URLRequest(gurl, this));
+    request_.reset(new net::URLRequest(gurl, this));
     request_->set_context(context);
     request_->set_method(cprequest_->method);
     request_->set_load_flags(PluginResponseUtils::CPLoadFlagsToNetFlags(0));
   }
 
-  URLRequest* request() { return request_.get(); }
+  net::URLRequest* request() { return request_.get(); }
 
-  // Wraper of URLRequest::Read()
+  // Wraper of net::URLRequest::Read()
   bool Read(char* dest, int dest_size, int *bytes_read) {
     CHECK(!my_buffer_.get());
     // We'll use our own buffer until the read actually completes.
@@ -189,14 +190,14 @@ class PluginRequestHandler : public PluginHelper, public URLRequest::Delegate {
     return false;
   }
 
-  // URLRequest::Delegate
-  virtual void OnReceivedRedirect(URLRequest* request, const GURL& new_url,
+  // net::URLRequest::Delegate
+  virtual void OnReceivedRedirect(net::URLRequest* request, const GURL& new_url,
                                   bool* defer_redirect) {
     plugin_->functions().response_funcs->received_redirect(
         cprequest_.get(), new_url.spec().c_str());
   }
 
-  virtual void OnResponseStarted(URLRequest* request) {
+  virtual void OnResponseStarted(net::URLRequest* request) {
     // TODO(mpcomplete): better error codes
     CPError result =
         request_->status().is_success() ? CPERR_SUCCESS : CPERR_FAILURE;
@@ -204,7 +205,7 @@ class PluginRequestHandler : public PluginHelper, public URLRequest::Delegate {
         cprequest_.get(), result);
   }
 
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read) {
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
     CHECK(my_buffer_.get());
     CHECK(user_buffer_);
     if (bytes_read > 0) {
@@ -220,7 +221,7 @@ class PluginRequestHandler : public PluginHelper, public URLRequest::Delegate {
 
  private:
   scoped_ptr<ScopableCPRequest> cprequest_;
-  scoped_ptr<URLRequest> request_;
+  scoped_ptr<net::URLRequest> request_;
   scoped_refptr<net::IOBuffer> my_buffer_;
   char* user_buffer_;
 };

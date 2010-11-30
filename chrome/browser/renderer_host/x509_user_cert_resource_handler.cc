@@ -22,7 +22,7 @@
 #include "net/url_request/url_request_status.h"
 
 X509UserCertResourceHandler::X509UserCertResourceHandler(
-    ResourceDispatcherHost* host, URLRequest* request,
+    ResourceDispatcherHost* host, net::URLRequest* request,
     int render_process_host_id, int render_view_id)
     : host_(host),
       request_(request),

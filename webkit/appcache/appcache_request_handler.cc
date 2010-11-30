@@ -41,7 +41,7 @@ void AppCacheRequestHandler::GetExtraResponseInfo(
 }
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
-    URLRequest* request) {
+    net::URLRequest* request) {
   if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
 
@@ -86,7 +86,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
 }
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
-    URLRequest* request, const GURL& location) {
+    net::URLRequest* request, const GURL& location) {
   if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
   if (is_main_resource())
@@ -115,7 +115,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
 }
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
-    URLRequest* request) {
+    net::URLRequest* request) {
   if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
   if (!found_fallback_entry_.has_response_id())
@@ -186,7 +186,7 @@ void AppCacheRequestHandler::DeliverNetworkResponse() {
 
 // Main-resource handling ----------------------------------------------
 
-void AppCacheRequestHandler::MaybeLoadMainResource(URLRequest* request) {
+void AppCacheRequestHandler::MaybeLoadMainResource(net::URLRequest* request) {
   DCHECK(!job_);
 
   // We may have to wait for our storage query to complete, but
@@ -244,7 +244,7 @@ void AppCacheRequestHandler::OnMainResponseFound(
 // Sub-resource handling ----------------------------------------------
 
 void AppCacheRequestHandler::MaybeLoadSubResource(
-    URLRequest* request) {
+    net::URLRequest* request) {
   DCHECK(!job_);
 
   if (host_->is_selection_pending()) {

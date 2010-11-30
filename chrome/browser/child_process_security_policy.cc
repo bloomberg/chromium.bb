@@ -350,7 +350,7 @@ bool ChildProcessSecurityPolicy::CanRequestURL(
     return false;
   }
 
-  if (!URLRequest::IsHandledURL(url))
+  if (!net::URLRequest::IsHandledURL(url))
     return true;  // This URL request is destined for ShellExecute.
 
   {

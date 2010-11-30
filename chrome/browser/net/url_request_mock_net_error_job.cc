@@ -57,7 +57,7 @@ void URLRequestMockNetErrorJob::RemoveMockedURL(const GURL& url) {
 }
 
 // static
-URLRequestJob* URLRequestMockNetErrorJob::Factory(URLRequest* request,
+URLRequestJob* URLRequestMockNetErrorJob::Factory(net::URLRequest* request,
                                                   const std::string& scheme) {
   GURL url = request->url();
 
@@ -80,7 +80,7 @@ URLRequestJob* URLRequestMockNetErrorJob::Factory(URLRequest* request,
                                        file_path);
 }
 
-URLRequestMockNetErrorJob::URLRequestMockNetErrorJob(URLRequest* request,
+URLRequestMockNetErrorJob::URLRequestMockNetErrorJob(net::URLRequest* request,
     const std::vector<int>& errors, net::X509Certificate* cert,
     const FilePath& file_path)
     : URLRequestMockHTTPJob(request, file_path),

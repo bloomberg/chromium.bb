@@ -41,14 +41,14 @@ class BlobURLRequestJobTest : public testing::Test {
   // Test Harness -------------------------------------------------------------
   // TODO(jianli): share this test harness with AppCacheURLRequestJobTest
 
-  class MockURLRequestDelegate : public URLRequest::Delegate {
+  class MockURLRequestDelegate : public net::URLRequest::Delegate {
    public:
     explicit MockURLRequestDelegate(BlobURLRequestJobTest* test)
         : test_(test),
           received_data_(new net::IOBuffer(kBufferSize)) {
     }
 
-    virtual void OnResponseStarted(URLRequest* request) {
+    virtual void OnResponseStarted(net::URLRequest* request) {
       if (request->status().is_success()) {
         EXPECT_TRUE(request->response_headers());
         ReadSome(request);
@@ -57,7 +57,7 @@ class BlobURLRequestJobTest : public testing::Test {
       }
     }
 
-    virtual void OnReadCompleted(URLRequest* request, int bytes_read) {
+    virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {
        if (bytes_read > 0)
          ReceiveData(request, bytes_read);
        else
@@ -67,7 +67,7 @@ class BlobURLRequestJobTest : public testing::Test {
     const std::string& response_data() const { return response_data_; }
 
    private:
-    void ReadSome(URLRequest* request) {
+    void ReadSome(net::URLRequest* request) {
       if (request->job()->is_done()) {
         RequestComplete();
         return;
@@ -84,7 +84,7 @@ class BlobURLRequestJobTest : public testing::Test {
       ReceiveData(request, bytes_read);
     }
 
-    void ReceiveData(URLRequest* request, int bytes_read) {
+    void ReceiveData(net::URLRequest* request, int bytes_read) {
       if (bytes_read) {
         response_data_.append(received_data_->data(),
                               static_cast<size_t>(bytes_read));
@@ -150,7 +150,7 @@ class BlobURLRequestJobTest : public testing::Test {
     io_thread_.reset(NULL);
   }
 
-  static URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
+  static URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
                                                  const std::string& scheme) {
     BlobURLRequestJob* temp = blob_url_request_job_;
     blob_url_request_job_ = NULL;
@@ -172,7 +172,7 @@ class BlobURLRequestJobTest : public testing::Test {
   void SetUpTest() {
     DCHECK(MessageLoop::current() == io_thread_->message_loop());
 
-    URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
+    net::URLRequest::RegisterProtocolFactory("blob", &BlobURLRequestJobFactory);
     url_request_delegate_.reset(new MockURLRequestDelegate(this));
   }
 
@@ -183,7 +183,7 @@ class BlobURLRequestJobTest : public testing::Test {
     url_request_delegate_.reset();
 
     DCHECK(!blob_url_request_job_);
-    URLRequest::RegisterProtocolFactory("blob", NULL);
+    net::URLRequest::RegisterProtocolFactory("blob", NULL);
   }
 
   void TestFinished() {
@@ -245,8 +245,8 @@ class BlobURLRequestJobTest : public testing::Test {
                    const net::HttpRequestHeaders& extra_headers,
                    BlobData* blob_data) {
     // This test has async steps.
-    request_.reset(new URLRequest(GURL("blob:blah"),
-                                  url_request_delegate_.get()));
+    request_.reset(new net::URLRequest(GURL("blob:blah"),
+                                       url_request_delegate_.get()));
     request_->set_method(method);
     blob_url_request_job_ = new BlobURLRequestJob(request_.get(),
                                                   blob_data, NULL);
@@ -391,7 +391,7 @@ class BlobURLRequestJobTest : public testing::Test {
 
   scoped_ptr<base::WaitableEvent> test_finished_event_;
   std::stack<std::pair<Task*, bool> > task_stack_;
-  scoped_ptr<URLRequest> request_;
+  scoped_ptr<net::URLRequest> request_;
   scoped_ptr<MockURLRequestDelegate> url_request_delegate_;
   int expected_status_code_;
   std::string expected_response_;

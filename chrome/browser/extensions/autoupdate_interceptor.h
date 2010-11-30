@@ -15,7 +15,7 @@
 // This url request interceptor lets us respond to localhost http request urls
 // with the contents of files on disk for use in tests.
 class AutoUpdateInterceptor
-    : public URLRequest::Interceptor,
+    : public net::URLRequest::Interceptor,
       public base::RefCountedThreadSafe<AutoUpdateInterceptor> {
  public:
   AutoUpdateInterceptor();

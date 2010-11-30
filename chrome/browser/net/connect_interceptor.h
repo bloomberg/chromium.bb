@@ -13,7 +13,7 @@ namespace chrome_browser_net {
 //------------------------------------------------------------------------------
 // An interceptor to monitor URLRequests so that we can do speculative DNS
 // resolution and/or speculative TCP preconnections.
-class ConnectInterceptor : public URLRequest::Interceptor {
+class ConnectInterceptor : public net::URLRequest::Interceptor {
  public:
   // Construction includes registration as an URL.
   ConnectInterceptor();
@@ -21,7 +21,7 @@ class ConnectInterceptor : public URLRequest::Interceptor {
   virtual ~ConnectInterceptor();
 
  protected:
-  // URLRequest::Interceptor overrides
+  // Overridden from net::URLRequest::Interceptor:
   // Learn about referrers, and optionally preconnect based on history.
   virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
   virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);

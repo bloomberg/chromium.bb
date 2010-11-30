@@ -21,7 +21,7 @@ static const FilePath::CharType kMockHeaderFileSuffix[] =
 FilePath URLRequestMockHTTPJob::base_path_;
 
 /* static */
-URLRequestJob* URLRequestMockHTTPJob::Factory(URLRequest* request,
+URLRequestJob* URLRequestMockHTTPJob::Factory(net::URLRequest* request,
                                               const std::string& scheme) {
   return new URLRequestMockHTTPJob(request,
                                    GetOnDiskPath(base_path_, request, scheme));
@@ -56,7 +56,7 @@ GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const FilePath& path) {
 
 /* static */
 FilePath URLRequestMockHTTPJob::GetOnDiskPath(const FilePath& base_path,
-                                              URLRequest* request,
+                                              net::URLRequest* request,
                                               const std::string& scheme) {
   std::string file_url("file:///");
   file_url += WideToUTF8(base_path.ToWStringHack());
@@ -68,7 +68,7 @@ FilePath URLRequestMockHTTPJob::GetOnDiskPath(const FilePath& base_path,
   return file_path;
 }
 
-URLRequestMockHTTPJob::URLRequestMockHTTPJob(URLRequest* request,
+URLRequestMockHTTPJob::URLRequestMockHTTPJob(net::URLRequest* request,
                                              const FilePath& file_path)
     : URLRequestFileJob(request, file_path) { }
 

@@ -395,7 +395,7 @@ URLFetcherBadHTTPSTest::URLFetcherBadHTTPSTest() {
 
 // The "server certificate expired" error should result in automatic
 // cancellation of the request by
-// URLRequest::Delegate::OnSSLCertificateError.
+// net::URLRequest::Delegate::OnSSLCertificateError.
 void URLFetcherBadHTTPSTest::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,

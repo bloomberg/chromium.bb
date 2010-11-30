@@ -10,11 +10,11 @@
 namespace chrome_browser_net {
 
 ConnectInterceptor::ConnectInterceptor() {
-  URLRequest::RegisterRequestInterceptor(this);
+  net::URLRequest::RegisterRequestInterceptor(this);
 }
 
 ConnectInterceptor::~ConnectInterceptor() {
-  URLRequest::UnregisterRequestInterceptor(this);
+  net::URLRequest::UnregisterRequestInterceptor(this);
 }
 
 net::URLRequestJob* ConnectInterceptor::MaybeIntercept(

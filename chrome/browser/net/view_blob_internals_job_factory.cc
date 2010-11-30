@@ -19,11 +19,10 @@ bool ViewBlobInternalsJobFactory::IsSupportedURL(const GURL& url) {
 
 // static.
 URLRequestJob* ViewBlobInternalsJobFactory::CreateJobForRequest(
-    URLRequest* request) {
+    net::URLRequest* request) {
   webkit_blob::BlobStorageController* blob_storage_controller =
       static_cast<ChromeURLRequestContext*>(request->context())->
           blob_storage_context()->controller();
   return new webkit_blob::ViewBlobInternalsJob(
       request, blob_storage_controller);
 }
-

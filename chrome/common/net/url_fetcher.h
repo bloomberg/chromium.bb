@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file contains URLFetcher, a wrapper around URLRequest that handles
+// This file contains URLFetcher, a wrapper around net::URLRequest that handles
 // low-level details like thread safety, ref counting, and incremental buffer
 // reading.  This is useful for callers who simply want to get the data from a
 // URL and don't care about all the nitty-gritty details.

@@ -445,7 +445,7 @@ struct ViewHostMsg_Resource_Request {
   // Additional HTTP request headers.
   std::string headers;
 
-  // URLRequest load flags (0 by default).
+  // net::URLRequest load flags (0 by default).
   int load_flags;
 
   // Unique ID of process that originated this request. For normal renderer

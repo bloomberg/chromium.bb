@@ -1076,8 +1076,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kImport) ||
       parsed_command_line.HasSwitch(switches::kImportFromFile)) {
     // We use different BrowserProcess when importing so no GoogleURLTracker is
-    // instantiated (as it makes a URLRequest and we don't have an IO thread,
-    // see bug #1292702).
+    // instantiated (as it makes a net::URLRequest and we don't have an IO
+    // thread, see bug #1292702).
     browser_process.reset(new FirstRunBrowserProcess(parsed_command_line));
     is_first_run = false;
   } else {
@@ -1321,7 +1321,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Allow access to file:// on ChromeOS for tests.
   if (parsed_command_line.HasSwitch(switches::kAllowFileAccess)) {
-    URLRequest::AllowFileAccess();
+    net::URLRequest::AllowFileAccess();
   }
 
   // There are two use cases for kLoginUser:

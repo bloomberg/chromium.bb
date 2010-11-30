@@ -52,7 +52,7 @@ void RecordSnifferMetrics(bool sniffing_blocked,
 
 BufferedResourceHandler::BufferedResourceHandler(ResourceHandler* handler,
                                                  ResourceDispatcherHost* host,
-                                                 URLRequest* request)
+                                                 net::URLRequest* request)
     : real_handler_(handler),
       host_(host),
       request_(request),
