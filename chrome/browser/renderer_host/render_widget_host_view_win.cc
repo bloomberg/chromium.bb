@@ -1563,16 +1563,17 @@ gfx::PluginWindowHandle RenderWidgetHostViewWin::CreateCompositorHostWindow() {
     DCHECK(window_class);
   }
 
+  RECT currentRect;
+  GetClientRect(&currentRect);
+  int width = currentRect.right - currentRect.left;
+  int height = currentRect.bottom - currentRect.top;
+
   compositor_host_window_ = CreateWindowEx(
     WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
     MAKEINTATOM(window_class), 0,
     WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
-    0, 0, 0, 0, m_hWnd, 0, GetModuleHandle(NULL), 0);
+    0, 0, width, height, m_hWnd, 0, GetModuleHandle(NULL), 0);
   DCHECK(compositor_host_window_);
-
-  // We need to not just "WM_SHOW" the new indow, but reparent it
-  // below any existing plugin existing windows.
-  ShowCompositorHostWindow(true);
 
   return static_cast<gfx::PluginWindowHandle>(compositor_host_window_);
 }
