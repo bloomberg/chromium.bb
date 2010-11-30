@@ -408,6 +408,10 @@ const char kEnableBackgroundMode[] = "enable-background-mode";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
+// Enables blocked content warning animation. Currently shows animation for
+// blocked pop-ups only.
+const char kEnableBlockContentAnimation[] = "enable-blocked-content-animation";
+
 // Enable experimental client-side detection of phishing pages.
 const char kEnableClientSidePhishingDetection[] =
     "enable-client-side-phishing-detection";

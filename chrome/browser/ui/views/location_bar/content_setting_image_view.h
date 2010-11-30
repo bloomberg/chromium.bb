@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 #pragma once
 
+#include "app/linear_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/content_settings_types.h"
@@ -22,21 +23,29 @@ class MouseEvent;
 }
 
 class ContentSettingImageView : public views::ImageView,
-                                public InfoBubbleDelegate {
+                                public InfoBubbleDelegate,
+                                public LinearAnimation {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
-                          const LocationBarView* parent,
+                          LocationBarView* parent,
                           Profile* profile);
   virtual ~ContentSettingImageView();
 
   void set_profile(Profile* profile) { profile_ = profile; }
-  void UpdateFromTabContents(const TabContents* tab_contents);
+  // |new_navigation| true if this is a new navigation, false if the tab was
+  // just switched to.
+  void UpdateFromTabContents(TabContents* tab_contents);
+
+  // views::View overrides:
+  virtual gfx::Size GetPreferredSize();
 
  private:
   // views::ImageView overrides:
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
+  virtual void Paint(gfx::Canvas* canvas);
+  virtual void PaintBackground(gfx::Canvas* canvas);
 
   // InfoBubbleDelegate overrides:
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
@@ -44,16 +53,25 @@ class ContentSettingImageView : public views::ImageView,
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow() { return false; }
 
+  // LinearAnimation override:
+  virtual void AnimateToState(double state);
+
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
   // The owning LocationBarView.
-  const LocationBarView* parent_;
+  LocationBarView* parent_;
 
   // The currently active profile.
   Profile* profile_;
 
   // The currently shown info bubble if any.
   InfoBubble* info_bubble_;
+
+  std::wstring animated_text_;
+  bool animation_in_progress_;
+  int text_size_;
+  int visible_text_size_;
+  gfx::Insets saved_insets_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingImageView);
 };

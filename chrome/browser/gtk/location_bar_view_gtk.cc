@@ -652,7 +652,7 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdateContentSettingsIcons() {
-  const TabContents* tab_contents = GetTabContents();
+  TabContents* tab_contents = GetTabContents();
   bool any_visible = false;
   for (ScopedVector<ContentSettingImageViewGtk>::iterator i(
            content_setting_views_.begin());
@@ -1267,7 +1267,7 @@ LocationBarViewGtk::ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
 }
 
 void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
-    const TabContents* tab_contents) {
+    TabContents* tab_contents) {
   content_setting_image_model_->UpdateFromTabContents(tab_contents);
   if (content_setting_image_model_->is_visible()) {
     gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),

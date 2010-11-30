@@ -559,7 +559,7 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   const bool input_in_progress = toolbar_model_->input_in_progress();
-  const TabContents* tab_contents =
+  TabContents* tab_contents =
       input_in_progress ? NULL : browser_->GetSelectedTabContents();
   bool icons_updated = false;
   for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {

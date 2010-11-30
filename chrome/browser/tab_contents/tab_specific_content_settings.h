@@ -64,6 +64,11 @@ class TabSpecificContentSettings
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
 
+  // Returns true if content blockage was indicated to the user.
+  bool IsBlockageIndicated(ContentSettingsType content_type) const;
+
+  void SetBlockageHasBeenIndicated(ContentSettingsType content_type);
+
   // Returns whether a particular kind of content has been accessed. Currently
   // only tracks cookies.
   bool IsContentAccessed(ContentSettingsType content_type) const;
@@ -159,6 +164,9 @@ class TabSpecificContentSettings
 
   // Stores which content setting types actually have blocked content.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
+
+  // Stores if the blocked content was messaged to the user.
+  bool content_blockage_indicated_to_user_[CONTENT_SETTINGS_NUM_TYPES];
 
   // Stores which content setting types actually were accessed.
   bool content_accessed_[CONTENT_SETTINGS_NUM_TYPES];

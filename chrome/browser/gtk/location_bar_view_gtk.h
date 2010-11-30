@@ -156,7 +156,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     void set_profile(Profile* profile) { profile_ = profile; }
 
     bool IsVisible() { return GTK_WIDGET_VISIBLE(widget()); }
-    void UpdateFromTabContents(const TabContents* tab_contents);
+    void UpdateFromTabContents(TabContents* tab_contents);
 
    private:
     CHROMEGTK_CALLBACK_1(ContentSettingImageViewGtk, gboolean, OnButtonPressed,

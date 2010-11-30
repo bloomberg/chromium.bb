@@ -18,11 +18,13 @@ class ContentSettingBlockedImageModel : public ContentSettingImageModel {
   explicit ContentSettingBlockedImageModel(
       ContentSettingsType content_settings_type);
 
-  virtual void UpdateFromTabContents(const TabContents* tab_contents);
+  virtual void UpdateFromTabContents(TabContents* tab_contents);
 
  private:
   static const int kAccessedIconIDs[];
   static const int kBlockedIconIDs[];
+  static const int kBlockedExplanatoryTextIDs[];
+  static const int kAccessedExplanatoryTextIDs[];
   static const int kAccessedTooltipIDs[];
   static const int kBlockedTooltipIDs[];
 };
@@ -31,14 +33,14 @@ class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
  public:
   ContentSettingGeolocationImageModel();
 
-  virtual void UpdateFromTabContents(const TabContents* tab_contents);
+  virtual void UpdateFromTabContents(TabContents* tab_contents);
 };
 
 class ContentSettingNotificationsImageModel : public ContentSettingImageModel {
  public:
   ContentSettingNotificationsImageModel();
 
-  virtual void UpdateFromTabContents(const TabContents* tab_contents);
+  virtual void UpdateFromTabContents(TabContents* tab_contents);
 };
 
 const int ContentSettingBlockedImageModel::kBlockedIconIDs[] = {
@@ -56,6 +58,23 @@ const int ContentSettingBlockedImageModel::kAccessedIconIDs[] = {
     0,
     0,
 };
+
+const int ContentSettingBlockedImageModel::kBlockedExplanatoryTextIDs[] = {
+    0,
+    0,
+    0,
+    0,
+    IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT,
+};
+
+const int ContentSettingBlockedImageModel::kAccessedExplanatoryTextIDs[] = {
+    0,
+    0,
+    0,
+    0,
+    0,
+};
+
 
 const int ContentSettingBlockedImageModel::kBlockedTooltipIDs[] = {
     IDS_BLOCKED_COOKIES_TITLE,
@@ -79,11 +98,12 @@ ContentSettingBlockedImageModel::ContentSettingBlockedImageModel(
 }
 
 void ContentSettingBlockedImageModel::UpdateFromTabContents(
-    const TabContents* tab_contents) {
+    TabContents* tab_contents) {
   TabSpecificContentSettings* content_settings = tab_contents ?
       tab_contents->GetTabSpecificContentSettings() : NULL;
   const int* icon_ids;
   const int* tooltip_ids;
+  const int* explanatory_string_ids;
 
   if (!content_settings) {
     set_visible(false);
@@ -92,6 +112,7 @@ void ContentSettingBlockedImageModel::UpdateFromTabContents(
   if (content_settings->IsContentBlocked(get_content_settings_type())) {
     icon_ids = kBlockedIconIDs;
     tooltip_ids = kBlockedTooltipIDs;
+    explanatory_string_ids = kBlockedExplanatoryTextIDs;
   } else if (tab_contents->profile()->GetHostContentSettingsMap()->
                  GetDefaultContentSetting(get_content_settings_type()) ==
                  CONTENT_SETTING_BLOCK &&
@@ -100,11 +121,14 @@ void ContentSettingBlockedImageModel::UpdateFromTabContents(
     // accessed icon.
     icon_ids = kAccessedIconIDs;
     tooltip_ids = kAccessedTooltipIDs;
+    explanatory_string_ids = kAccessedExplanatoryTextIDs;
   } else {
     set_visible(false);
     return;
   }
   set_icon(icon_ids[get_content_settings_type()]);
+  set_explanatory_string_id(
+      explanatory_string_ids[get_content_settings_type()]);
   set_tooltip(
       l10n_util::GetStringUTF8(tooltip_ids[get_content_settings_type()]));
   set_visible(true);
@@ -115,7 +139,7 @@ ContentSettingGeolocationImageModel::ContentSettingGeolocationImageModel()
 }
 
 void ContentSettingGeolocationImageModel::UpdateFromTabContents(
-    const TabContents* tab_contents) {
+    TabContents* tab_contents) {
   if (!tab_contents) {
     set_visible(false);
     return;
@@ -147,7 +171,7 @@ ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
 }
 
 void ContentSettingNotificationsImageModel::UpdateFromTabContents(
-    const TabContents* tab_contents) {
+    TabContents* tab_contents) {
   // Notifications do not have a bubble.
   set_visible(false);
 }
@@ -156,7 +180,8 @@ ContentSettingImageModel::ContentSettingImageModel(
     ContentSettingsType content_settings_type)
     : content_settings_type_(content_settings_type),
       is_visible_(false),
-      icon_(0) {
+      icon_(0),
+      explanatory_string_id_(0) {
 }
 
 // static

@@ -41,7 +41,7 @@ ContentSettingDecoration::~ContentSettingDecoration() {
 }
 
 bool ContentSettingDecoration::UpdateFromTabContents(
-    const TabContents* tab_contents) {
+    TabContents* tab_contents) {
   bool was_visible = IsVisible();
   int old_icon = content_setting_image_model_->get_icon();
   content_setting_image_model_->UpdateFromTabContents(tab_contents);
