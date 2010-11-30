@@ -6,7 +6,6 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "gfx/rect.h"
 

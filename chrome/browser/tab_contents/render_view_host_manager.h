@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/common/notification_registrar.h"
@@ -145,10 +146,16 @@ class RenderViewHostManager
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
   // method to unset the interstitial) and no interstitial page should be set
   // when there is already a non NULL interstitial page set.
-  void set_interstitial_page(InterstitialPage* interstitial_page);
+  void set_interstitial_page(InterstitialPage* interstitial_page) {
+    DCHECK(!interstitial_page_ && interstitial_page);
+    interstitial_page_ = interstitial_page;
+  }
 
   // Unsets the currently showing interstitial.
-  void remove_interstitial_page();
+  void remove_interstitial_page() {
+    DCHECK(interstitial_page_);
+    interstitial_page_ = NULL;
+  }
 
   // Returns the currently showing interstitial, NULL if no interstitial is
   // showing.

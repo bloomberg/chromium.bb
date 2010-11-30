@@ -11,6 +11,7 @@
 
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
+#include "base/task.h"
 #include "chrome/plugin/command_buffer_stub.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"

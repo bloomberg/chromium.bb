@@ -12,6 +12,7 @@
 #include "app/slide_animation.h"
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "gfx/canvas.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"

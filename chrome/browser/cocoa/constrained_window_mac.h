@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/tab_contents/constrained_window.h"
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/scoped_nsobject.h"
 
 @class BrowserWindowController;
@@ -94,7 +95,15 @@ class ConstrainedWindowMacDelegateCustomSheet
 
  protected:
   // For when you need to delay initalization after the constructor call.
-  void init(NSWindow* sheet, id delegate, SEL didEndSelector);
+  void init(NSWindow* sheet, id delegate, SEL didEndSelector) {
+    DCHECK(!delegate_.get());
+    DCHECK(!didEndSelector_);
+    customSheet_.reset([sheet retain]);
+    delegate_.reset([delegate retain]);
+    didEndSelector_ = didEndSelector;
+    DCHECK(delegate_.get());
+    DCHECK(didEndSelector_);
+  }
   void set_sheet(NSWindow* sheet) { customSheet_.reset([sheet retain]); }
   NSWindow* sheet() { return customSheet_; }
 
@@ -153,3 +162,4 @@ class ConstrainedWindowMac : public ConstrainedWindow {
 };
 
 #endif  // CHROME_BROWSER_COCOA_CONSTRAINED_WINDOW_MAC_H_
+

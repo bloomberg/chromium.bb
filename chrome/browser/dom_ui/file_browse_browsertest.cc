@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/task.h"
 #include "base/path_service.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -20,9 +21,9 @@ typedef DOMElementProxy::By By;
 
 class FileBrowseBrowserTest : public InProcessBrowserTest {
  public:
-  FileBrowseBrowserTest() {
-    EnableDOMAutomation();
-  }
+   FileBrowseBrowserTest() {
+     EnableDOMAutomation();
+   }
 };
 
 class FileBrowseUiObserver : public NotificationObserver {

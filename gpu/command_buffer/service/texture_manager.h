@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
@@ -166,7 +167,15 @@ class TextureManager {
     // Parameters:
     //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
     //   max_levels: The maximum levels this type of target can have.
-    void SetTarget(GLenum target, GLint max_levels);
+    void SetTarget(GLenum target, GLint max_levels) {
+      DCHECK_EQ(0u, target_);  // you can only set this once.
+      target_ = target;
+      size_t num_faces = (target == GL_TEXTURE_2D) ? 1 : 6;
+      level_infos_.resize(num_faces);
+      for (size_t ii = 0; ii < num_faces; ++ii) {
+        level_infos_[ii].resize(max_levels);
+      }
+    }
 
     // Update info about this texture.
     void Update(const FeatureInfo* feature_info);
@@ -235,7 +244,10 @@ class TextureManager {
   // Parameters:
   //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
   //   max_levels: The maximum levels this type of target can have.
-  void SetInfoTarget(TextureInfo* info, GLenum target);
+  void SetInfoTarget(TextureInfo* info, GLenum target) {
+    DCHECK(info);
+    info->SetTarget(target, MaxLevelsForTarget(target));
+  }
 
   // Set the info for a particular level in a TexureInfo.
   void SetLevelInfo(
@@ -320,3 +332,4 @@ class TextureManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
+

@@ -6,7 +6,6 @@
 
 #include <list>
 
-#include "base/logging.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/win_util.h"
@@ -151,12 +150,6 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
 
 HICON WindowImpl::GetDefaultWindowIcon() const {
   return NULL;
-}
-
-void WindowImpl::set_initial_class_style(UINT class_style) {
-  // We dynamically generate the class name, so don't register it globally!
-  DCHECK_EQ((class_style & CS_GLOBALCLASS), 0u);
-  class_style_ = class_style;
 }
 
 // static

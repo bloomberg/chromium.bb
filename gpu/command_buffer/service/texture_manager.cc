@@ -3,11 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/texture_manager.h"
-
-#include <algorithm>
-
 #include "base/bits.h"
-#include "base/logging.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -281,16 +277,6 @@ void TextureManager::TextureInfo::SetParameter(
   Update(feature_info);
 }
 
-void TextureManager::TextureInfo::SetTarget(GLenum target, GLint max_levels) {
-  DCHECK_EQ(0u, target_);  // you can only set this once.
-  target_ = target;
-  size_t num_faces = (target == GL_TEXTURE_2D) ? 1 : 6;
-  level_infos_.resize(num_faces);
-  for (size_t ii = 0; ii < num_faces; ++ii) {
-    level_infos_[ii].resize(max_levels);
-  }
-}
-
 void TextureManager::TextureInfo::Update(const FeatureInfo* feature_info) {
   // Update npot status.
   npot_ = false;
@@ -440,11 +426,6 @@ bool TextureManager::ValidForTarget(
          (target != GL_TEXTURE_2D || (depth == 1));
 }
 
-void TextureManager::SetInfoTarget(TextureInfo* info, GLenum target) {
-  DCHECK(info);
-  info->SetTarget(target, MaxLevelsForTarget(target));
-}
-
 void TextureManager::SetLevelInfo(
     const FeatureInfo* feature_info,
     TextureManager::TextureInfo* info,
@@ -545,3 +526,5 @@ bool TextureManager::GetClientId(GLuint service_id, GLuint* client_id) const {
 
 }  // namespace gles2
 }  // namespace gpu
+
+

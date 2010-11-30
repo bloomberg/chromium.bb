@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"
@@ -310,6 +311,7 @@ HRESULT SetupRunOnce() {
     // Use this only for the dev channel and CEEE channels.
     if (channel_name.find(L"dev") != std::wstring::npos ||
         channel_name.find(L"ceee") != std::wstring::npos) {
+
       HKEY hive = HKEY_CURRENT_USER;
       if (IsSystemProcess()) {
         // For system installs, our updates will be running as SYSTEM which

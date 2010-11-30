@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"

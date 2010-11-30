@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_URL_REQUEST_HTTPS_PROBER_H_
-#define NET_URL_REQUEST_HTTPS_PROBER_H_
+#ifndef NET_BASE_HTTPS_PROBER_H_
+#define NET_BASE_HTTPS_PROBER_H_
 #pragma once
 
 #include <map>
@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/singleton.h"
+#include "base/task.h"
 #include "net/url_request/url_request.h"
 
 class URLRequestContext;
@@ -73,4 +74,4 @@ class HTTPSProber : public URLRequest::Delegate {
 };
 
 }  // namespace net
-#endif  // NET_URL_REQUEST_HTTPS_PROBER_H_
+#endif

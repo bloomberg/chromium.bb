@@ -13,7 +13,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/logging.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 
@@ -64,7 +64,11 @@ class WindowImpl : public MessageMapInterface {
   DWORD window_ex_style() const { return window_ex_style_; }
 
   // Sets the class style to use. The default is CS_DBLCLKS.
-  void set_initial_class_style(UINT class_style);
+  void set_initial_class_style(UINT class_style) {
+    // We dynamically generate the class name, so don't register it globally!
+    DCHECK_EQ((class_style & CS_GLOBALCLASS), 0u);
+    class_style_ = class_style;
+  }
   UINT initial_class_style() const { return class_style_; }
 
   // Returns true if the specified |hwnd| is a WindowImpl.

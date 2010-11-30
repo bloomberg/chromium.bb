@@ -95,7 +95,10 @@ class BufferManager {
       return target_;
     }
 
-    void set_target(GLenum target);
+    void set_target(GLenum target) {
+      DCHECK_EQ(target_, 0u);  // you can only set this once.
+      target_ = target;
+    }
 
     bool shadowed() const {
       return shadowed_;
@@ -179,3 +182,5 @@ class BufferManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_BUFFER_MANAGER_H_
+
+

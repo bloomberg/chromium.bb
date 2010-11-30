@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "chrome/browser/extensions/extension_devtools_bridge.h"
 #include "chrome/browser/extensions/extension_devtools_events.h"
 
@@ -68,3 +69,4 @@ void ExtensionDevToolsManager::BridgeClosingForTab(int tab_id) {
   }
   tab_id_to_render_process_ids_.erase(tab_id);
 }
+

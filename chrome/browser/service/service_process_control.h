@@ -13,12 +13,12 @@
 #include "base/callback.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "ipc/ipc_sync_channel.h"
 
 class Profile;
-class Task;
 
 // A ServiceProcessControl works as a portal between the service process and
 // the browser process.

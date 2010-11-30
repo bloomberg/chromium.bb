@@ -8,8 +8,6 @@
 
 #include <OpenGL/CGLMacro.h>
 
-#include "base/logging.h"
-
 namespace remoting {
 
 CapturerMac::CapturerMac(MessageLoop* message_loop)

@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/singleton.h"
 #include "base/string16.h"
+#include "base/task.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "ipc/ipc_message.h"

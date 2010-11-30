@@ -10,7 +10,6 @@
 
 #include <set>
 
-#include "base/logging.h"
 #include "remoting/base/types.h"
 
 namespace remoting {

@@ -4,7 +4,6 @@
 
 #include "printing/image.h"
 
-#include "base/logging.h"
 #include "gfx/gdi_util.h"  // EMF support
 #include "gfx/rect.h"
 #include "skia/ext/platform_device.h"

@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
+#include "base/task.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/glue/model_associator.h"

@@ -1,10 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/cocoa/constrained_window_mac.h"
 
-#include "base/logging.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -40,17 +39,6 @@ void ConstrainedWindowMacDelegateCustomSheet::RunSheet(
                 modalDelegate:delegate_.get()
                didEndSelector:didEndSelector_
                   contextInfo:NULL];
-}
-
-void ConstrainedWindowMacDelegateCustomSheet::init(NSWindow* sheet,
-    id delegate, SEL didEndSelector) {
-  DCHECK(!delegate_.get());
-  DCHECK(!didEndSelector_);
-  customSheet_.reset([sheet retain]);
-  delegate_.reset([delegate retain]);
-  didEndSelector_ = didEndSelector;
-  DCHECK(delegate_.get());
-  DCHECK(didEndSelector_);
 }
 
 // static

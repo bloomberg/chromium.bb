@@ -8,6 +8,7 @@
 
 #include <windows.h>
 
+#include "base/logging.h"
 #include "base/thread.h"
 #include "base/ref_counted.h"
 
@@ -15,9 +16,10 @@
 // The PluginInstallationJobMonitorThread class represents a background
 // thread which monitors the install job completion port which is associated
 // with the job when an instance of this class is initialized.
-class PluginInstallationJobMonitorThread
-    : public base::Thread,
-      public base::RefCountedThreadSafe<PluginInstallationJobMonitorThread> {
+class PluginInstallationJobMonitorThread :
+    public base::Thread,
+    public base::RefCountedThreadSafe<PluginInstallationJobMonitorThread> {
+
  public:
   PluginInstallationJobMonitorThread();
 
@@ -30,7 +32,10 @@ class PluginInstallationJobMonitorThread
   void Stop();
 
   // Simple setter/getters for the plugin window handle.
-  void set_plugin_window(HWND plugin_window);
+  void set_plugin_window(HWND plugin_window) {
+    DCHECK(::IsWindow(plugin_window));
+    plugin_window_ = plugin_window;
+  }
 
   HWND plugin_window() const {
     return plugin_window_;

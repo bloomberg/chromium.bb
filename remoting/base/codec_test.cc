@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <deque>
 #include <stdlib.h>
 
-#include <deque>
-
-#include "base/task.h"
 #include "gfx/rect.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/codec_test.h"
@@ -155,7 +153,7 @@ class EncoderMessageTester {
 
 class DecoderTester {
  public:
-  explicit DecoderTester(Decoder* decoder)
+  DecoderTester(Decoder* decoder)
       : strict_(false),
         decoder_(decoder),
         decode_done_(false) {
