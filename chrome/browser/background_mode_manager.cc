@@ -80,21 +80,36 @@ FilePath GetAutostartFilename(base::Environment* environment) {
 }
 
 }  // namespace
+#endif  // defined(OS_LINUX)
 
+#if defined(OS_WIN) || defined(OS_LINUX)
 class DisableLaunchOnStartupTask : public Task {
  public:
   virtual void Run() {
+#if defined(OS_LINUX)
     scoped_ptr<base::Environment> environment(base::Environment::Create());
     if (!file_util::Delete(GetAutostartFilename(environment.get()), false)) {
       LOG(WARNING) << "Failed to deregister launch on login.";
     }
+#elif defined(OS_WIN)
+  const wchar_t* key_name = kBackgroundModeRegistryKeyName;
+  base::win::RegKey read_key(kBackgroundModeRegistryRootKey,
+                             kBackgroundModeRegistrySubkey, KEY_READ);
+  base::win::RegKey write_key(kBackgroundModeRegistryRootKey,
+                              kBackgroundModeRegistrySubkey, KEY_WRITE);
+  if (read_key.ValueExists(key_name) && !write_key.DeleteValue(key_name))
+    LOG(WARNING) << "Failed to deregister launch on login.";
+#endif
   }
 };
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 // TODO(rickcam): Bug 56280: Share implementation with ShellIntegration
+#if defined(OS_WIN) || defined(OS_LINUX)
 class EnableLaunchOnStartupTask : public Task {
  public:
   virtual void Run() {
+#if defined(OS_LINUX)
     scoped_ptr<base::Environment> environment(base::Environment::Create());
     scoped_ptr<chrome::VersionInfo> version_info(new chrome::VersionInfo());
     FilePath autostart_directory = GetAutostartDirectory(environment.get());
@@ -126,9 +141,31 @@ class EnableLaunchOnStartupTask : public Task {
                    << autostart_file.value();
       file_util::Delete(GetAutostartFilename(environment.get()), false);
     }
+#elif defined(OS_WIN)
+  // TODO(rickcam): Bug 53597: Make RegKey mockable.
+  // TODO(rickcam): Bug 53600: Use distinct registry keys per flavor+profile.
+  const wchar_t* key_name = kBackgroundModeRegistryKeyName;
+  base::win::RegKey read_key(kBackgroundModeRegistryRootKey,
+                             kBackgroundModeRegistrySubkey, KEY_READ);
+  base::win::RegKey write_key(kBackgroundModeRegistryRootKey,
+                              kBackgroundModeRegistrySubkey, KEY_WRITE);
+  FilePath executable;
+  if (!PathService::Get(base::FILE_EXE, &executable))
+    return;
+  std::wstring new_value = executable.value() + L" --no-startup-window";
+  if (read_key.ValueExists(key_name)) {
+    std::wstring current_value;
+    if (read_key.ReadValue(key_name, &current_value) &&
+        (current_value == new_value)) {
+      return;
+    }
+  }
+  if (!write_key.WriteValue(key_name, new_value.c_str()))
+    LOG(WARNING) << "Failed to register launch on login.";
+#endif
   }
 };
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 void BackgroundModeManager::OnApplicationDataChanged(
     const Extension* extension) {
@@ -347,13 +384,14 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   // This functionality is only defined for default profile, currently.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
     return;
-#if defined(OS_LINUX)
-  if (should_launch)
+#if defined(OS_WIN) || defined(OS_LINUX)
+  if (should_launch) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             new EnableLaunchOnStartupTask());
-  else
+  } else {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             new DisableLaunchOnStartupTask());
+  }
 #elif defined(OS_MACOSX)
   if (should_launch) {
     // Return if Chrome is already a Login Item (avoid overriding user choice).
@@ -377,32 +415,6 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
       return;
 
     mac_util::RemoveFromLoginItems();
-  }
-#elif defined(OS_WIN)
-  // TODO(rickcam): Bug 53597: Make RegKey mockable.
-  // TODO(rickcam): Bug 53600: Use distinct registry keys per flavor+profile.
-  const wchar_t* key_name = kBackgroundModeRegistryKeyName;
-  base::win::RegKey read_key(kBackgroundModeRegistryRootKey,
-                             kBackgroundModeRegistrySubkey, KEY_READ);
-  base::win::RegKey write_key(kBackgroundModeRegistryRootKey,
-                              kBackgroundModeRegistrySubkey, KEY_WRITE);
-  if (should_launch) {
-    FilePath executable;
-    if (!PathService::Get(base::FILE_EXE, &executable))
-      return;
-    std::wstring new_value = executable.value() +
-        L" --enable-background-mode --no-startup-window";
-    if (read_key.ValueExists(key_name)) {
-      std::wstring current_value;
-      if (read_key.ReadValue(key_name, &current_value) &&
-          (current_value == new_value))
-        return;
-    }
-    if (!write_key.WriteValue(key_name, new_value.c_str()))
-      LOG(WARNING) << "Failed to register launch on login.";
-  } else {
-    if (read_key.ValueExists(key_name) && !write_key.DeleteValue(key_name))
-      LOG(WARNING) << "Failed to deregister launch on login.";
   }
 #endif
 }
