@@ -7,7 +7,6 @@
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "base/sys_info.h"
 #include "chrome/browser/renderer_host/audio_sync_reader.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -25,34 +24,6 @@ static const int kMaxSamplesPerHardwarePacket = 64 * 1024;
 // chosen carefully.
 // This value is selected so that we have 8192 samples for 48khz streams.
 static const int kMillisecondsPerHardwarePacket = 170;
-
-// We allow at most 50 concurrent audio streams in most case. This is a
-// rather high limit that is practically hard to reach.
-static const size_t kMaxStreams = 50;
-
-// By experiment the maximum number of audio streams allowed in Leopard
-// is 18. But we put a slightly smaller number just to be safe.
-static const size_t kMaxStreamsLeopard = 15;
-
-// Returns the number of audio streams allowed. This is a practical limit to
-// prevent failure caused by too many audio streams opened.
-static size_t GetMaxAudioStreamsAllowed() {
-#if defined(OS_MACOSX)
-  // We are hitting a bug in Leopard where too many audio streams will cause
-  // a deadlock in the AudioQueue API when starting the stream. Unfortunately
-  // there's no way to detect it within the AudioQueue API, so we put a
-  // special hard limit only for Leopard.
-  // See bug: http://crbug.com/30242
-  int32 major, minor, bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  if (major < 10 || (major == 10 && minor <= 5))
-    return kMaxStreamsLeopard;
-#endif
-
-  // In OS other than OSX Leopard, the number of audio streams allowed is a
-  // lot more so we return a separate number.
-  return kMaxStreams;
-}
 
 static uint32 SelectSamplesPerPacket(AudioParameters params) {
   // Select the number of samples that can provide at least
@@ -336,15 +307,6 @@ void AudioRendererHost::OnCreateStream(
     const ViewHostMsg_Audio_CreateStream_Params& params, bool low_latency) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(LookupById(msg.routing_id(), stream_id) == NULL);
-
-  // Limit the number of audio streams opened. This is to prevent using
-  // excessive resources for a large number of audio streams. More
-  // importantly it prevents instability on certain systems.
-  // See bug: http://crbug.com/30242
-  if (audio_entries_.size() >= GetMaxAudioStreamsAllowed()) {
-    SendErrorMessage(msg.routing_id(), stream_id);
-    return;
-  }
 
   AudioParameters audio_params(params.params);
 
