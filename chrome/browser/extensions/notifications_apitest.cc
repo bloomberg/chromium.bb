@@ -8,14 +8,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ui/browser.h"
 
-// Fails and hoses bot, http://crbug.com/50060.
 // Flaky, http://crbug.com/42314.
-#if defined(OS_MACOSX)
-#define MAYBE_Notifications DISABLED_Notifications
-#else
-#define MAYBE_Notifications FLAKY_Notifications
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Notifications) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Notifications) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
