@@ -12,6 +12,7 @@
 #include "gfx/native_widget_types.h"
 
 typedef unsigned long XID;
+struct _GtkPreserveWindow;
 
 // NativeViewIds are the opaque values which the renderer holds as a reference
 // to a window. These ids are often used in sync calls from the renderer and
@@ -70,6 +71,14 @@ class GtkNativeViewManager {
   // returns: true if |id| is a valid id, false otherwise.
   bool GetPermanentXIDForId(XID* xid, gfx::NativeViewId id);
 
+  // Must be called from the UI thread because we may need to access a
+  // GtkWidget or destroy a GdkWindow.
+  //
+  // If the widget associated with the XID is still alive, allow the widget
+  // to destroy the associated XID when it wants. Otherwise, destroy the
+  // GdkWindow associated with the XID.
+  void ReleasePermanentXID(XID xid);
+
   // These are actually private functions, but need to be called from statics.
   void OnRealize(gfx::NativeView widget);
   void OnUnrealize(gfx::NativeView widget);
@@ -104,6 +113,26 @@ class GtkNativeViewManager {
   // id. So this records the current mapping.
   std::map<gfx::NativeView, gfx::NativeViewId> native_view_to_id_;
   std::map<gfx::NativeViewId, NativeViewInfo> id_to_info_;
+
+  struct PermanentXIDInfo {
+    PermanentXIDInfo() : widget(NULL), ref_count(0) {
+    }
+    _GtkPreserveWindow* widget;
+    int ref_count;
+  };
+
+  // Used to maintain the reference count for permanent XIDs
+  // (referenced by GetPermanentXIDForId and dereferenced by
+  // ReleasePermanentXID). Only those XIDs with a positive reference count
+  // will be in the table.
+  //
+  // In general, several GTK widgets may share the same X window. We assume
+  // that is not true of the widgets stored in this registry.
+  //
+  // An XID will map to NULL, if there is an outstanding reference but the
+  // widget was destroyed. In this case, the destruction of the X window
+  // is deferred to the dropping of all references.
+  std::map<XID, PermanentXIDInfo> perm_xid_to_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GtkNativeViewManager);
 };

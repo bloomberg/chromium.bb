@@ -94,6 +94,11 @@ IPC_BEGIN_MESSAGES(GpuHost)
                               gfx::NativeViewId, /* view */
                               unsigned long /* xid */)
 
+  // Release the lock on the window.
+  // If the associated view has been destroyed, destroy the window.
+  IPC_MESSAGE_CONTROL1(GpuHostMsg_ReleaseXID,
+                       unsigned long /* xid */)
+
   IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_ResizeXID,
                               unsigned long, /* xid */
                               gfx::Size, /* size */

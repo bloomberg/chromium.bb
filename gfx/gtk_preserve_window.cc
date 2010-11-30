@@ -61,10 +61,13 @@ GtkWidget* gtk_preserve_window_new() {
 
 static void gtk_preserve_window_destroy(GtkObject* object) {
   GtkWidget* widget = reinterpret_cast<GtkWidget*>(object);
+  GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
 
   if (widget->window) {
     gdk_window_set_user_data(widget->window, NULL);
-    gdk_window_destroy(widget->window);
+    // If the window is preserved, someone else must destroy it.
+    if (!priv->preserve_window)
+      gdk_window_destroy(widget->window);
     widget->window = NULL;
   }
 
@@ -167,6 +170,9 @@ void gtk_preserve_window_set_preserve(GtkPreserveWindow* window,
     attributes_mask = GDK_WA_VISUAL | GDK_WA_COLORMAP;
     widget->window = gdk_window_new(
         gdk_get_default_root_window(), &attributes, attributes_mask);
+  } else if (!value && widget->window && !GTK_WIDGET_REALIZED(widget)) {
+    gdk_window_destroy(widget->window);
+    widget->window = NULL;
   }
 }
 

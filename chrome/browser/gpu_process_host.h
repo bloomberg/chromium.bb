@@ -87,6 +87,7 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   void OnSynchronizeReply();
 #if defined(OS_LINUX)
   void OnGetViewXID(gfx::NativeViewId id, IPC::Message* reply_msg);
+  void OnReleaseXID(unsigned long xid);
   void OnResizeXID(unsigned long xid, gfx::Size size, IPC::Message* reply_msg);
 #elif defined(OS_MACOSX)
   void OnAcceleratedSurfaceSetIOSurface(

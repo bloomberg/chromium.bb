@@ -159,6 +159,10 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
     DestroyWindow(static_cast<HWND>(compositor_window_));
     compositor_window_ = NULL;
   }
+#elif defined(OS_LINUX)
+  ChildThread* gpu_thread = ChildThread::current();
+  gpu_thread->Send(
+      new GpuHostMsg_ReleaseXID(handle_));
 #endif
 }
 

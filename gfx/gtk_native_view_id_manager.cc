@@ -63,7 +63,7 @@ gfx::NativeViewId GtkNativeViewManager::GetIdForWidget(gfx::NativeView widget) {
   info.widget = widget;
   if (GTK_WIDGET_REALIZED(widget)) {
     GdkWindow *gdk_window = widget->window;
-    CHECK(gdk_window);
+    DCHECK(gdk_window);
     info.x_window_id = GDK_WINDOW_XID(gdk_window);
   }
 
@@ -102,15 +102,50 @@ bool GtkNativeViewManager::GetPermanentXIDForId(XID* output,
 
   // We only return permanent XIDs for widgets that allow us to guarantee that
   // the XID will not change.
-  if (!GTK_IS_PRESERVE_WINDOW(i->second.widget))
-    return false;
-
+  DCHECK(GTK_IS_PRESERVE_WINDOW(i->second.widget));
   GtkPreserveWindow* widget =
       reinterpret_cast<GtkPreserveWindow*>(i->second.widget);
   gtk_preserve_window_set_preserve(widget, TRUE);
 
   *output = GDK_WINDOW_XID(i->second.widget->window);
+
+  // Update the reference count on the permanent XID.
+  PermanentXIDInfo info;
+  info.widget = widget;
+  info.ref_count = 1;
+  std::pair<std::map<XID, PermanentXIDInfo>::iterator, bool> ret =
+    perm_xid_to_info_.insert(std::make_pair(*output, info));
+
+  if (!ret.second) {
+    DCHECK(ret.first->second.widget == widget);
+    ret.first->second.ref_count++;
+  }
+
   return true;
+}
+
+void GtkNativeViewManager::ReleasePermanentXID(XID xid) {
+  AutoLock locked(lock_);
+
+  std::map<XID, PermanentXIDInfo>::iterator i =
+    perm_xid_to_info_.find(xid);
+
+  if (i == perm_xid_to_info_.end())
+    return;
+
+  if (i->second.ref_count > 1) {
+    i->second.ref_count--;
+  } else {
+    if (i->second.widget) {
+      gtk_preserve_window_set_preserve(i->second.widget, FALSE);
+    } else {
+      GdkWindow* window = reinterpret_cast<GdkWindow*>(
+          gdk_xid_table_lookup(xid));
+      DCHECK(window);
+      gdk_window_destroy(window);
+    }
+    perm_xid_to_info_.erase(i);
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -151,8 +186,6 @@ void GtkNativeViewManager::OnUnrealize(gfx::NativeView widget) {
     id_to_info_.find(id);
 
   CHECK(i != id_to_info_.end());
-
-  i->second.x_window_id = 0;
 }
 
 void GtkNativeViewManager::OnDestroy(gfx::NativeView widget) {
@@ -165,6 +198,18 @@ void GtkNativeViewManager::OnDestroy(gfx::NativeView widget) {
   std::map<gfx::NativeViewId, NativeViewInfo>::iterator j =
     id_to_info_.find(i->second);
   CHECK(j != id_to_info_.end());
+
+  // If the XID is supposed to outlive the widget, mark it
+  // in the lookup table.
+  if (GTK_IS_PRESERVE_WINDOW(widget) &&
+      gtk_preserve_window_get_preserve(
+          reinterpret_cast<GtkPreserveWindow*>(widget))) {
+    std::map<XID, PermanentXIDInfo>::iterator k =
+      perm_xid_to_info_.find(GDK_WINDOW_XID(widget->window));
+
+    if (k != perm_xid_to_info_.end())
+      k->second.widget = NULL;
+  }
 
   native_view_to_id_.erase(i);
   id_to_info_.erase(j);
