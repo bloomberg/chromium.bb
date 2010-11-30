@@ -53,27 +53,50 @@ struct dnd_drag {
 	struct dnd *dnd;
 	struct input *input;
 	uint32_t time;
+	struct item *item;
+	int x_offset, y_offset;
+	const char *mime_type;
 };
 
 struct dnd_offer {
+	int refcount;
 	struct dnd *dnd;
 	struct wl_array types;
 	const char *drag_type;
 	uint32_t tag;
+	int x, y;
 };
 
 struct item {
 	cairo_surface_t *surface;
+	int seed;
 	int x, y;
 };
+
+struct dnd_flower_message {
+	int seed, x_offset, y_offset;
+};
+
 
 static const int item_width = 64;
 static const int item_height = 64;
 static const int item_padding = 16;
 
 static struct item *
-item_create(struct display *display, int x, int y)
+item_create(struct display *display, int x, int y, int seed)
 {
+	struct item *item;
+	struct timeval tv;
+
+	item = malloc(sizeof *item);
+	if (item == NULL)
+		return NULL;
+	
+	
+	gettimeofday(&tv, NULL);
+	item->seed = seed ? seed : tv.tv_usec;
+	srandom(item->seed);
+	
 	const int petal_count = 3 + random() % 5;
 	const double r1 = 20 + random() % 10;
 	const double r2 = 5 + random() % 12;
@@ -85,11 +108,7 @@ item_create(struct display *display, int x, int y)
 	double t, dt = 2 * M_PI / (petal_count * 2);
 	double x1, y1, x2, y2, x3, y3;
 	struct rectangle rect;
-	struct item *item;
 
-	item = malloc(sizeof *item);
-	if (item == NULL)
-		return NULL;
 
 	rect.width = item_width;
 	rect.height = item_height;
@@ -206,6 +225,30 @@ keyboard_focus_handler(struct window *window,
 	window_schedule_redraw(dnd->window);
 }
 
+static void 
+dnd_offer_destroy(struct dnd_offer *dnd_offer)
+{
+	dnd_offer->refcount--;
+	if (dnd_offer->refcount == 0) {
+		wl_array_release(&dnd_offer->types);
+		free(dnd_offer);
+	}
+}
+
+static int
+dnd_add_item(struct dnd *dnd, struct item *item)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
+		if (dnd->items[i] == 0) {
+			dnd->items[i] = item;
+			return i;
+		}
+	}
+	return -1;
+}
+
 static struct item *
 dnd_get_item(struct dnd *dnd, int32_t x, int32_t y)
 {
@@ -241,6 +284,7 @@ drag_target(void *data,
 
 	fprintf(stderr, "target %s\n", mime_type);
 	device = input_get_input_device(dnd_drag->input);
+	dnd_drag->mime_type = mime_type;
 	if (mime_type)
 		surface = dnd_drag->opaque;
 	else
@@ -255,17 +299,35 @@ static void
 drag_finish(void *data, struct wl_drag *drag, int fd)
 {
 	struct dnd_drag *dnd_drag = data;
-	char text[] = "[drop data]";
 
-	fprintf(stderr, "got 'finish', fd %d, sending message\n", fd);
+	if (!dnd_drag->mime_type) {
+		dnd_add_item(dnd_drag->dnd, dnd_drag->item);
+		window_schedule_redraw(dnd_drag->dnd->window);
+		return;
+	}
+	
+	struct dnd_flower_message dnd_flower_message;	
+	
+	
+	dnd_flower_message.seed = dnd_drag->item->seed;
 
-	write(fd, text, sizeof text);
+	dnd_flower_message.x_offset = dnd_drag->x_offset;
+	dnd_flower_message.y_offset = dnd_drag->y_offset;
+
+	fprintf(stderr, "got 'finish', fd %d, sending dnd_flower_message\n", fd);
+
+	write(fd, &dnd_flower_message, sizeof dnd_flower_message);
 	close(fd);
 
 	/* The 'finish' event marks the end of the session on the drag
 	 * source side and we need to clean up the drag object created
 	 * and the local state. */
 	wl_drag_destroy(drag);
+	
+	/* Destroy the item that has been dragged out */
+	cairo_surface_destroy(dnd_drag->item->surface);
+	free(dnd_drag->item);
+	
 	cairo_surface_destroy(dnd_drag->translucent);
 	cairo_surface_destroy(dnd_drag->opaque);
 	free(dnd_drag);
@@ -274,7 +336,10 @@ drag_finish(void *data, struct wl_drag *drag, int fd)
 static void
 drag_reject(void *data, struct wl_drag *drag)
 {
-	fprintf(stderr, "drop rejected\n");
+	struct dnd_drag *dnd_drag = data;
+
+	dnd_add_item(dnd_drag->dnd, dnd_drag->item);
+	window_schedule_redraw(dnd_drag->dnd->window);
 }
 
 static const struct wl_drag_listener drag_listener = {
@@ -312,9 +377,8 @@ drag_offer_pointer_focus(void *data,
 	 * allocated. */
 	if (!surface) {
 		fprintf(stderr, "pointer focus NULL, session over\n");
-		wl_array_release(&dnd_offer->types);
-		free(dnd_offer);
 		wl_drag_offer_destroy(offer);
+		dnd_offer_destroy(dnd_offer);
 		return;
 	}
 
@@ -328,8 +392,10 @@ drag_offer_pointer_focus(void *data,
 	dnd_offer->dnd = window_get_user_data(window);
 
 	if (!dnd_get_item(dnd_offer->dnd, surface_x, surface_y)) {
-		wl_drag_offer_accept(offer, time, "text/plain");
-		dnd_offer->drag_type = "text/plain";
+		wl_drag_offer_accept(offer, time, "application/x-wayland-dnd-flower");
+		dnd_offer->drag_type = "application/x-wayland-dnd-flower";
+		dnd_offer->x = surface_x;
+		dnd_offer->y = surface_y;
 	} else {
 		wl_drag_offer_accept(offer, time, NULL);
 		dnd_offer->drag_type = NULL;
@@ -342,13 +408,14 @@ drag_offer_motion(void *data,
 		  int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
 {
 	struct dnd_offer *dnd_offer = data;
-	struct dnd *dnd = dnd_offer->dnd;
 
-	if (!dnd_get_item(dnd, surface_x, surface_y)) {
+	if (!dnd_get_item(dnd_offer->dnd, surface_x, surface_y)) {
 		fprintf(stderr, "drag offer motion %d, %d, accepting\n",
 			surface_x, surface_y);
-		wl_drag_offer_accept(offer, time, "text/plain");
-		dnd_offer->drag_type = "text/plain";
+		wl_drag_offer_accept(offer, time, "application/x-wayland-dnd-flower");
+		dnd_offer->drag_type = "application/x-wayland-dnd-flower";
+		dnd_offer->x = surface_x;
+		dnd_offer->y = surface_y;
 	} else {
 		fprintf(stderr, "drag offer motion %d, %d, declining\n",
 			surface_x, surface_y);
@@ -361,18 +428,30 @@ static gboolean
 drop_io_func(GIOChannel *source, GIOCondition condition, gpointer data)
 {
 	struct dnd_offer *dnd_offer = data;
-	char buffer[256];
+	struct dnd *dnd = dnd_offer->dnd;
+	struct dnd_flower_message dnd_flower_message;
 	int fd;
 	unsigned int len;
-	GError *err = NULL;
+	struct item *item;
 
-	g_io_channel_read_chars(source, buffer, sizeof buffer, &len, &err);
-	fprintf(stderr, "read %d bytes: %s\n", len, buffer);
 	fd = g_io_channel_unix_get_fd(source);
+	len = read(fd, &dnd_flower_message, sizeof dnd_flower_message);
+	fprintf(stderr, "read %d bytes\n", len);
+
 	close(fd);
 	g_source_remove(dnd_offer->tag);
 
 	g_io_channel_unref(source);
+
+	item = item_create(dnd->display,
+			   dnd_offer->x - dnd_flower_message.x_offset - 26,
+			   dnd_offer->y - dnd_flower_message.y_offset - 66,
+			   dnd_flower_message.seed);
+
+	dnd_add_item(dnd, item);
+	window_schedule_redraw(dnd->window);
+
+	dnd_offer_destroy(dnd_offer);
 
 	return TRUE;
 }
@@ -392,6 +471,7 @@ drag_offer_drop(void *data, struct wl_drag_offer *offer)
 
 	fprintf(stderr, "got 'drop', sending write end of pipe\n");
 
+	dnd_offer->refcount++;
 	pipe(p);
 	wl_drag_offer_receive(offer, p[1]);
 	close(p[1]);
@@ -416,6 +496,8 @@ drag_offer_handler(struct wl_drag_offer *offer, struct display *display)
 	dnd_offer = malloc(sizeof *dnd_offer);
 	if (dnd_offer == NULL)
 		return;
+	
+	dnd_offer->refcount = 1;
 
 	wl_drag_offer_add_listener(offer, &drag_offer_listener, dnd_offer);
 	wl_array_init(&dnd_offer->types);
@@ -482,6 +564,7 @@ dnd_button_handler(struct window *window,
 	struct rectangle rectangle;
 	struct dnd_drag *dnd_drag;
 	struct wl_drag *drag;
+	int i;
 
 	window_get_child_rectangle(dnd->window, &rectangle);
 	input_get_position(input, &x, &y);
@@ -496,6 +579,16 @@ dnd_button_handler(struct window *window,
 		dnd_drag->dnd = dnd;
 		dnd_drag->input = input;
 		dnd_drag->time = time;
+		dnd_drag->item = item;
+		dnd_drag->x_offset = x - item->x;
+		dnd_drag->y_offset = y - item->y;
+
+		for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
+			if (item == dnd->items[i]){
+				dnd->items[i] = 0;
+				break;
+			}
+		}
 
 		dnd_drag->opaque =
 			create_drag_cursor(dnd_drag, item, x, y, 1);
@@ -503,10 +596,10 @@ dnd_button_handler(struct window *window,
 			create_drag_cursor(dnd_drag, item, x, y, 0.2);
 
 		drag = window_create_drag(window);
-		wl_drag_offer(drag, "text/plain");
-		wl_drag_offer(drag, "text/html");
+		wl_drag_offer(drag, "application/x-wayland-dnd-flower");
 		window_activate_drag(drag, window, input, time);
 		wl_drag_add_listener(drag, &drag_listener, dnd_drag);
+		window_schedule_redraw(dnd->window);
 	}
 }
 
@@ -550,7 +643,7 @@ dnd_create(struct display *display)
 		x = (i % 4) * (item_width + item_padding) + item_padding;
 		y = (i / 4) * (item_height + item_padding) + item_padding;
 		if ((i ^ (i >> 2)) & 1)
-			dnd->items[i] = item_create(display, x, y);
+			dnd->items[i] = item_create(display, x, y, 0);
 		else
 			dnd->items[i] = NULL;
 	}
@@ -583,10 +676,6 @@ main(int argc, char *argv[])
 {
 	struct display *d;
 	struct dnd *dnd;
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-	srandom(tv.tv_usec);
 
 	d = display_create(&argc, &argv, option_entries);
 	if (d == NULL) {
