@@ -270,7 +270,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       first_set_window_call_(true),
       plugin_has_focus_(false),
       has_webkit_focus_(false),
-      containing_view_has_focus_(true) {
+      containing_view_has_focus_(true),
+      creation_succeeded_(false) {
   memset(&window_, 0, sizeof(window_));
 #ifndef NP_NO_CARBON
   memset(&np_cg_context_, 0, sizeof(np_cg_context_));

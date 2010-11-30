@@ -86,9 +86,9 @@ bool WebPluginDelegateImpl::Initialize(
     argc++;
   }
 
-  bool start_result = instance_->Start(
+  creation_succeeded_ = instance_->Start(
       url, argn.get(), argv.get(), argc, load_manually);
-  if (!start_result)
+  if (!creation_succeeded_)
     return false;
 
   windowless_ = instance_->windowless();
@@ -120,7 +120,8 @@ void WebPluginDelegateImpl::DestroyInstance() {
     instance_->CloseStreams();
 
     window_.window = NULL;
-    if (!(quirks_ & PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY)) {
+    if (creation_succeeded_ &&
+        !(quirks_ & PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY)) {
       instance_->NPP_SetWindow(&window_);
     }
 

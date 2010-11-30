@@ -55,7 +55,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       first_set_window_call_(true),
       plugin_has_focus_(false),
       has_webkit_focus_(false),
-      containing_view_has_focus_(true) {
+      containing_view_has_focus_(true),
+      creation_succeeded_(false) {
   memset(&window_, 0, sizeof(window_));
   if (instance_->mime_type() == "application/x-shockwave-flash") {
     // Flash is tied to Firefox's whacky behavior with windowless plugins. See

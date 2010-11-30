@@ -502,6 +502,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // https://bugs.webkit.org/show_bug.cgi?id=46013 for details.
   bool containing_view_has_focus_;
 
+  // True if NPP_New did not return an error.
+  bool creation_succeeded_;
+
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateImpl);
 };
 
