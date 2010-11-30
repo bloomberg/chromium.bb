@@ -67,6 +67,32 @@ class CookiesTest(pyauto.PyUITest):
     self.RestartBrowser(clear_profile=False)
     self.assertEqual('name=Good', self.GetCookie(pyauto.GURL(file_url)))
 
+  def testBlockCookies(self):
+    """Verify that cookies are being blocked."""
+    file_url = self.GetFileURLForPath(
+        os.path.join(self.DataDir(), 'setcookie.html'))
+    self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
+
+    # Set the preference to block all cookies.
+    self.SetPrefs(pyauto.kDefaultContentSettings, {u'cookies': 2})
+    # Regular window
+    self.NavigateToURL('http://www.google.com')
+    self.AppendTab(pyauto.GURL('https://www.google.com'))
+    self.AppendTab(pyauto.GURL(file_url))
+    self.assertFalse(self.GetCookie(pyauto.GURL(file_url)),
+                     msg='Cookies are not blocked.')
+
+    # Incognito window
+    self._CookieCheckIncognitoWindow('http://www.google.com')
+    self.GetBrowserWindow(1).GetTab(0).Close(True)
+
+    # Restart and verify that cookie setting persists and there are no cookies.
+    self.SetPrefs(pyauto.kRestoreOnStartup, 1)
+    self.RestartBrowser(clear_profile=False)
+    self.assertEquals({u'cookies': 2},
+        self.GetPrefsInfo().Prefs(pyauto.kDefaultContentSettings))
+    self.assertFalse(self.GetCookie(pyauto.GURL(file_url)))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
