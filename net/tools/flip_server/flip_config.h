@@ -30,8 +30,11 @@ public:
    string listen_port_;
    string ssl_cert_filename_;
    string ssl_key_filename_;
-   string server_ip_;
-   string server_port_;
+   string http_server_ip_;
+   string http_server_port_;
+   string https_server_ip_;
+   string https_server_port_;
+   int spdy_only_;
    int accept_backlog_size_;
    bool disable_nagle_;
    int accepts_per_wake_;
@@ -43,8 +46,11 @@ public:
                 string listen_port,
                 string ssl_cert_filename,
                 string ssl_key_filename,
-                string server_ip,
-                string server_port,
+                string http_server_ip,
+                string http_server_port,
+                string https_server_ip,
+                string https_server_port,
+                int spdy_only,
                 int accept_backlog_size,
                 bool disable_nagle,
                 int accepts_per_wake,
@@ -56,8 +62,11 @@ public:
        listen_port_(listen_port),
        ssl_cert_filename_(ssl_cert_filename),
        ssl_key_filename_(ssl_key_filename),
-       server_ip_(server_ip),
-       server_port_(server_port),
+       http_server_ip_(http_server_ip),
+       http_server_port_(http_server_port),
+       https_server_ip_(https_server_ip),
+       https_server_port_(https_server_port),
+       spdy_only_(spdy_only),
        accept_backlog_size_(accept_backlog_size),
        disable_nagle_(disable_nagle),
        accepts_per_wake_(accepts_per_wake),
@@ -65,6 +74,11 @@ public:
    {
      VLOG(1) << "Attempting to listen on " << listen_ip_.c_str() << ":"
              << listen_port_.c_str();
+     if (!https_server_ip_.size())
+       https_server_ip_ = http_server_ip_;
+     if (!https_server_port_.size())
+       https_server_port_ = http_server_port_;
+
      while (1) {
        int ret = net::CreateListeningSocket(listen_ip_,
                                             listen_port_,
@@ -89,8 +103,24 @@ public:
        }
      }
      net::SetNonBlocking(listen_fd_);
-     VLOG(1) << "Listening for spdy on port: " << listen_ip_ << ":"
-             << listen_port_;
+     VLOG(1) << "Listening on socket: ";
+     if (flip_handler_type == FLIP_HANDLER_PROXY)
+       VLOG(1) << "\tType         : Proxy";
+     else if (FLIP_HANDLER_SPDY_SERVER)
+       VLOG(1) << "\tType         : SPDY Server";
+     else if (FLIP_HANDLER_HTTP_SERVER)
+       VLOG(1) << "\tType         : HTTP Server";
+     VLOG(1) << "\tIP           : " << listen_ip_;
+     VLOG(1) << "\tPort         : " << listen_port_;
+     VLOG(1) << "\tHTTP Server  : " << http_server_ip_ << ":"
+             << http_server_port_;
+     VLOG(1) << "\tHTTPS Server : " << https_server_ip_ << ":"
+             << https_server_port_;
+     VLOG(1) << "\tSSL          : "
+             << (ssl_cert_filename.size()?"true":"false");
+     VLOG(1) << "\tCertificate  : " << ssl_cert_filename;
+     VLOG(1) << "\tKey          : " << ssl_key_filename;
+     VLOG(1) << "\tSpdy Only    : " << (spdy_only?"true":"flase");
    }
    ~FlipAcceptor () {}
 };
@@ -105,13 +135,15 @@ public:
    string forward_ip_header_;
    bool wait_for_iface_;
    int ssl_session_expiry_;
+   bool ssl_disable_compression_;
 
    FlipConfig() :
        server_think_time_in_s_(0),
        log_destination_(logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG),
        forward_ip_header_enabled_(false),
        wait_for_iface_(false),
-       ssl_session_expiry_(300)
+       ssl_session_expiry_(300),
+       ssl_disable_compression_(false)
        {}
 
    ~FlipConfig() {}
@@ -121,8 +153,11 @@ public:
                     string listen_port,
                     string ssl_cert_filename,
                     string ssl_key_filename,
-                    string server_ip,
-                    string server_port,
+                    string http_server_ip,
+                    string http_server_port,
+                    string https_server_ip,
+                    string https_server_port,
+                    int spdy_only,
                     int accept_backlog_size,
                     bool disable_nagle,
                     int accepts_per_wake,
@@ -135,8 +170,11 @@ public:
                                              listen_port,
                                              ssl_cert_filename,
                                              ssl_key_filename,
-                                             server_ip,
-                                             server_port,
+                                             http_server_ip,
+                                             http_server_port,
+                                             https_server_ip,
+                                             https_server_port,
+                                             spdy_only,
                                              accept_backlog_size,
                                              disable_nagle,
                                              accepts_per_wake,

@@ -56,12 +56,10 @@ using std::cout;
 
 #define ACCEPTOR_CLIENT_IDENT acceptor_->listen_ip_ << ":" \
                                << acceptor_->listen_port_ << " "
-#define ACCEPTOR_SERVER_IDENT acceptor_->server_ip_ << ":" \
-                               << acceptor_->server_port_ << " "
 
 #define NEXT_PROTO_STRING "\x06spdy/2\x08http/1.1\x08http/1.0"
 
-#define SSL_CTX_DEFAULT_CIPHER_LIST "RC4:!aNULL:!eNULL"
+#define SSL_CTX_DEFAULT_CIPHER_LIST "!aNULL:!ADH:!eNull:!LOW:!EXP:RC4+RSA:MEDIUM:HIGH"
 
 // If true, then disables the nagle algorithm);
 bool FLAGS_disable_nagle = true;
@@ -214,7 +212,8 @@ void spdy_init_ssl(SSLState* state,
     LOG(FATAL) << "Unable to create SSL context";
   }
   // Disable SSLv2 support.
-  SSL_CTX_set_options(state->ssl_ctx, SSL_OP_NO_SSLv2);
+  SSL_CTX_set_options(state->ssl_ctx,
+                      SSL_OP_NO_SSLv2 | SSL_OP_CIPHER_SERVER_PREFERENCE);
   if (SSL_CTX_use_certificate_file(state->ssl_ctx,
                                    ssl_cert_name.c_str(),
                                    SSL_FILETYPE_PEM) <= 0) {
@@ -246,6 +245,17 @@ void spdy_init_ssl(SSLState* state,
   VLOG(1) << "SSL CTX: Setting Release Buffers mode.";
   SSL_CTX_set_mode(state->ssl_ctx, SSL_MODE_RELEASE_BUFFERS);
 #endif
+
+  // Proper methods to disable compression don't exist until 0.9.9+. For now
+  // we must manipulate the stack of compression methods directly.
+  if (g_proxy_config.ssl_disable_compression_) {
+    STACK_OF(SSL_COMP) *ssl_comp_methods = SSL_COMP_get_compression_methods();
+    int num_methods = sk_SSL_COMP_num(ssl_comp_methods);
+    int i;
+    for (i = 0; i < num_methods; i++) {
+      sk_SSL_COMP_delete(ssl_comp_methods, i);
+    }
+  }
 }
 
 SSL* spdy_new_ssl(SSL_CTX* ssl_ctx) {
@@ -680,6 +690,8 @@ class SMInterface {
                                 SMInterface* sm_interface,
                                 EpollServer* epoll_server,
                                 int fd,
+                                string server_ip,
+                                string server_port,
                                 bool use_ssl)  = 0;
   virtual size_t ProcessReadInput(const char* data, size_t len) = 0;
   virtual size_t ProcessWriteInput(const char* data, size_t len) = 0;
@@ -810,6 +822,9 @@ class SMConnection:  public SMConnectionInterface,
 
   SSL* ssl_;
  public:
+  string server_ip_;
+  string server_port_;
+
   EpollServer* epoll_server() { return epoll_server_; }
   OutputList* output_list() { return &output_list_; }
   MemoryCache* memory_cache() { return memory_cache_; }
@@ -848,6 +863,8 @@ class SMConnection:  public SMConnectionInterface,
                         SMInterface* sm_interface,
                         EpollServer* epoll_server,
                         int fd,
+                        string server_ip,
+                        string server_port,
                         bool use_ssl) {
     if (initialized_) {
       LOG(FATAL) << "Attempted to initialize already initialized server";
@@ -862,9 +879,11 @@ class SMConnection:  public SMConnectionInterface,
       //        0 == connection in progress
       //        1 == connection complete
       // TODO: is_numeric_host_address value needs to be detected
+      server_ip_ = server_ip;
+      server_port_ = server_port;
       int ret = net::CreateConnectedSocket(&fd_,
-                                           acceptor_->server_ip_,
-                                           acceptor_->server_port_,
+                                           server_ip,
+                                           server_port,
                                            true,
                                            acceptor_->disable_nagle_);
 
@@ -875,10 +894,12 @@ class SMConnection:  public SMConnectionInterface,
         DCHECK_NE(-1, fd_);
         connection_complete_ = true;
         VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                << "Connection complete to: " << ACCEPTOR_SERVER_IDENT;
+                << "Connection complete to: " << server_ip_ << ":"
+                << server_port_ << " ";
       }
       VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-              << "Connecting to server: " << ACCEPTOR_SERVER_IDENT;
+              << "Connecting to server: " << server_ip_ << ":"
+                << server_port_ << " ";
     } else {
       // If fd != -1 then we are initializing a connection that has just been
       // accepted from the listen socket.
@@ -1014,7 +1035,8 @@ class SMConnection:  public SMConnectionInterface,
         if (sock_error == 0) {
           connection_complete_ = true;
           VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
-                  << "Connection complete to " << ACCEPTOR_SERVER_IDENT;
+                  << "Connection complete to " << server_ip_ << ":"
+                << server_port_ << " ";
         } else if (sock_error == EINPROGRESS) {
           return;
         } else {
@@ -1137,6 +1159,10 @@ class SMConnection:  public SMConnectionInterface,
                         << "Reusing SPDY interface.";
               }
               sm_interface_ = sm_spdy_interface_;
+            } else if (acceptor_->spdy_only_) {
+              VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
+                      << "SPDY proxy only, closing HTTPS connection.";
+              goto error_or_close;
             } else {
               if (!sm_streamer_interface_) {
                 sm_streamer_interface_ = NewStreamerSM(this, NULL,
@@ -1582,11 +1608,14 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
                         SMInterface* sm_interface,
                         EpollServer* epoll_server,
                         int fd,
+                        string server_ip,
+                        string server_port,
                         bool use_ssl) {
     VLOG(2) << ACCEPTOR_CLIENT_IDENT
             << "SpdySM: Initializing server connection.";
     connection_->InitSMConnection(connection_pool, sm_interface,
-                                  epoll_server, fd, use_ssl);
+                                  epoll_server, fd, server_ip, server_port,
+                                  use_ssl);
   }
 
  private:
@@ -1610,7 +1639,8 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
     return sm_http_interface;
   }
 
-  SMInterface* FindOrMakeNewSMConnectionInterface() {
+  SMInterface* FindOrMakeNewSMConnectionInterface(string server_ip,
+                                                  string server_port) {
     SMInterface *sm_http_interface;
     int32 server_idx;
     if (unused_server_interface_list.empty()) {
@@ -1630,19 +1660,22 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
 
     sm_http_interface->InitSMInterface(this, server_idx);
     sm_http_interface->InitSMConnection(NULL, sm_http_interface,
-                                        epoll_server_, -1, false);
+                                        epoll_server_, -1,
+                                        server_ip, server_port, false);
 
     return sm_http_interface;
   }
 
-   int SpdyHandleNewStream(const SpdyControlFrame* frame,
-                           string *http_data)
+  int SpdyHandleNewStream(const SpdyControlFrame* frame,
+                          string *http_data,
+                          bool *is_https_scheme)
   {
     bool parsed_headers = false;
     SpdyHeaderBlock headers;
     const SpdySynStreamControlFrame* syn_stream =
       reinterpret_cast<const SpdySynStreamControlFrame*>(frame);
 
+    *is_https_scheme = false;
     parsed_headers = spdy_framer_->ParseHeaderBlock(frame, &headers);
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSyn("
             << syn_stream->stream_id() << ")";
@@ -1658,6 +1691,11 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
       VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: didn't find method or url "
               << "or method. Not creating stream";
       return 0;
+    }
+
+    SpdyHeaderBlock::iterator scheme = headers.find("scheme");
+    if (scheme->second.compare("https") == 0) {
+      *is_https_scheme = true;
     }
 
     string uri = UrlUtilities::GetUrlPath(url->second);
@@ -1707,15 +1745,25 @@ class SpdySM : public SpdyFramerVisitorInterface, public SMInterface {
             reinterpret_cast<const SpdySynStreamControlFrame*>(frame);
 
           string http_data;
-          int ret = SpdyHandleNewStream(frame, &http_data);
+          bool is_https_scheme;
+          int ret = SpdyHandleNewStream(frame, &http_data, &is_https_scheme);
           if (!ret) {
             LOG(ERROR) << "SpdySM: Could not convert spdy into http.";
             break;
           }
 
           if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
+            string server_ip;
+            string server_port;
+            if (is_https_scheme) {
+              server_ip = acceptor_->https_server_ip_;
+              server_port = acceptor_->https_server_port_;
+            } else {
+              server_ip = acceptor_->http_server_ip_;
+              server_port = acceptor_->http_server_port_;
+            }
             SMInterface *sm_http_interface =
-              FindOrMakeNewSMConnectionInterface();
+              FindOrMakeNewSMConnectionInterface(server_ip, server_port);
             stream_to_smif_[syn_stream->stream_id()] = sm_http_interface;
             sm_http_interface->SetStreamID(syn_stream->stream_id());
             sm_http_interface->ProcessWriteInput(http_data.c_str(),
@@ -2151,7 +2199,8 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
         stream_id_ += 2;
       } else {
         VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Received Response from "
-                << ACCEPTOR_SERVER_IDENT;
+                << connection_->server_ip_ << ":"
+                << connection_->server_port_ << " ";
         sm_spdy_interface_->SendSynReply(stream_id_, headers);
       }
     }
@@ -2175,9 +2224,9 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
     virtual void ProcessChunkExtensions(const char *input, size_t size) {}
     virtual void HeaderDone() {}
     virtual void MessageDone() {
+      if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
         VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: MessageDone. Sending EOF: "
                 << "stream " << stream_id_;
-      if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
         sm_spdy_interface_->SendEOF(stream_id_);
       } else {
         VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: MessageDone.";
@@ -2215,12 +2264,15 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
                         SMInterface* sm_interface,
                         EpollServer* epoll_server,
                         int fd,
+                        string server_ip,
+                        string server_port,
                         bool use_ssl)
   {
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Initializing server "
             << "connection.";
     connection_->InitSMConnection(connection_pool, sm_interface,
-                                  epoll_server, fd, use_ssl);
+                                  epoll_server, fd, server_ip, server_port,
+                                  use_ssl);
   }
 
   size_t ProcessReadInput(const char* data, size_t len) {
@@ -2259,7 +2311,7 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
   }
 
   void Reset() {
-    VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Reset: stream %d "
+    VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Reset: stream "
             << stream_id_;
     http_framer_->Reset();
   }
@@ -2268,8 +2320,11 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
   }
 
   void ResetForNewConnection() {
-    VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Server connection closing "
-            << "to: " << ACCEPTOR_SERVER_IDENT;
+    if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
+      VLOG(1) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Server connection closing "
+        << "to: " << connection_->server_ip_ << ":"
+        << connection_->server_port_ << " ";
+    }
     seq_num_ = 0;
     output_ordering_.Reset();
     http_framer_->Reset();
@@ -2495,12 +2550,15 @@ class StreamerSM : public SMInterface {
                          SMInterface* sm_interface,
                          EpollServer* epoll_server,
                          int fd,
+                         string server_ip,
+                         string server_port,
                          bool use_ssl)
    {
      VLOG(2) << ACCEPTOR_CLIENT_IDENT << "StreamerSM: Initializing server "
              << "connection.";
      connection_->InitSMConnection(connection_pool, sm_interface,
-                                   epoll_server, fd, use_ssl);
+                                   epoll_server, fd, server_ip,
+                                   server_port, use_ssl);
    }
 
    size_t ProcessReadInput(const char* data, size_t len) {
@@ -2562,8 +2620,13 @@ class StreamerSM : public SMInterface {
                                             epoll_server_, acceptor_);
        sm_other_interface_->InitSMInterface(this, 0);
      }
+     // The Streamer interface is used to stream HTTPS connections, so we
+     // will always use the https_server_ip/port here.
      sm_other_interface_->InitSMConnection(NULL, sm_other_interface_,
-                                           epoll_server_, -1, false);
+                                           epoll_server_, -1,
+                                           acceptor_->https_server_ip_,
+                                           acceptor_->https_server_port_,
+                                           false);
 
      return 1;
    }
@@ -2734,6 +2797,7 @@ class SMAcceptorThread : public SimpleThread,
                                         NULL,
                                         &epoll_server_,
                                         server_fd,
+                                        "", "",
                                         use_ssl_);
   }
 
@@ -2883,22 +2947,43 @@ int main (int argc, char**argv)
   unsigned int i = 0;
   bool wait_for_iface = false;
 
+  signal(SIGPIPE, SIG_IGN);
+
   CommandLine::Init(argc, argv);
   CommandLine cl(argc, argv);
 
-  if (cl.HasSwitch("--help") || argc < 2) {
+  if (cl.HasSwitch("help") || argc < 2) {
     cout << argv[0] << " <options>\n";
-    cout << "\t--proxy<1..n>=\"<listen ip>,<listen port>,<ssl cert filename>,"
-         << "<ssl key filename>,<server ip>,<server port>\"\n";
-    cout << "\t--spdy-server=\"<listen ip>,<listen port>,<ssl cert filename>,"
-         << "<ssl key filename>\"\n";
-    cout << "\t--http-server=\"<listen ip>,<listen port>,<ssl cert filename>,"
-         << "<ssl key filename>\"\n";
+    cout << "  Proxy options:\n";
+    cout << "\t--proxy<1..n>=\"<listen ip>,<listen port>,"
+         << "<ssl cert filename>,\n"
+         << "\t               <ssl key filename>,<http server ip>,"
+         << "<http server port>,\n"
+         << "\t               [https server ip],[https server port],"
+         << "<spdy only 0|1>\"\n";
+    cout << "\t  * The https server ip and port may be left empty if they are"
+         << " the same as\n"
+         << "\t    the http server fields.\n";
+    cout << "\t  * spdy only prevents non-spdy https connections from being"
+         << " passed\n"
+         << "\t    through the proxy listen ip:port.\n";
     cout << "\t--forward-ip-header=<header name>\n";
-    cout << "\t--logdest=file|system|both\n";
+    cout << "\n  Server options:\n";
+    cout << "\t--spdy-server=\"<listen ip>,<listen port>,[ssl cert filename],\n"
+         << "\t               [ssl key filename]\"\n";
+    cout << "\t--http-server=\"<listen ip>,<listen port>,[ssl cert filename],\n"
+         << "\t               [ssl key filename]\"\n";
+    cout << "\t  * Leaving the ssl cert and key fields empty will disable ssl"
+         << " for the\n"
+         << "\t    http and spdy flip servers\n";
+    cout << "\n  Global options:\n";
+    cout << "\t--logdest=<file|system|both>\n";
     cout << "\t--logfile=<logfile>\n";
     cout << "\t--wait-for-iface\n";
+    cout << "\t  * The flip server will block until the listen ip has been"
+         << " raised.\n";
     cout << "\t--ssl-session-expiry=<seconds> (default is 300)\n";
+    cout << "\t--ssl-disable-compression\n";
     cout << "\t--help\n";
     exit(0);
   }
@@ -2949,23 +3034,31 @@ int main (int argc, char**argv)
     g_proxy_config.ssl_session_expiry_ = atoi( session_expiry.c_str() );
   }
 
+  if (cl.HasSwitch("ssl-disable-compression")) {
+    g_proxy_config.ssl_disable_compression_ = true;
+  }
+
   InitLogging(g_proxy_config.log_filename_.c_str(),
               g_proxy_config.log_destination_,
               logging::DONT_LOCK_LOG_FILE,
               logging::APPEND_TO_OLD_LOG_FILE);
 
   LOG(INFO) << "Flip SPDY proxy started with configuration:";
-  LOG(INFO) << "Logging destination : " << g_proxy_config.log_destination_;
-  LOG(INFO) << "Log file            : " << g_proxy_config.log_filename_;
-  LOG(INFO) << "Forward IP Header   : "
+  LOG(INFO) << "Logging destination     : " << g_proxy_config.log_destination_;
+  LOG(INFO) << "Log file                : " << g_proxy_config.log_filename_;
+  LOG(INFO) << "Forward IP Header       : "
             << (g_proxy_config.forward_ip_header_enabled_ ?
                 g_proxy_config.forward_ip_header_ : "(disabled)");
-  LOG(INFO) << "Wait for interfaces : " << (wait_for_iface?"true":"false");
-  LOG(INFO) << "Accept backlog size : " << FLAGS_accept_backlog_size;
-  LOG(INFO) << "Accepts per wake    : " << FLAGS_accepts_per_wake;
-  LOG(INFO) << "Disable nagle       : "
+  LOG(INFO) << "Wait for interfaces     : " << (wait_for_iface?"true":"false");
+  LOG(INFO) << "Accept backlog size     : " << FLAGS_accept_backlog_size;
+  LOG(INFO) << "Accepts per wake        : " << FLAGS_accepts_per_wake;
+  LOG(INFO) << "Disable nagle           : "
             << (FLAGS_disable_nagle?"true":"false");
-  LOG(INFO) << "Reuseport           : " << (FLAGS_reuseport?"true":"false");
+  LOG(INFO) << "Reuseport               : " << (FLAGS_reuseport?"true":"false");
+  LOG(INFO) << "SSL session expiry      : "
+            << g_proxy_config.ssl_session_expiry_;
+  LOG(INFO) << "SSL disable compression : "
+            << g_proxy_config.ssl_disable_compression_;
 
   // Proxy Acceptors
   while (true) {
@@ -2977,13 +3070,16 @@ int main (int argc, char**argv)
     }
     string value = cl.GetSwitchValueASCII(name.str());
     vector<std::string> valueArgs = split(value, ',');
-    CHECK_EQ((unsigned int)6, valueArgs.size());
+    CHECK_EQ((unsigned int)9, valueArgs.size());
+    int spdy_only = atoi(valueArgs[8].c_str());
     // If wait_for_iface is enabled, then this call will block
     // indefinitely until the interface is raised.
     g_proxy_config.AddAcceptor(FLIP_HANDLER_PROXY,
                                valueArgs[0], valueArgs[1],
                                valueArgs[2], valueArgs[3],
                                valueArgs[4], valueArgs[5],
+                               valueArgs[6], valueArgs[7],
+                               spdy_only,
                                FLAGS_accept_backlog_size,
                                FLAGS_disable_nagle,
                                FLAGS_accepts_per_wake,
@@ -3001,7 +3097,8 @@ int main (int argc, char**argv)
     g_proxy_config.AddAcceptor(FLIP_HANDLER_SPDY_SERVER,
                                valueArgs[0], valueArgs[1],
                                valueArgs[2], valueArgs[3],
-                               "", "",
+                               "", "", "", "",
+                               0,
                                FLAGS_accept_backlog_size,
                                FLAGS_disable_nagle,
                                FLAGS_accepts_per_wake,
@@ -3019,7 +3116,8 @@ int main (int argc, char**argv)
     g_proxy_config.AddAcceptor(FLIP_HANDLER_HTTP_SERVER,
                                valueArgs[0], valueArgs[1],
                                valueArgs[2], valueArgs[3],
-                               "", "",
+                               "", "", "", "",
+                               0,
                                FLAGS_accept_backlog_size,
                                FLAGS_disable_nagle,
                                FLAGS_accepts_per_wake,
