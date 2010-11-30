@@ -49,7 +49,13 @@ protocol::Session* ConnectionToClient::session() {
 }
 
 void ConnectionToClient::Disconnect() {
-  DCHECK_EQ(loop_, MessageLoop::current());
+  // This method can be called from main thread so perform threading switching.
+  if (MessageLoop::current() != loop_) {
+    loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ConnectionToClient::Disconnect));
+    return;
+  }
 
   // If there is a channel then close it and release the reference.
   if (session_) {
@@ -80,8 +86,14 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
     dispatcher_->Initialize(session_.get(), host_stub_, input_stub_);
   }
 
-  loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ConnectionToClient::StateChangeTask, state));
+  // This method can be called from main thread so perform threading switching.
+  if (MessageLoop::current() != loop_) {
+    loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ConnectionToClient::StateChangeTask, state));
+  } else {
+    StateChangeTask(state);
+  }
 }
 
 void ConnectionToClient::StateChangeTask(protocol::Session::State state) {

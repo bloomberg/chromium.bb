@@ -200,25 +200,34 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
 ////////////////////////////////////////////////////////////////////////////
 // protocol::ConnectionToClient::EventHandler implementations
 void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
 
   // Completes the connection to the client.
   VLOG(1) << "Connection to client established.";
-  OnClientConnected(connection_.get());
+  context_->main_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &ChromotingHost::OnClientConnected,
+                        connection_.get()));
 }
 
 void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
 
   VLOG(1) << "Connection to client closed.";
-  OnClientDisconnected(connection_.get());
+  context_->main_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &ChromotingHost::OnClientDisconnected,
+                        connection_.get()));
 }
 
 void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
+  DCHECK_EQ(context_->network_message_loop(), MessageLoop::current());
 
   LOG(ERROR) << "Connection failed unexpectedly.";
-  OnClientDisconnected(connection_.get());
+  context_->main_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &ChromotingHost::OnClientDisconnected,
+                        connection_.get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -293,7 +302,7 @@ void ChromotingHost::OnNewClientSession(
 
   // If we accept the connected then create a client object and set the
   // callback.
-  connection_ = new ConnectionToClient(context_->main_message_loop(),
+  connection_ = new ConnectionToClient(context_->network_message_loop(),
                                        this, host_stub_.get(),
                                        input_stub_.get());
   connection_->Init(session);
