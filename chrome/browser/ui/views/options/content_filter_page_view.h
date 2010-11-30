@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_OPTIONS_CONTENT_FILTER_PAGE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_registrar.h"

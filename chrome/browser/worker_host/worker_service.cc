@@ -9,7 +9,7 @@
 #include "base/sys_info.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"

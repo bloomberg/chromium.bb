@@ -5,8 +5,8 @@
 // Maps hostnames to custom content settings.  Written on the UI thread and read
 // on any thread.  One instance per profile.
 
-#ifndef CHROME_BROWSER_HOST_CONTENT_SETTINGS_MAP_H_
-#define CHROME_BROWSER_HOST_CONTENT_SETTINGS_MAP_H_
+#ifndef CHROME_BROWSER_CONTENT_SETTINGS_HOST_CONTENT_SETTINGS_MAP_H_
+#define CHROME_BROWSER_CONTENT_SETTINGS_HOST_CONTENT_SETTINGS_MAP_H_
 #pragma once
 
 #include <map>
@@ -351,4 +351,4 @@ inline std::ostream& operator<<(
   return out << pattern.AsString();
 }
 
-#endif  // CHROME_BROWSER_HOST_CONTENT_SETTINGS_MAP_H_
+#endif  // CHROME_BROWSER_CONTENT_SETTINGS_HOST_CONTENT_SETTINGS_MAP_H_

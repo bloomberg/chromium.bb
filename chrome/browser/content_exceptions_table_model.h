@@ -12,7 +12,7 @@
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 
 class ContentExceptionsTableModel : public TableModel {
  public:

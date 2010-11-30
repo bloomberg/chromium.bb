@@ -15,7 +15,7 @@
 #import "chrome/browser/cocoa/info_bubble_view.h"
 #import "chrome/browser/cocoa/l10n_util.h"
 #include "chrome/browser/content_setting_bubble_model.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"

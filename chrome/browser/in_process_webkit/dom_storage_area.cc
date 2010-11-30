@@ -6,10 +6,10 @@
 
 #include "base/task.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
-#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"

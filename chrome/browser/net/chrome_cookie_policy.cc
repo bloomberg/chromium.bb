@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 

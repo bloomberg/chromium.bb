@@ -5,7 +5,7 @@
 #include "chrome/browser/views/options/cookie_filter_page_view.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/show_options_url.h"
 #include "chrome/browser/views/options/cookies_view.h"

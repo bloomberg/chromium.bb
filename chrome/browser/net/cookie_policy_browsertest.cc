@@ -4,7 +4,7 @@
 
 #include "base/task.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/net/url_request_context_getter.h"

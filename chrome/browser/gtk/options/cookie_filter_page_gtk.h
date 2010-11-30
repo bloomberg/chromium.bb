@@ -11,7 +11,7 @@
 #include <string>
 
 #include "app/gtk_signal.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/prefs/pref_member.h"
 

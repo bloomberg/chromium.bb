@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/in_process_webkit/indexed_db_callbacks.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"

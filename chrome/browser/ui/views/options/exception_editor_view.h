@@ -8,8 +8,8 @@
 
 #include <string>
 
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_setting_combo_model.h"
-#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "views/window/dialog_delegate.h"

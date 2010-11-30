@@ -1265,6 +1265,7 @@
         'browser/cocoa/wrench_menu_controller_unittest.mm',
         'browser/command_updater_unittest.cc',
         'browser/content_exceptions_table_model_unittest.cc',
+        'browser/content_settings/host_content_settings_map_unittest.cc',
         'browser/cookies_tree_model_unittest.cc',
         'browser/debugger/devtools_manager_unittest.cc',
         'browser/device_orientation/provider_unittest.cc',
@@ -1356,7 +1357,7 @@
         'browser/history/url_database_unittest.cc',
         'browser/history/visit_database_unittest.cc',
         'browser/history/visit_tracker_unittest.cc',
-        'browser/host_content_settings_map_unittest.cc',
+
         'browser/host_zoom_map_unittest.cc',
         'browser/importer/firefox_importer_unittest.cc',
         'browser/importer/firefox_importer_unittest_messages_internal.h',

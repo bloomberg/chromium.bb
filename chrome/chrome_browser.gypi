@@ -1239,6 +1239,8 @@
         'browser/content_setting_combo_model.h',
         'browser/content_setting_image_model.cc',
         'browser/content_setting_image_model.h',
+        'browser/content_settings/host_content_settings_map.cc',
+        'browser/content_settings/host_content_settings_map.h',
         'browser/cookies_tree_model.cc',
         'browser/cookies_tree_model.h',
         'browser/cross_site_request_manager.cc',
@@ -2059,8 +2061,7 @@
         'browser/history/visit_tracker.h',
         'browser/history/visitsegment_database.cc',
         'browser/history/visitsegment_database.h',
-        'browser/host_content_settings_map.cc',
-        'browser/host_content_settings_map.h',
+
         'browser/host_zoom_map.cc',
         'browser/host_zoom_map.h',
         'browser/hung_renderer_dialog.h',
