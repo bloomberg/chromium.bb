@@ -1061,7 +1061,7 @@ MOCK_STATIC_CLASS_BEGIN(MockStaticTabApiResult)
     MOCK_STATIC_INIT2(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow,
                       IsTabFromSameOrUnspecifiedFrameWindow);
   MOCK_STATIC_INIT_END()
-  MOCK_STATIC4(bool, , IsTabFromSameOrUnspecifiedFrameWindow,
+  MOCK_STATIC4(HRESULT, , IsTabFromSameOrUnspecifiedFrameWindow,
                const DictionaryValue&, const Value*, HWND*, ApiDispatcher*);
 MOCK_STATIC_CLASS_END(MockStaticTabApiResult)
 
@@ -1182,12 +1182,12 @@ TEST_F(TabApiTests, CreateTabContinueExecution) {
   HRESULT hr = invocation.CallContinueExecution("");
   EXPECT_HRESULT_FAILED(hr);
 
-  // IsTabFromSameOrUnspecifiedFrameWindow returns false.
+  // IsTabFromSameOrUnspecifiedFrameWindow returns S_FALSE.
   invocation.AllocateNewResult(kRequestId);
   StrictMock<MockStaticTabApiResult> tab_api_result;
   EXPECT_CALL(tab_api_result,
               IsTabFromSameOrUnspecifiedFrameWindow(_, _, _, NotNull())).
-      WillOnce(Return(false));
+      WillOnce(Return(S_FALSE));
 
   hr = invocation.CallContinueExecution(input_args);
   EXPECT_HRESULT_SUCCEEDED(hr);
@@ -1199,7 +1199,7 @@ TEST_F(TabApiTests, CreateTabContinueExecution) {
 
   EXPECT_CALL(tab_api_result,
               IsTabFromSameOrUnspecifiedFrameWindow(_, _, _, NotNull())).
-      WillOnce(Return(true));
+      WillOnce(Return(S_OK));
 
   hr = invocation.CallContinueExecution(input_args);
   EXPECT_HRESULT_SUCCEEDED(hr);
@@ -1211,7 +1211,7 @@ TEST_F(TabApiTests, CreateTabContinueExecution) {
 
   EXPECT_CALL(tab_api_result,
               IsTabFromSameOrUnspecifiedFrameWindow(_, _, _, NotNull())).
-      WillOnce(DoAll(SetArgumentPointee<2>(kGoodTabWindow), Return(true)));
+      WillOnce(DoAll(SetArgumentPointee<2>(kGoodTabWindow), Return(S_OK)));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabIdFromHandle(kGoodTabWindow)).WillOnce(Return(kGoodTabWindowId));
 
@@ -1231,7 +1231,7 @@ TEST_F(TabApiTests, CreateTabContinueExecution) {
 
   EXPECT_CALL(tab_api_result,
               IsTabFromSameOrUnspecifiedFrameWindow(_, _, _, NotNull())).
-      WillOnce(DoAll(SetArgumentPointee<2>(kGoodTabWindow), Return(true)));
+      WillOnce(DoAll(SetArgumentPointee<2>(kGoodTabWindow), Return(S_OK)));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
       GetTabIdFromHandle(kGoodTabWindow)).WillOnce(Return(kGoodTabWindowId));
 
@@ -1498,24 +1498,27 @@ TEST_F(TabApiTests, IsTabFromSameOrUnspecifiedFrameWindow) {
   // We need a mock for this now.
   StrictMock<MockApiDispatcher> mock_api_dispatcher;
 
-  // We expect these calls repeatedly
+  // We expect these calls repeatedly.
+  // TODO(mad@chromium): Add test cases for when they return other values.
   EXPECT_CALL(mock_api_dispatcher, GetTabHandleFromId(kGoodTabWindowId)).
       WillRepeatedly(Return(kGoodTabWindow));
   EXPECT_CALL(mock_api_dispatcher, GetWindowIdFromHandle(kGoodFrameWindow)).
       WillRepeatedly(Return(kGoodFrameWindowId));
   EXPECT_CALL(mock_api_dispatcher, GetWindowHandleFromId(kGoodFrameWindowId)).
       WillRepeatedly(Return(kGoodFrameWindow));
+  EXPECT_CALL(mock_api_dispatcher, IsTabIdValid(kGoodTabWindowId)).
+      WillRepeatedly(Return(true));
 
   // We always need a kIdKey value in the input_dict.
   DictionaryValue input_dict;
   input_dict.SetInteger(ext::kIdKey, kGoodTabWindowId);
   // Start with no saved dict, so any input value is good.
-  EXPECT_TRUE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, NULL, NULL, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, NULL, NULL, &mock_api_dispatcher), S_OK);
   // Also test that we are properly returned the input value.
   HWND tab_window = NULL;
-  EXPECT_TRUE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, NULL, &tab_window, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, NULL, &tab_window, &mock_api_dispatcher), S_OK);
   EXPECT_EQ(kGoodTabWindow, tab_window);
 
   // Now check with the same value found as a grand parent.
@@ -1523,37 +1526,39 @@ TEST_F(TabApiTests, IsTabFromSameOrUnspecifiedFrameWindow) {
   StrictMock<testing::MockWindowUtils> window_utils;
   EXPECT_CALL(window_utils, GetTopLevelParent(kGoodTabWindow)).
       WillRepeatedly(Return(kGoodFrameWindow));
-  EXPECT_TRUE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, &saved_window, NULL, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, &saved_window, NULL, &mock_api_dispatcher), S_OK);
   tab_window = NULL;
-  EXPECT_TRUE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, &saved_window, &tab_window, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, &saved_window, &tab_window, &mock_api_dispatcher), S_OK);
   EXPECT_EQ(kGoodTabWindow, tab_window);
 
   // Now check with the same value provided in the input_dict.
   input_dict.SetInteger(ext::kWindowIdKey, kGoodFrameWindowId);
-  EXPECT_TRUE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, &saved_window, NULL, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, &saved_window, NULL, &mock_api_dispatcher), S_OK);
   tab_window = NULL;
-  EXPECT_TRUE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, &saved_window, &tab_window, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, &saved_window, &tab_window, &mock_api_dispatcher), S_OK);
   EXPECT_EQ(kGoodTabWindow, tab_window);
 
   // And now check the cases where they differ.
   FundamentalValue other_saved_window(kGoodFrameWindowId + 1);
-  EXPECT_FALSE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, &other_saved_window, NULL, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, &other_saved_window, NULL, &mock_api_dispatcher), S_FALSE);
   tab_window = NULL;
-  EXPECT_FALSE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, &other_saved_window, &tab_window, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, &other_saved_window, &tab_window, &mock_api_dispatcher),
+          S_FALSE);
   EXPECT_EQ(kGoodTabWindow, tab_window);
 
   input_dict.Remove(ext::kWindowIdKey, NULL);
-  EXPECT_FALSE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, &other_saved_window, NULL, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, &other_saved_window, NULL, &mock_api_dispatcher), S_FALSE);
   tab_window = NULL;
-  EXPECT_FALSE(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
-      input_dict, &other_saved_window, &tab_window, &mock_api_dispatcher));
+  EXPECT_EQ(TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      input_dict, &other_saved_window, &tab_window, &mock_api_dispatcher),
+          S_FALSE);
   EXPECT_EQ(kGoodTabWindow, tab_window);
 }
 

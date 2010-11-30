@@ -20,12 +20,13 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "ceee/ie/broker/api_module_constants.h"
 #include "ceee/ie/broker/api_module_util.h"
@@ -174,7 +175,7 @@ bool TabApiResult::CreateTabValue(int tab_id, long index) {
     return false;
   }
 
-  ScopedComPtr<ICeeeTabExecutor> executor;
+  base::win::ScopedComPtr<ICeeeTabExecutor> executor;
   dispatcher->GetExecutor(tab_window, IID_ICeeeTabExecutor,
                           reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
@@ -238,7 +239,7 @@ bool TabApiResult::CreateTabValue(int tab_id, long index) {
   // so we can save an IPC call.
   if (index == -1) {
     // We need another executor to get the index from the frame window thread.
-    ScopedComPtr<ICeeeWindowExecutor> executor;
+    base::win::ScopedComPtr<ICeeeWindowExecutor> executor;
     dispatcher->GetExecutor(frame_window, IID_ICeeeWindowExecutor,
                             reinterpret_cast<void**>(executor.Receive()));
     if (executor == NULL) {
@@ -270,7 +271,7 @@ bool TabApiResult::CreateTabValue(int tab_id, long index) {
   return true;
 }
 
-bool TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+HRESULT TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
     const DictionaryValue& input_dict,
     const Value* saved_window_value,
     HWND* tab_window,
@@ -279,12 +280,17 @@ bool TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
   bool success = input_dict.GetInteger(ext::kIdKey, &tab_id);
   DCHECK(success && tab_id != 0) << "The input_dict MUST have a tab ID!!!";
   DCHECK(dispatcher != NULL);
+  if (!dispatcher->IsTabIdValid(tab_id)) {
+    // This can happen if the tab died before we get here.
+    LOG(WARNING) << "Ta ID: " << tab_id << ", not recognized.";
+    return E_UNEXPECTED;
+  }
   HWND input_tab_window = dispatcher->GetTabHandleFromId(tab_id);
   if (tab_window != NULL)
     *tab_window = input_tab_window;
 
   if (saved_window_value == NULL)
-    return true;
+    return S_OK;
 
   DCHECK(saved_window_value->IsType(Value::TYPE_INTEGER));
   int saved_window_id = 0;
@@ -303,7 +309,7 @@ bool TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
     DCHECK_EQ(window_utils::GetTopLevelParent(input_tab_window), frame_window);
   }
 
-  return frame_window_id == saved_window_id;
+  return frame_window_id == saved_window_id ? S_OK : S_FALSE;
 }
 
 bool GetIntegerFromValue(
@@ -507,8 +513,15 @@ HRESULT GetSelectedTab::ContinueExecution(
   }
 
   HWND tab_window = NULL;
-  if (!TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(*input_dict,
-      result->GetValue(ext::kWindowIdKey), &tab_window, dispatcher)) {
+  HRESULT hr = TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      *input_dict, result->GetValue(ext::kWindowIdKey), &tab_window,
+      dispatcher);
+  if (FAILED(hr)) {
+    // The ApiDispatcher will forget about us and result's destructor will
+    // free the allocation of user_data.
+    return hr;
+  }
+  if (hr == S_FALSE) {
     // These are not the droids you are looking for. :-)
     result.release();  // The ApiDispatcher will keep it alive.
     return S_FALSE;
@@ -578,7 +591,7 @@ void GetAllTabsInWindow::Execute(const ListValue& args, int request_id) {
 
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher != NULL);
-  ScopedComPtr<ICeeeWindowExecutor> executor;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> executor;
   dispatcher->GetExecutor(frame_window, IID_ICeeeWindowExecutor,
                           reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
@@ -646,7 +659,7 @@ void UpdateTab::Execute(const ListValue& args, int request_id) {
       return;
     }
 
-    ScopedComPtr<ICeeeTabExecutor> executor;
+    base::win::ScopedComPtr<ICeeeTabExecutor> executor;
     dispatcher->GetExecutor(tab_window, IID_ICeeeTabExecutor,
                             reinterpret_cast<void**>(executor.Receive()));
     if (executor == NULL) {
@@ -676,7 +689,7 @@ void UpdateTab::Execute(const ListValue& args, int request_id) {
     // We only take action if the user wants to select the tab; this function
     // does not actually let you deselect a tab.
     if (selected) {
-      ScopedComPtr<ICeeeWindowExecutor> frame_executor;
+      base::win::ScopedComPtr<ICeeeWindowExecutor> frame_executor;
       dispatcher->GetExecutor(
           window_utils::GetTopLevelParent(tab_window), IID_ICeeeWindowExecutor,
           reinterpret_cast<void**>(frame_executor.Receive()));
@@ -726,7 +739,7 @@ void RemoveTab::Execute(const ListValue& args, int request_id) {
     return;
   }
 
-  ScopedComPtr<ICeeeWindowExecutor> frame_executor;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> frame_executor;
   dispatcher->GetExecutor(window_utils::GetTopLevelParent(tab_window),
                           IID_ICeeeWindowExecutor,
                           reinterpret_cast<void**>(frame_executor.Receive()));
@@ -860,7 +873,7 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
   // So bb2284073 & bb2492252 might still occur there.
   std::wstring url_wstring = UTF8ToWide(url_string);
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    ScopedComPtr<IWebBrowser2> browser;
+    base::win::ScopedComPtr<IWebBrowser2> browser;
     HRESULT hr = ie_util::GetWebBrowserForTopLevelIeHwnd(
         frame_window, NULL, browser.Receive());
     DCHECK(SUCCEEDED(hr)) << "Can't get the browser for window: " <<
@@ -871,11 +884,12 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
     }
 
     long flags = selected ? navOpenInNewTab : navOpenInBackgroundTab;
-    hr = browser->Navigate(base::win::ScopedBstr(url_wstring.c_str()),
-                           &CComVariant(flags),
-                           &CComVariant(L"_blank"),
-                           &CComVariant(),  // Post data
-                           &CComVariant());  // Headers
+    hr = browser->Navigate(
+        base::win::ScopedBstr(url_wstring.c_str()),
+        const_cast<VARIANT*>(&base::win::ScopedVariant(flags)),
+        const_cast<VARIANT*>(&base::win::ScopedVariant(L"_blank")),
+        const_cast<VARIANT*>(&base::win::ScopedVariant()),  // Post data
+        const_cast<VARIANT*>(&base::win::ScopedVariant()));  // Headers
     DCHECK(SUCCEEDED(hr)) << "Failed to create tab. " << com::LogHr(hr);
     if (FAILED(hr)) {
       result->PostError("Internal error while trying to create tab.");
@@ -892,7 +906,7 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
       return;
     }
 
-    ScopedComPtr<ICeeeTabExecutor> executor;
+    base::win::ScopedComPtr<ICeeeTabExecutor> executor;
     dispatcher->GetExecutor(existing_tab, IID_ICeeeTabExecutor,
                             reinterpret_cast<void**>(executor.Receive()));
     if (executor == NULL) {
@@ -940,8 +954,15 @@ HRESULT CreateTab::ContinueExecution(const std::string& input_args,
   }
 
   HWND tab_window = NULL;
-  if (!TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(*input_dict,
-      result->GetValue(ext::kWindowIdKey), &tab_window, dispatcher)) {
+  HRESULT hr = TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
+      *input_dict, result->GetValue(ext::kWindowIdKey), &tab_window,
+      dispatcher);
+  if (FAILED(hr)) {
+    // The ApiDispatcher will forget about us and result's destructor will
+    // free the allocation of user_data.
+    return hr;
+  }
+  if (hr == S_FALSE) {
     // These are not the droids you are looking for. :-)
     result.release();  // The ApiDispatcher will keep it alive.
     return S_FALSE;
@@ -980,7 +1001,7 @@ HRESULT CreateTab::ContinueExecution(const std::string& input_args,
     DCHECK(success) << "index_value->GetAsInteger()";
 
     HWND frame_window = window_utils::GetTopLevelParent(tab_window);
-    ScopedComPtr<ICeeeWindowExecutor> frame_executor;
+    base::win::ScopedComPtr<ICeeeWindowExecutor> frame_executor;
     dispatcher->GetExecutor(frame_window, __uuidof(ICeeeWindowExecutor),
                             reinterpret_cast<void**>(frame_executor.Receive()));
     if (frame_executor == NULL) {
@@ -1105,7 +1126,7 @@ void MoveTab::Execute(const ListValue& args, int request_id) {
 
   HWND frame_window = window_utils::GetTopLevelParent(tab_window);
 
-  ScopedComPtr<ICeeeWindowExecutor> frame_executor;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> frame_executor;
   dispatcher->GetExecutor(frame_window, IID_ICeeeWindowExecutor,
                           reinterpret_cast<void**>(frame_executor.Receive()));
   if (frame_executor == NULL) {
@@ -1184,7 +1205,7 @@ ApiDispatcher::InvocationResult* TabsInsertCode::ExecuteImpl(
     return NULL;
   }
 
-  ScopedComPtr<ICeeeTabExecutor> tab_executor;
+  base::win::ScopedComPtr<ICeeeTabExecutor> tab_executor;
   dispatcher->GetExecutor(tab_window, IID_ICeeeTabExecutor,
                           reinterpret_cast<void**>(tab_executor.Receive()));
   if (tab_executor == NULL) {
@@ -1193,10 +1214,9 @@ ApiDispatcher::InvocationResult* TabsInsertCode::ExecuteImpl(
     return NULL;
   }
 
-  *hr = tab_executor->InsertCode(CComBSTR(code.c_str()),
-                                 CComBSTR(file.c_str()),
-                                 all_frames,
-                                 type);
+  *hr = tab_executor->InsertCode(
+      base::win::ScopedBstr(ASCIIToWide(code).c_str()),
+      base::win::ScopedBstr(ASCIIToWide(file).c_str()), all_frames, type);
   return result.release();
 }
 
