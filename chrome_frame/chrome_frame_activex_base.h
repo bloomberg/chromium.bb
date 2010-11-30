@@ -1112,19 +1112,21 @@ END_MSG_MAP()
              << base::StringPrintf("0x%08x", hr);
 
     if (hr != S_OK) {
-      // The WM_SYSCHAR message is not processed by the IOleControlSite
-      // implementation and the IBrowserService2::v_MayTranslateAccelerator
-      // implementation. We need to understand this better. That is for
-      // another day. For now we just post the WM_SYSCHAR message back to our
-      // parent which forwards it off to the frame. This should not cause major
-      // grief for Chrome as it does not need to handle WM_SYSCHAR accelerators
-      // when running in ChromeFrame mode.
+      // The WM_SYSKEYDOWN/WM_SYSKEYUP messages are not processed by the
+      // IOleControlSite and IBrowserService2::v_MayTranslateAccelerator
+      // implementations. We need to understand this better. That is for
+      // another day. For now we just post these messages back to the parent
+      // which forwards it off to the frame. This should not cause major
+      // grief for Chrome as it does not need to handle WM_SYSKEY* messages in
+      // in ChromeFrame mode.
       // TODO(iyengar)
       // Understand and fix WM_SYSCHAR handling
       // We should probably unify the accelerator handling for the active
       // document and the activex.
-      if (accel_message.message == WM_SYSCHAR) {
-        ::PostMessage(GetParent(), WM_SYSCHAR, accel_message.wParam,
+      if (accel_message.message == WM_SYSCHAR ||
+          accel_message.message == WM_SYSKEYDOWN ||
+          accel_message.message == WM_SYSKEYUP) {
+        ::PostMessage(GetParent(), accel_message.message, accel_message.wParam,
                       accel_message.lParam);
         return;
       }
