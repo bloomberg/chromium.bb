@@ -1,0 +1,52 @@
+# -*- python -*-
+#
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# Tests that the PNaCl frontend issues warnings about non-portable asm,
+# and does not issue warnings about portable asm.
+
+# These tests only make sense for the PNaCl toolchain.
+if not env.Bit('bitcode'):
+  Return()
+
+def MakeCompileTestAliases(my_env, obj, name):
+  my_env.Alias('small_tests', obj)
+  my_env.Alias('pnacl_asm_tests', obj)
+  my_env.Alias('run_' + name + '_test', obj)
+
+# The following tests should issue warnings. Be sure to manually check that
+# it is stopping with the correct warning.
+
+def GetArchCPPDefine(my_env):
+  return 'TARGET_FULLARCH_' + my_env['TARGET_FULLARCH'].replace("-", "_")
+
+fail_compile_env = env.GetExpectedCompileWarningEnv('CCCOM')
+fail_compile_env.Append(CCFLAGS=['-Wportable-llvm',],
+                        CPPDEFINES=[GetArchCPPDefine(fail_compile_env)])
+for src in ['file_level_asm_unwanted.c',
+            'simple_asm_unwanted.c',
+            'extended_asm_unwanted.c']:
+  name = src.split('.')[0]
+  obj = fail_compile_env.ComponentObject(name + '.o',
+                                         src)
+  MakeCompileTestAliases(fail_compile_env, obj, name)
+
+# These tests should NOT issue warnings.
+
+nowarn_compile_env = env.GetNoCompileWarningEnv('CCCOM')
+nowarn_compile_env.Append(CCFLAGS=['-Wportable-llvm',],
+                          CPPDEFINES=[GetArchCPPDefine(nowarn_compile_env)])
+for src in ['bitcode_asm_wanted.c']:
+  name = src.split('.')[0]
+  obj = nowarn_compile_env.ComponentObject(name + '.o', src)
+  nexe = nowarn_compile_env.ComponentProgram(name + '.nexe', obj)
+  node = nowarn_compile_env.CommandSelLdrTestNacl(name + '.out',
+                                                  command=[nexe],
+                                                  exit_status='55')
+  nowarn_compile_env.AddNodeToTestSuite(node,
+                                        ['small_tests', 'pnacl_asm_tests'],
+                                        'run_' + name + '_test')

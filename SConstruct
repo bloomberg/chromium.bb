@@ -437,6 +437,7 @@ ACCEPTABLE_TEST_SUITES = set([
   'tsan_bot_tests',
   'toolchain_tests',
   'pnacl_abi_tests',
+  'pnacl_asm_tests',
   ])
 
 # The major test suites are also acceptable names.  Suite names are checked
@@ -543,6 +544,46 @@ Alias('smoke_tests', ['small_tests', 'medium_tests'])
 
 Alias('memcheck_bot_tests', ['small_tests', 'medium_tests', 'large_tests'])
 Alias('tsan_bot_tests', [])
+
+#-----------------------------------------------------------
+
+# Return an env. for testing that the compiler issues an expected warning.
+# COMName should be CCCOM for C and CXXCOM for CPP
+def GetExpectedCompileWarningEnv(env, COMName):
+  def FailsGood(exit_status):
+    if exit_status:
+      print "PASSED: Got expected compiler warning/error!"
+      return 0
+    else:
+      print "FAILED: Did not get expected compiler warning/error!"
+      return 1
+  fail_compile_env = env.Clone()
+  fail_compile_env.Append(CCFLAGS=['-Werror'])
+  fail_compile_env['CCCOM'] = Action(fail_compile_env[COMName],
+                                     exitstatfunc=FailsGood)
+  return fail_compile_env
+
+# Return an env. for testing that the compiler does not issue any warnings.
+# COMName should be CCCOM for C and CXXCOM for CPP
+# NOTE: This essentially just adds -Werror, but it also prints a message
+# to indicate that the test completed (especially when the test only sets
+# up a compile and does not run the result).
+def GetNoCompileWarningEnv(env, COMName):
+  def FailsBad(exit_status):
+    if exit_status:
+      print "FAILED: Did not avoid compiler warning/error!"
+      return 1
+    else:
+      print "PASSED: Avoided compiler warning/error!"
+      return 0
+  nowarn_compile_env = env.Clone()
+  nowarn_compile_env.Append(CCFLAGS=['-Werror'])
+  nowarn_compile_env['CCCOM'] = Action(nowarn_compile_env[COMName],
+                                       exitstatfunc=FailsBad)
+  return nowarn_compile_env
+
+pre_base_env.AddMethod(GetExpectedCompileWarningEnv)
+pre_base_env.AddMethod(GetNoCompileWarningEnv)
 
 # ----------------------------------------------------------
 def Banner(text):
@@ -1836,6 +1877,7 @@ nacl_env.Append(
     'tests/nullptr/nacl.scons',
     'tests/pepper_plugin/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
+    'tests/pnacl_asm/nacl.scons',
     'tests/ppapi_geturl/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',
     # uncomment this test once issue
