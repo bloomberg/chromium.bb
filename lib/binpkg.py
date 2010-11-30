@@ -51,9 +51,10 @@ class PackageIndex(object):
 
     uri = self.header['URI']
     for pkg in self.packages:
-      cpv, sha1 = pkg['CPV'], pkg['SHA1']
-      path = pkg.get('PATH', cpv + '.tbz2')
-      db[sha1] = urlparse.urljoin(uri, path)
+      cpv, sha1 = pkg['CPV'], pkg.get('SHA1')
+      if sha1:
+        path = pkg.get('PATH', cpv + '.tbz2')
+        db[sha1] = urlparse.urljoin(uri, path)
 
   def _ReadPkgIndex(self, pkgfile):
     """Read a list of key/value pairs from the Packages file into a dictionary.
@@ -180,9 +181,9 @@ class PackageIndex(object):
     uploads = []
     base_uri = self.header['URI']
     for pkg in self.packages:
-      sha1 = pkg['SHA1']
+      sha1 = pkg.get('SHA1')
       uri = db.get(sha1)
-      if uri and uri.startswith(base_uri):
+      if sha1 and uri and uri.startswith(base_uri):
         pkg['PATH'] = uri[len(base_uri):].lstrip('/')
       else:
         uploads.append(pkg)
