@@ -3941,20 +3941,7 @@
           "description": {
             "type": "string",
             "minLength": 1,
-            "description": "The text that is displayed in the URL dropdown. Can optionally be stylized by the descriptionStyles parameter."
-          },
-          "descriptionStyles": {
-            "type": "array",
-            "optional": true,
-            "description": "An array of style objects, created using styleUrl, styleMatch, or styleDim. A style applies to the region of text specified by the style's starting offset and length. If there are any overlapping regions of text covered by multiple styles, they will be added together (e.g. 'match' + 'dim' will display a dimmed match). Not all style combinations will be visually distinct (e.g. 'url' + 'dim' may look identical to 'url').",
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": {"type": "string", "enum": ["url", "match", "dim"]},
-                "offset": {"type": "integer"},
-                "length": {"type": "integer", "optional": true}
-              }
-            }
+            "description": "The text that is displayed in the URL dropdown. Can contain XML-style markup for styling. The supported tags are 'url' (for a literal URL), 'match' (for highlighting text that matched what the user's query), and 'dim' (for dim helper text). The styles can be nested, eg. <dim><match>dimmed match</match></dim>."
           }
         }
       }
@@ -3971,7 +3958,8 @@
             "type": "array",
             "description": "Array of suggest results",
             "items": {
-              "$ref": "SuggestResult"
+              "type": "object",
+              "additionalProperties": { "type": "any" }
             }
           }
         ]
@@ -3986,52 +3974,13 @@
             "name": "suggestion",
             "description": "A partial SuggestResult object, without the 'content' parameter. See SuggestResult for a description of the parameters.",
             "properties": {
-	          "description": {
-	            "type": "string",
-	            "minLength": 1,
-                    "description": "The text to display in the default suggestion. The placeholder string '%s' can be included and will be replaced with the user's input."
-	          },
-	          "descriptionStyles": {
-	            "type": "array",
-	            "optional": true,
-	            "items": {
-	              "type": "object",
-	              "properties": {
-	                "type": {"type": "string", "enum": ["url", "match", "dim"]},
-	                "offset": {"type": "integer"},
-	                "length": {"type": "integer", "optional": true}
-	              }
-	            }
-	          }
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The text to display in the default suggestion. The placeholder string '%s' can be included and will be replaced with the user's input."
+              }
             }
           }
-        ]
-      },
-      {
-        "name": "styleUrl",
-        "type": "function",
-        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
-        "parameters": [
-           {"type": "integer", "name": "offset"},
-           {"type": "integer", "name": "length", "minimum": 0, "optional": true}
-        ]
-      },
-      {
-        "name": "styleMatch",
-        "type": "function",
-        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching what the user typed. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
-        "parameters": [
-           {"type": "integer", "name": "offset"},
-           {"type": "integer", "name": "length", "minimum": 0, "optional": true}
-        ]
-      },
-      {
-        "name": "styleDim",
-        "type": "function",
-        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of dim helper text. A negative offset means the region will start at that many characters from the end of the description. If length is omitted, the region will apply for the rest of the description text.",
-        "parameters": [
-           {"type": "integer", "name": "offset"},
-           {"type": "integer", "name": "length", "minimum": 0, "optional": true}
         ]
       }
     ],

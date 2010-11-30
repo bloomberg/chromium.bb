@@ -285,6 +285,64 @@ var chrome = chrome || {};
     };
   }
 
+  // Parses the xml syntax supported by omnibox suggestion results. Returns an
+  // object with two properties: 'description', which is just the text content,
+  // and 'descriptionStyles', which is an array of style objects in a format
+  // understood by the C++ backend.
+  function parseOmniboxDescription(input) {
+    var domParser = new DOMParser();
+
+    // The XML parser requires a single top-level element, but we want to
+    // support things like 'hello, <match>world</match>!'. So we wrap the
+    // provided text in generated root level element.
+    var root = domParser.parseFromString(
+        '<fragment>' + input + '</fragment>', 'text/xml');
+
+    // DOMParser has a terrible error reporting facility. Errors come out nested
+    // inside the returned document.
+    var error = root.querySelector('parsererror div');
+    if (error) {
+      throw new Error(error.textContent);
+    }
+
+    // Otherwise, it's valid, so build up the result.
+    var result = {
+      description: '',
+      descriptionStyles: []
+    };
+
+    // Recursively walk the tree.
+    (function(node) {
+      for (var i = 0, child; child = node.childNodes[i]; i++) {
+        // Append text nodes to our description.
+        if (child.nodeType == Node.TEXT_NODE) {
+          result.description += child.nodeValue;
+          continue;
+        }
+
+        // Process and descend into a subset of recognized tags.
+        if (child.nodeType == Node.ELEMENT_NODE &&
+            (child.nodeName == 'dim' || child.nodeName == 'match' ||
+             child.nodeName == 'url')) {
+          var style = {
+            'type': child.nodeName,
+            'offset': result.description.length
+          };
+          result.descriptionStyles.push(style);
+          arguments.callee(child);
+          style.length = result.description.length - style.offset;
+          continue;
+        }
+
+        // Descend into all other nodes, even if they are unrecognized, for
+        // forward compat.
+        arguments.callee(child);
+      }
+    })(root);
+
+    return result;
+  }
+
   function setupOmniboxEvents(extensionId) {
     chrome.omnibox.onInputChanged.dispatch =
         function(text, requestId) {
@@ -344,16 +402,11 @@ var chrome = chrome || {};
 
           module[functionDef.name] = (function() {
             var args = arguments;
-            if (this.updateArguments) {
-              // Functions whose signature has changed can define an
-              // |updateArguments| function to transform old argument lists
-              // into the new form, preserving compatibility.
-              // TODO(skerner): Once optional args can be omitted (crbug/29215),
-              // this mechanism will become unnecessary.  Consider removing it
-              // when crbug/29215 is fixed.
-              args = this.updateArguments.apply(this, args);
-            }
+            if (this.updateArgumentsPreValidate)
+              args = this.updateArgumentsPreValidate.apply(this, args);
             chromeHidden.validate(args, this.definition.parameters);
+            if (this.updateArgumentsPostValidate)
+              args = this.updateArgumentsPostValidate.apply(this, args);
 
             var retval;
             if (this.handleRequest) {
@@ -640,6 +693,12 @@ var chrome = chrome || {};
       return id;
     };
 
+    apiFunctions["omnibox.setDefaultSuggestion"].handleRequest =
+        function(details) {
+      var parseResult = parseOmniboxDescription(details.description);
+      sendRequest(this.name, [parseResult], this.definition.parameters);
+    };
+
     apiFunctions["contextMenus.create"].customCallback =
         function(name, request, response) {
       if (chrome.extension.lastError) {
@@ -684,7 +743,8 @@ var chrome = chrome || {};
       chromeHidden.contextMenus.handlers = {};
     };
 
-    apiFunctions["tabs.captureVisibleTab"].updateArguments = function() {
+    apiFunctions["tabs.captureVisibleTab"].updateArgumentsPreValidate =
+        function() {
       // Old signature:
       //    captureVisibleTab(int windowId, function callback);
       // New signature:
@@ -703,15 +763,16 @@ var chrome = chrome || {};
       return newArgs;
     };
 
-    apiFunctions["omnibox.styleUrl"].handleRequest = function(offset, length) {
-      return {type: "url", offset: offset, length: length};
-    };
-    apiFunctions["omnibox.styleMatch"].handleRequest =
-        function(offset, length) {
-      return {type: "match", offset: offset, length: length};
-    };
-    apiFunctions["omnibox.styleDim"].handleRequest = function(offset, length) {
-      return {type: "dim", offset: offset, length: length};
+    apiFunctions["omnibox.sendSuggestions"].updateArgumentsPostValidate =
+        function(requestId, userSuggestions) {
+      var suggestions = [];
+      for (var i = 0; i < userSuggestions.length; i++) {
+        var parseResult = parseOmniboxDescription(
+            userSuggestions[i].description);
+        parseResult.content = userSuggestions[i].content;
+        suggestions.push(parseResult);
+      }
+      return [requestId, suggestions];
     };
 
     if (chrome.test) {

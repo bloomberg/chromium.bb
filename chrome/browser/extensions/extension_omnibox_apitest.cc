@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
     EXPECT_EQ(ACMatchClassification::MATCH,
               result.match_at(1).contents_class[1].style);
 
-    EXPECT_EQ(description.find('>'),
+    EXPECT_EQ(description.find('>') + 1u,
               result.match_at(1).contents_class[2].offset);
     EXPECT_EQ(ACMatchClassification::NONE,
               result.match_at(1).contents_class[2].style);
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
     EXPECT_EQ(ACMatchClassification::DIM,
               result.match_at(1).contents_class[3].style);
 
-    EXPECT_EQ(description.find(']'),
+    EXPECT_EQ(description.find(']') + 1u,
               result.match_at(1).contents_class[4].offset);
     EXPECT_EQ(ACMatchClassification::NONE,
               result.match_at(1).contents_class[4].style);
