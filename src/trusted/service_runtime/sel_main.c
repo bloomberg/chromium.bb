@@ -526,21 +526,6 @@ int main(int  argc,
     }
   }
 
-#if NACL_OSX
-  /*
-   * Enable the outer sandbox on Mac.  Do this as soon as possible.
-   * It would be good to do this as soon as we have opened the
-   * executable file and log file, but nacl_text.c currently does not
-   * work in the sandbox.  See
-   * http://code.google.com/p/nativeclient/issues/detail?id=583
-   *
-   * We cannot enable the sandbox if file access is enabled.
-   */
-  if (!NaClAclBypassChecks) {
-    NaClEnableOuterSandbox();
-  }
-#endif
-
   /*
    * Execute additional I/O redirections.  NB: since the NaClApp
    * takes ownership of host / IMC socket descriptors, all but

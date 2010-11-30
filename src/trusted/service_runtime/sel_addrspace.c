@@ -4,8 +4,11 @@
  * be found in the LICENSE file.
  */
 
-/* NaCl Simple/secure ELF loader (NaCl SEL).
+/*
+ * NaCl Simple/secure ELF loader (NaCl SEL).
  */
+
+#include <errno.h>
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
@@ -61,11 +64,13 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
                 " the beginning of stack is zero size.\n"));
   } else {
     NaClLog(2,
-            "madvising 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxS", PROT_NONE\n",
+            ("madvising 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxS
+             ", MADV_DONTNEED\n"),
             nap->mem_start + hole_start, hole_size);
     if (0 != NaCl_madvise((void *) (nap->mem_start + hole_start),
                           hole_size,
                           MADV_DONTNEED)) {
+      NaClLog(1, "madvise, errno %d\n", errno);
       return LOAD_MADVISE_FAIL;
     }
     NaClLog(2,
@@ -74,6 +79,7 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
     if (0 != NaCl_mprotect((void *) (nap->mem_start + hole_start),
                            hole_size,
                            PROT_NONE)) {
+      NaClLog(1, "mprotect, errno %d\n", errno);
       return LOAD_MPROTECT_FAIL;
     }
   }

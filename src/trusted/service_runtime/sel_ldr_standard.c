@@ -30,7 +30,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_closure.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
+#include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
@@ -327,6 +329,26 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     ret = subret;
     goto done;
   }
+#if NACL_OSX
+  /*
+   * Enable the outer sandbox on Mac.  Do this as soon as possible.
+   * It would be good to do this as soon as we have opened the
+   * executable file and log file, but nacl_text.c currently does not
+   * work in the sandbox.  See
+   * http://code.google.com/p/nativeclient/issues/detail?id=583
+   *
+   * We cannot enable the sandbox if file access is enabled.
+   *
+   * OSX's sandbox has a race condition where mprotect in the address
+   * space set up code would sometimes fail, even before nacl_text.c.
+   * Ideally we would enable the OSX sandbox before examining any
+   * untrusted data (the nexe), but we have to wait until we address
+   * space setup is done, which requires reading the ELF headers.
+   */
+  if (!NaClAclBypassChecks) {
+    NaClEnableOuterSandbox();
+  }
+#endif
 
   /*
    * Make sure the static image pages are marked writable before we try
