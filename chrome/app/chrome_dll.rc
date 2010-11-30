@@ -274,3 +274,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
+// (temp change to touch this file or incremental builds may break now
+// that we removed chrome_dll_version.rc from it)
