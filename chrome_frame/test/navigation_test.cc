@@ -977,7 +977,7 @@ ACTION(VerifySeleniumCoreTestResults) {
 }
 
 // Tests refreshing causes a page load.
-TEST_F(FullTabSeleniumTest, DISABLED_Core) {
+TEST_F(FullTabSeleniumTest, Core) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::HttpHeader());
   std::wstring url = GetTestUrl(L"core/TestRunner.html");
 
