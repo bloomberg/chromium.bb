@@ -1,347 +1,220 @@
 <div class="page hidden" id="contentSettingsPage">
   <h1 i18n-content="contentSettingsPage"></h1>
 
-  <!-- Navigation tabs -->
-  <div class="subpages-nav-tabs">
-    <span id="cookies-nav-tab" class="inactive-tab"
-        tab-contents="cookiesFilterTab">
-      <span class="inactive-tab-label" i18n-content="cookies_tab_label"></span>
-      <span class="active-tab-label" i18n-content="cookies_tab_label"></span>
-    </span>
-    <span id="images-nav-tab" class="inactive-tab"
-        tab-contents="imagesFilterTab">
-      <span class="inactive-tab-label" i18n-content="images_tab_label"></span>
-      <span class="active-tab-label" i18n-content="images_tab_label"></span>
-    </span>
-    <span id="javascript-nav-tab" class="inactive-tab"
-        tab-contents="javascriptFilterTab">
-      <span class="inactive-tab-label"
-          i18n-content="javascript_tab_label"></span>
-      <span class="active-tab-label" i18n-content="javascript_tab_label"></span>
-    </span>
-    <span id="plugins-nav-tab" class="inactive-tab"
-        tab-contents="pluginsFilterTab">
-      <span class="inactive-tab-label" i18n-content="plugins_tab_label"></span>
-      <span class="active-tab-label" i18n-content="plugins_tab_label"></span>
-    </span>
-    <span id="popups-nav-tab" class="inactive-tab"
-        tab-contents="popupsFilterTab">
-      <span class="inactive-tab-label" i18n-content="popups_tab_label"></span>
-      <span class="active-tab-label" i18n-content="popups_tab_label"></span>
-    </span>
-    <span id="location-nav-tab" class="inactive-tab"
-        tab-contents="locationFilterTab">
-      <span class="inactive-tab-label" i18n-content="location_tab_label"></span>
-      <span class="active-tab-label" i18n-content="location_tab_label"></span>
-    </span>
-    <span id="notifications-nav-tab" class="inactive-tab"
-        tab-contents="notificationsFilterTab">
-      <span class="inactive-tab-label"
-          i18n-content="notifications_tab_label"></span>
-      <span class="active-tab-label"
-          i18n-content="notifications_tab_label"></span>
-    </span>
-  </div>
-
   <!-- Cookie filter tab contents -->
-  <div id="cookiesFilterTab" class="subpages-tab-contents">
-    <h4 i18n-content="cookies_modify" class="contentSettingsHeader"></h4>
-    <table class="option-control-table">
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="cookies" value="allow">
-          <span i18n-content="cookies_allow"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="cookies" value="block">
-           <span i18n-content="cookies_block"></span>
-        </label>
-      </td>
-    </tr>
-    </table>
+  <section>
+    <h3 i18n-content="cookies_tab_label"></h3>
+    <div>
+      <label class="radio">
+        <input type="radio" name="cookies" value="allow">
+        <span i18n-content="cookies_allow"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="cookies" value="block">
+         <span i18n-content="cookies_block"></span>
+      </label>
 
-    <div class="zippy">
-      <div class="zippy-header" i18n-content="content_exceptions"></div>
-      <div class="zippy-content">
-        <div contentType="cookies" mode="normal">
-          <list></list>
-        </div>
-        <div contentType="cookies" mode="otr">
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list></list>
+      <label class="checkbox">
+        <input id="block-third-party-cookies"
+            pref="profile.block_third_party_cookies" type="checkbox">
+        <span i18n-content="cookies_block_3rd_party"></span>
+      </label>
+      <label class="checkbox">
+        <input id="clear-cookies-on-exit"
+            pref="profile.clear_site_data_on_exit" type="checkbox">
+        <span i18n-content="cookies_clear_on_exit"></span>
+      </label>
+      <button id="show-cookies-button"
+          i18n-content="cookies_show_cookies"></button>
+      <a i18n-values="href:flash_storage_url"
+          i18n-content="flash_storage_settings" target="_blank"></a>
+
+      <div class="zippy">
+        <div class="zippy-header" i18n-content="content_exceptions"></div>
+        <div class="zippy-content">
+          <div contentType="cookies" mode="normal">
+            <list></list>
+          </div>
+          <div contentType="cookies" mode="otr">
+            <span i18n-content="otr_exceptions_explanation"></span>
+            <list></list>
+          </div>
         </div>
       </div>
-    </div>
+   </div>
+  </section>
 
-    <table class="option-control-table">
-    <tr>
-      <td class="option-name">
-        <label class="checkbox">
-          <input id="block-third-party-cookies"
-              pref="profile.block_third_party_cookies" type="checkbox">
-          <span i18n-content="cookies_block_3rd_party"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="checkbox">
-          <input id="clear-cookies-on-exit"
-              pref="profile.clear_site_data_on_exit" type="checkbox">
-          <span i18n-content="cookies_clear_on_exit"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name"><button id="show-cookies-button"
-          i18n-content="cookies_show_cookies"></button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <a i18n-values="href:flash_storage_url"
-            i18n-content="flash_storage_settings" target="_blank"></a>
-      </td>
-    </tr>
-    </table>
-  </div>
-
-  <!-- Image filter tab contents -->
-  <div id="imagesFilterTab" class="subpages-tab-contents">
-    <h4 i18n-content="images_setting" class="contentSettingsHeader"></h4>
-    <table class="option-control-table">
-    <tr>
-      <td class="option-name">
+  <!-- Image filter -->
+  <section>
+    <h3 i18n-content="images_tab_label"></h3>
+    <div>
         <label class="radio">
           <input type="radio" name="images" value="allow">
           <span i18n-content="images_allow"></span>
         </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
         <label class="radio">
           <input type="radio" name="images" value="block">
           <span i18n-content="images_block"></span>
         </label>
-      </td>
-    </tr>
-    </table>
 
-    <div class="zippy">
-      <div class="zippy-header" i18n-content="content_exceptions"></div>
-      <div class="zippy-content">
-        <div contentType="images" mode="normal">
-          <list></list>
-        </div>
-        <div contentType="images" mode="otr">
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list></list>
+      <div class="zippy">
+        <div class="zippy-header" i18n-content="content_exceptions"></div>
+        <div class="zippy-content">
+          <div contentType="images" mode="normal">
+            <list></list>
+          </div>
+          <div contentType="images" mode="otr">
+            <span i18n-content="otr_exceptions_explanation"></span>
+            <list></list>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- JavaScript filter tab contents -->
-  <div id="javascriptFilterTab" class="subpages-tab-contents">
-    <h4 i18n-content="javascript_setting" class="contentSettingsHeader"></h4>
-    <table class="option-control-table">
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="javascript" value="allow">
-          <span i18n-content="javascript_allow"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="javascript" value="block">
-          <span i18n-content="javascript_block"></span>
-        </label>
-      </td>
-    </tr>
-    </table>
+  <!-- JavaScript filter -->
+  <section>
+    <h3 i18n-content="javascript_tab_label"></h3>
+    <div>
+      <label class="radio">
+        <input type="radio" name="javascript" value="allow">
+        <span i18n-content="javascript_allow"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="javascript" value="block">
+        <span i18n-content="javascript_block"></span>
+      </label>
 
-    <div class="zippy">
-      <div class="zippy-header" i18n-content="content_exceptions"></div>
-      <div class="zippy-content">
-        <div contentType="javascript" mode="normal">
-          <list></list>
-        </div>
-        <div contentType="javascript" mode="otr">
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list></list>
+      <div class="zippy">
+        <div class="zippy-header" i18n-content="content_exceptions"></div>
+        <div class="zippy-content">
+          <div contentType="javascript" mode="normal">
+            <list></list>
+          </div>
+          <div contentType="javascript" mode="otr">
+            <span i18n-content="otr_exceptions_explanation"></span>
+            <list></list>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Plug-ins filter tab contents -->
-  <div id="pluginsFilterTab" class="subpages-tab-contents">
-    <h4 i18n-content="plugins_setting" class="contentSettingsHeader"></h4>
-    <table class="option-control-table">
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="plugins" value="allow">
-          <span i18n-content="plugins_allow"></span>
-        </label>
-      </td>
-    </tr>
-    <tr id="click_to_play">
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="plugins" value="ask">
-          <span i18n-content="plugins_ask"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="plugins" value="block">
-          <span i18n-content="plugins_block"></span>
-        </label>
-      </td>
-    </tr>
-    </table>
+  <!-- Plug-ins filter -->
+  <section>
+    <h3 i18n-content="plugins_tab_label"></h3>
+    <div>
+      <label class="radio">
+        <input type="radio" name="plugins" value="allow">
+        <span i18n-content="plugins_allow"></span>
+      </label>
+      <label class="radio" id="click_to_play">
+        <input type="radio" name="plugins" value="ask">
+        <span i18n-content="plugins_ask"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="plugins" value="block">
+        <span i18n-content="plugins_block"></span>
+      </label>
 
-    <div class="zippy">
-      <div class="zippy-header" i18n-content="content_exceptions"></div>
-      <div class="zippy-content">
-        <div contentType="plugins" mode="normal">
-          <list></list>
+      <div class="zippy">
+        <div class="zippy-header" i18n-content="content_exceptions"></div>
+        <div class="zippy-content">
+          <div contentType="plugins" mode="normal">
+            <list></list>
+          </div>
+          <div contentType="plugins" mode="otr">
+            <span i18n-content="otr_exceptions_explanation"></span>
+            <list></list>
+          </div>
         </div>
-        <div contentType="plugins" mode="otr">
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list></list>
+      </div>
+
+      <a i18n-content="disable_individual_plugins" id="plugins-tab" href="#"></a>
+    </div>
+  </section>
+
+  <!-- Pop-ups filter -->
+  <section>
+    <h3 i18n-content="popups_tab_label" class="contentSettingsHeader"></h3>
+    <div>
+      <label class="radio">
+        <input type="radio" name="popups" value="allow">
+         <span i18n-content="popups_allow"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="popups" value="block">
+        <span i18n-content="popups_block"></span>
+      </label>
+
+      <div class="zippy">
+        <div class="zippy-header" i18n-content="content_exceptions"></div>
+        <div class="zippy-content">
+          <div contentType="popups" mode="normal">
+            <list></list>
+          </div>
+          <div contentType="popups" mode="otr">
+            <span i18n-content="otr_exceptions_explanation"></span>
+            <list></list>
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <a i18n-content="disable_individual_plugins" id="plugins-tab" href="#"></a>
-  </div>
+  <!-- Location filter -->
+  <section>
+    <h3 i18n-content="location_tab_label"></h3>
+    <div>
+      <label class="radio">
+        <input type="radio" name="location" value="allow">
+        <span i18n-content="location_allow"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="location" value="ask">
+        <span i18n-content="location_ask"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="location" value="block">
+        <span i18n-content="location_block"></span>
+      </label>
 
-  <!-- Pop-ups filter tab contents -->
-  <div id="popupsFilterTab" class="subpages-tab-contents">
-    <h4 i18n-content="popups_setting" class="contentSettingsHeader"></h4>
-    <table class="option-control-table">
-    <tr>
-       <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="popups" value="allow">
-           <span i18n-content="popups_allow"></span>
-        </label>
-       </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="popups" value="block">
-          <span i18n-content="popups_block"></span>
-        </label>
-      </td>
-    </tr>
-    </table>
-
-    <div class="zippy">
-      <div class="zippy-header" i18n-content="content_exceptions"></div>
-      <div class="zippy-content">
-        <div contentType="popups" mode="normal">
-          <list></list>
-        </div>
-        <div contentType="popups" mode="otr">
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list></list>
+      <div class="zippy">
+        <div class="zippy-header" i18n-content="content_exceptions"></div>
+        <div class="zippy-content">
+          <div contentType="location" mode="normal">
+            <list></list>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Location filter tab contents -->
-  <div id="locationFilterTab" class="subpages-tab-contents">
-    <h4 i18n-content="location_setting" class="contentSettingsHeader"></h4>
-    <table class="option-control-table">
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="location" value="allow">
-          <span i18n-content="location_allow"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="location" value="ask">
-          <span i18n-content="location_ask"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="location" value="block">
-          <span i18n-content="location_block"></span>
-        </label>
-      </td>
-    </tr>
-    </table>
-
-    <div class="zippy">
-      <div class="zippy-header" i18n-content="content_exceptions"></div>
-      <div class="zippy-content">
-        <div contentType="location" mode="normal">
-          <list></list>
-        </div>
-      </div>
-    </div>
-  </div>
+  </section>
 
   <!-- Notifications filter tab contents -->
-  <div id="notificationsFilterTab" class="subpages-tab-contents">
-    <h4 i18n-content="notifications_setting" class="contentSettingsHeader"></h4>
-    <table class="option-control-table">
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="notifications" value="allow">
-          <span i18n-content="notifications_allow"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="notifications" value="ask">
-          <span i18n-content="notifications_ask"></span>
-        </label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name">
-        <label class="radio">
-          <input type="radio" name="notifications" value="block">
-          <span i18n-content="notifications_block"></span>
-        </label>
-      </td>
-    </tr>
-    </table>
+  <section>
+    <h3 i18n-content="notifications_tab_label"></h3>
+    <div>
+      <label class="radio">
+        <input type="radio" name="notifications" value="allow">
+        <span i18n-content="notifications_allow"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="notifications" value="ask">
+        <span i18n-content="notifications_ask"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="notifications" value="block">
+        <span i18n-content="notifications_block"></span>
+      </label>
 
-    <div class="zippy">
-      <div class="zippy-header" i18n-content="content_exceptions"></div>
-      <div class="zippy-content">
-        <div contentType="notifications" mode="normal">
-          <list></list>
+      <div class="zippy">
+        <div class="zippy-header" i18n-content="content_exceptions"></div>
+        <div class="zippy-content">
+          <div contentType="notifications" mode="normal">
+            <list></list>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>

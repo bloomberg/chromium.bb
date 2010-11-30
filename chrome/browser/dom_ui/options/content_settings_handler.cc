@@ -203,8 +203,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   // Cookies filter.
   localized_strings->SetString("cookies_tab_label",
       l10n_util::GetStringUTF16(IDS_COOKIES_TAB_LABEL));
-  localized_strings->SetString("cookies_modify",
-      l10n_util::GetStringUTF16(IDS_MODIFY_COOKIE_STORING_LABEL));
   localized_strings->SetString("cookies_allow",
       l10n_util::GetStringUTF16(IDS_COOKIES_ALLOW_RADIO));
   localized_strings->SetString("cookies_ask",
@@ -225,8 +223,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   // Image filter.
   localized_strings->SetString("images_tab_label",
       l10n_util::GetStringUTF16(IDS_IMAGES_TAB_LABEL));
-  localized_strings->SetString("images_setting",
-      l10n_util::GetStringUTF16(IDS_IMAGES_SETTING_LABEL));
   localized_strings->SetString("images_allow",
       l10n_util::GetStringUTF16(IDS_IMAGES_LOAD_RADIO));
   localized_strings->SetString("images_block",
@@ -235,8 +231,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   // JavaScript filter.
   localized_strings->SetString("javascript_tab_label",
       l10n_util::GetStringUTF16(IDS_JAVASCRIPT_TAB_LABEL));
-  localized_strings->SetString("javascript_setting",
-      l10n_util::GetStringUTF16(IDS_JS_SETTING_LABEL));
   localized_strings->SetString("javascript_allow",
       l10n_util::GetStringUTF16(IDS_JS_ALLOW_RADIO));
   localized_strings->SetString("javascript_block",
@@ -245,8 +239,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   // Plug-ins filter.
   localized_strings->SetString("plugins_tab_label",
       l10n_util::GetStringUTF16(IDS_PLUGIN_TAB_LABEL));
-  localized_strings->SetString("plugins_setting",
-      l10n_util::GetStringUTF16(IDS_PLUGIN_SETTING_LABEL));
   localized_strings->SetString("plugins_ask",
       l10n_util::GetStringUTF16(IDS_PLUGIN_ASK_RADIO));
   localized_strings->SetString("plugins_allow",
@@ -263,8 +255,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   // Pop-ups filter.
   localized_strings->SetString("popups_tab_label",
       l10n_util::GetStringUTF16(IDS_POPUP_TAB_LABEL));
-  localized_strings->SetString("popups_setting",
-      l10n_util::GetStringUTF16(IDS_POPUP_SETTING_LABEL));
   localized_strings->SetString("popups_allow",
       l10n_util::GetStringUTF16(IDS_POPUP_ALLOW_RADIO));
   localized_strings->SetString("popups_block",
@@ -273,8 +263,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   // Location filter.
   localized_strings->SetString("location_tab_label",
       l10n_util::GetStringUTF16(IDS_GEOLOCATION_TAB_LABEL));
-  localized_strings->SetString("location_setting",
-      l10n_util::GetStringUTF16(IDS_GEOLOCATION_SETTING_LABEL));
   localized_strings->SetString("location_allow",
       l10n_util::GetStringUTF16(IDS_GEOLOCATION_ALLOW_RADIO));
   localized_strings->SetString("location_ask",
@@ -285,8 +273,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   // Notifications filter.
   localized_strings->SetString("notifications_tab_label",
       l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_TAB_LABEL));
-  localized_strings->SetString("notifications_setting",
-      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_SETTING_LABEL));
   localized_strings->SetString("notifications_allow",
       l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_ALLOW_RADIO));
   localized_strings->SetString("notifications_ask",
