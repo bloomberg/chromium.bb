@@ -750,7 +750,14 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
       "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
   form1.fields.push_back(field);
   autofill_test::CreateTestFormField(
+      "Address Line 2:", "address2", "Suite A", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
+  form1.fields.push_back(field);
+  // Phone gets updated.
+  autofill_test::CreateTestFormField(
+      "Phone:", "phone", "4445556666", "text", &field);
   form1.fields.push_back(field);
 
   FormStructure form_structure1(form1);
@@ -766,8 +773,8 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 
   AutoFillProfile expected;
   autofill_test::SetProfileInfo(&expected, NULL, "George", NULL,
-      "Washington", "theprez@gmail.com", NULL, "1600 Pennsylvania Avenue", NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL);
+      "Washington", "theprez@gmail.com", NULL, "1600 Pennsylvania Avenue",
+      "Suite A", NULL, NULL, NULL, NULL, "4445556666", NULL);
   const std::vector<AutoFillProfile*>& results1 = personal_data_->profiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
@@ -783,13 +790,19 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   autofill_test::CreateTestFormField(
       "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
   form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address Line 2:", "address2", "Suite A", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email:", "email", "theprez@gmail.com", "text", &field);
+  form2.fields.push_back(field);
   // Country gets added.
   autofill_test::CreateTestFormField(
       "Country:", "country", "USA", "text", &field);
   form2.fields.push_back(field);
-  // Email gets updated.
+  // Phone gets updated.
   autofill_test::CreateTestFormField(
-      "Email:", "email", "new_email@gmail.com", "text", &field);
+      "Phone:", "phone", "1231231234", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2);
@@ -807,8 +820,8 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 
   AutoFillProfile expected2;
   autofill_test::SetProfileInfo(&expected2, NULL, "George", NULL,
-      "Washington", "new_email@gmail.com", NULL, "1600 Pennsylvania Avenue",
-      NULL, NULL, NULL, NULL, "USA", NULL, NULL);
+      "Washington", "theprez@gmail.com", NULL, "1600 Pennsylvania Avenue",
+      "Suite A", NULL, NULL, NULL, "USA", "1231231234", NULL);
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
