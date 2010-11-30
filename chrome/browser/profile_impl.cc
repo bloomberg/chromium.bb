@@ -402,14 +402,6 @@ void ProfileImpl::RegisterComponentExtensions() {
 }
 
 void ProfileImpl::InstallDefaultApps() {
-#if !defined(OS_CHROMEOS)
-  // On desktop Chrome, we don't have default apps on by, err, default yet.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDefaultApps)) {
-    return;
-  }
-#endif
-
   // The web store only supports en-US at the moment, so we don't install
   // default apps in other locales.
   if (g_browser_process->GetApplicationLocale() != "en-US")

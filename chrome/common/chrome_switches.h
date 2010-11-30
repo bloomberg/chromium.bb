@@ -134,7 +134,6 @@ extern const char kEnableConfirmToQuit[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableContentPrefetch[];
 extern const char kEnableCrxlessWebApps[];
-extern const char kEnableDefaultApps[];
 extern const char kEnableDeviceMotion[];
 extern const char kEnableDNSCertProvenanceChecking[];
 extern const char kEnableDNSSECCerts[];

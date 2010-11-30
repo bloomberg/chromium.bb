@@ -445,10 +445,6 @@ const char kEnableContentPrefetch[]         = "enable-content-prefetch";
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
-// Whether default apps should be installed in this profile. This flag has no
-// effect on Chrome OS because default apps are always enabled  there.
-const char kEnableDefaultApps[]             = "enable-default-apps";
-
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
