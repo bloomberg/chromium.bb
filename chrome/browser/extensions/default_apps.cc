@@ -21,9 +21,9 @@ void DefaultApps::RegisterUserPrefs(PrefService* prefs) {
 DefaultApps::DefaultApps(PrefService* prefs)
     : prefs_(prefs) {
 #if !defined(OS_CHROMEOS)
-  // gmail, docs
-  ids_.insert("pjkljhegncpnkpknbcohdijeoejaedia");
-  ids_.insert("apdfllckaahabafndbhieahigkjlhalf");
+  // Poppit, Entanglement
+  ids_.insert("mcbkbpnkkkipelfledbfocopglifcfmi");
+  ids_.insert("aciahcmjmecflokailenpkdchphgkefd");
 #endif  // OS_CHROMEOS
 }
 
