@@ -54,16 +54,19 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
-static const char kScreenshotBaseUrl[] = "chrome://screenshots/";
-static const char kCurrentScreenshotUrl[] = "chrome://screenshots/current";
-#if defined(OS_CHROMEOS)
-static const char kSavedScreenshotsUrl[] = "chrome://screenshots/saved/";
+namespace {
 
-static const char kScreenshotPattern[] = "*.png";
-static const char kScreenshotsRelativePath[] = "/Screenshots";
+const char kScreenshotBaseUrl[] = "chrome://screenshots/";
+const char kCurrentScreenshotUrl[] = "chrome://screenshots/current";
+#if defined(OS_CHROMEOS)
+const char kSavedScreenshotsUrl[] = "chrome://screenshots/saved/";
+
+const char kScreenshotPattern[] = "*.png";
+const char kScreenshotsRelativePath[] = "/Screenshots";
+
+const size_t kMaxSavedScreenshots = 2;
 #endif
 
-namespace {
 #if defined(OS_CHROMEOS)
 
 void GetSavedScreenshots(std::vector<std::string>* saved_screenshots,
@@ -88,6 +91,9 @@ void GetSavedScreenshots(std::vector<std::string>* saved_screenshots,
   while (!screenshot.empty()) {
     saved_screenshots->push_back(std::string(kSavedScreenshotsUrl) +
                                  screenshot.BaseName().value());
+    if (saved_screenshots->size() >= kMaxSavedScreenshots)
+      break;
+
     screenshot = screenshots.Next();
   }
   done->Signal();
@@ -190,7 +196,10 @@ class BugReportHandler : public DOMMessageHandler,
 
  private:
   void HandleGetDialogDefaults(const ListValue* args);
-  void HandleRefreshScreenshots(const ListValue* args);
+  void HandleRefreshCurrentScreenshot(const ListValue* args);
+#if defined(OS_CHROMEOS)
+  void HandleRefreshSavedScreenshots(const ListValue* args);
+#endif
   void HandleSendReport(const ListValue* args);
   void HandleCancel(const ListValue* args);
   void HandleOpenSystemTab(const ListValue* args);
@@ -233,24 +242,36 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
   DictionaryValue localized_strings;
   localized_strings.SetString(std::string("title"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_TITLE));
+  localized_strings.SetString(std::string("page-title"),
+      l10n_util::GetStringUTF8(IDS_BUGREPORT_REPORT_PAGE_TITLE));
   localized_strings.SetString(std::string("issue-with"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_ISSUE_WITH));
   localized_strings.SetString(std::string("page-url"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_REPORT_URL_LABEL));
   localized_strings.SetString(std::string("description"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_DESCRIPTION_LABEL));
-  localized_strings.SetString(std::string("screenshot"),
+  localized_strings.SetString(std::string("current-screenshot"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_SCREENSHOT_LABEL));
+  localized_strings.SetString(std::string("saved-screenshot"),
+      l10n_util::GetStringUTF8(IDS_BUGREPORT_SAVED_SCREENSHOT_LABEL));
 #if defined(OS_CHROMEOS)
   localized_strings.SetString(std::string("user-email"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_USER_EMAIL_LABEL));
+  localized_strings.SetString(std::string("sysinfo"),
+      l10n_util::GetStringUTF8(
+          IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX));
+
   localized_strings.SetString(std::string("currentscreenshots"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_CURRENT_SCREENSHOTS));
   localized_strings.SetString(std::string("savedscreenshots"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_SAVED_SCREENSHOTS));
-  localized_strings.SetString(std::string("sysinfo"),
+
+  localized_strings.SetString(std::string("choose-different-screenshot"),
       l10n_util::GetStringUTF8(
-          IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX));
+          IDS_BUGREPORT_CHOOSE_DIFFERENT_SCREENSHOT));
+  localized_strings.SetString(std::string("choose-original-screenshot"),
+      l10n_util::GetStringUTF8(
+          IDS_BUGREPORT_CHOOSE_ORIGINAL_SCREENSHOT));
 #else
   localized_strings.SetString(std::string("currentscreenshots"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE));
@@ -270,6 +291,14 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(std::string("no-issue-selected"),
       l10n_util::GetStringUTF8(IDS_BUGREPORT_NO_ISSUE_SELECTED));
 
+  localized_strings.SetString(std::string("no-description"),
+      l10n_util::GetStringUTF8(IDS_BUGREPORT_NO_DESCRIPTION));
+
+  localized_strings.SetString(std::string("no-saved-screenshots"),
+      l10n_util::GetStringUTF8(IDS_BUGREPORT_NO_SAVED_SCREENSHOTS_HELP));
+
+  localized_strings.SetString(std::string("privacy-note"),
+      l10n_util::GetStringUTF8(IDS_BUGREPORT_PRIVACY_NOTE));
 
   // TODO(rkc): Find some way to ensure this order of dropdowns is in sync
   // with the order in the userfeedback ChromeData proto buffer
@@ -500,8 +529,12 @@ base::StringPiece BugReportHandler::Init() {
 void BugReportHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("getDialogDefaults",
       NewCallback(this, &BugReportHandler::HandleGetDialogDefaults));
-  dom_ui_->RegisterMessageCallback("refreshScreenshots",
-      NewCallback(this, &BugReportHandler::HandleRefreshScreenshots));
+  dom_ui_->RegisterMessageCallback("refreshCurrentScreenshot",
+      NewCallback(this, &BugReportHandler::HandleRefreshCurrentScreenshot));
+#if defined(OS_CHROMEOS)
+  dom_ui_->RegisterMessageCallback("refreshSavedScreenshots",
+      NewCallback(this, &BugReportHandler::HandleRefreshSavedScreenshots));
+#endif
   dom_ui_->RegisterMessageCallback("sendReport",
       NewCallback(this, &BugReportHandler::HandleSendReport));
   dom_ui_->RegisterMessageCallback("cancel",
@@ -540,22 +573,25 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   dom_ui_->CallJavascriptFunction(L"setupDialogDefaults", dialog_defaults);
 }
 
-void BugReportHandler::HandleRefreshScreenshots(const ListValue*) {
-  ListValue screenshots;
-  screenshots.Append(new StringValue(std::string(kCurrentScreenshotUrl)));
+void BugReportHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
+  std::string current_screenshot(kCurrentScreenshotUrl);
+  StringValue screenshot(current_screenshot);
+  dom_ui_->CallJavascriptFunction(L"setupCurrentScreenshot", screenshot);
+}
 
 
 #if defined(OS_CHROMEOS)
+void BugReportHandler::HandleRefreshSavedScreenshots(const ListValue*) {
   std::vector<std::string> saved_screenshots;
   GetScreenshotUrls(&saved_screenshots);
 
-  ListValue* saved_screenshot_list = new ListValue();
+  ListValue screenshots_list;
   for (size_t i = 0; i < saved_screenshots.size(); ++i)
-    saved_screenshot_list->Append(new StringValue(saved_screenshots[i]));
-  screenshots.Append(saved_screenshot_list);
-#endif
-  dom_ui_->CallJavascriptFunction(L"setupScreenshots", screenshots);
+    screenshots_list.Append(new StringValue(saved_screenshots[i]));
+  dom_ui_->CallJavascriptFunction(L"setupSavedScreenshots", screenshots_list);
 }
+#endif
+
 
 void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   ListValue::const_iterator i = list_value->begin();

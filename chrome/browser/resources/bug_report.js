@@ -52,21 +52,17 @@ function addScreenshot(divId, screenshot) {
   };
 
   var innerDiv = document.createElement('div');
-  innerDiv.className = 'image-thumbnail';
+  if (divId == 'current-screenshots')
+    innerDiv.className = 'image-thumbnail-current';
+  else
+    innerDiv.className = 'image-thumbnail';
 
   var thumbnail = document.createElement('img');
   thumbnail.id = thumbnailDiv.id + '-image';
   // We add the ?+timestamp to make sure the image URLs are unique
   // and Chrome does not load the image from cache.
-  thumbnail.src = screenshot + "?" + Date.now();
+  thumbnail.src = screenshot + '?' + Date.now();
   innerDiv.appendChild(thumbnail);
-
-  var largeImage = document.createElement('img');
-  largeImage.src = screenshot + "?" + Date.now();
-
-  var popupDiv = document.createElement('div');
-  popupDiv.appendChild(largeImage);
-  innerDiv.appendChild(popupDiv);
 
   thumbnailDiv.appendChild(innerDiv);
   $(divId).appendChild(thumbnailDiv);
@@ -84,6 +80,9 @@ function sendReport() {
   if (!$('issue-with-combo').selectedIndex) {
     alert(localStrings.getString('no-issue-selected'));
     return false;
+  } else if ($('description-text').value.length == 0) {
+    alert(localStrings.getString('no-description'));
+    return false;
   }
 
   var imagePath = '';
@@ -92,14 +91,20 @@ function sendReport() {
 
   // Note, categories are based from 1 in our protocol buffers, so no
   // adjustment is needed on selectedIndex.
+  var pageUrl = $('page-url-text').value;
+  if (!$('page-url-checkbox').checked)
+    pageUrl = '';
   var reportArray = [String($('issue-with-combo').selectedIndex),
-                     $('page-url-text').value,
+                     pageUrl,
                      $('description-text').value,
                      imagePath];
 
   // Add chromeos data if it exists.
   if ($('user-email-text') && $('sys-info-checkbox')) {
-    reportArray = reportArray.concat([$('user-email-text').value,
+    var userEmail= $('user-email-text').textContent;
+    if (!$('user-email-checkbox').checked)
+      userEmail = '';
+    reportArray = reportArray.concat([userEmail,
                                       String($('sys-info-checkbox').checked)]);
   }
 
@@ -119,6 +124,7 @@ function cancel() {
  * selected when we had this div open previously.
  */
 function currentSelected() {
+  // TODO(rkc): Change this to use a class instead.
   $('current-screenshots').style.display = 'block';
   if ($('saved-screenshots'))
     $('saved-screenshots').style.display = 'none';
@@ -136,23 +142,46 @@ function currentSelected() {
  */
 function savedSelected() {
   $('current-screenshots').style.display = 'none';
-  $('saved-screenshots').style.display = 'block';
 
-  if (selectedThumbnailDivId != 'saved-screenshots')
-    selectImage('saved-screenshots', savedThumbnailIds['saved-screenshots']);
+  if ($('saved-screenshots').childElementCount == 0) {
+    // setupSavedScreenshots will take care of changing visibility
+    chrome.send('refreshSavedScreenshots', []);
+  } else {
+    $('saved-screenshots').style.display = 'block';
+    if (selectedThumbnailDivId != 'saved-screenshots')
+      selectImage('saved-screenshots', savedThumbnailIds['saved-screenshots']);
+  }
 
   return true;
 }
 
-/**
- * Unselect all screenshots divs.
- */
-function noneSelected() {
-  $('current-screenshots').style.display = 'none';
-  if ($('saved-screenshots'))
-    $('saved-screenshots').style.display = 'none';
 
-  selectedThumbnailDivId = '';
-  selectedThumbnailId = '';
-  return true;
+/**
+ * Change the type of screenshot we're showing to the user from
+ * the current screenshot to saved screenshots
+ */
+function changeToSaved() {
+  $('screenshot-label-current').style.display = 'none';
+  $('screenshot-label-saved').style.display = 'inline';
+
+  // Change the link to say "go to original"
+  $('screenshot-link-tosaved').style.display = 'none';
+  $('screenshot-link-tocurrent').style.display = 'inline';
+  
+  savedSelected();
+}
+
+/**
+ * Change the type of screenshot we're showing to the user from
+ * the saved screenshots to the current screenshots
+ */
+function changeToCurrent() {
+  $('screenshot-label-current').style.display = 'inline';
+  $('screenshot-label-saved').style.display = 'none';
+
+  // Change the link to say "go to original"
+  $('screenshot-link-tosaved').style.display = 'inline';
+  $('screenshot-link-tocurrent').style.display = 'none';
+  
+  currentSelected();
 }
