@@ -29,6 +29,11 @@ node = env.CommandTest(
     command=[simple_srpc_test_exe])
 env.AddNodeToTestSuite(node, TEST_SUITES, 'run_simple_srpc_test')
 
+# types_srpc_test is broken on ARM. I have not a hardware ARM machine
+# and qemu does works incorrectly (see above).
+if env.Bit('target_arm') or env.Bit('bitcode'):
+  TEST_SUITES = ['broken_tests']
+
 types_srpc_test_exe = env.ComponentProgram(
     'types_srpc_test',
     'types_srpc_test.c',
