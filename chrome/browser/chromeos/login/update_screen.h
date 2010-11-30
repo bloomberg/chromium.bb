@@ -36,7 +36,10 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   virtual void CancelUpdate();
 
   // Reports update results to the ScreenObserver.
-  virtual void ExitUpdate();
+  // |forced| should be set to true when calling this method and update status
+  // is not one of UPDATE_STATUS_IDLE, UPDATE_STATUS_ERROR,
+  // UPDATE_STATUS_REPORTING_ERROR_EVENT.
+  virtual void ExitUpdate(bool forced);
 
   // Maximal curtain time get/set, in seconds.
   int maximal_curtain_time() const { return maximal_curtain_time_; }

@@ -842,7 +842,7 @@ void WizardController::MarkDeviceRegistered() {
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, chromeos::ScreenObserver overrides:
 void WizardController::OnExit(ExitCodes exit_code) {
-  VLOG(1) << "Wizard screen exit code: " << exit_code;
+  LOG(INFO) << "Wizard screen exit code: " << exit_code;
   switch (exit_code) {
     case LOGIN_SIGN_IN_SELECTED:
       OnLoginSignInSelected();
