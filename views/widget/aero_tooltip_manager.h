@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/ref_counted.h"
-#include "base/task.h"
 #include "views/widget/tooltip_manager_win.h"
 
 namespace views {
@@ -60,4 +59,4 @@ class AeroTooltipManager : public TooltipManagerWin {
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_WIDGET_AERO_TOOLTIP_MANAGER_H_
+#endif  // VIEWS_WIDGET_AERO_TOOLTIP_MANAGER_H_

@@ -5,7 +5,6 @@
 #include "chrome/renderer/notification_provider.h"
 
 #include "base/string_util.h"
-#include "base/task.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"

@@ -6,7 +6,6 @@
 
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"

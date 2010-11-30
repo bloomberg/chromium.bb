@@ -8,7 +8,6 @@
 
 #include <set>
 
-#include "base/task.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 

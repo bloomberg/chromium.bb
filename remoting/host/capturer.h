@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/lock.h"
-#include "base/task.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/types.h"
 

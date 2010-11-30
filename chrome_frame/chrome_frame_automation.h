@@ -15,7 +15,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_handle.h"
 #include "base/stack_container.h"
-#include "base/task.h"
 #include "base/timer.h"
 #include "base/thread.h"
 #include "chrome/common/page_zoom.h"

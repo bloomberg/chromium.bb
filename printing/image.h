@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "gfx/size.h"
 #include "printing/native_metafile.h"
 
@@ -56,13 +55,7 @@ class Image {
       return color;
   }
 
-  uint32 pixel_at(int x, int y) const {
-    DCHECK(x >= 0 && x < size_.width());
-    DCHECK(y >= 0 && y < size_.height());
-    const uint32* data = reinterpret_cast<const uint32*>(&*data_.begin());
-    const uint32* data_row = data + y * row_length_ / sizeof(uint32);
-    return Color(data_row[x]);
-  }
+  uint32 pixel_at(int x, int y) const;
 
  private:
   // Construct from metafile.  This is kept internal since it's ambiguous what

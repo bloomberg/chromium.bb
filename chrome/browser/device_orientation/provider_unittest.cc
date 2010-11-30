@@ -6,7 +6,6 @@
 
 #include "base/lock.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "chrome/browser/device_orientation/data_fetcher.h"
 #include "chrome/browser/device_orientation/orientation.h"
 #include "chrome/browser/device_orientation/provider.h"
@@ -311,7 +310,7 @@ TEST_F(DeviceOrientationProviderTest, StartStopStart) {
   provider_->AddObserver(checker_a.get());
   MessageLoop::current()->Run();
 
-  provider_->RemoveObserver(checker_a.get()); // This stops the Provider.
+  provider_->RemoveObserver(checker_a.get());  // This stops the Provider.
 
   checker_b->AddExpectation(kTestOrientation2);
   orientation_factory->SetOrientation(kTestOrientation2);

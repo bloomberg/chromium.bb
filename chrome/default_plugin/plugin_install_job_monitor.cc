@@ -4,6 +4,7 @@
 
 #include "chrome/default_plugin/plugin_install_job_monitor.h"
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/default_plugin/plugin_impl.h"
 
@@ -97,6 +98,11 @@ void PluginInstallationJobMonitorThread::Stop() {
   Thread::Stop();
   ::CloseHandle(install_job_completion_port_);
   install_job_completion_port_ = NULL;
+}
+
+void PluginInstallationJobMonitorThread::set_plugin_window(HWND plugin_window) {
+  DCHECK(::IsWindow(plugin_window));
+  plugin_window_ = plugin_window;
 }
 
 bool PluginInstallationJobMonitorThread::AssignProcessToJob(

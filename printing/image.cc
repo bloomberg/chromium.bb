@@ -4,7 +4,10 @@
 
 #include "printing/image.h"
 
+#include <algorithm>
+
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/md5.h"
 #include "base/string_number_conversions.h"
 #include "gfx/codec/png_codec.h"
@@ -129,6 +132,14 @@ double Image::PercentageDifferent(const Image& rhs) const {
   double total_pixels = static_cast<double>(size_.width()) *
       static_cast<double>(height);
   return static_cast<double>(pixels_different) / total_pixels * 100.;
+}
+
+uint32 Image::pixel_at(int x, int y) const {
+  DCHECK(x >= 0 && x < size_.width());
+  DCHECK(y >= 0 && y < size_.height());
+  const uint32* data = reinterpret_cast<const uint32*>(&*data_.begin());
+  const uint32* data_row = data + y * row_length_ / sizeof(uint32);
+  return Color(data_row[x]);
 }
 
 bool Image::LoadPng(const std::string& compressed) {

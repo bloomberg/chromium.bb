@@ -87,4 +87,3 @@ class Graphics3D : public Resource {
 }  // namespace pepper
 
 #endif  // WEBKIT_GLUE_PLUGINS_PEPPER_GRAPHICS_3D_H_
-

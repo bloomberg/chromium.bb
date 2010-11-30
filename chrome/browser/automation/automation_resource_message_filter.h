@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,11 @@
 #pragma once
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/lazy_instance.h"
-#include "base/lock.h"
 #include "base/platform_thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "net/base/completion_callback.h"
@@ -218,4 +219,3 @@ class AutomationResourceMessageFilter
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_RESOURCE_MESSAGE_FILTER_H_
-

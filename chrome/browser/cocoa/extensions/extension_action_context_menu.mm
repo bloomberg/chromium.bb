@@ -6,7 +6,6 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
-#include "base/task.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/cocoa/browser_window_controller.h"

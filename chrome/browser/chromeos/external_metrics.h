@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_EXTERNAL_METRICS_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
-#include "base/task.h"
+#include "base/ref_counted.h"
 
 namespace chromeos {
 

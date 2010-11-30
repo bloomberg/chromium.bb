@@ -217,6 +217,17 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
   // the response is not a download.
 }
 
+void RenderViewHostManager::set_interstitial_page(
+    InterstitialPage* interstitial_page) {
+  DCHECK(!interstitial_page_ && interstitial_page);
+  interstitial_page_ = interstitial_page;
+}
+
+void RenderViewHostManager::remove_interstitial_page() {
+  DCHECK(interstitial_page_);
+  interstitial_page_ = NULL;
+}
+
 void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
                                             bool proceed) {
   if (for_cross_site_transition) {

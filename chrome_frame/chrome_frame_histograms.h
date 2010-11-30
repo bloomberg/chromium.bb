@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_FRAME_HISTOGRAM_SNAPSHOTS_H_
-#define CHROME_FRAME_HISTOGRAM_SNAPSHOTS_H_
+#ifndef CHROME_FRAME_CHROME_FRAME_HISTOGRAMS_H_
+#define CHROME_FRAME_CHROME_FRAME_HISTOGRAMS_H_
 
 #include <map>
 #include <string>
@@ -14,7 +14,6 @@
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 
 // This class gathers histogram data in the host browser process and
 // serializes the data into a vector of strings to be uploaded to the
@@ -55,4 +54,4 @@ class ChromeFrameHistogramSnapshots {
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameHistogramSnapshots);
 };
 
-#endif  // CHROME_RENDERER_HISTOGRAM_SNAPSHOTS_H_
+#endif  // CHROME_FRAME_CHROME_FRAME_HISTOGRAMS_H_

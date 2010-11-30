@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "base/task.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/extensions/update_manifest.h"

@@ -54,6 +54,11 @@ void BufferManager::RemoveBufferInfo(GLuint client_id) {
   }
 }
 
+void BufferManager::BufferInfo::set_target(GLenum target) {
+  DCHECK_EQ(target_, 0u);  // you can only set this once.
+  target_ = target;
+}
+
 BufferManager::BufferInfo::BufferInfo(GLuint service_id)
     : service_id_(service_id),
       target_(0),
@@ -206,5 +211,3 @@ bool BufferManager::SetTarget(BufferManager::BufferInfo* info, GLenum target) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

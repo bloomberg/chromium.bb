@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/task.h"
+
 namespace {
 
 // Find items matching between |subs| and |adds|, and remove them,
@@ -134,19 +136,19 @@ void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
 
   // Sort the inputs by the SBAddPrefix bits.
   std::sort(add_prefixes->begin(), add_prefixes->end(),
-            SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+            SBAddPrefixLess<SBAddPrefix, SBAddPrefix>);
   std::sort(sub_prefixes->begin(), sub_prefixes->end(),
-            SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+            SBAddPrefixLess<SBSubPrefix, SBSubPrefix>);
   std::sort(add_full_hashes->begin(), add_full_hashes->end(),
-            SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+            SBAddPrefixHashLess<SBAddFullHash, SBAddFullHash>);
   std::sort(sub_full_hashes->begin(), sub_full_hashes->end(),
-            SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
+            SBAddPrefixHashLess<SBSubFullHash, SBSubFullHash>);
 
   // Factor out the prefix subs.
   std::vector<SBAddPrefix> removed_adds;
   KnockoutSubs(sub_prefixes, add_prefixes,
-               SBAddPrefixLess<SBAddPrefix,SBSubPrefix>,
-               SBAddPrefixLess<SBSubPrefix,SBAddPrefix>,
+               SBAddPrefixLess<SBAddPrefix, SBSubPrefix>,
+               SBAddPrefixLess<SBSubPrefix, SBAddPrefix>,
                &removed_adds);
 
   // Remove the full-hashes corrosponding to the adds which
@@ -167,8 +169,8 @@ void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
     // Factor out the full-hash subs.
     std::vector<SBAddFullHash> removed_full_adds;
     KnockoutSubs(sub_full_hashes, add_full_hashes,
-                 SBAddPrefixHashLess<SBAddFullHash,SBSubFullHash>,
-                 SBAddPrefixHashLess<SBSubFullHash,SBAddFullHash>,
+                 SBAddPrefixHashLess<SBAddFullHash, SBSubFullHash>,
+                 SBAddPrefixHashLess<SBSubFullHash, SBAddFullHash>,
                  &removed_full_adds);
   }
 

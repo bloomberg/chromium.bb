@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/task.h"
 #include "base/time.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"

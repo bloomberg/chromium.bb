@@ -17,7 +17,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "base/task.h"
 #include "ipc/ipc_channel.h"
 #include "chrome/service/service_child_process_host.h"
 #include "printing/native_metafile.h"

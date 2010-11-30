@@ -6,7 +6,7 @@
 #define VIEWS_WINDOW_NON_CLIENT_VIEW_H_
 #pragma once
 
-#include "base/task.h"
+#include "base/basictypes.h"
 #include "views/view.h"
 #include "views/window/client_view.h"
 
@@ -236,4 +236,4 @@ class NonClientView : public View {
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_WINDOW_NON_CLIENT_VIEW_H_
+#endif  // VIEWS_WINDOW_NON_CLIENT_VIEW_H_

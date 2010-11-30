@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/task.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/model_associator.h"
