@@ -154,7 +154,6 @@ class GeneralPageView : public OptionsPageView,
   views::NativeButton* default_search_manage_engines_button_;
   scoped_ptr<SearchEngineListModel> default_search_engines_model_;
   views::Checkbox* instant_checkbox_;
-  views::Label* instant_type_label_;
   views::Link* instant_link_;
 
   // Controls for the Default Browser group

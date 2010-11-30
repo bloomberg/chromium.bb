@@ -1255,12 +1255,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
   NSInteger state = enabled ? NSOnState : NSOffState;
   [instantCheckbox_ setState:state];
 
-  NSString* title = @"";
-  if (enabled) {
-    title = [NSString stringWithFormat:@"[%d]",
-        prefs_->GetInteger(prefs::kInstantType)];
-  }
-  [instantExperiment_ setStringValue:title];
+  [instantExperiment_ setStringValue:@""];
 }
 
 - (IBAction)learnMoreAboutInstant:(id)sender {

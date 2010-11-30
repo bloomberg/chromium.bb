@@ -56,7 +56,6 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kInstantEnabled, false);
   prefs->RegisterBooleanPref(prefs::kInstantEnabledOnce, false);
   prefs->RegisterInt64Pref(prefs::kInstantEnabledTime, false);
-  prefs->RegisterIntegerPref(prefs::kInstantType, 0);
   PromoCounter::RegisterUserPrefs(prefs, prefs::kInstantPromo);
 }
 
@@ -107,15 +106,6 @@ void InstantController::Enable(Profile* profile) {
   if (!service)
     return;
 
-  // Randomly pick a type. We're doing this to get feedback as to which variant
-  // folks prefer.
-#if defined(TOOLKIT_VIEWS)
-  int max_type = LAST_TYPE;
-#else
-  int max_type = VERBATIM_TYPE;
-#endif
-  service->SetInteger(prefs::kInstantType,
-                      base::RandInt(static_cast<int>(FIRST_TYPE), max_type));
   service->SetBoolean(prefs::kInstantEnabled, true);
   service->SetBoolean(prefs::kInstantConfirmDialogShown, true);
   service->SetInt64(prefs::kInstantEnabledTime,
@@ -532,17 +522,8 @@ bool InstantController::GetType(Profile* profile, Type* type) {
   if (!prefs->GetBoolean(prefs::kInstantEnabled))
     return false;
 
-  int int_value = prefs->GetInteger(prefs::kInstantType);
-  if (int_value < FIRST_TYPE || int_value > LAST_TYPE) {
-    // Make sure the value is legal.
-    int_value = FIRST_TYPE;
-  }
-#if !defined(TOOLKIT_VIEWS)
-  // PREDICTIVE_NO_AUTO_COMPLETE_TYPE only makes sense on views.
-  if (int_value == PREDICTIVE_NO_AUTO_COMPLETE_TYPE)
-    int_value = PREDICTIVE_TYPE;
-#endif
-  *type = static_cast<Type>(int_value);
+  // PREDICTIVE_TYPE is the default if enabled via preferences.
+  *type = PREDICTIVE_TYPE;
   return true;
 }
 

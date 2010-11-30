@@ -203,20 +203,6 @@ void GeneralPageGtk::NotifyPrefChanged(const std::string* pref_name) {
       instant_checkbox_) {
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(instant_checkbox_), instant_.GetValue());
-    std::string description = l10n_util::GetStringUTF8(IDS_INSTANT_PREF);
-    if (instant_.GetValue()) {
-      description += " " +
-          base::StringPrintf("[%d]", prefs->GetInteger(prefs::kInstantType));
-    }
-    gtk_button_set_label(GTK_BUTTON(instant_checkbox_), description.c_str());
-
-    // Relies on knowledge of GTK+ internals to find the checkbox's label child
-    // and then make the indent below match its vertical spacing.
-    GtkWidget* instant_label = gtk_bin_get_child(GTK_BIN(instant_checkbox_));
-    if (instant_label && GTK_IS_LABEL(instant_label)) {
-      g_signal_connect(instant_label, "size-allocate",
-                       G_CALLBACK(OnInstantLabelSizeAllocateThunk), this);
-    }
   }
 
   initializing_ = false;
@@ -420,6 +406,14 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
   g_signal_connect(instant_checkbox_, "toggled",
                    G_CALLBACK(OnInstantToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(instant_vbox), instant_checkbox_, FALSE, FALSE, 0);
+
+  // Relies on knowledge of GTK+ internals to find the checkbox's label child
+  // and then make the indent below match its vertical spacing.
+  GtkWidget* instant_label = gtk_bin_get_child(GTK_BIN(instant_checkbox_));
+  if (instant_label && GTK_IS_LABEL(instant_label)) {
+    g_signal_connect(instant_label, "size-allocate",
+                     G_CALLBACK(OnInstantLabelSizeAllocateThunk), this);
+  }
 
   instant_indent_ = gtk_fixed_new();
   GtkWidget* explanation_box = gtk_hbox_new(FALSE, 0);

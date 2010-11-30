@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
@@ -215,7 +214,6 @@ GeneralPageView::GeneralPageView(Profile* profile)
       default_search_group_(NULL),
       default_search_manage_engines_button_(NULL),
       instant_checkbox_(NULL),
-      instant_type_label_(NULL),
       instant_link_(NULL),
       default_browser_group_(NULL),
       default_browser_status_label_(NULL),
@@ -444,19 +442,8 @@ void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
         !show_home_button_.IsManaged());
   }
 
-  if (!pref_name || *pref_name == prefs::kInstantEnabled) {
-    bool is_instant_enabled = prefs->GetBoolean(prefs::kInstantEnabled);
-    instant_checkbox_->SetChecked(is_instant_enabled);
-    if (is_instant_enabled) {
-      instant_type_label_->SetText(
-          L"[" +
-          UTF8ToWide(
-              base::IntToString(prefs->GetInteger(prefs::kInstantType))) +
-          L"]");
-    }
-    instant_type_label_->SetVisible(is_instant_enabled);
-    instant_type_label_->GetParent()->Layout();
-  }
+  if (!pref_name || *pref_name == prefs::kInstantEnabled)
+    instant_checkbox_->SetChecked(prefs->GetBoolean(prefs::kInstantEnabled));
 }
 
 void GeneralPageView::HighlightGroup(OptionsGroup highlight_group) {
@@ -672,8 +659,6 @@ void GeneralPageView::InitDefaultSearchGroup() {
   instant_checkbox_->SetMultiLine(false);
   instant_checkbox_->set_listener(this);
 
-  instant_type_label_ = new views::Label();
-
   instant_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
   instant_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   instant_link_->SetController(this);
@@ -697,8 +682,6 @@ void GeneralPageView::InitDefaultSearchGroup() {
   column_set = layout->AddColumnSet(checkbox_column_view_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
 
   const int link_column_set_id = 2;
   column_set = layout->AddColumnSet(link_column_set_id);
@@ -717,7 +700,6 @@ void GeneralPageView::InitDefaultSearchGroup() {
 
   layout->StartRow(0, checkbox_column_view_set_id);
   layout->AddView(instant_checkbox_);
-  layout->AddView(instant_type_label_);
   layout->AddPaddingRow(0, 0);
 
   layout->StartRow(0, link_column_set_id);

@@ -226,9 +226,6 @@ const char kInstantEnabledTime[] = "instant.enabled_time";
 // that are used.
 const char kInstantPromo[] = "instant.promo";
 
-// Type of instant. This is one of the enums defined in InstantController::TYPE.
-const char kInstantType[] = "instant.type";
-
 #if defined(USE_NSS) || defined(USE_OPENSSL)
 // Prefs for SSLConfigServicePref.  Currently, these are only present on
 // and used by NSS/OpenSSL using OSes.
