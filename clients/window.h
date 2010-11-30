@@ -222,9 +222,11 @@ display_set_drag_offer_handler(struct display *display,
 			       display_drag_offer_handler_t handler);
 
 struct wl_drag *
-window_start_drag(struct window *window, struct input *input, uint32_t time,
-		  const struct wl_drag_listener *listener, void *data);
+window_create_drag(struct window *window);
 
+void
+window_activate_drag(struct wl_drag *drag, struct window *window,
+		     struct input *input, uint32_t time);
 
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);

@@ -477,6 +477,7 @@ dnd_button_handler(struct window *window,
 	struct item *item;
 	struct rectangle rectangle;
 	struct dnd_drag *dnd_drag;
+	struct wl_drag *drag;
 
 	window_get_child_rectangle(dnd->window, &rectangle);
 	input_get_position(input, &x, &y);
@@ -497,8 +498,11 @@ dnd_button_handler(struct window *window,
 		dnd_drag->translucent =
 			create_drag_cursor(dnd_drag, item, x, y, 0.2);
 
-		window_start_drag(window, input, time,
-				  &drag_listener, dnd_drag);
+		drag = window_create_drag(window);
+		wl_drag_offer(drag, "text/plain");
+		wl_drag_offer(drag, "text/html");
+		window_activate_drag(drag, window, input, time);
+		wl_drag_add_listener(drag, &drag_listener, dnd_drag);
 	}
 }
 

@@ -988,20 +988,18 @@ input_get_input_device(struct input *input)
 }
 
 struct wl_drag *
-window_start_drag(struct window *window, struct input *input, uint32_t time,
-		  const struct wl_drag_listener *listener, void *data)
+window_create_drag(struct window *window)
 {
-	struct wl_drag *drag;
-
 	cairo_device_flush (window->display->device);
 
-	drag = wl_shell_create_drag(window->display->shell);
-	wl_drag_offer(drag, "text/plain");
-	wl_drag_offer(drag, "text/html");
-	wl_drag_activate(drag, window->surface, input->input_device, time);
-	wl_drag_add_listener(drag, listener, data);
+	return wl_shell_create_drag(window->display->shell);
+}
 
-	return drag;
+void
+window_activate_drag(struct wl_drag *drag, struct window *window,
+		     struct input *input, uint32_t time)
+{
+	wl_drag_activate(drag, window->surface, input->input_device, time);
 }
 
 static void
