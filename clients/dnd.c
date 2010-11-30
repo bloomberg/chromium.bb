@@ -271,9 +271,16 @@ drag_finish(void *data, struct wl_drag *drag, int fd)
 	free(dnd_drag);
 }
 
+static void
+drag_reject(void *data, struct wl_drag *drag)
+{
+	fprintf(stderr, "drop rejected\n");
+}
+
 static const struct wl_drag_listener drag_listener = {
 	drag_target,
-	drag_finish
+	drag_finish,
+	drag_reject
 };
 
 static void
@@ -379,10 +386,7 @@ drag_offer_drop(void *data, struct wl_drag_offer *offer)
 
 	if (!dnd_offer->drag_type) {
 		fprintf(stderr, "got 'drop', but no target\n");
-		/* FIXME: Should send response so compositor and
-		 * source knows it's over. Can't send -1 to indicate
-		 * 'no target' though becauses of the way fd passing
-		 * currently works.  */
+		wl_drag_offer_reject(offer);
 		return;
 	}
 

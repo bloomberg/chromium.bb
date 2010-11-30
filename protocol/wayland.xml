@@ -209,6 +209,8 @@
     <event name="finish">
       <arg name="fd" type="fd"/>
     </event>
+
+    <event name="reject"/>
   </interface>
 
 
@@ -225,6 +227,9 @@
     <request name="receive">
       <arg name="fd" type="fd"/>
     </request>
+
+    <!-- Called to reject a drop  -->
+    <request name="reject"/>
 
     <!-- Sent before the pointer_focus event to announce the types
          offered.  One event per offered mime type. -->

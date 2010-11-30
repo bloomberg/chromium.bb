@@ -1137,9 +1137,19 @@ drag_offer_receive(struct wl_client *client,
 	close(fd);
 }
 
+static void
+drag_offer_reject(struct wl_client *client, struct wl_drag_offer *offer)
+{
+	struct wl_drag *drag = container_of(offer, struct wl_drag, drag_offer);
+
+	wl_client_post_event(drag->source->client, &drag->resource.base,
+			     WL_DRAG_REJECT);
+}
+
 static const struct wl_drag_offer_interface drag_offer_interface = {
 	drag_offer_accept,
-	drag_offer_receive
+	drag_offer_receive,
+	drag_offer_reject
 };
 
 static void
