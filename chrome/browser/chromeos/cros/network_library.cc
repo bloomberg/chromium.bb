@@ -1496,9 +1496,18 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                << " error=" << service->error;
       // Once a connected ethernet service is found, disregard other ethernet
       // services that are also found
-      if (service->type == TYPE_ETHERNET)
-        ethernet_ = new EthernetNetwork(service);
-      else if (service->type == TYPE_WIFI) {
+      if (service->type == TYPE_ETHERNET) {
+        // There could be multiple ethernet services (eth0, dummy0, etc)
+        // In this case, once you find a connected service, ignore the
+        // other ones.  Otherwise, you may choose an ethernet service
+        // that is not connected.
+        if (ethernet_ == NULL || !(ethernet_->connected())) {
+          // If previous ethernet was previously created, free it first
+          if (ethernet_ != NULL)
+            delete ethernet_;
+          ethernet_ = new EthernetNetwork(service);
+        }
+      } else if (service->type == TYPE_WIFI) {
         wifi_networks_.push_back(new WifiNetwork(service));
       } else if (service->type == TYPE_CELLULAR) {
         cellular_networks_.push_back(new CellularNetwork(service));
