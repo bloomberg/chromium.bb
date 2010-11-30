@@ -166,7 +166,7 @@ global_config_flags = {
       '-sfi-cp-fudge',
       # NOTE: we need a fairly high fudge factor because of
       # some vfp instructions which only have a 9bit offset
-      '-sfi-cp-fudge-percent=75',
+      '-sfi-cp-fudge-percent=50',
       '-sfi-store',
       '-sfi-stack',
       '-sfi-branch',
