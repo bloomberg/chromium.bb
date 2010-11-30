@@ -147,7 +147,7 @@ namespace {
 // The URL to be loaded to display Help.
 #if defined(OS_CHROMEOS)
 const char kHelpContentUrl[] =
-    "chrome-extension://nifaohjgppdbmalmmgkmfdlodaggnbpe/main.html";
+    "chrome-extension://oonnajkebngbfpmcpekfdeofeannbapp/main.html";
 const char kHelpContentOnlineUrl[] =
     "http://www.google.com/support/chromeos/";
 #else
