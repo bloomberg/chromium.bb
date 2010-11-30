@@ -120,11 +120,33 @@ def GetSources(dest_dir):
   return src
 
 
+def CopyNaClSourceSubset(top_dir):
+  # TODO(mseaborn): Currently the NaCl source tree is treated as a
+  # special case.  We scan it and update our private copy on every run
+  # of build.py.  We should do something similar for the other source
+  # trees.
+  full_working_tree = btarget.ExistingSource("nacl-src-orig", nacl_src)
+  subset_tree = btarget.TreeMapper(
+      "nacl-src", os.path.join(top_dir, "temp_source", "nacl"),
+      treemappers.NaClSourceSubset,
+      [full_working_tree])
+  opts = btarget.BuildOptions()
+  # We disable the check because it produces a warning/error when
+  # Python .pyc files are written into the temporary source tree, but
+  # there is no reason to modify the temporary source tree by hand.
+  # TODO(mseaborn): Deal with the .pyc file problem in a more general
+  # way.
+  opts.check_for_manual_change = False
+  subset_tree.DoBuild(opts)
+  return subset_tree
+
+
 def GetTargets():
   top_dir = os.path.abspath("out")
   src = GetSources(os.path.join(top_dir, "source"))
   modules = {}
   module_list = []
+  modules["nacl_src"] = CopyNaClSourceSubset(top_dir)
 
   # In principle we can build a multilib toolchain with either
   # "--target=nacl" or "--target=nacl64", and it should only affect
@@ -186,7 +208,6 @@ def GetTargets():
       "--disable-shared",
       "--target=%s" % arch]
 
-  modules["nacl_src"] = btarget.ExistingSource("nacl-src", nacl_dir)
   modules["nacl-headers"] = \
       btarget.ExportHeaders("nacl-headers", os.path.join(top_dir, "headers"),
                             modules["nacl_src"])

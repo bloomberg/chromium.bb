@@ -179,8 +179,8 @@ scratch.
 
 == Limitations ==
 
-modular-build does not scan source directories when it is run, so
-changing source files does not trigger a rebuild.
+modular-build does not scan source directories in out/source/* when it
+is run, so changing source files there does not trigger a rebuild.
 
 This means --non-pristine (--np) tends to be useful only when used
 with --single (-s), unless the target has not successfully built

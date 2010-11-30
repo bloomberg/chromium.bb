@@ -29,6 +29,7 @@ def CheckedRepr(val):
 class BuildOptions(object):
 
   allow_non_pristine = False
+  check_for_manual_change = True
   allow_overwrite = False
 
 
@@ -111,7 +112,8 @@ class TargetBase(object):
 
   def DoBuild(self, opts):
     input = self.GetCurrentInput()
-    self._CheckForManualChange(opts)
+    if opts.check_for_manual_change:
+      self._CheckForManualChange(opts)
     result_info = self._build_func(opts)
     if result_info is None:
       result_info = {}
@@ -388,11 +390,11 @@ def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
 def ExportHeaders(name, dest_dir, src_dir):
   def DoBuild(opts):
     ResetDir(dest_dir)
-    nacl_dir = src_dir.dest_path
+    service_runtime_dir = os.path.join(
+        src_dir.dest_path, "native_client/src/trusted/service_runtime")
     subprocess.check_call(
-        [os.path.join(nacl_dir,
-                      "src/trusted/service_runtime/export_header.py"),
-         os.path.join(nacl_dir, "src/trusted/service_runtime/include"),
+        [os.path.join(service_runtime_dir, "export_header.py"),
+         os.path.join(service_runtime_dir, "include"),
          dest_dir])
   return BuildTarget(name, dest_dir, DoBuild, args=[], deps=[src_dir])
 
@@ -414,7 +416,7 @@ def SconsBuild(name, dest_dir, build_dir, src_dir, prefix_obj,
       ResetDir(build_dir)
     ResetDir(dest_dir)
     subprocess.check_call(scons_cmd + ["--verbose"],
-                          cwd=src_dir.dest_path)
+                          cwd=os.path.join(src_dir.dest_path, "native_client"))
     return {"pristine": pristine}
   return BuildTarget(name, dest_dir, DoBuild,
                      args=[scons_cmd],
