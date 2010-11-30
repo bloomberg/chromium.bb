@@ -360,6 +360,8 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                     l10n_util::GetStringUTF16(IDS_MOBILE_ACTIVATING_HEADER));
   strings.SetString("completed_header",
                     l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_HEADER));
+  strings.SetString("please_wait",
+                    l10n_util::GetStringUTF16(IDS_MOBILE_PLEASE_WAIT));
   strings.SetString("completed_text",
                     l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_TEXT));
   strings.SetString("close_button",

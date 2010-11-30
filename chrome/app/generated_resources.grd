@@ -4326,6 +4326,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_MOBILE_COMPLETED_HEADER" desc="Message header when data service is completed">
           Activation complete
         </message>
+        <message name="IDS_MOBILE_PLEASE_WAIT" desc="Message user the header displayed while mobile plan is being activated">
+          (this might take a few minutes)
+        </message>
         <message name="IDS_MOBILE_COMPLETED_TEXT" desc="Message when cellular data service activation or payment is completed">
           Your data service is activated and ready to use
         </message>
