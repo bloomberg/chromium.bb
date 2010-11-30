@@ -466,8 +466,11 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (BOOL)acceptsFirstResponder {
-  // Accept first responder if the first responder isn't the RWHVMac.
-  return [[self window] firstResponder] != [self superview];
+  // Accept first responder if the first responder isn't the RWHVMac, and if the
+  // RWHVMac accepts first responder.  If the RWHVMac does not accept first
+  // responder, do not accept on its behalf.
+  return ([[self window] firstResponder] != [self superview] &&
+          [[self superview] acceptsFirstResponder]);
 }
 
 - (BOOL)becomeFirstResponder {
