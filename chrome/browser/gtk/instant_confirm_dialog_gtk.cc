@@ -14,6 +14,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/show_options_url.h"
 #include "googleurl/src/gurl.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 namespace browser {

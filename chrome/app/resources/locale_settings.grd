@@ -698,7 +698,7 @@
 
       <!-- The width of the Instant confirm dialog box in characters. -->
       <message name="IDS_INSTANT_CONFIRM_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        95
+        70
       </message>
 
       <if expr="pp_ifdef('chromeos')">

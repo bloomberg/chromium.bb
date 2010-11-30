@@ -4193,11 +4193,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_INSTANT_OPT_IN_LABEL" desc="Label shown in the omnibox dropdown for enabling instant">
         Enable Instant for faster searching and browsing?
       </message>
-      <message name="IDS_INSTANT_OPT_IN_TITLE" desc="Title of the instant opt-in dialog">
-        Instant
-      </message>
       <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant opt-in dialog">
-        Instant lets you view web pages and search results faster than ever!\n\nWith Instant enabled, most web pages begin loading as soon as you type a URL in the omnibox, before you hit Enter. In addition, if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause new search results are requested each time you press a key, anything you type into the omnibox may be logged as a search query by your default search engine.\n\n
+        With Instant enabled, most web pages begin loading as soon as you type a URL in the omnibox, before you hit Enter. In addition, if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause new search results are requested each time you press a key, anything you type into the omnibox may be logged as a search query by your default search engine.\n
       </message>
       <message name="IDS_INSTANT_PREF" desc="Preference for enabling instant">
         Enable Instant for faster searching and browsing

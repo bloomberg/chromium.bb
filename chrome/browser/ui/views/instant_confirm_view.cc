@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
@@ -36,7 +37,7 @@ InstantConfirmView::InstantConfirmView(Profile* profile) : profile_(profile) {
 
   const int first_column_set = 1;
   views::ColumnSet* column_set = layout->AddColumnSet(first_column_set);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, first_column_set);
   layout->AddView(description_label);
