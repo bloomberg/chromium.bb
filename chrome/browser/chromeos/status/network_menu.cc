@@ -45,38 +45,40 @@ namespace chromeos {
 // NetworkMenu
 
 // static
-const int NetworkMenu::kNumWifiImages = 4;
+const int NetworkMenu::kNumBarsImages = 4;
 
 // NOTE: Use an array rather than just calculating a resource number to avoid
 // creating implicit ordering dependencies on the resource values.
 // static
-const int NetworkMenu::kBarsImages[kNumWifiImages] = {
+const int NetworkMenu::kBarsImages[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS1,
   IDR_STATUSBAR_NETWORK_BARS2,
   IDR_STATUSBAR_NETWORK_BARS3,
   IDR_STATUSBAR_NETWORK_BARS4,
 };
 // static
-const int NetworkMenu::kBarsImagesBlack[kNumWifiImages] = {
+const int NetworkMenu::kBarsImagesBlack[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS1_BLACK,
   IDR_STATUSBAR_NETWORK_BARS2_BLACK,
   IDR_STATUSBAR_NETWORK_BARS3_BLACK,
   IDR_STATUSBAR_NETWORK_BARS4_BLACK,
 };
+/*
 // static
-const int NetworkMenu::kBarsImagesLowData[kNumWifiImages] = {
+const int NetworkMenu::kBarsImagesLowData[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS1_ORANGE,
   IDR_STATUSBAR_NETWORK_BARS2_ORANGE,
   IDR_STATUSBAR_NETWORK_BARS3_ORANGE,
   IDR_STATUSBAR_NETWORK_BARS4_ORANGE,
 };
 // static
-const int NetworkMenu::kBarsImagesVLowData[kNumWifiImages] = {
+const int NetworkMenu::kBarsImagesVLowData[kNumBarsImages] = {
   IDR_STATUSBAR_NETWORK_BARS1_RED,
   IDR_STATUSBAR_NETWORK_BARS2_RED,
   IDR_STATUSBAR_NETWORK_BARS3_RED,
   IDR_STATUSBAR_NETWORK_BARS4_RED,
 };
+*/
 
 NetworkMenu::NetworkMenu()
     : min_width_(-1) {
@@ -378,33 +380,32 @@ void NetworkMenu::UpdateMenu() {
 }
 
 // static
-SkBitmap NetworkMenu::IconForNetworkStrength(int strength, bool black) {
+SkBitmap NetworkMenu::IconForNetworkStrength(const WifiNetwork* wifi,
+                                             bool black) {
+  DCHECK(wifi);
   // Compose wifi icon by superimposing various icons.
-  int index = static_cast<int>(strength / 100.0 *
-      nextafter(static_cast<float>(kNumWifiImages), 0));
-  index = std::max(std::min(index, kNumWifiImages - 1), 0);
+  int index = static_cast<int>(wifi->strength() / 100.0 *
+      nextafter(static_cast<float>(kNumBarsImages), 0));
+  index = std::max(std::min(index, kNumBarsImages - 1), 0);
   const int* images = black ? kBarsImagesBlack : kBarsImages;
   return *ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
 }
 
 // static
-SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular) {
+SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular,
+                                             bool black) {
   DCHECK(cellular);
+  // If no data, then we show 0 bars.
+  if (cellular->GetDataLeft() == CellularNetwork::DATA_NONE) {
+    return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
+                IDR_STATUSBAR_NETWORK_BARS0);
+  }
   // Compose cellular icon by superimposing various icons.
   int index = static_cast<int>(cellular->strength() / 100.0 *
-      nextafter(static_cast<float>(kNumWifiImages), 0));
-  index = std::max(std::min(index, kNumWifiImages - 1), 0);
-  const int* images = kBarsImages;
-  switch (cellular->GetDataLeft()) {
-    case CellularNetwork::DATA_NONE:
-      images = kBarsImagesVLowData;
-      break;
-    case CellularNetwork::DATA_VERY_LOW:
-    case CellularNetwork::DATA_LOW:
-    case CellularNetwork::DATA_NORMAL:
-      images = kBarsImages;
-      break;
-  }
+      nextafter(static_cast<float>(kNumBarsImages), 0));
+  index = std::max(std::min(index, kNumBarsImages - 1), 0);
+  const int* images = black ? kBarsImagesBlack : kBarsImages;
   return *ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
 }
 
@@ -560,8 +561,7 @@ void NetworkMenu::InitMenuItems() {
         }
       }
 
-      SkBitmap icon = IconForNetworkStrength(wifi_networks[i]->strength(),
-                                             true);
+      SkBitmap icon = IconForNetworkStrength(wifi_networks[i], true);
       SkBitmap badge = wifi_networks[i]->encrypted() ?
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : SkBitmap();
       int flag = FLAG_WIFI;
@@ -621,8 +621,7 @@ void NetworkMenu::InitMenuItems() {
         }
       }
 
-      SkBitmap icon = IconForNetworkStrength(cell_networks[i]->strength(),
-                                             true);
+      SkBitmap icon = IconForNetworkStrength(cell_networks[i], true);
       SkBitmap badge = BadgeForNetworkTechnology(cell_networks[i]);
       int flag = FLAG_CELLULAR;
       if (!cell_networks[i]->connectable())

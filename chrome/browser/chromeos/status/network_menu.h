@@ -114,13 +114,15 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // Cancels the active menu.
   void CancelMenu();
 
-  // Returns the Icon for a network strength between 0 and 100.
+  // Returns the Icon for a network strength for a WifiNetwork |wifi|.
   // |black| is used to specify whether to return a black icon for display
   // on a light background or a white icon for display on a dark background.
-  static SkBitmap IconForNetworkStrength(int strength, bool black);
+  static SkBitmap IconForNetworkStrength(const WifiNetwork* wifi, bool black);
   // Returns the Icon for a network strength for CellularNetwork |cellular|.
-  // This returns different colored bars depending on cellular data left.
-  static SkBitmap IconForNetworkStrength(const CellularNetwork* cellular);
+  // |black| is used to specify whether to return a black icon for display
+  // on a light background or a white icon for display on a dark background.
+  static SkBitmap IconForNetworkStrength(const CellularNetwork* cellular,
+                                         bool black);
   // Returns the Icon for animating network connecting.
   // |animation_value| is the value from Animation.GetCurrentValue()
   // |black| is used to specify whether to return a black icon for display
@@ -203,14 +205,15 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;
 
-  // The number of wifi strength images.
-  static const int kNumWifiImages;
+  // The number of bars images for representing network strength.
+  static const int kNumBarsImages;
 
   // Bars image resources.
   static const int kBarsImages[];
   static const int kBarsImagesBlack[];
-  static const int kBarsImagesLowData[];
-  static const int kBarsImagesVLowData[];
+  // TODO(chocobo): Add these back when we decide to do colored bars again.
+//  static const int kBarsImagesLowData[];
+//  static const int kBarsImagesVLowData[];
 
   // Our menu items.
   MenuItemVector menu_items_;

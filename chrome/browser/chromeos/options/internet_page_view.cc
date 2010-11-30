@@ -322,7 +322,7 @@ void WirelessSection::InitSection() {
     std::wstring name = ASCIIToWide(wifi_networks_[i]->name());
 
     SkBitmap icon = NetworkMenu::IconForNetworkStrength(
-        wifi_networks_[i]->strength(), true);
+        wifi_networks_[i], true);
     if (wifi_networks_[i]->encrypted()) {
       icon = NetworkMenu::IconForDisplay(icon,
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
@@ -339,7 +339,7 @@ void WirelessSection::InitSection() {
     std::wstring name = ASCIIToWide(cellular_networks_[i]->name());
 
     SkBitmap icon = NetworkMenu::IconForNetworkStrength(
-        cellular_networks_[i]->strength(), true);
+        cellular_networks_[i], true);
     SkBitmap badge =
         NetworkMenu::BadgeForNetworkTechnology(cellular_networks_[i]);
     icon = NetworkMenu::IconForDisplay(icon, badge);

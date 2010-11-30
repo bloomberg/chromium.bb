@@ -75,18 +75,23 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // Always show the active network, if any
     const Network* active_network = cros->active_network();
-    const WirelessNetwork* wireless;
     if (active_network != NULL) {
       animation_connecting_.Stop();
       if (active_network->type() == TYPE_ETHERNET) {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
         SetText(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
+      } else if (active_network->type() == TYPE_WIFI) {
+        const WifiNetwork* wifi =
+            static_cast<const WifiNetwork*>(active_network);
+        SetIcon(IconForNetworkStrength(wifi, true));
+        SetText(ASCIIToWide(wifi->name()));
+      } else if (active_network->type() == TYPE_CELLULAR) {
+        const CellularNetwork* cellular =
+            static_cast<const CellularNetwork*>(active_network);
+        SetIcon(IconForNetworkStrength(cellular, true));
+        SetText(ASCIIToWide(cellular->name()));
       } else {
-        DCHECK(active_network->type() == TYPE_WIFI ||
-               active_network->type() == TYPE_CELLULAR);
-        wireless = static_cast<const WirelessNetwork*>(active_network);
-        SetIcon(IconForNetworkStrength(wireless->strength(), true));
-        SetText(ASCIIToWide(wireless->name()));
+        NOTREACHED();
       }
     } else if (cros->wifi_connecting() || cros->cellular_connecting()) {
       if (!animation_connecting_.is_animating()) {

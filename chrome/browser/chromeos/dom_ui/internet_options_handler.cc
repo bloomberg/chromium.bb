@@ -933,8 +933,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WifiNetworkVector& wifi_networks = cros->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
-    SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(
-        (*it)->strength(), true);
+    SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
     if ((*it)->encrypted()) {
       icon = chromeos::NetworkMenu::IconForDisplay(icon,
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
@@ -956,8 +955,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cros->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
-    SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(
-        (*it)->strength(), true);
+    SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(*it, true);
     SkBitmap badge = chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
     icon = chromeos::NetworkMenu::IconForDisplay(icon, badge);
     list->Append(GetNetwork(
