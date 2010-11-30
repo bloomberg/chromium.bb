@@ -473,7 +473,7 @@ void TestingProfile::set_session_service(SessionService* session_service) {
 
 WebKitContext* TestingProfile::GetWebKitContext() {
   if (webkit_context_ == NULL)
-    webkit_context_ = new WebKitContext(this);
+    webkit_context_ = new WebKitContext(this, false);
   return webkit_context_;
 }
 

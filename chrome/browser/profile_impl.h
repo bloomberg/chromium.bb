@@ -234,6 +234,7 @@ class ProfileImpl : public Profile,
   bool created_password_store_;
   bool created_download_manager_;
   bool created_theme_provider_;
+  bool clear_local_state_on_exit_;
   // Whether or not the last session exited cleanly. This is set only once.
   bool last_session_exited_cleanly_;
 

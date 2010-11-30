@@ -9,9 +9,10 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
 
-WebKitContext::WebKitContext(Profile* profile)
+WebKitContext::WebKitContext(Profile* profile, bool clear_local_state_on_exit)
     : data_path_(profile->IsOffTheRecord() ? FilePath() : profile->GetPath()),
       is_incognito_(profile->IsOffTheRecord()),
+      clear_local_state_on_exit_(clear_local_state_on_exit),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           dom_storage_context_(new DOMStorageContext(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -30,6 +31,8 @@ WebKitContext::~WebKitContext() {
     delete dom_storage_context;
   }
 
+  indexed_db_context_->set_clear_local_state_on_exit(
+      clear_local_state_on_exit_);
   IndexedDBContext* indexed_db_context = indexed_db_context_.release();
   if (!BrowserThread::DeleteSoon(
           BrowserThread::WEBKIT, FROM_HERE, indexed_db_context)) {

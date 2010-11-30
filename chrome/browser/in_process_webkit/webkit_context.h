@@ -24,9 +24,10 @@ class Profile;
 //
 // This class is created on the UI thread and accessed on the UI, IO, and WebKit
 // threads.
-class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
+class WebKitContext
+    : public base::RefCountedThreadSafe<WebKitContext> {
  public:
-  explicit WebKitContext(Profile* profile);
+  explicit WebKitContext(Profile* profile, bool clear_local_state_on_exit);
 
   const FilePath& data_path() const { return data_path_; }
   bool is_incognito() const { return is_incognito_; }
@@ -37,6 +38,10 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
 
   IndexedDBContext* indexed_db_context() {
     return indexed_db_context_.get();
+  }
+
+  void set_clear_local_state_on_exit(bool clear_local_state) {
+    clear_local_state_on_exit_ = clear_local_state;
   }
 
 #ifdef UNIT_TEST
@@ -62,11 +67,14 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
 
  private:
   friend class base::RefCountedThreadSafe<WebKitContext>;
-  ~WebKitContext();
+  virtual ~WebKitContext();
 
   // Copies of profile data that can be accessed on any thread.
   const FilePath data_path_;
   const bool is_incognito_;
+
+  // True if the destructors of context objects should delete their files.
+  bool clear_local_state_on_exit_;
 
   scoped_ptr<DOMStorageContext> dom_storage_context_;
 

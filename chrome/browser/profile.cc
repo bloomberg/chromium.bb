@@ -500,7 +500,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual WebKitContext* GetWebKitContext() {
     if (!webkit_context_.get())
-      webkit_context_ = new WebKitContext(this);
+      webkit_context_ = new WebKitContext(this, false);
     DCHECK(webkit_context_.get());
     return webkit_context_.get();
   }

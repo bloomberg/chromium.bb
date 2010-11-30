@@ -273,6 +273,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
   pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
   pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
+  pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
 
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(prefs, CommandLine::ForCurrentProcess());
@@ -317,6 +318,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   extension_info_map_ = new ExtensionInfoMap();
 
   GetPolicyContext()->Initialize();
+
+  clear_local_state_on_exit_ = prefs->GetBoolean(prefs::kClearSiteDataOnExit);
 
   // Log the profile size after a reasonable startup delay.
   BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
@@ -1166,7 +1169,7 @@ void ProfileImpl::SpellCheckHostInitialized() {
 
 WebKitContext* ProfileImpl::GetWebKitContext() {
   if (!webkit_context_.get())
-    webkit_context_ = new WebKitContext(this);
+    webkit_context_ = new WebKitContext(this, clear_local_state_on_exit_);
   DCHECK(webkit_context_.get());
   return webkit_context_.get();
 }
@@ -1205,6 +1208,12 @@ void ProfileImpl::Observe(NotificationType type,
       NotificationService::current()->Notify(
           NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED,
               Source<Profile>(this), NotificationService::NoDetails());
+    } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
+      clear_local_state_on_exit_ =
+          prefs->GetBoolean(prefs::kClearSiteDataOnExit);
+      if (webkit_context_)
+        webkit_context_->set_clear_local_state_on_exit(
+            clear_local_state_on_exit_);
     }
   } else if (NotificationType::THEME_INSTALLED == type) {
     DCHECK_EQ(Source<Profile>(source).ptr(), GetOriginalProfile());

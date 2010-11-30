@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/common/url_constants.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
@@ -21,39 +22,12 @@ using WebKit::WebIDBDatabase;
 using WebKit::WebIDBFactory;
 using WebKit::WebSecurityOrigin;
 
-const FilePath::CharType IndexedDBContext::kIndexedDBDirectory[] =
-    FILE_PATH_LITERAL("IndexedDB");
+namespace {
 
-const FilePath::CharType IndexedDBContext::kIndexedDBExtension[] =
-    FILE_PATH_LITERAL(".indexeddb");
-
-IndexedDBContext::IndexedDBContext(WebKitContext* webkit_context)
-    : webkit_context_(webkit_context) {
-}
-
-IndexedDBContext::~IndexedDBContext() {
-}
-
-WebIDBFactory* IndexedDBContext::GetIDBFactory() {
-  if (!idb_factory_.get())
-    idb_factory_.reset(WebIDBFactory::create());
-  DCHECK(idb_factory_.get());
-  return idb_factory_.get();
-}
-
-FilePath IndexedDBContext::GetIndexedDBFilePath(
-    const string16& origin_id) const {
-  FilePath storage_dir = webkit_context_->data_path().Append(
-      kIndexedDBDirectory);
-  FilePath::StringType id = webkit_glue::WebStringToFilePathString(origin_id);
-  return storage_dir.Append(id.append(kIndexedDBExtension));
-}
-
-// static
-void IndexedDBContext::ClearLocalState(const FilePath& profile_path,
-                                       const char* url_scheme_to_be_skipped) {
-  file_util::FileEnumerator file_enumerator(profile_path.Append(
-      kIndexedDBDirectory), false, file_util::FileEnumerator::FILES);
+void ClearLocalState(const FilePath& indexeddb_path,
+                     const char* url_scheme_to_be_skipped) {
+  file_util::FileEnumerator file_enumerator(
+      indexeddb_path, false, file_util::FileEnumerator::FILES);
   // TODO(pastarmovj): We might need to consider exchanging this loop for
   // something more efficient in the future.
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
@@ -66,6 +40,40 @@ void IndexedDBContext::ClearLocalState(const FilePath& profile_path,
     if (!EqualsASCII(origin.protocol(), url_scheme_to_be_skipped))
       file_util::Delete(file_path, false);
   }
+}
+
+}  // namespace
+
+const FilePath::CharType IndexedDBContext::kIndexedDBDirectory[] =
+    FILE_PATH_LITERAL("IndexedDB");
+
+const FilePath::CharType IndexedDBContext::kIndexedDBExtension[] =
+    FILE_PATH_LITERAL(".indexeddb");
+
+IndexedDBContext::IndexedDBContext(WebKitContext* webkit_context) {
+  data_path_ = webkit_context->data_path().Append(kIndexedDBDirectory);
+}
+
+IndexedDBContext::~IndexedDBContext() {
+  // Not being on the WEBKIT thread here means we are running in a unit test
+  // where no clean up is needed.
+  if (clear_local_state_on_exit_ &&
+      BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+    ClearLocalState(data_path_, chrome::kExtensionScheme);
+  }
+}
+
+WebIDBFactory* IndexedDBContext::GetIDBFactory() {
+  if (!idb_factory_.get())
+    idb_factory_.reset(WebIDBFactory::create());
+  DCHECK(idb_factory_.get());
+  return idb_factory_.get();
+}
+
+FilePath IndexedDBContext::GetIndexedDBFilePath(
+    const string16& origin_id) const {
+  FilePath::StringType id = webkit_glue::WebStringToFilePathString(origin_id);
+  return data_path_.Append(id.append(kIndexedDBExtension));
 }
 
 void IndexedDBContext::DeleteIndexedDBFile(const FilePath& file_path) {

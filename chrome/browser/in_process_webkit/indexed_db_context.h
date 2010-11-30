@@ -33,10 +33,9 @@ class IndexedDBContext {
   // Get the file name of the indexed db file for the given origin.
   FilePath GetIndexedDBFilePath(const string16& origin_id) const;
 
-  // Deletes all idb files except for those on the url scheme
-  // |url_scheme_to_be_skipped|.
-  static void ClearLocalState(const FilePath& profile_path,
-                              const char* url_scheme_to_be_skipped);
+  void set_clear_local_state_on_exit(bool clear_local_state) {
+    clear_local_state_on_exit_ = clear_local_state;
+  }
 
   // Deletes a single indexed db file.
   void DeleteIndexedDBFile(const FilePath& file_path);
@@ -44,11 +43,19 @@ class IndexedDBContext {
   // Deletes all indexed db files for the given origin.
   void DeleteIndexedDBForOrigin(const string16& origin_id);
 
+#ifdef UNIT_TEST
+  // For unit tests allow to override the |data_path_|.
+  void set_data_path(const FilePath& data_path) { data_path_ = data_path; }
+#endif
+
  private:
   scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
 
-  // We're owned by this WebKit context.
-  WebKitContext* webkit_context_;
+  // Path where the indexed db data is stored
+  FilePath data_path_;
+
+  // True if the destructor should delete its files.
+  bool clear_local_state_on_exit_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContext);
 };

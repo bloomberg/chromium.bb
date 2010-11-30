@@ -9,10 +9,13 @@
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/in_process_webkit/indexed_db_context.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/testing_profile.h"
+#include "chrome/test/thread_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
@@ -92,9 +95,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
       IndexedDBContext::kIndexedDBDirectory);
   ASSERT_TRUE(file_util::CreateDirectory(indexeddb_dir));
 
-  FilePath::StringType file_name_1(FILE_PATH_LITERAL("http_www.google.com_0"));
+  FilePath::StringType file_name_1(FILE_PATH_LITERAL("http_foo_0"));
   file_name_1.append(IndexedDBContext::kIndexedDBExtension);
-  FilePath::StringType file_name_2(FILE_PATH_LITERAL("https_www.google.com_0"));
+  FilePath::StringType file_name_2(FILE_PATH_LITERAL("chrome-extension_foo_0"));
   file_name_2.append(IndexedDBContext::kIndexedDBExtension);
   FilePath temp_file_path_1 = indexeddb_dir.Append(file_name_1);
   FilePath temp_file_path_2 = indexeddb_dir.Append(file_name_2);
@@ -102,7 +105,18 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
   ASSERT_EQ(1, file_util::WriteFile(temp_file_path_1, ".", 1));
   ASSERT_EQ(1, file_util::WriteFile(temp_file_path_2, "o", 1));
 
-  IndexedDBContext::ClearLocalState(temp_dir.path(), "https");
+  // Create the scope which will ensure we run the destructor of the webkit
+  // context which should trigger the clean up.
+  {
+    TestingProfile profile;
+    WebKitContext *webkit_context = profile.GetWebKitContext();
+    webkit_context->indexed_db_context()->set_data_path(indexeddb_dir);
+    webkit_context->set_clear_local_state_on_exit(true);
+  }
+  // Make sure we wait until the destructor has run.
+  scoped_refptr<ThreadTestHelper> helper(
+      new ThreadTestHelper(BrowserThread::WEBKIT));
+  ASSERT_TRUE(helper->Run());
 
   // Because we specified https for scheme to be skipped the second file
   // should survive and the first go into vanity.
