@@ -1,15 +1,35 @@
 .bug-report-label {
   text-align: start;
   vertical-align: text-top;
+  font-weight: 300;
 }
 
 .bug-report-text {
   width: 40em;
-  resize: none;
+}
+
+.bug-report-dropdown {
+  width: 15em;
+}
+
+.bug-report-table {
+  width: 40em;
+  border-spacing: 0px;
+}
+
+.bug-report-field {
+  width: 22em;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.bug-report-fieldlabel {
+  width: 13em;
+  font-weight: 300;
 }
 
 .bug-report-button {
-  width: 8em;
+  
 }
 
 hr {
@@ -18,7 +38,7 @@ hr {
   background: #cccccc;
   margin-top: 10px;
   margin-bottom: 10px;
-  width: 33.5em;
+  width: 40em;
 }
 
 .thumbnail-list {
@@ -70,18 +90,18 @@ hr {
 
 .image-thumbnail img {
   display: block;
-  width: 75px;
+  width: 200px;
 }
 
 .image-thumbnail:hover div {
-    display: block;
-    position: absolute;
-    top: 130%;
-    left:0;
-    padding: 1px;
-    border: 1px dashed blue;
-    background-color: transparent;
-    text-align: center
+  display: block;
+  position: absolute;
+  top: 130%;
+  left: 0;
+  padding: 1px;
+  border: 1px dashed blue;
+  background-color: transparent;
+  text-align: center
 }
 
 .image-thumbnail:hover div img {
@@ -89,19 +109,76 @@ hr {
   width: 400px;
 }
 
-th {
-  padding-top: 10px;
-  color: #233478;
+.image-thumbnail-current {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding: 0px;
+  border: 2px solid white;
 }
 
-#main-panel {
-  display: -webkit-box;
+.image-thumbnail-current:hover {
+  z-index: 2;
+}
+
+.image-thumbnail-current div {
+  display: none;
+}
+
+.image-thumbnail-current img {
+  display: block;
+  width: 200px;
+}
+
+.image-thumbnail-current:hover div {
+  display: block;
+  position: absolute;
+  top: 130%;
+  left: 0;
+  padding: 1px;
+  border: 1px dashed blue;
+  background-color: transparent;
+  text-align: center
+}
+
+.image-thumbnail-current:hover div img {
+  position: absolute;
+  width: 400px;
+  padding: 2px;
+  border: 1px dashed blue;
+}
+
+th {
+  padding-top: 10px;
+  font-weight: normal;
 }
 
 .formpane {
   margin-right: 20px;
 }
 
-body {
-  -webkit-user-select: none;
+.bug-report-input {
+  border-style: solid;
+  border-width: 1px;
+}
+
+#user-email-text {
+  border: none;
+}
+
+#buttons-pane {
+  padding: 0px 0px;
+}
+
+#privacy-note {
+  -webkit-padding-start: 24px;
+  -webkit-padding-end: 24px;
+  padding-top: 24px;
+  padding-bottom: 34px;
+  text-align: start;
+  font-size: 70%;
+  font-weight: normal;
+  color: #53627d;
+  margin: 0;
+  width: 47em;
 }

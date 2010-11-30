@@ -4785,22 +4785,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Report Bug or Broken Web Site Dialog -->
       <message name="IDS_BUGREPORT_TITLE" desc="Dialog title for bug report dialog">
-        Report Bug or Broken Web Site
+        Whoops. Let's fix that.
       </message>
       <message name="IDS_BUGREPORT_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-        Page title:
+        Feedback
       </message>
       <message name="IDS_BUGREPORT_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
-        Page URL:
+        Include this URL:
       </message>
       <message name="IDS_BUGREPORT_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported">
-        User e-mail:
+        Include this email:
       </message>
       <message name="IDS_BUGREPORT_DESCRIPTION_LABEL" desc="Label for the description field">
-        Description:
+        Tell us what is happening. (required)
       </message>
-      <message name="IDS_BUGREPORT_SCREENSHOT_LABEL" desc="Label for the screenshot field">
-        Screenshot:
+      <message name="IDS_BUGREPORT_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
+        Include the current screenshot:
+      </message>
+      <message name="IDS_BUGREPORT_SAVED_SCREENSHOT_LABEL" desc="Label for the screenshot field if saved screenshots are being shown">
+        Include a saved screenshot:
       </message>
       <!-- For Mac compatibility -->
       <message name="IDS_BUGREPORT_SOMETHING_MISSING" desc="In Title Case: Report a bug/problem type: Something's missing">
@@ -4831,23 +4834,41 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_FEEDBACK_STATUS_FAIL" desc="Message for the status of a feedback submission failure">
         User feedback submission failed: $1
       </message>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_BUGREPORT_INCLUDE_LAST_SCREEN_IMAGE" desc="Radio button for including the last screen image on the bug report dialog box">
-          Send last saved screen shot
-        </message>
-        <message name="IDS_BUGREPORT_CURRENT_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
-          Send a current page screen shot
-        </message>
-        <message name="IDS_BUGREPORT_SAVED_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
-          Send a saved screen shot
-        </message>
-        <message name="IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
-          Send system information
-        </message>
-        <message name="IDS_BUGREPORT_SYSTEM_INFORMATION_URL_TEXT" desc="Text for system information url on the bug report dialog box">
-          Included system information...
-        </message>
-      </if>
+      <message name="IDS_BUGREPORT_INCLUDE_LAST_SCREEN_IMAGE" desc="Radio button for including the last screen image on the bug report dialog box">
+        Send last saved screen shot
+      </message>
+      <message name="IDS_BUGREPORT_CURRENT_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
+        Send a current page screen shot
+      </message>
+      <message name="IDS_BUGREPORT_SAVED_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
+        Send a saved screen shot
+      </message>
+      <message name="IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
+        Send system information
+      </message>
+      <message name="IDS_BUGREPORT_SYSTEM_INFORMATION_URL_TEXT" desc="Text for system information url on the bug report dialog box">
+        Include System Information
+      </message>
+      <message name="IDS_BUGREPORT_CHOOSE_DIFFERENT_SCREENSHOT" desc="Text for changing the screenshot selection from current to saved">
+        (Choose a different screenshot)
+      </message>
+      <message name="IDS_BUGREPORT_CHOOSE_ORIGINAL_SCREENSHOT" desc="Text for changing the screenshot selection from saved to current">
+        (Go back to original screenshot)
+      </message>
+      <message name="IDS_BUGREPORT_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
+        Note: When you click "Send Feedback," Chrome OS includes a log of
+        system events from your device. This information is used by
+        us to diagnose problems, understand how you interact with
+        the device, and to help us improve its performance. Any
+        personal information included with the feedback report,
+        whether explicitly in your comments or incidentally in the
+        system logs and the screenshot, will be protected in
+        accordance with our <ph name="BEGIN_LINK">&lt;a target="_blank"
+        href="http://www.google.com/chromeos/intl/en/privacy.html"&gt;</ph>
+        privacy policies.<ph name="END_LINK">&lt;/a&gt;</ph>
+        To not send any system logs at all, please uncheck the
+        "Include System Information" box.
+      </message>
       <message name="IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX" desc="Checkbox for including page source">
         Send source of current page
       </message>
@@ -4866,15 +4887,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_PHISHING_PAGE" desc="Report a bug/problem type: Phishing page">
         Phishing page
       </message>
-      <message name="IDS_BUGREPORT_NO_ISSUE_SELECTED" desc="Message shown when no issue is selected before hitting submit">
-        Please select an issue type from the drop down before sending the report
+      <message name="IDS_BUGREPORT_NO_ISSUE_SELECTED" desc="Message shown when no issue is selected before hitting send feedback">
+        Please tell where you are having problems before sending the feedback.
+      </message>
+      <message name="IDS_BUGREPORT_NO_DESCRIPTION" desc="Message shown when no text is entered before hitting send feedback">
+        Please tell us what is happening before sending the feedback.
+      </message>
+      <message name="IDS_BUGREPORT_NO_SAVED_SCREENSHOTS_HELP" desc="Message shown when no screenshots are available for selection">
+        You can select saved screenshots from here. Currently there are no screenshots available. You can press Ctrl + the "Overview Mode" key together to take a screenshot. The last three screenshots that you have taken will appear here. 
       </message>
       <message name="IDS_BUGREPORT_ISSUE_WITH" desc="Label for issue with">
-        I see an issue with:
+        Where are you having problems? (required)
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_BUGREPORT_SEND_REPORT" desc="Text for OK button on dialog">
-          Send report
+          Send Feedback
         </message>
         <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="Text for report phishing button">
           Open phishing report
@@ -4924,7 +4951,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_BUGREPORT_SEND_REPORT" desc="Text for the send report button on dialog">
-          Send report
+          Send Feedback
         </message>
         <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="Text for report phishing button">
           Open phishing report
