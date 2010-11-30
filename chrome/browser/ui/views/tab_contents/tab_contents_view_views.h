@@ -60,6 +60,9 @@ class TabContentsViewViews : public TabContentsView, public views::View {
   virtual void RestoreFocus();
 
   // views::View implementation
+  virtual void DidChangeBounds(const gfx::Rect& previous,
+                               const gfx::Rect& current);
+
   virtual void Paint(gfx::Canvas* canvas);
 
   // Backend implementation of RenderViewHostDelegate::View.

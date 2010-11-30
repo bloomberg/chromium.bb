@@ -210,6 +210,12 @@ void TabContentsViewViews::RestoreFocus() {
   }
 }
 
+void TabContentsViewViews::DidChangeBounds(const gfx::Rect& previous,
+                                           const gfx::Rect& current) {
+  if (IsVisibleInRootView())
+    WasSized(gfx::Size(current.width(), current.height()));
+}
+
 void TabContentsViewViews::Paint(gfx::Canvas* canvas) {
 }
 
