@@ -126,6 +126,10 @@ def CopyNaClSourceSubset(top_dir):
   # of build.py.  We should do something similar for the other source
   # trees.
   full_working_tree = btarget.ExistingSource("nacl-src-orig", nacl_src)
+  # TODO(mseaborn): We do this DoBuild() call to create a state file
+  # that is needed by later steps, but the state file does not record
+  # anything interesting, so we should be able to factor it away.
+  full_working_tree.DoBuild(btarget.BuildOptions())
   subset_tree = btarget.TreeMapper(
       "nacl-src", os.path.join(top_dir, "temp_source", "nacl"),
       treemappers.NaClSourceSubset,
