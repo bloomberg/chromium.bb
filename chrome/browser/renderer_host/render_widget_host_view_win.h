@@ -264,6 +264,9 @@ class RenderWidgetHostViewWin
   // Create an intermediate window between the given HWND and its parent.
   HWND ReparentWindow(HWND window);
 
+  // Clean up the compositor window, if needed.
+  void CleanupCompositorWindow();
+
   // Whether the window should be activated.
   bool IsActivatable() const;
 

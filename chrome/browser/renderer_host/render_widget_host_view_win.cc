@@ -524,6 +524,27 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
   return parent;
 }
 
+static BOOL CALLBACK AddChildWindowToVector(HWND hwnd, LPARAM lparam) {
+  std::vector<HWND>* vector = reinterpret_cast<std::vector<HWND>*>(lparam);
+  vector->push_back(hwnd);
+  return TRUE;
+}
+
+void RenderWidgetHostViewWin::CleanupCompositorWindow() {
+  if (!compositor_host_window_)
+    return;
+
+  std::vector<HWND> all_child_windows;
+  ::EnumChildWindows(compositor_host_window_, AddChildWindowToVector,
+    reinterpret_cast<LPARAM>(&all_child_windows));
+  if (all_child_windows.size()) {
+    DCHECK(all_child_windows.size() == 1);
+    ::ShowWindow(all_child_windows[0], SW_HIDE);
+    ::SetParent(all_child_windows[0], NULL);
+  }
+  compositor_host_window_ = NULL;
+}
+
 bool RenderWidgetHostViewWin::IsActivatable() const {
   // Popups should not be activated.
   return popup_type_ == WebKit::WebPopupTypeNone;
@@ -714,27 +735,12 @@ void RenderWidgetHostViewWin::RenderViewGone() {
   // TODO(darin): keep this around, and draw sad-tab into it.
   UpdateCursorIfOverSelf();
   being_destroyed_ = true;
+  CleanupCompositorWindow();
   DestroyWindow();
 }
 
-static BOOL CALLBACK AddChildWindowToVector(HWND hwnd, LPARAM lparam) {
-  std::vector<HWND>* vector = reinterpret_cast<std::vector<HWND>*>(lparam);
-  vector->push_back(hwnd);
-  return TRUE;
-}
-
 void RenderWidgetHostViewWin::WillWmDestroy() {
-  if (!compositor_host_window_)
-    return;
-
-  std::vector<HWND> all_child_windows;
-  ::EnumChildWindows(compositor_host_window_, AddChildWindowToVector,
-      reinterpret_cast<LPARAM>(&all_child_windows));
-  if (all_child_windows.size()) {
-    DCHECK(all_child_windows.size() == 1);
-    ::ShowWindow(all_child_windows[0], SW_HIDE);
-    ::SetParent(all_child_windows[0], NULL);
-  }
+  CleanupCompositorWindow();
 }
 
 void RenderWidgetHostViewWin::WillDestroyRenderWidget(RenderWidgetHost* rwh) {
@@ -750,7 +756,7 @@ void RenderWidgetHostViewWin::Destroy() {
   // OnFinalMessage();
   close_on_deactivate_ = false;
   being_destroyed_ = true;
-  WillWmDestroy();
+  CleanupCompositorWindow();
   DestroyWindow();
 }
 
@@ -867,6 +873,8 @@ void RenderWidgetHostViewWin::OnDestroy() {
 
   renderer_id_prop_.reset();
   props_.reset();
+
+  CleanupCompositorWindow();
 
   ResetTooltip();
   TrackMouseLeave(false);
