@@ -770,7 +770,10 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
     } else if (!use_settings_ui_ &&
                service_path == kOtherNetworksFakePath) {
       // Other wifi networks.
-      CreateModalPopup(new chromeos::NetworkConfigView());
+      chromeos::NetworkConfigView* view =
+          new chromeos::NetworkConfigView();
+      CreateModalPopup(view);
+      view->SetLoginTextfieldFocus();
     } else if ((network = cros->FindWifiNetworkByPath(service_path))) {
       if (command == "connect") {
         // Connect to wifi here. Open password page if appropriate.
