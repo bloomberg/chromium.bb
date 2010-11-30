@@ -1018,14 +1018,16 @@ handle_configure(void *data, struct wl_shell *shell,
 	window->pending_allocation.width = width;
 	window->pending_allocation.height = height;
 
-	if (!(edges & 15))
-		return;
-
-	if (window->resize_handler)
-		(*window->resize_handler)(window,
-					  window->user_data);
-	else if (window->redraw_handler)
-		window_schedule_redraw(window);
+	if (edges & WINDOW_TITLEBAR) {
+		window->allocation.x = window->pending_allocation.x;
+		window->allocation.y = window->pending_allocation.y;
+	} else if (edges & WINDOW_RESIZING_MASK) {
+		if (window->resize_handler)
+			(*window->resize_handler)(window,
+						  window->user_data);
+		else if (window->redraw_handler)
+			window_schedule_redraw(window);
+	}
 }
 
 static const struct wl_shell_listener shell_listener = {
