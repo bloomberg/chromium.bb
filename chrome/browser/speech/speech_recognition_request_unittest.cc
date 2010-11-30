@@ -37,6 +37,7 @@ class SpeechRecognitionRequestTest : public SpeechRecognitionRequestDelegate,
   }
 
  protected:
+  MessageLoop message_loop_;
   TestURLFetcherFactory url_fetcher_factory_;
   bool error_;
   SpeechInputResultArray result_;
