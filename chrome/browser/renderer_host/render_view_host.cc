@@ -16,6 +16,8 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/cross_site_request_manager.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -24,6 +26,8 @@
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/printing/printer_query.h"
+#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -263,7 +267,6 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
     // don't want to either.
     if (!params.url.SchemeIs(chrome::kJavaScriptScheme))
       delegate_->DidStartLoading();
-
   }
   const GURL& url = params.url;
   if (!delegate_->IsExternalTabContainer() &&
@@ -901,13 +904,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
-#if defined(OS_MACOSX) || defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageReadyForPreview,
-                        OnPageReadyForPreview)
-#else
     IPC_MESSAGE_HANDLER(ViewHostMsg_PagesReadyForPreview,
                         OnPagesReadyForPreview)
-#endif
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -2237,21 +2235,8 @@ TabContents* RenderViewHost::GetOrCreatePrintPreviewTab() {
   return NULL;
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-void RenderViewHost::OnPageReadyForPreview(
-    const ViewHostMsg_DidPrintPage_Params& params) {
-  // Get/Create print preview tab.
-  TabContents* print_preview_tab = GetOrCreatePrintPreviewTab();
-  DCHECK(print_preview_tab);
-
-  // TODO(kmadhusu): Function definition needs to be changed.
-  // 'params' contains the metafile handle for preview.
-
-  // Send the printingDone msg for now.
-  Send(new ViewMsg_PrintingDone(routing_id(), -1, true));
-}
-#else
-void RenderViewHost::OnPagesReadyForPreview(int fd_in_browser) {
+void RenderViewHost::OnPagesReadyForPreview(int document_cookie,
+                                            int fd_in_browser) {
   // Get/Create print preview tab.
   TabContents* print_preview_tab = GetOrCreatePrintPreviewTab();
   DCHECK(print_preview_tab);
@@ -2259,7 +2244,16 @@ void RenderViewHost::OnPagesReadyForPreview(int fd_in_browser) {
   // TODO(kmadhusu): Function definition needs to be changed.
   // fd_in_browser should be the file descriptor of the metafile.
 
+  scoped_refptr<printing::PrinterQuery> printer_query;
+  g_browser_process->print_job_manager()->PopPrinterQuery(document_cookie,
+                                                          &printer_query);
+  if (printer_query.get()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(printer_query.get(),
+                            &printing::PrinterQuery::StopWorker));
+  }
+
   // Send the printingDone msg for now.
   Send(new ViewMsg_PrintingDone(routing_id(), -1, true));
 }
-#endif

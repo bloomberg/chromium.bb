@@ -57,7 +57,9 @@ PrintJobWorker::PrintJobWorker(PrintJobWorkerOwner* owner)
 }
 
 PrintJobWorker::~PrintJobWorker() {
-  // The object is deleted in the UI thread.
+  // The object is normally deleted in the UI thread, but when the user
+  // cancels printing or in the case of print preview, the worker is destroyed
+  // on the I/O thread.
   DCHECK_EQ(owner_->message_loop(), MessageLoop::current());
 }
 

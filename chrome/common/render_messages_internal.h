@@ -165,19 +165,12 @@ IPC_BEGIN_MESSAGES(View)
   // requested pages for print preview.
   IPC_MESSAGE_ROUTED0(ViewMsg_PrintPreview)
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
   // Sends back to the browser the rendered "printed page" for preview that was
   // requested by a ViewMsg_PrintPage message or from scripted printing. The
   // memory handle in this message is already valid in the browser process.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_PageReadyForPreview,
-                      ViewHostMsg_DidPrintPage_Params /* page content */)
-#else
-  // Sends back to the browser the rendered "printed page" for preview that was
-  // requested by a ViewMsg_PrintPage message or from scripted printing. The
-  // memory handle in this message is already valid in the browser process.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_PagesReadyForPreview,
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_PagesReadyForPreview,
+                      int /* document cookie */,
                       int /* fd in browser */)
-#endif
 
   // Tells the renderer to dump as much memory as it can, perhaps because we
   // have memory pressure or the renderer is (or will be) paged out.  This

@@ -53,7 +53,9 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
 
   int fd_in_browser = -1;
   if (is_preview_) {
-    Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), fd_in_browser));
+    Send(new ViewHostMsg_PagesReadyForPreview(routing_id(),
+                                              params.params.document_cookie,
+                                              fd_in_browser));
     return;
   }
   // Get the size of the resulting metafile.

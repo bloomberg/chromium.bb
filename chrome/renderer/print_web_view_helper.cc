@@ -227,9 +227,11 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                               frame->view());
   int page_count = prep_frame_view.GetExpectedPageCount();
 
-  Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                               printParams.document_cookie,
-                                               page_count));
+  if (!is_preview_) {
+    Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
+                                                 printParams.document_cookie,
+                                                 page_count));
+  }
   if (!page_count)
     return;
 
@@ -248,6 +250,13 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
       page_params.page_number = params.pages[i];
       PrintPage(page_params, canvas_size, frame);
     }
+  }
+
+  if (is_preview_) {
+    // TODO(kmadhusu) Put this in the right place when fixing bug 64121.
+    Send(new ViewHostMsg_PagesReadyForPreview(routing_id(),
+                                              printParams.document_cookie,
+                                              -1));
   }
 }
 #endif  // OS_MACOSX || OS_WIN

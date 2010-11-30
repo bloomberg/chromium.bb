@@ -723,11 +723,7 @@ class RenderViewHost : public RenderWidgetHost {
                               const SkBitmap& thumbnail);
   void OnScriptEvalResponse(int id, bool result);
   void OnUpdateContentRestrictions(int restrictions);
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  void OnPageReadyForPreview(const ViewHostMsg_DidPrintPage_Params& params);
-#else
-  void OnPagesReadyForPreview(int fd_in_browser);
-#endif
+  void OnPagesReadyForPreview(int document_cookie, int fd_in_browser);
 
 #if defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
