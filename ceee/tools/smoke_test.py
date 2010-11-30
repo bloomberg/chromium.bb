@@ -15,6 +15,7 @@ except ImportError:
   print "This script requires Python 2.6 with PyWin32 installed."
   raise
 
+
 import datetime
 import logging
 import optparse
@@ -23,6 +24,8 @@ import subprocess
 import sys
 import time
 import verifier
+import vs_solution
+
 
 # The top-level source directory.
 # All other paths in this file are relative to this directory.
@@ -54,6 +57,7 @@ _PROJECTS_TO_BUILD = [
     _AbsolutePath('ceee/ie/mediumtest_ie.vcproj'),
 ]
 
+
 # List of test executables to run.
 _TESTS_TO_RUN = [
   'ceee_common_unittests',
@@ -61,54 +65,27 @@ _TESTS_TO_RUN = [
   'mediumtest_ie',
 ]
 
+
 # A list of configurations we build and run.
 _CONFIGURATIONS = [
   'Debug',
   'Release',
 ]
 
+
 class TestRunner(object):
   def __init__(self, solution, projects, tests):
     self._projects = projects
     self._tests = tests
     self._saved_autohides = None
-    self._solution = win32com.client.GetObject(solution)
-    self._dte = self._GetDte(self._solution)
-    self._EnsureVisible()
+    self._solution = solution
 
   def __del__(self):
     self._RestoreVisibility()
 
-  def _EnsureVisible(self):
-    dte = self._dte
-    # Make sure the UI is visible.
-    dte.MainWindow.Visible = True
-
-    # Get the output window, disable its autohide and give it focus.
-    self._output = dte.Windows['Output']
-    self._saved_autohides = self._output.AutoHides
-    self._output.AutoHides = False
-    self._output.SetFocus()
-
   def _RestoreVisibility(self):
     if self._saved_autohides != None:
       self._output.AutoHides = self._saved_autohides
-
-  def _GetDte(self, solution):
-    '''Sometimes invoking solution.DTE will fail with an exception during
-    Visual Studio initialization. To work around this, we try a couple of
-    times with an intervening sleep to give VS time to settle.'''
-    # Attempt ten times under a try block.
-    for i in range(0, 10):
-      try:
-        return solution.DTE
-      except pythoncom.com_error:
-        # Sleep for 10 seconds between attempts.
-        logging.exception('Exception getting DTE, retrying')
-        time.sleep(10.0)
-
-    # Final try, pass the exception to the caller on failure here.
-    return solution.DTE
 
   def BuildConfig(self, config):
     '''Builds all projects for a given config.
@@ -119,7 +96,8 @@ class TestRunner(object):
     Returns:
       The number of failures.
     '''
-    builder = self._solution.SolutionBuild
+    solution = self._solution.GetSolution()
+    builder = solution.SolutionBuild
     for project in self._projects:
       logging.info('Building project "%s" in "%s" configuration',
                    project,
@@ -212,16 +190,20 @@ def Main():
   if args:
     parser.error('This script takes no arguments')
 
-  solution = options.solution
+  solution_path = options.solution
   # If the solution is a path to an existing file, we use it as-is.
-  if not os.path.exists(solution):
+  if not os.path.exists(solution_path):
     # Otherwise we assume it's the base name for a file in the
     # in the same directory as our default solution file.
-    solution = os.path.join(os.path.dirname(_CHROME_SOLUTION), solution)
-    solution = solution + '.sln'
+    solution_path = os.path.join(os.path.dirname(_CHROME_SOLUTION),
+                                 solution_path)
+    solution_path = solution_path + '.sln'
 
   # Make the path absolute
-  solution = os.path.abspath(solution)
+  solution_path = os.path.abspath(solution_path)
+
+  solution = vs_solution.VsSolution(solution_path)
+  solution.EnsureVisible()
 
   runner = TestRunner(solution,
                       _PROJECTS_TO_BUILD,
