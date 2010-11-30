@@ -689,6 +689,11 @@ TEST_F(ContextMenuTest, IEBackForward) {
 
 // Test CF link context menu - Open link in new window.
 TEST_F(ContextMenuTest, CFOpenLinkInNewWindow) {
+  // See crbug.com/64794.
+  if (GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test with IE7";
+    return;
+  }
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
