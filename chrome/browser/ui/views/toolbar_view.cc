@@ -76,9 +76,8 @@ static const int kPopupBottomSpacingGlass = 1;
 // badge.
 static const float kBadgeTextFontSize = 9.0;
 
-// Margins for the wrench menu badges (badge is placed in the upper right
-// corner of the wrench menu with the specified margins).
-static const int kBadgeRightMargin = 2;
+// Top margin for the wrench menu badges (badge is placed in the upper right
+// corner of the wrench menu).
 static const int kBadgeTopMargin = 2;
 
 static SkBitmap* kPopupBackgroundEdge = NULL;
@@ -753,9 +752,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
     NOTREACHED();
   }
 
-  canvas->DrawBitmapInt(badge,
-                        icon.width() - badge.width() - kBadgeRightMargin,
-                        kBadgeTopMargin);
+  canvas->DrawBitmapInt(badge, icon.width() - badge.width(), kBadgeTopMargin);
 
   return canvas->ExtractBitmap();
 }
