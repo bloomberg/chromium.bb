@@ -47,12 +47,6 @@ using prefs::kExtensionBlacklistUpdateVersion;
 using prefs::kLastExtensionsUpdateCheck;
 using prefs::kNextExtensionsUpdateCheck;
 
-// NOTE: HTTPS is used here to ensure the response from omaha can be trusted.
-// The response contains a url for fetching the blacklist and a hash value
-// for validation.
-const char* ExtensionUpdater::kBlacklistUpdateUrl =
-    "https://clients2.google.com/service/update2/crx";
-
 // Update AppID for extension blacklist.
 const char* ExtensionUpdater::kBlacklistAppID = "com.google.crx.blacklist";
 
@@ -273,7 +267,7 @@ void ManifestFetchesBuilder::AddExtensionData(
     // Fill in default update URL.
     //
     // TODO(akalin): Figure out if we should use the HTTPS version.
-    update_url = GURL(extension_urls::kGalleryUpdateHttpUrl);
+    update_url = Extension::GalleryUpdateUrl(false);
   } else {
     url_stats_.other_url_count++;
   }
@@ -749,8 +743,11 @@ void ExtensionUpdater::CheckNow() {
 
   // Start a fetch of the blacklist if needed.
   if (blacklist_checks_enabled_ && service_->HasInstalledExtensions()) {
+    // Note: it is very important that we use the https version of the update
+    // url here to avoid DNS hijacking of the blacklist, which is not validated
+    // by a public key signature like .crx files are.
     ManifestFetchData* blacklist_fetch =
-        new ManifestFetchData(GURL(kBlacklistUpdateUrl));
+        new ManifestFetchData(Extension::GalleryUpdateUrl(true));
     std::string version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
     int ping_days =
         CalculatePingDays(service_->extension_prefs()->BlacklistLastPingDay());

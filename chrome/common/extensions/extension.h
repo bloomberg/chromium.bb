@@ -49,10 +49,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     COMPONENT,          // An integral component of Chrome itself, which
                         // happens to be implemented as an extension. We don't
                         // show these in the management UI.
-    EXTERNAL_PREF_DOWNLOAD, // A crx file from an external directory (via
-                            // prefs), installed from an update URL.
-    EXTERNAL_POLICY_DOWNLOAD, // A crx file from an external directory (via
-                              // admin policies), installed from an update URL.
+    EXTERNAL_PREF_DOWNLOAD,    // A crx file from an external directory (via
+                               // prefs), installed from an update URL.
+    EXTERNAL_POLICY_DOWNLOAD,  // A crx file from an external directory (via
+                               // admin policies), installed from an update URL.
 
     NUM_LOCATIONS
   };
@@ -112,6 +112,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                          const DictionaryValue& value,
                                          bool require_key,
                                          std::string* error);
+
+  // Return the update url used by gallery/webstore extensions.
+  static GURL GalleryUpdateUrl(bool secure);
 
   // The install message id for |permission|.  Returns 0 if none exists.
   static int GetPermissionMessageId(const std::string& permission);

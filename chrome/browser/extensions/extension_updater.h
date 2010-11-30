@@ -189,7 +189,6 @@ class ExtensionUpdater
   static const int kManifestFetcherId = 1;
   static const int kExtensionFetcherId = 2;
 
-  static const char* kBlacklistUpdateUrl;
   static const char* kBlacklistAppID;
 
   // Does common work from constructors.

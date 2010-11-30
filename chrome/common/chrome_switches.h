@@ -31,6 +31,7 @@ extern const char kApp[];
 extern const char kAppId[];
 extern const char kAppsGalleryReturnTokens[];
 extern const char kAppsGalleryURL[];
+extern const char kAppsGalleryUpdateURL[];
 extern const char kAppsNoThrob[];
 extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kAuthSchemes[];

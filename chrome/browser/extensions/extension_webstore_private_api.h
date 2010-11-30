@@ -36,10 +36,6 @@ class BeginInstallFunction : public SyncExtensionFunction {
 };
 
 class CompleteInstallFunction : public SyncExtensionFunction {
- public:
-  // This changes the base of the download url to the crx file to be installed.
-  static void SetTestingInstallBaseUrl(const char* testing_install_base_url);
- protected:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.completeInstall");
 };

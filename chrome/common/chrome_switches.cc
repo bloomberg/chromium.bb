@@ -59,6 +59,8 @@ const char kAppsGalleryReturnTokens[]       = "apps-gallery-return-tokens";
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 
+const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
+
 // Disable throbber for extension apps.
 const char kAppsNoThrob[]                   = "apps-no-throb";
 

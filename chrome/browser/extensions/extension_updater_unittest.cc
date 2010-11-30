@@ -450,7 +450,7 @@ class ExtensionUpdaterTest : public testing::Test {
               fetch_data.full_url().spec());
   }
 
-  static void TestUpdateUrlDataFromGallery(const char* gallery_url) {
+  static void TestUpdateUrlDataFromGallery(const std::string& gallery_url) {
     MockService service;
     ManifestFetchesBuilder builder(&service);
     ExtensionList extensions;
@@ -924,9 +924,9 @@ TEST(ExtensionUpdaterTest, TestUpdateUrlData) {
   ExtensionUpdaterTest::TestUpdateUrlDataSimple();
   ExtensionUpdaterTest::TestUpdateUrlDataCompound();
   ExtensionUpdaterTest::TestUpdateUrlDataFromGallery(
-      extension_urls::kGalleryUpdateHttpUrl);
+      Extension::GalleryUpdateUrl(false).spec());
   ExtensionUpdaterTest::TestUpdateUrlDataFromGallery(
-      extension_urls::kGalleryUpdateHttpsUrl);
+      Extension::GalleryUpdateUrl(true).spec());
 }
 
 TEST(ExtensionUpdaterTest, TestDetermineUpdates) {

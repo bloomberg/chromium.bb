@@ -278,12 +278,6 @@ const char* kIllegalPlugins =
 
 namespace extension_urls {
 const char* kGalleryBrowsePrefix = "https://chrome.google.com/extensions";
-const char* kGalleryDownloadPrefix =
-    "https://clients2.googleusercontent.com/crx/download";
-const char* kGalleryUpdateHttpUrl =
-    "http://clients2.google.com/service/update2/crx";
-const char* kGalleryUpdateHttpsUrl =
-    "https://clients2.google.com/service/update2/crx";
 const char* kMiniGalleryBrowsePrefix = "https://tools.google.com/chrome/";
 const char* kMiniGalleryDownloadPrefix = "https://dl-ssl.google.com/chrome/";
 }

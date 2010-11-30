@@ -266,6 +266,22 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
   return extension;
 }
 
+namespace {
+const char* kGalleryUpdateHttpUrl =
+    "http://clients2.google.com/service/update2/crx";
+const char* kGalleryUpdateHttpsUrl =
+    "https://clients2.google.com/service/update2/crx";
+}  // namespace
+
+// static
+GURL Extension::GalleryUpdateUrl(bool secure) {
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL))
+    return GURL(cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL));
+  else
+    return GURL(secure ? kGalleryUpdateHttpsUrl : kGalleryUpdateHttpUrl);
+}
+
 // static
 int Extension::GetPermissionMessageId(const std::string& permission) {
   return ExtensionConfig::GetSingleton()->GetPermissionMessageId(permission);
@@ -414,7 +430,7 @@ bool Extension::IdIsValid(const std::string& id) {
 std::string Extension::GenerateIdForPath(const FilePath& path) {
   FilePath new_path = Extension::MaybeNormalizePath(path);
   std::string id;
-  if (!GenerateId(WideToUTF8(new_path.ToWStringHack()),&id))
+  if (!GenerateId(WideToUTF8(new_path.ToWStringHack()), &id))
     return "";
   return id;
 }
@@ -2200,8 +2216,8 @@ bool Extension::CanExecuteScriptEverywhere() const {
 }
 
 bool Extension::UpdatesFromGallery() const {
-  return update_url() == GURL(extension_urls::kGalleryUpdateHttpsUrl) ||
-      update_url() == GURL(extension_urls::kGalleryUpdateHttpUrl);
+  return update_url() == GalleryUpdateUrl(false) ||
+         update_url() == GalleryUpdateUrl(true);
 }
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,

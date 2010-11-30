@@ -24,8 +24,9 @@ class ExtensionGalleryInstallApiTest : public ExtensionApiTest {
 
     std::string testing_install_base_url = base_url;
     testing_install_base_url += "good.crx";
-    CompleteInstallFunction::SetTestingInstallBaseUrl(
-        testing_install_base_url.c_str());
+
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryUpdateURL, testing_install_base_url);
 
     std::string page_url = base_url;
     page_url += "api_test/extension_gallery_install/" + page;

@@ -30,7 +30,6 @@
 
 namespace {
 
-const char* install_base_url = extension_urls::kGalleryUpdateHttpsUrl;
 const char kLoginKey[] = "login";
 const char kTokenKey[] = "token";
 const char kInvalidIdError[] = "Invalid id";
@@ -137,12 +136,6 @@ bool BeginInstallFunction::RunImpl() {
   return true;
 }
 
-// static
-void CompleteInstallFunction::SetTestingInstallBaseUrl(
-    const char* testing_install_base_url) {
-  install_base_url = testing_install_base_url;
-}
-
 bool CompleteInstallFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
@@ -164,7 +157,7 @@ bool CompleteInstallFunction::RunImpl() {
   params.push_back("id=" + id);
   params.push_back("lang=" + g_browser_process->GetApplicationLocale());
   params.push_back("uc");
-  std::string url_string = install_base_url;
+  std::string url_string = Extension::GalleryUpdateUrl(true).spec();
 
   GURL url(url_string + "?response=redirect&x=" +
       EscapeQueryParamValue(JoinString(params, '&'), true));
