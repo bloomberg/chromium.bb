@@ -22,9 +22,17 @@ node = env.CommandTest(
     command=[nacl_base_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'])
 
+def FailsGood(exit_status):
+  if exit_status:
+    return 0
+  else:
+    return 1
+
 # Compile-time failures in nacl_macros.h only work for gcc right now.
 if not env.Bit('windows'):
-  fail_compile_env = env.GetExpectedCompileWarningEnv('CCCOM')
+  fail_compile_env = env.Clone()
+  fail_compile_env['CCCOM'] = Action(fail_compile_env['CCCOM'],
+                                     exitstatfunc=FailsGood)
   obj = fail_compile_env.ComponentObject('nacl_base_assert_is_array_test',
                                          ['nacl_base_assert_is_array_test.c'])
   fail_compile_env.AlwaysBuild(obj)
@@ -36,8 +44,9 @@ if not env.Bit('windows'):
   fail_compile_env.Alias('small_tests', obj)
   fail_compile_env.Alias('compile_tests', obj)
 
-  # Also try building as a C++ program.
-  fail_compile_env = env.GetExpectedCompileWarningEnv('CXXCOM')
+  fail_compile_env = env.Clone()
+  fail_compile_env['CCCOM'] = Action(fail_compile_env['CXXCOM'],
+                                   exitstatfunc=FailsGood)
   obj = fail_compile_env.ComponentObject('nacl_base_assert_is_array_cpp_test',
                                          ['nacl_base_assert_is_array_test.c'])
   fail_compile_env.AlwaysBuild(obj)
