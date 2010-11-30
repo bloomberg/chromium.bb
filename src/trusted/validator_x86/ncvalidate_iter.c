@@ -150,7 +150,8 @@ static const char *NaClLogLevelLabel(int level) {
  */
 static void NaClRecordErrorReported(NaClValidatorState* state, int level) {
   if ((state != NULL) && ((level == LOG_ERROR) || (level == LOG_FATAL)) &&
-      (state->quit_after_error_count > 0)) {
+      (state->quit_after_error_count > 0) &&
+      !state->do_stub_out) {
     --(state->quit_after_error_count);
     state->quit = NaClValidatorQuit(state);
     if (state->quit_after_error_count == 0) {
