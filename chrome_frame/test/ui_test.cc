@@ -186,18 +186,18 @@ TEST_P(FullTabUITest, CtrlR) {
     return;
   }
 
-  InSequence expect_in_sequence_for_scope;
+  EXPECT_CALL(server_mock_, Get(_, UrlPathEq(GetSimplePageUrl()), _))
+      .Times(testing::AtMost(2))
+      .WillRepeatedly(SendResponse(&server_mock_, GetParam()));
 
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(),
                                StrEq(GetSimplePageUrl())))
+      .Times(testing::AtMost(2))
       .WillOnce(testing::DoAll(
           SetFocusToRenderer(&ie_mock_),
-          DelaySendChar(&loop_, 1000, 'r', simulate_input::CONTROL)));
-
-  EXPECT_CALL(server_mock_, Get(_, UrlPathEq(GetSimplePageUrl()), _))
-      .WillOnce(testing::DoAll(
-          SendResponse(&server_mock_, GetParam()),
-          CloseBrowserMock(&ie_mock_)));
+          DelaySendChar(&loop_, 1000, 'r', simulate_input::CONTROL),
+          DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)))
+      .WillRepeatedly(testing::Return());
 
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
