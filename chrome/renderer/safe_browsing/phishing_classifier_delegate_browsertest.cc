@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
@@ -16,6 +17,7 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
@@ -56,6 +58,44 @@ class MockScorer : public Scorer {
 }  // namespace
 
 class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
+ protected:
+  void OnMessageReceived(const IPC::Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegateTest, message)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
+                          OnDetectedPhishingSite)
+      IPC_MESSAGE_UNHANDLED(
+          RenderViewFakeResourcesTest::OnMessageReceived(message))
+    IPC_END_MESSAGE_MAP()
+  }
+
+  void OnDetectedPhishingSite(GURL phishing_url,
+                              double phishing_score,
+                              SkBitmap thumbnail) {
+    detected_phishing_site_ = true;
+    detected_url_ = phishing_url;
+    detected_score_ = phishing_score;
+    detected_thumbnail_ = thumbnail;
+    message_loop_.Quit();
+  }
+
+  // Runs the ClassificationDone callback, then waits for the
+  // DetectedPhishingSite IPC to arrive.
+  void RunClassificationDone(PhishingClassifierDelegate* delegate,
+                             bool is_phishy, double phishy_score) {
+    // Clear out any previous state.
+    detected_phishing_site_ = false;
+    detected_url_ = GURL();
+    detected_score_ = -1.0;
+    detected_thumbnail_ = SkBitmap();
+
+    delegate->ClassificationDone(is_phishy, phishy_score);
+    message_loop_.Run();
+  }
+
+  bool detected_phishing_site_;
+  GURL detected_url_;
+  double detected_score_;
+  SkBitmap detected_thumbnail_;
 };
 
 TEST_F(PhishingClassifierDelegateTest, Navigation) {
@@ -180,6 +220,39 @@ TEST_F(PhishingClassifierDelegateTest, PendingClassification_Ref) {
   MockScorer scorer;
   delegate.SetPhishingScorer(&scorer);
   Mock::VerifyAndClearExpectations(classifier);
+
+  // The delegate will cancel pending classification on destruction.
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+}
+
+TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
+  // Tests that a DetectedPhishingSite IPC is sent to the browser
+  // if a site comes back as phishy.
+  MockPhishingClassifier* classifier =
+      new StrictMock<MockPhishingClassifier>(view_);
+  PhishingClassifierDelegate delegate(view_, classifier);
+  MockScorer scorer;
+  delegate.SetPhishingScorer(&scorer);
+  ASSERT_TRUE(classifier->is_ready());
+
+  // Start by loading a page to populate the delegate's state.
+  responses_["http://host.com/"] = "<html><body>phish</body></html>";
+  LoadURL("http://host.com/");
+  string16 page_text = ASCIIToUTF16("phish");
+  EXPECT_CALL(*classifier, CancelPendingClassification());
+  delegate.CommittedLoadInFrame(GetMainFrame());
+  Mock::VerifyAndClearExpectations(classifier);
+  EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
+      WillOnce(DeleteArg<1>());
+  delegate.FinishedLoad(&page_text);
+  Mock::VerifyAndClearExpectations(classifier);
+
+  // Now run the callback to simulate the classifier finishing.
+  RunClassificationDone(&delegate, true, 0.8);
+  EXPECT_TRUE(detected_phishing_site_);
+  EXPECT_EQ(GURL("http://host.com/"), detected_url_);
+  EXPECT_EQ(0.8, detected_score_);
+  EXPECT_FALSE(detected_thumbnail_.isNull());
 
   // The delegate will cancel pending classification on destruction.
   EXPECT_CALL(*classifier, CancelPendingClassification());

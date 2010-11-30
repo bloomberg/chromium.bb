@@ -6,15 +6,31 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
+#include "chrome/renderer/safe_browsing/phishing_thumbnailer.h"
+#include "gfx/size.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 namespace safe_browsing {
+
+// The view and thumbnail sizes need to match what the server is expecting.
+namespace {
+// The dimensions that the view will be resized to prior to capturing the
+// thumbnail.
+const int kThumbnailViewWidth = 1024;
+const int kThumbnailViewHeight = 768;
+
+// The dimensions that the image will be resized to after it is captured.
+const int kThumbnailWidth = 212;
+const int kThumbnailHeight = 159;
+}  // namespace
 
 PhishingClassifierDelegate::PhishingClassifierDelegate(
     RenderView* render_view,
@@ -109,9 +125,24 @@ void PhishingClassifierDelegate::ClassificationDone(bool is_phishy,
   // We no longer need the page text.
   classifier_page_text_.clear();
   VLOG(2) << "Phishy verdict = " << is_phishy << " score = " << phishy_score;
+  if (!is_phishy) {
+    return;
+  }
 
-  // TODO(bryner): Grab a snapshot and send a DetectedPhishingSite message
-  // to the browser.
+  SkBitmap thumbnail = GrabPhishingThumbnail(
+      render_view_,
+      gfx::Size(kThumbnailViewWidth, kThumbnailViewHeight),
+      gfx::Size(kThumbnailWidth, kThumbnailHeight));
+  if (thumbnail.isNull()) {
+    LOG(ERROR) << "Unable to capture thumbnail.";
+    return;
+  }
+
+  render_view_->Send(new ViewHostMsg_DetectedPhishingSite(
+      render_view_->routing_id(),
+      last_url_sent_to_classifier_,
+      phishy_score,
+      thumbnail));
 }
 
 GURL PhishingClassifierDelegate::StripToplevelUrl() {
