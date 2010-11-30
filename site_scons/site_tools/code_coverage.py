@@ -70,6 +70,7 @@ def generate(env):
   """SCons entry point for this tool."""
 
   env['COVERAGE_ENABLED'] = True
+  env.SetBits('coverage_enabled')
 
   env.SetDefault(
       # Setup up coverage related tool paths.

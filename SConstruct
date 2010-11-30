@@ -690,7 +690,7 @@ pre_base_env.AddMethod(lambda self: ARGUMENTS.get('running_on_valgrind'),
                        'IsRunningUnderValgrind')
 
 # This method indicates that the binaries we are building will validate code
-# for an architechture different than the one the binaries will run on.
+# for an architecture different than the one the binaries will run on.
 # NOTE Currently (2010/11/17) this is 'x86' vs. 'arm', and  x86-32 vs. x86-64
 # is not considered to be a cross-tools build.
 def CrossToolsBuild(env):
@@ -1047,7 +1047,7 @@ def CommandSelLdrTestNacl(env, name, command,
   # Currently several .S files block sel_ldr from being instrumented.
   # See http://code.google.com/p/nativeclient/issues/detail?id=831
   if ('TRUSTED_ENV' in env and
-      env['TRUSTED_ENV'].get('COVERAGE_ENABLED') and
+      env['TRUSTED_ENV'].Bit('coverage_enabled') and
       env['TRUSTED_ENV'].Bit('windows')):
     return []
 
@@ -2164,6 +2164,9 @@ nacl_extra_sdk_env.Command('extra_sdk_clean', [],
 # ----------------------------------------------------------
 # CODE COVERAGE
 # ----------------------------------------------------------
+DeclareBit('coverage_enabled', 'The build should be instrumented to generate'
+           'coverage information')
+
 windows_coverage_env = windows_env.Clone(
     tools = ['code_coverage'],
     BUILD_TYPE = 'coverage-win',

@@ -75,5 +75,5 @@ env.DualLibrary('platform_qual_lib', pql_inputs)
 # These tests use assembly which seem to make the coverage instrumentation
 # on windows unhappy. Disable them for now on coverage for windows.
 # TODO(bradnelson): figure out a way to get coverage working for these.
-if env.Bit('windows') and env.get('COVERAGE_ENABLED'):
+if env.Bit('windows') and env.Bit('coverage_enabled'):
   Return()

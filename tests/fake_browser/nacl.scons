@@ -66,7 +66,7 @@ sel_ldr = trusted_env.File(
 # TODO(mseaborn): Setting NACLLOG is a workaround for
 # http://code.google.com/p/nativeclient/issues/detail?id=669
 log_file = env.File('fake_browser_log_file.out').abspath
-if not trusted_env.get('COVERAGE_ENABLED') or not trusted_env.Bit('windows'):
+if not trusted_env.Bit('coverage_enabled') or not trusted_env.Bit('windows'):
   node = env.CommandTest('fake_browser_test.out',
                          [fake_browser, plugin,
                           'srpc_hw.nexe', srpc_hello_world_prog,

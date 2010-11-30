@@ -329,7 +329,7 @@ if sdl_mode != 'none' and sdl_mode != 'armlocal':
       # add AddPluginPrerequisite if you build a 64-bit plugin
 
 VALIDATOR_LIBS = []
-if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
+if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
 
 
@@ -405,7 +405,7 @@ unittest_inputs = [
 ]
 
 if (not env.CrossToolsBuild() and
-    (not env.get('COVERAGE_ENABLED') or not env.Bit('windows'))):
+    (not env.Bit('coverage_enabled') or not env.Bit('windows'))):
   unit_tests_exe = gtest_env.ComponentProgram('service_runtime_tests',
                                               unittest_inputs,
                                               EXTRA_LIBS=['gtest',
@@ -430,7 +430,7 @@ if (not env.CrossToolsBuild() and
       'run_service_runtime_tests')
 
 
-if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
+if not env.Bit('coverage_enabled') or not env.Bit('windows'):
   format_string_test_exe = sdl_env.ComponentProgram('format_string_test',
                                                     ['format_string_test.c'],
                                                     EXTRA_LIBS=['sel'])
@@ -453,7 +453,7 @@ else:
 
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
-if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
+if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
     not env.CrossToolsBuild()):
   # NOTE: uses sdl and validator
   mmap_test_exe = sdl_env.ComponentProgram('mmap_test',
@@ -534,7 +534,7 @@ env.Requires(env_cleanser_test_exe, crt)
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 # Test nacl_signal
-if (not env.get('COVERAGE_ENABLED') and
+if (not env.Bit('coverage_enabled') and
     not env.Bit('target_arm') and
     not env.IsRunningUnderValgrind()):
   nacl_signal_exe = env.ComponentProgram('nacl_signal_unittest',
@@ -553,7 +553,7 @@ if (not env.get('COVERAGE_ENABLED') and
 
 
 
-if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
+if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
   gio_shm_test_exe = sdl_env.ComponentProgram('gio_shm_test',
                                               ['gio_shm_test.c'],
@@ -728,7 +728,7 @@ if not env.CrossToolsBuild():
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
 # NOTE: uses sdl and validator
-if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
+if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
     not env.CrossToolsBuild()):
   obj_proxy_test_inputs = [ 'fs/obj_proxy_test.c', ]
   obj_proxy_test = sdl_env.ComponentProgram('obj_proxy_test',
@@ -862,7 +862,7 @@ if env.Bit('target_x86'):
 # More Death Tests
 # ----------------------------------------------------------
 if (not env.CrossToolsBuild() and
-    (not env.get('COVERAGE_ENABLED') or not env.Bit('windows'))):
+    (not env.Bit('coverage_enabled') or not env.Bit('windows'))):
   # NOTE: uses sdl and validator
   sel_ldr_thread_death_test_exe = sdl_env.ComponentProgram(
       'sel_ldr_thread_death_test',
