@@ -36,9 +36,7 @@ class ExtensionDisabledDialogDelegate
 
   // Overridden from ExtensionInstallUI::Delegate:
   virtual void InstallUIProceed() {
-    ExtensionPrefs* prefs = service_->extension_prefs();
-    prefs->SetDidExtensionEscalatePermissions(extension_, false);
-    service_->EnableExtension(extension_->id());
+    service_->GrantPermissionsAndEnableExtension(extension_);
     Release();
   }
   virtual void InstallUIAbort() {

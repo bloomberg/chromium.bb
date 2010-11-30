@@ -96,11 +96,6 @@ class CrxInstaller
   bool delete_source() const { return delete_source_; }
   void set_delete_source(bool val) { delete_source_ = val; }
 
-  bool allow_privilege_increase() const { return allow_privilege_increase_; }
-  void set_allow_privilege_increase(bool val) {
-    allow_privilege_increase_ = val;
-  }
-
   bool allow_silent_install() const { return allow_silent_install_; }
   void set_allow_silent_install(bool val) { allow_silent_install_ = val; }
 
@@ -177,14 +172,6 @@ class CrxInstaller
   // Whether we're supposed to delete the source file on destruction. Defaults
   // to false.
   bool delete_source_;
-
-  // Whether privileges should be allowed to silently increaes from any
-  // previously installed version of the extension. This is used for things
-  // like external extensions, where extensions come with third-party software
-  // or are distributed by the network administrator. There is no UI shown
-  // for these extensions, so there shouldn't be UI for privilege increase,
-  // either. Defaults to false.
-  bool allow_privilege_increase_;
 
   // Whether the install originated from the gallery.
   bool is_gallery_install_;

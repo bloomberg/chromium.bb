@@ -103,7 +103,7 @@ void LiveExtensionsSyncTestBase::InstallExtension(
     Profile* profile, scoped_refptr<Extension> extension) {
   CHECK(profile);
   CHECK(extension.get());
-  profile->GetExtensionsService()->OnExtensionInstalled(extension, true);
+  profile->GetExtensionsService()->OnExtensionInstalled(extension);
 }
 
 void LiveExtensionsSyncTestBase::InstallAllPendingExtensions(
