@@ -1572,8 +1572,17 @@ void AdvancedContentsView::InitControlLayout() {
   layout->AddView(new WebContentSection(profile()));
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new SecuritySection(profile()));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCloudPrintProxy) &&
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+  // We want to enable the cloud print UI on Windows. Since the cloud
+  // print proxy on Windows needs the PDF plugin, we only enable it by
+  // default on Google Chrome Windows builds (which contain the PDF
+  // plugin).
+  bool cloud_print_available = true;
+#else
+  bool cloud_print_available = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCloudPrintProxy);
+#endif
+  if (cloud_print_available &&
       profile()->GetCloudPrintProxyService()) {
     layout->StartRow(0, single_column_view_set_id);
     layout->AddView(new CloudPrintProxySection(profile()));

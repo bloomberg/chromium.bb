@@ -150,7 +150,15 @@ const Experiment kExperiments[] = {
     "cloud-print-proxy",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CLOUD_PRINT_PROXY_NAME,
     IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION,
+#if defined(GOOGLE_CHROME_BUILD)
+    // For a Chrome build, we know we have a PDF plug-in, and so we'll
+    // enable by platform as we get things working.
+    0,
+#else
+    // Otherwise, where we know it could be working if a viable PDF
+    // plug-in could be supplied, we'll keep the lab enabled.
     kOsWin,
+#endif
     switches::kEnableCloudPrintProxy
   },
   {
