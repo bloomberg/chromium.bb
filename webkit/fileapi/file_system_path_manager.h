@@ -28,8 +28,6 @@ class FileSystemPathManager {
                         bool allow_file_access_from_files);
   ~FileSystemPathManager();
 
-  static FilePath GetFileSystemCommonRootDirectory(const FilePath& root_path);
-
   // Callback for GetFileSystemRootPath.
   // If the request is accepted and the root filesystem for the origin exists
   // the callback is called with success=true and valid root_path and name.

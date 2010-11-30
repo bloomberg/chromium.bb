@@ -463,34 +463,6 @@ TEST_F(FileSystemOperationTest, TestCreateFileFailure) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
-TEST_F(FileSystemOperationTest, TestCreateVeryLongName) {
-  ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-
-#if defined(OS_WIN)
-  FilePath dir_path(FILE_PATH_LITERAL("\\\\?\\") + dir.path().value());
-#else
-  FilePath dir_path = dir.path();
-#endif
-
-  // TODO(kkanetkar): Once each platform's limitations have been enforced
-  // consider that in this test. Currently this test is for
-  // windows primarily.
-  FilePath dir1 = dir_path.AppendASCII(
-      "012345678901234567890123456789012345678901234567890123456789"
-      "012345678901234567890123456789012345678901234567890123456789"
-      "0123456789012345678901234567890123456789");
-  FilePath file = dir1.AppendASCII(
-      "012345678901234567890123456789012345678901234567890123456789"
-      "012345678901234567890123456789012345678901234567890123456789"
-      "0123456789012345678901234567890123456789");
-  operation()->CreateDirectory(dir1, false, true);
-  MessageLoop::current()->RunAllPending();
-  operation()->CreateFile(file, true);
-  MessageLoop::current()->RunAllPending();
-  EXPECT_TRUE(file_util::PathExists(file));
-}
-
 TEST_F(FileSystemOperationTest, TestCreateFileSuccessFileExists) {
   // Already existing file and exclusive false.
   ScopedTempDir dir;

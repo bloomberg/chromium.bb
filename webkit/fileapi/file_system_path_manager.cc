@@ -124,7 +124,6 @@ class FileSystemPathManager::GetFileSystemRootPathTask
       DispatchCallbackOnCallerThread(FilePath());
       return;
     }
-
     DispatchCallbackOnCallerThread(root);
   }
 
@@ -171,25 +170,13 @@ class FileSystemPathManager::GetFileSystemRootPathTask
   scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback_;
 };
 
-FilePath FileSystemPathManager::GetFileSystemCommonRootDirectory(
-    const FilePath& root_path) {
-#if defined(OS_WIN)
-  // To specify an extended-length path, "\\?\" prefix is used. Else path names
-  // are limited to 260 characters.
-  FilePath::StringType extended_length_str(L"\\\\?\\");
-  extended_length_str.append(root_path.value());
-  return FilePath(extended_length_str).Append(kFileSystemDirectory);
-#endif
-  return root_path.Append(kFileSystemDirectory);
-}
-
 FileSystemPathManager::FileSystemPathManager(
     scoped_refptr<base::MessageLoopProxy> file_message_loop,
     const FilePath& profile_path,
     bool is_incognito,
     bool allow_file_access_from_files)
     : file_message_loop_(file_message_loop),
-      base_path_(GetFileSystemCommonRootDirectory(profile_path)),
+      base_path_(profile_path.Append(kFileSystemDirectory)),
       is_incognito_(is_incognito),
       allow_file_access_from_files_(allow_file_access_from_files) {
 }
@@ -228,8 +215,7 @@ void FileSystemPathManager::GetFileSystemRootPath(
   DCHECK(!type_string.empty());
 
   FilePath origin_base_path = base_path_.AppendASCII(storage_identifier)
-      .AppendASCII(type_string);
-
+                                        .AppendASCII(type_string);
   std::string name = storage_identifier + ":" + type_string;
 
   scoped_refptr<GetFileSystemRootPathTask> task(
