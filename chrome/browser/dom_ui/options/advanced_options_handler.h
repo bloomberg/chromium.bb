@@ -69,10 +69,6 @@ class AdvancedOptionsHandler
   // can support manual handling on Windows.
   void HandleCheckRevocationCheckbox(const ListValue* args);
 
-  // Callback for the "Use SSL2" checkbox.  This is needed so we can support
-  // manual handling on Windows.
-  void HandleUseSSL2Checkbox(const ListValue* args);
-
   // Callback for the "Use SSL3" checkbox.  This is needed so we can support
   // manual handling on Windows.
   void HandleUseSSL3Checkbox(const ListValue* args);

@@ -29,7 +29,6 @@ class SSLConfigServiceWin : public SSLConfigService {
 
   // Setters.  Can be called on any thread.
   static void SetRevCheckingEnabled(bool enabled);
-  static void SetSSL2Enabled(bool enabled);
   static void SetSSL3Enabled(bool enabled);
   static void SetTLS1Enabled(bool enabled);
 

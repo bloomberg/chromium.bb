@@ -40,7 +40,6 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kDnsPrefetchingEnabled,
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
     prefs::kCertRevocationCheckingEnabled,
-    prefs::kSSL2Enabled,
     prefs::kSSL3Enabled,
     prefs::kTLS1Enabled,
 #endif

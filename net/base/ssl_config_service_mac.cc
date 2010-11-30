@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@ namespace {
 
 static const int kConfigUpdateInterval = 10;  // seconds
 
-static const bool kSSL2EnabledDefaultValue = false;
 static const bool kSSL3EnabledDefaultValue = true;
 static const bool kTLS1EnabledDefaultValue = true;
 
@@ -27,7 +26,6 @@ static CFStringRef kOCSPStyleKey = CFSTR("OCSPStyle");
 static CFStringRef kCRLStyleKey = CFSTR("CRLStyle");
 static CFStringRef kNoneRevocationValue = CFSTR("None");
 static CFStringRef kBestAttemptRevocationValue = CFSTR("BestAttempt");
-static CFStringRef kSSL2EnabledKey = CFSTR("org.chromium.ssl.ssl2");
 static CFStringRef kSSL3EnabledKey = CFSTR("org.chromium.ssl.ssl3");
 static CFStringRef kTLS1EnabledKey = CFSTR("org.chromium.ssl.tls1");
 
@@ -89,8 +87,6 @@ bool SSLConfigServiceMac::GetSSLConfigNow(SSLConfig* config) {
   config->rev_checking_enabled = (RevocationStyleIsEnabled(kOCSPStyleKey) ||
                                   RevocationStyleIsEnabled(kCRLStyleKey));
 
-  config->ssl2_enabled = SSLVersionIsEnabled(kSSL2EnabledKey,
-                                             kSSL2EnabledDefaultValue);
   config->ssl3_enabled = SSLVersionIsEnabled(kSSL3EnabledKey,
                                              kSSL3EnabledDefaultValue);
   config->tls1_enabled = SSLVersionIsEnabled(kTLS1EnabledKey,
@@ -100,14 +96,6 @@ bool SSLConfigServiceMac::GetSSLConfigNow(SSLConfig* config) {
   // TODO(rsleevi): http://crbug.com/58831 - Implement preferences for
   // disabling cipher suites.
   return true;
-}
-
-// static
-void SSLConfigServiceMac::SetSSL2Enabled(bool enabled) {
-  CFPreferencesSetAppValue(kSSL2EnabledKey,
-                           enabled ? kCFBooleanTrue : kCFBooleanFalse,
-                           kCFPreferencesCurrentApplication);
-  CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 }
 
 // static

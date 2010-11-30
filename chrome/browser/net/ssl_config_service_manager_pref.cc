@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,6 @@ class SSLConfigServiceManagerPref
 
   // The prefs (should only be accessed from UI thread)
   BooleanPrefMember rev_checking_enabled_;
-  BooleanPrefMember ssl2_enabled_;
   BooleanPrefMember ssl3_enabled_;
   BooleanPrefMember tls1_enabled_;
 
@@ -96,7 +95,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(Profile* profile)
 
   rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
                              profile->GetPrefs(), this);
-  ssl2_enabled_.Init(prefs::kSSL2Enabled, profile->GetPrefs(), this);
   ssl3_enabled_.Init(prefs::kSSL3Enabled, profile->GetPrefs(), this);
   tls1_enabled_.Init(prefs::kTLS1Enabled, profile->GetPrefs(), this);
 
@@ -110,8 +108,6 @@ void SSLConfigServiceManagerPref::RegisterUserPrefs(PrefService* user_prefs) {
   net::SSLConfig default_config;
   user_prefs->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
                                   default_config.rev_checking_enabled);
-  user_prefs->RegisterBooleanPref(prefs::kSSL2Enabled,
-                                  default_config.ssl2_enabled);
   user_prefs->RegisterBooleanPref(prefs::kSSL3Enabled,
                                   default_config.ssl3_enabled);
   user_prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
@@ -144,7 +140,6 @@ void SSLConfigServiceManagerPref::Observe(NotificationType type,
 void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     net::SSLConfig* config) {
   config->rev_checking_enabled = rev_checking_enabled_.GetValue();
-  config->ssl2_enabled = ssl2_enabled_.GetValue();
   config->ssl3_enabled = ssl3_enabled_.GetValue();
   config->tls1_enabled = tls1_enabled_.GetValue();
   SSLConfigServicePref::SetSSLConfigFlags(config);

@@ -96,8 +96,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION));
   localized_strings->SetString("sslGroupDescription",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_GROUP_DESCRIPTION));
-  localized_strings->SetString("sslUseSSL2",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_USESSL2));
   localized_strings->SetString("sslCheckRevocation",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_CHECKREVOCATION));
   localized_strings->SetString("sslUseSSL3",
@@ -264,9 +262,6 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleCheckRevocationCheckbox));
-  dom_ui_->RegisterMessageCallback("useSSL2CheckboxAction",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleUseSSL2Checkbox));
   dom_ui_->RegisterMessageCallback("useSSL3CheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleUseSSL3Checkbox));
@@ -371,15 +366,6 @@ void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
                : "Options_CheckCertRevocation_Disable");
   UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
   net::SSLConfigServiceWin::SetRevCheckingEnabled(enabled);
-}
-
-void AdvancedOptionsHandler::HandleUseSSL2Checkbox(const ListValue* args) {
-  std::string checked_str = WideToUTF8(ExtractStringValue(args));
-  bool enabled = (checked_str == "true");
-  std::string metric =
-      (enabled ? "Options_SSL2_Enable" : "Options_SSL2_Disable");
-  UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
-  net::SSLConfigServiceWin::SetSSL2Enabled(enabled);
 }
 
 void AdvancedOptionsHandler::HandleUseSSL3Checkbox(const ListValue* args) {
@@ -555,7 +541,6 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
 #if defined(OS_WIN)
 void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   bool checkRevocationSetting = false;
-  bool useSSL2Setting = false;
   bool useSSL3Setting = false;
   bool useTLS1Setting = false;
   bool disabled = false;
@@ -563,7 +548,6 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   net::SSLConfig config;
   if (net::SSLConfigServiceWin::GetSSLConfigNow(&config)) {
     checkRevocationSetting = config.rev_checking_enabled;
-    useSSL2Setting = config.ssl2_enabled;
     useSSL3Setting = config.ssl3_enabled;
     useTLS1Setting = config.tls1_enabled;
   } else {
@@ -574,10 +558,6 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetCheckRevocationCheckboxState",
       checkRevocationValue, disabledValue);
-  FundamentalValue useSSL2Value(useSSL2Setting);
-  dom_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetUseSSL2CheckboxState",
-      useSSL2Value, disabledValue);
   FundamentalValue useSSL3Value(useSSL3Setting);
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetUseSSL3CheckboxState",

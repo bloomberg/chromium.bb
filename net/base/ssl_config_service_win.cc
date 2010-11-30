@@ -29,7 +29,6 @@ static const wchar_t kProtocolsValueName[] = L"SecureProtocols";
 // The bits are OR'ed to form the DWORD value.  So 0xa0 means SSL 3.0 and
 // TLS 1.0.
 enum {
-  SSL2 = 0x08,
   SSL3 = 0x20,
   TLS1 = 0x80
 };
@@ -77,7 +76,6 @@ bool SSLConfigServiceWin::GetSSLConfigNow(SSLConfig* config) {
     protocols = PROTOCOLS_DEFAULT;
 
   config->rev_checking_enabled = (revocation != 0);
-  config->ssl2_enabled = ((protocols & SSL2) != 0);
   config->ssl3_enabled = ((protocols & SSL3) != 0);
   config->tls1_enabled = ((protocols & TLS1) != 0);
   SSLConfigService::SetSSLConfigFlags(config);
@@ -102,11 +100,6 @@ void SSLConfigServiceWin::SetRevCheckingEnabled(bool enabled) {
   internet_settings.WriteValue(kRevocationValueName, value);
   // TODO(mattm): We should call UpdateConfig after updating settings, but these
   // methods are static.
-}
-
-// static
-void SSLConfigServiceWin::SetSSL2Enabled(bool enabled) {
-  SetSSLVersionEnabled(SSL2, enabled);
 }
 
 // static

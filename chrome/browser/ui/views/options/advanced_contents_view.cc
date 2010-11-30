@@ -790,7 +790,6 @@ class SecuritySection : public AdvancedSection,
  private:
   // Controls for this section:
   views::Label* ssl_info_label_;
-  views::Checkbox* enable_ssl2_checkbox_;
   views::Checkbox* enable_ssl3_checkbox_;
   views::Checkbox* enable_tls1_checkbox_;
   views::Checkbox* check_for_cert_revocation_checkbox_;
@@ -802,7 +801,6 @@ class SecuritySection : public AdvancedSection,
 
 SecuritySection::SecuritySection(Profile* profile)
     : ssl_info_label_(NULL),
-      enable_ssl2_checkbox_(NULL),
       enable_ssl3_checkbox_(NULL),
       enable_tls1_checkbox_(NULL),
       check_for_cert_revocation_checkbox_(NULL),
@@ -814,15 +812,7 @@ SecuritySection::SecuritySection(Profile* profile)
 
 void SecuritySection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender == enable_ssl2_checkbox_) {
-    bool enabled = enable_ssl2_checkbox_->checked();
-    if (enabled) {
-      UserMetricsRecordAction(UserMetricsAction("Options_SSL2_Enable"), NULL);
-    } else {
-      UserMetricsRecordAction(UserMetricsAction("Options_SSL2_Disable"), NULL);
-    }
-    net::SSLConfigServiceWin::SetSSL2Enabled(enabled);
-  } else if (sender == enable_ssl3_checkbox_) {
+  if (sender == enable_ssl3_checkbox_) {
     bool enabled = enable_ssl3_checkbox_->checked();
     if (enabled) {
       UserMetricsRecordAction(UserMetricsAction("Options_SSL3_Enable"), NULL);
@@ -862,9 +852,6 @@ void SecuritySection::InitControlLayout() {
 
   ssl_info_label_ = new views::Label(
       l10n_util::GetString(IDS_OPTIONS_SSL_GROUP_DESCRIPTION));
-  enable_ssl2_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_SSL_USESSL2));
-  enable_ssl2_checkbox_->set_listener(this);
   enable_ssl3_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_OPTIONS_SSL_USESSL3));
   enable_ssl3_checkbox_->set_listener(this);
@@ -900,8 +887,6 @@ void SecuritySection::InitControlLayout() {
                     indented_column_set_id, false);
   AddWrappingLabelRow(layout, ssl_info_label_, single_column_view_set_id,
                       true);
-  AddWrappingCheckboxRow(layout, enable_ssl2_checkbox_,
-                         indented_column_set_id, true);
   AddWrappingCheckboxRow(layout, enable_ssl3_checkbox_,
                          indented_column_set_id, true);
   AddWrappingCheckboxRow(layout, enable_tls1_checkbox_,
@@ -916,13 +901,11 @@ void SecuritySection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name) {
     net::SSLConfig config;
     if (net::SSLConfigServiceWin::GetSSLConfigNow(&config)) {
-      enable_ssl2_checkbox_->SetChecked(config.ssl2_enabled);
       enable_ssl3_checkbox_->SetChecked(config.ssl3_enabled);
       enable_tls1_checkbox_->SetChecked(config.tls1_enabled);
       check_for_cert_revocation_checkbox_->SetChecked(
           config.rev_checking_enabled);
     } else {
-      enable_ssl2_checkbox_->SetEnabled(false);
       enable_ssl3_checkbox_->SetEnabled(false);
       enable_tls1_checkbox_->SetEnabled(false);
       check_for_cert_revocation_checkbox_->SetEnabled(false);

@@ -86,7 +86,6 @@ extern const char kInstantEnabledTime[];
 extern const char kInstantPromo[];
 #if defined(USE_NSS) || defined(USE_OPENSSL)
 extern const char kCertRevocationCheckingEnabled[];
-extern const char kSSL2Enabled[];
 extern const char kSSL3Enabled[];
 extern const char kTLS1Enabled[];
 #endif

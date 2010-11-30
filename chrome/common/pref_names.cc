@@ -230,7 +230,6 @@ const char kInstantPromo[] = "instant.promo";
 // Prefs for SSLConfigServicePref.  Currently, these are only present on
 // and used by NSS/OpenSSL using OSes.
 const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
-const char kSSL2Enabled[] = "ssl.ssl2.enabled";
 const char kSSL3Enabled[] = "ssl.ssl3.enabled";
 const char kTLS1Enabled[] = "ssl.tls1.enabled";
 #endif

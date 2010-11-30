@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,6 @@ TEST(SSLConfigServiceMacTest, GetNowTest) {
   // Verify that the constructor sets the correct default values.
   net::SSLConfig config;
   EXPECT_TRUE(config.rev_checking_enabled);
-  EXPECT_FALSE(config.ssl2_enabled);
   EXPECT_TRUE(config.ssl3_enabled);
   EXPECT_TRUE(config.tls1_enabled);
 
@@ -68,19 +67,6 @@ TEST(SSLConfigServiceMacTest, SetTest) {
 
   net::SSLConfigServiceMac::SetRevCheckingEnabled(
       config_save.rev_checking_enabled);
-
-  // Test SetSSL2Enabled.
-  net::SSLConfigServiceMac::SetSSL2Enabled(true);
-  rv = net::SSLConfigServiceMac::GetSSLConfigNow(&config);
-  EXPECT_TRUE(rv);
-  EXPECT_TRUE(config.ssl2_enabled);
-
-  net::SSLConfigServiceMac::SetSSL2Enabled(false);
-  rv = net::SSLConfigServiceMac::GetSSLConfigNow(&config);
-  EXPECT_TRUE(rv);
-  EXPECT_FALSE(config.ssl2_enabled);
-
-  net::SSLConfigServiceMac::SetSSL2Enabled(config_save.ssl2_enabled);
 
   // Test SetSSL3Enabled.
   net::SSLConfigServiceMac::SetSSL3Enabled(true);
@@ -147,15 +133,15 @@ TEST(SSLConfigServiceMacTest, ObserverTest) {
   EXPECT_TRUE(rv);
 
   net::SSLConfig config;
-  net::SSLConfigServiceMac::SetSSL2Enabled(false);
+  net::SSLConfigServiceMac::SetSSL3Enabled(false);
   config_service->GetSSLConfigAt(&config, now);
 
   // Add an observer.
   SSLConfigServiceMacObserver observer;
   config_service->AddObserver(&observer);
 
-  // Toggle SSL2.
-  net::SSLConfigServiceMac::SetSSL2Enabled(!config_save.ssl2_enabled);
+  // Toggle SSL3.
+  net::SSLConfigServiceMac::SetSSL3Enabled(!config_save.ssl3_enabled);
   config_service->GetSSLConfigAt(&config, later);
 
   // Verify that the observer was notified.
@@ -164,7 +150,7 @@ TEST(SSLConfigServiceMacTest, ObserverTest) {
   // Remove the observer.
   config_service->RemoveObserver(&observer);
 
-  // Restore the original SSL2 setting.
-  net::SSLConfigServiceMac::SetSSL2Enabled(config_save.ssl2_enabled);
+  // Restore the original SSL3 setting.
+  net::SSLConfigServiceMac::SetSSL3Enabled(config_save.ssl3_enabled);
 }
 

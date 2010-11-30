@@ -7163,9 +7163,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SSL_GROUP_DESCRIPTION" desc="The description of the 'SSL Connections' group">
         Computer-wide SSL settings:
       </message>
-      <message name="IDS_OPTIONS_SSL_USESSL2" desc="The label of the 'Use SSL 2.0' checkbox">
-        Use SSL 2.0
-      </message>
       <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
         Check for server certificate revocation
       </message>

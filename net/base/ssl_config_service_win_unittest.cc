@@ -39,7 +39,6 @@ TEST(SSLConfigServiceWinTest, GetNowTest) {
   // Verify that the constructor sets the correct default values.
   net::SSLConfig config;
   EXPECT_EQ(true, config.rev_checking_enabled);
-  EXPECT_EQ(false, config.ssl2_enabled);
   EXPECT_EQ(true, config.ssl3_enabled);
   EXPECT_EQ(true, config.tls1_enabled);
 
@@ -69,18 +68,31 @@ TEST(SSLConfigServiceWinTest, SetTest) {
   net::SSLConfigServiceWin::SetRevCheckingEnabled(
       config_save.rev_checking_enabled);
 
-  // Test SetSSL2Enabled.
-  net::SSLConfigServiceWin::SetSSL2Enabled(true);
+  // Test SetSSL3Enabled.
+  net::SSLConfigServiceWin::SetSSL3Enabled(true);
   rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
   EXPECT_TRUE(rv);
-  EXPECT_TRUE(config.ssl2_enabled);
+  EXPECT_TRUE(config.ssl3_enabled);
 
-  net::SSLConfigServiceWin::SetSSL2Enabled(false);
+  net::SSLConfigServiceWin::SetSSL3Enabled(false);
   rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
   EXPECT_TRUE(rv);
-  EXPECT_FALSE(config.ssl2_enabled);
+  EXPECT_FALSE(config.ssl3_enabled);
 
-  net::SSLConfigServiceWin::SetSSL2Enabled(config_save.ssl2_enabled);
+  net::SSLConfigServiceWin::SetSSL3Enabled(config_save.ssl3_enabled);
+
+  // Test SetTLS1Enabled.
+  net::SSLConfigServiceWin::SetTLS1Enabled(true);
+  rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
+  EXPECT_TRUE(rv);
+  EXPECT_TRUE(config.tls1_enabled);
+
+  net::SSLConfigServiceWin::SetTLS1Enabled(false);
+  rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
+  EXPECT_TRUE(rv);
+  EXPECT_FALSE(config.tls1_enabled);
+
+  net::SSLConfigServiceWin::SetTLS1Enabled(config_save.tls1_enabled);
 
   // Test SetSSL3Enabled.
   net::SSLConfigServiceWin::SetSSL3Enabled(true);
@@ -147,15 +159,15 @@ TEST(SSLConfigServiceWinTest, ObserverTest) {
   EXPECT_TRUE(rv);
 
   net::SSLConfig config;
-  net::SSLConfigServiceWin::SetSSL2Enabled(false);
+  net::SSLConfigServiceWin::SetSSL3Enabled(false);
   config_service->GetSSLConfigAt(&config, now);
 
   // Add an observer.
   SSLConfigServiceWinObserver observer;
   config_service->AddObserver(&observer);
 
-  // Toggle SSL2.
-  net::SSLConfigServiceWin::SetSSL2Enabled(!config_save.ssl2_enabled);
+  // Toggle SSL3.
+  net::SSLConfigServiceWin::SetSSL3Enabled(!config_save.ssl3_enabled);
   config_service->GetSSLConfigAt(&config, later);
 
   // Verify that the observer was notified.
@@ -164,7 +176,7 @@ TEST(SSLConfigServiceWinTest, ObserverTest) {
   // Remove the observer.
   config_service->RemoveObserver(&observer);
 
-  // Restore the original SSL2 setting.
-  net::SSLConfigServiceWin::SetSSL2Enabled(config_save.ssl2_enabled);
+  // Restore the original SSL3 setting.
+  net::SSLConfigServiceWin::SetSSL3Enabled(config_save.ssl3_enabled);
 }
 

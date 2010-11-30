@@ -108,10 +108,6 @@ var OptionsPage = options.OptionsPage;
           chrome.send('checkRevocationCheckboxAction',
               [String($('sslCheckRevocation').checked)]);
         };
-        $('sslUseSSL2').onclick = function(event) {
-          chrome.send('useSSL2CheckboxAction',
-              [String($('sslUseSSL2').checked)]);
-        };
         $('sslUseSSL3').onclick = function(event) {
           chrome.send('useSSL3CheckboxAction',
               [String($('sslUseSSL3').checked)]);
@@ -162,8 +158,8 @@ var OptionsPage = options.OptionsPage;
   //
 
   // Set the checked state of the metrics reporting checkbox.
-  AdvancedOptions.SetMetricsReportingCheckboxState = function(checked,
-      disabled, user_changed) {
+  AdvancedOptions.SetMetricsReportingCheckboxState = function(
+      checked, disabled, user_changed) {
     $('metricsReportingEnabled').checked = checked;
     $('metricsReportingEnabled').disabled = disabled;
 
@@ -209,16 +205,10 @@ var OptionsPage = options.OptionsPage;
   };
 
   // Set the checked state for the sslCheckRevocation checkbox.
-  AdvancedOptions.SetCheckRevocationCheckboxState = function(checked,
-      disabled) {
+  AdvancedOptions.SetCheckRevocationCheckboxState = function(
+      checked, disabled) {
     $('sslCheckRevocation').checked = checked;
     $('sslCheckRevocation').disabled = disabled;
-  };
-
-  // Set the checked state for the sslUseSSL2 checkbox.
-  AdvancedOptions.SetUseSSL2CheckboxState = function(checked, disabled) {
-    $('sslUseSSL2').checked = checked;
-    $('sslUseSSL2').disabled = disabled;
   };
 
   // Set the checked state for the sslUseSSL3 checkbox.
