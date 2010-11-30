@@ -1162,3 +1162,17 @@
    fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
    fun:_ZN3net12CertVerifier7RequestC2EPS0_PNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
 }
+{
+   bug_64797
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18TestRenderViewHostC2EP12SiteInstanceP22RenderViewHostDelegatei
+   fun:_ZN18TestRenderViewHostC1EP12SiteInstanceP22RenderViewHostDelegatei
+   fun:_ZN25TestRenderViewHostFactory20CreateRenderViewHostEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostFactory6CreateEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostManager4InitEP7ProfileP12SiteInstancei
+   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
+   fun:_ZN15TestTabContentsC2EP7ProfileP12SiteInstance
+   fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
+   fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
+}
