@@ -95,5 +95,5 @@ configure-gcc-with-glibc:
 	    $(GCC_CONFIGURE_FLAGS) \
 	    --enable-shared \
 	    --enable-languages="c,c++" \
-	    --enable-threads=nacl \
+	    --enable-threads=posix \
 	    --enable-tls

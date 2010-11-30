@@ -599,6 +599,13 @@ GLIBC_HOST_CFLAGS=$(if $(filter 32,$(BITSPLATFORM)),-march=i486,)
 # CFLAGS for building glibc.
 GLIBC_CFLAGS=-O2 -g
 
+# Extra arguments to scons to define build and install destinations.
+SCONS_DESTINATIONS=\
+ DESTINATION_ROOT=tools/BUILD/build-extra_sdk-$(CROSSARCH) \
+ naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+ extra_sdk_lib_destination=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib \
+ extra_sdk_include_destination=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
+
 # Build glibc:
 BUILD/stamp-glibc: SRC/stamp-glibc SRC/stamp-linux-headers
 	rm -rf $(GLIBC_BUILD_DIR)
@@ -632,7 +639,7 @@ BUILD/stamp-glibc-adhoc-files:
 	cp -f $(NACL_BITS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/bits
 	cp -f $(NACL_SYS_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/sys
 	cp -f $(NACL_MACHINE_HEADERS) $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine
-	echo '/* Intentionally empty */' > \
+	cp ../src/untrusted/include/machine/_default_types.h \
 		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/machine/_default_types.h
 	echo '/* Intentionally empty */' > \
 		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
@@ -648,11 +655,18 @@ BUILD/stamp-glibc-adhoc-files:
 # Native Client libraries.
 ##################################################################
 BUILD/stamp-nacl-libs-glibc: BUILD/stamp-glibc-adhoc-files
+	rm -rf BUILD/build-extra_sdk-$(CROSSARCH)
+	mkdir BUILD/build-extra_sdk-$(CROSSARCH)
 	cd .. && \
-	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
-	    --mode=nacl_extra_sdk --nacl_glibc \
+	  (./$(SCONS) \
+	    $(SCONS_DESTINATIONS) \
+	    MODE=nacl_extra_sdk --nacl_glibc \
 	    extra_sdk_update_header extra_sdk_update \
 	    targetplatform=x86-$(BITSPLATFORM) --verbose )
+	# Remove the fake libnacl.so to let libnacl.a be used to run tests.
+	if [ -f $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.a ]; then \
+	  rm -f $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so; \
+	fi
 	touch $@
 
 ##################################################################
@@ -664,7 +678,8 @@ BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
 	rm -f $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
-	ln -s include $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
+	mkdir $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
+	ln -s ../include/limits.h $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include/limits.h
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    -f ../../Makefile.gcc \
@@ -953,9 +968,10 @@ check: ALWAYS
 ##################################################################
 nacl-check: ALWAYS
 	(cd .. && \
-	  ./$(SCONS) -k naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
+	  ./$(SCONS) -k \
+	    $(SCONS_DESTINATIONS) \
 	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
-	    sdl=none --nacl_glibc --verbose run_hello_world_test)
+	    sdl=none --nacl_glibc --verbose small_tests)
 
 
 ##################################################################
