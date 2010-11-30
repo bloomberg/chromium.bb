@@ -241,6 +241,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     switches::kEnableClickToPlay
   },
+  {
+    "disable-hyperlink-auditing",
+    IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_NAME,
+    IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_DESCRIPTION,
+    kOsAll,
+    switches::kNoPings
+  }
 };
 
 const Experiment* experiments = kExperiments;
