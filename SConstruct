@@ -68,7 +68,7 @@ def VerboseConfigInfo(env):
   "Should we print verbose config information useful for bug reports"
   if '--help' in sys.argv: return False
   if env.Bit('prebuilt') or env.Bit('built_elsewhere'): return False
-  return ARGUMENTS.get('sysinfo', True)
+  return env.Bit('sysinfo')
 
 # ----------------------------------------------------------
 # SANITY CHECKS
@@ -117,8 +117,6 @@ ACCEPTABLE_ARGUMENTS = set([
     'scale_timeout',
     # enable use of SDL
     'sdl',
-    # disable printing of sys info with sysinfo=
-    'sysinfo',
     # set target platform
     'targetplatform',
     # activates buildbot-specific presets
@@ -148,12 +146,12 @@ def StringValueToBoolean(value):
   elif value.lower() in _FALSE_STRINGS:
     return False
   else:
-    raise Exception("Cannot convert '%s' to a boolean value" % value)
+    raise Exception("Cannot convert '%s' to a Boolean value" % value)
 
 
 def GetBinaryArgumentValue(arg_name, default):
   if not isinstance(default, bool):
-    raise Exception("Default value for '%s' must be a boolean" % bit_name)
+    raise Exception("Default value for '%s' must be a Boolean" % arg_name)
   if arg_name not in ARGUMENTS:
     return default
   return StringValueToBoolean(ARGUMENTS[arg_name])
@@ -192,7 +190,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'built_elsewhere', default=False,
     desc="The programs have already been built by another system")
 
-  BitFromArgument(env, 'target_stats', default=False,
+  # Defaults on when --verbose is specified.
+  # --verbose sets 'brief_comstr' to False, so this looks a little strange
+  BitFromArgument(env, 'target_stats', default=not GetOption('brief_comstr'),
     desc="Collect and display information about which commands are executed "
       "during the build process")
 
@@ -229,10 +229,15 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'dangerous_debug_disable_inner_sandbox',
     default=False, desc="Make sel_ldr less strict")
 
-  # By default SCons does not use the system's enviroment variables when
+  # By default SCons does not use the system's environment variables when
   # executing commands, to help isolate the build process.
   BitFromArgument(env, 'use_environ', arg_name='USE_ENVIRON',
-    default=False, desc="Expose existing evironment variables to the build")
+    default=False, desc="Expose existing environment variables to the build")
+
+  # Defaults on when --verbose is specified
+  # --verbose sets 'brief_comstr' to False, so this looks a little strange
+  BitFromArgument(env, 'sysinfo', default=not GetOption('brief_comstr'),
+    desc="Print verbose system information")
 
 
 def CheckArguments():
@@ -1435,7 +1440,7 @@ naclsdk_mode=<mode>   where <mode>:
 
 pp=1                Use command line pretty printing (more concise output)
 
-sysinfo=            Suppress verbose system info printing
+sysinfo=1           Verbose system info printing
 
 naclsdk_validate=0  Suppress presence check of sdk
 
