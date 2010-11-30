@@ -27,7 +27,6 @@ BUG_THAKIS MAC : fast/repaint/block-layout-inline-children-replaced.html = IMAGE
 BUG_KINUKO : fast/filesystem/read-directory.html = TEXT
 BUG_KINUKO : fast/filesystem/simple-persistent.html = TEXT
 BUG_KINUKO : fast/filesystem/simple-temporary.html = TEXT
-BUG_KINUKO : fast/filesystem/async-operations.html = TEXT
 
 BUG_LOISLO WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT 
 BUGWK46940 WIN RELEASE : fast/dom/Window/window-screen-properties.html = TEXT
@@ -35,3 +34,4 @@ BUGWK46940 WIN RELEASE : fast/dom/Window/window-screen-properties.html = TEXT
 BUG_OJAN WONTFIX SKIP : fast/spatial-navigation = FAIL
 BUG_OJAN MAC : fast/block/basic/truncation-rtl.html = IMAGE+TEXT
 
+BUG_VITALYR MAC : fast/filesystem/async-operations.html = CRASH PASS TEXT
