@@ -1239,6 +1239,7 @@
         'browser/content_setting_combo_model.h',
         'browser/content_setting_image_model.cc',
         'browser/content_setting_image_model.h',
+        'browser/content_settings/content_settings_provider.h',
         'browser/content_settings/host_content_settings_map.cc',
         'browser/content_settings/host_content_settings_map.h',
         'browser/cookies_tree_model.cc',
