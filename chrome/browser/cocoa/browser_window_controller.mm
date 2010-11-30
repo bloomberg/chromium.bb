@@ -444,6 +444,10 @@
   [tabStripController_ removeConstrainedWindow:window];
 }
 
+- (BOOL)canAttachConstrainedWindow {
+  return ![previewableContentsController_ isShowingPreview];
+}
+
 - (void)updateDevToolsForContents:(TabContents*)contents {
   [devToolsController_ updateDevToolsForTabContents:contents];
   [devToolsController_ ensureContentsVisible];

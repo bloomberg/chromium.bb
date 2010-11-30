@@ -69,7 +69,10 @@ void ConstrainedWindowMac::ShowConstrainedWindow() {
   NSWindowController* controller = [browserWindow windowController];
   if (controller != nil) {
     DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
-    Realize(static_cast<BrowserWindowController*>(controller));
+    BrowserWindowController* browser_controller =
+        static_cast<BrowserWindowController*>(controller);
+    if ([browser_controller canAttachConstrainedWindow])
+      Realize(browser_controller);
   }
 }
 

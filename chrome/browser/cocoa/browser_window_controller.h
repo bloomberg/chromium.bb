@@ -234,6 +234,8 @@ class TabContents;
 // Closes the tab sheet |window| and potentially shows the next sheet in the
 // tab's sheet queue.
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
+// Returns NO if constrained windows cannot be attached to this window.
+- (BOOL)canAttachConstrainedWindow;
 
 // Shows or hides the docked web inspector depending on |contents|'s state.
 - (void)updateDevToolsForContents:(TabContents*)contents;
