@@ -4574,7 +4574,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Close
       </message>
       <message name="IDS_ACCNAME_SYNC_ERROR_BUTTON" desc="The accessible name for the sync error button on the bookmarks bar.">
-        Sync Error - please relogin
+        Sync Error - please sign in again
       </message>
       <message name="IDS_ACCNAME_WEB_CONTENTS" desc="The accessible name for the web contents.">
         Web Contents
@@ -4715,7 +4715,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_IMPORTER_GOOGLE_LOGIN_TEXT" desc="The message to be displayed on dialog">
-        In order to import Toolbar bookmarks into Chrome, you must be logged into your Google account.  Please log in and try to import again.
+        In order to import Toolbar bookmarks into Chrome, you must be signed in to your Google account.  Please sign in and try to import again.
       </message>
       <message name="IDS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
         No supported browser found
@@ -5992,7 +5992,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Summary in the error page when the server has a weak Diffie-Hellman public key">
         This error can occur when connecting to a secure (HTTPS) server. It
-        means that the server is trying to setup a secure connection but, due to
+        means that the server is trying to set up a secure connection but, due to
         a disastrous misconfiguration, the connection wouldn't be secure at all!
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph> In this case the
         server needs to be fixed. Chrome won't use insecure connections in order
@@ -6059,7 +6059,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Access to the webpage was denied
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_FORBIDDEN" desc="Summary in the error page when a server returns a 403.">
-        You are not authorized to access the webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.  You may need to log in.
+        You are not authorized to access the webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>.  You may need to sign in.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_FORBIDDEN" desc="Details in the error page when a server returns a 403.">
         The server refused to fulfill the request.
@@ -8129,7 +8129,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Last synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
       </message>
       <message name="IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED" desc="The sync setup is underway and the user has not yet entered credentials.">
-        Account login details are not yet entered.
+        Account sign-in details are not yet entered.
       </message>
       <message name="IDS_SYNC_AUTHENTICATING_LABEL" desc="Label to display while the user is being authenticated to use sync.">
         Authenticating...
@@ -8149,14 +8149,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
         Error signing in.
       </message>
-      <message name="IDS_SYNC_LOGIN_INFO_OUT_OF_DATE" desc="The login information for the user is out of date - for example, the user changed their password and therefore a re-login is required.">
-        Login details are out of date.
+      <message name="IDS_SYNC_LOGIN_INFO_OUT_OF_DATE" desc="The login information for the user is out of date - for example, the user changed their password and therefore signing in again is required.">
+        Account sign-in details are out of date.
       </message>
       <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page sync section when the server is unreachable.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex> could not sync your data because it could not connect to the sync server. Retrying...</ph>
       </message>
-      <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to relogin to use sync.">
-        Login again
+      <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
+        Sign in again
       </message>
       <message name="IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL" desc="The label on a link that brings users to the Google Privacy Dashboard to control sync">
         Control sync from Google Dashboard
@@ -8315,9 +8315,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Title of the sync login dialog.">
         Set up sync
       </message>
-      <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the Login dialog">
+      <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the login dialog">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and preferences) between your computers.
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you login with your Google Account.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
       </message>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
         Sign in with your
@@ -8413,7 +8413,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sync Error
       </message>
       <message name="IDS_SYNC_BOOKMARK_BAR_ERROR_DESC" desc="The detailed description of the error to associate with the bookmark bar error button.">
-        Your login details are out of date. Click to re-enter your password.
+        Your account sign-in details are out of date. Click to re-enter your password.
       </message>
 
       <!-- Translate Info Bar -->
@@ -9178,7 +9178,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Fix network issues
       </message>
       <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
-        Sign in
+        Sign In
       </message>
       <message name="IDS_LOGIN_TITLE_HINT" desc="Hint under title 'Sign in to Chrome OS'">
         with your Google Account
@@ -9202,7 +9202,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Change picture
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE" desc="Title for the password changed dialog box">
-        Login
+        Sign In
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_TITLE" desc="Title of the dialog shown when password change has been detected">
         You password has changed
@@ -9244,7 +9244,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Help
       </message>
       <message name="IDS_LOGIN_CAPTCHA_DIALOG_TITLE" desc="Title shown for captcha input dialog">
-        Login
+        Sign In
       </message>
      <message name="IDS_LOGIN_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
         Type the characters you see in the picture below.
@@ -9327,7 +9327,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_GUEST_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow guest to sign in.">
         Restrict sign-in to the following users:
       </message>
-      <message name="IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to show user names and pictures on signin screen.">
+      <message name="IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to show user names and pictures on sign-in screen.">
         Show usernames and photos on the sign-in screen
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT" desc="In the Accounts settings tab, the instruction text on an empty username edit.">
@@ -9438,8 +9438,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT" desc="In settings Internet options, the text for customer support hyper link.">
         Customer support
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings Internet options, the label for the button login.">
-        Login
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings Internet options, the label for the button to sign in.">
+        Sign in
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONFIGURE" desc="In settings Internet options, the label for to configure the type of connection.">
         Configure:
@@ -11067,22 +11067,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Korean keyboard layout
       </message>
 
-      <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't log in because user is not whitelisted.">
-        Sorry, you are not allowed to login on this device.
+      <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
+        Sorry, you are not allowed to sign in on this device.
       </message>
-      <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't log in because password is invalid">
+      <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
         Sorry, your password could not be verified. Please try again.
       </message>
-      <message name="IDS_LOGIN_ERROR_AUTHENTICATING_NEW" desc="Couldn't log in because username or password invalid">
+      <message name="IDS_LOGIN_ERROR_AUTHENTICATING_NEW" desc="Couldn't sign in because username or password invalid">
         Sorry, your email or password could not be verified. Please try again.
       </message>
-      <message name="IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't log in because hosted account is used">
+      <message name="IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't sign in because hosted account is used">
         This type of account will not work with <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>.  Please contact your domain administrator or use an @gmail.com account to sign in.
       </message>
-      <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't log in because offline login has failed and network is not connected">
-        Offline login failed and network not connected
+      <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't sign in because offline sign-in has failed and network is not connected">
+        Offline sign-in failed and network not connected
       </message>
-      <message name="IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY" desc="Couldn't log in because nework library couldn't be loaded">
+      <message name="IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY" desc="Couldn't sign in because nework library couldn't be loaded">
         Can't access network library
       </message>
       <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens">
@@ -11091,7 +11091,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTIFICATION_PANEL_TITLE" desc="Text for the title of the notification panel.">
         Notifications
       </message>
-      <message name="IDS_GUEST" desc="Shown in login panel for users that would like to browse without signin.">
+      <message name="IDS_GUEST" desc="Shown in login panel for users that would like to browse without signing in.">
         Guest
       </message>
       <message name="IDS_ADD_USER" desc="Shown in login panel for adding new user to login screen.">
