@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -20,33 +21,26 @@ class SetupUtilTest : public testing::Test {
     data_dir_ = data_dir_.AppendASCII("installer");
     ASSERT_TRUE(file_util::PathExists(data_dir_));
 
-    // Name a subdirectory of the user temp directory.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-    test_dir_ = test_dir_.AppendASCII("SetupUtilTest");
-
-    // Create a fresh, empty copy of this test directory.
-    file_util::Delete(test_dir_, true);
-    file_util::CreateDirectory(test_dir_);
-    ASSERT_TRUE(file_util::PathExists(test_dir_));
+    // Create a temp directory for testing.
+    ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   }
 
   virtual void TearDown() {
-    // Clean up test directory
-    ASSERT_TRUE(file_util::Delete(test_dir_, false));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
+    // Clean up test directory manually so we can fail if it leaks.
+    ASSERT_TRUE(test_dir_.Delete());
   }
 
-  // the path to temporary directory used to contain the test operations
-  FilePath test_dir_;
+  // The temporary directory used to contain the test operations.
+  ScopedTempDir test_dir_;
 
   // The path to input data used in tests.
   FilePath data_dir_;
 };
-};
+}
 
 // Test that we are parsing Chrome version correctly.
 TEST_F(SetupUtilTest, ApplyDiffPatchTest) {
-  FilePath work_dir(test_dir_);
+  FilePath work_dir(test_dir_.path());
   work_dir = work_dir.AppendASCII("ApplyDiffPatchTest");
   ASSERT_FALSE(file_util::PathExists(work_dir));
   EXPECT_TRUE(file_util::CreateDirectory(work_dir));
@@ -65,25 +59,25 @@ TEST_F(SetupUtilTest, ApplyDiffPatchTest) {
 // Test that we are parsing Chrome version correctly.
 TEST_F(SetupUtilTest, GetVersionFromDirTest) {
   // Create a version dir
-  FilePath chrome_dir = test_dir_.AppendASCII("1.0.0.0");
+  FilePath chrome_dir = test_dir_.path().AppendASCII("1.0.0.0");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
   scoped_ptr<installer::Version> version(
-      setup_util::GetVersionFromDir(test_dir_));
+      setup_util::GetVersionFromDir(test_dir_.path()));
   ASSERT_TRUE(version->GetString() == L"1.0.0.0");
 
   file_util::Delete(chrome_dir, true);
   ASSERT_FALSE(file_util::PathExists(chrome_dir));
-  ASSERT_TRUE(setup_util::GetVersionFromDir(test_dir_) == NULL);
+  ASSERT_TRUE(setup_util::GetVersionFromDir(test_dir_.path()) == NULL);
 
-  chrome_dir = test_dir_.AppendASCII("ABC");
+  chrome_dir = test_dir_.path().AppendASCII("ABC");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
-  ASSERT_TRUE(setup_util::GetVersionFromDir(test_dir_) == NULL);
+  ASSERT_TRUE(setup_util::GetVersionFromDir(test_dir_.path()) == NULL);
 
-  chrome_dir = test_dir_.AppendASCII("2.3.4.5");
+  chrome_dir = test_dir_.path().AppendASCII("2.3.4.5");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
-  version.reset(setup_util::GetVersionFromDir(test_dir_));
+  version.reset(setup_util::GetVersionFromDir(test_dir_.path()));
   ASSERT_TRUE(version->GetString() == L"2.3.4.5");
 }
