@@ -11,7 +11,7 @@ TEST_SUITES = ['small_tests']
 
 # Do not run on qemu
 if env.Bit('target_arm') or env.Bit('bitcode'):
-  #TEST_SUITES = ['small_tests_arm_hw_only']
+  # TEST_SUITES = ['small_tests_arm_hw_only']
   # Currently, run_simple_srpc_test_nexe does not pass the validator.
   TEST_SUITES = ['broken_tests']
 
@@ -33,4 +33,20 @@ env.AddNodeToTestSuite(node,
                        TEST_SUITES,
                        'run_simple_srpc_test_nexe')
 
+env.ComponentProgram('types_srpc_test.nexe',
+                     ['types_srpc_test.c'],
+                     EXTRA_LIBS=['srpc',
+                                 'google_nacl_imc_c',
+                                 'google_nacl_imc',
+                                 'google_nacl_platform',
+                                 'gio',
+                                 'pthread'])
+node = env.CommandSelLdrTestNacl(
+    'types_srpc_test_nexe.out',
+    command=[env.File('types_srpc_test.nexe')],
+    exit_status='0',
+    )
+env.AddNodeToTestSuite(node,
+                       TEST_SUITES,
+                       'run_types_srpc_test_nexe')
 

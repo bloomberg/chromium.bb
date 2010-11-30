@@ -29,3 +29,18 @@ node = env.CommandTest(
     command=[simple_srpc_test_exe])
 env.AddNodeToTestSuite(node, TEST_SUITES, 'run_simple_srpc_test')
 
+types_srpc_test_exe = env.ComponentProgram(
+    'types_srpc_test',
+    'types_srpc_test.c',
+    EXTRA_LIBS=['google_nacl_imc',
+                'google_nacl_imc_c',
+                'nonnacl_srpc',
+                'nrd_xfer',
+                'nacl_base',
+                'platform',
+                'gio'])
+node = env.CommandTest(
+    'types_srpc_test.out',
+    command=[types_srpc_test_exe])
+env.AddNodeToTestSuite(node, TEST_SUITES, 'run_types_srpc_test')
+
