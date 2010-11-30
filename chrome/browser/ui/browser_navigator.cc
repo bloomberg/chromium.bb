@@ -237,6 +237,26 @@ void NormalizeDisposition(browser::NavigateParams* params) {
   }
 }
 
+// Obtain the profile used by the code that originated the Navigate() request.
+// |source_browser| represents the Browser that was supplied in |params| before
+// it was modified.
+Profile* GetSourceProfile(browser::NavigateParams* params,
+    Browser* source_browser) {
+  if (params->source_contents)
+    return params->source_contents->profile();
+
+  if (source_browser)
+    return source_browser->profile();
+
+  if (params->profile)
+    return params->profile;
+
+  // We couldn't find one in any of the source metadata, so we'll fall back to
+  // the profile associated with the target browser.
+  return params->browser->profile();
+}
+
+
 // This class makes sure the Browser object held in |params| is made visible
 // by the time it goes out of scope, provided |params| wants it to be shown.
 class ScopedBrowserDisplayer {
@@ -326,7 +346,7 @@ NavigateParams::~NavigateParams() {
 }
 
 void Navigate(NavigateParams* params) {
-  Browser* browser = params->browser;
+  Browser* source_browser = params->browser;
   AdjustNavigateParamsForURL(params);
 
   params->browser = GetBrowserForDisposition(params);
@@ -334,7 +354,14 @@ void Navigate(NavigateParams* params) {
     return;
   // Navigate() must not return early after this point.
 
-  if (browser != params->browser &&
+  if (GetSourceProfile(params, source_browser) != params->browser->profile()) {
+    // A tab is being opened from a link from a different profile, we must reset
+    // source information that may cause state to be shared.
+    params->source_contents = NULL;
+    params->referrer = GURL();
+  }
+
+  if (source_browser != params->browser &&
       params->browser->tabstrip_model()->empty()) {
     // A new window has been created. So it needs to be displayed.
     params->show_window = true;

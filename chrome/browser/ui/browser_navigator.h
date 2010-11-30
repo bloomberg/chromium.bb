@@ -69,6 +69,9 @@ struct NavigateParams {
   //       is necessary. Default is NULL, i.e. no context.
   // [out] If NULL, this value will be set to the selected TabContents in the
   //       originating browser prior to the operation performed by Navigate().
+  //       However, if the originating page is from a different profile (e.g. an
+  //       OFF_THE_RECORD page originating from a non-OTR window), then
+  //       |source_contents| is reset to NULL.
   TabContentsWrapper* source_contents;
 
   // The disposition requested by the navigation source. Default is

@@ -325,6 +325,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_Incognito) {
   EXPECT_EQ(browser()->profile()->GetOffTheRecordProfile(),
             p.browser->profile());
 
+  // |source_contents| should be set to NULL because the profile for the new
+  // page is different from the originating page.
+  EXPECT_EQ(NULL, p.source_contents);
+
   // We should now have two windows, the browser() provided by the framework and
   // the new incognito window.
   EXPECT_EQ(2u, BrowserList::size());
