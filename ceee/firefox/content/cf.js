@@ -158,10 +158,10 @@ CfHelper.prototype.create = function(parent, idValue, onCfReady, onCfMessage) {
 
   this.cf_.id = idValue;
   this.cf_.setAttribute('type', 'application/chromeframe');
-  // TODO(rogerta@chromium.org): the height here is arbitrary.  We
-  // will need to size appropriately when we have more info.
+  // TODO(cindylau@chromium.org): The dimensions should not be hardcoded here.
+  // We should receive UI size info from extensions in the future, if possible.
   this.cf_.setAttribute('width', '1440');
-  this.cf_.setAttribute('height', '25');
+  this.cf_.setAttribute('height', '31');
   this.cf_.setAttribute('flex', '1');
   this.cf_.setAttribute('privileged_mode', '1');
   this.cf_.setAttribute('chrome_extra_arguments',

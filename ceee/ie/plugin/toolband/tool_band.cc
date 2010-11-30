@@ -24,6 +24,19 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/com_message_event.h"
 
+namespace {
+
+// TODO(cindylau@chromium.org): The dimensions should not be hardcoded here.
+// We should receive UI size info from extensions in the future, if possible.
+const int kToolBandMinWidth = 64;
+const int kToolBandHeight = 31;
+
+// Define the type of SHGetPropertyStoreForWindow is SHGPSFW.
+typedef DECLSPEC_IMPORT HRESULT (STDAPICALLTYPE *SHGPSFW)(HWND hwnd,
+                                                          REFIID riid,
+                                                          void** ppv);
+}  // namespace
+
 _ATL_FUNC_INFO ToolBand::handler_type_idispatch_ =
     { CC_STDCALL, VT_EMPTY, 1, { VT_DISPATCH } };
 _ATL_FUNC_INFO ToolBand::handler_type_long_ =
@@ -44,8 +57,8 @@ ToolBand::ToolBand()
       listening_to_browser_events_(false),
       band_id_(0),
       is_quitting_(false),
-      current_width_(64),
-      current_height_(25) {
+      current_width_(kToolBandMinWidth),
+      current_height_(kToolBandHeight) {
   TRACE_EVENT_BEGIN("ceee.toolband", this, "");
 }
 
