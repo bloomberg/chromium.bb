@@ -140,6 +140,13 @@ class WebResourceService
   // Puts parsed json data in the right places, and writes to prefs file.
   void OnWebResourceUnpacked(const DictionaryValue& parsed_json);
 
+  // Notify listeners that the state of a web resource has changed.
+  void WebResourceStateChange();
+
+  // Schedule a notification that a web resource is either going to become
+  // available or be no longer valid.
+  void ScheduleNotification(double ms_start_time, double ms_end_time);
+
   // We need to be able to load parsed resource data into preferences file,
   // and get proper install directory.
   PrefService* prefs_;
@@ -148,12 +155,14 @@ class WebResourceService
   // profile.
   Profile* profile_;
 
-  // Server from which we are currently pulling web resource data.
-  std::string web_resource_server_;
-
   scoped_ptr<WebResourceFetcher> web_resource_fetcher_;
 
   ResourceDispatcherHost* resource_dispatcher_host_;
+
+  // Allows the creation of tasks to send a WEB_RESOURCE_STATE_CHANGED
+  // notification. This allows the WebResourceService to notify the New Tab
+  // Page immediately when a new web resource should be shown or removed.
+  ScopedRunnableMethodFactory<WebResourceService> service_factory_;
 
   // Gets mutable dictionary attached to user's preferences, so that we
   // can write resource data back to user's pref file.
@@ -167,6 +176,10 @@ class WebResourceService
   // Delay between calls to update the web resource cache. This delay may be
   // different for different builds of Chrome.
   int cache_update_delay_;
+
+  // True if a task has been set to update the cache when a new web resource
+  // becomes available.
+  bool web_resource_update_scheduled_;
 
   DISALLOW_COPY_AND_ASSIGN(WebResourceService);
 };
