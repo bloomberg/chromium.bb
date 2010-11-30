@@ -5,6 +5,7 @@
 #include "chrome/browser/net/predictor.h"
 
 #include <algorithm>
+#include <cmath>
 #include <set>
 #include <sstream>
 
@@ -182,8 +183,9 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
              kMaxSearchKeepaliveSeconds)
           return;  // We've done a preconnect recently.
         last_omnibox_preconnect_ = now;
-
-        Preconnect::PreconnectOnUIThread(CanonicalizeUrl(url), motivation);
+        const int kConnectionsNeeded = 1;
+        Preconnect::PreconnectOnUIThread(CanonicalizeUrl(url), motivation,
+                                         kConnectionsNeeded);
         return;  // Skip pre-resolution, since we'll open a connection.
       }
     } else {
@@ -215,7 +217,9 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url) {
   if (preconnect_enabled()) {
     std::string host = url.HostNoBrackets();
     UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
-    Preconnect::PreconnectOnUIThread(CanonicalizeUrl(url), motivation);
+    const int kConnectionsNeeded = 1;
+    Preconnect::PreconnectOnUIThread(CanonicalizeUrl(url), motivation,
+                                     kConnectionsNeeded);
     PredictFrameSubresources(url.GetWithEmptyPath());
   }
 }
@@ -250,11 +254,12 @@ void Predictor::PrepareFrameSubresources(const GURL& url) {
                                 10, 5000, 50);
     future_url->second.ReferrerWasObserved();
     if (preconnect_enabled_ &&
-        kPreconnectWorthyExpectedValue < connection_expectation) {
+        connection_expectation > kPreconnectWorthyExpectedValue) {
       evalution = PRECONNECTION;
       future_url->second.IncrementPreconnectionCount();
-      Preconnect::PreconnectOnIOThread(future_url->first, motivation);
-    } else if (kDNSPreresolutionWorthyExpectedValue < connection_expectation) {
+      int count = static_cast<int>(std::ceil(connection_expectation));
+      Preconnect::PreconnectOnIOThread(future_url->first, motivation, count);
+    } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
       evalution = PRERESOLUTION;
       future_url->second.preresolution_increment();
       UrlInfo* queued_info = AppendToResolutionQueue(future_url->first,

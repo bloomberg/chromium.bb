@@ -122,7 +122,8 @@ class StreamFactory {
 
   // Requests that enough connections for |num_streams| be opened.  If
   // ERR_IO_PENDING is returned, |info|, |ssl_config|, and |proxy_info| must
-  // be kept alive until |callback| is invoked.
+  // be kept alive until |callback| is invoked. That callback will be given the
+  // final error code.
   virtual int PreconnectStreams(int num_streams,
                                 const HttpRequestInfo* info,
                                 SSLConfig* ssl_config,

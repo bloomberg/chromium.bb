@@ -416,9 +416,11 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
   // If we're now connected, prewarm the auth url.
   void OnNetworkManagerChanged(NetworkLibrary* netlib) {
     if (netlib->Connected()) {
+      const int kConnectionsNeeded = 1;
       chrome_browser_net::Preconnect::PreconnectOnUIThread(
           GURL(GaiaAuthFetcher::kClientLoginUrl),
-          chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED);
+          chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
+          kConnectionsNeeded);
       netlib->RemoveNetworkManagerObserver(this);
       delete this;
     }
@@ -429,9 +431,11 @@ void LoginUtilsImpl::PrewarmAuthentication() {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     NetworkLibrary *network = CrosLibrary::Get()->GetNetworkLibrary();
     if (network->Connected()) {
+      const int kConnectionsNeeded = 1;
       chrome_browser_net::Preconnect::PreconnectOnUIThread(
           GURL(GaiaAuthFetcher::kClientLoginUrl),
-          chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED);
+          chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
+          kConnectionsNeeded);
     } else {
       new WarmingObserver();
     }
