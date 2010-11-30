@@ -32,4 +32,5 @@ BUG_KINUKO : fast/filesystem/async-operations.html = TEXT
 BUG_LOISLO WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT 
 BUGWK46940 WIN RELEASE : fast/dom/Window/window-screen-properties.html = TEXT
 
+BUG_OJAN WONTFIX SKIP : fast/spatial-navigation = FAIL
 
