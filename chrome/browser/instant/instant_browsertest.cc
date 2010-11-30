@@ -162,13 +162,8 @@ class InstantTest : public InProcessBrowserTest {
 //    default search provider.
 // 3. Test resize events.
 
-#if defined(OS_WIN)
-#define MAYBE_OnChangeEvent OnChangeEvent
-#else
-#define MAYBE_OnChangeEvent DISABLED_OnChangeEvent
-#endif
 // Verify that the onchange event is dispatched upon typing in the box.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
@@ -185,14 +180,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
       1, "window.onchangecalls", preview_));
 }
 
-#if defined(OS_WIN)
-// Disabled, http://crbug.com/62940.
-#define MAYBE_OnSubmitEvent DISABLED_OnSubmitEvent
-#else
-#define MAYBE_OnSubmitEvent DISABLED_OnSubmitEvent
-#endif
 // Verify that the onsubmit event is dispatched upon pressing enter.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnSubmitEvent) {
+// TODO(sky): Disabled, http://crbug.com/62940.
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnSubmitEvent) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
@@ -217,10 +207,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnSubmitEvent) {
       1, "window.onsubmitcalls", contents));
 }
 
-#if defined(OS_WIN)
-#define MAYBE_OnCancelEvent OnCancelEvent
+#if defined(OS_MACOSX)
+// Does not pass on Mac.  http://crbug.com/64696
+#define MAYBE_OnCancelEvent FAILS_OnCancelEvent
 #else
-#define MAYBE_OnCancelEvent DISABLED_OnCancelEvent
+#define MAYBE_OnCancelEvent OnCancelEvent
 #endif
 // Verify that the oncancel event is dispatched upon losing focus.
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
