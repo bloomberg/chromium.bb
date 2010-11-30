@@ -41,6 +41,11 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen {
   virtual void DidInitiatePaint();
   virtual void DidFlushPaint();
   virtual void Close();
+  virtual bool GetBitmapForOptimizedPluginPaint(
+      const gfx::Rect& paint_bounds,
+      TransportDIB** dib,
+      gfx::Rect* location,
+      gfx::Rect* clip);
 
   // RenderWidgetFullscreen API.
   virtual WebKit::WebWidget* CreateWebWidget();

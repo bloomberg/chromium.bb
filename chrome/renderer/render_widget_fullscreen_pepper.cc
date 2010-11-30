@@ -214,3 +214,15 @@ void RenderWidgetFullscreenPepper::SendClose() {
 void RenderWidgetFullscreenPepper::GenerateFullRepaint() {
   didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
 }
+
+bool RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
+    const gfx::Rect& paint_bounds,
+    TransportDIB** dib,
+    gfx::Rect* location,
+    gfx::Rect* clip) {
+  if (plugin_) {
+    return plugin_->GetBitmapForOptimizedPluginPaint(
+        paint_bounds, dib, location, clip);
+  }
+  return false;
+}
