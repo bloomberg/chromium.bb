@@ -93,32 +93,6 @@ TEST(SSLConfigServiceWinTest, SetTest) {
   EXPECT_FALSE(config.tls1_enabled);
 
   net::SSLConfigServiceWin::SetTLS1Enabled(config_save.tls1_enabled);
-
-  // Test SetSSL3Enabled.
-  net::SSLConfigServiceWin::SetSSL3Enabled(true);
-  rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
-  EXPECT_TRUE(rv);
-  EXPECT_TRUE(config.ssl3_enabled);
-
-  net::SSLConfigServiceWin::SetSSL3Enabled(false);
-  rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
-  EXPECT_TRUE(rv);
-  EXPECT_FALSE(config.ssl3_enabled);
-
-  net::SSLConfigServiceWin::SetSSL3Enabled(config_save.ssl3_enabled);
-
-  // Test SetTLS1Enabled.
-  net::SSLConfigServiceWin::SetTLS1Enabled(true);
-  rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
-  EXPECT_TRUE(rv);
-  EXPECT_TRUE(config.tls1_enabled);
-
-  net::SSLConfigServiceWin::SetTLS1Enabled(false);
-  rv = net::SSLConfigServiceWin::GetSSLConfigNow(&config);
-  EXPECT_TRUE(rv);
-  EXPECT_FALSE(config.tls1_enabled);
-
-  net::SSLConfigServiceWin::SetTLS1Enabled(config_save.tls1_enabled);
 }
 
 TEST(SSLConfigServiceWinTest, GetTest) {
