@@ -43,13 +43,9 @@ namespace browser {
 // Defined in browser_dialogs.h for creation of the view.
 void ShowClearBrowsingDataView(gfx::NativeWindow parent,
                                Profile* profile) {
-#if defined(OS_WIN)
-  views::Window::CreateChromeWindow(parent, gfx::Rect(),
-                                    new ClearDataView(profile))->Show();
-#else
+
   views::Window::CreateChromeWindow(parent, gfx::Rect(),
                                     new ClearBrowsingDataView(profile))->Show();
-#endif
 }
 
 }  // namespace browser
