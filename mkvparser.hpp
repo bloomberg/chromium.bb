@@ -529,10 +529,11 @@ public:
 
     long Load();  //loads headers and all clusters
 
-    //for incremental loading (splitter)
+    //for incremental loading
     long long Unparsed() const;
     long long ParseHeaders();  //stops when first cluster is found
-    long LoadCluster();        //loads one cluster
+    long LoadCluster(long long& pos, long& size);  //load one cluster
+    long LoadCluster();
 
     //This pair parses one cluster, but only changes the state of the
     //segment object when the cluster is actually added to the index.
@@ -577,7 +578,14 @@ private:
 
 };
 
-
 }  //end namespace mkvparser
+
+inline long mkvparser::Segment::LoadCluster()
+{
+    long long pos;
+    long size;
+
+    return LoadCluster(pos, size);
+}
 
 #endif  //MKVPARSER_HPP

@@ -29,80 +29,6 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
     assert(pReader);
     assert(pos >= 0);
 
-#if 0
-    unsigned char b;
-
-    int hr = pReader->Read(pos, 1, &b);
-
-    if (hr < 0)
-        return hr;
-
-    assert(hr == 0L);
-
-    if (b & 0x80)       //1000 0000
-    {
-        len = 1;
-        b &= 0x7F;      //0111 1111
-    }
-    else if (b & 0x40)  //0100 0000
-    {
-        len = 2;
-        b &= 0x3F;      //0011 1111
-    }
-    else if (b & 0x20)  //0010 0000
-    {
-        len = 3;
-        b &= 0x1F;      //0001 1111
-    }
-    else if (b & 0x10)  //0001 0000
-    {
-        len = 4;
-        b &= 0x0F;      //0000 1111
-    }
-    else if (b & 0x08)  //0000 1000
-    {
-        len = 5;
-        b &= 0x07;      //0000 0111
-    }
-    else if (b & 0x04)  //0000 0100
-    {
-        len = 6;
-        b &= 0x03;      //0000 0011
-    }
-    else if (b & 0x02)  //0000 0010
-    {
-        len = 7;
-        b &= 0x01;      //0000 0001
-    }
-    else
-    {
-        assert(b & 0x01);  //0000 0001
-        len = 8;
-        b = 0;             //0000 0000
-    }
-
-    //assert((available - pos) >= len);
-
-    long long result = b;
-    ++pos;
-
-    for (long i = 1; i < len; ++i)
-    {
-        hr = pReader->Read(pos, 1, &b);
-
-        if (hr < 0)
-            return hr;
-
-        assert(hr == 0L);
-
-        result <<= 8;
-        result |= b;
-
-        ++pos;
-    }
-
-    return result;
-#else
     int status;
 
 #ifdef _DEBUG
@@ -161,7 +87,6 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
     }
 
     return result;
-#endif
 }
 
 long long mkvparser::GetUIntLength(
@@ -174,8 +99,9 @@ long long mkvparser::GetUIntLength(
 
     long long total, available;
 
-    long hr = pReader->Length(&total, &available);
-    assert(hr >= 0);
+    int status = pReader->Length(&total, &available);
+    assert(status >= 0);
+    assert(total >= 0);
     assert(available <= total);
 
     if (pos >= available)
@@ -183,12 +109,12 @@ long long mkvparser::GetUIntLength(
 
     unsigned char b;
 
-    hr = pReader->Read(pos, 1, &b);
+    status = pReader->Read(pos, 1, &b);
 
-    if (hr < 0)
-        return hr;
+    if (status < 0)
+        return status;
 
-    assert(hr == 0L);
+    assert(status == 0);
 
     if (b == 0)  //we can't handle u-int values larger than 8 bytes
         return E_FILE_FORMAT_INVALID;
@@ -1233,15 +1159,17 @@ bool Segment::AddCluster(long long off, long long pos)
 }
 
 
-long Segment::LoadCluster()
+long Segment::LoadCluster(
+    long long& pos,
+    long& len)
 {
     const long long stop = m_start + m_size;
 
     while (m_pos < stop)
     {
-        long long pos = m_pos;
+        pos = m_pos;
 
-        long len;
+        //Read ID
 
         long long result = GetUIntLength(m_pReader, pos, len);
 
@@ -1263,6 +1191,7 @@ long Segment::LoadCluster()
         pos += len;  //consume ID
 
         //Read Size
+
         result = GetUIntLength(m_pReader, pos, len);
 
         if (result < 0)  //error
@@ -1300,7 +1229,10 @@ long Segment::LoadCluster()
         assert(avail <= total);
 
         if ((pos + size) > avail)
+        {
+            len = static_cast<long>(size);
             return E_BUFFER_NOT_FULL;
+        }
 
         if (id == 0x0C53BB6B)  //Cues ID
         {
