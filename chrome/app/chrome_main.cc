@@ -187,7 +187,99 @@ bool HasDeprecatedArguments(const std::wstring& command_line) {
   return (pos != std::wstring::npos);
 }
 
+// Register the invalid param handler and pure call handler to be able to
+// notify breakpad when it happens.
+void RegisterInvalidParamHandler() {
+  _set_invalid_parameter_handler(InvalidParameter);
+  _set_purecall_handler(PureCall);
+  // Gather allocation failure.
+  std::set_new_handler(&OnNoMemory);
+  // Also enable the new handler for malloc() based failures.
+  _set_new_mode(1);
+}
+
 #endif  // defined(OS_WIN)
+
+
+#if defined(OS_POSIX)
+// Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
+void SetupSignalHandlers() {
+  // Sanitise our signal handling state. Signals that were ignored by our
+  // parent will also be ignored by us. We also inherit our parent's sigmask.
+  sigset_t empty_signal_set;
+  CHECK(0 == sigemptyset(&empty_signal_set));
+  CHECK(0 == sigprocmask(SIG_SETMASK, &empty_signal_set, NULL));
+
+  struct sigaction sigact;
+  memset(&sigact, 0, sizeof(sigact));
+  sigact.sa_handler = SIG_DFL;
+  static const int signals_to_reset[] =
+      {SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
+       SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
+  for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
+    CHECK(0 == sigaction(signals_to_reset[i], &sigact, NULL));
+  }
+
+  // Always ignore SIGPIPE.  We check the return value of write().
+  CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
+}
+#endif  // OS_POSIX
+
+// Perform low-level initialization that occurs before we even consider
+// the command line; for example, make us abort if we run out of memory.
+void LowLevelInit() {
+#if defined(OS_WIN)
+  RegisterInvalidParamHandler();
+#endif
+
+#if defined(OS_MACOSX)
+  // TODO(mark): Some of these things ought to be handled in
+  // chrome_exe_main_mac.mm.  Under the current architecture, nothing
+  // in chrome_exe_main can rely directly on chrome_dll code on the
+  // Mac, though, so until some of this code is refactored to avoid
+  // such a dependency, it lives here.  See also the TODO(mark)
+  // at InitCrashReporter() and DestructCrashReporter().
+  base::EnableTerminationOnHeapCorruption();
+  base::EnableTerminationOnOutOfMemory();
+#endif  // OS_MACOSX
+
+#if defined(OS_POSIX)
+  // Set C library locale to make sure CommandLine can parse argument values
+  // in correct encoding.
+  setlocale(LC_ALL, "");
+
+  SetupSignalHandlers();
+
+  typedef Singleton<base::GlobalDescriptors,
+                    LeakySingletonTraits<base::GlobalDescriptors> >
+      GlobalDescriptorsSingleton;
+  base::GlobalDescriptors* g_fds = GlobalDescriptorsSingleton::get();
+  g_fds->Set(kPrimaryIPCChannel,
+             kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+#if defined(OS_LINUX)
+  g_fds->Set(kCrashDumpSignal,
+             kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
+#endif
+#endif  // OS_POSIX
+}
+
+// Perform last-second shutdown work.  Partner of LowLevelInit().
+void LowLevelShutdown() {
+#if defined(OS_WIN)
+#ifdef _CRTDBG_MAP_ALLOC
+  _CrtDumpMemoryLeaks();
+#endif  // _CRTDBG_MAP_ALLOC
+
+  _Module.Term();
+#endif
+
+  logging::CleanupChromeLogging();
+
+#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
+  // TODO(mark): See the TODO(mark) at InitCrashReporter.
+  DestructCrashReporter();
+#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
+}
 
 #if defined(OS_LINUX)
 static void AdjustLinuxOOMScore(const std::string& process_type) {
@@ -225,19 +317,6 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
     base::AdjustOOMScore(base::GetCurrentProcId(), score);
 }
 #endif  // defined(OS_LINUX)
-
-// Register the invalid param handler and pure call handler to be able to
-// notify breakpad when it happens.
-void RegisterInvalidParamHandler() {
-#if defined(OS_WIN)
-  _set_invalid_parameter_handler(InvalidParameter);
-  _set_purecall_handler(PureCall);
-  // Gather allocation failure.
-  std::set_new_handler(&OnNoMemory);
-  // Also enable the new handler for malloc() based failures.
-  _set_new_mode(1);
-#endif
-}
 
 void SetupCRT(const CommandLine& parsed_command_line) {
 #if defined(OS_WIN)
@@ -377,28 +456,6 @@ void InitializeStatsTable(base::ProcessId browser_pid,
 }
 
 #if defined(OS_POSIX)
-// Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
-void SetupSignalHandlers() {
-  // Sanitise our signal handling state. Signals that were ignored by our
-  // parent will also be ignored by us. We also inherit our parent's sigmask.
-  sigset_t empty_signal_set;
-  CHECK(0 == sigemptyset(&empty_signal_set));
-  CHECK(0 == sigprocmask(SIG_SETMASK, &empty_signal_set, NULL));
-
-  struct sigaction sigact;
-  memset(&sigact, 0, sizeof(sigact));
-  sigact.sa_handler = SIG_DFL;
-  static const int signals_to_reset[] =
-      {SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
-       SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
-  for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
-    CHECK(0 == sigaction(signals_to_reset[i], &sigact, NULL));
-  }
-
-  // Always ignore SIGPIPE.  We check the return value of write().
-  CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
-}
-
 // Check for --version and --product-version; return true if we encountered
 // one of these switches and should exit now.
 bool HandleVersionSwitches(const CommandLine& command_line) {
@@ -543,18 +600,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, char** argv) {
 #endif
-#if defined(OS_MACOSX)
-  // TODO(mark): Some of these things ought to be handled in
-  // chrome_exe_main_mac.mm.  Under the current architecture, nothing
-  // in chrome_exe_main can rely directly on chrome_dll code on the
-  // Mac, though, so until some of this code is refactored to avoid
-  // such a dependency, it lives here.  See also the TODO(mark) below
-  // at InitCrashReporter() and DestructCrashReporter().
-  base::EnableTerminationOnHeapCorruption();
-  base::EnableTerminationOnOutOfMemory();
-#endif  // OS_MACOSX
-
-  RegisterInvalidParamHandler();
+  LowLevelInit();
 
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager;
@@ -567,24 +613,6 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
-#endif
-
-#if defined(OS_POSIX)
-  base::GlobalDescriptors* g_fds = Singleton<base::GlobalDescriptors>::get();
-  g_fds->Set(kPrimaryIPCChannel,
-             kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
-#if defined(OS_LINUX)
-  g_fds->Set(kCrashDumpSignal,
-             kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
-#endif
-#endif
-
-#if defined(OS_POSIX)
-  // Set C library locale to make sure CommandLine can parse argument values
-  // in correct encoding.
-  setlocale(LC_ALL, "");
-
-  SetupSignalHandlers();
 #endif
 
   // Initialize the command line.
@@ -622,9 +650,6 @@ int ChromeMain(int argc, char** argv) {
   // Must do this before any other usage of command line!
   if (HasDeprecatedArguments(parsed_command_line.command_line_string()))
     return 1;
-#endif
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 #endif
 
   if (parsed_command_line.HasSwitch(switches::kEnableNaCl)) {
@@ -880,20 +905,7 @@ int ChromeMain(int argc, char** argv) {
   if (SubprocessNeedsResourceBundle(process_type))
     ResourceBundle::CleanupSharedInstance();
 
-#if defined(OS_WIN)
-#ifdef _CRTDBG_MAP_ALLOC
-  _CrtDumpMemoryLeaks();
-#endif  // _CRTDBG_MAP_ALLOC
-
-  _Module.Term();
-#endif
-
-  logging::CleanupChromeLogging();
-
-#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
-  // TODO(mark): See the TODO(mark) above at InitCrashReporter.
-  DestructCrashReporter();
-#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
+  LowLevelShutdown();
 
   return exit_code;
 }
