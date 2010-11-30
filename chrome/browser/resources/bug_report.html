@@ -2,11 +2,8 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8"/>
-<title i18n-content="page-title"></title>
-<!-- We want to keep our style in sync with the options page. -->
-<link rel="stylesheet" href="dom_ui.css">
-<link rel="stylesheet" href="options/options_page.css">
-<link rel="stylesheet" href="bug_report.css">
+<title i18n-content="title"></title>
+<link rel="stylesheet" href="bug_report.css"/>
 
 <script src="shared/js/local_strings.js"></script>
 <script src="shared/js/util.js"></script>
@@ -22,20 +19,36 @@ function load() {
   $('sysinfo-url').onclick = function(event) {
     chrome.send('openSystemTab');
   };
-  
-  var menuOffPattern = /(^\?|&)menu=off($|&)/;
-  var menuDisabled = menuOffPattern.test(window.location.search);
-  document.documentElement.setAttribute('hide-menu', menuDisabled);
-  
 
   // textContent on description-text textarea seems to default
   // to several spaces, this resets it to empty.
   $('description-text').textContent = '';
+  $('send-report-button').disabled = true;
+
+  $('issue-with-combo').addEventListener('change', function(e) {
+    $('send-report-button').disabled =
+        this.selectedIndex <= 0 || $('description-text').value.length == 0;
+  });
+
+  $('description-text').addEventListener('keyup', function(e) {
+    $('send-report-button').disabled =
+        $('issue-with-combo').selectedIndex <= 0 || this.value.length == 0;
+  });
+
+  $('current-screenshot').nextSibling.textContent =
+      localStrings.getString('currentscreenshots');
+<if expr="pp_ifdef('chromeos')">
+  $('saved-screenshot').nextSibling.textContent =
+      localStrings.getString('savedscreenshots');
+</if>
+  $('no-screenshot').nextSibling.textContent =
+      localStrings.getString('noscreenshot');
 
   // Get a list of issues that we allow the user to select from.
   // Note, the order and the issues types themselves are different
   // between Chromium and Chromium OS, so this code needs to be
-  // maintained individually between in these two sections.
+  // maintained individually between the bug_report.html and
+  // bug_report_cros.html files.
   var issueTypeText = [];
   issueTypeText[0] = localStrings.getString('issue-choose');
 <if expr="not pp_ifdef('chromeos')">
@@ -68,53 +81,33 @@ function load() {
   }
 
   chrome.send('getDialogDefaults', []);
-  chrome.send('refreshCurrentScreenshot', []);
+  chrome.send('refreshScreenshots', []);
 };
 
-function setupCurrentScreenshot(screenshot) {
-  addScreenshot('current-screenshots', screenshot);
-}
-
-function setupSavedScreenshots(screenshots) {
-  if (screenshots.length == 0) {
-    $('saved-screenshots').innerText =
-        localStrings.getString('no-saved-screenshots');
-
-    // Make sure we make the display the message
-    $('saved-screenshots').style.display = 'block';
-    
-    // In case the user tries to send now; fail safe, do not send a screenshot
-    // at all versus sending the current screenshot. 
-    selectedThumbnailDivId = '';
-    selectedThumbnailId = '';
+function setupScreenshots(screenshots) {
+  if (screenshots.length == 1) {
+    addScreenshot('current-screenshots', screenshots[0]);
   } else {
-    for (i = 0; i < screenshots.length; ++i)
-      addScreenshot('saved-screenshots', screenshots[i]);
-  
-    // Now that we have our screenshots, try selecting the saved screenshots
-    // again.
-    savedSelected();
+    // We're in Chromium OS.
+    currentScreenshot = screenshots[0];
+    addScreenshot('current-screenshots', currentScreenshot);
+
+    savedScreenshots = screenshots[1];
+    if (savedScreenshots.length == 0) {
+      $('saved-screenshots').disabled = true;
+      return;
+    }
+    for (i = 0; i < savedScreenshots.length; ++i)
+      addScreenshot('saved-screenshots', savedScreenshots[i]);
   }
 }
-
 
 function setupDialogDefaults(defaults) {
   if (defaults.length > 0) {
     $('page-url-text').value = defaults[0];
-    if (defaults[0] == '')
-      $('page-url-checkbox').checked = false;
-
     if (defaults.length > 2) {
       // We're in Chromium OS.
-      $('user-email-text').textContent = defaults[2];
-      if (defaults[2] == '') {
-        // if we didn't get an e-mail address from cros,
-        // disable the user email display totally
-        $('user-email-table').style.display = 'none';
-        
-        // this also means we are in privacy mode, so no saved screenshots
-        $('screenshot-link-tosaved').style.display = 'none';
-      }
+      $('user-email-text').value = defaults[2];
     }
   }
 }
@@ -122,169 +115,106 @@ function setupDialogDefaults(defaults) {
 window.addEventListener('DOMContentLoaded', load);
 </script>
 </head>
-<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-<div id="main-content">
-  <div id="navbar-container">
-    <h1 id="settings-title" i18n-content="page-title">
-    </h1>
-  </div>
-  <div id="mainview" class>
-    <!-- Even though we really don't need these many nested DIV's, we're staying
-    as close to the settings page layout as possible, re-using all our styles
-    from options_page.css -->
-    <div id="mainview-content">
-      <div class="page">
-        <h1 i18n-content="title"></h1>
-        <table id="main-table">
-          <!--  Issue type dropdown -->
-          <tbody>
-            <tr>
-              <th id="issue-with" class="bug-report-label"
-                  i18n-content="issue-with"></th>
-            </tr>
-            <tr>
-              <td>
-                <select id="issue-with-combo" class="bug-report-text">
-                </select>
-              </td>
-            </tr>
-            <!--  Description -->
-            <tr>
-              <th id="description" colspan="2" class="bug-report-label"
-                  i18n-content="description"></th>
-            </tr>
-            <tr>
-              <td colspan="2">
-                <textarea id="description-text" rows="10"
-                    class="bug-report-text"></textarea>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <table style="-webkit-border-vertical-spacing: 0px;">
-                  <!--  Page URL -->
-                  <tr>
-                    <td>
-                      <table class="bug-report-table">
-                        <tr>
-                          <td class="bug-report-fieldlabel">
-                            <input id="page-url-checkbox" type="checkbox"
-                                value="pageurl" checked>
-                            <span id="page-url-label" i18n-content="page-url">
-                            </span>
-                          </td>
-                          <td>
-                            <input id="page-url-text" class="bug-report-field"
-                                maxlength="200">
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  <!--  User e-mail -->
-                  <tr>
-                    <td>
+<body>
+<div>
+  <div id="main-panel">
+    <div class="formpane">
+      <table>
+        <!--  Issue type dropdown -->
+        <tr>
+          <th id="issue-with" class="bug-report-label" i18n-content="issue-with">
+          </th>
+        </tr>
+        <tr>
+          <td>
+            <select id="issue-with-combo" class="bug-report-text">
+            </select>
+          </td>
+        </tr>
+        <!--  Page URL text box -->
+        <tr>
+          <th colspan="2" id="page-url" class="bug-report-label"
+              i18n-content="page-url">
+          </th>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <input id='page-url-text' maxlength=200 class="bug-report-text">
+          </td>
+        </tr>
+        <!--  Description -->
+        <tr>
+          <th id="description" colspan="2" class="bug-report-label"
+              i18n-content="description">
+          </th>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <textarea id='description-text' rows="10" class="bug-report-text">
+            </textarea>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="formpane">
+      <table>
 <if expr="pp_ifdef('chromeos')">
-                      <table id="user-email-table" class="bug-report-table">
-                        <tr>
-                          <td class="bug-report-fieldlabel">
-                            <input id="user-email-checkbox" type="checkbox"
-                                checked>
-                            <span id="user-email-label"
-                                i18n-content="user-email"></span>
-                          </td>
-                          <td>
-                            <label id="user-email-text"
-                                class="bug-report-field"></label>
-                          </td>
-                        </tr>
-                      </table>
-</if>                        
-                    </td>
-                  </tr>
-                  <!--  System Information -->
-                  <tr>
-                    <td>
-                      <table class="bug-report-table">
-                        <tr>
-                          <td class="bug-report-fieldlabel">
-                            <input id="sys-info-checkbox" type="checkbox"
-                                checked>
-                            <span id="sysinfo-label">
-                              <a id="sysinfo-url" href="#"
-                                  i18n-content="sysinfo"></a>
-                            </span>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  <!--  Screenshot -->
-                  <tr>
-                    <td>
-                      <table class="bug-report-table">
-                        <tr>
-                          <td class="bug-report-fieldlabel">
-                            <input id="screenshot-checkbox" type="checkbox"
-                                checked>
-                            <span id="screenshot-label-current"
-                                i18n-content="current-screenshot">
-                            </span>
-<if expr="pp_ifdef('chromeos')">
-                            <span id="screenshot-label-saved"
-                                style="display: none;"
-                                i18n-content="saved-screenshot">
-                            </span>
-                            <a id="screenshot-link-tosaved" href="#"
-                                onclick="changeToSaved()"
-                                i18n-content="choose-different-screenshot">
-                            </a>
-                            <a id="screenshot-link-tocurrent" href="#"
-                                style="display: none;"
-                                onclick="changeToCurrent()"
-                                i18n-content="choose-original-screenshot">
-                            </a>
+        <!--  Page URL text box -->
+        <tr>
+          <th id="user-email" class="bug-report-label" i18n-content="user-email">
+          </th>
+        </tr>
+        <tr>
+          <td>
+            <input id='user-email-text' maxlength=200 class="bug-report-text">
+          </td>
+        </tr>
+        <!--  System Information checkbox -->
+        <tr>
+          <td>
+            <input id="sys-info-checkbox" type="checkbox" value="sysinfo" checked>
+            <span id="sysinfo-label"></span>
+            <a id="sysinfo-url" href="#" >
+              <span i18n-content="sysinfo"></span>
+            </a>
+          </td>
+        </tr>
 </if>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
+        <!--  Screenshot radio buttons -->
+        <tr>
+          <th id="screenshot" class="bug-report-label" i18n-content="screenshot">
+          </th>
+        </tr>
+        <tr>
+          <td>
+            <input id="no-screenshot" type="radio" name="screenshot-group"
+                   value="none" onclick="noneSelected()">
+            <br>
 <if expr="pp_ifdef('chromeos')">
-                      <div id="saved-screenshots" style="display: none;"
-                          class="thumbnail-list"></div>
+            <input id="saved-screenshot" type="radio" name="screenshot-group"
+                   value="saved" onclick="savedSelected()">
+            <br>
+            <div id="saved-screenshots" style="display: none;"
+                 class="thumbnail-list">
+            </div>
 </if>
-                      <div id="current-screenshots" class="thumbnail-list">
-                      </div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div id="buttons-pane">
-                  <!--  Buttons -->
-                  <input id="send-report-button" type="submit"
-                      class="bug-report-button" onclick="sendReport()"
-                      i18n-values="value:send-report">
-                  <input id="cancel-button" type="submit"
-                      class="bug-report-button" i18n-values="value:cancel"
-                      onclick="cancel()">
-                </div>
-<if expr="pp_ifdef('chromeos')">
-                <div id="privacy-note" i18n-values=".innerHTML:privacy-note">
-                </div>
-</if>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            <input id="current-screenshot" type="radio" name="screenshot-group"
+                   value="current" checked onclick="currentSelected()">
+            <br>
+            <div id="current-screenshots" class="thumbnail-list">
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
   </div>
+</div>
+<div id="buttons">
+    <!--  Buttons -->
+    <input id='send-report-button' type="submit" class="bug-report-button"
+          i18n-values="value:send-report" onclick="sendReport()">
+    <input id='cancel-button' type="submit" class="bug-report-button"
+           i18n-values="value:cancel" onclick="cancel()">
 </div>
 </body>
 </html>
