@@ -153,7 +153,7 @@ int32_t GetSyncSocket(PP_Resource audio_id, int* sync_socket) {
 
 int32_t GetSharedMemory(PP_Resource audio_id,
                         int* shm_handle,
-                        int32_t* shm_size) {
+                        uint32_t* shm_size) {
   scoped_refptr<Audio> audio = Resource::GetAs<Audio>(audio_id);
   if (audio)
     return audio->GetSharedMemory(shm_handle, shm_size);
@@ -300,7 +300,7 @@ int32_t Audio::GetSyncSocket(int* sync_socket) {
   return PP_ERROR_FAILED;
 }
 
-int32_t Audio::GetSharedMemory(int* shm_handle, int32_t* shm_size) {
+int32_t Audio::GetSharedMemory(int* shm_handle, uint32_t* shm_size) {
   if (shared_memory_ != NULL) {
 #if defined(OS_POSIX)
     *shm_handle = shared_memory_->handle().fd;

@@ -71,7 +71,7 @@ class Audio : public Resource,
 
   int32_t GetSyncSocket(int* sync_socket);
 
-  int32_t GetSharedMemory(int* shm_handle, int32_t* shm_size);
+  int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size);
 
   bool StartPlayback();
 
