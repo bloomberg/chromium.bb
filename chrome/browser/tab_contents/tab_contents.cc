@@ -2137,7 +2137,7 @@ void TabContents::OnInstantSupportDetermined(int32 page_id, bool result) {
 
 void TabContents::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host,
-    long long frame_id,
+    int64 frame_id,
     bool is_main_frame,
     const GURL& url) {
   ProvisionalLoadDetails details(is_main_frame,
@@ -2201,7 +2201,7 @@ void TabContents::DidRunInsecureContent(const std::string& security_origin) {
 
 void TabContents::DidFailProvisionalLoadWithError(
     RenderViewHost* render_view_host,
-    long long frame_id,
+    int64 frame_id,
     bool is_main_frame,
     int error_code,
     const GURL& url,
@@ -2256,19 +2256,19 @@ void TabContents::DidFailProvisionalLoadWithError(
       Details<ProvisionalLoadDetails>(&details));
 }
 
-void TabContents::DocumentLoadedInFrame(long long frame_id) {
+void TabContents::DocumentLoadedInFrame(int64 frame_id) {
   controller_.DocumentLoadedInFrame();
   NotificationService::current()->Notify(
       NotificationType::FRAME_DOM_CONTENT_LOADED,
       Source<NavigationController>(&controller_),
-      Details<long long>(&frame_id));
+      Details<int64>(&frame_id));
 }
 
-void TabContents::DidFinishLoad(long long frame_id) {
+void TabContents::DidFinishLoad(int64 frame_id) {
   NotificationService::current()->Notify(
       NotificationType::FRAME_DID_FINISH_LOAD,
       Source<NavigationController>(&controller_),
-      Details<long long>(&frame_id));
+      Details<int64>(&frame_id));
 }
 
 void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {

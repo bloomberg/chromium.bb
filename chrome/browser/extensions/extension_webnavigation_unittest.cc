@@ -15,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 
+
 class FrameNavigationStateTest : public RenderViewHostTestHarness {
 };
 
@@ -22,8 +23,8 @@ class FrameNavigationStateTest : public RenderViewHostTestHarness {
 // goes away.
 TEST_F(FrameNavigationStateTest, TrackFrame) {
   FrameNavigationState navigation_state;
-  const long long frame_id1 = 23;
-  const long long frame_id2 = 42;
+  const int64 frame_id1 = 23;
+  const int64 frame_id2 = 42;
   const GURL url1("http://www.google.com/");
   const GURL url2("http://mail.google.com/");
 
@@ -54,7 +55,7 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
 // before a new navigation happened in this frame.
 TEST_F(FrameNavigationStateTest, ErrorState) {
   FrameNavigationState navigation_state;
-  const long long frame_id = 42;
+  const int64 frame_id = 42;
   const GURL url("http://www.google.com/");
 
   navigation_state.TrackFrame(frame_id, url, true, contents());
@@ -78,8 +79,8 @@ TEST_F(FrameNavigationStateTest, ErrorState) {
 // before a new navigation happened in this frame.
 TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
   FrameNavigationState navigation_state;
-  const long long frame_id1 = 23;
-  const long long frame_id2 = 42;
+  const int64 frame_id1 = 23;
+  const int64 frame_id2 = 42;
   const GURL url("http://www.google.com/");
 
   navigation_state.TrackFrame(frame_id1, url, true, contents());

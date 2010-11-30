@@ -245,7 +245,7 @@ struct ViewHostMsg_FrameNavigate_Params {
 
   // The frame ID for this navigation. The frame ID uniquely identifies the
   // frame the navigation happened in for a given renderer.
-  long long frame_id;
+  int64 frame_id;
 
   // URL of the page being loaded.
   GURL url;

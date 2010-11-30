@@ -885,7 +885,7 @@ class TabContents : public PageNavigator,
 
   // RenderViewHostDelegate::Resource implementation.
   virtual void DidStartProvisionalLoadForFrame(RenderViewHost* render_view_host,
-                                               long long frame_id,
+                                               int64 frame_id,
                                                bool is_main_frame,
                                                const GURL& url);
   virtual void DidStartReceivingResourceResponse(
@@ -904,13 +904,13 @@ class TabContents : public PageNavigator,
   virtual void DidRunInsecureContent(const std::string& security_origin);
   virtual void DidFailProvisionalLoadWithError(
       RenderViewHost* render_view_host,
-      long long frame_id,
+      int64 frame_id,
       bool is_main_frame,
       int error_code,
       const GURL& url,
       bool showing_repost_interstitial);
-  virtual void DocumentLoadedInFrame(long long frame_id);
-  virtual void DidFinishLoad(long long frame_id);
+  virtual void DocumentLoadedInFrame(int64 frame_id);
+  virtual void DidFinishLoad(int64 frame_id);
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();

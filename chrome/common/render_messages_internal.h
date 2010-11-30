@@ -1221,11 +1221,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Notifies the browser that a document has been loaded in a frame.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentLoadedInFrame,
-                      long long /* frame_id */)
+                      int64 /* frame_id */)
 
   // Notifies the browser that a frame finished loading.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFinishLoad,
-                      long long /* frame_id */)
+                      int64 /* frame_id */)
 
   // Changes the title for the page in the UI when the page is navigated or the
   // title changes.
@@ -1282,13 +1282,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Sent when the renderer starts a provisional load for a frame.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_DidStartProvisionalLoadForFrame,
-                      long long /* frame_id */,
+                      int64 /* frame_id */,
                       bool /* true if it is the main frame */,
                       GURL /* url */)
 
   // Sent when the renderer fails a provisional load with an error.
   IPC_MESSAGE_ROUTED5(ViewHostMsg_DidFailProvisionalLoadWithError,
-                      long long /* frame_id */,
+                      int64 /* frame_id */,
                       bool /* true if it is the main frame */,
                       int /* error_code */,
                       GURL /* url */,

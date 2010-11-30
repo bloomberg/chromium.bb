@@ -22,43 +22,44 @@ class NavigationController;
 class ProvisionalLoadDetails;
 class TabContents;
 
-// Tracks which frames are in an error state, and no navigation events should
-// be sent for.
+// Tracks the navigation state of all frames currently known to the
+// webNavigation API. It is mainly used to track in which frames an error
+// occurred so no further events for this frame are being sent.
 class FrameNavigationState {
  public:
   FrameNavigationState();
   ~FrameNavigationState();
 
   // True if navigation events for the given frame can be sent.
-  bool CanSendEvents(long long frame_id) const;
+  bool CanSendEvents(int64 frame_id) const;
 
   // Starts to track a frame given by its |frame_id| showing the URL |url| in
   // a |tab_contents|.
-  void TrackFrame(long long frame_id,
+  void TrackFrame(int64 frame_id,
                   const GURL& url,
                   bool is_main_frame,
                   const TabContents* tab_contents);
 
   // Returns the URL corresponding to a tracked frame given by its |frame_id|.
-  GURL GetUrl(long long frame_id) const;
+  GURL GetUrl(int64 frame_id) const;
 
   // True if the frame given by its |frame_id| is the main frame of its tab.
-  bool IsMainFrame(long long frame_id) const;
+  bool IsMainFrame(int64 frame_id) const;
 
   // Marks a frame as in an error state.
-  void ErrorOccurredInFrame(long long frame_id);
+  void ErrorOccurredInFrame(int64 frame_id);
 
   // Removes state associated with this tab contents and all of its frames.
   void RemoveTabContentsState(const TabContents* tab_contents);
 
  private:
-  typedef std::multimap<const TabContents*, long long> TabContentsToFrameIdMap;
+  typedef std::multimap<const TabContents*, int64> TabContentsToFrameIdMap;
   struct FrameState {
     bool error_occurred;  // True if an error has occurred in this frame.
     bool is_main_frame;  // True if this is a main frame.
     GURL url;  // URL of this frame.
   };
-  typedef std::map<long long, FrameState> FrameIdToStateMap;
+  typedef std::map<int64, FrameState> FrameIdToStateMap;
 
   // Tracks which frames belong to a given tab contents object.
   TabContentsToFrameIdMap tab_contents_map_;
@@ -69,13 +70,16 @@ class FrameNavigationState {
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationState);
 };
 
+
 // Observes navigation notifications and routes them as events to the extension
 // system.
 class ExtensionWebNavigationEventRouter : public NotificationObserver {
  public:
-  // Single instance of the event router.
+  // Returns the singleton instance of the event router.
   static ExtensionWebNavigationEventRouter* GetInstance();
 
+  // Invoked by the extensions service once the extension system is fully set
+  // up and can start dispatching events to extensions.
   void Init();
 
  private:
@@ -104,11 +108,11 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   // Handler for the FRAME_DOM_CONTENT_LOADED event. The method takes the frame
   // ID and constructs a suitable JSON formatted extension event from it.
   void FrameDomContentLoaded(NavigationController* controller,
-                             long long frame_id);
+                             int64 frame_id);
 
   // Handler for the FRAME_DID_FINISH_LOAD event. The method takes the frame
   // ID and constructs a suitable JSON formatted extension event from it.
-  void FrameDidFinishLoad(NavigationController* controller, long long frame_id);
+  void FrameDidFinishLoad(NavigationController* controller, int64 frame_id);
 
   // Handler for the FAIL_PROVISIONAL_LOAD_WITH_ERROR event. The method takes
   // the details of such an event and constructs a suitable JSON formatted
@@ -116,7 +120,7 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   void FailProvisionalLoadWithError(NavigationController* controller,
                                     ProvisionalLoadDetails* details);
 
-  // This method dispatches events to the extension message service.
+  // Dispatches events to the extension message service.
   void DispatchEvent(Profile* context,
                      const char* event_name,
                      const std::string& json_args);

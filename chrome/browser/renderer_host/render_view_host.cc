@@ -1187,7 +1187,7 @@ void RenderViewHost::OnMsgDidRunInsecureContent(
     resource_delegate->DidRunInsecureContent(security_origin);
 }
 
-void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(long long frame_id,
+void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
                                                           const GURL& url) {
   GURL validated_url(url);
@@ -1203,7 +1203,7 @@ void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(long long frame_id,
 }
 
 void RenderViewHost::OnMsgDidFailProvisionalLoadWithError(
-    long long frame_id,
+    int64 frame_id,
     bool is_main_frame,
     int error_code,
     const GURL& url,
@@ -1365,14 +1365,14 @@ void RenderViewHost::OnMsgForwardMessageToExternalHost(
   delegate_->ProcessExternalHostMessage(message, origin, target);
 }
 
-void RenderViewHost::OnMsgDocumentLoadedInFrame(long long frame_id) {
+void RenderViewHost::OnMsgDocumentLoadedInFrame(int64 frame_id) {
   RenderViewHostDelegate::Resource* resource_delegate =
       delegate_->GetResourceDelegate();
   if (resource_delegate)
     resource_delegate->DocumentLoadedInFrame(frame_id);
 }
 
-void RenderViewHost::OnMsgDidFinishLoad(long long frame_id) {
+void RenderViewHost::OnMsgDidFinishLoad(int64 frame_id) {
   RenderViewHostDelegate::Resource* resource_delegate =
       delegate_->GetResourceDelegate();
   if (resource_delegate)

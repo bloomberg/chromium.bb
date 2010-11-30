@@ -12,7 +12,7 @@ ProvisionalLoadDetails::ProvisionalLoadDetails(bool is_main_frame,
                                                const GURL& url,
                                                const std::string& security_info,
                                                bool is_content_filtered,
-                                               long long frame_id)
+                                               int64 frame_id)
       : error_code_(net::OK),
         transition_type_(PageTransition::LINK),
         url_(url),

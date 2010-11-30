@@ -37,34 +37,34 @@ double MilliSecondsFromTime(const base::Time& time) {
 
 }  // namespace
 
+
 FrameNavigationState::FrameNavigationState() {
 }
 
 FrameNavigationState::~FrameNavigationState() {
 }
 
-bool FrameNavigationState::CanSendEvents(long long frame_id) const {
+bool FrameNavigationState::CanSendEvents(int64 frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   return frame_state != frame_state_map_.end() &&
       !frame_state->second.error_occurred;
 }
 
-void FrameNavigationState::TrackFrame(long long frame_id,
+void FrameNavigationState::TrackFrame(int64 frame_id,
                                       const GURL& url,
                                       bool is_main_frame,
                                       const TabContents* tab_contents) {
   if (is_main_frame)
     RemoveTabContentsState(tab_contents);
-  tab_contents_map_.insert(
-      TabContentsToFrameIdMap::value_type(tab_contents, frame_id));
+  tab_contents_map_.insert(std::make_pair(tab_contents, frame_id));
   FrameState& frame_state = frame_state_map_[frame_id];
   frame_state.error_occurred = (url.spec() == chrome::kUnreachableWebDataURL);
   frame_state.url = url;
   frame_state.is_main_frame = is_main_frame;
 }
 
-GURL FrameNavigationState::GetUrl(long long frame_id) const {
+GURL FrameNavigationState::GetUrl(int64 frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   if (frame_state == frame_state_map_.end()) {
@@ -74,7 +74,7 @@ GURL FrameNavigationState::GetUrl(long long frame_id) const {
   return frame_state->second.url;
 }
 
-bool FrameNavigationState::IsMainFrame(long long frame_id) const {
+bool FrameNavigationState::IsMainFrame(int64 frame_id) const {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   if (frame_state == frame_state_map_.end()) {
@@ -84,7 +84,7 @@ bool FrameNavigationState::IsMainFrame(long long frame_id) const {
   return frame_state->second.is_main_frame;
 }
 
-void FrameNavigationState::ErrorOccurredInFrame(long long frame_id) {
+void FrameNavigationState::ErrorOccurredInFrame(int64 frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
   frame_state_map_[frame_id].error_occurred = true;
 }
@@ -93,7 +93,7 @@ void FrameNavigationState::RemoveTabContentsState(
     const TabContents* tab_contents) {
   typedef TabContentsToFrameIdMap::iterator FrameIdIterator;
   std::pair<FrameIdIterator, FrameIdIterator> frame_ids =
-          tab_contents_map_.equal_range(tab_contents);
+      tab_contents_map_.equal_range(tab_contents);
   for (FrameIdIterator frame_id = frame_ids.first; frame_id != frame_ids.second;
        ++frame_id) {
     frame_state_map_.erase(frame_id->second);
@@ -149,19 +149,18 @@ void ExtensionWebNavigationEventRouter::Observe(
     case NotificationType::FRAME_DOM_CONTENT_LOADED:
       FrameDomContentLoaded(
           Source<NavigationController>(source).ptr(),
-          *Details<long long>(details).ptr());
+          *Details<int64>(details).ptr());
       break;
     case NotificationType::FRAME_DID_FINISH_LOAD:
       FrameDidFinishLoad(
           Source<NavigationController>(source).ptr(),
-          *Details<long long>(details).ptr());
+          *Details<int64>(details).ptr());
       break;
     case NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR:
       FailProvisionalLoadWithError(
           Source<NavigationController>(source).ptr(),
           Details<ProvisionalLoadDetails>(details).ptr());
       break;
-
     case NotificationType::TAB_CONTENTS_DESTROYED:
       navigation_state_.RemoveTabContentsState(
           Source<TabContents>(source).ptr());
@@ -184,8 +183,7 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey,
-                  details->url().spec());
+  dict->SetString(keys::kUrlKey, details->url().spec());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetInteger(keys::kRequestIdKey, 0);
   dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
@@ -205,8 +203,7 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey,
-                  details->url().spec());
+  dict->SetString(keys::kUrlKey, details->url().spec());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetString(keys::kTransitionTypeKey,
                   PageTransition::CoreTransitionString(
@@ -223,7 +220,8 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
 }
 
 void ExtensionWebNavigationEventRouter::FrameDomContentLoaded(
-    NavigationController* controller, long long frame_id) {
+    NavigationController* controller,
+    int64 frame_id) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   ListValue args;
@@ -231,8 +229,8 @@ void ExtensionWebNavigationEventRouter::FrameDomContentLoaded(
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
   dict->SetString(keys::kUrlKey, navigation_state_.GetUrl(frame_id).spec());
-  dict->SetInteger(keys::kFrameIdKey, navigation_state_.IsMainFrame(frame_id) ?
-      0 : static_cast<int>(frame_id));
+  dict->SetInteger(keys::kFrameIdKey,
+      navigation_state_.IsMainFrame(frame_id) ? 0 : static_cast<int>(frame_id));
   dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
@@ -242,7 +240,8 @@ void ExtensionWebNavigationEventRouter::FrameDomContentLoaded(
 }
 
 void ExtensionWebNavigationEventRouter::FrameDidFinishLoad(
-    NavigationController* controller, long long frame_id) {
+    NavigationController* controller,
+    int64 frame_id) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   ListValue args;
@@ -250,8 +249,8 @@ void ExtensionWebNavigationEventRouter::FrameDidFinishLoad(
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
   dict->SetString(keys::kUrlKey, navigation_state_.GetUrl(frame_id).spec());
-  dict->SetInteger(keys::kFrameIdKey, navigation_state_.IsMainFrame(frame_id) ?
-      0 : static_cast<int>(frame_id));
+  dict->SetInteger(keys::kFrameIdKey,
+      navigation_state_.IsMainFrame(frame_id) ? 0 : static_cast<int>(frame_id));
   dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
@@ -269,8 +268,7 @@ void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
-  dict->SetString(keys::kUrlKey,
-                  details->url().spec());
+  dict->SetString(keys::kUrlKey, details->url().spec());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetString(keys::kErrorKey,
                   std::string(net::ErrorToString(details->error_code())));

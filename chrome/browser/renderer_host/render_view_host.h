@@ -575,10 +575,10 @@ class RenderViewHost : public RenderWidgetHost {
                                            const std::string& security_info);
   void OnMsgDidDisplayInsecureContent();
   void OnMsgDidRunInsecureContent(const std::string& security_origin);
-  void OnMsgDidStartProvisionalLoadForFrame(long long frame_id,
+  void OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
                                             bool main_frame,
                                             const GURL& url);
-  void OnMsgDidFailProvisionalLoadWithError(long long frame_id,
+  void OnMsgDidFailProvisionalLoadWithError(int64 frame_id,
                                             bool main_frame,
                                             int error_code,
                                             const GURL& url,
@@ -606,8 +606,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgForwardMessageToExternalHost(const std::string& message,
                                          const std::string& origin,
                                          const std::string& target);
-  void OnMsgDocumentLoadedInFrame(long long frame_id);
-  void OnMsgDidFinishLoad(long long frame_id);
+  void OnMsgDocumentLoadedInFrame(int64 frame_id);
+  void OnMsgDidFinishLoad(int64 frame_id);
   void OnMsgGoToEntryAtOffset(int offset);
   void OnMsgSetTooltipText(const std::wstring& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);

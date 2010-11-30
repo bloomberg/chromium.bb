@@ -328,7 +328,7 @@ class RenderViewHostDelegate {
     // The RenderView is starting a provisional load.
     virtual void DidStartProvisionalLoadForFrame(
         RenderViewHost* render_view_host,
-        long long frame_id,
+        int64 frame_id,
         bool is_main_frame,
         const GURL& url) = 0;
 
@@ -368,17 +368,17 @@ class RenderViewHostDelegate {
     // The RenderView failed a provisional load with an error.
     virtual void DidFailProvisionalLoadWithError(
         RenderViewHost* render_view_host,
-        long long frame_id,
+        int64 frame_id,
         bool is_main_frame,
         int error_code,
         const GURL& url,
         bool showing_repost_interstitial) = 0;
 
     // Notification that a document has been loaded in a frame.
-    virtual void DocumentLoadedInFrame(long long frame_id) = 0;
+    virtual void DocumentLoadedInFrame(int64 frame_id) = 0;
 
     // Notification that a frame finished loading.
-    virtual void DidFinishLoad(long long frame_id) = 0;
+    virtual void DidFinishLoad(int64 frame_id) = 0;
 
    protected:
     virtual ~Resource() {}
