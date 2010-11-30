@@ -6,6 +6,8 @@
 #define CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TEST_BASE_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/test/ui/ui_test.h"
 
 class AutomatedUITestBase : public UITest {
@@ -117,7 +119,7 @@ class AutomatedUITestBase : public UITest {
   bool ShowHistory();
 
   // Runs the specified browser command in the current active browser.
-  // See browser_commands.cc for the list of commands.
+  // See Browser::ExecuteCommandWithDisposition() for the list of commands.
   // Returns true if the call is successfully dispatched.
   // Possible failures include the active window is not a browser window or
   // the message to apply the accelerator fails.
@@ -125,7 +127,7 @@ class AutomatedUITestBase : public UITest {
 
   // Runs the specified browser command in the current active browser, wait
   // and return until the command has finished executing.
-  // See browser_commands.cc for the list of commands.
+  // See Browser::ExecuteCommandWithDisposition() for the list of commands.
   // Returns true if the call is successfully dispatched and executed.
   // Possible failures include the active window is not a browser window, or
   // the message to apply the accelerator fails, or the command execution

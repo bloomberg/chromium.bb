@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <deque>
 #include <map>
 #include <string>
@@ -1161,7 +1159,7 @@ class TabContents : public PageNavigator,
   // used to check whether we can do something for some special contents.
   std::string contents_mime_type_;
 
-  // Character encoding. TODO(jungshik) : convert to std::string
+  // Character encoding.
   std::string encoding_;
 
   // Object that holds any blocked TabContents spawned from this TabContents.

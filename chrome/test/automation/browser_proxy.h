@@ -135,14 +135,16 @@ class BrowserProxy : public AutomationResourceProxy {
   // will be false. Returns false on failure.
   bool IsFindWindowFullyVisible(bool* is_visible) WARN_UNUSED_RESULT;
 
-  // Run the specified command in the browser (see browser_commands.cc for the
-  // list of supported commands).  Returns true if the command was successfully
-  // dispatched, false otherwise.
+  // Run the specified command in the browser
+  // (see Browser::ExecuteCommandWithDisposition() for the list of supported
+  // commands).  Returns true if the command was successfully dispatched,
+  // false otherwise.
   bool RunCommandAsync(int browser_command) const WARN_UNUSED_RESULT;
 
-  // Run the specified command in the browser (see browser_commands.cc for the
-  // list of supported commands).  Returns true if the command was successfully
-  // dispatched and executed, false otherwise.
+  // Run the specified command in the browser
+  // (see Browser::ExecuteCommandWithDisposition() for the list of supported
+  // commands).  Returns true if the command was successfully dispatched and
+  // executed, false otherwise.
   bool RunCommand(int browser_command) const WARN_UNUSED_RESULT;
 
   // Returns whether the Bookmark bar is visible and whether we are animating
