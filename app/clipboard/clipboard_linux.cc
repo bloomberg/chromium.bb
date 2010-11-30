@@ -101,9 +101,7 @@ Clipboard::Clipboard() : clipboard_data_(NULL) {
 }
 
 Clipboard::~Clipboard() {
-  // TODO(estade): do we want to save clipboard data after we exit?
-  // gtk_clipboard_set_can_store and gtk_clipboard_store work
-  // but have strangely awful performance.
+  gtk_clipboard_store(clipboard_);
 }
 
 void Clipboard::WriteObjects(const ObjectMap& objects) {
@@ -138,10 +136,14 @@ void Clipboard::SetGtkClipboard() {
     targets[i].info = 0;
   }
 
-  gtk_clipboard_set_with_data(clipboard_, targets.get(),
-                              clipboard_data_->size(),
-                              GetData, ClearData,
-                              clipboard_data_);
+  if (gtk_clipboard_set_with_data(clipboard_, targets.get(),
+                                  clipboard_data_->size(),
+                                  GetData, ClearData,
+                                  clipboard_data_)) {
+    gtk_clipboard_set_can_store(clipboard_,
+                                targets.get(),
+                                clipboard_data_->size());
+  }
 
   // clipboard_data_ now owned by the GtkClipboard.
   clipboard_data_ = NULL;
