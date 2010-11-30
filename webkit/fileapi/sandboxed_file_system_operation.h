@@ -71,6 +71,8 @@ class SandboxedFileSystemOperation : public FileSystemOperation {
   // Returns true if the given |path| is a valid FileSystem path.
   // Otherwise it calls dispatcher's DidFail method with
   // PLATFORM_FILE_ERROR_SECURITY and returns false.
+  // (Note: this doesn't delete this when it calls DidFail and returns false;
+  // it's the caller's responsibility.)
   bool VerifyFileSystemPathForRead(const FilePath& path);
 
   // Checks the validity of a given |path| for writing.
@@ -85,6 +87,8 @@ class SandboxedFileSystemOperation : public FileSystemOperation {
   // If |create| flag is true this also checks if the |path| contains
   // any restricted names and chars. If it does, the call fires dispatcher's
   // DidFail with PLATFORM_FILE_ERROR_SECURITY and returns false.
+  // (Note: this doesn't delete this when it calls DidFail and returns false;
+  // it's the caller's responsibility.)
   bool VerifyFileSystemPathForWrite(const FilePath& path,
                                     bool create,
                                     int64 growth);

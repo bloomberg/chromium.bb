@@ -54,17 +54,11 @@ class SimpleFileSystemCallbackDispatcher
   }
 
   ~SimpleFileSystemCallbackDispatcher() {
-    DCHECK(!operation_.get());
-  }
-
-  void set_operation(SandboxedFileSystemOperation* operation) {
-    operation_.reset(operation);
   }
 
   virtual void DidSucceed() {
-    if (file_system_)
-      callbacks_->didSucceed();
-    RemoveOperation();
+    DCHECK(file_system_);
+    callbacks_->didSucceed();
   }
 
   virtual void DidReadMetadata(const base::PlatformFileInfo& info) {
@@ -75,7 +69,6 @@ class SimpleFileSystemCallbackDispatcher
     web_file_info.type = info.is_directory ?
         WebFileInfo::TypeDirectory : WebFileInfo::TypeFile;
     callbacks_->didReadMetadata(web_file_info);
-    RemoveOperation();
   }
 
   virtual void DidReadDirectory(
@@ -93,7 +86,6 @@ class SimpleFileSystemCallbackDispatcher
     WebVector<WebKit::WebFileSystemEntry> web_entries =
         web_entries_vector;
     callbacks_->didReadDirectory(web_entries, has_more);
-    RemoveOperation();
   }
 
   virtual void DidOpenFileSystem(
@@ -104,14 +96,12 @@ class SimpleFileSystemCallbackDispatcher
     else
       callbacks_->didOpenFileSystem(
           UTF8ToUTF16(name), webkit_glue::FilePathToWebString(path));
-    RemoveOperation();
   }
 
   virtual void DidFail(base::PlatformFileError error_code) {
     DCHECK(file_system_);
     callbacks_->didFail(
         webkit_glue::PlatformFileErrorToWebFileError(error_code));
-    RemoveOperation();
   }
 
   virtual void DidWrite(int64, bool) {
@@ -119,17 +109,8 @@ class SimpleFileSystemCallbackDispatcher
   }
 
  private:
-  void RemoveOperation() {
-    // We need to make sure operation_ is null when we delete the operation
-    // (which in turn deletes this dispatcher instance).
-    scoped_ptr<SandboxedFileSystemOperation> operation;
-    operation.swap(operation_);
-    operation.reset();
-  }
-
   WeakPtr<SimpleFileSystem> file_system_;
   WebFileSystemCallbacks* callbacks_;
-  scoped_ptr<SandboxedFileSystemOperation> operation_;
 };
 
 }  // namespace
@@ -262,6 +243,5 @@ SandboxedFileSystemOperation* SimpleFileSystem::GetNewOperation(
   SandboxedFileSystemOperation* operation = new SandboxedFileSystemOperation(
       dispatcher, base::MessageLoopProxy::CreateForCurrentThread(),
       sandboxed_context_.get());
-  dispatcher->set_operation(operation);
   return operation;
 }

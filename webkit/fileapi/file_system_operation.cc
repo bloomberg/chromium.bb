@@ -16,8 +16,7 @@ FileSystemOperation::FileSystemOperation(
     scoped_refptr<base::MessageLoopProxy> proxy)
     : proxy_(proxy),
       dispatcher_(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      cancel_operation_(NULL) {
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(dispatcher);
 #ifndef NDEBUG
   pending_operation_ = kOperationNone;
@@ -159,6 +158,7 @@ void FileSystemOperation::OnFileOpenedForWrite(
     bool created) {
   if (base::PLATFORM_FILE_OK != rv) {
     dispatcher_->DidFail(rv);
+    delete this;
     return;
   }
   file_writer_delegate_->Start(file.ReleaseValue(), blob_request_.get());
@@ -189,7 +189,8 @@ void FileSystemOperation::TouchFile(const FilePath& path,
 
 // We can only get here on a write or truncate that's not yet completed.
 // We don't support cancelling any other operation at this time.
-void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation) {
+void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
+  scoped_ptr<FileSystemOperation> cancel_operation(cancel_operation_ptr);
   if (file_writer_delegate_.get()) {
 #ifndef NDEBUG
     DCHECK(kOperationWrite == pending_operation_);
@@ -203,9 +204,9 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation) {
       // This halts any calls to file_writer_delegate_ from blob_request_.
       blob_request_->Cancel();
 
-    // This deletes us, and by proxy deletes file_writer_delegate_ if any.
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
-    cancel_operation->dispatcher_->DidSucceed();
+    cancel_operation->dispatcher()->DidSucceed();
+    delete this;
   } else {
 #ifndef NDEBUG
     DCHECK(kOperationTruncate == pending_operation_);
@@ -214,15 +215,17 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation) {
     // since it's been proxied to another thread.  We need to save the
     // cancel_operation so that when the truncate returns, it can see that it's
     // been cancelled, report it, and report that the cancel has succeeded.
-    cancel_operation_ = cancel_operation;
+    DCHECK(!cancel_operation_.get());
+    cancel_operation_.swap(cancel_operation);
   }
 }
 
 void FileSystemOperation::DidEnsureFileExistsExclusive(
     base::PlatformFileError rv, bool created) {
-  if (rv == base::PLATFORM_FILE_OK && !created)
+  if (rv == base::PLATFORM_FILE_OK && !created) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_EXISTS);
-  else
+    delete this;
+  } else
     DidFinishFileOperation(rv);
 }
 
@@ -233,19 +236,19 @@ void FileSystemOperation::DidEnsureFileExistsNonExclusive(
 
 void FileSystemOperation::DidFinishFileOperation(
     base::PlatformFileError rv) {
-  if (cancel_operation_) {
+  if (cancel_operation_.get()) {
 #ifndef NDEBUG
     DCHECK(kOperationTruncate == pending_operation_);
 #endif
-    FileSystemOperation *cancel_op = cancel_operation_;
-    // This call deletes us, so we have to extract cancel_op first.
+
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
-    cancel_op->dispatcher_->DidSucceed();
+    cancel_operation_->dispatcher()->DidSucceed();
   } else if (rv == base::PLATFORM_FILE_OK) {
     dispatcher_->DidSucceed();
   } else {
     dispatcher_->DidFail(rv);
   }
+  delete this;
 }
 
 void FileSystemOperation::DidDirectoryExists(
@@ -259,6 +262,7 @@ void FileSystemOperation::DidDirectoryExists(
   } else {
     dispatcher_->DidFail(rv);
   }
+  delete this;
 }
 
 void FileSystemOperation::DidFileExists(
@@ -272,6 +276,7 @@ void FileSystemOperation::DidFileExists(
   } else {
     dispatcher_->DidFail(rv);
   }
+  delete this;
 }
 
 void FileSystemOperation::DidGetMetadata(
@@ -281,6 +286,7 @@ void FileSystemOperation::DidGetMetadata(
     dispatcher_->DidReadMetadata(file_info);
   else
     dispatcher_->DidFail(rv);
+  delete this;
 }
 
 void FileSystemOperation::DidReadDirectory(
@@ -290,6 +296,7 @@ void FileSystemOperation::DidReadDirectory(
     dispatcher_->DidReadDirectory(entries, false /* has_more */);
   else
     dispatcher_->DidFail(rv);
+  delete this;
 }
 
 void FileSystemOperation::DidWrite(
@@ -300,6 +307,8 @@ void FileSystemOperation::DidWrite(
     dispatcher_->DidWrite(bytes, complete);
   else
     dispatcher_->DidFail(rv);
+  if (complete || rv != base::PLATFORM_FILE_OK)
+    delete this;
 }
 
 void FileSystemOperation::DidTouchFile(base::PlatformFileError rv) {
@@ -307,6 +316,7 @@ void FileSystemOperation::DidTouchFile(base::PlatformFileError rv) {
     dispatcher_->DidSucceed();
   else
     dispatcher_->DidFail(rv);
+  delete this;
 }
 
 }  // namespace fileapi

@@ -38,15 +38,19 @@ void SandboxedFileSystemOperation::OpenFileSystem(
 
 void SandboxedFileSystemOperation::CreateFile(
     const FilePath& path, bool exclusive) {
-  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0))
+  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0)) {
+    delete this;
     return;
+  }
   FileSystemOperation::CreateFile(path, exclusive);
 }
 
 void SandboxedFileSystemOperation::CreateDirectory(
     const FilePath& path, bool exclusive, bool recursive) {
-  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0))
+  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0)) {
+    delete this;
     return;
+  }
   FileSystemOperation::CreateDirectory(path, exclusive, recursive);
 }
 
@@ -54,8 +58,10 @@ void SandboxedFileSystemOperation::Copy(
     const FilePath& src_path, const FilePath& dest_path) {
   if (!VerifyFileSystemPathForRead(src_path) ||
       !VerifyFileSystemPathForWrite(dest_path, true /* create */,
-                                    FileSystemQuotaManager::kUnknownSize))
+                                    FileSystemQuotaManager::kUnknownSize)) {
+    delete this;
     return;
+  }
   FileSystemOperation::Copy(src_path, dest_path);
 }
 
@@ -63,39 +69,51 @@ void SandboxedFileSystemOperation::Move(
     const FilePath& src_path, const FilePath& dest_path) {
   if (!VerifyFileSystemPathForRead(src_path) ||
       !VerifyFileSystemPathForWrite(dest_path, true /* create */,
-                                    FileSystemQuotaManager::kUnknownSize))
+                                    FileSystemQuotaManager::kUnknownSize)) {
+    delete this;
     return;
+  }
   FileSystemOperation::Move(src_path, dest_path);
 }
 
 void SandboxedFileSystemOperation::DirectoryExists(const FilePath& path) {
-  if (!VerifyFileSystemPathForRead(path))
+  if (!VerifyFileSystemPathForRead(path)) {
+    delete this;
     return;
+  }
   FileSystemOperation::DirectoryExists(path);
 }
 
 void SandboxedFileSystemOperation::FileExists(const FilePath& path) {
-  if (!VerifyFileSystemPathForRead(path))
+  if (!VerifyFileSystemPathForRead(path)) {
+    delete this;
     return;
+  }
   FileSystemOperation::FileExists(path);
 }
 
 void SandboxedFileSystemOperation::GetMetadata(const FilePath& path) {
-  if (!VerifyFileSystemPathForRead(path))
+  if (!VerifyFileSystemPathForRead(path)) {
+    delete this;
     return;
+  }
   FileSystemOperation::GetMetadata(path);
 }
 
 void SandboxedFileSystemOperation::ReadDirectory(const FilePath& path) {
-  if (!VerifyFileSystemPathForRead(path))
+  if (!VerifyFileSystemPathForRead(path)) {
+    delete this;
     return;
+  }
   FileSystemOperation::ReadDirectory(path);
 }
 
 void SandboxedFileSystemOperation::Remove(
     const FilePath& path, bool recursive) {
-  if (!VerifyFileSystemPathForWrite(path, false /* create */, 0))
+  if (!VerifyFileSystemPathForWrite(path, false /* create */, 0)) {
+    delete this;
     return;
+  }
   FileSystemOperation::Remove(path, recursive);
 }
 
@@ -103,15 +121,19 @@ void SandboxedFileSystemOperation::Write(
     scoped_refptr<URLRequestContext> url_request_context,
     const FilePath& path, const GURL& blob_url, int64 offset) {
   if (!VerifyFileSystemPathForWrite(path, true /* create */,
-                                    FileSystemQuotaManager::kUnknownSize))
+                                    FileSystemQuotaManager::kUnknownSize)) {
+    delete this;
     return;
+  }
   FileSystemOperation::Write(url_request_context, path, blob_url, offset);
 }
 
 void SandboxedFileSystemOperation::Truncate(
     const FilePath& path, int64 length) {
-  if (!VerifyFileSystemPathForWrite(path, false /* create */, 0))
+  if (!VerifyFileSystemPathForWrite(path, false /* create */, 0)) {
+    delete this;
     return;
+  }
   FileSystemOperation::Truncate(path, length);
 }
 
@@ -119,8 +141,10 @@ void SandboxedFileSystemOperation::TouchFile(
     const FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0))
+  if (!VerifyFileSystemPathForWrite(path, true /* create */, 0)) {
+    delete this;
     return;
+  }
   FileSystemOperation::TouchFile(path, last_access_time, last_modified_time);
 }
 
@@ -128,6 +152,7 @@ void SandboxedFileSystemOperation::DidGetRootPath(
     bool success, const FilePath& path, const std::string& name) {
   DCHECK(success || path.empty());
   dispatcher()->DidOpenFileSystem(name, path);
+  delete this;
 }
 
 bool SandboxedFileSystemOperation::VerifyFileSystemPathForRead(

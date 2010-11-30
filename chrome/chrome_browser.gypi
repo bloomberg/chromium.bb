@@ -1656,8 +1656,6 @@
         'browser/file_path_watcher_win.cc',
         'browser/file_select_helper.cc',
         'browser/file_select_helper.h',
-        'browser/file_system/browser_file_system_callback_dispatcher.cc',
-        'browser/file_system/browser_file_system_callback_dispatcher.h',
         'browser/file_system/browser_file_system_context.cc',
         'browser/file_system/browser_file_system_context.h',
         'browser/file_system/file_system_dispatcher_host.cc',

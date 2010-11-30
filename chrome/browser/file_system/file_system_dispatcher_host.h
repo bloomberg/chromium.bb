@@ -79,7 +79,7 @@ class FileSystemDispatcherHost
                    const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);
   void Send(IPC::Message* message);
-  void RemoveCompletedOperation(int request_id);
+  void UnregisterOperation(int request_id);
 
  private:
   // Creates a new SandboxedFileSystemOperation.
@@ -99,8 +99,7 @@ class FileSystemDispatcherHost
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Keeps ongoing file system operations.
-  typedef IDMap<fileapi::SandboxedFileSystemOperation, IDMapOwnPointer>
-      OperationsMap;
+  typedef IDMap<fileapi::SandboxedFileSystemOperation> OperationsMap;
   OperationsMap operations_;
 
   // This holds the URLRequestContextGetter until Init() can be called from the

@@ -36,8 +36,11 @@ class FileWriterDelegate;
 // Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,
 // GetMetadata, ReadDirectory and Remove) may be called during the lifetime of
 // this object and it should be called no more than once.
+// This class is self-destructed and an instance automatically gets deleted
+// when its operation is finished.
 class FileSystemOperation {
  public:
+  // |dispatcher| will be owned by this class.
   FileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
                       scoped_refptr<base::MessageLoopProxy> proxy);
   virtual ~FileSystemOperation();
@@ -65,15 +68,16 @@ class FileSystemOperation {
 
   virtual void Remove(const FilePath& path, bool recursive);
 
-  virtual void Write(
-      scoped_refptr<URLRequestContext> url_request_context,
-      const FilePath& path, const GURL& blob_url, int64 offset);
+  virtual void Write(scoped_refptr<URLRequestContext> url_request_context,
+                     const FilePath& path,
+                     const GURL& blob_url,
+                     int64 offset);
 
   virtual void Truncate(const FilePath& path, int64 length);
 
   virtual void TouchFile(const FilePath& path,
-                 const base::Time& last_access_time,
-                 const base::Time& last_modified_time);
+                         const base::Time& last_access_time,
+                         const base::Time& last_modified_time);
 
   // Try to cancel the current operation [we support cancelling write or
   // truncate only].  Report failure for the current operation, then tell the
@@ -154,7 +158,7 @@ class FileSystemOperation {
   friend class FileWriterDelegate;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> blob_request_;
-  FileSystemOperation* cancel_operation_;
+  scoped_ptr<FileSystemOperation> cancel_operation_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
 };
