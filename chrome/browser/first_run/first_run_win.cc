@@ -68,13 +68,6 @@ bool GetNewerChromeFile(FilePath* path) {
   return true;
 }
 
-bool GetBackupChromeFile(std::wstring* path) {
-  if (!PathService::Get(base::DIR_EXE, path))
-    return false;
-  file_util::AppendToPath(path, installer_util::kChromeOldExe);
-  return true;
-}
-
 bool InvokeGoogleUpdateForRename() {
   ScopedComPtr<IProcessLauncher> ipl;
   if (!FAILED(ipl.CreateInstance(__uuidof(ProcessLauncherClass)))) {
@@ -225,30 +218,31 @@ void FirstRun::DoDelayedInstallExtensions() {
 CommandLine* Upgrade::new_command_line_ = NULL;
 
 bool FirstRun::CreateChromeDesktopShortcut() {
-  std::wstring chrome_exe;
+  FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
     return false;
   BrowserDistribution *dist = BrowserDistribution::GetDistribution();
   if (!dist)
     return false;
-  return ShellUtil::CreateChromeDesktopShortcut(chrome_exe,
+  return ShellUtil::CreateChromeDesktopShortcut(chrome_exe.value(),
       dist->GetAppDescription(), ShellUtil::CURRENT_USER,
       false, true);  // create if doesn't exist.
 }
 
 bool FirstRun::CreateChromeQuickLaunchShortcut() {
-  std::wstring chrome_exe;
+  FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
     return false;
-  return ShellUtil::CreateChromeQuickLaunchShortcut(chrome_exe,
+  return ShellUtil::CreateChromeQuickLaunchShortcut(chrome_exe.value(),
       ShellUtil::CURRENT_USER,  // create only for current user.
       true);  // create if doesn't exist.
 }
 
 bool Upgrade::IsBrowserAlreadyRunning() {
   static HANDLE handle = NULL;
-  std::wstring exe;
-  PathService::Get(base::FILE_EXE, &exe);
+  FilePath exe_path;
+  PathService::Get(base::FILE_EXE, &exe_path);
+  std::wstring exe = exe_path.value();
   std::replace(exe.begin(), exe.end(), '\\', '!');
   std::transform(exe.begin(), exe.end(), exe.begin(), tolower);
   exe = L"Global\\" + exe;
@@ -273,12 +267,13 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
     return false;
   if (!file_util::PathExists(new_chrome_exe))
     return false;
-  std::wstring curr_chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &curr_chrome_exe))
+  FilePath cur_chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &cur_chrome_exe))
     return false;
 
   // First try to rename exe by launching rename command ourselves.
-  bool user_install = InstallUtil::IsPerUserInstall(curr_chrome_exe.c_str());
+  bool user_install =
+      InstallUtil::IsPerUserInstall(cur_chrome_exe.value().c_str());
   HKEY reg_root = user_install ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
   BrowserDistribution *dist = BrowserDistribution::GetDistribution();
   base::win::RegKey key;

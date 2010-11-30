@@ -116,29 +116,28 @@ PluginPolicyCategory GetPolicyCategoryForPlugin(
 bool AddDirectory(int path, const wchar_t* sub_dir, bool children,
                   sandbox::TargetPolicy::Semantics access,
                   sandbox::TargetPolicy* policy) {
-  std::wstring directory;
+  FilePath directory;
   if (!PathService::Get(path, &directory))
     return false;
 
   if (sub_dir) {
-    file_util::AppendToPath(&directory, sub_dir);
+    directory = directory.Append(sub_dir);
     file_util::AbsolutePath(&directory);
   }
 
   sandbox::ResultCode result;
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES, access,
-                           directory.c_str());
+                           directory.value().c_str());
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
+  std::wstring directory_str = directory.value() + L"\\";
   if (children)
-    file_util::AppendToPath(&directory, L"*");
-  else
-    // Add the version of the path that ends with a separator.
-    file_util::AppendToPath(&directory, L"");
+    directory_str += L"*";
+  // Otherwise, add the version of the path that ends with a separator.
 
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES, access,
-                           directory.c_str());
+                           directory_str.c_str());
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
@@ -198,10 +197,11 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 
   // Add the policy for debug message only in debug
 #ifndef NDEBUG
-  std::wstring debug_message;
-  if (!PathService::Get(chrome::DIR_APP, &debug_message))
+  FilePath app_dir;
+  if (!PathService::Get(chrome::DIR_APP, &app_dir))
     return false;
-  if (!win_util::ConvertToLongPath(debug_message, &debug_message))
+  std::wstring debug_message;
+  if (!win_util::ConvertToLongPath(app_dir.value(), &debug_message))
     return false;
   file_util::AppendToPath(&debug_message, L"debug_message.exe");
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_PROCESS,

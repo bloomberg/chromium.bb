@@ -265,7 +265,7 @@ bool MigrateChromiumShortcutsTask::GetShortcutAppId(
 };
 
 bool ShellIntegration::SetAsDefaultBrowser() {
-  std::wstring chrome_exe;
+  FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     LOG(ERROR) << "Error getting app exe path";
     return false;
@@ -273,7 +273,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
 
   // From UI currently we only allow setting default browser for current user.
   if (!ShellUtil::MakeChromeDefault(ShellUtil::CURRENT_USER,
-                                    chrome_exe, true)) {
+                                    chrome_exe.value(), true)) {
     LOG(ERROR) << "Chrome could not be set as default browser.";
     return false;
   }
@@ -285,7 +285,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
 ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
   // First determine the app path. If we can't determine what that is, we have
   // bigger fish to fry...
-  std::wstring app_path;
+  FilePath app_path;
   if (!PathService::Get(base::FILE_EXE, &app_path)) {
     LOG(ERROR) << "Error getting app exe path";
     return UNKNOWN_DEFAULT_BROWSER;
@@ -330,7 +330,8 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
     pAAR->Release();
   } else {
     std::wstring short_app_path;
-    GetShortPathName(app_path.c_str(), WriteInto(&short_app_path, MAX_PATH),
+    GetShortPathName(app_path.value().c_str(),
+                     WriteInto(&short_app_path, MAX_PATH),
                      MAX_PATH);
 
     // open command for protocol associations

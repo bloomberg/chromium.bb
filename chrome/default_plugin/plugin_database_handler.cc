@@ -43,8 +43,9 @@ bool PluginDatabaseHandler::DownloadPluginsFileIfNeeded(
 
   plugin_finder_url_ = plugin_finder_url;
 
-  PathService::Get(base::DIR_MODULE, &plugins_file_);
-  plugins_file_ += L"\\chrome_plugins_file.xml";
+  FilePath module_path;
+  PathService::Get(base::DIR_MODULE, &module_path);
+  plugins_file_ = module_path.Append(L"chrome_plugins_file.xml").value();
 
   bool initiate_download = false;
   if (!file_util::PathExists(FilePath::FromWStringHack(plugins_file_))) {

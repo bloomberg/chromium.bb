@@ -416,7 +416,7 @@ bool UpdateJumpList(const wchar_t* app_id,
     return false;
 
   // Retrieve the absolute path to "chrome.exe".
-  std::wstring chrome_path;
+  FilePath chrome_path;
   if (!PathService::Get(base::FILE_EXE, &chrome_path))
     return false;
 
@@ -447,20 +447,21 @@ bool UpdateJumpList(const wchar_t* app_id,
   // This update request is applied into the JumpList when we commit this
   // transaction.
   result = UpdateCategory(destination_list, IDS_NEW_TAB_MOST_VISITED,
-                          chrome_path, chrome_switches, most_visited_pages,
-                          most_visited_items);
+                          chrome_path.value(), chrome_switches,
+                          most_visited_pages, most_visited_items);
   if (FAILED(result))
     return false;
 
   // Update the "Recently Closed" category of the JumpList.
   result = UpdateCategory(destination_list, IDS_NEW_TAB_RECENTLY_CLOSED,
-                          chrome_path, chrome_switches, recently_closed_pages,
-                          recently_closed_items);
+                          chrome_path.value(), chrome_switches,
+                          recently_closed_pages, recently_closed_items);
   if (FAILED(result))
     return false;
 
   // Update the "Tasks" category of the JumpList.
-  result = UpdateTaskCategory(destination_list, chrome_path, chrome_switches);
+  result = UpdateTaskCategory(destination_list, chrome_path.value(),
+                              chrome_switches);
   if (FAILED(result))
     return false;
 

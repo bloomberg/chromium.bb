@@ -91,10 +91,10 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   // Found another window, send our command line to it
   // format is "START\0<<<current directory>>>\0<<<commandline>>>".
   std::wstring to_send(L"START\0", 6);  // want the NULL in the string.
-  std::wstring cur_dir;
+  FilePath cur_dir;
   if (!PathService::Get(base::DIR_CURRENT, &cur_dir))
     return PROCESS_NONE;
-  to_send.append(cur_dir);
+  to_send.append(cur_dir.value());
   to_send.append(L"\0", 1);  // Null separator.
   to_send.append(GetCommandLineW());
   to_send.append(L"\0", 1);  // Null separator.

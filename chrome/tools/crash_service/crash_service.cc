@@ -173,22 +173,23 @@ bool CrashService::Initialize(const std::wstring& command_line) {
   using google_breakpad::CrashGenerationServer;
 
   const wchar_t* pipe_name = kTestPipeName;
-  std::wstring dumps_path;
   int max_reports = -1;
 
   // The checkpoint file allows CrashReportSender to enforce the the maximum
   // reports per day quota. Does not seem to serve any other purpose.
-  std::wstring checkpoint_path = report_path_;
-  file_util::AppendToPath(&checkpoint_path, kCheckPointFile);
+  FilePath checkpoint_path = report_path_.Append(kCheckPointFile);
 
   // The dumps path is typically : '<user profile>\Local settings\
   // Application data\Goggle\Chrome\Crash Reports' and the report path is
   // Application data\Google\Chrome\Reported Crashes.txt
-  if (!PathService::Get(chrome::DIR_USER_DATA, &report_path_)) {
+  FilePath user_data_dir;
+  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     LOG(ERROR) << "could not get DIR_USER_DATA";
     return false;
   }
-  file_util::AppendToPath(&report_path_, chrome::kCrashReportLog);
+  report_path_ = user_data_dir.Append(chrome::kCrashReportLog);
+
+  FilePath dumps_path;
   if (!PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
     LOG(ERROR) << "could not get DIR_CRASH_DUMPS";
     return false;
@@ -202,7 +203,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 
   if (max_reports > 0) {
     // Create the http sender object.
-    sender_ = new CrashReportSender(checkpoint_path);
+    sender_ = new CrashReportSender(checkpoint_path.value());
     if (!sender_) {
       LOG(ERROR) << "could not create sender";
       return false;
@@ -231,7 +232,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
                                       &CrashService::OnClientConnected, this,
                                       &CrashService::OnClientDumpRequest, this,
                                       &CrashService::OnClientExited, this,
-                                      true, &dumps_path);
+                                      true, &dumps_path.value());
 
   if (!dumper_) {
     LOG(ERROR) << "could not create dumper";
@@ -254,11 +255,11 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 
   // Log basic information.
   VLOG(1) << "pipe name is " << pipe_name
-          << "\ndumps at " << dumps_path
-          << "\nreports at " << report_path_;
+          << "\ndumps at " << dumps_path.value()
+          << "\nreports at " << report_path_.value();
 
   if (sender_) {
-    VLOG(1) << "checkpoint is " << checkpoint_path
+    VLOG(1) << "checkpoint is " << checkpoint_path.value()
             << "\nserver is " << kCrashReportURL
             << "\nmaximum " << sender_->max_reports_per_day() << " reports/day"
             << "\nreporter is " << reporter_tag_;

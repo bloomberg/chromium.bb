@@ -7,6 +7,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
@@ -226,16 +227,17 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
                                              Window* window,
                                              MessageLoop* main_loop) {
 
-  std::wstring chrome_exe_path;
+  FilePath chrome_exe_path;
   if (!PathService::Get(base::DIR_EXE, &chrome_exe_path)) {
     NOTREACHED();
     return false;
   }
+  std::wstring chrome_exe = chrome_exe_path.value();
 
-  std::transform(chrome_exe_path.begin(), chrome_exe_path.end(),
-                 chrome_exe_path.begin(), tolower);
+  std::transform(chrome_exe.begin(), chrome_exe.end(),
+                 chrome_exe.begin(), tolower);
 
-  if (!CanUpdateCurrentChrome(chrome_exe_path)) {
+  if (!CanUpdateCurrentChrome(chrome_exe)) {
     main_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
         &GoogleUpdate::ReportResults, UPGRADE_ERROR,
         CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY));
@@ -254,7 +256,7 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
 
   ScopedComPtr<IGoogleUpdate> on_demand;
 
-  if (InstallUtil::IsPerUserInstall(chrome_exe_path.c_str())) {
+  if (InstallUtil::IsPerUserInstall(chrome_exe.c_str())) {
     hr = on_demand.CreateInstance(CLSID_OnDemandUserAppsClass);
   } else {
     // The Update operation needs Admin privileges for writing
