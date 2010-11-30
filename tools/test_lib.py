@@ -35,16 +35,89 @@
 
 import difflib
 import re
+import os
 import signal
 import subprocess
 import sys
-import time
+
+
+
+# Windows does not fully implement os.times functionality.  If
+# _GetTimesPosix were used, the fields for CPU time used in user and
+# in kernel mode by the process will both be zero.  Instead, we must
+# use the ctypes module and access windll's kernel32 interface to
+# extract the CPU usage information.
+
+if sys.platform[:3] == 'win':
+  import ctypes
+
+
+class SubprocessCpuTimer:
+  """Timer used to measure user and kernel CPU time expended by a subprocess.
+
+  A new object of this class should be instantiated just before the
+  subprocess is created, and after the subprocess is finished and
+  waited for (via the wait method of the Popen object), the elapsed
+  time can be obtained by invoking the ElapsedCpuTime of the
+  SubprocessCpuTimer instance.
+
+  """
+
+  WIN32_PROCESS_TIMES_TICKS_PER_SECOND = 1.0e7
+
+  # use a class variable to avoid slicing at run-time
+  _use_proc_handle = sys.platform[:3] == 'win'
+
+
+  @staticmethod
+  def _GetTimePosix():
+    t = os.times()
+    return t[2] + t[3]
+
+
+  @staticmethod
+  def _GetTimeWindows(proc_handle):
+    if proc_handle is None:
+      return 0
+    creation_time = ctypes.c_ulonglong()
+    exit_time = ctypes.c_ulonglong()
+    kernel_time = ctypes.c_ulonglong()
+    user_time = ctypes.c_ulonglong()
+    rc = ctypes.windll.kernel32.GetProcessTimes(
+        int(proc_handle._handle),
+        ctypes.byref(creation_time),
+        ctypes.byref(exit_time),
+        ctypes.byref(kernel_time),
+        ctypes.byref(user_time))
+    if not rc:
+      print >>sys.stderr, 'Could not obtain process time'
+      return 0
+    return ((kernel_time.value + user_time.value)
+            / SubprocessCpuTimer.WIN32_PROCESS_TIMES_TICKS_PER_SECOND)
+
+
+  @staticmethod
+  def _GetTime(proc_handle):
+    if SubprocessCpuTimer._use_proc_handle:
+      return SubprocessCpuTimer._GetTimeWindows(proc_handle)
+    return SubprocessCpuTimer._GetTimePosix()
+
+
+  def __init__(self):
+    self._start_time = self._GetTime(None)
+
+
+  def ElapsedCpuTime(self, proc_handle):
+    return self._GetTime(proc_handle) - self._start_time
+
+
 
 def RunTest(cmd):
   """Run a test where we only care about the return code."""
   assert type(cmd) == list
   failed = 0
-  start = time.time()
+  timer = SubprocessCpuTimer()
+  p = None
   try:
     p = subprocess.Popen(cmd)
     retcode = p.wait()
@@ -53,8 +126,9 @@ def RunTest(cmd):
     retcode = 0
     failed = 1
 
-  end = time.time()
-  return (end - start, retcode, failed)
+  if p is None:
+    return (0, 0, 1)
+  return (timer.ElapsedCpuTime(p), retcode, failed)
 
 
 def RunTestWithInputOutput(cmd, input_data):
@@ -69,7 +143,9 @@ def RunTestWithInputOutput(cmd, input_data):
   stdout = ''
   stderr = ''
   failed = 0
-  start = time.time()
+
+  p = None
+  timer = SubprocessCpuTimer()
   try:
     # Python on windows does not include any notion of SIGPIPE.  On
     # Linux and OSX, Python installs a signal handler for SIGPIPE that
@@ -116,8 +192,11 @@ def RunTestWithInputOutput(cmd, input_data):
       print 'exception: ' + str(sys.exc_info()[1])
       retcode = 0
       failed = 1
-  end = time.time()
-  return (end - start, retcode, failed, stdout, stderr)
+  if p is None:
+    cpu_time_consumed = 0
+  else:
+    cpu_time_consumed = timer.ElapsedCpuTime(p)
+  return (cpu_time_consumed, retcode, failed, stdout, stderr)
 
 
 def DiffStringsIgnoringWhiteSpace(a, b):

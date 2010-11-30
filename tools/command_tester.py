@@ -40,7 +40,6 @@ This harness is used instead of shell scripts to ensure windows compatibility
 import getopt
 import os
 import sys
-import time
 
 # local imports
 import test_lib
@@ -383,13 +382,12 @@ def main(argv):
   if run_under:
     command = run_under.split(',') + command
 
-  start_time = time.time()
   Banner('running %s' % str(command))
   # print the command in copy-and-pastable fashion
   print " ".join(command)
-  _, exit_status, failed, stdout, stderr = test_lib.RunTestWithInputOutput(
+  (total_time, exit_status,
+   failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
       command, stdin_data)
-  total_time = time.time() - start_time
 
   req_status = GlobalSettings['exit_status']
   req_status = MassageExitStatus(req_status)
