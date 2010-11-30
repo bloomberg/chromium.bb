@@ -68,6 +68,8 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
   typedef std::vector<SafeBrowsingService::UnsafeResource> UnsafeResourceList;
 
  protected:
+  friend class SafeBrowsingBlockingPageTest;
+
   // InterstitialPage method:
   virtual void CommandReceived(const std::string& command);
 

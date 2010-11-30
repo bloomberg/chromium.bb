@@ -26,6 +26,7 @@
 class PrefService;
 class SafeBrowsingDatabase;
 class SafeBrowsingProtocolManager;
+class SafeBrowsingServiceFactory;
 class URLRequestContextGetter;
 
 namespace base {
@@ -88,8 +89,14 @@ class SafeBrowsingService
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingCheck);
   };
 
-  // Creates the safe browsing service.  Need to initialize before using.
-  SafeBrowsingService();
+  // Makes the passed |factory| the factory used to instanciate
+  // a SafeBrowsingService. Useful for tests.
+  static void RegisterFactory(SafeBrowsingServiceFactory* factory) {
+    factory_ = factory;
+  }
+
+  // Create an instance of the safe browsing service.
+  static SafeBrowsingService* CreateSafeBrowsingService();
 
   // Called on the UI thread to initialize the service.
   void Initialize();
@@ -104,7 +111,7 @@ class SafeBrowsingService
   // can synchronously determine that the url is safe, CheckUrl returns true.
   // Otherwise it returns false, and "client" is called asynchronously with the
   // result when it is ready.
-  bool CheckUrl(const GURL& url, Client* client);
+  virtual bool CheckUrl(const GURL& url, Client* client);
 
   // Called on the IO thread to cancel a pending check if the result is no
   // longer needed.
@@ -174,7 +181,15 @@ class SafeBrowsingService
   // the current page is 'safe'.
   void LogPauseDelay(base::TimeDelta time);
 
+ protected:
+  // Creates the safe browsing service.  Need to initialize before using.
+  SafeBrowsingService();
+
+  virtual ~SafeBrowsingService();
+
  private:
+  friend class SafeBrowsingServiceFactoryImpl;
+
   typedef std::set<SafeBrowsingCheck*> CurrentChecks;
   typedef std::vector<SafeBrowsingCheck*> GetHashRequestors;
   typedef base::hash_map<SBPrefix, GetHashRequestors> GetHashRequests;
@@ -191,8 +206,6 @@ class SafeBrowsingService
 
   friend class base::RefCountedThreadSafe<SafeBrowsingService>;
   friend class SafeBrowsingServiceTest;
-
-  ~SafeBrowsingService();
 
   // Called to initialize objects that are used on the io_thread.
   void OnIOInitialize(const std::string& client_key,
@@ -281,6 +294,11 @@ class SafeBrowsingService
                              bool is_subresource,
                              UrlCheckResult threat_type);
 
+  // The factory used to instanciate a SafeBrowsingService object.
+  // Useful for tests, so they can provide their own implementation of
+  // SafeBrowsingService.
+  static SafeBrowsingServiceFactory* factory_;
+
   CurrentChecks checks_;
 
   // Used for issuing only one GetHash request for a given prefix.
@@ -323,6 +341,16 @@ class SafeBrowsingService
   std::deque<QueuedCheck> queued_checks_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
+};
+
+// Factory for creating SafeBrowsingService.  Useful for tests.
+class SafeBrowsingServiceFactory {
+ public:
+  SafeBrowsingServiceFactory() { }
+  virtual ~SafeBrowsingServiceFactory() { }
+  virtual SafeBrowsingService* CreateSafeBrowsingService() = 0;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_

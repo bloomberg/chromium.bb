@@ -210,7 +210,7 @@ ResourceDispatcherHost::ResourceDispatcherHost()
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
       user_script_listener_(new UserScriptListener(&resource_queue_)),
-      safe_browsing_(new SafeBrowsingService),
+      safe_browsing_(SafeBrowsingService::CreateSafeBrowsingService()),
       socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
       webkit_thread_(new WebKitThread),
       request_id_(-1),

@@ -2071,6 +2071,7 @@
         'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
         'browser/renderer_host/test/renderer_accessibility_browsertest.cc',
         'browser/renderer_host/test/web_cache_manager_browsertest.cc',
+        'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
         'browser/service/service_process_control_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
         'browser/sessions/tab_restore_service_browsertest.cc',

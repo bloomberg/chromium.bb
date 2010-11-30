@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -49,6 +50,25 @@ static Profile* GetDefaultProfile() {
   return profile_manager->GetDefaultProfile(user_data_dir);
 }
 
+// static
+SafeBrowsingServiceFactory* SafeBrowsingService::factory_ = NULL;
+
+// The default SafeBrowsingServiceFactory.  Global, made a singleton so we
+// don't leak it.
+class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
+ public:
+  virtual SafeBrowsingService* CreateSafeBrowsingService() {
+    return new SafeBrowsingService();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<SafeBrowsingServiceFactoryImpl>;
+
+  SafeBrowsingServiceFactoryImpl() { }
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactoryImpl);
+};
+
 struct SafeBrowsingService::WhiteListedEntry {
   int render_process_host_id;
   int render_view_id;
@@ -73,6 +93,13 @@ SafeBrowsingService::SafeBrowsingCheck::SafeBrowsingCheck()
 }
 
 SafeBrowsingService::SafeBrowsingCheck::~SafeBrowsingCheck() {}
+
+/* static */
+SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
+  if (!factory_)
+    factory_ = Singleton<SafeBrowsingServiceFactoryImpl>::get();
+  return factory_->CreateSafeBrowsingService();
+}
 
 SafeBrowsingService::SafeBrowsingService()
     : database_(NULL),
