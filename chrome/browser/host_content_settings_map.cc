@@ -799,9 +799,13 @@ void HostContentSettingsMap::ResetToDefaults() {
     AutoLock auto_lock(lock_);
     default_content_settings_ = ContentSettings();
     ForceDefaultsToBeExplicit();
+    // Clear all content settings map except the
+    // managed_default_content_settings.
     host_content_settings_.clear();
     off_the_record_settings_.clear();
-    block_third_party_cookies_ = false;
+    // Don't reset block third party cookies if they are managed.
+    if (!IsBlockThirdPartyCookiesManaged())
+      block_third_party_cookies_ = false;
     block_nonsandboxed_plugins_ = false;
   }
 
@@ -810,6 +814,9 @@ void HostContentSettingsMap::ResetToDefaults() {
     updating_preferences_ = true;
     prefs->ClearPref(prefs::kDefaultContentSettings);
     prefs->ClearPref(prefs::kContentSettingsPatterns);
+    // If the block third party cookies preference is managed we still must
+    // clear it in order to restore the default value for later when the
+    // preference is not managed anymore.
     prefs->ClearPref(prefs::kBlockThirdPartyCookies);
     prefs->ClearPref(prefs::kBlockNonsandboxedPlugins);
     updating_preferences_ = false;

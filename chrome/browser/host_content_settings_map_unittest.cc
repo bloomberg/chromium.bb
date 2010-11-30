@@ -984,4 +984,35 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
                 CONTENT_SETTINGS_TYPE_PLUGINS));
 }
 
+TEST_F(HostContentSettingsMapTest, ResetToDefaultsWhenManaged) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  prefs->SetManagedPref(prefs::kBlockThirdPartyCookies,
+                        Value::CreateBooleanValue(true));
+  prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
+                     Value::CreateBooleanValue(true));
+
+  EXPECT_EQ(true,
+            host_content_settings_map->IsBlockThirdPartyCookiesManaged());
+  EXPECT_EQ(true, host_content_settings_map->BlockThirdPartyCookies());
+
+  // Reset to the default value (false).
+  host_content_settings_map->ResetToDefaults();
+  // Since the preference BlockThirdPartyCookies is managed the
+  // HostContentSettingsMap should still return the managed value which is true.
+  EXPECT_EQ(true,
+            host_content_settings_map->IsBlockThirdPartyCookiesManaged());
+  EXPECT_EQ(true, host_content_settings_map->BlockThirdPartyCookies());
+
+  // After unsetting the managed value for the preference BlockThirdPartyCookies
+  // the default value should be returned now.
+  prefs->RemoveManagedPref(prefs::kBlockThirdPartyCookies);
+  EXPECT_EQ(false,
+            host_content_settings_map->IsBlockThirdPartyCookiesManaged());
+  EXPECT_EQ(false, host_content_settings_map->BlockThirdPartyCookies());
+}
+
 }  // namespace
