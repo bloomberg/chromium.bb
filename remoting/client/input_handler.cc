@@ -19,31 +19,37 @@ InputHandler::InputHandler(ClientContext* context,
 }
 
 void InputHandler::SendKeyEvent(bool press, int keycode) {
-  KeyEvent* event = new KeyEvent();
-  event->set_key(keycode);
-  event->set_pressed(press);
-
   protocol::InputStub* stub = connection_->input_stub();
-  stub->InjectKeyEvent(event, new DeleteTask<KeyEvent>(event));
+  if (stub) {
+    KeyEvent* event = new KeyEvent();
+    event->set_key(keycode);
+    event->set_pressed(press);
+
+    stub->InjectKeyEvent(event, new DeleteTask<KeyEvent>(event));
+  }
 }
 
 void InputHandler::SendMouseMoveEvent(int x, int y) {
-  MouseEvent* event = new MouseEvent();
-  event->set_x(x);
-  event->set_y(y);
-
   protocol::InputStub* stub = connection_->input_stub();
-  stub->InjectMouseEvent(event, new DeleteTask<MouseEvent>(event));
+  if (stub) {
+    MouseEvent* event = new MouseEvent();
+    event->set_x(x);
+    event->set_y(y);
+
+    stub->InjectMouseEvent(event, new DeleteTask<MouseEvent>(event));
+  }
 }
 
 void InputHandler::SendMouseButtonEvent(bool button_down,
                                         MouseButton button) {
-  MouseEvent* event = new MouseEvent();
-  event->set_button(button);
-  event->set_button_down(button_down);
-
   protocol::InputStub* stub = connection_->input_stub();
-  stub->InjectMouseEvent(event, new DeleteTask<MouseEvent>(event));
+  if (stub) {
+    MouseEvent* event = new MouseEvent();
+    event->set_button(button);
+    event->set_button_down(button_down);
+
+    stub->InjectMouseEvent(event, new DeleteTask<MouseEvent>(event));
+  }
 }
 
 }  // namespace remoting
