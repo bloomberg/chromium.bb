@@ -151,6 +151,13 @@ std::wstring GetPathAndQueryFromUrl(const std::wstring& url);
 // Adds the CF meta tag to the html page. Returns true if successful.
 bool AddCFMetaTag(std::string* html_data);
 
+// Get text data from the clipboard.
+std::wstring GetClipboardText();
+
+// Puts the given text data on the clipboard. All previous items on the
+// clipboard are removed.
+void SetClipboardText(const std::wstring& text);
+
 // A convenience class to close all open IE windows at the end
 // of a scope.  It's more convenient to do it this way than to
 // explicitly call chrome_frame_test::CloseAllIEWindows at the

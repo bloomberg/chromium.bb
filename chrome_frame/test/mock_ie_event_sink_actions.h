@@ -82,6 +82,10 @@ ACTION_P3(DelayRefresh, mock, loop, delay) {
       &IEEventSink::Refresh), delay);
 }
 
+ACTION_P2(PostMessageToCF, mock, message) {
+  mock->event_sink()->PostMessageToCF(message, L"*");
+}
+
 // Accessibility-related actions
 
 ACTION_P(AccDoDefaultAction, matcher) {

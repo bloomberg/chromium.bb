@@ -9,6 +9,8 @@
 #include <iepmapi.h>
 #include <sddl.h>
 
+#include "app/clipboard/clipboard.h"
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_version_info.h"
@@ -477,6 +479,21 @@ std::wstring GetPathAndQueryFromUrl(const std::wstring& url) {
   string16 url16 = WideToUTF16(url);
   GURL gurl = GURL(url16);
   return UTF8ToWide(gurl.PathForRequest());
+}
+
+std::wstring GetClipboardText() {
+  Clipboard clipboard;
+  string16 text16;
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &text16);
+  return UTF16ToWide(text16);
+}
+
+void SetClipboardText(const std::wstring& text) {
+  Clipboard clipboard;
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard);
+    clipboard_writer.WriteText(WideToUTF16(text));
+  }
 }
 
 bool AddCFMetaTag(std::string* html_data) {

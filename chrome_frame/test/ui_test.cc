@@ -383,9 +383,12 @@ TEST_P(FullTabUITest, TabCrashRefresh) {
 // menus for CF and IE are different, these tests are not parameterized.
 class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
  public:
-  ContextMenuTest() {}
+  ContextMenuTest(): kTextFieldInitValue(L"SomeInitializedTextValue") {}
 
   virtual void SetUp() {
+    context_menu_page_url = GetTestUrl(L"context_menu.html");
+    // Clear clipboard to make sure there is no effect from previous tests.
+    SetClipboardText(L"");
     // These are UI-related tests, so we do not care about the exact
     // navigations that occur.
     ie_mock_.ExpectAnyNavigations();
@@ -430,6 +433,11 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
   }
 
  protected:
+  // Html page that holds a text field for context menu testing.
+  std::wstring context_menu_page_url;
+  // This is the text value used to test cut/copy/paste etc.
+  const std::wstring kTextFieldInitValue;
+
   testing::NiceMock<MockAccEventObserver> acc_observer_;
 };
 
@@ -677,6 +685,206 @@ TEST_F(ContextMenuTest, IEBackForward) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIEAndNavigate(page1);
+}
+
+// Test CF link context menu - Open link in new window.
+TEST_F(ContextMenuTest, CFOpenLinkInNewWindow) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  MockIEEventSink new_window_mock;
+  new_window_mock.ExpectAnyNavigations();
+
+  // Invoke 'Open link in new window' context menu item.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(AccRightClick(AccObjectMatcher(L"", L"link")))
+      .WillOnce(testing::Return());
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher(L"Open link in new window*")));
+
+  ie_mock_.ExpectNewWindow(&new_window_mock);
+  EXPECT_CALL(new_window_mock, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
+      .WillOnce(CloseBrowserMock(&new_window_mock));
+  EXPECT_CALL(new_window_mock, OnQuit())
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(GetLinkPageUrl());
+}
+
+// Test CF link context menu - Copy link address.
+TEST_F(ContextMenuTest, CFCopyLinkAddress) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+
+  // Invoke 'Copy link address' context menu item.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(AccRightClick(AccObjectMatcher(L"", L"link")));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(testing::DoAll(
+          AccLeftClick(AccObjectMatcher(L"Copy link address*")),
+          CloseBrowserMock(&ie_mock_)));
+
+  LaunchIEAndNavigate(GetLinkPageUrl());
+
+  EXPECT_STREQ(GetSimplePageUrl().c_str(), GetClipboardText().c_str());
+}
+
+// Test CF text field context menu - cut.
+TEST_F(ContextMenuTest, CFTxtFieldCut) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  AccObjectMatcher txtfield_matcher(L"", L"editable text");
+
+  // Invoke "Cut" context menu item of text field.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          AccRightClick(txtfield_matcher),
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+    .WillOnce(AccLeftClick(AccObjectMatcher(L"Cut*")));
+
+  // Verify that text field is empty after cut operation.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(L"")))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(context_menu_page_url);
+  // Verify that the text value has been cut to clipboard.
+  EXPECT_STREQ(kTextFieldInitValue.c_str(), GetClipboardText().c_str());
+}
+
+// Test CF text field context menu - copy.
+TEST_F(ContextMenuTest, CFTxtFieldCopy) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  AccObjectMatcher txtfield_matcher(L"", L"editable text");
+
+  // Invoke "Copy" context menu item of text field.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          AccRightClick(txtfield_matcher),
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+    .WillOnce(testing::DoAll(
+        AccLeftClick(AccObjectMatcher(L"Copy*")),
+        CloseBrowserMock(&ie_mock_)));
+
+  // Verify that there is no change on text field value after copy operation.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, _))
+      .Times(testing::AtMost(0));
+
+  LaunchIEAndNavigate(context_menu_page_url);
+  // Verify that the text value has been copied to clipboard.
+  EXPECT_STREQ(kTextFieldInitValue.c_str(), GetClipboardText().c_str());
+}
+
+// Test CF text field context menu - paste.
+TEST_F(ContextMenuTest, CFTxtFieldPaste) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  AccObjectMatcher txtfield_matcher(L"", L"editable text");
+
+  // Invoke "Paste" context menu item of text field.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          AccRightClick(txtfield_matcher),
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher(L"Paste*")));
+  // Verify that value has been pasted to text field.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(kTextFieldInitValue)))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  // Set some text value to clipboard, this is to emulate the 'copy' action.
+  SetClipboardText(kTextFieldInitValue);
+
+  LaunchIEAndNavigate(context_menu_page_url);
+}
+
+// Test CF text field context menu - delete.
+TEST_F(ContextMenuTest, CFTxtFieldDelete) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  AccObjectMatcher txtfield_matcher(L"", L"editable text");
+
+  // Invoke 'Delete' context menu item of text field.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          AccRightClick(txtfield_matcher),
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher(L"Delete*")));
+  // Verify that value has been deleted from text field.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(L"")))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(context_menu_page_url);
+}
+
+// Test CF text field context menu - select all.
+TEST_F(ContextMenuTest, CFTxtFieldSelectAll) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+
+  // Invoke 'Select all' context menu item of text field.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(AccRightClick(AccObjectMatcher(L"", L"editable text")));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(testing::DoAll(
+          AccLeftClick(AccObjectMatcher(L"Select all*")),
+          PostMessageToCF(&ie_mock_, L"selectall")));
+  // Client side script verifies that the text field value has been selected,
+  // then send 'OK' message.
+  EXPECT_CALL(ie_mock_, OnMessage(testing::StrCaseEq(L"OK"), _, _))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(context_menu_page_url + L"?action=selectall");
+}
+
+// Test CF text field context menu - undo.
+TEST_F(ContextMenuTest, CFTxtFieldUndo) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  AccObjectMatcher txtfield_matcher(L"", L"editable text");
+
+  // Change the value of text field to 'A', then invoke 'Undo' context menu item
+  // of text field.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          AccSendCharMessage(txtfield_matcher, L'A'),
+          AccRightClick(txtfield_matcher)));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(testing::DoAll(
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
+          AccLeftClick(AccObjectMatcher(L"Undo*"))));
+
+  // Verify that value has been reset to initial value after undo operation.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(kTextFieldInitValue)))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(context_menu_page_url);
+}
+
+// Test CF text field context menu - redo.
+TEST_F(ContextMenuTest, CFTxtFieldRedo) {
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  AccObjectMatcher txtfield_matcher(L"", L"editable text");
+  InSequence expect_in_sequence_for_scope;
+
+  // Change text field value to 'A', then undo it.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          AccSendCharMessage(txtfield_matcher, L'A'),
+          AccRightClick(txtfield_matcher)));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(testing::DoAll(
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher),
+          AccLeftClick(AccObjectMatcher(L"Undo*"))));
+
+  // After undo operation is done, invoke 'Redo' context menu item.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(kTextFieldInitValue)))
+      .WillOnce(testing::DoAll(
+          AccRightClick(txtfield_matcher),
+          AccWatchForOneValueChange(&acc_observer_, txtfield_matcher)));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher(L"Redo*")));
+
+  // After redo operation is done, verify that text field value is reset to its
+  // changed value 'A'.
+  EXPECT_CALL(acc_observer_, OnAccValueChange(_, _, StrEq(L"A")))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(context_menu_page_url);
 }
 
 TEST_F(ContextMenuTest, CFBackForward) {

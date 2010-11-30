@@ -159,3 +159,33 @@ function AppendArgumentsToBaseUrl() {
   }
   return url;
 }
+
+// Get the value of the first parameter from the query string which matches the
+// given name.
+function getURLParameter(name) {
+  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+  var regexString = "[\\?&]" + name + "=([^&#]*)";
+  var regex = new RegExp(regexString);
+  var results = regex.exec(window.location.href);
+  if (results == null) {
+    return "";
+  } else {
+    return results[1];
+  }
+}
+
+// Create new URL by given html page name and querystring, based on current URL
+// path.
+function buildURL(pageName, queryString) {
+  var path = window.location.pathname;
+  var url = "";
+
+  url += window.location.protocol + "//" + window.location.host;
+  if (path.lastIndexOf("/") > 0) {
+    url += path.substring(0, path.lastIndexOf("/")) + "/" + pageName;
+  } else {
+    url += "/" + pageName;
+  }
+  url += ((queryString == "") ? "" : "?" + queryString);
+  return url;
+}
