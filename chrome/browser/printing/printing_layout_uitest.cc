@@ -280,7 +280,7 @@ class DismissTheWindow : public base::DelegateSimpleThread::Delegate {
 }  // namespace
 
 // Fails, see http://crbug.com/7721.
-TEST_F(PrintingLayoutTextTest, FAILS_Complex) {
+TEST_F(PrintingLayoutTextTest, DISABLED_Complex) {
   if (IsTestCaseDisabled())
     return;
 
