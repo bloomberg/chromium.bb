@@ -52,6 +52,11 @@ static const NaClMnemonic kNaClIllegalOp[] = {
   InstInto,
   InstInt1,
   InstInt3,
+  InstLes,
+  InstLds,
+  InstLfs,
+  InstLgs,
+  InstLss,
   InstIret,
   InstIretd,
   InstIretq,
@@ -65,6 +70,7 @@ static const NaClMnemonic kNaClIllegalOp[] = {
   InstPopf,
   InstPopfd,
   InstPopfq,
+  InstPrefetch_reserved,
   InstPusha,
   InstPushad,
   InstPushf,
@@ -77,6 +83,7 @@ static const NaClMnemonic kNaClIllegalOp[] = {
    * accordingly? Making illegal till we know more.
    */
   InstSalc,
+  InstSysret,
   /* Note: Ud2 is special. We except the instruction sequence "0f0b" (with no
    * no prefix bytes) as a special case on a nop instruction. The entry below
    * amkes all other forms, i.e. with a prefix bytes, illegal.
@@ -92,20 +99,34 @@ static const NaClNameOpcodeSeq kNaClIllegalOpSeq[] = {
   { InstPush, { 0x06 , END_OPCODE_SEQ } },
   { InstPush, { 0x0e , END_OPCODE_SEQ } },
 
-  /* It may be the case that these can also be enabled by CPUID_ECX_PRE; */
-  /* This enabling is not supported by the validator at this time. */
-  { InstPrefetch , { 0x0f , 0x0d , SL(2) , END_OPCODE_SEQ } },
-  { InstPrefetch , { 0x0f , 0x0d , SL(3) , END_OPCODE_SEQ } },
-  { InstPrefetch , { 0x0f , 0x0d , SL(4) , END_OPCODE_SEQ } },
-  { InstPrefetch , { 0x0f , 0x0d , SL(5) , END_OPCODE_SEQ } },
-  { InstPrefetch , { 0x0f , 0x0d , SL(6) , END_OPCODE_SEQ } },
-  { InstPrefetch , { 0x0f , 0x0d , SL(7) , END_OPCODE_SEQ } },
+  /* The following are illegal since they are define by AMD(tm), but not
+   * Intel(TM).
+   */
+  { InstNop,  { 0x0f , 0x19 , END_OPCODE_SEQ } },
+  { InstNop,  { 0x0f , 0x1a , END_OPCODE_SEQ } },
+  { InstNop,  { 0x0f , 0x1b , END_OPCODE_SEQ } },
+  { InstNop,  { 0x0f , 0x1c , END_OPCODE_SEQ } },
+  { InstNop,  { 0x0f , 0x1d , END_OPCODE_SEQ } },
+  { InstNop,  { 0x0f , 0x1e , END_OPCODE_SEQ } },
+  { InstNop,  { 0x0f , 0x1f , END_OPCODE_SEQ } },
 
+  /* Disallow pushing/popping to segment registers. */
+  { InstPush, { 0x06 , END_OPCODE_SEQ } },
   { InstPush, { 0x16 , END_OPCODE_SEQ } },
+  { InstPush, { 0x0e , END_OPCODE_SEQ } },
   { InstPush, { 0x1e , END_OPCODE_SEQ } },
+  { InstPush, { 0x0f , 0xa0 , END_OPCODE_SEQ } },
+  { InstPush, { 0x0f , 0xa8 , END_OPCODE_SEQ } },
   { InstPop , { 0x07 , END_OPCODE_SEQ } },
   { InstPop , { 0x17 , END_OPCODE_SEQ } },
   { InstPop , { 0x1f , END_OPCODE_SEQ } },
+  { InstPop , { 0x0f , 0xa1 , END_OPCODE_SEQ } },
+  { InstPop , { 0x0f , 0xa9 , END_OPCODE_SEQ } },
+
+  /* The following operations are provided as a synonym
+   * for the corresponding 0x80 code. NaCl requires the
+   * use of the 0x80 version.
+   */
   { InstAdd , { 0x82 , SL(0) , END_OPCODE_SEQ } },
   { InstOr  , { 0x82 , SL(1) , END_OPCODE_SEQ } },
   { InstAdc , { 0x82 , SL(2) , END_OPCODE_SEQ } },
@@ -114,8 +135,12 @@ static const NaClNameOpcodeSeq kNaClIllegalOpSeq[] = {
   { InstSub , { 0x82 , SL(5) , END_OPCODE_SEQ } },
   { InstXor , { 0x82 , SL(6) , END_OPCODE_SEQ } },
   { InstCmp , { 0x82 , SL(7) , END_OPCODE_SEQ } },
+
+  /* TODO(Karl): Don't know why these are disallowed. */
   { InstMov , { 0x8c , END_OPCODE_SEQ } },
   { InstMov , { 0x8e , END_OPCODE_SEQ } },
+
+  /* Don't allow far calls/jumps. */
   { InstCall , { 0x9a , END_OPCODE_SEQ } },
   /* Note: special case 64-bit with 66 prefix, which is not suppported on some
    * Intel Chips. See explicit rules in ncdecode_onebyte.c for specific
@@ -127,6 +152,36 @@ static const NaClNameOpcodeSeq kNaClIllegalOpSeq[] = {
   { InstJmp , { 0xea , END_OPCODE_SEQ } },
   { InstCall, { 0xff , SL(3), END_OPCODE_SEQ } },
   { InstJmp , { 0xff , SL(5), END_OPCODE_SEQ } },
+
+  /* ISE reviewers suggested omitting bt. Issues have with how many bytes are
+   * accessable when using memory for bit base. Note: Current solution is
+   * to allow the form that uses a byte, but not general memory/registers.
+   * This allows bit access to all standard size integers, but doesn't allow
+   * accesses that are very far away.
+   */
+  { InstBt  , { 0x0f , 0xa3 , END_OPCODE_SEQ } },
+  { InstBtc , { 0x0f , 0xbb , END_OPCODE_SEQ } },
+  { InstBtr , { 0x0f , 0xb3 , END_OPCODE_SEQ } },
+  { InstBts , { 0x0f , 0xab , END_OPCODE_SEQ } },
+
+  /* Added the group17 form of this instruction, since xed does not implement,
+   * just to be safe. Note: The form in 660F79 is still allowed.
+   */
+  { InstExtrq , { PR(0x66) , 0x0f, 0x78 , SL(0), END_OPCODE_SEQ } },
+};
+
+/* Holds illegal opcode sequences for 32-bit model only. */
+static const NaClNameOpcodeSeq kNaClIllegal32OpSeq[] = {
+  /* ISE reviewers suggested omitting bt, btc, btr and bts, but bt must
+   * be kept in 64-bit mode, because the compiler needs it to access
+   * the top 32-bits of a 64-bit value.
+   * Note: For 32-bit mode, we followed the existing implementation
+   * that doesn't even allow the one byte form.
+   */
+  { InstBt  , { 0x0f , 0xba , SL(4) , END_OPCODE_SEQ } },
+  { InstBts , { 0x0f , 0xba , SL(5) , END_OPCODE_SEQ } },
+  { InstBtr , { 0x0f , 0xba , SL(6) , END_OPCODE_SEQ } },
+  { InstBtc , { 0x0f , 0xba , SL(7) , END_OPCODE_SEQ } },
 };
 
 void NaClAddNaClIllegalIfApplicable() {
@@ -151,18 +206,22 @@ void NaClAddNaClIllegalIfApplicable() {
     case NACLi_RDTSCP:
     case NACLi_SVM:
     case NACLi_3BYTE:
-    case NACLi_CMPXCHG16B:
     case NACLi_UNDEFINED:
     case NACLi_INVALID:
     case NACLi_SYSCALL:
     case NACLi_SYSENTER:
     case NACLi_VMX:
+    case NACLi_FXSAVE:  /* don't allow until we can handle. */
       is_illegal = TRUE;
       break;
     default:
       if (NaClInInstructionSet(
               kNaClIllegalOp, NACL_ARRAY_SIZE(kNaClIllegalOp),
-              kNaClIllegalOpSeq, NACL_ARRAY_SIZE(kNaClIllegalOpSeq))) {
+              kNaClIllegalOpSeq, NACL_ARRAY_SIZE(kNaClIllegalOpSeq)) ||
+          ((X86_32 == NACL_FLAGS_run_mode) &&
+           NaClInInstructionSet(
+               NULL, 0,
+               kNaClIllegal32OpSeq, NACL_ARRAY_SIZE(kNaClIllegal32OpSeq)))) {
         is_illegal = TRUE;
       }
       break;

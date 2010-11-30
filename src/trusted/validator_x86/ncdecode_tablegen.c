@@ -225,13 +225,9 @@ static char* NaClDefaultOperandsDesc(NaClInst* inst) {
         CharAdvance(&buf, &buf_size,
                     SNPRINTF(buf, buf_size, "$G"));
         break;
-      case ES_G_Operand:
+      case Seg_G_Operand:
         CharAdvance(&buf, &buf_size,
-                    SNPRINTF(buf, buf_size, "es:$G"));
-        break;
-      case DS_G_Operand:
-        CharAdvance(&buf, &buf_size,
-                    SNPRINTF(buf, buf_size, "ds:$G"));
+                    SNPRINTF(buf, buf_size, "$SegG"));
         break;
       case G_OpcodeBase:
         CharAdvance(&buf, &buf_size,
@@ -302,6 +298,14 @@ static char* NaClDefaultOperandsDesc(NaClInst* inst) {
       case S_Operand:
         CharAdvance(&buf, &buf_size,
                     SNPRINTF(buf, buf_size, "%%Sreg"));
+        break;
+      case C_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "%%Creg"));
+        break;
+      case D_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "%%Dreg"));
         break;
       case St_Operand:
         CharAdvance(&buf, &buf_size,
@@ -1100,6 +1104,11 @@ static void NaClApplySanityChecksToInst() {
       (current_inst->flags & NACL_IFLAG(Opcode64Only))) {
     NaClFatalInst("Can't be both Opcode32Only and Opcode64Only");
   }
+  /* Fix case where both OperandSize_w and SizeIgnoresData16 are specified. */
+  if ((current_inst->flags & NACL_IFLAG(OperandSize_w)) &&
+      (current_inst->flags & NACL_IFLAG(SizeIgnoresData16))) {
+    current_inst->flags &= ~NACL_IFLAG(OperandSize_w);
+  }
   if ((current_inst->flags & NACL_IFLAG(OperandSize_b)) &&
       (current_inst->flags & (NACL_IFLAG(OperandSize_w) |
                               NACL_IFLAG(OperandSize_v) |
@@ -1323,7 +1332,8 @@ static void NaClAddRepPrefixFlagsIfApplicable() {
     case Prefix660F:
     case Prefix660F38:
     case Prefix660F3A:
-      current_inst->flags |= NACL_IFLAG(OpcodeAllowsData16);
+      current_inst->flags |= NACL_IFLAG(OpcodeAllowsData16) |
+          NACL_IFLAG(SizeIgnoresData16);
       break;
     case PrefixF20F:
     case PrefixF20F38:

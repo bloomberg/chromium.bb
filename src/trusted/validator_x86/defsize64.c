@@ -52,6 +52,12 @@ static const NaClMnemonic kNameSizeDefaultIs64[] = {
   InstLoop,           /* e2 */
   InstLoopne,         /* e0 */
   InstLoope,          /* e1 */
+  /*
+  InstMovmskpd,       ** 66 0f 50 - Intel(tm) claims 64-bit size assumption,
+                       * while AMD does not. If we go ahead and assume that
+                       * all 64-bits can be effected, we do not break anything.
+                       * Hence, we generalize to 64-bit default.
+                       */
   InstPopf,           /* 9d */
   InstPopfd,          /* 9d */
   InstPopfq,          /* 9d */

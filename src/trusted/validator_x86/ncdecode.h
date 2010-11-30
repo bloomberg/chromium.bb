@@ -91,15 +91,15 @@ typedef enum {
   NACLi_INDIRECT,                                                     /* 32 */
   NACLi_OPINMRM,                                                      /* 32 */
   NACLi_RETURN,                                                       /* 32 */
-  NACLi_SFENCE_CLFLUSH,                                               /* 32 */
-  NACLi_CMPXCHG8B,                                                    /* 32 */
-  NACLi_CMPXCHG16B,   /* 64-bit mode only, illegal for NaCl */        /* 32 */
-  NACLi_CMOV,                                                         /* 32 */
-  NACLi_RDMSR,                                                        /* 32 */
-  NACLi_RDTSC,                                                        /* 32 */
-  NACLi_RDTSCP,  /* AMD only */                                       /* 32 */
-  NACLi_SYSCALL, /* AMD only; equivalent to SYSENTER */               /* 32 */
-  NACLi_SYSENTER,                                                     /* 32 */
+  NACLi_SFENCE_CLFLUSH,                                               /* Both */
+  NACLi_CMPXCHG8B,                                                    /* Both */
+  NACLi_CMPXCHG16B,   /* 64-bit mode only, illegal for NaCl */        /* Both */
+  NACLi_CMOV,                                                         /* Both */
+  NACLi_RDMSR,                                                        /* Both */
+  NACLi_RDTSC,                                                        /* Both */
+  NACLi_RDTSCP,  /* AMD only */                                       /* Both */
+  NACLi_SYSCALL, /* AMD only; equivalent to SYSENTER */               /* Both */
+  NACLi_SYSENTER,                                                     /* Both */
   NACLi_X87,                                                          /* Both */
   NACLi_MMX,                                                          /* Both */
   NACLi_MMXSSE2, /* MMX with no prefix, SSE2 with 0x66 prefix */      /* Both */
@@ -109,24 +109,25 @@ typedef enum {
   NACLi_SSE,                                                          /* Both */
   NACLi_SSE2,    /* no prefix => MMX; prefix 66 => SSE; */            /* Both */
                  /* f2, f3 not allowed unless used for opcode selection */
-  NACLi_SSE2x,   /* SSE2; prefix 66 required!!! */                    /* Both */
+  NACLi_SSE2x,   /* SSE2; prefix 66 required!!! */                    /* 32 */
   NACLi_SSE3,                                                         /* Both */
   NACLi_SSE4A,   /* AMD only */                                       /* Both */
   NACLi_SSE41,                                                        /* Both */
   NACLi_SSE42,                                                        /* Both */
   NACLi_MOVBE,                                                        /* Both */
-  NACLi_POPCNT,                                                       /* 32 */
-  NACLi_LZCNT,                                                        /* 32 */
+  NACLi_POPCNT,                                                       /* Both */
+  NACLi_LZCNT,                                                        /* Both */
   NACLi_LONGMODE,/* AMD only? */                                      /* 32 */
   NACLi_SVM,     /* AMD only */                                       /* Both */
   NACLi_SSSE3,                                                        /* Both */
   NACLi_3BYTE,                                                        /* 32 */
   NACLi_FCMOV,                                                        /* 32 */
-  NACLi_VMX                                                           /* 64 */
+  NACLi_VMX,                                                          /* 64 */
+  NACLi_FXSAVE   /* SAVE/RESTORE xmm, mmx, and x87 state. */          /* 64 */
   /* NOTE: This enum must be kept consistent with kNaClInstTypeRange   */
   /* (defined below). */
 } NaClInstType;
-#define kNaClInstTypeRange 44
+#define kNaClInstTypeRange 45
 #ifdef NEEDSNACLINSTTYPESTRING
 static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
   "NACLi_UNDEFINED",
@@ -173,6 +174,7 @@ static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
   "NACLi_3BYTE",
   "NACLi_FCMOV",
   "NACLi_VMX",
+  "NACLi_FXSAVE",
 };
 #define NaClInstTypeString(itype)  (kNaClInstTypeString[itype])
 #endif  /* ifdef NEEDSNACLINSTTYPESTRING */

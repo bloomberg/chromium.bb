@@ -108,6 +108,12 @@ OpcodeAllowsRepne
 # Defines that the opcode can be prefixed with a DATA16 prefix.
 OpcodeAllowsData16
 
+# Defines that prefix 66 can't be used to define operand size.
+# That is, only 32 or 64 bit values are allowed.
+# Used for special cases where operand size is defined as "d/q".
+# Also used to mark instructions with 66 prefix.
+SizeIgnoresData16
+
 # Opcode only applies if running in 32-bit mode.
 Opcode32Only
 

@@ -82,6 +82,7 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstNeg,            /* f7/3 */
   InstNot,            /* f7/2 */
   InstOr,             /* 09, 0b, 0d, 81/1, 83/1 */
+  InstPextrb,         /* 66 0f 3a 14 */
   /* InstPopcnt,         ** f3 0f b8 */
   InstRcl,            /* D1/2, D3/2, C1/2 */
   InstRcr,            /* D1/3, D3/3, c1/3 */

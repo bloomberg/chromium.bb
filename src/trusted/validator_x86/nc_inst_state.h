@@ -67,4 +67,7 @@ uint8_t NaClInstStateOperandSize(NaClInstState* state);
 /* Returns the address size (measured in bits) of the instruction state. */
 uint8_t NaClInstStateAddressSize(NaClInstState* state);
 
+/* Changes opcode encodings to match those used by xed. */
+void NaClChangeOpcodesToXedsModel();
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_STATE_H_ */

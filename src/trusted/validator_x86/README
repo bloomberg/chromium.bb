@@ -57,10 +57,44 @@ by specifying an input file with instructions to decode. Options are:
         Prints out the internal form of the disassembled instruction as
         well. Only applicable when -use_iter is specified.
 
-*To run some sample tests, one can run:
+* To run some sample tests, one can run:
    > ncdis -self_document -commands=testdata/32/ncdis_iter_test.input
 or
    > ncdis -use_iter -self_document -commands=testdata/64/ncdis_iter_test.input
 
 * To see the set of modeled instructions used by the iterator model of the
 decoder and validator, see testdata/XX/README (where XX is 32 or 64).
+
+* To test the differences between the modeled x86-64 instructions,
+and the effects of prefixes, when compared to xed, do the following
+(in the native_client directory):
+
+   (1) Generate the 64-bit decoder using:
+
+       .> ./scons --mode=opt-linux platform=x86-64 sdl=none
+
+   (2) Change directory to the following private tests:
+
+       .> cd private_tests/enuminsts
+
+   (3) Add the PIN library (see README in private_tests/enuminsts)
+       tarfile.
+
+   (4) Make sure you have the latest patches for enuminsts:
+
+       .> svn update
+
+   (5) Remove old implementations.
+
+       .> make clean
+
+   (6) Build new implementation
+
+       .> make
+
+   (7) Run the comparison of the NaCl decoder against xed using:
+
+       .> ./enuminsts --checkoperands --nacllegal --xedimplemented --nops
+
+The output generated describes differences from NACL (legal) instructions,
+using the NACL decoder, and what xed finds.

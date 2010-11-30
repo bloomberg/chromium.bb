@@ -440,9 +440,9 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   /* 0xC0 and 0xC1 defined by NaClDefGroup2OpcodesInModRm, called below. */
   NaClDefine("c2: Ret {%@ip}, {%@sp}, $Iw", NACLi_386, st, Return);
   NaClDefine("c3: Ret {%@ip}, {%@sp}", NACLi_386, st, Return);
-  NaClDef_32("c4: Les $esGz, $Mp", NACLi_386, st, Move);
+  NaClDef_32("c4: Les $SGz, $Mp", NACLi_386, st, Lea);
   NaClDef_64("c4: Invalid", NACLi_INVALID, st, Other);
-  NaClDef_32("c5: Lds $dsGz, $Mp", NACLi_386, st, Move);
+  NaClDef_32("c5: Lds $SGz, $Mp", NACLi_386, st, Lea);
   NaClDef_64("c5: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("c6/0: Mov $Eb, $Ib", NACLi_386, st, Move);
   NaClDefine("c6/r: Invalid", NACLi_INVALID, st, Other);

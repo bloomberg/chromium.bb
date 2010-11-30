@@ -70,6 +70,9 @@ void NaClCpuCheck(struct NaClValidatorState* state,
     case NACLi_CMPXCHG8B:
       NACL_CHECK_FEATURE(f_CX8, "CX8");
       break;
+    case NACLi_CMPXCHG16B:
+      NACL_CHECK_FEATURE(f_CX16, "CX16");
+      break;
     case NACLi_CMOV:
       NACL_CHECK_FEATURE(f_CMOV, "CMOV");
       break;

@@ -294,7 +294,7 @@ NaClExpVector[6] = {
 };
 00000000: 0f 16 d1                                     movlhps %xmm2, %xmm1
   0f 16                       SSE ModRmModIs0x3 OpcodeUsesModRm
-    Movlhps $G(xmm), $E(xmm)
+    Movlhps $Vps, $VRq
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
 NaClExpVector[4] = {
@@ -305,7 +305,7 @@ NaClExpVector[4] = {
 };
 00000000: 0f 16 a5 00 00 00 00                         movhps %xmm4, %ss:[%ebp]
   0f 16                       SSE ModRmModIsnt0x3 OpcodeUsesModRm
-    Movhps $G(xmm), $M
+    Movhps $Vps, $Mq
       Xmm_G_Operand           OpSet OpDest
       Mo_Operand              OpUse
 NaClExpVector[10] = {
@@ -322,7 +322,7 @@ NaClExpVector[10] = {
 };
 00000000: 0f ac c1 10                                  shrd %ecx, %eax, 0x10
   0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Shrd $E, $G, $I
+    Shrd $Ev, $Gv, $Ib
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
       I_Operand               OpUse
@@ -336,7 +336,7 @@ NaClExpVector[6] = {
 };
 00000000: 0f ad 45 bc                                  shrd %ss:[%ebp-0x44], %eax, %cl
   0f ad                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
-    Shrd $E, $G, %CL
+    Shrd $Ev, $Gv, %cl
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
       RegCL                   OpUse

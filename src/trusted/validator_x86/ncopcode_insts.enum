@@ -20,6 +20,8 @@ Andnps
 Andpd
 Andps
 Arpl
+Blendpd
+Blendps
 Blendvpd
 Blendvps
 Bound
@@ -58,6 +60,8 @@ Cmovnl
 Cmovle
 Cmovnle
 Cmp
+Cmppd
+Cmpps
 Cmpsb
 Cmpsd
 Cmpsd_xmm
@@ -65,6 +69,8 @@ Cmpss
 Cmpsq
 Cmpsw
 Cmpxchg
+Cmpxchg8b
+Cmpxchg16b
 Cpuid
 Comisd
 Comiss
@@ -79,6 +85,7 @@ Cvtpi2ps
 Cvtps2dq
 Cvtps2pi
 Cvtps2pd
+Cvtsd2pi
 Cvtsd2si
 Cvtsd2ss
 Cvtsi2sd
@@ -90,6 +97,7 @@ Cvttpd2pi
 Cvttpd2dq
 Cvttps2dq
 Cvttps2pi
+Cvttsd2pi
 Cvttsd2si
 Cvttss2si
 Cwd
@@ -102,8 +110,11 @@ Divpd
 Divps
 Divsd
 Divss
+Dppd
+Dpps
 Emms
 Enter
+Extractps
 Extrq
 Fabs
 Fadd
@@ -189,6 +200,8 @@ Fucompp
 Fwait
 Fxam
 Fxch
+Fxrstor
+Fxsave
 Fxtract
 Fyl2x
 Fyl2xp1
@@ -204,6 +217,7 @@ In
 Inc
 Insb
 Insd
+Insertps
 Insertq
 Insw
 Int
@@ -241,12 +255,15 @@ Jz
 Lahf
 Lar
 Lddqu
+Ldmxcsr
 Lds
 Lea
 Leave
 Les
 Lfence
+Lfs
 Lgdt
+Lgs
 Lidt
 Lldt
 Lmsw
@@ -258,7 +275,9 @@ Loop
 Loope
 Loopne
 Lsl
+Lss
 Ltr
+Lzcnt
 Maskmovdqu
 Maskmovq
 Maxpd
@@ -311,6 +330,7 @@ Movsxd
 Movupd
 Movups
 Movzx
+Mpsadbw
 Mul
 Mulpd
 Mulps
@@ -437,11 +457,14 @@ Pmuludq
 Pop
 Popa
 Popad
+Popcnt
 Popf
 Popfd
 Popfq
 Por
-Prefetch
+Prefetch_exclusive
+Prefetch_modified
+Prefetch_reserved
 Prefetchnta
 Prefetcht0
 Prefetcht1
@@ -497,11 +520,17 @@ Rcpps
 Rcpss
 Rcr
 Rdmsr
+Rdpmc
 Rdtsc
 Rdtscp
 Ret
 Rol
 Ror
+Roundpd
+Roundps
+Roundsd
+Roundss
+Rsm
 Rsqrtps
 Rsqrtss
 Sahf
@@ -548,6 +577,7 @@ Stc
 Std
 Stgi
 Sti
+Stmxcsr
 Stosb
 Stosd
 Stosq
@@ -560,6 +590,8 @@ Subsd
 Subss
 Swapgs
 Syscall
+Sysenter
+Sysexit
 Sysret
 Test
 Ucomisd

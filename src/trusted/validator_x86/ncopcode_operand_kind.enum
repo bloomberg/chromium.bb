@@ -54,8 +54,7 @@ Edq_Operand
 # Note: The instruction decoder may count on the fact that the G_Operand
 # values are contiguous, in the order specified.
 
-# Models a general purpose register or memory operand in the
-# Modrm Byte. Size is defined by the computed operand size.
+# General purpose register specified by the ModRm reg field.
 G_Operand
 
 # Models an 8-bit general purpose register or memory operand in
@@ -78,11 +77,9 @@ Go_Operand
 # Models a 128-bit general purpose register or memory operand.
 Gdq_Operand
 
-# Models a G operand which is combined with ES to generate a segment address
-ES_G_Operand
-
-# Models a G operand which is combined with DS to generate a segment address
-DS_G_Operand
+# Models a G operand which is combined with a segment register to generate a segment address
+# The segment register used is based on the mnemonic name of the instruction.
+Seg_G_Operand
 
 # Models registers using the difference in the opcode base, from the opcode
 # value.
@@ -197,7 +194,13 @@ Xmm_Eo_Operand
 Xmm_G_Operand
 
 # A 64-bit Xmm value, as defined by Xmm_G_operand.
-Xmm_Go_Operand,
+Xmm_Go_Operand
+
+# Control register specified by the ModRm reg field.
+C_Operand
+
+# Debug register specified by the ModRm reg field.
+D_Operand
 
 # Note: The instruction decoder may count on the fact that the O_Operand
 # values are contiguous, in the order specified.
@@ -299,6 +302,40 @@ RegSS
 RegES
 RegFS
 RegGS
+
+RegCR0             # Control registers in 32-bit and 64-bit modes.
+RegCR1
+RegCR2
+RegCR3
+RegCR4
+RegCR5
+RegCR6
+RegCR7
+RegCR8
+RegCR9
+RegCR10
+RegCR11
+RegCR12
+RegCR13
+RegCR14
+RegCR15
+
+RegDR0             # Debug registers in 32-bit and 64-bit modes.
+RegDR1
+RegDR2
+RegDR3
+RegDR4
+RegDR5
+RegDR6
+RegDR7
+RegDR8
+RegDR9
+RegDR10
+RegDR11
+RegDR12
+RegDR13
+RegDR14
+RegDR15
 
 RegEFLAGS          # Program status and control register in 32-bit mode.
 RegRFLAGS          # Program status and control register in 64-bit mode.

@@ -128,6 +128,31 @@ static NaClExp* NaClFatal(const char* message,
   return NULL;
 }
 
+/* Returns the segment register encoded in the corresponding
+ * mnemonic name of the corresponding instruction.
+ */
+static NaClOpKind NaClGetMnemonicSegmentRegister(NaClInstState* state) {
+  NaClInst* inst = NaClInstStateInst(state);
+  switch (inst->name) {
+    case InstLds:
+      return RegDS;
+    case InstLes:
+      return RegES;
+    case InstLfs:
+      return RegFS;
+    case InstLgs:
+      return RegGS;
+    case InstLss:
+      return RegSS;
+    default:
+      break;
+  }
+  NaClFatal("Unable to determine segment regsiter form instruction name",
+            state);
+  /* NOT REACHED */
+  return RegUnknown;
+}
+
 /* Append the given constant onto the given vector of expression
  * nodes. Returns the appended expression node.
  */
@@ -412,6 +437,56 @@ static const NaClOpKind NaClRegTableXmm[NACL_REG_TABLE_SIZE] = {
 #endif
 };
 
+/* Defines the available control registers, for the given subarchitecture.
+ * Note: The order is important, and is based on the indexing values
+ * used in the ModRm byte (and the REX prefix if appropriate).
+ */
+static const NaClOpKind NaClRegTableC[NACL_REG_TABLE_SIZE] = {
+  RegCR0,
+  RegCR1,
+  RegCR2,
+  RegCR3,
+  RegCR4,
+  RegCR5,
+  RegCR6,
+  RegCR7,
+#if NACL_TARGET_SUBARCH == 64
+  RegCR8,
+  RegCR9,
+  RegCR10,
+  RegCR11,
+  RegCR12,
+  RegCR13,
+  RegCR14,
+  RegCR15,
+#endif
+};
+
+/* Defines the available debug registers, for the given subarchitecture.
+ * Note: The order is important, and is based on the indexing values
+ * used in the ModRm byte (and the REX prefix if appropriate).
+ */
+static const NaClOpKind NaClRegTableD[NACL_REG_TABLE_SIZE] = {
+  RegDR0,
+  RegDR1,
+  RegDR2,
+  RegDR3,
+  RegDR4,
+  RegDR5,
+  RegDR6,
+  RegDR7,
+#if NACL_TARGET_SUBARCH == 64
+  RegDR8,
+  RegDR9,
+  RegDR10,
+  RegDR11,
+  RegDR12,
+  RegDR13,
+  RegDR14,
+  RegDR15,
+#endif
+};
+
 /* Define a type corresponding to the arrays NaClRegTable8,
  * NaClRegTable16, NaClRegTable32, and NaClRegTable64.
  */
@@ -573,7 +648,9 @@ static NaClRegTableGroup* const NaClRegTable[] = {
   &NaClRegTable32,
   &NaClRegTable64,
   &NaClRegTableMmx,
-  &NaClRegTableXmm
+  &NaClRegTableXmm,
+  &NaClRegTableC,
+  &NaClRegTableD,
 };
 
 /* Define possible register categories. */
@@ -587,11 +664,14 @@ typedef enum NaClRegKind {
   RegSize64,
   RegMMX,
   RegXMM,
+  RegC,
+  RegD,
   /* Note: sizes below this point don't define general
    * purpose registers, and hence, don't have a lookup
    * value in the register tables.
    */
   RegSize128,
+  RegSizeZ,
   RegUndefined,   /* Always returns RegUnknown. */
 } NaClRegKind;
 
@@ -602,7 +682,10 @@ static const char* const g_NaClRegKindName[] = {
   "RegSize64",
   "RegMMX",
   "RegXMM",
+  "RegC",
+  "RegD",
   "RegSize128",
+  "RegSizeZ",
   "RegUndefined"
 };
 
@@ -615,6 +698,8 @@ typedef enum NaClModRmRegKind {
   ModRmGeneral,
   ModRmMmx,
   ModRmXmm,
+  ModRmCreg,
+  ModRmDreg,
   /* Don't allow top level registers in Effective address. */
   ModRmNoTopLevelRegisters
 } NaClModRmRegKind;
@@ -623,6 +708,8 @@ static const char* const g_NaClModRmRegKindName[] = {
   "ModRmGeneral",
   "ModRmMmx",
   "ModRmXmm",
+  "ModRmCreg",
+  "ModRmDreg",
   "ModRmNoTopLevelRegisters"
 };
 
@@ -675,6 +762,8 @@ static NaClRegKind NaClGetOpKindRegKind(NaClOpKind kind) {
     case Xmm_E_Operand:
     case Xmm_G_Operand:
       return RegSize128;
+    case Seg_G_Operand:
+      return RegSizeZ;
     default:
       return RegUndefined;
   }
@@ -822,6 +911,12 @@ static NaClRegKind NaClExtractOpRegKind(NaClInstState* state,
     case RegSize32:
     case RegSize64:
       return reg_kind;
+    case RegSizeZ:
+      if (state->operand_size == 2) {
+        return RegSize16;
+      } else {
+        return RegSize32;
+      }
     default:
       /* Size not explicitly defined, pick up from operand size. */
       if (state->inst->flags & NACL_IFLAG(OperandSize_b)) {
@@ -876,6 +971,12 @@ static NaClExp* NaClAppendOperandReg(
       break;
     case ModRmXmm:
       reg_kind = RegXMM;
+      break;
+    case ModRmCreg:
+      reg_kind = RegC;
+      break;
+    case ModRmDreg:
+      reg_kind = RegD;
       break;
     case ModRmNoTopLevelRegisters:
       reg_kind = RegUndefined;
@@ -1619,13 +1720,10 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
     case Gdq_Operand:
       return NaClAppendOperandReg(state, operand, NaClGetGenRegRegister(state),
                                   ModRmGeneral);
-
-    case ES_G_Operand:
-      return NaClAppendSegmentOpReg(state, operand, RegES,
-                                    NaClGetGenRegRegister(state), ModRmGeneral);
-    case DS_G_Operand:
-      return NaClAppendSegmentOpReg(state, operand, RegDS,
-                                    NaClGetGenRegRegister(state), ModRmGeneral);
+    case Seg_G_Operand:
+      return NaClAppendSegmentOpReg(
+          state, operand, NaClGetMnemonicSegmentRegister(state),
+          NaClGetGenRegRegister(state), ModRmGeneral);
     case G_OpcodeBase:
       return NaClAppendOpcodeBaseReg(state, operand);
     case I_Operand:
@@ -1657,6 +1755,10 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
     case Xmm_E_Operand:
     case Xmm_Eo_Operand:
       return NaClAppendEffectiveAddress(state, operand, ModRmXmm);
+    case C_Operand:
+      return NaClAppendEffectiveAddress(state, operand, ModRmCreg);
+    case D_Operand:
+      return NaClAppendEffectiveAddress(state, operand, ModRmDreg);
     case O_Operand:
     case Ob_Operand:
     case Ow_Operand:
@@ -1724,6 +1826,38 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
     case RegES:
     case RegFS:
     case RegGS:
+    case RegCR0:
+    case RegCR1:
+    case RegCR2:
+    case RegCR3:
+    case RegCR4:
+    case RegCR5:
+    case RegCR6:
+    case RegCR7:
+    case RegCR8:
+    case RegCR9:
+    case RegCR10:
+    case RegCR11:
+    case RegCR12:
+    case RegCR13:
+    case RegCR14:
+    case RegCR15:
+    case RegDR0:
+    case RegDR1:
+    case RegDR2:
+    case RegDR3:
+    case RegDR4:
+    case RegDR5:
+    case RegDR6:
+    case RegDR7:
+    case RegDR8:
+    case RegDR9:
+    case RegDR10:
+    case RegDR11:
+    case RegDR12:
+    case RegDR13:
+    case RegDR14:
+    case RegDR15:
     case RegEFLAGS:
     case RegRFLAGS:
     case RegEIP:

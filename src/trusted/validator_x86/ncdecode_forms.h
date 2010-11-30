@@ -53,8 +53,12 @@ typedef enum NaClInstCat {
   UnaryUpdate, /* Dest := f(Dest) for some f. */
   /* The following are for categorizing operations with 2 or more operands. */
   Move,       /* Dest := f(Source) for some f. */
+  O2Move,     /* Dest1, Dest2 = f(source) for some f. */
   Binary,     /* Dest := f(Dest, Source) for some f. */
   O2Binary,   /* Dest1,Dest2 = f(Dest2, Source) for some f. */
+  Nary,       /* Dest := f(dest, source1, ..., sourcen) for some f. */
+  O1Nary,     /* Dest := f(source1, ..., sourcen) for some f. */
+  O3Nary,     /* Dest1,Dest2,Dest3 = f(source1, ..., sourcen) for some f. */
   Compare,    /* Sets flag using f(Dest, Source). The value of Dest is not
                * modified.
                */
@@ -74,10 +78,13 @@ typedef enum NaClInstCat {
   SysCall,    /* Implicit ip first argument that is updated, Implicit register
                * second argument that is set.
                */
+  SysJump,    /* First four arguments are set (eip, esp, cs, ss). Remaining
+               * (if any) are used.
+               */
   Return,     /* Implicit ip first argument that is set. Stack second
                * argument that is updated. Third argument, if given, is used.
                */
-  SysReturn,  /* Implicit ip first argument that is set. Implicit register
+  SysRet,     /* Implicit ip first argument that is set. Implicit register
                * second argument that is used.
                */
   Jump,       /* Implicit first (IP) argument is updated to the
@@ -88,6 +95,7 @@ typedef enum NaClInstCat {
   Lea,        /* Address calculation, and hence, operand 2 is neither used
                * nor set.
                */
+  Cpuid,      /* Sets all, uses starting with third. */
   Other,      /* No implicit set/use implications. */
 } NaClInstCat;
 
@@ -100,9 +108,10 @@ const char* NaClInstCatName(NaClInstCat cat);
 void NaClSetInstCat(NaClInstCat icat);
 
 /* Defines the maximum length of an opcode sequence descriptor (see
- * comment for typedef NaClOpcodeSeq).
+ * comment for typedef NaClOpcodeSeq). Note: two extra bytes have been added
+ * for SL(x) and END_OPCODE_SEQ entries.
  */
-#define NACL_OPCODE_SEQ_SIZE (NACL_MAX_OPCODE_BYTES + 1)
+#define NACL_OPCODE_SEQ_SIZE (NACL_MAX_OPCODE_BYTES + 2)
 
 /* Models an opcode sequence. Used by NaClInInstructionSet to describe
  * an instruction implemented by a sequence of bytes. Macro SL(N) is used
@@ -111,6 +120,7 @@ void NaClSetInstCat(NaClInstCat icat);
  * opcode sequence.
  *
  * 0..256         => Opcode byte.
+ * PR(N)          => prefix byte value N.
  * SL(N)          => /N
  * END_OPCODE_SEQ => Not part of prefix.
  */
@@ -120,7 +130,10 @@ typedef int16_t NaClOpcodeSeq[NACL_OPCODE_SEQ_SIZE];
 #define END_OPCODE_SEQ 512
 
 /* Define value in modrm (i.e. /n in opcode sequence). */
-#define SL(n) (-(n))
+#define SL(n) (-((n) + 1))
+
+/* Define prefix value for opcode sequence. */
+#define PR(n) SL(n) - END_OPCODE_SEQ
 
 /* Model an instruction by its mnemonic and opcode sequence. */
 typedef struct NaClNameOpcodeSeq {
@@ -588,6 +601,8 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *   r8 - The 8 registers rAX, rCX, rDX, rBX, rSP, rBP, rSI, rDI, and the
  *        optional registers r8-r15 if REX.b is set, based on the register value
  *        embedded in the opcode.
+ *   SG - segment address defined by a G expression and the segment register in
+ *        the corresponding mnemonic (lds, les, lfs, lgs, lss).
  *   rAX - The register AX, EAX, or RAX, depending on SIZE.
  *   rBP - The register BP, EBP, or RBP, depending on SIZE.
  *   rBX - The register BX, EBX, or RBX, depending on SIZE.
@@ -602,6 +617,11 @@ DECLARE_BINARY_OINST(Vdq, I__);
  * value allows a single defining call to be used (within a for loop),
  * rather than writing eight separate rules (one for each possible register
  * value).
+ *
+ * Note: SG is also not in the manual cited above. It has been added to deal
+ * with the instructions lds, les, lfs, lgs, and lss, which generate a
+ * segment address from a General puurpose register specified in the ModRm reg
+ * field.
  *
  * Valid SIZEs are:
  *   a - Two 16-bit or 32-bit memory operands, depending on the effective
@@ -619,7 +639,7 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *        single).
  *   q - A quadword, irrespective of the effective operand size.
  *   s - A 6-byte or 10-byte pseudo-descriptor.
- *   sd - A scalar dobule-precision floating point operand (scalar double).
+ *   sd - A scalar double-precision floating point operand (scalar double).
  *   si - A scalar doubleword (32-bit) integer operand (scalar integer).
  *   ss - A scalar single-precision floating-point operand (scalar single).
  *   w - A word, irrespective of the effective operand size.
@@ -642,6 +662,15 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *
  * In addition, this code adds the following special print forms:
  *    One - The literal constant 1.
+ *
+ * Note: The AMD manual uses some slash notations (such as d/q) which isn't
+ * explicitly defined. In general, we allow such notation as specified in
+ * the AMD manual. Depending on the use, it can mean any of the following:
+ *   (1) In 32-bit mode, d is used. In 64-bit mode, q is used.
+ *   (2) only 32-bit or 64-bit values are allowed.
+ * In addition, when the nmemonic name changes based on which value is chosen
+ * in d/q, we use d/q/d to denote the 32-bit case, and d/q/q to denote the
+ * 64 bit case.
  *
  * Because some instructions may need to add flags and/or additional operands
  * outside the string context, instructions are modeled using a pair of calls

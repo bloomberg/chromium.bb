@@ -73,10 +73,12 @@ static int NaClExtractOpSize(NaClInstState* state) {
       return 8;
     }
   }
-  if (state->prefix_mask & kPrefixDATA16) {
+  if ((state->prefix_mask & kPrefixDATA16) &&
+      (NACL_EMPTY_IFLAGS ==
+       (state->inst->flags & NACL_IFLAG(SizeIgnoresData16)))) {
     return 2;
   }
-  if (NACL_TARGET_SUBARCH == 64 &&
+  if ((NACL_TARGET_SUBARCH == 64) &&
       (state->inst->flags & NACL_IFLAG(OperandSizeDefaultIs64))) {
     return 8;
   }
@@ -954,4 +956,15 @@ uint8_t NaClInstStateOperandSize(NaClInstState* state) {
 
 uint8_t NaClInstStateAddressSize(NaClInstState* state) {
   return state->address_size;
+}
+
+void NaClChangeOpcodesToXedsModel() {
+  /* Changes opcodes to match xed. That is change:
+   * 0f0f..1c: Pf2iw $Pq, $Qq => 0f0f..2c: Pf2iw $Pq, $Qq
+   * 0f0f..1d: Pf2id $Pq, $Qq => 0f0f..2d: Pf2id $Pq, $Qq
+   */
+  g_OpcodeTable[Prefix0F0F][0x2c] = g_OpcodeTable[Prefix0F0F][0x1c];
+  g_OpcodeTable[Prefix0F0F][0x1c] = NULL;
+  g_OpcodeTable[Prefix0F0F][0x2d] = g_OpcodeTable[Prefix0F0F][0x1d];
+  g_OpcodeTable[Prefix0F0F][0x1d] = NULL;
 }
