@@ -47,7 +47,16 @@ class TabApiResult : public common_api::CommonApiResult {
   // to the frame window that is contained in the given input_dict or the
   // grand parent of the tab window found in the input_dict and returned in
   // tab_window.
-  static bool IsTabFromSameOrUnspecifiedFrameWindow(
+  // @param input_dict The input dictionary where the window IDs can be fetched.
+  // @param saved_window_value The frame window value to compare to the one
+  //    deduced from the content of @p input_dict.
+  // @param tab_window Where to return the tab handle. Can be NULL.
+  // @param dispatcher A pointer to the dispatcher to be used.
+  //
+  // @rvalue S_OK if the tab is from the same frame.
+  // @rvalue S_FALSE if the tab is NOT from the same frame.
+  // @rvalue E_UNEXPECTED if something wrong happened.
+  static HRESULT IsTabFromSameOrUnspecifiedFrameWindow(
       const DictionaryValue& input_dict,
       const Value* saved_window_value,
       HWND* tab_window,
