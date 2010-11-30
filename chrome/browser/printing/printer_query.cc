@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,18 +7,15 @@
 #include "base/message_loop.h"
 #include "chrome/browser/printing/print_job_worker.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)  // 'this' : used in base member initializer list
-#endif
-
 namespace printing {
 
 PrinterQuery::PrinterQuery()
     : ui_message_loop_(MessageLoop::current()),
-      worker_(new PrintJobWorker(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(worker_(new PrintJobWorker(this))),
       is_print_dialog_box_shown_(false),
       cookie_(PrintSettings::NewCookie()),
       last_status_(PrintingContext::FAILED) {
+  DCHECK_EQ(ui_message_loop_->type(), MessageLoop::TYPE_UI);
 }
 
 PrinterQuery::~PrinterQuery() {

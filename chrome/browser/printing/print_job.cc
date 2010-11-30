@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,6 @@
 #include "chrome/common/notification_service.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)  // 'this' : used in base member initializer list
-#endif
 
 using base::TimeDelta;
 
@@ -28,6 +24,10 @@ PrintJob::PrintJob()
       is_print_dialog_box_shown_(false),
       is_canceling_(false) {
   DCHECK(ui_message_loop_);
+  // This is normally a UI message loop, but in unit tests, the message loop is
+  // of the 'default' type.
+  DCHECK(ui_message_loop_->type() == MessageLoop::TYPE_UI ||
+         ui_message_loop_->type() == MessageLoop::TYPE_DEFAULT);
   ui_message_loop_->AddDestructionObserver(this);
 }
 
