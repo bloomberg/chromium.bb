@@ -48,6 +48,7 @@
         'broker/window_api_module_unittest.cc',
         'broker/window_events_funnel_unittest.cc',
         'common/ceee_module_util_unittest.cc',
+        'common/ceee_util_unittest.cc',
         'common/chrome_frame_host_unittest.cc',
         'common/crash_reporter_unittest.cc',
         'common/extension_manifest_unittest.cc',

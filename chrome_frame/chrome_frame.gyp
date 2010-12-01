@@ -695,6 +695,8 @@
         'chrome_frame_strings',
         'chrome_frame_utils',
         'chrome_tab_idl',
+        '../ceee/ie/common/common.gyp:ie_common',
+        '../ceee/ie/common/common.gyp:ie_guids',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../build/temp_gyp/googleurl.gyp:googleurl',
