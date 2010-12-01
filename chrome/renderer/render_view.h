@@ -495,8 +495,6 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebFrame* frame,
       WebKit::WebApplicationCacheHostClient* client);
-  // TODO(jochen): remove after roll.
-  virtual WebKit::WebCookieJar* cookieJar();
   virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
   virtual void frameDetached(WebKit::WebFrame* frame);
   virtual void willClose(WebKit::WebFrame* frame);
