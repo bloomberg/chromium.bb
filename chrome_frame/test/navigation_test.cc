@@ -978,6 +978,14 @@ ACTION(VerifySeleniumCoreTestResults) {
 
 // Tests refreshing causes a page load.
 TEST_F(FullTabSeleniumTest, Core) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
+
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::HttpHeader());
   std::wstring url = GetTestUrl(L"core/TestRunner.html");
 
