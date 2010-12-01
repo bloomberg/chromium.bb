@@ -133,8 +133,6 @@ TEST(SSLConfigServiceWinTest, ObserverTest) {
   EXPECT_TRUE(rv);
 
   net::SSLConfig config;
-  net::SSLConfigServiceWin::SetSSL3Enabled(false);
-  config_service->GetSSLConfigAt(&config, now);
 
   // Add an observer.
   SSLConfigServiceWinObserver observer;
