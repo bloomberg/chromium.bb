@@ -90,6 +90,8 @@
     '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
     '-browser.BrowserTest.testFlashLoadsAfterKill',  # crbug.com/63039
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
+    # crbug.com/64664
+    '-databases.DatabasesTest.testReloadActiveTab',
     # crbug.com/64269
     '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
   ],
