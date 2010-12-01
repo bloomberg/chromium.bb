@@ -14,9 +14,10 @@
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_observer_mock.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/mock_notification_observer.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,7 +70,7 @@ class DBThreadObserverHelper :
     registrar_.RemoveAll();
   }
 
-  MockNotificationObserver& observer() {
+  NotificationObserverMock& observer() {
     return observer_;
   }
 
@@ -86,7 +87,7 @@ class DBThreadObserverHelper :
 
   WaitableEvent done_event_;
   NotificationRegistrar registrar_;
-  MockNotificationObserver observer_;
+  NotificationObserverMock observer_;
 };
 
 }  // anonymous namespace

@@ -13,9 +13,9 @@
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/policy_constants.h"
-#include "chrome/test/mock_notification_observer.h"
 #include "chrome/test/testing_device_token_fetcher.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -193,7 +193,7 @@ TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
 // When policy is successfully fetched from the device management server, it
 // should force a policy refresh.
 TEST_F(DeviceManagementPolicyProviderTest, FetchTriggersRefresh) {
-  MockNotificationObserver observer;
+  NotificationObserverMock observer;
   NotificationRegistrar registrar;
   registrar.Add(&observer,
                 NotificationType::POLICY_CHANGED,
