@@ -128,6 +128,11 @@ struct wl_shell {
 
 struct wl_input_device {
 	struct wl_object base;
+	struct wl_surface *pointer_focus;
+	struct wl_surface *keyboard_focus;
+	struct wl_array keys;
+	uint32_t pointer_focus_time;
+	uint32_t keyboard_focus_time;
 };
 
 struct wl_visual {
@@ -173,6 +178,19 @@ wl_client_get_display(struct wl_client *client);
 
 void
 wl_resource_destroy(struct wl_resource *resource, struct wl_client *client);
+
+void
+wl_input_device_set_pointer_focus(struct wl_input_device *device,
+				  struct wl_surface *surface,
+				  uint32_t time,
+				  int32_t x, int32_t y,
+				  int32_t sx, int32_t sy);
+
+void
+wl_input_device_set_keyboard_focus(struct wl_input_device *device,
+				   struct wl_surface *surface,
+				   uint32_t time);
+
 
 #ifdef  __cplusplus
 }

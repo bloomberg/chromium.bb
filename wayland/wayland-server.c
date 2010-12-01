@@ -301,6 +301,57 @@ wl_client_destroy(struct wl_client *client)
 	free(client);
 }
 
+WL_EXPORT void
+wl_input_device_set_pointer_focus(struct wl_input_device *device,
+				  struct wl_surface *surface,
+				  uint32_t time,
+				  int32_t x, int32_t y,
+				  int32_t sx, int32_t sy)
+{
+	if (device->pointer_focus == surface)
+		return;
+
+	if (device->pointer_focus &&
+	    (!surface || device->pointer_focus->client != surface->client))
+		wl_client_post_event(device->pointer_focus->client,
+				     &device->base,
+				     WL_INPUT_DEVICE_POINTER_FOCUS,
+				     time, NULL, 0, 0, 0, 0);
+	if (surface)
+		wl_client_post_event(surface->client,
+				     &device->base,
+				     WL_INPUT_DEVICE_POINTER_FOCUS,
+				     time, surface, x, y, sx, sy);
+
+	device->pointer_focus = surface;
+	device->pointer_focus_time = time;
+}
+
+WL_EXPORT void
+wl_input_device_set_keyboard_focus(struct wl_input_device *device,
+				   struct wl_surface *surface,
+				   uint32_t time)
+{
+	if (device->keyboard_focus == surface)
+		return;
+
+	if (device->keyboard_focus &&
+	    (!surface || device->keyboard_focus->client != surface->client))
+		wl_client_post_event(device->keyboard_focus->client,
+				     &device->base,
+				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
+				     time, NULL, &device->keys);
+
+	if (surface)
+		wl_client_post_event(surface->client,
+				     &device->base,
+				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
+				     time, surface, &device->keys);
+
+	device->keyboard_focus = surface;
+	device->keyboard_focus_time = time;
+}
+
 static void
 display_sync(struct wl_client *client,
 	       struct wl_display *display, uint32_t key)

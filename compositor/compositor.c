@@ -56,13 +56,6 @@ static const GOptionEntry option_entries[] = {
 };
 
 static void
-wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
-				    struct wlsc_surface *surface,
-				    uint32_t time,
-				    int32_t x, int32_t y,
-				    int32_t sx, int32_t sy);
-
-static void
 wlsc_matrix_init(struct wlsc_matrix *matrix)
 {
 	static const struct wlsc_matrix identity = {
@@ -492,16 +485,18 @@ wlsc_input_device_start_grab(struct wlsc_input_device *device,
 			     uint32_t time,
 			     enum wlsc_grab_type grab)
 {
-	device->grab = grab;
-	device->grab_surface = device->pointer_focus;
-	device->grab_dx = device->pointer_focus->x - device->grab_x;
-	device->grab_dy = device->pointer_focus->y - device->grab_y;
-	device->grab_width = device->pointer_focus->width;
-	device->grab_height = device->pointer_focus->height;
+	struct wlsc_surface *focus =
+		(struct wlsc_surface *) device->base.pointer_focus;
 
-	wlsc_input_device_set_pointer_focus(device,
-					    (struct wlsc_surface *) &wl_grab_surface,
-					    time, 0, 0, 0, 0);
+	device->grab = grab;
+	device->grab_surface = focus;
+	device->grab_dx = focus->x - device->grab_x;
+	device->grab_dy = focus->y - device->grab_y;
+	device->grab_width = focus->width;
+	device->grab_height = focus->height;
+
+	wl_input_device_set_pointer_focus(&device->base,
+					  &wl_grab_surface, time, 0, 0, 0, 0);
 }
 
 static void
@@ -513,7 +508,7 @@ shell_move(struct wl_client *client, struct wl_shell *shell,
 
 	if (wd->grab != WLSC_DEVICE_GRAB_MOTION ||
 	    wd->grab_time != time ||
-	    &wd->pointer_focus->base != surface)
+	    wd->base.pointer_focus != surface)
 		return;
 
 	wlsc_input_device_start_grab(wd, time, WLSC_DEVICE_GRAB_MOVE);
@@ -534,7 +529,7 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 
 	if (wd->grab != WLSC_DEVICE_GRAB_MOTION ||
 	    wd->grab_time != time ||
-	    &wd->pointer_focus->base != surface)
+	    wd->base.pointer_focus != surface)
 		return;
 
 	switch (edges) {
@@ -688,61 +683,6 @@ wlsc_surface_transform(struct wlsc_surface *surface,
 	*sy = v.f[1] * surface->height;
 }
 
-static void
-wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
-				     struct wlsc_surface *surface,
-				     uint32_t time)
-{
-	if (device->keyboard_focus == surface)
-		return;
-
-	if (device->keyboard_focus &&
-	    (!surface || device->keyboard_focus->base.client != surface->base.client))
-		wl_client_post_event(device->keyboard_focus->base.client,
-				     &device->base.base,
-				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
-				     time, NULL, &device->keys);
-
-	if (surface)
-		wl_client_post_event(surface->base.client,
-				     &device->base.base,
-				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
-				     time, &surface->base, &device->keys);
-
-	device->keyboard_focus = surface;
-}
-
-static void
-wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
-				    struct wlsc_surface *surface,
-				    uint32_t time,
-				    int32_t x, int32_t y,
-				    int32_t sx, int32_t sy)
-{
-	if (device->pointer_focus == surface)
-		return;
-
-	if (device->pointer_focus &&
-	    (!surface || device->pointer_focus->base.client != surface->base.client))
-		wl_client_post_event(device->pointer_focus->base.client,
-				     &device->base.base,
-				     WL_INPUT_DEVICE_POINTER_FOCUS,
-				     time, NULL, 0, 0, 0, 0);
-	if (surface)
-		wl_client_post_event(surface->base.client,
-				     &device->base.base,
-				     WL_INPUT_DEVICE_POINTER_FOCUS,
-				     time, &surface->base,
-				     x, y, sx, sy);
-
-	if (!surface)
-		wlsc_input_device_set_pointer_image(device,
-						    WLSC_POINTER_LEFT_PTR);
-
-	device->pointer_focus = surface;
-	device->pointer_focus_time = time;
-}
-
 static struct wlsc_surface *
 pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 {
@@ -784,8 +724,8 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	switch (device->grab) {
 	case WLSC_DEVICE_GRAB_NONE:
 		es = pick_surface(device, &sx, &sy);
-		wlsc_input_device_set_pointer_focus(device, es,
-						    time, x, y, sx, sy);
+		wl_input_device_set_pointer_focus(&device->base, &es->base,
+						  time, x, y, sx, sy);
 		if (es)
 			wl_client_post_event(es->base.client,
 					     &device->base.base,
@@ -794,7 +734,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 		break;
 
 	case WLSC_DEVICE_GRAB_MOTION:
-		es = device->pointer_focus;
+		es = (struct wlsc_surface *) device->base.pointer_focus;
 		wlsc_surface_transform(es, x, y, &sx, &sy);
 		wl_client_post_event(es->base.client,
 				     &device->base.base,
@@ -898,7 +838,7 @@ wlsc_input_device_end_grab(struct wlsc_input_device *device, uint32_t time)
 
 	device->grab = WLSC_DEVICE_GRAB_NONE;
 	es = pick_surface(device, &sx, &sy);
-	wlsc_input_device_set_pointer_focus(device, es, time,
+	wl_input_device_set_pointer_focus(&device->base, &es->base, time,
 					    device->x, device->y, sx, sy);
 }
 
@@ -909,7 +849,7 @@ notify_button(struct wlsc_input_device *device,
 	struct wlsc_surface *surface;
 	struct wlsc_compositor *compositor = device->ec;
 
-	surface = device->pointer_focus;
+	surface = (struct wlsc_surface *) device->base.pointer_focus;
 	if (surface) {
 		if (state && device->grab == WLSC_DEVICE_GRAB_NONE) {
 			wlsc_surface_raise(surface);
@@ -918,8 +858,9 @@ notify_button(struct wlsc_input_device *device,
 			device->grab_time = time;
 			device->grab_x = device->x;
 			device->grab_y = device->y;
-			wlsc_input_device_set_keyboard_focus(device,
-							     surface, time);
+			wl_input_device_set_keyboard_focus(&device->base,
+							   &surface->base,
+							   time);
 		}
 
 		if (state && button == BTN_LEFT &&
@@ -990,19 +931,19 @@ notify_key(struct wlsc_input_device *device,
 	else
 		device->modifier_state &= ~modifier;
 
-	end = device->keys.data + device->keys.size;
-	for (k = device->keys.data; k < end; k++) {
+	end = device->base.keys.data + device->base.keys.size;
+	for (k = device->base.keys.data; k < end; k++) {
 		if (*k == key)
 			*k = *--end;
 	}
-	device->keys.size = (void *) end - device->keys.data;
+	device->base.keys.size = (void *) end - device->base.keys.data;
 	if (state) {
-		k = wl_array_add(&device->keys, sizeof *k);
+		k = wl_array_add(&device->base.keys, sizeof *k);
 		*k = key;
 	}
 
-	if (device->keyboard_focus != NULL)
-		wl_client_post_event(device->keyboard_focus->base.client,
+	if (device->base.keyboard_focus != NULL)
+		wl_client_post_event(device->base.keyboard_focus->client,
 				     &device->base.base,
 				     WL_INPUT_DEVICE_KEY, time, key, state);
 }
@@ -1016,13 +957,13 @@ input_device_attach(struct wl_client *client,
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) device_base;
 
-	if (time < device->pointer_focus_time)
+	if (time < device->base.pointer_focus_time)
 		return;
-	if (device->pointer_focus == NULL)
+	if (device->base.pointer_focus == NULL)
 		return;
 
-	if (device->pointer_focus->base.client != client &&
-	    !(&device->pointer_focus->base == &wl_grab_surface &&
+	if (device->base.pointer_focus->client != client &&
+	    !(device->base.pointer_focus == &wl_grab_surface &&
 	      device->grab_surface->base.client == client))
 		return;
 
@@ -1047,13 +988,13 @@ handle_surface_destroy(struct wlsc_listener *listener,
 		container_of(listener, struct wlsc_input_device, listener);
 	uint32_t time = get_time();
 
-	if (device->keyboard_focus == surface)
-		wlsc_input_device_set_keyboard_focus(device, NULL, time);
-	if (device->pointer_focus == surface)
-		wlsc_input_device_set_pointer_focus(device, NULL, time,
+	if (device->base.keyboard_focus == &surface->base)
+		wl_input_device_set_keyboard_focus(&device->base, NULL, time);
+	if (device->base.pointer_focus == &surface->base)
+		wl_input_device_set_pointer_focus(&device->base, NULL, time,
 						    0, 0, 0, 0);
-	if (device->pointer_focus == surface ||
-	    (&device->pointer_focus->base == &wl_grab_surface &&
+	if (device->base.pointer_focus == &surface->base ||
+	    (device->base.pointer_focus == &wl_grab_surface &&
 	     device->grab_surface == surface))
 		wlsc_input_device_end_grab(device, time);
 }
@@ -1179,7 +1120,7 @@ drag_activate(struct wl_client *client,
 	int32_t sx, sy;
 
 	if (device->grab != WLSC_DEVICE_GRAB_MOTION ||
-	    &device->pointer_focus->base != surface ||
+	    device->base.pointer_focus != surface ||
 	    device->grab_time != time)
 		return;
 
