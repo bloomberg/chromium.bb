@@ -21,6 +21,7 @@
 #include "chrome/installer/util/version.h"
 
 class WorkItemList;
+class BrowserDistribution;
 
 namespace base {
 namespace win {
@@ -39,23 +40,19 @@ class InstallUtil {
   // Reads the uninstall command for Chromium from registry and returns it.
   // If system_install is true the command is read from HKLM, otherwise
   // from HKCU.
-  static std::wstring GetChromeUninstallCmd(bool system_install);
+  static std::wstring GetChromeUninstallCmd(bool system_install,
+                                            BrowserDistribution* dist);
+
   // Find the version of Chrome installed on the system by checking the
   // Google Update registry key. Returns the version or NULL if no version is
   // found.
   // system_install: if true, looks for version number under the HKLM root,
   //                 otherwise looks under the HKCU.
-  static installer::Version* GetChromeVersion(bool system_install);
+  static installer::Version* GetChromeVersion(BrowserDistribution* dist,
+                                              bool system_install);
 
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();
-
-  // This function sets installer error information in registry so that Google
-  // Update can read it and display to the user.
-  static void WriteInstallerResult(bool system_install,
-                                   installer_util::InstallStatus status,
-                                   int string_resource_id,
-                                   const std::wstring* const launch_cmd);
 
   // Returns true if this installation path is per user, otherwise returns
   // false (per machine install, meaning: the exe_path contains path to
@@ -73,21 +70,6 @@ class InstallUtil {
   // is running Chrome process from the Chrome SxS installation (as indicated
   // by either --chrome-sxs or the executable path).
   static bool IsChromeSxSProcess();
-
-  // Returns true if this setup process is running as an install managed by an
-  // MSI wrapper. There are three things that are checked:
-  // 1) the presence of --msi on the command line
-  // 2) the presence of "msi": true in the master preferences file
-  // 3) the presence of a DWORD value in the ClientState key called msi with
-  //    value 1
-  // NOTE: This method is NOT thread safe.
-  static bool IsMSIProcess(bool system_level);
-
-
-  // Sets the boolean MSI marker for this installation if set is true or clears
-  // it otherwise. The MSI marker is stored in the registry under the
-  // ClientState key.
-  static bool SetMSIMarker(bool system_level, bool set);
 
   // Adds all DLLs in install_path whose names are given by dll_names to a
   // work item list containing registration or unregistration actions.

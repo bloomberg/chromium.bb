@@ -224,7 +224,7 @@ bool FirstRun::CreateChromeDesktopShortcut() {
   BrowserDistribution *dist = BrowserDistribution::GetDistribution();
   if (!dist)
     return false;
-  return ShellUtil::CreateChromeDesktopShortcut(chrome_exe.value(),
+  return ShellUtil::CreateChromeDesktopShortcut(dist, chrome_exe.value(),
       dist->GetAppDescription(), ShellUtil::CURRENT_USER,
       false, true);  // create if doesn't exist.
 }
@@ -233,7 +233,8 @@ bool FirstRun::CreateChromeQuickLaunchShortcut() {
   FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
     return false;
-  return ShellUtil::CreateChromeQuickLaunchShortcut(chrome_exe.value(),
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  return ShellUtil::CreateChromeQuickLaunchShortcut(dist, chrome_exe.value(),
       ShellUtil::CURRENT_USER,  // create only for current user.
       true);  // create if doesn't exist.
 }

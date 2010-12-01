@@ -86,10 +86,13 @@ class DetectUpgradeTask : public Task {
     // Get the version of the currently *installed* instance of Chrome,
     // which might be newer than the *running* instance if we have been
     // upgraded in the background.
-    installed_version.reset(InstallUtil::GetChromeVersion(false));
+    // TODO(tommi): Check if using the default distribution is always the right
+    // thing to do.
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    installed_version.reset(InstallUtil::GetChromeVersion(dist, false));
     if (!installed_version.get()) {
       // User level Chrome is not installed, check system level.
-      installed_version.reset(InstallUtil::GetChromeVersion(true));
+      installed_version.reset(InstallUtil::GetChromeVersion(dist, true));
     }
 #elif defined(OS_MACOSX)
     installed_version.reset(

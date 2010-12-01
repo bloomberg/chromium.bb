@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "gfx/canvas.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -739,8 +740,11 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       // Google Update reported that Chrome is up-to-date. Now make sure that we
       // are running the latest version and if not, notify the user by falling
       // into the next case of UPGRADE_SUCCESSFUL.
+      // TODO(tommi): Check if using the default distribution is always the
+      // right thing to do.
+      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       scoped_ptr<installer::Version> installed_version(
-          InstallUtil::GetChromeVersion(false));
+          InstallUtil::GetChromeVersion(dist, false));
       scoped_ptr<installer::Version> running_version(
           installer::Version::GetVersionFromString(current_version_));
       if (!installed_version.get() ||

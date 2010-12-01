@@ -13,39 +13,37 @@
 #include <shlobj.h>
 
 #include "base/command_line.h"
+#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
 
-namespace installer_setup {
+namespace installer {
 // This function removes all Chrome registration related keys. It returns true
 // if successful, otherwise false. The error code is set in |exit_code|.
 // |root| is the registry root (HKLM|HKCU) and |browser_entry_suffix| is the
 // suffix for default browser entry name in the registry (optional).
-bool DeleteChromeRegistrationKeys(HKEY root,
+bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
                                   const std::wstring& browser_entry_suffix,
                                   installer_util::InstallStatus& exit_code);
 
 // Removes any legacy registry keys from earlier versions of Chrome that are no
 // longer needed. This is used during autoupdate since we don't do full
 // uninstalls/reinstalls to update.
-void RemoveLegacyRegistryKeys();
+void RemoveLegacyRegistryKeys(BrowserDistribution* dist);
 
 // This function uninstalls Chrome.
 //
-// exe_path: Path to the executable (setup.exe) as it will be copied
+// setup_path: Path to the executable (setup.exe) as it will be copied
 //           to temp folder before deleting Chrome folder.
-// system_uninstall: if true, the function uninstalls Chrome installed system
-//                   wise. otherwise, it uninstalls Chrome installed for the
-//                   current user.
+// dist: Represents the distribution to be uninstalled.
 // remove_all: Remove all shared files, registry entries as well.
 // force_uninstall: Uninstall without prompting for user confirmation or
 //                  any checks for Chrome running.
 // cmd_line: CommandLine that contains information about the command that
 //           was used to launch current uninstaller.
 installer_util::InstallStatus UninstallChrome(
-    const std::wstring& exe_path, bool system_uninstall,
-    bool remove_all, bool force_uninstall,
-    const CommandLine& cmd_line);
+    const FilePath& setup_path, const Product& dist, bool remove_all,
+    bool force_uninstall, const CommandLine& cmd_line);
 
 }  // namespace installer_setup
 

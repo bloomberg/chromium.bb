@@ -57,27 +57,27 @@ TEST_F(SetupUtilTest, ApplyDiffPatchTest) {
 }
 
 // Test that we are parsing Chrome version correctly.
-TEST_F(SetupUtilTest, GetVersionFromDirTest) {
+TEST_F(SetupUtilTest, GetVersionFromArchiveDirTest) {
   // Create a version dir
   FilePath chrome_dir = test_dir_.path().AppendASCII("1.0.0.0");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
   scoped_ptr<installer::Version> version(
-      setup_util::GetVersionFromDir(test_dir_.path()));
+      setup_util::GetVersionFromArchiveDir(test_dir_.path()));
   ASSERT_TRUE(version->GetString() == L"1.0.0.0");
 
   file_util::Delete(chrome_dir, true);
   ASSERT_FALSE(file_util::PathExists(chrome_dir));
-  ASSERT_TRUE(setup_util::GetVersionFromDir(test_dir_.path()) == NULL);
+  ASSERT_TRUE(setup_util::GetVersionFromArchiveDir(test_dir_.path()) == NULL);
 
   chrome_dir = test_dir_.path().AppendASCII("ABC");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
-  ASSERT_TRUE(setup_util::GetVersionFromDir(test_dir_.path()) == NULL);
+  ASSERT_TRUE(setup_util::GetVersionFromArchiveDir(test_dir_.path()) == NULL);
 
   chrome_dir = test_dir_.path().AppendASCII("2.3.4.5");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
-  version.reset(setup_util::GetVersionFromDir(test_dir_.path()));
+  version.reset(setup_util::GetVersionFromArchiveDir(test_dir_.path()));
   ASSERT_TRUE(version->GetString() == L"2.3.4.5");
 }

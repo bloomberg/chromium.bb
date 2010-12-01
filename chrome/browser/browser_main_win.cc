@@ -29,6 +29,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -99,9 +100,12 @@ int DoUninstallTasks(bool chrome_still_running) {
       VLOG(1) << "Failed to delete sentinel file.";
     // We want to remove user level shortcuts and we only care about the ones
     // created by us and not by the installer so |alternate| is false.
-    if (!ShellUtil::RemoveChromeDesktopShortcut(ShellUtil::CURRENT_USER, false))
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    if (!ShellUtil::RemoveChromeDesktopShortcut(dist, ShellUtil::CURRENT_USER,
+                                                false))
       VLOG(1) << "Failed to delete desktop shortcut.";
-    if (!ShellUtil::RemoveChromeQuickLaunchShortcut(ShellUtil::CURRENT_USER))
+    if (!ShellUtil::RemoveChromeQuickLaunchShortcut(dist,
+                                                    ShellUtil::CURRENT_USER))
       VLOG(1) << "Failed to delete quick launch shortcut.";
   }
   return ret;
@@ -176,22 +180,23 @@ int HandleIconsCommands(const CommandLine &parsed_command_line) {
 // allow the user level Chrome to run. So we notify the user and uninstall
 // user level Chrome.
 bool CheckMachineLevelInstall() {
-  scoped_ptr<installer::Version> version(InstallUtil::GetChromeVersion(true));
+  // TODO(tommi): Check if using the default distribution is always the right
+  // thing to do.
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  scoped_ptr<installer::Version> version(InstallUtil::GetChromeVersion(dist,
+                                                                       true));
   if (version.get()) {
     FilePath exe_path;
     PathService::Get(base::DIR_EXE, &exe_path);
     std::wstring exe = exe_path.value();
-    std::transform(exe.begin(), exe.end(), exe.begin(), tolower);
-    std::wstring user_exe_path = installer::GetChromeInstallPath(false);
-    std::transform(user_exe_path.begin(), user_exe_path.end(),
-                   user_exe_path.begin(), tolower);
-    if (exe == user_exe_path) {
+    FilePath user_exe_path(installer::GetChromeInstallPath(false, dist));
+    if (FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {
       const std::wstring text =
           l10n_util::GetString(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
       const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
       const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
       win_util::MessageBox(NULL, text, caption, flags);
-      FilePath uninstall_path(InstallUtil::GetChromeUninstallCmd(false));
+      FilePath uninstall_path(InstallUtil::GetChromeUninstallCmd(false, dist));
       CommandLine uninstall_cmd(uninstall_path);
       if (!uninstall_cmd.GetProgram().value().empty()) {
         uninstall_cmd.AppendSwitch(installer_util::switches::kForceUninstall);

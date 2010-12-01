@@ -9,23 +9,38 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
 
-namespace base {
-namespace win {
-class RegKey;
-}  // namespace win
-}  // namespace base
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+namespace installer {
+class Product;
+}
 
 class BrowserDistribution {
  public:
   virtual ~BrowserDistribution() {}
 
+  typedef enum DistributionType {
+    CHROME_BROWSER,
+    CHROME_FRAME,
+    CEEE,
+  };
+
   static BrowserDistribution* GetDistribution();
 
+  static BrowserDistribution* GetSpecificDistribution(DistributionType type);
+
+  DistributionType GetType() const { return type_; }
+
+  static int GetInstallReturnCode(installer_util::InstallStatus install_status);
+
   virtual void DoPostUninstallOperations(const installer::Version& version,
-                                         const std::wstring& local_data_path,
+                                         const FilePath& local_data_path,
                                          const std::wstring& distribution_data);
 
   virtual std::wstring GetAppGuid();
@@ -46,9 +61,6 @@ class BrowserDistribution {
 
   virtual std::wstring GetLongAppDescription();
 
-  virtual int GetInstallReturnCode(
-      installer_util::InstallStatus install_status);
-
   virtual std::string GetSafeBrowsingName();
 
   virtual std::wstring GetStateKey();
@@ -57,7 +69,9 @@ class BrowserDistribution {
 
   virtual std::wstring GetStatsServerURL();
 
-  virtual std::wstring GetDistributionData(base::win::RegKey* key);
+#if defined(OS_WIN)
+  virtual std::wstring GetDistributionData(HKEY root_key);
+#endif
 
   virtual std::wstring GetUninstallLinkName();
 
@@ -80,17 +94,23 @@ class BrowserDistribution {
   // experiment. This function determines if the user qualifies and if so it
   // sets the wheels in motion or in simple cases does the experiment itself.
   virtual void LaunchUserExperiment(installer_util::InstallStatus status,
-                                    const installer::Version& version,
-                                    bool system_install);
+      const installer::Version& version,
+      const installer::Product& installation,
+      bool system_level);
 
   // The user has qualified for the inactive user toast experiment and this
   // function just performs it.
-  virtual void InactiveUserToastExperiment(int flavor, bool system_install);
+  virtual void InactiveUserToastExperiment(int flavor,
+      const installer::Product& installation);
 
  protected:
-  BrowserDistribution() {}
+  BrowserDistribution() : type_(CHROME_BROWSER) {}
 
-  static BrowserDistribution* GetDistribution(bool chrome_frame);
+  template<class DistributionClass>
+  static BrowserDistribution* GetOrCreateBrowserDistribution(
+      BrowserDistribution** dist);
+
+  DistributionType type_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserDistribution);

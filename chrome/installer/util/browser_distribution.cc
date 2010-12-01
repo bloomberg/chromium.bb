@@ -9,10 +9,12 @@
 
 #include "chrome/installer/util/browser_distribution.h"
 
+#include "base/atomicops.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/lock.h"
+#include "base/logging.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -25,6 +27,11 @@
 #include "installer_util_strings.h"
 
 namespace {
+// The BrowserDistribution objects are never freed.
+BrowserDistribution* g_browser_distribution = NULL;
+BrowserDistribution* g_chrome_frame_distribution = NULL;
+BrowserDistribution* g_ceee_distribution = NULL;
+
 // Returns true if currently running in npchrome_frame.dll
 bool IsChromeFrameModule() {
   FilePath module_path;
@@ -41,40 +48,69 @@ bool IsCeeeBrokerProcess() {
                                           installer_util::kCeeeBrokerExe);
 }
 
-}  // end namespace
-
-BrowserDistribution* BrowserDistribution::GetDistribution() {
-  return GetDistribution(InstallUtil::IsChromeFrameProcess() ||
-                         IsChromeFrameModule() ||
-                         IsCeeeBrokerProcess());
+BrowserDistribution::DistributionType GetCurrentDistributionType() {
+  static BrowserDistribution::DistributionType type =
+      (InstallUtil::IsChromeFrameProcess() || IsChromeFrameModule()) ?
+          BrowserDistribution::CHROME_FRAME :
+          (IsCeeeBrokerProcess() ? BrowserDistribution::CEEE :
+                                   BrowserDistribution::CHROME_BROWSER);
+  return type;
 }
 
-BrowserDistribution* BrowserDistribution::GetDistribution(bool chrome_frame) {
-  static BrowserDistribution* dist = NULL;
-  static Lock dist_lock;
-  AutoLock lock(dist_lock);
-  if (dist == NULL) {
-    if (chrome_frame) {
-      // TODO(robertshield): Make one of these for Google Chrome vs
-      // non Google Chrome builds?
-      dist = new ChromeFrameDistribution();
-    } else {
+}  // end namespace
+
+template<class DistributionClass>
+BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
+    BrowserDistribution** dist) {
+  if (!*dist) {
+    DistributionClass* temp = new DistributionClass();
+    if (base::subtle::NoBarrier_CompareAndSwap(
+            reinterpret_cast<base::subtle::AtomicWord*>(dist), NULL,
+            reinterpret_cast<base::subtle::AtomicWord>(temp)) != NULL)
+      delete temp;
+  }
+
+  return *dist;
+}
+
+BrowserDistribution* BrowserDistribution::GetDistribution() {
+  return GetSpecificDistribution(GetCurrentDistributionType());
+}
+
+// static
+BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
+    BrowserDistribution::DistributionType type) {
+  BrowserDistribution* dist = NULL;
+
+  // TODO(tommi): initialize g_ceee_distribution when appropriate.  Right now
+  // we treat CEEE as Chrome Frame.
+
+  if (type == CHROME_FRAME || type == CEEE) {
+    // TODO(robertshield): Make one of these for Google Chrome vs
+    // non Google Chrome builds?
+    dist = GetOrCreateBrowserDistribution<ChromeFrameDistribution>(
+        &g_chrome_frame_distribution);
+  } else {
+    DCHECK_EQ(CHROME_BROWSER, type);
 #if defined(GOOGLE_CHROME_BUILD)
       if (InstallUtil::IsChromeSxSProcess()) {
-        dist = new GoogleChromeSxSDistribution();
+        dist = GetOrCreateBrowserDistribution<GoogleChromeSxSDistribution>(
+            &g_browser_distribution);
       } else {
-        dist = new GoogleChromeDistribution();
+        dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
+            &g_browser_distribution);
       }
 #else
-      dist = new BrowserDistribution();
+      dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
+          &g_browser_distribution);
 #endif
-    }
   }
+
   return dist;
 }
 
 void BrowserDistribution::DoPostUninstallOperations(
-    const installer::Version& version, const std::wstring& local_data_path,
+    const installer::Version& version, const FilePath& local_data_path,
     const std::wstring& distribution_data) {
 }
 
@@ -116,6 +152,7 @@ std::wstring BrowserDistribution::GetLongAppDescription() {
   return app_description;
 }
 
+// static
 int BrowserDistribution::GetInstallReturnCode(
     installer_util::InstallStatus status) {
   switch (status) {
@@ -145,7 +182,7 @@ std::wstring BrowserDistribution::GetStatsServerURL() {
   return L"";
 }
 
-std::wstring BrowserDistribution::GetDistributionData(base::win::RegKey* key) {
+std::wstring BrowserDistribution::GetDistributionData(HKEY root_key) {
   return L"";
 }
 
@@ -183,10 +220,10 @@ void BrowserDistribution::UpdateDiffInstallStatus(bool system_install,
 
 void BrowserDistribution::LaunchUserExperiment(
     installer_util::InstallStatus status, const installer::Version& version,
-    bool system_install) {
+    const installer::Product& installation, bool system_level) {
 }
 
 
 void BrowserDistribution::InactiveUserToastExperiment(int flavor,
-                                                      bool system_install) {
+    const installer::Product& installation) {
 }

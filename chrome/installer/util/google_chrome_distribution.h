@@ -27,7 +27,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   //   concatenated to the survey url if the file in local_data_path indicates
   //   the user has opted in to providing anonymous usage data.
   virtual void DoPostUninstallOperations(const installer::Version& version,
-                                         const std::wstring& local_data_path,
+                                         const FilePath& local_data_path,
                                          const std::wstring& distribution_data);
 
   virtual std::wstring GetAppGuid();
@@ -55,7 +55,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // This method reads data from the Google Update ClientState key for
   // potential use in the uninstall survey. It must be called before the
   // key returned by GetVersionKey() is deleted.
-  virtual std::wstring GetDistributionData(base::win::RegKey* key);
+  virtual std::wstring GetDistributionData(HKEY root_key);
 
   virtual std::wstring GetUninstallLinkName();
 
@@ -69,13 +69,15 @@ class GoogleChromeDistribution : public BrowserDistribution {
       bool incremental_install, installer_util::InstallStatus install_status);
 
   virtual void LaunchUserExperiment(installer_util::InstallStatus status,
-                                    const installer::Version& version,
-                                    bool system_install);
+      const installer::Version& version,
+      const installer::Product& installation,
+      bool system_level);
 
   // Assuming that the user qualifies, this function performs the inactive user
   // toast experiment. It will use chrome to show the UI and it will record the
   // outcome in the registry.
-  virtual void InactiveUserToastExperiment(int flavor, bool system_install);
+  virtual void InactiveUserToastExperiment(int flavor,
+      const installer::Product& installation);
 
   std::wstring product_guid() { return product_guid_; }
 

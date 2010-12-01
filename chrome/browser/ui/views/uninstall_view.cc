@@ -65,10 +65,11 @@ void UninstallView::SetupControls() {
   layout->AddView(delete_profile_);
 
   // Set default browser combo box
-  if (BrowserDistribution::GetDistribution()->CanSetAsDefault() &&
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (dist->CanSetAsDefault() &&
       ShellIntegration::IsDefaultBrowser()) {
     browsers_.reset(new BrowsersMap());
-    ShellUtil::GetRegisteredBrowsers(browsers_.get());
+    ShellUtil::GetRegisteredBrowsers(dist, browsers_.get());
     if (!browsers_->empty()) {
       layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 

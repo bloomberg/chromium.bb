@@ -272,7 +272,8 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   }
 
   // From UI currently we only allow setting default browser for current user.
-  if (!ShellUtil::MakeChromeDefault(ShellUtil::CURRENT_USER,
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!ShellUtil::MakeChromeDefault(dist, ShellUtil::CURRENT_USER,
                                     chrome_exe.value(), true)) {
     LOG(ERROR) << "Chrome could not be set as default browser.";
     return false;
@@ -315,7 +316,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
     // app name being default. If not, then default browser is just called
     // Google Chrome or Chromium so we do not append suffix to app name.
     std::wstring suffix;
-    if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(&suffix))
+    if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
       app_name += suffix;
 
     for (int i = 0; i < _countof(kChromeProtocols); i++) {

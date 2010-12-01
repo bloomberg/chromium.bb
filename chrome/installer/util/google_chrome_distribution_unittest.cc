@@ -51,7 +51,8 @@ TEST(GoogleChromeDistTest, TestExtractUninstallMetrics) {
   ASSERT_TRUE(root.get());
   std::wstring uninstall_metrics_string;
   GoogleChromeDistribution* dist = static_cast<GoogleChromeDistribution*>(
-      BrowserDistribution::GetDistribution());
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER));
 
   EXPECT_TRUE(
       dist->ExtractUninstallMetrics(*static_cast<DictionaryValue*>(root.get()),

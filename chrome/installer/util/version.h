@@ -11,6 +11,7 @@
 
 namespace installer {
 
+// TODO(tommi): We should be using the Version class from base.
 class Version {
  public:
   virtual ~Version();
@@ -22,6 +23,10 @@ class Version {
   // Return the string representation of this version
   const string16& GetString() const {
     return version_str_;
+  }
+
+  bool IsEqual(const Version& other) const {
+    return version_str_ == other.GetString();
   }
 
   // Assume that the version string is specified by four integers separated

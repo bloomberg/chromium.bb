@@ -23,7 +23,7 @@ namespace setup_util {
   // Find the version of Chrome from an install source directory.
   // Chrome_path should contain a version folder.
   // Returns the first version found or NULL if no version is found.
-  installer::Version* GetVersionFromDir(const FilePath& chrome_path);
+  installer::Version* GetVersionFromArchiveDir(const FilePath& chrome_path);
 }  // namespace setup_util
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_UTIL_H_

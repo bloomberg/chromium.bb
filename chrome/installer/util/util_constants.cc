@@ -153,4 +153,10 @@ const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kUninstallDisplayNameField[] = L"DisplayName";
 const char kUninstallMetricsName[] = "uninstall_metrics";
 const wchar_t kUninstallInstallationDate[] = L"installation_date";
+const wchar_t kInstallerResult[] = L"InstallerResult";
+const wchar_t kInstallerError[] = L"InstallerError";
+const wchar_t kInstallerResultUIString[] = L"InstallerResultUIString";
+const wchar_t kInstallerSuccessLaunchCmdLine[] =
+    L"InstallerSuccessLaunchCmdLine";
+
 }  // namespace installer_util

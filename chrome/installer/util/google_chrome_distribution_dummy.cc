@@ -19,7 +19,7 @@ GoogleChromeDistribution::GoogleChromeDistribution() {
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const installer::Version& version,
-    const std::wstring& local_data_path,
+    const FilePath& local_data_path,
     const std::wstring& distribution_data) {
 }
 
@@ -78,8 +78,7 @@ std::wstring GoogleChromeDistribution::GetStatsServerURL() {
   return std::wstring();
 }
 
-std::wstring GoogleChromeDistribution::GetDistributionData(
-    base::win::RegKey* key) {
+std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   NOTREACHED();
   return std::wstring();
 }
@@ -111,13 +110,12 @@ void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
 
 void GoogleChromeDistribution::LaunchUserExperiment(
     installer_util::InstallStatus status, const installer::Version& version,
-    bool system_install) {
+    const installer::Product& installation, bool system_level) {
   NOTREACHED();
 }
 
-void GoogleChromeDistribution::InactiveUserToastExperiment(
-    int flavor,
-    bool system_install) {
+void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
+    const installer::Product& installation) {
   NOTREACHED();
 }
 

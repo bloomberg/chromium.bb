@@ -24,14 +24,23 @@ class BrowserDistributionTest : public testing::Test {
 // The distribution strings should not be empty. The unit tests are not linking
 // with the chrome resources so we cannot test official build.
 TEST(BrowserDistributionTest, StringsTest) {
-  BrowserDistribution *dist = BrowserDistribution::GetDistribution();
-  ASSERT_TRUE(dist != NULL);
-  std::wstring name = dist->GetApplicationName();
-  EXPECT_FALSE(name.empty());
-  std::wstring desc = dist->GetAppDescription();
-  EXPECT_FALSE(desc.empty());
-  std::wstring alt_name = dist->GetAlternateApplicationName();
-  EXPECT_FALSE(alt_name.empty());
+  BrowserDistribution::DistributionType types[] = {
+    BrowserDistribution::CHROME_BROWSER,
+    BrowserDistribution::CHROME_FRAME,
+    // TODO(tommi): Also include CEEE.
+  };
+
+  for (int i = 0; i < arraysize(types); ++i) {
+    BrowserDistribution* dist =
+        BrowserDistribution::GetSpecificDistribution(types[i]);
+    ASSERT_TRUE(dist != NULL);
+    std::wstring name = dist->GetApplicationName();
+    EXPECT_FALSE(name.empty());
+    std::wstring desc = dist->GetAppDescription();
+    EXPECT_FALSE(desc.empty());
+    std::wstring alt_name = dist->GetAlternateApplicationName();
+    EXPECT_FALSE(alt_name.empty());
+  }
 }
 
 // The shortcut strings obtained by the shell utility functions should not
@@ -39,8 +48,9 @@ TEST(BrowserDistributionTest, StringsTest) {
 TEST(BrowserDistributionTest, AlternateAndNormalShortcutName) {
   std::wstring normal_name;
   std::wstring alternate_name;
-  EXPECT_TRUE(ShellUtil::GetChromeShortcutName(&normal_name, false));
-  EXPECT_TRUE(ShellUtil::GetChromeShortcutName(&alternate_name, true));
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  EXPECT_TRUE(ShellUtil::GetChromeShortcutName(dist, &normal_name, false));
+  EXPECT_TRUE(ShellUtil::GetChromeShortcutName(dist, &alternate_name, true));
   EXPECT_NE(normal_name, alternate_name);
   EXPECT_FALSE(normal_name.empty());
   EXPECT_FALSE(alternate_name.empty());

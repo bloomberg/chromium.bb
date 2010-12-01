@@ -11,9 +11,14 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "chrome/installer/util/package.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/version.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using installer::Version;
+using installer::Package;
 
 namespace {
   class SetupHelperTest : public testing::Test {
@@ -103,8 +108,9 @@ TEST_F(SetupHelperTest, Delete) {
   CreateTextFile(chrome_dll_4.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
-  std::wstring latest_version(L"1.0.4.0");
-  installer::RemoveOldVersionDirs(chrome_dir.value(), latest_version);
+  scoped_ptr<Version> latest_version(Version::GetVersionFromString(L"1.0.4.0"));
+  scoped_refptr<Package> package(new Package(chrome_dir));
+  package->RemoveOldVersionDirectories(*latest_version.get());
 
   // old versions should be gone
   EXPECT_FALSE(file_util::PathExists(chrome_dir_1));
@@ -176,8 +182,9 @@ TEST_F(SetupHelperTest, DeleteInUsed) {
   CreateTextFile(chrome_dll_4.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
-  std::wstring latest_version(L"1.0.4.0");
-  installer::RemoveOldVersionDirs(chrome_dir.value(), latest_version);
+  scoped_ptr<Version> latest_version(Version::GetVersionFromString(L"1.0.4.0"));
+  scoped_refptr<Package> install_path(new Package(chrome_dir));
+  install_path->RemoveOldVersionDirectories(*latest_version.get());
 
   // old versions not in used should be gone
   EXPECT_FALSE(file_util::PathExists(chrome_dir_1));

@@ -54,11 +54,13 @@ class ChromeFrameDistribution : public BrowserDistribution {
   virtual void UpdateDiffInstallStatus(bool system_install,
       bool incremental_install, installer_util::InstallStatus install_status);
 
- private:
+ protected:
   friend class BrowserDistribution;
 
   // Disallow construction from non-friends.
-  ChromeFrameDistribution() {}
+  ChromeFrameDistribution() {
+    type_ = BrowserDistribution::CHROME_FRAME;
+  }
 
 };
 

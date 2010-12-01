@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,6 +109,8 @@ class ShellUtilTest : public testing::Test {
 
 // Test that we can open archives successfully.
 TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  ASSERT_TRUE(dist != NULL);
   // Create an executable in test path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
   EXPECT_FALSE(::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH) == 0);
@@ -118,7 +121,7 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
 
   FilePath shortcut_path = test_dir_.AppendASCII("shortcut.lnk");
   const std::wstring description(L"dummy description");
-  EXPECT_TRUE(ShellUtil::UpdateChromeShortcut(exe_path.value(),
+  EXPECT_TRUE(ShellUtil::UpdateChromeShortcut(dist, exe_path.value(),
                                               shortcut_path.value(),
                                               description, true));
   EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
@@ -139,7 +142,7 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
 "}";
   file.close();
   ASSERT_TRUE(file_util::Delete(shortcut_path, false));
-  EXPECT_TRUE(ShellUtil::UpdateChromeShortcut(exe_path.value(),
+  EXPECT_TRUE(ShellUtil::UpdateChromeShortcut(dist, exe_path.value(),
                                               shortcut_path.value(),
                                               description, true));
   EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
@@ -149,7 +152,7 @@ TEST_F(ShellUtilTest, UpdateChromeShortcutTest) {
   // Now change only description to update shortcut and make sure icon index
   // doesn't change.
   const std::wstring description2(L"dummy description 2");
-  EXPECT_TRUE(ShellUtil::UpdateChromeShortcut(exe_path.value(),
+  EXPECT_TRUE(ShellUtil::UpdateChromeShortcut(dist, exe_path.value(),
                                               shortcut_path.value(),
                                               description2, false));
   EXPECT_TRUE(VerifyChromeShortcut(exe_path.value(),
