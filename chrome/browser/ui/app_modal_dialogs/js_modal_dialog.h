@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_JS_MODAL_DIALOG_H_
-#define CHROME_BROWSER_JS_MODAL_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JS_MODAL_DIALOG_H_
+#define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JS_MODAL_DIALOG_H_
 #pragma once
 
 #include <string>
 
 #include "build/build_config.h"
-#include "chrome/browser/app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
@@ -114,4 +114,4 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialog);
 };
 
-#endif  // CHROME_BROWSER_JS_MODAL_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JS_MODAL_DIALOG_H_

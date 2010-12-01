@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/js_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 
 #include "base/string_util.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/native_app_modal_dialog.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "ipc/ipc_message.h"

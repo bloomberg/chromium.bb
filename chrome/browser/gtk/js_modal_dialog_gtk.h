@@ -11,7 +11,7 @@
 #include "app/gtk_signal.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/native_app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "gfx/native_widget_types.h"
 
 class JavaScriptAppModalDialog;

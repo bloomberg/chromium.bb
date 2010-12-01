@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/app_modal_dialog_queue.h"
-
-#include "chrome/browser/browser_list.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 
 void AppModalDialogQueue::AddDialog(AppModalDialog* dialog) {
   if (!active_dialog_) {

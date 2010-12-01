@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_JS_MODAL_DIALOG_COCOA_H_
 #pragma once
 
-#include "chrome/browser/native_app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"

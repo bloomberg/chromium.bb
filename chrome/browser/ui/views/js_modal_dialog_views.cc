@@ -7,7 +7,7 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
-#include "chrome/browser/app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/views/window.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"

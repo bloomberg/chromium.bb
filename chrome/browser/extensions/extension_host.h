@@ -12,9 +12,9 @@
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/js_modal_dialog.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/extensions/extension_view.h"
 #elif defined(OS_MACOSX)

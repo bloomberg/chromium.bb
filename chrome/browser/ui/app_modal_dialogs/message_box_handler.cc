@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/message_box_handler.h"
+#include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
@@ -10,12 +10,12 @@
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/js_modal_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/font.h"

@@ -1,12 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 
-#include "chrome/browser/app_modal_dialog_queue.h"
-#include "chrome/browser/native_app_modal_dialog.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 

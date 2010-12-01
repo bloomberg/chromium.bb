@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
-#include "chrome/browser/js_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
 

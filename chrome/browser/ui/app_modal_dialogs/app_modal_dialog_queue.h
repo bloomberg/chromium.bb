@@ -1,15 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H_
-#define CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H_
+#ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_QUEUE_H_
+#define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_QUEUE_H_
 #pragma once
 
 #include <queue>
 
 #include "base/singleton.h"
-#include "chrome/browser/app_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 
 // Keeps a queue of AppModalDialogs, making sure only one app modal
 // dialog is shown at a time.
@@ -82,4 +82,4 @@ class AppModalDialogQueue {
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogQueue);
 };
 
-#endif  // CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H_
+#endif  // CHROME_BROWSER_UI_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_QUEUE_H_

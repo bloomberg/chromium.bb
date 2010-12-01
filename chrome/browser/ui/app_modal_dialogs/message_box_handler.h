@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
-#define CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_MESSAGE_BOX_HANDLER_H_
+#define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_MESSAGE_BOX_HANDLER_H_
 #pragma once
 
 #include <string>
@@ -38,4 +38,4 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
                            const std::wstring& message_text,
                            IPC::Message* reply_msg);
 
-#endif  // CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_APP_MODAL_DIALOGS_MESSAGE_BOX_HANDLER_H_

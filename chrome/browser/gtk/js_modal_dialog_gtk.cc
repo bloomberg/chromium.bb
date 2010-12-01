@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/js_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
