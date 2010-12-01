@@ -25,7 +25,7 @@ class BrowserDistribution {
  public:
   virtual ~BrowserDistribution() {}
 
-  typedef enum DistributionType {
+  enum DistributionType {
     CHROME_BROWSER,
     CHROME_FRAME,
     CEEE,
