@@ -129,8 +129,10 @@ void GpuThread::OnCrash() {
 }
 
 void GpuThread::OnHang() {
-  for (;;)
-    PlatformThread::Sleep(1000);
+  for (;;) {
+    // Do not sleep here. The GPU watchdog timer tracks the amount of user
+    // time this thread is using and it doesn't use much while calling Sleep.
+  }
 }
 
 #if defined(OS_WIN)

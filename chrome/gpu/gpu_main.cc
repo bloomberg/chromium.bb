@@ -130,8 +130,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // consuming has completed, otherwise the process is liable to be aborted.
   scoped_refptr<GpuWatchdogThread> watchdog_thread;
   if (enable_watchdog) {
-    watchdog_thread = new GpuWatchdogThread(MessageLoop::current(),
-                                            watchdog_timeout * 1000);
+    watchdog_thread = new GpuWatchdogThread(watchdog_timeout * 1000);
     watchdog_thread->Start();
   }
 

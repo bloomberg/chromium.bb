@@ -16,7 +16,7 @@
 class GpuWatchdogThread : public base::Thread,
                           public base::RefCountedThreadSafe<GpuWatchdogThread> {
  public:
-  GpuWatchdogThread(MessageLoop* watched_message_loop, int timeout);
+  explicit GpuWatchdogThread(int timeout);
   virtual ~GpuWatchdogThread();
 
   // Accessible on watched thread but only modified by watchdog thread.
@@ -50,10 +50,17 @@ class GpuWatchdogThread : public base::Thread,
   void OnExit();
   void Disable();
 
+  int64 GetWatchedThreadTime();
+
   MessageLoop* watched_message_loop_;
   int timeout_;
   volatile bool armed_;
   GpuWatchdogTaskObserver task_observer_;
+
+#if defined(OS_WIN)
+  void* watched_thread_handle_;
+  int64 arm_time_;
+#endif
 
   typedef ScopedRunnableMethodFactory<GpuWatchdogThread> MethodFactory;
   scoped_ptr<MethodFactory> method_factory_;
