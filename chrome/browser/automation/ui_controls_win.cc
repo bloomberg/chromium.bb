@@ -8,7 +8,6 @@
 #include "app/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
 #include "base/win_util.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
@@ -17,12 +16,6 @@
 namespace ui_controls {
 
 namespace {
-
-void Checkpoint(const char* message, const base::TimeTicks& start_time) {
-  LOG(INFO) << message << " : "
-            << (base::TimeTicks::Now() - start_time).InMilliseconds()
-            << " ms" << std::flush;
-}
 
 // InputDispatcher ------------------------------------------------------------
 
@@ -45,7 +38,7 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
 
   ~InputDispatcher();
 
-   // Notifies the task and release this (which should delete it).
+  // Notifies the task and release this (which should delete it).
   void NotifyTask();
 
   // The task we notify.
@@ -78,25 +71,14 @@ LRESULT CALLBACK MouseHook(int n_code, WPARAM w_param, LPARAM l_param) {
 
 // Callback from hook when a key message is received.
 LRESULT CALLBACK KeyHook(int n_code, WPARAM w_param, LPARAM l_param) {
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  char msg[512];
-  base::snprintf(msg, 512, "KeyHook starts: %d", n_code);
-  Checkpoint(msg, start_time);
-
   HHOOK next_hook = next_hook_;
-  base::snprintf(msg, 512, "n_code == HC_ACTION: %d, %d",
-          l_param, !!(l_param & (1 << 30)));
-  Checkpoint(msg, start_time);
   if (n_code == HC_ACTION) {
     DCHECK(current_dispatcher_);
-    if (l_param & (1 << 30)) {  // Only send on key up.
-      Checkpoint("MatchingMessageFound", start_time);
+    if (l_param & (1 << 30)) {
+      // Only send on key up.
       current_dispatcher_->MatchingMessageFound();
-    } else {
-      Checkpoint("Not key up", start_time);
     }
   }
-  Checkpoint("KeyHook ends, calling next hook.", start_time);
   return CallNextHookEx(next_hook, n_code, w_param, l_param);
 }
 
@@ -184,99 +166,77 @@ bool SendKeyEvent(app::KeyboardCode key, bool up) {
 bool SendKeyPressImpl(app::KeyboardCode key,
                       bool control, bool shift, bool alt,
                       Task* task) {
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  Checkpoint("SendKeyPressImpl starts", start_time);
-
   scoped_refptr<InputDispatcher> dispatcher(
       task ? new InputDispatcher(task, WM_KEYUP) : NULL);
 
   // If a pop-up menu is open, it won't receive events sent using SendInput.
   // Check for a pop-up menu using its window class (#32768) and if one
   // exists, send the key event directly there.
-  Checkpoint("FindWindow", start_time);
   HWND popup_menu = ::FindWindow(L"#32768", 0);
   if (popup_menu != NULL && popup_menu == ::GetTopWindow(NULL)) {
-    Checkpoint("Found popup window", start_time);
     WPARAM w_param = app::WindowsKeyCodeForKeyboardCode(key);
     LPARAM l_param = 0;
-    Checkpoint("Send WM_KEYDOWN", start_time);
     ::SendMessage(popup_menu, WM_KEYDOWN, w_param, l_param);
-    Checkpoint("Send WM_KEYUP", start_time);
     ::SendMessage(popup_menu, WM_KEYUP, w_param, l_param);
 
-    Checkpoint("Send Done", start_time);
     if (dispatcher.get())
       dispatcher->AddRef();
     return true;
   }
 
-  Checkpoint("Found no popup window", start_time);
-
-  INPUT input[8] = { 0 }; // 8, assuming all the modifiers are activated
+  INPUT input[8] = { 0 };  // 8, assuming all the modifiers are activated.
 
   UINT i = 0;
   if (control) {
-    Checkpoint("FillKeyboardInput Control", start_time);
     if (!FillKeyboardInput(app::VKEY_CONTROL, &input[i], false))
       return false;
     i++;
   }
 
   if (shift) {
-    Checkpoint("FillKeyboardInput Shift", start_time);
     if (!FillKeyboardInput(app::VKEY_SHIFT, &input[i], false))
       return false;
     i++;
   }
 
   if (alt) {
-    Checkpoint("FillKeyboardInput Alt", start_time);
     if (!FillKeyboardInput(app::VKEY_MENU, &input[i], false))
       return false;
     i++;
   }
 
-  Checkpoint("FillKeyboardInput 1", start_time);
   if (!FillKeyboardInput(key, &input[i], false))
     return false;
   i++;
 
-  Checkpoint("FillKeyboardInput 2", start_time);
   if (!FillKeyboardInput(key, &input[i], true))
     return false;
   i++;
 
   if (alt) {
-    Checkpoint("FillKeyboardInput Alt2", start_time);
     if (!FillKeyboardInput(app::VKEY_MENU, &input[i], true))
       return false;
     i++;
   }
 
   if (shift) {
-    Checkpoint("FillKeyboardInput Shift2", start_time);
     if (!FillKeyboardInput(app::VKEY_SHIFT, &input[i], true))
       return false;
     i++;
   }
 
   if (control) {
-    Checkpoint("FillKeyboardInput Ctrl2", start_time);
     if (!FillKeyboardInput(app::VKEY_CONTROL, &input[i], true))
       return false;
     i++;
   }
 
-  Checkpoint("SendInput called", start_time);
   if (::SendInput(i, input, sizeof(INPUT)) != i)
     return false;
-
-  Checkpoint("SendInput done", start_time);
 
   if (dispatcher.get())
     dispatcher->AddRef();
 
-  Checkpoint("Test done", start_time);
   return true;
 }
 
