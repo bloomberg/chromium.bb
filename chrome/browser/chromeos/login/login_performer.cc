@@ -21,7 +21,8 @@ namespace {
 
 LoginPerformer::LoginPerformer(Delegate* delegate)
     : last_login_failure_(LoginFailure::None()),
-      delegate_(delegate) {}
+      delegate_(delegate),
+      method_factory_(this) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, LoginStatusConsumer implementation:
@@ -100,6 +101,18 @@ void LoginPerformer::Login(const std::string& username,
                            const std::string& password) {
   username_ = username;
   password_ = password;
+  // Must not proceed without signature verification.
+  UserCrosSettingsProvider user_settings;
+  bool trusted_setting_available = user_settings.RequestTrustedAllowNewUser(
+      method_factory_.NewRunnableMethod(
+          &LoginPerformer::Login,
+          username,
+          password));
+  if (!trusted_setting_available) {
+    // Value of AllowNewUser setting is still not verified.
+    // Another attempt will be invoked after verification completion.
+    return;
+  }
   if (UserCrosSettingsProvider::cached_allow_new_user()) {
     // Starts authentication if guest login is allowed.
     StartAuthentication();

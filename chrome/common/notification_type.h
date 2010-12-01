@@ -1243,6 +1243,9 @@ class NotificationType {
     // os device has failed.
     OWNER_KEY_FETCH_ATTEMPT_FAILED,
 
+    // Sent after device was successfully owned.
+    OWNERSHIP_TAKEN,
+
     // This is sent to a ChromeOS settings observer when a system setting is
     // changed. The source is the CrosSettings and the details a std::string of
     // the changed setting.

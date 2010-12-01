@@ -148,7 +148,8 @@ UserController::UserController(Delegate* delegate, bool is_guest)
       existing_user_view_(NULL),
       guest_user_view_(NULL),
       label_view_(NULL),
-      unselected_label_view_(NULL) {
+      unselected_label_view_(NULL),
+      method_factory_(this) {
   registrar_.Add(
       this,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -163,9 +164,7 @@ UserController::UserController(Delegate* delegate,
       is_guest_(false),
       // Empty 'cached_owner()' means that owner hasn't been cached yet, not
       // that owner has an empty email.
-      is_owner_(
-          !user.email().empty() &&
-          UserCrosSettingsProvider::cached_owner() == user.email()),
+      is_owner_(user.email() == UserCrosSettingsProvider::cached_owner()),
       show_name_tooltip_(false),
       user_(user),
       delegate_(delegate),
@@ -179,7 +178,9 @@ UserController::UserController(Delegate* delegate,
       existing_user_view_(NULL),
       guest_user_view_(NULL),
       label_view_(NULL),
-      unselected_label_view_(NULL) {
+      unselected_label_view_(NULL),
+      method_factory_(this) {
+  DCHECK(!user.email().empty());
   registrar_.Add(
       this,
       NotificationType::LOGIN_USER_IMAGE_CHANGED,
@@ -552,6 +553,19 @@ void UserController::NavigateAway() {
 }
 
 void UserController::OnRemoveUser() {
+  // Must not proceed without signature verification.
+  UserCrosSettingsProvider user_settings;
+  bool trusted_owner_available = user_settings.RequestTrustedOwner(
+      method_factory_.NewRunnableMethod(&UserController::OnRemoveUser));
+  if (!trusted_owner_available) {
+    // Value of owner email is still not verified.
+    // Another attempt will be invoked after verification completion.
+    return;
+  }
+  if (user().email() == UserCrosSettingsProvider::cached_owner()) {
+    // Owner is not allowed to be removed from the device.
+    return;
+  }
   delegate_->RemoveUser(this);
 }
 

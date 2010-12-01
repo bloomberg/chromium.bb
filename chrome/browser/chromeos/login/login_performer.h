@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/task.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
@@ -106,6 +107,8 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // Notifications receiver.
   Delegate* delegate_;
+
+  ScopedRunnableMethodFactory<LoginPerformer> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPerformer);
 };

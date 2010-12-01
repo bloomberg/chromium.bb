@@ -126,7 +126,8 @@ ExistingUserController::ExistingUserController(
       selected_view_index_(kNotSelected),
       num_login_attempts_(0),
       bubble_(NULL),
-      user_settings_(new UserCrosSettingsProvider()) {
+      user_settings_(new UserCrosSettingsProvider),
+      method_factory_(this) {
   if (delete_scheduled_instance_)
     delete_scheduled_instance_->Delete();
 
@@ -302,8 +303,19 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
 
 void ExistingUserController::LoginOffTheRecord() {
   // Check allow_guest in case this call is fired from key accelerator.
-  if (!UserCrosSettingsProvider::cached_allow_guest())
+  // Must not proceed without signature verification.
+  bool trusted_setting_available = user_settings_->RequestTrustedAllowGuest(
+      method_factory_.NewRunnableMethod(
+          &ExistingUserController::LoginOffTheRecord));
+  if (!trusted_setting_available) {
+    // Value of AllowGuest setting is still not verified.
+    // Another attempt will be invoked again after verification completion.
     return;
+  }
+  if (!UserCrosSettingsProvider::cached_allow_guest()) {
+    // Disallowed.
+    return;
+  }
 
   // Disable clicking on other windows.
   SendSetLoginState(false);
@@ -356,11 +368,10 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
 void ExistingUserController::RemoveUser(UserController* source) {
   ClearErrors();
 
-  // TODO(xiyuan): Wait for the cached settings update before using them.
-  if (UserCrosSettingsProvider::cached_owner() == source->user().email()) {
-    // Owner is not allowed to be removed from the device.
-    return;
-  }
+  // Owner is not allowed to be removed from the device.
+  // It must be enforced at upper levels.
+  DCHECK(user_settings_->RequestTrustedOwner(NULL));
+  DCHECK(source->user().email() != UserCrosSettingsProvider::cached_owner());
 
   UserManager::Get()->RemoveUser(source->user().email());
 
@@ -548,9 +559,18 @@ void ExistingUserController::OnPasswordChangeDetected(
     return;
   }
 
+  // Must not proceed without signature verification.
+  bool trusted_setting_available = user_settings_->RequestTrustedOwner(
+      method_factory_.NewRunnableMethod(
+          &ExistingUserController::OnPasswordChangeDetected,
+          credentials));
+  if (!trusted_setting_available) {
+    // Value of owner email is still not verified.
+    // Another attempt will be invoked after verification completion.
+    return;
+  }
   // TODO(altimofeev): remove this constrain when full sync for the owner will
   // be correctly handled.
-  // TODO(xiyuan): Wait for the cached settings update before using them.
   bool full_sync_disabled = (UserCrosSettingsProvider::cached_owner() ==
       controllers_[selected_view_index_]->user().email());
 

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
+#include "base/task.h"
 #include "chrome/browser/chromeos/login/new_user_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_view.h"
@@ -19,7 +20,6 @@
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/widget/widget_delegate.h"
-
 namespace views {
 class WidgetGtk;
 }
@@ -230,6 +230,8 @@ class UserController : public views::ButtonListener,
   views::Label* unselected_label_view_;
 
   NotificationRegistrar registrar_;
+
+  ScopedRunnableMethodFactory<UserController> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserController);
 };

@@ -17,7 +17,7 @@
 namespace chromeos {
 
 AccountsOptionsHandler::AccountsOptionsHandler()
-    : CrosOptionsPageUIHandler(new UserCrosSettingsProvider()) {
+    : CrosOptionsPageUIHandler(new UserCrosSettingsProvider) {
 }
 
 AccountsOptionsHandler::~AccountsOptionsHandler() {

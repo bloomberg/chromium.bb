@@ -73,8 +73,16 @@ void OwnerManager::GenerateKeysAndExportPublic() {
 }
 
 void OwnerManager::ExportKey() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Exporting public key";
-  if (!utils_->ExportPublicKeyViaDbus(private_key_.get(), this)) {
+  if (utils_->ExportPublicKeyViaDbus(private_key_.get(), this)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &OwnerManager::SendNotification,
+                          NotificationType::OWNERSHIP_TAKEN,
+                          NotificationService::NoDetails()));
+  } else {
     private_key_.reset(NULL);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

@@ -166,8 +166,11 @@ class ExistingUserController : public WmMessageListener::Observer,
   // Help application used for help dialogs.
   scoped_ptr<HelpAppLauncher> help_app_;
 
-  // A user settings provider instance to trigger settings cache update.
+  // Triggers prefetching of user settings.
   scoped_ptr<UserCrosSettingsProvider> user_settings_;
+
+  // Factory of callbacks.
+  ScopedRunnableMethodFactory<ExistingUserController> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };
