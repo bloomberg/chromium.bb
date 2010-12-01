@@ -92,9 +92,20 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
   if (ids[0] < 0 && !display_warning_if_disabled_)
     return;
 
+  // Only include "AutoFill Options" special menu item if we have AutoFill
+  // items, identified by |unique_ids| having at least one valid value.
+  bool has_autofill_item = false;
+  for (size_t i = 0; i < ids.size(); ++i) {
+    if (ids[i] > 0) {
+      has_autofill_item = true;
+      break;
+    }
+  }
+
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
-  if (form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
+  if (has_autofill_item &&
+      form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
     v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
     l.push_back(string16());
     i.push_back(string16());
@@ -103,16 +114,7 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
     separator_index = v.size() - 1;
   }
 
-  // Only include "AutoFill Options" special menu item if we have AutoFill
-  // items, identified by |unique_ids| having at least one valid value.
-  bool show_options = false;
-  for (size_t i = 0; i < ids.size(); ++i) {
-    if (ids[i] > 0) {
-      show_options = true;
-      break;
-    }
-  }
-  if (show_options) {
+  if (has_autofill_item) {
     // Append the 'Chrome Autofill options' menu item;
     v.push_back(l10n_util::GetStringFUTF16(IDS_AUTOFILL_OPTIONS_POPUP,
         WideToUTF16(chrome::kBrowserAppName)));
