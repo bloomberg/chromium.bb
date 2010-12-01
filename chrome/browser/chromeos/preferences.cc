@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/touchpad_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_service.h"
@@ -188,6 +189,12 @@ void Preferences::Init(PrefService* prefs) {
 
   // Initialize touchpad settings to what's saved in user preferences.
   NotifyPrefChanged(NULL);
+
+  // If a guest is logged in, initialize the prefs as if this is the first
+  // login.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+    LoginUtils::Get()->SetFirstLoginPrefs(prefs);
+  }
 }
 
 void Preferences::Observe(NotificationType type,

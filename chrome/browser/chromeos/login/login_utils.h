@@ -12,6 +12,7 @@
 
 class GURL;
 class Profile;
+class PrefService;
 
 namespace chromeos {
 
@@ -44,6 +45,10 @@ class LoginUtils {
   // Asks session manager to restart Chrome in Browse Without Sign In mode.
   // |start_url| is url for launched browser to open.
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) = 0;
+
+  // Invoked when the user is logging in for the first time, or is logging in as
+  // a guest user.
+  virtual void SetFirstLoginPrefs(PrefService* prefs) = 0;
 
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.

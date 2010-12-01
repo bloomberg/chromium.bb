@@ -113,6 +113,10 @@ class LoginUtilsImpl : public LoginUtils {
   // Launches a browser in the off the record (incognito) mode.
   virtual void CompleteOffTheRecordLogin(const GURL& start_url);
 
+  // Invoked when the user is logging in for the first time, or is logging in as
+  // a guest user.
+  virtual void SetFirstLoginPrefs(PrefService* prefs);
+
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
@@ -267,39 +271,8 @@ void LoginUtilsImpl::CompleteLogin(
 
   RespectLocalePreference(profile->GetPrefs());
 
-  static const char kFallbackInputMethodLocale[] = "en-US";
   if (first_login) {
-    std::string locale(g_browser_process->GetApplicationLocale());
-    // Add input methods based on the application locale when the user first
-    // logs in. For instance, if the user chooses Japanese as the UI
-    // language at the first login, we'll add input methods associated with
-    // Japanese, such as mozc.
-    if (locale != kFallbackInputMethodLocale) {
-      StringPrefMember language_preload_engines;
-      language_preload_engines.Init(prefs::kLanguagePreloadEngines,
-                                    profile->GetPrefs(), NULL);
-      StringPrefMember language_preferred_languages;
-      language_preferred_languages.Init(prefs::kLanguagePreferredLanguages,
-                                        profile->GetPrefs(), NULL);
-
-      std::string preload_engines(language_preload_engines.GetValue());
-      std::vector<std::string> input_method_ids;
-      input_method::GetInputMethodIdsFromLanguageCode(
-          locale, input_method::kAllInputMethods, &input_method_ids);
-      if (!input_method_ids.empty()) {
-        if (!preload_engines.empty())
-          preload_engines += ',';
-        preload_engines += input_method_ids[0];
-      }
-      language_preload_engines.SetValue(preload_engines);
-
-      // Add the UI language to the preferred languages the user first logs in.
-      std::string preferred_languages(locale);
-      preferred_languages += ",";
-      preferred_languages += kFallbackInputMethodLocale;
-      language_preferred_languages.SetValue(preferred_languages);
-      btl->AddLoginTimeMarker("IMESTarted", false);
-    }
+    SetFirstLoginPrefs(profile->GetPrefs());
   }
 
   // We suck. This is a hack since we do not have the enterprise feature
@@ -384,6 +357,44 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
     }
 
     CrosLibrary::Get()->GetLoginLibrary()->RestartJob(getpid(), cmd_line_str);
+  }
+}
+
+void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
+  VLOG(1) << "Setting first login prefs";
+  BootTimesLoader* btl = BootTimesLoader::Get();
+
+  static const char kFallbackInputMethodLocale[] = "en-US";
+  std::string locale(g_browser_process->GetApplicationLocale());
+  // Add input methods based on the application locale when the user first
+  // logs in. For instance, if the user chooses Japanese as the UI
+  // language at the first login, we'll add input methods associated with
+  // Japanese, such as mozc.
+  if (locale != kFallbackInputMethodLocale) {
+    StringPrefMember language_preload_engines;
+    language_preload_engines.Init(prefs::kLanguagePreloadEngines,
+                                  prefs, NULL);
+    StringPrefMember language_preferred_languages;
+    language_preferred_languages.Init(prefs::kLanguagePreferredLanguages,
+                                      prefs, NULL);
+
+    std::string preload_engines(language_preload_engines.GetValue());
+    std::vector<std::string> input_method_ids;
+    input_method::GetInputMethodIdsFromLanguageCode(
+        locale, input_method::kAllInputMethods, &input_method_ids);
+    if (!input_method_ids.empty()) {
+      if (!preload_engines.empty())
+        preload_engines += ',';
+      preload_engines += input_method_ids[0];
+    }
+    language_preload_engines.SetValue(preload_engines);
+
+    // Add the UI language to the preferred languages the user first logs in.
+    std::string preferred_languages(locale);
+    preferred_languages += ",";
+    preferred_languages += kFallbackInputMethodLocale;
+    language_preferred_languages.SetValue(preferred_languages);
+    btl->AddLoginTimeMarker("IMEStarted", false);
   }
 }
 

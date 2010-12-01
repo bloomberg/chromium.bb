@@ -120,6 +120,9 @@ class MockLoginUtils : public LoginUtils {
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) {
   }
 
+  virtual void SetFirstLoginPrefs(PrefService* prefs) {
+  }
+
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) {
     return new MockAuthenticator(
         consumer, expected_username_, expected_password_);
