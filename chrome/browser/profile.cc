@@ -546,6 +546,10 @@ class OffTheRecordProfileImpl : public Profile,
       GetChromeOSProxyConfigServiceImpl() {
     return profile_->GetChromeOSProxyConfigServiceImpl();
   }
+
+  virtual void SetupChromeOSEnterpriseExtensionObserver() {
+    profile_->SetupChromeOSEnterpriseExtensionObserver();
+  }
 #endif  // defined(OS_CHROMEOS)
 
   virtual void ExitedOffTheRecordMode() {

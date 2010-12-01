@@ -36,6 +36,7 @@ class MockLoginLibrary : public LoginLibrary {
                                     Delegate*));
   MOCK_METHOD2(StartSession, bool(const std::string&, const std::string&));
   MOCK_METHOD1(StopSession, bool(const std::string&));
+  MOCK_METHOD0(RestartEntd, bool(void));
   MOCK_METHOD2(RestartJob, bool(int, const std::string&));
 };
 

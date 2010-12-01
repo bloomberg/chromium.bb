@@ -128,6 +128,7 @@ class ProfileImpl : public Profile,
 
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
+  virtual void SetupChromeOSEnterpriseExtensionObserver();
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker();
@@ -281,6 +282,9 @@ class ProfileImpl : public Profile,
 
   scoped_refptr<chromeos::ProxyConfigServiceImpl>
       chromeos_proxy_config_service_impl_;
+
+  scoped_ptr<chromeos::EnterpriseExtensionObserver>
+      chromeos_enterprise_extension_observer_;
 #endif
 
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

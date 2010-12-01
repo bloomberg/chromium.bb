@@ -105,6 +105,7 @@
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/enterprise_extension_observer.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
 #include "base/nix/xdg_util.h"
@@ -1329,6 +1330,12 @@ chromeos::ProxyConfigServiceImpl*
         new chromeos::ProxyConfigServiceImpl();
   }
   return chromeos_proxy_config_service_impl_;
+}
+
+void ProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {
+  DCHECK(!chromeos_enterprise_extension_observer_.get());
+  chromeos_enterprise_extension_observer_.reset(
+      new chromeos::EnterpriseExtensionObserver(this));
 }
 #endif  // defined(OS_CHROMEOS)
 

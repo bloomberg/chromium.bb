@@ -292,6 +292,8 @@ class TestingProfile : public Profile {
       GetChromeOSProxyConfigServiceImpl() {
     return NULL;
   }
+  virtual void SetupChromeOSEnterpriseExtensionObserver() {
+  }
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker();

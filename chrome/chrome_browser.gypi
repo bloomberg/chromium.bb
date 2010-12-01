@@ -486,6 +486,8 @@
         'browser/chromeos/dom_ui/wrench_menu_ui.cc',
         'browser/chromeos/dom_ui/wrench_menu_ui.h',
         'browser/chromeos/drop_shadow_label.cc',
+        'browser/chromeos/enterprise_extension_observer.cc',
+        'browser/chromeos/enterprise_extension_observer.h',
         'browser/chromeos/external_metrics.cc',
         'browser/chromeos/external_metrics.h',
         'browser/chromeos/external_protocol_dialog.cc',

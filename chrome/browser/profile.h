@@ -17,6 +17,7 @@ class Time;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
+class EnterpriseExtensionObserver;
 class ProxyConfigServiceImpl;
 }
 #endif
@@ -484,6 +485,10 @@ class Profile {
   // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.
   virtual chromeos::ProxyConfigServiceImpl*
       GetChromeOSProxyConfigServiceImpl() = 0;
+
+  // Creates ChromeOS's EnterpriseExtensionListener.
+  virtual void SetupChromeOSEnterpriseExtensionObserver() = 0;
+
 #endif  // defined(OS_CHROMEOS)
 
   // Returns the helper object that provides the proxy configuration service

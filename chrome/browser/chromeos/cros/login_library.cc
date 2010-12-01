@@ -134,6 +134,10 @@ class LoginLibraryImpl : public LoginLibrary {
     return chromeos::StopSession("");
   }
 
+  bool RestartEntd() {
+    return chromeos::RestartEntd();
+  }
+
   bool RestartJob(int pid, const std::string& command_line) {
     return chromeos::RestartJob(pid, command_line.c_str());
   }
@@ -257,6 +261,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
                     const std::string& unique_id /* unused */) { return true; }
   bool StopSession(const std::string& unique_id /* unused */) { return true; }
   bool RestartJob(int pid, const std::string& command_line) { return true; }
+  bool RestartEntd() { return true; }
 
  private:
   static void DoStubCallback(Delegate* callback) {
