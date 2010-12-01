@@ -2872,6 +2872,102 @@
       ],
     },
     {
+      # Executable that contains all the tests to be run on the GPU bots.
+      'target_name': 'gpu_tests',
+      'type': 'executable',
+      'msvs_guid': '3D3BB86C-F284-4911-BAEB-12C6EFA09A01',
+      'dependencies': [
+        'browser',
+        'chrome',
+        'chrome_resources',
+        'chrome_strings',
+        'renderer',
+        'test_support_common',
+        '../app/app.gyp:app_base',
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../net/net.gyp:net_test_support',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        # Runtime dependencies
+        'chrome_mesa',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+      'sources': [
+        'test/gpu/gpu_pixel_browsertest.cc',
+        'test/in_process_browser_test.cc',
+        'test/in_process_browser_test.h',
+        'test/out_of_proc_test_runner.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            'chrome_dll_version',
+            'installer_util_strings',
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+          'sources': [
+            'app/chrome_dll.rc',
+            'app/chrome_dll_resource.h',
+            'app/chrome_dll_version.rc.version',
+            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
+          ],
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+        }],
+        ['OS=="mac"', {
+          # See the comment in this section of the unit_tests target for an
+          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
+          'dependencies+++': [
+            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
+          # See comments about "xcode_settings" elsewhere in this file.
+          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+        }],
+        ['OS=="linux"', {
+           'dependencies': [
+             '../build/linux/system.gyp:gtk',
+             '../build/linux/system.gyp:nss',
+           ],
+        }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '../views/views.gyp:views',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'plugin_tests',
       'type': 'executable',
       'msvs_guid': 'A1CAA831-C507-4B2E-87F3-AEC63C9907F9',

@@ -6,16 +6,19 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item.h"
@@ -26,6 +29,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -35,9 +39,12 @@
 #if defined(TOOLKIT_VIEWS)
 #include "views/focus/accelerator_handler.h"
 #endif
+#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace ui_test_utils {
 
@@ -810,6 +817,115 @@ void WindowedNotificationObserver::Observe(NotificationType type,
   } else {
     sources_seen_.insert(source.map_key());
   }
+}
+
+DOMMessageQueue::DOMMessageQueue() {
+  registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
+                 NotificationService::AllSources());
+}
+
+void DOMMessageQueue::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  Details<DomOperationNotificationDetails> dom_op_details(details);
+  Source<RenderViewHost> sender(source);
+  message_queue_.push(dom_op_details->json());
+  if (waiting_for_message_) {
+    waiting_for_message_ = false;
+    MessageLoopForUI::current()->Quit();
+  }
+}
+
+bool DOMMessageQueue::WaitForMessage(std::string* message) {
+  if (message_queue_.empty()) {
+    waiting_for_message_ = true;
+    // This will be quit when a new message comes in.
+    RunMessageLoop();
+  }
+  // The queue should not be empty, unless we were quit because of a timeout.
+  if (message_queue_.empty())
+    return false;
+  if (message)
+    *message = message_queue_.front();
+  return true;
+}
+
+// Coordinates taking snapshots of a |RenderWidget|.
+class SnapshotTaker {
+ public:
+  SnapshotTaker() : bitmap_(NULL) {}
+
+  bool TakeRenderWidgetSnapshot(RenderWidgetHost* rwh,
+                                const gfx::Size& page_size,
+                                const gfx::Size& desired_size,
+                                SkBitmap* bitmap) WARN_UNUSED_RESULT {
+    bitmap_ = bitmap;
+    ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
+    rwh->set_painting_observer(generator);
+    snapshot_taken_ = false;
+    generator->AskForSnapshot(
+        rwh,
+        false,  // don't use backing_store
+        NewCallback(this, &SnapshotTaker::OnSnapshotTaken),
+        page_size,
+        desired_size);
+    ui_test_utils::RunMessageLoop();
+    return snapshot_taken_;
+  }
+
+  bool TakeEntirePageSnapshot(RenderViewHost* rvh,
+                              SkBitmap* bitmap) WARN_UNUSED_RESULT {
+    const wchar_t* script =
+        L"window.domAutomationController.send("
+        L"    JSON.stringify([document.width, document.height]))";
+    std::string json;
+    if (!ui_test_utils::ExecuteJavaScriptAndExtractString(
+            rvh, L"", script, &json))
+      return false;
+
+    // Parse the JSON.
+    std::vector<int> dimensions;
+    scoped_ptr<Value> value(base::JSONReader::Read(json, true));
+    if (!value->IsType(Value::TYPE_LIST))
+      return false;
+    ListValue* list = static_cast<ListValue*>(value.get());
+    int width, height;
+    if (!list->GetInteger(0, &width) || !list->GetInteger(1, &height))
+      return false;
+
+    // Take the snapshot.
+    gfx::Size page_size(width, height);
+    return TakeRenderWidgetSnapshot(rvh, page_size, page_size, bitmap);
+  }
+
+ private:
+  // Called when the ThumbnailGenerator has taken the snapshot.
+  void OnSnapshotTaken(const SkBitmap& bitmap) {
+    *bitmap_ = bitmap;
+    snapshot_taken_ = true;
+    MessageLoop::current()->Quit();
+  }
+
+  SkBitmap* bitmap_;
+  // Whether the snapshot was actually taken and received by this SnapshotTaker.
+  // This will be false if the test times out.
+  bool snapshot_taken_;
+
+  DISALLOW_COPY_AND_ASSIGN(SnapshotTaker);
+};
+
+bool TakeRenderWidgetSnapshot(RenderWidgetHost* rwh,
+                              const gfx::Size& page_size,
+                              SkBitmap* bitmap) {
+  DCHECK(bitmap);
+  SnapshotTaker taker;
+  return taker.TakeRenderWidgetSnapshot(rwh, page_size, page_size, bitmap);
+}
+
+bool TakeEntirePageSnapshot(RenderViewHost* rvh, SkBitmap* bitmap) {
+  DCHECK(bitmap);
+  SnapshotTaker taker;
+  return taker.TakeEntirePageSnapshot(rvh, bitmap);
 }
 
 }  // namespace ui_test_utils

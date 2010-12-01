@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <queue>
 #include <string>
 #include <set>
 
@@ -36,9 +37,15 @@ class NavigationController;
 class NotificationType;
 class Profile;
 class RenderViewHost;
+class RenderWidgetHost;
 class ScopedTempDir;
+class SkBitmap;
 class TabContents;
 class Value;
+
+namespace gfx {
+class Size;
+}
 
 // A collections of functions designed for use with InProcessBrowserTest.
 namespace ui_test_utils {
@@ -421,6 +428,44 @@ void HideNativeWindow(gfx::NativeWindow window);
 
 // Show and focus a native window.
 void ShowAndFocusNativeWindow(gfx::NativeWindow window);
+
+// Watches for responses from the DOMAutomationController and keeps them in a
+// queue. Useful for waiting for a message to be received.
+class DOMMessageQueue : public NotificationObserver {
+ public:
+  // Constructs a DOMMessageQueue and begins listening for messages from the
+  // DOMAutomationController. Do not construct this until the browser has
+  // started.
+  DOMMessageQueue();
+
+  // Wait for the next message to arrive. |message| will be set to the next
+  // message, if not null. Returns true on success.
+  bool WaitForMessage(std::string* message) WARN_UNUSED_RESULT;
+
+  // Overridden NotificationObserver methods.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  std::queue<std::string> message_queue_;
+  bool waiting_for_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
+};
+
+// Takes a snapshot of the given render widget, rendered at |page_size|. The
+// snapshot is set to |bitmap|. Returns true on success.
+bool TakeRenderWidgetSnapshot(RenderWidgetHost* rwh,
+                              const gfx::Size& page_size,
+                              SkBitmap* bitmap) WARN_UNUSED_RESULT;
+
+// Takes a snapshot of the entire page, according to the width and height
+// properties of the DOM's document. Returns true on success. DOMAutomation
+// must be enabled.
+bool TakeEntirePageSnapshot(RenderViewHost* rvh,
+                            SkBitmap* bitmap) WARN_UNUSED_RESULT;
 
 }  // namespace ui_test_utils
 
