@@ -734,12 +734,12 @@
    bug_16096
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
-   fun:_ZNSs7reserveEj
-   fun:_ZNSs6appendEPKcj
-   fun:*StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
-   fun:_ZN4base13StringAppendVEPSsPKcPc
+   fun:_ZNSs4_Rep9_S_createE*RKSaIcE
+   fun:_ZNSs4_Rep8_M_cloneERKSaIcE*
+   fun:_ZNSs7reserveE*
+   fun:_ZNSs6appendEPKc*
+   fun:*StringAppendV*
+   ...
    fun:_ZN4base12StringPrintfEPKcz
 }
 {
@@ -1357,19 +1357,6 @@
    fun:_ZN4base6Thread10ThreadMainEv
    fun:_Z10ThreadFuncPv
    fun:start_thread
-}
-{
-   # This appears to be the NDEBUG mode version of bug_16096 -- i.e. the
-   # intermediate call to StringAppendV() is optimized away
-   bug_22109
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
-   fun:_ZNSs7reserveEj
-   fun:_ZNSs6appendEPKcj
-   fun:*StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
-   fun:_ZN4base12StringPrintfEPKcz
 }
 {
    bug_22450
@@ -2051,8 +2038,8 @@
    bug_43471
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIPN11MessageLoop19DestructionObserverEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseIPN11MessageLoop19DestructionObserverESaIS2_EE11_M_allocateEj
+   fun:_ZN9__gnu_cxx13new_allocatorIPN11MessageLoop19DestructionObserverEE8allocateE*
+   fun:_ZNSt12_Vector_baseIPN11MessageLoop19DestructionObserverESaIS2_EE11_M_allocateE*
    fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
    fun:_ZNSt6vectorIPN11MessageLoop19DestructionObserverESaIS2_EE9push_backERKS2_
    fun:_ZN16ObserverListBaseIN11MessageLoop19DestructionObserverEE11AddObserverEPS1_
@@ -3368,4 +3355,30 @@
    fun:_ZN10URLFetcher4CoreC1EPS_RK4GURLNS_11RequestTypeEPNS_8DelegateE
    fun:_ZN10URLFetcherC1ERK4GURLNS_11RequestTypeEPNS_8DelegateE
    fun:_ZN10URLFetcher6CreateEiRK4GURLNS_11RequestTypeEPNS_8DelegateE
+}
+{
+   bug_64887
+   Memcheck:Value8
+   fun:_itoa_word
+   fun:vfprintf
+   fun:vsnprintf
+   fun:snprintf
+   fun:_ZN7testing*26PrintByteSegmentInObjectToEPKhmmPSo
+   fun:_ZN7testing*24PrintBytesInObjectToImplEPKhmPSo
+   fun:_ZN7testing9internal220PrintBytesInObjectToEPKhmPSo
+   fun:_ZN7testing9internal220TypeWithoutFormatterI*
+   fun:_ZN7testing9internal2lsIcSt11char_traitsIcE*
+   fun:_ZN16testing_internal26DefaultPrintNonContainerToI*
+   fun:_ZN7testing8internal14DefaultPrintToI*
+   fun:_ZN7testing8internal7PrintToI*
+   fun:_ZN7testing8internal16UniversalPrinterI*
+   fun:_ZN7testing8internal14UniversalPrintI*
+   fun:_ZN7testing8internal19UniversalTersePrintI*
+   fun:_ZN7testing13PrintToStringI*
+   fun:_ZN7testing8internal25ParameterizedTestCaseInfoI*E13RegisterTestsEv
+   fun:_ZN7testing8internal29ParameterizedTestCaseRegistry13RegisterTestsEv
+   fun:_ZN7testing8internal12UnitTestImpl26RegisterParameterizedTestsEv
+   fun:_ZN7testing8internal12UnitTestImpl19PostFlagParsingInitEv
+   fun:_ZN7testing8internal18InitGoogleTestImplIcEEvPiPPT_
+   fun:_ZN7testing14InitGoogleTestEPiPPc
 }
