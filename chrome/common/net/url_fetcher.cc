@@ -363,6 +363,9 @@ void URLFetcher::Core::StartURLRequest() {
   if (!extra_request_headers_.IsEmpty())
     request_->SetExtraRequestHeaders(extra_request_headers_);
 
+  // There might be data left over from a previous request attempt.
+  data_.clear();
+
   request_->Start();
 }
 

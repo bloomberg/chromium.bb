@@ -228,6 +228,20 @@ class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
   scoped_refptr<URLRequestContext> context_;
 };
 
+// Version of URLFetcherTest that tests retying the same request twice.
+class URLFetcherMultipleAttemptTest : public URLFetcherTest {
+ public:
+  // URLFetcher::Delegate
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const URLRequestStatus& status,
+                                  int response_code,
+                                  const ResponseCookies& cookies,
+                                  const std::string& data);
+ private:
+  std::string data_;
+};
+
 // Wrapper that lets us call CreateFetcher() on a thread of our choice.  We
 // could make URLFetcherTest refcounted and use PostTask(FROM_HERE.. ) to call
 // CreateFetcher() directly, but the ownership of the URLFetcherTest is a bit
@@ -448,6 +462,31 @@ void URLFetcherCancelTest::CancelRequest() {
   // did not work.
 }
 
+void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
+  EXPECT_TRUE(status.is_success());
+  EXPECT_EQ(200, response_code);  // HTTP OK
+  EXPECT_FALSE(data.empty());
+  if (!data.empty() && data_.empty()) {
+    data_ = data;
+    fetcher_->Start();
+  } else {
+    EXPECT_EQ(data, data_);
+    delete fetcher_;  // Have to delete this here and not in the destructor,
+                      // because the destructor won't necessarily run on the
+                      // same thread that CreateFetcher() did.
+
+    io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+    // If the current message loop is not the IO loop, it will be shut down when
+    // the main loop returns and this thread subsequently goes out of scope.
+  }
+}
+
 TEST_F(URLFetcherTest, SameThreadsTest) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
@@ -627,6 +666,18 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
   MessageLoop::current()->Run();
 
   net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
+}
+
+TEST_F(URLFetcherMultipleAttemptTest, SameData) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  // Create the fetcher on the main thread.  Since IO will happen on the main
+  // thread, this will test URLFetcher's ability to do everything on one
+  // thread.
+  CreateFetcher(test_server.GetURL("defaultresponse"));
+
+  MessageLoop::current()->Run();
 }
 
 }  // namespace.
