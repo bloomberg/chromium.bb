@@ -164,6 +164,8 @@ function load() {
 
   localStrings = new LocalStrings();
 
+  OptionsPage.register(SearchPage.getInstance());
+
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.registerSubPage(AboutPage.getInstance(),
@@ -193,7 +195,6 @@ function load() {
     OptionsPage.register(InternetOptions.getInstance());
   }
 
-  OptionsPage.register(SearchPage.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance());
