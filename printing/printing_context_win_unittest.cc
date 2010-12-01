@@ -103,10 +103,12 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   return S_OK;
 }
 
-// crbug.com/61509
-TEST_F(PrintingContextTest, FLAKY_Base) {
-  printing::PrintSettings settings;
+TEST_F(PrintingContextTest, Base) {
+  // Sometimes ::GetDefaultPrinter() fails? bug 61509.
+  if (IsTestCaseDisabled())
+    return;
 
+  printing::PrintSettings settings;
   settings.set_device_name(GetDefaultPrinter());
   // Initialize it.
   scoped_ptr<printing::PrintingContext> context(
@@ -120,8 +122,11 @@ TEST_F(PrintingContextTest, FLAKY_Base) {
   EXPECT_TRUE(ModifyWorldTransform(context->context(), NULL, MWT_IDENTITY));
 }
 
-// http://crbug.com/61499
-TEST_F(PrintingContextTest, FLAKY_PrintAll) {
+TEST_F(PrintingContextTest, PrintAll) {
+  // Sometimes ::GetDefaultPrinter() fails? bug 61509.
+  if (IsTestCaseDisabled())
+    return;
+
   printing::PrintingContextWin context;
   context.SetPrintDialog(&PrintDlgExMock);
   context.AskUserForSettings(
