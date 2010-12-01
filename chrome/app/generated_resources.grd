@@ -10394,7 +10394,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Battery is charged
       </message>
       <message name="IDS_STATUSBAR_FEEDBACK_TOOLTIP" desc="Tooltip for the feedback status bar icon.">
-        Report a bug.
+        Report a bug
       </message>
       <message name="IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP" desc="Tooltip for the network menu status bar icon when no network is connected.">
         No network
