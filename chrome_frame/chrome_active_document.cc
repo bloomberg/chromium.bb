@@ -111,6 +111,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
   mshtml_group_commands_map_[IDM_BASELINEFONT3] = flags;
   mshtml_group_commands_map_[IDM_BASELINEFONT4] = flags;
   mshtml_group_commands_map_[IDM_BASELINEFONT5] = flags;
+  mshtml_group_commands_map_[IDM_VIEWSOURCE] = flags;
 
   HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
   accelerator_table_ =
@@ -1348,4 +1349,3 @@ bool ChromeActiveDocument::IsNewNavigation(
 
   return false;
 }
-
