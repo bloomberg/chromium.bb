@@ -45,7 +45,6 @@
       'sources': [
         'app/breakpad_mac_stubs.mm',
         # The only thing used from browser is Browser::Type.
-        'browser/browser.h',
         'browser/extensions/test_extension_prefs.cc',
         'browser/extensions/test_extension_prefs.h',
         'browser/geolocation/mock_location_provider.cc',
@@ -76,6 +75,7 @@
         'browser/renderer_host/test/test_render_view_host.h',
         'browser/tab_contents/test_tab_contents.cc',
         'browser/tab_contents/test_tab_contents.h',
+        'browser/ui/browser.h',
         'browser/ui/cocoa/browser_test_helper.h',
         'common/notification_observer_mock.h',
         'common/ipc_test_sink.cc',

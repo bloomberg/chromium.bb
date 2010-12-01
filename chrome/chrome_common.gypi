@@ -309,6 +309,7 @@
         'common/service_process_util_win.cc',
         'common/socket_stream_dispatcher.cc',
         'common/socket_stream_dispatcher.h',
+        'common/speech_input_result.h',
         'common/spellcheck_common.cc',
         'common/spellcheck_common.h',
         'common/sqlite_compiled_statement.cc',
