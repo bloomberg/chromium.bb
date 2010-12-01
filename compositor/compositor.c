@@ -1395,10 +1395,18 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	return 0;
 }
 
+static void on_term_signal(int signal_number, void *data)
+{
+	struct wlsc_compositor *ec = data;
+
+	wl_display_terminate(ec->wl_display);
+}
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
 	struct wlsc_compositor *ec;
+	struct wl_event_loop *loop;
 	GError *error = NULL;
 	GOptionContext *context;
 	int width, height;
@@ -1435,6 +1443,10 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
 	}
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
+	wl_event_loop_add_signal(loop, SIGINT, on_term_signal, ec);
 
 	wl_display_run(display);
 

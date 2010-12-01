@@ -581,7 +581,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			client_message = (xcb_client_message_event_t *) event;
 			atom = client_message->data.data32[0];
 			if (atom == c->atom.wm_delete_window)
-				exit(1);
+				wl_display_terminate(c->base.wl_display);
 			break;
 		default: 
 
