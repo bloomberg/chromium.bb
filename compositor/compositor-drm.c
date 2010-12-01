@@ -42,9 +42,7 @@ struct drm_compositor {
 	struct udev *udev;
 	struct wl_event_source *drm_source;
 
-	struct wl_event_source *term_signal_source;
-
-        /* tty handling state */
+	/* tty handling state */
 	int tty_fd;
 	uint32_t vt_active : 1;
 
@@ -559,16 +557,6 @@ on_tty_input(int fd, uint32_t mask, void *data)
 	tcflush(ec->tty_fd, TCIFLUSH);
 }
 
-static void on_term_signal(int signal_number, void *data)
-{
-	struct drm_compositor *ec = data;
-
-	if (tcsetattr(ec->tty_fd, TCSANOW, &ec->terminal_attributes) < 0)
-		fprintf(stderr, "could not restore terminal to canonical mode\n");
-
-	exit(0);
-}
-
 static int setup_tty(struct drm_compositor *ec, struct wl_event_loop *loop)
 {
 	struct termios raw_attributes;
@@ -595,9 +583,6 @@ static int setup_tty(struct drm_compositor *ec, struct wl_event_loop *loop)
 
 	if (tcsetattr(ec->tty_fd, TCSANOW, &raw_attributes) < 0)
 		fprintf(stderr, "could not put terminal into raw mode: %m\n");
-
-	ec->term_signal_source =
-		wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
 
 	ec->tty_input_source =
 		wl_event_loop_add_fd(loop, ec->tty_fd,
@@ -629,6 +614,18 @@ drm_authenticate(struct wlsc_compositor *c, uint32_t id)
 	struct drm_compositor *ec = (struct drm_compositor *) c;
 
 	return drmAuthMagic(ec->base.drm.fd, id);
+}
+
+static void
+drm_destroy(struct wlsc_compositor *ec)
+{
+	struct drm_compositor *d = (struct drm_compositor *) ec;
+
+	if (tcsetattr(d->tty_fd, TCSANOW, &d->terminal_attributes) < 0)
+		fprintf(stderr,
+			"could not restore terminal to canonical mode\n");
+
+	free(ec);
 }
 
 struct wlsc_compositor *
@@ -691,6 +688,7 @@ drm_compositor_create(struct wl_display *display, int connector)
 		wl_event_loop_add_fd(loop, ec->base.drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
 	setup_tty(ec, loop);
+	ec->base.destroy = drm_destroy;
 	ec->base.authenticate = drm_authenticate;
 	ec->base.present = drm_compositor_present;
 	ec->base.focus = 1;

@@ -643,6 +643,12 @@ x11_authenticate(struct wlsc_compositor *c, uint32_t id)
 	return dri2_authenticate((struct x11_compositor *) c, id);
 }
 
+static void
+x11_destroy(struct wlsc_compositor *ec)
+{
+	free(ec);
+}
+
 struct wlsc_compositor *
 x11_compositor_create(struct wl_display *display, int width, int height)
 {
@@ -686,6 +692,7 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 				     WL_EVENT_READABLE,
 				     x11_compositor_handle_event, c);
 
+	c->base.destroy = x11_destroy;
 	c->base.authenticate = x11_authenticate;
 	c->base.present = x11_compositor_present;
 

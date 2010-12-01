@@ -1452,5 +1452,7 @@ int main(int argc, char *argv[])
 
 	wl_display_destroy(display);
 
+	ec->destroy(ec);
+
 	return 0;
 }

@@ -163,6 +163,7 @@ struct wlsc_compositor {
 
 	uint32_t focus;
 
+	void (*destroy)(struct wlsc_compositor *ec);
 	int (*authenticate)(struct wlsc_compositor *c, uint32_t id);
 	void (*present)(struct wlsc_compositor *c);
 };
