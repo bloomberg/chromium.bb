@@ -4188,6 +4188,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_DESCRIPTION" desc="Description of the 'Disable hyperlink auditing' lab.">
         Disable sending hyperlink auditing pings.
       </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_NAME" desc="Name of the 'Enable experimental location features' lab.">
+        Experimental location features
+      </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental location features' lab.">
+        Enables experimental extensions to the geolocation feature. Includes using operating system location APIs (where available), and sending additional local network configuration data to the Google location service to provide higher accuracy positioning.
+      </message>
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">

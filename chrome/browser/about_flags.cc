@@ -255,6 +255,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_DESCRIPTION,
     kOsAll,
     switches::kNoPings
+  },
+  {
+    "experimental-location-features",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_NAME,
+    IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION,
+    kOsMac | kOsWin | kOsLinux,  // Currently does nothing on CrOS.
+    switches::kExperimentalLocationFeatures
   }
 };
 
