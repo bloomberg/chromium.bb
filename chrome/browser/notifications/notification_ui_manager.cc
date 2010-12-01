@@ -10,6 +10,8 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 
 // A class which represents a notification waiting to be shown.
 class QueuedNotification {
@@ -38,6 +40,8 @@ class QueuedNotification {
 
 NotificationUIManager::NotificationUIManager()
     : balloon_collection_(NULL) {
+  registrar_.Add(this, NotificationType::APP_TERMINATING,
+                 NotificationService::AllSources());
 }
 
 NotificationUIManager::~NotificationUIManager() {
@@ -96,6 +100,11 @@ bool NotificationUIManager::CancelAllBySourceOrigin(const GURL& source) {
   return balloon_collection_->RemoveBySourceOrigin(source) || removed;
 }
 
+void NotificationUIManager::CancelAll() {
+  STLDeleteElements(&show_queue_);
+  balloon_collection_->RemoveAll();
+}
+
 void NotificationUIManager::CheckAndShowNotifications() {
   // TODO(johnnyg): http://crbug.com/25061 - Check for user idle/presentation.
   ShowNotifications();
@@ -146,4 +155,13 @@ bool NotificationUIManager::TryReplacement(const Notification& notification) {
   }
 
   return false;
+}
+
+void NotificationUIManager::Observe(NotificationType type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  if (type == NotificationType::APP_TERMINATING)
+    CancelAll();
+  else
+    NOTREACHED();
 }

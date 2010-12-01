@@ -43,6 +43,9 @@ class BalloonCollectionBase {
   // was found.
   virtual bool CloseAllBySourceOrigin(const GURL& source_origin);
 
+  // Calls CloseByScript on all balloons.
+  virtual void CloseAll();
+
   const Balloons& balloons() const { return balloons_; }
 
   // Returns the balloon matching the given notification, or
