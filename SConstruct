@@ -1230,36 +1230,27 @@ CMD_COUNTER = {}
 ENV_COUNTER = {}
 
 
-if pre_base_env.Bit('target_stats'):
-  # target_stats and pp are incompatible as they both use the
-  # PRINT_CMD_LINE_FUNC hook
-  assert not pre_base_env.Bit('pp')
-
-  def CommandStats(cmd, targets, source, env):
+def CustomCommandPrinter(cmd, targets, source, env):
+  # Log the command
+  if env.Bit('target_stats'):
     cmd_name = GetPrintableCommandName(cmd)
+    env_name = GetPrintableEnvironmentName(env)
     CMD_COUNTER[cmd_name] = CMD_COUNTER.get(cmd_name, 0) + 1
-    env_name = GetPrintableEnvironmentName(env)
     ENV_COUNTER[env_name] = ENV_COUNTER.get(env_name, 0) + 1
-  # Abuse standard scons's hook for command pretty printing (c.f.
-  # http://www.scons.org/doc/HTML/scons-man.html) to gather stats
-  # about how often each command is executed during this scons invocation.
-  pre_base_env.Append(PRINT_CMD_LINE_FUNC=CommandStats)
 
+  # Print the command
+  if env.Bit('pp'):
+    if targets:
+      cmd_name = GetPrintableCommandName(cmd)
+      env_name = GetPrintableEnvironmentName(env)
+      sys.stdout.write('[%s] [%s] %s\n' % (cmd_name, env_name,
+                                           targets[0].get_path()))
+  else:
+    # The SCons default
+    sys.stdout.write(cmd)
+    sys.stdout.write('\n')
 
-if pre_base_env.Bit('pp'):
-  # target_stats and pp are incompatible as they both use the
-  # PRINT_CMD_LINE_FUNC hook
-  assert not pre_base_env.Bit('target_stats')
-  def CommandPrettyPrinter(cmd, targets, source, env):
-    if not targets:
-      return
-    target =  targets[0]
-    cmd_name = GetPrintableCommandName(cmd)
-    env_name = GetPrintableEnvironmentName(env)
-    print '[%s] [%s] %s' % (cmd_name, env_name, target.get_path())
-  # Use standard scons's hooks for command pretty printing, c.f.
-  # http://www.scons.org/doc/HTML/scons-man.html
-  pre_base_env.Append(PRINT_CMD_LINE_FUNC=CommandPrettyPrinter)
+pre_base_env.Append(PRINT_CMD_LINE_FUNC=CustomCommandPrinter)
 
 # ----------------------------------------------------------
 # for generation of a promiscuous sel_ldr
@@ -1788,12 +1779,6 @@ if nacl_env.Bit('bitcode'):
   # NOTE: we change the linker command line to make it possible to
   #       sneak in startup and cleanup code
   nacl_env.Prepend(EMULATOR=EMULATOR)
-
-if not GetOption('brief_comstr'):
-  nacl_env['LINKCOM'] += '&& $PYTHON -c "import os; import sys;\
-      print(sys.argv[1] + sys.argv[2] + \
-            str(os.stat(sys.argv[1])[6]) + sys.argv[3])" \
-      $TARGET " is " " bytes"'
 
 environment_list.append(nacl_env)
 
