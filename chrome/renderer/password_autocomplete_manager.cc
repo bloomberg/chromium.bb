@@ -422,7 +422,11 @@ bool PasswordAutocompleteManager::ShowSuggestionPopup(
   if (!webview)
     return false;
 
-  webview->applyAutocompleteSuggestions(user_input, suggestions, -1);
+  std::vector<string16> labels(suggestions.size());
+  std::vector<string16> icons(suggestions.size());
+  std::vector<int> ids(suggestions.size(), 0);
+  webview->applyAutoFillSuggestions(user_input, suggestions, labels, icons, ids,
+                                    -1);
   return true;
 }
 
