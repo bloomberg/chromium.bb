@@ -15,6 +15,7 @@
 namespace {
 
 const char* const kSelectID = "mySelect";
+const char* const kEmptySelectID = "myEmptySelect";
 
 }  // namespace
 
@@ -31,6 +32,8 @@ class ExternalPopupMenuTest : public RenderViewTest {
                        "  <option>zero</option>"
                        "  <option selected='1'>one</option>"
                        "  <option>two</option>"
+                       "</select>"
+                       "<select id='myEmptySelect'>"
                        "</select>";
     if (ShouldRemoveSelectOnChange()) {
       html += "<script>"
@@ -107,6 +110,12 @@ TEST_F(ExternalPopupMenuTest, ShowPopupThenNavigate) {
 
   // Now the user selects something, we should not crash.
   view_->OnSelectPopupMenuItem(-1);
+}
+
+// An empty select should not cause a crash when clicked.
+// http://crbug.com/63774
+TEST_F(ExternalPopupMenuTest, EmptySelect) {
+  EXPECT_TRUE(SimulateElementClick(kEmptySelectID));
 }
 
 class ExternalPopupMenuRemoveTest : public ExternalPopupMenuTest {
