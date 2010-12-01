@@ -177,14 +177,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   EXPECT_EQ(url, browser()->GetSelectedTabContents()->GetURL());
 }
 
-// Disabled because of bug in parsing output: 64792.
-#if defined(OS_WIN)
-#define MAYBE_PhishingDontProceed DISABLED_PhishingDontProceed
-#else
-#define MAYBE_PhishingDontProceed PhishingDontProceed
-#endif
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
-                       MAYBE_PhishingDontProceed) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
   AddURLResult(url, SafeBrowsingService::URL_PHISHING);
 
@@ -208,14 +201,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
   EXPECT_EQ(url, browser()->GetSelectedTabContents()->GetURL());
 }
 
-// Disabled because of bug in parsing output: 64792.
-#if defined(OS_WIN)
-#define MAYBE_PhishingReportError DISABLED_PhishingReportError
-#else
-#define MAYBE_PhishingReportError PhishingReportError
-#endif
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
-                       MAYBE_PhishingReportError) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
   GURL url = test_server()->GetURL(kEmptyPage);
   AddURLResult(url, SafeBrowsingService::URL_PHISHING);
 
@@ -230,13 +216,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
             browser()->GetSelectedTabContents()->GetURL().path());
 }
 
-// Disabled because of bug in parsing output: 64792.
-#if defined(OS_WIN)
-#define MAYBE_PhishingLearnMore DISABLED_PhishingLearnMore
-#else
-#define MAYBE_PhishingLearnMore PhishingLearnMore
-#endif
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MAYBE_PhishingLearnMore) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingLearnMore) {
   GURL url = test_server()->GetURL(kEmptyPage);
   AddURLResult(url, SafeBrowsingService::URL_PHISHING);
 
