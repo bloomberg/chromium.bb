@@ -101,6 +101,7 @@ cpp_flags = ['-D__native_client__=1']
 global_config_flags = {
   'CPP_FLAGS' : cpp_flags,
   'LLVM_GCC_COMPILE': [
+    '-Werror-portable-llvm',
     '-nostdinc',
     # TODO: get rid of the next line
     '-DNACL_LINUX=1'
