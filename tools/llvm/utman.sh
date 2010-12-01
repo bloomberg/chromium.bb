@@ -1366,7 +1366,7 @@ misc-tools() {
           platform=arm \
           sdl=none \
           naclsdk_validate=0 \
-          sysinfo= \
+          sysinfo=0 \
           sel_ldr
    rm -rf  ${INSTALL_ROOT}/tools-arm
    mkdir ${INSTALL_ROOT}/tools-arm
@@ -1377,7 +1377,7 @@ misc-tools() {
    RunWithLog arm_ncval_core \
            ./scons MODE=opt-linux \
            targetplatform=arm \
-           sysinfo= \
+           sysinfo=0 \
            arm-ncval-core
    rm -rf  ${INSTALL_ROOT}/tools-x86
    mkdir ${INSTALL_ROOT}/tools-x86
@@ -2667,7 +2667,7 @@ else
   readonly SCONS_ARGS=(MODE=nacl,opt-linux
                        sdl=none
                        naclsdk_validate=0
-                       sysinfo=
+                       sysinfo=0
                        bitcode=1
                        -j${UTMAN_CONCURRENCY})
 
@@ -2675,7 +2675,7 @@ else
                                bitcode=1
                                sdl=none
                                naclsdk_validate=0
-                               sysinfo=
+                               sysinfo=0
                                -j${UTMAN_CONCURRENCY})
 fi
 
