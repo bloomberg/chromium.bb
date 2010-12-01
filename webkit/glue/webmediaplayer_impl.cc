@@ -225,28 +225,32 @@ void WebMediaPlayerImpl::Proxy::PutCurrentFrame(
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
-    media::MediaFilterCollection* collection,
-    MediaResourceLoaderBridgeFactory* bridge_factory_simple,
-    MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
-    bool use_simple_data_source,
-    scoped_refptr<WebVideoRenderer> web_video_renderer)
+    media::MediaFilterCollection* collection)
     : network_state_(WebKit::WebMediaPlayer::Empty),
       ready_state_(WebKit::WebMediaPlayer::HaveNothing),
       main_loop_(NULL),
       filter_collection_(collection),
+      pipeline_(NULL),
       pipeline_thread_("PipelineThread"),
       paused_(true),
       playback_rate_(0.0f),
       client_(client),
+      proxy_(NULL),
       pipeline_stopped_(false, false) {
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
+}
 
+bool WebMediaPlayerImpl::Initialize(
+    MediaResourceLoaderBridgeFactory* bridge_factory_simple,
+    MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
+    bool use_simple_data_source,
+    scoped_refptr<WebVideoRenderer> web_video_renderer) {
   // Create the pipeline and its thread.
   if (!pipeline_thread_.Start()) {
     NOTREACHED() << "Could not start PipelineThread";
-    return;
+    return false;
   }
 
   pipeline_ = new media::PipelineImpl(pipeline_thread_.message_loop());
@@ -290,6 +294,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder());
   filter_collection_->AddVideoDecoder(new media::FFmpegVideoDecoder(NULL));
   filter_collection_->AddAudioRenderer(new media::NullAudioRenderer());
+
+  return true;
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -776,10 +782,12 @@ void WebMediaPlayerImpl::Destroy() {
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.
-  pipeline_->Stop(NewCallback(this,
-      &WebMediaPlayerImpl::PipelineStoppedCallback));
-  pipeline_stopped_.Wait();
-  pipeline_thread_.Stop();
+  if (pipeline_) {
+    pipeline_->Stop(NewCallback(this,
+        &WebMediaPlayerImpl::PipelineStoppedCallback));
+    pipeline_stopped_.Wait();
+    pipeline_thread_.Stop();
+  }
 
   // And then detach the proxy, it may live on the render thread for a little
   // longer until all the tasks are finished.

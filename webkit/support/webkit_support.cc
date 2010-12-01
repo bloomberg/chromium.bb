@@ -295,9 +295,15 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
       new webkit_glue::VideoRendererImpl(false));
   collection->AddVideoRenderer(video_renderer);
 
-  return new webkit_glue::WebMediaPlayerImpl(
-      client, collection.release(), bridge_factory_simple,
-      bridge_factory_buffered, false, video_renderer);
+  scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
+      new webkit_glue::WebMediaPlayerImpl(client, collection.release()));
+  if (!result->Initialize(bridge_factory_simple,
+                          bridge_factory_buffered,
+                          false,
+                          video_renderer)) {
+    return NULL;
+  }
+  return result.release();
 }
 
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(

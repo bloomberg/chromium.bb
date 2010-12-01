@@ -169,13 +169,17 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // |collection| can override the default filters by adding extra filters to
   // |collection| before calling this method.
   //
+  // Callers must call |Initialize()| before they can use the object.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                     media::MediaFilterCollection* collection,
-                     MediaResourceLoaderBridgeFactory* bridge_factory_simple,
-                     MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
-                     bool use_simple_data_source,
-                     scoped_refptr<WebVideoRenderer> web_video_renderer);
+                     media::MediaFilterCollection* collection);
   virtual ~WebMediaPlayerImpl();
+
+  // Finalizes initialization of the object.
+  bool Initialize(
+      MediaResourceLoaderBridgeFactory* bridge_factory_simple,
+      MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
+      bool use_simple_data_source,
+      scoped_refptr<WebVideoRenderer> web_video_renderer);
 
   virtual void load(const WebKit::WebURL& url);
   virtual void cancelLoad();
