@@ -201,16 +201,6 @@ Core wayland protocol
 
     - synaptics, 3-button emulation, scim
 
- - auth; We need to generate a random socket name and advertise that
-   on dbus along with a connection cookie.  Something like a method
-   that returns the socket name and a connection cookie.  The
-   connection cookie is just another random string that the client
-   must pass to the wayland server to become authenticated.  The
-   Wayland server generates the cookie on demand when the dbus method
-   is called and expires it after 5s or so.
-
-    - or just pass the fd over dbus
-
  - drm bo access control, authentication, flink_to
 
  - Range protocol may not be sufficient... if a server cycles through
