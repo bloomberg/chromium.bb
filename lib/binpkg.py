@@ -11,7 +11,6 @@ import os
 import tempfile
 import time
 import urllib2
-import urlparse
 
 class PackageIndex(object):
   """A parser for the Portage Packages index file.
@@ -54,7 +53,7 @@ class PackageIndex(object):
       cpv, sha1 = pkg['CPV'], pkg.get('SHA1')
       if sha1:
         path = pkg.get('PATH', cpv + '.tbz2')
-        db[sha1] = urlparse.urljoin(uri, path)
+        db[sha1] = '%s/%s' % (uri.rstrip('/'), path)
 
   def _ReadPkgIndex(self, pkgfile):
     """Read a list of key/value pairs from the Packages file into a dictionary.
@@ -201,7 +200,7 @@ class PackageIndex(object):
     """
     self.header['URI'] = base_uri
     for pkg in self.packages:
-      pkg['PATH'] = urlparse.urljoin(path_prefix, pkg['CPV'] + '.tbz2')
+      pkg['PATH'] = '%s/%s' % (path_prefix.rstrip('/'), pkg['CPV'] + '.tbz2')
 
   def Write(self, pkgfile):
     """Write a packages file to disk.
@@ -277,7 +276,7 @@ def GrabRemotePackageIndex(binhost_url):
     server returns status code 404, None is returned.
   """
 
-  url = urlparse.urljoin(binhost_url, 'Packages')
+  url = '%s/Packages' % binhost_url.rstrip('/')
   try:
     f = _RetryUrlOpen(url)
   except urllib2.HTTPError as e:
