@@ -26,3 +26,11 @@ test_dir = env.CommandSelLdrTestNacl(
     command=[test_dir_nexe, test_dir_nexe.path.rstrip('test_dir.nexe')])
 
 env.AddNodeToTestSuite(test_dir, ['small_tests'], 'run_dir_test')
+
+env.ComponentProgram('test_time.nexe', 'test_time.c')
+
+test_time = env.CommandSelLdrTestNacl(
+    'test_time.out',
+    command=[env.File('test_time.nexe')])
+
+env.AddNodeToTestSuite(test_time, ['small_tests'], 'run_time_test')
