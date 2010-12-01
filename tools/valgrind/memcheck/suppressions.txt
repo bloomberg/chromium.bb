@@ -961,7 +961,7 @@
    bug_16092b
    Memcheck:Leak
    ...
-   fun:_ZNSt11_Deque_baseIN11MessageLoop11PendingTaskESaIS1_EE17_M_initialize_mapEj
+   fun:_ZNSt11_Deque_baseIN11MessageLoop11PendingTaskESaIS1_EE17_M_initialize_mapE*
    ...
    fun:_ZN11MessageLoopC1ENS_4TypeE
    fun:_ZN4base6Thread10ThreadMainEv
@@ -3301,21 +3301,6 @@
    fun:_ZN10scoped_ptrIN3net19TCPClientSocketPoolEED1Ev
 }
 {
-   bug_62801
-   Memcheck:Addr4
-   fun:pthread_mutex_lock
-   fun:PR_Lock
-   fun:_pt_thread_death_internal
-   fun:PR_DetachThread
-   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
-   fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
-   fun:*12WorkerThread10ThreadMainEv
-   fun:_Z10ThreadFuncPv
-   fun:start_thread
-   fun:clone
-}
-{
    bug_63015
    Memcheck:Addr2
    fun:_ZN7WebCore18stringToLengthTypeERPKtS1_
@@ -3381,4 +3366,24 @@
    fun:_ZN7testing8internal12UnitTestImpl19PostFlagParsingInitEv
    fun:_ZN7testing8internal18InitGoogleTestImplIcEEvPiPPT_
    fun:_ZN7testing14InitGoogleTestEPiPPc
+}
+{
+   bug_64894a
+   Memcheck:Cond
+   fun:_ZN3net11SpdySession10GetSSLInfoEPNS_7SSLInfoEPb
+   fun:_ZN3net10SpdyStream10GetSSLInfoEPNS_7SSLInfoEPb
+   fun:_ZN3net14SpdyHttpStream18OnResponseReceivedERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEN4base4TimeEi
+}
+{
+   bug_64894b
+   Memcheck:Cond
+   fun:_ZN3net11SpdySession16CreateStreamImplERK4GURLNS_15RequestPriorityEP13scoped_refptrINS_10SpdyStreamEERKNS_11BoundNetLogE
+   fun:_ZN3net11SpdySession27ProcessPendingCreateStreamsEv
+   fun:_ZN3net11SpdySession12DeleteStreamEji
+   fun:_ZN3net11SpdySession11CloseStreamEji
+   fun:_ZN3net10SpdyStream14OnDataReceivedEPKci
+   fun:_ZN3net11SpdySession17OnStreamFrameDataEjPKcm
+   fun:_ZN4spdy10SpdyFramer23ProcessDataFramePayloadEPKcm
+   fun:_ZN4spdy10SpdyFramer12ProcessInputEPKcm
+   fun:_ZN3net11SpdySession14OnReadCompleteEi
 }
