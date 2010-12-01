@@ -113,7 +113,7 @@ html[install-animation-enabled=true] .app[new=installed] {
 }
 
 .app[app-id=web-store-entry] > a {
-  background-image: url("web_store_icon.png");
+  background-image: url("chrome://theme/IDR_WEBSTORE_ICON");
 }
 
 menu > button.default {
