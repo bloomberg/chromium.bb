@@ -37,33 +37,10 @@ extern NaClRunMode NACL_FLAGS_run_mode;
 /* Change the current opcode prefix to the given value. */
 void NaClDefInstPrefix(const NaClInstPrefix prefix);
 
-/* Define the default prefix to use. Typical use is top-level
- * routine in file defines the default. All helping routines
- * that define a specific local prefix (using NaClDefInstPrefix),
- * then only need to call NaClResetToDefaultInstPrefix.
- *
- * Note: automatically calls NaClDefInstPrefix on the given prefix.
- */
-void NaClDefDefaultInstPrefix(const NaClInstPrefix prefix);
-
 /* Resets the default opcode prefix to the value of the last
  * call to NaClDefDefaultInstPrefix.
  */
 void NaClResetToDefaultInstPrefix();
-
-/* By default, an opcode can only have either zero or one choice.
- * If you want to define more that one entry for an opcode sequence,
- * you must register the number expected with a call to this function.
- * Note: Assumes the current opcode prefix should be applied.
- */
-void NaClDefInstChoices(const uint8_t opcode, const int count);
-
-/* Same as NaClDefInstChoices, but extends the opcode with the
- * modrm opcode in the modrm byte (must be in [0..7]).
- */
-void NaClDefInstMrmChoices(const uint8_t opcode,
-                           const uint8_t modrm_opcode,
-                           const int count);
 
 /* Same as NaClDefInstChoices, but you can explicitly define the
  * prefix associated with the opcode.
@@ -79,21 +56,6 @@ void NaClDefPrefixInstMrmChoices(const NaClInstPrefix prefix,
                                  const uint8_t opcode,
                                  const uint8_t modrm_opcode,
                                  const int count);
-
-/* Same as NaClDefInstChoices, except that the counts for
- * the 32 and 64 bit models can be separately epressed.
- */
-void NaClDefInstChoices_32_64(const uint8_t opcode,
-                              const int count_32,
-                              const int count_64);
-
-/* Same as NaClDefInstChoices_32_64, but extends the opcode with
- * the modrm opcode in the modrm byte (must be in [0..7]).
- */
-void NaClDefInstMrmChoices_32_64(const uint8_t opcode,
-                                 const uint8_t modrm_opcode,
-                                 const int count_32,
-                                 const int count_64);
 
 /* Same as NaClDefInstChoices_32_64, but you can explicitly define the
  * prefix associated with the opcode.
@@ -149,18 +111,6 @@ void NaClDefineOpcodeModRmRmExtension(int value);
 
 /* Define a register value embedded in the opcode value. */
 void NaClDefOpcodeRegisterValue(int r);
-
-/* Defines a specific sequence of byte codes for which the next NaClDefInst
- * should apply. When specified, restricts the match to be only defined for
- * that specific sequence of characters.
- */
-void NaClDefInstSeq(const char* opcode_seq);
-
-/* Defines an invalid instruction for the current prefix. */
-void NaClDefInvalid(const uint8_t opcode);
-
-/* Defines an invalid instruction for the given prefix. */
-void NaClDefInvalidIcode(NaClInstPrefix prefix, const uint8_t opcode);
 
 /* Adds the given operands description to the current instruction being
  * processed.

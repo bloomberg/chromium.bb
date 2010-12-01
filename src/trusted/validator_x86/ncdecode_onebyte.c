@@ -205,7 +205,7 @@ static void NaClDefJumpRegZero(struct NaClSymbolTable* context_st) {
   };
   int i;
   struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
-  NaClDefInstChoices(0xe3, 2);
+  NaClDefPrefixInstChoices(NoPrefix, 0xe3, 2);
   for (i = 0; i < 3; ++i) {
     NaClSymbolTablePutText("name", inst[i].name, st);
     NaClSymbolTablePutText("reg",  inst[i].reg, st);
@@ -293,14 +293,14 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefIncOrDec_00_07(0x48, InstDec, st);
   NaClDefPushOrPop_00_07(0x50, InstPush, st);
   NaClDefPushOrPop_00_07(0x58, InstPop, st);
-  NaClDefInstChoices_32_64(0x60, 2, 1);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0x60, 2, 1);
   NaClBegD32("60: Pusha {%@sp}, {%gp7}", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
   NaClEndDef(Push);
   NaClBegD32("60: Pushad {%@sp}, {%gp7}", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
   NaClEndDef(Push);
-  NaClDefInstChoices_32_64(0x61, 2, 1);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0x61, 2, 1);
   NaClDef_64("60: Invalid", NACLi_INVALID, st, Other);
   NaClBegD32("61: Popa {%@sp}, {%gp7}", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
@@ -326,11 +326,11 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("6a: Push {%@sp} $Ib", NACLi_386, st, Push);
   NaClDefine("6b: Imul $Gv, $Ev, $Ib", NACLi_386, st, Binary);
   NaClDefine("6c: Insb {$Yb}, {%dx}", NACLi_386, st, Move);
-  NaClDefInstChoices(0x6D, 2);
+  NaClDefPrefixInstChoices(NoPrefix, 0x6D, 2);
   NaClDefine("6d: Insw {$Yzw}, {%dx}", NACLi_386, st, Move);
   NaClDefine("6d: Insd {$Yzd}, {%dx}", NACLi_386, st, Move);
   NaClDefine("6e: Outsb {%dx}, {$Xb}", NACLi_386, st, Uses);
-  NaClDefInstChoices(0x6F, 2);
+  NaClDefPrefixInstChoices(NoPrefix, 0x6F, 2);
   NaClDefine("6f: Outsw {%dx}, {$Xzw}", NACLi_386, st, Uses);
   NaClDefine("6f: Outsd {%dx}, {$Xzd}", NACLi_386, st, Uses);
   NaClDefJump8Opcode(0x70, InstJo, st);
@@ -368,7 +368,7 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("8f/r: Invalid", NACLi_INVALID, st, Other);
   /* 90-97: exchange register. */
   NaClDefXchgRegister();
-  NaClDefInstChoices_32_64(0x98, 2, 3);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0x98, 2, 3);
   NaClBegDef("98: Cbw {%ax}, {%al}", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
   NaClEndDef(Move);
@@ -379,7 +379,7 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClBegD64("98: Cdqe {%rax}, {%eax}", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
   NaClEndDef(Move);
-  NaClDefInstChoices_32_64(0x99, 2, 3);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0x99, 2, 3);
   NaClBegDef("99: Cwd {%dx}, {%ax}", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
   NaClEndDef(Move);
@@ -389,16 +389,16 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClBegD64("99: Cqo {%rdx}, {%rax}", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
   NaClEndDef(Move);
-  NaClDefInstChoices_32_64(0x9a, 2, 1);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0x9a, 2, 1);
   NaClDef_32("9a: Call {%@ip}, {%@sp}, $Ad", NACLi_386, st, Call);
   NaClDef_32("9a: Call {%@ip}, {%@sp}, $Ap", NACLi_386, st, Call);
   NaClDef_64("9a: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("9b: Fwait", NACLi_X87, st, Other);
-  NaClDefInstChoices(0x9c, 2);
+  NaClDefPrefixInstChoices(NoPrefix, 0x9c, 2);
   NaClDefine("9c: Pushf {%@sp}, {$Fvw}", NACLi_386, st, Push);
   NaClDef_32("9c: Pushfd {%@sp}, {$Fvd}", NACLi_386, st, Push);
   NaClDef_64("9c: Pushfq {%@sp}, {$Fvq}", NACLi_386, st, Push);
-  NaClDefInstChoices(0x9d, 2);
+  NaClDefPrefixInstChoices(NoPrefix, 0x9d, 2);
   NaClDefine("9d: Popf {%@sp}, {$Fvw}", NACLi_386, st, Pop);
   NaClDef_32("9d: Popfd {%@sp}, {$Fvd}", NACLi_386, st, Pop);
   NaClDef_64("9d: Popfq {%@sp}, {$Fvq}", NACLi_386, st, Pop);
@@ -409,29 +409,29 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("a2: Mov $Ob, %al", NACLi_386, st, Move);
   NaClDefine("a3: Mov $Ov, $rAXv", NACLi_386, st, Move);
   NaClDefine("a4: Movsb {$Yb}, {$Xb}", NACLi_386, st, Move);
-  NaClDefInstChoices_32_64(0xa5, 2, 3);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0xa5, 2, 3);
   NaClDefine("a5: Movsw {$Yvw}, {$Xvw}", NACLi_386, st, Move);
   NaClDefine("a5: Movsd {$Yvd}, {$Xvd}", NACLi_386, st, Move);
   NaClDef_64("a5: Movsq {$Yvq}, {$Xvq}", NACLi_386, st, Move);
   NaClDefine("a6: Cmpsb {$Xb}, {$Yb}", NACLi_386, st, Compare);
-  NaClDefInstChoices_32_64(0xa7, 2, 3);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0xa7, 2, 3);
   NaClDefine("a7: Cmpsw {$Xvw}, {$Yvw}", NACLi_386, st, Compare);
   NaClDefine("a7: Cmpsd {$Xvd}, {$Yvd}", NACLi_386, st, Compare);
   NaClDef_64("a7: Cmpsq {$Xvq}, {$Yvq}", NACLi_386, st, Compare);
   NaClDefine("a8: Test %al, $Ib", NACLi_386, st, Compare);
   NaClDefine("a9: Test $rAXv, $Iz", NACLi_386, st, Compare);
   NaClDefine("aa: Stosb {$Yb}, {%al}", NACLi_386, st, Move);
-  NaClDefInstChoices_32_64(0xab, 2, 3);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0xab, 2, 3);
   NaClDefine("ab: Stosw {$Yvw}, {$rAXvw}", NACLi_386, st, Move);
   NaClDefine("ab: Stosd {$Yvd}, {$rAXvd}", NACLi_386, st, Move);
   NaClDef_64("ab: Stosq {$Yvq}, {$rAXvq}", NACLi_386, st, Move);
   NaClDefine("ac: Lodsb {%al}, {$Xb}", NACLi_386, st, Move);
-  NaClDefInstChoices_32_64(0xad, 2, 3);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0xad, 2, 3);
   NaClDefine("ad: Lodsw {$rAXvw}, {$Xvw}", NACLi_386, st, Move);
   NaClDefine("ad: Lodsd {$rAXvd}, {$Xvd}", NACLi_386, st, Move);
   NaClDef_64("ad: Lodsq {$rAXvq}, {$Xvq}", NACLi_386, st, Move);
   NaClDefine("ae: Scasb {%al}, {$Yb}", NACLi_386, st, Compare);
-  NaClDefInstChoices_32_64(0xaf, 2, 3);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0xaf, 2, 3);
   NaClDefine("af: Scasw {$rAXvw}, {$Yvw}", NACLi_386, st, Compare);
   NaClDefine("af: Scasd {$rAXvd}, {$Yvd}", NACLi_386, st, Compare);
   NaClDef_64("af: Scasq {$rAXvq}, {$Yvq}", NACLi_386, st, Compare);
@@ -455,7 +455,7 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("cc: Int3", NACLi_SYSTEM, st, Other);
   NaClDefine("cd: Int $Ib", NACLi_386, st, Uses);
   NaClDefine("ce: Into", NACLi_386, st, Other);
-  NaClDefInstChoices_32_64(0xcf, 2, 3);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0xcf, 2, 3);
   NaClBegDef("cf: Iretd {%@ip} {%@sp}", NACLi_SYSTEM, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
   NaClEndDef(Return);
@@ -494,7 +494,7 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
    * See Call instruction in Intel document 253666-030US - March 2009,
    * "Intel 654 and IA-32 Architectures Software Developer's Manual, Volume2A".
    */
-  NaClDefInstChoices_32_64(0xe8, 1, 2);
+  NaClDefPrefixInstChoices_32_64(NoPrefix, 0xe8, 1, 2);
   NaClBegD64("e8: Call {%@ip}, {%@sp}, $Jzw", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal));
   NaClEndDef(Call);

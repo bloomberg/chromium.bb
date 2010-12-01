@@ -36,7 +36,6 @@ void NaClDefX87Insts(struct NaClSymbolTable* st) {
    * not explicitly listed in table A-10. This information
    * was derived from xed tests.
    */
-  NaClDefDefaultInstPrefix(NoPrefix);
 
   /* Define D8 x87 instructions. */
 

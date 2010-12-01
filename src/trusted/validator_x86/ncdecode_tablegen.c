@@ -137,7 +137,7 @@ static NaClMrmInst* NaClInstMrmTable[NCDTABLESIZE]
           [NaClInstPrefixEnumSize][NACL_MODRM_OPCODE_SIZE];
 
 /* Holds encodings of prefix bytes. */
-const char* NaClPrefixTable[NCDTABLESIZE];
+static const char* NaClPrefixTable[NCDTABLESIZE];
 
 /* Prints out the opcode prefix being defined, the opcode pattern
  * being defined, and the given error message. Then aborts the
@@ -470,11 +470,6 @@ static void NaClEncodePrefixName(const uint8_t byte, const char* name) {
 /* Change the current opcode prefix to the given value. */
 void NaClDefInstPrefix(const NaClInstPrefix prefix) {
   current_opcode_prefix = prefix;
-}
-
-void NaClDefDefaultInstPrefix(const NaClInstPrefix prefix) {
-  default_opcode_prefix = prefix;
-  NaClDefInstPrefix(prefix);
 }
 
 void NaClResetToDefaultInstPrefix() {
@@ -1276,17 +1271,6 @@ void NaClDefPrefixInstMrmChoices_32_64(const NaClInstPrefix prefix,
   }
 }
 
-void NaClDefInstChoices(const uint8_t opcode, const int count) {
-  NaClDefPrefixInstChoices(current_opcode_prefix, opcode, count);
-}
-
-void NaClDefInstMrmChoices(const uint8_t opcode,
-                           const uint8_t modrm_opcode,
-                           const int count) {
-  NaClDefPrefixInstMrmChoices(current_opcode_prefix, opcode,
-                              modrm_opcode, count);
-}
-
 void NaClDefPrefixInstChoices(const NaClInstPrefix prefix,
                               const uint8_t opcode,
                               const int count) {
@@ -1299,21 +1283,6 @@ void NaClDefPrefixInstMrmChoices(const NaClInstPrefix prefix,
                                  const int count) {
   NaClDefPrefixInstMrmChoices_32_64(prefix, opcode, modrm_opcode,
                                          count, count);
-}
-
-void NaClDefInstChoices_32_64(const uint8_t opcode,
-                              const int count_32,
-                              const int count_64) {
-  NaClDefPrefixInstChoices_32_64(current_opcode_prefix, opcode,
-                                 count_32, count_64);
-}
-
-void NaClDefInstMrmChoices_32_64(const uint8_t opcode,
-                                 const uint8_t modrm_opcode,
-                                 const int count_32,
-                                 const int count_64) {
-  NaClDefPrefixInstMrmChoices_32_64(current_opcode_prefix, opcode,
-                                    modrm_opcode, count_32, count_64);
 }
 
 void NaClDefPrefixInstChoices_32_64(const NaClInstPrefix prefix,
@@ -1454,16 +1423,6 @@ void NaClDefInst(
   NaClDefInstInternal(opcode, insttype, flags, name, FALSE);
 }
 
-void NaClDefInvalid(const uint8_t opcode) {
-  NaClDefInstInternal(opcode, NACLi_INVALID, 0, InstInvalid, FALSE);
-}
-
-void NaClDefInvalidIcode(NaClInstPrefix prefix, const uint8_t opcode) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInvalid(opcode);
-  NaClResetToDefaultInstPrefix(prefix);
-}
-
 /* Simple (fast hack) routine to extract a byte value from a character string.
  */
 static int NaClExtractByte(const char* chars, const char* opcode_seq) {
@@ -1520,7 +1479,7 @@ static NaClInstNode* NaClInstallInstSeq(int index,
   }
 }
 
-void NaClDefInstSeq(const char* opcode_seq) {
+static void NaClDefInstSeq(const char* opcode_seq) {
   /* First check that opcode sequence not defined twice without a corresponding
    * call to NaClDefInst.
    */
