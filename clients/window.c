@@ -198,7 +198,7 @@ display_get_image_for_drm_surface(struct display *display,
 	return data->image;
 }
 
-cairo_surface_t *
+static cairo_surface_t *
 display_create_drm_surface(struct display *display,
 			   struct rectangle *rectangle)
 {
@@ -251,7 +251,7 @@ display_create_drm_surface(struct display *display,
 	return surface;
 }
 
-cairo_surface_t *
+static cairo_surface_t *
 display_create_drm_surface_from_file(struct display *display,
 				     const char *filename,
 				     struct rectangle *rect)
@@ -326,7 +326,7 @@ struct shm_surface_data {
 	size_t length;
 };
 
-void
+static void
 shm_surface_data_destroy(void *p)
 {
 	struct shm_surface_data *data = p;
@@ -335,7 +335,7 @@ shm_surface_data_destroy(void *p)
 	munmap(data->map, data->length);
 }
 
-cairo_surface_t *
+static cairo_surface_t *
 display_create_shm_surface(struct display *display,
 			   struct rectangle *rectangle)
 {
@@ -394,7 +394,7 @@ display_create_shm_surface(struct display *display,
 	return surface;
 }
 
-cairo_surface_t *
+static cairo_surface_t *
 display_create_shm_surface_from_file(struct display *display,
 				     const char *filename,
 				     struct rectangle *rect)
@@ -459,7 +459,7 @@ display_create_surface(struct display *display,
 #endif
 }
 
-cairo_surface_t *
+static cairo_surface_t *
 display_create_surface_from_file(struct display *display,
 				 const char *filename,
 				 struct rectangle *rectangle)

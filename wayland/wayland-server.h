@@ -74,7 +74,7 @@ int wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout);
 struct wl_event_source *wl_event_loop_add_idle(struct wl_event_loop *loop,
 					       wl_event_loop_idle_func_t func,
 					       void *data);
-int wl_event_get_fd(struct wl_event_loop *loop);
+int wl_event_loop_get_fd(struct wl_event_loop *loop);
 
 struct wl_client;
 struct wl_display;

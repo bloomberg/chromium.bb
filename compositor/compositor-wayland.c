@@ -181,7 +181,6 @@ wayland_compositor_present(struct wlsc_compositor *base)
 {
 	struct wayland_compositor *c = (struct wayland_compositor *) base;
 	struct wayland_output *output;
-	uint32_t msec;
 
 	glFlush();
 
