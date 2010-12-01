@@ -51,7 +51,7 @@ struct wl_listener {
 };
 
 struct wl_proxy {
-	struct wl_object base;
+	struct wl_object object;
 	struct wl_display *display;
 	struct wl_list listener_list;
 	void *user_data;
@@ -144,11 +144,11 @@ wl_proxy_create_for_id(struct wl_display *display,
 	if (proxy == NULL)
 		return NULL;
 
-	proxy->base.interface = interface;
-	proxy->base.id = id;
+	proxy->object.interface = interface;
+	proxy->object.id = id;
 	proxy->display = display;
 	wl_list_init(&proxy->listener_list);
-	wl_hash_table_insert(display->objects, proxy->base.id, proxy);
+	wl_hash_table_insert(display->objects, proxy->object.id, proxy);
 
 	return proxy;
 }
@@ -169,7 +169,7 @@ wl_proxy_destroy(struct wl_proxy *proxy)
 	wl_list_for_each_safe(listener, next, &proxy->listener_list, link)
 		free(listener);
 
-	wl_hash_table_remove(proxy->display->objects, proxy->base.id);
+	wl_hash_table_remove(proxy->display->objects, proxy->object.id);
 	free(proxy);
 }
 
@@ -198,8 +198,8 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 
 	va_start(ap, opcode);
 	closure = wl_connection_vmarshal(proxy->display->connection,
-					 &proxy->base, opcode, ap,
-					 &proxy->base.interface->methods[opcode]);
+					 &proxy->object, opcode, ap,
+					 &proxy->object.interface->methods[opcode]);
 	va_end(ap);
 
 	wl_closure_send(closure, proxy->display->connection);
@@ -273,7 +273,7 @@ display_handle_global(void *data,
 
 	if (strcmp(interface, "display") == 0)
 		wl_hash_table_insert(display->objects,
-				     id, &display->proxy.base);
+				     id, &display->proxy.object);
 	else if (strcmp(interface, "visual") == 0)
 		add_visual(display, id);
 
@@ -377,8 +377,8 @@ wl_display_connect(const char *name)
 	display->objects = wl_hash_table_create();
 	wl_list_init(&display->global_listener_list);
 
-	display->proxy.base.interface = &wl_display_interface;
-	display->proxy.base.id = 1;
+	display->proxy.object.interface = &wl_display_interface;
+	display->proxy.object.id = 1;
 	display->proxy.display = display;
 	wl_list_init(&display->proxy.listener_list);
 
@@ -476,12 +476,12 @@ handle_event(struct wl_display *display,
 		return;
 	}
 
-	message = &proxy->base.interface->events[opcode];
+	message = &proxy->object.interface->events[opcode];
 	closure = wl_connection_demarshal(display->connection,
 					  size, display->objects, message);
 
 	wl_list_for_each(listener, &proxy->listener_list, link)
-		wl_closure_invoke(closure, &proxy->base,
+		wl_closure_invoke(closure, &proxy->object,
 				  listener->implementation[opcode],
 				  listener->data);
 

@@ -28,9 +28,9 @@ static void
 destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 {
 	struct wlsc_shm_buffer *buffer =
-		container_of(resource, struct wlsc_shm_buffer, base.base);
+		container_of(resource, struct wlsc_shm_buffer, buffer.resource);
 
-	munmap(buffer->data, buffer->stride * buffer->base.height);
+	munmap(buffer->data, buffer->stride * buffer->buffer.height);
 	free(buffer);
 }
 
@@ -59,9 +59,9 @@ shm_buffer_attach(struct wl_buffer *buffer_base, struct wl_surface *surface)
 		     0, 0, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-		     buffer->base.width, buffer->base.height, 0,
+		     buffer->buffer.width, buffer->buffer.height, 0,
 		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer->data);
-	es->visual = buffer->base.visual;
+	es->visual = buffer->buffer.visual;
 }
 
 static void
@@ -75,7 +75,7 @@ shm_buffer_damage(struct wl_buffer *buffer_base,
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-		     buffer->base.width, buffer->base.height, 0,
+		     buffer->buffer.width, buffer->buffer.height, 0,
 		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer->data);
 
 	/* Hmm, should use glTexSubImage2D() here but GLES2 doesn't
@@ -112,12 +112,12 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 		return;
 	}
 
-	buffer->base.compositor = (struct wl_compositor *) compositor;
-	buffer->base.width = width;
-	buffer->base.height = height;
-	buffer->base.visual = visual;
-	buffer->base.attach = shm_buffer_attach;
-	buffer->base.damage = shm_buffer_damage;
+	buffer->buffer.compositor = (struct wl_compositor *) compositor;
+	buffer->buffer.width = width;
+	buffer->buffer.height = height;
+	buffer->buffer.visual = visual;
+	buffer->buffer.attach = shm_buffer_attach;
+	buffer->buffer.damage = shm_buffer_damage;
 	buffer->stride = stride;
 	buffer->data =
 		mmap(NULL, stride * height, PROT_READ, MAP_SHARED, fd, 0);
@@ -133,14 +133,14 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 		return;
 	}
 
-	buffer->base.base.base.id = id;
-	buffer->base.base.base.interface = &wl_buffer_interface;
-	buffer->base.base.base.implementation = (void (**)(void))
+	buffer->buffer.resource.object.id = id;
+	buffer->buffer.resource.object.interface = &wl_buffer_interface;
+	buffer->buffer.resource.object.implementation = (void (**)(void))
 		&buffer_interface;
 
-	buffer->base.base.destroy = destroy_buffer;
+	buffer->buffer.resource.destroy = destroy_buffer;
 
-	wl_client_add_resource(client, &buffer->base.base);
+	wl_client_add_resource(client, &buffer->buffer.resource);
 }
 
 const static struct wl_shm_interface shm_interface = {
@@ -152,10 +152,10 @@ wlsc_shm_init(struct wlsc_compositor *ec)
 {
 	struct wlsc_shm *shm = &ec->shm;
 
-	shm->base.interface = &wl_shm_interface;
-	shm->base.implementation = (void (**)(void)) &shm_interface;
-	wl_display_add_object(ec->wl_display, &shm->base);
-	wl_display_add_global(ec->wl_display, &shm->base, NULL);
+	shm->object.interface = &wl_shm_interface;
+	shm->object.implementation = (void (**)(void)) &shm_interface;
+	wl_display_add_object(ec->wl_display, &shm->object);
+	wl_display_add_global(ec->wl_display, &shm->object, NULL);
 
 	return 0;
 }

@@ -98,18 +98,18 @@ void wl_client_post_no_memory(struct wl_client *client);
 void wl_client_post_global(struct wl_client *client, struct wl_object *object);
 
 struct wl_compositor {
-	struct wl_object base;
+	struct wl_object object;
 };
 
 struct wl_resource {
-	struct wl_object base;
+	struct wl_object object;
 	void (*destroy)(struct wl_resource *resource,
 			struct wl_client *client);
 	struct wl_list link;
 };
 
 struct wl_buffer {
-	struct wl_resource base;
+	struct wl_resource resource;
 	struct wl_compositor *compositor;
 	struct wl_visual *visual;
 	int32_t width, height;
@@ -120,16 +120,16 @@ struct wl_buffer {
 };
 
 struct wl_surface {
-	struct wl_resource base;
+	struct wl_resource resource;
 	struct wl_client *client;
 };
 
 struct wl_shell {
-	struct wl_object base;
+	struct wl_object object;
 };
 
 struct wl_input_device {
-	struct wl_object base;
+	struct wl_object object;
 	struct wl_surface *pointer_focus;
 	struct wl_surface *keyboard_focus;
 	struct wl_array keys;
@@ -138,11 +138,11 @@ struct wl_input_device {
 };
 
 struct wl_visual {
-	struct wl_object base;
+	struct wl_object object;
 };
 
 struct wl_drag_offer {
-	struct wl_object base;
+	struct wl_object object;
 };
 
 struct wl_drag {

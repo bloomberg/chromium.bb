@@ -35,16 +35,17 @@ drm_authenticate(struct wl_client *client,
 				     (struct wl_object *) compositor->wl_display,
 				     WL_DISPLAY_INVALID_OBJECT, 0);
 	else
-		wl_client_post_event(client, &drm->base, WL_DRM_AUTHENTICATED);
+		wl_client_post_event(client, &drm->object,
+				     WL_DRM_AUTHENTICATED);
 }
 
 static void
 destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 {
 	struct wlsc_drm_buffer *buffer =
-		container_of(resource, struct wlsc_drm_buffer, base.base);
+		container_of(resource, struct wlsc_drm_buffer, buffer.resource);
 	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) buffer->base.compositor;
+		(struct wlsc_compositor *) buffer->buffer.compositor;
 
 	eglDestroyImageKHR(compositor->display, buffer->image);
 	free(buffer);
@@ -53,7 +54,7 @@ destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 static void
 buffer_destroy(struct wl_client *client, struct wl_buffer *buffer)
 {
-	wl_resource_destroy(&buffer->base, client);
+	wl_resource_destroy(&buffer->resource, client);
 }
 
 const static struct wl_buffer_interface buffer_interface = {
@@ -69,7 +70,7 @@ drm_buffer_attach(struct wl_buffer *buffer_base, struct wl_surface *surface)
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
-	es->visual = buffer->base.visual;
+	es->visual = buffer->buffer.visual;
 }
 
 static void
@@ -118,12 +119,12 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	attribs[3] = height;
 	attribs[5] = stride / 4;
 
-	buffer->base.compositor = &compositor->base;
-	buffer->base.width = width;
-	buffer->base.height = height;
-	buffer->base.visual = visual;
-	buffer->base.attach = drm_buffer_attach;
-	buffer->base.damage = drm_buffer_damage;
+	buffer->buffer.compositor = &compositor->compositor;
+	buffer->buffer.width = width;
+	buffer->buffer.height = height;
+	buffer->buffer.visual = visual;
+	buffer->buffer.attach = drm_buffer_attach;
+	buffer->buffer.damage = drm_buffer_damage;
 	buffer->image = eglCreateImageKHR(compositor->display,
 					  compositor->context,
 					  EGL_DRM_BUFFER_MESA,
@@ -139,14 +140,14 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 		return;
 	}
 
-	buffer->base.base.base.id = id;
-	buffer->base.base.base.interface = &wl_buffer_interface;
-	buffer->base.base.base.implementation = (void (**)(void))
+	buffer->buffer.resource.object.id = id;
+	buffer->buffer.resource.object.interface = &wl_buffer_interface;
+	buffer->buffer.resource.object.implementation = (void (**)(void))
 		&buffer_interface;
 
-	buffer->base.base.destroy = destroy_buffer;
+	buffer->buffer.resource.destroy = destroy_buffer;
 
-	wl_client_add_resource(client, &buffer->base.base);
+	wl_client_add_resource(client, &buffer->buffer.resource);
 }
 
 const static struct wl_drm_interface drm_interface = {
@@ -157,7 +158,7 @@ const static struct wl_drm_interface drm_interface = {
 static void
 post_drm_device(struct wl_client *client, struct wl_object *global)
 {
-	struct wlsc_drm *drm = container_of(global, struct wlsc_drm, base);
+	struct wlsc_drm *drm = container_of(global, struct wlsc_drm, object);
 
 	wl_client_post_event(client, global, WL_DRM_DEVICE, drm->filename);
 }
@@ -172,10 +173,10 @@ wlsc_drm_init(struct wlsc_compositor *ec, int fd, const char *filename)
 	if (drm->filename == NULL)
 		return -1;
 
-	drm->base.interface = &wl_drm_interface;
-	drm->base.implementation = (void (**)(void)) &drm_interface;
-	wl_display_add_object(ec->wl_display, &drm->base);
-	wl_display_add_global(ec->wl_display, &drm->base, post_drm_device);
+	drm->object.interface = &wl_drm_interface;
+	drm->object.implementation = (void (**)(void)) &drm_interface;
+	wl_display_add_object(ec->wl_display, &drm->object);
+	wl_display_add_global(ec->wl_display, &drm->object, post_drm_device);
 
 	return 0;
 }
@@ -208,11 +209,11 @@ wlsc_drm_buffer_create(struct wlsc_compositor *ec,
 		return NULL;
 	}
 
-	buffer->base.visual = visual;
-	buffer->base.width = width;
-	buffer->base.height = height;
-	buffer->base.attach = drm_buffer_attach;
-	buffer->base.damage = drm_buffer_damage;
+	buffer->buffer.visual = visual;
+	buffer->buffer.width = width;
+	buffer->buffer.height = height;
+	buffer->buffer.attach = drm_buffer_attach;
+	buffer->buffer.damage = drm_buffer_damage;
 
 	return buffer;
 }

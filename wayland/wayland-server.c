@@ -53,7 +53,7 @@ struct wl_client {
 };
 
 struct wl_display {
-	struct wl_object base;
+	struct wl_object object;
 	struct wl_event_loop *loop;
 	struct wl_hash_table *objects;
 	int run;
@@ -142,7 +142,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		object = wl_hash_table_lookup(client->display->objects, p[0]);
 		if (object == NULL) {
-			wl_client_post_event(client, &client->display->base,
+			wl_client_post_event(client, &client->display->object,
 					     WL_DISPLAY_INVALID_OBJECT, p[0]);
 			wl_connection_consume(connection, size);
 			len -= size;
@@ -150,7 +150,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		}
 
 		if (opcode >= object->interface->method_count) {
-			wl_client_post_event(client, &client->display->base,
+			wl_client_post_event(client, &client->display->object,
 					     WL_DISPLAY_INVALID_METHOD, p[0], opcode);
 			wl_connection_consume(connection, size);
 			len -= size;
@@ -164,7 +164,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		len -= size;
 
 		if (closure == NULL && errno == EINVAL) {
-			wl_client_post_event(client, &client->display->base,
+			wl_client_post_event(client, &client->display->object,
 					     WL_DISPLAY_INVALID_METHOD,
 					     p[0], opcode);
 			continue;
@@ -208,7 +208,7 @@ wl_client_get_display(struct wl_client *client)
 static void
 wl_display_post_range(struct wl_display *display, struct wl_client *client)
 {
-	wl_client_post_event(client, &client->display->base,
+	wl_client_post_event(client, &client->display->object,
 			     WL_DISPLAY_RANGE, display->client_id_range);
 	display->client_id_range += 256;
 	client->id_count += 256;
@@ -237,7 +237,7 @@ wl_client_create(struct wl_display *display, int fd)
 	wl_display_post_range(display, client);
 
 	wl_list_for_each(global, &display->global_list, link)
-		wl_client_post_event(client, &client->display->base,
+		wl_client_post_event(client, &client->display->object,
 				     WL_DISPLAY_GLOBAL,
 				     global->object,
 				     global->object->interface->name,
@@ -260,7 +260,7 @@ wl_client_add_resource(struct wl_client *client,
 		wl_display_post_range(display, client);
 
 	wl_hash_table_insert(client->display->objects,
-			     resource->base.id, resource);
+			     resource->object.id, resource);
 	wl_list_insert(client->resource_list.prev, &resource->link);
 }
 
@@ -268,7 +268,7 @@ WL_EXPORT void
 wl_client_post_no_memory(struct wl_client *client)
 {
 	wl_client_post_event(client,
-			     &client->display->base,
+			     &client->display->object,
 			     WL_DISPLAY_NO_MEMORY);
 }
 
@@ -276,7 +276,7 @@ WL_EXPORT void
 wl_client_post_global(struct wl_client *client, struct wl_object *object)
 {
 	wl_client_post_event(client,
-			     &client->display->base,
+			     &client->display->object,
 			     WL_DISPLAY_GLOBAL,
 			     object,
 			     object->interface->name,
@@ -289,8 +289,8 @@ wl_resource_destroy(struct wl_resource *resource, struct wl_client *client)
 	struct wl_display *display = client->display;
 
 	wl_list_remove(&resource->link);
-	if (resource->base.id > 0)
-		wl_hash_table_remove(display->objects, resource->base.id);
+	if (resource->object.id > 0)
+		wl_hash_table_remove(display->objects, resource->object.id);
 	resource->destroy(resource, client);
 }
 
@@ -322,12 +322,12 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 	if (device->pointer_focus &&
 	    (!surface || device->pointer_focus->client != surface->client))
 		wl_client_post_event(device->pointer_focus->client,
-				     &device->base,
+				     &device->object,
 				     WL_INPUT_DEVICE_POINTER_FOCUS,
 				     time, NULL, 0, 0, 0, 0);
 	if (surface)
 		wl_client_post_event(surface->client,
-				     &device->base,
+				     &device->object,
 				     WL_INPUT_DEVICE_POINTER_FOCUS,
 				     time, surface, x, y, sx, sy);
 
@@ -346,13 +346,13 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 	if (device->keyboard_focus &&
 	    (!surface || device->keyboard_focus->client != surface->client))
 		wl_client_post_event(device->keyboard_focus->client,
-				     &device->base,
+				     &device->object,
 				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				     time, NULL, &device->keys);
 
 	if (surface)
 		wl_client_post_event(surface->client,
-				     &device->base,
+				     &device->object,
 				     WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				     time, surface, &device->keys);
 
@@ -364,7 +364,7 @@ static void
 display_sync(struct wl_client *client,
 	       struct wl_display *display, uint32_t key)
 {
-	wl_client_post_event(client, &display->base, WL_DISPLAY_KEY, key, 0);
+	wl_client_post_event(client, &display->object, WL_DISPLAY_KEY, key, 0);
 }
 
 static void
@@ -392,7 +392,7 @@ display_frame(struct wl_client *client,
 	/* The listener is a resource so we destroy it when the client
 	 * goes away. */
 	listener->resource.destroy = destroy_frame_listener;
-	listener->resource.base.id = 0;
+	listener->resource.object.id = 0;
 	listener->client = client;
 	listener->key = key;
 	wl_list_insert(client->resource_list.prev, &listener->resource.link);
@@ -438,10 +438,10 @@ wl_display_create(void)
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	display->id = 1;
-	display->base.interface = &wl_display_interface;
-	display->base.implementation = (void (**)(void)) &display_interface;
-	wl_display_add_object(display, &display->base);
-	if (wl_display_add_global(display, &display->base, NULL)) {
+	display->object.interface = &wl_display_interface;
+	display->object.implementation = (void (**)(void)) &display_interface;
+	wl_display_add_object(display, &display->object);
+	if (wl_display_add_global(display, &display->object, NULL)) {
 		wl_event_loop_destroy(display->loop);
 		free(display);
 		return NULL;
@@ -497,7 +497,7 @@ wl_display_post_frame(struct wl_display *display, uint32_t time)
 	struct wl_frame_listener *listener, *next;
 
 	wl_list_for_each_safe(listener, next, &display->frame_list, link) {
-		wl_client_post_event(listener->client, &display->base,
+		wl_client_post_event(listener->client, &display->object,
 				     WL_DISPLAY_KEY, listener->key, time);
 		wl_resource_destroy(&listener->resource, listener->client);
 	}
