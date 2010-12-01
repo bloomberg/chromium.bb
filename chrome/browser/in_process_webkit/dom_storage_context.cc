@@ -14,11 +14,34 @@
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/common/dom_storage_common.h"
+#include "chrome/common/url_constants.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebSecurityOrigin;
+
+namespace {
+
+void ClearLocalState(const FilePath& domstorage_path,
+                     const char* url_scheme_to_be_skipped) {
+  file_util::FileEnumerator file_enumerator(
+      domstorage_path, false, file_util::FileEnumerator::FILES);
+  for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
+       file_path = file_enumerator.Next()) {
+    if (file_path.Extension() == DOMStorageContext::kLocalStorageExtension) {
+      WebSecurityOrigin web_security_origin =
+          WebSecurityOrigin::createFromDatabaseIdentifier(
+              webkit_glue::FilePathToWebString(file_path.BaseName()));
+      if (!EqualsASCII(web_security_origin.protocol(),
+                       url_scheme_to_be_skipped)) {
+        file_util::Delete(file_path, false);
+      }
+    }
+  }
+}
+
+}  // namespace
 
 const FilePath::CharType DOMStorageContext::kLocalStorageDirectory[] =
     FILE_PATH_LITERAL("Local Storage");
@@ -44,7 +67,8 @@ DOMStorageContext::DOMStorageContext(WebKitContext* webkit_context)
     : last_storage_area_id_(0),
       last_session_storage_namespace_id_on_ui_thread_(kLocalStorageNamespaceId),
       last_session_storage_namespace_id_on_io_thread_(kLocalStorageNamespaceId),
-      webkit_context_(webkit_context) {
+      clear_local_state_on_exit_(false) {
+  data_path_ = webkit_context->data_path();
 }
 
 DOMStorageContext::~DOMStorageContext() {
@@ -55,6 +79,14 @@ DOMStorageContext::~DOMStorageContext() {
   for (StorageNamespaceMap::iterator iter(storage_namespace_map_.begin());
        iter != storage_namespace_map_.end(); ++iter) {
     delete iter->second;
+  }
+
+  // Not being on the WEBKIT thread here means we are running in a unit test
+  // where no clean up is needed.
+  if (clear_local_state_on_exit_ &&
+      BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
+    ClearLocalState(data_path_.Append(kLocalStorageDirectory),
+                    chrome::kExtensionScheme);
   }
 }
 
@@ -167,7 +199,7 @@ void DOMStorageContext::DeleteDataModifiedSince(
   PurgeMemory();
 
   file_util::FileEnumerator file_enumerator(
-      webkit_context_->data_path().Append(kLocalStorageDirectory), false,
+      data_path_.Append(kLocalStorageDirectory), false,
       file_util::FileEnumerator::FILES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
@@ -215,7 +247,7 @@ void DOMStorageContext::DeleteAllLocalStorageFiles() {
   PurgeMemory();
 
   file_util::FileEnumerator file_enumerator(
-      webkit_context_->data_path().Append(kLocalStorageDirectory), false,
+      data_path_.Append(kLocalStorageDirectory), false,
       file_util::FileEnumerator::FILES);
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
@@ -225,11 +257,10 @@ void DOMStorageContext::DeleteAllLocalStorageFiles() {
 }
 
 DOMStorageNamespace* DOMStorageContext::CreateLocalStorage() {
-  FilePath data_path = webkit_context_->data_path();
   FilePath dir_path;
-  if (!data_path.empty()) {
-    MigrateLocalStorageDirectory(data_path);
-    dir_path = data_path.Append(kLocalStorageDirectory);
+  if (!data_path_.empty()) {
+    MigrateLocalStorageDirectory(data_path_);
+    dir_path = data_path_.Append(kLocalStorageDirectory);
   }
   DOMStorageNamespace* new_namespace =
       DOMStorageNamespace::CreateLocalStorageNamespace(this, dir_path);
@@ -264,28 +295,9 @@ void DOMStorageContext::CompleteCloningSessionStorage(
     context->RegisterStorageNamespace(existing_namespace->Copy(clone_id));
 }
 
-// static
-void DOMStorageContext::ClearLocalState(const FilePath& profile_path,
-                                        const char* url_scheme_to_be_skipped) {
-  file_util::FileEnumerator file_enumerator(profile_path.Append(
-      kLocalStorageDirectory), false, file_util::FileEnumerator::FILES);
-  for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
-       file_path = file_enumerator.Next()) {
-    if (file_path.Extension() == kLocalStorageExtension) {
-      WebSecurityOrigin web_security_origin =
-          WebSecurityOrigin::createFromDatabaseIdentifier(
-              webkit_glue::FilePathToWebString(file_path.BaseName()));
-      if (!EqualsASCII(web_security_origin.protocol(),
-                       url_scheme_to_be_skipped)) {
-        file_util::Delete(file_path, false);
-      }
-    }
-  }
-}
-
 FilePath DOMStorageContext::GetLocalStorageFilePath(
     const string16& origin_id) const {
-  FilePath storageDir = webkit_context_->data_path().Append(
+  FilePath storageDir = data_path_.Append(
       DOMStorageContext::kLocalStorageDirectory);
   FilePath::StringType id =
       webkit_glue::WebStringToFilePathString(origin_id);

@@ -2066,6 +2066,7 @@
         'browser/gtk/view_id_util_browsertest.cc',
         'browser/history/history_browsertest.cc',
         'browser/idbbindingutilities_browsertest.cc',
+        'browser/in_process_webkit/dom_storage_browsertest.cc',
         'browser/in_process_webkit/indexed_db_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',

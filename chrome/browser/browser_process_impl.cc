@@ -29,7 +29,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/icon_manager.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -504,7 +503,6 @@ bool BrowserProcessImpl::have_inspector_files() const {
 void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
   SQLitePersistentCookieStore::ClearLocalState(profile_path.Append(
       chrome::kCookieFilename));
-  DOMStorageContext::ClearLocalState(profile_path, chrome::kExtensionScheme);
   webkit_database::DatabaseTracker::ClearLocalState(profile_path);
   ChromeAppCacheService::ClearLocalState(profile_path);
 }

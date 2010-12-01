@@ -23,6 +23,8 @@ WebKitContext::~WebKitContext() {
   // If the WebKit thread was ever spun up, delete the object there.  The task
   // will just get deleted if the WebKit thread isn't created (which only
   // happens during testing).
+  dom_storage_context_->set_clear_local_state_on_exit_(
+      clear_local_state_on_exit_);
   DOMStorageContext* dom_storage_context = dom_storage_context_.release();
   if (!BrowserThread::DeleteSoon(
           BrowserThread::WEBKIT, FROM_HERE, dom_storage_context)) {
