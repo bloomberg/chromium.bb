@@ -177,7 +177,8 @@ wayland_compositor_present(struct wlsc_compositor *base)
 	struct timeval tv;
 	uint32_t msec;
 
-	glFinish();
+	glFlush();
+
 	wl_list_for_each(output, &base->output_list, base.link) {
 		output->current ^= 1;
 
