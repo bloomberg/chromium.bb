@@ -1229,6 +1229,13 @@ void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
   }
   controller->candidate_window_->UpdateAuxiliaryText(utf8_text);
   controller->candidate_window_->ShowAuxiliaryText();
+  // We should move the candidate window, as adding auxiliary text can
+  // change the window size. This is particularly important when we show
+  // the candidate window above the pre-edit text. Otherwise, the pre-edit
+  // text can be covered by the auxiliary text. See crosbug.com/7084.
+  controller->MoveCandidateWindow(
+      controller->cursor_location(),
+      controller->candidate_window_->GetHorizontalOffset());
 }
 
 void CandidateWindowController::Impl::OnUpdateLookupTable(
