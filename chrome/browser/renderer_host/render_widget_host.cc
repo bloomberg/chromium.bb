@@ -987,9 +987,11 @@ void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
   if (old_state != is_accelerated_compositing_active_ && view_)
     view_->GpuRenderingStateDidChange();
 #elif defined(OS_WIN)
-  view_->ShowCompositorHostWindow(is_accelerated_compositing_active_);
+  if (view_)
+    view_->ShowCompositorHostWindow(is_accelerated_compositing_active_);
 #elif defined(TOOLKIT_USES_GTK)
-  view_->AcceleratedCompositingActivated(activated);
+  if (view_)
+    view_->AcceleratedCompositingActivated(activated);
 #endif
 }
 
