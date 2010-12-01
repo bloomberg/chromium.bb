@@ -438,18 +438,21 @@ div.filebutton {
   position: absolute;
 }
 
-div.openbutton {
-  bottom: 3px;
-  right: 100px;
+div.buttonscontainer {
+  display: -webkit-box;
+  bottom: 0;
+  right: 10px;
   position: absolute;
-  width: 50px;
+}
+
+div.openbutton {
+  min-width: 50px;
+  margin: 3px;
 }
 
 div.cancelbutton {
-  bottom: 3px;
-  right: 10px;
-  position: absolute;
-  width: 50px;
+  min-width: 50px;
+  margin: 3px;
 }
 
 div.newfolderbutton {
@@ -698,16 +701,21 @@ function enabledResult(info) {
         var savemenu = document.createElement('div');
         savemenu.className = 'savecontainer';
 
+        // The container is used for placing buttons horizontally.
+        var buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'buttonscontainer';
+        savemenu.appendChild(buttonsContainer);
+
         var savebutton = document.createElement('div');
         savebutton.id = 'savebutton';
         savebutton.className = 'filebutton openbutton disabled';
         savebutton.onclick = dialogSaveClick;
         savebutton.textContent = localStrings.getString('save');
-        savemenu.appendChild(savebutton);
+        buttonsContainer.appendChild(savebutton);
 
         var cancelbutton = document.createElement('div');
         cancelbutton.className = 'filebutton cancelbutton';
-        savemenu.appendChild(cancelbutton);
+        buttonsContainer.appendChild(cancelbutton);
         cancelbutton.textContent = localStrings.getString('confirmcancel');
         cancelbutton.onclick = dialogCancelClick;
 
