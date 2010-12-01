@@ -97,3 +97,14 @@ if not env.IsRunningUnderValgrind():
   env.AddNodeToTestSuite(tests,
                          ['small_tests', 'sel_ldr_tests'],
                          'run_dynamic_load_test')
+
+if not env.Bit('nacl_glibc'):
+  Return()
+
+env.ComponentProgram('dlopen_test.nexe', 'dlopen_test.c', EXTRA_LIBS=['dl'])
+
+dlopen_test = env.CommandSelLdrTestNacl(
+    'dlopen_test.out',
+    command=[env.File('dlopen_test.nexe')])
+
+env.AddNodeToTestSuite(dlopen_test, ['small_tests'], 'run_dlopen_test')
