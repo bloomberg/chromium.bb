@@ -64,7 +64,9 @@ void StringArrayToMultiSZBytes(const std::vector<PendingMove>& strings,
                                std::vector<char>* buffer);
 
 // A helper function for the win32 GetShortPathName that more conveniently
-// returns a correctly sized wstring.
+// returns a correctly sized wstring. Note that if |path| is not present on the
+// file system then GetShortPathName will return |path| unchanged, unlike the
+// win32 GetShortPathName which will return an error.
 std::wstring GetShortPathName(const wchar_t* path);
 
 #endif  // CHROME_INSTALLER_UTIL_DELETE_AFTER_REBOOT_HELPER_H_
