@@ -314,7 +314,11 @@ void TestDoubleUnlockReturnValue() {
   CHECK_OK(pthread_mutex_unlock(&mutex));
   rv = pthread_mutex_unlock(&mutex);
 
+  /* glibc does not return an error in this case.  TODO(mseaborn): We
+     could fix this, but this happens with Linux glibc too. */
+#ifndef __GLIBC__
   EXPECT_EQ(EPERM, rv);
+#endif
 
   TEST_FUNCTION_END;
 }
@@ -327,7 +331,11 @@ void TestUnlockUninitializedReturnValue() {
   CHECK_OK(pthread_mutex_init(&mutex, NULL));
   rv = pthread_mutex_unlock(&mutex);
 
+  /* glibc does not return an error in this case.  TODO(mseaborn): We
+     could fix this, but this happens with Linux glibc too. */
+#ifndef __GLIBC__
   EXPECT_EQ(EPERM, rv);
+#endif
 
   TEST_FUNCTION_END;
 }
