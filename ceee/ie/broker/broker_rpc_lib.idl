@@ -27,8 +27,10 @@ void Disconnect(
 // @name Remote calls.
 // @{
 // Fires event to broker.
+// @param context is required to avoid execution by wrong broker instance.
 void FireEvent(
     [in] handle_t binding_handle,
+    [in] BrokerContextHandle context,
     [in, string] const char* event_name,
     [in, string] const char* event_args);
 

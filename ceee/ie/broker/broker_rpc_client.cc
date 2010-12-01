@@ -128,7 +128,8 @@ void BrokerRpcClient::Disconnect() {
 HRESULT BrokerRpcClient::FireEvent(const char* event_name,
                                    const char* event_args) {
   RpcTryExcept {
-    BrokerRpcClient_FireEvent(binding_handle_, event_name, event_args);
+    BrokerRpcClient_FireEvent(binding_handle_, context_, event_name,
+                              event_args);
     return S_OK;
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
     LogRpcException("RPC error in FireEvent", RpcExceptionCode());

@@ -30,8 +30,8 @@ MOCK_STATIC_CLASS_BEGIN(BrokerRpcMock)
     MOCK_STATIC_INIT(BrokerRpcServer_SendUmaHistogramData);
   MOCK_STATIC_INIT_END()
   MOCK_STATIC0(std::wstring, , GetRpcEndPointAddress);
-  MOCK_STATIC3(void, , BrokerRpcServer_FireEvent, handle_t, const char*,
-               const char*);
+  MOCK_STATIC4(void, , BrokerRpcServer_FireEvent, handle_t, BrokerContextHandle,
+               const char*, const char*);
   MOCK_STATIC3(void, , BrokerRpcServer_SendUmaHistogramTimes, handle_t,
                const char*, int);
   MOCK_STATIC6(void, , BrokerRpcServer_SendUmaHistogramData, handle_t,
@@ -79,7 +79,7 @@ TEST_F(BrokerRpcTest, RpcCalls) {
   const char* args = "args";
 
   EXPECT_CALL(broker_rpc_mock_,
-      BrokerRpcServer_FireEvent(_, StrEq(name), StrEq(args)))
+      BrokerRpcServer_FireEvent(_, _, StrEq(name), StrEq(args)))
           .Times(1);
 
   ASSERT_HRESULT_SUCCEEDED(client.FireEvent(name, args));
