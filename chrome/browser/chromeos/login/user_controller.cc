@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/guest_user_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/rounded_view.h"
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/username_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -53,6 +54,9 @@ const int kControlsHeight = 31;
 const int kControlsHeight = 28;
 #endif
 
+// Vertical interval between the image and the textfield.
+const int kVerticalIntervalSize = 10;
+
 // Widget that notifies window manager about clicking on itself.
 // Doesn't send anything if user is selected.
 class ClickNotifyingWidget : public views::WidgetGtk {
@@ -82,6 +86,35 @@ void CloseWindow(views::WidgetGtk* window) {
   window->SetWidgetDelegate(NULL);
   window->Close();
 }
+
+// Class that sets up half rounded rectangle (only the bottom corners are
+// rounded) as a clip region of the view.
+// For more info see the file "chrome/browser/chromeos/login/rounded_view.h".
+template<typename C>
+class HalfRoundedView : public chromeos::RoundedView<C> {
+ public:
+  explicit HalfRoundedView(const std::wstring &text): RoundedView<C>(text) {
+  }
+
+ protected:
+  // Overrides ViewFilter.
+  virtual void DrawFrame(gfx::Canvas* canvas) {
+    // No frame is needed.
+  }
+
+  virtual SkRect GetViewRect() const {
+    gfx::Rect bounds = C::GetLocalBounds(false);
+    SkRect view_rect;
+    // The rectangle will be intersected with the bounds, so the correct half
+    // of the round rectangle will be obtained.
+    view_rect.iset(bounds.x(), bounds.y() - bounds.width(),
+                   bounds.x() + bounds.width(),
+                   bounds.y() + bounds.height());
+    view_rect.inset(2 * rounded_view::kStrokeWidth,
+                    2 * rounded_view::kStrokeWidth);
+    return view_rect;
+  }
+};
 
 }  // namespace
 
@@ -409,7 +442,7 @@ void UserController::CreateBorderWindow(int index,
   int height = controls_height;
   if (!is_new_user_) {
     width += kBorderSize * 2;
-    height += 3 * kBorderSize + kUserImageSize;
+    height += 2 * kBorderSize + kUserImageSize + kVerticalIntervalSize;
   }
 
   border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
@@ -462,7 +495,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   }
 
   views::Label *label = is_new_user_ ?
-      new views::Label(text) : new UsernameView(text);
+      new views::Label(text) : new HalfRoundedView<UsernameView>(text);
 
   label->SetColor(kTextColor);
   label->SetFont(font);

@@ -67,7 +67,7 @@ enum Command {
 };
 
 // Gap between edge and image view, and image view and controls.
-const int kBorderSize = 6;
+const int kBorderSize = 10;
 
 // The size of user image.
 const int kUserImageSize = 256;
@@ -87,7 +87,7 @@ const int kWizardScreenWidth = 800;
 const int kWizardScreenHeight = 450;
 
 const int kScreenCornerRadius = 10;
-const int kUserCornerRadius = 5;
+const int kUserCornerRadius = 6;
 
 // Username label height in different states.
 const int kSelectedLabelHeight = 25;

@@ -8,7 +8,10 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/rounded_view.h"
+#include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
+#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/background.h"
@@ -239,7 +242,7 @@ class PodImageView : public views::ImageView {
 UserView::UserView(Delegate* delegate, bool is_login, bool need_background)
     : delegate_(delegate),
       signout_view_(NULL),
-      image_view_(new PodImageView()),
+      image_view_(new RoundedView<PodImageView>),
       throbber_(CreateDefaultSmoothedThrobber()),
       remove_button_(NULL) {
   DCHECK(delegate);
@@ -268,6 +271,7 @@ void UserView::Init(bool need_background) {
   // UserView's layout never changes, so let's layout once here.
   image_view_->SetBounds(0, 0, kUserImageSize, kUserImageSize);
   AddChildView(image_view_);
+
   if (signout_view_) {
     signout_view_->SetBounds(0, kUserImageSize, kUserImageSize,
                              signout_view_->GetPreferredSize().height());
