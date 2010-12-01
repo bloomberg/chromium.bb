@@ -27,7 +27,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/time.h>
 
 #include "wayland-client.h"
 
@@ -170,11 +169,18 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 }
 
 static void
+frame_callback(void *data, uint32_t time)
+{
+	struct wayland_compositor *c = (struct wayland_compositor *) data;
+
+	wlsc_compositor_finish_frame(&c->base, time);
+}
+
+static void
 wayland_compositor_present(struct wlsc_compositor *base)
 {
 	struct wayland_compositor *c = (struct wayland_compositor *) base;
 	struct wayland_output *output;
-	struct timeval tv;
 	uint32_t msec;
 
 	glFlush();
@@ -193,10 +199,7 @@ wayland_compositor_present(struct wlsc_compositor *base)
 			          output->base.width, output->base.height);
 	}
 
-
-	gettimeofday(&tv, NULL);
-	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	wlsc_compositor_finish_frame(&c->base, msec);
+	wl_display_frame_callback(c->parent.display, frame_callback, c);
 }
 
 static int
