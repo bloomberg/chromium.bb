@@ -300,7 +300,7 @@ display_handle_key(void *data,
 
 	sync_handler = container_of(display->sync_list.next,
 				    struct wl_sync_handler, link);
-	if (sync_handler->key == key) {
+	if (!wl_list_empty(&display->sync_list) && sync_handler->key == key) {
 		wl_list_remove(&sync_handler->link);
 		sync_handler->func(sync_handler->data);
 		free(sync_handler);
@@ -309,7 +309,8 @@ display_handle_key(void *data,
 
 	frame_handler = container_of(display->frame_list. next,
 				     struct wl_frame_handler, link);
-	if (frame_handler->key == key) {
+	if (!wl_list_empty(&display->frame_list) &&
+	    frame_handler->key == key) {
 		wl_list_remove(&frame_handler->link);
 		frame_handler->func(frame_handler->data, time);
 		free(frame_handler);
