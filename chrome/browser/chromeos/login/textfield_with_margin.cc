@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 
+#include "chrome/browser/chromeos/login/helper.h"
+
 namespace {
 
 // Holds ratio of the margin to the preferred text height.
@@ -17,6 +19,12 @@ const int kVerticalMargin = 3;
 namespace chromeos {
 
 TextfieldWithMargin::TextfieldWithMargin() {
+  CorrectTextfieldFontSize(this);
+}
+
+TextfieldWithMargin::TextfieldWithMargin(views::Textfield::StyleFlags style)
+    : Textfield(style) {
+  CorrectTextfieldFontSize(this);
 }
 
 void TextfieldWithMargin::Layout() {

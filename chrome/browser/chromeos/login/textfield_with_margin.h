@@ -15,11 +15,10 @@ namespace chromeos {
 class TextfieldWithMargin : public views::Textfield {
  public:
   TextfieldWithMargin();
+  explicit TextfieldWithMargin(views::Textfield::StyleFlags style);
 
-  explicit TextfieldWithMargin(views::Textfield::StyleFlags style)
-      : Textfield(style) {}
-
-  // Reimplements views::Textfield.
+ protected:
+  // Overridden from views::View:
   virtual void Layout();
 
  private:

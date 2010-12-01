@@ -151,12 +151,10 @@ void NewUserView::Init() {
   splitter_down2_ = CreateSplitter(kSplitterDown2Color);
 
   username_field_ = new UsernameField();
-  CorrectTextfieldFontSize(username_field_);
   username_field_->set_background(new CopyBackground(this));
   AddChildView(username_field_);
 
   password_field_ = new TextfieldWithMargin(views::Textfield::STYLE_PASSWORD);
-  CorrectTextfieldFontSize(password_field_);
   password_field_->set_background(new CopyBackground(this));
   AddChildView(password_field_);
 
