@@ -137,7 +137,7 @@ int pthread_mutex_unlock (pthread_mutex_t *mutex) {
   }
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  return NACL_SYSCALL(mutex_unlock)(mutex->mutex_handle);
+  return -NACL_SYSCALL(mutex_unlock)(mutex->mutex_handle);
 }
 
 /*

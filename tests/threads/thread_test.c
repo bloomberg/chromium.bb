@@ -295,11 +295,39 @@ void TestTryLockReturnValue() {
   int rv;
   TEST_FUNCTION_START;
 
-  pthread_mutex_init(&mutex, 0);
-  pthread_mutex_lock(&mutex);
+  CHECK_OK(pthread_mutex_init(&mutex, NULL));
+  CHECK_OK(pthread_mutex_lock(&mutex));
   rv = pthread_mutex_trylock(&mutex);
 
   EXPECT_EQ(EBUSY, rv);
+
+  TEST_FUNCTION_END;
+}
+
+void TestDoubleUnlockReturnValue() {
+  pthread_mutex_t mutex;
+  int rv;
+  TEST_FUNCTION_START;
+
+  CHECK_OK(pthread_mutex_init(&mutex, NULL));
+  CHECK_OK(pthread_mutex_lock(&mutex));
+  CHECK_OK(pthread_mutex_unlock(&mutex));
+  rv = pthread_mutex_unlock(&mutex);
+
+  EXPECT_EQ(EPERM, rv);
+
+  TEST_FUNCTION_END;
+}
+
+void TestUnlockUninitializedReturnValue() {
+  pthread_mutex_t mutex;
+  int rv;
+  TEST_FUNCTION_START;
+
+  CHECK_OK(pthread_mutex_init(&mutex, NULL));
+  rv = pthread_mutex_unlock(&mutex);
+
+  EXPECT_EQ(EPERM, rv);
 
   TEST_FUNCTION_END;
 }
@@ -761,6 +789,8 @@ int main(int argc, char *argv[]) {
   TestSemaphores();
   TestSemaphoreInitDestroy();
   TestTryLockReturnValue();
+  TestDoubleUnlockReturnValue();
+  TestUnlockUninitializedReturnValue();
   TestPthreadOnce();
   TestRecursiveMutex();
   TestErrorCheckingMutex();
