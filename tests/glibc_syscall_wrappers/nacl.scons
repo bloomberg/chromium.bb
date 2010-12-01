@@ -34,3 +34,11 @@ test_time = env.CommandSelLdrTestNacl(
     command=[env.File('test_time.nexe')])
 
 env.AddNodeToTestSuite(test_time, ['small_tests'], 'run_time_test')
+
+env.ComponentProgram('test_rewind.nexe', 'test_rewind.c')
+
+test_rewind = env.CommandSelLdrTestNacl(
+    'test_rewind.out',
+    command=[env.File('test_rewind.nexe'), env.File('test_rewind_data')])
+
+env.AddNodeToTestSuite(test_rewind, ['small_tests'], 'run_rewind_test')
