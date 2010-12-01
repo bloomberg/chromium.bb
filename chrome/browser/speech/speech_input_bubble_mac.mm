@@ -7,9 +7,9 @@
 #include "chrome/browser/speech/speech_input_bubble.h"
 
 #import "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/speech_input_window_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#import "chrome/browser/ui/cocoa/speech_input_window_controller.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {

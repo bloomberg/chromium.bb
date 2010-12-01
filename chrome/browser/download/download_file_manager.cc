@@ -27,7 +27,7 @@
 #include "app/win_util.h"
 #include "chrome/common/win_safe_util.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/cocoa/file_metadata.h"
+#include "chrome/browser/ui/cocoa/file_metadata.h"
 #endif
 
 namespace {

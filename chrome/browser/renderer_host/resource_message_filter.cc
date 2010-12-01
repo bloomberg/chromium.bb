@@ -87,7 +87,7 @@
 #include "chrome/browser/chromeos/plugin_selection_policy.h"
 #endif
 #if defined(OS_MACOSX)
-#include "chrome/browser/cocoa/task_helpers.h"
+#include "chrome/browser/ui/cocoa/task_helpers.h"
 #include "chrome/common/font_descriptor_mac.h"
 #include "chrome/common/font_loader_mac.h"
 #endif

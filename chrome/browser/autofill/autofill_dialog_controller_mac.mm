@@ -14,7 +14,7 @@
 #import "chrome/browser/autofill/autofill_credit_card_sheet_controller_mac.h"
 #import "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_process.h"
-#import "chrome/browser/cocoa/window_size_autosaver.h"
+#import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ui/browser.h"

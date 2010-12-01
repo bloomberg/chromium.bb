@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/accessibility/browser_accessibility_cocoa.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
-#include "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 

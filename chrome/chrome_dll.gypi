@@ -281,7 +281,7 @@
                 'app/theme/stop_Template.pdf',
                 'app/theme/tools_Template.pdf',
                 'app/theme/upgrade_dot.pdf',
-                'browser/cocoa/install.sh',
+                'browser/ui/cocoa/install.sh',
               ],
               'mac_bundle_resources!': [
                 'app/framework-Info.plist',
@@ -514,8 +514,8 @@
                 }],  # mac_breakpad
                 ['mac_keystone==1', {
                   'mac_bundle_resources': [
-                    'browser/cocoa/keystone_promote_preflight.sh',
-                    'browser/cocoa/keystone_promote_postflight.sh',
+                    'browser/ui/cocoa/keystone_promote_preflight.sh',
+                    'browser/ui/cocoa/keystone_promote_postflight.sh',
                   ],
                   'postbuilds': [
                     {

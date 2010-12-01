@@ -28,7 +28,7 @@
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/cocoa/find_bar_bridge.h"
+#include "chrome/browser/ui/cocoa/find_bar_bridge.h"
 #endif
 
 const std::string kSimplePage = "404_is_enough_for_us.html";

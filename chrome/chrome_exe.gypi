@@ -230,13 +230,13 @@
               'mac_bundle_resources': [
                 'app/theme/google_chrome/app.icns',
                 'app/theme/google_chrome/document.icns',
-                'browser/cocoa/applescript/scripting.sdef',
+                'browser/ui/cocoa/applescript/scripting.sdef',
               ],
             }, {  # else: 'branding!="Chrome"
               'mac_bundle_resources': [
                 'app/theme/chromium/app.icns',
                 'app/theme/chromium/document.icns',
-                'browser/cocoa/applescript/scripting.sdef',
+                'browser/ui/cocoa/applescript/scripting.sdef',
               ],
             }],
             ['mac_breakpad==1', {

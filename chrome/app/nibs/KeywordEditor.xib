@@ -689,7 +689,7 @@
 					<string key="superclassName">GTMUILocalizer</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/ui_localizer.h</string>
+						<string key="minorKey">browser/ui/cocoa/ui_localizer.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -752,21 +752,21 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/keyword_editor_cocoa_controller.h</string>
+						<string key="minorKey">browser/ui/cocoa/keyword_editor_cocoa_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/status_bubble_mac.h</string>
+						<string key="minorKey">browser/ui/cocoa/status_bubble_mac.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
+						<string key="minorKey">browser/ui/cocoa/tab_strip_model_observer_bridge.h</string>
 					</object>
 				</object>
 			</object>

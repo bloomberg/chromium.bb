@@ -9,7 +9,7 @@
 #include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -33,7 +33,7 @@
 #include "chrome/browser/views/importer_lock_view.h"
 #include "views/window/window.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/cocoa/importer_lock_dialog.h"
+#include "chrome/browser/ui/cocoa/importer_lock_dialog.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/gtk/import_lock_dialog_gtk.h"
 #endif

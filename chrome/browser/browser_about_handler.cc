@@ -73,7 +73,7 @@
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/zygote_host_linux.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/cocoa/about_ipc_dialog.h"
+#include "chrome/browser/ui/cocoa/about_ipc_dialog.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/zygote_host_linux.h"
 #endif

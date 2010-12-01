@@ -7,8 +7,8 @@
 #include "chrome/browser/autofill/autofill_common_test.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
 #include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/cocoa/browser_test_helper.h"
-#import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/browser_test_helper.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

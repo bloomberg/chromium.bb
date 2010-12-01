@@ -6,7 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/cocoa/notifications/balloon_view_bridge.h"
+#include "chrome/browser/ui/cocoa/notifications/balloon_view_bridge.h"
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {

@@ -471,7 +471,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/base_bubble_controller.h</string>
+						<string key="minorKey">browser/ui/cocoa/base_bubble_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -479,7 +479,7 @@
 					<string key="superclassName">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/chrome_event_processing_window.h</string>
+						<string key="minorKey">browser/ui/cocoa/chrome_event_processing_window.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -487,7 +487,7 @@
 					<string key="superclassName">GTMUILocalizer</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/ui_localizer.h</string>
+						<string key="minorKey">browser/ui/cocoa/ui_localizer.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -541,7 +541,7 @@
 					<string key="superclassName">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/info_bubble_view.h</string>
+						<string key="minorKey">browser/ui/cocoa/info_bubble_view.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -549,7 +549,7 @@
 					<string key="superclassName">ChromeEventProcessingWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/info_bubble_window.h</string>
+						<string key="minorKey">browser/ui/cocoa/info_bubble_window.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -563,21 +563,21 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/objc_zombie.h</string>
+						<string key="minorKey">browser/ui/cocoa/objc_zombie.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/status_bubble_mac.h</string>
+						<string key="minorKey">browser/ui/cocoa/status_bubble_mac.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
+						<string key="minorKey">browser/ui/cocoa/tab_strip_model_observer_bridge.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -591,21 +591,21 @@
 					<string key="className">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/view_id_util.h</string>
+						<string key="minorKey">browser/ui/cocoa/view_id_util.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/framed_browser_window.h</string>
+						<string key="minorKey">browser/ui/cocoa/framed_browser_window.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/themed_window.h</string>
+						<string key="minorKey">browser/ui/cocoa/themed_window.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -643,7 +643,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/speech_input_window_controller.h</string>
+						<string key="minorKey">browser/ui/cocoa/speech_input_window_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

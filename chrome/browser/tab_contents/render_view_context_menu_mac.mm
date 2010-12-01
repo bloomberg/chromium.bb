@@ -9,7 +9,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#import "chrome/browser/cocoa/menu_controller.h"
+#import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "grit/generated_resources.h"
 
 // Obj-C bridge class that is the target of all items in the context menu.

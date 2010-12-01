@@ -6,9 +6,9 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/browser_thread.h"
-#import "chrome/browser/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/cocoa/test_event_utils.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/test_event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {

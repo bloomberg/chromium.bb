@@ -69,7 +69,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/cocoa/keystone_infobar.h"
+#include "chrome/browser/ui/cocoa/keystone_infobar.h"
 #endif
 
 #if defined(OS_WIN)

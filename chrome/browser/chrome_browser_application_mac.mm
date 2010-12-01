@@ -10,8 +10,8 @@
 #import "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
-#import "chrome/browser/cocoa/objc_method_swizzle.h"
-#import "chrome/browser/cocoa/objc_zombie.h"
+#import "chrome/browser/ui/cocoa/objc_method_swizzle.h"
+#import "chrome/browser/ui/cocoa/objc_zombie.h"
 
 // The implementation of NSExceptions break various assumptions in the
 // Chrome code.  This category defines a replacement for

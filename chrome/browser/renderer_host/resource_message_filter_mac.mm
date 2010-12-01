@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
-#import "chrome/browser/cocoa/find_pasteboard.h"
+#import "chrome/browser/ui/cocoa/find_pasteboard.h"
 
 // The number of utf16 code units that will be written to the find pasteboard,
 // longer texts are silently ignored. This is to prevent that a compromised

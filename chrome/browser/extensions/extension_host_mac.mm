@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/extension_host_mac.h"
 
-#import "chrome/browser/cocoa/chrome_event_processing_window.h"
-#import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
-#import "chrome/browser/cocoa/info_bubble_window.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/native_web_keyboard_event.h"
 
 ExtensionHostMac::~ExtensionHostMac() {

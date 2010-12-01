@@ -431,7 +431,7 @@
 					<string key="superclassName">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/background_gradient_view.h</string>
+						<string key="minorKey">browser/ui/cocoa/background_gradient_view.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -471,7 +471,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/find_bar_cocoa_controller.h</string>
+						<string key="minorKey">browser/ui/cocoa/find_bar_cocoa_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -479,7 +479,7 @@
 					<string key="superclassName">StyledTextField</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/find_bar_text_field.h</string>
+						<string key="minorKey">browser/ui/cocoa/find_bar_text_field.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -487,7 +487,7 @@
 					<string key="superclassName">StyledTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/find_bar_text_field_cell.h</string>
+						<string key="minorKey">browser/ui/cocoa/find_bar_text_field_cell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -495,7 +495,7 @@
 					<string key="superclassName">BackgroundGradientView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/find_bar_view.h</string>
+						<string key="minorKey">browser/ui/cocoa/find_bar_view.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -503,7 +503,7 @@
 					<string key="superclassName">NSButtonCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/gradient_button_cell.h</string>
+						<string key="minorKey">browser/ui/cocoa/gradient_button_cell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -511,7 +511,7 @@
 					<string key="superclassName">NSButton</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/hover_close_button.h</string>
+						<string key="minorKey">browser/ui/cocoa/hover_close_button.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -525,21 +525,21 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/objc_zombie.h</string>
+						<string key="minorKey">browser/ui/cocoa/objc_zombie.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/status_bubble_mac.h</string>
+						<string key="minorKey">browser/ui/cocoa/status_bubble_mac.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
+						<string key="minorKey">browser/ui/cocoa/tab_strip_model_observer_bridge.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -547,7 +547,7 @@
 					<string key="superclassName">NSTextField</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/styled_text_field.h</string>
+						<string key="minorKey">browser/ui/cocoa/styled_text_field.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -555,7 +555,7 @@
 					<string key="superclassName">NSTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/styled_text_field_cell.h</string>
+						<string key="minorKey">browser/ui/cocoa/styled_text_field_cell.h</string>
 					</object>
 				</object>
 			</object>

@@ -6,8 +6,8 @@
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 #include "chrome/browser/autofill/autofill_profile.h"
-#include "chrome/browser/cocoa/browser_test_helper.h"
-#import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/browser_test_helper.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
