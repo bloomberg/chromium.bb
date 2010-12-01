@@ -45,6 +45,9 @@ TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                      kInvalidSessionStorageNamespaceId),
       render_view_created_(false),
       delete_counter_(NULL) {
+  // For normal RenderViewHosts, this is freed when |Shutdown()| is called.
+  // For TestRenderViewHost, the view is explicitly deleted in the destructor
+  // below, because TestRenderWidgetHostView::Destroy() doesn't |delete this|.
   set_view(new TestRenderWidgetHostView(this));
 }
 
@@ -182,9 +185,8 @@ void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
 void TestRenderWidgetHostView::GpuRenderingStateDidChange() {
 }
 #elif defined(OS_WIN)
-gfx::PluginWindowHandle TestRenderWidgetHostView::CreateCompositorHostWindow(
-  ) {
-    return gfx::kNullPluginWindow;
+gfx::PluginWindowHandle TestRenderWidgetHostView::CreateCompositorHostWindow() {
+  return gfx::kNullPluginWindow;
 }
 
 void TestRenderWidgetHostView::WillWmDestroy() {
