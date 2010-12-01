@@ -12,6 +12,26 @@
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+// The class is used for enabling the stub libcros, and cleaning it up at
+// the end of the object lifetime.
+class ScopedStubImplEnabler {
+ public:
+  ScopedStubImplEnabler() {
+    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+  }
+
+  ~ScopedStubImplEnabler() {
+    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedStubImplEnabler);
+};
+
+}  // namespace
+
 namespace chromeos {
 
 static InputMethodDescriptors CreateInputMethodDescriptors() {
@@ -27,12 +47,14 @@ static InputMethodDescriptors CreateInputMethodDescriptors() {
   return descriptors;
 }
 
-// TODO: Fix this test.  See http://crosbug.com/6269
-TEST(LanguageOptionsHandlerTest, DISABLED_GetInputMethodList) {
-  // Use the stub libcros. The change is global (i.e. affects other unti
-  // tests), but it should be ok. Unit tests should not require the real
-  // libcros.
-  CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
+  // Use the stub libcros. The object will take care of the cleanup.
+  ScopedStubImplEnabler enabler;
+
+  // Reset the library implementation so it will be initialized
+  // again. Otherwise, non-stub implementation can be reused, if it's
+  // already initialized elsewhere, which results in a crash.
+  CrosLibrary::Get()->GetTestApi()->SetInputMethodLibrary(NULL, false);
 
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
