@@ -278,7 +278,7 @@ def DummyLibrary(arch, name):
   # This text file works as a dummy (empty) library because ld treats
   # it as a linker script.
   dummy_lib = FileSnapshotInMemory("/* Intentionally empty */\n")
-  lib_dir = {"%s.so" % name: dummy_lib}
+  lib_dir = {"%s.a" % name: dummy_lib}
   return {arch: {"lib": lib_dir, "lib32": lib_dir}}
 
 
