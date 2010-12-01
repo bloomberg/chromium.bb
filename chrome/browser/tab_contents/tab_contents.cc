@@ -2139,6 +2139,7 @@ void TabContents::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host,
     int64 frame_id,
     bool is_main_frame,
+    bool is_error_page,
     const GURL& url) {
   ProvisionalLoadDetails details(is_main_frame,
                                  controller_.IsURLInPageNavigation(url),
@@ -2148,7 +2149,11 @@ void TabContents::DidStartProvisionalLoadForFrame(
       Source<NavigationController>(&controller_),
       Details<ProvisionalLoadDetails>(&details));
   if (is_main_frame) {
-    content_settings_delegate_->ClearCookieSpecificContentSettings();
+    // If we're displaying a network error page do not reset the content
+    // settings delegate's cookies so the user has a chance to modify cookie
+    // settings.
+    if (!is_error_page)
+      content_settings_delegate_->ClearCookieSpecificContentSettings();
     content_settings_delegate_->ClearGeolocationContentSettings();
   }
 }

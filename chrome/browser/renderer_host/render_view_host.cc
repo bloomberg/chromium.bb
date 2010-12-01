@@ -1190,6 +1190,7 @@ void RenderViewHost::OnMsgDidRunInsecureContent(
 void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
                                                           const GURL& url) {
+  bool is_error_page = (url.spec() == chrome::kUnreachableWebDataURL);
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
             process()->id(), &validated_url);
@@ -1198,7 +1199,7 @@ void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
       delegate_->GetResourceDelegate();
   if (resource_delegate) {
     resource_delegate->DidStartProvisionalLoadForFrame(
-        this, frame_id, is_main_frame, validated_url);
+        this, frame_id, is_main_frame, is_error_page, validated_url);
   }
 }
 

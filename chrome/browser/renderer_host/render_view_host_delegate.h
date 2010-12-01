@@ -330,6 +330,7 @@ class RenderViewHostDelegate {
         RenderViewHost* render_view_host,
         int64 frame_id,
         bool is_main_frame,
+        bool is_error_page,
         const GURL& url) = 0;
 
     // Notification by the resource loading system (not the renderer) that it
