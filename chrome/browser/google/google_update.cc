@@ -35,7 +35,7 @@ bool CanUpdateCurrentChrome(const std::wstring& chrome_exe_path) {
 #else
   // TODO(tommi): Check if using the default distribution is always the right
   // thing to do.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution()
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring user_exe_path = installer::GetChromeInstallPath(false, dist);
   std::wstring machine_exe_path = installer::GetChromeInstallPath(true, dist);
   std::transform(user_exe_path.begin(), user_exe_path.end(),
