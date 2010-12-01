@@ -1231,24 +1231,23 @@ ENV_COUNTER = {}
 
 
 def CustomCommandPrinter(cmd, targets, source, env):
-  # Log the command
+  # Abuse the print hook to count the commands that are executed
   if env.Bit('target_stats'):
     cmd_name = GetPrintableCommandName(cmd)
     env_name = GetPrintableEnvironmentName(env)
     CMD_COUNTER[cmd_name] = CMD_COUNTER.get(cmd_name, 0) + 1
     ENV_COUNTER[env_name] = ENV_COUNTER.get(env_name, 0) + 1
 
-  # Print the command
   if env.Bit('pp'):
+    # Our pretty printer
     if targets:
       cmd_name = GetPrintableCommandName(cmd)
       env_name = GetPrintableEnvironmentName(env)
       sys.stdout.write('[%s] [%s] %s\n' % (cmd_name, env_name,
                                            targets[0].get_path()))
   else:
-    # The SCons default
-    sys.stdout.write(cmd)
-    sys.stdout.write('\n')
+    # The SCons default (copied from print_cmd_line in Action.py)
+    sys.stdout.write(cmd + u'\n')
 
 pre_base_env.Append(PRINT_CMD_LINE_FUNC=CustomCommandPrinter)
 
