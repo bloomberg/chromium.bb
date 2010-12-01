@@ -35,8 +35,6 @@
  * the compositor and serves as a test bed for implementing client
  * side marshalling outside libwayland.so */
 
-static const char socket_name[] = "\0wayland";
-
 static void
 handle_global(struct wl_display *display, uint32_t id,
 	      const char *interface, uint32_t version, void *data)
@@ -54,7 +52,7 @@ int main(int argc, char *argv[])
 	GSource *source;
 	struct wl_screenshooter *screenshooter;
 
-	display = wl_display_connect(socket_name, sizeof socket_name);
+	display = wl_display_connect(NULL);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

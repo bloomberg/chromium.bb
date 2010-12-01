@@ -81,8 +81,10 @@ struct wl_display;
 struct wl_input_device;
 
 struct wl_display *wl_display_create(void);
+void wl_display_destroy(struct wl_display *display);
 struct wl_event_loop *wl_display_get_event_loop(struct wl_display *display);
-int wl_display_add_socket(struct wl_display *display, const char *name, size_t name_size);
+int wl_display_add_socket(struct wl_display *display, const char *name);
+void wl_display_terminate(struct wl_display *display);
 void wl_display_run(struct wl_display *display);
 
 void wl_display_add_object(struct wl_display *display, struct wl_object *object);

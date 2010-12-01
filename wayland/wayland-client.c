@@ -38,8 +38,6 @@
 #include "wayland-util.h"
 #include "wayland-client.h"
 
-static const char socket_name[] = "\0wayland";
-
 struct wl_global_listener {
 	wl_display_global_func_t handler;
 	void *data;
@@ -330,11 +328,13 @@ static const struct wl_display_listener display_listener = {
 };
 
 WL_EXPORT struct wl_display *
-wl_display_connect(const char *name, size_t name_size)
+wl_display_connect(const char *name)
 {
 	struct wl_display *display;
 	struct sockaddr_un addr;
 	socklen_t size;
+	const char *runtime_dir;
+	size_t name_size;
 
 	display = malloc(sizeof *display);
 	if (display == NULL)
@@ -347,8 +347,24 @@ wl_display_connect(const char *name, size_t name_size)
 		return NULL;
 	}
 
+	runtime_dir = getenv("XDG_RUNTIME_DIR");
+	if (runtime_dir == NULL) {
+		runtime_dir = ".";
+		fprintf(stderr,
+			"XDG_RUNTIME_DIR not set, falling back to %s\n",
+			runtime_dir);
+	}
+
+	if (name == NULL)
+		name = getenv("WAYLAND_DISPLAY");
+	if (name == NULL)
+		name = "wayland-0";
+
+	memset(&addr, 0, sizeof addr);
 	addr.sun_family = AF_LOCAL;
-	memcpy(addr.sun_path, name, name_size);
+	name_size =
+		snprintf(addr.sun_path, sizeof addr.sun_path,
+			 "%s/%s", runtime_dir, name) + 1;
 
 	size = offsetof (struct sockaddr_un, sun_path) + name_size;
 

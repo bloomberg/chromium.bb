@@ -38,6 +38,12 @@
 #include "wayland-server-protocol.h"
 #include "connection.h"
 
+struct wl_socket {
+	int fd;
+	struct sockaddr_un addr;
+	struct wl_list link;
+};
+
 struct wl_client {
 	struct wl_connection *connection;
 	struct wl_event_source *source;
@@ -50,12 +56,14 @@ struct wl_display {
 	struct wl_object base;
 	struct wl_event_loop *loop;
 	struct wl_hash_table *objects;
+	int run;
 
 	struct wl_list frame_list;
 	uint32_t client_id_range;
 	uint32_t id;
 
 	struct wl_list global_list;
+	struct wl_list socket_list;
 };
 
 struct wl_frame_listener {
@@ -425,6 +433,7 @@ wl_display_create(void)
 
 	wl_list_init(&display->frame_list);
 	wl_list_init(&display->global_list);
+	wl_list_init(&display->socket_list);
 
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
@@ -439,6 +448,23 @@ wl_display_create(void)
 	}
 
 	return display;
+}
+
+WL_EXPORT void
+wl_display_destroy(struct wl_display *display)
+{
+	struct wl_socket *s, *next;
+
+	wl_event_loop_destroy(display->loop);
+	wl_hash_table_destroy(display->objects);
+	
+	wl_list_for_each_safe(s, next, &display->socket_list, link) {
+		close(s->fd);
+		unlink(s->addr.sun_path);
+		free(s);
+	}
+
+	free(display);
 }
 
 WL_EXPORT void
@@ -484,9 +510,17 @@ wl_display_get_event_loop(struct wl_display *display)
 }
 
 WL_EXPORT void
+wl_display_terminate(struct wl_display *display)
+{
+	display->run = 0;
+}
+
+WL_EXPORT void
 wl_display_run(struct wl_display *display)
 {
-	while (1)
+	display->run = 1;
+
+	while (display->run)
 		wl_event_loop_dispatch(display->loop, -1);
 }
 
@@ -507,30 +541,50 @@ socket_data(int fd, uint32_t mask, void *data)
 }
 
 WL_EXPORT int
-wl_display_add_socket(struct wl_display *display,
-		      const char *name, size_t name_size)
+wl_display_add_socket(struct wl_display *display, const char *name)
 {
-	struct sockaddr_un addr;
-	int sock;
-	socklen_t size;
+	struct wl_socket *s;
+	socklen_t size, name_size;
+	const char *runtime_dir;
 
-	sock = socket(PF_LOCAL, SOCK_STREAM, 0);
-	if (sock < 0)
+	s = malloc(sizeof *s);
+	if (socket == NULL)
 		return -1;
 
-	addr.sun_family = AF_LOCAL;
-	memcpy(addr.sun_path, name, name_size);
+	s->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
+	if (s->fd < 0)
+		return -1;
+
+	runtime_dir = getenv("XDG_RUNTIME_DIR");
+	if (runtime_dir == NULL) {
+		runtime_dir = ".";
+		fprintf(stderr,
+			"XDG_RUNTIME_DIR not set, falling back to %s\n",
+			runtime_dir);
+	}
+
+	if (name == NULL)
+		name = getenv("WAYLAND_DISPLAY");
+	if (name == NULL)
+		name = "wayland-0";
+
+	memset(&s->addr, 0, sizeof s->addr);
+	s->addr.sun_family = AF_LOCAL;
+	name_size = snprintf(s->addr.sun_path, sizeof s->addr.sun_path,
+			     "%s/%s", runtime_dir, name) + 1;
+	fprintf(stderr, "using socket %s\n", s->addr.sun_path);
 
 	size = offsetof (struct sockaddr_un, sun_path) + name_size;
-	if (bind(sock, (struct sockaddr *) &addr, size) < 0)
+	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0)
 		return -1;
 
-	if (listen(sock, 1) < 0)
+	if (listen(s->fd, 1) < 0)
 		return -1;
 
-	wl_event_loop_add_fd(display->loop, sock,
+	wl_event_loop_add_fd(display->loop, s->fd,
 			     WL_EVENT_READABLE,
 			     socket_data, display);
+	wl_list_insert(display->socket_list.prev, &s->link);
 
 	return 0;
 }

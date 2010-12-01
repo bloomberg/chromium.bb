@@ -42,9 +42,6 @@
 
 #include "window.h"
 
-static const char gem_device[] = "/dev/dri/card0";
-static const char socket_name[] = "\0wayland";
-
 struct view {
 	struct window *window;
 	struct display *display;

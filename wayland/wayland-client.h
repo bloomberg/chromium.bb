@@ -37,7 +37,7 @@ typedef int (*wl_display_update_func_t)(uint32_t mask, void *data);
 typedef void (*wl_display_sync_func_t)(void *data);
 typedef void (*wl_display_frame_func_t)(void *data, uint32_t time);
 
-struct wl_display *wl_display_connect(const char *name, size_t name_size);
+struct wl_display *wl_display_connect(const char *name);
 void wl_display_destroy(struct wl_display *display);
 int wl_display_get_fd(struct wl_display *display,
 		      wl_display_update_func_t update, void *data);

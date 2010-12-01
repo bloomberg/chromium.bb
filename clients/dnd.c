@@ -37,8 +37,6 @@
 
 #include "window.h"
 
-static const char socket_name[] = "\0wayland";
-
 struct dnd {
 	struct window *window;
 	struct display *display;

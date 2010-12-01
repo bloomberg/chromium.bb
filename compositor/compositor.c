@@ -37,8 +37,7 @@
 /* The plan here is to generate a random anonymous socket name and
  * advertise that through a service on the session dbus.
  */
-static const char *option_socket_name = "wayland";
-
+static const char *option_socket_name = NULL;
 static const char *option_background = "background.jpg";
 static const char *option_geometry = "1024x640";
 static int option_connector = 0;
@@ -901,7 +900,7 @@ notify_key(struct wlsc_input_device *device,
 
 	switch (key | device->modifier_state) {
 	case KEY_BACKSPACE | MODIFIER_CTRL | MODIFIER_ALT:
-		kill(0, SIGTERM);
+		wl_display_terminate(device->ec->wl_display);
 		return;
 	}
 
@@ -1396,7 +1395,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	return 0;
 }
 
-
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
@@ -1404,8 +1402,6 @@ int main(int argc, char *argv[])
 	GError *error = NULL;
 	GOptionContext *context;
 	int width, height;
-	char *socket_name;
-	int socket_name_size;
 
 	g_type_init(); /* GdkPixbuf needs this, it seems. */
 
@@ -1435,16 +1431,14 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	socket_name_size =
-		asprintf(&socket_name, "%c%s", '\0', option_socket_name) + 1;
-
-	if (wl_display_add_socket(display, socket_name, socket_name_size)) {
+	if (wl_display_add_socket(display, option_socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
 	}
-	free(socket_name);
 
 	wl_display_run(display);
+
+	wl_display_destroy(display);
 
 	return 0;
 }

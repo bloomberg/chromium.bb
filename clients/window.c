@@ -1337,8 +1337,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	}
 }
 
-static const char socket_name[] = "\0wayland";
-
 static void
 display_render_frame(struct display *d)
 {
@@ -1425,7 +1423,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	if (d == NULL)
 		return NULL;
 
-	d->display = wl_display_connect(socket_name, sizeof socket_name);
+	d->display = wl_display_connect(NULL);
 	if (d->display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return NULL;
