@@ -1435,8 +1435,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	socket_name_size = 1 + asprintf(&socket_name, "%c%s", '\0',
-					option_socket_name);
+	socket_name_size =
+		asprintf(&socket_name, "%c%s", '\0', option_socket_name) + 1;
 
 	if (wl_display_add_socket(display, socket_name, socket_name_size)) {
 		fprintf(stderr, "failed to add socket: %m\n");

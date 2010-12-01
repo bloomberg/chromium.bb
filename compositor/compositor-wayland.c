@@ -513,7 +513,7 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 	struct wayland_compositor *c;
 	struct wl_event_loop *loop;
 	int fd;
-	char *socket_name;
+	char *socket_name, *env;
 	int socket_name_size;
 
 	c = malloc(sizeof *c);
@@ -522,8 +522,8 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 
 	memset(c, 0, sizeof *c);
 
-	socket_name_size = 1 + asprintf(&socket_name, "%c%s", '\0',
-					getenv("WAYLAND_DISPLAY"));
+	env = getenv("WAYLAND_DISPLAY");
+	socket_name_size = asprintf(&socket_name, "%c%s", '\0', env) + 1;
 
 	c->parent.display = wl_display_connect(socket_name, socket_name_size);
 	free(socket_name);
