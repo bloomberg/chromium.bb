@@ -55,9 +55,6 @@
         '../../../net/net.gyp:net_base',
         '../../../ceee/common/common.gyp:initializing_coclass',
         '../../../ceee/common/common.gyp:ceee_common',
-        # TODO(joi@chromium.org) Why? Can we remove?
-        '../../../ceee/testing/utils/test_utils.gyp:test_utils',
-        '../../../ceee/testing/utils/test_utils.gyp:mshtml_mocks',
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
         '../plugin/toolband/toolband.gyp:toolband_idl',
