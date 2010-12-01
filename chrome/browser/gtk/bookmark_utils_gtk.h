@@ -98,6 +98,13 @@ bool CreateNewBookmarksFromURIList(
     const BookmarkNode* parent,
     int idx);
 
+// Add the "url\ntitle" combination into the model at the given position.
+bool CreateNewBookmarkFromNetscapeURL(
+    GtkSelectionData* selection_data,
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int idx);
+
 }  // namespace bookmark_utils
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_UTILS_GTK_H_

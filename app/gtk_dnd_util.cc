@@ -237,4 +237,27 @@ bool ExtractURIList(GtkSelectionData* selection_data, std::vector<GURL>* urls) {
   return true;
 }
 
+bool ExtractNetscapeURL(GtkSelectionData* selection_data,
+                        GURL* url,
+                        string16* title) {
+  if (!selection_data || selection_data->length <= 0)
+    return false;
+
+  // Find the first '\n' in the data. It is the separator between the url and
+  // the title.
+  std::string data(reinterpret_cast<char*>(selection_data->data),
+                   selection_data->length);
+  std::string::size_type newline = data.find('\n');
+  if (newline == std::string::npos)
+    return false;
+
+  GURL gurl(data.substr(0, newline));
+  if (!gurl.is_valid())
+    return false;
+
+  *url = gurl;
+  *title = UTF8ToUTF16(data.substr(newline + 1));
+  return true;
+}
+
 }  // namespace gtk_dnd_util

@@ -78,6 +78,11 @@ bool ExtractNamedURL(GtkSelectionData* selection_data,
 bool ExtractURIList(GtkSelectionData* selection_data,
                     std::vector<GURL>* urls);
 
+// Extracts a Netscape URL (url\ntitle) from |selection_data|.
+bool ExtractNetscapeURL(GtkSelectionData* selection_data,
+                        GURL* url,
+                        string16* title);
+
 }  // namespace gtk_dnd_util
 
 #endif  // APP_GTK_DND_UTIL_H_

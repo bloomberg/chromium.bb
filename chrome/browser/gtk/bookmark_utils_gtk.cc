@@ -427,4 +427,15 @@ bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
   return true;
 }
 
+bool CreateNewBookmarkFromNetscapeURL(GtkSelectionData* selection_data,
+    BookmarkModel* model, const BookmarkNode* parent, int idx) {
+  GURL url;
+  string16 title;
+  if (!gtk_dnd_util::ExtractNetscapeURL(selection_data, &url, &title))
+    return false;
+
+  model->AddURL(parent, idx, title, url);
+  return true;
+}
+
 }  // namespace bookmark_utils
