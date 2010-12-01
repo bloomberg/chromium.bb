@@ -1390,6 +1390,7 @@
         'browser/net/connection_tester_unittest.cc',
         'browser/net/gaia/token_service_unittest.cc',
         'browser/net/gaia/token_service_unittest.h',
+        'browser/net/chrome_net_log_unittest.cc',
         'browser/net/load_timing_observer_unittest.cc',
         'browser/net/passive_log_collector_unittest.cc',
         'browser/net/predictor_unittest.cc',

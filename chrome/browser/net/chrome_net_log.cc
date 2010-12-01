@@ -9,27 +9,59 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_thread.h"
+#include "base/values.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/net/net_log_logger.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/common/chrome_switches.h"
 
-ChromeNetLog::Observer::Observer(LogLevel log_level) : log_level_(log_level) {}
+ChromeNetLog::ThreadSafeObserver::ThreadSafeObserver(LogLevel log_level)
+    : net_log_(NULL),
+      log_level_(log_level) {
+}
 
-net::NetLog::LogLevel ChromeNetLog::Observer::log_level() const {
+ChromeNetLog::ThreadSafeObserver::~ThreadSafeObserver() {
+  DCHECK(!net_log_);
+}
+
+net::NetLog::LogLevel ChromeNetLog::ThreadSafeObserver::log_level() const {
   return log_level_;
 }
 
-void ChromeNetLog::Observer::set_log_level(net::NetLog::LogLevel log_level) {
-  log_level_ = log_level;
+void ChromeNetLog::ThreadSafeObserver::AssertNetLogLockAcquired() const {
+  if (net_log_)
+    net_log_->lock_.AssertAcquired();
 }
 
+void ChromeNetLog::ThreadSafeObserver::SetLogLevel(
+    net::NetLog::LogLevel log_level) {
+  DCHECK(net_log_);
+  AutoLock lock(net_log_->lock_);
+  log_level_ = log_level;
+  net_log_->UpdateLogLevel_();
+}
+
+ChromeNetLog::Entry::Entry(uint32 order,
+                           net::NetLog::EventType type,
+                           const base::TimeTicks& time,
+                           net::NetLog::Source source,
+                           net::NetLog::EventPhase phase,
+                           net::NetLog::EventParameters* params)
+    : order(order),
+      type(type),
+      time(time),
+      source(source),
+      phase(phase),
+      params(params) {
+}
+
+ChromeNetLog::Entry::~Entry() {}
+
 ChromeNetLog::ChromeNetLog()
-    : next_id_(1),
+    : last_id_(0),
+      log_level_(LOG_BASIC),
       passive_collector_(new PassiveLogCollector),
       load_timing_observer_(new LoadTimingObserver) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   AddObserver(passive_collector_.get());
   AddObserver(load_timing_observer_.get());
 
@@ -41,7 +73,6 @@ ChromeNetLog::ChromeNetLog()
 }
 
 ChromeNetLog::~ChromeNetLog() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RemoveObserver(passive_collector_.get());
   RemoveObserver(load_timing_observer_.get());
   if (net_log_logger_.get()) {
@@ -54,42 +85,69 @@ void ChromeNetLog::AddEntry(EventType type,
                             const Source& source,
                             EventPhase phase,
                             EventParameters* params) {
-  // This must be invoked when we're on the IO thread, or if the IO thread's
-  // message loop isn't valid. The later can happen if this is invoked when the
-  // IOThread is shuting down the MessageLoop.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
-         !BrowserThread::IsMessageLoopValid(BrowserThread::IO));
+  AutoLock lock(lock_);
 
   // Notify all of the log observers.
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(ThreadSafeObserver, observers_,
                     OnAddEntry(type, time, source, phase, params));
 }
 
 uint32 ChromeNetLog::NextID() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return next_id_++;
+  return base::subtle::NoBarrier_AtomicIncrement(&last_id_, 1);
 }
 
 net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  base::subtle::Atomic32 log_level = base::subtle::NoBarrier_Load(&log_level_);
+  return static_cast<net::NetLog::LogLevel>(log_level);
+}
+
+void ChromeNetLog::AddObserver(ThreadSafeObserver* observer) {
+  AutoLock lock(lock_);
+  AddObserverWhileLockHeld(observer);
+}
+
+void ChromeNetLog::RemoveObserver(ThreadSafeObserver* observer) {
+  AutoLock lock(lock_);
+  DCHECK_EQ(observer->net_log_, this);
+  observer->net_log_ = NULL;
+  observers_.RemoveObserver(observer);
+  UpdateLogLevel_();
+}
+
+void ChromeNetLog::AddObserverAndGetAllPassivelyCapturedEvents(
+    ThreadSafeObserver* observer, EntryList* passive_entries) {
+  AutoLock lock(lock_);
+  AddObserverWhileLockHeld(observer);
+  passive_collector_->GetAllCapturedEvents(passive_entries);
+}
+
+void ChromeNetLog::GetAllPassivelyCapturedEvents(EntryList* passive_entries) {
+  AutoLock lock(lock_);
+  passive_collector_->GetAllCapturedEvents(passive_entries);
+}
+
+void ChromeNetLog::ClearAllPassivelyCapturedEvents() {
+  AutoLock lock(lock_);
+  passive_collector_->Clear();
+}
+
+void ChromeNetLog::UpdateLogLevel_() {
+  lock_.AssertAcquired();
 
   // Look through all the observers and find the finest granularity
   // log level (higher values of the enum imply *lower* log levels).
-  LogLevel log_level = LOG_BASIC;
-  ObserverListBase<Observer>::Iterator it(observers_);
-  Observer* observer;
+  LogLevel new_log_level = LOG_BASIC;
+  ObserverListBase<ThreadSafeObserver>::Iterator it(observers_);
+  ThreadSafeObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
-    log_level = std::min(log_level, observer->log_level());
+    new_log_level = std::min(new_log_level, observer->log_level());
   }
-  return log_level;
+  base::subtle::NoBarrier_Store(&log_level_, new_log_level);
 }
 
-void ChromeNetLog::AddObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+void ChromeNetLog::AddObserverWhileLockHeld(ThreadSafeObserver* observer) {
+  DCHECK(!observer->net_log_);
+  observer->net_log_ = this;
   observers_.AddObserver(observer);
-}
-
-void ChromeNetLog::RemoveObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  observers_.RemoveObserver(observer);
+  UpdateLogLevel_();
 }

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
+#include "base/lock.h"
 #include "base/string_util.h"
 #include "base/format_macros.h"
 #include "chrome/browser/browser_thread.h"
@@ -18,7 +19,7 @@ namespace {
 
 const size_t kMaxNumEntriesPerLog = 30;
 
-void AddEntryToSourceInfo(const PassiveLogCollector::Entry& entry,
+void AddEntryToSourceInfo(const ChromeNetLog::Entry& entry,
                           PassiveLogCollector::SourceInfo* out_info) {
   // Start dropping new entries when the log has gotten too big.
   if (out_info->entries.size() + 1 <= kMaxNumEntriesPerLog) {
@@ -30,28 +31,12 @@ void AddEntryToSourceInfo(const PassiveLogCollector::Entry& entry,
 }
 
 // Comparator to sort entries by their |order| property, ascending.
-bool SortByOrderComparator(const PassiveLogCollector::Entry& a,
-                           const PassiveLogCollector::Entry& b) {
+bool SortByOrderComparator(const ChromeNetLog::Entry& a,
+                           const ChromeNetLog::Entry& b) {
   return a.order < b.order;
 }
 
 }  // namespace
-
-PassiveLogCollector::Entry::Entry(uint32 order,
-                                  net::NetLog::EventType type,
-                                  const base::TimeTicks& time,
-                                  net::NetLog::Source source,
-                                  net::NetLog::EventPhase phase,
-                                  net::NetLog::EventParameters* params)
-    : order(order),
-      type(type),
-      time(time),
-      source(source),
-      phase(phase),
-      params(params) {
-}
-
-PassiveLogCollector::Entry::~Entry() {}
 
 PassiveLogCollector::SourceInfo::SourceInfo()
     : source_id(net::NetLog::Source::kInvalidId),
@@ -67,7 +52,7 @@ PassiveLogCollector::SourceInfo::~SourceInfo() {}
 //----------------------------------------------------------------------------
 
 PassiveLogCollector::PassiveLogCollector()
-    : Observer(net::NetLog::LOG_BASIC),
+    : ThreadSafeObserver(net::NetLog::LOG_BASIC),
       ALLOW_THIS_IN_INITIALIZER_LIST(connect_job_tracker_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(url_request_tracker_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(socket_stream_tracker_(this)),
@@ -100,28 +85,33 @@ void PassiveLogCollector::OnAddEntry(
     const net::NetLog::Source& source,
     net::NetLog::EventPhase phase,
     net::NetLog::EventParameters* params) {
+  AssertNetLogLockAcquired();
   // Package the parameters into a single struct for convenience.
-  Entry entry(num_events_seen_++, type, time, source, phase, params);
+  ChromeNetLog::Entry entry(num_events_seen_++, type, time, source, phase,
+                            params);
 
-  SourceTrackerInterface* tracker = GetTrackerForSourceType(entry.source.type);
+  SourceTrackerInterface* tracker = GetTrackerForSourceType_(entry.source.type);
   if (tracker)
     tracker->OnAddEntry(entry);
 }
 
+void PassiveLogCollector::Clear() {
+  AssertNetLogLockAcquired();
+  for (size_t i = 0; i < arraysize(trackers_); ++i)
+    trackers_[i]->Clear();
+}
+
 PassiveLogCollector::SourceTrackerInterface*
-PassiveLogCollector::GetTrackerForSourceType(
+PassiveLogCollector::GetTrackerForSourceType_(
     net::NetLog::SourceType source_type) {
   DCHECK_LE(source_type, static_cast<int>(arraysize(trackers_)));
   DCHECK_GE(source_type, 0);
   return trackers_[source_type];
 }
 
-void PassiveLogCollector::Clear() {
-  for (size_t i = 0; i < arraysize(trackers_); ++i)
-    trackers_[i]->Clear();
-}
-
-void PassiveLogCollector::GetAllCapturedEvents(EntryList* out) const {
+void PassiveLogCollector::GetAllCapturedEvents(
+    ChromeNetLog::EntryList* out) const {
+  AssertNetLogLockAcquired();
   out->clear();
 
   // Append all of the captured entries held by the various trackers to
@@ -137,7 +127,7 @@ std::string PassiveLogCollector::SourceInfo::GetURL() const {
   // Note: we look at the first *two* entries, since the outer REQUEST_ALIVE
   // doesn't actually contain any data.
   for (size_t i = 0; i < 2 && i < entries.size(); ++i) {
-    const PassiveLogCollector::Entry& entry = entries[i];
+    const ChromeNetLog::Entry& entry = entries[i];
     if (entry.phase == net::NetLog::PHASE_BEGIN && entry.params) {
       switch (entry.type) {
         case net::NetLog::TYPE_URL_REQUEST_START_JOB:
@@ -161,7 +151,8 @@ std::string PassiveLogCollector::SourceInfo::GetURL() const {
 PassiveLogCollector::GlobalSourceTracker::GlobalSourceTracker() {}
 PassiveLogCollector::GlobalSourceTracker::~GlobalSourceTracker() {}
 
-void PassiveLogCollector::GlobalSourceTracker::OnAddEntry(const Entry& entry) {
+void PassiveLogCollector::GlobalSourceTracker::OnAddEntry(
+    const ChromeNetLog::Entry& entry) {
   const size_t kMaxEntries = 30u;
   entries_.push_back(entry);
   if (entries_.size() > kMaxEntries)
@@ -173,7 +164,7 @@ void PassiveLogCollector::GlobalSourceTracker::Clear() {
 }
 
 void PassiveLogCollector::GlobalSourceTracker::AppendAllEntries(
-    EntryList* out) const {
+    ChromeNetLog::EntryList* out) const {
   out->insert(out->end(), entries_.begin(), entries_.end());
 }
 
@@ -192,7 +183,8 @@ PassiveLogCollector::SourceTracker::SourceTracker(
 
 PassiveLogCollector::SourceTracker::~SourceTracker() {}
 
-void PassiveLogCollector::SourceTracker::OnAddEntry(const Entry& entry) {
+void PassiveLogCollector::SourceTracker::OnAddEntry(
+    const ChromeNetLog::Entry& entry) {
   // Lookup or insert a new entry into the bounded map.
   SourceIDToInfoMap::iterator it = sources_.find(entry.source.id);
   if (it == sources_.end()) {
@@ -259,7 +251,7 @@ void PassiveLogCollector::SourceTracker::Clear() {
 }
 
 void PassiveLogCollector::SourceTracker::AppendAllEntries(
-    EntryList* out) const {
+    ChromeNetLog::EntryList* out) const {
   // Append all of the entries for each of the sources.
   for (SourceIDToInfoMap::const_iterator it = sources_.begin();
        it != sources_.end();
@@ -344,7 +336,7 @@ void PassiveLogCollector::SourceTracker::AddReferenceToSourceDependency(
   DCHECK(parent_);
   DCHECK_NE(source.type, net::NetLog::SOURCE_NONE);
   SourceTracker* tracker = static_cast<SourceTracker*>(
-      parent_->GetTrackerForSourceType(source.type));
+      parent_->GetTrackerForSourceType_(source.type));
   DCHECK(tracker);
 
   // Tell the owning tracker to increment the reference count of |source|.
@@ -366,7 +358,7 @@ PassiveLogCollector::SourceTracker::ReleaseAllReferencesToDependencies(
     DCHECK(parent_);
     DCHECK_NE(source.type, net::NetLog::SOURCE_NONE);
     SourceTracker* tracker = static_cast<SourceTracker*>(
-        parent_->GetTrackerForSourceType(source.type));
+        parent_->GetTrackerForSourceType_(source.type));
     DCHECK(tracker);
 
     // Tell the owning tracker to decrement the reference count of |source|.
@@ -389,8 +381,8 @@ PassiveLogCollector::ConnectJobTracker::ConnectJobTracker(
 }
 
 PassiveLogCollector::SourceTracker::Action
-PassiveLogCollector::ConnectJobTracker::DoAddEntry(const Entry& entry,
-                                                   SourceInfo* out_info) {
+PassiveLogCollector::ConnectJobTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
 
   if (entry.type == net::NetLog::TYPE_CONNECT_JOB_SET_SOCKET) {
@@ -420,7 +412,7 @@ PassiveLogCollector::SocketTracker::SocketTracker()
 }
 
 PassiveLogCollector::SourceTracker::Action
-PassiveLogCollector::SocketTracker::DoAddEntry(const Entry& entry,
+PassiveLogCollector::SocketTracker::DoAddEntry(const ChromeNetLog::Entry& entry,
                                                SourceInfo* out_info) {
   // TODO(eroman): aggregate the byte counts once truncation starts to happen,
   //               to summarize transaction read/writes for each SOCKET_IN_USE
@@ -452,8 +444,8 @@ PassiveLogCollector::RequestTracker::RequestTracker(PassiveLogCollector* parent)
 }
 
 PassiveLogCollector::SourceTracker::Action
-PassiveLogCollector::RequestTracker::DoAddEntry(const Entry& entry,
-                                                SourceInfo* out_info) {
+PassiveLogCollector::RequestTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
   if (entry.type == net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB ||
       entry.type == net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET) {
     const net::NetLog::Source& source_dependency =
@@ -491,7 +483,7 @@ PassiveLogCollector::InitProxyResolverTracker::InitProxyResolverTracker()
 
 PassiveLogCollector::SourceTracker::Action
 PassiveLogCollector::InitProxyResolverTracker::DoAddEntry(
-    const Entry& entry, SourceInfo* out_info) {
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_INIT_PROXY_RESOLVER &&
       entry.phase == net::NetLog::PHASE_END) {
@@ -513,8 +505,8 @@ PassiveLogCollector::SpdySessionTracker::SpdySessionTracker()
 }
 
 PassiveLogCollector::SourceTracker::Action
-PassiveLogCollector::SpdySessionTracker::DoAddEntry(const Entry& entry,
-                                                    SourceInfo* out_info) {
+PassiveLogCollector::SpdySessionTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_SPDY_SESSION &&
       entry.phase == net::NetLog::PHASE_END) {
@@ -536,8 +528,8 @@ PassiveLogCollector::DNSRequestTracker::DNSRequestTracker()
 }
 
 PassiveLogCollector::SourceTracker::Action
-PassiveLogCollector::DNSRequestTracker::DoAddEntry(const Entry& entry,
-                                                   SourceInfo* out_info) {
+PassiveLogCollector::DNSRequestTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL_REQUEST &&
       entry.phase == net::NetLog::PHASE_END) {
@@ -559,7 +551,7 @@ PassiveLogCollector::DNSJobTracker::DNSJobTracker()
 }
 
 PassiveLogCollector::SourceTracker::Action
-PassiveLogCollector::DNSJobTracker::DoAddEntry(const Entry& entry,
+PassiveLogCollector::DNSJobTracker::DoAddEntry(const ChromeNetLog::Entry& entry,
                                                SourceInfo* out_info) {
   AddEntryToSourceInfo(entry, out_info);
   if (entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL_JOB &&

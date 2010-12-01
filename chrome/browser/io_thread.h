@@ -43,7 +43,6 @@ class IOThread : public BrowserProcessSubThread {
     Globals();
     ~Globals();
 
-    scoped_ptr<ChromeNetLog> net_log;
     scoped_ptr<net::HostResolver> host_resolver;
     scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
@@ -51,12 +50,15 @@ class IOThread : public BrowserProcessSubThread {
     ChromeNetworkDelegate network_delegate;
   };
 
-  explicit IOThread(PrefService* local_state);
+  // |net_log| must either outlive the IOThread or be NULL.
+  IOThread(PrefService* local_state, ChromeNetLog* net_log);
 
   virtual ~IOThread();
 
   // Can only be called on the IO thread.
   Globals* globals();
+
+  ChromeNetLog* net_log();
 
   // Initializes the network predictor, which induces DNS pre-resolution and/or
   // TCP/IP preconnections.  |prefetching_enabled| indicates whether or not DNS
@@ -120,21 +122,19 @@ class IOThread : public BrowserProcessSubThread {
 
   void ChangedToOnTheRecordOnIOThread();
 
+  // The NetLog is owned by the browser process, to allow logging from other
+  // threads during shutdown, but is used most frequently on the IOThread.
+  ChromeNetLog* net_log_;
+
   // These member variables are basically global, but their lifetimes are tied
   // to the IOThread.  IOThread owns them all, despite not using scoped_ptr.
   // This is because the destructor of IOThread runs on the wrong thread.  All
-  // member variables should be deleted in CleanUp(), except ChromeNetLog
-  // which is deleted later in CleanUpAfterMessageLoopDestruction().
+  // member variables should be deleted in CleanUp().
 
   // These member variables are initialized in Init() and do not change for the
   // lifetime of the IO thread.
 
   Globals* globals_;
-
-  // This variable is only meaningful during shutdown. It is used to defer
-  // deletion of the NetLog to CleanUpAfterMessageLoopDestruction() even
-  // though |globals_| is reset by CleanUp().
-  scoped_ptr<ChromeNetLog> deferred_net_log_to_delete_;
 
   // Observer that logs network changes to the ChromeNetLog.
   scoped_ptr<net::NetworkChangeNotifier::Observer> network_change_observer_;

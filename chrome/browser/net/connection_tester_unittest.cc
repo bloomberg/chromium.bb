@@ -78,7 +78,7 @@ class ConnectionTesterTest : public PlatformTest {
             FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
         message_loop_(MessageLoop::TYPE_IO),
         pref_service(new TestingPrefService()),
-        io_thread_(pref_service.get()) {
+        io_thread_(pref_service.get(), NULL) {
     scoped_refptr<net::RuleBasedHostResolverProc> catchall_resolver(
         new net::RuleBasedHostResolverProc(NULL));
 

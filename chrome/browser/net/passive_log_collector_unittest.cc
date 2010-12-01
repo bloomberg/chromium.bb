@@ -19,9 +19,9 @@ using net::NetLog;
 
 const NetLog::SourceType kSourceType = NetLog::SOURCE_NONE;
 
-PassiveLogCollector::Entry MakeStartLogEntryWithURL(int source_id,
-                                                    const std::string& url) {
-  return PassiveLogCollector::Entry(
+ChromeNetLog::Entry MakeStartLogEntryWithURL(int source_id,
+                                             const std::string& url) {
+  return ChromeNetLog::Entry(
       0,
       NetLog::TYPE_URL_REQUEST_START_JOB,
       base::TimeTicks(),
@@ -30,13 +30,13 @@ PassiveLogCollector::Entry MakeStartLogEntryWithURL(int source_id,
       new URLRequestStartEventParameters(GURL(url), "GET", 0, net::LOW));
 }
 
-PassiveLogCollector::Entry MakeStartLogEntry(int source_id) {
+ChromeNetLog::Entry MakeStartLogEntry(int source_id) {
   return MakeStartLogEntryWithURL(source_id,
                                   StringPrintf("http://req%d", source_id));
 }
 
-PassiveLogCollector::Entry MakeEndLogEntry(int source_id) {
-  return PassiveLogCollector::Entry(
+ChromeNetLog::Entry MakeEndLogEntry(int source_id) {
+  return ChromeNetLog::Entry(
       0,
       NetLog::TYPE_REQUEST_ALIVE,
       base::TimeTicks(),
@@ -176,7 +176,7 @@ TEST(SpdySessionTracker, MovesToGraveyard) {
   EXPECT_EQ(0u, GetLiveSources(tracker).size());
   EXPECT_EQ(0u, GetDeadSources(tracker).size());
 
-  PassiveLogCollector::Entry begin(
+  ChromeNetLog::Entry begin(
       0u,
       NetLog::TYPE_SPDY_SESSION,
       base::TimeTicks(),
@@ -188,7 +188,7 @@ TEST(SpdySessionTracker, MovesToGraveyard) {
   EXPECT_EQ(1u, GetLiveSources(tracker).size());
   EXPECT_EQ(0u, GetDeadSources(tracker).size());
 
-  PassiveLogCollector::Entry end(
+  ChromeNetLog::Entry end(
       0u,
       NetLog::TYPE_SPDY_SESSION,
       base::TimeTicks(),

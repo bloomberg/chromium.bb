@@ -21,11 +21,15 @@ struct ResourceResponse;
 // DevToolsNetLogObserver watches the NetLog event stream and collects the
 // stuff that may be of interest to DevTools. Currently, this only includes
 // actual HTTP/SPDY headers sent and received over the network.
-class DevToolsNetLogObserver: public ChromeNetLog::Observer {
+//
+// As DevToolsNetLogObserver shares live data with objects that live on the
+// IO Thread, it must also reside on the IO Thread.  Only OnAddEntry can be
+// called from other threads.
+class DevToolsNetLogObserver: public ChromeNetLog::ThreadSafeObserver {
   typedef webkit_glue::ResourceDevToolsInfo ResourceInfo;
 
  public:
-  // Observer implementation:
+  // ThreadSafeObserver implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,

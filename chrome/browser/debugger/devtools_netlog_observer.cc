@@ -19,7 +19,7 @@ const size_t kMaxNumEntries = 1000;
 DevToolsNetLogObserver* DevToolsNetLogObserver::instance_ = NULL;
 
 DevToolsNetLogObserver::DevToolsNetLogObserver(ChromeNetLog* chrome_net_log)
-    : ChromeNetLog::Observer(net::NetLog::LOG_ALL_BUT_BYTES),
+    : ChromeNetLog::ThreadSafeObserver(net::NetLog::LOG_ALL_BUT_BYTES),
       chrome_net_log_(chrome_net_log) {
   chrome_net_log_->AddObserver(this);
 }
@@ -41,6 +41,10 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
                                         const net::NetLog::Source& source,
                                         net::NetLog::EventPhase phase,
                                         net::NetLog::EventParameters* params) {
+  // The events that the Observer is interested in only occur on the IO thread.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO))
+    return;
+
   if (type == net::NetLog::TYPE_URL_REQUEST_START_JOB) {
     if (phase != net::NetLog::PHASE_BEGIN)
       return;
@@ -108,7 +112,7 @@ void DevToolsNetLogObserver::Attach(IOThread* io_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!instance_);
 
-  instance_ = new DevToolsNetLogObserver(io_thread->globals()->net_log.get());
+  instance_ = new DevToolsNetLogObserver(io_thread->net_log());
 }
 
 void DevToolsNetLogObserver::Detach() {

@@ -234,8 +234,9 @@ class SSLClientSocketSnapStartTest : public PlatformTest {
   // SnapStartEventType extracts the type of Snap Start from the NetLog. See
   // the SSL_SNAP_START_* defines in sslt.h
   int SnapStartEventType() {
-    const std::vector<CapturingNetLog::Entry>& entries = log_.entries();
-    for (std::vector<CapturingNetLog::Entry>::const_iterator
+    CapturingNetLog::EntryList entries;
+    log_.GetEntries(&entries);
+    for (CapturingNetLog::EntryList::const_iterator
          i = entries.begin(); i != entries.end(); i++) {
       if (i->type == NetLog::TYPE_SSL_SNAP_START) {
         scoped_ptr<Value> value(i->extra_parameters->ToValue());
@@ -253,8 +254,9 @@ class SSLClientSocketSnapStartTest : public PlatformTest {
   // it's certificate validation with the optimistic validation from the
   // SSLHostInfo.
   bool DidMerge() {
-    const std::vector<CapturingNetLog::Entry>& entries = log_.entries();
-    for (std::vector<CapturingNetLog::Entry>::const_iterator
+    CapturingNetLog::EntryList entries;
+    log_.GetEntries(&entries);
+    for (CapturingNetLog::EntryList::const_iterator
          i = entries.begin(); i != entries.end(); i++) {
       if (i->type == NetLog::TYPE_SSL_VERIFICATION_MERGED)
         return true;

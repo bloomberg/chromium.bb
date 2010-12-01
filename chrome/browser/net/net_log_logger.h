@@ -11,12 +11,12 @@
 // NetLogLogger watches the NetLog event stream, and sends all entries to
 // VLOG(1).  This is to debug errors that prevent getting to the
 // about:net-internals page.
-class NetLogLogger : public ChromeNetLog::Observer {
+class NetLogLogger : public ChromeNetLog::ThreadSafeObserver {
  public:
   NetLogLogger();
   ~NetLogLogger();
 
-  // Observer implementation:
+  // ThreadSafeObserver implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,

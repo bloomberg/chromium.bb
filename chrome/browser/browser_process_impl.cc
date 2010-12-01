@@ -32,6 +32,7 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
@@ -111,6 +112,8 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   print_job_manager_.reset(new printing::PrintJobManager);
 
   shutdown_event_.reset(new base::WaitableEvent(true, false));
+
+  net_log_.reset(new ChromeNetLog);
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
@@ -562,7 +565,7 @@ void BrowserProcessImpl::CreateIOThread() {
   background_x11_thread_.swap(background_x11_thread);
 #endif
 
-  scoped_ptr<IOThread> thread(new IOThread(local_state()));
+  scoped_ptr<IOThread> thread(new IOThread(local_state(), net_log_.get()));
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))

@@ -21,7 +21,10 @@ struct ResourceResponse;
 
 // LoadTimingObserver watches the NetLog event stream and collects the network
 // timing information.
-class LoadTimingObserver : public ChromeNetLog::Observer {
+//
+// LoadTimingObserver lives completely on the IOThread and ignores events from
+// other threads.  It is not safe to use from other threads.
+class LoadTimingObserver : public ChromeNetLog::ThreadSafeObserver {
  public:
   struct URLRequestRecord {
     URLRequestRecord();
@@ -48,7 +51,7 @@ class LoadTimingObserver : public ChromeNetLog::Observer {
 
   URLRequestRecord* GetURLRequestRecord(uint32 source_id);
 
-  // Observer implementation:
+  // ThreadSafeObserver implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,

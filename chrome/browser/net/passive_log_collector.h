@@ -32,29 +32,12 @@
 // The data captured by PassiveLogCollector is grouped by NetLog::Source, into
 // a SourceInfo structure. These in turn are grouped by NetLog::SourceType, and
 // owned by a SourceTracker instance for the specific source type.
-class PassiveLogCollector : public ChromeNetLog::Observer {
+//
+// The PassiveLogCollector is owned by the ChromeNetLog itself, and is not
+// thread safe.  The ChromeNetLog is responsible for calling it in a thread safe
+// manner.
+class PassiveLogCollector : public ChromeNetLog::ThreadSafeObserver {
  public:
-  // This structure encapsulates all of the parameters of a captured event,
-  // including an "order" field that identifies when it was captured relative
-  // to other events.
-  struct Entry {
-    Entry(uint32 order,
-          net::NetLog::EventType type,
-          const base::TimeTicks& time,
-          net::NetLog::Source source,
-          net::NetLog::EventPhase phase,
-          net::NetLog::EventParameters* params);
-    ~Entry();
-
-    uint32 order;
-    net::NetLog::EventType type;
-    base::TimeTicks time;
-    net::NetLog::Source source;
-    net::NetLog::EventPhase phase;
-    scoped_refptr<net::NetLog::EventParameters> params;
-  };
-
-  typedef std::vector<Entry> EntryList;
   typedef std::vector<net::NetLog::Source> SourceDependencyList;
 
   struct SourceInfo {
@@ -67,7 +50,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     std::string GetURL() const;
 
     uint32 source_id;
-    EntryList entries;
+    ChromeNetLog::EntryList entries;
     size_t num_entries_truncated;
 
     // List of other sources which contain information relevant to this
@@ -93,13 +76,13 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
    public:
     virtual ~SourceTrackerInterface() {}
 
-    virtual void OnAddEntry(const Entry& entry) = 0;
+    virtual void OnAddEntry(const ChromeNetLog::Entry& entry) = 0;
 
     // Clears all the passively logged data from this tracker.
     virtual void Clear() = 0;
 
     // Appends all the captured entries to |out|. The ordering is undefined.
-    virtual void AppendAllEntries(EntryList* out) const = 0;
+    virtual void AppendAllEntries(ChromeNetLog::EntryList* out) const = 0;
   };
 
   // This source tracker is intended for TYPE_NONE. All entries go into a
@@ -110,12 +93,12 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     ~GlobalSourceTracker();
 
     // SourceTrackerInterface implementation:
-    virtual void OnAddEntry(const Entry& entry);
+    virtual void OnAddEntry(const ChromeNetLog::Entry& entry);
     virtual void Clear();
-    virtual void AppendAllEntries(EntryList* out) const;
+    virtual void AppendAllEntries(ChromeNetLog::EntryList* out) const;
 
    private:
-    typedef std::deque<Entry> CircularEntryList;
+    typedef std::deque<ChromeNetLog::Entry> CircularEntryList;
     CircularEntryList entries_;
     DISALLOW_COPY_AND_ASSIGN(GlobalSourceTracker);
   };
@@ -136,9 +119,9 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     virtual ~SourceTracker();
 
     // SourceTrackerInterface implementation:
-    virtual void OnAddEntry(const Entry& entry);
+    virtual void OnAddEntry(const ChromeNetLog::Entry& entry);
     virtual void Clear();
-    virtual void AppendAllEntries(EntryList* out) const;
+    virtual void AppendAllEntries(ChromeNetLog::EntryList* out) const;
 
 #ifdef UNIT_TEST
     // Helper used to inspect the current state by unit-tests.
@@ -172,7 +155,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     // Updates |out_info| with the information from |entry|. Returns an action
     // to perform for this map entry on completion.
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info) = 0;
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info) = 0;
 
     // Removes |source_id| from |sources_|. This also releases any references
     // to dependencies held by this source.
@@ -217,7 +201,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     explicit ConnectJobTracker(PassiveLogCollector* parent);
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
    private:
     DISALLOW_COPY_AND_ASSIGN(ConnectJobTracker);
   };
@@ -231,7 +216,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     SocketTracker();
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SocketTracker);
@@ -246,7 +232,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     explicit RequestTracker(PassiveLogCollector* parent);
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(RequestTracker);
@@ -262,7 +249,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     InitProxyResolverTracker();
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitProxyResolverTracker);
@@ -277,7 +265,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     SpdySessionTracker();
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SpdySessionTracker);
@@ -292,7 +281,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     DNSRequestTracker();
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DNSRequestTracker);
@@ -307,7 +297,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     DNSJobTracker();
 
    protected:
-    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+    virtual Action DoAddEntry(const ChromeNetLog::Entry& entry,
+                              SourceInfo* out_info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DNSJobTracker);
@@ -316,25 +307,25 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   PassiveLogCollector();
   ~PassiveLogCollector();
 
-  // Observer implementation:
+  // ThreadSafeObserver implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,
                           net::NetLog::EventPhase phase,
                           net::NetLog::EventParameters* params);
 
-  // Returns the tracker to use for sources of type |source_type|, or NULL.
-  SourceTrackerInterface* GetTrackerForSourceType(
-      net::NetLog::SourceType source_type);
-
   // Clears all of the passively logged data.
   void Clear();
 
   // Fills |out| with the full list of events that have been passively
   // captured. The list is ordered by capture time.
-  void GetAllCapturedEvents(EntryList* out) const;
+  void GetAllCapturedEvents(ChromeNetLog::EntryList* out) const;
 
  private:
+  // Returns the tracker to use for sources of type |source_type|, or NULL.
+  SourceTrackerInterface* GetTrackerForSourceType_(
+      net::NetLog::SourceType source_type);
+
   FRIEND_TEST_ALL_PREFIXES(PassiveLogCollectorTest,
                            HoldReferenceToDependentSource);
   FRIEND_TEST_ALL_PREFIXES(PassiveLogCollectorTest,

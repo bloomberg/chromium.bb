@@ -214,8 +214,9 @@ IOThread::Globals::~Globals() {}
 
 // |local_state| is passed in explicitly in order to (1) reduce implicit
 // dependencies and (2) make IOThread more flexible for testing.
-IOThread::IOThread(PrefService* local_state)
+IOThread::IOThread(PrefService* local_state, ChromeNetLog* net_log)
     : BrowserProcessSubThread(BrowserThread::IO),
+      net_log_(net_log),
       globals_(NULL),
       speculative_interceptor_(NULL),
       predictor_(NULL) {
@@ -243,6 +244,10 @@ IOThread::~IOThread() {
 IOThread::Globals* IOThread::globals() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return globals_;
+}
+
+ChromeNetLog* IOThread::net_log() {
+  return net_log_;
 }
 
 void IOThread::InitNetworkPredictor(
@@ -320,16 +325,14 @@ void IOThread::Init() {
   DCHECK(!globals_);
   globals_ = new Globals;
 
-  globals_->net_log.reset(new ChromeNetLog());
-
   // Add an observer that will emit network change events to the ChromeNetLog.
   // Assuming NetworkChangeNotifier dispatches in FIFO order, we should be
   // logging the network change before other IO thread consumers respond to it.
   network_change_observer_.reset(
-      new LoggingNetworkChangeObserver(globals_->net_log.get()));
+      new LoggingNetworkChangeObserver(net_log_));
 
   globals_->host_resolver.reset(
-      CreateGlobalHostResolver(globals_->net_log.get()));
+      CreateGlobalHostResolver(net_log_));
   globals_->dnsrr_resolver.reset(new net::DnsRRResolver);
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
@@ -416,10 +419,6 @@ void IOThread::CleanUp() {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
 
-  // We will delete the NetLog as part of CleanUpAfterMessageLoopDestruction()
-  // in case any of the message loop destruction observers try to access it.
-  deferred_net_log_to_delete_.reset(globals_->net_log.release());
-
   delete globals_;
   globals_ = NULL;
 
@@ -427,12 +426,6 @@ void IOThread::CleanUp() {
 }
 
 void IOThread::CleanUpAfterMessageLoopDestruction() {
-  // TODO(eroman): get rid of this special case for 39723. If we could instead
-  // have a method that runs after the message loop destruction observers have
-  // run, but before the message loop itself is destroyed, we could safely
-  // combine the two cleanups.
-  deferred_net_log_to_delete_.reset();
-
   // This will delete the |notification_service_|.  Make sure it's done after
   // anything else can reference it.
   BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
@@ -529,5 +522,5 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
   // Clear all of the passively logged data.
   // TODO(eroman): this is a bit heavy handed, really all we need to do is
   //               clear the data pertaining to off the record context.
-  globals_->net_log->passive_collector()->Clear();
+  net_log_->ClearAllPassivelyCapturedEvents();
 }

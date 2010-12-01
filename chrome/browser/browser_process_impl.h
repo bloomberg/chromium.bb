@@ -24,6 +24,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "ipc/ipc_message.h"
 
+class ChromeNetLog;
 class CommandLine;
 class DebuggerWrapper;
 class FilePath;
@@ -210,6 +211,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.
   PrefChangeRegistrar pref_change_registrar_;
+
+  // Lives here so can safely log events on shutdown.
+  scoped_ptr<ChromeNetLog> net_log_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;

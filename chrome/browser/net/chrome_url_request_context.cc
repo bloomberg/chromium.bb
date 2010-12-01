@@ -273,7 +273,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   context->set_proxy_service(
-      CreateProxyService(io_thread_globals->net_log.get(),
+      CreateProxyService(io_thread()->net_log(),
                          context,
                          proxy_config_service_.release(),
                          command_line,
@@ -290,7 +290,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
                          &io_thread_globals->network_delegate,
-                         io_thread_globals->net_log.get(),
+                         io_thread()->net_log(),
                          backend);
 
   bool record_mode = chrome::kRecordModeEnabled &&
@@ -324,7 +324,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   appcache_service_->set_request_context(context);
 
-  context->set_net_log(io_thread_globals->net_log.get());
+  context->set_net_log(io_thread()->net_log());
   return context;
 }
 
@@ -417,7 +417,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
                          &io_thread_globals->network_delegate,
-                         io_thread_globals->net_log.get(),
+                         io_thread()->net_log(),
                          backend);
   context->set_cookie_store(new net::CookieMonster(NULL,
       cookie_monster_delegate_));
@@ -430,7 +430,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
 
   appcache_service_->set_request_context(context);
 
-  context->set_net_log(io_thread_globals->net_log.get());
+  context->set_net_log(io_thread()->net_log());
   return context;
 }
 
@@ -510,12 +510,12 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
                                main_context->ssl_config_service(),
                                main_context->http_auth_handler_factory(),
                                &io_thread_globals->network_delegate,
-                               io_thread_globals->net_log.get(),
+                               io_thread()->net_log(),
                                backend);
   }
 
   context->set_http_transaction_factory(cache);
-  context->set_net_log(io_thread_globals->net_log.get());
+  context->set_net_log(io_thread()->net_log());
 
   return context;
 }

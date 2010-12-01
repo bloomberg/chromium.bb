@@ -44,7 +44,7 @@ static int32 TimeTicksToOffset(
       (time_ticks - record->base_ticks).InMillisecondsRoundedUp());
 }
 
-}
+}  // namespace
 
 LoadTimingObserver::URLRequestRecord::URLRequestRecord()
     : connect_job_id(net::NetLog::Source::kInvalidId),
@@ -53,7 +53,7 @@ LoadTimingObserver::URLRequestRecord::URLRequestRecord()
 }
 
 LoadTimingObserver::LoadTimingObserver()
-    : Observer(net::NetLog::LOG_BASIC),
+    : ThreadSafeObserver(net::NetLog::LOG_BASIC),
       last_connect_job_id_(net::NetLog::Source::kInvalidId) {
 }
 
@@ -62,6 +62,8 @@ LoadTimingObserver::~LoadTimingObserver() {
 
 LoadTimingObserver::URLRequestRecord*
 LoadTimingObserver::GetURLRequestRecord(uint32 source_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   URLRequestToRecordMap::iterator it = url_request_to_record_.find(source_id);
   if (it != url_request_to_record_.end())
     return &it->second;
@@ -73,6 +75,9 @@ void LoadTimingObserver::OnAddEntry(net::NetLog::EventType type,
                                     const net::NetLog::Source& source,
                                     net::NetLog::EventPhase phase,
                                     net::NetLog::EventParameters* params) {
+  // The events that the Observer is interested in only occur on the IO thread.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO))
+    return;
   if (source.type == net::NetLog::SOURCE_URL_REQUEST)
     OnAddURLRequestEntry(type, time, source, phase, params);
   else if (source.type == net::NetLog::SOURCE_CONNECT_JOB)
@@ -84,6 +89,7 @@ void LoadTimingObserver::OnAddEntry(net::NetLog::EventType type,
 // static
 void LoadTimingObserver::PopulateTimingInfo(net::URLRequest* request,
                                             ResourceResponse* response) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!(request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING))
     return;
 
@@ -109,6 +115,8 @@ void LoadTimingObserver::OnAddURLRequestEntry(
     const net::NetLog::Source& source,
     net::NetLog::EventPhase phase,
     net::NetLog::EventParameters* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   bool is_begin = phase == net::NetLog::PHASE_BEGIN;
   bool is_end = phase == net::NetLog::PHASE_END;
 
@@ -210,6 +218,8 @@ void LoadTimingObserver::OnAddConnectJobEntry(
     const net::NetLog::Source& source,
     net::NetLog::EventPhase phase,
     net::NetLog::EventParameters* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   bool is_begin = phase == net::NetLog::PHASE_BEGIN;
   bool is_end = phase == net::NetLog::PHASE_END;
 
@@ -253,6 +263,8 @@ void LoadTimingObserver::OnAddSocketEntry(
     const net::NetLog::Source& source,
     net::NetLog::EventPhase phase,
     net::NetLog::EventParameters* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   bool is_begin = phase == net::NetLog::PHASE_BEGIN;
   bool is_end = phase == net::NetLog::PHASE_END;
 
