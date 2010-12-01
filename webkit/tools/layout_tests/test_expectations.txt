@@ -17,3 +17,5 @@ BUG_ANTON LINUX : fast/ruby/nested-ruby.html = CRASH PASS
 // Rebaseline tool wasn't working for these tests.
 BUG64394 MAC : svg/W3C-SVG-1.1/struct-image-10-t.svg = IMAGE
 BUG64395 MAC : tables/mozilla/bugs/bug14929.html = IMAGE
+
+BUG_LOISLO WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT

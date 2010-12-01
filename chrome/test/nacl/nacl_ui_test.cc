@@ -45,7 +45,7 @@ TEST_F(NaClUITest, SrpcHelloWorld) {
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, SrpcBasicTest) {
+TEST_F(NaClUITest, DISABLED_SrpcBasicTest) {
   FilePath test_file(kSrpcBasicHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
