@@ -27,6 +27,7 @@ libwayland_client_la_SOURCES =			\
 	wayland-client.c
 
 INCLUDES = $(FFI_CFLAGS)
+AM_CFLAGS = $(GCC_CFLAGS)
 
 include $(top_srcdir)/wayland/scanner.mk
 

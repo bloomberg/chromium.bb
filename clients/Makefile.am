@@ -10,6 +10,7 @@ LDADD = libtoytoolkit.la				\
 	$(top_builddir)/wayland/libwayland-client.la	\
 	$(CLIENT_LIBS) -lrt -lm
 
+AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 
 libtoytoolkit_la_SOURCES =			\

@@ -5,6 +5,7 @@ INCLUDES =					\
 	-I$(top_builddir)/wayland		\
 	$(COMPOSITOR_CFLAGS)
 
+AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 
 compositor_LDADD =					\
