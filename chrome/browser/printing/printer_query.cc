@@ -10,12 +10,12 @@
 namespace printing {
 
 PrinterQuery::PrinterQuery()
-    : ui_message_loop_(MessageLoop::current()),
+    : io_message_loop_(MessageLoop::current()),
       ALLOW_THIS_IN_INITIALIZER_LIST(worker_(new PrintJobWorker(this))),
       is_print_dialog_box_shown_(false),
       cookie_(PrintSettings::NewCookie()),
       last_status_(PrintingContext::FAILED) {
-  DCHECK_EQ(ui_message_loop_->type(), MessageLoop::TYPE_UI);
+  DCHECK_EQ(io_message_loop_->type(), MessageLoop::TYPE_IO);
 }
 
 PrinterQuery::~PrinterQuery() {
@@ -28,7 +28,6 @@ PrinterQuery::~PrinterQuery() {
     callback_->Cancel();
   }
   // It may get deleted in a different thread that the one that created it.
-  // That's fine so don't DCHECK_EQ(ui_message_loop_, MessageLoop::current());
 }
 
 void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
@@ -64,7 +63,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                bool has_selection,
                                bool use_overlays,
                                CancelableTask* callback) {
-  DCHECK_EQ(ui_message_loop_, MessageLoop::current());
+  DCHECK_EQ(io_message_loop_, MessageLoop::current());
   DCHECK(!is_print_dialog_box_shown_);
   DCHECK(!callback_.get());
   DCHECK(worker_.get());

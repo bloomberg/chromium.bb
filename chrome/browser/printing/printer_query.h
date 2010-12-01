@@ -37,7 +37,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
                                PrintingContext::Result result);
   virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner);
   virtual MessageLoop* message_loop() {
-    return ui_message_loop_;
+    return io_message_loop_;
   }
   virtual const PrintSettings& settings() const { return settings_; }
 
@@ -73,7 +73,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
 
   // Main message loop reference. Used to send notifications in the right
   // thread.
-  MessageLoop* const ui_message_loop_;
+  MessageLoop* const io_message_loop_;
 
   // All the UI is done in a worker thread because many Win32 print functions
   // are blocking and enters a message loop without your consent. There is one
