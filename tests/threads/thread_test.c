@@ -290,6 +290,20 @@ void TestSemaphoreInitDestroy() {
   TEST_FUNCTION_END;
 }
 
+void TestTryLockReturnValue() {
+  pthread_mutex_t mutex;
+  int rv;
+  TEST_FUNCTION_START;
+
+  pthread_mutex_init(&mutex, 0);
+  pthread_mutex_lock(&mutex);
+  rv = pthread_mutex_trylock(&mutex);
+
+  EXPECT_EQ(EBUSY, rv);
+
+  TEST_FUNCTION_END;
+}
+
 pthread_once_t once_control = PTHREAD_ONCE_INIT;
 
 typedef int AtomicInt32;  /* Why is this needed? We included pthread already. */
@@ -746,6 +760,7 @@ int main(int argc, char *argv[]) {
   TestManyThreadsDetached();
   TestSemaphores();
   TestSemaphoreInitDestroy();
+  TestTryLockReturnValue();
   TestPthreadOnce();
   TestRecursiveMutex();
   TestErrorCheckingMutex();

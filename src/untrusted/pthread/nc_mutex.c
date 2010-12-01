@@ -93,9 +93,11 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
     }
   }
   if (try_only) {
-    rv = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(mutex_trylock)(mutex->mutex_handle));
+    rv = -NACL_GC_WRAP_SYSCALL(
+        NACL_SYSCALL(mutex_trylock)(mutex->mutex_handle));
   } else {
-    rv = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(mutex_lock)(mutex->mutex_handle));
+    rv = -NACL_GC_WRAP_SYSCALL(
+        NACL_SYSCALL(mutex_lock)(mutex->mutex_handle));
   }
   if (rv) {
     return rv;
