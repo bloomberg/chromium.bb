@@ -67,8 +67,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString("autofill",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME));
-  localized_strings->SetString("autofillOptions",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
+  localized_strings->SetString("manageAutofillSettings",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS));
 
   localized_strings->SetString("browsingData",
       l10n_util::GetStringUTF16(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME));

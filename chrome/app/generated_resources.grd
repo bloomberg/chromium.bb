@@ -6860,6 +6860,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
         Automatic credit card filling is disabled because this form does not use a secure connection.
       </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS" desc="The label of the 'Manage Autofill settings' button">
+          Manage Autofill settings
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS" desc="In Title Case: The label of the 'Manage Autofill Settings' button">
+          Manage Autofill Settings
+        </message>
+      </if>
       <if expr="os != 'darwin'">
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Options

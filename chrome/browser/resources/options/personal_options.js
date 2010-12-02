@@ -53,7 +53,7 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordsExceptions']);
       };
-      $('autofill-options').onclick = function(event) {
+      $('autofill-settings').onclick = function(event) {
         OptionsPage.showPageByName('autoFillOptions');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowAutoFillSettings']);
