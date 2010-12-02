@@ -1299,7 +1299,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void EnableWifiNetworkDevice(bool enable) {
-    wifi_scanning_ = enable;  // Cleared in UpdateNetworkManagerStatus.
     EnableNetworkDeviceType(TYPE_WIFI, enable);
   }
 
@@ -1579,14 +1578,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
 
     wifi_scanning_ = false;
-    // TODO(stevenjb): Enable this code once crosbug.com/9326 is fixed.
-    // for (int i = 0; i < system->device_size; i++) {
-    //   const DeviceInfo* device = system->GetDeviceInfo(i);
-    //   if (device->type == TYPE_WIFI) {
-    //     if (device->scanning)
-    //       wifi_scanning_ = true;
-    //   }
-    // }
+    for (int i = 0; i < system->device_size; i++) {
+      const DeviceInfo* device = system->GetDeviceInfo(i);
+      if (device->type == TYPE_WIFI && device->scanning)
+        wifi_scanning_ = true;
+    }
 
     available_devices_ = system->available_technologies;
     enabled_devices_ = system->enabled_technologies;
