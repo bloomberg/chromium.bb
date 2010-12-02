@@ -40,7 +40,6 @@ class UILayoutTest : public UITest {
 
   static const int kNoHttpPort = -1;
   static const int kHttpPort = 8080;
-  static const int kWebSocketPort = 8880;
 };
 
 #endif  // CHROME_TEST_UI_UI_LAYOUT_TEST_H_

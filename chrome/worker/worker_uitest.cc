@@ -445,8 +445,7 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-// Times out, see http://crbug.com/49381
-TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
+TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "close-in-onmessage-crash.html",
     "close-in-shared-worker.html",
@@ -459,22 +458,21 @@ TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
   FilePath websocket_test_dir;
   websocket_test_dir = websocket_test_dir.AppendASCII("http");
   websocket_test_dir = websocket_test_dir.AppendASCII("tests");
-  websocket_test_dir = websocket_test_dir.AppendASCII("websocket");
-  websocket_test_dir = websocket_test_dir.AppendASCII("tests");
 
   FilePath worker_test_dir;
+  worker_test_dir = worker_test_dir.AppendASCII("websocket");
+  worker_test_dir = worker_test_dir.AppendASCII("tests");
   worker_test_dir = worker_test_dir.AppendASCII("workers");
-  InitializeForLayoutTest(websocket_test_dir, worker_test_dir, kWebSocketPort);
-  test_case_dir_ = test_case_dir_.AppendASCII("http");
-  test_case_dir_ = test_case_dir_.AppendASCII("tests");
-  test_case_dir_ = test_case_dir_.AppendASCII("websocket");
-  test_case_dir_ = test_case_dir_.AppendASCII("tests");
-  test_case_dir_ = test_case_dir_.AppendASCII("workers");
+  InitializeForLayoutTest(websocket_test_dir, worker_test_dir, kHttpPort);
 
-  ui_test_utils::TestWebSocketServer websocket_server(
-      temp_test_dir_.AppendASCII("LayoutTests"));
+  FilePath websocket_root_dir(temp_test_dir_);
+  websocket_root_dir = websocket_root_dir.AppendASCII("LayoutTests");
+  ui_test_utils::TestWebSocketServer websocket_server(websocket_root_dir);
+
+  StartHttpServer(new_http_root_dir_);
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
-    RunLayoutTest(kLayoutTestFiles[i], kWebSocketPort);
+    RunLayoutTest(kLayoutTestFiles[i], kHttpPort);
+  StopHttpServer();
 }
 
 TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
