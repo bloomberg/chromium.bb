@@ -258,6 +258,22 @@ CEEE_tabs_internal_.getSelectedTab_ = function(cmd, data) {
   return this.buildTabValue(mainBrowser, tab);
 };
 
+CEEE_tabs_internal_.CMD_GET_CURRENT_TAB = 'tabs.getCurrent';
+CEEE_tabs_internal_.getCurrentTab_ = function(cmd, data) {
+  // TODO(rogerta@chromium.org): Revisit this implementation.  I'm not sure
+  // it strictly obeys the chrome extension API spec.
+  var cfTab = data.tab;
+  if (cfTab) {
+    var win = CEEE_mozilla_windows.findWindowFromCfSessionId(cfTab.id);
+    if (win) {
+      var mainBrowser = win.document.getElementById(
+          CEEE_globals.MAIN_BROWSER_ID);
+      var tab = mainBrowser.selectedTab;
+      return this.buildTabValue(mainBrowser, tab);
+    }
+  }
+};
+
 CEEE_tabs_internal_.CMD_GET_ALL_TABS_IN_WINDOW = 'tabs.getAllInWindow';
 CEEE_tabs_internal_.getAllTabsInWindow_ = function(cmd, data) {
   var args = CEEE_json.decode(data.args);
@@ -455,6 +471,9 @@ function CEEE_initialize_tabs(ceeeInstance) {
   ceeeInstance.registerExtensionHandler(tabs.CMD_GET_SELECTED_TAB,
                                         tabs,
                                         tabs.getSelectedTab_);
+  ceeeInstance.registerExtensionHandler(tabs.CMD_GET_CURRENT_TAB,
+                                        tabs,
+                                        tabs.getCurrentTab_);
   ceeeInstance.registerExtensionHandler(tabs.CMD_GET_ALL_TABS_IN_WINDOW,
                                         tabs,
                                         tabs.getAllTabsInWindow_);

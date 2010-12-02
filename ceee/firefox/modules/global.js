@@ -142,6 +142,25 @@ CEEE_mozilla_windows.findWindowFromContentWindow = function(win) {
 };
 
 /**
+ * Find the window with the given a Chrome Frame session id.
+ *
+ * @param {number} id The Chrome Frame session Id of the window to find.
+ * @return The window that contains the Chrome Frame instance with the
+ *     specified session Id, or null if no window is found.
+ * @public
+ */
+CEEE_mozilla_windows.findWindowFromCfSessionId = function(id) {
+  var e = this.service.getEnumerator(this.WINDOW_TYPE);
+  while (e.hasMoreElements()) {
+    var win = e.getNext();
+    var cf = win.document.getElementById(CEEE_globals.CHROME_FRAME_ID);
+    if (cf.sessionid == id)
+      return win;
+  }
+  return null;
+};
+
+/**
  * Global object used as a place-holder for API routines accessing the Mozilla
  * tabs interface.
  * @public
@@ -376,6 +395,12 @@ CEEE_PrivateBrowsingService.prototype.observe = function(subject, topic,
 var CEEE_globals = CEEE_globals || {
   /** @const */ MAIN_BROWSER_ID: 'content',
   /** @const */ ADDON_ID: 'ceee@google.com',
+
+  /**
+   * Value used for id attribute of the ChromeFrame <embed> element.
+   * @const
+   */
+  CHROME_FRAME_ID: 'ceee-browser',
 
   /** The integer id for the next window. @private */
   nextWindowId_: 0,

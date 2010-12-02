@@ -49,12 +49,6 @@ function CfHelper(instance) {
   this.parent_ = null;
 }
 
-/**
- * Value used for id attribute of the ChromeFrame <embed> element.
- * @const
- */
-CfHelper.prototype.CHROME_FRAME_ID = 'ceee-browser';
-
 /** Origin for use with postPrivateMessage. @const */
 CfHelper.prototype.ORIGIN_EXTENSION = '__priv_xtapi';
 
@@ -241,6 +235,10 @@ CfHelper.prototype.onReadyStateChange_ = function() {
   if (this.cf_.readystate == READY_STATE_UNINITIALIZED) {
     this.cf_.style.visibility = 'hidden';
   } else if (this.cf_.readystate == READY_STATE_COMPLETED) {
+    this.ceee_.logInfo('CfHelper.readystatechange: window=' +
+                       CEEE_mozilla_windows.getWindowId(window) +
+                       ' cf=' + this.cf_.sessionid);
+
     // Do this before we even load the extension at the other end so
     // that extension automation is set up before any background pages
     // in the extension load.

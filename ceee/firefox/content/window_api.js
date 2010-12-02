@@ -143,7 +143,12 @@ CEEE_window_internal_.getWindow_ = function(cmd, data) {
 
 CEEE_window_internal_.CMD_GET_CURRENT_WINDOW = 'windows.getCurrent';
 CEEE_window_internal_.getCurrentWindow_ = function(cmd, data) {
-  return this.buildWindowValue(window);
+  var tab = data.tab;
+  if (tab) {
+    var win = CEEE_mozilla_windows.findWindowFromCfSessionId(tab.id);
+    if (win)
+      return this.buildWindowValue(win);
+  }
 };
 
 CEEE_window_internal_.CMD_GET_LAST_FOCUSED_WINDOW =

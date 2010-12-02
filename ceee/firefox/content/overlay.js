@@ -297,8 +297,8 @@ CEEE_Class.prototype.createChromeFrame_ = function() {
 
   this.cfHelper_ = new CEEE_CfHelper(this);
   var parent = document.getElementById('ceee-browser-item');
-  var cf = this.cfHelper_.create(parent, this.cfHelper_.CHROME_FRAME_ID,
-      onCfReady, onCfMessage);
+  var cf = this.cfHelper_.create(parent, CEEE_globals.CHROME_FRAME_ID,
+                                 onCfReady, onCfMessage);
 };
 
 /** Returns a helper object for working with ChromeFrame. */
