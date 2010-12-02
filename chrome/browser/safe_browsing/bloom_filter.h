@@ -58,7 +58,7 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
 
   // Force a maximum size on the bloom filter to avoid using too much memory
   // (in bytes).
-  static const int kBloomFilterMaxSize = 2 * 1024 * 1024;
+  static const int kBloomFilterMaxSize = 3 * 1024 * 1024;
 
   // Use the above constants to calculate an appropriate size to pass
   // to the BloomFilter constructor based on the intended |key_count|.
