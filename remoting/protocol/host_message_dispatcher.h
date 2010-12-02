@@ -12,12 +12,12 @@
 namespace remoting {
 
 class EventMessage;
-class MessageReader;
 
 namespace protocol {
 
 class ControlMessage;
 class HostStub;
+class MessageReader;
 class InputStub;
 class Session;
 

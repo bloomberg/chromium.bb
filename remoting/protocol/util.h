@@ -14,6 +14,7 @@
 class Task;
 
 namespace remoting {
+namespace protocol {
 
 // Serialize the Protocol Buffer message and provide sufficient framing for
 // sending it over the wire.
@@ -25,6 +26,7 @@ scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
 // Create a runnable task that deletes a message.
 Task* NewDeleteMessageTask(google::protobuf::MessageLite* message);
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_UTIL_H_

@@ -11,11 +11,10 @@
 class Task;
 
 namespace remoting {
+namespace protocol {
 
 class KeyEvent;
 class MouseEvent;
-
-namespace protocol {
 
 class InputStub {
  public:

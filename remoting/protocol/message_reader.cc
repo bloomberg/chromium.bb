@@ -12,6 +12,7 @@
 #include "remoting/proto/internal.pb.h"
 
 namespace remoting {
+namespace protocol {
 
 static const int kReadBufferSize = 4096;
 
@@ -65,4 +66,5 @@ void MessageReader::HandleReadResult(int result) {
   }
 }
 
+}  // namespace protocol
 }  // namespace remoting

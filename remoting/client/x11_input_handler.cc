@@ -16,6 +16,9 @@
 
 namespace remoting {
 
+using protocol::KeyEvent;
+using protocol::MouseEvent;
+
 X11InputHandler::X11InputHandler(ClientContext* context,
                                  protocol::ConnectionToHost* connection,
                                  ChromotingView* view)
@@ -88,16 +91,16 @@ void X11InputHandler::HandleMouseMoveEvent(int x, int y) {
 }
 
 void X11InputHandler::HandleMouseButtonEvent(bool button_down, int xbutton_id) {
-  MouseButton button = MouseButtonUndefined;
+  MouseEvent::MouseButton button = MouseEvent::BUTTON_UNDEFINED;
   if (xbutton_id == 1) {
-    button = MouseButtonLeft;
+    button = MouseEvent::BUTTON_LEFT;
   } else if (xbutton_id == 2) {
-    button = MouseButtonMiddle;
+    button = MouseEvent::BUTTON_MIDDLE;
   } else if (xbutton_id == 3) {
-    button = MouseButtonRight;
+    button = MouseEvent::BUTTON_RIGHT;
   }
 
-  if (button != MouseButtonUndefined) {
+  if (button != MouseEvent::BUTTON_UNDEFINED) {
     SendMouseButtonEvent(button_down, button);
   }
 }

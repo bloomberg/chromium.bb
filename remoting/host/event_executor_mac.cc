@@ -10,6 +10,9 @@
 
 namespace remoting {
 
+using protocol::MouseEvent;
+using protocol::KeyEvent;
+
 EventExecutorMac::EventExecutorMac(
     MessageLoop* message_loop, Capturer* capturer)
     : message_loop_(message_loop),

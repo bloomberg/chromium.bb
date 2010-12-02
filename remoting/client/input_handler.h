@@ -30,7 +30,8 @@ class InputHandler {
  protected:
   void SendKeyEvent(bool press, int keycode);
   void SendMouseMoveEvent(int x, int y);
-  void SendMouseButtonEvent(bool down, MouseButton button);
+  void SendMouseButtonEvent(bool down,
+                            protocol::MouseEvent::MouseButton button);
 
   ClientContext* context_;
   protocol::ConnectionToHost* connection_;

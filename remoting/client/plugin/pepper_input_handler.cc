@@ -8,6 +8,9 @@
 
 namespace remoting {
 
+using protocol::KeyEvent;
+using protocol::MouseEvent;
+
 PepperInputHandler::PepperInputHandler(ClientContext* context,
                                        protocol::ConnectionToHost* connection,
                                        ChromotingView* view)
@@ -38,16 +41,16 @@ void PepperInputHandler::HandleMouseMoveEvent(const PP_InputEvent_Mouse& event) 
 void PepperInputHandler::HandleMouseButtonEvent(
     bool button_down,
     const PP_InputEvent_Mouse& event) {
-  MouseButton button = MouseButtonUndefined;
+  MouseEvent::MouseButton button = MouseEvent::BUTTON_UNDEFINED;
   if (event.button == PP_INPUTEVENT_MOUSEBUTTON_LEFT) {
-    button = MouseButtonLeft;
+    button = MouseEvent::BUTTON_LEFT;
   } else if (event.button == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
-    button = MouseButtonMiddle;
+    button = MouseEvent::BUTTON_MIDDLE;
   } else if (event.button == PP_INPUTEVENT_MOUSEBUTTON_RIGHT) {
-    button = MouseButtonRight;
+    button = MouseEvent::BUTTON_RIGHT;
   }
 
-  if (button != MouseButtonUndefined) {
+  if (button != MouseEvent::BUTTON_UNDEFINED) {
     SendMouseButtonEvent(button_down, button);
   }
 }

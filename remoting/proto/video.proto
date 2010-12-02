@@ -10,15 +10,6 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting;
 
-// A message that gets sent to the client after the client is connected to the
-// host. It contains information that the client needs to know about the host.
-// NEXT ID: 3
-// TODO(sergeyu): Move to the control channel.
-message InitClientMessage {
-  required int32 width = 1;
-  required int32 height = 2;
-}
-
 // TODO(ajwong): Determine if these fields should be optional or required.
 message VideoPacketFormat {
   // Identifies how the image was encoded.

@@ -66,8 +66,7 @@ void DecoderRowBased::Initialize(scoped_refptr<media::VideoFrame> frame) {
   state_ = kReady;
 }
 
-Decoder::DecodeResult DecoderRowBased::DecodePacket(
-    const VideoPacket* packet) {
+Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
   UpdateStateForPacket(packet);
 
   if (state_ == kError) {

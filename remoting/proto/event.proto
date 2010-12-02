@@ -8,7 +8,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package remoting;
+package remoting.protocol;
 
 // Defines a keyboard event.
 // NEXT ID: 3
@@ -18,15 +18,16 @@ message KeyEvent {
   required bool pressed = 2;
 }
 
-enum MouseButton {
-  MouseButtonUndefined = 0;
-  MouseButtonLeft = 1;
-  MouseButtonMiddle = 2;
-  MouseButtonRight = 3;
-}
-
 // Defines a mouse event message on the event channel. 
 message MouseEvent {
+
+  enum MouseButton {
+    BUTTON_UNDEFINED = 0;
+    BUTTON_LEFT = 1;
+    BUTTON_MIDDLE = 2;
+    BUTTON_RIGHT = 3;
+  }
+
   // Mouse position information.
   optional int32 x = 1;
   optional int32 y = 2;

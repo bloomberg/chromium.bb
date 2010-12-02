@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
+namespace protocol {
 
 static const int kTestKey = 142;
 
@@ -105,4 +106,5 @@ TEST(MessageDecoderTest, EmptyReads) {
   SimulateReadSequence(kReads, arraysize(kReads));
 }
 
+}  // namespace protocol
 }  // namespace remoting

@@ -14,6 +14,9 @@
 
 namespace remoting {
 
+using protocol::MouseEvent;
+using protocol::KeyEvent;
+
 EventExecutorWin::EventExecutorWin(
     MessageLoop* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
@@ -36,8 +39,7 @@ void EventExecutorWin::InjectKeyEvent(const KeyEvent* event, Task* done) {
   delete done;
 }
 
-void EventExecutorWin::InjectMouseEvent(const MouseEvent* event,
-                                        Task* done) {
+void EventExecutorWin::InjectMouseEvent(const MouseEvent* event, Task* done) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
@@ -126,15 +128,15 @@ void EventExecutorWin::HandleMouse(const MouseEvent* event) {
     button_event.mi.dx = 0;
     button_event.mi.dy = 0;
 
-    MouseButton button = event->button();
+    MouseEvent::MouseButton button = event->button();
     bool down = event->button_down();
-    if (button == MouseButtonLeft) {
+    if (button == MouseEvent::BUTTON_LEFT) {
       button_event.mi.dwFlags =
           down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
-    } else if (button == MouseButtonMiddle) {
+    } else if (button == MouseEvent::BUTTON_MIDDLE) {
       button_event.mi.dwFlags =
           down ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
-    } else if (button == MouseButtonRight) {
+    } else if (button == MouseEvent::BUTTON_RIGHT) {
       button_event.mi.dwFlags =
           down ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
     } else {

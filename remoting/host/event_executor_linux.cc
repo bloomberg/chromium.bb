@@ -15,18 +15,22 @@
 
 namespace remoting {
 
-static int MouseButtonToX11ButtonNumber(MouseButton button) {
+using protocol::MouseEvent;
+using protocol::KeyEvent;
+
+static int MouseButtonToX11ButtonNumber(
+    protocol::MouseEvent::MouseButton button) {
   switch (button) {
-    case MouseButtonLeft:
+    case MouseEvent::BUTTON_LEFT:
       return 1;
 
-    case MouseButtonRight:
+    case MouseEvent::BUTTON_RIGHT:
       return 2;
 
-    case MouseButtonMiddle:
+    case MouseEvent::BUTTON_MIDDLE:
       return 3;
 
-    case MouseButtonUndefined:
+    case MouseEvent::BUTTON_UNDEFINED:
     default:
       return -1;
   }
@@ -202,6 +206,7 @@ class EventExecutorLinuxPimpl {
   ~EventExecutorLinuxPimpl();
 
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
+
   void HandleMouse(const MouseEvent* message);
   void HandleKey(const KeyEvent* key_event);
 

@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/proto/control.pb.h"
+#include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
@@ -25,7 +26,7 @@ ClientControlSender::~ClientControlSender() {
 
 void ClientControlSender::NotifyResolution(
     const NotifyResolutionRequest* msg, Task* done) {
-  ControlMessage message;
+  protocol::ControlMessage message;
   message.mutable_notify_resolution()->CopyFrom(*msg);
   buffered_writer_->Write(SerializeAndFrameMessage(message));
   done->Run();

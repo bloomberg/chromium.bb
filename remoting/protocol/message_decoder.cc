@@ -11,6 +11,7 @@
 #include "third_party/libjingle/source/talk/base/byteorder.h"
 
 namespace remoting {
+namespace protocol {
 
 MessageDecoder::MessageDecoder()
     : next_payload_(0),
@@ -64,4 +65,5 @@ bool MessageDecoder::GetPayloadSize(int* size) {
   return true;
 }
 
+}  // namespace protocol
 }  // namespace remoting

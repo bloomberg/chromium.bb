@@ -18,8 +18,8 @@ class Socket;
 }  // namespace net
 
 namespace remoting {
+namespace protocol {
 
-class ChromotocolConnection;
 class MessageReader;
 
 namespace internal {
@@ -27,7 +27,7 @@ namespace internal {
 template <class T>
 class MessageReaderPrivate {
  private:
-  friend class remoting::MessageReader;
+  friend class remoting::protocol::MessageReader;
 
   typedef typename Callback1<T*>::Type MessageReceivedCallback;
 
@@ -102,6 +102,7 @@ class MessageReader {
   scoped_ptr<Callback0::Type> destruction_callback_;
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_MESSAGE_READER_H_

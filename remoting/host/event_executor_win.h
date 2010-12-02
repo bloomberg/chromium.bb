@@ -23,12 +23,12 @@ class EventExecutorWin : public protocol::InputStub {
   EventExecutorWin(MessageLoop* message_loop, Capturer* capturer);
   virtual ~EventExecutorWin();
 
-  virtual void InjectKeyEvent(const KeyEvent* event, Task* done);
-  virtual void InjectMouseEvent(const MouseEvent* event, Task* done);
+  virtual void InjectKeyEvent(const protocol::KeyEvent* event, Task* done);
+  virtual void InjectMouseEvent(const protocol::MouseEvent* event, Task* done);
 
  private:
-  void HandleKey(const KeyEvent* event);
-  void HandleMouse(const MouseEvent* event);
+  void HandleKey(const protocol::KeyEvent* event);
+  void HandleMouse(const protocol::MouseEvent* event);
 
   MessageLoop* message_loop_;
   Capturer* capturer_;

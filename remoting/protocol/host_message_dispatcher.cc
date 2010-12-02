@@ -6,6 +6,7 @@
 #include "net/base/io_buffer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/host_message_dispatcher.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"

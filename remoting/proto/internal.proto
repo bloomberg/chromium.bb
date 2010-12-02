@@ -9,11 +9,16 @@ syntax = "proto2";
 
 import "control.proto";
 import "event.proto";
-import "video.proto";
 
 option optimize_for = LITE_RUNTIME;
 
-package remoting;
+package remoting.protocol;
+
+// Represents a message being sent on the control channel.
+message ControlMessage {
+  optional SuggestResolutionRequest suggest_resolution = 1;
+  optional NotifyResolutionRequest notify_resolution = 2;
+}
 
 // TODO(garykac) This is dead, remove remaining references and delete.
 message ChromotingClientMessage {

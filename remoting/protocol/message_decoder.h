@@ -15,6 +15,7 @@
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace remoting {
+namespace protocol {
 
 // MessageDecoder uses CompoundBuffer to decode bytes into protocol
 // buffer messages. This can be used to decode bytes received from the
@@ -87,6 +88,7 @@ class MessageDecoder {
   bool next_payload_known_;
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_MESSAGES_DECODER_H_
