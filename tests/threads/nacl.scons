@@ -68,14 +68,3 @@ node = env.CommandSelLdrTestNacl(
     size='small',
     )
 env.AddNodeToTestSuite(node, TEST_SUITES, 'run_main_thread_pthread_exit_test')
-
-env.ComponentProgram('cond_wait_test.nexe',
-                     'cond_wait_test.cc',
-                     EXTRA_LIBS=['pthread'],
-                     )
-node = env.CommandSelLdrTestNacl(
-    'cond_wait_test.out',
-    command=[env.File('cond_wait_test.nexe')],
-    size='small',
-    )
-env.AddNodeToTestSuite(node, TEST_SUITES, 'cond_wait_test')
