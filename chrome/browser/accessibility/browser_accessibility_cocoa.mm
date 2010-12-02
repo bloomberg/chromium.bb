@@ -210,6 +210,9 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
         WebAccessibility::ATTR_HELP);
   }
   if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
+    // WebCore uses an attachmentView to get the below behavior.
+    // We do not have any native views backing this object, so need
+    // to approximate Cocoa ax behavior best as we can.
     if ([self role] == @"AXHeading") {
       NSString* headingLevel =
           NSStringForWebAccessibilityAttribute(
@@ -219,6 +222,9 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
         return [NSNumber numberWithInt:
             [[headingLevel substringFromIndex:1] intValue]];
       }
+    } else if ([self role] == NSAccessibilityButtonRole) {
+      // AXValue does not make sense for pure buttons.
+      return @"";
     } else if ([self role] == NSAccessibilityCheckBoxRole) {
       return [NSNumber numberWithInt:GetState(
           browserAccessibility_, WebAccessibility::STATE_CHECKED) ? 1 : 0];
