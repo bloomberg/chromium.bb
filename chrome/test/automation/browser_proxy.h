@@ -6,12 +6,6 @@
 #define CHROME_TEST_AUTOMATION_BROWSER_PROXY_H_
 #pragma once
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include <string>
 #include <vector>
 
@@ -20,10 +14,10 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 
+class AutocompleteEditProxy;
 class GURL;
 class TabProxy;
 class WindowProxy;
-class AutocompleteEditProxy;
 
 namespace gfx {
   class Point;
@@ -56,8 +50,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // Append a new tab to the TabStrip.  The new tab is selected.
   // The new tab navigates to the given tab_url.
   // Returns true if successful.
-  // TODO(mpcomplete): If the navigation results in an auth challenge, the
-  // TabProxy we attach won't know about it.  See bug 666730.
   bool AppendTab(const GURL& tab_url) WARN_UNUSED_RESULT;
 
   // Gets the (zero-based) index of the currently active tab. Returns true if
@@ -168,7 +160,7 @@ class BrowserProxy : public AutomationResourceProxy {
   // Bookmark editing:
   bool ReparentBookmark(int64 id, int64 new_parent_id,
                         int index) WARN_UNUSED_RESULT;
-  bool SetBookmarkTitle(int64 id, std::wstring& title) WARN_UNUSED_RESULT;
+  bool SetBookmarkTitle(int64 id, const std::wstring& title) WARN_UNUSED_RESULT;
   bool SetBookmarkURL(int64 id, const GURL& url) WARN_UNUSED_RESULT;
   // Finally, bookmark deletion:
   bool RemoveBookmark(int64 id) WARN_UNUSED_RESULT;

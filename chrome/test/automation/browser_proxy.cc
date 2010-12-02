@@ -4,10 +4,9 @@
 
 #include "chrome/test/automation/browser_proxy.h"
 
-#include <vector>
+#include <algorithm>
 
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
@@ -344,7 +343,7 @@ bool BrowserProxy::ReparentBookmark(int64 id, int64 new_parent_id, int index) {
   return result;
 }
 
-bool BrowserProxy::SetBookmarkTitle(int64 id, std::wstring& title) {
+bool BrowserProxy::SetBookmarkTitle(int64 id, const std::wstring& title) {
   if (!is_valid())
     return false;
   bool result = false;

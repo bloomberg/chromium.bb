@@ -19,8 +19,8 @@ class PrintSettings;
 class PrintJobWorkerOwner
     : public base::RefCountedThreadSafe<PrintJobWorkerOwner> {
  public:
-  // Finishes the initialization began by PrintJobWorker::Init(). Creates a
-  // new PrintedDocument if necessary. Solely meant to be called by
+  // Finishes the initialization began by PrintJobWorker::GetSettings().
+  // Creates a new PrintedDocument if necessary. Solely meant to be called by
   // PrintJobWorker.
   virtual void GetSettingsDone(const PrintSettings& new_settings,
                                PrintingContext::Result result) = 0;
