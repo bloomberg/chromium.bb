@@ -31,6 +31,7 @@
 #include "chrome/common/service_messages_internal.h"
 #include "chrome/common/utility_messages_internal.h"
 #include "chrome/common/worker_messages_internal.h"
+#include "ppapi/proxy/ppapi_messages_internal.h"
 #endif
 
 // These are probalby still defined because of ipc_message_macros.h should be
