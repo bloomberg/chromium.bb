@@ -368,10 +368,27 @@ class CandidateWindowView : public views::View {
   // Candidates are arranged per |orientation|.
   void UpdateCandidates(const InputMethodLookupTable& lookup_table);
 
-  // Resizes the parent frame and schedules painting. This needs to be
-  // called when the visible contents of the candidate window are
-  // modified.
-  void ResizeAndSchedulePaint();
+  // Resizes and moves the parent frame. The two actions should be
+  // performed consecutively as resizing may require the candidate window
+  // to move. For instance, we may need to move the candidate window from
+  // below the cursor to above the cursor, if the candidate window becomes
+  // too big to be shown near the bottom of the screen.  This function
+  // needs to be called when the visible contents of the candidate window
+  // are modified.
+  void ResizeAndMoveParentFrame();
+
+  // Resizes the parent frame per the current contents size.
+  //
+  // The function is rarely used solely. See comments at
+  // ResizeAndMoveParentFrame().
+  void ResizeParentFrame();
+
+  // Moves the candidate window per the current cursor location, and the
+  // horizontal offset.
+  //
+  // The function is rarely used solely. See comments at
+  // ResizeAndMoveParentFrame().
+  void MoveParentFrame();
 
   // Returns the horizontal offset used for placing the vertical candidate
   // window so that the first candidate is aligned with the the text being
@@ -385,6 +402,11 @@ class CandidateWindowView : public views::View {
   //
   // Returns 0 if no candidate is present.
   int GetHorizontalOffset();
+
+  const gfx::Rect& cursor_location() const { return cursor_location_; }
+  void set_cursor_location(const gfx::Rect& cursor_location) {
+    cursor_location_ = cursor_location;
+  }
 
  private:
   // Initializes the candidate views if needed.
@@ -442,6 +464,9 @@ class CandidateWindowView : public views::View {
   int previous_shortcut_column_width_;
   int previous_candidate_column_width_;
   int previous_annotation_column_width_;
+
+  // The last cursor location.
+  gfx::Rect cursor_location_;
 };
 
 // CandidateRow renderes a row of a candidate.
@@ -523,23 +548,10 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer {
   bool Init();
 
  private:
-  // Returns the work area of the monitor nearest the candidate window.
-  gfx::Rect GetMonitorWorkAreaNearestWindow();
-
-  // Moves the candidate window per the given cursor location, and the
-  // horizontal offset.
-  void MoveCandidateWindow(const gfx::Rect& cursor_location,
-                           int horizontal_offset);
-
   // CandidateWindowView::Observer implementation.
   virtual void OnCandidateCommitted(int index,
                                     int button,
                                     int flags);
-
-  const gfx::Rect& cursor_location() const { return cursor_location_; }
-  void set_cursor_location(const gfx::Rect& cursor_location) {
-    cursor_location_ = cursor_location;
-  }
 
   // Creates the candidate window view.
   void CreateView();
@@ -585,9 +597,6 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer {
   // This is the outer frame of the candidate window view. The frame will
   // own |candidate_window_|.
   scoped_ptr<views::Widget> frame_;
-
-  // The last cursor location received in OnSetCursorLocation().
-  gfx::Rect cursor_location_;
 };
 
 CandidateView::CandidateView(
@@ -667,11 +676,14 @@ void CandidateView::Select() {
   set_background(
       views::Background::CreateSolidBackground(kSelectedRowBackgroundColor));
   set_border(views::Border::CreateSolidBorder(1, kSelectedRowFrameColor));
+  // Need to call SchedulePaint() for background and border color changes.
+  SchedulePaint();
 }
 
 void CandidateView::Unselect() {
   set_background(NULL);
   set_border(NULL);
+  SchedulePaint();  // See comments at Select().
 }
 
 void CandidateView::SetRowEnabled(bool enabled) {
@@ -767,7 +779,6 @@ void CandidateWindowView::HideAuxiliaryText() {
   // Put the place holder to the target display area.
   target_area->RemoveAllChildViews(false);  // Don't delete child views.
   target_area->AddChildView(target_place_holder);
-  ResizeAndSchedulePaint();
 }
 
 void CandidateWindowView::ShowAuxiliaryText() {
@@ -781,7 +792,6 @@ void CandidateWindowView::ShowAuxiliaryText() {
   // Put contents to the target display area.
   target_area->RemoveAllChildViews(false);  // Don't delete child views.
   target_area->AddChildView(target_contents);
-  ResizeAndSchedulePaint();
 }
 
 void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
@@ -971,7 +981,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   // Compute views size in |layout|.
   // If we don't call this function, GetHorizontalOffset() often
   // returns invalid value (returns 0), then candidate window
-  // moves right from the correct position in MoveCandidateWindow().
+  // moves right from the correct position in MoveParentFrame().
   // TODO(nhiroki): Figure out why it returns invalid value.
   // It seems that the x-position of the candidate labels is not set.
   layout->Layout(this);
@@ -1057,22 +1067,16 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
     return;
   }
 
+  // Unselect the currently selected candidate.
+  candidate_views_[selected_candidate_index_in_page_]->Unselect();
   // Remember the currently selected candidate index in the current page.
   selected_candidate_index_in_page_ = index_in_page;
 
-  // Unselect all the candidate first. Theoretically, we could remember
-  // the lastly selected candidate and only unselect it, but unselecting
-  // everything is simpler.
-  for (size_t i = 0; i < candidate_views_.size(); ++i) {
-    candidate_views_[i]->Unselect();
-  }
   // Select the candidate specified by index_in_page.
   candidate_views_[index_in_page]->Select();
 
   // Update the cursor indexes in the model.
   lookup_table_.cursor_absolute_index = cursor_absolute_index;
-
-  ResizeAndSchedulePaint();
 }
 
 void CandidateWindowView::OnCandidateDragged(
@@ -1098,16 +1102,57 @@ void CandidateWindowView::CommitCandidate() {
                                          key_modifilers));
 }
 
-void CandidateWindowView::ResizeAndSchedulePaint() {
+void CandidateWindowView::ResizeAndMoveParentFrame() {
+  ResizeParentFrame();
+  MoveParentFrame();
+}
+
+void CandidateWindowView::ResizeParentFrame() {
   // Resize the parent frame, with the current candidate window size.
   gfx::Size size = GetPreferredSize();
   gfx::Rect bounds;
   parent_frame_->GetBounds(&bounds, false);
-  bounds.set_width(size.width());
-  bounds.set_height(size.height());
-  parent_frame_->SetBounds(bounds);
+  // SetBounds() is not cheap. Only call this when the size is changed.
+  if (bounds.size() != size) {
+    bounds.set_size(size);
+    parent_frame_->SetBounds(bounds);
+  }
+}
 
-  SchedulePaint();
+void CandidateWindowView::MoveParentFrame() {
+  const int x = cursor_location_.x();
+  const int y = cursor_location_.y();
+  const int height = cursor_location_.height();
+  const int horizontal_offset = GetHorizontalOffset();
+
+  gfx::Rect frame_bounds;
+  parent_frame_->GetBounds(&frame_bounds, false);
+
+  gfx::Rect screen_bounds = views::Screen::GetMonitorWorkAreaNearestWindow(
+      parent_frame_->GetNativeView());
+
+  // The default position.
+  frame_bounds.set_x(x + horizontal_offset);
+  frame_bounds.set_y(y + height);
+
+  // Handle overflow at the left and the top.
+  frame_bounds.set_x(std::max(frame_bounds.x(), screen_bounds.x()));
+  frame_bounds.set_y(std::max(frame_bounds.y(), screen_bounds.y()));
+
+  // Handle overflow at the right.
+  const int right_overflow = frame_bounds.right() - screen_bounds.right();
+  if (right_overflow > 0) {
+    frame_bounds.set_x(frame_bounds.x() - right_overflow);
+  }
+
+  // Handle overflow at the bottom.
+  const int bottom_overflow = frame_bounds.bottom() - screen_bounds.bottom();
+  if (bottom_overflow > 0) {
+    frame_bounds.set_y(frame_bounds.y() - height - frame_bounds.height());
+  }
+
+  // Move the window per the cursor location.
+  parent_frame_->SetBounds(frame_bounds);
 }
 
 int CandidateWindowView::GetHorizontalOffset() {
@@ -1181,53 +1226,13 @@ CandidateWindowController::Impl::~Impl() {
   chromeos::DisconnectInputMethodUiStatus(ui_status_connection_);
 }
 
-gfx::Rect CandidateWindowController::Impl::GetMonitorWorkAreaNearestWindow() {
-  return views::Screen::GetMonitorWorkAreaNearestWindow(
-      frame_->GetNativeView());
-}
-
-void CandidateWindowController::Impl::MoveCandidateWindow(
-    const gfx::Rect& cursor_location,
-    int horizontal_offset) {
-  const int x = cursor_location.x();
-  const int y = cursor_location.y();
-  const int height = cursor_location.height();
-
-  gfx::Rect frame_bounds;
-  frame_->GetBounds(&frame_bounds, false);
-
-  gfx::Rect screen_bounds = GetMonitorWorkAreaNearestWindow();
-
-  // The default position.
-  frame_bounds.set_x(x + horizontal_offset);
-  frame_bounds.set_y(y + height);
-
-  // Handle overflow at the left and the top.
-  frame_bounds.set_x(std::max(frame_bounds.x(), screen_bounds.x()));
-  frame_bounds.set_y(std::max(frame_bounds.y(), screen_bounds.y()));
-
-  // Handle overflow at the right.
-  const int right_overflow = frame_bounds.right() - screen_bounds.right();
-  if (right_overflow > 0) {
-    frame_bounds.set_x(frame_bounds.x() - right_overflow);
-  }
-
-  // Handle overflow at the bottom.
-  const int bottom_overflow = frame_bounds.bottom() - screen_bounds.bottom();
-  if (bottom_overflow > 0) {
-    frame_bounds.set_y(frame_bounds.y() - height - frame_bounds.height());
-  }
-
-  // Move the window per the cursor location.
-  frame_->SetBounds(frame_bounds);
-}
-
 void CandidateWindowController::Impl::OnHideAuxiliaryText(
     void* input_method_library) {
   CandidateWindowController::Impl* controller =
       static_cast<CandidateWindowController::Impl*>(input_method_library);
 
   controller->candidate_window_->HideAuxiliaryText();
+  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnHideLookupTable(
@@ -1250,7 +1255,8 @@ void CandidateWindowController::Impl::OnSetCursorLocation(
   // A workaround for http://crosbug.com/6460. We should ignore very short Y
   // move to prevent the window from shaking up and down.
   const int kKeepPositionThreshold = 2;  // px
-  const gfx::Rect& last_location = controller->cursor_location();
+  const gfx::Rect& last_location =
+      controller->candidate_window_->cursor_location();
   const int delta_y = abs(last_location.y() - y);
   if ((last_location.x() == x) && (delta_y <= kKeepPositionThreshold)) {
     DLOG(INFO) << "Ignored set_cursor_location signal to prevent window shake";
@@ -1258,11 +1264,10 @@ void CandidateWindowController::Impl::OnSetCursorLocation(
   }
 
   // Remember the cursor location.
-  controller->set_cursor_location(gfx::Rect(x, y, width, height));
+  controller->candidate_window_->set_cursor_location(
+      gfx::Rect(x, y, width, height));
   // Move the window per the cursor location.
-  controller->MoveCandidateWindow(
-      controller->cursor_location(),
-      controller->candidate_window_->GetHorizontalOffset());
+  controller->candidate_window_->MoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
@@ -1278,13 +1283,7 @@ void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
   }
   controller->candidate_window_->UpdateAuxiliaryText(utf8_text);
   controller->candidate_window_->ShowAuxiliaryText();
-  // We should move the candidate window, as adding auxiliary text can
-  // change the window size. This is particularly important when we show
-  // the candidate window above the pre-edit text. Otherwise, the pre-edit
-  // text can be covered by the auxiliary text. See crosbug.com/7084.
-  controller->MoveCandidateWindow(
-      controller->cursor_location(),
-      controller->candidate_window_->GetHorizontalOffset());
+  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnUpdateLookupTable(
@@ -1301,12 +1300,10 @@ void CandidateWindowController::Impl::OnUpdateLookupTable(
 
   controller->candidate_window_->UpdateCandidates(lookup_table);
   controller->frame_->Show();
-  // We should call MoveCandidateWindow() after
-  // controller->frame_->Show(), as GetHorizontalOffset() returns a valid
-  // value only after the Show() method is called.
-  controller->MoveCandidateWindow(
-      controller->cursor_location(),
-      controller->candidate_window_->GetHorizontalOffset());
+  // We should move the candidate window after controller->frame_->Show(),
+  // as GetHorizontalOffset() returns a valid value only after the Show()
+  // method is called.
+  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnCandidateCommitted(int index,
