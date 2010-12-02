@@ -99,6 +99,8 @@ TEST_F(BufferManagerTest, SetRange) {
   EXPECT_TRUE(info->SetRange(sizeof(data), 0, data));
   EXPECT_FALSE(info->SetRange(sizeof(data), 1, data));
   EXPECT_FALSE(info->SetRange(0, sizeof(data) + 1, data));
+  EXPECT_FALSE(info->SetRange(-1, sizeof(data), data));
+  EXPECT_FALSE(info->SetRange(0, -1, data));
 }
 
 TEST_F(BufferManagerTest, GetRange) {
@@ -117,6 +119,8 @@ TEST_F(BufferManagerTest, GetRange) {
   EXPECT_EQ(buf + 1, buf1);
   EXPECT_TRUE(info->GetRange(sizeof(data), 1) == NULL);
   EXPECT_TRUE(info->GetRange(0, sizeof(data) + 1) == NULL);
+  EXPECT_TRUE(info->GetRange(-1, sizeof(data)) == NULL);
+  EXPECT_TRUE(info->GetRange(-0, -1) == NULL);
 }
 
 TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {

@@ -65,7 +65,7 @@ GL_APICALL void         GL_APIENTRY glBlendEquationSeparate (GLenumEquation mode
 GL_APICALL void         GL_APIENTRY glBlendFunc (GLenumSrcBlendFactor sfactor, GLenumDstBlendFactor dfactor);
 GL_APICALL void         GL_APIENTRY glBlendFuncSeparate (GLenumSrcBlendFactor srcRGB, GLenumDstBlendFactor dstRGB, GLenumSrcBlendFactor srcAlpha, GLenumDstBlendFactor dstAlpha);
 GL_APICALL void         GL_APIENTRY glBufferData (GLenumBufferTarget target, GLsizeiptr size, const void* data, GLenumBufferUsage usage);
-GL_APICALL void         GL_APIENTRY glBufferSubData (GLenumBufferTarget target, GLintptr offset, GLsizeiptr size, const void* data);
+GL_APICALL void         GL_APIENTRY glBufferSubData (GLenumBufferTarget target, GLintptrNotNegative offset, GLsizeiptr size, const void* data);
 GL_APICALL GLenum       GL_APIENTRY glCheckFramebufferStatus (GLenumFrameBufferTarget target);
 GL_APICALL void         GL_APIENTRY glClear (GLbitfield mask);
 GL_APICALL void         GL_APIENTRY glClearColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
@@ -203,7 +203,7 @@ GL_APICALL void         GL_APIENTRY glGenSharedIdsCHROMIUM (GLuint namespace_id,
 GL_APICALL void         GL_APIENTRY glDeleteSharedIdsCHROMIUM (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
 GL_APICALL void         GL_APIENTRY glRegisterSharedIdsCHROMIUM (GLuint namespace_id, GLsizeiNotNegative n, const GLuint* ids);
 GL_APICALL GLboolean    GL_APIENTRY glCommandBufferEnableCHROMIUM (const char* feature);
-GL_APICALL void*        GL_APIENTRY glMapBufferSubDataCHROMIUM (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+GL_APICALL void*        GL_APIENTRY glMapBufferSubDataCHROMIUM (GLuint target, GLintptrNotNegative offset, GLsizeiptr size, GLenum access);
 GL_APICALL void         GL_APIENTRY glUnmapBufferSubDataCHROMIUM (const void* mem);
 GL_APICALL void*        GL_APIENTRY glMapTexSubImage2DCHROMIUM (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
 GL_APICALL void         GL_APIENTRY glUnmapTexSubImage2DCHROMIUM (const void* mem);
@@ -4087,8 +4087,8 @@ class SizeArgument(Argument):
 class SizeNotNegativeArgument(SizeArgument):
   """class for GLsizeiNotNegative. It's NEVER allowed to be negative"""
 
-  def __init__(self, name, type):
-    SizeArgument.__init__(self, name, "GLsizei")
+  def __init__(self, name, type, gl_type):
+    SizeArgument.__init__(self, name, gl_type)
 
   def GetInvalidArg(self, offset, index):
     """overridden from SizeArgument."""
@@ -4802,10 +4802,13 @@ def CreateArg(arg_string):
   elif arg_parts[0].startswith('GLboolean') and len(arg_parts[0]) > 9:
     return BoolArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   elif (arg_parts[0].startswith('GLint') and len(arg_parts[0]) > 5 and
-        arg_parts[0] != "GLintptr"):
+        not arg_parts[0].startswith('GLintptr')):
     return IntArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
-  elif arg_parts[0].startswith('GLsizeiNotNegative'):
-    return SizeNotNegativeArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
+  elif (arg_parts[0].startswith('GLsizeiNotNegative') or
+        arg_parts[0].startswith('GLintptrNotNegative')):
+    return SizeNotNegativeArgument(arg_parts[-1],
+                                   " ".join(arg_parts[0:-1]),
+                                   arg_parts[0][0:-11])
   elif arg_parts[0].startswith('GLsize'):
     return SizeArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   else:
