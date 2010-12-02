@@ -173,6 +173,14 @@ SetupPnaclX8664Opt() {
 }
 
 #@
+#@ SetupPnaclX8664OptPIC
+#@    use pnacl x86-64 compiler (with lto and PIC)
+SetupPnaclX8664OptPIC() {
+  SetupPnaclX8664Common
+  SUFFIX=pnacl.opt.pic.x8664
+}
+
+#@
 #@ SetupPnaclTranslatorX8664
 #@    use pnacl x8664 translator (no lto)
 SetupPnaclTranslatorX8664() {
@@ -214,6 +222,13 @@ SetupPnaclX8632Opt() {
   SUFFIX=pnacl.opt.x8632
 }
 
+#@
+#@ SetupPnaclX8632OptPIC
+#@    use pnacl x86-32 compiler (with lto and PIC)
+SetupPnaclX8632OptPIC() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl.opt.pic.x8632
+}
 
 #@
 #@ SetupPnaclTranslatorX8632
@@ -256,17 +271,25 @@ SetupPnaclArmCommon() {
 #@
 #@ SetupPnaclArm
 #@    use pnacl arm compiler (no lto)
+SetupPnaclArm() {
+  SetupPnaclArmCommon
+  SUFFIX=pnacl.arm
+}
+
+#@
+#@ SetupPnaclArmOpt
+#@    use pnacl arm compiler (with lto)
 SetupPnaclArmOpt() {
   SetupPnaclArmCommon
   SUFFIX=pnacl.opt.arm
 }
 
 #@
-#@ SetupPnaclArmOpt
-#@    use pnacl arm compiler (with lto)
-SetupPnaclArm() {
+#@ SetupPnaclArmOptPIC
+#@    use pnacl arm compiler (with lto and PIC)
+SetupPnaclArmOptPIC() {
   SetupPnaclArmCommon
-  SUFFIX=pnacl.arm
+  SUFFIX=pnacl.opt.pic.arm
 }
 
 # TODO(robertm): add arm translator support
@@ -292,7 +315,7 @@ ConfigInfo() {
 #@
 #@ GetBenchmarkList
 #@
-#@   Show avilable benchmarks
+#@   Show available benchmarks
 GetBenchmarkList() {
   if [[ $# -ge 1 ]]; then
       if [[ ($1 == "ref") || ($1 == "train") ]]; then
