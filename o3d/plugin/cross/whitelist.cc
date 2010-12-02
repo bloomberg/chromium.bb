@@ -57,6 +57,15 @@ static const char kHttpsProtocol[] = "https://";
 // For testing purposes assume local files valid too.
 static const char kLocalFileUrlProtocol[] = "file://";
 
+static bool GetPropertyByNameString(NPP instance,
+                                    NPObject *obj,
+                                    const char *name_str,
+                                    NPVariant *out) {
+  // Create an identifier for the name.
+  NPIdentifier identifier = NPN_GetStringIdentifier(name_str);
+  return NPN_GetProperty(instance, obj, identifier, out);
+}
+
 static std::string GetURL(NPP instance) {
   std::string url;
   // get URL for the loading page - first approach from
@@ -74,14 +83,14 @@ static std::string GetURL(NPP instance) {
     goto exit0;
   }
   {
-    // Create a "location" identifier.
-    NPIdentifier identifier = NPN_GetStringIdentifier("location");
     // Declare a local variant value for the location.
     NPVariant location_variant_value;
     // Get the location property from the window object
     // (which is another object).
-    bool success = NPN_GetProperty(instance, window_obj, identifier,
-                                   &location_variant_value);
+    bool success = GetPropertyByNameString(instance,
+                                           window_obj,
+                                           "location",
+                                           &location_variant_value);
     if (!success) {
       LOG(ERROR) << "getproperty failed (location)";
       goto exit0;
@@ -93,14 +102,14 @@ static std::string GetURL(NPP instance) {
     }
     {
       // Get a pointer to the "location" object.
-      NPObject *location_obj = location_variant_value.value.objectValue;
-      // Create a "href" identifier.
-      identifier = NPN_GetStringIdentifier("href");
+      NPObject *location_obj = NPVARIANT_TO_OBJECT(location_variant_value);
       // Declare a local variant value for the href.
       NPVariant href_variant_value;
       // Get the location property from the location object.
-      success = NPN_GetProperty(instance, location_obj, identifier,
-                                &href_variant_value);
+      success = GetPropertyByNameString(instance,
+                                        location_obj,
+                                        "href",
+                                        &href_variant_value);
       if (!success) {
         LOG(ERROR) << "getproperty failed (href)";
         goto exit1;
@@ -114,9 +123,9 @@ static std::string GetURL(NPP instance) {
       // from it.
       url = std::string(
           static_cast<const char *>(
-              href_variant_value.value.stringValue.UTF8Characters),
+              NPVARIANT_TO_STRING(href_variant_value).UTF8Characters),
           static_cast<size_t>(
-              href_variant_value.value.stringValue.UTF8Length));
+              NPVARIANT_TO_STRING(href_variant_value).UTF8Length));
 
      exit2:
       NPN_ReleaseVariantValue(&href_variant_value);
@@ -180,7 +189,17 @@ static bool IsDomainWhitelisted(const std::string &in_url) {
 
 bool IsDomainAuthorized(NPP instance) {
 #ifdef O3D_PLUGIN_DOMAIN_WHITELIST
-  bool authorized = IsDomainWhitelisted(GetURL(instance));
+  std::string url(GetURL(instance));
+  if (url.empty()) {
+    // This can happen in Chrome due to a bug with cross-origin security checks,
+    // including on legitimate pages. Until it's fixed we'll just allow any
+    // domain when this happens.
+    // http://code.google.com/p/chromium/issues/detail?id=64229
+    LOG(WARNING) <<
+        "Allowing use despite inability to determine the hosting page";
+    return true;
+  }
+  bool authorized = IsDomainWhitelisted(url);
   if (!authorized) {
     LOG(ERROR) << "Unauthorized domain";
   }
