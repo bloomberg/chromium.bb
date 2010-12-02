@@ -27,7 +27,7 @@ TEST_F(ContentExceptionsTableModelTest, Incognito) {
                                     otr_profile->GetHostContentSettingsMap(),
                                     CONTENT_SETTINGS_TYPE_COOKIES);
   delete otr_profile;
-  model.AddException(HostContentSettingsMap::Pattern("example.com"),
+  model.AddException(ContentSettingsPattern("example.com"),
                      CONTENT_SETTING_BLOCK, true);
 }
 

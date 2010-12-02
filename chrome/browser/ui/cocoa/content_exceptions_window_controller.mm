@@ -49,7 +49,7 @@
              forString:(NSString*)string
       errorDescription:(NSString**)error {
   if ([string length]) {
-      if (HostContentSettingsMap::Pattern(
+      if (ContentSettingsPattern(
           base::SysNSStringToUTF8(string)).IsValid()) {
       *object = string;
       return YES;
@@ -295,7 +295,7 @@ static ContentExceptionsWindowController*
     return;
   }
   newException_.reset(new HostContentSettingsMap::PatternSettingPair);
-  newException_->first = HostContentSettingsMap::Pattern(
+  newException_->first = ContentSettingsPattern(
       l10n_util::GetStringUTF8(IDS_EXCEPTIONS_SAMPLE_PATTERN));
   newException_->second = CONTENT_SETTING_BLOCK;
   [tableView_ reloadData];
@@ -418,8 +418,7 @@ static ContentExceptionsWindowController*
   // Modify it.
   NSString* identifier = [tableColumn identifier];
   if ([identifier isEqualToString:@"pattern"]) {
-    entry.first = HostContentSettingsMap::Pattern(
-                      base::SysNSStringToUTF8(object));
+    entry.first = ContentSettingsPattern(base::SysNSStringToUTF8(object));
   }
   if ([identifier isEqualToString:@"action"]) {
     int index = [object intValue];

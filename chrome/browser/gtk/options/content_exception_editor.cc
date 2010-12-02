@@ -21,7 +21,7 @@ ContentExceptionEditor::ContentExceptionEditor(
     ContentExceptionsTableModel* model,
     bool allow_off_the_record,
     int index,
-    const HostContentSettingsMap::Pattern& pattern,
+    const ContentSettingsPattern& pattern,
     ContentSetting setting,
     bool is_off_the_record)
     : delegate_(delegate),
@@ -91,7 +91,7 @@ ContentExceptionEditor::ContentExceptionEditor(
 }
 
 bool ContentExceptionEditor::IsPatternValid(
-    const HostContentSettingsMap::Pattern& pattern,
+    const ContentSettingsPattern& pattern,
     bool is_off_the_record) const {
   bool is_valid_pattern = pattern.IsValid() &&
       (model_->IndexOfExceptionByPattern(pattern, is_off_the_record) == -1);
@@ -107,8 +107,7 @@ void ContentExceptionEditor::UpdateImage(GtkWidget* image, bool is_valid) {
 }
 
 void ContentExceptionEditor::OnEntryChanged(GtkWidget* entry) {
-  HostContentSettingsMap::Pattern new_pattern(
-      gtk_entry_get_text(GTK_ENTRY(entry)));
+  ContentSettingsPattern new_pattern(gtk_entry_get_text(GTK_ENTRY(entry)));
   bool is_off_the_record =
       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(otr_checkbox_));
   bool is_valid = IsPatternValid(new_pattern, is_off_the_record);
@@ -120,8 +119,7 @@ void ContentExceptionEditor::OnEntryChanged(GtkWidget* entry) {
 void ContentExceptionEditor::OnResponse(GtkWidget* sender, int response_id) {
   if (response_id == GTK_RESPONSE_OK) {
     // Notify our delegate to update everything.
-    HostContentSettingsMap::Pattern new_pattern(
-        gtk_entry_get_text(GTK_ENTRY(entry_)));
+    ContentSettingsPattern new_pattern(gtk_entry_get_text(GTK_ENTRY(entry_)));
     ContentSetting setting = cb_model_.SettingForIndex(
         gtk_combo_box_get_active(GTK_COMBO_BOX(action_combo_)));
     bool is_off_the_record =

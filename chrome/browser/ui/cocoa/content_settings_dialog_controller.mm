@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/mac_util.h"
+#import "chrome/browser/content_settings/content_settings_details.h"
 #import "chrome/browser/content_settings/host_content_settings_map.h"
 #import "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #import "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
@@ -49,8 +50,7 @@ ContentSettingsDialogController* g_instance = nil;
 - (void)prefChanged:(const std::string&)prefName;
 
 // Callback when content settings are changed.
-- (void)contentSettingsChanged:
-    (HostContentSettingsMap::ContentSettingsDetails*)details;
+- (void)contentSettingsChanged:(ContentSettingsDetails*)details;
 
 @end
 
@@ -80,8 +80,8 @@ class PrefObserverBridge : public NotificationObserver {
     // This is sent when the "is managed" state changes.
     // TODO(markusheintz): Move all content settings to this notification.
     if (type == NotificationType::CONTENT_SETTINGS_CHANGED) {
-      HostContentSettingsMap::ContentSettingsDetails* settings_details =
-        Details<HostContentSettingsMap::ContentSettingsDetails>(details).ptr();
+      ContentSettingsDetails* settings_details =
+          Details<ContentSettingsDetails>(details).ptr();
       [controller_ contentSettingsChanged:settings_details];
     }
   }
@@ -638,8 +638,7 @@ class PrefObserverDisabler {
   }
 }
 
-- (void)contentSettingsChanged:
-    (HostContentSettingsMap::ContentSettingsDetails*)details {
+- (void)contentSettingsChanged:(ContentSettingsDetails*)details {
   [self prefChanged:prefs::kBlockNonsandboxedPlugins];
   [self prefChanged:prefs::kDefaultContentSettings];
 }

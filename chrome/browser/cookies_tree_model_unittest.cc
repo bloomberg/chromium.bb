@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/mock_browsing_data_database_helper.h"
@@ -33,12 +34,11 @@ class StubSettingsObserver : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     ++counter;
-    Details<HostContentSettingsMap::ContentSettingsDetails>
-        settings_details(details);
+    Details<ContentSettingsDetails> settings_details(details);
     last_pattern = settings_details.ptr()->pattern();
   }
 
-  HostContentSettingsMap::Pattern last_pattern;
+  ContentSettingsPattern last_pattern;
   int counter;
 
  private:
@@ -670,7 +670,7 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
 
 TEST_F(CookiesTreeModelTest, ContentSettings) {
   GURL host("http://example.com/");
-  HostContentSettingsMap::Pattern pattern("[*.]example.com");
+  ContentSettingsPattern pattern("[*.]example.com");
   net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(host, "A=1");
 

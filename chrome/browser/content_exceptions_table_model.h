@@ -37,7 +37,7 @@ class ContentExceptionsTableModel : public TableModel {
   }
 
   // Adds a new exception on the map and table model.
-  void AddException(const HostContentSettingsMap::Pattern& pattern,
+  void AddException(const ContentSettingsPattern& pattern,
                     ContentSetting setting,
                     bool is_off_the_record);
 
@@ -49,7 +49,7 @@ class ContentExceptionsTableModel : public TableModel {
 
   // Returns the index of the specified exception given a host, or -1 if there
   // is no exception for the specified host.
-  int IndexOfExceptionByPattern(const HostContentSettingsMap::Pattern& pattern,
+  int IndexOfExceptionByPattern(const ContentSettingsPattern& pattern,
                                 bool is_off_the_record);
 
   // TableModel overrides:

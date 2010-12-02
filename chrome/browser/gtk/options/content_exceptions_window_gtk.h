@@ -37,7 +37,7 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
 
   // ContentExceptionEditor::Delegate implementation:
   virtual void AcceptExceptionEdit(
-      const HostContentSettingsMap::Pattern& pattern,
+      const ContentSettingsPattern& pattern,
       ContentSetting setting,
       bool is_off_the_record,
       int index,

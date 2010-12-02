@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
@@ -3138,8 +3139,7 @@ void TabContents::Observe(NotificationType type,
       break;
 
     case NotificationType::CONTENT_SETTINGS_CHANGED: {
-      Details<const HostContentSettingsMap::ContentSettingsDetails>
-          settings_details(details);
+      Details<const ContentSettingsDetails> settings_details(details);
       NavigationEntry* entry = controller_.GetActiveEntry();
       GURL entry_url;
       if (entry)

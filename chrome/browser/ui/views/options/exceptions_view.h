@@ -69,7 +69,7 @@ class ExceptionsView : public ExceptionEditorView::Delegate,
 
   // ExceptionEditorView::Delegate implementation.
   virtual void AcceptExceptionEdit(
-      const HostContentSettingsMap::Pattern& pattern,
+      const ContentSettingsPattern& pattern,
       ContentSetting setting,
       bool is_off_the_record,
       int index,

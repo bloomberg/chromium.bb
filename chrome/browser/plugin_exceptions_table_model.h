@@ -55,7 +55,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
   friend class plugin_test_internal::PluginExceptionsTableModelTest;
 
   struct SettingsEntry {
-   HostContentSettingsMap::Pattern pattern;
+   ContentSettingsPattern pattern;
    int plugin_id;
    ContentSetting setting;
    bool is_otr;

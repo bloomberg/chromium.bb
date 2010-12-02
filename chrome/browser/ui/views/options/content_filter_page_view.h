@@ -39,7 +39,7 @@ class ContentFilterPageView : public OptionsPageView,
   virtual void UpdateView();
 
   virtual void NotifyContentSettingsChanged(
-      const HostContentSettingsMap::ContentSettingsDetails *details);
+      const ContentSettingsDetails* details);
 
   // OptionsPageView implementation:
   virtual void InitControlLayout();

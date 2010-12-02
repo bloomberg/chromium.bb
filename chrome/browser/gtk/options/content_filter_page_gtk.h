@@ -15,6 +15,8 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_registrar.h"
 
+class ContentSettingsDetails;
+
 // A page in the content settings window. Used for everything but the Cookies
 // page (which has a much more complex dialog). A |content_type| is passed into
 // the constructor and the correct strings and settings are used.
@@ -38,7 +40,7 @@ class ContentFilterPageGtk : public OptionsPageBase {
   virtual void UpdateButtonsState();
 
   virtual void NotifyContentSettingsChanged(
-      const HostContentSettingsMap::ContentSettingsDetails *details);
+      const ContentSettingsDetails* details);
 
   // Builds the content of the dialog.
   GtkWidget* InitGroup();

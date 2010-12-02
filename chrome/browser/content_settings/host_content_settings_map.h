@@ -18,11 +18,13 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class ContentSettingsDetails;
 class DictionaryValue;
 class GURL;
 class PrefService;
@@ -33,86 +35,7 @@ class HostContentSettingsMap
       public base::RefCountedThreadSafe<HostContentSettingsMap,
                                         BrowserThread::DeleteOnUIThread> {
  public:
-  // A hostname pattern. See |IsValid| for a description of possible patterns.
-  class Pattern {
-   public:
-    // Returns a pattern that matches the host of this URL and all subdomains.
-    static Pattern FromURL(const GURL& url);
-
-    // Returns a pattern that matches exactly this URL.
-    static Pattern FromURLNoWildcard(const GURL& url);
-
-    Pattern() {}
-
-    explicit Pattern(const std::string& pattern) : pattern_(pattern) {}
-
-    // True if this is a valid pattern. Valid patterns are
-    //   - [*.]domain.tld (matches domain.tld and all sub-domains)
-    //   - host (matches an exact hostname)
-    //   - a.b.c.d (matches an exact IPv4 ip)
-    //   - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
-    bool IsValid() const;
-
-    // True if |url| matches this pattern.
-    bool Matches(const GURL& url) const;
-
-    // Returns a std::string representation of this pattern.
-    const std::string& AsString() const { return pattern_; }
-
-    bool operator==(const Pattern& other) const {
-      return pattern_ == other.pattern_;
-    }
-
-    // Canonicalizes the pattern so that it's ASCII only, either
-    // in original or punycode form.
-    std::string CanonicalizePattern() const;
-
-   private:
-    std::string pattern_;
-  };
-
-  // Details for the CONTENT_SETTINGS_CHANGED notification. This is sent when
-  // content settings change for at least one host. If settings change for more
-  // than one pattern in one user interaction, this will usually send a single
-  // notification with update_all() returning true instead of one notification
-  // for each pattern.
-  class ContentSettingsDetails {
-   public:
-    // Update the setting that matches this pattern/content type/resource.
-    ContentSettingsDetails(const Pattern& pattern,
-                           ContentSettingsType type,
-                           const std::string& resource_identifier)
-        : pattern_(pattern),
-          type_(type),
-          resource_identifier_(resource_identifier) {}
-
-    // The pattern whose settings have changed.
-    const Pattern& pattern() const { return pattern_; }
-
-    // True if all settings should be updated for the given type.
-    bool update_all() const { return pattern_.AsString().empty(); }
-
-    // The type of the pattern whose settings have changed.
-    ContentSettingsType type() const { return type_; }
-
-    // The resource identifier for the settings type that has changed.
-    const std::string& resource_identifier() const {
-      return resource_identifier_;
-    }
-
-    // True if all types should be updated. If update_all() is false, this will
-    // be false as well (although the reverse does not hold true).
-    bool update_all_types() const {
-      return CONTENT_SETTINGS_TYPE_DEFAULT == type_;
-    }
-
-   private:
-    Pattern pattern_;
-    ContentSettingsType type_;
-    std::string resource_identifier_;
-  };
-
-  typedef std::pair<Pattern, ContentSetting> PatternSettingPair;
+  typedef std::pair<ContentSettingsPattern, ContentSetting> PatternSettingPair;
   typedef std::vector<PatternSettingPair> SettingsForOneType;
 
   explicit HostContentSettingsMap(Profile* profile);
@@ -189,7 +112,7 @@ class HostContentSettingsMap
   // the |resource_identifier| must be non-empty.
   //
   // This should only be called on the UI thread.
-  void SetContentSetting(const Pattern& pattern,
+  void SetContentSetting(const ContentSettingsPattern& pattern,
                          ContentSettingsType content_type,
                          const std::string& resource_identifier,
                          ContentSetting setting);
@@ -343,12 +266,5 @@ class HostContentSettingsMap
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };
-
-// Stream operator so HostContentSettingsMap::Pattern can be used in
-// assertion statements.
-inline std::ostream& operator<<(
-    std::ostream& out, const HostContentSettingsMap::Pattern& pattern) {
-  return out << pattern.AsString();
-}
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_HOST_CONTENT_SETTINGS_MAP_H_

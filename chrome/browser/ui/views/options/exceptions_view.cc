@@ -128,7 +128,7 @@ std::wstring ExceptionsView::GetWindowTitle() const {
 }
 
 void ExceptionsView::AcceptExceptionEdit(
-    const HostContentSettingsMap::Pattern& pattern,
+    const ContentSettingsPattern& pattern,
     ContentSetting setting,
     bool is_off_the_record,
     int index,
@@ -234,7 +234,7 @@ void ExceptionsView::UpdateButtonState() {
 void ExceptionsView::Add() {
   ExceptionEditorView* view =
       new ExceptionEditorView(this, &model_, allow_off_the_record_, -1,
-                              HostContentSettingsMap::Pattern(),
+                              ContentSettingsPattern(),
                               CONTENT_SETTING_BLOCK, false);
   view->Show(window()->GetNativeWindow());
 

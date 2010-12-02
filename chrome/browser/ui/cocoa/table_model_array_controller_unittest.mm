@@ -35,8 +35,8 @@ class TableModelArrayControllerTest : public CocoaTest {
     TestingProfile* profile = browser_helper_.profile();
     HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
 
-    HostContentSettingsMap::Pattern example_com("[*.]example.com");
-    HostContentSettingsMap::Pattern moose_org("[*.]moose.org");
+    ContentSettingsPattern example_com("[*.]example.com");
+    ContentSettingsPattern moose_org("[*.]moose.org");
     map->SetContentSetting(example_com,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
                            "a-foo",
@@ -138,7 +138,7 @@ TEST_F(TableModelArrayControllerTest, RemoveAll) {
 TEST_F(TableModelArrayControllerTest, AddException) {
   TestingProfile* profile = browser_helper_.profile();
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-  HostContentSettingsMap::Pattern example_com("[*.]example.com");
+  ContentSettingsPattern example_com("[*.]example.com");
   map->SetContentSetting(example_com,
                          CONTENT_SETTINGS_TYPE_PLUGINS,
                          "c-blurp",

@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -23,8 +24,6 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-
-typedef HostContentSettingsMap::ContentSettingsDetails ContentSettingsDetails;
 
 namespace {
 
@@ -112,7 +111,7 @@ std::string GeolocationExceptionToString(const GURL& origin,
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
 // Ownership of the pointer is passed to the caller.
 DictionaryValue* GetExceptionForPage(
-    const HostContentSettingsMap::Pattern pattern,
+    const ContentSettingsPattern pattern,
     ContentSetting setting) {
   DictionaryValue* exception = new DictionaryValue();
   exception->Set(
@@ -330,7 +329,7 @@ void ContentSettingsHandler::Observe(NotificationType type,
 
     case NotificationType::CONTENT_SETTINGS_CHANGED: {
       const ContentSettingsDetails* settings_details =
-          static_cast<Details<const ContentSettingsDetails> >(details).ptr();
+          Details<const ContentSettingsDetails>(details).ptr();
 
       // TODO(estade): we pretend update_all() is always true.
       if (settings_details->update_all_types())
@@ -633,7 +632,7 @@ void ContentSettingsHandler::RemoveExceptions(const ListValue* args) {
       // got destroyed before we received this message.
       if (settings_map) {
         settings_map->SetContentSetting(
-            HostContentSettingsMap::Pattern(pattern),
+            ContentSettingsPattern(pattern),
             ContentSettingsTypeFromGroupName(type_string),
             "",
             CONTENT_SETTING_DEFAULT);
@@ -669,11 +668,10 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
   if (!settings_map)
     return;
 
-  settings_map->
-      SetContentSetting(HostContentSettingsMap::Pattern(pattern),
-                        type,
-                        "",
-                        ContentSettingFromString(setting));
+  settings_map->SetContentSetting(ContentSettingsPattern(pattern),
+                                  type,
+                                  "",
+                                  ContentSettingFromString(setting));
 }
 
 void ContentSettingsHandler::CheckExceptionPatternValidity(
@@ -686,7 +684,7 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
   std::string pattern_string;
   CHECK(args->GetString(arg_i++, &pattern_string));
 
-  HostContentSettingsMap::Pattern pattern(pattern_string);
+  ContentSettingsPattern pattern(pattern_string);
 
   scoped_ptr<Value> mode_value(Value::CreateStringValue(mode_string));
   scoped_ptr<Value> pattern_value(Value::CreateStringValue(pattern_string));

@@ -23,7 +23,7 @@ class ContentExceptionEditor {
    public:
     // Invoked when the user accepts the edit.
     virtual void AcceptExceptionEdit(
-        const HostContentSettingsMap::Pattern& pattern,
+        const ContentSettingsPattern& pattern,
         ContentSetting setting,
         bool is_off_the_record,
         int index,
@@ -38,7 +38,7 @@ class ContentExceptionEditor {
                          ContentExceptionsTableModel* model,
                          bool allow_off_the_record,
                          int index,
-                         const HostContentSettingsMap::Pattern& pattern,
+                         const ContentSettingsPattern& pattern,
                          ContentSetting setting,
                          bool is_off_the_record);
   virtual ~ContentExceptionEditor() {}
@@ -47,7 +47,7 @@ class ContentExceptionEditor {
   // Returns true if we're adding a new item.
   bool is_new() const { return index_ == -1; }
 
-  bool IsPatternValid(const HostContentSettingsMap::Pattern& pattern,
+  bool IsPatternValid(const ContentSettingsPattern& pattern,
                       bool is_off_the_record) const;
 
   void UpdateImage(GtkWidget* image, bool is_valid);
@@ -65,7 +65,7 @@ class ContentExceptionEditor {
 
   // Index of the item being edited. If -1, indicates this is a new entry.
   const int index_;
-  const HostContentSettingsMap::Pattern pattern_;
+  const ContentSettingsPattern pattern_;
   const ContentSetting setting_;
 
   // UI widgets.

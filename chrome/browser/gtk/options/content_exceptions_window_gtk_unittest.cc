@@ -26,7 +26,7 @@ class ContentExceptionsWindowGtkUnittest : public testing::Test {
 
   void AddException(const std::string& pattern, ContentSetting value) {
     host_content_settings_map_->SetContentSetting(
-        HostContentSettingsMap::Pattern(pattern),
+        ContentSettingsPattern(pattern),
         CONTENT_SETTINGS_TYPE_JAVASCRIPT,
         "",
         value);

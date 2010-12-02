@@ -160,7 +160,7 @@ TEST_F(ContentExceptionsWindowControllerTest, Add) {
                                       "",
                                       &settings);
   EXPECT_EQ(1u, settings.size());
-  EXPECT_EQ(HostContentSettingsMap::Pattern("addedhost"), settings[0].first);
+  EXPECT_EQ(ContentSettingsPattern("addedhost"), settings[0].first);
 }
 
 TEST_F(ContentExceptionsWindowControllerTest, AddEscDoesNotAdd) {
@@ -202,7 +202,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddEditAddAdd) {
 }
 
 TEST_F(ContentExceptionsWindowControllerTest, AddExistingEditAdd) {
-  settingsMap_->SetContentSetting(HostContentSettingsMap::Pattern("myhost"),
+  settingsMap_->SetContentSetting(ContentSettingsPattern("myhost"),
                                   CONTENT_SETTINGS_TYPE_PLUGINS,
                                   "",
                                   CONTENT_SETTING_BLOCK);
@@ -226,7 +226,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddExistingEditAdd) {
 }
 
 TEST_F(ContentExceptionsWindowControllerTest, AddExistingDoesNotOverwrite) {
-  settingsMap_->SetContentSetting(HostContentSettingsMap::Pattern("myhost"),
+  settingsMap_->SetContentSetting(ContentSettingsPattern("myhost"),
                                   CONTENT_SETTINGS_TYPE_COOKIES,
                                   "",
                                   CONTENT_SETTING_SESSION_ONLY);
