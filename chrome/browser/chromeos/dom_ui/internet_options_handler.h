@@ -40,15 +40,23 @@ class InternetOptionsHandler
   virtual void OnCellularDataPlanChanged(chromeos::NetworkLibrary* network_lib);
 
  private:
-  // Open a modal popup dialog.
+  // Opens a modal popup dialog.
   void CreateModalPopup(views::WindowDelegate* view);
 
   // Passes data needed to show details overlay for network.
   // |args| will be [ network_type, service_path, command ]
-  // And command is one of 'options', 'connect', disconnect', or 'forget'
+  // And command is one of 'options', 'connect', disconnect', 'activate' or
+  // 'forget'
+  // Handle{Wifi,Cellular}ButtonClick handles button click on a wireless
+  // network item and a cellular network item respectively.
   void ButtonClickCallback(const ListValue* args);
-  // Initiates cellular plan data refresh. The results from libcros will
-  // be passed through CellularDataPlanChanged() callback method.
+  void HandleWifiButtonClick(const std::string& service_path,
+                             const std::string& command);
+  void HandleCellularButtonClick(const std::string& service_path,
+                                 const std::string& command);
+
+  // Initiates cellular plan data refresh. The results from libcros will be
+  // passed through CellularDataPlanChanged() callback method.
   // |args| will be [ service_path ]
   void RefreshCellularPlanCallback(const ListValue* args);
 
@@ -62,36 +70,55 @@ class InternetOptionsHandler
   void DisableCellularCallback(const ListValue* args);
   void BuyDataPlanCallback(const ListValue* args);
 
-  bool is_certificate_in_pkcs11(const std::string& path);
+  // Parses 'path' to determine if the certificate is stored in a pkcs#11
+  // device. flimflam recognizes the string "SETTINGS:" to specify
+  // authentication parameters. 'key_id=' indicates that the certificate is
+  // stored in a pkcs#11 device.
+  // See src/third_party/flimflam/files/doc/service-api.txt.
+  bool IsCertificateInPkcs11(const std::string& path);
 
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI.
   void PopulateDictionaryDetails(const chromeos::Network* net,
                                  chromeos::NetworkLibrary* cros);
+  void PopulateWifiDetails(DictionaryValue* dictionary,
+                           const chromeos::WifiNetwork* wifi);
+  void PopulateCellularDetails(DictionaryValue* dictionary,
+                               const chromeos::CellularNetwork*
+                               cellular);
 
-  // Converts CellularDataPlan structure into dictionary for JS. Formats
-  // plan settings into human readable texts.
+  // Converts CellularDataPlan structure into dictionary for JS. Formats plan
+  // settings into human readable texts.
   DictionaryValue* CellularDataPlanToDictionary(
       const chromeos::CellularDataPlan* plan);
-  // Creates the map of a network
-  ListValue* GetNetwork(const std::string& service_path, const SkBitmap& icon,
-      const std::string& name, bool connecting, bool connected,
-      bool connectable, chromeos::ConnectionType connection_type,
-      bool remembered, chromeos::ActivationState activation_state,
-      bool restricted_ip);
+  // Creates the map of a network.
+  ListValue* GetNetwork(const std::string& service_path,
+                        const SkBitmap& icon,
+                        const std::string& name,
+                        bool connecting,
+                        bool connected,
+                        bool connectable,
+                        chromeos::ConnectionType connection_type,
+                        bool remembered,
+                        chromeos::ActivationState activation_state,
+                        bool restricted_ip);
 
-  // Creates the map of wired networks
+  // Creates the map of wired networks.
   ListValue* GetWiredList();
-  // Creates the map of wireless networks
+  // Creates the map of wireless networks.
   ListValue* GetWirelessList();
-  // Creates the map of remembered networks
+  // Creates the map of remembered networks.
   ListValue* GetRememberedList();
-  // Refresh the display of network information
+  // Fills network information into JS dictionary for displaying network lists.
+  void FillNetworkInfo(DictionaryValue* dictionary,
+                       chromeos::NetworkLibrary* cros);
+  // Refreshes the display of network information.
   void RefreshNetworkData(chromeos::NetworkLibrary* cros);
-  // Monitor the active network, if any
+  // Adds an observer for the active network, if any, so that we can dynamically
+  // display the correct icon for that network's signal strength.
   void MonitorActiveNetwork(chromeos::NetworkLibrary* cros);
 
-  // If any network is currently active, this is its service path
+  // If any network is currently active, this is its service path.
   std::string active_network_;
 
   // A boolean flag of whether to use DOMUI for connect UI. True to use DOMUI
