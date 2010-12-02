@@ -214,8 +214,8 @@ void SystemSettingsProvider::DoSet(const std::string& path, Value* in_value) {
 bool SystemSettingsProvider::Get(const std::string& path,
                                  Value** out_value) const {
   if (path == kSystemTimezone) {
-    *out_value = Value::CreateStringValue(
-        GetTimezoneID(CrosLibrary::Get()->GetSystemLibrary()->GetTimezone()));
+    *out_value = Value::CreateStringValue(GetKnownTimezoneID(
+        CrosLibrary::Get()->GetSystemLibrary()->GetTimezone()));
     return true;
   }
   return false;
@@ -298,6 +298,19 @@ const icu::TimeZone* SystemSettingsProvider::GetTimezone(
     }
   }
   return NULL;
+}
+
+string16 SystemSettingsProvider::GetKnownTimezoneID(
+    const icu::TimeZone& timezone) const {
+  for (std::vector<icu::TimeZone*>::const_iterator iter = timezones_.begin();
+       iter != timezones_.end(); ++iter) {
+    const icu::TimeZone* known_timezone = *iter;
+    if (known_timezone->hasSameRules(timezone))
+      return GetTimezoneID(*known_timezone);
+  }
+
+  // Not able to find a matching timezone in our list.
+  return string16();
 }
 
 }  // namespace chromeos

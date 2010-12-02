@@ -46,6 +46,15 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   // Gets timezone object from its id.
   const icu::TimeZone* GetTimezone(const string16& timezone_id);
 
+  // Gets a timezone id from a timezone in |timezones_| that has the same
+  // rule of given |timezone|.
+  // One timezone could have multiple timezones,
+  // e.g.
+  //   US/Pacific == America/Los_Angeles
+  // We should always use the known timezone id when passing back as
+  // pref values.
+  string16 GetKnownTimezoneID(const icu::TimeZone& timezone) const;
+
   // Timezones.
   std::vector<icu::TimeZone*> timezones_;
 
