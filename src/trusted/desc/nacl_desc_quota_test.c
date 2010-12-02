@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
@@ -30,6 +31,12 @@
 #include "native_client/src/trusted/desc/pepper/nacl_pepper.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+
+#if NACL_WINDOWS
+# define UNLINK(f)  _unlink(f)
+#else
+# define UNLINK(f)  unlink(f)
+#endif
 
 char *gProgram = NULL;
 
@@ -176,8 +183,8 @@ int main(int ac, char **av) {
   size_t                max_write_size = 5UL << 10;  /* > 1 page */
   size_t                ix;
   uint64_t              num_bytes = 16UL << 20;
-  struct NaClDescIoDesc *ndip;
-  struct NaClDescQuota  *object_under_test;
+  struct NaClDescIoDesc *ndip = NULL;
+  struct NaClDescQuota  *object_under_test = NULL;
   struct NaClSecureRng  rng;
   static uint8_t        file_id0[NACL_DESC_QUOTA_FILE_ID_LEN];
 
@@ -219,6 +226,18 @@ int main(int ac, char **av) {
     goto cleanup;
   }
 
+  /*
+   * Invariant in cleanup code: ndip and object_under_test, if
+   * non-NULL, needs to be Dtor'd (via NaClDescSafeUnref).  So:
+   *
+   * 1) We never have a partially-constructed object.  (Our Ctors fail
+   *    atomically.)
+   *
+   * 2) If a Ctor takes ownership of another object, we immediately
+   *    replace our reference to that object with NULL, so that the
+   *    cleanup code would not try to Dtor the contained object
+   *    independently of the containing object.
+   */
   if (NULL == (ndip = NaClDescIoDescOpen(file_path,
                                          NACL_ABI_O_RDWR | NACL_ABI_O_CREAT,
                                          0777))) {
@@ -237,9 +256,17 @@ int main(int ac, char **av) {
                          file_id0)) {
     perror(gProgram);
     fprintf(stderr, "Ctor for quota object failed.\n");
+    /*
+     * object_under_test is not constructed, so we must free it and
+     * NULL it out to prevent the cleanup code Dtors from firing.
+     */
+    free(object_under_test);
+    object_under_test = NULL;
     exit_status = 5;
     goto cleanup_file;
   }
+
+  ndip = NULL;  /* object_under_test has ownership */
 
   if (!NaClSecureRngCtor(&rng)) {
     fprintf(stderr, "Ctor for SecureRng failed.\n");
@@ -272,11 +299,16 @@ int main(int ac, char **av) {
   }
 
 cleanup_file:
-#if NACL_WINDOWS
-  _unlink(file_path);
-#else
-  unlink(file_path);
-#endif
+  NaClDescSafeUnref((struct NaClDesc *) ndip);
+  NaClDescSafeUnref((struct NaClDesc *) object_under_test);
+
+  if (-1 == UNLINK(file_path)) {
+    perror("nacl_desc_quota_test");
+    fprintf(stderr,
+            "unlink of a temporary file failed during test cleanup, errno %d\n",
+            errno);
+    exit_status = 9;
+  }
 
 cleanup:
   return exit_status;
