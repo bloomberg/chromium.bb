@@ -222,6 +222,12 @@ void CookieAccountant::RecordHttpResponseCookies(
 }
 
 void CookieAccountant::PatchWininetFunctions() {
+  {
+    AutoLock lock(lock_);
+    if (patching_wininet_functions_)
+      return;
+    patching_wininet_functions_ = true;
+  }
   if (!internet_set_cookie_ex_a_patch_.is_patched()) {
     DWORD error = internet_set_cookie_ex_a_patch_.Patch(
         kMsHtmlModuleName, kWinInetModuleName,
@@ -236,4 +242,8 @@ void CookieAccountant::PatchWininetFunctions() {
   }
   DCHECK(internet_set_cookie_ex_a_patch_.is_patched() ||
          internet_set_cookie_ex_w_patch_.is_patched());
+  {
+    AutoLock lock(lock_);
+    patching_wininet_functions_ = false;
+  }
 }

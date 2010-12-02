@@ -13,6 +13,7 @@
 #include <string>
 
 #include "app/win/iat_patch_function.h"
+#include "base/lock.h"
 #include "base/singleton.h"
 #include "base/time.h"
 #include "ceee/ie/plugin/bho/cookie_events_funnel.h"
@@ -52,7 +53,11 @@ class CookieAccountant {
   // Since this class has one instance per window, not per tab, we cannot
   // queue the events sent to the broker. They don't need to be sent to the BHO
   // because they don't need tab_id anyway.
-  CookieAccountant() : cookie_events_funnel_(new BrokerRpcClient) {}
+  CookieAccountant()
+      : cookie_events_funnel_(new BrokerRpcClient),
+        patching_wininet_functions_(false) {
+  }
+
   virtual ~CookieAccountant();
 
   // Records the modification or creation of a cookie. Fires off a
@@ -69,6 +74,15 @@ class CookieAccountant {
   // Function patches that allow us to intercept scripted cookie changes.
   app::win::IATPatchFunction internet_set_cookie_ex_a_patch_;
   app::win::IATPatchFunction internet_set_cookie_ex_w_patch_;
+
+  // Used to allow exactly one thread to attempt to apply function patches.
+  // We use this boolean instead of a simple lock so that threads that lose
+  // the race will return immediately instead of blocking on the lock.
+  // Protected by CookieAccountant::lock_.
+  bool patching_wininet_functions_;
+
+  // A lock that protects access to the function patches.
+  Lock lock_;
 
   // Cached singleton instance. Useful for unit testing.
   static CookieAccountant* singleton_instance_;
