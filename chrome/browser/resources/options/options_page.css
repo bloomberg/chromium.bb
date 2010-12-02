@@ -217,7 +217,9 @@ html[hide-menu=true] #mainview {
   box-sizing: border-box;
   min-height: 100%;
   padding: 0px 20px;
+  position: relative;
   width: 100%;
+  z-index: 5;
 }
 
 #managed-prefs-banner {
