@@ -4823,9 +4823,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_DESCRIPTION_LABEL" desc="Label for the description field">
         Tell us what is happening. (required)
       </message>
+      <if expr="pp_ifdef('chromeos')">
       <message name="IDS_BUGREPORT_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
         Include the current screenshot:
       </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
+      <message name="IDS_BUGREPORT_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
+        Include this screenshot:
+      </message>
+      </if>
       <message name="IDS_BUGREPORT_SAVED_SCREENSHOT_LABEL" desc="Label for the screenshot field if saved screenshots are being shown">
         Include a saved screenshot:
       </message>
@@ -4879,6 +4886,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_CHOOSE_ORIGINAL_SCREENSHOT" desc="Text for changing the screenshot selection from saved to current">
         (Go back to original screenshot)
       </message>
+      <if expr="pp_ifdef('chromeos')">
       <message name="IDS_BUGREPORT_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
         Note: When you click "Send Feedback," Chrome OS includes a log of
         system events from your device. This information is used by
@@ -4893,6 +4901,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         To not send any system logs at all, please uncheck the
         "Include System Information" box.
       </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
+      <message name="IDS_BUGREPORT_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
+        Note: When you click "Send Feedback," Chrome includes a log of your
+        Chrome version and OS version and the URL associated with your feedback.
+        You may also choose to include a screenshot associated with your
+        feedback.  This information is used by us to diagnose problems and to
+        help us improve Chrome’s performance.  Any personal information included
+        with the feedback report, whether explicitly in your comments or
+        incidentally in the log, URL or screenshot, will be protected in
+        accordance with our privacy policies.  To not send the URL, please
+        uncheck the “Include this URL:” box.  To not send the screenshot, leave the box
+        “Include this screenshot:” unchecked.  You agree that Google may use any feedback that you
+        provide to improve any Google products or services
+      </message>
+      </if>
       <message name="IDS_BUGREPORT_INCLUDE_PAGE_SOURCE_CHKBOX" desc="Checkbox for including page source">
         Send source of current page
       </message>
