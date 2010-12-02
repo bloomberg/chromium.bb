@@ -336,10 +336,13 @@ void Audio::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
     PP_RunCompletionCallback(&create_callback_, 0);
     create_callback_pending_ = false;
 
-    // Close the handles now that this process is done with them.
-    shared_memory_for_create_callback_.reset();
-    shared_memory_size_for_create_callback_ = 0;
-    socket_for_create_callback_.reset();
+    // It might be nice to close the handles here to free up some system
+    // resources, but we can't since there's a race condition. The handles must
+    // be valid until they're sent over IPC, which is done from the I/O thread
+    // which will often get done after this code executes. We could do
+    // something more elaborate like an ACK from the plugin or post a task to
+    // the I/O thread and back, but this extra complexity doesn't seem worth it
+    // just to clean up these handles faster.
   } else {
     SetStreamInfo(shared_memory_handle, shared_memory_size, socket_handle);
   }
