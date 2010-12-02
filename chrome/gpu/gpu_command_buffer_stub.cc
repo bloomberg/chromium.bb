@@ -80,10 +80,10 @@ bool GpuCommandBufferStub::CreateCompositorWindow() {
   // Ask the browser to create the the host window.
   ChildThread* gpu_thread = ChildThread::current();
   gfx::PluginWindowHandle host_window_id = gfx::kNullPluginWindow;
-    gpu_thread->Send(new GpuHostMsg_CreateCompositorHostWindow(
-        renderer_id_,
-        render_view_id_,
-        &host_window_id));
+  gpu_thread->Send(new GpuHostMsg_CreateCompositorHostWindow(
+      renderer_id_,
+      render_view_id_,
+      &host_window_id));
   if (host_window_id == gfx::kNullPluginWindow)
     return false;
   HWND host_window = static_cast<HWND>(host_window_id);

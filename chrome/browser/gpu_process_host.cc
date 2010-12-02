@@ -398,6 +398,11 @@ void CreateCompositorHostWindowDispatcher(
   RenderViewHost* host = RenderViewHost::FromID(renderer_id,
                                                 render_view_id);
   if (!host) {
+    GpuHostMsg_CreateCompositorHostWindow::WriteReplyParams(reply_msg,
+        gfx::kNullPluginWindow);
+    BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&SendDelayedReply, reply_msg));
     return;
   }
 
