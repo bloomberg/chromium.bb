@@ -10,6 +10,7 @@
 namespace test_shell {
 
 extern const char kCrashDumps[];
+extern const char kCrashDumpsFulldump[];
 extern const char kDumpPixels[];
 extern const char kLayoutTests[];
 extern const char kGenericTheme[];

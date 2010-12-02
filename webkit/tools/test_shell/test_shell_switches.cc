@@ -13,6 +13,8 @@ const char kNoErrorDialogs[]                = "noerrdialogs";
 // respectively, and interferes with interactive use of the UI.
 const char kLayoutTests[] = "layout-tests";
 const char kCrashDumps[] = "crash-dumps";  // Enable crash dumps
+// Dumps the full-heap instead of only stack. Used with kCrashDumps.
+const char kCrashDumpsFulldump[] = "crash-dumps-fulldump";
 
 // Causes the test_shell to run with a generic theme (part of layout_tests).
 const char kGenericTheme[] = "generic-theme";

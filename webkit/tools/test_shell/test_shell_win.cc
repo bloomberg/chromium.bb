@@ -151,6 +151,11 @@ HINSTANCE TestShell::instance_handle_;
 /////////////////////////////////////////////////////////////////////////////
 // static methods on TestShell
 
+const MINIDUMP_TYPE kFullDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithFullMemory |  // Full memory from process.
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithHandleData);  // Get all handle information.
+
 void TestShell::InitializeTestShell(bool layout_test_mode,
                                     bool allow_external_pages) {
   // Start COM stuff.
@@ -180,7 +185,14 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   if (parsed_command_line.HasSwitch(test_shell::kCrashDumps)) {
     std::wstring dir(
         parsed_command_line.GetSwitchValueNative(test_shell::kCrashDumps));
-    new google_breakpad::ExceptionHandler(dir, 0, &MinidumpCallback, 0, true);
+    if (parsed_command_line.HasSwitch(test_shell::kCrashDumpsFulldump)) {
+        new google_breakpad::ExceptionHandler(
+            dir, 0, &MinidumpCallback, 0, true,
+            kFullDumpType, 0, 0);
+    } else {
+        new google_breakpad::ExceptionHandler(
+            dir, 0, &MinidumpCallback, 0, true);
+    }
   }
 }
 
