@@ -91,8 +91,7 @@ BOOL gNewNSMenuAPI;
                                         attributes:attrs]);
     [menuItem setAttributedTitle:attrTitle];
   }
-  if (gNewNSMenuAPI)
-    [menuItem setTag:[menu_ numberOfItems] - 1];
+  [menuItem setTag:[menu_ numberOfItems] - 1];
 }
 
 // Reflects the result of the user's interaction with the popup menu. If NO, the
@@ -113,8 +112,13 @@ BOOL gNewNSMenuAPI;
            withBounds:(NSRect)bounds
          initialIndex:(int)index {
   if (gNewNSMenuAPI) {
-    NSMenuItem* selectedItem = [menu_ itemAtIndex:index];
-    [selectedItem setState:NSOnState];
+    // index might be out of bounds, in which case we set no selection.
+    NSMenuItem* selectedItem = [menu_ itemWithTag:index];
+    if (selectedItem) {
+      [selectedItem setState:NSOnState];
+    } else {
+      selectedItem = [menu_ itemWithTag:0];
+    }
     NSPoint anchor = NSMakePoint(NSMinX(bounds) + kPopupXOffset,
                                  NSMaxY(bounds));
     [menu_ popUpMenuPositioningItem:selectedItem
@@ -128,7 +132,9 @@ BOOL gNewNSMenuAPI;
                                                               pullsDown:NO];
     [button autorelease];
     [button setMenu:menu_];
-    [button selectItemAtIndex:index];
+    // We use selectItemWithTag below so if the index is out-of-bounds nothing
+    // bad happens.
+    [button selectItemWithTag:index];
     [button setFont:[NSFont menuFontOfSize:fontSize_]];
 
     // Create a dummy view to associate the popup with, since the OS will use
