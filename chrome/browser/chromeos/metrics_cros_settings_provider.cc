@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 
@@ -36,6 +37,11 @@ bool MetricsCrosSettingsProvider::Get(const std::string& path,
 
 // static
 bool MetricsCrosSettingsProvider::SetMetricsStatus(bool enabled) {
+  // We must be not logged in (on EULA page) or logged is as an owner to be able
+  // to modify the setting.
+  UserManager *user = UserManager::Get();
+  if (user->user_is_logged_in() && !user->current_user_is_owner())
+    return false;
   VLOG(1) << "Setting cros stats/crash metric reporting to " << enabled;
   if (enabled != GoogleUpdateSettings::GetCollectStatsConsent()) {
     bool new_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);

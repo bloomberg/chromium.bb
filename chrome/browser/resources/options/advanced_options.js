@@ -162,6 +162,8 @@ var OptionsPage = options.OptionsPage;
       checked, disabled, user_changed) {
     $('metricsReportingEnabled').checked = checked;
     $('metricsReportingEnabled').disabled = disabled;
+    if (disabled)
+      $('metricsReportingEnabledText').className = 'disable-services-span';
 
     if (user_changed)
       AdvancedOptions.getInstance().showRestartRequiredAlert_();

@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
 #include "chrome/browser/metrics/user_metrics.h"
 
@@ -54,7 +55,7 @@ void StatsOptionsHandler::HandleMetricsReportingCheckbox(
 void StatsOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
 #if defined(GOOGLE_CHROME_BUILD)
   FundamentalValue checked(MetricsCrosSettingsProvider::GetMetricsStatus());
-  FundamentalValue disabled(false);
+  FundamentalValue disabled(!UserManager::Get()->current_user_is_owner());
   FundamentalValue user_has_changed(user_changed);
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
