@@ -17,6 +17,7 @@
 #include "base/string_tokenizer.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
@@ -86,10 +87,14 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     ggl::GGL_NONE,
   };
 
+  GPUInfo gpu_info = host->gpu_info();
+  UMA_HISTOGRAM_ENUMERATION(
+      "GPU.WebGraphicsContext3D_Init_CanLoseContext",
+      attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context(), 
+      4);
   if (attributes.canRecoverFromContextLoss == false) {
-    GPUInfo gpu_info = host->gpu_info();
     if (gpu_info.can_lose_context())
-        return false;
+      return false;
   }
 
   if (render_directly_to_web_view) {
