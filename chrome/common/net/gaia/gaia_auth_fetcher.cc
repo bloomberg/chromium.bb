@@ -53,6 +53,8 @@ const char GaiaAuthFetcher::kAccountDeletedError[] = "AccountDeleted";
 // static
 const char GaiaAuthFetcher::kAccountDisabledError[] = "AccountDisabled";
 // static
+const char GaiaAuthFetcher::kBadAuthenticationError[] = "BadAuthentication";
+// static
 const char GaiaAuthFetcher::kCaptchaError[] = "CaptchaRequired";
 // static
 const char GaiaAuthFetcher::kServiceUnavailableError[] =
@@ -344,13 +346,18 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
       return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DELETED);
     if (error == kAccountDisabledError)
       return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
+    if (error == kBadAuthenticationError) {
+      return GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+    }
     if (error == kServiceUnavailableError) {
       return GoogleServiceAuthError(
           GoogleServiceAuthError::SERVICE_UNAVAILABLE);
     }
 
+    LOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
     return GoogleServiceAuthError(
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+        GoogleServiceAuthError::SERVICE_UNAVAILABLE);
   }
 
   NOTREACHED();
