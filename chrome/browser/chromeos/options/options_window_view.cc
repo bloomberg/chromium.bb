@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/options_window.h"
-
 #include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
@@ -16,6 +14,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/views/accessible_view_helper.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/window_sizer.h"

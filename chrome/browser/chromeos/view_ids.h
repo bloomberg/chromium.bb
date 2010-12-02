@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_VIEW_IDS_H_
 #pragma once
 
-#include "chrome/browser/view_ids.h"
+#include "chrome/browser/ui/view_ids.h"
 
 // View ID used in ChromeOS.
 enum ChromeOSViewIds {

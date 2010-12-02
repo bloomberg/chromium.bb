@@ -5,8 +5,8 @@
 #include "chrome/browser/views/options/plugin_filter_page_view.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/show_options_url.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "views/grid_layout.h"

@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "chrome/browser/input_window_dialog.h"
+#include "chrome/browser/ui/input_window_dialog.h"
 #include "gfx/native_widget_types.h"
 
 class Profile;

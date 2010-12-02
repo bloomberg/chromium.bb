@@ -13,7 +13,7 @@
 
 #include "base/string16.h"
 #include "base/task.h"
-#include "chrome/browser/status_bubble.h"
+#include "chrome/browser/ui/status_bubble.h"
 #include "googleurl/src/gurl.h"
 
 class GURL;

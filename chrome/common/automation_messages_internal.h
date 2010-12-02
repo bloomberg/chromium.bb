@@ -256,7 +256,7 @@ IPC_BEGIN_MESSAGES(Automation)
   // window coordinates.
   // Request:
   //   int - the handle of the window in which the view appears
-  //   int - the ID of the view, as specified in chrome/browser/view_ids.h
+  //   int - the ID of the view, as specified in chrome/browser/ui/view_ids.h
   //   bool - whether the bounds should be returned in the screen coordinates
   //          (if true) or in the browser coordinates (if false).
   // Response:

@@ -5,9 +5,9 @@
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 
 #include "base/logging.h"
-#include "chrome/browser/view_ids.h"
-#include "chrome/browser/views/tabs/dragged_tab_controller.h"
-#include "chrome/browser/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/tabs/dragged_tab_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 

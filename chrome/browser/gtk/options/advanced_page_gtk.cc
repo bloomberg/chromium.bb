@@ -6,8 +6,8 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/options_util.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/options/options_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 

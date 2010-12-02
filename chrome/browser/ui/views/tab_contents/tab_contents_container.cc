@@ -8,8 +8,8 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/view_ids.h"
-#include "chrome/browser/views/tab_contents/native_tab_contents_container.h"
+#include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
 #include "chrome/common/notification_service.h"
 
 #if defined(TOUCH_UI)

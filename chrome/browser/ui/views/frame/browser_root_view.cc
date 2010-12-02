@@ -10,11 +10,11 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/frame/browser_frame.h"
-#include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "grit/chromium_strings.h"
 
 BrowserRootView::BrowserRootView(BrowserView* browser_view,

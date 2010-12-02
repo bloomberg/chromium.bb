@@ -7,8 +7,8 @@
 #include "app/l10n_util_mac.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
-#include "chrome/browser/location_bar_util.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
+#include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "grit/theme_resources.h"
 #include "grit/generated_resources.h"
 

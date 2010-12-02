@@ -6,10 +6,10 @@
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/options_window.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/ui/options/options_window.h"
 
 namespace PreferencesWindowControllerInternal {
 class PrefObserverBridge;

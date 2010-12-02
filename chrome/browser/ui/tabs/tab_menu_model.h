@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_MENU_MODEL_H_
-#define CHROME_BROWSER_TAB_MENU_MODEL_H_
+#ifndef CHROME_BROWSER_UI_TABS_TAB_MENU_MODEL_H_
+#define CHROME_BROWSER_UI_TABS_TAB_MENU_MODEL_H_
 #pragma once
 
 #include "app/menus/simple_menu_model.h"
@@ -26,4 +26,4 @@ class TabMenuModel : public menus::SimpleMenuModel {
   DISALLOW_COPY_AND_ASSIGN(TabMenuModel);
 };
 
-#endif  // CHROME_BROWSER_TAB_MENU_MODEL_H_
+#endif  // CHROME_BROWSER_UI_TABS_TAB_MENU_MODEL_H_

@@ -8,8 +8,8 @@
 // specific implementations of the location bar control.  It also allows the
 // location bar to be mocked for testing.
 
-#ifndef CHROME_BROWSER_LOCATION_BAR_H_
-#define CHROME_BROWSER_LOCATION_BAR_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_H_
+#define CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_H_
 #pragma once
 
 #include <string>
@@ -103,4 +103,4 @@ class LocationBarTesting {
   virtual ~LocationBarTesting() {}
 };
 
-#endif  // CHROME_BROWSER_LOCATION_BAR_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_H_

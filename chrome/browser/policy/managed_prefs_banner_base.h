@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/options_window.h"
+#include "chrome/browser/ui/options/options_window.h"
 #include "chrome/common/notification_observer.h"
 
 class PrefService;

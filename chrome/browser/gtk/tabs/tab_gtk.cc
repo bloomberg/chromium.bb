@@ -13,7 +13,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
-#include "chrome/browser/tab_menu_model.h"
+#include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "gfx/path.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

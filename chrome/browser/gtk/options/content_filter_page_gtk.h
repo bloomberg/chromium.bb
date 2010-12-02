@@ -10,7 +10,7 @@
 
 #include "app/gtk_signal.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/options_page_base.h"
+#include "chrome/browser/ui/options/options_page_base.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_registrar.h"

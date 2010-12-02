@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WRAPPER_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WRAPPER_H_
+#ifndef CHROME_BROWSER_UI_TAB_CONTENTS_TAB_CONTENTS_WRAPPER_H_
+#define CHROME_BROWSER_UI_TAB_CONTENTS_TAB_CONTENTS_WRAPPER_H_
 #pragma once
 
 #include "base/scoped_ptr.h"
@@ -76,4 +76,4 @@ class TabContentsWrapper : public WebNavigationObserver {
   scoped_ptr<TabContents> tab_contents_;
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WRAPPER_H_
+#endif  // CHROME_BROWSER_UI_TAB_CONTENTS_TAB_CONTENTS_WRAPPER_H_

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/location_bar.h"
+#include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 

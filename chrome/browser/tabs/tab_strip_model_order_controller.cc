@@ -4,7 +4,7 @@
 
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 
-#include "chrome/browser/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController, public:

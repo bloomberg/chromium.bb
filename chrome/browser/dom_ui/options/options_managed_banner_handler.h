@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/policy/managed_prefs_banner_base.h"
-#include "chrome/browser/options_window.h"
+#include "chrome/browser/ui/options/options_window.h"
 
 class DOMUI;
 

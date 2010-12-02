@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/view_ids.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"

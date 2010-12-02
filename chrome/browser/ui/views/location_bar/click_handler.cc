@@ -6,8 +6,8 @@
 
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents_wrapper.h"
-#include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "views/view.h"
 
 ClickHandler::ClickHandler(const views::View* owner,

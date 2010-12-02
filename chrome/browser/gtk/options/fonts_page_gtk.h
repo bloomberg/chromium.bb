@@ -14,8 +14,8 @@
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/character_encoding.h"
-#include "chrome/browser/options_page_base.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/ui/options/options_page_base.h"
 
 class DefaultEncodingComboboxModel;
 

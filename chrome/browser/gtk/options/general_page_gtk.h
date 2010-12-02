@@ -13,11 +13,11 @@
 #include "app/gtk_signal.h"
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/gtk/options/managed_prefs_banner_gtk.h"
-#include "chrome/browser/options_page_base.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/options/options_page_base.h"
 #include "googleurl/src/gurl.h"
 
 class AccessibleWidgetHelper;

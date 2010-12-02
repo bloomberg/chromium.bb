@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/show_options_url.h"
+#include "chrome/browser/ui/options/show_options_url.h"
 
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ui/browser.h"

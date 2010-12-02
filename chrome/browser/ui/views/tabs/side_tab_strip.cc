@@ -6,9 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "chrome/browser/views/tabs/side_tab.h"
-#include "chrome/browser/views/tabs/tab_strip_controller.h"
-#include "chrome/browser/view_ids.h"
+#include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/tabs/side_tab.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

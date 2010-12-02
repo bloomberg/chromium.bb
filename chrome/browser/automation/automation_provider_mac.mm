@@ -13,7 +13,7 @@
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/ui/cocoa/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/view_ids.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/automation_messages.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"

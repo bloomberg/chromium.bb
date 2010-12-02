@@ -8,7 +8,7 @@
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 InstantLoaderManager::InstantLoaderManager(
     InstantLoaderDelegate* loader_delegate)

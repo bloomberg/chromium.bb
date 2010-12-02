@@ -5,11 +5,11 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/scoped_nsobject.h"
-#include "chrome/browser/options_window.h"
 #import "chrome/browser/ui/cocoa/preferences_window_controller.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/custom_home_pages_model.h"
+#include "chrome/browser/ui/options/options_window.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"

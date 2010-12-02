@@ -6,7 +6,7 @@
 #include "base/file_util.h"
 #include "base/platform_thread.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
-#include "chrome/browser/view_ids.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"

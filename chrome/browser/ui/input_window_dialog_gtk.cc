@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/input_window_dialog.h"
+#include "chrome/browser/ui/input_window_dialog.h"
 
 #include <gtk/gtk.h>
 

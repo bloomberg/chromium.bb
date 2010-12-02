@@ -6,13 +6,13 @@
 
 #import "chrome/browser/browser_window.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents_wrapper.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tab_strip_view.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

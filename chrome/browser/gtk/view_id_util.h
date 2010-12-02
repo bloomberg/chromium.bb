@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_GTK_VIEW_ID_UTIL_H_
 #pragma once
 
-#include "chrome/browser/view_ids.h"
+#include "chrome/browser/ui/view_ids.h"
 
 typedef struct _GtkWidget GtkWidget;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/location_bar_util.h"
+#include "chrome/browser/ui/omnibox/location_bar_util.h"
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"

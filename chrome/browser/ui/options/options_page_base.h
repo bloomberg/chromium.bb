@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OPTIONS_PAGE_BASE_H_
-#define CHROME_BROWSER_OPTIONS_PAGE_BASE_H_
+#ifndef CHROME_BROWSER_UI_OPTIONS_OPTIONS_PAGE_BASE_H_
+#define CHROME_BROWSER_UI_OPTIONS_OPTIONS_PAGE_BASE_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/options_window.h"
-#include "chrome/common/notification_observer.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/ui/options/options_window.h"
+#include "chrome/common/notification_observer.h"
 
 class PrefService;
 class Profile;
@@ -59,4 +59,4 @@ class OptionsPageBase : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(OptionsPageBase);
 };
 
-#endif  // CHROME_BROWSER_OPTIONS_PAGE_BASE_H_
+#endif  // CHROME_BROWSER_UI_OPTIONS_OPTIONS_PAGE_BASE_H_
