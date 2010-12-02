@@ -40,7 +40,7 @@ class PasswordField : public TextfieldWithMargin {
   PasswordField()
       : TextfieldWithMargin(views::Textfield::STYLE_PASSWORD) {
     set_text_to_display_when_empty(
-        l10n_util::GetStringUTF16(IDS_LOGIN_EMPTY_PASSWORD_TEXT));
+        l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
   }
 
   // views::View overrides.
@@ -123,10 +123,10 @@ void ScreenLockView::Init() {
   column_set->AddPaddingColumn(0, kBorderSize);
 
   column_set = layout->AddColumnSet(1);
-  column_set->AddPaddingColumn(0, 5);
+  column_set->AddPaddingColumn(0, kBorderSize);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, 5);
+  column_set->AddPaddingColumn(0, kBorderSize);
 
   layout->AddPaddingRow(0, kBorderSize);
   layout->StartRow(0, 0);
