@@ -172,7 +172,7 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
 
     // TODO(vitalybuka@chromium.org): switch to sampling when we have enough
     // users.
-    ReportAddonLoadTime("BH0", CLSID_BrowserHelperObject);
+    ReportAddonLoadTime("BHO", CLSID_BrowserHelperObject);
     ReportAddonLoadTime("ChromeFrameBHO", CLSID_ChromeFrameBHO);
     ReportAddonLoadTime("Toolband", CLSID_ToolBand);
 
