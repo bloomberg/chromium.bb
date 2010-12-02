@@ -5,10 +5,6 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// Started to flake since http://src.chromium.org/viewvc/chrome?view=rev&revision=66937
-// (72440; 72514] range
-BUG_ANTON LINUX : fast/ruby/nested-ruby.html = CRASH PASS IMAGE
-
 BUG_LOISLO WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 
 // This test failed on mac because this line was removed by webkit
