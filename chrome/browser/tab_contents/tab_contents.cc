@@ -79,7 +79,6 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/tab_contents/web_navigation_observer.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
@@ -382,15 +381,6 @@ TabContents::TabContents(Profile* profile,
 
   content_settings_delegate_.reset(
       new TabSpecificContentSettings(this, profile));
-
-#if defined(OS_CHROMEOS)
-  // Make sure the thumbnailer is started before starting the render manager.
-  // The thumbnailer will want to listen for RVH creations, one of which will
-  // happen in RVHManager::Init.
-  ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
-  if (generator)
-    generator->StartThumbnailing();
-#endif
 
   render_manager_.Init(profile, site_instance, routing_id);
 
