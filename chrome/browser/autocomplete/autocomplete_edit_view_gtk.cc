@@ -892,20 +892,20 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
 
   GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(widget);
 
-  enter_was_pressed_ = (event->keyval == GDK_Return ||
-                        event->keyval == GDK_ISO_Enter ||
-                        event->keyval == GDK_KP_Enter);
+  enter_was_pressed_ = event->keyval == GDK_Return ||
+                       event->keyval == GDK_ISO_Enter ||
+                       event->keyval == GDK_KP_Enter;
 
   // Set |tab_was_pressed_| to true if it's a Tab key press event, so that our
   // handler of "move-focus" signal can trigger Tab to search behavior when
   // necessary.
-  tab_was_pressed_ = ((event->keyval == GDK_Tab ||
-                       event->keyval == GDK_ISO_Left_Tab ||
-                       event->keyval == GDK_KP_Tab) &&
-                      !(event->state & GDK_CONTROL_MASK));
+  tab_was_pressed_ = (event->keyval == GDK_Tab ||
+                      event->keyval == GDK_ISO_Left_Tab ||
+                      event->keyval == GDK_KP_Tab) &&
+                     !(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK));
 
-  delete_was_pressed_ = (event->keyval == GDK_Delete ||
-                         event->keyval == GDK_KP_Delete);
+  delete_was_pressed_ = event->keyval == GDK_Delete ||
+                        event->keyval == GDK_KP_Delete;
 
   // Reset |enter_was_inserted_|, which may be set in the "insert-text" signal
   // handler, so that we'll know if an Enter key event was handled by IME.
@@ -1385,18 +1385,32 @@ void AutocompleteEditViewGtk::HandleBackSpace(GtkWidget* sender) {
 
 void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
                                                   GtkDirectionType direction) {
-  // Trigger Tab to search behavior only when Tab key is pressed.
-  if (tab_was_pressed_ && enable_tab_to_search_ &&
-      model_->is_keyword_hint() && !model_->keyword().empty()) {
-    model_->AcceptKeyword();
+  if (!tab_was_pressed_)
+    return;
 
-    // If Tab to search behavior is triggered, then stop the signal emission to
-    // prevent the focus from being moved.
+  // If special behavior is triggered, then stop the signal emission to
+  // prevent the focus from being moved.
+  bool handled = false;
+
+  // Trigger Tab to search behavior only when Tab key is pressed.
+  if (model_->is_keyword_hint() && !model_->keyword().empty()) {
+    if (enable_tab_to_search_) {
+      model_->AcceptKeyword();
+      handled = true;
+    }
+  } else {
+    if (GTK_WIDGET_VISIBLE(instant_view_)) {
+      controller_->OnCommitSuggestedText(GetText());
+      handled = true;
+    } else {
+      handled = controller_->AcceptCurrentInstantPreview();
+    }
+  }
+
+  if (handled) {
     static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);
     g_signal_stop_emission(widget, signal_id, 0);
   }
-
-  // Propagate the signal so that focus can be moved as normal.
 }
 
 void AutocompleteEditViewGtk::HandleCopyClipboard(GtkWidget* sender) {

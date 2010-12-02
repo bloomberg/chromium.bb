@@ -467,6 +467,15 @@ bool LocationBarViewGtk::OnCommitSuggestedText(
   return rv;
 }
 
+bool LocationBarViewGtk::AcceptCurrentInstantPreview() {
+  InstantController* instant = browser_->instant();
+  if (instant && instant->IsCurrent()) {
+    instant->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
+    return true;
+  }
+  return false;
+}
+
 void LocationBarViewGtk::OnSetSuggestedSearchText(
     const string16& suggested_text) {
   SetSuggestedText(suggested_text);

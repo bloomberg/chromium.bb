@@ -96,6 +96,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void OnAutocompleteWillAccept();
   // For this implementation, the parameter is ignored.
   virtual bool OnCommitSuggestedText(const std::wstring& typed_text);
+  virtual bool AcceptCurrentInstantPreview();
   virtual void OnSetSuggestedSearchText(const string16& suggested_text);
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,

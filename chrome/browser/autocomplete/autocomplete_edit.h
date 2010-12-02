@@ -50,6 +50,10 @@ class AutocompleteEditController {
   // autocomplete. Returns true if the text was committed.
   virtual bool OnCommitSuggestedText(const std::wstring& typed_text) = 0;
 
+  // Accepts the currently showing instant preview, if any, and returns true.
+  // Returns false if there is no instant preview showing.
+  virtual bool AcceptCurrentInstantPreview() { return false; }
+
   // Sets the suggested search text to |suggested_text|.
   virtual void OnSetSuggestedSearchText(const string16& suggested_text) = 0;
 
