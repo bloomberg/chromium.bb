@@ -25,14 +25,15 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(RemoveObserverForAllNetworks, void(NetworkObserver*));
   MOCK_METHOD1(AddCellularDataPlanObserver, void(CellularDataPlanObserver*));
   MOCK_METHOD1(RemoveCellularDataPlanObserver, void(CellularDataPlanObserver*));
-  MOCK_METHOD0(ethernet_network, EthernetNetwork*(void));
+  MOCK_CONST_METHOD0(ethernet_network, const EthernetNetwork*(void));
   MOCK_CONST_METHOD0(ethernet_connecting, bool(void));
   MOCK_CONST_METHOD0(ethernet_connected, bool(void));
-  MOCK_METHOD0(wifi_network, WifiNetwork*(void));
+
+  MOCK_CONST_METHOD0(wifi_network, const WifiNetwork*(void));
   MOCK_CONST_METHOD0(wifi_connecting, bool(void));
   MOCK_CONST_METHOD0(wifi_connected, bool(void));
 
-  MOCK_METHOD0(cellular_network, CellularNetwork*(void));
+  MOCK_CONST_METHOD0(cellular_network, const CellularNetwork*(void));
   MOCK_CONST_METHOD0(cellular_connecting, bool(void));
   MOCK_CONST_METHOD0(cellular_connected, bool(void));
 

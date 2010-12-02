@@ -79,6 +79,8 @@ void NetworkMenuButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
 // NetworkMenuButton, NetworkLibrary::NetworkObserver implementation:
 void NetworkMenuButton::OnNetworkChanged(NetworkLibrary* cros,
                                          const Network* network) {
+  // This gets called on initialization, so any changes should be reflected
+  // in CrosMock::SetNetworkLibraryStatusAreaExpectations().
   SetNetworkIcon(cros, network);
   RefreshNetworkObserver(cros);
   SchedulePaint();

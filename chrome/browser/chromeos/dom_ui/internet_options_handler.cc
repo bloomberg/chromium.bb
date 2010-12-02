@@ -418,7 +418,7 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
     chromeos::NetworkLibrary* obj) {
   if (!dom_ui_)
     return;
-  chromeos::CellularNetwork* cellular = obj->cellular_network();
+  const chromeos::CellularNetwork* cellular = obj->cellular_network();
   if (!cellular)
     return;
   const chromeos::CellularDataPlanVector& plans = cellular->GetDataPlans();
@@ -748,7 +748,7 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
   if (type == chromeos::TYPE_ETHERNET) {
     chromeos::NetworkLibrary* cros =
         chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-    chromeos::EthernetNetwork* ether = cros->ethernet_network();
+    const chromeos::EthernetNetwork* ether = cros->ethernet_network();
     PopulateDictionaryDetails(ether, cros);
   } else if (type == chromeos::TYPE_WIFI) {
     HandleWifiButtonClick(service_path, command);
@@ -916,7 +916,7 @@ ListValue* InternetOptionsHandler::GetWiredList() {
 
   // If ethernet is not enabled, then don't add anything.
   if (cros->ethernet_enabled()) {
-    chromeos::EthernetNetwork* ethernet_network =
+    const chromeos::EthernetNetwork* ethernet_network =
         cros->ethernet_network();
     SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
     if (!ethernet_network || (!ethernet_network->connecting() &&

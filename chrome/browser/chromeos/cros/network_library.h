@@ -504,17 +504,17 @@ class NetworkLibrary {
       CellularDataPlanObserver* observer) = 0;
 
   // Return the active Ethernet network (or a default structure if inactive).
-  virtual EthernetNetwork* ethernet_network() = 0;
+  virtual const EthernetNetwork* ethernet_network() const = 0;
   virtual bool ethernet_connecting() const = 0;
   virtual bool ethernet_connected() const = 0;
 
   // Return the active Wifi network (or a default structure if none active).
-  virtual WifiNetwork* wifi_network() = 0;
+  virtual const WifiNetwork* wifi_network() const = 0;
   virtual bool wifi_connecting() const = 0;
   virtual bool wifi_connected() const = 0;
 
   // Return the active Cellular network (or a default structure if none active).
-  virtual CellularNetwork* cellular_network() = 0;
+  virtual const CellularNetwork* cellular_network() const = 0;
   virtual bool cellular_connecting() const = 0;
   virtual bool cellular_connected() const = 0;
 

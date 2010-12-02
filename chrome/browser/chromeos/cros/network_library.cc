@@ -948,7 +948,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     data_plan_observers_.RemoveObserver(observer);
   }
 
-  virtual EthernetNetwork* ethernet_network() { return ethernet_; }
+  virtual const EthernetNetwork* ethernet_network() const { return ethernet_; }
   virtual bool ethernet_connecting() const {
     return ethernet_ ? ethernet_->connecting() : false;
   }
@@ -956,7 +956,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return ethernet_ ? ethernet_->connected() : false;
   }
 
-  virtual WifiNetwork* wifi_network() { return wifi_; }
+  virtual const WifiNetwork* wifi_network() const { return wifi_; }
   virtual bool wifi_connecting() const {
     return wifi_ ? wifi_->connecting() : false;
   }
@@ -964,7 +964,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return wifi_ ? wifi_->connected() : false;
   }
 
-  virtual CellularNetwork* cellular_network() { return cellular_; }
+  virtual const CellularNetwork* cellular_network() const { return cellular_; }
   virtual bool cellular_connecting() const {
     return cellular_ ? cellular_->connecting() : false;
   }
@@ -1944,17 +1944,17 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
       CellularDataPlanObserver* observer) {}
   virtual void RemoveCellularDataPlanObserver(
       CellularDataPlanObserver* observer) {}
-  virtual EthernetNetwork* ethernet_network() {
+  virtual const EthernetNetwork* ethernet_network() const {
     return ethernet_;
   }
   virtual bool ethernet_connecting() const { return false; }
   virtual bool ethernet_connected() const { return true; }
-  virtual WifiNetwork* wifi_network() {
+  virtual const WifiNetwork* wifi_network() const {
     return wifi_;
   }
   virtual bool wifi_connecting() const { return false; }
   virtual bool wifi_connected() const { return false; }
-  virtual CellularNetwork* cellular_network() {
+  virtual const CellularNetwork* cellular_network() const {
     return cellular_;
   }
   virtual bool cellular_connecting() const { return false; }

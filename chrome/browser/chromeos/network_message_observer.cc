@@ -98,7 +98,7 @@ void NetworkMessageObserver::OpenMoreInfoPage(const ListValue* args) {
     return;
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::CellularNetwork* cellular = lib->cellular_network();
+  const chromeos::CellularNetwork* cellular = lib->cellular_network();
   if (!cellular)
     return;
   browser->ShowSingletonTab(GURL(cellular->payment_url()), false);
