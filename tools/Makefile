@@ -507,7 +507,7 @@ BUILD/stamp-pregcc-standalone: SRC/stamp-gcc | BUILD
 	echo '/* Intentionally empty */' > \
 	    $(PREGCC_PREFIX)/$(CROSSARCH)/lib/libnacl.so
 	echo '/* Intentionally empty */' > \
-	    $(PREGCC_PREFIX)/$(CROSSARCH)/lib/libcrt_platform.so
+	    $(PREGCC_PREFIX)/$(CROSSARCH)/lib/libcrt_platform.a
 	touch $@
 
 
@@ -644,7 +644,7 @@ BUILD/stamp-glibc-adhoc-files:
 	echo '/* Intentionally empty */' > \
 		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
 	echo '/* Intentionally empty */' > \
-		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
+		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.a
 	echo '/* Intentionally empty */' > \
 		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnosys.so
 	cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) && \
