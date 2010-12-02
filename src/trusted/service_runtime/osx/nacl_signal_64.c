@@ -49,7 +49,7 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
   sigCtx->r13 = uctx->REG(r13);
   sigCtx->r14 = uctx->REG(r14);
   sigCtx->r15 = uctx->REG(r15);
-  sigCtx->flags = (unt32_t) uctx->REG(rflags);
+  sigCtx->flags = (uint32_t) uctx->REG(rflags);
   sigCtx->cs = (uint32_t) uctx->REG(cs);
   sigCtx->fs = (uint32_t) uctx->REG(fs);
   sigCtx->gs = (uint32_t) uctx->REG(gs);
