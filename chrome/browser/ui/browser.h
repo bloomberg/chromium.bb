@@ -459,6 +459,7 @@ class Browser : public TabHandlerDelegate,
 #if defined(OS_CHROMEOS)
   void ToggleCompactNavigationBar();
   void Search();
+  void ShowKeyboardOverlay();
 #endif
 
   // Page-related commands

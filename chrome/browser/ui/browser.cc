@@ -1461,6 +1461,10 @@ void Browser::Search() {
   // Otherwise just open it.
   NewTab();
 }
+
+void Browser::ShowKeyboardOverlay() {
+  window_->ShowKeyboardOverlay(window_->GetNativeHandle());
+}
 #endif
 
 void Browser::Exit() {
@@ -2129,6 +2133,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();          break;
 #if defined(OS_CHROMEOS)
     case IDC_SEARCH:                Search();                         break;
+    case IDC_SHOW_KEYBOARD_OVERLAY: ShowKeyboardOverlay();            break;
 #endif
 
     // Page-related commands
@@ -3469,6 +3474,7 @@ void Browser::InitCommandState() {
 
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_SEARCH, true);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_KEYBOARD_OVERLAY, true);
   command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif

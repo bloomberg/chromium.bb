@@ -327,6 +327,9 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ShowInstant(TabContents* preview_contents);
   virtual void HideInstant();
   virtual gfx::Rect GetInstantBounds();
+#if defined(OS_CHROMEOS)
+  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window);
+#endif
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;

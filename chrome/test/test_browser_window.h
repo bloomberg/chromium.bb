@@ -108,6 +108,9 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowInstant(TabContents* preview_contents) {}
   virtual void HideInstant() {}
   virtual gfx::Rect GetInstantBounds() { return gfx::Rect(); }
+#if defined(OS_CHROMEOS)
+  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) {}
+#endif
 
  protected:
   virtual void DestroyBrowser() {}

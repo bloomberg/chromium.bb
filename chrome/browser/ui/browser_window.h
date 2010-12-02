@@ -330,6 +330,11 @@ class BrowserWindow {
   // placed at.
   virtual gfx::Rect GetInstantBounds() = 0;
 
+#if defined(OS_CHROMEOS)
+  // Shows the keyboard overlay dialog box.
+  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) = 0;
+#endif
+
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 

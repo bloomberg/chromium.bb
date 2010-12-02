@@ -92,6 +92,10 @@
 #include "views/window/window_gtk.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
+#endif
+
 using base::TimeDelta;
 using views::ColumnSet;
 using views::GridLayout;
@@ -1382,6 +1386,12 @@ void BrowserView::HideInstant() {
 gfx::Rect BrowserView::GetInstantBounds() {
   return contents_->GetPreviewBounds();
 }
+
+#if defined(OS_CHROMEOS)
+void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
+  KeyboardOverlayDelegate::ShowDialog(owning_window);
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
