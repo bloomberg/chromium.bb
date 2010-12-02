@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/testing_pref_service.h"
+#include "chrome/test/testing_pref_value_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -342,8 +343,8 @@ TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
   // The PrefValueStore takes ownership of the PrefStores; in this case, that's
   // only an ExtensionPrefStore. Likewise, the PrefService takes ownership of
   // the PrefValueStore and PrefNotifier.
-  PrefValueStore* value_store = new TestingPrefService::TestingPrefValueStore(
-      NULL, NULL, eps, NULL, NULL, NULL, dps);
+  PrefValueStore* value_store =
+      new TestingPrefValueStore(NULL, NULL, eps, NULL, NULL, NULL, dps);
   scoped_ptr<MockPrefService> pref_service(new MockPrefService(value_store));
   MockPrefNotifier* pref_notifier = new MockPrefNotifier(pref_service.get(),
       value_store);

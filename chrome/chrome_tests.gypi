@@ -126,6 +126,7 @@
         'test/testing_device_token_fetcher.h',
         'test/testing_pref_service.cc',
         'test/testing_pref_service.h',
+        'test/testing_pref_value_store.h',
         'test/testing_profile.cc',
         'test/testing_profile.h',
         'test/thread_observer_helper.h',

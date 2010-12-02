@@ -4,8 +4,10 @@
 
 #include "chrome/browser/notifications/desktop_notification_service.h"
 
+#include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_pref_update.h"
