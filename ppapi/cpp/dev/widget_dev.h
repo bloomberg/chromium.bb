@@ -27,7 +27,6 @@ class Widget_Dev : public Resource {
   Widget_Dev(const Widget_Dev& other);
 
   Widget_Dev& operator=(const Widget_Dev& other);
-  void swap(Widget_Dev& other);
 
   // PPB_Widget methods:
   bool Paint(const Rect& rect, ImageData* image);

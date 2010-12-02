@@ -34,13 +34,8 @@ FileIO_Dev::FileIO_Dev(const FileIO_Dev& other)
 }
 
 FileIO_Dev& FileIO_Dev::operator=(const FileIO_Dev& other) {
-  FileIO_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
   return *this;
-}
-
-void FileIO_Dev::swap(FileIO_Dev& other) {
-  Resource::swap(other);
 }
 
 int32_t FileIO_Dev::Open(const FileRef_Dev& file_ref,

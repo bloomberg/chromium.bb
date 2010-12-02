@@ -37,13 +37,8 @@ VideoDecoder_Dev::VideoDecoder_Dev(const VideoDecoder_Dev& other)
 }
 
 VideoDecoder_Dev& VideoDecoder_Dev::operator=(const VideoDecoder_Dev& other) {
-  VideoDecoder_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
   return *this;
-}
-
-void VideoDecoder_Dev::swap(VideoDecoder_Dev& other) {
-  Resource::swap(other);
 }
 
 // static

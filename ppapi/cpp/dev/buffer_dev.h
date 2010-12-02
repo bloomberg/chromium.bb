@@ -23,7 +23,6 @@ class Buffer_Dev : public Resource {
   ~Buffer_Dev();
 
   Buffer_Dev& operator=(const Buffer_Dev& other);
-  void swap(Buffer_Dev& other);
 
   uint32_t size() const { return size_; }
   void* data() const { return data_; }

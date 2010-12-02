@@ -27,13 +27,8 @@ Widget_Dev::Widget_Dev(const Widget_Dev& other) : Resource(other) {
 }
 
 Widget_Dev& Widget_Dev::operator=(const Widget_Dev& other) {
-  Widget_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
   return *this;
-}
-
-void Widget_Dev::swap(Widget_Dev& other) {
-  Resource::swap(other);
 }
 
 bool Widget_Dev::Paint(const Rect& rect, ImageData* image) {

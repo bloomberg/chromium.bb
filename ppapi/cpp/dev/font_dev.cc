@@ -50,28 +50,14 @@ FontDescription_Dev::~FontDescription_Dev() {
 
 FontDescription_Dev& FontDescription_Dev::operator=(
     const FontDescription_Dev& other) {
-  FontDescription_Dev copy(other);
-  swap(copy);
-  return *this;
-}
+  pp_font_description_ = other.pp_font_description_;
 
-void FontDescription_Dev::swap(FontDescription_Dev& other) {
-  // Need to fix up both the face and the pp_font_description_.face which the
-  // setter does for us.
-  Var temp = face();
+  // Be careful about the refcount of the string, the copy that operator= made
+  // above didn't copy a ref.
+  pp_font_description_.face = PP_MakeUndefined();
   set_face(other.face());
-  other.set_face(temp);
 
-  std::swap(pp_font_description_.family, other.pp_font_description_.family);
-  std::swap(pp_font_description_.size, other.pp_font_description_.size);
-  std::swap(pp_font_description_.weight, other.pp_font_description_.weight);
-  std::swap(pp_font_description_.italic, other.pp_font_description_.italic);
-  std::swap(pp_font_description_.small_caps,
-            other.pp_font_description_.small_caps);
-  std::swap(pp_font_description_.letter_spacing,
-            other.pp_font_description_.letter_spacing);
-  std::swap(pp_font_description_.word_spacing,
-            other.pp_font_description_.word_spacing);
+  return *this;
 }
 
 // TextRun_Dev -----------------------------------------------------------------
@@ -101,21 +87,10 @@ TextRun_Dev::~TextRun_Dev() {
 }
 
 TextRun_Dev& TextRun_Dev::operator=(const TextRun_Dev& other) {
-  TextRun_Dev copy(other);
-  swap(copy);
-  return *this;
-}
-
-void TextRun_Dev::swap(TextRun_Dev& other) {
-  std::swap(text_, other.text_);
-
-  // Fix up both object's pp_text_run.text to point to their text_ member.
+  pp_text_run_ = other.pp_text_run_;
+  text_ = other.text_;
   pp_text_run_.text = text_.pp_var();
-  other.pp_text_run_.text = other.text_.pp_var();
-
-  std::swap(pp_text_run_.rtl, other.pp_text_run_.rtl);
-  std::swap(pp_text_run_.override_direction,
-            other.pp_text_run_.override_direction);
+  return *this;
 }
 
 // Font ------------------------------------------------------------------------
@@ -134,13 +109,8 @@ Font_Dev::Font_Dev(const Font_Dev& other) : Resource(other) {
 }
 
 Font_Dev& Font_Dev::operator=(const Font_Dev& other) {
-  Font_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
   return *this;
-}
-
-void Font_Dev::swap(Font_Dev& other) {
-  Resource::swap(other);
 }
 
 bool Font_Dev::Describe(FontDescription_Dev* description,

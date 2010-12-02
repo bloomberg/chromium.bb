@@ -24,7 +24,6 @@ class DirectoryReader_Dev : public Resource {
   DirectoryReader_Dev(const DirectoryReader_Dev& other);
 
   DirectoryReader_Dev& operator=(const DirectoryReader_Dev& other);
-  void swap(DirectoryReader_Dev& other);
 
   // See PPB_DirectoryReader::GetNextEntry.
   int32_t GetNextEntry(DirectoryEntry_Dev* entry,

@@ -35,7 +35,6 @@ class FileRef_Dev : public Resource {
   FileRef_Dev(const FileRef_Dev& other);
 
   FileRef_Dev& operator=(const FileRef_Dev& other);
-  void swap(FileRef_Dev& other);
 
   // Returns the file system type.
   PP_FileSystemType_Dev GetFileSystemType() const;

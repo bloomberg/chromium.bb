@@ -21,7 +21,6 @@ class FileIO_Dev : public Resource {
   FileIO_Dev(const FileIO_Dev& other);
 
   FileIO_Dev& operator=(const FileIO_Dev& other);
-  void swap(FileIO_Dev& other);
 
   // PPB_FileIO methods:
   int32_t Open(const FileRef_Dev& file_ref,

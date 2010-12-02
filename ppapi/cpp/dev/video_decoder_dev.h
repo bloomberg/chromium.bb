@@ -26,7 +26,6 @@ class VideoDecoder_Dev : public Resource {
   VideoDecoder_Dev(const VideoDecoder_Dev& other);
 
   VideoDecoder_Dev& operator=(const VideoDecoder_Dev& other);
-  void swap(VideoDecoder_Dev& other);
 
   // PPB_VideoDecoder methods:
   static bool GetConfig(const Instance& instance,

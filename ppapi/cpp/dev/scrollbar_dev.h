@@ -23,7 +23,6 @@ class Scrollbar_Dev : public Widget_Dev {
   Scrollbar_Dev(const Scrollbar_Dev& other);
 
   Scrollbar_Dev& operator=(const Scrollbar_Dev& other);
-  void swap(Scrollbar_Dev& other);
 
   // PPB_Scrollbar methods:
   static uint32_t GetThickness();

@@ -40,15 +40,10 @@ Buffer_Dev::~Buffer_Dev() {
 }
 
 Buffer_Dev& Buffer_Dev::operator=(const Buffer_Dev& other) {
-  Buffer_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
+  size_ = other.size_;
+  data_ = other.data_;
   return *this;
-}
-
-void Buffer_Dev::swap(Buffer_Dev& other) {
-  Resource::swap(other);
-  std::swap(size_, other.size_);
-  std::swap(data_, other.data_);
 }
 
 }  // namespace pp

@@ -28,14 +28,12 @@ DirectoryEntry_Dev::~DirectoryEntry_Dev() {
 
 DirectoryEntry_Dev& DirectoryEntry_Dev::operator=(
     const DirectoryEntry_Dev& other) {
-  DirectoryEntry_Dev copy(other);
-  swap(copy);
+  if (data_.file_ref)
+    Module::Get()->core()->ReleaseResource(data_.file_ref);
+  data_ = other.data_;
+  if (data_.file_ref)
+    Module::Get()->core()->AddRefResource(data_.file_ref);
   return *this;
-}
-
-void DirectoryEntry_Dev::swap(DirectoryEntry_Dev& other) {
-  std::swap(data_.file_ref, other.data_.file_ref);
-  std::swap(data_.file_type, other.data_.file_type);
 }
 
 }  // namespace pp

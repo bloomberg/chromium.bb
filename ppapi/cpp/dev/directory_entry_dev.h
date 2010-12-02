@@ -17,7 +17,6 @@ class DirectoryEntry_Dev {
   ~DirectoryEntry_Dev();
 
   DirectoryEntry_Dev& operator=(const DirectoryEntry_Dev& other);
-  void swap(DirectoryEntry_Dev& other);
 
   // Returns true if the DirectoryEntry is invalid or uninitialized.
   bool is_null() const { return !data_.file_ref; }

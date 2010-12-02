@@ -33,14 +33,10 @@ FileChooser_Dev::FileChooser_Dev(const FileChooser_Dev& other)
 }
 
 FileChooser_Dev& FileChooser_Dev::operator=(const FileChooser_Dev& other) {
-  FileChooser_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
   return *this;
 }
 
-void FileChooser_Dev::swap(FileChooser_Dev& other) {
-  Resource::swap(other);
-}
 
 int32_t FileChooser_Dev::Show(const CompletionCallback& cc) {
   if (!file_chooser_f)

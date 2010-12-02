@@ -35,13 +35,8 @@ Scrollbar_Dev::Scrollbar_Dev(const Scrollbar_Dev& other)
 }
 
 Scrollbar_Dev& Scrollbar_Dev::operator=(const Scrollbar_Dev& other) {
-  Scrollbar_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
   return *this;
-}
-
-void Scrollbar_Dev::swap(Scrollbar_Dev& other) {
-  Resource::swap(other);
 }
 
 uint32_t Scrollbar_Dev::GetThickness() {

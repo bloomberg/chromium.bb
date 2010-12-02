@@ -36,13 +36,8 @@ FileRef_Dev::FileRef_Dev(const FileRef_Dev& other)
 }
 
 FileRef_Dev& FileRef_Dev::operator=(const FileRef_Dev& other) {
-  FileRef_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
   return *this;
-}
-
-void FileRef_Dev::swap(FileRef_Dev& other) {
-  Resource::swap(other);
 }
 
 PP_FileSystemType_Dev FileRef_Dev::GetFileSystemType() const {

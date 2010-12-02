@@ -26,7 +26,6 @@ class FileChooser_Dev : public Resource {
   FileChooser_Dev(const FileChooser_Dev& other);
 
   FileChooser_Dev& operator=(const FileChooser_Dev& other);
-  void swap(FileChooser_Dev& other);
 
   // PPB_FileChooser methods:
   int32_t Show(const CompletionCallback& cc);

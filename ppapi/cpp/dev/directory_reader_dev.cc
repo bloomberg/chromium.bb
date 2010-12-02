@@ -33,13 +33,8 @@ DirectoryReader_Dev::DirectoryReader_Dev(const DirectoryReader_Dev& other)
 
 DirectoryReader_Dev& DirectoryReader_Dev::operator=(
     const DirectoryReader_Dev& other) {
-  DirectoryReader_Dev copy(other);
-  swap(copy);
+  Resource::operator=(other);
   return *this;
-}
-
-void DirectoryReader_Dev::swap(DirectoryReader_Dev& other) {
-  Resource::swap(other);
 }
 
 int32_t DirectoryReader_Dev::GetNextEntry(DirectoryEntry_Dev* entry,
