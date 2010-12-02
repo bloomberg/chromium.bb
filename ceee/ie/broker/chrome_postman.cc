@@ -244,6 +244,19 @@ HRESULT ChromePostman::ChromePostmanThread::InitializeChromeFrameHost() {
     LOG(ERROR) << "Failed to start chrome frame " << com::LogHr(hr);
     return hr;
   }
+  // We need to pin the Chrome Frame DLL so that it doesn't get unloaded
+  // while we call CoUninitialize in our thread cleanup, otherwise we would
+  // get stuck on breakpad termination as filed in http://crbug.com/64388.
+  static bool s_pinned = false;
+  if (!s_pinned) {
+    HMODULE unused;
+    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN, L"npchrome_frame.dll",
+                           &unused)) {
+      NOTREACHED() << "Failed to pin Chrome Frame. " << com::LogWe();
+    } else {
+      s_pinned = true;
+    }
+  }
   return hr;
 }
 
