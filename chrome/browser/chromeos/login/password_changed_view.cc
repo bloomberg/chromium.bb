@@ -183,14 +183,4 @@ void PasswordChangedView::ButtonPressed(Button* sender,
   }
 }
 
-bool PasswordChangedView::HandleKeystroke(views::Textfield* s,
-    const views::Textfield::Keystroke& keystroke) {
-  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
-    ExitDialog();
-    return true;
-  }
-
-  return false;
-}
-
 }  // namespace chromeos

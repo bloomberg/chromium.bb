@@ -63,7 +63,9 @@ class PasswordChangedView : public views::View,
 
   // views::Textfield::Controller overrides:
   virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke& keystroke);
+                               const views::Textfield::Keystroke& keystroke) {
+    return false;
+  }
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) {}
 

@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
+#include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/screen_lock_view.h"
@@ -725,14 +726,7 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   EnableInput();
   // Don't enable signout button here as we're showing
   // MessageBubble.
-  gfx::Rect rect = screen_lock_view_->GetPasswordBoundsRelativeTo(
-      lock_widget_->GetRootView());
-  gfx::Rect lock_widget_bounds;
-  lock_widget_->GetBounds(&lock_widget_bounds, false);
-  rect.Offset(lock_widget_bounds.x(), lock_widget_bounds.y());
 
-  if (error_info_)
-    error_info_->Close();
   std::wstring msg = l10n_util::GetString(IDS_LOGIN_ERROR_AUTHENTICATING);
   const std::string error_text = error.GetErrorString();
   if (!error_text.empty())
@@ -743,21 +737,7 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   if (input_method_library->GetNumActiveInputMethods() > 1)
     msg += L"\n" + l10n_util::GetString(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
 
-  error_info_ = MessageBubble::ShowNoGrab(
-      lock_window_,
-      rect,
-      BubbleBorder::BOTTOM_LEFT,
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
-      msg,
-      std::wstring(),  // TODO: add help link
-      this);
-  if (mouse_event_relay_.get()) {
-    MessageLoopForUI::current()->RemoveObserver(mouse_event_relay_.get());
-  }
-  mouse_event_relay_.reset(
-      new MouseEventRelay(lock_widget_->GetNativeView()->window,
-                          error_info_->GetNativeView()->window));
-  MessageLoopForUI::current()->AddObserver(mouse_event_relay_.get());
+  ShowErrorBubble(msg, BubbleBorder::BOTTOM_LEFT);
 }
 
 void ScreenLocker::OnLoginSuccess(
@@ -801,12 +781,21 @@ void ScreenLocker::Authenticate(const string16& password) {
   authentication_start_time_ = base::Time::Now();
   screen_lock_view_->SetEnabled(false);
   screen_lock_view_->SetSignoutEnabled(false);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::AuthenticateToUnlock,
-                        user_.email(),
-                        UTF16ToUTF8(password)));
+
+  // If LoginPerformer instance exists,
+  // initial online login phase is still active.
+  if (LoginPerformer::default_performer()) {
+    DVLOG(1) << "Delegating authentication to LoginPerformer.";
+    LoginPerformer::default_performer()->Login(user_.email(),
+                                               UTF16ToUTF8(password));
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(authenticator_.get(),
+                          &Authenticator::AuthenticateToUnlock,
+                          user_.email(),
+                          UTF16ToUTF8(password)));
+  }
 }
 
 void ScreenLocker::ClearErrors() {
@@ -833,6 +822,19 @@ void ScreenLocker::Signout() {
     // Don't hide yet the locker because the chrome screen may become visible
     // briefly.
   }
+}
+
+void ScreenLocker::ShowErrorMessage(const std::wstring& message,
+                                    bool sign_out_only) {
+  if (sign_out_only) {
+    screen_lock_view_->SetEnabled(false);
+  } else {
+    EnableInput();
+  }
+  screen_lock_view_->SetSignoutEnabled(sign_out_only);
+  // Make sure that active Sign Out button is not hidden behind the bubble.
+  ShowErrorBubble(message, sign_out_only ?
+      BubbleBorder::BOTTOM_RIGHT : BubbleBorder::BOTTOM_LEFT);
 }
 
 void ScreenLocker::OnGrabInputs() {
@@ -978,6 +980,33 @@ void ScreenLocker::OnWindowManagerReady() {
   drawn_ = true;
   if (input_grabbed_)
     ScreenLockReady();
+}
+
+void ScreenLocker::ShowErrorBubble(const std::wstring& message,
+                                   BubbleBorder::ArrowLocation arrow_location) {
+  if (error_info_)
+    error_info_->Close();
+
+  gfx::Rect rect = screen_lock_view_->GetPasswordBoundsRelativeTo(
+      lock_widget_->GetRootView());
+  gfx::Rect lock_widget_bounds;
+  lock_widget_->GetBounds(&lock_widget_bounds, false);
+  rect.Offset(lock_widget_bounds.x(), lock_widget_bounds.y());
+  error_info_ = MessageBubble::ShowNoGrab(
+      lock_window_,
+      rect,
+      arrow_location,
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
+      message,
+      std::wstring(),  // TODO(nkostylev): Add help link.
+      this);
+
+  if (mouse_event_relay_.get())
+    MessageLoopForUI::current()->RemoveObserver(mouse_event_relay_.get());
+  mouse_event_relay_.reset(
+      new MouseEventRelay(lock_widget_->GetNativeView()->window,
+                          error_info_->GetNativeView()->window));
+  MessageLoopForUI::current()->AddObserver(mouse_event_relay_.get());
 }
 
 void ScreenLocker::StopScreenSaver() {

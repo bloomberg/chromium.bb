@@ -15,22 +15,44 @@
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 namespace chromeos {
 
 // This class encapsulates sign in operations.
-// Sign in is performed in a way that offline login is executed first.
-// Once it's successful user homedir is mounted, UI is launched.
-// If concurrent online login operation would fail that means:
-// - User password has changed. Ask user for the new password.
-// - User password has changed & CAPTCHA input is required.
-// If |delegate_| is not NULL it will handle
-// password changed and CAPTCHA dialogs.
+// Sign in is performed in a way that offline auth is executed first.
+// Once offline auth is OK - user homedir is mounted, UI is launched.
+// At this point LoginPerformer |delegate_| is destroyed and it releases
+// LP instance ownership. LP waits for online login result.
+// If auth is succeeded, cookie fetcher is executed, LP instance deletes itself.
+//
+// If online login operation fails that means:
+// (1) User password has changed. Ask user for the new password.
+// (2) User password has changed and/or CAPTCHA input is required.
+// (3) User account is deleted/disabled/not signed up.
+// (4) Timeout/service unavailable/connection failed.
+//
+// Actions:
+// (1)-(3): Request screen lock.
+// (1) Ask for new user password.
+// (2) Ask for new user password and/or CAPTCHA.
+// (3) Display error message and allow "Sign Out" as the only action.
+// (4) Delete LP instance since offline auth was OK.
+//
+// If |delegate_| is not NULL it will handle error messages,
+// CAPTCHA dialog, password input.
 // If |delegate_| is NULL that does mean that LoginPerformer instance
-// is waiting for online login operation.
-// In case of failure use ScreenLock and ask for a new password.
+// is waiting for successful online login or blocked on online login failure.
+// In case of failure password/captcha
+// input & error messages display is dedicated to ScreenLocker instance.
+//
+// 2 things make LoginPerfrormer instance exist longer:
+// 1. ScreenLock active (pending correct new password input)
+// 2. Pending online auth request.
 class LoginPerformer : public LoginStatusConsumer,
-                       public SignedSettingsHelper::Callback {
+                       public SignedSettingsHelper::Callback,
+                       public NotificationObserver {
  public:
   // Delegate class to get notifications from the LoginPerformer.
   class Delegate : public LoginStatusConsumer {
@@ -40,6 +62,14 @@ class LoginPerformer : public LoginStatusConsumer,
   };
 
   explicit LoginPerformer(Delegate* delegate);
+  virtual ~LoginPerformer();
+
+  // Returns the default instance if it has been created.
+  // This instance is owned by delegate_ till it's destroyed.
+  // When LP instance lives by itself it's used by ScreenLocker instance.
+  static LoginPerformer* default_performer() {
+    return default_performer_;
+  }
 
   // LoginStatusConsumer implementation:
   virtual void OnLoginFailure(const LoginFailure& error);
@@ -52,9 +82,14 @@ class LoginPerformer : public LoginStatusConsumer,
   virtual void OnPasswordChangeDetected(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 
-  // SignedSettingsHelper::Callback
+  // SignedSettingsHelper::Callback implementation:
   virtual void OnCheckWhiteListCompleted(bool success,
                                          const std::string& email);
+
+  // NotificationObserver implementation:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Performs login with the |username| and |password| specified.
   void Login(const std::string& username, const std::string& password);
@@ -82,8 +117,32 @@ class LoginPerformer : public LoginStatusConsumer,
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
+  // Requests screen lock and subscribes to screen lock notifications.
+  void RequestScreenLock();
+
+  // Requests screen unlock.
+  void RequestScreenUnlock();
+
+  // Resolves initial LoginFailure::NETWORK_AUTH_FAILED error i.e.
+  // when screen is not locked yet.
+  void ResolveInitialNetworkAuthFailure();
+
+  // Resolves LoginFailure when screen is locked.
+  void ResolveLockLoginFailure();
+
+  // Resolves LoginFailure::NETWORK_AUTH_FAILED error when screen is locked.
+  // Uses ScreenLocker to show error message based on |last_login_failure_|.
+  void ResolveLockNetworkAuthFailure();
+
+  // Resolve ScreenLock changed state.
+  void ResolveScreenLocked();
+  void ResolveScreenUnlocked();
+
   // Starts authentication.
   void StartAuthentication();
+
+  // Default performer. Will be used by ScreenLocker.
+  static LoginPerformer* default_performer_;
 
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;
@@ -107,6 +166,17 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // Notifications receiver.
   Delegate* delegate_;
+
+  // True if password change has been detected.
+  // Once correct password is entered homedir migration is executed.
+  bool password_changed_;
+
+  // Used for ScreenLock notifications.
+  NotificationRegistrar registrar_;
+
+  // True if LoginPerformer has requested screen lock. Used to distinguish
+  // such requests with cases when screen is locked on its own.
+  bool screen_lock_requested_;
 
   ScopedRunnableMethodFactory<LoginPerformer> method_factory_;
 

@@ -47,6 +47,11 @@ class ScreenLocker : public LoginStatusConsumer,
  public:
   explicit ScreenLocker(const UserManager::User& user);
 
+  // Returns the default instance if it has been created.
+  static ScreenLocker* default_screen_locker() {
+    return screen_locker_;
+  }
+
   // Initialize and show the screen locker.
   void Init();
 
@@ -75,6 +80,11 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // Exit the chrome, which will sign out the current session.
   void Signout();
+
+  // Disables all UI needed and shows error bubble with |message|.
+  // If |sign_out_only| is true then all other input except "Sign Out"
+  // button is blocked.
+  void ShowErrorMessage(const std::wstring& message, bool sign_out_only);
 
   // Called when the all inputs are grabbed.
   void OnGrabInputs();
@@ -116,6 +126,11 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // Called when the window manager is ready to handle locked state.
   void OnWindowManagerReady();
+
+  // Shows error_info_ bubble with the |message| and |arrow_location| specified.
+  // Assumes that UI controls were locked before that.
+  void ShowErrorBubble(const std::wstring& message,
+                       BubbleBorder::ArrowLocation arrow_location);
 
   // Stops screen saver.
   void StopScreenSaver();

@@ -273,7 +273,9 @@ void ParallelAuthenticator::Resolve() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool request_pending = false;
   bool create = false;
-  switch (ResolveState()) {
+  ParallelAuthenticator::AuthState state = ResolveState();
+  VLOG(1) << "Resolved state to: " << state;
+  switch (state) {
     case CONTINUE:
     case POSSIBLE_PW_CHANGE:
     case NO_MOUNT:

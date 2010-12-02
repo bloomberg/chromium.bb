@@ -11118,6 +11118,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
         Sorry, your password could not be verified. Please try again.
       </message>
+      <message name="IDS_LOGIN_ERROR_PASSWORD_CHANGED" desc="Couldn't log in because password specified matched as old one, but not new one (online) - password change has been detected.">
+        Your password has changed. Please try again with your new password.
+      </message>
+      <message name="IDS_LOGIN_ERROR_RESTRICTED" desc="Couldn't log in because account is disabled/deleted or not signed up">
+        Couldn't validate your account. It has been either deleted or disabled. Please sign out.
+      </message>
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING_NEW" desc="Couldn't sign in because username or password invalid">
         Sorry, your email or password could not be verified. Please try again.
       </message>
