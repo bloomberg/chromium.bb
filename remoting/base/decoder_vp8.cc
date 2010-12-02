@@ -18,7 +18,8 @@ extern "C" {
 namespace remoting {
 
 DecoderVp8::DecoderVp8()
-    : state_(kUninitialized),
+    : reverse_rows_(true),
+      state_(kUninitialized),
       codec_(NULL) {
 }
 
@@ -82,11 +83,16 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
   }
 
   // Perform YUV conversion.
+  uint8* data_start = frame_->data(media::VideoFrame::kRGBPlane);
+  int stride = frame_->stride(media::VideoFrame::kRGBPlane);
+  if (reverse_rows_) {
+    data_start = data_start + (frame_->height() - 1) * stride;
+    stride = -stride;
+  }
+
   media::ConvertYUVToRGB32(image->planes[0], image->planes[1], image->planes[2],
-                           frame_->data(media::VideoFrame::kRGBPlane),
-                           frame_->width(), frame_->height(),
-                           image->stride[0], image->stride[1],
-                           frame_->stride(media::VideoFrame::kRGBPlane),
+                           data_start, frame_->width(), frame_->height(),
+                           image->stride[0], image->stride[1], stride,
                            media::YV12);
   return DECODE_DONE;
 }
