@@ -61,7 +61,6 @@ void ChannelProxy::MessageFilter::OnDestruct() const {
 //------------------------------------------------------------------------------
 
 ChannelProxy::Context::Context(Channel::Listener* listener,
-                               MessageFilter* filter,
                                MessageLoop* ipc_message_loop)
     : listener_message_loop_(MessageLoop::current()),
       listener_(listener),
@@ -69,8 +68,6 @@ ChannelProxy::Context::Context(Channel::Listener* listener,
       channel_(NULL),
       peer_pid_(0),
       channel_connected_called_(false) {
-  if (filter)
-    filters_.push_back(make_scoped_refptr(filter));
 }
 
 void ChannelProxy::Context::CreateChannel(const std::string& id,
@@ -118,6 +115,12 @@ void ChannelProxy::Context::OnMessageReceivedNoFilter(const Message& message) {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnChannelConnected(int32 peer_pid) {
+  // Add any pending filters.  This avoids a race condition where someone
+  // creates a ChannelProxy, calls AddFilter, and then right after starts the
+  // peer process.  The IO thread could receive a message before the task to add
+  // the filter is run on the IO thread.
+  OnAddFilter();
+
   peer_pid_ = peer_pid;
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnChannelConnected(peer_pid);
@@ -189,13 +192,24 @@ void ChannelProxy::Context::OnSendMessage(Message* message) {
 }
 
 // Called on the IPC::Channel thread
-void ChannelProxy::Context::OnAddFilter(MessageFilter* filter) {
-  filters_.push_back(make_scoped_refptr(filter));
+void ChannelProxy::Context::OnAddFilter() {
+  std::vector<scoped_refptr<MessageFilter> > filters;
+  {
+    AutoLock auto_lock(pending_filters_lock_);
+    filters.swap(pending_filters_);
+  }
 
-  // If the channel has already been created, then we need to send this message
-  // so that the filter gets access to the Channel.
-  if (channel_)
-    filter->OnFilterAdded(channel_);
+  for (size_t i = 0; i < filters.size(); ++i) {
+    filters_.push_back(filters[i]);
+
+    // If the channel has already been created, then we need to send this
+    // message so that the filter gets access to the Channel.
+    if (channel_)
+      filters[i]->OnFilterAdded(channel_);
+    // Ditto for the peer process id.
+    if (peer_pid_)
+      filters[i]->OnChannelConnected(peer_pid_);
+  }
 }
 
 // Called on the IPC::Channel thread
@@ -209,6 +223,15 @@ void ChannelProxy::Context::OnRemoveFilter(MessageFilter* filter) {
   }
 
   NOTREACHED() << "filter to be removed not found";
+}
+
+// Called on the listener's thread
+void ChannelProxy::Context::AddFilter(MessageFilter* filter) {
+  AutoLock auto_lock(pending_filters_lock_);
+  pending_filters_.push_back(make_scoped_refptr(filter));
+  ipc_message_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &Context::OnAddFilter));
 }
 
 // Called on the listener's thread
@@ -255,15 +278,18 @@ void ChannelProxy::Context::OnDispatchError() {
 
 //-----------------------------------------------------------------------------
 
-ChannelProxy::ChannelProxy(const std::string& channel_id, Channel::Mode mode,
-                           Channel::Listener* listener, MessageFilter* filter,
+ChannelProxy::ChannelProxy(const std::string& channel_id,
+                           Channel::Mode mode,
+                           Channel::Listener* listener,
                            MessageLoop* ipc_thread)
-    : context_(new Context(listener, filter, ipc_thread)) {
+    : context_(new Context(listener, ipc_thread)) {
   Init(channel_id, mode, ipc_thread, true);
 }
 
-ChannelProxy::ChannelProxy(const std::string& channel_id, Channel::Mode mode,
-                           MessageLoop* ipc_thread, Context* context,
+ChannelProxy::ChannelProxy(const std::string& channel_id,
+                           Channel::Mode mode,
+                           MessageLoop* ipc_thread,
+                           Context* context,
                            bool create_pipe_now)
     : context_(context) {
   Init(channel_id, mode, ipc_thread, create_pipe_now);
@@ -314,12 +340,7 @@ bool ChannelProxy::Send(Message* message) {
 }
 
 void ChannelProxy::AddFilter(MessageFilter* filter) {
-  context_->ipc_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          context_.get(),
-          &Context::OnAddFilter,
-          make_scoped_refptr(filter)));
+  context_->AddFilter(filter);
 }
 
 void ChannelProxy::RemoveFilter(MessageFilter* filter) {

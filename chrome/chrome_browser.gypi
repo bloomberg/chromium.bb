@@ -302,6 +302,8 @@
         'browser/browser_about_handler.h',
         'browser/browser_child_process_host.cc',
         'browser/browser_child_process_host.h',
+        'browser/browser_io_message_filter.cc',
+        'browser/browser_io_message_filter.h',
         'browser/browser_main.cc',
         'browser/browser_main_gtk.cc',
         'browser/browser_main_gtk.h',

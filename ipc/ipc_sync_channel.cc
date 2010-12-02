@@ -200,10 +200,9 @@ base::LazyInstance<base::ThreadLocalPointer<SyncChannel::ReceivedSyncMsgQueue> >
 
 SyncChannel::SyncContext::SyncContext(
     Channel::Listener* listener,
-    MessageFilter* filter,
     MessageLoop* ipc_thread,
     WaitableEvent* shutdown_event)
-    : ChannelProxy::Context(listener, filter, ipc_thread),
+    : ChannelProxy::Context(listener, ipc_thread),
       received_sync_msgs_(ReceivedSyncMsgQueue::AddContext()),
       shutdown_event_(shutdown_event) {
 }
@@ -356,13 +355,15 @@ void SyncChannel::SyncContext::OnWaitableEventSignaled(WaitableEvent* event) {
 
 
 SyncChannel::SyncChannel(
-    const std::string& channel_id, Channel::Mode mode,
-    Channel::Listener* listener, MessageFilter* filter,
-    MessageLoop* ipc_message_loop, bool create_pipe_now,
+    const std::string& channel_id,
+    Channel::Mode mode,
+    Channel::Listener* listener,
+    MessageLoop* ipc_message_loop,
+    bool create_pipe_now,
     WaitableEvent* shutdown_event)
     : ChannelProxy(
           channel_id, mode, ipc_message_loop,
-          new SyncContext(listener, filter, ipc_message_loop, shutdown_event),
+          new SyncContext(listener, ipc_message_loop, shutdown_event),
           create_pipe_now),
       sync_messages_with_no_timeout_allowed_(true) {
   // Ideally we only want to watch this object when running a nested message

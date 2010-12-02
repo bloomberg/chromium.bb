@@ -296,18 +296,6 @@ bool BrowserRenderProcessHost::Init(
   // run the IPC channel on the shared IO thread.
   base::Thread* io_thread = g_browser_process->io_thread();
 
-  // Construct the AudioRendererHost with the IO thread.
-  audio_renderer_host_ = new AudioRendererHost();
-
-  scoped_refptr<ResourceMessageFilter> resource_message_filter(
-      new ResourceMessageFilter(g_browser_process->resource_dispatcher_host(),
-                                id(),
-                                audio_renderer_host_.get(),
-                                PluginService::GetInstance(),
-                                g_browser_process->print_job_manager(),
-                                profile(),
-                                widget_helper_));
-
   CommandLine::StringType renderer_prefix;
 #if defined(OS_POSIX)
   // A command prefix is something prepended to the command line of the spawned
@@ -329,7 +317,6 @@ bool BrowserRenderProcessHost::Init(
       ChildProcessInfo::GenerateRandomChannelID(this);
   channel_.reset(
       new IPC::SyncChannel(channel_id, IPC::Channel::MODE_SERVER, this,
-                           resource_message_filter,
                            io_thread->message_loop(), true,
                            g_browser_process->shutdown_event()));
   // As a preventive mesure, we DCHECK if someone sends a synchronous message
@@ -337,9 +324,7 @@ bool BrowserRenderProcessHost::Init(
   // be doing.
   channel_->set_sync_messages_with_no_timeout_allowed(false);
 
-  scoped_refptr<PepperFileMessageFilter> pepper_file_message_filter(
-      new PepperFileMessageFilter(id(), profile()));
-  channel_->AddFilter(pepper_file_message_filter);
+  CreateMessageFilters();
 
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that
@@ -389,6 +374,25 @@ bool BrowserRenderProcessHost::Init(
   }
 
   return true;
+}
+
+void BrowserRenderProcessHost::CreateMessageFilters() {
+  // Construct the AudioRendererHost with the IO thread.
+  audio_renderer_host_ = new AudioRendererHost();
+
+  scoped_refptr<ResourceMessageFilter> resource_message_filter(
+      new ResourceMessageFilter(g_browser_process->resource_dispatcher_host(),
+                                id(),
+                                audio_renderer_host_.get(),
+                                PluginService::GetInstance(),
+                                g_browser_process->print_job_manager(),
+                                profile(),
+                                widget_helper_));
+  channel_->AddFilter(resource_message_filter);
+
+  scoped_refptr<PepperFileMessageFilter> pepper_file_message_filter(
+      new PepperFileMessageFilter(id(), profile()));
+  channel_->AddFilter(pepper_file_message_filter);
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

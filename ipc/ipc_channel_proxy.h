@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "ipc/ipc_channel.h"
 
@@ -104,8 +105,9 @@ class ChannelProxy : public Message::Sender {
   // on the background thread.  Any message not handled by the filter will be
   // dispatched to the listener.  The given message loop indicates where the
   // IPC::Channel should be created.
-  ChannelProxy(const std::string& channel_id, Channel::Mode mode,
-               Channel::Listener* listener, MessageFilter* filter,
+  ChannelProxy(const std::string& channel_id,
+               Channel::Mode mode,
+               Channel::Listener* listener,
                MessageLoop* ipc_thread_loop);
 
   virtual ~ChannelProxy();
@@ -129,6 +131,10 @@ class ChannelProxy : public Message::Sender {
   // Ordinarily, messages sent to the ChannelProxy are routed to the matching
   // listener on the worker thread.  This API allows code to intercept messages
   // before they are sent to the worker thread.
+  // If you call this before the target process is launched, then you're
+  // guaranteed to not miss any messages.  But if you call this anytime after,
+  // then some messages might be missed since the filter is added internally on
+  // the IO thread.
   void AddFilter(MessageFilter* filter);
   void RemoveFilter(MessageFilter* filter);
 
@@ -147,16 +153,17 @@ class ChannelProxy : public Message::Sender {
   // A subclass uses this constructor if it needs to add more information
   // to the internal state.  If create_pipe_now is true, the pipe is created
   // immediately.  Otherwise it's created on the IO thread.
-  ChannelProxy(const std::string& channel_id, Channel::Mode mode,
-               MessageLoop* ipc_thread_loop, Context* context,
+  ChannelProxy(const std::string& channel_id,
+               Channel::Mode mode,
+               MessageLoop* ipc_thread_loop,
+               Context* context,
                bool create_pipe_now);
 
   // Used internally to hold state that is referenced on the IPC thread.
   class Context : public base::RefCountedThreadSafe<Context>,
                   public Channel::Listener {
    public:
-    Context(Channel::Listener* listener, MessageFilter* filter,
-            MessageLoop* ipc_thread);
+    Context(Channel::Listener* listener, MessageLoop* ipc_thread);
     void ClearIPCMessageLoop() { ipc_message_loop_ = NULL; }
     MessageLoop* ipc_message_loop() const { return ipc_message_loop_; }
     const std::string& channel_id() const { return channel_id_; }
@@ -196,10 +203,13 @@ class ChannelProxy : public Message::Sender {
     // Create the Channel
     void CreateChannel(const std::string& id, const Channel::Mode& mode);
 
-    // Methods called via InvokeLater:
+    // Methods called on the IO thread.
     void OnSendMessage(Message* message_ptr);
-    void OnAddFilter(MessageFilter* filter);
+    void OnAddFilter();
     void OnRemoveFilter(MessageFilter* filter);
+
+    // Methods called on the listener thread.
+    void AddFilter(MessageFilter* filter);
     void OnDispatchConnected();
     void OnDispatchError();
 
@@ -213,6 +223,12 @@ class ChannelProxy : public Message::Sender {
     std::string channel_id_;
     int peer_pid_;
     bool channel_connected_called_;
+
+    // Holds filters between the AddFilter call on the listerner thread and the
+    // IPC thread when they're added to filters_.
+    std::vector<scoped_refptr<MessageFilter> > pending_filters_;
+    // Lock for pending_filters_.
+    Lock pending_filters_lock_;
   };
 
   Context* context() { return context_; }

@@ -105,6 +105,9 @@ class BrowserRenderProcessHost : public RenderProcessHost,
  private:
   friend class VisitRelayingRenderProcessHost;
 
+  // Creates and adds the IO thread message filters.
+  void CreateMessageFilters();
+
   // Control message handlers.
   void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
   void SuddenTerminationChanged(bool enabled);

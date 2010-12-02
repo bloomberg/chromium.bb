@@ -115,7 +115,7 @@ NPObjectBase* PluginChannelBase::GetNPObjectListenerForRoute(int route_id) {
 bool PluginChannelBase::Init(MessageLoop* ipc_message_loop,
                              bool create_pipe_now) {
   channel_.reset(new IPC::SyncChannel(
-      channel_name_, mode_, this, NULL, ipc_message_loop, create_pipe_now,
+      channel_name_, mode_, this, ipc_message_loop, create_pipe_now,
       ChildProcess::current()->GetShutDownEvent()));
   channel_valid_ = true;
   return true;

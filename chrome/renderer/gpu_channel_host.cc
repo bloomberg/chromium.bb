@@ -19,7 +19,7 @@ GpuChannelHost::~GpuChannelHost() {
 void GpuChannelHost::Connect(const std::string& channel_name) {
   // Open a channel to the GPU process.
   channel_.reset(new IPC::SyncChannel(
-      channel_name, IPC::Channel::MODE_CLIENT, this, NULL,
+      channel_name, IPC::Channel::MODE_CLIENT, this,
       ChildProcess::current()->io_message_loop(), true,
       ChildProcess::current()->GetShutDownEvent()));
 

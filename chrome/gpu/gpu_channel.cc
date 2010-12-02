@@ -255,7 +255,7 @@ bool GpuChannel::Init() {
   IPC::AddChannelSocket(channel_name, gpu_fd);
 #endif
   channel_.reset(new IPC::SyncChannel(
-      channel_name, IPC::Channel::MODE_SERVER, this, NULL,
+      channel_name, IPC::Channel::MODE_SERVER, this,
       ChildProcess::current()->io_message_loop(), false,
       ChildProcess::current()->GetShutDownEvent()));
 

@@ -157,10 +157,10 @@ void AutomationProxy::InitializeChannel(const std::string& channel_id,
     use_named_interface ? IPC::Channel::MODE_NAMED_CLIENT
                         : IPC::Channel::MODE_SERVER,
     this,  // we are the listener
-    new AutomationMessageFilter(this),
     thread_->message_loop(),
     true,
     shutdown_event_.get()));
+  channel_->AddFilter(new AutomationMessageFilter(this));
 }
 
 void AutomationProxy::InitializeHandleTracker() {

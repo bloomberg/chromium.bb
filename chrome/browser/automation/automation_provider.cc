@@ -176,9 +176,9 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
       use_named_interface ? IPC::Channel::MODE_NAMED_SERVER
                           : IPC::Channel::MODE_CLIENT,
       this,
-      automation_resource_message_filter_,
       g_browser_process->io_thread()->message_loop(),
       true, g_browser_process->shutdown_event()));
+  channel_->AddFilter(automation_resource_message_filter_);
 
   TRACE_EVENT_END("AutomationProvider::InitializeChannel", 0, "");
 

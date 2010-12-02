@@ -122,7 +122,7 @@ void ServiceProcessControl::ConnectInternal() {
   // TODO(hclam): Handle error connecting to channel.
   const std::string channel_id = GetServiceProcessChannelName();
   channel_.reset(
-      new IPC::SyncChannel(channel_id, IPC::Channel::MODE_CLIENT, this, NULL,
+      new IPC::SyncChannel(channel_id, IPC::Channel::MODE_CLIENT, this,
                            io_thread->message_loop(), true,
                            g_browser_process->shutdown_event()));
   channel_->set_sync_messages_with_no_timeout_allowed(false);

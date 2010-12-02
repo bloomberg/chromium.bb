@@ -34,9 +34,11 @@ class MessageReplyDeserializer;
 class SyncChannel : public ChannelProxy,
                     public base::WaitableEventWatcher::Delegate {
  public:
-  SyncChannel(const std::string& channel_id, Channel::Mode mode,
-              Channel::Listener* listener, MessageFilter* filter,
-              MessageLoop* ipc_message_loop, bool create_pipe_now,
+  SyncChannel(const std::string& channel_id,
+              Channel::Mode mode,
+              Channel::Listener* listener,
+              MessageLoop* ipc_message_loop,
+              bool create_pipe_now,
               base::WaitableEvent* shutdown_event);
   virtual ~SyncChannel();
 
@@ -59,7 +61,6 @@ class SyncChannel : public ChannelProxy,
                       public base::WaitableEventWatcher::Delegate {
    public:
     SyncContext(Channel::Listener* listener,
-                MessageFilter* filter,
                 MessageLoop* ipc_thread,
                 base::WaitableEvent* shutdown_event);
 
