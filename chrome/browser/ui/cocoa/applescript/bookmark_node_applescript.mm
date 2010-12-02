@@ -10,7 +10,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 

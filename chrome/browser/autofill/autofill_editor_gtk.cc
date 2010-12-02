@@ -18,7 +18,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

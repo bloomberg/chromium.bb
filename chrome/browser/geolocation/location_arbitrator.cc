@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace {
 const char* kDefaultNetworkProviderUrl = "https://www.google.com/loc/json";

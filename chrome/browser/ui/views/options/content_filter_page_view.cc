@@ -12,7 +12,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/browser/plugin_exceptions_table_model.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/options/exceptions_view.h"
 #include "chrome/browser/views/options/simple_content_exceptions_view.h"
 #include "chrome/common/chrome_switches.h"

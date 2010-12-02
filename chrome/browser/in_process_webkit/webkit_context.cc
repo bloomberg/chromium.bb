@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 
 WebKitContext::WebKitContext(Profile* profile, bool clear_local_state_on_exit)

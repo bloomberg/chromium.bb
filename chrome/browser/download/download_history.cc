@@ -8,7 +8,7 @@
 #include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/download/download_item.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 // Our download table ID starts at 1, so we use 0 to represent a download that
 // has started, but has not yet had its data persisted in the table. We use fake

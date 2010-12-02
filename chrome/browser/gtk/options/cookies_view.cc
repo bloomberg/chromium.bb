@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

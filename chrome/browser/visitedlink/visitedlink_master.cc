@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/visitedlink_master.h"
+#include "chrome/browser/visitedlink/visitedlink_master.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -25,7 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 using file_util::ScopedFILE;
 using file_util::OpenFile;

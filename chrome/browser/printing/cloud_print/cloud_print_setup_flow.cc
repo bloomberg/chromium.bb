@@ -22,7 +22,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_message_handler.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_source.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"

@@ -8,7 +8,7 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "gfx/rect.h"

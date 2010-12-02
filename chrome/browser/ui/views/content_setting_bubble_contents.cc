@@ -14,7 +14,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/plugin_updater.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/info_bubble.h"

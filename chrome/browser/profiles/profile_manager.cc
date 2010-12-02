@@ -4,7 +4,7 @@
 
 #include <set>
 
-#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"

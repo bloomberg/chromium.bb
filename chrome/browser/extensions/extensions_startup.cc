@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_WIN)

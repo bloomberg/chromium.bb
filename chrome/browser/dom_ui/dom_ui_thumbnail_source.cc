@@ -6,7 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/callback.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"

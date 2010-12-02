@@ -20,7 +20,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "gfx/gtk_util.h"
 #include "gfx/point.h"
 #include "googleurl/src/gurl.h"

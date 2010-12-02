@@ -4,7 +4,7 @@
 
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/character_encoding.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/font_language_settings_controller.h"

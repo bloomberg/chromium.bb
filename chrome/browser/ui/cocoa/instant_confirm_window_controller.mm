@@ -8,7 +8,7 @@
 #include "base/mac_util.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"

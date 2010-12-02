@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/extension_history_api_constants.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 

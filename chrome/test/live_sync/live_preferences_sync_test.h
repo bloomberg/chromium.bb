@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/login_prompt.h"
+#include "chrome/browser/ui/login/login_prompt.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/auth.h"
 #include "testing/gtest/include/gtest/gtest.h"

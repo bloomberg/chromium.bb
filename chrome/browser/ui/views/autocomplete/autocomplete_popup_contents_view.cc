@@ -17,7 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/promo_counter.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "gfx/canvas_skia.h"

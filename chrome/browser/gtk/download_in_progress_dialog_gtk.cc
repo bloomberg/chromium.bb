@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "grit/chromium_strings.h"

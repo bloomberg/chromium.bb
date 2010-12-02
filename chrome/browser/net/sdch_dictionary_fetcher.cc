@@ -5,7 +5,7 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "net/url_request/url_request_status.h"
 
 SdchDictionaryFetcher::SdchDictionaryFetcher()

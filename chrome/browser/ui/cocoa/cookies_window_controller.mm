@@ -12,7 +12,7 @@
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browsing_data_remover.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
 #include "chrome/browser/ui/cocoa/cookie_details_view_controller.h"
 #include "grit/generated_resources.h"

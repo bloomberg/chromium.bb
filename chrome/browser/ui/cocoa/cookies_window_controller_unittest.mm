@@ -14,7 +14,7 @@
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"

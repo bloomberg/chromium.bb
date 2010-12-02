@@ -8,7 +8,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/test/ui_test_utils.h"

@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"

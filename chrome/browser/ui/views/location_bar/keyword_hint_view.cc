@@ -8,7 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"

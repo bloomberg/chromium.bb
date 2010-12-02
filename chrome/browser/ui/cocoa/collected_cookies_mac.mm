@@ -10,7 +10,7 @@
 #include "app/resource_bundle.h"
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 #include "chrome/common/notification_service.h"

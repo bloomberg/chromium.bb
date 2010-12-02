@@ -14,7 +14,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/guid.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "grit/generated_resources.h"
 
 AutoFillOptionsHandler::AutoFillOptionsHandler()

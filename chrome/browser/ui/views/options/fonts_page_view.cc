@@ -18,7 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/default_encoding_combo_model.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas_skia.h"

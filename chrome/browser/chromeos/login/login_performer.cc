@@ -20,8 +20,8 @@
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {

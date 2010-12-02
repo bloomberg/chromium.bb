@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 using std::map;
 using std::vector;

@@ -7,7 +7,7 @@
 #import "base/scoped_nsobject.h"
 #import "chrome/app/breakpad_mac.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/shell_integration.h"
 #import "chrome/browser/ui/cocoa/first_run_dialog.h"

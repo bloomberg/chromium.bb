@@ -13,7 +13,7 @@
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"

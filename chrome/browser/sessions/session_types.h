@@ -11,7 +11,7 @@
 
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/rect.h"

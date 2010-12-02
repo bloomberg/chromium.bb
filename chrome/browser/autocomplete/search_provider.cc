@@ -21,7 +21,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/json_value_serializer.h"

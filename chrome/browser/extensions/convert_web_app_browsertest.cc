@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/common/chrome_switches.h"

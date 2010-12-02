@@ -5,7 +5,7 @@
 // This file exists for Unix systems which don't have the inotify headers, and
 // thus cannot build file_watcher_inotify.cc
 
-#include "chrome/browser/file_path_watcher.h"
+#include "chrome/browser/file_path_watcher/file_path_watcher.h"
 
 class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
  public:

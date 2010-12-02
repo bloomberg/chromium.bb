@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOGIN_PROMPT_H_
-#define CHROME_BROWSER_LOGIN_PROMPT_H_
+#ifndef CHROME_BROWSER_UI_LOGIN_LOGIN_PROMPT_H_
+#define CHROME_BROWSER_UI_LOGIN_LOGIN_PROMPT_H_
 #pragma once
 
 #include <string>
@@ -211,4 +211,4 @@ void ResetLoginHandlerForRequest(net::URLRequest* request);
 std::string GetSignonRealm(const GURL& url,
                            const net::AuthChallengeInfo& auth_info);
 
-#endif  // CHROME_BROWSER_LOGIN_PROMPT_H_
+#endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_PROMPT_H_

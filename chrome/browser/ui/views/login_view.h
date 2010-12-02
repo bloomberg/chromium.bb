@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/task.h"
-#include "chrome/browser/login_model.h"
+#include "chrome/browser/ui/login/login_model.h"
 #include "views/view.h"
 
 namespace views {

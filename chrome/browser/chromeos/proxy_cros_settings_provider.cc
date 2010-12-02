@@ -6,8 +6,8 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 
 namespace chromeos {
 

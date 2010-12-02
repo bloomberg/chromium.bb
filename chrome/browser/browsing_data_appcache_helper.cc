@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage.h"

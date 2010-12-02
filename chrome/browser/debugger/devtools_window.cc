@@ -16,7 +16,7 @@
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"

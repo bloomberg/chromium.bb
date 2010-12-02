@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 const char* BrowserActionDragData::kClipboardFormatString =
     "chromium/x-browser-actions";

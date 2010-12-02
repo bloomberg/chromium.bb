@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/login_prompt.h"
-#import "chrome/browser/login_prompt_mac.h"
+#include "chrome/browser/ui/login/login_prompt.h"
+#import "chrome/browser/ui/login/login_prompt_mac.h"
 
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
@@ -11,13 +11,13 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/login_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/ui/login/login_model.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"

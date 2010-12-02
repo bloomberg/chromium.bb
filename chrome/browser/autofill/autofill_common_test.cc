@@ -9,7 +9,7 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "webkit/glue/form_field.h"
 

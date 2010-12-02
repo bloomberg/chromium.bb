@@ -7,7 +7,7 @@
 #include "chrome/browser/policy/device_management_policy_provider.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/profile_policy_context.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace policy {

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/renderer_preferences_util.h"
 
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"

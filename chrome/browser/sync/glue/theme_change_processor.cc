@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/theme_change_processor.h"
 
 #include "base/logging.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/theme_util.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"

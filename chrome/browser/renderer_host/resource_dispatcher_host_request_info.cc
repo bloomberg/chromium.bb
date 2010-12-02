@@ -4,9 +4,9 @@
 
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 
-#include "chrome/browser/login_prompt.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
+#include "chrome/browser/ui/login/login_prompt.h"
 #include "webkit/blob/blob_data.h"
 
 ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(

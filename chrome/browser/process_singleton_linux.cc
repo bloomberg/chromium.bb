@@ -80,8 +80,8 @@
 #include "chrome/browser/gtk/process_singleton_dialog.h"
 #endif
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

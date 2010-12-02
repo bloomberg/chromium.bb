@@ -9,7 +9,7 @@
 #include "base/timer.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/chromeos/volume_bubble_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/info_bubble.h"

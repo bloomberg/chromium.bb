@@ -6,7 +6,7 @@
 
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 SessionStorageNamespace::SessionStorageNamespace(Profile* profile)
     : webkit_context_(profile->GetWebKitContext()),

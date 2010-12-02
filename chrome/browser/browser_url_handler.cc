@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 

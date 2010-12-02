@@ -23,7 +23,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/page_info_window.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"

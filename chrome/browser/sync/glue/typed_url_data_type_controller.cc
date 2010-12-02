@@ -10,7 +10,7 @@
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"

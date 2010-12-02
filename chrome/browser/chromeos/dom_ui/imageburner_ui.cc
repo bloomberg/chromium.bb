@@ -17,7 +17,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/login_prompt.h"
+#include "chrome/browser/ui/login/login_prompt.h"
 
 #include <gtk/gtk.h>
 
@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/login_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/login/login_model.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"

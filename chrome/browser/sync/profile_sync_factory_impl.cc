@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/app_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_change_processor2.h"

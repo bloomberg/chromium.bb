@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "views/controls/menu/menu_item_view.h"

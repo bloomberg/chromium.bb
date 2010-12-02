@@ -30,7 +30,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/process_singleton.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/views/first_run_search_engine_view.h"
 #include "chrome/common/chrome_switches.h"

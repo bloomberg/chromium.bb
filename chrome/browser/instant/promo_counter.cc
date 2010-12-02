@@ -7,7 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 // Pref keys. These are relative to pref_key_.
 static const char* kShowKey = ".show";

@@ -12,7 +12,7 @@
 #include "app/win_util.h"
 #include "base/win_util.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/views/frame/app_panel_browser_frame_view.h"

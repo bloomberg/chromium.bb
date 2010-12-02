@@ -4,8 +4,8 @@
 
 // This class keeps track of the currently-active profiles in the runtime.
 
-#ifndef CHROME_BROWSER_PROFILE_MANAGER_H__
-#define CHROME_BROWSER_PROFILE_MANAGER_H__
+#ifndef CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
+#define CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
 #pragma once
 
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/non_thread_safe.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -125,4 +125,4 @@ class ProfileManager : public NonThreadSafe,
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
 };
 
-#endif  // CHROME_BROWSER_PROFILE_MANAGER_H__
+#endif  // CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_

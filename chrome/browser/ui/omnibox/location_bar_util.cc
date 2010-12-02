@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 

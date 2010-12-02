@@ -4,15 +4,15 @@
 
 // This class gathers state related to a single user profile.
 
-#ifndef CHROME_BROWSER_PROFILE_IMPL_H_
-#define CHROME_BROWSER_PROFILE_IMPL_H_
+#ifndef CHROME_BROWSER_PROFILES_PROFILE_IMPL_H_
+#define CHROME_BROWSER_PROFILES_PROFILE_IMPL_H_
 #pragma once
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/spellcheck_host_observer.h"
 #include "chrome/common/notification_observer.h"
@@ -292,4 +292,4 @@ class ProfileImpl : public Profile,
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };
 
-#endif  // CHROME_BROWSER_PROFILE_IMPL_H_
+#endif  // CHROME_BROWSER_PROFILES_PROFILE_IMPL_H_

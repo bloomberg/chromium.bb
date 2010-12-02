@@ -39,7 +39,7 @@
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

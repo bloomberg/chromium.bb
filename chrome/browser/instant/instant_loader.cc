@@ -16,7 +16,7 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"

@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/tips_handler.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"

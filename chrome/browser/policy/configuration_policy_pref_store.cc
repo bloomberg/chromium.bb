@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #if defined(OS_WIN)
 #include "chrome/browser/policy/configuration_policy_provider_win.h"

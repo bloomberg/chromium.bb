@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/mime_util.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/shell_dialogs.h"

@@ -12,7 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/backing_store_x.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

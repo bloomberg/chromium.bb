@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chrome_plugin_host.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/chrome_plugin/test_chrome_plugin.h"

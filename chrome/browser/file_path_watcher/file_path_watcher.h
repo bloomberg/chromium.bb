@@ -4,8 +4,8 @@
 
 // This module provides a way to monitor a file or directory for changes.
 
-#ifndef CHROME_BROWSER_FILE_PATH_WATCHER_H_
-#define CHROME_BROWSER_FILE_PATH_WATCHER_H_
+#ifndef CHROME_BROWSER_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
+#define CHROME_BROWSER_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -61,4 +61,4 @@ class FilePathWatcher {
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcher);
 };
 
-#endif  // CHROME_BROWSER_FILE_PATH_WATCHER_H_
+#endif  // CHROME_BROWSER_FILE_PATH_WATCHER_FILE_PATH_WATCHER_H_

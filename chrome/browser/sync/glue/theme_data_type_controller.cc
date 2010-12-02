@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/theme_change_processor.h"
 #include "chrome/browser/sync/glue/theme_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"

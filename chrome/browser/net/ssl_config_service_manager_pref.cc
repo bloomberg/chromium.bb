@@ -9,7 +9,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/ssl_config_service.h"

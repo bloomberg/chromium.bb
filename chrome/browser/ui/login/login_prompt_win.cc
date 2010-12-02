@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/login_prompt.h"
+#include "chrome/browser/ui/login/login_prompt.h"
 
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_thread.h"
@@ -14,7 +14,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/views/login_view.h"
+#include "chrome/browser/ui/views/login_view.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"

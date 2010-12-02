@@ -8,7 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"

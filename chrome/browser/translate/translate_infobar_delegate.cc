@@ -10,7 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/translate/translate_manager.h"

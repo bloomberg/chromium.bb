@@ -17,7 +17,7 @@
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"

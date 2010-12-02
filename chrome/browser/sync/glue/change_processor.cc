@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace browser_sync {
 

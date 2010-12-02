@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"

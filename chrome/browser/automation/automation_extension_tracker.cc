@@ -4,7 +4,7 @@
 
 #include "chrome/browser/automation/automation_extension_tracker.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 

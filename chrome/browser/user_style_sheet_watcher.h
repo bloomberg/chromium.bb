@@ -10,7 +10,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/file_path_watcher.h"
+#include "chrome/browser/file_path_watcher/file_path_watcher.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"

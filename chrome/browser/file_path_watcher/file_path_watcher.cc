@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // Cross platform methods for FilePathWatcher. See the various platform
-// specific implementaiton files, too.
+// specific implementation files, too.
 
-#include "chrome/browser/file_path_watcher.h"
+#include "chrome/browser/file_path_watcher/file_path_watcher.h"
 
 FilePathWatcher::~FilePathWatcher() {
   impl_->Cancel();

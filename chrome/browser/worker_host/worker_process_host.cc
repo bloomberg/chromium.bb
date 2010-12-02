@@ -19,7 +19,7 @@
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/mime_registry_dispatcher.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/file_utilities_dispatcher_host.h"

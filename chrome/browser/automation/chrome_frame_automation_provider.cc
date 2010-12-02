@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/automation_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_channel.h"

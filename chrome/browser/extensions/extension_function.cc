@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 ExtensionFunction::ExtensionFunction()
     : request_id_(-1),

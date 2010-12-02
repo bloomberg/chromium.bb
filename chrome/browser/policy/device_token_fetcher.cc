@@ -11,7 +11,7 @@
 #include "chrome/browser/guid.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_details.h"

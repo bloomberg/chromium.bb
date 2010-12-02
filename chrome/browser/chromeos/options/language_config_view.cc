@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/browser/views/window.h"
 #include "chrome/common/notification_type.h"

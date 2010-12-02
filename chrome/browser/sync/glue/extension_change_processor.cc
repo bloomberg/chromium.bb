@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"

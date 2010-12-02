@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 BrowserAccessibilityState::BrowserAccessibilityState()
     : screen_reader_active_(false) {

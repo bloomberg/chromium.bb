@@ -14,7 +14,7 @@
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"

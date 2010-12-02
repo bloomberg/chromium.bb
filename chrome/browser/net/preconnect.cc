@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/http/http_network_session.h"

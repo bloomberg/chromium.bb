@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_drag_source.h"
 
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 
 @implementation BookmarkDragSource

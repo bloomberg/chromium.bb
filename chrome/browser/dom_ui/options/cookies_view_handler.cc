@@ -15,7 +15,7 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 

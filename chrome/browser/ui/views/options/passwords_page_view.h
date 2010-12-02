@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/views/confirm_message_box_dialog.h"
 #include "chrome/browser/views/options/options_page_view.h"

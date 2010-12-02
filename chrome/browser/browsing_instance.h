@@ -8,7 +8,7 @@
 
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 class GURL;
 class SiteInstance;

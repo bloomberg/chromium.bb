@@ -6,7 +6,7 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 
 @interface BookmarkItemAppleScript()

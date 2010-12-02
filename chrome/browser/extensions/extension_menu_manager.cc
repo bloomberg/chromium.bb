@@ -15,7 +15,7 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "gfx/favicon_size.h"
 #include "webkit/glue/context_menu.h"

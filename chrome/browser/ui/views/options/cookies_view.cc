@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/appcache_info_view.h"
 #include "chrome/browser/views/cookie_info_view.h"
 #include "chrome/browser/views/database_info_view.h"

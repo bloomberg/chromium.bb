@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"

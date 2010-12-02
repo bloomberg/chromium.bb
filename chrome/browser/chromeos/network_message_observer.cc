@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/window.h"
 #include "chrome/common/pref_names.h"

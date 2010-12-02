@@ -13,7 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"

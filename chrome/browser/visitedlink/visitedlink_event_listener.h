@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@
 // processes. It also coalesces the updates to avoid excessive broadcasting of
 // messages to the renderers.
 
-#ifndef CHROME_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
-#define CHROME_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
+#ifndef CHROME_BROWSER_VISITEDLINK_VISITEDLINK_EVENT_LISTENER_H_
+#define CHROME_BROWSER_VISITEDLINK_VISITEDLINK_EVENT_LISTENER_H_
 #pragma once
 
 #include "base/timer.h"
-#include "chrome/browser/visitedlink_master.h"
+#include "chrome/browser/visitedlink/visitedlink_master.h"
 
 namespace base {
 class SharedMemory;
@@ -35,4 +35,4 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener {
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventListener);
 };
 
-#endif  // CHROME_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
+#endif  // CHROME_BROWSER_VISITEDLINK_VISITEDLINK_EVENT_LISTENER_H_

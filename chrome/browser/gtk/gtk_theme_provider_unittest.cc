@@ -6,7 +6,7 @@
 
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/theme_resources.h"

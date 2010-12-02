@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
 
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 
 GtkThemeInstalledInfoBarDelegate::GtkThemeInstalledInfoBarDelegate(
     TabContents* tab_contents,

@@ -8,7 +8,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "grit/generated_resources.h"
 
 BookmarkFolderEditorController::~BookmarkFolderEditorController() {

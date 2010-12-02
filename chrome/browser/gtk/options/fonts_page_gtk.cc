@@ -11,7 +11,7 @@
 #include "chrome/browser/default_encoding_combo_model.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
 #include "grit/generated_resources.h"

@@ -8,7 +8,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/logging.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "grit/generated_resources.h"
 

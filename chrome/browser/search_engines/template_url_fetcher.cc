@@ -8,7 +8,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
 #include "chrome/browser/search_engines/template_url_model.h"

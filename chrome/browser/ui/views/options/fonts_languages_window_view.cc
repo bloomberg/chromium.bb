@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/options/fonts_page_view.h"
 #include "chrome/browser/views/options/languages_page_view.h"
 #include "chrome/common/chrome_constants.h"

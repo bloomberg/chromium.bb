@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
-#include "chrome/browser/visitedlink_master.h"
+#include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;

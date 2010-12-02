@@ -10,7 +10,7 @@
 #include "base/singleton.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"

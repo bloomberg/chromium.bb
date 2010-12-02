@@ -17,7 +17,7 @@
 #import "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/browser/plugin_exceptions_table_model.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/content_exceptions_window_controller.h"

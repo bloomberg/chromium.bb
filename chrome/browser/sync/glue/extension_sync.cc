@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_data.h"
 #include "chrome/browser/sync/glue/extension_sync_traits.h"

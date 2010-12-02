@@ -11,7 +11,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"

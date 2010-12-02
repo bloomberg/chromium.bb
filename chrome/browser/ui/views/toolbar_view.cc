@@ -11,7 +11,7 @@
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/ui_test_utils.h"

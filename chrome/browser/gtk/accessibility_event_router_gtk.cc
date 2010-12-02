@@ -10,7 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_type.h"
 #include "views/controls/textfield/native_textfield_gtk.h"
 

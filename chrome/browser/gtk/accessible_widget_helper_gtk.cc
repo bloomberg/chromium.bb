@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/accessibility_events.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
 
 AccessibleWidgetHelper::AccessibleWidgetHelper(

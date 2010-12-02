@@ -10,7 +10,7 @@
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"

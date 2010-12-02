@@ -14,7 +14,7 @@
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/remoting/remoting_resources_source.h"
 #include "chrome/browser/remoting/remoting_setup_message_handler.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

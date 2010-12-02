@@ -22,7 +22,7 @@
 #include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "unicode/timezone.h"

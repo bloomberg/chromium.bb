@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/browser/ui/views/options/cookies_view.h"
 #include "chrome/common/pref_names.h"

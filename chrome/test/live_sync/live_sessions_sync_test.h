@@ -15,7 +15,7 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profile_impl.h"
+#include "chrome/browser/profiles/profile_impl.h"
 
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
@@ -60,7 +60,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
-#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -76,8 +76,8 @@
 #include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
-#include "chrome/browser/visitedlink_event_listener.h"
-#include "chrome/browser/visitedlink_master.h"
+#include "chrome/browser/visitedlink/visitedlink_event_listener.h"
+#include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"

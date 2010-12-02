@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"

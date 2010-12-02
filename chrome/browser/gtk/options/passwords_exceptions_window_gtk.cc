@@ -15,7 +15,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_page_gtk.h"
 #include "chrome/browser/gtk/options/passwords_page_gtk.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

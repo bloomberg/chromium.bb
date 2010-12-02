@@ -22,7 +22,7 @@
 #include "chrome/browser/net/url_info.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"

@@ -12,7 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/plugin_service.h"

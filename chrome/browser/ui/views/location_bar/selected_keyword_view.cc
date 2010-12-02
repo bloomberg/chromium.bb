@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "grit/generated_resources.h"

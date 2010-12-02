@@ -7,7 +7,7 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

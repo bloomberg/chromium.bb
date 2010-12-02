@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/options/show_options_url.h"
 
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 

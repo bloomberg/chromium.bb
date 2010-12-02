@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
 
 void UserMetrics::RecordAction(const UserMetricsAction& action,

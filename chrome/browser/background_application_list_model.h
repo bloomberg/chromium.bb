@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

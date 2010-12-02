@@ -10,7 +10,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/profile.h"
+#include "chrome/browser/profiles/profile.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
 using base::Time;

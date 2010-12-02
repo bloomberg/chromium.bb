@@ -4,8 +4,8 @@
 
 // This class gathers state related to a single user profile.
 
-#ifndef CHROME_BROWSER_PROFILE_H_
-#define CHROME_BROWSER_PROFILE_H_
+#ifndef CHROME_BROWSER_PROFILES_PROFILE_H_
+#define CHROME_BROWSER_PROFILES_PROFILE_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -546,4 +546,4 @@ class Profile {
   int accessibility_pause_level_;
 };
 
-#endif  // CHROME_BROWSER_PROFILE_H_
+#endif  // CHROME_BROWSER_PROFILES_PROFILE_H_
