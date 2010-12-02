@@ -353,4 +353,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   EXPECT_EQ("2.0", extensions->at(size_before)->VersionString());
   EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD,
             extensions->at(size_before)->location());
+
+  // Check that emptying the list doesn't cause any trouble.
+  prefs->ClearPref(prefs::kExtensionInstallForceList);
+  prefs->pref_notifier()->FireObservers(prefs::kExtensionInstallForceList);
 }

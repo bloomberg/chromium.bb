@@ -9,5 +9,6 @@ RefCountedList::RefCountedList(ListValue* list) {
 }
 
 RefCountedList::~RefCountedList() {
-  delete list_;
+  if (list_)
+    delete list_;
 }

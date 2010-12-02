@@ -1437,14 +1437,16 @@ void ExtensionsService::CheckForExternalUpdates() {
 void ExtensionsService::UpdateExternalPolicyExtensionProvider() {
   const ListValue* list_pref =
       profile_->GetPrefs()->GetList(prefs::kExtensionInstallForceList);
-  RefCountedList* list_copy = new RefCountedList(
-      static_cast<ListValue*>(list_pref->DeepCopy()));
+  ListValue* list_copy = NULL;
+  if (list_pref)
+    list_copy = static_cast<ListValue*>(list_pref->DeepCopy());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           backend_.get(),
           &ExtensionsServiceBackend::UpdateExternalPolicyExtensionProvider,
-          scoped_refptr<RefCountedList>(list_copy)));
+          scoped_refptr<RefCountedList>(
+              new RefCountedList(list_copy))));
 }
 
 void ExtensionsService::UnloadExtension(const std::string& extension_id) {
