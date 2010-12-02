@@ -12,7 +12,7 @@ BUG_JPARENT LINUX : fast/dom/HTMLHeadElement/head-check.html = CRASH PASS
 
 // Started to flake since http://src.chromium.org/viewvc/chrome?view=rev&revision=66937
 // (72440; 72514] range
-BUG_ANTON LINUX : fast/ruby/nested-ruby.html = CRASH PASS
+BUG_ANTON LINUX : fast/ruby/nested-ruby.html = CRASH PASS IMAGE
 
 // Rebaseline tool wasn't working for these tests.
 BUG64394 MAC : svg/W3C-SVG-1.1/struct-image-10-t.svg = IMAGE
