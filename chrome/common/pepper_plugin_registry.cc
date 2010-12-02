@@ -30,8 +30,12 @@ PepperPluginInfo::~PepperPluginInfo() {}
 
 // static
 PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
-  static PepperPluginRegistry registry;
-  return &registry;
+  static PepperPluginRegistry* registry = NULL;
+  // This object leaks.  It is a temporary hack to work around a crash.
+  // http://code.google.com/p/chromium/issues/detail?id=63234
+  if (!registry)
+    registry = new PepperPluginRegistry;
+  return registry;
 }
 
 // static
