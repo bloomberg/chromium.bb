@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dock_info.h"
+#include "chrome/browser/ui/tabs/dock_info.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/tabs/tab.h"

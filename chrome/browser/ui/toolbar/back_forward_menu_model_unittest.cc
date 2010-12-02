@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/back_forward_menu_model.h"
+#include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "base/path_service.h"
 #include "base/string_util.h"

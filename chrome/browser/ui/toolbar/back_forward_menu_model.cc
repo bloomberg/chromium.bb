@@ -4,7 +4,7 @@
 
 #include "build/build_config.h"
 
-#include "chrome/browser/back_forward_menu_model.h"
+#include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "app/l10n_util.h"
 #include "app/text_elider.h"

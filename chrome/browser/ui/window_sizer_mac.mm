@@ -6,7 +6,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/window_sizer.h"
+#include "chrome/browser/ui/window_sizer.h"
 
 
 // How much horizontal and vertical offset there is between newly

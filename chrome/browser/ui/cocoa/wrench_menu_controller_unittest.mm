@@ -4,12 +4,12 @@
 
 #include "base/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu_controller.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

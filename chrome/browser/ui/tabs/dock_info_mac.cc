@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dock_info.h"
+#include "chrome/browser/ui/tabs/dock_info.h"
 
 bool DockInfo::GetNewWindowBounds(gfx::Rect* new_window_bounds,
                                   bool* maximize_new_window) const {

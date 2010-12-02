@@ -25,7 +25,7 @@
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"

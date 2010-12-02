@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "chrome/browser/window_sizer.h"
+#include "chrome/browser/ui/window_sizer.h"
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

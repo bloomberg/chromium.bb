@@ -4,8 +4,6 @@
 
 #include "chrome/browser/views/extensions/extension_popup.h"
 
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -14,8 +12,10 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/window_sizer.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"

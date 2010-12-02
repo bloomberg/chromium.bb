@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/window_sizer.h"
+#include "chrome/browser/ui/window_sizer.h"
 
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 
 // Used to pad the default new window size.  On Windows, this is also used for
 // positioning new windows (each window is offset from the previous one).

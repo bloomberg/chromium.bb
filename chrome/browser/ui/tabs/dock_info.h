@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOCK_INFO_H_
-#define CHROME_BROWSER_DOCK_INFO_H_
+#ifndef CHROME_BROWSER_UI_TABS_DOCK_INFO_H_
+#define CHROME_BROWSER_UI_TABS_DOCK_INFO_H_
 #pragma once
 
 #include <set>
@@ -187,4 +187,4 @@ class DockInfo {
   static Factory* factory_;
 };
 
-#endif  // CHROME_BROWSER_DOCK_INFO_H_
+#endif  // CHROME_BROWSER_UI_TABS_DOCK_INFO_H_

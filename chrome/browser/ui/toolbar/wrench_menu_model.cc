@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/wrench_menu_model.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 
 #include <algorithm>
 #include <cmath>
@@ -19,7 +19,6 @@
 #include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/badge_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -44,7 +44,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/ui/browser_window.h"
 #endif
 
 #if defined(OS_CHROMEOS)

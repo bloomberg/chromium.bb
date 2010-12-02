@@ -6,7 +6,7 @@
 
 #include "app/keyboard_codes.h"
 #include "app/slide_animation.h"
-#include "chrome/browser/window_sizer.h"
+#include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"

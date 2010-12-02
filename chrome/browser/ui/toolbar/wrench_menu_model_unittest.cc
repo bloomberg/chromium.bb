@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/wrench_menu_model.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/test/browser_with_test_window_test.h"

@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/back_forward_menu_model.h"
 #import "chrome/browser/ui/cocoa/delayedmenu_button.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
+#include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

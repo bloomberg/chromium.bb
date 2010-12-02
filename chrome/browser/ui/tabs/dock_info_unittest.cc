@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "chrome/browser/dock_info.h"
+#include "chrome/browser/ui/tabs/dock_info.h"
 #include "gfx/point.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

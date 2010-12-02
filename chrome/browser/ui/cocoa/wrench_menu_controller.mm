@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/toolbar_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/wrench_menu_model.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"

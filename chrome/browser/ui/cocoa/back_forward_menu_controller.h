@@ -10,7 +10,7 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/back_forward_menu_model.h"
+#include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 @class DelayedMenuButton;
 

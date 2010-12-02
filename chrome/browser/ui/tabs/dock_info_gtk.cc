@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dock_info.h"
+#include "chrome/browser/ui/tabs/dock_info.h"
 
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
 #include "base/task.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "gfx/native_widget_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////

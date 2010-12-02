@@ -9,8 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/views/accessibility_event_router_views.h"
-#include "chrome/browser/window_sizer.h"
+#include "chrome/browser/ui/views/accessibility_event_router_views.h"
+#include "chrome/browser/ui/window_sizer.h"
 #include "gfx/rect.h"
 
 #if defined(OS_WIN)
