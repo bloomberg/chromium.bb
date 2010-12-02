@@ -874,10 +874,12 @@ int ChromeMain(int argc, char** argv) {
 #if defined(OS_MACOSX)
   // On OS X the renderer sandbox needs to be initialized later in the startup
   // sequence in RendererMainPlatformDelegate::EnableSandbox().
-  // Same goes for NaClLoader, in NaClMainPlatformDelegate::EnableSandbox().
+  // Same goes for NaClLoader, in NaClMainPlatformDelegate::EnableSandbox(),
+  // and the GPU process, in GpuMain().
   if (process_type != switches::kRendererProcess &&
       process_type != switches::kExtensionProcess &&
-      process_type != switches::kNaClLoaderProcess) {
+      process_type != switches::kNaClLoaderProcess &&
+      process_type != switches::kGpuProcess) {
     bool sandbox_initialized_ok =
         sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
     // Die if the sandbox can't be enabled.

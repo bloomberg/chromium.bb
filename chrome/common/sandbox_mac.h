@@ -75,6 +75,9 @@ class Sandbox {
     // Native Client sandbox for the user's untrusted code.
     SANDBOX_TYPE_NACL_LOADER,
 
+    // GPU process.
+    SANDBOX_TYPE_GPU,
+
     SANDBOX_AFTER_TYPE_LAST_TYPE,  // Placeholder to ease iteration.
   };
 

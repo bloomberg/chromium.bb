@@ -823,6 +823,9 @@ const char kNoExperiments[]                 = "no-experiments";
 // you're for some reason tempted to pass them both.
 const char kNoFirstRun[]                    = "no-first-run";
 
+// Runs just the GPU process outside the sandbox.
+const char kNoGpuSandbox[]                  = "no-gpu-sandbox";
+
 // Support a separate switch that enables the v8 playback extension.
 // The extension causes javascript calls to Date.now() and Math.random()
 // to return consistent values, such that subsequent loads of the same
@@ -840,7 +843,7 @@ const char kNoProxyServer[]                 = "no-proxy-server";
 // Don't send HTTP-Referer headers.
 const char kNoReferrers[]                   = "no-referrers";
 
-// Runs the renderer outside the sandbox.
+// Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 
 // Does not automatically open a browser window on startup (used when launching

@@ -25,6 +25,10 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/common/sandbox_mac.h"
+#endif
+
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
@@ -33,14 +37,26 @@
 #include "gfx/gtk_util.h"
 #endif
 
-namespace {
-
 // 1% per watchdog trial group.
 const int kFieldTrialSize = 1;
 
 // 5 - 20 seconds timeout.
 const int kMinGpuTimeout = 5;
 const int kMaxGpuTimeout = 20;
+
+namespace {
+
+bool InitializeGpuSandbox() {
+#if defined(OS_MACOSX)
+  CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
+  SandboxInitWrapper sandbox_wrapper;
+  return sandbox_wrapper.InitializeSandbox(*parsed_command_line,
+                                           switches::kGpuProcess);
+#else
+  // TODO(port): Create GPU sandbox for linux and windows.
+  return true;
+#endif
+}
 
 }  // namespace
 
@@ -81,6 +97,17 @@ int GpuMain(const MainFunctionParams& parameters) {
   g_thread_init(NULL);
   gfx::GtkInitFromCommandLine(command_line);
 #endif
+
+  // Note that kNoSandbox will also disable the GPU sandbox.
+  bool no_gpu_sandbox = command_line.HasSwitch(switches::kNoGpuSandbox);
+  if (!no_gpu_sandbox) {
+    if (!InitializeGpuSandbox()) {
+      LOG(ERROR) << "Failed to initialize the GPU sandbox";
+      return EXIT_FAILURE;
+    }
+  } else {
+    LOG(ERROR) << "Running without GPU sandbox";
+  }
 
   // Load the GL implementation and locate the bindings before starting the GPU
   // watchdog because this can take a lot of time and the GPU watchdog might

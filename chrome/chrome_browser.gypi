@@ -3671,6 +3671,7 @@
               '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
             ],
             'mac_bundle_resources': [
+              'browser/gpu.sb',
               'browser/nacl_loader.sb',
               'browser/utility.sb',
               'browser/worker.sb',

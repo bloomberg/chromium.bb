@@ -278,6 +278,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     bool run_loop = true;
     if (!no_sandbox) {
       run_loop = platform.EnableSandbox();
+    } else {
+      LOG(ERROR) << "Running without renderer sandbox";
     }
 #if defined(OS_LINUX)
     RenderProcessImpl render_process;

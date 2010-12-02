@@ -32,8 +32,9 @@ class SandboxInitWrapper {
   sandbox::BrokerServices* BrokerServices() const { return broker_services_; }
   sandbox::TargetServices* TargetServices() const { return target_services_; }
 
-  // Initialize the sandbox for renderer and plug-in processes, depending on
-  // the command line flags. The browser process is not sandboxed.
+  // Initialize the sandbox for renderer, gpu, utility, worker, nacl, and
+  // plug-in processes, depending on the command line flags. The browser
+  // process is not sandboxed.
   // Returns true if the sandbox was initialized succesfully, false if an error
   // occurred.  If process_type isn't one that needs sandboxing true is always
   // returned.

@@ -314,6 +314,9 @@ NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
       // untrusted code within Native Client.
       sandbox_config_filename = @"nacl_loader";
       break;
+    case Sandbox::SANDBOX_TYPE_GPU:
+      sandbox_config_filename = @"gpu";
+      break;
     default:
       NOTREACHED();
       return nil;
@@ -465,7 +468,7 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
 
   // Enable verbose logging if enabled on the command line. (See common.sb
   // for details).
-  const CommandLine *command_line = CommandLine::ForCurrentProcess();
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool enable_logging =
       command_line->HasSwitch(switches::kEnableSandboxLogging);;
   if (enable_logging) {

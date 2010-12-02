@@ -508,8 +508,13 @@ bool GpuProcessHost::LaunchGpuProcess() {
     switches::kDisableLogging,
     switches::kEnableAcceleratedDecoding,
     switches::kEnableLogging,
+#if defined(OS_MACOSX)
+    switches::kEnableSandboxLogging,
+#endif
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
+    switches::kNoGpuSandbox,
+    switches::kNoSandbox,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));

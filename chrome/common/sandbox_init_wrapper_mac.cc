@@ -53,9 +53,10 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   } else if (process_type == switches::kNaClLoaderProcess) {
     // Native Client sel_ldr (user untrusted code) sandbox.
     sandbox_process_type = Sandbox::SANDBOX_TYPE_NACL_LOADER;
+  } else if (process_type == switches::kGpuProcess) {
+    sandbox_process_type = Sandbox::SANDBOX_TYPE_GPU;
   } else if ((process_type == switches::kPluginProcess) ||
              (process_type == switches::kProfileImportProcess) ||
-             (process_type == switches::kGpuProcess) ||
              (process_type == switches::kServiceProcess)) {
     return true;
   } else {
