@@ -14,6 +14,6 @@ extern const wchar_t kRpcProtocol[];
 
 // Returns RPC end point. Depends on current session ID and
 // account used by chrome frame.
-std::wstring GetRpcEndPointAddress();
+std::wstring GetRpcEndpointAddress();
 
 #endif  // CEEE_IE_BROKER_BROKER_RPC_UTILS_H_

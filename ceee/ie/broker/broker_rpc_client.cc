@@ -9,17 +9,60 @@
 #include <atlbase.h>
 #include "base/lock.h"
 #include "base/logging.h"
+#include "base/tuple.h"
 #include "base/win/scoped_comptr.h"
 #include "broker_lib.h"  // NOLINT
 #include "broker_rpc_lib.h"  // NOLINT
 #include "ceee/common/com_utils.h"
 #include "ceee/ie/broker/broker_rpc_utils.h"
 
-BrokerRpcClient::BrokerRpcClient() : context_(0), binding_handle_(NULL) {
+
+namespace {
+
+void LogRpcException(const char* str, unsigned int exception_code) {
+  LOG(ERROR) << str << com::LogWe(exception_code);
 }
 
-BrokerRpcClient::~BrokerRpcClient() {
-  Disconnect();
+HRESULT BindRpc(std::wstring endpoint, RPC_BINDING_HANDLE* binding_handle) {
+  DCHECK(binding_handle != NULL);
+  std::wstring protocol = kRpcProtocol;
+  DCHECK(!protocol.empty());
+  DCHECK(!endpoint.empty());
+  if (protocol.empty() || endpoint.empty() || binding_handle == NULL)
+    return E_INVALIDARG;
+
+  RPC_BINDING_HANDLE tmp_binding_handle = NULL;
+
+  // TODO(vitalybuka@google.com): There's no guarantee (aside from name
+  // uniqueness) that it will connect to an endpoint created by the same user.
+  // Hint: The missing invocation is RpcBindingSetAuthInfoEx.
+  VLOG(1) << "Connecting to RPC server. Endpoint: " << endpoint;
+  RPC_WSTR string_binding = NULL;
+  // Create binding string for given end point.
+  RPC_STATUS status = ::RpcStringBindingCompose(
+      NULL,
+      reinterpret_cast<RPC_WSTR>(&protocol[0]),
+      NULL,
+      reinterpret_cast<RPC_WSTR>(&endpoint[0]),
+      NULL,
+      &string_binding);
+
+  if (RPC_S_OK == status) {
+    // Create binding from just generated binding string. Binding handle should
+    // be used for PRC calls.
+    status = ::RpcBindingFromStringBinding(string_binding, &tmp_binding_handle);
+    ::RpcStringFree(&string_binding);
+    if (RPC_S_OK == status) {
+      VLOG(1) << "RPC client is connected. Endpoint: " << endpoint;
+      *binding_handle = tmp_binding_handle;
+      return S_OK;
+    } else {
+      LogRpcException("Failed to bind. RPC_STATUS:", status);
+    }
+  } else {
+    LogRpcException("Failed to compose binding string. RPC_STATUS:", status);
+  }
+  return RPC_E_FAULT;
 }
 
 int HandleRpcException(unsigned int rpc_exception_code) {
@@ -38,8 +81,16 @@ int HandleRpcException(unsigned int rpc_exception_code) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
-static void LogRpcException(const char* str, unsigned int exception_code) {
-  LOG(ERROR) << str << com::LogWe(exception_code);
+}  // namespace
+
+BrokerRpcClient::BrokerRpcClient(bool allow_restarts)
+    : context_(0),
+      binding_handle_(NULL),
+      allow_restarts_(allow_restarts) {
+}
+
+BrokerRpcClient::~BrokerRpcClient() {
+  Disconnect();
 }
 
 void BrokerRpcClient::LockContext() {
@@ -58,56 +109,33 @@ void BrokerRpcClient::ReleaseContext() {
   } RpcEndExcept
 }
 
+HRESULT BrokerRpcClient::StartServer(IUnknown** server) {
+  base::win::ScopedComPtr<IUnknown> broker;
+  // TODO(vitalybuka@google.com): Start broker without COM after the last
+  // COM interface is removed.
+  HRESULT hr = broker.CreateInstance(CLSID_CeeeBroker);
+  LOG_IF(ERROR, FAILED(hr)) << "Failed to create broker. " << com::LogHr(hr);
+  if (FAILED(hr))
+    return hr;
+  *server = broker.Detach();
+  return S_OK;
+}
+
 HRESULT BrokerRpcClient::Connect(bool start_server) {
   if (is_connected())
     return S_OK;
 
   // Keep alive until RPC is connected.
-  base::win::ScopedComPtr<ICeeeBrokerRegistrar> broker;
+  base::win::ScopedComPtr<IUnknown> broker;
   if (start_server) {
-    // TODO(vitalybuka@google.com): Start broker without COM after the last
-    // COM interface is removed.
-    HRESULT hr = broker.CreateInstance(CLSID_CeeeBroker);
-    LOG_IF(ERROR, FAILED(hr)) << "Failed to create broker. " << com::LogHr(hr);
+    HRESULT hr = StartServer(broker.Receive());
     if (FAILED(hr))
       return hr;
   }
 
-  std::wstring end_point = GetRpcEndPointAddress();
-  std::wstring protocol = kRpcProtocol;
-  DCHECK(!protocol.empty());
-  DCHECK(!end_point.empty());
-  if (protocol.empty() || end_point.empty())
-    return RPC_E_FAULT;
+  if (SUCCEEDED(BindRpc(GetRpcEndpointAddress(), &binding_handle_)))
+    LockContext();
 
-  // TODO(vitalybuka@google.com): There's no guarantee (aside from name
-  // uniqueness) that it will connect to an endpoint created by the same user.
-  // Hint: The missing invocation is RpcBindingSetAuthInfoEx.
-  LOG(INFO) << "Connecting to RPC server. Endpoint: " << end_point;
-  RPC_WSTR string_binding = NULL;
-  // Create binding string with given protocol and end point.
-  RPC_STATUS status = ::RpcStringBindingCompose(
-      NULL,
-      reinterpret_cast<RPC_WSTR>(&protocol[0]),
-      NULL,
-      reinterpret_cast<RPC_WSTR>(&end_point[0]),
-      NULL,
-      &string_binding);
-  LOG_IF(ERROR, RPC_S_OK != status) <<
-      "Failed to compose binding string. RPC_STATUS=0x" << com::LogWe(status);
-
-  if (RPC_S_OK == status) {
-    // Create binding from just generated binding string. Binding handle should
-    // used for PRC calls.
-    status = ::RpcBindingFromStringBinding(string_binding, &binding_handle_);
-    LOG_IF(ERROR, RPC_S_OK != status) <<
-        "Failed to bind. RPC_STATUS=0x" << com::LogWe(status);
-    ::RpcStringFree(&string_binding);
-    if (RPC_S_OK == status) {
-      LOG(INFO) << "RPC client is connected. Endpoint: " << end_point;
-      LockContext();
-    }
-  }
   if (!is_connected()) {
     Disconnect();
     return RPC_E_FAULT;
@@ -125,26 +153,42 @@ void BrokerRpcClient::Disconnect() {
   }
 }
 
-HRESULT BrokerRpcClient::FireEvent(const char* event_name,
-                                   const char* event_args) {
+template<class Function, class Params>
+HRESULT BrokerRpcClient::RunRpc(bool allow_restart,
+                                Function rpc_function,
+                                const Params& params) {
+  DCHECK(rpc_function);
+  if (!is_connected())
+    return RPC_E_FAULT;
   RpcTryExcept {
-    BrokerRpcClient_FireEvent(binding_handle_, context_, event_name,
-                              event_args);
+    DispatchToFunction(rpc_function, params);
     return S_OK;
   } RpcExcept(HandleRpcException(RpcExceptionCode())) {
-    LogRpcException("RPC error in FireEvent", RpcExceptionCode());
+    LogRpcException("RPC error in RunRpc", RpcExceptionCode());
+
+    if (allow_restart &&
+        RPC_S_OK != ::RpcMgmtIsServerListening(binding_handle_)) {
+      Disconnect();
+      if (SUCCEEDED(Connect(true))) {
+        return RunRpc(false, rpc_function, params);
+      }
+    }
     return RPC_E_FAULT;
   } RpcEndExcept
 }
 
+HRESULT BrokerRpcClient::FireEvent(const char* event_name,
+                                   const char* event_args) {
+  return RunRpc(allow_restarts_,
+                &BrokerRpcClient_FireEvent,
+                MakeRefTuple(binding_handle_, context_, event_name,
+                             event_args));
+}
+
 HRESULT BrokerRpcClient::SendUmaHistogramTimes(const char* name, int sample) {
-  RpcTryExcept {
-    BrokerRpcClient_SendUmaHistogramTimes(binding_handle_, name, sample);
-    return S_OK;
-  } RpcExcept(HandleRpcException(RpcExceptionCode())) {
-    LogRpcException("RPC error in SendUmaHistogramTimes", RpcExceptionCode());
-    return RPC_E_FAULT;
-  } RpcEndExcept
+  return RunRpc(allow_restarts_,
+                &BrokerRpcClient_SendUmaHistogramTimes,
+                MakeRefTuple(binding_handle_, name, sample));
 }
 
 HRESULT BrokerRpcClient::SendUmaHistogramData(const char* name,
@@ -152,12 +196,8 @@ HRESULT BrokerRpcClient::SendUmaHistogramData(const char* name,
                                               int min,
                                               int max,
                                               int bucket_count) {
-  RpcTryExcept {
-    BrokerRpcClient_SendUmaHistogramData(
-        binding_handle_, name, sample, min, max, bucket_count);
-    return S_OK;
-  } RpcExcept(HandleRpcException(RpcExceptionCode())) {
-    LogRpcException("RPC error in SendUmaHistogramData", RpcExceptionCode());
-    return RPC_E_FAULT;
-  } RpcEndExcept
+  return RunRpc(allow_restarts_,
+                &BrokerRpcClient_SendUmaHistogramData,
+                MakeRefTuple(binding_handle_, name, sample, min, max,
+                          bucket_count));
 }

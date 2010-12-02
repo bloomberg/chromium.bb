@@ -7,8 +7,9 @@
 #include "ceee/ie/broker/broker_rpc_server.h"
 
 #include "base/atomic_sequence_num.h"
-#include "base/metrics/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/process_util.h"
 #include "base/win_util.h"
 #include "broker_rpc_lib.h"  // NOLINT
 #include "ceee/common/com_utils.h"
@@ -16,9 +17,39 @@
 #include "ceee/ie/broker/broker_rpc_utils.h"
 #include "ceee/ie/broker/chrome_postman.h"
 
+
+namespace {
 // This lock ensures that histograms created by the broker are thread safe.
 // The histograms created here can be initialized on multiple threads.
 Lock g_metrics_lock;
+
+RPC_STATUS PrepareEndpoint(std::wstring endpoint) {
+  std::wstring protocol = kRpcProtocol;
+  DCHECK(!protocol.empty());
+  DCHECK(!endpoint.empty());
+  if (protocol.empty() || endpoint.empty())
+    return false;
+  VLOG(1) << "RPC server is starting. Endpoint: " << endpoint;
+  // Tell RPC runtime to use local interprocess communication for given
+  // end point.
+  RPC_STATUS status = ::RpcServerUseProtseqEp(
+      reinterpret_cast<RPC_WSTR>(&protocol[0]),
+      RPC_C_PROTSEQ_MAX_REQS_DEFAULT,
+      reinterpret_cast<RPC_WSTR>(&endpoint[0]),
+      NULL);
+  LOG_IF(ERROR, RPC_S_OK != status && RPC_S_DUPLICATE_ENDPOINT != status) <<
+      "Failed to set protocol for RPC end point. RPC_STATUS=0x" <<
+      com::LogWe(status);
+  // This is not an error because unittest may start several servers. For
+  // ceee_broker this is an error because we should not have several instances
+  // of broker for the same endpoint. However BrokerRpcServer will fail anyway
+  // while starting to listen.
+  if (RPC_S_DUPLICATE_ENDPOINT == status)
+    status = RPC_S_OK;
+  return status;
+}
+
+}  // namespace
 
 BrokerRpcServer::BrokerRpcServer()
     : is_started_(false),
@@ -36,25 +67,10 @@ bool BrokerRpcServer::Start() {
   if (is_started())
     return true;
 
-  std::wstring end_point = GetRpcEndPointAddress();
-  std::wstring protocol = kRpcProtocol;
-  DCHECK(!protocol.empty());
-  DCHECK(!end_point.empty());
-  if (protocol.empty() || end_point.empty())
-    return false;
+  std::wstring endpoint = GetRpcEndpointAddress();
+  RPC_STATUS status = PrepareEndpoint(endpoint);
 
-  LOG(INFO) << "RPC server is starting. Endpoint: " << end_point;
-  // Tell RPC runtime to use local interprocess communication for given
-  // end point.
-  RPC_STATUS status = ::RpcServerUseProtseqEp(
-      reinterpret_cast<RPC_WSTR>(&protocol[0]),
-      RPC_C_PROTSEQ_MAX_REQS_DEFAULT,
-      reinterpret_cast<RPC_WSTR>(&end_point[0]),
-      NULL);
-  LOG_IF(ERROR, RPC_S_OK != status && RPC_S_DUPLICATE_ENDPOINT != status) <<
-      "Failed to set protocol for RPC end point. RPC_STATUS=0x" <<
-      com::LogWe(status);
-  if (RPC_S_OK == status || RPC_S_DUPLICATE_ENDPOINT == status) {
+  if (RPC_S_OK == status) {
     // Register RPC interface with the RPC runtime.
     status = ::RpcServerRegisterIfEx(BrokerRpcServer_CeeeBroker_v1_1_s_ifspec,
         NULL, NULL, 0, RPC_C_LISTEN_MAX_CALLS_DEFAULT, NULL);
@@ -66,7 +82,7 @@ bool BrokerRpcServer::Start() {
       LOG_IF(ERROR, RPC_S_OK != status) <<
           "Failed to start listening. RPC_STATUS=0x" << com::LogWe(status);
       if (RPC_S_OK == status) {
-        LOG(INFO) << "RPC server is started. Endpoint: " << end_point;
+        VLOG(1) << "RPC server is started. Endpoint: " << endpoint;
         is_started_ = true;
       }
     }
@@ -82,17 +98,19 @@ bool BrokerRpcServer::Stop() {
   is_started_ = false;
   // Stop server listening for RPC.
   RPC_STATUS status = ::RpcMgmtStopServerListening(NULL);
-  LOG_IF(WARNING, RPC_S_OK != status) <<
-         "Failed to stop listening. RPC_STATUS=0x" << com::LogWe(status);
+  LOG_IF(WARNING, RPC_S_OK != status && RPC_S_NOT_LISTENING != status) <<
+      "Failed to stop listening. RPC_STATUS=0x" << com::LogWe(status);
   // Wait while server stops listening threads.
   status = ::RpcMgmtWaitServerListen();
-  LOG_IF(WARNING, RPC_S_OK != status) <<
-         "Failed to wait server listen. RPC_STATUS=0x" << com::LogWe(status);
+  LOG_IF(WARNING, RPC_S_OK != status && RPC_S_NOT_LISTENING != status) <<
+      "Failed to wait server listen. RPC_STATUS=0x" << com::LogWe(status);
   // Unregister RPC interface.
   status = ::RpcServerUnregisterIf(
       BrokerRpcServer_CeeeBroker_v1_1_s_ifspec, NULL, FALSE);
-  LOG_IF(WARNING, RPC_S_OK != status) <<
-         "Failed to unregister interface. RPC_STATUS=0x" << com::LogWe(status);
+  LOG_IF(WARNING, RPC_S_OK != status || RPC_S_UNKNOWN_MGR_TYPE != status ||
+                  RPC_S_UNKNOWN_IF != status) <<
+      "Failed to unregister interface. RPC_STATUS=0x" << com::LogWe(status);
+
   return RPC_S_OK == status;
 }
 

@@ -70,7 +70,9 @@ class TestingBrowserHelperObject
       public InitializingCoClass<TestingBrowserHelperObject>,
       public InstanceCountMixin<TestingBrowserHelperObject> {
  public:
-  TestingBrowserHelperObject() : mock_chrome_frame_host_(NULL) {
+  TestingBrowserHelperObject()
+      : mock_chrome_frame_host_(NULL),
+        mock_broker_rpc_client_(false) {
   }
 
   HRESULT Initialize(TestingBrowserHelperObject** self) {

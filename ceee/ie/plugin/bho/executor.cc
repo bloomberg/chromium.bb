@@ -428,7 +428,7 @@ HRESULT CeeeExecutor::Initialize(CeeeWindowHandle hwnd) {
   // is ready.
   if (window_utils::GetTopLevelParent(hwnd_) != hwnd_)
     infobar_manager_.reset(
-        new infobar_api::InfobarManager(hwnd_, new BrokerRpcClient));
+        new infobar_api::InfobarManager(hwnd_, new BrokerRpcClient(false)));
 
   return S_OK;
 }

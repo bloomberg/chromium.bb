@@ -13,23 +13,23 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::StrEq;
-using testing::StrictMock;
-using testing::Return;
-
 namespace {
 
 using testing::_;
+using testing::DoAll;
+using testing::Invoke;
+using testing::InvokeWithoutArgs;
+using testing::StrEq;
+using testing::Return;
 
 MOCK_STATIC_CLASS_BEGIN(BrokerRpcMock)
   MOCK_STATIC_INIT_BEGIN(BrokerRpcMock)
-    MOCK_STATIC_INIT(GetRpcEndPointAddress);
+    MOCK_STATIC_INIT(GetRpcEndpointAddress);
     MOCK_STATIC_INIT(BrokerRpcServer_FireEvent);
     MOCK_STATIC_INIT(BrokerRpcServer_SendUmaHistogramTimes);
     MOCK_STATIC_INIT(BrokerRpcServer_SendUmaHistogramData);
   MOCK_STATIC_INIT_END()
-  MOCK_STATIC0(std::wstring, , GetRpcEndPointAddress);
+  MOCK_STATIC0(std::wstring, , GetRpcEndpointAddress);
   MOCK_STATIC4(void, , BrokerRpcServer_FireEvent, handle_t, BrokerContextHandle,
                const char*, const char*);
   MOCK_STATIC3(void, , BrokerRpcServer_SendUmaHistogramTimes, handle_t,
@@ -41,7 +41,7 @@ MOCK_STATIC_CLASS_END(BrokerRpcMock)
 class BrokerRpcTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    EXPECT_CALL(broker_rpc_mock_, GetRpcEndPointAddress())
+    EXPECT_CALL(broker_rpc_mock_, GetRpcEndpointAddress())
         .WillRepeatedly(Return(L"BrokerRpcTestEP"));
   }
 
@@ -52,7 +52,7 @@ class BrokerRpcTest : public testing::Test {
 };
 
 TEST_F(BrokerRpcTest, ConnectNoServer) {
-  BrokerRpcClient client;
+  BrokerRpcClient client(false);
   ASSERT_FALSE(client.is_connected());
   ASSERT_HRESULT_FAILED(client.Connect(false));
   ASSERT_FALSE(client.is_connected());
@@ -63,7 +63,7 @@ TEST_F(BrokerRpcTest, Connect) {
   ASSERT_FALSE(server.is_started());
   ASSERT_TRUE(server.Start());
   ASSERT_TRUE(server.is_started());
-  BrokerRpcClient client;
+  BrokerRpcClient client(false);
   ASSERT_HRESULT_SUCCEEDED(client.Connect(false));
   ASSERT_TRUE(client.is_connected());
 }
@@ -72,7 +72,7 @@ TEST_F(BrokerRpcTest, RpcCalls) {
   BrokerRpcServer server;
   ASSERT_TRUE(server.Start());
 
-  BrokerRpcClient client;
+  BrokerRpcClient client(false);
   ASSERT_HRESULT_SUCCEEDED(client.Connect(false));
 
   const char* name = "name";
@@ -93,6 +93,76 @@ TEST_F(BrokerRpcTest, RpcCalls) {
       BrokerRpcServer_SendUmaHistogramData(_, StrEq(name), 1, 2, 3, 4))
           .Times(1);
   ASSERT_HRESULT_SUCCEEDED(client.SendUmaHistogramData(name, 1, 2, 3, 4));
+}
+
+class TestingBrokerRpcClient : public BrokerRpcClient {
+ public:
+  explicit TestingBrokerRpcClient(bool allow_restarts)
+      : BrokerRpcClient(allow_restarts) {}
+  MOCK_METHOD1(StartServer, HRESULT(IUnknown**));
+};
+
+TEST_F(BrokerRpcTest, StartServer) {
+  BrokerRpcServer server;
+  TestingBrokerRpcClient client(true);
+  EXPECT_CALL(client, StartServer(_))
+      .Times(0);
+  ASSERT_HRESULT_FAILED(client.Connect(false));
+
+  EXPECT_CALL(client, StartServer(_))
+      .Times(1)
+      .WillOnce(DoAll(IgnoreResult(InvokeWithoutArgs(&server,
+                                                     &BrokerRpcServer::Start)),
+                      Return(RPC_E_FAULT)));
+  ASSERT_HRESULT_FAILED(client.Connect(true));
+
+  EXPECT_CALL(client, StartServer(_))
+      .Times(1)
+      .WillOnce(DoAll(IgnoreResult(InvokeWithoutArgs(&server,
+                                                     &BrokerRpcServer::Start)),
+                      Return(RPC_S_OK)));
+  ASSERT_HRESULT_SUCCEEDED(client.Connect(true));
+}
+
+TEST_F(BrokerRpcTest, NoRestartServer) {
+  BrokerRpcServer server;
+  TestingBrokerRpcClient client(false);
+  EXPECT_CALL(client, StartServer(_))
+      .Times(1)
+      .WillOnce(DoAll(IgnoreResult(InvokeWithoutArgs(&server,
+                                                     &BrokerRpcServer::Start)),
+                      Return(RPC_S_OK)));
+  ASSERT_HRESULT_SUCCEEDED(client.Connect(true));
+  server.Stop();
+
+  EXPECT_CALL(client, StartServer(_))
+      .Times(0);
+  EXPECT_CALL(broker_rpc_mock_,
+      BrokerRpcServer_FireEvent(_, _, _, _))
+          .Times(0);
+  ASSERT_HRESULT_FAILED(client.FireEvent("A", "B"));
+}
+
+TEST_F(BrokerRpcTest, RestartServer) {
+  BrokerRpcServer server;
+  TestingBrokerRpcClient client(true);
+  EXPECT_CALL(client, StartServer(_))
+      .Times(1)
+      .WillOnce(DoAll(IgnoreResult(InvokeWithoutArgs(&server,
+                                                     &BrokerRpcServer::Start)),
+                      Return(RPC_S_OK)));
+  ASSERT_HRESULT_SUCCEEDED(client.Connect(true));
+  server.Stop();
+
+  EXPECT_CALL(client, StartServer(_))
+      .Times(1)
+      .WillOnce(DoAll(IgnoreResult(InvokeWithoutArgs(&server,
+                                                     &BrokerRpcServer::Start)),
+                      Return(RPC_S_OK)));
+  EXPECT_CALL(broker_rpc_mock_,
+      BrokerRpcServer_FireEvent(_, _, _, _))
+          .Times(1);
+  ASSERT_HRESULT_SUCCEEDED(client.FireEvent("A", "B"));
 }
 
 }  // namespace

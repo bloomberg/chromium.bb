@@ -102,6 +102,7 @@ BrowserHelperObject::BrowserHelperObject()
       thread_id_(::GetCurrentThreadId()),
       full_tab_chrome_frame_(false),
       broker_client_queue_(this),
+      broker_rpc_(false),
       tab_events_funnel_(broker_client()) {
   TRACE_EVENT_BEGIN("ceee.bho", this, "");
 }
@@ -171,7 +172,7 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
 
     // TODO(vitalybuka@chromium.org): switch to sampling when we have enough
     // users.
-    ReportAddonLoadTime("BH0", CLSID_BrowserHelperObject);
+    ReportAddonLoadTime("BHO", CLSID_BrowserHelperObject);
     ReportAddonLoadTime("ChromeFrameBHO", CLSID_ChromeFrameBHO);
     ReportAddonLoadTime("Toolband", CLSID_ToolBand);
 
@@ -840,7 +841,7 @@ HRESULT BrowserHelperObject::PostMessage(int port_id,
 
 HRESULT BrowserHelperObject::PostMessageImpl(int port_id,
                                              const std::string& message) {
-    return extension_port_manager_.PostMessage(port_id, message);
+  return extension_port_manager_.PostMessage(port_id, message);
 }
 
 HRESULT BrowserHelperObject::OnCfPrivateMessage(BSTR msg,
@@ -955,8 +956,8 @@ STDMETHODIMP_(void) BrowserHelperObject::OnNavigateComplete2(
   HandleNavigateComplete(webbrowser, url_bstr);
 
   for (std::vector<Sink*>::iterator iter = sinks_.begin();
-    iter != sinks_.end(); ++iter) {
-      (*iter)->OnNavigateComplete(webbrowser, url_bstr);
+       iter != sinks_.end(); ++iter) {
+    (*iter)->OnNavigateComplete(webbrowser, url_bstr);
   }
 }
 

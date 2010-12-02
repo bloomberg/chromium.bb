@@ -14,22 +14,22 @@
 // Local interprocess communication only.
 const wchar_t kRpcProtocol[] = L"ncalrpc";
 
-std::wstring GetRpcEndPointAddress() {
-  std::wstring end_point;
+std::wstring GetRpcEndpointAddress() {
+  std::wstring endpoint;
   bool running_as_admin = false;
   // CEEE running as regular user and CEEE running as elevated user will start
   // different broker processes. So make end points names different to connect
   // to appropriate one.
   process_utils_win::IsCurrentProcessUacElevated(&running_as_admin);
   if (running_as_admin)
-    end_point += L"ADMIN-";
+    endpoint += L"ADMIN-";
   std::wstring sid;
   win_util::GetUserSidString(&sid);
-  end_point += sid;
-  end_point += L"-B4630D08-4621-41A1-A8D0-F1E98DA460D6";
+  endpoint += sid;
+  endpoint += L"-B4630D08-4621-41A1-A8D0-F1E98DA460D6";
   // XP does not accept endpoints longer than 52.
-  end_point.resize(std::min(52u, end_point.size()));
-  return end_point;
+  endpoint.resize(std::min(52u, endpoint.size()));
+  return endpoint;
 }
 
 void  __RPC_FAR * __RPC_USER midl_user_allocate(size_t len) {

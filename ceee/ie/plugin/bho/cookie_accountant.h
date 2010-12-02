@@ -54,7 +54,7 @@ class CookieAccountant {
   // queue the events sent to the broker. They don't need to be sent to the BHO
   // because they don't need tab_id anyway.
   CookieAccountant()
-      : cookie_events_funnel_(new BrokerRpcClient),
+      : cookie_events_funnel_(new BrokerRpcClient(true)),
         patching_wininet_functions_(false) {
   }
 

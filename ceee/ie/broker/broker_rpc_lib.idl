@@ -15,37 +15,32 @@ typedef [context_handle] void* BrokerContextHandle;
 // @name Implementation specific calls.
 // @{
 // Returns context handle for new client.
-BrokerContextHandle Connect( 
-    [in] handle_t binding_handle);
+BrokerContextHandle Connect([in] handle_t binding_handle);
 
 // Release context handle.
-void Disconnect( 
-    [in] handle_t binding_handle,
-    [in, out] BrokerContextHandle* context);
+void Disconnect([in] handle_t binding_handle,
+                [in, out] BrokerContextHandle* context);
 // @}
 
 // @name Remote calls.
 // @{
 // Fires event to broker.
 // @param context is required to avoid execution by wrong broker instance.
-void FireEvent(
-    [in] handle_t binding_handle,
-    [in] BrokerContextHandle context,
-    [in, string] const char* event_name,
-    [in, string] const char* event_args);
+void FireEvent([in] handle_t binding_handle,
+               [in] BrokerContextHandle context,
+               [in, string] const char* event_name,
+               [in, string] const char* event_args);
 
-void SendUmaHistogramTimes(
-    [in] handle_t binding_handle,
-    [in, string] const char* name,
-    [in] int sample);
+void SendUmaHistogramTimes([in] handle_t binding_handle,
+                           [in, string] const char* name,
+                           [in] int sample);
 
-void SendUmaHistogramData(
-    [in] handle_t binding_handle,
-    [in, string] const char* name,
-    [in] int sample,
-    [in] int min,
-    [in] int max,
-    [in] int bucket_count);
+void SendUmaHistogramData([in] handle_t binding_handle,
+                          [in, string] const char* name,
+                          [in] int sample,
+                          [in] int min,
+                          [in] int max,
+                          [in] int bucket_count);
 // @}
 }
 

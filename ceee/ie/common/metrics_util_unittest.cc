@@ -58,7 +58,7 @@ TEST_F(CeeeMetricsUtilTest, ScopedTimerSuccess) {
 
   // Test that timing is right. This should ultimately succeed.
   // We expect less than a couple milliseconds on this call.
-  testing::MockBrokerRpcClient broker_rpc;
+  testing::MockBrokerRpcClient broker_rpc(false);
   EXPECT_CALL(broker_rpc, SendUmaHistogramTimes(_, testing::Lt(10)));
   CreateAndDestroyTimer(&broker_rpc);
 }

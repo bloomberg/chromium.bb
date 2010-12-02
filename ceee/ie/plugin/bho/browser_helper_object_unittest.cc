@@ -80,6 +80,8 @@ class TestingBrowserHelperObject
       public InstanceCountMixin<TestingBrowserHelperObject>,
       public InitializingCoClass<TestingBrowserHelperObject> {
  public:
+  TestingBrowserHelperObject() : mock_broker_rpc_client_(false) {}
+
   HRESULT Initialize(TestingBrowserHelperObject** self) {
     // Make sure this is done early so we can mock it.
     EXPECT_HRESULT_SUCCEEDED(MockChromeFrameHost::CreateInitializedIID(
