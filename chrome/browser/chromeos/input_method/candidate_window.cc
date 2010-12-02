@@ -1263,9 +1263,6 @@ void CandidateWindowController::Impl::OnSetCursorLocation(
   controller->MoveCandidateWindow(
       controller->cursor_location(),
       controller->candidate_window_->GetHorizontalOffset());
-  // The call is needed to ensure that the candidate window is redrawn
-  // properly after the cursor location is changed.
-  controller->candidate_window_->ResizeAndSchedulePaint();
 }
 
 void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
