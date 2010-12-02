@@ -145,6 +145,20 @@ HRESULT ToolbandModule::DllUnregisterServer() {
   return hr;
 }
 
+// No-op entry point to keep user-level registration happy.
+// TODO(robertshield): Remove this as part of registration re-org.
+STDAPI DllRegisterUserServer() {
+  LOG(WARNING) << "Call to unimplemented DllRegisterUserServer.";
+  return S_OK;
+}
+
+// No-op entry point to keep user-level unregistration happy.
+// TODO(robertshield): Remove this as part of registration re-org.
+STDAPI DllUnregisterUserServer() {
+  LOG(WARNING) << "Call to unimplemented DllUnregisterUserServer.";
+  return S_OK;
+}
+
 void ToolbandModule::Init() {
   // We must protect our data member against concurrent calls to check if we
   // can be unloaded. We must also making the call to Term within the lock

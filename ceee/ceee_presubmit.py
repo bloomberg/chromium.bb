@@ -20,7 +20,7 @@ SOURCE_FILE_EXTENSIONS = [
 EXCLUDED_PATHS = []
 
 # Finds what seem to be definitions of DllRegisterServer.
-DLL_REGISTER_SERVER_RE = re.compile('\s+DllRegisterServer\s*\(')
+DLL_REGISTER_SERVER_RE = re.compile('\s*STDAPI\s+DllRegisterServer\s*\(')
 
 # Matches a Tracker story URL
 story_url_re = re.compile('https?://tracker.+/[0-9]+')
@@ -178,9 +178,9 @@ def CheckNoDllRegisterServer(input_api, output_api):
       file_name = os.path.basename(f.LocalPath())
       if file_name not in ['install_utils.h', 'install_utils_unittest.cc']:
         return [output_api.PresubmitError(
-            '%s seems to contain a definition of DllRegisterServer.\n'
+            '%s contains a definition of DllRegisterServer at line %s.\n'
             'Please search for CEEE_DEFINE_DLL_REGISTER_SERVER.' %
-            f.LocalPath())]
+            (f.LocalPath(), line_num))]
   return []
 
 
