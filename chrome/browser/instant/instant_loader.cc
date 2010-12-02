@@ -194,7 +194,14 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
       tab->UpdateHistoryForNavigation(add_page_vector_[i].get());
 
     NavigationEntry* active_entry = tab->controller().GetActiveEntry();
-    DCHECK(active_entry);
+    if (!active_entry) {
+      // It appears to be possible to get here with no active entry. This seems
+      // to be possible with an auth dialog, but I can't narrow down the
+      // circumstances. If you hit this, file a bug with the steps you did and
+      // assign it to me (sky).
+      NOTREACHED();
+      return;
+    }
     tab->UpdateHistoryPageTitle(*active_entry);
 
     FaviconService* favicon_service =
