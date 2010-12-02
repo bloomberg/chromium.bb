@@ -4,6 +4,7 @@
 
 #include "chrome/installer/util/helper.h"
 
+#include "base/file_path.h"
 #include "base/path_service.h"
 #include "chrome/installer/util/browser_distribution.h"
 

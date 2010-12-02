@@ -8,9 +8,8 @@
 #define CHROME_INSTALLER_UTIL_HELPER_H_
 #pragma once
 
-#include "base/file_path.h"
-
 class BrowserDistribution;
+class FilePath;
 
 namespace installer {
 

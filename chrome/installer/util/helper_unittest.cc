@@ -11,14 +11,14 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "chrome/installer/util/package.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/package.h"
 #include "chrome/installer/util/version.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using installer::Version;
 using installer::Package;
+using installer::Version;
 
 namespace {
   class SetupHelperTest : public testing::Test {
