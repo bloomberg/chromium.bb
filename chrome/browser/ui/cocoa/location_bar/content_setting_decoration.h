@@ -13,6 +13,7 @@
 // ContentSettingDecoration is used to display the content settings
 // images on the current page.
 
+@class ContentSettingAnimationState;
 class ContentSettingImageModel;
 class LocationBarViewMac;
 class Profile;
@@ -33,6 +34,12 @@ class ContentSettingDecoration : public ImageDecoration {
   virtual bool AcceptsMousePress() { return true; }
   virtual bool OnMousePressed(NSRect frame);
   virtual NSString* GetToolTip();
+  virtual CGFloat GetWidthForSpace(CGFloat width);
+  virtual void DrawInFrame(NSRect frame, NSView* control_view);
+
+  // Called from internal animator. Only public because ObjC objects can't
+  // be friends.
+  virtual void AnimationTimerFired();
 
  private:
   // Helper to get where the bubble point should land.  Similar to
@@ -42,12 +49,25 @@ class ContentSettingDecoration : public ImageDecoration {
 
   void SetToolTip(NSString* tooltip);
 
+  // Returns an attributed string with the animated text. Caller is responsible
+  // for releasing.
+  NSAttributedString* CreateAnimatedText();
+
+  // Measure the width of the animated text.
+  CGFloat MeasureTextWidth();
+
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
   LocationBarViewMac* owner_;  // weak
   Profile* profile_;  // weak
 
   scoped_nsobject<NSString> tooltip_;
+
+  // Used when the decoration has animated text.
+  scoped_nsobject<ContentSettingAnimationState> animation_;
+  CGFloat text_width_;
+  scoped_nsobject<NSAttributedString> animated_text_;
+  scoped_nsobject<NSGradient> gradient_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDecoration);
 };
