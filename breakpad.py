@@ -55,7 +55,7 @@ def FormatException(e):
   return out
 
 
-def SendStack(last_tb, stack, url=None):
+def SendStack(last_tb, stack, url=None, maxlen=50):
   """Sends the stack trace to the breakpad server."""
   if not url:
     url = DEFAULT_URL
@@ -71,7 +71,8 @@ def SendStack(last_tb, stack, url=None):
         'version': sys.version,
     }
     # pylint: disable=W0702
-    print('\n'.join('  %s: %s' % (k, v[0:50]) for k, v in params.iteritems()))
+    print('\n'.join('  %s: %s' % (k, v[0:maxlen])
+                    for k, v in params.iteritems()))
     request = urllib.urlopen(url, urllib.urlencode(params))
     print(request.read())
     request.close()
