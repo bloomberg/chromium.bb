@@ -509,13 +509,6 @@ void ExistingUserController::OnLoginSuccess(
   LoginPerformer* performer = login_performer_.release();
   performer = NULL;
   bool known_user = UserManager::Get()->IsKnownUser(username);
-  if (credentials.two_factor && !known_user && !start_url_.is_valid()) {
-    // If we have a two factor error and and this is a new user and we are not
-    // already directing the user to a start url (e.g. a help page),
-    // direct them to the personal settings page.
-    // TODO(stevenjb): direct the user to a lightweight sync login page.
-    start_url_ = GURL(kSettingsSyncLoginUrl);
-  }
   AppendStartUrlToCmdline();
   if (selected_view_index_ + 1 == controllers_.size() && !known_user) {
 #if defined(OFFICIAL_BUILD)
@@ -524,6 +517,12 @@ void ExistingUserController::OnLoginSuccess(
         FilePath(kGetStartedPath));
     CommandLine::ForCurrentProcess()->AppendArg(kGetStartedURL);
 #endif  // OFFICIAL_BUILD
+    if (credentials.two_factor) {
+      // If we have a two factor error and and this is a new user,
+      // load the personal settings page.
+      // TODO(stevenjb): direct the user to a lightweight sync login page.
+      CommandLine::ForCurrentProcess()->AppendArg(kSettingsSyncLoginUrl);
+    }
     // For new user login don't launch browser until we pass image screen.
     LoginUtils::Get()->EnableBrowserLaunch(false);
     LoginUtils::Get()->CompleteLogin(username, password, credentials);
