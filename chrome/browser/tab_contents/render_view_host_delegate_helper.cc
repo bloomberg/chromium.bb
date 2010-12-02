@@ -188,6 +188,8 @@ void RenderViewHostDelegateViewHelper::RenderWidgetHostDestroyed(
   }
 }
 
+bool RenderViewHostDelegateHelper::gpu_enabled_ = true;
+
 // static
 WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     Profile* profile, bool is_dom_ui) {
@@ -271,6 +273,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.databases_enabled =
         !command_line.HasSwitch(switches::kDisableDatabases);
     web_prefs.experimental_webgl_enabled =
+        gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
     web_prefs.site_specific_quirks_enabled =
         !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
@@ -279,8 +282,10 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.show_composited_layer_borders =
         command_line.HasSwitch(switches::kShowCompositedLayerBorders);
     web_prefs.accelerated_compositing_enabled =
+        gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
     web_prefs.accelerated_2d_canvas_enabled =
+        gpu_enabled() &&
         command_line.HasSwitch(switches::kEnableAccelerated2dCanvas);
     web_prefs.memory_info_enabled =
         command_line.HasSwitch(switches::kEnableMemoryInfo);

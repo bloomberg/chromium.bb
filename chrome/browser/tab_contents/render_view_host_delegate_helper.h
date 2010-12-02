@@ -104,8 +104,16 @@ class RenderViewHostDelegateHelper {
                                      const std::string& value);
   static void ClearInspectorSettings(Profile* profile);
 
+  static bool gpu_enabled() { return gpu_enabled_; }
+  static void set_gpu_enabled(bool enabled) { gpu_enabled_ = enabled; }
+
  private:
   RenderViewHostDelegateHelper();
+
+  // Master switch for enabling/disabling GPU acceleration for the current
+  // browser session. It does not change the acceleration settings for
+  // existing tabs, just the future ones.
+  static bool gpu_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostDelegateHelper);
 };

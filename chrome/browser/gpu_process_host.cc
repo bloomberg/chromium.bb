@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
@@ -57,6 +58,12 @@ class RouteOnUIThreadTask : public Task {
 // GpuProcessHost to be terminated on the same thread on which it is
 // initialized, the IO thread.
 static GpuProcessHost* sole_instance_ = NULL;
+
+// Number of times the gpu process has crashed in the current browser session.
+static int g_gpu_crash_count = 0;
+// Maximum number of times the gpu process is allowed to crash in a session.
+// Once this limit is reached, any request to launch the gpu process will fail.
+static const int kGpuMaxCrashCount = 3;
 
 void RouteOnUIThread(const IPC::Message& message) {
   BrowserThread::PostTask(BrowserThread::UI,
@@ -469,13 +476,15 @@ void GpuProcessHost::OnChildDied() {
 }
 
 void GpuProcessHost::OnProcessCrashed() {
-  // TODO(alokp): Update gpu process crash rate.
+  if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
+    // The gpu process is too unstable to use. Disable it for current session.
+    RenderViewHostDelegateHelper::set_gpu_enabled(false);
+  }
   BrowserChildProcessHost::OnProcessCrashed();
 }
 
 bool GpuProcessHost::CanLaunchGpuProcess() const {
-  // TODO(alokp): Answer based on crash rate.
-  return true;
+  return RenderViewHostDelegateHelper::gpu_enabled();
 }
 
 bool GpuProcessHost::LaunchGpuProcess() {
