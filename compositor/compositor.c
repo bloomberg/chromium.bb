@@ -1199,6 +1199,7 @@ wlsc_output_post_geometry(struct wl_client *client, struct wl_object *global)
 
 	wl_client_post_event(client, global,
 			     WL_OUTPUT_GEOMETRY,
+			     output->x, output->y,
 			     output->width, output->height);
 }
 

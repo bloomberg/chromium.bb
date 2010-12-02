@@ -1272,12 +1272,12 @@ static const struct wl_drm_listener drm_listener = {
 static void
 display_handle_geometry(void *data,
 			struct wl_output *output,
-			int32_t width, int32_t height)
+			int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct display *display = data;
 
-	display->screen_allocation.x = 0;
-	display->screen_allocation.y = 0;
+	display->screen_allocation.x = x;
+	display->screen_allocation.y = y;
 	display->screen_allocation.width = width;
 	display->screen_allocation.height = height;
 }

@@ -378,6 +378,8 @@
   <interface name="output" version="1">
     <!-- Notification about the screen size. -->
     <event name="geometry">
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>

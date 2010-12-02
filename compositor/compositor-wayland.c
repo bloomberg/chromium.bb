@@ -316,12 +316,13 @@ create_invisible_pointer(struct wayland_compositor *c)
 static void
 display_handle_geometry(void *data,
 			struct wl_output *output,
+			int32_t x, int32_t y,
 			int32_t width, int32_t height)
 {
 	struct wayland_compositor *c = data;
 
-	c->parent.screen_allocation.x = 0;
-	c->parent.screen_allocation.y = 0;
+	c->parent.screen_allocation.x = x;
+	c->parent.screen_allocation.y = y;
 	c->parent.screen_allocation.width = width;
 	c->parent.screen_allocation.height = height;
 }
