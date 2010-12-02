@@ -62,7 +62,7 @@ FcInitLoadConfig (void)
     FcInitDebug ();
     config = FcConfigCreate ();
     if (!config)
-	return FcFalse;
+	return NULL;
 
     if (!FcConfigParseAndLoad (config, 0, FcTrue))
     {
