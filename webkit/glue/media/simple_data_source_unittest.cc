@@ -6,9 +6,15 @@
 #include "media/base/filters.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
-#include "webkit/glue/media/mock_media_resource_loader_bridge_factory.h"
+#include "net/base/net_errors.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/media/simple_data_source.h"
-#include "webkit/glue/mock_resource_loader_bridge.h"
+#include "webkit/glue/mock_webframe.h"
+#include "webkit/glue/mock_weburlloader_impl.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -20,6 +26,11 @@ using ::testing::Return;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
+
+using WebKit::WebURLError;
+using WebKit::WebURLLoader;
+using WebKit::WebURLRequest;
+using WebKit::WebURLResponse;
 
 namespace {
 
@@ -39,68 +50,56 @@ namespace webkit_glue {
 class SimpleDataSourceTest : public testing::Test {
  public:
   SimpleDataSourceTest() {
-    bridge_factory_.reset(
-        new NiceMock<MockMediaResourceLoaderBridgeFactory>());
-    bridge_.reset(new NiceMock<MockResourceLoaderBridge>());
-
     for (int i = 0; i < kDataSize; ++i) {
       data_[i] = i;
     }
   }
 
   virtual ~SimpleDataSourceTest() {
-    if (bridge_.get())
-      EXPECT_CALL(*bridge_, OnDestroy());
-    if (bridge_factory_.get())
-      EXPECT_CALL(*bridge_factory_, OnDestroy());
+    ignore_result(frame_.release());
   }
 
   void InitializeDataSource(const char* url) {
+    gurl_ = GURL(url);
+
+    frame_.reset(new NiceMock<MockWebFrame>());
+    url_loader_ = new NiceMock<MockWebURLLoader>();
+
     data_source_ = new SimpleDataSource(MessageLoop::current(),
-                                        bridge_factory_.get());
-    CHECK(data_source_);
+                                        frame_.get());
 
     // There is no need to provide a message loop to data source.
     data_source_->set_host(&host_);
+    data_source_->SetURLLoaderForTest(url_loader_);
 
-    // First a bridge is created.
     InSequence s;
-    EXPECT_CALL(*bridge_factory_, CreateBridge(GURL(url), _, -1, -1))
-        .WillOnce(Return(bridge_.get()));
-    EXPECT_CALL(*bridge_, Start(data_source_.get()))
-        .WillOnce(Return(true));
 
     data_source_->Initialize(url, callback_.NewCallback());
-
     MessageLoop::current()->RunAllPending();
   }
 
   void RequestSucceeded(bool is_loaded) {
-    ResourceResponseInfo info;
-    info.content_length = kDataSize;
+    WebURLResponse response(gurl_);
+    response.setExpectedContentLength(kDataSize);
 
-    data_source_->OnReceivedResponse(info, false);
+    data_source_->didReceiveResponse(NULL, response);
     int64 size;
     EXPECT_TRUE(data_source_->GetSize(&size));
     EXPECT_EQ(kDataSize, size);
 
-    for (int i = 0; i < kDataSize; ++i)
-      data_source_->OnReceivedData(data_ + i, 1);
+    for (int i = 0; i < kDataSize; ++i) {
+      data_source_->didReceiveData(NULL, data_ + i, 1);
+    }
 
     EXPECT_CALL(host_, SetLoaded(is_loaded));
 
     InSequence s;
-    EXPECT_CALL(*bridge_, OnDestroy())
-        .WillOnce(Invoke(this, &SimpleDataSourceTest::ReleaseBridge));
     EXPECT_CALL(host_, SetTotalBytes(kDataSize));
     EXPECT_CALL(host_, SetBufferedBytes(kDataSize));
     EXPECT_CALL(callback_, OnFilterCallback());
     EXPECT_CALL(callback_, OnCallbackDestroyed());
 
-    URLRequestStatus status;
-    status.set_status(URLRequestStatus::SUCCESS);
-    status.set_os_error(0);
-    data_source_->OnCompletedRequest(status, "", base::Time());
+    data_source_->didFinishLoading(NULL, 0);
 
     // Let the tasks to be executed.
     MessageLoop::current()->RunAllPending();
@@ -108,28 +107,23 @@ class SimpleDataSourceTest : public testing::Test {
 
   void RequestFailed() {
     InSequence s;
-    EXPECT_CALL(*bridge_, OnDestroy())
-        .WillOnce(Invoke(this, &SimpleDataSourceTest::ReleaseBridge));
     EXPECT_CALL(host_, SetError(media::PIPELINE_ERROR_NETWORK));
     EXPECT_CALL(callback_, OnFilterCallback());
     EXPECT_CALL(callback_, OnCallbackDestroyed());
 
-    URLRequestStatus status;
-    status.set_status(URLRequestStatus::FAILED);
-    status.set_os_error(100);
-    data_source_->OnCompletedRequest(status, "", base::Time());
+    WebURLError error;
+    error.reason = net::ERR_FAILED;
+    data_source_->didFail(NULL, error);
 
     // Let the tasks to be executed.
     MessageLoop::current()->RunAllPending();
   }
 
   void DestroyDataSource() {
-    EXPECT_CALL(*bridge_factory_, OnDestroy())
-        .WillOnce(Invoke(this, &SimpleDataSourceTest::ReleaseBridgeFactory));
-
     StrictMock<media::MockFilterCallback> callback;
     EXPECT_CALL(callback, OnFilterCallback());
     EXPECT_CALL(callback, OnCallbackDestroyed());
+
     data_source_->Stop(callback.NewCallback());
     MessageLoop::current()->RunAllPending();
 
@@ -148,23 +142,17 @@ class SimpleDataSourceTest : public testing::Test {
     }
   }
 
-  void ReleaseBridge() {
-    ignore_result(bridge_.release());
-  }
-
-  void ReleaseBridgeFactory() {
-    ignore_result(bridge_factory_.release());
-  }
-
   MOCK_METHOD1(ReadCallback, void(size_t size));
 
  protected:
+  GURL gurl_;
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<NiceMock<MockMediaResourceLoaderBridgeFactory> > bridge_factory_;
-  scoped_ptr<NiceMock<MockResourceLoaderBridge> > bridge_;
+  NiceMock<MockWebURLLoader>* url_loader_;
   scoped_refptr<SimpleDataSource> data_source_;
   StrictMock<media::MockFilterHost> host_;
   StrictMock<media::MockFilterCallback> callback_;
+  scoped_ptr<NiceMock<MockWebFrame> > frame_;
+
   char data_[kDataSize];
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDataSourceTest);
@@ -189,13 +177,16 @@ TEST_F(SimpleDataSourceTest, InitializeFile) {
 }
 
 TEST_F(SimpleDataSourceTest, InitializeData) {
+  frame_.reset(new NiceMock<MockWebFrame>());
+  url_loader_ = new NiceMock<MockWebURLLoader>();
+
   data_source_ = new SimpleDataSource(MessageLoop::current(),
-                                      bridge_factory_.get());
+                                      frame_.get());
   EXPECT_TRUE(data_source_->IsUrlSupported(kDataUrl));
-  CHECK(data_source_);
 
   // There is no need to provide a message loop to data source.
   data_source_->set_host(&host_);
+  data_source_->SetURLLoaderForTest(url_loader_);
 
   EXPECT_CALL(host_, SetLoaded(true));
   EXPECT_CALL(host_, SetTotalBytes(sizeof(kDataUrlDecoded)));
@@ -218,9 +209,7 @@ TEST_F(SimpleDataSourceTest, RequestFailed) {
 TEST_F(SimpleDataSourceTest, StopWhenDownloading) {
   InitializeDataSource(kHttpUrl);
 
-  EXPECT_CALL(*bridge_, Cancel());
-  EXPECT_CALL(*bridge_, OnDestroy())
-      .WillOnce(Invoke(this, &SimpleDataSourceTest::ReleaseBridge));
+  EXPECT_CALL(*url_loader_, cancel());
   EXPECT_CALL(callback_, OnCallbackDestroyed());
   DestroyDataSource();
 }

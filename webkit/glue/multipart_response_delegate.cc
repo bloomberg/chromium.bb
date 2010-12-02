@@ -316,7 +316,8 @@ bool MultipartResponseDelegate::ReadMultipartBoundary(
 bool MultipartResponseDelegate::ReadContentRanges(
     const WebURLResponse& response,
     int* content_range_lower_bound,
-    int* content_range_upper_bound) {
+    int* content_range_upper_bound,
+    int* content_range_instance_size) {
 
   std::string content_range = response.httpHeaderField("Content-Range").utf8();
   if (content_range.empty()) {
@@ -336,12 +337,20 @@ bool MultipartResponseDelegate::ReadContentRanges(
   // Skip over the initial space.
   byte_range_lower_bound_start_offset++;
 
+  // Find the lower bound.
   size_t byte_range_lower_bound_end_offset =
       content_range.find("-", byte_range_lower_bound_start_offset);
   if (byte_range_lower_bound_end_offset == std::string::npos) {
     return false;
   }
 
+  size_t byte_range_lower_bound_characters =
+      byte_range_lower_bound_end_offset - byte_range_lower_bound_start_offset;
+  std::string byte_range_lower_bound =
+      content_range.substr(byte_range_lower_bound_start_offset,
+                           byte_range_lower_bound_characters);
+
+  // Find the upper bound.
   size_t byte_range_upper_bound_start_offset =
       byte_range_lower_bound_end_offset + 1;
 
@@ -351,16 +360,31 @@ bool MultipartResponseDelegate::ReadContentRanges(
     return false;
   }
 
-  if (!base::StringToInt(
-      content_range.begin() + byte_range_lower_bound_start_offset,
-      content_range.begin() + byte_range_lower_bound_end_offset,
-      content_range_lower_bound))
-    return false;
+  size_t byte_range_upper_bound_characters =
+      byte_range_upper_bound_end_offset - byte_range_upper_bound_start_offset;
+  std::string byte_range_upper_bound =
+      content_range.substr(byte_range_upper_bound_start_offset,
+                           byte_range_upper_bound_characters);
 
-  if (!base::StringToInt(
-      content_range.begin() + byte_range_upper_bound_start_offset,
-      content_range.begin() + byte_range_upper_bound_end_offset,
-      content_range_upper_bound))
+  // Find the instance size.
+  size_t byte_range_instance_size_start_offset =
+      byte_range_upper_bound_end_offset + 1;
+
+  size_t byte_range_instance_size_end_offset =
+      content_range.length();
+
+  size_t byte_range_instance_size_characters =
+      byte_range_instance_size_end_offset -
+      byte_range_instance_size_start_offset;
+  std::string byte_range_instance_size =
+      content_range.substr(byte_range_instance_size_start_offset,
+                           byte_range_instance_size_characters);
+
+  if (!base::StringToInt(byte_range_lower_bound, content_range_lower_bound))
+    return false;
+  if (!base::StringToInt(byte_range_upper_bound, content_range_upper_bound))
+    return false;
+  if (!base::StringToInt(byte_range_instance_size, content_range_instance_size))
     return false;
   return true;
 }
