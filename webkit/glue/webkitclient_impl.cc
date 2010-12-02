@@ -16,6 +16,7 @@
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
+#include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/platform_file.h"
 #include "base/singleton.h"
@@ -252,6 +253,30 @@ void WebKitClientImpl::decrementStatsCounter(const char* name) {
 
 void WebKitClientImpl::incrementStatsCounter(const char* name) {
   base::StatsCounter(name).Increment();
+}
+
+void WebKitClientImpl::histogramCustomCounts(
+    const char* name, int sample, int min, int max, int bucket_count) {
+  // Copied from histogram macro, but without the static variable caching
+  // the histogram because name is dynamic.
+  scoped_refptr<base::Histogram> counter =
+      base::Histogram::FactoryGet(name, min, max, bucket_count,
+          base::Histogram::kUmaTargetedHistogramFlag);
+  DCHECK_EQ(name, counter->histogram_name());
+  if (counter.get())
+    counter->Add(sample);
+}
+
+void WebKitClientImpl::histogramEnumeration(
+    const char* name, int sample, int boundary_value) {
+  // Copied from histogram macro, but without the static variable caching
+  // the histogram because name is dynamic.
+  scoped_refptr<base::Histogram> counter =
+      base::LinearHistogram::FactoryGet(name, 1, boundary_value,
+          boundary_value + 1, base::Histogram::kUmaTargetedHistogramFlag);
+  DCHECK_EQ(name, counter->histogram_name());
+  if (counter.get())
+    counter->Add(sample);
 }
 
 void WebKitClientImpl::traceEventBegin(const char* name, void* id,
