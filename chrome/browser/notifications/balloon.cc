@@ -28,20 +28,7 @@ void Balloon::SetPosition(const gfx::Point& upper_left, bool reposition) {
 }
 
 void Balloon::SetContentPreferredSize(const gfx::Size& size) {
-  gfx::Size new_size(size);
-#if defined(OS_MACOSX)
-  // TODO(levin): Make all of the code that went in with this change to be
-  // cross-platform. See http://crbug.com/64720
-  // Only allow the size of notifications to grow.  This stops the balloon
-  // from jumping between sizes due to dynamic content.  For example, the
-  // balloon's contents may adjust due to changes in
-  // document.body.clientHeight.
-  new_size.set_height(std::max(new_size.height(), content_size_.height()));
-
-  if (content_size_ == new_size)
-    return;
-#endif
-  collection_->ResizeBalloon(this, new_size);
+  collection_->ResizeBalloon(this, size);
 }
 
 void Balloon::set_view(BalloonView* balloon_view) {

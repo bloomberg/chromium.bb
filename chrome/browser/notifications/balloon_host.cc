@@ -118,6 +118,8 @@ void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
       render_view_host->routing_id(), balloon_->min_scrollbar_size()));
   render_view_host->WasResized();
 #if !defined(OS_MACOSX)
+  // TODO(levin): Make all of the code that went in originally with this change
+  // to be cross-platform. See http://crbug.com/64720
   render_view_host->EnablePreferredSizeChangedMode(
       kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
 #endif
