@@ -45,14 +45,12 @@ class SignedSettingsHelperTest : public ::testing::Test,
   }
 
   virtual void SetUp() {
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
     file_thread_.Start();
     SignedSettingsHelper::Get()->set_test_delegate(this);
   }
 
   virtual void TearDown() {
     SignedSettingsHelper::Get()->set_test_delegate(NULL);
-    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
   }
 
   virtual void OnOpCreated(SignedSettings* op) {
@@ -80,6 +78,8 @@ class SignedSettingsHelperTest : public ::testing::Test,
   BrowserThread file_thread_;
 
   int pending_ops_;
+
+  ScopedStubCrosEnabler stub_cros_enabler_;
 };
 
 TEST_F(SignedSettingsHelperTest, SerializedOps) {

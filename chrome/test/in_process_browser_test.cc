@@ -41,10 +41,6 @@
 #include "net/test/test_server.h"
 #include "sandbox/src/dep.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
@@ -150,8 +146,6 @@ void InProcessBrowserTest::SetUp() {
     RenderProcessHost::set_run_renderer_in_process(true);
 
 #if defined(OS_CHROMEOS)
-  chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
-
   // Make sure that the log directory exists.
   FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
   file_util::CreateDirectory(log_dir);

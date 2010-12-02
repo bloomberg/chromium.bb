@@ -78,13 +78,11 @@ class SignedSettingsTest : public ::testing::Test {
   virtual ~SignedSettingsTest() {}
 
   virtual void SetUp() {
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
     file_thread_.Start();
   }
 
   virtual void TearDown() {
     OwnerKeyUtils::set_factory(NULL);
-    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
   }
 
   void mock_service(SignedSettings* s, MockOwnershipService* m) {
@@ -164,6 +162,8 @@ class SignedSettingsTest : public ::testing::Test {
 
   MockKeyUtils* mock_;
   MockInjector injector_;
+
+  ScopedStubCrosEnabler stub_cros_enabler_;
 
 };
 

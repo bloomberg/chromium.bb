@@ -14,6 +14,10 @@
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#endif  // defined(OS_CHROMEOS)
+
 class Browser;
 class CommandLine;
 class Profile;
@@ -184,6 +188,10 @@ class InProcessBrowserTest : public testing::Test {
   // Temporary user data directory. Used only when a user data directory is not
   // specified in the command line.
   ScopedTempDir temp_user_data_dir_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+#endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(InProcessBrowserTest);
 };

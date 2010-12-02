@@ -218,6 +218,22 @@ class CrosLibrary {
   DISALLOW_COPY_AND_ASSIGN(CrosLibrary);
 };
 
+// The class is used for enabling the stub libcros, and cleaning it up at
+// the end of the object lifetime. Useful for testing.
+class ScopedStubCrosEnabler {
+ public:
+  ScopedStubCrosEnabler() {
+    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+  }
+
+  ~ScopedStubCrosEnabler() {
+    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedStubCrosEnabler);
+};
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_CROS_LIBRARY_H_

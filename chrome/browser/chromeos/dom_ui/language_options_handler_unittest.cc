@@ -12,26 +12,6 @@
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-// The class is used for enabling the stub libcros, and cleaning it up at
-// the end of the object lifetime.
-class ScopedStubImplEnabler {
- public:
-  ScopedStubImplEnabler() {
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
-  }
-
-  ~ScopedStubImplEnabler() {
-    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedStubImplEnabler);
-};
-
-}  // namespace
-
 namespace chromeos {
 
 static InputMethodDescriptors CreateInputMethodDescriptors() {
@@ -49,7 +29,7 @@ static InputMethodDescriptors CreateInputMethodDescriptors() {
 
 TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
   // Use the stub libcros. The object will take care of the cleanup.
-  ScopedStubImplEnabler enabler;
+  ScopedStubCrosEnabler stub_cros_enabler;
 
   // Reset the library implementation so it will be initialized
   // again. Otherwise, non-stub implementation can be reused, if it's

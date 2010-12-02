@@ -224,12 +224,10 @@ class ProxyConfigServiceImplTest : public PlatformTest {
   ProxyConfigServiceImplTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
   }
 
   virtual ~ProxyConfigServiceImplTest() {
     config_service_ = NULL;
-    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
     MessageLoop::current()->RunAllPending();
   }
 
@@ -311,6 +309,7 @@ class ProxyConfigServiceImplTest : public PlatformTest {
   }
 
  private:
+  ScopedStubCrosEnabler stub_cros_enabler_;
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
