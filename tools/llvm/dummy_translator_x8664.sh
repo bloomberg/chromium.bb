@@ -22,7 +22,8 @@ readonly SEL_LDR="${SEL_LDR_ROOT}/scons-out/opt-linux-x86-64/staging/sel_ldr"
 
 # Flags
 readonly LLC_FLAGS=(-march=x86-64
-                    -mcpu=core2)
+                    -mcpu=core2
+                    -asm-verbose=false)
 
 readonly AS_FLAGS=(--64 \
                    --nacl-align 5 \

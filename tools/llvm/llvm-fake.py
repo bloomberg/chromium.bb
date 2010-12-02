@@ -171,14 +171,17 @@ global_config_flags = {
       '-no-inline-jumptables',
       '-sfi-disable-cp',
       '-arm_static_tls',
+      '-asm-verbose=false',
       ],
     'x86-32': [
       '-march=x86',
       '-mcpu=pentium4',
+      '-asm-verbose=false',
       ],
     'x86-64': [
       '-march=x86-64',
       '-mcpu=core2',
+      '-asm-verbose=false',
       ],
     },
 
