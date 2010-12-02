@@ -378,16 +378,20 @@ void InputMethodMenu::RunMenu(
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodLibrary::Observer implementation:
 
-void InputMethodMenu::InputMethodChanged(InputMethodLibrary* obj) {
+void InputMethodMenu::InputMethodChanged(
+    InputMethodLibrary* obj,
+    const InputMethodDescriptor& previous_input_method,
+    const InputMethodDescriptor& current_input_method,
+    size_t num_active_input_methods) {
   UserMetrics::RecordAction(
       UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
+  UpdateUIFromInputMethod(current_input_method, num_active_input_methods);
+}
 
-  const InputMethodDescriptor& previous_input_method =
-      obj->previous_input_method();
-  const InputMethodDescriptor& current_input_method =
-      obj->current_input_method();
-  UpdateUIFromInputMethod(current_input_method);
-  // Update Chrome prefs as well.
+void InputMethodMenu::PreferenceUpdateNeeded(
+    InputMethodLibrary* obj,
+    const InputMethodDescriptor& previous_input_method,
+    const InputMethodDescriptor& current_input_method) {
   if (is_browser_mode_) {
     if (pref_service_) {  // make sure we're not in unit tests.
       // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
@@ -418,20 +422,21 @@ void InputMethodMenu::PrepareForMenuOpen() {
   }
 }
 
-void InputMethodMenu::ActiveInputMethodsChanged(InputMethodLibrary* obj) {
+void InputMethodMenu::ActiveInputMethodsChanged(
+    InputMethodLibrary* obj,
+    const InputMethodDescriptor& current_input_method,
+    size_t num_active_input_methods) {
   // Update the icon if active input methods are changed. See also
-  // comments in UpdateUI()
-  UpdateUIFromInputMethod(obj->current_input_method());
-}
-
-void InputMethodMenu::ImePropertiesChanged(InputMethodLibrary* obj) {
+  // comments in UpdateUI() in input_method_menu_button.cc.
+  UpdateUIFromInputMethod(current_input_method, num_active_input_methods);
 }
 
 void InputMethodMenu::UpdateUIFromInputMethod(
-    const InputMethodDescriptor& input_method) {
+    const InputMethodDescriptor& input_method,
+    size_t num_active_input_methods) {
   const std::wstring name = GetTextForIndicator(input_method);
   const std::wstring tooltip = GetTextForMenu(input_method);
-  UpdateUI(name, tooltip);
+  UpdateUI(input_method.id, name, tooltip, num_active_input_methods);
 }
 
 void InputMethodMenu::RebuildModel() {

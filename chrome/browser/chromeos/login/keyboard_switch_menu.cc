@@ -24,8 +24,10 @@ KeyboardSwitchMenu::KeyboardSwitchMenu()
 
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMenu::InputMethodMenuHost implementation.
-void KeyboardSwitchMenu::UpdateUI(
-    const std::wstring& name, const std::wstring& tooltip) {
+void KeyboardSwitchMenu::UpdateUI(const std::string& input_method_id,
+                                  const std::wstring& name,
+                                  const std::wstring& tooltip,
+                                  size_t num_active_input_methods) {
   // Update all view hierarchies so that the new input method name is shown in
   // the menu button.
   views::Widget::NotifyLocaleChanged();

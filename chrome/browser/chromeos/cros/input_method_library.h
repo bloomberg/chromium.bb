@@ -26,14 +26,23 @@ class InputMethodLibrary {
    public:
     virtual ~Observer() = 0;
     // Called when the current input method is changed.
-    virtual void InputMethodChanged(InputMethodLibrary* obj) = 0;
-
-    // Called when input method properties (see chromeos_input_method.h
-    // for details) are changed.
-    virtual void ImePropertiesChanged(InputMethodLibrary* obj) = 0;
+    virtual void InputMethodChanged(
+        InputMethodLibrary* obj,
+        const InputMethodDescriptor& previous_input_method,
+        const InputMethodDescriptor& current_input_method,
+        size_t num_active_input_methods) = 0;
 
     // Called when the active input methods are changed.
-    virtual void ActiveInputMethodsChanged(InputMethodLibrary* obj) = 0;
+    virtual void ActiveInputMethodsChanged(
+        InputMethodLibrary* obj,
+        const InputMethodDescriptor& current_input_method,
+        size_t num_active_input_methods) = 0;
+
+    // Called when the preferences have to be updated.
+    virtual void PreferenceUpdateNeeded(
+        InputMethodLibrary* obj,
+        const InputMethodDescriptor& previous_input_method,
+        const InputMethodDescriptor& current_input_method) = 0;
   };
   virtual ~InputMethodLibrary() {}
 

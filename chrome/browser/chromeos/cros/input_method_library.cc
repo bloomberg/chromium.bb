@@ -23,6 +23,7 @@
 #include "chrome/common/notification_service.h"
 
 namespace {
+
 const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
 const char kCandidateWindowPath[] = "/opt/google/chrome/candidate_window";
 
@@ -290,7 +291,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
 
     if (active_input_methods_are_changed) {
-      FOR_EACH_OBSERVER(Observer, observers_, ActiveInputMethodsChanged(this));
+      const size_t num_active_input_methods = GetNumActiveInputMethods();
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        ActiveInputMethodsChanged(this,
+                                                  current_input_method_,
+                                                  num_active_input_methods));
     }
   }
 
@@ -386,13 +391,29 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       previous_input_method_ = current_input_method_;
       current_input_method_ = new_input_method;
     }
-    FOR_EACH_OBSERVER(Observer, observers_, InputMethodChanged(this));
+    const size_t num_active_input_methods = GetNumActiveInputMethods();
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      InputMethodChanged(this,
+                                         previous_input_method_,
+                                         current_input_method_,
+                                         num_active_input_methods));
+
+    // Ask the first observer to update preferences. We should not ask every
+    // observer to do so. Otherwise, we'll end up updating preferences many
+    // times when many observers are attached (ex. many windows are opened),
+    // which is unnecessary and expensive.
+    ObserverListBase<Observer>::Iterator it(observers_);
+    Observer* first_observer = it.GetNext();
+    if (first_observer) {
+      first_observer->PreferenceUpdateNeeded(this,
+                                             previous_input_method_,
+                                             current_input_method_);
+    }
   }
 
   void RegisterProperties(const ImePropertyList& prop_list) {
     // |prop_list| might be empty. This means "clear all properties."
     current_ime_properties_ = prop_list;
-    FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
   }
 
   void StartInputMethodProcesses() {
@@ -404,7 +425,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     for (size_t i = 0; i < prop_list.size(); ++i) {
       FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
     }
-    FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
   }
 
   // Launches an input method procsess specified by the given command

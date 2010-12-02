@@ -29,8 +29,10 @@ class InputMethodMenuButton : public StatusAreaButton,
 
  private:
   // InputMethodMenu implementation.
-  virtual void UpdateUI(
-      const std::wstring& name, const std::wstring& tooltip);
+  virtual void UpdateUI(const std::string& input_method_id,
+                        const std::wstring& name,
+                        const std::wstring& tooltip,
+                        size_t num_active_input_methods);
   virtual bool ShouldSupportConfigUI();
   virtual void OpenConfigUI();
 

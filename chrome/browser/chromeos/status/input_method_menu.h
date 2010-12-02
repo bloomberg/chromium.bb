@@ -63,9 +63,19 @@ class InputMethodMenu : public views::ViewMenuDelegate,
                        const gfx::Point& pt);
 
   // InputMethodLibrary::Observer implementation.
-  virtual void InputMethodChanged(InputMethodLibrary* obj);
-  virtual void ImePropertiesChanged(InputMethodLibrary* obj);
-  virtual void ActiveInputMethodsChanged(InputMethodLibrary* obj);
+  virtual void InputMethodChanged(
+      InputMethodLibrary* obj,
+      const InputMethodDescriptor& previous_input_method,
+      const InputMethodDescriptor& current_input_method,
+      size_t num_active_input_methods);
+  virtual void ActiveInputMethodsChanged(
+      InputMethodLibrary* obj,
+      const InputMethodDescriptor& current_input_method,
+      size_t num_active_input_methods);
+  virtual void PreferenceUpdateNeeded(
+    InputMethodLibrary* obj,
+    const InputMethodDescriptor& previous_input_method,
+    const InputMethodDescriptor& current_input_method);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -89,7 +99,8 @@ class InputMethodMenu : public views::ViewMenuDelegate,
 
  protected:
   // Parses |input_method| and then calls UpdateUI().
-  void UpdateUIFromInputMethod(const InputMethodDescriptor& input_method);
+  void UpdateUIFromInputMethod(const InputMethodDescriptor& input_method,
+                               size_t num_active_input_methods);
 
   // Rebuilds model and menu2 objects in preparetion to open the menu.
   void PrepareForMenuOpen();
@@ -102,8 +113,10 @@ class InputMethodMenu : public views::ViewMenuDelegate,
  private:
   // Updates UI of a container of the menu (e.g. the "US" menu button in the
   // status area). Sub classes have to implement the interface for their own UI.
-  virtual void UpdateUI(
-      const std::wstring& name, const std::wstring& tooltip) = 0;
+  virtual void UpdateUI(const std::string& input_method_id,  // e.g. "mozc"
+                        const std::wstring& name,  // e.g. "US", "INTL"
+                        const std::wstring& tooltip,
+                        size_t num_active_input_methods) = 0;
 
   // Sub classes have to implement the interface. This interface should return
   // true if the dropdown menu should show an item like "Customize languages

@@ -23,8 +23,10 @@ class KeyboardSwitchMenu : public InputMethodMenu {
   virtual ~KeyboardSwitchMenu() {}
 
   // InputMethodMenu::InputMethodMenuHost implementation.
-  virtual void UpdateUI(
-      const std::wstring& name, const std::wstring& tooltip);
+  virtual void UpdateUI(const std::string& input_method_id,
+                        const std::wstring& name,
+                        const std::wstring& tooltip,
+                        size_t num_active_input_methods);
   virtual bool ShouldSupportConfigUI() { return false; }
   virtual void OpenConfigUI() {}
 

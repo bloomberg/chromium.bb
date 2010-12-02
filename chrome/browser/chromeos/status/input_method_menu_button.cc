@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -54,11 +55,16 @@ InputMethodMenuButton::InputMethodMenuButton(StatusAreaHost* host)
   SetShowMultipleIconStates(false);
   set_alignment(TextButton::ALIGN_CENTER);
 
+  chromeos::KeyboardLibrary* keyboard_library =
+      chromeos::CrosLibrary::Get()->GetKeyboardLibrary();
+  const std::string hardware_keyboard_id =  // e.g. "xkb:us::eng"
+      keyboard_library->GetHardwareKeyboardLayoutName();
+
   // Draw the default indicator "US". The default indicator "US" is used when
   // |pref_service| is not available (for example, unit tests) or |pref_service|
   // is available, but Chrome preferences are not available (for example,
   // initial OS boot).
-  InputMethodMenuButton::UpdateUI(L"US", L"");
+  InputMethodMenuButton::UpdateUI(hardware_keyboard_id, L"US", L"", 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,9 +80,21 @@ gfx::Size InputMethodMenuButton::GetPreferredSize() {
 
 void InputMethodMenuButton::OnLocaleChanged() {
   input_method::OnLocaleChanged();
+
+  chromeos::InputMethodLibrary* input_method_library =
+      chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
   const InputMethodDescriptor& input_method =
-      CrosLibrary::Get()->GetInputMethodLibrary()->current_input_method();
-  UpdateUIFromInputMethod(input_method);
+      input_method_library->current_input_method();
+
+  // In general, we should not call an input method API in the input method
+  // button classes (status/input_menu_button*.cc) for performance reasons (see
+  // http://crosbug.com/8284). However, since OnLocaleChanged is called only in
+  // OOBE/Login screen which does not have two or more Chrome windows, it's okay
+  // to call GetNumActiveInputMethods here.
+  const size_t num_active_input_methods =
+      input_method_library->GetNumActiveInputMethods();
+
+  UpdateUIFromInputMethod(input_method, num_active_input_methods);
   Layout();
   SchedulePaint();
 }
@@ -84,16 +102,16 @@ void InputMethodMenuButton::OnLocaleChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMenu::InputMethodMenuHost implementation:
 
-void InputMethodMenuButton::UpdateUI(
-    const std::wstring& name, const std::wstring& tooltip) {
+void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
+                                     const std::wstring& name,
+                                     const std::wstring& tooltip,
+                                     size_t num_active_input_methods) {
   // Hide the button only if there is only one input method, and the input
   // method is a XKB keyboard layout. We don't hide the button for other
   // types of input methods as these might have intra input method modes,
   // like Hiragana and Katakana modes in Japanese input methods.
-  scoped_ptr<InputMethodDescriptors> active_input_methods(
-      CrosLibrary::Get()->GetInputMethodLibrary()->GetActiveInputMethods());
-  if (active_input_methods->size() == 1 &&
-      input_method::IsKeyboardLayout(active_input_methods->at(0).id) &&
+  if (num_active_input_methods == 1 &&
+      input_method::IsKeyboardLayout(input_method_id) &&
       host_->IsBrowserMode()) {
     // As the disabled color is set to invisible, disabling makes the
     // button disappear.
