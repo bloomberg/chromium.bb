@@ -16,6 +16,30 @@
 (defun get-chrome-root ()
   (or chrome-root default-directory))
 
+; Hunt down from the top, case correcting each path component as needed.
+; Currently does not keep a cache.  Returns nil if no matching file can be
+; figured out.
+(defun case-corrected-filename (filename)
+  (save-match-data
+    (let ((path-components (split-string filename "/"))
+          (corrected-path (file-name-as-directory (get-chrome-root))))
+      (mapc
+       (function
+        (lambda (elt)
+          (if corrected-path
+              (let ((next-component
+                     (car (member-ignore-case
+                           elt (directory-files corrected-path)))))
+                (setq corrected-path
+                      (and next-component
+                           (file-name-as-directory
+                            (concat corrected-path next-component))))))))
+       path-components)
+      (if corrected-path
+          (file-relative-name (directory-file-name corrected-path)
+                              (get-chrome-root))
+        nil))))
+
 (defun trybot-fixup ()
   "Parse and fixup the contents of the current buffer as trybot output."
 
@@ -31,15 +55,20 @@
   (goto-char (point-min))
   ; Fix Windows paths ("d:\...\src\").
   ; TODO: need to fix case; e.g. third_party/webkit -> third_party/WebKit. :(
-  (while (re-search-forward "^.:\\\\.*\\\\src\\\\" nil t)
-    (replace-match "")
+  (while (re-search-forward "\\(^.:\\\\.*\\\\src\\\\\\)\\(.*?\\)[(:]" nil t)
+    (replace-match "" nil t nil 1)
     ; Line now looks like:
     ;  foo\bar\baz.cc error message here
     ; We want to fixup backslashes in path into forward slashes, without
-    ; modifying the error message.
-    ; XXX current eats backslashes after the filename; how can I limit it to
-    ; changing from current point up to the first space?
-    (subst-char-in-region (point) (line-end-position) ?\\ ?/))
+    ; modifying the error message - by matching up to the first colon above
+    ; (which will be just beyond the end of the filename) we can use the end of
+    ; the match as a limit.
+    (subst-char-in-region (point) (match-end 0) ?\\ ?/)
+    ; See if we can correct the file name casing.
+    (let ((filename (buffer-substring (match-beginning 2) (match-end 2))))
+      (if (and (not (file-exists-p filename))
+               (setq filename (case-corrected-filename filename)))
+          (replace-match filename t t nil 2))))
   (goto-char (point-min))
 
   ;; Switch into compilation mode.

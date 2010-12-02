@@ -19,7 +19,7 @@ toolband_proxy_lib - 0 error(s), 0 warning(s)
 --------------------Configuration: webcore_bindings - Debug|Win32--------------
 Compiling...
 CSSGrammar.cpp
-e:\b\build\slave\win\build\src\third_party\webkit\javascriptcore\wtf\text\StringImpl.h(90) : warning C4355: 'this' : used in base member initializer list
+e:\b\build\slave\win\build\src\third_party\webkit\javascriptcore\wtf\text\StringImpl.h(90) : warning C4355: 'this' : used in base member initializer list with a gratuitous backslash \ for testing
 e:\b\build\slave\win\build\src\third_party\webkit\webcore\dom\ViewportArguments.h(78) : warning C4305: 'initializing' : truncation from '' to 'bool'
 e:\b\build\slave\win\build\src\build\Debug\obj\global_intermediate\webkit\CSSGrammar.cpp(1930) : warning C4065: switch statement contains 'default' but no 'case' labels
 V8DerivedSources1.cpp
