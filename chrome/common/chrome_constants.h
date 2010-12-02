@@ -91,8 +91,6 @@ extern const int kHistogramSynchronizerReservedSequenceNumber;
 // The maximum number of session history entries per tab.
 extern const int kMaxSessionHistoryEntries;
 
-extern const wchar_t kChromiumRendererIdProperty[];
-
 // The language code used when the language of a page could not be detected.
 // (Matches what the CLD -Compact Language Detection- library reports.)
 extern const char* const kUnknownLanguageCode;

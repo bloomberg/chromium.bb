@@ -97,14 +97,15 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 
   GPUCreateCommandBufferConfig init_params(allowed_extensions, attribs);
   int32 route_id;
-  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(
-      view,
-      render_view_id,
-      init_params,
-      &route_id)) &&
-      route_id != MSG_ROUTING_NONE) {
+  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(view,
+                                                      render_view_id,
+                                                      init_params,
+                                                      &route_id))) {
     return NULL;
   }
+
+  if (route_id == MSG_ROUTING_NONE)
+    return NULL;
 
   CommandBufferProxy* command_buffer = new CommandBufferProxy(this, route_id);
   router_.AddRoute(route_id, command_buffer);
@@ -133,10 +134,12 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
                                                            size,
                                                            init_params,
                                                            parent_texture_id,
-                                                           &route_id)) &&
-      route_id != MSG_ROUTING_NONE) {
+                                                           &route_id))) {
     return NULL;
   }
+
+  if (route_id == MSG_ROUTING_NONE)
+    return NULL;
 
   CommandBufferProxy* command_buffer = new CommandBufferProxy(this, route_id);
   router_.AddRoute(route_id, command_buffer);

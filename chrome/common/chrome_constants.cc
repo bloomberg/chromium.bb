@@ -132,8 +132,6 @@ const int kHistogramSynchronizerReservedSequenceNumber = 0;
 
 const int kMaxSessionHistoryEntries = 50;
 
-const wchar_t kChromiumRendererIdProperty[] = L"ChromiumRendererId";
-
 const char* const kUnknownLanguageCode = "und";
 
 }  // namespace chrome

@@ -119,25 +119,22 @@ void GpuChannel::OnCreateViewCommandBuffer(
     int32 render_view_id,
     const GPUCreateCommandBufferConfig& init_params,
     int32* route_id) {
-  *route_id = 0;
+  *route_id = MSG_ROUTING_NONE;
 
 #if defined(ENABLE_GPU)
 
   gfx::PluginWindowHandle handle = gfx::kNullPluginWindow;
 #if defined(OS_WIN)
-  gfx::NativeView view = gfx::NativeViewFromId(view_id);
-
-  // Check that the calling renderer is allowed to render to this window.
-  // TODO(apatrick): consider killing the renderer process rather than failing.
-  int view_renderer_id = reinterpret_cast<int>(
-      GetProp(view, chrome::kChromiumRendererIdProperty));
-  if (view_renderer_id != renderer_id_)
-    return;
-
-  // Note, we don't actually render into the view HWND. Instead, inside
-  // the GpuCommandBufferStub, we will create a child window within the view
-  // HWND into which we will render.
-  handle = view;
+  // TODO(apatrick): We don't actually need the window handle on the Windows
+  // platform. At this point, it only indicates to the GpuCommandBufferStub
+  // whether onscreen or offscreen rendering is requested. The window handle
+  // that will be rendered to is the child compositor window and that window
+  // handle is provided by the browser process. Looking at what we are doing on
+  // this and other platforms, I think a redesign is in order here. Perhaps
+  // on all platforms the renderer just indicates whether it wants onscreen or
+  // offscreen rendering and the browser provides whichever platform specific
+  // "render target" the GpuCommandBufferStub targets.
+  handle = gfx::NativeViewFromId(view_id);
 #elif defined(OS_LINUX)
   ChildThread* gpu_thread = ChildThread::current();
   // Ask the browser for the view's XID.
@@ -194,7 +191,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #else
-  *route_id = 0;
+  *route_id = MSG_ROUTING_NONE;
 #endif
 }
 

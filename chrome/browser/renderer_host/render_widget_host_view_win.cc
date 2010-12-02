@@ -8,7 +8,6 @@
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "app/view_prop.h"
-#include "app/win/scoped_prop.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
@@ -60,6 +59,8 @@ using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebTextDirection;
 using webkit_glue::WebPluginGeometry;
+
+const wchar_t kRenderWidgetHostHWNDClass[] = L"Chrome_RenderWidgetHostHWND";
 
 namespace {
 
@@ -308,16 +309,6 @@ RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
 
 void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
   Create(parent);  // ATL function to create the window.
-
-  // Add a property indicating that a particular renderer is associated with
-  // this window. Used by the GPU process to validate window handles it
-  // receives from renderer processes. As this is used by a separate process we
-  // have to use ScopedProp here instead of ViewProp.
-  int renderer_id = render_widget_host_->process()->id();
-  renderer_id_prop_.reset(
-      new app::win::ScopedProp(m_hWnd,
-                               chrome::kChromiumRendererIdProperty,
-                               reinterpret_cast<HANDLE>(renderer_id)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -871,7 +862,6 @@ void RenderWidgetHostViewWin::OnDestroy() {
   // sequence as part of the usual cleanup when the plugin instance goes away.
   EnumChildWindows(m_hWnd, DetachPluginWindowsCallback, NULL);
 
-  renderer_id_prop_.reset();
   props_.reset();
 
   CleanupCompositorWindow();

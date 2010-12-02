@@ -22,15 +22,11 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "gfx/native_widget_types.h"
 #include "webkit/glue/webcursor.h"
 
 namespace app {
-
 class ViewProp;
-
-namespace win {
-class ScopedProp;
-}
 }
 
 namespace gfx {
@@ -48,8 +44,7 @@ class RenderWidgetHost;
 typedef CWinTraits<WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0>
     RenderWidgetHostHWNDTraits;
 
-static const wchar_t* const kRenderWidgetHostHWNDClass =
-    L"Chrome_RenderWidgetHostHWND";
+extern const wchar_t kRenderWidgetHostHWNDClass[];
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin
@@ -355,7 +350,6 @@ class RenderWidgetHostViewWin
   WebKit::WebTextInputType text_input_type_;
 
   ScopedVector<app::ViewProp> props_;
-  scoped_ptr<app::win::ScopedProp> renderer_id_prop_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };
