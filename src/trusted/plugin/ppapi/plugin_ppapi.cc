@@ -372,6 +372,12 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   }
   nacl::scoped_array<char> json_buffer(
       new char[kNaclManifestMaxFileBytesPlusNull]);
+  if (json_buffer == NULL) {
+    fclose(json_file);
+    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed: "
+                   "can\'t allocate memory\n"));
+    return;
+  }
   size_t read_byte_count = fread(json_buffer.get(),
                                  sizeof(char),
                                  kNaclManifestMaxFileBytesNoNull,
