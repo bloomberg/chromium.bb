@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/weak_ptr.h"
-#include "chrome/browser/file_path_watcher.h"
+#include "chrome/browser/file_path_watcher/file_path_watcher.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 class CancelableTask;
