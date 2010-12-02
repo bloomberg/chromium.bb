@@ -5,8 +5,6 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-BUG_LEVIN WIN : fast/xsl/xslt-mismatched-tags-in-xslt.xml = IMAGE
-
 // Not sure when this started crashing, seen on my webkit roll, but was crashing before that.
 BUG_JPARENT LINUX : fast/dom/HTMLHeadElement/head-check.html = CRASH PASS
 
