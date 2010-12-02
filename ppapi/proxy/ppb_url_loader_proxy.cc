@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -63,7 +64,7 @@ URLLoader::~URLLoader() {
 
 namespace {
 
-// Plugin interface implmentation ----------------------------------------------
+// Plugin PPB_URLLoader implmentation ------------------------------------------
 
 PP_Resource Create(PP_Instance instance_id) {
   PluginDispatcher* dispatcher = PluginDispatcher::Get();
@@ -199,6 +200,19 @@ const PPB_URLLoader ppb_urlloader = {
   &ReadResponseBody,
   &FinishStreamingToFile,
   &Close
+};
+
+// Plugin URLLoaderTrusted implementation --------------------------------------
+
+void GrantUniversalAccess(PP_Resource loader) {
+  PluginDispatcher::Get()->Send(
+      new PpapiHostMsg_PPBURLLoaderTrusted_GrantUniversalAccess(
+          INTERFACE_ID_PPB_URL_LOADER_TRUSTED, loader));
+}
+
+const PPB_URLLoaderTrusted ppb_urlloader_trusted = {
+  &GrantUniversalAccess,
+  NULL,  // RegisterStatusCallback is used internally by the proxy only.
 };
 
 }  // namespace
@@ -392,6 +406,37 @@ void PPB_URLLoader_Proxy::OnReadCallback(int32_t result,
       result, info->read_buffer));
 
   delete info;
+}
+
+// PPB_URLLoaderTrusted_Proxy --------------------------------------------------
+
+PPB_URLLoaderTrusted_Proxy::PPB_URLLoaderTrusted_Proxy(
+    Dispatcher* dispatcher,
+    const void* target_interface)
+    : InterfaceProxy(dispatcher, target_interface) {
+}
+
+PPB_URLLoaderTrusted_Proxy::~PPB_URLLoaderTrusted_Proxy() {
+}
+
+const void* PPB_URLLoaderTrusted_Proxy::GetSourceInterface() const {
+  return &ppb_urlloader_trusted;
+}
+
+InterfaceID PPB_URLLoaderTrusted_Proxy::GetInterfaceId() const {
+  return INTERFACE_ID_PPB_URL_LOADER_TRUSTED;
+}
+
+void PPB_URLLoaderTrusted_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  IPC_BEGIN_MESSAGE_MAP(PPB_URLLoaderTrusted_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLLoaderTrusted_GrantUniversalAccess,
+                        OnMsgGrantUniversalAccess)
+  IPC_END_MESSAGE_MAP();
+  // TODO(brettw) handle bad messages!
+}
+
+void PPB_URLLoaderTrusted_Proxy::OnMsgGrantUniversalAccess(PP_Resource loader) {
+  ppb_url_loader_trusted_target()->GrantUniversalAccess(loader);
 }
 
 }  // namespace proxy

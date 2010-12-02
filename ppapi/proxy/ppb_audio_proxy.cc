@@ -219,8 +219,8 @@ void PPB_Audio_Proxy::AudioChannelConnected(int32_t result,
   // us, as long as the remote side always closes the handles it receives
   // (in OnMsgNotifyAudioStreamCreated), even in the failure case.
   dispatcher()->Send(new PpapiMsg_PPBAudio_NotifyAudioStreamCreated(
-      INTERFACE_ID_PPB_AUDIO, resource, result_code, shared_memory,
-      socket_handle, shared_memory_length));
+      INTERFACE_ID_PPB_AUDIO, resource, result_code, socket_handle,
+      shared_memory, shared_memory_length));
 }
 
 int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(

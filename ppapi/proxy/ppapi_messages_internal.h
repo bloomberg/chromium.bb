@@ -424,6 +424,10 @@ IPC_BEGIN_MESSAGES(PpapiHost)
   IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_Close,
                       PP_Resource /* loader */)
 
+  // PPB_URLLoaderTrusted.
+  IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoaderTrusted_GrantUniversalAccess,
+                      PP_Resource /* loader */)
+
   // PPB_URLRequestInfo.
   IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLRequestInfo_Create,
                              PP_Module /* module */,

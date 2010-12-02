@@ -32,6 +32,7 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_config_proxy.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
@@ -39,6 +40,7 @@
 #include "ppapi/proxy/ppb_char_set_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
+#include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_fullscreen_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
@@ -54,6 +56,7 @@
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 #include "webkit/glue/plugins/ppb_private.h"
+#include "webkit/glue/plugins/ppb_private2.h"
 
 namespace pp {
 namespace proxy {
@@ -62,7 +65,7 @@ Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
                        GetInterfaceFunc local_get_interface)
     : pp_module_(0),
       remote_process_handle_(remote_process_handle),
-      disallow_trusted_interfaces_(true),
+      disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
       local_get_interface_(local_get_interface),
       declared_supported_remote_interfaces_(false),
       callback_tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -244,8 +247,6 @@ InterfaceProxy* Dispatcher::CreateProxyForInterface(
     return new PPB_ImageData_Proxy(this, interface_functions);
   if (interface_name == PPB_INSTANCE_INTERFACE)
     return new PPB_Instance_Proxy(this, interface_functions);
-  if (interface_name == PPB_PRIVATE_INTERFACE)
-    return new PPB_Pdf_Proxy(this, interface_functions);
   if (interface_name == PPB_TESTING_DEV_INTERFACE)
     return new PPB_Testing_Proxy(this, interface_functions);
   if (interface_name == PPB_URLLOADER_INTERFACE)
@@ -258,6 +259,16 @@ InterfaceProxy* Dispatcher::CreateProxyForInterface(
     return new PPB_Var_Deprecated_Proxy(this, interface_functions);
   if (interface_name == PPP_INSTANCE_INTERFACE)
     return new PPP_Instance_Proxy(this, interface_functions);
+
+  // Trusted interfaces.
+  if (!disallow_trusted_interfaces_) {
+    if (interface_name == PPB_PRIVATE2_INTERFACE)
+      return new PPB_Flash_Proxy(this, interface_functions);
+    if (interface_name == PPB_PRIVATE_INTERFACE)
+      return new PPB_Pdf_Proxy(this, interface_functions);
+    if (interface_name == PPB_URLLOADERTRUSTED_INTERFACE)
+      return new PPB_URLLoaderTrusted_Proxy(this, interface_functions);
+  }
 
   return NULL;
 }
