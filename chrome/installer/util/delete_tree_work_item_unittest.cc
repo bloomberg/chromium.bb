@@ -85,9 +85,9 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // test Do()
+  std::vector<FilePath> key_files;
   scoped_ptr<DeleteTreeWorkItem> work_item(
-      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete.ToWStringHack(),
-                                         std::wstring()));
+      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, key_files));
   EXPECT_TRUE(work_item->Do());
 
   // everything should be gone
@@ -133,9 +133,9 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // test Do()
+  std::vector<FilePath> key_files(1, file_name_delete_1);
   scoped_ptr<DeleteTreeWorkItem> work_item(
-      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete.ToWStringHack(),
-                                         file_name_delete_1.ToWStringHack()));
+      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, key_files));
   EXPECT_TRUE(work_item->Do());
 
   // everything should be gone
@@ -202,9 +202,9 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
 
   // test Do().
   {
+    std::vector<FilePath> key_paths(1, key_path);
     scoped_ptr<DeleteTreeWorkItem> work_item(
-        WorkItem::CreateDeleteTreeWorkItem(dir_name_delete.ToWStringHack(),
-                                           key_path.ToWStringHack()));
+        WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, key_paths));
 
     // delete should fail as file in use.
     EXPECT_FALSE(work_item->Do());

@@ -24,7 +24,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 
-#include "installer_util_strings.h"
+#include "installer_util_strings.h"  // NOLINT
 
 namespace {
 // The BrowserDistribution objects are never freed.
@@ -226,4 +226,8 @@ void BrowserDistribution::LaunchUserExperiment(
 
 void BrowserDistribution::InactiveUserToastExperiment(int flavor,
     const installer::Product& installation) {
+}
+
+FilePath::StringType BrowserDistribution::GetKeyFile() {
+  return installer_util::kChromeDll;
 }

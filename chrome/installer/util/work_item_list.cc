@@ -5,6 +5,7 @@
 #include "chrome/installer/util/work_item_list.h"
 
 #include "base/logging.h"
+#include "base/file_path.h"
 #include "chrome/installer/util/logging_installer.h"
 
 WorkItemList::~WorkItemList() {
@@ -99,11 +100,17 @@ bool WorkItemList::AddDeleteRegValueWorkItem(HKEY predefined_root,
   return AddWorkItem(item);
 }
 
-bool WorkItemList::AddDeleteTreeWorkItem(const std::wstring& root_path,
-                                         const std::wstring& key_path) {
+bool WorkItemList::AddDeleteTreeWorkItem(
+    const FilePath& root_path,
+    const std::vector<FilePath>& key_paths) {
   WorkItem* item = reinterpret_cast<WorkItem*>(
-      WorkItem::CreateDeleteTreeWorkItem(root_path, key_path));
+      WorkItem::CreateDeleteTreeWorkItem(root_path, key_paths));
   return AddWorkItem(item);
+}
+
+bool WorkItemList::AddDeleteTreeWorkItem(const FilePath& root_path) {
+  std::vector<FilePath> no_key_files;
+  return AddDeleteTreeWorkItem(root_path, no_key_files);
 }
 
 bool WorkItemList::AddMoveTreeWorkItem(const std::wstring& source_path,

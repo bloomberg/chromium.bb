@@ -54,6 +54,8 @@ class ChromeFrameDistribution : public BrowserDistribution {
   virtual void UpdateDiffInstallStatus(bool system_install,
       bool incremental_install, installer_util::InstallStatus install_status);
 
+  virtual FilePath::StringType GetKeyFile();
+
  protected:
   friend class BrowserDistribution;
 
@@ -61,7 +63,6 @@ class ChromeFrameDistribution : public BrowserDistribution {
   ChromeFrameDistribution() {
     type_ = BrowserDistribution::CHROME_FRAME;
   }
-
 };
 
 #endif  // CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_

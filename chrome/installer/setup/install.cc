@@ -624,7 +624,6 @@ installer_util::InstallStatus InstallNewVersion(
     }
   }
 
-  // TODO(tommi): See if we can't get rid of this parameter.
   current_version->reset(package.GetCurrentVersion());
 
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
@@ -637,7 +636,7 @@ installer_util::InstallStatus InstallNewVersion(
   FilePath new_chrome_exe(
       package.path().Append(installer_util::kChromeNewExe));
 
-  install_list->AddDeleteTreeWorkItem(new_chrome_exe.value(), std::wstring());
+  install_list->AddDeleteTreeWorkItem(new_chrome_exe);
   install_list->AddCopyTreeWorkItem(
       src_path.Append(installer_util::kChromeExe).value(),
       package.path().Append(installer_util::kChromeExe).value(),
@@ -673,8 +672,7 @@ installer_util::InstallStatus InstallNewVersion(
 
   // Delete any old_chrome.exe if present.
   install_list->AddDeleteTreeWorkItem(
-      package.path().Append(installer_util::kChromeOldExe).value(),
-      std::wstring());
+      package.path().Append(installer_util::kChromeOldExe));
 
   // Copy installer in install directory and
   // add shortcut in Control Panel->Add/Remove Programs.

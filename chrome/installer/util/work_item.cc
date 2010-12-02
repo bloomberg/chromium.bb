@@ -49,8 +49,8 @@ DeleteRegValueWorkItem* WorkItem::CreateDeleteRegValueWorkItem(
 }
 
 DeleteTreeWorkItem* WorkItem::CreateDeleteTreeWorkItem(
-    const std::wstring& root_path, const std::wstring& key_path) {
-  return new DeleteTreeWorkItem(root_path, key_path);
+    const FilePath& root_path, const std::vector<FilePath>& key_paths) {
+  return new DeleteTreeWorkItem(root_path, key_paths);
 }
 
 MoveTreeWorkItem* WorkItem::CreateMoveTreeWorkItem(

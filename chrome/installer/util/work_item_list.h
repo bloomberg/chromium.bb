@@ -10,6 +10,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "chrome/installer/util/work_item.h"
 
@@ -60,8 +61,11 @@ class WorkItemList : public WorkItem {
   // Add a DeleteTreeWorkItem that recursively deletes a file system
   // hierarchy at the given root path. A key file can be optionally specified
   // by key_path.
-  bool AddDeleteTreeWorkItem(const std::wstring& root_path,
-                             const std::wstring& key_path);
+  bool AddDeleteTreeWorkItem(const FilePath& root_path,
+                             const std::vector<FilePath>& key_paths);
+
+  // Same as above but without support for key files.
+  bool AddDeleteTreeWorkItem(const FilePath& root_path);
 
   // Add a MoveTreeWorkItem to the list of work items.
   bool AddMoveTreeWorkItem(const std::wstring& source_path,

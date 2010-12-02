@@ -10,14 +10,13 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 
 #include <string>
-#include <windows.h>
 
 #include "base/string_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 
-#include "installer_util_strings.h"
+#include "installer_util_strings.h"  // NOLINT
 
 namespace {
 const wchar_t kChromeFrameGuid[] = L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
@@ -109,4 +108,9 @@ void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
   GoogleUpdateSettings::UpdateDiffInstallStatus(system_install,
       incremental_install, GetInstallReturnCode(install_status),
       kChromeFrameGuid);
+}
+
+FilePath::StringType ChromeFrameDistribution::GetKeyFile() {
+  // TODO(tommi): Implement this for CEEE too.
+  return installer_util::kChromeFrameDll;
 }

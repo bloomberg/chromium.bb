@@ -8,13 +8,15 @@
 #define CHROME_INSTALLER_UTIL_BROWSER_DISTRIBUTION_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include <windows.h>  // NOLINT
 #endif
 
 namespace installer {
@@ -102,6 +104,16 @@ class BrowserDistribution {
   // function just performs it.
   virtual void InactiveUserToastExperiment(int flavor,
       const installer::Product& installation);
+
+  // A key-file is a file such as a DLL on Windows that is expected to be
+  // in use when the product is being used.  For example "chrome.dll" for
+  // Chrome.  Before attempting to delete an installation directory during
+  // an uninstallation, the uninstaller will check if any one of a potential
+  // set of key files is in use and if they are, abort the delete operation.
+  // Only if none of the key files are in use, can the folder be deleted.
+  // Note that this function does not return a full path to the key file,
+  // only a file name.
+  virtual FilePath::StringType GetKeyFile();
 
  protected:
   BrowserDistribution() : type_(CHROME_BROWSER) {}

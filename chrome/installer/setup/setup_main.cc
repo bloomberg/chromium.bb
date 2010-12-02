@@ -126,7 +126,7 @@ installer_util::InstallStatus RenameChromeExecutables(
       installer_util::kChromeNewExe));
 
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
-  install_list->AddDeleteTreeWorkItem(chrome_old_exe.value(), std::wstring());
+  install_list->AddDeleteTreeWorkItem(chrome_old_exe);
   FilePath temp_path;
   if (!file_util::CreateNewTempDirectory(L"chrome_", &temp_path)) {
     LOG(ERROR) << "Failed to create Temp directory " << temp_path.value();
@@ -138,7 +138,7 @@ installer_util::InstallStatus RenameChromeExecutables(
                                     temp_path.ToWStringHack(),
                                     WorkItem::IF_DIFFERENT,
                                     std::wstring());
-  install_list->AddDeleteTreeWorkItem(chrome_new_exe.value(), std::wstring());
+  install_list->AddDeleteTreeWorkItem(chrome_new_exe);
 
   HKEY reg_root = installation.system_level() ? HKEY_LOCAL_MACHINE :
                                                 HKEY_CURRENT_USER;

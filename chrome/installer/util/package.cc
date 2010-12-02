@@ -124,16 +124,18 @@ void Package::RemoveOldVersionDirectories(
       VLOG(1) << "directory found: " << find_file_data.cFileName;
       version.reset(Version::GetVersionFromString(find_file_data.cFileName));
       if (version.get() && latest_version.IsHigherThan(version.get())) {
-        std::wstring remove_dir(path_.value());
-        file_util::AppendToPath(&remove_dir, find_file_data.cFileName);
-        std::wstring chrome_dll_path(remove_dir);
-        file_util::AppendToPath(&chrome_dll_path, installer_util::kChromeDll);
-        VLOG(1) << "Deleting directory: " << remove_dir;
-        // TODO(tommi): We should support more "key files".  One for each
-        // associated Product.  Maybe the relative key file path should
-        // be a property of BrowserDistribution.
+        FilePath remove_dir(path_.Append(find_file_data.cFileName));
+        std::vector<FilePath> key_files;
+        Products::const_iterator it = products_.begin();
+        for (; it != products_.end(); ++it) {
+          BrowserDistribution* dist = it->get()->distribution();
+          key_files.push_back(remove_dir.Append(dist->GetKeyFile()));
+        }
+
+        VLOG(1) << "Deleting directory: " << remove_dir.value();
+
         scoped_ptr<DeleteTreeWorkItem> item(
-            WorkItem::CreateDeleteTreeWorkItem(remove_dir, chrome_dll_path));
+            WorkItem::CreateDeleteTreeWorkItem(remove_dir, key_files));
         if (!item->Do())
           item->Rollback();
       }
