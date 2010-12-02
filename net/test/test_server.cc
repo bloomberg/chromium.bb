@@ -314,7 +314,7 @@ FilePath TestServer::GetRootCertificatePath() {
 }
 
 bool TestServer::LoadTestRootCert() {
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL) || defined(USE_NSS)
   if (cert_)
     return true;
 

@@ -60,7 +60,8 @@ CertificateNameVerifyTestData kNameVerifyTestData[] = {
     { false, "baz2.example.net", "baz*.example.net" },
     { false, "bar.*.example.net", "bar.*.example.net" },
     { false, "bar.f*o.example.net", "bar.f*o.example.net" },
-    // IP addresses currently not supported.
+    // IP addresses currently not supported, except for the localhost.
+    { true, "127.0.0.1", "127.0.0.1" },
     { false, "192.168.1.1", "192.168.1.1" },
     { false, "FEDC:BA98:7654:3210:FEDC:BA98:7654:3210",
       "FEDC:BA98:7654:3210:FEDC:BA98:7654:3210" },

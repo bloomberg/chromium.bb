@@ -149,9 +149,17 @@ bool VerifyHostname(const std::string& hostname,
   }
   DCHECK(!reference_name.empty());
 
-  // TODO(joth): Add IP address support. See http://crbug.com/62973
   if (found_ip6_chars || !found_alpha) {
-    NOTIMPLEMENTED() << hostname;
+    // For now we just do simple localhost IP address support, primarily as
+    // it's needed by the test server. TODO(joth): Replace this with full IP
+    // address support. See http://crbug.com/62973
+    if (hostname == "127.0.0.1" &&
+        std::find(cert_names.begin(), cert_names.end(), hostname)
+            != cert_names.end()) {
+      DVLOG(1) << "Allowing localhost IP certificate: " << hostname;
+      return true;
+    }
+    NOTIMPLEMENTED() << hostname;  // See comment above.
     return false;
   }
 
