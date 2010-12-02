@@ -49,6 +49,7 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
 class TestRenderWidgetHostView : public RenderWidgetHostView {
  public:
   explicit TestRenderWidgetHostView(RenderWidgetHost* rwh);
+  virtual ~TestRenderWidgetHostView();
 
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) {}

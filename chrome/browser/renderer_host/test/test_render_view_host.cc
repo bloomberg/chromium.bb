@@ -108,6 +108,9 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
       is_showing_(false) {
 }
 
+TestRenderWidgetHostView::~TestRenderWidgetHostView() {
+}
+
 gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
   return gfx::Rect();
 }
