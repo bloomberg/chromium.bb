@@ -112,7 +112,7 @@ html[toolkit=views] .button-strip {
   left: 0;
   position: fixed;
   top: 0;
-  width: 250px;
+  width: 266px;
   z-index: 2;
 }
 
@@ -175,7 +175,7 @@ html[hide-menu=false] #navbar-container {
 
 #mainview {
   -webkit-box-align: stretch;
-  -webkit-padding-start: 251px;
+  -webkit-padding-start: 267px;
   margin: 0;
   position: absolute;
   left: 0;
@@ -191,10 +191,11 @@ html[hide-menu=true] #mainview {
 
 #mainview-content {
   box-sizing: border-box;
+  max-width: 888px;
   min-height: 100%;
+  min-width: 600px;
   padding: 0 24px;
   position: relative;
-  width: 600px;
 }
 
 #subpage-sheet-container {
