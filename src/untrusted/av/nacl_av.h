@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_AV_NACL_AV_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_AV_NACL_AV_H_
 
+#include <nacl/nacl_srpc.h>
 #include <sys/audio_video.h>
 
 /**
@@ -158,6 +159,22 @@ extern int nacl_audio_shutdown();
  *  @return 0 on success, -1 on failure (sets errno appropriately)
  */
 extern int nacl_audio_stream(const void *data, size_t *size);
+
+extern void nacl_multimedia_bridge(NaClSrpcRpc *rpc,
+                                   NaClSrpcArg **in_args,
+                                   NaClSrpcArg **out_args,
+                                   NaClSrpcClosure *done);
+
+/**
+ * @nacl
+ * NACL_AV_DECLARE_METHODS is intended to be used as follows:
+ *   const struct NaClSrpcHandlerDesc srpc_methods[] = {
+ *     NACL_AV_DECLARE_METHODS
+ *     ...
+ *   };
+ */
+#define NACL_AV_DECLARE_METHODS \
+  {"nacl_multimedia_bridge:hh:", nacl_multimedia_bridge },
 
 #ifdef __cplusplus
 }

@@ -315,13 +315,19 @@ void ParseCmdLineArgs(int argc, char **argv) {
 }
 
 
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  NACL_AV_DECLARE_METHODS
+  { NULL, NULL },
+};
+
+
 // Parses cmd line options, initializes surface, runs the demo & shuts down.
 int main(int argc, char **argv) {
 #if !defined(STANDALONE)
   if (!NaClSrpcModuleInit()) {
     return 1;
   }
-  if (!NaClSrpcAcceptClientOnThread(__kNaClSrpcHandlers)) {
+  if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
     return 1;
   }
 #endif  // !defined(STANDALONE)

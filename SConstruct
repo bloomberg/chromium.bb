@@ -398,11 +398,14 @@ nacl_glibc_skiplist = [
     'sdk_minimal_test',
     # TODO(elijahtaylor) add apropriate syscall hooks for glibc
     'run_gc_instrumentation_test',
-    # run_whole_archive_test is disabled because it runs ncval.  ncval
-    # does not pass on dynamically-linked executables because, to
-    # reduce executable size, the code segment is not page-aligned,
-    # and ncval rejects such executables.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=1183
+    # The tests below just run ncval.  ncval does not pass on
+    # dynamically-linked executables because, to reduce executable
+    # size, the code segment is not page-aligned, and ncval rejects
+    # such executables.  See
+    # http://code.google.com/p/nativeclient/issues/detail?id=1183
+    'run_earth',
+    'run_life',
+    'run_mandel_nav',
     'run_whole_archive_test',
     # run_srpc_sysv_shm_test fails because:
     # 1) it uses fstat(), while we only have an fstat64() wrapper;

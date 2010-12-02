@@ -859,8 +859,6 @@ void NaclModuleStartDemo(NaClSrpcRpc *rpc,
   done->Run(done);
 }
 
-NACL_SRPC_METHOD("start_demo:i:", NaclModuleStartDemo);
-
 void NaclModuleFrameChecksum(NaClSrpcRpc *rpc,
                              NaClSrpcArg** in_args,
                              NaClSrpcArg** out_args,
@@ -871,7 +869,12 @@ void NaclModuleFrameChecksum(NaClSrpcRpc *rpc,
   done->Run(done);
 }
 
-NACL_SRPC_METHOD("frame_checksum::i", NaclModuleFrameChecksum);
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  NACL_AV_DECLARE_METHODS
+  { "start_demo:i:", NaclModuleStartDemo },
+  { "frame_checksum::i", NaclModuleFrameChecksum },
+  { NULL, NULL },
+};
 #endif
 
 // Parses cmd line options, initializes surface, runs the demo & shuts down.
@@ -885,7 +888,7 @@ int main(int argc, char *argv[]) {
   if (!NaClSrpcModuleInit()) {
     return 1;
   }
-  if (!NaClSrpcAcceptClientOnThread(__kNaClSrpcHandlers)) {
+  if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
     return 1;
   }
   // NOTE: We current cannot distinguish whether we run in the browser or not

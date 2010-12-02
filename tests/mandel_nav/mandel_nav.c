@@ -263,8 +263,6 @@ void do_SetupGlobals(struct work_item *p) {
   InterpolateColors();
 }
 
-NACL_SRPC_METHOD("setup:d:", SetupGlobals);
-
 void ShutdownSharedMemory(NaClSrpcRpc *rpc,
                           NaClSrpcArg **in_args,
                           NaClSrpcArg **out_args,
@@ -281,8 +279,6 @@ void do_ShutdownSharedMemory(struct work_item *p) {
   /* free(pixmap); TODO(sehr): is this vestigial code? */
   /* Return success. */
 }
-
-NACL_SRPC_METHOD("shutdown::", ShutdownSharedMemory);
 
 /*
  * Compute ARGB value for one pixel.
@@ -536,8 +532,6 @@ void do_SetRegion(struct work_item *p) {
   }
 }
 
-NACL_SRPC_METHOD("set_region:dddd:", SetRegion);
-
 /*
  * Display the pixmap, using the color palette with a possible shift.
  */
@@ -570,8 +564,6 @@ void do_MandelDisplay(struct work_item *wp) {
   nacl_video_update(display_mem);
 }
 
-NACL_SRPC_METHOD("display::", MandelDisplay);
-
 /*
  * To implement "psychedelic mode" we select one of 256 palettes
  * (actually rotations of the same palette) by using palette_select.
@@ -600,8 +592,16 @@ void do_ShiftColors(struct work_item *p) {
   }
 }
 
-NACL_SRPC_METHOD("shift_colors:i:", ShiftColors);
 
+const struct NaClSrpcHandlerDesc srpc_methods[] = {
+  NACL_AV_DECLARE_METHODS
+  { "setup:d:", SetupGlobals },
+  { "shutdown::", ShutdownSharedMemory },
+  { "set_region:dddd:", SetRegion },
+  { "display::", MandelDisplay },
+  { "shift_colors:i:", ShiftColors },
+  { NULL, NULL },
+};
 
 
 /*
@@ -614,7 +614,7 @@ int main(int argc, char* argv[]) {
   if (!NaClSrpcModuleInit()) {
     return 1;
   }
-  if (!NaClSrpcAcceptClientOnThread(__kNaClSrpcHandlers)) {
+  if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
     return 1;
   }
   /* Initialize the graphics subsystem.  */
