@@ -557,6 +557,11 @@ string16 FindBarGtk::GetFindText() {
   return UTF8ToUTF16(contents);
 }
 
+string16 FindBarGtk::GetMatchCountText() {
+  std::string contents(gtk_label_get_text(GTK_LABEL(match_count_label_)));
+  return UTF8ToUTF16(contents);
+}
+
 void FindBarGtk::FindEntryTextInContents(bool forward_search) {
   TabContents* tab_contents = find_bar_controller_->tab_contents();
   if (!tab_contents)

@@ -90,6 +90,9 @@ class FindBarTesting {
 
   // Gets the search string currently visible in the Find box.
   virtual string16 GetFindText() = 0;
+
+  // Gets the match count text (ie. 1 of 3) visible in the Find box.
+  virtual string16 GetMatchCountText() = 0;
 };
 
 #endif  // CHROME_BROWSER_FIND_BAR_H_

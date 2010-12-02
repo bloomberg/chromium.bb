@@ -47,10 +47,16 @@ class FindBarView : public DropdownBarView,
   string16 GetFindText() const;
   void SetFindText(const string16& find_text);
 
+  // Gets the match count text displayed in the text box.
+  string16 GetMatchCountText() const;
+
   // Updates the label inside the Find text box that shows the ordinal of the
   // active item and how many matches were found.
   void UpdateForResult(const FindNotificationDetails& result,
                        const string16& find_text);
+
+  // Clears the current Match Count value in the Find text box.
+  void ClearMatchCount();
 
   // Claims focus for the text field and selects its contents.
   virtual void SetFocusAndSelection(bool select_all);

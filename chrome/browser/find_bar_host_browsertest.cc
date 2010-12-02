@@ -90,6 +90,16 @@ class FindInPageControllerTest : public InProcessBrowserTest {
     return GetFindBarTextForBrowser(browser());
   }
 
+  string16 GetFindBarMatchCountTextForBrowser(Browser* browser) {
+    FindBarTesting* find_bar =
+      browser->GetFindBarController()->find_bar()->GetFindBarTesting();
+    return find_bar->GetMatchCountText();
+  }
+
+  string16 GetMatchCountText() {
+    return GetFindBarMatchCountTextForBrowser(browser());
+  }
+
   void EnsureFindBoxOpenForBrowser(Browser* browser) {
     browser->ShowFindBar();
     gfx::Point position;
@@ -870,6 +880,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
   EnsureFindBoxOpen();
 
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
@@ -881,6 +892,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
   // After the Find box has been reopened, it should have been prepopulated with
   // the word "page" again.
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
 }
 
 // This tests that whenever you open Find in a new tab it should prepopulate
@@ -902,6 +914,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
   int ordinal = 0;
   TabContents* tab1 = browser()->GetSelectedTabContents();
   EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
 
   // Now create a second tab and load the same page.
   browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
@@ -914,6 +927,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
   // The new tab should have "page" prepopulated, since that was the last search
   // in the first tab.
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+  // But it should not seem like a search has been issued.
+  EXPECT_EQ(ASCIIToUTF16(""), GetMatchCountText());
 }
 
 // This makes sure that we can search for A in tabA, then for B in tabB and
@@ -984,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 }
 
 // TODO(rohitrao): Searching in incognito tabs does not work in browser tests in
-// linux views.  Investigate and fix.  http://crbug.com/40948
+// Linux views.  Investigate and fix.  http://crbug.com/40948
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_NoIncognitoPrepopulate DISABLED_NoIncognitoPrepopulate
 #else

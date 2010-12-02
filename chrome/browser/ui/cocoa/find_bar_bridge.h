@@ -77,6 +77,7 @@ class FindBarBridge : public FindBar,
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible);
   virtual string16 GetFindText();
+  virtual string16 GetMatchCountText();
 
   // Used to disable find bar animations when testing.
   static bool disable_animations_during_testing_;

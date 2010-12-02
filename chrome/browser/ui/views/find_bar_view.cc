@@ -187,6 +187,10 @@ string16 FindBarView::GetFindText() const {
   return find_text_->text();
 }
 
+string16 FindBarView::GetMatchCountText() const {
+  return WideToUTF16Hack(match_count_text_->GetText());
+}
+
 void FindBarView::UpdateForResult(const FindNotificationDetails& result,
                                   const string16& find_text) {
   bool have_valid_range =
@@ -219,6 +223,13 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   // The match_count label may have increased/decreased in size so we need to
   // do a layout and repaint the dialog so that the find text field doesn't
   // partially overlap the match-count label when it increases on no matches.
+  Layout();
+  SchedulePaint();
+}
+
+void FindBarView::ClearMatchCount() {
+  match_count_text_->SetText(L"");
+  UpdateMatchCountAppearance(false);
   Layout();
   SchedulePaint();
 }
