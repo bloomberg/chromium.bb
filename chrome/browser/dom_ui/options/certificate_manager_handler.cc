@@ -533,10 +533,10 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
       password_,
       &output);
   if (!num_exported) {
+    dom_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
-    dom_ui_->CallJavascriptFunction(L"CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
