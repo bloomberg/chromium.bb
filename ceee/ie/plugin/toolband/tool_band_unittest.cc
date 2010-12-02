@@ -511,8 +511,15 @@ TEST_F(ToolBandTest, SendSessionIdToBho) {
       SetArgumentPointee<0>(5), Return(S_OK)));
   EXPECT_CALL(*mock_bho, SetToolBandSessionId(5)).WillOnce(Return(S_OK));
   EXPECT_EQ(S_OK, tool_band_->CallSendSessionIdToBho(mock_bho_with_site));
+  // Second call should not do anything.
+  EXPECT_EQ(S_FALSE, tool_band_->CallSendSessionIdToBho(mock_bho_with_site));
+}
 
-  // Test error handling.
+TEST_F(ToolBandTest, SendSessionIdToBhoErrorHandling) {
+  MockCeeeBho* mock_bho;
+  CComPtr<IObjectWithSite> mock_bho_with_site;
+  ASSERT_HRESULT_SUCCEEDED(
+      MockCeeeBho::CreateInitialized(&mock_bho, &mock_bho_with_site));
   EXPECT_CALL(*tool_band_, GetSessionId(_)).WillOnce(Return(E_FAIL));
   EXPECT_EQ(E_FAIL, tool_band_->CallSendSessionIdToBho(mock_bho_with_site));
 

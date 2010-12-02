@@ -254,6 +254,9 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   bool own_line_flag_;
   bool already_checked_own_line_flag_;
 
+  // True if we have sent the tool band ID to the BHO.
+  bool already_sent_id_to_bho_;
+
   // Listening to DIID_DWebBrowserEvents2 is optional. For registration
   // purposes we have to know if we are listening, though.
   bool listening_to_browser_events_;

@@ -57,6 +57,7 @@ ToolBand::ToolBand()
       listening_to_browser_events_(false),
       band_id_(0),
       is_quitting_(false),
+      already_sent_id_to_bho_(false),
       current_width_(kToolBandMinWidth),
       current_height_(kToolBandHeight) {
   TRACE_EVENT_BEGIN("ceee.toolband", this, "");
@@ -696,8 +697,11 @@ HRESULT ToolBand::EnsureBhoIsAvailable() {
     DVLOG(1) << "BHO already loaded";
     if (existing_bho.vt != VT_UNKNOWN || existing_bho.punkVal == NULL)
       return E_FAIL;
-    else
-      return SendSessionIdToBho(existing_bho.punkVal);
+
+    hr = SendSessionIdToBho(existing_bho.punkVal);
+    DCHECK(SUCCEEDED(hr)) << "Failed to send tool band session ID to the " <<
+        "BHO." << com::LogHr(hr);
+    return SUCCEEDED(hr) ? S_OK : hr;
   }
 
   ScopedComPtr<IObjectWithSite> bho;
@@ -721,7 +725,10 @@ HRESULT ToolBand::EnsureBhoIsAvailable() {
   }
   LOG_IF(INFO, SUCCEEDED(hr)) << "CEEE BHO has been created by the toolband.";
 
-  return SendSessionIdToBho(bho);
+  hr = SendSessionIdToBho(bho);
+  DCHECK(SUCCEEDED(hr)) << "Failed to send tool band session ID to the BHO." <<
+      com::LogHr(hr);
+  return SUCCEEDED(hr) ? S_OK : hr;
 }
 
 HRESULT ToolBand::CreateBhoInstance(IObjectWithSite** new_bho_instance) {
@@ -742,6 +749,8 @@ HRESULT ToolBand::GetSessionId(int* session_id) {
 }
 
 HRESULT ToolBand::SendSessionIdToBho(IUnknown* bho) {
+  if (already_sent_id_to_bho_)
+    return S_FALSE;
   // Now send the tool band's session ID to the BHO.
   ScopedComPtr<ICeeeBho> ceee_bho;
   HRESULT hr = ceee_bho.QueryFrom(bho);
@@ -749,7 +758,10 @@ HRESULT ToolBand::SendSessionIdToBho(IUnknown* bho) {
     int session_id = 0;
     hr = GetSessionId(&session_id);
     if (SUCCEEDED(hr)) {
-      return ceee_bho->SetToolBandSessionId(session_id);
+      hr = ceee_bho->SetToolBandSessionId(session_id);
+      if (SUCCEEDED(hr))
+        already_sent_id_to_bho_ = true;
+      return hr;
     }
   }
   return E_FAIL;
