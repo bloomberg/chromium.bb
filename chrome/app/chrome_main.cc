@@ -785,19 +785,6 @@ int ChromeMain(int argc, char** argv) {
   if (parsed_command_line.HasSwitch(switches::kMessageLoopHistogrammer))
     MessageLoop::EnableHistogrammer(true);
 
-  // Checks if the sandbox is enabled in this process and initializes it if this
-  // is the case. The crash handler depends on this so it has to be done before
-  // its initialization.
-  SandboxInitWrapper sandbox_wrapper;
-#if defined(OS_WIN)
-  sandbox_wrapper.SetServices(sandbox_info);
-#endif
-
-  // OS X enables sandboxing later in the startup process.
-#if !defined (OS_MACOSX)
-  sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
-#endif  // !OS_MACOSX
-
 #if defined(OS_WIN)
   _Module.Init(NULL, instance);
 #endif
@@ -871,7 +858,13 @@ int ChromeMain(int argc, char** argv) {
   if (!process_type.empty())
     CommonSubprocessInit();
 
-#if defined(OS_MACOSX)
+  // Initialize the sandbox for this process.
+  SandboxInitWrapper sandbox_wrapper;
+  bool initialize_sandbox = true;
+
+#if defined(OS_WIN)
+  sandbox_wrapper.SetServices(sandbox_info);
+#elif defined(OS_MACOSX)
   // On OS X the renderer sandbox needs to be initialized later in the startup
   // sequence in RendererMainPlatformDelegate::EnableSandbox().
   // Same goes for NaClLoader, in NaClMainPlatformDelegate::EnableSandbox(),
@@ -880,13 +873,17 @@ int ChromeMain(int argc, char** argv) {
       process_type != switches::kExtensionProcess &&
       process_type != switches::kNaClLoaderProcess &&
       process_type != switches::kGpuProcess) {
+    initialize_sandbox = false;
+  }
+#endif
+
+  if (initialize_sandbox) {
     bool sandbox_initialized_ok =
         sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
     // Die if the sandbox can't be enabled.
     CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "
                                   << process_type;
   }
-#endif  // OS_MACOSX
 
   startup_timer.Stop();  // End of Startup Time Measurement.
 
