@@ -1302,26 +1302,22 @@ init_shaders(struct wlsc_compositor *ec)
 	return 0;
 }
 
-static const struct wl_interface visual_interface = {
-	"visual", 1,
-};
-
 static void
 add_visuals(struct wlsc_compositor *ec)
 {
-	ec->argb_visual.object.interface = &visual_interface;
+	ec->argb_visual.object.interface = &wl_visual_interface;
 	ec->argb_visual.object.implementation = NULL;
 	wl_display_add_object(ec->wl_display, &ec->argb_visual.object);
 	wl_display_add_global(ec->wl_display, &ec->argb_visual.object, NULL);
 
-	ec->premultiplied_argb_visual.object.interface = &visual_interface;
+	ec->premultiplied_argb_visual.object.interface = &wl_visual_interface;
 	ec->premultiplied_argb_visual.object.implementation = NULL;
 	wl_display_add_object(ec->wl_display,
 			      &ec->premultiplied_argb_visual.object);
 	wl_display_add_global(ec->wl_display,
 			      &ec->premultiplied_argb_visual.object, NULL);
 
-	ec->rgb_visual.object.interface = &visual_interface;
+	ec->rgb_visual.object.interface = &wl_visual_interface;
 	ec->rgb_visual.object.implementation = NULL;
 	wl_display_add_object(ec->wl_display, &ec->rgb_visual.object);
 	wl_display_add_global(ec->wl_display, &ec->rgb_visual.object, NULL);
