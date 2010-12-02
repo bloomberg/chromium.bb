@@ -752,7 +752,6 @@ clean-pnacl() {
 
 #@ untrusted_sdk <file>  - Create untrusted SDK tarball from scratch
 #@                          (clean + all + prune + tarball)
-
 untrusted_sdk() {
   if [ ! -n "${1:-}" ]; then
     echo "Error: untrusted_sdk needs a tarball name." >&2
@@ -768,18 +767,49 @@ untrusted_sdk() {
   tarball $1
 }
 
-#+ prune                 - Prune tree to make tarball smaller.
 
+get_dir_size_in_mb() {
+  du -msc $1 | tail -1 | egrep -o "[0-9]+"
+}
+
+#+ prune                 - Prune toolchain
 prune() {
-  StepBanner "PRUNE" "Pruning llvm sourcery tree"
+  StepBanner "PRUNE" "Pruning toolchain"
+  local ACCEPTABLE_SIZE=250
+  local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
 
-  SubBanner "Size before: $(du -msc "${INSTALL_DIR}")"
+  SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
+  echo "removing some static libs we do not have any use for"
   rm  -f "${INSTALL_DIR}"/lib/lib*.a
-  SubBanner "Size after: $(du -msc "${INSTALL_DIR}")"
+
+  echo "removing x86-32 frontend"
+  rm -rf "${INSTALL_DIR}"/libexec/gcc/i686-none-linux-gnu/
+  rm -rf "${INSTALL_DIR}"/bin/i686-none-linux-gnu-*
+
+  echo "removing x86-64 frontend"
+  rm -rf "${INSTALL_DIR}"/libexec/gcc/x86_64-none-linux-gnu/
+  rm -rf "${INSTALL_DIR}"/bin/x86_64-none-linux-gnu-*
+
+  echo "stripping binaries"
+  strip "${INSTALL_DIR}"/libexec/gcc/arm-none-linux-gnueabi/4.2.1/c*
+  if ! strip "${INSTALL_DIR}"/bin/* ; then
+    echo "NOTE: some failures during stripping are expected"
+  fi
+
+  echo "removing llvm headers"
+  rm -rf "${INSTALL_DIR}"/include/llvm*
+
+  local dir_size_after=$(get_dir_size_in_mb ${INSTALL_ROOT})
+  SubBanner "Size after: ${INSTALL_ROOT} ${dir_size_after}MB"
+
+  if [[ ${dir_size_after} -gt ${ACCEPTABLE_SIZE} ]] ; then
+    echo "ERROR: size of toolchain exceeds ${ACCEPTABLE_SIZE}MB"
+    exit -1
+  fi
+
 }
 
 #+ tarball <filename>    - Produce tarball file
-
 tarball() {
   if [ ! -n "${1:-}" ]; then
     echo "Error: tarball needs a tarball name." >&2
