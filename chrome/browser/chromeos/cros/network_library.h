@@ -68,10 +68,6 @@ class Network {
   // Return a string representation of the error code.
   std::string GetErrorString() const;
 
-  // Strip the base path from service_path_ and return the result.
-  // Useful for comparing active networks with remembered networks.
-  std::string GetBaseServicePath() const;
-
  protected:
   Network()
       : type_(TYPE_UNKNOWN),
@@ -536,8 +532,8 @@ class NetworkLibrary {
   // Returns the current list of cellular networks.
   virtual const CellularNetworkVector& cellular_networks() const = 0;
 
-  // Search the list of networks by path and if the network is available,
-  // return a pointer to the network.
+  // Search the current list of networks by path and if the network
+  // is available, copy the result and return true.
   virtual WifiNetwork* FindWifiNetworkByPath(const std::string& path) = 0;
   virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) = 0;
