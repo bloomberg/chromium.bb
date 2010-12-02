@@ -77,7 +77,7 @@ struct PPB_Graphics2D {
    * The src_rect is specified in the coordinate system of the image being
    * painted, not the context. For the common case of copying the entire image,
    * you may specify a NULL |src_rect| pointer. If you are frequently updating
-   * the entire image, consider using SwapImageData which will give slightly
+   * the entire image, consider using ReplaceContents which will give slightly
    * higher performance.
    *
    * The painted area of the source bitmap must fall entirely within the
