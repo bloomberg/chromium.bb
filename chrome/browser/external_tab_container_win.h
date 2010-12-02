@@ -173,6 +173,8 @@ class ExternalTabContainer : public TabContentsDelegate,
                                  bool proceed,
                                  bool* proceed_to_fire_unload);
 
+  void ShowRepostFormWarningDialog(TabContents* tab_contents);
+
   // Overriden from TabContentsDelegate::AutomationResourceRoutingDelegate
   virtual void RegisterRenderViewHost(RenderViewHost* render_view_host);
   virtual void UnregisterRenderViewHost(RenderViewHost* render_view_host);

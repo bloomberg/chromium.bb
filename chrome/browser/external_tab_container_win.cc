@@ -29,6 +29,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/page_info_bubble_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
@@ -700,6 +701,11 @@ void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
     unload_reply_message_ = NULL;
     *proceed_to_fire_unload = false;
   }
+}
+
+void ExternalTabContainer::ShowRepostFormWarningDialog(
+    TabContents* tab_contents) {
+  browser::ShowRepostFormWarningDialog(GetNativeView(), tab_contents);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -5621,9 +5621,10 @@ bool RenderView::IsNonLocalTopLevelNavigation(
   if (!url.SchemeIs("http") && !url.SchemeIs("https"))
     return false;
 
-  // Not interested in reloads.
+  // Not interested in reloads/form submits/resubmits/back forward navigations.
   if (type != WebKit::WebNavigationTypeReload &&
       type != WebKit::WebNavigationTypeFormSubmitted &&
+      type != WebKit::WebNavigationTypeFormResubmitted &&
       type != WebKit::WebNavigationTypeBackForward) {
     // The opener relationship between the new window and the parent allows the
     // new window to script the parent and vice versa. This is not allowed if
