@@ -79,11 +79,15 @@ void Unmap(PP_Resource resource) {
     image_data->Unmap();
 }
 
-uint64_t GetNativeMemoryHandle2(PP_Resource resource, uint32_t* byte_count) {
+int32_t GetSharedMemory(PP_Resource resource,
+                        int* handle,
+                        uint32_t* byte_count) {
   scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
-  if (image_data)
-    return image_data->GetNativeMemoryHandle(byte_count);
-  return 0;
+  if (image_data) {
+    *handle = image_data->GetSharedMemoryHandle(byte_count);
+    return PP_OK;
+  }
+  return PP_ERROR_BADRESOURCE;
 }
 
 const PPB_ImageData ppb_imagedata = {
@@ -97,7 +101,7 @@ const PPB_ImageData ppb_imagedata = {
 };
 
 const PPB_ImageDataTrusted ppb_imagedata_trusted = {
-  &GetNativeMemoryHandle2,
+  &GetSharedMemory,
 };
 
 }  // namespace
@@ -189,7 +193,7 @@ void ImageData::Unmap() {
   // in the future to save some memory.
 }
 
-uint64 ImageData::GetNativeMemoryHandle(uint32* byte_count) const {
+int ImageData::GetSharedMemoryHandle(uint32* byte_count) const {
   return platform_image_->GetSharedMemoryHandle(byte_count);
 }
 

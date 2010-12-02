@@ -30,9 +30,9 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
  private:
   // Message handlers.
   void OnMsgCreate(PP_Module module,
-                   int32_t size,
+                   uint32_t size,
                    PP_Resource* result_resource,
-                   uint64_t* result_shm_handle);
+                   int* result_shm_handle);
 };
 
 }  // namespace proxy

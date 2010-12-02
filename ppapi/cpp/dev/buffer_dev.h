@@ -18,19 +18,19 @@ class Buffer_Dev : public Resource {
 
   // Allocates a new Buffer in the browser with the given size. The
   // resulting object will be is_null() if the allocation failed.
-  explicit Buffer_Dev(int32_t size);
+  explicit Buffer_Dev(uint32_t size);
 
   ~Buffer_Dev();
 
   Buffer_Dev& operator=(const Buffer_Dev& other);
   void swap(Buffer_Dev& other);
 
-  int32_t size() const { return size_; }
+  uint32_t size() const { return size_; }
   void* data() const { return data_; }
 
  private:
   void* data_;
-  int32_t size_;
+  uint32_t size_;
 };
 
 }  // namespace pp

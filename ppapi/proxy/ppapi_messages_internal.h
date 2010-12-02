@@ -145,9 +145,9 @@ IPC_BEGIN_MESSAGES(PpapiHost)
   // PPB_Buffer.
   IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                              PP_Module /* module */,
-                             int32_t /* size */,
+                             uint32_t /* size */,
                              PP_Resource /* result_resource */,
-                             uint64_t /* result_shm_handle */)
+                             int32_t /* result_shm_handle */)
 
   // PPB_Core.
   IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource, PP_Resource)
@@ -317,7 +317,7 @@ IPC_BEGIN_MESSAGES(PpapiHost)
                              PP_Bool /* init_to_zero */,
                              PP_Resource /* result_resource */,
                              std::string /* image_data_desc */,
-                             uint64_t /* result_shm_handle */)
+                             int32_t /* result_shm_handle */)
 
   // PPB_Instance.
   IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetWindowObject,

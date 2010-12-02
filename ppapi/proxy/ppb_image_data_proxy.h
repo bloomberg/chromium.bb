@@ -42,7 +42,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
                    PP_Bool init_to_zero,
                    PP_Resource* result,
                    std::string* image_data_desc,
-                   uint64_t* result_shm_handle);
+                   int* result_shm_handle);
 };
 
 }  // namespace proxy

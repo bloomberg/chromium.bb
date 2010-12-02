@@ -20,7 +20,7 @@ namespace pepper {
 
 namespace {
 
-PP_Resource Create(PP_Module module_id, int32_t size) {
+PP_Resource Create(PP_Module module_id, uint32_t size) {
   PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
@@ -36,7 +36,7 @@ PP_Bool IsBuffer(PP_Resource resource) {
   return BoolToPPBool(!!Resource::GetAs<Buffer>(resource));
 }
 
-PP_Bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
+PP_Bool Describe(PP_Resource resource, uint32_t* size_in_bytes) {
   scoped_refptr<Buffer> buffer(Resource::GetAs<Buffer>(resource));
   if (!buffer)
     return PP_FALSE;
@@ -81,7 +81,7 @@ const PPB_Buffer_Dev* Buffer::GetInterface() {
   return &ppb_buffer;
 }
 
-bool Buffer::Init(int size) {
+bool Buffer::Init(uint32_t size) {
   if (size == 0)
     return false;
   Unmap();
@@ -89,7 +89,7 @@ bool Buffer::Init(int size) {
   return true;
 }
 
-void Buffer::Describe(int* size_in_bytes) const {
+void Buffer::Describe(uint32_t* size_in_bytes) const {
   *size_in_bytes = size_;
 }
 

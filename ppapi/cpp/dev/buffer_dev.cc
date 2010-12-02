@@ -26,7 +26,7 @@ Buffer_Dev::Buffer_Dev(const Buffer_Dev& other)
       size_(other.size_) {
 }
 
-Buffer_Dev::Buffer_Dev(int32_t size) : data_(NULL), size_(0) {
+Buffer_Dev::Buffer_Dev(uint32_t size) : data_(NULL), size_(0) {
   if (!buffer_f)
     return;
 

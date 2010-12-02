@@ -43,7 +43,7 @@ std::string TestBuffer::TestInitToZero() {
 
   // Now check that everything is 0.
   unsigned char* bytes = static_cast<unsigned char *>(buffer.data());
-  for (int index = 0; index < buffer.size(); index++) {
+  for (uint32_t index = 0; index < buffer.size(); index++) {
     if (bytes[index] != 0)
       return "Buffer isn't entirely zero";
   }

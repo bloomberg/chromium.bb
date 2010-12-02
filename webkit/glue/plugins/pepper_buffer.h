@@ -20,7 +20,7 @@ class Buffer : public Resource {
   explicit Buffer(PluginModule* module);
   virtual ~Buffer();
 
-  int size() const { return size_; }
+  uint32_t size() const { return size_; }
   unsigned char* mapped_buffer() { return mem_buffer_.get(); }
 
   // Returns true if this buffer is mapped. False means that the buffer is
@@ -35,8 +35,8 @@ class Buffer : public Resource {
   Buffer* AsBuffer() { return this; }
 
   // PPB_Buffer implementation.
-  bool Init(int size);
-  void Describe(int* size_in_bytes) const;
+  bool Init(uint32_t size);
+  void Describe(uint32_t* size_in_bytes) const;
   void* Map();
   void Unmap();
 
@@ -44,7 +44,7 @@ class Buffer : public Resource {
   void Swap(Buffer* other);
 
  private:
-  int size_;
+  uint32_t size_;
   scoped_array<unsigned char> mem_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);

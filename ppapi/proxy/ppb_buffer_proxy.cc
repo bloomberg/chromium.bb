@@ -20,27 +20,27 @@ namespace proxy {
 
 class Buffer : public PluginResource {
  public:
-  Buffer(uint64_t memory_handle, int32_t size);
+  Buffer(int memory_handle, uint32_t size);
   virtual ~Buffer();
 
   // Resource overrides.
   virtual Buffer* AsBuffer() { return this; }
 
-  int32_t size() const { return size_; }
+  uint32_t size() const { return size_; }
 
   void* Map();
   void Unmap();
 
  private:
-  uint64_t memory_handle_;
-  int32_t size_;
+  int memory_handle_;
+  uint32_t size_;
 
   void* mapped_data_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
 
-Buffer::Buffer(uint64_t memory_handle, int32_t size)
+Buffer::Buffer(int memory_handle, uint32_t size)
     : memory_handle_(memory_handle),
       size_(size),
       mapped_data_(NULL) {
@@ -61,9 +61,9 @@ void Buffer::Unmap() {
 
 namespace {
 
-PP_Resource Create(PP_Module module_id, int32_t size) {
+PP_Resource Create(PP_Module module_id, uint32_t size) {
   PP_Resource result = 0;
-  uint64_t shm_handle = -1;
+  int32_t shm_handle = -1;
   PluginDispatcher::Get()->Send(
       new PpapiHostMsg_PPBBuffer_Create(
           INTERFACE_ID_PPB_BUFFER, module_id, size,
@@ -71,7 +71,7 @@ PP_Resource Create(PP_Module module_id, int32_t size) {
   if (!result)
     return 0;
 
-  linked_ptr<Buffer> object(new Buffer(shm_handle, size));
+  linked_ptr<Buffer> object(new Buffer(static_cast<int>(shm_handle), size));
   PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
       result, object);
   return result;
@@ -82,7 +82,7 @@ PP_Bool IsBuffer(PP_Resource resource) {
   return BoolToPPBool(!!object);
 }
 
-PP_Bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
+PP_Bool Describe(PP_Resource resource, uint32_t* size_in_bytes) {
   Buffer* object = PluginResource::GetAs<Buffer>(resource);
   if (!object) {
     *size_in_bytes = 0;
@@ -139,9 +139,9 @@ void PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PPB_Buffer_Proxy::OnMsgCreate(PP_Module module,
-                                   int32_t size,
+                                   uint32_t size,
                                    PP_Resource* result_resource,
-                                   uint64_t* result_shm_handle) {
+                                   int* result_shm_handle) {
   *result_resource = ppb_buffer_target()->Create(module, size);
   // TODO(brettw) set the shm handle from a trusted interface.
   *result_shm_handle = 0;
