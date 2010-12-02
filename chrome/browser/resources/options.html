@@ -166,6 +166,16 @@ function load() {
 
   OptionsPage.register(SearchPage.getInstance());
 
+  OptionsPage.register(BrowserOptions.getInstance());
+  OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
+                              BrowserOptions.getInstance());
+  OptionsPage.register(PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
+                              PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(PasswordsExceptions.getInstance(),
+                              PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(SyncOptions.getInstance(),
+                              PersonalOptions.getInstance());
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.registerSubPage(AboutPage.getInstance(),
@@ -194,17 +204,6 @@ function load() {
         SystemOptions.getInstance());
     OptionsPage.register(InternetOptions.getInstance());
   }
-
-  OptionsPage.register(BrowserOptions.getInstance());
-  OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
-                              BrowserOptions.getInstance());
-  OptionsPage.register(PersonalOptions.getInstance());
-  OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
-                              PersonalOptions.getInstance());
-  OptionsPage.registerSubPage(PasswordsExceptions.getInstance(),
-                              PersonalOptions.getInstance());
-  OptionsPage.registerSubPage(SyncOptions.getInstance(),
-                              PersonalOptions.getInstance());
   OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance());
@@ -258,11 +257,7 @@ function load() {
       OptionsPage.handleHashForPage(pageName, hash.slice(1));
   } else {
     // TODO(csilv): Save/restore last selected page.
-    if (cr.isChromeOS) {
-      OptionsPage.showPageByName(SystemOptions.getInstance().name);
-    } else {
-      OptionsPage.showPageByName(BrowserOptions.getInstance().name);
-    }
+    OptionsPage.showPageByName(BrowserOptions.getInstance().name);
   }
 
   var subpagesNavTabs = document.querySelectorAll('.subpages-nav-tabs');
@@ -333,13 +328,13 @@ window.onpopstate = function(e) {
        <!-- Please keep the main pages in desired order of display.  This will
             allow search results to display in the desired order. -->
        <include src="options/search_page.html">
+       <include src="options/browser_options.html">
+       <include src="options/personal_options.html">
        <if expr="pp_ifdef('chromeos')">
          <include src="options/chromeos_system_options.html">
          <include src="options/chromeos_internet_options.html">
          <include src="options/chromeos_accounts_options.html">
        </if>
-       <include src="options/browser_options.html">
-       <include src="options/personal_options.html">
        <include src="options/advanced_options.html">
        <!-- End main pages -->
        <div id="subpage-sheet-container" class="hidden">
