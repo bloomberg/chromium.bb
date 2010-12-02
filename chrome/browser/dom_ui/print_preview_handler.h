@@ -25,6 +25,9 @@ class PrintPreviewHandler : public DOMMessageHandler,
   virtual void RegisterMessages();
 
  private:
+  // Get the PDF preview and refresh the PDF plugin. |args| is unused.
+  void HandleGetPreview(const ListValue* args);
+
   // Get the list of printers and send it to the DOM UI. |args| is unused.
   void HandleGetPrinters(const ListValue* args);
 

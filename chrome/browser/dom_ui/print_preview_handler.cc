@@ -15,8 +15,16 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 }
 
 void PrintPreviewHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback("getPreview",
+      NewCallback(this, &PrintPreviewHandler::HandleGetPreview));
   dom_ui_->RegisterMessageCallback("getPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinters));
+}
+
+void PrintPreviewHandler::HandleGetPreview(const ListValue*) {
+  // TODO(thestig) Hook this up properly when PDF generation works.
+  StringValue dummy_url("chrome://print/dummy.pdf");
+  dom_ui_->CallJavascriptFunction(L"createPDFPlugin", dummy_url);
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {

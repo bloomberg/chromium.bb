@@ -13,6 +13,7 @@ function load() {
   });
 
   chrome.send('getPrinters');
+  chrome.send('getPreview');
 };
 
 /**
@@ -34,5 +35,29 @@ function setPrinters(printers) {
   }
 }
 
-window.addEventListener('DOMContentLoaded', load);
+function onPDFLoad() {
+  $('pdf-viewer').fitToHeight();
+}
 
+/**
+ * Create the PDF plugin or reload the existing one.
+ */
+function createPDFPlugin(url) {
+  if ($('pdf-viewer')) {
+    pdfPlugin.reload();
+    return;
+  }
+
+  var loadingElement = $('loading');
+  var mainView = loadingElement.parentNode;
+  mainView.removeChild(loadingElement);
+
+  pdfPlugin = document.createElement('object');
+  pdfPlugin.setAttribute('id', 'pdf-viewer');
+  pdfPlugin.setAttribute('type', 'application/pdf');
+  pdfPlugin.setAttribute('src', url);
+  mainView.appendChild(pdfPlugin);
+  pdfPlugin.onload('onPDFLoad()');
+}
+
+window.addEventListener('DOMContentLoaded', load);
