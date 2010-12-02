@@ -327,7 +327,13 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
       if (IsControlledBooleanSetting(name)) {
         // For boolean settings we can just set safe (false) values
         // and continue as trusted.
-        UpdateCacheBool(name, false, USE_VALUE_SUPPLIED);
+        // TODO(dilmah): after http://crosbug.com/9666 is fixed:
+        // replace it to USE_VALUE_SUPPLIED.
+        // Until that we use default value as a quick "fix" for:
+        // http://crosbug.com/9876 and http://crosbug.com/9818
+        // Since we cannot discriminate missing and spoofed setting ATM: assume
+        // that it is missing (common case for old images).
+        UpdateCacheBool(name, false, USE_VALUE_DEFAULT);
       } else {
         prefs->ClearPref((name + kTrustedSuffix).c_str());
         return;
