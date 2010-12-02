@@ -332,9 +332,26 @@ TEST_F(ExecutorsManagerTests, RegisterTabExecutor) {
   EXPECT_EQ(0, executors_manager.GetNumExecutors());
 }
 
+// Mock static functions defined in CommonApiResult.
+MOCK_STATIC_CLASS_BEGIN(MockCommonApiResultStatics)
+MOCK_STATIC_INIT_BEGIN(MockCommonApiResultStatics)
+MOCK_STATIC_INIT2(common_api::CommonApiResult::IsIeFrameClass,
+                  IsIeFrameClass);
+MOCK_STATIC_INIT_END()
+MOCK_STATIC1(bool, , IsIeFrameClass, HWND);
+MOCK_STATIC_CLASS_END(MockCommonApiResultStatics)
+
+
 TEST_F(ExecutorsManagerTests, GetExecutor) {
   testing::LogDisabler no_dchecks;
   TestingExecutorsManager executors_manager;
+
+  // We now test that the window is a valid frame before attempting to
+  // inject an executor in the thread.
+  StrictMock<MockCommonApiResultStatics> mock_common;
+  EXPECT_CALL(
+      mock_common, IsIeFrameClass(TestingExecutorsManager::kWindowHwnd)).
+          WillRepeatedly(Return(true));
 
   // Already in the map.
   MockExecutor executor;
@@ -676,16 +693,6 @@ TEST_F(ExecutorsManagerTests, ThreadProc) {
       WillOnce(Return(WAIT_FAILED));
   EXPECT_EQ(1, executors_manager.CallThreadProc());
 }
-
-// Mock static functions defined in CommonApiResult.
-MOCK_STATIC_CLASS_BEGIN(MockCommonApiResultStatics)
-  MOCK_STATIC_INIT_BEGIN(MockCommonApiResultStatics)
-    MOCK_STATIC_INIT2(common_api::CommonApiResult::IsIeFrameClass,
-                      IsIeFrameClass);
-  MOCK_STATIC_INIT_END()
-  MOCK_STATIC1(bool, , IsIeFrameClass, HWND);
-MOCK_STATIC_CLASS_END(MockCommonApiResultStatics)
-
 
 TEST_F(ExecutorsManagerTests, SetTabIdForHandle) {
   testing::LogDisabler no_logs;

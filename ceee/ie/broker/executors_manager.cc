@@ -209,6 +209,17 @@ HRESULT ExecutorsManager::GetExecutor(ThreadId thread_id, HWND window,
       return exec_iter->second.executor->QueryInterface(riid, executor);
     }
 
+    // If we didn't find it, it must be a windows executor, otherwise, bail out.
+    // This can happen if the cookie API for example, asks for a tab executor
+    // after it unregistered itself but before we completed the async unmapping
+    // of the tab handle to tab id that we use to confirm the tab's existence.
+    if (!common_api::CommonApiResult::IsIeFrameClass(window)) {
+      DLOG(ERROR) << "Being asked for inexistent tab executor for window: " <<
+          window;
+      *executor = NULL;
+      return E_UNEXPECTED;
+    }
+
     // Check if we need to wait for a pending registration.
     Tid2Event::iterator event_iter = pending_registrations_.find(thread_id);
     if (event_iter == pending_registrations_.end()) {
