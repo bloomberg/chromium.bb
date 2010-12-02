@@ -517,7 +517,7 @@ static struct radeon_cs_funcs radeon_cs_gem_funcs = {
 
 static int radeon_get_device_id(int fd, uint32_t *device_id)
 {
-    struct drm_radeon_info info;
+    struct drm_radeon_info info = {};
     int r;
 
     *device_id = 0;

@@ -252,7 +252,7 @@ static int bo_set_tiling(struct radeon_bo_int *boi, uint32_t tiling_flags,
 static int bo_get_tiling(struct radeon_bo_int *boi, uint32_t *tiling_flags,
                          uint32_t *pitch)
 {
-    struct drm_radeon_gem_set_tiling args;
+    struct drm_radeon_gem_set_tiling args = {};
     int r;
 
     args.handle = boi->handle;
