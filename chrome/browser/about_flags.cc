@@ -201,15 +201,13 @@ const Experiment kExperiments[] = {
     kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnablePredictiveInstant)
   },
-  // FIXME(scheib): Add Flags entry for accelerated Compositing,
-  // or pull it and the strings in generated_resources.grd by Dec 2010
-  // {
-  //   "gpu-compositing",
-  //   IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
-  //   IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
-  //   kOsAll,
-  //   SINGLE_VALUE_TYPE(switches::kDisableAcceleratedCompositing)
-  // },
+  {
+    "gpu-compositing",
+     IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
+     IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableAcceleratedLayers)
+  },
   {
     "gpu-canvas-2d",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME,

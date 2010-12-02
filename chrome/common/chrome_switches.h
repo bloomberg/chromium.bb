@@ -118,6 +118,7 @@ extern const char kDnsServer[];
 extern const char kDomAutomationController[];
 extern const char kDumpHistogramsOnExit[];
 extern const char kEnableAccelerated2dCanvas[];
+extern const char kEnableAcceleratedLayers[];
 extern const char kEnableAccessibility[];
 extern const char kEnableAeroPeekTabs[];
 extern const char kEnableAppLauncher[];

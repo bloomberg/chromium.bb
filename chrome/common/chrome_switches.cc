@@ -387,6 +387,9 @@ extern const char kLogNetLog[]              = "log-net-log";
 // Enable gpu-accelerated 2d canvas.
 const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
+// Enables the hardware acceleration of 3D CSS, Video and animation.
+const char kEnableAcceleratedLayers[]       = "enable-accelerated-layers";
+
 // Enables WebKit accessibility within the renderer process.
 const char kEnableAccessibility[]           = "enable-accessibility";
 
