@@ -17,7 +17,6 @@
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/url_constants.h"
 #include "net/base/net_errors.h"
 
 namespace keys = extension_webnavigation_api_constants;
@@ -54,12 +53,13 @@ bool FrameNavigationState::CanSendEvents(int64 frame_id) const {
 void FrameNavigationState::TrackFrame(int64 frame_id,
                                       const GURL& url,
                                       bool is_main_frame,
+                                      bool is_error_page,
                                       const TabContents* tab_contents) {
   if (is_main_frame)
     RemoveTabContentsState(tab_contents);
   tab_contents_map_.insert(std::make_pair(tab_contents, frame_id));
   FrameState& frame_state = frame_state_map_[frame_id];
-  frame_state.error_occurred = (url.spec() == chrome::kUnreachableWebDataURL);
+  frame_state.error_occurred = is_error_page;
   frame_state.url = url;
   frame_state.is_main_frame = is_main_frame;
 }
@@ -176,6 +176,7 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
   navigation_state_.TrackFrame(details->frame_id(),
                                details->url(),
                                details->main_frame(),
+                               details->is_error_page(),
                                controller->tab_contents());
   if (!navigation_state_.CanSendEvents(details->frame_id()))
     return;

@@ -2133,7 +2133,8 @@ void TabContents::DidStartProvisionalLoadForFrame(
     const GURL& url) {
   ProvisionalLoadDetails details(is_main_frame,
                                  controller_.IsURLInPageNavigation(url),
-                                 url, std::string(), false, frame_id);
+                                 url, std::string(), false,
+                                 is_error_page, frame_id);
   NotificationService::current()->Notify(
       NotificationType::FRAME_PROVISIONAL_LOAD_START,
       Source<NavigationController>(&controller_),
@@ -2242,7 +2243,7 @@ void TabContents::DidFailProvisionalLoadWithError(
   // Send out a notification that we failed a provisional load with an error.
   ProvisionalLoadDetails details(is_main_frame,
                                  controller_.IsURLInPageNavigation(url),
-                                 url, std::string(), false, frame_id);
+                                 url, std::string(), false, false, frame_id);
   details.set_error_code(error_code);
 
   NotificationService::current()->Notify(
@@ -2482,7 +2483,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     bool is_main_frame = did_navigate ? details.is_main_frame : false;
     ProvisionalLoadDetails load_details(
         is_main_frame, details.is_in_page, params.url, std::string(), false,
-        params.frame_id);
+        false, params.frame_id);
     load_details.set_transition_type(params.transition);
     // Whether or not a page transition was triggered by going backward or
     // forward in the history is only stored in the navigation controller's

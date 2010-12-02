@@ -38,6 +38,7 @@ class FrameNavigationState {
   void TrackFrame(int64 frame_id,
                   const GURL& url,
                   bool is_main_frame,
+                  bool is_error_page,
                   const TabContents* tab_contents);
 
   // Returns the URL corresponding to a tracked frame given by its |frame_id|.
