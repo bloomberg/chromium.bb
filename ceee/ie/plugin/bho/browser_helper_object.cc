@@ -1155,10 +1155,10 @@ void BrowserHelperObject::HandleNavigateComplete(IWebBrowser2* webbrowser,
   if (FAILED(GetBrowserHandler(webbrowser, handler.Receive()))) {
     hr = AttachBrowserHandler(webbrowser, handler.Receive());
 
-    DCHECK(SUCCEEDED(hr))
+    DCHECK(SUCCEEDED(hr) || E_DOCUMENT_NOT_MSHTML == hr)
         << "Error when trying to attach a handler to the web browser " <<
             com::LogHr(hr);
-    LOG_IF(INFO, S_FALSE == hr) <<
+    LOG_IF(INFO, S_FALSE == hr || E_DOCUMENT_NOT_MSHTML == hr) <<
         "Decided not to attach a handler to a frame with " << url;
   }
 
