@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "app/keyboard_codes.h"
+#include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/find_bar_controller.h"
@@ -17,6 +19,11 @@
 #include "net/test/test_server.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#include <Psapi.h>
+#endif
 
 namespace {
 
@@ -42,6 +49,48 @@ void Checkpoint(const char* message, const base::TimeTicks& start_time) {
   LOG(INFO) << message << " : "
     << (base::TimeTicks::Now() - start_time).InMilliseconds()
     << " ms" << std::flush;
+}
+
+// Test to make sure Chrome is in the foreground as we start testing. This is
+// required for tests that synthesize input to the Chrome window.
+bool ChromeInForeground() {
+#if defined(OS_WIN)
+  HWND window = ::GetForegroundWindow();
+  std::wstring caption;
+  std::wstring filename;
+  int len = ::GetWindowTextLength(window) + 1;
+  ::GetWindowText(window, WriteInto(&caption, len), len);
+  bool chrome_window_in_foreground =
+      (caption == L"about:blank - Google Chrome") ||
+      (caption == L"about:blank - Chromium");
+  if (!chrome_window_in_foreground) {
+    DWORD process_id;
+    int thread_id = ::GetWindowThreadProcessId(window, &process_id);
+
+    base::ProcessHandle process;
+    if (base::OpenProcessHandleWithAccess(process_id,
+                                          PROCESS_QUERY_LIMITED_INFORMATION,
+                                          &process)) {
+      len = MAX_PATH;
+      if (!GetProcessImageFileName(process, WriteInto(&filename, len), len)) {
+        int error = GetLastError();
+        filename = std::wstring(L"Unable to read filename for process id '" +
+                                base::IntToString16(process_id) +
+                                L"' (error ") +
+                                base::IntToString16(error) + L")";
+      }
+      base::CloseProcessHandle(process);
+    }
+  }
+  EXPECT_TRUE(chrome_window_in_foreground)
+      << "Chrome must be in the foreground when running interactive tests\n"
+      << "Process in foreground: " << filename.c_str() << "\n"
+      << "Caption: " << caption.c_str();
+  return chrome_window_in_foreground;
+#else
+  // Windows only at the moment.
+  return true;
+#endif
 }
 
 }  // namespace
@@ -138,6 +187,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   Checkpoint("Starting test server", start_time);
 
   ASSERT_TRUE(test_server()->Start());
+
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ChromeInForeground());
 
   // First we navigate to any page.
   Checkpoint("Navigating", start_time);
