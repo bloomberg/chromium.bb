@@ -426,13 +426,15 @@ PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
 scoped_refptr<pepper::PluginModule>
 PepperPluginDelegateImpl::CreateOutOfProcessPepperPlugin(
     const FilePath& path) {
+  base::ProcessHandle plugin_process_handle = NULL;
   IPC::ChannelHandle channel_handle;
   render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
-      path, &channel_handle));
+      path, &plugin_process_handle, &channel_handle));
   if (channel_handle.name.empty())
     return scoped_refptr<pepper::PluginModule>();  // Couldn't be initialized.
   return pepper::PluginModule::CreateOutOfProcessModule(
       ChildProcess::current()->io_message_loop(),
+      plugin_process_handle,
       channel_handle,
       ChildProcess::current()->GetShutDownEvent());
 }

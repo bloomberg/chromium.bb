@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/native_library.h"
+#include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
@@ -74,6 +75,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
       EntryPoints entry_points);
   static scoped_refptr<PluginModule> CreateOutOfProcessModule(
       MessageLoop* ipc_message_loop,
+      base::ProcessHandle plugin_process_handle,
       const IPC::ChannelHandle& handle,
       base::WaitableEvent* shutdown_event);
 
@@ -122,6 +124,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   bool InitFromEntryPoints(const EntryPoints& entry_points);
   bool InitFromFile(const FilePath& path);
   bool InitForOutOfProcess(MessageLoop* ipc_message_loop,
+                           base::ProcessHandle remote_process,
                            const IPC::ChannelHandle& handle,
                            base::WaitableEvent* shutdown_event);
   static bool LoadEntryPoints(const base::NativeLibrary& library,

@@ -117,6 +117,14 @@ void BrowserChildProcessHost::Launch(
       &client_));
 }
 
+base::ProcessHandle BrowserChildProcessHost::GetChildProcessHandle() const {
+  DCHECK(child_process_.get())
+      << "Requesting a child process handle before launching.";
+  DCHECK(child_process_->GetHandle())
+      << "Requesting a child process handle before launch has completed OK.";
+  return child_process_->GetHandle();
+}
+
 bool BrowserChildProcessHost::Send(IPC::Message* msg) {
   return SendOnChannel(msg);
 }

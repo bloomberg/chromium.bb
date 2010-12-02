@@ -135,12 +135,12 @@ PP_Bool Describe(PP_Resource font_id,
 }
 
 PP_Bool DrawTextAt(PP_Resource font_id,
-                PP_Resource image_data,
-                const PP_TextRun_Dev* text,
-                const PP_Point* position,
-                uint32_t color,
-                const PP_Rect* clip,
-                PP_Bool image_data_is_opaque) {
+                   PP_Resource image_data,
+                   const PP_TextRun_Dev* text,
+                   const PP_Point* position,
+                   uint32_t color,
+                   const PP_Rect* clip,
+                   PP_Bool image_data_is_opaque) {
   scoped_refptr<Font> font(Resource::GetAs<Font>(font_id));
   if (!font.get())
     return PP_FALSE;

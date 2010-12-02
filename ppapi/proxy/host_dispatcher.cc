@@ -19,10 +19,11 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 
 }  // namespace
 
-HostDispatcher::HostDispatcher(const PPB_Var_Deprecated* var_interface,
+HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
+                               const PPB_Var_Deprecated* var_interface,
                                PP_Module module,
                                GetInterfaceFunc local_get_interface)
-    : Dispatcher(local_get_interface) {
+    : Dispatcher(remote_process_handle, local_get_interface) {
   SetSerializationRules(new HostVarSerializationRules(var_interface, module));
 }
 

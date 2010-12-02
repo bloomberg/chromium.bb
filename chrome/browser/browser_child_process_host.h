@@ -73,6 +73,10 @@ class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
 #endif
       CommandLine* cmd_line);
 
+  // Returns the handle of the child process. This must be called only after
+  // OnProcessLaunched is called or it will be invalid and may crash.
+  base::ProcessHandle GetChildProcessHandle() const;
+
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() { }
 

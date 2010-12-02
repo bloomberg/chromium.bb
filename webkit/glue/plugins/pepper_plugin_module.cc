@@ -354,10 +354,12 @@ scoped_refptr<PluginModule> PluginModule::CreateInternalModule(
 // static
 scoped_refptr<PluginModule> PluginModule::CreateOutOfProcessModule(
     MessageLoop* ipc_message_loop,
+    base::ProcessHandle plugin_process_handle,
     const IPC::ChannelHandle& handle,
     base::WaitableEvent* shutdown_event) {
   scoped_refptr<PluginModule> lib(new PluginModule);
-  if (!lib->InitForOutOfProcess(ipc_message_loop, handle, shutdown_event))
+  if (!lib->InitForOutOfProcess(ipc_message_loop, plugin_process_handle,
+                                handle, shutdown_event))
     return NULL;
   return lib;
 }
@@ -405,13 +407,14 @@ bool PluginModule::InitFromFile(const FilePath& path) {
 }
 
 bool PluginModule::InitForOutOfProcess(MessageLoop* ipc_message_loop,
+                                       base::ProcessHandle remote_process,
                                        const IPC::ChannelHandle& handle,
                                        base::WaitableEvent* shutdown_event) {
   const PPB_Var_Deprecated* var_interface =
       reinterpret_cast<const PPB_Var_Deprecated*>(
           GetInterface(PPB_VAR_DEPRECATED_INTERFACE));
-  dispatcher_.reset(new pp::proxy::HostDispatcher(var_interface,
-                                                  pp_module(), &GetInterface));
+  dispatcher_.reset(new pp::proxy::HostDispatcher(
+      remote_process, var_interface, pp_module(), &GetInterface));
 
 #if defined(OS_POSIX)
   // If we received a ChannelHandle, register it now.
@@ -427,7 +430,6 @@ bool PluginModule::InitForOutOfProcess(MessageLoop* ipc_message_loop,
 
   bool init_result = false;
   dispatcher_->Send(new PpapiMsg_InitializeModule(pp_module(), &init_result));
-
   if (!init_result) {
     // TODO(brettw) does the module get unloaded in this case?
     dispatcher_.reset();

@@ -1579,15 +1579,16 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_OpenChannelToPlugin,
                               GURL /* url */,
                               std::string /* mime_type */,
-                              IPC::ChannelHandle /* handle to channel */,
+                              IPC::ChannelHandle /* channel_handle */,
                               WebPluginInfo /* info */)
 
   // A renderer sends this to the browser process when it wants to
   // create a pepper plugin.  The browser will create the plugin process if
   // necessary, and will return a handle to the channel on success.
   // On error an empty string is returned.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_OpenChannelToPepperPlugin,
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
                               FilePath /* path */,
+                              base::ProcessHandle /* plugin_process_handle */,
                               IPC::ChannelHandle /* handle to channel */)
 
   // A renderer sends this to the browser process when it wants to

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/linked_ptr.h"
+#include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
@@ -86,6 +87,14 @@ class Dispatcher : public IPC::Channel::Listener,
   // or not supported by the remote side, returns NULL.
   const void* GetProxiedInterface(const std::string& interface);
 
+  // Returns the remote process' handle. For the host dispatcher, this will be
+  // the plugin process, and for the plugin dispatcher, this will be the
+  // renderer process. This is used for sharing memory and such and is
+  // guaranteed valid (unless the remote process has suddenly died).
+  base::ProcessHandle remote_process_handle() const {
+    return remote_process_handle_;
+  }
+
   // Called if the remote side is declaring to us which interfaces it supports
   // so we don't have to query for each one. We'll pre-create proxies for
   // each of the given interfaces.
@@ -105,7 +114,8 @@ class Dispatcher : public IPC::Channel::Listener,
   }
 
  protected:
-  Dispatcher(GetInterfaceFunc local_get_interface);
+  Dispatcher(base::ProcessHandle remote_process_handle,
+             GetInterfaceFunc local_get_interface);
 
   // Setter for the derived classes to set the appropriate var serialization.
   // Takes ownership of the given pointer, which must be on the heap.
@@ -154,6 +164,7 @@ class Dispatcher : public IPC::Channel::Listener,
   // this dispatcher.
   PP_Module pp_module_;
 
+  base::ProcessHandle remote_process_handle_;  // See getter above.
   scoped_ptr<IPC::SyncChannel> channel_;
 
   bool disallow_trusted_interfaces_;

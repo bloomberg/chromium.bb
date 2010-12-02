@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
@@ -36,7 +37,8 @@ class HostDispatcher : public Dispatcher {
   // Constructor for the renderer side.
   //
   // You must call Dispatcher::InitWithChannel after the constructor.
-  HostDispatcher(const PPB_Var_Deprecated* var_interface,
+  HostDispatcher(base::ProcessHandle host_process_handle,
+                 const PPB_Var_Deprecated* var_interface,
                  PP_Module module,
                  GetInterfaceFunc local_get_interface);
   ~HostDispatcher();

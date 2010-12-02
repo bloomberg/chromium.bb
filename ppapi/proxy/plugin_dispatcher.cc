@@ -30,10 +30,11 @@ const void* GetInterfaceFromDispatcher(const char* interface) {
 
 }  // namespace
 
-PluginDispatcher::PluginDispatcher(GetInterfaceFunc get_interface,
+PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
+                                   GetInterfaceFunc get_interface,
                                    InitModuleFunc init_module,
                                    ShutdownModuleFunc shutdown_module)
-    : Dispatcher(get_interface),
+    : Dispatcher(remote_process_handle, get_interface),
       init_module_(init_module),
       shutdown_module_(shutdown_module),
       plugin_resource_tracker_(new PluginResourceTracker(

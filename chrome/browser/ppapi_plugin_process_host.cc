@@ -29,7 +29,7 @@ void PpapiPluginProcessHost::Init(const FilePath& path,
   reply_msg_.reset(reply_msg);
 
   if (!CreateChannel()) {
-    ReplyToRenderer(IPC::ChannelHandle());
+    ReplyToRenderer(NULL, IPC::ChannelHandle());
     return;
   }
 
@@ -39,7 +39,7 @@ void PpapiPluginProcessHost::Init(const FilePath& path,
 
   FilePath exe_path = ChildProcessHost::GetChildPath(plugin_launcher.empty());
   if (exe_path.empty()) {
-    ReplyToRenderer(IPC::ChannelHandle());
+    ReplyToRenderer(NULL, IPC::ChannelHandle());
     return;
   }
 
@@ -80,25 +80,49 @@ void PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PpapiPluginProcessHost::OnChannelConnected(int32 peer_pid) {
-  PpapiMsg_LoadPlugin* msg = new PpapiMsg_LoadPlugin(plugin_path_,
+#if defined(OS_WIN)
+  base::ProcessHandle plugins_renderer_handle = NULL;
+  ::DuplicateHandle(::GetCurrentProcess(), filter_->handle(),
+                    GetChildProcessHandle(), &plugins_renderer_handle,
+                    0, FALSE, DUPLICATE_SAME_ACCESS);
+#elif defined(OS_POSIX)
+  base::ProcessHandle plugins_renderer_handle = filter_->handle();
+#endif
+
+  PpapiMsg_LoadPlugin* msg = new PpapiMsg_LoadPlugin(plugins_renderer_handle,
+                                                     plugin_path_,
                                                      filter_->id());
   if (!Send(msg))  // Just send an empty handle on failure.
-    ReplyToRenderer(IPC::ChannelHandle());
+    ReplyToRenderer(NULL, IPC::ChannelHandle());
   // This function will result in OnChannelCreated getting called to finish.
 }
 
 void PpapiPluginProcessHost::OnChannelError() {
   if (reply_msg_.get())
-    ReplyToRenderer(IPC::ChannelHandle());
+    ReplyToRenderer(NULL, IPC::ChannelHandle());
 }
 
-void PpapiPluginProcessHost::OnPluginLoaded(const IPC::ChannelHandle& handle) {
-  ReplyToRenderer(handle);
+void PpapiPluginProcessHost::OnPluginLoaded(
+    const IPC::ChannelHandle& channel_handle) {
+  base::ProcessHandle plugin_process = GetChildProcessHandle();
+#if defined(OS_WIN)
+  base::ProcessHandle renderers_plugin_handle = NULL;
+  ::DuplicateHandle(::GetCurrentProcess(), plugin_process,
+                    filter_->handle(), &renderers_plugin_handle,
+                    0, FALSE, DUPLICATE_SAME_ACCESS);
+#elif defined(OS_POSIX)
+  // Don't need to duplicate anything on POSIX since it's just a PID.
+  base::ProcessHandle renderers_plugin_handle = plugin_process;
+#endif
+  ReplyToRenderer(renderers_plugin_handle, channel_handle);
 }
 
-void PpapiPluginProcessHost::ReplyToRenderer(const IPC::ChannelHandle& handle) {
+void PpapiPluginProcessHost::ReplyToRenderer(
+    base::ProcessHandle plugin_handle,
+    const IPC::ChannelHandle& channel_handle) {
   DCHECK(reply_msg_.get());
   ViewHostMsg_OpenChannelToPepperPlugin::WriteReplyParams(reply_msg_.get(),
-      handle);
+                                                          plugin_handle,
+                                                          channel_handle);
   filter_->Send(reply_msg_.release());
 }

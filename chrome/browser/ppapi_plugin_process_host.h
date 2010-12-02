@@ -39,7 +39,8 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
   void OnPluginLoaded(const IPC::ChannelHandle& handle);
 
   // Sends the reply_msg_ to the renderer with the given channel info.
-  void ReplyToRenderer(const IPC::ChannelHandle& handle);
+  void ReplyToRenderer(base::ProcessHandle plugin_handle,
+                       const IPC::ChannelHandle& channel_handle);
 
   ResourceMessageFilter* filter_;
 

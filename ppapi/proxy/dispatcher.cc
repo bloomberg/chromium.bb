@@ -12,6 +12,8 @@
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ppapi/c/dev/ppb_audio_config_dev.h"
+#include "ppapi/c/dev/ppb_audio_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -31,6 +33,8 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_audio_config_proxy.h"
+#include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_char_set_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
@@ -54,8 +58,10 @@
 namespace pp {
 namespace proxy {
 
-Dispatcher::Dispatcher(GetInterfaceFunc local_get_interface)
+Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
+                       GetInterfaceFunc local_get_interface)
     : pp_module_(0),
+      remote_process_handle_(remote_process_handle),
       disallow_trusted_interfaces_(true),
       local_get_interface_(local_get_interface),
       declared_supported_remote_interfaces_(false),
@@ -216,6 +222,10 @@ void Dispatcher::OnMsgDeclareInterfaces(
 InterfaceProxy* Dispatcher::CreateProxyForInterface(
     const std::string& interface_name,
     const void* interface_functions) {
+  if (interface_name == PPB_AUDIO_CONFIG_DEV_INTERFACE)
+    return new PPB_AudioConfig_Proxy(this, interface_functions);
+  if (interface_name == PPB_AUDIO_DEV_INTERFACE)
+    return new PPB_Audio_Proxy(this, interface_functions);
   if (interface_name == PPB_BUFFER_DEV_INTERFACE)
     return new PPB_Buffer_Proxy(this, interface_functions);
   if (interface_name == PPB_CHAR_SET_DEV_INTERFACE)

@@ -12,7 +12,9 @@ namespace proxy {
 // to route messages to the appropriate message handler.
 enum InterfaceID {
   // Zero is reserved for control messages.
-  INTERFACE_ID_PPB_BUFFER = 1,
+  INTERFACE_ID_PPB_AUDIO = 1,
+  INTERFACE_ID_PPB_AUDIO_CONFIG,
+  INTERFACE_ID_PPB_BUFFER,
   INTERFACE_ID_PPB_CHAR_SET,
   INTERFACE_ID_PPB_CORE,
   INTERFACE_ID_PPB_CURSORCONTROL,

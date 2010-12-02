@@ -495,11 +495,32 @@
 #      ],
     },
     {
+      'target_name': 'ppapi_shared_impl',
+      'type': 'static_library',
+      'dependencies': [
+        'ppapi_c',
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'shared_impl/audio_impl.cc',
+        'shared_impl/audio_impl.h',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'msvs_guid': 'E7420D65-A885-41EB-B4BE-04DE0C97033B',
+        }],
+      ],
+    },
+    {
       'target_name': 'ppapi_proxy',
       'type': 'static_library',
       'dependencies': [
         '../ipc/ipc.gyp:ipc',
         'ppapi_c',
+        'ppapi_shared_impl',
       ],
       'all_dependent_settings': {
         'include_dirs': [
@@ -536,6 +557,10 @@
         'proxy/ppapi_messages_internal.h',
         'proxy/ppapi_param_traits.cc',
         'proxy/ppapi_param_traits.h',
+        'proxy/ppb_audio_config_proxy.cc',
+        'proxy/ppb_audio_config_proxy.h',
+        'proxy/ppb_audio_proxy.cc',
+        'proxy/ppb_audio_proxy.h',
         'proxy/ppb_buffer_proxy.cc',
         'proxy/ppb_buffer_proxy.h',
         'proxy/ppb_char_set_proxy.cc',

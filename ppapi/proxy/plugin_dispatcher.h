@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "ppapi/proxy/callback_tracker.h"
 #include "ppapi/proxy/dispatcher.h"
@@ -29,7 +30,8 @@ class PluginDispatcher : public Dispatcher {
   // module ID will be set upon receipt of the InitializeModule message.
   //
   // You must call Dispatcher::InitWithChannel after the constructor.
-  PluginDispatcher(GetInterfaceFunc get_interface,
+  PluginDispatcher(base::ProcessHandle remote_process_handle,
+                   GetInterfaceFunc get_interface,
                    InitModuleFunc init_module,
                    ShutdownModuleFunc shutdown_module);
   ~PluginDispatcher();
@@ -59,6 +61,7 @@ class PluginDispatcher : public Dispatcher {
   }
 
  private:
+  // IPC message handler.
   void OnInitializeModule(PP_Module pp_module, bool* result);
 
   InitModuleFunc init_module_;

@@ -96,9 +96,9 @@ PP_Bool IsAudio(PP_Resource resource) {
   return BoolToPPBool(!!audio);
 }
 
-PP_Resource GetCurrentConfiguration(PP_Resource audio_id) {
+PP_Resource GetCurrentConfig(PP_Resource audio_id) {
   scoped_refptr<Audio> audio = Resource::GetAs<Audio>(audio_id);
-  return audio ? audio->GetCurrentConfiguration() : 0;
+  return audio ? audio->GetCurrentConfig() : 0;
 }
 
 PP_Bool StartPlayback(PP_Resource audio_id) {
@@ -114,7 +114,7 @@ PP_Bool StopPlayback(PP_Resource audio_id) {
 const PPB_Audio_Dev ppb_audio = {
   &Create,
   &IsAudio,
-  &GetCurrentConfiguration,
+  &GetCurrentConfig,
   &StartPlayback,
   &StopPlayback,
 };
@@ -201,14 +201,8 @@ AudioConfig* AudioConfig::AsAudioConfig() {
 
 Audio::Audio(PluginModule* module, PP_Instance instance_id)
     : Resource(module),
-      playing_(false),
       pp_instance_(instance_id),
       audio_(NULL),
-      socket_(NULL),
-      shared_memory_(NULL),
-      shared_memory_size_(0),
-      callback_(NULL),
-      user_data_(NULL),
       create_callback_pending_(false) {
   create_callback_ = PP_MakeCompletionCallback(NULL, NULL);
 }
@@ -218,20 +212,12 @@ Audio::~Audio() {
   audio_->ShutDown();
   audio_ = NULL;
 
-  // Closing the socket causes the thread to exit - wait for it.
-  socket_->Close();
-  if (audio_thread_.get()) {
-    audio_thread_->Join();
-    audio_thread_.reset();
-  }
-
   // If the completion callback hasn't fired yet, do so here
   // with an error condition.
   if (create_callback_pending_) {
     PP_RunCompletionCallback(&create_callback_, PP_ERROR_ABORTED);
     create_callback_pending_ = false;
   }
-  // Shared memory destructor will unmap the memory automatically.
 }
 
 const PPB_Audio_Dev* Audio::GetInterface() {
@@ -253,14 +239,33 @@ bool Audio::Init(PluginDelegate* plugin_delegate,
   config_ = Resource::GetAs<AudioConfig>(config_id);
   if (!config_)
     return false;
-  callback_ = callback;
-  user_data_ = user_data;
+  SetCallback(callback, user_data);
 
   // When the stream is created, we'll get called back on StreamCreated().
   audio_ = plugin_delegate->CreateAudio(config_->sample_rate(),
                                         config_->sample_frame_count(),
                                         this);
   return audio_ != NULL;
+}
+
+PP_Resource Audio::GetCurrentConfig() {
+  return config_->GetReference();
+}
+
+bool Audio::StartPlayback() {
+  if (playing())
+    return true;
+  SetStartPlaybackState();
+  return audio_->StartPlayback();
+}
+
+bool Audio::StopPlayback() {
+  if (!playing())
+    return true;
+  if (!audio_->StopPlayback())
+    return false;
+  SetStopPlaybackState();
+  return true;
 }
 
 int32_t Audio::Open(PluginDelegate* plugin_delegate,
@@ -287,11 +292,11 @@ int32_t Audio::Open(PluginDelegate* plugin_delegate,
 }
 
 int32_t Audio::GetSyncSocket(int* sync_socket) {
-  if (socket_ != NULL) {
+  if (socket_for_create_callback_.get()) {
 #if defined(OS_POSIX)
-    *sync_socket = socket_->handle();
+    *sync_socket = socket_for_create_callback_->handle();
 #elif defined(OS_WIN)
-    *sync_socket = reinterpret_cast<int>(socket_->handle());
+    *sync_socket = reinterpret_cast<int>(socket_for_create_callback_->handle());
 #else
     #error "Platform not supported."
 #endif
@@ -301,88 +306,42 @@ int32_t Audio::GetSyncSocket(int* sync_socket) {
 }
 
 int32_t Audio::GetSharedMemory(int* shm_handle, uint32_t* shm_size) {
-  if (shared_memory_ != NULL) {
+  if (shared_memory_for_create_callback_.get()) {
 #if defined(OS_POSIX)
-    *shm_handle = shared_memory_->handle().fd;
+    *shm_handle = shared_memory_for_create_callback_->handle().fd;
 #elif defined(OS_WIN)
-    *shm_handle = reinterpret_cast<int>(shared_memory_->handle());
+    *shm_handle = reinterpret_cast<int>(
+        shared_memory_for_create_callback_->handle());
 #else
     #error "Platform not supported."
 #endif
-    *shm_size = shared_memory_size_;
+    *shm_size = shared_memory_size_for_create_callback_;
     return PP_OK;
   }
   return PP_ERROR_FAILED;
 }
 
-bool Audio::StartPlayback() {
-  if (playing_)
-    return true;
-
-  CHECK(!audio_thread_.get());
-  if (callback_ && socket_.get()) {
-    audio_thread_.reset(new base::DelegateSimpleThread(this,
-                                                       "plugin_audio_thread"));
-    audio_thread_->Start();
-  }
-  playing_ = true;
-  return audio_->StartPlayback();
-}
-
-bool Audio::StopPlayback() {
-  if (!playing_)
-    return true;
-
-  if (!audio_->StopPlayback())
-    return false;
-
-  if (audio_thread_.get()) {
-    audio_thread_->Join();
-    audio_thread_.reset();
-  }
-  playing_ = false;
-  return true;
-}
-
 void Audio::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
                           size_t shared_memory_size,
                           base::SyncSocket::Handle socket_handle) {
-  socket_.reset(new base::SyncSocket(socket_handle));
-  shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
-  shared_memory_size_ = shared_memory_size;
-
-  // Trusted side of proxy can specify a callback to recieve handles.
   if (create_callback_pending_) {
+    // Trusted side of proxy can specify a callback to recieve handles. In
+    // this case we don't need to map any data or start the thread since it
+    // will be handled by the proxy.
+    shared_memory_for_create_callback_.reset(
+        new base::SharedMemory(shared_memory_handle, false));
+    shared_memory_size_for_create_callback_ = shared_memory_size;
+    socket_for_create_callback_.reset(new base::SyncSocket(socket_handle));
+
     PP_RunCompletionCallback(&create_callback_, 0);
     create_callback_pending_ = false;
-  }
 
-  // Trusted, non-proxy audio will invoke buffer filling callback on a
-  // dedicated thread, see Audio::Run() below.
-  if (callback_) {
-    shared_memory_->Map(shared_memory_size_);
-
-    // In common case StartPlayback() was called before StreamCreated().
-    if (playing_) {
-      audio_thread_.reset(new base::DelegateSimpleThread(this,
-          "plugin_audio_thread"));
-      audio_thread_->Start();
-    }
-  }
-}
-
-void Audio::Run() {
-  int pending_data;
-  void* buffer = shared_memory_->memory();
-  size_t buffer_size_in_bytes = config_->BufferSize();
-
-  while (sizeof(pending_data) ==
-      socket_->Receive(&pending_data, sizeof(pending_data)) &&
-      pending_data >= 0) {
-    // Exit the thread on pause.
-    if (pending_data < 0)
-      return;
-    callback_(buffer, buffer_size_in_bytes, user_data_);
+    // Close the handles now that this process is done with them.
+    shared_memory_for_create_callback_.reset();
+    shared_memory_size_for_create_callback_ = 0;
+    socket_for_create_callback_.reset();
+  } else {
+    SetStreamInfo(shared_memory_handle, shared_memory_size, socket_handle);
   }
 }
 

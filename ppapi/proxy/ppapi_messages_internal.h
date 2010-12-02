@@ -13,7 +13,8 @@
 // These are from the plugin to the renderer
 IPC_BEGIN_MESSAGES(Ppapi)
   // Loads the given plugin.
-  IPC_MESSAGE_CONTROL2(PpapiMsg_LoadPlugin,
+  IPC_MESSAGE_CONTROL3(PpapiMsg_LoadPlugin,
+                       base::ProcessHandle /* host_process_handle */,
                        FilePath /* path */,
                        int /* renderer_id */)
 
@@ -35,6 +36,27 @@ IPC_BEGIN_MESSAGES(Ppapi)
   IPC_MESSAGE_CONTROL2(PpapiMsg_ExecuteCallback,
                        uint32 /* serialized_callback */,
                        int32 /* param */)
+
+  // PPB_Audio.
+
+  // Notifies the result of the audio stream create call. This is called in
+  // both error cases and in the normal success case. These cases are
+  // differentiated by the result code, which is one of the standard PPAPI
+  // result codes.
+  //
+  // The handler of this message should always close all of the handles passed
+  // in, since some could be valid even in the error case.
+  IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
+                      PP_Resource /* audio_id */,
+                      int32_t /* result_code (will be != PP_OK on failure) */,
+                      IPC::PlatformFileForTransit /* socket_handle */,
+                      base::SharedMemoryHandle /* handle */,
+                      int32_t /* length */)
+
+  // PPB_Graphics2D.
+  IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
+                      PP_Resource /* graphics_2d */,
+                      int32_t /* pp_error */)
 
   // PPP_Class.
   IPC_SYNC_MESSAGE_ROUTED3_2(PpapiMsg_PPPClass_HasProperty,
@@ -88,11 +110,6 @@ IPC_BEGIN_MESSAGES(Ppapi)
                       int64 /* ppp_class */,
                       int64 /* object */)
 
-  // PPB_Graphics2D.
-  IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
-                      PP_Resource /* graphics_2d */,
-                      int32_t /* pp_error */)
-
   // PPP_Instance.
   IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,
                              PP_Instance /* instance */,
@@ -141,6 +158,26 @@ IPC_BEGIN_MESSAGES(PpapiHost)
   // Reply to PpapiMsg_LoadPlugin.
   IPC_MESSAGE_CONTROL1(PpapiHostMsg_PluginLoaded,
                        IPC::ChannelHandle /* handle */)
+
+  // PPB_Audio.
+  IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBAudio_Create,
+                             PP_Instance /* instance_id */,
+                             PP_Resource /* config_id */,
+                             PP_Resource /* result */)
+  IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudio_StartOrStop,
+                      PP_Resource /* audio_id */,
+                      bool /* play */)
+
+  // PPB_AudioConfig.
+  IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudioConfig_Create,
+                             PP_Module /* module */,
+                             int32_t /* sample_rate */,
+                             uint32_t /* sample_frame_count */,
+                             PP_Resource /* result */)
+  IPC_SYNC_MESSAGE_ROUTED1_1(
+      PpapiHostMsg_PPBAudioConfig_RecommendSampleFrameCount,
+      uint32_t /* requested */,
+      uint32_t /* result */)
 
   // PPB_Buffer.
   IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,

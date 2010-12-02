@@ -47,9 +47,11 @@ void PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-void PpapiThread::OnLoadPlugin(const FilePath& path, int renderer_id) {
+void PpapiThread::OnLoadPlugin(base::ProcessHandle host_process_handle,
+                               const FilePath& path,
+                               int renderer_id) {
   IPC::ChannelHandle channel_handle;
-  if (!LoadPluginLib(path) ||
+  if (!LoadPluginLib(host_process_handle, path) ||
       !SetupRendererChannel(renderer_id, &channel_handle)) {
     // An empty channel handle indicates error.
     Send(new PpapiHostMsg_PluginLoaded(IPC::ChannelHandle()));
@@ -59,7 +61,8 @@ void PpapiThread::OnLoadPlugin(const FilePath& path, int renderer_id) {
   Send(new PpapiHostMsg_PluginLoaded(channel_handle));
 }
 
-bool PpapiThread::LoadPluginLib(const FilePath& path) {
+bool PpapiThread::LoadPluginLib(base::ProcessHandle host_process_handle,
+                                const FilePath& path) {
   base::ScopedNativeLibrary library(base::LoadNativeLibrary(path));
   if (!library.is_valid())
     return false;
@@ -88,8 +91,8 @@ bool PpapiThread::LoadPluginLib(const FilePath& path) {
           library.GetFunctionPointer("PPP_ShutdownModule"));
 
   library_.Reset(library.Release());
-  dispatcher_.reset(new pp::proxy::PluginDispatcher(get_interface, init_module,
-                                                    shutdown_module));
+  dispatcher_.reset(new pp::proxy::PluginDispatcher(
+      host_process_handle, get_interface, init_module, shutdown_module));
   pp::proxy::PluginDispatcher::SetGlobal(dispatcher_.get());
   return true;
 }
