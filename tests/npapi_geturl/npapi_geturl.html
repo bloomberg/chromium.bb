@@ -12,52 +12,84 @@
     </style>
     <script type="application/x-javascript">
       //<![CDATA[
+var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+
 var plugin = 0;
-var logElt;
-var testsNotRun = 2;
+var TOTAL_TESTS;
+// The invalied-url test causes a timeout with Firefox under Selenium on
+// nacl-hardy64_m32_n32_opt, so we only enable it when running manually
+// with Chrome.
+if (is_chrome) {
+  TOTAL_TESTS = 3;
+} else {
+  TOTAL_TESTS = 2;
+}
+var testsNotRun = TOTAL_TESTS;
+var testsPassed = 0;
 var testTimeoutHandler = 0;
 var testTimedOut = false;
-var valid_url = 'npapi_geturl_success.html';
-var cross_origin_url = 'http://www.google.com/robots.txt';
-var invalid_url = 'npapi_nonexistent_url.html';
 
-// Logs a string to the page.
-function generalLog(str) {
-  logElt.textContent += str + '\n';
+// Test1
+var logValid;
+var VALID_URL = 'npapi_geturl_success.html';
+// Test2
+var logCrossOrigin;
+var CROSSORIGIN_URL = 'http://www.google.com/robots.txt';
+// Test3
+var logInvalid;
+var INVALID_URL = 'npapi_nonexistent_url.html';
+
+function isMatch(actual, expected) {
+  return (0 <= actual.indexOf(expected));
 }
 
-// Validates the data loaded from the url.
-var ReportResult = function(url, result, success) {
-  logElt.textContent += 'FULLY QUALIFIED URL:' + url + '\n';
-  logElt.textContent += 'RESULT:\n' + result + '\n';
-  --testsNotRun;
-  if (0 <= url.indexOf(valid_url)) {
-    // Loading the valid URL should pass.
-    if (!success) {
-      logElt.className = 'fail';
-    } else {
-      // Note that the Selenium framework returns a list of all files that
-      // *could* be opened if the requested file could not be opened.
-      // Check for getting the real data from the test file, not just the
-      // list of all existing files.
-      var expected_text = 'TEST PASSED';
-      if (0 > result.indexOf(expected_text)) {
-        logElt.className = 'fail';
-      }
-    }
+function logTestMessage(logElement, message) {
+  logElement.textContent += message + '\n';
+}
+
+function setTestStatus(logElement, actual, expected) {
+  logTestMessage(logElement,
+                 'LOAD STATUS: success=' + actual + ' expected=' + expected);
+  if (actual != expected) {
+    logElement.className = 'fail';
   } else {
-    // Loading a cross-origin or invalid URL should fail.
-    if (success) {
-      logElt.className = 'fail';
-    }
+    logElement.className = 'pass';
+    ++testsPassed;
   }
+}
+
+// Validates the data loaded from the url. To be called by the plugin to
+// complete each test on both success and failure or the test will time out.
+var ReportResult = function(url, result, success) {
+  --testsNotRun;
+  var logElement;
+  var expectedSuccess;
+
+  if (isMatch(url, VALID_URL)) {
+    expectedSuccess = true;
+    // Note that the Selenium framework returns a list of all files that
+    // *could* be opened if the requested file could not be opened.
+    // Check for getting the real data from the test file, not just the
+    // list of all existing files.
+    success = success && isMatch(result, 'TEST PASSED');
+    logElement = logValid;
+  }
+  if (isMatch(url, CROSSORIGIN_URL)) {
+    expectedSuccess = false;
+    logElement = logCrossOrigin;
+  }
+  if (isMatch(url, INVALID_URL)) {
+    expectedSuccess = false;
+    logElement = logInvalid;
+  }
+  logTestMessage(logElement, 'FULL URL   : ' + url);
+  setTestStatus(logElement, success, expectedSuccess);
+  logTestMessage(logElement, 'LOAD RESULT: ' + result);
+
   if (0 == testsNotRun){
     if (0 != testTimeoutHandler) {
       clearTimeout(testTimeoutHandler);
       testTimeoutHandler = 0;
-    }
-    if ('notrun' == logElt.className) {
-      logElt.className = 'pass';
     }
   }
 }
@@ -68,23 +100,30 @@ function handleTestTimeout() {
   clearTimeout(testTimeoutHandler);
   testTimeoutHandler = 0;
   testTimedOut = true;
-  generalLog('The test did not finish in the allotted time.');
 }
 
-// Starts testing.
+// Start tests asynchronously. Plugin must call ReportResult() above
+// to complete each test on success or failure or the test will time out.
 function startTests() {
   plugin = document.getElementById('nacl');
-  logElt = document.getElementById('GeneralOutput');
   testTimeoutHandler = setTimeout('handleTestTimeout()', 10000);
-  generalLog('Loading URL ' + valid_url);
-  plugin.loadUrl(valid_url, '');
-  generalLog('Loading URL ' + cross_origin_url);
-  plugin.loadUrl(cross_origin_url, '');
-  // TODO(sehr): selenium always returns a table of contents page when
-  // an invalid URL load is attempted.  Reenable the next two lines and
-  // set testsNotRun to 3 above when selenium is fixed.
-  // generalLog('Loading URL ' + invalid_url);
-  // plugin.loadUrl(invalid_url, '');
+
+  logValid = document.getElementById('LogValid');
+  logTestMessage(logValid, 'Loading valid URL ' + VALID_URL);
+  plugin.loadUrl(VALID_URL, '');
+
+  logCrossOrigin = document.getElementById('LogCrossOrigin');
+  logTestMessage(logCrossOrigin, 'Loading cross-origin URL ' + CROSSORIGIN_URL);
+  plugin.loadUrl(CROSSORIGIN_URL, '');
+
+  logInvalid = document.getElementById('LogInvalid');
+  logTestMessage(logInvalid, 'Loading invalid URL ' + INVALID_URL);
+  if (is_chrome) {
+    plugin.loadUrl(INVALID_URL, '');
+  } else {
+    logTestMessage(logInvalid,
+                   'This test is disabled in Firefox due to Selenium timeouts')
+  }
 }
       //]]>
     </script>
@@ -94,14 +133,11 @@ function startTests() {
         onunload="nacllib.cleanUp();" >
     <h1>NPAPI GetURL Test</h1>
 
-    <h2> Output logs </h2>
-    <table border=5 cellpadding=5% summary="A title and a result log">
-      <tr>
-        <td> <b> General test output </b> </td>
-      </tr>
-      <tr>
-        <td valign=top><pre id='GeneralOutput' class='notrun'></pre></td>
-      </tr>
+    <table border=5 cellpadding=5%>
+      <tr><td> <b>Test Logs</b>
+      <tr><td><pre id='LogValid' class='notrun'></pre>
+      <tr><td><pre id='LogCrossOrigin' class='notrun'></pre>
+      <tr><td><pre id='LogInvalid' class='notrun'></pre>
     </table>
 
     <div id="status">NO-STATUS</div>
@@ -114,24 +150,18 @@ function startTests() {
       //<![CDATA[
       var nacllib = new NaclLib('nacl_module', 'status', 500);
 
-      // Returns true ("wait") to the NaclLib test driver until all of the
+      // Returns true (for "wait") to the NaclLib test driver until all of the
       // tests are complete.  I.e., either all of the file load callbacks have
       // completed successfully or an error has occurred.
-      nacllib.wait = function() {
-        logElt = document.getElementById('GeneralOutput');
+      nacllib.wait = function() {  // First call after the module was loaded.
         if (0 == plugin) {
-          // This is the first call after the module was loaded.
-          // Start testing.
           startTests();
           return true;
-        } else if (testTimedOut) {
-          // Testing took too long.
+        } else if (testTimedOut) {  // Testing took too long.
           return false;
-        } else if (0 < testsNotRun) {
-          // Still waiting for tests to finish.
+        } else if (0 < testsNotRun) {  // Still waiting for tests to finish.
           return true;
-        } else {
-          // Testing is complete.  Allow the test driver to call test().
+        } else { // Testing is complete.  Allow the test driver to call test().
           return false;
         }
       }
@@ -142,8 +172,8 @@ function startTests() {
       nacllib.test = function() {
         // The actual testing is all finished by the time this method is
         // called, so just return the test results.
-        if ('pass' == logElt.className) {
-          return '';
+        if (testsPassed == TOTAL_TESTS) {
+          return '';  // success
         } else if (testTimedOut) {
           return 'Test timed out.';
         } else {
