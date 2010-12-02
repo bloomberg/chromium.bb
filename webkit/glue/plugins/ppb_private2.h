@@ -51,10 +51,10 @@ struct PPB_Private2 {
                      uint32_t color,
                      PP_Point position,
                      PP_Rect clip,
-                     float transformation[3][3],
+                     const float transformation[3][3],
                      uint32_t glyph_count,
-                     uint16_t glyph_indices[],
-                     PP_Point glyph_advances[]);
+                     const uint16_t glyph_indices[],
+                     const PP_Point glyph_advances[]);
 
   // Retrieves the proxy that will be used for the given URL. The result will
   // be a string in PAC format, or an undefined var on error.

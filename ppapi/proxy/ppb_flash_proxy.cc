@@ -59,10 +59,10 @@ bool DrawGlyphs(PP_Resource pp_image_data,
                 uint32_t color,
                 PP_Point position,
                 PP_Rect clip,
-                float transformation[3][3],
+                const float transformation[3][3],
                 uint32_t glyph_count,
-                uint16_t glyph_indices[],
-                PP_Point glyph_advances[]) {
+                const uint16_t glyph_indices[],
+                const PP_Point glyph_advances[]) {
   Dispatcher* dispatcher = PluginDispatcher::Get();
 
   PPBFlash_DrawGlyphs_Params params;
@@ -83,9 +83,10 @@ bool DrawGlyphs(PP_Resource pp_image_data,
                                &glyph_advances[0],
                                &glyph_advances[glyph_count]);
 
+  bool result = false;
   dispatcher->Send(new PpapiHostMsg_PPBFlash_DrawGlyphs(
-      INTERFACE_ID_PPB_FLASH, params));
-  return true;
+      INTERFACE_ID_PPB_FLASH, params, &result));
+  return result;
 }
 
 PP_Var GetProxyForURL(PP_Module pp_module, const char* url) {
@@ -236,7 +237,10 @@ void PPB_Flash_Proxy::OnMsgSetInstanceAlwaysOnTop(
 }
 
 void PPB_Flash_Proxy::OnMsgDrawGlyphs(
-    const pp::proxy::PPBFlash_DrawGlyphs_Params& params) {
+    const pp::proxy::PPBFlash_DrawGlyphs_Params& params,
+    bool* result) {
+  *result = false;
+
   PP_FontDescription_Dev font_desc;
   params.font_desc.SetToPPFontDescription(dispatcher(), &font_desc, false);
 
@@ -244,7 +248,7 @@ void PPB_Flash_Proxy::OnMsgDrawGlyphs(
       params.glyph_indices.empty())
     return;
 
-  ppb_flash_target()->DrawGlyphs(
+  *result = ppb_flash_target()->DrawGlyphs(
       params.pp_image_data, &font_desc, params.color,
       params.position, params.clip,
       const_cast<float(*)[3]>(params.transformation),

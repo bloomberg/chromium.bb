@@ -41,7 +41,8 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgSetInstanceAlwaysOnTop(PP_Instance instance,
                                    bool on_top);
-  void OnMsgDrawGlyphs(const pp::proxy::PPBFlash_DrawGlyphs_Params& params);
+  void OnMsgDrawGlyphs(const pp::proxy::PPBFlash_DrawGlyphs_Params& params,
+                       bool* result);
   void OnMsgGetProxyForURL(PP_Module module,
                            const std::string& url,
                            SerializedVarReturnValue result);

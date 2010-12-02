@@ -24,10 +24,10 @@ bool Private2::DrawGlyphs(PP_Resource pp_image_data,
                           uint32_t color,
                           PP_Point position,
                           PP_Rect clip,
-                          float transformation[3][3],
+                          const float transformation[3][3],
                           uint32_t glyph_count,
-                          uint16_t glyph_indices[],
-                          PP_Point glyph_advances[]) {
+                          const uint16_t glyph_indices[],
+                          const PP_Point glyph_advances[]) {
   scoped_refptr<ImageData> image_resource(
       Resource::GetAs<ImageData>(pp_image_data));
   if (!image_resource.get())

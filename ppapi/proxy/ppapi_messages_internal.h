@@ -231,8 +231,11 @@ IPC_BEGIN_MESSAGES(PpapiHost)
   IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
                       PP_Instance /* instance */,
                       bool /* on_top */)
-  IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFlash_DrawGlyphs,
-                      pp::proxy::PPBFlash_DrawGlyphs_Params /* params */)
+  // This has to be synchronous becuase the caller may want to composite on
+  // top of the resulting text after the call is complete.
+  IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlash_DrawGlyphs,
+                             pp::proxy::PPBFlash_DrawGlyphs_Params /* params */,
+                             bool /* result */)
   IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
                              PP_Module /* module */,
                              std::string /* url */,

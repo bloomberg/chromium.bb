@@ -26,10 +26,10 @@ class Private2 {
                          uint32_t color,
                          PP_Point position,
                          PP_Rect clip,
-                         float transformation[3][3],
+                         const float transformation[3][3],
                          uint32_t glyph_count,
-                         uint16_t glyph_indices[],
-                         PP_Point glyph_advances[])
+                         const uint16_t glyph_indices[],
+                         const PP_Point glyph_advances[])
 #if defined(OS_LINUX)
       ;
 #else
