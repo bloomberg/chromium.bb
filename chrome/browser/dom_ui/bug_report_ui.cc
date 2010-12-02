@@ -116,8 +116,20 @@ std::string GetUserEmail() {
   else
     return manager->logged_in_user().email();
 }
-
 #endif
+
+// Returns the index of the feedback tab if already open, -1 otherwise
+int GetIndexOfFeedbackTab(Browser* browser) {
+  GURL bug_report_url(chrome::kChromeUIBugReportURL);
+  for (int i = 0; i < browser->tab_count(); ++i) {
+    TabContents* tab = browser->GetTabContentsAt(i);
+    if (tab && tab->GetURL().GetWithEmptyPath() == bug_report_url)
+      return i;
+  }
+
+  return -1;
+}
+
 }  // namespace
 
 
@@ -127,7 +139,27 @@ namespace browser {
 std::vector<unsigned char>* last_screenshot_png = 0;
 gfx::Rect screen_size;
 
+// Get bounds in different ways for different OS's;
+#if defined(TOOLKIT_VIEWS)
+// Windows/ChromeOS support Views - so we get dimensions from the
+// views::Window object
 void RefreshLastScreenshot(views::Window* parent) {
+  gfx::NativeWindow window = parent->GetNativeWindow();
+  int width = parent->GetBounds().width();
+  int height = parent->GetBounds().height();
+#elif defined(OS_LINUX)
+// Linux provides its bounds and a native window handle to the screen
+void RefreshLastScreenshot(gfx::NativeWindow window,
+                           const gfx::Rect& bounds) {
+  int width = bounds.width();
+  int height = bounds.height();
+#elif defined(OS_MACOSX)
+// Mac gets its bounds from the GrabWindowSnapshot function
+void RefreshLastScreenshot(NSWindow* window) {
+  int width = 0;
+  int height = 0;
+#endif
+
   // Grab an exact snapshot of the window that the user is seeing (i.e. as
   // rendered--do not re-render, and include windowed plugins).
   if (last_screenshot_png)
@@ -136,24 +168,47 @@ void RefreshLastScreenshot(views::Window* parent) {
     last_screenshot_png = new std::vector<unsigned char>;
 
 #if defined(USE_X11)
-  screen_size = parent->GetBounds();
-  x11_util::GrabWindowSnapshot(parent->GetNativeWindow(), last_screenshot_png);
+  x11_util::GrabWindowSnapshot(window, last_screenshot_png);
 #elif defined(OS_MACOSX)
-  int width = 0, height = 0;
-  mac_util::GrabWindowSnapshot(parent->GetNativeWindow(), last_screenshot_png,
-                               &width, &height);
+  mac_util::GrabWindowSnapshot(window, last_screenshot_png, &width, &height);
 #elif defined(OS_WIN)
-  screen_size = parent->GetBounds();
-  win_util::GrabWindowSnapshot(parent->GetNativeWindow(), last_screenshot_png);
+  win_util::GrabWindowSnapshot(window, last_screenshot_png);
 #endif
+
+  screen_size.set_width(width);
+  screen_size.set_height(height);
 }
 
-// Global "display this dialog" function declared in browser_dialogs.h.
+#if defined(TOOLKIT_VIEWS)
 void ShowHtmlBugReportView(views::Window* parent, Browser* browser) {
+#elif defined(OS_LINUX)
+void ShowHtmlBugReportView(gfx::NativeWindow window, const gfx::Rect& bounds,
+                           Browser* browser) {
+#elif defined(OS_MACOSX)
+void ShowHtmlBugReportView(NSWindow* window, Browser* browser) {
+#endif
+
+  // First check if we're already open (we cannot depend on ShowSingletonTab
+  // for this functionality since we need to make *sure* we never get
+  // instantiated again while we are open - with singleton tabs, that can
+  // happen)
+  int feedback_tab_index = GetIndexOfFeedbackTab(browser);
+  if (feedback_tab_index >=0) {
+    // Do not refresh screenshot, do not create a new tab
+    browser->SelectTabContentsAt(feedback_tab_index, true);
+  }
+
+  // now for refreshing the last screenshot
+#if defined(TOOLKIT_VIEWS)
+  RefreshLastScreenshot(parent);
+#elif defined(OS_LINUX)
+  RefreshLastScreenshot(window, bounds);
+#elif defined(OS_MACOSX)
+  RefreshLastScreenshot(window);
+#endif
+
   std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
       "#" + base::IntToString(browser->selected_index());
-
-  RefreshLastScreenshot(parent);
   browser->ShowSingletonTab(GURL(bug_report_url), false);
 }
 
@@ -662,6 +717,7 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   // If we aren't sending the sys_info, cancel the gathering of the syslogs.
   if (!send_sys_info)
     CancelFeedbackCollection();
+#endif
 
   // Update the data in bug_report_ so it can be sent
   bug_report_->UpdateData(dom_ui_->GetProfile()
@@ -678,6 +734,7 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
 #endif
                           );
 
+#if defined(OS_CHROMEOS)
   // If we don't require sys_info, or we have it, or we never requested it
   // (because libcros failed to load), then send the report now.
   // Otherwise, the report will get sent when we receive sys_info.

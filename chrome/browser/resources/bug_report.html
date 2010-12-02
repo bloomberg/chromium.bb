@@ -19,9 +19,11 @@
  * Window onload handler, sets up the page.
  */
 function load() {
-  $('sysinfo-url').onclick = function(event) {
-    chrome.send('openSystemTab');
-  };
+  if ($('sysinfo-url')) {
+    $('sysinfo-url').onclick = function(event) {
+      chrome.send('openSystemTab');
+    };
+  }
   
   var menuOffPattern = /(^\?|&)menu=off($|&)/;
   var menuDisabled = menuOffPattern.test(window.location.search);
@@ -181,10 +183,10 @@ window.addEventListener('DOMContentLoaded', load);
                       </table>
                     </td>
                   </tr>
+<if expr="pp_ifdef('chromeos')">
                   <!--  User e-mail -->
                   <tr>
                     <td>
-<if expr="pp_ifdef('chromeos')">
                       <table id="user-email-table" class="bug-report-table">
                         <tr>
                           <td class="bug-report-fieldlabel">
@@ -199,7 +201,6 @@ window.addEventListener('DOMContentLoaded', load);
                           </td>
                         </tr>
                       </table>
-</if>                        
                     </td>
                   </tr>
                   <!--  System Information -->
@@ -219,6 +220,7 @@ window.addEventListener('DOMContentLoaded', load);
                       </table>
                     </td>
                   </tr>
+</if>
                   <!--  Screenshot -->
                   <tr>
                     <td>

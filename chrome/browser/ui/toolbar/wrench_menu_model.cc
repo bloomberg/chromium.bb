@@ -188,7 +188,7 @@ void ToolsMenuModel::Build(Browser* browser) {
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
 
   AddSeparator();
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
   AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
   AddSeparator();
 #endif

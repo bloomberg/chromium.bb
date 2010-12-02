@@ -46,9 +46,6 @@ void ShowBugReportView(views::Window* parent,
                        Profile* profile,
                        TabContents* tab);
 
-// Shows the "Report a problem with this page" page in a new tab
-void ShowHtmlBugReportView(views::Window* parent, Browser* browser);
-
 // Shows the "Clear browsing data" dialog box. See ClearBrowsingDataView.
 void ShowClearBrowsingDataView(gfx::NativeWindow parent,
                                Profile* profile);
