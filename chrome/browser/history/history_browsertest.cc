@@ -4,8 +4,6 @@
 
 #include <vector>
 
-#include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"

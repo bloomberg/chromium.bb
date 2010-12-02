@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/external_policy_extension_provider.h"
 
-#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/extensions/stateful_external_extension_provider.h"

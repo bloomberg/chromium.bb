@@ -4,7 +4,6 @@
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
 
-#include "base/logging.h"
 #include "chrome/browser/prefs/pref_service.h"
 
 PrefChangeRegistrar::PrefChangeRegistrar() : service_(NULL) {}

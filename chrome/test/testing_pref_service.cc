@@ -8,7 +8,19 @@
 #include "chrome/browser/prefs/dummy_pref_store.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/test/testing_pref_value_store.h"
+
+TestingPrefService::TestingPrefValueStore::TestingPrefValueStore(
+    PrefStore* managed_platform_prefs,
+    PrefStore* device_management_prefs,
+    PrefStore* extension_prefs,
+    PrefStore* command_line_prefs,
+    PrefStore* user_prefs,
+    PrefStore* recommended_prefs,
+    PrefStore* default_prefs)
+    : PrefValueStore(managed_platform_prefs, device_management_prefs,
+                     extension_prefs, command_line_prefs,
+                     user_prefs, recommended_prefs, default_prefs, NULL) {
+}
 
 // TODO(pamg): Instantiate no PrefStores by default. Allow callers to specify
 // which they want, and expand usage of this class to more unit tests.

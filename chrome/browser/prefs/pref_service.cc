@@ -21,8 +21,6 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/prefs/pref_notifier.h"
-#include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -353,10 +351,6 @@ const ListValue* PrefService::GetList(const char* path) const {
   if (value->GetType() == Value::TYPE_NULL)
     return NULL;
   return static_cast<const ListValue*>(value);
-}
-
-bool PrefService::ReadOnly() const {
-  return pref_value_store_->ReadOnly();
 }
 
 void PrefService::AddPrefObserver(const char* path,

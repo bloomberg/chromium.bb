@@ -9,7 +9,7 @@
 #include "chrome/browser/prefs/dummy_pref_store.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_pref_value_store.h"
+#include "chrome/test/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -113,7 +113,7 @@ class PrefValueStoreTest : public testing::Test {
     default_pref_store_->set_prefs(default_prefs_);
 
     // Create a new pref-value-store.
-    pref_value_store_ = new TestingPrefValueStore(
+    pref_value_store_ = new TestingPrefService::TestingPrefValueStore(
         managed_platform_pref_store_,
         device_management_pref_store_,
         extension_pref_store_,
@@ -262,7 +262,7 @@ class PrefValueStoreTest : public testing::Test {
 
   MessageLoop loop_;
 
-  scoped_refptr<TestingPrefValueStore> pref_value_store_;
+  scoped_refptr<TestingPrefService::TestingPrefValueStore> pref_value_store_;
 
   // |PrefStore|s are owned by the |PrefValueStore|.
   DummyPrefStore* managed_platform_pref_store_;

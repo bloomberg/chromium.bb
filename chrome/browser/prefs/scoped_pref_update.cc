@@ -4,7 +4,6 @@
 
 #include "chrome/browser/prefs/scoped_pref_update.h"
 
-#include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 
 ScopedPrefUpdate::ScopedPrefUpdate(PrefService* service, const char* path)

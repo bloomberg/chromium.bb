@@ -19,6 +19,18 @@ class PrefStore;
 // (managed, extension, user) conveniently.
 class TestingPrefService : public PrefService {
  public:
+  // Subclass to allow directly setting PrefStores.
+  class TestingPrefValueStore : public PrefValueStore {
+   public:
+    TestingPrefValueStore(PrefStore* managed_prefs,
+                          PrefStore* device_management_prefs,
+                          PrefStore* extension_prefs,
+                          PrefStore* command_line_prefs,
+                          PrefStore* user_prefs,
+                          PrefStore* recommended_prefs,
+                          PrefStore* default_prefs);
+  };
+
   // Create an empty instance.
   TestingPrefService();
 
