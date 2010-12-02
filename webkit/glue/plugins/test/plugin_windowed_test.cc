@@ -90,8 +90,8 @@ NPError WindowedPluginTest::Destroy() {
     bool result = HostFunctions()->evaluate(
         id(), window_obj, &script_string, &result_var);
     if (!result ||
-        result_var.type != NPVariantType_Int32 ||
-        result_var.value.intValue != 42) {
+        result_var.type != NPVariantType_Double ||
+        result_var.value.doubleValue != 42.0) {
       SetError("Failed to script during NPP_Destroy");
     }
   }

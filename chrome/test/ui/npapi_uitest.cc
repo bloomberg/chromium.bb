@@ -327,7 +327,7 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
 
 #if defined(OS_WIN)
 // Starting failing during WebKit roll 72952:72986, see http://crbug.com/64874
-TEST_F(NPAPITesterBase, DISABLED_EnsureScriptingWorksInDestroy) {
+TEST_F(NPAPITesterBase, EnsureScriptingWorksInDestroy) {
   if (UITest::in_process_renderer())
     return;
 
