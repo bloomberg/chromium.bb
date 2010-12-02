@@ -734,7 +734,10 @@ void ExtensionUpdater::CheckNow() {
       service_->pending_extensions();
   for (PendingExtensionMap::const_iterator iter = pending_extensions.begin();
        iter != pending_extensions.end(); ++iter) {
-    fetches_builder.AddPendingExtension(iter->first, iter->second);
+    Extension::Location location = iter->second.install_source;
+    if (location != Extension::EXTERNAL_PREF &&
+        location != Extension::EXTERNAL_REGISTRY)
+      fetches_builder.AddPendingExtension(iter->first, iter->second);
   }
 
   fetches_builder.ReportStats();

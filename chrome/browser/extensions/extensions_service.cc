@@ -783,7 +783,6 @@ void ExtensionsService::AddPendingExtensionInternal(
       return;
   }
 
-
   pending_extensions_[id] =
       PendingExtensionInfo(update_url, expected_crx_type, is_from_sync,
                            install_silently, enable_on_install,
@@ -1941,6 +1940,22 @@ void ExtensionsService::OnExternalExtensionFileFound(
         return;
     }
   }
+
+  GURL update_url = GURL();
+  PendingExtensionInfo::ExpectedCrxType expected_crx_type =
+      PendingExtensionInfo::UNKNOWN;
+  bool is_from_sync = false;
+  bool install_silently = true;
+  bool enable_on_install = true;
+  bool enable_incognito_on_install = false;
+  pending_extensions_[id] = PendingExtensionInfo(
+      update_url,
+      expected_crx_type,
+      is_from_sync,
+      install_silently,
+      enable_on_install,
+      enable_incognito_on_install,
+      location);
 
   scoped_refptr<CrxInstaller> installer(
       new CrxInstaller(this,  // frontend
