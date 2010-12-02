@@ -46,8 +46,12 @@ const char* const kExternalExtensionName = "v8/External";
 // with an extra parameter to indicate if the provider should be the default"
 // be available?
 static bool EnableSearchProviderV2() {
+#if defined(OS_WIN)
+  return true;
+#else
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSearchProviderApiV2);
+#endif
 }
 
 class ExternalExtensionWrapper : public v8::Extension {
