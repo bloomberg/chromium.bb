@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/about_flags.h"
-
+#include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
@@ -14,37 +14,64 @@
 const char kFlags1[] = "flag1";
 const char kFlags2[] = "flag2";
 const char kFlags3[] = "flag3";
+const char kFlags4[] = "flag4";
 
 const char kSwitch1[] = "switch";
 const char kSwitch2[] = "switch2";
 const char kSwitch3[] = "switch3";
 
+const char kMultiSwitch1[] = "multi_switch1";
+const char kMultiSwitch2[] = "multi_switch2";
+
 namespace about_flags {
 
-// The experiments that are set for these tests. The first two experiments are
-// supported on the current platform, but the last is only supported on a
-// platform other than the current.
+const Experiment::Choice kMultiChoices[] = {
+  { IDS_PRODUCT_NAME, kMultiSwitch1 },
+  { IDS_PRODUCT_NAME, kMultiSwitch2 },
+};
+
+// The experiments that are set for these tests. The 3rd experiment is not
+// supported on the current platform, all others are.
 static Experiment kExperiments[] = {
   {
     kFlags1,
     IDS_PRODUCT_NAME,
     IDS_PRODUCT_NAME,
     0,  // Ends up being mapped to the current platform.
-    kSwitch1
+    Experiment::SINGLE_VALUE,
+    kSwitch1,
+    NULL,
+    0
   },
   {
     kFlags2,
     IDS_PRODUCT_NAME,
     IDS_PRODUCT_NAME,
     0,  // Ends up being mapped to the current platform.
-    kSwitch2
+    Experiment::SINGLE_VALUE,
+    kSwitch2,
+    NULL,
+    0
   },
   {
     kFlags3,
     IDS_PRODUCT_NAME,
     IDS_PRODUCT_NAME,
     0,  // This ends up enabling for an OS other than the current.
-    kSwitch3
+    Experiment::SINGLE_VALUE,
+    kSwitch3,
+    NULL,
+    0
+  },
+  {
+    kFlags4,
+    IDS_PRODUCT_NAME,
+    IDS_PRODUCT_NAME,
+    0,  // Ends up being mapped to the current platform.
+    Experiment::MULTI_VALUE,
+    "",
+    kMultiChoices,
+    arraysize(kMultiChoices)
   },
 };
 
@@ -176,7 +203,7 @@ TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
 
 // Tests enabling experiments that aren't supported on the current platform.
 TEST_F(AboutFlagsTest, PersistAndPrune) {
-  // Enable exerpiement 1 and experiment 3.
+  // Enable experiments 1 and 3.
   SetExperimentEnabled(&prefs_, kFlags1, true);
   SetExperimentEnabled(&prefs_, kFlags3, true);
   CommandLine command_line(CommandLine::NO_PROGRAM);
@@ -192,7 +219,51 @@ TEST_F(AboutFlagsTest, PersistAndPrune) {
   // Experiment 3 should show still be persisted in preferences though.
   scoped_ptr<ListValue> switch_prefs(GetFlagsExperimentsData(&prefs_));
   ASSERT_TRUE(switch_prefs.get());
-  EXPECT_EQ(2u, switch_prefs->GetSize());
+  EXPECT_EQ(arraysize(kExperiments) - 1, switch_prefs->GetSize());
+}
+
+// Tests enabling multi-value type experiments.
+TEST_F(AboutFlagsTest, MultiValues) {
+  // Enable the multi value experiment, which should enable the first choice.
+  SetExperimentEnabled(&prefs_, kFlags4, true);
+  {
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&prefs_, &command_line);
+    EXPECT_TRUE(command_line.HasSwitch(kMultiSwitch1));
+    EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
+  }
+
+  // Enable the 2nd choice of the multi-value, which should disable the first
+  // choice.
+  SetExperimentEnabled(&prefs_, std::string(kFlags4) +
+                       std::string(testing::kMultiSeparator) +
+                       base::IntToString(1), true);
+  {
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&prefs_, &command_line);
+    EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
+    EXPECT_TRUE(command_line.HasSwitch(kMultiSwitch2));
+  }
+
+  // Disable the multi-value experiment.
+  SetExperimentEnabled(&prefs_, kFlags4, false);
+  {
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&prefs_, &command_line);
+    EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
+    EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
+  }
+}
+
+// Makes sure there are no separators in any of the experiment names.
+TEST_F(AboutFlagsTest, NoSeparators) {
+  testing::SetExperiments(NULL, 0);
+  size_t count;
+  const Experiment* experiments = testing::GetExperiments(&count);
+    for (size_t i = 0; i < count; ++i) {
+    std::string name = experiments->internal_name;
+    EXPECT_EQ(std::string::npos, name.find(testing::kMultiSeparator)) << i;
+  }
 }
 
 }  // namespace about_flags

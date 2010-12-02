@@ -514,8 +514,10 @@ bool InstantController::GetType(Profile* profile, Type* type) {
     *type = VERBATIM_TYPE;
     return true;
   }
-
-  // There is no switch for PREDICTIVE_NO_AUTO_COMPLETE_TYPE.
+  if (cl->HasSwitch(switches::kEnablePredictiveNoAutoCompleteInstant)) {
+    *type = PREDICTIVE_NO_AUTO_COMPLETE_TYPE;
+    return true;
+  }
 
   // Then prefs.
   PrefService* prefs = profile->GetPrefs();

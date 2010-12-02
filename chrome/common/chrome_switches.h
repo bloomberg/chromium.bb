@@ -154,6 +154,7 @@ extern const char kEnablePagePrerender[];
 extern const char kEnableSyncNewAutofill[];
 extern const char kEnablePreconnect[];
 extern const char kEnablePredictiveInstant[];
+extern const char kEnablePredictiveNoAutoCompleteInstant[];
 extern const char kEnablePreparsedJsCaching[];
 extern const char kEnablePrintPreview[];
 extern const char kEnableRemoting[];

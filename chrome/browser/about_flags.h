@@ -24,6 +24,27 @@ enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 , kOsCrOS = 1 << 3 };
 // for testing).
 // This is exposed only for testing.
 struct Experiment {
+  enum Type {
+    // An experiment with a single value. This is typically what you want.
+    SINGLE_VALUE,
+
+    // The experiment has multiple values only one of which is ever enabled.
+    // For MULTI_VALUE experiments the command_line of the Experiment is not
+    // used. If the experiment is enabled the command line of the selected
+    // Choice is enabled.
+    MULTI_VALUE,
+  };
+
+  // Used for MULTI_VALUE types to describe one of the possible values the user
+  // can select.
+  struct Choice {
+    // ID of the message containing the choice name.
+    int description_id;
+
+    // Command line to enabled for this choice.
+    const char* command_line;
+  };
+
   // The internal name of the experiment. This is never shown to the user.
   // It _is_ however stored in the prefs file, so you shouldn't change the
   // name of existing flags.
@@ -39,10 +60,21 @@ struct Experiment {
   // Needs to be more than a compile-time #ifdef because of profile sync.
   unsigned supported_platforms;  // bitmask
 
+  // Type of experiment.
+  Type type;
+
   // The commandline parameter that's added when this lab is active. This is
   // different from |internal_name| so that the commandline flag can be
   // renamed without breaking the prefs file.
+  // This is used if type is SINGLE_VALUE.
   const char* command_line;
+
+  // This is used if type is MULTI_VALUE.
+  const Choice* choices;
+
+  // Number of |choices|.
+  // This is used if type is MULTI_VALUE.
+  int num_choices;
 };
 
 // Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
@@ -80,6 +112,14 @@ void ClearState();
 // Sets the list of experiments. Pass in NULL to use the default set. This does
 // NOT take ownership of the supplied Experiments.
 void SetExperiments(const Experiment* e, size_t count);
+
+// Returns the current set of experiments.
+const Experiment* GetExperiments(size_t* count);
+
+// Separator used for multi values. Multi values are represented in prefs as
+// name-of-experiment + kMultiSeparator + selected_index.
+extern const char kMultiSeparator[];
+
 }  // namespace testing
 
 }  // namespace about_flags

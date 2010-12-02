@@ -4065,11 +4065,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PREDICTIVE_INSTANT_DESCRIPTION" desc="Description of the predictive 'Instant' lab.">
         Makes the address bar load urls as you type. Search results are shown for the best match.
       </message>
-      <message name="IDS_FLAGS_VERBATIM_INSTANT_NAME" desc="Description of the verbatim 'Instant' lab.">
-        Verbatim Instant
+      <message name="IDS_FLAGS_INSTANT_TYPE_NAME" desc="Description of the 'Instant Type' lab.">
+        Instant Type
       </message>
-      <message name="IDS_FLAGS_VERBATIM_INSTANT_DESCRIPTION" desc="Description of the verbatim 'Instant' lab.">
-        Makes the address bar load urls as you type. Search results are shown exactly as you typed them.
+      <message name="IDS_FLAGS_INSTANT_TYPE_DESCRIPTION" desc="Description of the 'Instant Type' lab.">
+        Configures the behavior of instant.
+      </message>
+      <message name="IDS_FLAGS_INSTANT_TYPE_PREDICTIVE" desc="Name for 'predictive' instant results">
+        Predictive
+      </message>
+      <message name="IDS_FLAGS_INSTANT_TYPE_PREDICTIVE_NO_AUTO_COMPLETE" desc="Name for 'predictive no auto-complete' instant results">
+        Predictive no auto-complete
+      </message>
+      <message name="IDS_FLAGS_INSTANT_TYPE_VERBATIM" desc="Name for 'verbatim' instant results">
+        Verbatim
       </message>
       <message name="IDS_FLAGS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
         Remoting

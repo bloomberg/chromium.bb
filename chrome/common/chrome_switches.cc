@@ -505,8 +505,12 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
-// Is the predictive varition of instant enabled?
+// Is InstantController::PREDICTIVE_TYPE enabled?
 const char kEnablePredictiveInstant[]       = "enable-predictive-instant";
+
+// Is InstantController::PREDICTIVE_NO_AUTO_COMPLETE_TYPE enabled?
+const char kEnablePredictiveNoAutoCompleteInstant[] =
+    "enable-predictive-no-auto-complete-instant";
 
 // This applies only when the process type is "service". Enables the
 // Chromoting Host Process within the service process.

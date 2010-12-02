@@ -176,7 +176,15 @@ var flagsExperimentsDataFormat = {
       'internal_name': 'Experiment ID string',
       'name': 'Experiment Name',
       'description': 'description',
-      'enabled': true
+      'enabled': true,
+      /* choices is only set if the experiment has multiple values */
+      'choices': [
+        {
+          'internal_name': 'Experiment ID string',
+          'description': 'description',
+          'selected': true
+        }
+      ]
     }
   ],
   'needsRestart': false
@@ -231,6 +239,17 @@ function handleEnableExperiment(node, enable) {
   requestFlagsExperimentsData();
 }
 
+/**
+ * Invoked when the selection of a multi-value choice is changed to the
+ * specified index.
+ */
+function handleSelectChoiceExperiment(node, index) {
+  // Tell the C++ FlagsDOMHandler to enable the selected choice.
+  chrome.send('enableFlagsExperiment',
+              [String(node.internal_name) + "@" + index, "true"]);
+  requestFlagsExperimentsData();
+}
+
 // Get data and have it displayed upon loading.
 document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
 
@@ -281,6 +300,15 @@ document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
                     jscontent="name">NAME</span>
               <div>
                 <span dir="ltr" jsvalues=".innerHTML:description">
+              </div>
+              <div jsdisplay="choices && choices.length > 0">
+                <select jsvalues=".internal_name:internal_name;.disabled:!enabled"
+                        onchange="handleSelectChoiceExperiment(this, this.selectedIndex)">
+                  <option jsvalues=".selected:selected"
+                          jsselect="choices"
+                          jscontent="description">NAME
+                  </option>
+                </select>
               </div>
             </div>
           </div>
