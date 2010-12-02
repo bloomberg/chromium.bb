@@ -20,8 +20,16 @@
 
 /* Initialize semaphore  */
 int sem_init (sem_t *sem, int pshared, unsigned int value) {
-  if ((pshared) || (value > SEM_VALUE_MAX)) {
-    /* we don's support shared semaphores yet */
+  if (NULL == sem) {
+    errno = EINVAL;
+    return -1;
+  }
+  if (pshared) {
+    /* We don't support shared semaphores yet. */
+    errno = ENOSYS;
+    return -1;
+  }
+  if (value > SEM_VALUE_MAX) {
     errno = EINVAL;
     return -1;
   }
@@ -30,16 +38,32 @@ int sem_init (sem_t *sem, int pshared, unsigned int value) {
 }
 
 int sem_destroy (sem_t *sem) {
-  int retval = close(sem->handle);
+  if (NULL == sem || NC_INVALID_HANDLE == sem->handle) {
+    errno = EINVAL;
+    return -1;
+  }
+  int rv = close(sem->handle);
   sem->handle = NC_INVALID_HANDLE;
-  return retval;
+  if (0 != rv) {
+    errno = EINVAL;
+    return -1;
+  }
+  return rv;
 }
 
 int sem_wait (sem_t *sem) {
+  if (NULL == sem || NC_INVALID_HANDLE == sem->handle) {
+    errno = EINVAL;
+    return -1;
+  }
   return NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(sem_wait)(sem->handle));
 }
 
 int sem_post (sem_t *sem) {
+  if (NULL == sem || NC_INVALID_HANDLE == sem->handle) {
+    errno = EINVAL;
+    return -1;
+  }
   int rv = NACL_SYSCALL(sem_post)(sem->handle);
   if (0 != rv) {
     errno = -rv;
