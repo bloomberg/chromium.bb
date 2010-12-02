@@ -70,6 +70,24 @@ chrome.test.runTests([
     chrome.windows.create({url:[]}, verify_default());
   },
 
+  function createWindowWithExistingTab() {
+    // Create a tab in the old window
+    chrome.tabs.create({"windowId" : firstWindowId, "url": pageUrl('a'),
+                        "selected" : false},
+                       pass(function(tab) {
+      assertEq(firstWindowId, tab.windowId);
+      assertEq(pageUrl('a'), tab.url);
+      
+      // Create a new window with this tab
+      chrome.windows.create({"tabId": tab.id}, pass(function(win) {
+        assertEq(1, win.tabs.length);
+        assertEq(tab.id, win.tabs[0].id);
+        assertEq(win.id, win.tabs[0].windowId);
+        assertEq(pageUrl('a'), win.tabs[0].url);
+      }));
+    }));
+  },
+
   function setupTwoWindows() {
     createWindow(["about:blank", "chrome://newtab/", pageUrl("a")], {},
                 pass(function(winId, tabIds) {

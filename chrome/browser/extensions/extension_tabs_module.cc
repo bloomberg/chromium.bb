@@ -310,6 +310,7 @@ bool GetAllWindowsFunction::RunImpl() {
 bool CreateWindowFunction::RunImpl() {
   DictionaryValue* args = NULL;
   std::vector<GURL> urls;
+  TabContentsWrapper* contents = NULL;
 
   if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
@@ -345,6 +346,29 @@ bool CreateWindowFunction::RunImpl() {
           return false;
         }
         urls.push_back(url);
+      }
+    }
+  }
+
+  // Look for optional tab id.
+  if (args) {
+    int tab_id;
+    if (args->HasKey(keys::kTabIdKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTabIdKey, &tab_id));
+
+      // Find the tab and detach it from the original window.
+      Browser* source_browser = NULL;
+      TabStripModel* source_tab_strip = NULL;
+      int tab_index = -1;
+      if (!GetTabById(tab_id, profile(), include_incognito(),
+                      &source_browser, &source_tab_strip, &contents,
+                      &tab_index, &error_))
+        return false;
+      contents = source_tab_strip->DetachTabContentsAt(tab_index);
+      if (!contents) {
+        error_ = ExtensionErrorUtils::FormatErrorMessage(
+            keys::kTabNotFoundError, base::IntToString(tab_id));
+        return false;
       }
     }
   }
@@ -428,8 +452,13 @@ bool CreateWindowFunction::RunImpl() {
   Browser* new_window = Browser::CreateForType(window_type, window_profile);
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i)
     new_window->AddSelectedTabWithURL(*i, PageTransition::LINK);
-  if (urls.size() == 0)
+  if (contents) {
+    TabStripModel* target_tab_strip = new_window->tabstrip_model();
+    target_tab_strip->InsertTabContentsAt(urls.size(), contents,
+                                          TabStripModel::ADD_NONE);
+  } else if (urls.size() == 0) {
     new_window->NewTab();
+  }
   new_window->SelectNumberedTab(0);
   if (window_type & Browser::TYPE_POPUP)
     new_window->window()->SetBounds(popup_bounds);
@@ -814,11 +843,6 @@ bool MoveTabFunction::RunImpl() {
                   &source_browser, &source_tab_strip, &contents,
                   &tab_index, &error_))
     return false;
-
-  if (source_browser->type() != Browser::TYPE_NORMAL) {
-    error_ = keys::kCanOnlyMoveTabsWithinNormalWindowsError;
-    return false;
-  }
 
   if (update_props->HasKey(keys::kWindowIdKey)) {
     Browser* target_browser;
