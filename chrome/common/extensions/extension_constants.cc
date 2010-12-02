@@ -98,6 +98,9 @@ const char* kDisabledByPolicy =
 const char* kDevToolsExperimental =
     "You must request the 'experimental' permission in order to use the"
     " DevTools API.";
+const char* kExperimentalFlagRequired =
+    "Loading extensions with 'experimental' permission requires"
+    " --enable-experimental-extension-apis command line flag.";
 const char* kHostedAppsCannotIncludeExtensionFeatures =
     "Hosted apps cannot use extension features.";
 const char* kInvalidAllFrames =

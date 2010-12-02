@@ -1719,6 +1719,15 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       if (web_extent().is_empty() || location() == Extension::COMPONENT) {
         // Check if it's a module permission.  If so, enable that permission.
         if (IsAPIPermission(permission_str)) {
+          // Only allow the experimental API permission if the command line
+          // flag is present, or if the extension is a component of Chrome.
+          if (permission_str == Extension::kExperimentalPermission &&
+              !CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableExperimentalExtensionApis) &&
+              location() != Extension::COMPONENT) {
+            *error = errors::kExperimentalFlagRequired;
+            return false;
+          }
           api_permissions_.insert(permission_str);
           continue;
         }
@@ -2179,20 +2188,7 @@ bool Extension::HasFullPermissions() const {
 bool Extension::IsAPIPermission(const std::string& str) const {
   for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
     if (str == Extension::kPermissions[i].name) {
-      // Only allow the experimental API permission if the command line
-      // flag is present, or if the extension is a component of Chrome.
-      if (str == Extension::kExperimentalPermission) {
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableExperimentalExtensionApis)) {
-          return true;
-        } else if (location() == Extension::COMPONENT) {
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return true;
-      }
+      return true;
     }
   }
   return false;

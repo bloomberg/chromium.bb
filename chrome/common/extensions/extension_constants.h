@@ -92,6 +92,8 @@ namespace extension_manifest_errors {
   extern const char* kCannotScriptGallery;
   extern const char* kChromeVersionTooLow;
   extern const char* kDevToolsExperimental;
+  extern const char* kDisabledByPolicy;
+  extern const char* kExperimentalFlagRequired;
   extern const char* kHostedAppsCannotIncludeExtensionFeatures;
   extern const char* kInvalidAllFrames;
   extern const char* kInvalidBackground;
@@ -105,7 +107,6 @@ namespace extension_manifest_errors {
   extern const char* kInvalidCssList;
   extern const char* kInvalidDefaultLocale;
   extern const char* kInvalidDescription;
-  extern const char* kDisabledByPolicy;
   extern const char* kInvalidDevToolsPage;
   extern const char* kInvalidGlob;
   extern const char* kInvalidGlobList;

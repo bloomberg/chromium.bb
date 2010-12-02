@@ -245,6 +245,15 @@ TEST_F(ExtensionManifestTest, ChromeURLContentScriptInvalid) {
       errors::kInvalidMatch);
 }
 
+TEST_F(ExtensionManifestTest, ExperimentalPermission) {
+  LoadAndExpectError("experimental.json", errors::kExperimentalFlagRequired);
+  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  LoadAndExpectSuccess("experimental.json");
+  *CommandLine::ForCurrentProcess() = old_command_line;
+}
+
 TEST_F(ExtensionManifestTest, DevToolsExtensions) {
   LoadAndExpectError("devtools_extension_no_permissions.json",
       errors::kDevToolsExperimental);
