@@ -78,9 +78,8 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   cmd_result.cmd = cmd_str
 
   try:
-    proc = subprocess.Popen(cmd_str, cwd=cwd, stdin=stdin,
-                            stdout=stdout, stderr=stderr,
-                            shell=shell)
+    proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
+                            stderr=stderr, shell=shell)
     (cmd_result.output, cmd_result.error) = proc.communicate(input)
     if exit_code:
       cmd_result.returncode = proc.returncode
