@@ -164,16 +164,13 @@ global_config_flags = {
       #     '-soft-float ',
       #     '-aeabi-calls '
       #     '-sfi-zero-mask',
-      '-sfi-cp-fudge',
-      # NOTE: we need a fairly high fudge factor because of
-      # some vfp instructions which only have a 9bit offset
-      '-sfi-cp-fudge-percent=50',
       '-sfi-store',
       '-sfi-stack',
       '-sfi-branch',
       '-sfi-data',
-      '-sfi-cp-disable-verify',
       '-no-inline-jumptables',
+      '-sfi-disable-cp',
+      '-arm_static_tls',
       ],
     'x86-32': [
       '-march=x86',
