@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/translate_errors.h"

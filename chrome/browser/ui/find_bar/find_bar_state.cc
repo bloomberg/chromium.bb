@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/ui/find_bar/find_bar_state.h"
 
 // static
 string16 FindBarState::GetLastPrepopulateText(Profile* p) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FIND_NOTIFICATION_DETAILS_H_
-#define CHROME_BROWSER_FIND_NOTIFICATION_DETAILS_H_
+#ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_NOTIFICATION_DETAILS_H_
+#define CHROME_BROWSER_UI_FIND_BAR_FIND_NOTIFICATION_DETAILS_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -48,4 +48,4 @@ class FindNotificationDetails {
   bool final_update_;  // Whether this is the last Find Result update.
 };
 
-#endif  // CHROME_BROWSER_FIND_NOTIFICATION_DETAILS_H_
+#endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_NOTIFICATION_DETAILS_H_

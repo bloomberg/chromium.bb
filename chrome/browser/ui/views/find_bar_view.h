@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
-#include "chrome/browser/find_notification_details.h"
+#include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/views/dropdown_bar_view.h"
 #include "gfx/size.h"
 #include "views/controls/button/button.h"

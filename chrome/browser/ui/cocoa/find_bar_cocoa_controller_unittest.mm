@@ -5,11 +5,11 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/find_notification_details.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/find_pasteboard.h"
 #import "chrome/browser/ui/cocoa/find_bar_text_field.h"
+#include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

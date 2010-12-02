@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FIND_BAR_CONTROLLER_H_
-#define CHROME_BROWSER_FIND_BAR_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONTROLLER_H_
+#define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONTROLLER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -86,4 +86,4 @@ class FindBarController : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(FindBarController);
 };
 
-#endif  // CHROME_BROWSER_FIND_BAR_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONTROLLER_H_

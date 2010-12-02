@@ -5,9 +5,9 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 

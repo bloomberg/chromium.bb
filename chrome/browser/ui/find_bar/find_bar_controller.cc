@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/find_bar_controller.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
-#include "chrome/browser/find_bar.h"
-#include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
+#include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "gfx/rect.h"

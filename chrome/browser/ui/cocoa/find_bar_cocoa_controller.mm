@@ -6,7 +6,6 @@
 
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -17,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/find_pasteboard.h"
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/tab_strip_controller.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {

@@ -6,8 +6,8 @@
 // for drawing the FindBar bar on the platform and is owned by the
 // FindBarController.
 
-#ifndef CHROME_BROWSER_FIND_BAR_H_
-#define CHROME_BROWSER_FIND_BAR_H_
+#ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_H_
+#define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_H_
 #pragma once
 
 #include "base/string16.h"
@@ -95,4 +95,4 @@ class FindBarTesting {
   virtual string16 GetMatchCountText() = 0;
 };
 
-#endif  // CHROME_BROWSER_FIND_BAR_H_
+#endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_H_

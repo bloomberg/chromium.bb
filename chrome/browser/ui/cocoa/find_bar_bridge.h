@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/logging.h"
-#include "chrome/browser/find_bar.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
 
 class BrowserWindowCocoa;
 class FindBarController;

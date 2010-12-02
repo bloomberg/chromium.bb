@@ -5,8 +5,8 @@
 // Stores per-profile state needed for find in page.  This includes the most
 // recently searched for term.
 
-#ifndef CHROME_BROWSER_FIND_BAR_STATE_H_
-#define CHROME_BROWSER_FIND_BAR_STATE_H_
+#ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_STATE_H_
+#define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_STATE_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -38,4 +38,4 @@ class FindBarState {
   DISALLOW_COPY_AND_ASSIGN(FindBarState);
 };
 
-#endif  // CHROME_BROWSER_FIND_BAR_STATE_H_
+#endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_STATE_H_

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/views/frame/browser_view_layout.h"
 
-#include "chrome/browser/find_bar.h"
-#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/download_shelf_view.h"

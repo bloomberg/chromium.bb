@@ -4,8 +4,8 @@
 
 #include "chrome/browser/views/find_bar_host.h"
 
-#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tab_contents/tab_contents_view_gtk.h"
 #include "views/widget/widget_gtk.h"
