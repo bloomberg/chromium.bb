@@ -257,8 +257,22 @@ void TabContentsViewViews::ShowContextMenu(const ContextMenuParams& params) {
   if (tab_contents()->delegate()->HandleContextMenu(params))
     return;
 
-  // TODO(anicolao): implement context menus for touch
-  NOTIMPLEMENTED();
+  context_menu_.reset(new RenderViewContextMenuViews(tab_contents(), params));
+  context_menu_->Init();
+
+  gfx::Point screen_point(params.x, params.y);
+  RenderWidgetHostViewViews* rwhv = static_cast<RenderWidgetHostViewViews*>
+      (tab_contents()->GetRenderWidgetHostView());
+  if (rwhv) {
+    views::View::ConvertPointToScreen(rwhv, &screen_point);
+  }
+
+  // Enable recursive tasks on the message loop so we can get updates while
+  // the context menu is being displayed.
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
+  context_menu_->RunMenuAt(screen_point.x(), screen_point.y());
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
 void TabContentsViewViews::ShowPopupMenu(const gfx::Rect& bounds,
