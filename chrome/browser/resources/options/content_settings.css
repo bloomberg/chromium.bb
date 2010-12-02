@@ -4,16 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
-.zippy div[mode=otr] {
-  display: none;
-}
-
-.zippy.show-otr div[mode=otr] {
-  display: block;
-  /* background reminiscent of an incognito window, but faded */
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(rgba(97, 122, 156, .25)),
-                               to(rgba(82, 108, 145, .25)));
+#contentSettingsPage list {
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
 }

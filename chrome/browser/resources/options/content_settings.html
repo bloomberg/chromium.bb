@@ -1,6 +1,5 @@
 <div class="page hidden" id="contentSettingsPage">
   <h1 i18n-content="contentSettingsPage"></h1>
-
   <!-- Cookie filter tab contents -->
   <section>
     <h3 i18n-content="cookies_tab_label"></h3>
@@ -29,16 +28,12 @@
       <a i18n-values="href:flash_storage_url"
           i18n-content="flash_storage_settings" target="_blank"></a>
 
-      <div class="zippy">
-        <div class="zippy-header" i18n-content="content_exceptions"></div>
-        <div class="zippy-content">
-          <div contentType="cookies" mode="normal">
-            <list></list>
-          </div>
-          <div contentType="cookies" mode="otr">
-            <span i18n-content="otr_exceptions_explanation"></span>
-            <list></list>
-          </div>
+      <!-- TODO(estade): put this in a sub-sub-page. -->
+      <div contentType="cookies">
+        <list mode="normal"></list>
+        <div>
+          <span i18n-content="otr_exceptions_explanation"></span>
+          <list mode="otr"></list>
         </div>
       </div>
    </div>
@@ -57,16 +52,12 @@
           <span i18n-content="images_block"></span>
         </label>
 
-      <div class="zippy">
-        <div class="zippy-header" i18n-content="content_exceptions"></div>
-        <div class="zippy-content">
-          <div contentType="images" mode="normal">
-            <list></list>
-          </div>
-          <div contentType="images" mode="otr">
-            <span i18n-content="otr_exceptions_explanation"></span>
-            <list></list>
-          </div>
+      <!-- TODO(estade): put this in a sub-sub-page. -->
+      <div contentType="images">
+        <list mode="normal"></list>
+        <div>
+          <span i18n-content="otr_exceptions_explanation"></span>
+          <list mode="otr"></list>
         </div>
       </div>
     </div>
@@ -85,16 +76,12 @@
         <span i18n-content="javascript_block"></span>
       </label>
 
-      <div class="zippy">
-        <div class="zippy-header" i18n-content="content_exceptions"></div>
-        <div class="zippy-content">
-          <div contentType="javascript" mode="normal">
-            <list></list>
-          </div>
-          <div contentType="javascript" mode="otr">
-            <span i18n-content="otr_exceptions_explanation"></span>
-            <list></list>
-          </div>
+      <!-- TODO(estade): put this in a sub-sub-page. -->
+      <div contentType="javascript">
+        <list mode="normal"></list>
+        <div>
+          <span i18n-content="otr_exceptions_explanation"></span>
+          <list mode="otr"></list>
         </div>
       </div>
     </div>
@@ -117,16 +104,12 @@
         <span i18n-content="plugins_block"></span>
       </label>
 
-      <div class="zippy">
-        <div class="zippy-header" i18n-content="content_exceptions"></div>
-        <div class="zippy-content">
-          <div contentType="plugins" mode="normal">
-            <list></list>
-          </div>
-          <div contentType="plugins" mode="otr">
-            <span i18n-content="otr_exceptions_explanation"></span>
-            <list></list>
-          </div>
+      <!-- TODO(estade): put this in a sub-sub-page. -->
+      <div contentType="plugins">
+        <list mode="normal"></list>
+        <div>
+          <span i18n-content="otr_exceptions_explanation"></span>
+          <list mode="otr"></list>
         </div>
       </div>
 
@@ -147,16 +130,12 @@
         <span i18n-content="popups_block"></span>
       </label>
 
-      <div class="zippy">
-        <div class="zippy-header" i18n-content="content_exceptions"></div>
-        <div class="zippy-content">
-          <div contentType="popups" mode="normal">
-            <list></list>
-          </div>
-          <div contentType="popups" mode="otr">
-            <span i18n-content="otr_exceptions_explanation"></span>
-            <list></list>
-          </div>
+      <!-- TODO(estade): put this in a sub-sub-page. -->
+      <div contentType="popups">
+        <list mode="normal"></list>
+        <div>
+          <span i18n-content="otr_exceptions_explanation"></span>
+          <list mode="otr"></list>
         </div>
       </div>
     </div>
@@ -179,13 +158,9 @@
         <span i18n-content="location_block"></span>
       </label>
 
-      <div class="zippy">
-        <div class="zippy-header" i18n-content="content_exceptions"></div>
-        <div class="zippy-content">
-          <div contentType="location" mode="normal">
-            <list></list>
-          </div>
-        </div>
+      <!-- TODO(estade): put this in a sub-sub-page. -->
+      <div contentType="popups">
+        <list mode="normal"></list>
       </div>
     </div>
   </section>
@@ -207,13 +182,9 @@
         <span i18n-content="notifications_block"></span>
       </label>
 
-      <div class="zippy">
-        <div class="zippy-header" i18n-content="content_exceptions"></div>
-        <div class="zippy-content">
-          <div contentType="notifications" mode="normal">
-            <list></list>
-          </div>
-        </div>
+      <!-- TODO(estade): put this in a sub-sub-page. -->
+      <div contentType="notifications">
+        <list mode="normal"></list>
       </div>
     </div>
   </section>

@@ -29,20 +29,15 @@ cr.define('options', function() {
 
       chrome.send('getContentFilterSettings');
 
-      var exceptionsAreas = this.pageDiv.querySelectorAll('div[contentType]');
-      for (var i = 0; i < exceptionsAreas.length; i++) {
-        options.contentSettings.ExceptionsArea.decorate(exceptionsAreas[i]);
+      var exceptionsLists = this.pageDiv.querySelectorAll('list');
+      for (var i = 0; i < exceptionsLists.length; i++) {
+        options.contentSettings.ExceptionsList.decorate(exceptionsLists[i]);
       }
+      ContentSettings.hideOTRLists();
 
-      cr.ui.decorate('.zippy', options.Zippy);
-      this.pageDiv.addEventListener('measure', function(e) {
-        if (e.target.classList.contains('zippy')) {
-          var lists = e.target.querySelectorAll('list');
-          for (var i = 0; i < lists.length; i++) {
-            if (lists[i].redraw) {
-              lists[i].redraw();
-            }
-          }
+      this.addEventListener('visibleChange', function(event) {
+        for (var i = 0; i < exceptionsLists.length; i++) {
+          exceptionsLists[i].redraw();
         }
       });
 
@@ -72,7 +67,7 @@ cr.define('options', function() {
      * @param {string} hash The hash value.
      */
     handleHash: function(hash) {
-      OptionsPage.showTab($(hash + '-nav-tab'));
+      // TODO(estade): show subpage for hash.
     },
   };
 
@@ -97,63 +92,44 @@ cr.define('options', function() {
   ContentSettings.setExceptions = function(type, list) {
     var exceptionsList =
         document.querySelector('div[contentType=' + type + ']' +
-                               '[mode=normal] list');
+                               ' list[mode=normal]');
+
     exceptionsList.clear();
     for (var i = 0; i < list.length; i++) {
       exceptionsList.addException(list[i]);
     }
+    exceptionsList.redraw();
   };
 
   ContentSettings.setOTRExceptions = function(type, list) {
-    var exceptionsArea =
-        document.querySelector('div[contentType=' + type + '][mode=otr]');
-    exceptionsArea.otrProfileExists = true;
+    var exceptionsList =
+        document.querySelector('div[contentType=' + type + ']' +
 
-    // Find the containing zippy, set it to show OTR profiles, and remeasure it
-    // to make it smoothly animate to the new size.
-    var zippy = exceptionsArea;
-    while (zippy &&
-           (!zippy.classList || !zippy.classList.contains('zippy'))) {
-      zippy = zippy.parentNode;
-    }
-    if (zippy) {
-      zippy.classList.add('show-otr');
-      zippy.remeasure();
-    }
+    exceptionsList.parentNode.classList.remove('hidden');
 
-    var exceptionsList = exceptionsArea.querySelector('list');
     exceptionsList.clear();
     for (var i = 0; i < list.length; i++) {
       exceptionsList.addException(list[i]);
     }
+    exceptionsList.redraw();
+  };
 
-    // If an OTR table is added while the normal exceptions area is already
-    // showing (because the exceptions area is already expanded), then show
-    // the new OTR table.
-    var parentExceptionsArea =
-        document.querySelector('div[contentType=' + type + '][mode=normal]');
-    if (!parentExceptionsArea.classList.contains('hidden')) {
-      exceptionsArea.querySelector('list').redraw();
-    }
+  /**
+   * Called when the last incognito window is closed.
+   */
+  ContentSettings.OTRProfileDestroyed = function() {
+    this.hideOTRLists();
   };
 
   /**
    * Clears and hides the incognito exceptions lists.
    */
-  ContentSettings.OTRProfileDestroyed = function() {
-    // Find all zippies, set them to hide OTR profiles, and remeasure them
-    // to make them smoothly animate to the new size.
-    var zippies = document.querySelectorAll('.zippy');
-    for (var i = 0; i < zippies.length; i++) {
-      zippies[i].classList.remove('show-otr');
-      zippies[i].remeasure();
-    }
+  ContentSettings.hideOTRLists = function() {
+    var otrLists = document.querySelectorAll('list[mode=otr]');
 
-    var exceptionsAreas =
-        document.querySelectorAll('div[contentType][mode=otr]');
-    for (var i = 0; i < exceptionsAreas.length; i++) {
-      exceptionsAreas[i].otrProfileExists = false;
-      exceptionsAreas[i].querySelector('list').clear();
+    for (var i = 0; i < otrLists.length; i++) {
+      otrLists[i].clear();
+      otrLists[i].parentNode.classList.add('hidden');
     }
   };
 
