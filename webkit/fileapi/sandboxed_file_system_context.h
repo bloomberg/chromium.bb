@@ -9,6 +9,7 @@
 #include "base/scoped_ptr.h"
 
 class FilePath;
+class GURL;
 
 namespace base {
 class MessageLoopProxy;
@@ -18,6 +19,9 @@ namespace fileapi {
 
 class FileSystemPathManager;
 class FileSystemQuotaManager;
+class SandboxedFileSystemContext;
+
+struct DefaultContextDeleter;
 
 // This class keeps and provides a sandboxed file system context.
 class SandboxedFileSystemContext {
@@ -32,11 +36,17 @@ class SandboxedFileSystemContext {
 
   void Shutdown();
 
+  void DeleteDataForOriginOnFileThread(const GURL& origin_url);
+
   FileSystemPathManager* path_manager() { return path_manager_.get(); }
   FileSystemQuotaManager* quota_manager() { return quota_manager_.get(); }
 
  private:
+  friend struct DefaultContextDeleter;
+  void DeleteOnCorrectThread() const;
+
   bool allow_file_access_from_files_;
+  scoped_refptr<base::MessageLoopProxy> file_message_loop_;
   scoped_ptr<FileSystemPathManager> path_manager_;
   scoped_ptr<FileSystemQuotaManager> quota_manager_;
 

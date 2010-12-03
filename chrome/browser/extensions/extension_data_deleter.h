@@ -15,6 +15,7 @@ namespace webkit_database {
 class DatabaseTracker;
 }
 
+class BrowserFileSystemContext;
 class Profile;
 class URLRequestContextGetter;
 class WebKitContext;
@@ -52,6 +53,10 @@ class ExtensionDataDeleter
   // webkit thread.
   void DeleteIndexedDBOnWebkitThread();
 
+  // Deletes filesystem files for the extension. May only be called on the
+  // file thread.
+  void DeleteFileSystemOnFileThread();
+
   // The database context for deleting the database.
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
 
@@ -66,6 +71,8 @@ class ExtensionDataDeleter
 
   // Webkit context for accessing the DOM storage helper.
   scoped_refptr<WebKitContext> webkit_context_;
+
+  scoped_refptr<BrowserFileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDataDeleter);
 };

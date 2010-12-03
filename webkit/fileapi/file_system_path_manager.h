@@ -74,11 +74,11 @@ class FileSystemPathManager {
     return base_path_;
   }
 
- private:
-  class GetFileSystemRootPathTask;
-
   // Returns the storage identifier string for the given |url|.
   static std::string GetStorageIdentifierFromURL(const GURL& url);
+
+ private:
+  class GetFileSystemRootPathTask;
 
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
 

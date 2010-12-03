@@ -6,6 +6,7 @@
 
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/cookie_monster.h"
@@ -19,6 +20,7 @@ ExtensionDataDeleter::ExtensionDataDeleter(Profile* profile,
   webkit_context_ = profile->GetWebKitContext();
   database_tracker_ = profile->GetDatabaseTracker();
   extension_request_context_ = profile->GetRequestContextForExtensions();
+  file_system_context_ = profile->GetFileSystemContext();
   extension_url_ = extension_url;
   origin_id_ =
       webkit_database::DatabaseUtil::GetOriginIdentifier(extension_url_);
@@ -48,6 +50,11 @@ void ExtensionDataDeleter::StartDeleting() {
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ExtensionDataDeleter::DeleteDatabaseOnFileThread));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &ExtensionDataDeleter::DeleteFileSystemOnFileThread));
 }
 
 void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
@@ -73,4 +80,9 @@ void ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread() {
 void ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   webkit_context_->indexed_db_context()->DeleteIndexedDBForOrigin(origin_id_);
+}
+
+void ExtensionDataDeleter::DeleteFileSystemOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  file_system_context_->DeleteDataForOriginOnFileThread(extension_url_);
 }
