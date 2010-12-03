@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,7 +115,7 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
   if (composited) {
     gtk_widget_set_app_paintable(widget_, TRUE);
     g_signal_connect(widget_, "expose-event",
-                     G_CALLBACK(HandleExposeEventThunk), this);
+                     G_CALLBACK(OnExposeThunk), this);
     gtk_widget_realize(widget_);
   } else {
     gtk_widget_modify_bg(widget_, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
@@ -127,7 +127,7 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
   MoveWindow();
 
   g_signal_connect(widget_, "unmap-event",
-                   G_CALLBACK(&HandleParentUnmapThunk), this);
+                   G_CALLBACK(OnUnmapEventThunk), this);
 
   gtk_widget_show_all(widget_);
 }
@@ -147,13 +147,13 @@ void ThemeInstallBubbleViewGtk::MoveWindow() {
   gtk_window_move(GTK_WINDOW(widget_), x, y);
 }
 
-gboolean ThemeInstallBubbleViewGtk::HandleParentUnmap() {
+gboolean ThemeInstallBubbleViewGtk::OnUnmapEvent(GtkWidget* widget) {
   delete this;
   return FALSE;
 }
 
-gboolean ThemeInstallBubbleViewGtk::HandleExposeEvent(
-    GdkEventExpose* event) {
+gboolean ThemeInstallBubbleViewGtk::OnExpose(GtkWidget* widget,
+                                             GdkEventExpose* event) {
   cairo_t* cr = gdk_cairo_create(event->window);
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);

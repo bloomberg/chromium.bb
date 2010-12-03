@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -35,23 +36,12 @@ class ThemeInstallBubbleViewGtk : public NotificationObserver {
   void MoveWindow();
 
   // Our parent is going down; self destruct.
-  static gboolean HandleParentUnmapThunk(GtkWidget* widget,
-                                         GdkEvent* event,
-                                         gpointer user_data) {
-    return reinterpret_cast<ThemeInstallBubbleViewGtk*>(user_data)->
-        HandleParentUnmap();
-  }
-  gboolean HandleParentUnmap();
+  CHROMEGTK_CALLBACK_0(ThemeInstallBubbleViewGtk, gboolean, OnUnmapEvent);
 
   // Draw the background. This is only signalled if we are using a compositing
   // window manager, otherwise we just use ActAsRoundedWindow().
-  static gboolean HandleExposeEventThunk(GtkWidget* widget,
-                                         GdkEventExpose* event,
-                                         gpointer user_data) {
-    return reinterpret_cast<ThemeInstallBubbleViewGtk*>(user_data)->
-        HandleExposeEvent(event);
-  }
-  gboolean HandleExposeEvent(GdkEventExpose* event);
+  CHROMEGTK_CALLBACK_1(ThemeInstallBubbleViewGtk, gboolean,
+                       OnExpose, GdkEventExpose*);
 
   GtkWidget* widget_;
 
