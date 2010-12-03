@@ -13,6 +13,11 @@ chrome.omnibox.onInputChanged.addListener(
       currentRequest = null;
     }
 
+    updateDefaultSuggestion(text);
+
+    if (text == 'halp')
+      return;
+
     currentRequest = search(text, function(xml) {
       var results = [];
       var entries = xml.getElementsByTagName("entry");
@@ -23,30 +28,34 @@ chrome.omnibox.onInputChanged.addListener(
             entry.getElementsByTagName("match")[0].getAttribute("lineNumber");
         var file = path.split("/").pop();
 
-        // Remove HTML tags from description since omnibox cannot display them.
-        var description = entry.getElementsByTagName("content")[0].textContent;
-        description = description.replace(/<\/?.+?>/g, '');
-        description = file + ': ' + description; 
-        descriptionStyles = [
-            chrome.omnibox.styleUrl(0, file.length),
-        ]
+        var description = '<url>' + file + '</url>';
+        if (/^file:/.test(text)) {
+          description += ' <dim>' + path + '</dim>';
+        } else {
+          description += ' ';
 
-        // Highlight all occurrences of the match text.
-        var index = -1;
-        for (;;) {
-          var index = description.indexOf(text, index+1);
-          if (index < 0) break;
-          if (index > file.length) {
-            descriptionStyles.push(
-                chrome.omnibox.styleMatch(index, text.length)
-            );
+          // Highlight all occurrences of the match text.
+          var content = entry.getElementsByTagName("content")[0].textContent;
+          var start = 0;
+          var index = 0;
+          for (;;) {
+            var index = content.toLowerCase().indexOf(
+                text.toLowerCase(), start);
+            if (index < 0) {
+              description += content.substring(start);
+              break;
+            }
+
+            description += content.substring(start, index);
+            description +=
+                '<match>' + content.substr(index, text.length) + '</match>';
+            start = index + text.length;
           }
         }
 
         results.push({
           content: path + '@' + line,
-          description: description,
-          descriptionStyles: descriptionStyles,
+          description: description
         });
       }
 
@@ -55,9 +64,58 @@ chrome.omnibox.onInputChanged.addListener(
   }
 );
 
+function resetDefaultSuggestion() {
+  chrome.omnibox.setDefaultSuggestion({
+    description: '<url><match>src:</match></url> Search Chromium source'
+  });
+}
+
+resetDefaultSuggestion();
+
+function updateDefaultSuggestion(text) {
+  var isRegex = /^re:/.test(text);
+  var isFile = /^file:/.test(text);
+  var isHalp = (text == 'halp');
+  var isPlaintext = text.length && !isRegex && !isFile && !isHalp;
+
+  var description = '<match><url>src</url></match><dim> [</dim>';
+  description +=
+      isPlaintext ? ('<match>' + text + '</match>') : 'plaintext-search';
+  description += '<dim> | </dim>';
+  description += isRegex ? ('<match>' + text + '</match>') : 're:regex-search';
+  description += '<dim> | </dim>';
+  description += isFile ? ('<match>' + text + '</match>') : 'file:filename';
+  description += '<dim> | </dim>';
+  description += isHalp ? '<match>halp</match>' : 'halp';
+  description += '<dim> ]</dim>';
+
+  chrome.omnibox.setDefaultSuggestion({
+    description: description
+  });
+}
+
+chrome.omnibox.onInputStarted.addListener(function() {
+  updateDefaultSuggestion('');
+});
+
+chrome.omnibox.onInputCancelled.addListener(function() {
+  resetDefaultSuggestion();
+});
+
 function search(query, callback) {
+  if (query == 'halp')
+    return;
+
+  if (/^re:/.test(query))
+    query = query.substring('re:'.length);
+  else if (/^file:/.test(query))
+    query = 'file:"' + query.substring('file:'.length) + '"';
+  else
+    query = '"' + query + '"';
+
   var url = "http://www.google.com/codesearch/feeds/search?" +
-      "q=package:chromium.git+" + query;
+      "q=package:src.chromium.org/git/chromium.git+" + query;
+
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
   req.setRequestHeader("GData-Version", "2");
@@ -71,9 +129,9 @@ function search(query, callback) {
 }
 
 function getUrl(path, line) {
-  var url =
-    "http://src.chromium.org/cgi-bin/gitweb.cgi?p=chromium.git;a=blob;hb=HEAD;f=" +
-    path + "#l" + line;
+  var url = "http://www.google.com/codesearch/p#hfE6470xZHk/" + path;
+  if (line)
+    url += "&l=" + line;
   return url;
 }
 
@@ -90,18 +148,19 @@ function navigate(url) {
   });
 }
 
-chrome.omnibox.onInputEntered.addListener(
-  function(text) {
-    if (text.indexOf('@') > 0) {
-      var chunks = text.split('@');
-      var path = chunks[0];
-      var line = chunks[1];
-      navigate(getUrl(path, line));
-    } else {
-      search(text, function(xml) {
-        navigate(getEntryUrl(xml.getElementsByTagName("entry")[0]));
-      });
-    }
+chrome.omnibox.onInputEntered.addListener(function(text) {
+  // TODO(aa): We need a way to pass arbitrary data through. Maybe that is just
+  // URL?
+  if (/@\d+\b/.test(text)) {
+    var chunks = text.split('@');
+    var path = chunks[0];
+    var line = chunks[1];
+    navigate(getUrl(path, line));
+  } else if (text == 'halp') {
+    // TODO(aa)
+  } else {
+    navigate("http://codesearch.google.com/codesearch?q=" +
+             "package:src.chromium.org/git/chromium.git " + text);
   }
-);
+});
 </script>
