@@ -215,7 +215,7 @@ public:
     bool Navigate(const TestNavigationEntry& entry, bool reload);
 
     bool PromptForSaveFile(const wchar_t* prompt_title, FilePath* result);
-    std::wstring GetDocumentText();
+    string16 GetDocumentText();
     void DumpDocumentText();
     void DumpRenderTree();
 

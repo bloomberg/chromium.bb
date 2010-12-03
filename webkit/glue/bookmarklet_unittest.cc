@@ -26,8 +26,8 @@ TEST_F(BookmarkletTest, Redirect) {
   test_shell_->LoadURL(
       GURL("javascript:location.href='data:text/plain,SUCCESS'"));
   test_shell_->WaitTestFinished();
-  std::wstring text = test_shell_->GetDocumentText();
-  EXPECT_EQ(L"SUCCESS", text);
+  string16 text = test_shell_->GetDocumentText();
+  EXPECT_EQ("SUCCESS", UTF16ToASCII(text));
 }
 
 TEST_F(BookmarkletTest, RedirectVoided) {
@@ -38,12 +38,12 @@ TEST_F(BookmarkletTest, RedirectVoided) {
   test_shell_->LoadURL(
       GURL("javascript:void(location.href='data:text/plain,SUCCESS')"));
   test_shell_->WaitTestFinished();
-  std::wstring text = test_shell_->GetDocumentText();
-  EXPECT_EQ(L"SUCCESS", text);
+  string16 text = test_shell_->GetDocumentText();
+  EXPECT_EQ("SUCCESS", UTF16ToASCII(text));
 }
 
 TEST_F(BookmarkletTest, NonEmptyResult) {
-  std::wstring text;
+  string16 text;
 
   // TODO(darin): This test fails in a JSC build.  WebCore+JSC does not really
   // need to support this usage until WebCore supports javascript: URLs that
@@ -54,13 +54,13 @@ TEST_F(BookmarkletTest, NonEmptyResult) {
   test_shell_->LoadURL(L"javascript:false");
   MessageLoop::current()->RunAllPending();
   text = test_shell_->GetDocumentText();
-  EXPECT_EQ(L"false", text);
+  EXPECT_EQ("false", UTF16ToASCII(text));
 #endif
 
   test_shell_->LoadURL(GURL("javascript:'hello world'"));
   MessageLoop::current()->RunAllPending();
   text = test_shell_->GetDocumentText();
-  EXPECT_EQ(L"hello world", text);
+  EXPECT_EQ("hello world", UTF16ToASCII(text));
 }
 
 TEST_F(BookmarkletTest, DocumentWrite) {
@@ -69,8 +69,8 @@ TEST_F(BookmarkletTest, DocumentWrite) {
       "document.write('hello world');"
       "document.close()"));
   MessageLoop::current()->RunAllPending();
-  std::wstring text = test_shell_->GetDocumentText();
-  EXPECT_EQ(L"hello world", text);
+  string16 text = test_shell_->GetDocumentText();
+  EXPECT_EQ("hello world", UTF16ToASCII(text));
 }
 
 }  // namespace

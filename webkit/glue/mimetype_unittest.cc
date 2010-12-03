@@ -23,12 +23,12 @@ class MimeTypeTests : public TestShellTest {
     test_shell_->WaitTestFinished();
   }
 
-  void CheckMimeType(const char* mimetype, const std::wstring& expected) {
+  void CheckMimeType(const char* mimetype, const std::string& expected) {
     std::string path("contenttype?");
     GURL url(test_server_.GetURL(path + mimetype));
     LoadURL(url);
     WebFrame* frame = test_shell_->webView()->mainFrame();
-    EXPECT_EQ(expected, webkit_glue::DumpDocumentText(frame));
+    EXPECT_EQ(expected, UTF16ToASCII(webkit_glue::DumpDocumentText(frame)));
   }
 
   UnittestTestServer test_server_;
@@ -37,8 +37,8 @@ class MimeTypeTests : public TestShellTest {
 TEST_F(MimeTypeTests, MimeTypeTests) {
   ASSERT_TRUE(test_server_.Start());
 
-  std::wstring expected_src(L"<html>\n<body>\n"
-      L"<p>HTML text</p>\n</body>\n</html>\n");
+  std::string expected_src("<html>\n<body>\n"
+      "<p>HTML text</p>\n</body>\n</html>\n");
 
   // These files should all be displayed as plain text.
   const char* plain_text[] = {
@@ -66,7 +66,7 @@ TEST_F(MimeTypeTests, MimeTypeTests) {
     "application/xhtml+xml",
   };
   for (size_t i = 0; i < arraysize(html_src); ++i) {
-    CheckMimeType(html_src[i], L"HTML text");
+    CheckMimeType(html_src[i], "HTML text");
   }
 
   // These shouldn't be rendered as text or HTML, but shouldn't download
@@ -78,7 +78,7 @@ TEST_F(MimeTypeTests, MimeTypeTests) {
     "image/bmp",
   };
   for (size_t i = 0; i < arraysize(not_text); ++i) {
-    CheckMimeType(not_text[i], L"");
+    CheckMimeType(not_text[i], "");
     test_shell_->webView()->mainFrame()->stopLoading();
   }
 

@@ -84,29 +84,29 @@ void EnableWebCoreNotImplementedLogging() {
   WebKit::enableLogChannel("NotYetImplemented");
 }
 
-std::wstring DumpDocumentText(WebFrame* web_frame) {
+string16 DumpDocumentText(WebFrame* web_frame) {
   // We use the document element's text instead of the body text here because
   // not all documents have a body, such as XML documents.
   WebElement document_element = web_frame->document().documentElement();
   if (document_element.isNull())
-    return std::wstring();
+    return string16();
 
-  return UTF16ToWideHack(document_element.innerText());
+  return document_element.innerText();
 }
 
-std::wstring DumpFramesAsText(WebFrame* web_frame, bool recursive) {
-  std::wstring result;
+string16 DumpFramesAsText(WebFrame* web_frame, bool recursive) {
+  string16 result;
 
   // Add header for all but the main frame. Skip empty frames.
   if (web_frame->parent() &&
       !web_frame->document().documentElement().isNull()) {
-    result.append(L"\n--------\nFrame: '");
-    result.append(UTF16ToWideHack(web_frame->name()));
-    result.append(L"'\n--------\n");
+    result.append(ASCIIToUTF16("\n--------\nFrame: '"));
+    result.append(web_frame->name());
+    result.append(ASCIIToUTF16("'\n--------\n"));
   }
 
   result.append(DumpDocumentText(web_frame));
-  result.append(L"\n");
+  result.append(ASCIIToUTF16("\n"));
 
   if (recursive) {
     WebFrame* child = web_frame->firstChild();
@@ -117,8 +117,8 @@ std::wstring DumpFramesAsText(WebFrame* web_frame, bool recursive) {
   return result;
 }
 
-std::wstring DumpRenderer(WebFrame* web_frame) {
-  return UTF16ToWideHack(web_frame->renderTreeAsText());
+string16 DumpRenderer(WebFrame* web_frame) {
+  return web_frame->renderTreeAsText();
 }
 
 bool CounterValueForElementById(WebFrame* web_frame, const std::string& id,

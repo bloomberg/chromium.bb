@@ -260,14 +260,14 @@ void TestShell::Dump(TestShell* shell) {
       if (should_dump_as_text) {
         bool recursive = shell->layout_test_controller_->
             ShouldDumpChildFramesAsText();
-        std::string data_utf8 = WideToUTF8(
+        std::string data_utf8 = UTF16ToUTF8(
             webkit_glue::DumpFramesAsText(frame, recursive));
         if (fwrite(data_utf8.c_str(), 1, data_utf8.size(), stdout) !=
             data_utf8.size()) {
           LOG(FATAL) << "Short write to stdout, disk full?";
         }
       } else {
-        printf("%s", WideToUTF8(
+        printf("%s", UTF16ToUTF8(
             webkit_glue::DumpRenderer(frame)).c_str());
 
         bool recursive = shell->layout_test_controller_->
@@ -717,7 +717,7 @@ void TestShell::DumpDocumentText() {
       return;
 
   const std::string data =
-      WideToUTF8(webkit_glue::DumpDocumentText(webView()->mainFrame()));
+      UTF16ToUTF8(webkit_glue::DumpDocumentText(webView()->mainFrame()));
   file_util::WriteFile(file_path, data.c_str(), data.length());
 }
 
@@ -727,11 +727,11 @@ void TestShell::DumpRenderTree() {
     return;
 
   const std::string data =
-      WideToUTF8(webkit_glue::DumpRenderer(webView()->mainFrame()));
+      UTF16ToUTF8(webkit_glue::DumpRenderer(webView()->mainFrame()));
   file_util::WriteFile(file_path, data.c_str(), data.length());
 }
 
-std::wstring TestShell::GetDocumentText() {
+string16 TestShell::GetDocumentText() {
   return webkit_glue::DumpDocumentText(webView()->mainFrame());
 }
 

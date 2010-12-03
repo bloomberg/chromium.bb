@@ -50,15 +50,15 @@ void SetJavaScriptFlags(const std::string& flags);
 void EnableWebCoreNotImplementedLogging();
 
 // Returns the text of the document element.
-std::wstring DumpDocumentText(WebKit::WebFrame* web_frame);
+string16 DumpDocumentText(WebKit::WebFrame* web_frame);
 
 // Returns the text of the document element and optionally its child frames.
 // If recursive is false, this is equivalent to DumpDocumentText followed by
 // a newline.  If recursive is true, it recursively dumps all frames as text.
-std::wstring DumpFramesAsText(WebKit::WebFrame* web_frame, bool recursive);
+string16 DumpFramesAsText(WebKit::WebFrame* web_frame, bool recursive);
 
 // Returns the renderer's description of its tree (its externalRepresentation).
-std::wstring DumpRenderer(WebKit::WebFrame* web_frame);
+string16 DumpRenderer(WebKit::WebFrame* web_frame);
 
 // Fill the value of counter in the element specified by the id into
 // counter_value.  Return false when the specified id doesn't exist.

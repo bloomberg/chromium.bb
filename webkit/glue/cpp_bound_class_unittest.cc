@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -113,14 +114,15 @@ class CppBoundClassTest : public TestShellTest {
    // document text is exactly "SUCCESS".
    void CheckJavaScriptSuccess(const std::string& javascript) {
      ExecuteJavaScript(javascript);
-     EXPECT_EQ(L"SUCCESS", webkit_glue::DumpDocumentText(webframe_));
+     EXPECT_EQ("SUCCESS",
+               UTF16ToASCII(webkit_glue::DumpDocumentText(webframe_)));
    }
 
    // Executes the specified JavaScript and checks that the resulting document
    // text is empty.
    void CheckJavaScriptFailure(const std::string& javascript) {
      ExecuteJavaScript(javascript);
-     EXPECT_EQ(L"", webkit_glue::DumpDocumentText(webframe_));
+     EXPECT_EQ("", UTF16ToASCII(webkit_glue::DumpDocumentText(webframe_)));
    }
 
    // Constructs a JavaScript snippet that evaluates and compares the left and
