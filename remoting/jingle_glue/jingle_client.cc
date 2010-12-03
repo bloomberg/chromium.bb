@@ -168,6 +168,9 @@ void JingleClient::OnConnectionStateChanged(buzz::XmppEngine::State state) {
       break;
     case buzz::XmppEngine::STATE_CLOSED:
       UpdateState(CLOSED);
+      // Client is destroyed by the TaskRunner after the client is
+      // closed. Reset the pointer so we don't try to use it later.
+      client_ = NULL;
       break;
     default:
       NOTREACHED();
