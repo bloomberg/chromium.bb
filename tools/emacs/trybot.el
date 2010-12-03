@@ -8,7 +8,7 @@
 ;
 ; To hack on this,
 ; M-x eval-buffer
-; M-x trybot-test
+; M-x trybot-test-win  or  M-x trybot-test-mac
 
 (defvar chrome-root nil
   "Path to the src/ directory of your Chrome checkout.")
@@ -74,17 +74,25 @@
   ;; Switch into compilation mode.
   (compilation-mode))
 
-(defun trybot-test ()
-  "Load our test data and do the trybot parse on it."
-  (interactive)
+(defun trybot-test (filename)
+  "Load the given test data filename and do the trybot parse on it."
 
   (switch-to-buffer (get-buffer-create "*trybot-test*"))
   (let ((inhibit-read-only t))
     (erase-buffer)
     (insert-file-contents-literally
-       (concat (get-chrome-root) "tools/emacs/trybot-windows.txt"))
+       (concat (get-chrome-root) "tools/emacs/" filename))
 
     (trybot-fixup)))
+
+(defun trybot-test-win ()
+  "Load the Windows test data and do the trybot parse on it."
+  (interactive)
+  (trybot-test "trybot-windows.txt"))
+(defun trybot-test-mac ()
+  "Load the Mac test data and do the trybot parse on it."
+  (interactive)
+  (trybot-test "trybot-mac.txt"))
 
 (defun trybot (url)
   "Fetch a trybot URL and fix up the output into a compilation-mode buffer."
