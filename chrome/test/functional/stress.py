@@ -97,10 +97,10 @@ class StressTest(pyauto.PyUITest):
     # TODO: Add linux symbol_files
     if self.IsWin():
       url = url + '/win/'
-      sybmol_files = ['chrome_dll.pdb', 'chrome_exe.pdb']
+      symbol_files = ['chrome_dll.pdb', 'chrome_exe.pdb']
     elif self.IsMac():
       url = url + '/mac/'
-      sybmol_files = map(urllib.quote,
+      symbol_files = map(urllib.quote,
                          ['Google Chrome Framework.framework',
                           'Google Chrome Helper.app',
                           'Google Chrome.app',
@@ -110,10 +110,10 @@ class StressTest(pyauto.PyUITest):
                           'libplugin_carbon_interpose.dylib'])
       index = 0
       symbol_files = ['%s-%s-i386.breakpad' % (sym_file, self.chrome_version) \
-                      for sym_file in sybmol_files]
-      logging.info(sybmol_files)
+                      for sym_file in symbol_files]
+      logging.info(symbol_files)
 
-    for sym_file in sybmol_files:
+    for sym_file in symbol_files:
       sym_url = url + sym_file
       logging.info(sym_url)
       download_sym_file = os.path.join(download_location, sym_file)
