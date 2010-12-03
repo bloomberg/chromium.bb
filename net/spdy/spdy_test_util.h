@@ -229,15 +229,21 @@ spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                                   int extra_header_count,
                                   int stream_id,
                                   int associated_stream_id,
-                                  const char* path);
+                                  const char* url);
 spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                                   int extra_header_count,
                                   int stream_id,
                                   int associated_stream_id,
-                                  const char* path,
+                                  const char* url,
                                   const char* status,
-                                  const char* location,
+                                  const char* location);
+spdy::SpdyFrame* ConstructSpdyPush(int stream_id,
+                                  int associated_stream_id,
                                   const char* url);
+
+spdy::SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
+                                          const char* const extra_headers[],
+                                          int extra_header_count);
 
 // Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
 // |extra_headers| are the extra header-value pairs, which typically

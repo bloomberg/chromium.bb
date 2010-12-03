@@ -171,6 +171,10 @@ spdy::SpdyFrame* ConstructSpdyPacket(const SpdyHeaderInfo& header_info,
     case spdy::RST_STREAM:
       frame = framer.CreateRstStream(header_info.id, header_info.status);
       break;
+    case spdy::HEADERS:
+      frame = framer.CreateHeaders(header_info.id, header_info.control_flags,
+                                   header_info.compressed, &headers);
+      break;
     default:
       frame = framer.CreateDataFrame(header_info.id, header_info.data,
                                      header_info.data_length,
@@ -460,16 +464,14 @@ spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                                    int extra_header_count,
                                    int stream_id,
                                    int associated_stream_id,
-                                   const char* path) {
+                                   const char* url) {
   const char* const kStandardGetHeaders[] = {
     "hello",
     "bye",
-    "path",
-    path,
     "status",
     "200 OK",
     "url",
-    path,
+    url,
     "version",
     "HTTP/1.1"
   };
@@ -489,15 +491,12 @@ spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                                    int extra_header_count,
                                    int stream_id,
                                    int associated_stream_id,
-                                   const char* path,
+                                   const char* url,
                                    const char* status,
-                                   const char* location,
-                                   const char* url) {
+                                   const char* location) {
   const char* const kStandardGetHeaders[] = {
     "hello",
     "bye",
-    "path",
-    path,
     "status",
     status,
     "location",
@@ -517,6 +516,45 @@ spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                                    kStandardGetHeaders,
                                    arraysize(kStandardGetHeaders),
                                    associated_stream_id);
+}
+
+spdy::SpdyFrame* ConstructSpdyPush(int stream_id,
+                                  int associated_stream_id,
+                                  const char* url) {
+  const char* const kStandardGetHeaders[] = {
+    "url",
+    url
+  };
+  return ConstructSpdyControlFrame(0,
+                                   0,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   spdy::SYN_STREAM,
+                                   spdy::CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   associated_stream_id);
+}
+
+spdy::SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
+                                          const char* const extra_headers[],
+                                          int extra_header_count) {
+  const char* const kStandardGetHeaders[] = {
+    "status",
+    "200 OK",
+    "version",
+    "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   spdy::HEADERS,
+                                   spdy::CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders));
 }
 
 // Constructs a standard SPDY SYN_REPLY packet with the specified status code.
