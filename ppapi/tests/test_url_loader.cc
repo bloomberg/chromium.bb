@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_loader.h"
@@ -24,7 +25,17 @@
 
 REGISTER_TEST_CASE(URLLoader);
 
+TestURLLoader::TestURLLoader(TestingInstance* instance)
+    : TestCase(instance),
+      file_io_trusted_interface_(NULL) {
+}
+
 bool TestURLLoader::Init() {
+  file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
+  if (!file_io_trusted_interface_) {
+    instance_->AppendError("FileIOTrusted interface not available");
+  }
   return InitTestingInterface() && EnsureRunningOverHTTP();
 }
 
@@ -226,7 +237,8 @@ std::string TestURLLoader::TestStreamToFile() {
   if (data != expected_body)
     return "ReadEntireFile returned unexpected content";
 
-  int32_t file_descriptor = reader.GetOSFileDescriptor();
+  int32_t file_descriptor = file_io_trusted_interface_->GetOSFileDescriptor(
+      reader.pp_resource());
   if (file_descriptor < 0)
     return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
 

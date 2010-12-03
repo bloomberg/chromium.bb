@@ -9,6 +9,8 @@
 
 #include "ppapi/tests/test_case.h"
 
+struct PPB_FileIOTrusted_Dev;
+
 namespace pp {
 class FileIO_Dev;
 class URLLoader;
@@ -17,7 +19,7 @@ class URLRequestInfo;
 
 class TestURLLoader : public TestCase {
  public:
-  explicit TestURLLoader(TestingInstance* instance) : TestCase(instance) {}
+  explicit TestURLLoader(TestingInstance* instance);
 
   // TestCase implementation.
   virtual bool Init();
@@ -40,6 +42,8 @@ class TestURLLoader : public TestCase {
   std::string TestStreamToFile();
   std::string TestSameOriginRestriction();
   std::string TestAuditURLRedirect();
+
+  const PPB_FileIOTrusted_Dev* file_io_trusted_interface_;
 };
 
 #endif  // PAPPI_TESTS_TEST_URL_LOADER_H_

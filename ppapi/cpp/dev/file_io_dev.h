@@ -43,16 +43,6 @@ class FileIO_Dev : public Resource {
                     const CompletionCallback& cc);
   int32_t Flush(const CompletionCallback& cc);
   void Close();
-
-  // PPB_FileIOTrusted methods:
-  // NOTE: These are only available to trusted plugins and will return
-  // PP_ERROR_NOINTERFACE if called from an untrusted plugin.
-  int32_t GetOSFileDescriptor();
-  int32_t WillWrite(int64_t offset,
-                    int32_t bytes_to_write,
-                    const CompletionCallback& cc);
-  int32_t WillSetLength(int64_t length,
-                        const CompletionCallback& cc);
 };
 
 }  // namespace pp

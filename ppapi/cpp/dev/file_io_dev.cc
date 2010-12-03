@@ -14,10 +14,7 @@
 
 namespace {
 
-DeviceFuncs<PPB_FileIO_Dev> file_io_f(
-    PPB_FILEIO_DEV_INTERFACE);
-DeviceFuncs<PPB_FileIOTrusted_Dev> file_io_trusted_f(
-    PPB_FILEIOTRUSTED_DEV_INTERFACE);
+DeviceFuncs<PPB_FileIO_Dev> file_io_f(PPB_FILEIO_DEV_INTERFACE);
 
 }  // namespace
 
@@ -102,29 +99,6 @@ void FileIO_Dev::Close() {
   if (!file_io_f)
     return;
   file_io_f->Close(pp_resource());
-}
-
-int32_t FileIO_Dev::GetOSFileDescriptor() {
-  if (!file_io_trusted_f)
-    return PP_ERROR_NOINTERFACE;
-  return file_io_trusted_f->GetOSFileDescriptor(pp_resource());
-}
-
-int32_t FileIO_Dev::WillWrite(int64_t offset,
-                              int32_t bytes_to_write,
-                              const CompletionCallback& cc) {
-  if (!file_io_trusted_f)
-    return PP_ERROR_NOINTERFACE;
-  return file_io_trusted_f->WillWrite(pp_resource(), offset, bytes_to_write,
-                                      cc.pp_completion_callback());
-}
-
-int32_t FileIO_Dev::WillSetLength(int64_t length,
-                                  const CompletionCallback& cc) {
-  if (!file_io_trusted_f)
-    return PP_ERROR_NOINTERFACE;
-  return file_io_trusted_f->WillSetLength(pp_resource(), length,
-                                          cc.pp_completion_callback());
 }
 
 }  // namespace pp
