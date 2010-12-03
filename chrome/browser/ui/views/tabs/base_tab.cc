@@ -34,7 +34,7 @@
 static const int kPulseDurationMs = 200;
 
 // How long the hover state takes.
-static const int kHoverDurationMs = 90;
+static const int kHoverDurationMs = 400;
 
 namespace {
 

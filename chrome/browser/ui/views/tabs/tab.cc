@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 
 #include <limits>
 
@@ -357,6 +357,13 @@ bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) {
   return true;
 }
 
+void Tab::OnMouseMoved(const views::MouseEvent& e) {
+  hover_point_ = e.location();
+  // We need to redraw here because otherwise the hover glow does not update
+  // and follow the new mouse position.
+  SchedulePaint();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, private
 
@@ -465,13 +472,18 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
       0 : background_offset_.y();
 
+  // We need a CanvasSkia object to be able to extract the bitmap from.
+  // We draw everything to this canvas and then output it to the canvas
+  // parameter in addition to using it to mask the hover glow if needed.
+  gfx::CanvasSkia background_canvas(width(), height(), false);
+
   // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
   // tab.
   SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
       *tab_bg, offset, bg_offset_y, tab_image->l_width, height());
   SkBitmap theme_l =
       SkBitmapOperations::CreateMaskedBitmap(tab_l, *alpha->image_l);
-  canvas->DrawBitmapInt(theme_l,
+  background_canvas.DrawBitmapInt(theme_l,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
       false);
@@ -482,7 +494,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       tab_image->r_width, height());
   SkBitmap theme_r =
       SkBitmapOperations::CreateMaskedBitmap(tab_r, *alpha->image_r);
-  canvas->DrawBitmapInt(theme_r,
+  background_canvas.DrawBitmapInt(theme_r,
       0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
       width() - theme_r.width(), 0, theme_r.width(),
       theme_r.height() - kToolbarOverlap, false);
@@ -490,13 +502,24 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // Draw center.  Instead of masking out the top portion we simply skip over
   // it by incrementing by kDropShadowHeight, since it's a simple rectangle.
   // And again, don't draw over the toolbar.
-  canvas->TileImageInt(*tab_bg,
+  background_canvas.TileImageInt(*tab_bg,
      offset + tab_image->l_width,
      bg_offset_y + kDropShadowHeight + tab_image->y_offset,
      tab_image->l_width,
      kDropShadowHeight + tab_image->y_offset,
      width() - tab_image->l_width - tab_image->r_width,
      height() - kDropShadowHeight - kToolbarOverlap - tab_image->y_offset);
+
+  canvas->DrawBitmapInt(background_canvas.ExtractBitmap(), 0, 0);
+
+  if (!GetThemeProvider()->HasCustomImage(tab_id) &&
+      hover_animation() && hover_animation()->IsShowing()) {
+    SkBitmap hover_glow = DrawHoverGlowBitmap(width(), height());
+    // Draw the hover glow clipped to the background into hover_image.
+    SkBitmap hover_image = SkBitmapOperations::CreateMaskedBitmap(
+        hover_glow, background_canvas.ExtractBitmap());
+    canvas->DrawBitmapInt(hover_image, 0, 0);
+  }
 
   // Now draw the highlights/shadows around the tab edge.
   canvas->DrawBitmapInt(*tab_inactive_image->image_l, 0, 0);
@@ -550,6 +573,43 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   canvas->TileImageInt(*tab_image->image_c, tab_image->l_width, 0,
       width() - tab_image->l_width - tab_image->r_width, height());
   canvas->DrawBitmapInt(*tab_image->image_r, width() - tab_image->r_width, 0);
+}
+
+SkBitmap Tab::DrawHoverGlowBitmap(int width_input, int height_input) {
+  // Draw a radial gradient to hover_canvas so we can export the bitmap.
+  gfx::CanvasSkia hover_canvas(width_input, height_input, false);
+
+  // Draw a radial gradient to hover_canvas.
+  int radius = width() / 3;
+
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setFlags(SkPaint::kAntiAlias_Flag);
+  SkPoint loc = { SkIntToScalar(hover_point_.x()),
+                  SkIntToScalar(hover_point_.y()) };
+  SkColor colors[2];
+  const SlideAnimation* hover_slide = hover_animation();
+  int hover_alpha = 0;
+  if (hover_slide) {
+    hover_alpha =
+        static_cast<int>(255 * kHoverOpacity * hover_slide->GetCurrentValue());
+  }
+  colors[0] = SkColorSetARGB(hover_alpha, 255, 255, 255);
+  colors[1] = SkColorSetARGB(0, 255, 255, 255);
+  SkShader* shader = SkGradientShader::CreateRadial(
+      loc,
+      SkIntToScalar(radius),
+      colors,
+      NULL,
+      2,
+      SkShader::kClamp_TileMode);
+  paint.setShader(shader);
+  shader->unref();
+  hover_canvas.DrawRectInt(hover_point_.x() - radius,
+                           hover_point_.y() - radius,
+                           radius * 2, radius * 2, paint);
+
+  return hover_canvas.ExtractBitmap();
 }
 
 int Tab::IconCapacity() const {

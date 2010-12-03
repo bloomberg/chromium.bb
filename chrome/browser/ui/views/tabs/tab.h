@@ -75,12 +75,14 @@ class Tab : public BaseTab {
   virtual bool HasHitTestMask() const;
   virtual void GetHitTestMask(gfx::Path* path) const;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin);
+  virtual void OnMouseMoved(const views::MouseEvent& event);
 
   // Paint various portions of the Tab
   void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
+  SkBitmap DrawHoverGlowBitmap(int width, int height);
 
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.
@@ -104,8 +106,8 @@ class Tab : public BaseTab {
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;
 
-  // Hover animation.
-  scoped_ptr<SlideAnimation> hover_animation_;
+  // The center point for the radial hover glow.
+  gfx::Point hover_point_;
 
   // Animation used when the title of an inactive mini tab changes.
   scoped_ptr<MultiAnimation> mini_title_animation_;
