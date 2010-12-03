@@ -695,6 +695,33 @@ TEST_F(GLES2ImplementationTest, ReadPixels2Reads) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, ReadPixelsBadFormatType) {
+  struct Cmds {
+    ReadPixels read;
+    cmd::SetToken set_token;
+  };
+  const GLint kBytesPerPixel = 4;
+  const GLint kWidth = 2;
+  const GLint kHeight = 2;
+  const GLenum kFormat = 0;
+  const GLenum kType = 0;
+
+  int32 token = 1;
+  uint32 offset = GLES2Implementation::kStartingOffset;
+  Cmds expected;
+  expected.read.Init(0, 0, kWidth, kHeight / 2, kFormat, kType,
+                     kTransferBufferId, offset,
+                     kTransferBufferId, 0);
+  expected.set_token.Init(token++);
+  scoped_array<int8> buffer(new int8[kWidth * kHeight * kBytesPerPixel]);
+
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  gl_->ReadPixels(0, 0, kWidth, kHeight, kFormat, kType, buffer.get());
+}
+
 TEST_F(GLES2ImplementationTest, MapUnmapBufferSubDataCHROMIUM) {
   struct Cmds {
     BufferSubData buf;

@@ -975,7 +975,8 @@ void GLES2Implementation::TexSubImage2D(
 
   if (padded_row_size <= max_size) {
     // Transfer by rows.
-    GLint max_rows = max_size / padded_row_size;
+    GLint max_rows = max_size / std::max(padded_row_size,
+                                         static_cast<GLsizeiptr>(1));
     while (height) {
       GLint num_rows = std::min(height, max_rows);
       GLsizeiptr part_size = num_rows * padded_row_size;
@@ -1239,7 +1240,8 @@ void GLES2Implementation::ReadPixels(
   if (padded_row_size <= max_size) {
     // Transfer by rows.
     // The max rows we can transfer.
-    GLint max_rows = max_size / padded_row_size;
+    GLint max_rows = max_size / std::max(padded_row_size,
+                                         static_cast<GLsizeiptr>(1));
     while (height) {
       // Compute how many rows to transfer.
       GLint num_rows = std::min(height, max_rows);
