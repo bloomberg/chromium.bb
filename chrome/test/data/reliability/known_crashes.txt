@@ -45,6 +45,7 @@ PREFIX : browser::processpendingtabs___browser::clearunloadstate
 
 # 47207
 PREFIX : messageloop::runtask___messageloop::deferorrunpendingtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
+PREFIX : messageloop::runtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 
 # 48712
 PREFIX : npapi::plugininstance::npp_newstream
