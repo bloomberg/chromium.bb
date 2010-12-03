@@ -94,7 +94,7 @@
         '../../base/base.gyp:base',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
-        '../../testing/gtest.gyp:gtestmain',
+        '../../testing/gtest.gyp:gtest_main',
         '../../breakpad/breakpad.gyp:breakpad_handler',
       ],
     },

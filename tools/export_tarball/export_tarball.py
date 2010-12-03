@@ -39,7 +39,6 @@ NONESSENTIAL_DIRS = (
     'third_party/hunspell_dictionaries',
     'third_party/hunspell/tests',
     'third_party/lighttpd',
-    'third_party/scons',
     'third_party/sqlite/test',
     'third_party/vc_80',
     'third_party/xdg-utils/tests',

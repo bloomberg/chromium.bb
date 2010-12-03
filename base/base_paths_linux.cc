@@ -76,7 +76,7 @@ bool PathProviderPosix(int key, FilePath* result) {
         }
       }
       // On POSIX, unit tests execute two levels deep from the source root.
-      // For example:  sconsbuild/{Debug|Release}/net_unittest
+      // For example:  out/{Debug|Release}/net_unittest
       if (PathService::Get(base::DIR_EXE, &path)) {
         path = path.DirName().DirName();
         if (file_util::PathExists(path.Append(kThisSourceFile))) {

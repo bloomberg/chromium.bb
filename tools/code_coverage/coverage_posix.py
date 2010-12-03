@@ -69,7 +69,7 @@ Linux:
   the directory within the buildbot working directory in which the
   solution, Debug, and Release directories are found.
   It's usually "src/build", but on mac it's $DIR/../xcodebuild and on
-  Linux it's $DIR/../sconsbuild or $DIR/sconsbuild or $DIR/out.
+  Linux it's $DIR/out.
   This is used by buildbot scripts to help us find the output directory.
   Must be used with --target.
 

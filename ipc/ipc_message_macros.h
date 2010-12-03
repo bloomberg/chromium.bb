@@ -48,7 +48,7 @@
        MESSAGES_INTERNAL_FILE first.
 #endif
 
-// Trick scons and xcode into seeing the possible real dependencies since they
+// Trick xcode into seeing the possible real dependencies since they
 // don't understand #include MESSAGES_INTERNAL_FILE. See http://crbug.com/7828
 #if 0
 #include "ipc/ipc_sync_message_unittest.h"

@@ -355,7 +355,7 @@
           'type': 'executable',
           'dependencies': [
             '../testing/gtest.gyp:gtest',
-            '../testing/gtest.gyp:gtestmain',
+            '../testing/gtest.gyp:gtest_main',
             '../testing/gmock.gyp:gmock',
             'breakpad_client',
             'breakpad_processor_support',

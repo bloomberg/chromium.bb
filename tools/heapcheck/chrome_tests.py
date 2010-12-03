@@ -147,7 +147,6 @@ class ChromeTests(object):
     if not self._options.build_dir:
       dirs = [
         os.path.join(self._source_dir, "xcodebuild", "Debug"),
-        os.path.join(self._source_dir, "sconsbuild", "Debug"),
         os.path.join(self._source_dir, "out", "Debug"),
       ]
       if exe:

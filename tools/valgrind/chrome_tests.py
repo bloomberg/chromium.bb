@@ -99,7 +99,6 @@ class ChromeTests:
       else:
         dirs = [
           os.path.join(self._source_dir, "xcodebuild", "Debug"),
-          os.path.join(self._source_dir, "sconsbuild", "Debug"),
           os.path.join(self._source_dir, "out", "Debug"),
           os.path.join(self._source_dir, "build", "Debug"),
         ]
