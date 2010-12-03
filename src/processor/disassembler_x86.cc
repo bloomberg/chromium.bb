@@ -212,7 +212,7 @@ bool DisassemblerX86::setBadRead() {
     return false;
 
   libdis::x86_op_t *operand = libdis::x86_get_src_operand(&current_instr_);
-  if (operand->type != libdis::op_expression)
+  if (!operand || operand->type != libdis::op_expression)
     return false;
 
   memcpy(&bad_register_, &operand->data.expression.base,
@@ -226,7 +226,7 @@ bool DisassemblerX86::setBadWrite() {
     return false;
 
   libdis::x86_op_t *operand = libdis::x86_get_dest_operand(&current_instr_);
-  if (operand->type != libdis::op_expression)
+  if (!operand || operand->type != libdis::op_expression)
     return false;
 
   memcpy(&bad_register_, &operand->data.expression.base,
