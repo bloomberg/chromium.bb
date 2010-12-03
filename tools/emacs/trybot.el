@@ -54,7 +54,6 @@
   ; undo stack?
   (goto-char (point-min))
   ; Fix Windows paths ("d:\...\src\").
-  ; TODO: need to fix case; e.g. third_party/webkit -> third_party/WebKit. :(
   (while (re-search-forward "\\(^.:\\\\.*\\\\src\\\\\\)\\(.*?\\)[(:]" nil t)
     (replace-match "" nil t nil 1)
     ; Line now looks like:
@@ -69,9 +68,14 @@
       (if (and (not (file-exists-p filename))
                (setq filename (case-corrected-filename filename)))
           (replace-match filename t t nil 2))))
-  (goto-char (point-min))
 
-  ;; Switch into compilation mode.
+  ; Fix Linux/Mac paths ("/b/build/.../src/").
+  (goto-char (point-min))
+  (while (re-search-forward "^/b/build/[^ ]*/src/" nil t)
+    (replace-match ""))
+
+  ;; Clean up and switch into compilation mode.
+  (goto-char (point-min))
   (compilation-mode))
 
 (defun trybot-test (filename)
