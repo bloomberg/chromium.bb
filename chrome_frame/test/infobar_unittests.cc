@@ -195,6 +195,22 @@ template <typename WINDOW, typename DELEGATE> void ExpectNcCalcSizeSequence(
   EXPECT_CALL(*mock_window,
               OnSize(0, CSize(modified_rect->right - modified_rect->left,
                               modified_rect->bottom - modified_rect->top)));
+
+  EXPECT_CALL(*mock_window, OnNcCalcSize(true, testing::_))
+    .Times(testing::Between(0, 1))
+    .WillOnce(RespondToNcCalcSize(0, natural_rect));
+  EXPECT_CALL(*delegate,
+              AdjustDisplacedWindowDimensions(EqualRect(natural_rect)))
+    .Times(testing::Between(0, 1))
+    .WillOnce(testing::SetArgumentPointee<0>(*modified_rect));
+  EXPECT_CALL(*mock_window, OnMove(CPoint(modified_rect->left,
+                                          modified_rect->top)))
+    .Times(testing::Between(0, 1));
+  EXPECT_CALL(*mock_window,
+              OnSize(0, CSize(modified_rect->right - modified_rect->left,
+                              modified_rect->bottom - modified_rect->top)))
+    .Times(testing::Between(0, 1));
+
 }
 
 template <typename WINDOW, typename DELEGATE, typename MANAGER>
@@ -210,6 +226,9 @@ template <typename WINDOW, typename DELEGATE, typename MANAGER>
   // This is required for the HostWindowManager, since it only looks up
   // and subclasses the displaced window on demand.
   manager->UpdateLayout();
+
+  testing::Mock::VerifyAndClearExpectations(mock_window);
+  testing::Mock::VerifyAndClearExpectations(delegate);
 
   ExpectNcCalcSizeSequence(
       mock_window, delegate, &natural_rects[1], &natural_rects[1]);
