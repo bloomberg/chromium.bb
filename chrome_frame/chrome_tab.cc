@@ -26,19 +26,19 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "grit/chrome_frame_resources.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/chrome_active_document.h"
 #include "chrome_frame/chrome_frame_activex.h"
 #include "chrome_frame/chrome_frame_automation.h"
-#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/chrome_frame_reporting.h"
 #include "chrome_frame/chrome_launcher_utils.h"
 #include "chrome_frame/chrome_protocol.h"
-#include "chrome_frame/module_utils.h"
+#include "chrome_frame/dll_redirector.h"
+#include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
 #include "googleurl/src/url_util.h"
+#include "grit/chrome_frame_resources.h"
 
 using base::win::RegKey;
 

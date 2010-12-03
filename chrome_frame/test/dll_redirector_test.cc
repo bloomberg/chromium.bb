@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_frame/module_utils.h"
+#include "chrome_frame/dll_redirector.h"
 
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
@@ -400,4 +400,3 @@ TEST_F(DllRedirectorTest, LowIntegrityAccessDenied) {
       shared_memory.Unlock();
   }
 }
-
