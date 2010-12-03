@@ -52,10 +52,11 @@ template<typename T> void PPVarToAllocateArray(const pp::Var& var,
   *array_length = 0;
   *array_data = NULL;
 
-  if (!var.is_int()) {
+  if (!var.is_number()) {
     *exception = "incompatible argument: unable to get array length";
     return;
   }
+  // AsInt will work if var is int or double.
   size_t length = var.AsInt();
 
   // Check for overflow on size multiplication and IMC array size limit.
