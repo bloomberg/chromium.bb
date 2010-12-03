@@ -50,8 +50,6 @@
 }
 
 - (void)awakeFromNib {
-  [[self bubble] setBubbleType:info_bubble::kWhiteInfoBubble];
-
   DCHECK(header_);
   [header_ setStringValue:cocoa_l10n_util::ReplaceNSStringPlaceholders(
       [header_ stringValue], GetDefaultSearchEngineName(profile_), NULL)];

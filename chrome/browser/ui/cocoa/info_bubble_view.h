@@ -20,12 +20,6 @@ enum BubbleArrowLocation {
   kTopRight,
 };
 
-enum InfoBubbleType {
-  kWhiteInfoBubble,
-  // Gradient bubbles are deprecated, per alcor@google.com. Please use white.
-  kGradientInfoBubble
-};
-
 }  // namespace info_bubble
 
 // Content view for a bubble with an arrow showing arbitrary content.
@@ -33,14 +27,9 @@ enum InfoBubbleType {
 @interface InfoBubbleView : NSView {
  @private
   info_bubble::BubbleArrowLocation arrowLocation_;
-
-  // The type simply is used to determine what sort of background it should
-  // draw.
-  info_bubble::InfoBubbleType bubbleType_;
 }
 
 @property (assign, nonatomic) info_bubble::BubbleArrowLocation arrowLocation;
-@property (assign, nonatomic) info_bubble::InfoBubbleType bubbleType;
 
 // Returns the point location in view coordinates of the tip of the arrow.
 - (NSPoint)arrowTip;

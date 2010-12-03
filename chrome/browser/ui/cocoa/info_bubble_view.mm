@@ -6,19 +6,15 @@
 
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"
-#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
 @implementation InfoBubbleView
 
 @synthesize arrowLocation = arrowLocation_;
-@synthesize bubbleType = bubbleType_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     arrowLocation_ = info_bubble::kTopLeft;
-    bubbleType_ = info_bubble::kWhiteInfoBubble;
   }
-
   return self;
 }
 
@@ -58,35 +54,8 @@
   [bezier lineToPoint:NSMakePoint(arrowStart.x + info_bubble::kBubbleArrowWidth,
                                   arrowStart.y)];
   [bezier closePath];
-
-  // Then fill the inside depending on the type of bubble.
-  if (bubbleType_ == info_bubble::kGradientInfoBubble) {
-    NSColor* base_color = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];
-    NSColor* startColor =
-        [base_color gtm_colorAdjustedFor:GTMColorationLightHighlight
-                                   faded:YES];
-    NSColor* midColor =
-        [base_color gtm_colorAdjustedFor:GTMColorationLightMidtone
-                                   faded:YES];
-    NSColor* endColor =
-        [base_color gtm_colorAdjustedFor:GTMColorationLightShadow
-                                   faded:YES];
-    NSColor* glowColor =
-        [base_color gtm_colorAdjustedFor:GTMColorationLightPenumbra
-                                   faded:YES];
-
-    scoped_nsobject<NSGradient> gradient(
-        [[NSGradient alloc] initWithColorsAndLocations:startColor, 0.0,
-                                                       midColor, 0.25,
-                                                       endColor, 0.5,
-                                                       glowColor, 0.75,
-                                                       nil]);
-
-    [gradient.get() drawInBezierPath:bezier angle:0.0];
-  } else if (bubbleType_ == info_bubble::kWhiteInfoBubble) {
-    [[NSColor whiteColor] set];
-    [bezier fill];
-  }
+  [[NSColor whiteColor] set];
+  [bezier fill];
 }
 
 - (NSPoint)arrowTip {

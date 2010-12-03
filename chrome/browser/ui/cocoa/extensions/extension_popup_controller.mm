@@ -96,7 +96,6 @@ class DevtoolsNotificationBridge : public NotificationObserver {
   if (!view.get())
     return nil;
   [view setArrowLocation:arrowLocation];
-  [view setBubbleType:info_bubble::kWhiteInfoBubble];
 
   host->view()->set_is_toolstrip(NO);
 

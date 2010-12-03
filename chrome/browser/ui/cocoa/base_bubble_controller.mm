@@ -120,7 +120,6 @@ class Bridge : public NotificationObserver {
 
   base_bridge_.reset(new BaseBubbleControllerInternal::Bridge(self));
 
-  [bubble_ setBubbleType:info_bubble::kWhiteInfoBubble];
   [bubble_ setArrowLocation:info_bubble::kTopRight];
 }
 

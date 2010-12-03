@@ -424,7 +424,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (void)awakeFromNib {
   [super awakeFromNib];
 
-  [[self bubble] setBubbleType:info_bubble::kWhiteInfoBubble];
   [[self bubble] setArrowLocation:info_bubble::kTopRight];
 
   // Adapt window size to bottom buttons. Do this before all other layouting.
