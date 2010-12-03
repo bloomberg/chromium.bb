@@ -1090,23 +1090,9 @@ gcc-stage1-make() {
   # In case it is still patched from an interrupted make
   xgcc-unpatch-nofail "${target}"
 
-  local ar
-  local ranlib
-  case ${target} in
-      arm-*)
-          ar=${CROSS_TARGET_AR}
-          ranlib=${CROSS_TARGET_RANLIB}
-          ;;
-      i686-*)
-          ar="${INSTALL_ROOT}/../linux_x86/bin/nacl-ar"
-          ranlib="${INSTALL_ROOT}/../linux_x86/bin/nacl-ranlib"
-          ;;
-      x86_64-*)
-          ar="${INSTALL_ROOT}/../linux_x86/bin/nacl64-ar"
-          ranlib="${INSTALL_ROOT}/../linux_x86/bin/nacl64-ranlib"
-          ;;
-  esac
-
+  # we built our version of binutil for multiple targets, so they work here
+  local ar=${CROSS_TARGET_AR}
+  local ranlib=${CROSS_TARGET_RANLIB}
   mkdir -p "${objdir}/dummy-bin"
   ln -sf ${ar} "${objdir}/dummy-bin/${target}-ar"
   ln -sf ${ranlib} "${objdir}/dummy-bin/${target}-ranlib"
