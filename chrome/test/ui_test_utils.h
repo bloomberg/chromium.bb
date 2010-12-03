@@ -20,6 +20,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "gfx/native_widget_types.h"
 
@@ -393,17 +394,18 @@ class WindowedNotificationObserver : public NotificationObserver {
 // the details associated with the notification.
 // Note that in order to use that class the details class should be copiable,
 // which is the case with most notifications.
-template <class T, class U>
+template <class U>
 class WindowedNotificationObserverWithDetails
     : public WindowedNotificationObserver {
  public:
   WindowedNotificationObserverWithDetails(NotificationType notification_type,
-                                          const T* source)
-      : WindowedNotificationObserver(notification_type, Source<T>(source)) {}
+                                          const NotificationSource& source)
+      : WindowedNotificationObserver(notification_type, source) {}
 
   // Fills |details| with the details of the notification received for |source|.
-  bool GetDetailsFor(T* source, U* details) {
-    typename std::map<T*, U>::const_iterator iter = details_.find(source);
+  bool GetDetailsFor(const void* source, U* details) {
+    typename std::map<uintptr_t, U>::const_iterator iter =
+        details_.find(reinterpret_cast<uintptr_t>(source));
     if (iter == details_.end())
       return false;
     *details = iter->second;
@@ -413,12 +415,12 @@ class WindowedNotificationObserverWithDetails
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    details_[Source<T>(source).ptr()] = *Details<U>(details).ptr();
+    details_[source.map_key()] = *Details<U>(details).ptr();
     WindowedNotificationObserver::Observe(type, source, details);
   }
 
  private:
-  std::map<T*, U> details_;
+  std::map<uintptr_t, U> details_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserverWithDetails);
 };

@@ -31,8 +31,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/page_transition_types.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "grit/chromium_strings.h"
@@ -452,12 +453,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   ASSERT_TRUE(test_server()->Start());
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
+  Source<TabContents> source(current_tab);
 
   // Navigate to a page in English.
-  ui_test_utils::WindowedNotificationObserverWithDetails<TabContents,
-                                                         std::string>
+  ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
       en_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
-                                  current_tab);
+                                  source);
   ui_test_utils::NavigateToURL(
       browser(), GURL(test_server()->GetURL("files/english_page.html")));
   EXPECT_TRUE(current_tab->language_state().original_language().empty());
@@ -468,10 +469,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   EXPECT_EQ("en", current_tab->language_state().original_language());
 
   // Now navigate to a page in French.
-  ui_test_utils::WindowedNotificationObserverWithDetails<TabContents,
-                                                         std::string>
+  ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
       fr_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
-                                  current_tab);
+                                  source);
   ui_test_utils::NavigateToURL(
       browser(), GURL(test_server()->GetURL("files/french_page.html")));
   EXPECT_TRUE(current_tab->language_state().original_language().empty());
