@@ -31,8 +31,8 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
                                   const void *rawCtx) {
   ucontext_t *uctx = (ucontext_t *) rawCtx;
 
-  sigCtx->prog_ctr = uctx->REG(rIP);
-  sigCtx->stack_ptr = uctx->REG(rSP);
+  sigCtx->prog_ctr = uctx->REG(rip);
+  sigCtx->stack_ptr = uctx->REG(rsp);
 
   sigCtx->rax = uctx->REG(rax);
   sigCtx->rbx = uctx->REG(rbx);
