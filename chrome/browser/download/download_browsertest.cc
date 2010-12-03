@@ -122,7 +122,7 @@ class DownloadsObserver : public DownloadManager::Observer,
 
       std::set<DownloadItem*>::const_iterator
           finished_it(finished_downloads_.find(*it));
-      std::set<DownloadItem*>::const_iterator
+      std::set<DownloadItem*>::iterator
           observed_it(downloads_observed_.find(*it));
 
       // If it isn't finished and we're aren't observing it, start.
