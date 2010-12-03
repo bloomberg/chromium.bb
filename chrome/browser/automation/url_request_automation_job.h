@@ -7,6 +7,7 @@
 #define CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 #pragma once
 
+#include "base/task.h"
 #include "chrome/common/ref_counted_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -122,8 +123,9 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   // stack when we receive a Read request for a completed job.
   URLRequestStatus request_status_;
 
+  ScopedRunnableMethodFactory<URLRequestAutomationJob> method_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(URLRequestAutomationJob);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
-

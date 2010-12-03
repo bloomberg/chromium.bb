@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/url_request_automation_job.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -57,7 +58,8 @@ URLRequestAutomationJob::URLRequestAutomationJob(
       pending_buf_size_(0),
       redirect_status_(0),
       request_id_(request_id),
-      is_pending_(is_pending) {
+      is_pending_(is_pending),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DVLOG(1) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
   DCHECK(message_filter_ != NULL);
 
@@ -130,8 +132,10 @@ void URLRequestAutomationJob::Start() {
   if (!is_pending()) {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &URLRequestAutomationJob::StartAsync));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &URLRequestAutomationJob::StartAsync));
   } else {
     // If this is a pending job, then register it immediately with the message
     // filter so it can be serviced later when we receive a request from the
@@ -153,6 +157,7 @@ void URLRequestAutomationJob::Kill() {
 
 bool URLRequestAutomationJob::ReadRawData(
     net::IOBuffer* buf, int buf_size, int* bytes_read) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "URLRequestAutomationJob: " << request_->url().spec()
            << " - read pending: " << buf_size;
 
@@ -167,9 +172,10 @@ bool URLRequestAutomationJob::ReadRawData(
         buf_size));
     SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
   } else {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &URLRequestAutomationJob::NotifyJobCompletionTask));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &URLRequestAutomationJob::NotifyJobCompletionTask));
   }
   return false;
 }
