@@ -26,7 +26,7 @@ class OmxVideoDecoder : public VideoDecoder,
   explicit OmxVideoDecoder(VideoDecodeContext* decode_context);
   virtual ~OmxVideoDecoder();
 
-  // MediaFilter implementations.
+  // Filter implementations.
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback);
   virtual void Stop(FilterCallback* callback);
   virtual void Flush(FilterCallback* callback);

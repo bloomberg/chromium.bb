@@ -95,12 +95,12 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     Proxy(MessageLoop* render_loop,
           WebMediaPlayerImpl* webmediaplayer);
 
-    // Methods for MediaFilter -> WebMediaPlayerImpl communication.
+    // Methods for Filter -> WebMediaPlayerImpl communication.
     void Repaint();
     void SetVideoRenderer(scoped_refptr<WebVideoRenderer> video_renderer);
     void SetDataSource(scoped_refptr<WebDataSource> data_source);
 
-    // Methods for WebMediaPlayerImpl -> MediaFilter communication.
+    // Methods for WebMediaPlayerImpl -> Filter communication.
     void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
     void SetSize(const gfx::Rect& rect);
     void Detach();
@@ -175,7 +175,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   //
   // Callers must call |Initialize()| before they can use the object.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                     media::MediaFilterCollection* collection);
+                     media::FilterCollection* collection);
   virtual ~WebMediaPlayerImpl();
 
   // Finalizes initialization of the object.
@@ -288,7 +288,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   MessageLoop* main_loop_;
 
   // A collection of filters.
-  scoped_ptr<media::MediaFilterCollection> filter_collection_;
+  scoped_ptr<media::FilterCollection> filter_collection_;
 
   // The actual pipeline and the thread it runs on.
   scoped_refptr<media::Pipeline> pipeline_;

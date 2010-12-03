@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "media/base/filter_collection.h"
 #include "media/base/limits.h"
 #include "media/base/media_format.h"
 #include "media/base/media_switches.h"
@@ -225,7 +226,7 @@ void WebMediaPlayerImpl::Proxy::PutCurrentFrame(
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
-    media::MediaFilterCollection* collection)
+    media::FilterCollection* collection)
     : network_state_(WebKit::WebMediaPlayer::Empty),
       ready_state_(WebKit::WebMediaPlayer::HaveNothing),
       main_loop_(NULL),

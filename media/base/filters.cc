@@ -9,41 +9,43 @@
 
 namespace media {
 
-MediaFilter::MediaFilter() : host_(NULL), message_loop_(NULL) {}
+Filter::Filter() : host_(NULL), message_loop_(NULL) {}
 
-const char* MediaFilter::major_mime_type() const {
+Filter::~Filter() {}
+
+const char* Filter::major_mime_type() const {
   return "";
 }
 
-void MediaFilter::set_host(FilterHost* host) {
+void Filter::set_host(FilterHost* host) {
   DCHECK(host);
   DCHECK(!host_);
   host_ = host;
 }
 
-FilterHost* MediaFilter::host() {
+FilterHost* Filter::host() {
   return host_;
 }
 
-bool MediaFilter::requires_message_loop() const {
+bool Filter::requires_message_loop() const {
   return false;
 }
 
-const char* MediaFilter::message_loop_name() const {
+const char* Filter::message_loop_name() const {
   return "FilterThread";
 }
 
-void MediaFilter::set_message_loop(MessageLoop* message_loop) {
+void Filter::set_message_loop(MessageLoop* message_loop) {
   DCHECK(message_loop);
   DCHECK(!message_loop_);
   message_loop_ = message_loop;
 }
 
-MessageLoop* MediaFilter::message_loop() {
+MessageLoop* Filter::message_loop() {
   return message_loop_;
 }
 
-void MediaFilter::Play(FilterCallback* callback) {
+void Filter::Play(FilterCallback* callback) {
   DCHECK(callback);
   if (callback) {
     callback->Run();
@@ -51,7 +53,7 @@ void MediaFilter::Play(FilterCallback* callback) {
   }
 }
 
-void MediaFilter::Pause(FilterCallback* callback) {
+void Filter::Pause(FilterCallback* callback) {
   DCHECK(callback);
   if (callback) {
     callback->Run();
@@ -59,7 +61,7 @@ void MediaFilter::Pause(FilterCallback* callback) {
   }
 }
 
-void MediaFilter::Flush(FilterCallback* callback) {
+void Filter::Flush(FilterCallback* callback) {
   DCHECK(callback);
   if (callback) {
     callback->Run();
@@ -67,7 +69,7 @@ void MediaFilter::Flush(FilterCallback* callback) {
   }
 }
 
-void MediaFilter::Stop(FilterCallback* callback) {
+void Filter::Stop(FilterCallback* callback) {
   DCHECK(callback);
   if (callback) {
     callback->Run();
@@ -75,19 +77,17 @@ void MediaFilter::Stop(FilterCallback* callback) {
   }
 }
 
-void MediaFilter::SetPlaybackRate(float playback_rate) {}
+void Filter::SetPlaybackRate(float playback_rate) {}
 
-void MediaFilter::Seek(base::TimeDelta time, FilterCallback* callback) {
+void Filter::Seek(base::TimeDelta time, FilterCallback* callback) {
   scoped_ptr<FilterCallback> seek_callback(callback);
   if (seek_callback.get()) {
     seek_callback->Run();
   }
 }
 
-void MediaFilter::OnAudioRendererDisabled() {
+void Filter::OnAudioRendererDisabled() {
 }
-
-MediaFilter::~MediaFilter() {}
 
 bool DataSource::IsUrlSupported(const std::string& url) {
   return true;

@@ -40,15 +40,15 @@ namespace media {
 class Buffer;
 class Decoder;
 class DemuxerStream;
+class Filter;
 class FilterHost;
-class MediaFilter;
 
 // Used for completing asynchronous methods.
 typedef Callback0::Type FilterCallback;
 
-class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
+class Filter : public base::RefCountedThreadSafe<Filter> {
  public:
-  MediaFilter();
+  Filter();
 
   // Return the major mime type for this filter.
   virtual const char* major_mime_type() const;
@@ -110,8 +110,8 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
 
  protected:
   // Only allow scoped_refptr<> to delete filters.
-  friend class base::RefCountedThreadSafe<MediaFilter>;
-  virtual ~MediaFilter();
+  friend class base::RefCountedThreadSafe<Filter>;
+  virtual ~Filter();
 
   FilterHost* host() const { return host_; }
   MessageLoop* message_loop() const { return message_loop_; }
@@ -120,10 +120,10 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
   FilterHost* host_;
   MessageLoop* message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaFilter);
+  DISALLOW_COPY_AND_ASSIGN(Filter);
 };
 
-class DataSource : public MediaFilter {
+class DataSource : public Filter {
  public:
   typedef Callback1<size_t>::Type ReadCallback;
   static const size_t kReadError = static_cast<size_t>(-1);
@@ -152,7 +152,7 @@ class DataSource : public MediaFilter {
 };
 
 
-class Demuxer : public MediaFilter {
+class Demuxer : public Filter {
  public:
   virtual bool requires_message_loop() const;
   virtual const char* message_loop_name() const;
@@ -208,7 +208,7 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 };
 
 
-class VideoDecoder : public MediaFilter {
+class VideoDecoder : public Filter {
  public:
   virtual const char* major_mime_type() const;
   virtual bool requires_message_loop() const;
@@ -253,7 +253,7 @@ class VideoDecoder : public MediaFilter {
 };
 
 
-class AudioDecoder : public MediaFilter {
+class AudioDecoder : public Filter {
  public:
   virtual const char* major_mime_type() const;
   virtual bool requires_message_loop() const;
@@ -292,7 +292,7 @@ class AudioDecoder : public MediaFilter {
 };
 
 
-class VideoRenderer : public MediaFilter {
+class VideoRenderer : public Filter {
  public:
   virtual const char* major_mime_type() const;
 
@@ -306,7 +306,7 @@ class VideoRenderer : public MediaFilter {
 };
 
 
-class AudioRenderer : public MediaFilter {
+class AudioRenderer : public Filter {
  public:
   virtual const char* major_mime_type() const;
 

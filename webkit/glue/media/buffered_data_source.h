@@ -256,7 +256,7 @@ class BufferedDataSource : public WebDataSource {
 
   virtual ~BufferedDataSource();
 
-  // media::MediaFilter implementation.
+  // media::Filter implementation.
   virtual void Initialize(const std::string& url,
                           media::FilterCallback* callback);
   virtual bool IsUrlSupported(const std::string& url);
@@ -280,7 +280,6 @@ class BufferedDataSource : public WebDataSource {
   virtual void Abort();
 
  protected:
-
   // A factory method to create a BufferedResourceLoader based on the read
   // parameters. We can override this file to object a mock
   // BufferedResourceLoader for testing.

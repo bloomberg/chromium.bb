@@ -651,7 +651,7 @@ base::TimeDelta BufferedDataSource::GetTimeoutMilliseconds() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BufferedDataSource, media::MediaFilter implementation
+// BufferedDataSource, media::Filter implementation
 void BufferedDataSource::Initialize(const std::string& url,
                                     media::FilterCallback* callback) {
   // Saves the url.

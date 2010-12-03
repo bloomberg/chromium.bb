@@ -5,6 +5,7 @@
 #include "media/tools/player_wtl/movie.h"
 
 #include "base/utf_string_conversions.h"
+#include "media/base/filter_collection.h"
 #include "media/base/pipeline_impl.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -19,7 +20,7 @@ using media::FFmpegAudioDecoder;
 using media::FFmpegDemuxer;
 using media::FFmpegVideoDecoder;
 using media::FileDataSource;
-using media::MediaFilterCollection;
+using media::FilterCollection;
 using media::PipelineImpl;
 
 namespace media {
@@ -54,7 +55,7 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
   }
 
   // Create filter collection.
-  scoped_ptr<MediaFilterCollection> collection(new MediaFilterCollection());
+  scoped_ptr<FilterCollection> collection(new FilterCollection());
   collection->AddDataSource(new FileDataSource());
   collection->AddAudioDecoder(new FFmpegAudioDecoder());
   collection->AddDemuxer(new FFmpegDemuxer());

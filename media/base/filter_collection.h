@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_MEDIA_FILTER_COLLECTION_H_
-#define MEDIA_BASE_MEDIA_FILTER_COLLECTION_H_
+#ifndef MEDIA_BASE_FILTER_COLLECTION_H_
+#define MEDIA_BASE_FILTER_COLLECTION_H_
 
 #include <list>
 
@@ -12,11 +12,11 @@
 
 namespace media {
 
-// This is a collection of MediaFilter objects used to form a media playback
+// This is a collection of Filter objects used to form a media playback
 // pipeline. See src/media/base/pipeline.h for more information.
-class MediaFilterCollection {
+class FilterCollection {
  public:
-  MediaFilterCollection();
+  FilterCollection();
 
   // Adds a filter to the collection.
   void AddDataSource(DataSource* filter);
@@ -52,30 +52,28 @@ class MediaFilterCollection {
     AUDIO_DECODER,
     VIDEO_DECODER,
     AUDIO_RENDERER,
-    VIDEO_RENDERER
+    VIDEO_RENDERER,
   };
 
   // List of filters managed by this collection.
-  typedef std::pair<FilterType, scoped_refptr<MediaFilter> > FilterListElement;
+  typedef std::pair<FilterType, scoped_refptr<Filter> > FilterListElement;
   typedef std::list<FilterListElement> FilterList;
   FilterList filters_;
 
   // Helper function that adds a filter to the filter list.
-  void AddFilter(FilterType filter_type, MediaFilter* filter);
+  void AddFilter(FilterType filter_type, Filter* filter);
 
   // Helper function for SelectXXX() methods. It manages the
   // downcasting and mapping between FilterType and Filter class.
-  template<FilterType filter_type, class Filter>
-  void SelectFilter(scoped_refptr<Filter>* filter_out);
+  template<FilterType filter_type, typename F>
+  void SelectFilter(scoped_refptr<F>* filter_out);
 
-  // Helper function that searches the filters list for a specific
-  // filter type.
-  void SelectFilter(FilterType filter_type,
-                    scoped_refptr<MediaFilter>* filter_out);
+  // Helper function that searches the filters list for a specific filter type.
+  void SelectFilter(FilterType filter_type, scoped_refptr<Filter>* filter_out);
 
-  DISALLOW_COPY_AND_ASSIGN(MediaFilterCollection);
+  DISALLOW_COPY_AND_ASSIGN(FilterCollection);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_MEDIA_FILTER_COLLECTION_H_
+#endif  // MEDIA_BASE_FILTER_COLLECTION_H_

@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "media/base/callback.h"
+#include "media/base/filter_collection.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_impl.h"
@@ -97,8 +98,8 @@ bool InitPipeline(MessageLoop* message_loop,
   }
 
   // Create our filter factories.
-  scoped_ptr<media::MediaFilterCollection> collection(
-      new media::MediaFilterCollection());
+  scoped_ptr<media::FilterCollection> collection(
+      new media::FilterCollection());
   collection->AddDataSource(new media::FileDataSource());
   collection->AddDemuxer(new media::FFmpegDemuxer());
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder());

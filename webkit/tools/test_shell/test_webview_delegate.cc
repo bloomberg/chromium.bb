@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"
+#include "media/base/filter_collection.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
@@ -725,8 +726,8 @@ WebWorker* TestWebViewDelegate::createWorker(
 
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
-  scoped_ptr<media::MediaFilterCollection> collection(
-      new media::MediaFilterCollection());
+  scoped_ptr<media::FilterCollection> collection(
+      new media::FilterCollection());
 
   // TODO(annacc): do we still need appcache_host?  http://crbug.com/65135
   // appcache::WebApplicationCacheHostImpl* appcache_host =

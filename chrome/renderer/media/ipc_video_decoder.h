@@ -24,13 +24,13 @@ class IpcVideoDecoder : public media::VideoDecoder,
   IpcVideoDecoder(MessageLoop* message_loop, ggl::Context* ggl_context);
   virtual ~IpcVideoDecoder();
 
-  // MediaFilter implementation.
+  // media::Filter implementation.
   virtual void Stop(media::FilterCallback* callback);
   virtual void Seek(base::TimeDelta time, media::FilterCallback* callback);
   virtual void Pause(media::FilterCallback* callback);
   virtual void Flush(media::FilterCallback* callback);
 
-  // Decoder implementation.
+  // media::VideoDecoder implementation.
   virtual void Initialize(media::DemuxerStream* demuxer_stream,
                           media::FilterCallback* callback);
   virtual const media::MediaFormat& media_format() { return media_format_; }
@@ -39,7 +39,7 @@ class IpcVideoDecoder : public media::VideoDecoder,
   // TODO(hclam): Remove this method.
   virtual bool ProvidesBuffer() { return true; }
 
-  // VideoDecodeEngine::EventHandler implementation.
+  // media::VideoDecodeEngine::EventHandler implementation.
   virtual void OnInitializeComplete(const media::VideoCodecInfo& info);
   virtual void OnUninitializeComplete();
   virtual void OnFlushComplete();

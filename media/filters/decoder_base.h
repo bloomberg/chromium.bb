@@ -27,7 +27,7 @@ template <class Decoder, class Output>
 class DecoderBase : public Decoder {
  public:
 
-  // MediaFilter implementation.
+  // Filter implementation.
   virtual void Stop(FilterCallback* callback) {
     this->message_loop()->PostTask(
         FROM_HERE,
@@ -101,7 +101,7 @@ class DecoderBase : public Decoder {
                             Task* done_cb) = 0;
 
   // Method that may be implemented by the derived class if desired.  It will
-  // be called from within the MediaFilter::Stop() method prior to stopping the
+  // be called from within the Filter::Stop() method prior to stopping the
   // base class.
   virtual void DoStop(Task* done_cb) {
     AutoTaskRunner done_runner(done_cb);

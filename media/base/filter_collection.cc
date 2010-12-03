@@ -2,89 +2,89 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/media_filter_collection.h"
+#include "media/base/filter_collection.h"
 
 namespace media {
 
-MediaFilterCollection::MediaFilterCollection() {
+FilterCollection::FilterCollection() {
 }
 
-void MediaFilterCollection::AddDataSource(DataSource* filter) {
+void FilterCollection::AddDataSource(DataSource* filter) {
   AddFilter(DATA_SOURCE, filter);
 }
 
-void MediaFilterCollection::AddDemuxer(Demuxer* filter) {
+void FilterCollection::AddDemuxer(Demuxer* filter) {
   AddFilter(DEMUXER, filter);
 }
 
-void MediaFilterCollection::AddVideoDecoder(VideoDecoder* filter) {
+void FilterCollection::AddVideoDecoder(VideoDecoder* filter) {
   AddFilter(VIDEO_DECODER, filter);
 }
 
-void MediaFilterCollection::AddAudioDecoder(AudioDecoder* filter) {
+void FilterCollection::AddAudioDecoder(AudioDecoder* filter) {
   AddFilter(AUDIO_DECODER, filter);
 }
 
-void MediaFilterCollection::AddVideoRenderer(VideoRenderer* filter) {
+void FilterCollection::AddVideoRenderer(VideoRenderer* filter) {
   AddFilter(VIDEO_RENDERER, filter);
 }
 
-void MediaFilterCollection::AddAudioRenderer(AudioRenderer* filter) {
+void FilterCollection::AddAudioRenderer(AudioRenderer* filter) {
   AddFilter(AUDIO_RENDERER, filter);
 }
 
-bool MediaFilterCollection::IsEmpty() const {
+bool FilterCollection::IsEmpty() const {
   return filters_.empty();
 }
 
-void MediaFilterCollection::Clear() {
+void FilterCollection::Clear() {
   filters_.clear();
 }
 
-void MediaFilterCollection::SelectDataSource(
+void FilterCollection::SelectDataSource(
     scoped_refptr<DataSource>* filter_out) {
   SelectFilter<DATA_SOURCE>(filter_out);
 }
 
-void MediaFilterCollection::SelectDemuxer(scoped_refptr<Demuxer>* filter_out) {
+void FilterCollection::SelectDemuxer(scoped_refptr<Demuxer>* filter_out) {
   SelectFilter<DEMUXER>(filter_out);
 }
 
-void MediaFilterCollection::SelectVideoDecoder(
+void FilterCollection::SelectVideoDecoder(
     scoped_refptr<VideoDecoder>* filter_out) {
   SelectFilter<VIDEO_DECODER>(filter_out);
 }
 
-void MediaFilterCollection::SelectAudioDecoder(
+void FilterCollection::SelectAudioDecoder(
     scoped_refptr<AudioDecoder>* filter_out) {
   SelectFilter<AUDIO_DECODER>(filter_out);
 }
 
-void MediaFilterCollection::SelectVideoRenderer(
+void FilterCollection::SelectVideoRenderer(
     scoped_refptr<VideoRenderer>* filter_out) {
   SelectFilter<VIDEO_RENDERER>(filter_out);
 }
 
-void MediaFilterCollection::SelectAudioRenderer(
+void FilterCollection::SelectAudioRenderer(
     scoped_refptr<AudioRenderer>* filter_out) {
   SelectFilter<AUDIO_RENDERER>(filter_out);
 }
 
-void MediaFilterCollection::AddFilter(FilterType filter_type,
-                                      MediaFilter* filter) {
+void FilterCollection::AddFilter(FilterType filter_type,
+                                 Filter* filter) {
   filters_.push_back(FilterListElement(filter_type, filter));
 }
 
-template<MediaFilterCollection::FilterType filter_type, class Filter>
-void MediaFilterCollection::SelectFilter(scoped_refptr<Filter>* filter_out) {
-  scoped_refptr<MediaFilter> filter;
+template<FilterCollection::FilterType filter_type, typename F>
+void FilterCollection::SelectFilter(scoped_refptr<F>* filter_out) {
+  scoped_refptr<Filter> filter;
   SelectFilter(filter_type, &filter);
-  *filter_out = reinterpret_cast<Filter*>(filter.get());
+  *filter_out = reinterpret_cast<F*>(filter.get());
 }
 
-void MediaFilterCollection::SelectFilter(
+void FilterCollection::SelectFilter(
     FilterType filter_type,
-    scoped_refptr<MediaFilter>* filter_out)  {
+    scoped_refptr<Filter>* filter_out)  {
 
   FilterList::iterator it = filters_.begin();
   while (it != filters_.end()) {

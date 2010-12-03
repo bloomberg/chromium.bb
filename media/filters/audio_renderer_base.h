@@ -32,7 +32,7 @@ class AudioRendererBase : public AudioRenderer {
   AudioRendererBase();
   virtual ~AudioRendererBase();
 
-  // MediaFilter implementation.
+  // Filter implementation.
   virtual void Play(FilterCallback* callback);
   virtual void Pause(FilterCallback* callback);
   virtual void Stop(FilterCallback* callback);

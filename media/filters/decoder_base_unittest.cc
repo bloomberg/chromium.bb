@@ -39,7 +39,7 @@ class MockBuffer : public media::Buffer {
   DISALLOW_COPY_AND_ASSIGN(MockBuffer);
 };
 
-class MockDecoder : public media::MediaFilter {
+class MockDecoder : public media::Filter {
  public:
   typedef Callback1<scoped_refptr<MockDecoderOutput> >::Type
       ConsumeAudioSamplesCallback;

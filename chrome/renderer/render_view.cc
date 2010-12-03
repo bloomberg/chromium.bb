@@ -101,6 +101,7 @@
 #include "gfx/skbitmap_operations.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
+#include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
@@ -2790,8 +2791,8 @@ WebSharedWorker* RenderView::createSharedWorker(
 
 WebMediaPlayer* RenderView::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
-  scoped_ptr<media::MediaFilterCollection> collection(
-      new media::MediaFilterCollection());
+  scoped_ptr<media::FilterCollection> collection(
+      new media::FilterCollection());
 
   // Add in any custom filter factories first.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();

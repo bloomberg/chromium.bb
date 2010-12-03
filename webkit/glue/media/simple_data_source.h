@@ -34,10 +34,10 @@ class SimpleDataSource : public WebDataSource,
   SimpleDataSource(MessageLoop* render_loop, WebKit::WebFrame* frame);
   virtual ~SimpleDataSource();
 
-  // MediaFilter implementation.
+  // media::Filter implementation.
   virtual void Stop(media::FilterCallback* callback);
 
-  // DataSource implementation.
+  // media::DataSource implementation.
   virtual void Initialize(const std::string& url,
                           media::FilterCallback* callback);
   virtual const media::MediaFormat& media_format();

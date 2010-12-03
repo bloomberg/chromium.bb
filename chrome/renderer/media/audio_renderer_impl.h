@@ -70,7 +70,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   void OnVolume(double volume);
 
   // Methods called on pipeline thread ----------------------------------------
-  // media::MediaFilter implementation.
+  // media::Filter implementation.
   virtual void SetPlaybackRate(float rate);
   virtual void Pause(media::FilterCallback* callback);
   virtual void Seek(base::TimeDelta time, media::FilterCallback* callback);

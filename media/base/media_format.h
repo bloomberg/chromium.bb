@@ -26,10 +26,10 @@ extern const char kMajorTypeAudio[];
 extern const char kMajorTypeVideo[];
 }  // namespace mime_type
 
-// MediaFormat is used to describe the output of a MediaFilterInterface to
-// determine whether a downstream filter can accept the output from an upstream
-// filter.  In general, every MediaFormat contains a MIME type describing
-// its output as well as additional key-values describing additional details.
+// MediaFormat is used to describe the output of a Filter to determine whether
+// a downstream filter can accept the output from an upstream filter.
+// In general, every MediaFormat contains a MIME type describing its output as
+// well as additional key-values describing additional details.
 //
 // For example, an audio decoder could output audio/x-uncompressed and include
 // additional key-values such as the number of channels and the sample rate.

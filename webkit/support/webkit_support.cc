@@ -24,6 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/weak_ptr.h"
 #include "grit/webkit_chromium_resources.h"
+#include "media/base/filter_collection.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -266,8 +267,8 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
 
 WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
                                           WebMediaPlayerClient* client) {
-  scoped_ptr<media::MediaFilterCollection> collection(
-      new media::MediaFilterCollection());
+  scoped_ptr<media::FilterCollection> collection(
+      new media::FilterCollection());
 
   // TODO(annacc): do we still need appcache_host?  http://crbug.com/65135
   // appcache::WebApplicationCacheHostImpl* appcache_host =
