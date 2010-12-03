@@ -1651,8 +1651,10 @@ void ExtensionsService::DisableIfPrivilegeIncrease(const Extension* extension) {
   }
 
   if (is_extension_upgrade) {
-    // CrxInstaller should have guaranteed that we aren't downgrading.
-    CHECK(extension->version()->CompareTo(*(old->version())) >= 0);
+    // Other than for unpacked extensions, CrxInstaller should have guaranteed
+    // that we aren't downgrading.
+    if (extension->location() != Extension::LOAD)
+      CHECK(extension->version()->CompareTo(*(old->version())) >= 0);
 
     // Extensions get upgraded if the privileges are allowed to increase or
     // the privileges haven't increased.

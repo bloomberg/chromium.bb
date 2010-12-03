@@ -1880,6 +1880,51 @@ TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesLocation) {
   EXPECT_EQ(good2->location(), Extension::EXTERNAL_PREF);
 }
 
+// Makes sure that LOAD extension types can downgrade.
+TEST_F(ExtensionsServiceTest, LoadExtensionsCanDowngrade) {
+  InitializeEmptyExtensionsService();
+
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  // We'll write the extension manifest dynamically to a temporary path
+  // to make it easier to change the version number.
+  FilePath extension_path = temp.path();
+  FilePath manifest_path = extension_path.Append(Extension::kManifestFilename);
+  ASSERT_FALSE(file_util::PathExists(manifest_path));
+
+  // Start with version 2.0.
+  DictionaryValue manifest;
+  manifest.SetString("version", "2.0");
+  manifest.SetString("name", "LOAD Downgrade Test");
+
+  JSONFileValueSerializer serializer(manifest_path);
+  ASSERT_TRUE(serializer.Serialize(manifest));
+
+  service_->LoadExtension(extension_path);
+  loop_.RunAllPending();
+
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, loaded_.size());
+  EXPECT_EQ(Extension::LOAD, loaded_[0]->location());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ("2.0", loaded_[0]->VersionString());
+
+  // Now set the version number to 1.0, reload the extensions and verify that
+  // the downgrade was accepted.
+  manifest.SetString("version", "1.0");
+  ASSERT_TRUE(serializer.Serialize(manifest));
+
+  service_->LoadExtension(extension_path);
+  loop_.RunAllPending();
+
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, loaded_.size());
+  EXPECT_EQ(Extension::LOAD, loaded_[0]->location());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ("1.0", loaded_[0]->VersionString());
+}
+
 // Test adding a pending extension.
 TEST_F(ExtensionsServiceTest, AddPendingExtension) {
   InitializeEmptyExtensionsService();
