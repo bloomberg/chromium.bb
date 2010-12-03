@@ -71,14 +71,7 @@ class WifiConfigView : public views::View,
   // Returns true if the textfields are non-empty and we can login.
   bool can_login() const { return can_login_; }
 
-  // Focus the first field in the UI.
-  void FocusFirstField();
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, NoChangeSaveTest);
-  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
-  FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangePasswordSaveTest);
-
   class SecurityComboboxModel : public ComboboxModel {
    public:
     SecurityComboboxModel() {}
@@ -119,7 +112,6 @@ class WifiConfigView : public views::View,
   views::Combobox* security_combobox_;
   views::Textfield* passphrase_textfield_;
   views::ImageButton* passphrase_visible_button_;
-  views::Checkbox* autoconnect_checkbox_;
   views::Label* error_label_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiConfigView);

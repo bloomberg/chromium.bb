@@ -193,13 +193,9 @@ class NetworkMenu : public views::ViewMenuDelegate,
 
   // Show a NetworkConfigView modal dialog instance.
   // TODO(stevenjb): deprecate this once all of the UI is embedded in the menu.
-  void ShowNetworkConfigView(NetworkConfigView* view, bool focus_login) const;
+  void ShowNetworkConfigView(NetworkConfigView* view) const;
 
-  // Wrappers for the ShowNetworkConfigView / ShowTabbedNetworkSettings.
-  void ShowWifi(const WifiNetwork* wifi, bool focus_login) const;
-  void ShowCellular(const CellularNetwork* cellular, bool focus_login) const;
   void ActivateCellular(const CellularNetwork* cellular) const;
-  void ShowEthernet(const EthernetNetwork* ethernet) const;
   void ShowOther() const;
 
   // Set to true if we are currently refreshing the menu.

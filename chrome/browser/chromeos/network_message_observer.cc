@@ -132,7 +132,7 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
       if (wifi->error() == ERROR_BAD_PASSPHRASE ||
           wifi->error() == ERROR_BAD_WEPKEY) {
         // The NetworkConfigView will show the appropriate error message.
-        view = new NetworkConfigView(wifi, true);
+        view = new NetworkConfigView(wifi);
         // There should only be one wifi network that failed to connect.
         // If for some reason, we have more than one failure,
         // we only display the first one. So we break here.

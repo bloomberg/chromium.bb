@@ -774,14 +774,12 @@ void InternetOptionsHandler::HandleWifiButtonClick(
     cros->ForgetWifiNetwork(service_path);
   } else if (!use_settings_ui_ && service_path == kOtherNetworksFakePath) {
     // Other wifi networks.
-    chromeos::NetworkConfigView* view =
-        new chromeos::NetworkConfigView();
-    CreateModalPopup(view);
-    view->SetLoginTextfieldFocus();
+    CreateModalPopup(new chromeos::NetworkConfigView());
   } else if ((network = cros->FindWifiNetworkByPath(service_path))) {
     if (command == "connect") {
       // Connect to wifi here. Open password page if appropriate.
-      if (network->encrypted() && !network->auto_connect()) {
+      if (network->encrypted() && !network->auto_connect() &&
+          !network->IsCertificateLoaded()) {
         if (use_settings_ui_) {
           if (network->encryption() == chromeos::SECURITY_8021X) {
             PopulateDictionaryDetails(network, cros);
@@ -792,10 +790,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
                 L"options.InternetOptions.showPasswordEntry", dictionary);
           }
         } else {
-          chromeos::NetworkConfigView* view =
-              new chromeos::NetworkConfigView(network, true);
-          CreateModalPopup(view);
-          view->SetLoginTextfieldFocus();
+          CreateModalPopup(new chromeos::NetworkConfigView(network));
         }
       } else {
         cros->ConnectToWifiNetwork(

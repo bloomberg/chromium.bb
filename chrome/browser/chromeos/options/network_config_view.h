@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_NETWORK_CONFIG_VIEW_H_
 #pragma once
 
-#include <string>
-
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/window/dialog_delegate.h"
@@ -20,14 +18,11 @@ class Window;
 
 namespace chromeos {
 
-class IPConfigView;
-class CellularConfigView;
 class WifiConfigView;
 
 // A dialog box for showing a password textfield.
 class NetworkConfigView : public views::View,
-                          public views::DialogDelegate,
-                          views::TabbedPane::Listener {
+                          public views::DialogDelegate {
  public:
   class Delegate {
    public:
@@ -41,15 +36,11 @@ class NetworkConfigView : public views::View,
      virtual ~Delegate() {}
   };
 
-  // Configure dialog for ethernet.
-  explicit NetworkConfigView(const EthernetNetwork* ethernet);
-  // Configure dialog for wifi. If |login_only|, then only show login tab.
-  explicit NetworkConfigView(const WifiNetwork* wifi, bool login_only);
-  // Configure dialog for cellular.
-  explicit NetworkConfigView(const CellularNetwork* cellular);
+  // Login dialog for wifi.
+  explicit NetworkConfigView(const WifiNetwork* wifi);
   // Login dialog for hidden networks.
   explicit NetworkConfigView();
-  virtual ~NetworkConfigView();
+  virtual ~NetworkConfigView() {}
 
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;
@@ -68,12 +59,6 @@ class NetworkConfigView : public views::View,
 
   // views::View overrides.
   virtual std::wstring GetWindowTitle() const;
-
-  // views::TabbedPane::Listener overrides.
-  virtual void TabSelectedAt(int index);
-
-  // Sets the focus on the login tab's first textfield.
-  void SetLoginTextfieldFocus();
 
   // Getter/setter for browser mode.
   void set_browser_mode(bool value) {
@@ -96,33 +81,14 @@ class NetworkConfigView : public views::View,
                                     views::View* child);
 
  private:
-  enum NetworkConfigFlags {
-    FLAG_ETHERNET      = 1 << 0,
-    FLAG_WIFI          = 1 << 1,
-    FLAG_CELLULAR      = 1 << 2,
-    FLAG_SHOW_IPCONFIG = 1 << 3,
-    FLAG_LOGIN_ONLY    = 1 << 4,
-    FLAG_OTHER_NETWORK = 1 << 5,
-  };
-
-  // Initializes UI.
-  void Init();
-
   // True when opening in browser, otherwise in OOBE/login mode.
   bool browser_mode_;
 
-  views::TabbedPane* tabs_;
+  std::wstring title_;
 
-  // NetworkConfigFlags to specify which UIs to show.
-  int flags_;
-
-  scoped_ptr<EthernetNetwork> ethernet_;
-  scoped_ptr<WifiNetwork> wifi_;
-  scoped_ptr<CellularNetwork> cellular_;
-
-  CellularConfigView* cellularconfig_view_;
+  // WifiConfig is the only child of this class.
+  // It will get deleted when NetworkConfigView gets cleaned up.
   WifiConfigView* wificonfig_view_;
-  IPConfigView* ipconfig_view_;
 
   Delegate* delegate_;
 

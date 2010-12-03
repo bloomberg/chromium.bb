@@ -69,7 +69,6 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent,
       security_combobox_(NULL),
       passphrase_textfield_(NULL),
       passphrase_visible_button_(NULL),
-      autoconnect_checkbox_(NULL),
       error_label_(NULL) {
   Init();
 }
@@ -85,7 +84,6 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
       security_combobox_(NULL),
       passphrase_textfield_(NULL),
       passphrase_visible_button_(NULL),
-      autoconnect_checkbox_(NULL),
       error_label_(NULL) {
   Init();
 }
@@ -234,8 +232,7 @@ bool WifiConfigView::Login() {
       sec = SECURITY_RSN;
     connected =  cros->ConnectToWifiNetwork(
         sec, GetSSID(), GetPassphrase(),
-        identity_string, certificate_path_,
-        autoconnect_checkbox_ ? autoconnect_checkbox_->checked() : true);
+        identity_string, certificate_path_, true);
   } else {
     Save();
     connected = cros->ConnectToWifiNetwork(
@@ -254,17 +251,9 @@ bool WifiConfigView::Login() {
 }
 
 bool WifiConfigView::Save() {
-  // Save password and auto-connect here.
+  // Save password here.
   if (!other_network_) {
     bool changed = false;
-
-    if (autoconnect_checkbox_) {
-      bool auto_connect = autoconnect_checkbox_->checked();
-      if (auto_connect != wifi_->auto_connect()) {
-        wifi_->set_auto_connect(auto_connect);
-        changed = true;
-      }
-    }
 
     if (passphrase_textfield_) {
       std::string passphrase = UTF16ToUTF8(passphrase_textfield_->text());
@@ -303,15 +292,6 @@ const std::string WifiConfigView::GetPassphrase() const {
   if (passphrase_textfield_ != NULL)
     result = UTF16ToUTF8(passphrase_textfield_->text());
   return result;
-}
-
-void WifiConfigView::FocusFirstField() {
-  if (ssid_textfield_)
-    ssid_textfield_->RequestFocus();
-  else if (identity_textfield_)
-    identity_textfield_->RequestFocus();
-  else if (passphrase_textfield_)
-    passphrase_textfield_->RequestFocus();
 }
 
 void WifiConfigView::Init() {
@@ -451,19 +431,6 @@ void WifiConfigView::Init() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   // Set or hide the error text.
   UpdateErrorLabel(false);
-
-  // Autoconnect checkbox
-  // Only show if this network is already remembered (a favorite).
-  if (wifi_.get() && wifi_->favorite()) {
-    autoconnect_checkbox_ = new views::Checkbox(l10n_util::GetString(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
-    // For other network, default to autoconnect.
-    bool autoconnect = other_network_ || wifi_->auto_connect();
-    autoconnect_checkbox_->SetChecked(autoconnect);
-    layout->StartRow(0, column_view_set_id);
-    layout->AddView(autoconnect_checkbox_, 3, 1);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  }
 }
 
 }  // namespace chromeos

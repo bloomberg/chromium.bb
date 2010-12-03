@@ -213,9 +213,9 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       // Connect or reconnect.
       if (auto_connect >= 0)
         wifi->set_auto_connect(auto_connect ? true : false);
-      if (wifi->connecting() || wifi->connected()) {
+      if (wifi->connecting_or_connected()) {
         // Show the config settings for the active network.
-        ShowWifi(wifi, false);
+        ShowTabbedNetworkSettings(wifi);
         return true;
       }
       bool connected = false;
@@ -225,7 +225,7 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
               wifi, std::string(), std::string(), wifi->cert_path());
         } else if (wifi->encryption() == SECURITY_8021X) {
           // Always show the wifi settings/dialog to load/select a certificate.
-          ShowWifi(wifi, true);
+          ShowNetworkConfigView(new NetworkConfigView(wifi));
           return true;
         } else {
           // If a passphrase is provided use it, otherwise use the saved one.
@@ -244,7 +244,7 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       if (!connected) {
         if (!MenuUI::IsEnabled()) {
           // Show the wifi dialog on a failed attempt for non DOM UI menus.
-          ShowWifi(wifi, true);
+          ShowNetworkConfigView(new NetworkConfigView(wifi));
           return true;
         } else {
           // If the connection attempt failed immediately (e.g. short password)
@@ -265,10 +265,10 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
           cellular->needs_new_plan()) {
         ActivateCellular(cellular);
         return true;
-      } else if (cellular->connecting() || cellular->connected()) {
+      } else if (cellular->connecting_or_connected()) {
         // Cellular network is connecting or connected,
         // so we show the config settings for the cellular network.
-        ShowCellular(cellular, false);
+        ShowTabbedNetworkSettings(cellular);
         return true;
       }
       // Clicked on a disconnected cellular network, so connect to it.
@@ -351,7 +351,7 @@ void NetworkMenu::ActivatedAt(int index) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_ETHERNET) {
     if (cros->ethernet_connected()) {
-      ShowEthernet(cros->ethernet_network());
+      ShowTabbedNetworkSettings(cros->ethernet_network());
     }
   } else if (flags & FLAG_WIFI) {
     ConnectToNetworkAt(index, std::string(), std::string(), -1);
@@ -750,36 +750,12 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
 // and the embedded menu UI (and fully deprecated NetworkConfigView).
 // Meanwhile, if MenuUI::IsEnabled() is true, always show the settings UI,
 // otherwise show NetworkConfigView only to get passwords when not connected.
-void NetworkMenu::ShowNetworkConfigView(NetworkConfigView* view,
-                                        bool focus_login) const {
+void NetworkMenu::ShowNetworkConfigView(NetworkConfigView* view) const {
   view->set_browser_mode(IsBrowserMode());
   views::Window* window = browser::CreateViewsWindow(
       GetNativeWindow(), gfx::Rect(), view);
   window->SetIsAlwaysOnTop(true);
   window->Show();
-  if (focus_login)
-    view->SetLoginTextfieldFocus();
-}
-
-void NetworkMenu::ShowWifi(const WifiNetwork* wifi, bool focus_login) const {
-  DCHECK(wifi);
-  if (use_settings_ui_ &&
-      (MenuUI::IsEnabled() || wifi->connected() || wifi->connecting())) {
-    ShowTabbedNetworkSettings(wifi);
-  } else {
-    ShowNetworkConfigView(new NetworkConfigView(wifi, true), focus_login);
-  }
-}
-
-void NetworkMenu::ShowCellular(const CellularNetwork* cellular,
-                               bool focus_login) const {
-  DCHECK(cellular);
-  // We should always use settings UI for cellular network because native UI
-  // is not complete and only settings UI version has full implementation.
-  if (use_settings_ui_)
-    ShowTabbedNetworkSettings(cellular);
-  else
-    ShowNetworkConfigView(new NetworkConfigView(cellular), focus_login);
 }
 
 void NetworkMenu::ActivateCellular(const CellularNetwork* cellular) const {
@@ -788,17 +764,6 @@ void NetworkMenu::ActivateCellular(const CellularNetwork* cellular) const {
   if (!browser)
     return;
   browser->OpenMobilePlanTabAndActivate();
-}
-
-void NetworkMenu::ShowEthernet(const EthernetNetwork* ethernet) const {
-  DCHECK(ethernet);
-  if (use_settings_ui_ &&
-      (MenuUI::IsEnabled() || ethernet->connected() ||
-          ethernet->connecting())) {
-    ShowTabbedNetworkSettings(ethernet);
-  } else {
-    ShowNetworkConfigView(new NetworkConfigView(ethernet), false);
-  }
 }
 
 void NetworkMenu::ShowOther() const {
@@ -811,8 +776,7 @@ void NetworkMenu::ShowOther() const {
       browser->ShowOptionsTab(page);
     }
   } else {
-    const bool kFocusLogin = true;
-    ShowNetworkConfigView(new NetworkConfigView(), kFocusLogin);
+    ShowNetworkConfigView(new NetworkConfigView());
   }
 }
 
