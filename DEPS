@@ -11,7 +11,7 @@ vars = {
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "856",
   "gtest_rev": "267",
-  "tools_rev": "3812",
+  "tools_rev": "3851",
   "python_26_rev": "53573",
   "wix_rev": "153",
   "lcov_rev": "54822",
