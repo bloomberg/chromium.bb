@@ -118,3 +118,7 @@ fun_r:*BrowserThread*CurrentlyOn*
 
 # zlib is smarter than we are, see http://www.zlib.net/zlib_faq.html#faq36
 fun_r:inflate
+
+# X11 reads the _XErrorFunction callback in a racey way, see
+# http://crbug.com/65278
+fun:XSetErrorHandler
