@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
@@ -13,9 +14,17 @@
 const char URLRequestFailedDnsJob::kTestUrl[] =
     "http://url.handled.by.fake.dns/";
 
+URLRequestFailedDnsJob::URLRequestFailedDnsJob(net::URLRequest* request)
+    : URLRequestJob(request),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+
+URLRequestFailedDnsJob::~URLRequestFailedDnsJob() {}
+
 void URLRequestFailedDnsJob::Start() {
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestFailedDnsJob::StartAsync));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &URLRequestFailedDnsJob::StartAsync));
 }
 
 /* static */

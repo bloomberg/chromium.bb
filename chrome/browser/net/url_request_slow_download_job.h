@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/task.h"
 #include "net/url_request/url_request_job.h"
 
 class URLRequestSlowDownloadJob : public URLRequestJob {
@@ -56,6 +57,8 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   int first_download_size_remaining_;
   bool should_finish_download_;
   bool should_send_second_chunk_;
+
+  ScopedRunnableMethodFactory<URLRequestSlowDownloadJob> method_factory_;
 };
 
 #endif  // CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_

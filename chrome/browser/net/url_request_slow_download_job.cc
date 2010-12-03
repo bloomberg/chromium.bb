@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/url_request_slow_download_job.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
@@ -26,8 +27,10 @@ std::vector<URLRequestSlowDownloadJob*>
     URLRequestSlowDownloadJob::kPendingRequests;
 
 void URLRequestSlowDownloadJob::Start() {
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &URLRequestSlowDownloadJob::StartAsync));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &URLRequestSlowDownloadJob::StartAsync));
 }
 
 /* static */
@@ -42,7 +45,8 @@ void URLRequestSlowDownloadJob::AddUrlHandler() {
 }
 
 /*static */
-URLRequestJob* URLRequestSlowDownloadJob::Factory(net::URLRequest* request,
+URLRequestJob* URLRequestSlowDownloadJob::Factory(
+    net::URLRequest* request,
     const std::string& scheme) {
   URLRequestSlowDownloadJob* job = new URLRequestSlowDownloadJob(request);
   if (request->url().spec() != kFinishDownloadUrl)
@@ -61,11 +65,11 @@ void URLRequestSlowDownloadJob::FinishPendingRequests() {
 }
 
 URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
-  : URLRequestJob(request),
-    first_download_size_remaining_(kFirstDownloadSize),
-    should_finish_download_(false),
-    should_send_second_chunk_(false) {
-}
+    : URLRequestJob(request),
+      first_download_size_remaining_(kFirstDownloadSize),
+      should_finish_download_(false),
+      should_send_second_chunk_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
 void URLRequestSlowDownloadJob::StartAsync() {
   if (LowerCaseEqualsASCII(kFinishDownloadUrl, request_->url().spec().c_str()))

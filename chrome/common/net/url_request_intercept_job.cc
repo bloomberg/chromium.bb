@@ -8,6 +8,7 @@
 
 #include "chrome/common/net/url_request_intercept_job.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_plugin_lib.h"
@@ -31,7 +32,8 @@ URLRequestInterceptJob::URLRequestInterceptJob(net::URLRequest* request,
     : URLRequestJob(request),
       cprequest_(cprequest),
       plugin_(plugin),
-      read_buffer_(NULL) {
+      read_buffer_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   cprequest_->data = this;  // see FromCPRequest().
 
   registrar_.Add(this, NotificationType::CHROME_PLUGIN_UNLOADED,
@@ -53,8 +55,10 @@ void URLRequestInterceptJob::DetachPlugin() {
 void URLRequestInterceptJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestInterceptJob::StartAsync));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &URLRequestInterceptJob::StartAsync));
 }
 
 void URLRequestInterceptJob::Kill() {
@@ -64,6 +68,7 @@ void URLRequestInterceptJob::Kill() {
     DetachPlugin();
   }
   URLRequestJob::Kill();
+  method_factory_.RevokeAll();
 }
 
 bool URLRequestInterceptJob::ReadRawData(net::IOBuffer* dest, int dest_size,

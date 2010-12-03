@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "net/url_request/url_request_job.h"
 #include "chrome/common/chrome_plugin_api.h"
 #include "chrome/common/chrome_plugin_util.h"
@@ -64,6 +65,7 @@ class URLRequestInterceptJob : public net::URLRequestJob,
   ChromePluginLib* plugin_;
   net::IOBuffer* read_buffer_;
   int read_buffer_size_;
+  ScopedRunnableMethodFactory<URLRequestInterceptJob> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestInterceptJob);
 };

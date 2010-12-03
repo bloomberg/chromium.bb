@@ -4,7 +4,9 @@
 
 #include "chrome/browser/net/view_http_cache_job_factory.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/task.h"
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_errors.h"
@@ -19,12 +21,12 @@ namespace {
 class ViewHttpCacheJob : public net::URLRequestJob {
  public:
   explicit ViewHttpCacheJob(net::URLRequest* request)
-      : URLRequestJob(request), data_offset_(0), cancel_(false), busy_(false),
+      : URLRequestJob(request), data_offset_(0),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            callback_(this, &ViewHttpCacheJob::OnIOComplete)) {}
+            callback_(this, &ViewHttpCacheJob::OnIOComplete)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
   virtual void Start();
-  virtual void Kill();
   virtual bool GetMimeType(std::string* mime_type) const;
   virtual bool GetCharset(std::string* charset);
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
@@ -37,18 +39,15 @@ class ViewHttpCacheJob : public net::URLRequestJob {
 
   std::string data_;
   int data_offset_;
-  bool cancel_;
-  bool busy_;
   net::ViewCacheHelper cache_helper_;
   net::CompletionCallbackImpl<ViewHttpCacheJob> callback_;
+  ScopedRunnableMethodFactory<ViewHttpCacheJob> method_factory_;
 };
 
 void ViewHttpCacheJob::Start() {
-  if (!request_ || cancel_)
+  if (!request_ || is_done())
     return;
 
-  busy_ = true;
-  AddRef();  // Released on OnIOComplete().
   std::string cache_key =
       request_->url().spec().substr(strlen(chrome::kNetworkViewCacheURL));
 
@@ -65,17 +64,11 @@ void ViewHttpCacheJob::Start() {
   if (rv != net::ERR_IO_PENDING) {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ViewHttpCacheJob::OnIOComplete, rv));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &ViewHttpCacheJob::OnIOComplete, rv));
   }
-}
-
-void ViewHttpCacheJob::Kill() {
-  // We don't want to delete this object while we are busy; we'll do it when it
-  // is safe.
-  cancel_ = true;
-  if (!busy_)
-    URLRequestJob::Kill();
 }
 
 bool ViewHttpCacheJob::GetMimeType(std::string* mime_type) const {
@@ -101,14 +94,7 @@ bool ViewHttpCacheJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 }
 
 void ViewHttpCacheJob::OnIOComplete(int result) {
-  // We may be holding the last reference to this job.
-  scoped_refptr<ViewHttpCacheJob> self(this);
   DCHECK_EQ(net::OK, result);
-  busy_ = false;
-  Release();  // Acquired on Start().
-
-  if (cancel_)
-    return URLRequestJob::Kill();
 
   // Notify that the headers are complete.
   NotifyHeadersComplete();
