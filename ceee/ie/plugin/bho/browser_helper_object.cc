@@ -131,15 +131,24 @@ void BrowserHelperObject::FinalRelease() {
   web_browser_.Release();
 }
 
-void BrowserHelperObject::ReportAddonLoadTime(const char* addon_name,
-                                              const CLSID& addon_id) {
-  int time = ie_util::GetAverageAddonLoadTimeMs(addon_id);
+void BrowserHelperObject::ReportAddonTimes(const char* name,
+                                           const CLSID& clsid) {
+  ReportSingleAddonTime(name, clsid, "LoadTime");
+  ReportSingleAddonTime(name, clsid, "NavTime");
+}
+
+void BrowserHelperObject::ReportSingleAddonTime(const char* name,
+                                                const CLSID& clsid,
+                                                const char* type) {
+  int time = ie_util::GetAverageAddonTimeMs(clsid, ASCIIToWide(type));
   if (time == ie_util::kInvalidTime)
     return;
   DCHECK(ie_util::GetIeVersion() >= ie_util::IEVERSION_IE8);
 
-  std::string counter_name = "ceee/AddonLoadTime.";
-  counter_name += addon_name;
+  std::string counter_name = "ceee/Addon";
+  counter_name += type;
+  counter_name += ".";
+  counter_name += name;
   counter_name += ".IE";
   switch (ie_util::GetIeVersion()) {
   case ie_util::IEVERSION_IE8:
@@ -152,6 +161,7 @@ void BrowserHelperObject::ReportAddonLoadTime(const char* addon_name,
     counter_name += 'x';
     break;
   }
+  VLOG(1) << counter_name << "=" << time;
   broker_rpc().SendUmaHistogramTimes(counter_name.c_str(), time);
 }
 
@@ -172,9 +182,9 @@ STDMETHODIMP BrowserHelperObject::SetSite(IUnknown* site) {
 
     // TODO(vitalybuka@chromium.org): switch to sampling when we have enough
     // users.
-    ReportAddonLoadTime("BHO", CLSID_BrowserHelperObject);
-    ReportAddonLoadTime("ChromeFrameBHO", CLSID_ChromeFrameBHO);
-    ReportAddonLoadTime("Toolband", CLSID_ToolBand);
+    ReportAddonTimes("BHO", CLSID_BrowserHelperObject);
+    ReportAddonTimes("ChromeFrameBHO", CLSID_ChromeFrameBHO);
+    ReportAddonTimes("Toolband", CLSID_ToolBand);
 
     // We're being torn down.
     TearDown();

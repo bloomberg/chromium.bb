@@ -47,10 +47,12 @@ bool GetIEIsInPrivateBrowsing();
 HRESULT GetIEIsInProtectedMode(bool* is_protected_mode);
 
 const int kInvalidTime = -1;
-// Returns average add-on load time measured by IE. Returns kInvalidTime if time
-// cannot be calculated.
+// Returns time spent on a given activity for this addon as measured by IE.
+// Returns kInvalidTime if time cannot be calculated.
 // @param addon_id is class id which you can find in IE add-on manager.
-int GetAverageAddonLoadTimeMs(const CLSID& addon_id);
+// @param time_prefix specifies activity type.
+int GetAverageAddonTimeMs(const CLSID& addon_id,
+                          const std::wstring& time_prefix);
 
 }  // namespace ie_util
 

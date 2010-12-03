@@ -406,7 +406,10 @@ class ATL_NO_VTABLE BrowserHelperObject
                                    IWebBrowser2* root_browser);
 
   // Send metrics histograms about the average load time of IE addons.
-  void ReportAddonLoadTime(const char* addon_name, const CLSID& addon_id);
+  void ReportAddonTimes(const char* name, const CLSID& clsid);
+  void ReportSingleAddonTime(const char* name,
+                             const CLSID& clsid,
+                             const char* type);
 
   // This class is used as a replacement for the BrokerRpcClient for the
   // event funnels contained inside a BHO. When sending an event, this will

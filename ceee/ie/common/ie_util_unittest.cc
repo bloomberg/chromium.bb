@@ -44,6 +44,10 @@ class IeUtilTest : public testing::Test {
     registry_override_.reset();
   }
 
+  int GetAverageAddonLoadTimeMs(const CLSID& addon_id) const {
+    return GetAverageAddonTimeMs(addon_id, L"LoadTime");
+  }
+
   scoped_ptr<testing::ScopedRegistryOverride> registry_override_;
 };
 

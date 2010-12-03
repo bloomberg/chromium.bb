@@ -141,7 +141,8 @@ HRESULT GetIEIsInProtectedMode(bool* is_protected_mode) {
   return hr;
 }
 
-int GetAverageAddonLoadTimeMs(const CLSID& addon_id) {
+int GetAverageAddonTimeMs(const CLSID& addon_id,
+                          const std::wstring& time_prefix) {
   if (GetIeVersion() < IEVERSION_IE8)
     return kInvalidTime;
 
@@ -164,19 +165,21 @@ int GetAverageAddonLoadTimeMs(const CLSID& addon_id) {
 
   DWORD load_time = 0;
   if (GetIeVersion() < IEVERSION_IE9) {
-    if (!stats_key.ReadValueDW(L"LoadTime", &load_time)) {
-      LOG(ERROR) << "Can't read LoadTime.";
+    if (!stats_key.ReadValueDW(time_prefix.c_str(), &load_time)) {
+      VLOG(1) << "Can't read time: " << time_prefix;
       return kInvalidTime;
     }
   } else {
+    std::wstring value_name(time_prefix);
+    value_name += L"Array";
     DWORD count = 0;
     int32 values[100];
     DWORD data_size = sizeof(values);
     DWORD data_type = REG_NONE;
 
-    if (!stats_key.ReadValue(L"LoadTimeArray", &values, &data_size,
+    if (!stats_key.ReadValue(value_name.c_str(), &values, &data_size,
                              &data_type)) {
-      LOG(ERROR) << "Can't read LoadTime.";
+      VLOG(1) << "Can't read time: " << value_name;
       return kInvalidTime;
     }
 
@@ -202,19 +205,19 @@ int GetAverageAddonLoadTimeMs(const CLSID& addon_id) {
 
     if (count < 2) {
       // IE9 shows performance warning only after second run.
-      LOG(INFO) << "Not enough data.";
+      VLOG(1) << "Not enough data. " << addon_id_str;
       return kInvalidTime;
     }
     load_time /= count;
   }
+
+  VLOG(1) << addon_id_str << "." << time_prefix << " = " << load_time << "ms";
 
   if (load_time < 0) {
     LOG(ERROR) << "Invalid time:" << load_time;
     return kInvalidTime;
   }
 
-  LOG(INFO) << "Average add-on " << addon_id_str << "load time: " <<
-      load_time << "ms";
   return load_time;
 }
 
