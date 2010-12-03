@@ -284,7 +284,13 @@ void LowLevelShutdown() {
 #if defined(OS_LINUX)
 static void AdjustLinuxOOMScore(const std::string& process_type) {
   const int kMiscScore = 7;
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, we want plugins to die after the renderers.  If this
+  // works well for ChromeOS, we may do it for Linux as well.
+  const int kPluginScore = 4;
+#else
   const int kPluginScore = 10;
+#endif
   int score = -1;
 
   if (process_type == switches::kPluginProcess ||
