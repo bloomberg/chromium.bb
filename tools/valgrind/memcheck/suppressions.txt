@@ -3338,8 +3338,9 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
+   ...
    fun:_ZN10URLFetcher4CoreC1EPS_RK4GURLNS_11RequestTypeEPNS_8DelegateE
-   fun:_ZN10URLFetcherC1ERK4GURLNS_11RequestTypeEPNS_8DelegateE
+   fun:_ZN10URLFetcherC*ERK4GURLNS_11RequestTypeEPNS_8DelegateE
 }
 {
    bug_64887
