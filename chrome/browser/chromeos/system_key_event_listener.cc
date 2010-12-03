@@ -118,27 +118,27 @@ void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
            True, GrabModeAsync, GrabModeAsync);
 }
 
-// TODO(davej): Move the ShowVolumeBubble() calls in to AudioHandler so that
-// this function returns faster without blocking on GetVolumePercent(), and
-// still guarantees that the volume displayed will be that after the adjustment.
+// TODO(davej): Move the ShowBubble() calls in to AudioHandler so that this
+// function returns faster without blocking on GetVolumePercent(), and still
+// guarantees that the volume displayed will be that after the adjustment.
 
-// TODO(davej): The IsMute() check can also be made non-blocking by changing
-// to an AdjustVolumeByPercentOrUnmute() function which can do the steps off
-// of this thread when ShowVolumeBubble() is moved in to AudioHandler.
+// TODO(davej): The IsMute() check can also be made non-blocking by changing to
+// an AdjustVolumeByPercentOrUnmute() function which can do the steps off of
+// this thread when ShowBubble() is moved in to AudioHandler.
 
 void SystemKeyEventListener::OnVolumeMute() {
   // Always muting (and not toggling) as per final decision on
   // http://crosbug.com/3751
   audio_handler_->SetMute(true);
-  VolumeBubble::instance()->ShowVolumeBubble(0);
+  VolumeBubble::instance()->ShowBubble(0);
 }
 
 void SystemKeyEventListener::OnVolumeDown() {
   if (audio_handler_->IsMute()) {
-    VolumeBubble::instance()->ShowVolumeBubble(0);
+    VolumeBubble::instance()->ShowBubble(0);
   } else {
     audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
-    VolumeBubble::instance()->ShowVolumeBubble(
+    VolumeBubble::instance()->ShowBubble(
         audio_handler_->GetVolumePercent());
   }
 }
@@ -148,7 +148,7 @@ void SystemKeyEventListener::OnVolumeUp() {
     audio_handler_->SetMute(false);
   else
     audio_handler_->AdjustVolumeByPercent(kStepPercentage);
-  VolumeBubble::instance()->ShowVolumeBubble(
+  VolumeBubble::instance()->ShowBubble(
       audio_handler_->GetVolumePercent());
 }
 
