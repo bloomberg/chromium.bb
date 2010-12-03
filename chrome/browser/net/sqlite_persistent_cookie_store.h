@@ -11,14 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "app/sql/meta_table.h"
-#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "net/base/cookie_monster.h"
-
-namespace sql {
-class Connection;
-}
 
 class FilePath;
 
@@ -40,13 +34,7 @@ class SQLitePersistentCookieStore
  private:
   class Backend;
 
-  // Database upgrade statements.
-  bool EnsureDatabaseVersion(sql::Connection* db);
-
-  FilePath path_;
   scoped_refptr<Backend> backend_;
-
-  sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLitePersistentCookieStore);
 };

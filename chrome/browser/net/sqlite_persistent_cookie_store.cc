@@ -6,9 +6,11 @@
 
 #include <list>
 
+#include "app/sql/meta_table.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -26,13 +28,14 @@ using base::Time;
 class SQLitePersistentCookieStore::Backend
     : public base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend> {
  public:
-  // The passed database pointer must be already-initialized. This object will
-  // take ownership.
-  explicit Backend(sql::Connection* db)
-      : db_(db),
+  explicit Backend(const FilePath& path)
+      : path_(path),
+        db_(NULL),
         num_pending_(0) {
-    DCHECK(db_) << "Database must exist.";
   }
+
+  // Creates or load the SQLite database.
+  bool Load(std::vector<net::CookieMonster::CanonicalCookie*>* cookies);
 
   // Batch a cookie addition.
   void AddCookie(const net::CookieMonster::CanonicalCookie& cc);
@@ -52,9 +55,12 @@ class SQLitePersistentCookieStore::Backend
 
   // You should call Close() before destructing this object.
   ~Backend() {
-    DCHECK(!db_) << "Close should have already been called.";
+    DCHECK(!db_.get()) << "Close should have already been called.";
     DCHECK(num_pending_ == 0 && pending_.empty());
   }
+
+  // Database upgrade statements.
+  bool EnsureDatabaseVersion();
 
   class PendingOperation {
    public:
@@ -85,7 +91,9 @@ class SQLitePersistentCookieStore::Backend
   // Close() executed on the background thread.
   void InternalBackgroundClose();
 
-  sql::Connection* db_;
+  FilePath path_;
+  scoped_ptr<sql::Connection> db_;
+  sql::MetaTable meta_table_;
 
   typedef std::list<PendingOperation*> PendingOperationsList;
   PendingOperationsList pending_;
@@ -94,6 +102,171 @@ class SQLitePersistentCookieStore::Backend
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
+
+// Version number of the database. In version 4, we migrated the time epoch.
+// If you open the DB with an older version on Mac or Linux, the times will
+// look wonky, but the file will likely be usable. On Windows version 3 and 4
+// are the same.
+//
+// Version 3 updated the database to include the last access time, so we can
+// expire them in decreasing order of use when we've reached the maximum
+// number of cookies.
+static const int kCurrentVersionNumber = 4;
+static const int kCompatibleVersionNumber = 3;
+
+namespace {
+
+// Initializes the cookies table, returning true on success.
+bool InitTable(sql::Connection* db) {
+  if (!db->DoesTableExist("cookies")) {
+    if (!db->Execute("CREATE TABLE cookies ("
+                     "creation_utc INTEGER NOT NULL UNIQUE PRIMARY KEY,"
+                     "host_key TEXT NOT NULL,"
+                     "name TEXT NOT NULL,"
+                     "value TEXT NOT NULL,"
+                     "path TEXT NOT NULL,"
+                     // We only store persistent, so we know it expires
+                     "expires_utc INTEGER NOT NULL,"
+                     "secure INTEGER NOT NULL,"
+                     "httponly INTEGER NOT NULL,"
+                     "last_access_utc INTEGER NOT NULL)"))
+      return false;
+  }
+
+  // Try to create the index every time. Older versions did not have this index,
+  // so we want those people to get it. Ignore errors, since it may exist.
+  db->Execute("CREATE INDEX cookie_times ON cookies (creation_utc)");
+  return true;
+}
+
+}  // namespace
+
+bool SQLitePersistentCookieStore::Backend::Load(
+    std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
+  // This function should be called only once per instance.
+  DCHECK(!db_.get());
+
+  db_.reset(new sql::Connection);
+  if (!db_->Open(path_)) {
+    NOTREACHED() << "Unable to open cookie DB.";
+    db_.reset();
+    return false;
+  }
+
+  db_->set_error_delegate(GetErrorHandlerForCookieDb());
+
+  if (!EnsureDatabaseVersion() || !InitTable(db_.get())) {
+    NOTREACHED() << "Unable to open cookie DB.";
+    db_.reset();
+    return false;
+  }
+
+  db_->Preload();
+
+  // Slurp all the cookies into the out-vector.
+  sql::Statement smt(db_->GetUniqueStatement(
+      "SELECT creation_utc, host_key, name, value, path, expires_utc, secure, "
+      "httponly, last_access_utc FROM cookies"));
+  if (!smt) {
+    NOTREACHED() << "select statement prep failed";
+    db_.reset();
+    return false;
+  }
+
+  while (smt.Step()) {
+    scoped_ptr<net::CookieMonster::CanonicalCookie> cc(
+        new net::CookieMonster::CanonicalCookie(
+            smt.ColumnString(2),                            // name
+            smt.ColumnString(3),                            // value
+            smt.ColumnString(1),                            // domain
+            smt.ColumnString(4),                            // path
+            smt.ColumnInt(6) != 0,                          // secure
+            smt.ColumnInt(7) != 0,                          // httponly
+            Time::FromInternalValue(smt.ColumnInt64(0)),    // creation_utc
+            Time::FromInternalValue(smt.ColumnInt64(8)),    // last_access_utc
+            true,                                           // has_expires
+            Time::FromInternalValue(smt.ColumnInt64(5))));  // expires_utc
+    DLOG_IF(WARNING,
+            cc->CreationDate() > Time::Now()) << L"CreationDate too recent";
+    cookies->push_back(cc.release());
+  }
+
+  return true;
+}
+
+bool SQLitePersistentCookieStore::Backend::EnsureDatabaseVersion() {
+  // Version check.
+  if (!meta_table_.Init(
+      db_.get(), kCurrentVersionNumber, kCompatibleVersionNumber)) {
+    return false;
+  }
+
+  if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
+    LOG(WARNING) << "Cookie database is too new.";
+    return false;
+  }
+
+  int cur_version = meta_table_.GetVersionNumber();
+  if (cur_version == 2) {
+    sql::Transaction transaction(db_.get());
+    if (!transaction.Begin())
+      return false;
+    if (!db_->Execute("ALTER TABLE cookies ADD COLUMN last_access_utc "
+                     "INTEGER DEFAULT 0") ||
+        !db_->Execute("UPDATE cookies SET last_access_utc = creation_utc")) {
+      LOG(WARNING) << "Unable to update cookie database to version 3.";
+      return false;
+    }
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
+    meta_table_.SetCompatibleVersionNumber(
+        std::min(cur_version, kCompatibleVersionNumber));
+    transaction.Commit();
+  }
+
+  if (cur_version == 3) {
+    // The time epoch changed for Mac & Linux in this version to match Windows.
+    // This patch came after the main epoch change happened, so some
+    // developers have "good" times for cookies added by the more recent
+    // versions. So we have to be careful to only update times that are under
+    // the old system (which will appear to be from before 1970 in the new
+    // system). The magic number used below is 1970 in our time units.
+    sql::Transaction transaction(db_.get());
+    transaction.Begin();
+#if !defined(OS_WIN)
+    db_->Execute(
+        "UPDATE cookies "
+        "SET creation_utc = creation_utc + 11644473600000000 "
+        "WHERE rowid IN "
+        "(SELECT rowid FROM cookies WHERE "
+          "creation_utc > 0 AND creation_utc < 11644473600000000)");
+    db_->Execute(
+        "UPDATE cookies "
+        "SET expires_utc = expires_utc + 11644473600000000 "
+        "WHERE rowid IN "
+        "(SELECT rowid FROM cookies WHERE "
+          "expires_utc > 0 AND expires_utc < 11644473600000000)");
+    db_->Execute(
+        "UPDATE cookies "
+        "SET last_access_utc = last_access_utc + 11644473600000000 "
+        "WHERE rowid IN "
+        "(SELECT rowid FROM cookies WHERE "
+          "last_access_utc > 0 AND last_access_utc < 11644473600000000)");
+#endif
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
+    transaction.Commit();
+  }
+
+  // Put future migration cases here.
+
+  // When the version is too old, we just try to continue anyway, there should
+  // not be a released product that makes a database too old for us to handle.
+  LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
+      "Cookie database version " << cur_version << " is too old to handle.";
+
+  return true;
+}
 
 void SQLitePersistentCookieStore::Backend::AddCookie(
     const net::CookieMonster::CanonicalCookie& cc) {
@@ -152,7 +325,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
   }
 
   // Maybe an old timer fired or we are already Close()'ed.
-  if (!db_ || ops.empty())
+  if (!db_.get() || ops.empty())
     return;
 
   sql::Statement add_smt(db_->GetCachedStatement(SQL_FROM_HERE,
@@ -178,7 +351,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
     return;
   }
 
-  sql::Transaction transaction(db_);
+  sql::Transaction transaction(db_.get());
   if (!transaction.Begin()) {
     NOTREACHED();
     return;
@@ -246,12 +419,11 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   // Commit any pending operations
   Commit();
 
-  delete db_;
-  db_ = NULL;
+  db_.reset();
 }
 
 SQLitePersistentCookieStore::SQLitePersistentCookieStore(const FilePath& path)
-    : path_(path) {
+    : backend_(new Backend(path)) {
 }
 
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
@@ -263,163 +435,9 @@ SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
   }
 }
 
-// Version number of the database. In version 4, we migrated the time epoch.
-// If you open the DB with an older version on Mac or Linux, the times will
-// look wonky, but the file will likely be usable. On Windows version 3 and 4
-// are the same.
-//
-// Version 3 updated the database to include the last access time, so we can
-// expire them in decreasing order of use when we've reached the maximum
-// number of cookies.
-static const int kCurrentVersionNumber = 4;
-static const int kCompatibleVersionNumber = 3;
-
-namespace {
-
-// Initializes the cookies table, returning true on success.
-bool InitTable(sql::Connection* db) {
-  if (!db->DoesTableExist("cookies")) {
-    if (!db->Execute("CREATE TABLE cookies ("
-                     "creation_utc INTEGER NOT NULL UNIQUE PRIMARY KEY,"
-                     "host_key TEXT NOT NULL,"
-                     "name TEXT NOT NULL,"
-                     "value TEXT NOT NULL,"
-                     "path TEXT NOT NULL,"
-                     // We only store persistent, so we know it expires
-                     "expires_utc INTEGER NOT NULL,"
-                     "secure INTEGER NOT NULL,"
-                     "httponly INTEGER NOT NULL,"
-                     "last_access_utc INTEGER NOT NULL)"))
-      return false;
-  }
-
-  // Try to create the index every time. Older versions did not have this index,
-  // so we want those people to get it. Ignore errors, since it may exist.
-  db->Execute("CREATE INDEX cookie_times ON cookies (creation_utc)");
-  return true;
-}
-
-}  // namespace
-
 bool SQLitePersistentCookieStore::Load(
     std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
-  scoped_ptr<sql::Connection> db(new sql::Connection);
-  if (!db->Open(path_)) {
-    NOTREACHED() << "Unable to open cookie DB.";
-    return false;
-  }
-
-  db->set_error_delegate(GetErrorHandlerForCookieDb());
-
-  if (!EnsureDatabaseVersion(db.get()) || !InitTable(db.get())) {
-    NOTREACHED() << "Unable to initialize cookie DB.";
-    return false;
-  }
-
-  db->Preload();
-
-  // Slurp all the cookies into the out-vector.
-  sql::Statement smt(db->GetUniqueStatement(
-      "SELECT creation_utc, host_key, name, value, path, expires_utc, secure, "
-      "httponly, last_access_utc FROM cookies"));
-  if (!smt) {
-    NOTREACHED() << "select statement prep failed";
-    return false;
-  }
-
-  while (smt.Step()) {
-    scoped_ptr<net::CookieMonster::CanonicalCookie> cc(
-        new net::CookieMonster::CanonicalCookie(
-            smt.ColumnString(2),                            // name
-            smt.ColumnString(3),                            // value
-            smt.ColumnString(1),                            // domain
-            smt.ColumnString(4),                            // path
-            smt.ColumnInt(6) != 0,                          // secure
-            smt.ColumnInt(7) != 0,                          // httponly
-            Time::FromInternalValue(smt.ColumnInt64(0)),    // creation_utc
-            Time::FromInternalValue(smt.ColumnInt64(8)),    // last_access_utc
-            true,                                           // has_expires
-            Time::FromInternalValue(smt.ColumnInt64(5))));  // expires_utc
-    DLOG_IF(WARNING,
-            cc->CreationDate() > Time::Now()) << L"CreationDate too recent";
-    cookies->push_back(cc.release());
-  }
-
-  // Create the backend, this will take ownership of the db pointer.
-  backend_ = new Backend(db.release());
-  return true;
-}
-
-bool SQLitePersistentCookieStore::EnsureDatabaseVersion(sql::Connection* db) {
-  // Version check.
-  if (!meta_table_.Init(db, kCurrentVersionNumber, kCompatibleVersionNumber))
-    return false;
-
-  if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
-    LOG(WARNING) << "Cookie database is too new.";
-    return false;
-  }
-
-  int cur_version = meta_table_.GetVersionNumber();
-  if (cur_version == 2) {
-    sql::Transaction transaction(db);
-    if (!transaction.Begin())
-      return false;
-    if (!db->Execute("ALTER TABLE cookies ADD COLUMN last_access_utc "
-                     "INTEGER DEFAULT 0") ||
-        !db->Execute("UPDATE cookies SET last_access_utc = creation_utc")) {
-      LOG(WARNING) << "Unable to update cookie database to version 3.";
-      return false;
-    }
-    ++cur_version;
-    meta_table_.SetVersionNumber(cur_version);
-    meta_table_.SetCompatibleVersionNumber(
-        std::min(cur_version, kCompatibleVersionNumber));
-    transaction.Commit();
-  }
-
-  if (cur_version == 3) {
-    // The time epoch changed for Mac & Linux in this version to match Windows.
-    // This patch came after the main epoch change happened, so some
-    // developers have "good" times for cookies added by the more recent
-    // versions. So we have to be careful to only update times that are under
-    // the old system (which will appear to be from before 1970 in the new
-    // system). The magic number used below is 1970 in our time units.
-    sql::Transaction transaction(db);
-    transaction.Begin();
-#if !defined(OS_WIN)
-    db->Execute(
-        "UPDATE cookies "
-        "SET creation_utc = creation_utc + 11644473600000000 "
-        "WHERE rowid IN "
-        "(SELECT rowid FROM cookies WHERE "
-          "creation_utc > 0 AND creation_utc < 11644473600000000)");
-    db->Execute(
-        "UPDATE cookies "
-        "SET expires_utc = expires_utc + 11644473600000000 "
-        "WHERE rowid IN "
-        "(SELECT rowid FROM cookies WHERE "
-          "expires_utc > 0 AND expires_utc < 11644473600000000)");
-    db->Execute(
-        "UPDATE cookies "
-        "SET last_access_utc = last_access_utc + 11644473600000000 "
-        "WHERE rowid IN "
-        "(SELECT rowid FROM cookies WHERE "
-          "last_access_utc > 0 AND last_access_utc < 11644473600000000)");
-#endif
-    ++cur_version;
-    meta_table_.SetVersionNumber(cur_version);
-    transaction.Commit();
-  }
-
-  // Put future migration cases here.
-
-  // When the version is too old, we just try to continue anyway, there should
-  // not be a released product that makes a database too old for us to handle.
-  LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
-      "Cookie database version " << cur_version << " is too old to handle.";
-
-  return true;
+  return backend_->Load(cookies);
 }
 
 void SQLitePersistentCookieStore::AddCookie(
