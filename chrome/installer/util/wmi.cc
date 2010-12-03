@@ -13,28 +13,9 @@
 
 #pragma comment(lib, "wbemuuid.lib")
 
+using base::win::ScopedVariant;
+
 namespace installer {
-
-namespace {
-
-// Simple class to manage the lifetime of a variant.
-// TODO(tommi): Replace this for a more useful class.
-class VariantHelper : public VARIANT {
- public:
-  VariantHelper() {
-    vt = VT_EMPTY;
-  }
-  explicit VariantHelper(VARTYPE type) {
-    vt = type;
-  }
-  ~VariantHelper() {
-    ::VariantClear(this);
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(VariantHelper);
-};
-
-}  // namespace
 
 bool WMI::CreateLocalConnection(bool set_blanket,
                                 IWbemServices** wmi_services) {
@@ -108,6 +89,9 @@ bool SetParameter(IWbemClassObject* class_method,
 // The code in Launch() basically calls the Create Method of the Win32_Process
 // CIM class is documented here:
 // http://msdn2.microsoft.com/en-us/library/aa389388(VS.85).aspx
+// NOTE: The documentation for the Create method suggests that the ProcessId
+// parameter and return value are of type uint32, but when we call the method
+// the values in the returned out_params, are VT_I4, which is int32.
 
 bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
   base::win::ScopedComPtr<IWbemServices> wmi_local;
@@ -121,10 +105,9 @@ bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
                                     process_create.Receive()))
     return false;
 
-  VariantHelper b_command_line(VT_BSTR);
-  b_command_line.bstrVal = ::SysAllocString(command_line.c_str());
+  ScopedVariant b_command_line(command_line.c_str());
 
-  if (!SetParameter(process_create, L"CommandLine", &b_command_line))
+  if (!SetParameter(process_create, L"CommandLine", b_command_line.AsInput()))
     return false;
 
   base::win::ScopedComPtr<IWbemClassObject> out_params;
@@ -135,18 +118,19 @@ bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
   if (FAILED(hr))
     return false;
 
-  VariantHelper ret_value;
+  // We're only expecting int32 or uint32 values, so no need for ScopedVariant.
+  VARIANT ret_value = {VT_EMPTY};
   hr = out_params->Get(L"ReturnValue", 0, &ret_value, NULL, 0);
-  if (FAILED(hr) || (0 != ret_value.uintVal))
+  if (FAILED(hr) || 0 != V_I4(&ret_value))
     return false;
 
-  VariantHelper pid;
+  VARIANT pid = {VT_EMPTY};
   hr = out_params->Get(L"ProcessId", 0, &pid, NULL, 0);
-  if (FAILED(hr) || (0 == pid.intVal))
+  if (FAILED(hr) || 0 == V_I4(&pid))
     return false;
 
   if (process_id)
-    *process_id = pid.intVal;
+    *process_id = V_I4(&pid);
 
   return true;
 }
