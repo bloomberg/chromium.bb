@@ -49,7 +49,7 @@ static const char kUploadURL[] =
     "https://clients2.google.com/cr/report";
 
 static bool is_crash_reporter_enabled = false;
-static uint64_t uptime = 0;
+static uint64_t process_start_time = 0;
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
@@ -319,12 +319,12 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
 
   IGNORE_RET(sys_writev(fd, iov, 29));
 
-  if (uptime >= 0) {
+  if (info.process_start_time > 0) {
     struct kernel_timeval tv;
     if (!sys_gettimeofday(&tv, NULL)) {
       uint64_t time = kernel_timeval_to_ms(&tv);
-      if (time > uptime) {
-        time -= uptime;
+      if (time > info.process_start_time) {
+        time -= info.process_start_time;
         char time_str[21];
         const unsigned time_len = my_uint64_len(time);
         my_uint64tos(time_str, time, time_len);
@@ -610,6 +610,7 @@ static bool CrashDone(const char* dump_path,
   info.distro = base::g_linux_distro;
   info.distro_length = my_strlen(base::g_linux_distro);
   info.upload = upload;
+  info.process_start_time = process_start_time;
   HandleCrashDump(info);
 
   return true;
@@ -678,9 +679,10 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   // The length of the control message:
   static const unsigned kControlMsgSize = CMSG_SPACE(2*sizeof(int));
 
+  const size_t kIovSize = 7;
   struct kernel_msghdr msg;
   my_memset(&msg, 0, sizeof(struct kernel_msghdr));
-  struct kernel_iovec iov[6];
+  struct kernel_iovec iov[kIovSize];
   iov[0].iov_base = const_cast<void*>(crash_context);
   iov[0].iov_len = crash_context_size;
   iov[1].iov_base = guid;
@@ -693,9 +695,11 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   iov[4].iov_len = sizeof(b_addr);
   iov[5].iov_base = &fds[0];
   iov[5].iov_len = sizeof(fds[0]);
+  iov[6].iov_base = &process_start_time;
+  iov[6].iov_len = sizeof(process_start_time);
 
   msg.msg_iov = iov;
-  msg.msg_iovlen = 6;
+  msg.msg_iovlen = kIovSize;
   char cmsg[kControlMsgSize];
   my_memset(cmsg, 0, kControlMsgSize);
   msg.msg_control = cmsg;
@@ -764,12 +768,12 @@ void InitCrashReporter() {
     EnableNonBrowserCrashDumping();
   }
 
-  // Set the base process uptime value.
+  // Set the base process start time value.
   struct timeval tv;
   if (!gettimeofday(&tv, NULL))
-    uptime = timeval_to_ms(&tv);
+    process_start_time = timeval_to_ms(&tv);
   else
-    uptime = 0;
+    process_start_time = 0;
 }
 
 bool IsCrashReporterEnabled() {

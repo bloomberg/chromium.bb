@@ -118,20 +118,23 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   static const unsigned kCrashContextSize =
       sizeof(ExceptionHandler::CrashContext);
 
+  const size_t kIovSize = 7;
   struct msghdr msg = {0};
-  struct iovec iov[6];
+  struct iovec iov[kIovSize];
   char crash_context[kCrashContextSize];
   char* guid = new char[kGuidSize + 1];
   char* crash_url = new char[kMaxActiveURLSize + 1];
   char* distro = new char[kDistroSize + 1];
   char* tid_buf_addr = NULL;
   int tid_fd = -1;
+  uint64_t uptime;
   char control[kControlMsgSize];
   const ssize_t expected_msg_size = sizeof(crash_context) +
       kGuidSize + 1 +
       kMaxActiveURLSize + 1 +
       kDistroSize + 1 +
-      sizeof(tid_buf_addr) + sizeof(tid_fd);
+      sizeof(tid_buf_addr) + sizeof(tid_fd) +
+      sizeof(uptime);
 
   iov[0].iov_base = crash_context;
   iov[0].iov_len = sizeof(crash_context);
@@ -145,8 +148,10 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   iov[4].iov_len = sizeof(tid_buf_addr);
   iov[5].iov_base = &tid_fd;
   iov[5].iov_len = sizeof(tid_fd);
+  iov[6].iov_base = &uptime;
+  iov[6].iov_len = sizeof(uptime);
   msg.msg_iov = iov;
-  msg.msg_iovlen = 6;
+  msg.msg_iovlen = kIovSize;
   msg.msg_control = control;
   msg.msg_controllen = kControlMsgSize;
 
@@ -328,6 +333,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   info->distro = distro;
 
   info->upload = upload;
+  info->process_start_time = uptime;
 
   uploader_thread_->message_loop()->PostTask(
       FROM_HERE,

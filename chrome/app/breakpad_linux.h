@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_APP_BREAKPAD_LINUX_H_
 #pragma once
 
-#include <stdlib.h>
+#include "base/basictypes.h"
 
 extern void InitCrashReporter();
 bool IsCrashReporterEnabled();
@@ -26,6 +26,7 @@ struct BreakpadInfo {
   const char* distro;
   unsigned distro_length;
   bool upload;
+  uint64_t process_start_time;
 };
 
 extern int HandleCrashDump(const BreakpadInfo& info);
