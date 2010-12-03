@@ -75,7 +75,7 @@ DictionaryValue* CreateCookieStoreValue(Profile* profile,
   return result;
 }
 
-net::CookieMonster::CookieList GetCookieListFromStore(
+net::CookieList GetCookieListFromStore(
     net::CookieStore* cookie_store, const GURL& url) {
   DCHECK(cookie_store);
   net::CookieMonster* monster = cookie_store->GetCookieMonster();
@@ -97,12 +97,12 @@ GURL GetURLFromCanonicalCookie(
 }
 
 void AppendMatchingCookiesToList(
-    const net::CookieMonster::CookieList& all_cookies,
+    const net::CookieList& all_cookies,
     const std::string& store_id,
     const GURL& url, const DictionaryValue* details,
     const Extension* extension,
     ListValue* match_list) {
-  net::CookieMonster::CookieList::const_iterator it;
+  net::CookieList::const_iterator it;
   for (it = all_cookies.begin(); it != all_cookies.end(); ++it) {
     // Ignore any cookie whose domain doesn't match the extension's
     // host permissions.

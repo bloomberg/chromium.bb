@@ -49,7 +49,7 @@ DictionaryValue* CreateCookieStoreValue(Profile* profile,
 // Retrieves all cookies from the given cookie store corresponding to the given
 // URL. If the URL is empty, all cookies in the cookie store are retrieved.
 // This can only be called on the IO thread.
-net::CookieMonster::CookieList GetCookieListFromStore(
+net::CookieList GetCookieListFromStore(
     net::CookieStore* cookie_store, const GURL& url);
 
 // Constructs a URL from a cookie's information for use in checking
@@ -63,7 +63,7 @@ GURL GetURLFromCanonicalCookie(
 // match list all the cookies that both match the given URL and cookie details
 // and are allowed by extension host permissions.
 void AppendMatchingCookiesToList(
-    const net::CookieMonster::CookieList& all_cookies,
+    const net::CookieList& all_cookies,
     const std::string& store_id,
     const GURL& url, const DictionaryValue* details,
     const Extension* extension,

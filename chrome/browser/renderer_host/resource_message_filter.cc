@@ -1795,8 +1795,7 @@ void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
     // it important that we don't read the cookie db ahead of pending writes.
     net::CookieMonster* cookie_monster =
         context_->cookie_store()->GetCookieMonster();
-    net::CookieMonster::CookieList cookie_list =
-        cookie_monster->GetAllCookiesForURL(url_);
+    net::CookieList cookie_list = cookie_monster->GetAllCookiesForURL(url_);
 
     std::vector<webkit_glue::WebCookie> cookies;
     for (size_t i = 0; i < cookie_list.size(); ++i) {

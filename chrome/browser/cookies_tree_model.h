@@ -555,7 +555,7 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
     COOKIE = 1,
     DATABASE = 2
   };
-  typedef net::CookieMonster::CookieList CookieList;
+  typedef net::CookieList CookieList;
   typedef std::vector<BrowsingDataDatabaseHelper::DatabaseInfo>
       DatabaseInfoList;
   typedef std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo>

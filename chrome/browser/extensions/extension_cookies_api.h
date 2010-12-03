@@ -106,7 +106,7 @@ class GetCookieFunction : public CookiesFunction {
   GURL url_;
   std::string store_id_;
   scoped_refptr<URLRequestContextGetter> store_context_;
-  net::CookieMonster::CookieList cookie_list_;
+  net::CookieList cookie_list_;
 };
 
 // Implements the cookies.getAll() extension function.
@@ -125,7 +125,7 @@ class GetAllCookiesFunction : public CookiesFunction {
   GURL url_;
   std::string store_id_;
   scoped_refptr<URLRequestContextGetter> store_context_;
-  net::CookieMonster::CookieList cookie_list_;
+  net::CookieList cookie_list_;
 };
 
 // Implements the cookies.set() extension function.

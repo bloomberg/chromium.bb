@@ -105,7 +105,7 @@ class CookiesViewTest : public testing::Test {
   //   EXPECT_STREQ("Y,X", GetMonsterCookies(monster).c_str());
   std::string GetMonsterCookies(net::CookieMonster* monster) {
     std::vector<std::string> parts;
-    net::CookieMonster::CookieList cookie_list = monster->GetAllCookies();
+    net::CookieList cookie_list = monster->GetAllCookies();
     for (size_t i = 0; i < cookie_list.size(); ++i)
       parts.push_back(cookie_list[i].Name());
     return JoinString(parts, ',');

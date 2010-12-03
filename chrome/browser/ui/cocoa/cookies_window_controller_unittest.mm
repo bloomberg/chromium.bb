@@ -223,7 +223,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodesAdded) {
   cm->SetCookie(url, "C=D");
   cm->SetCookie(url, "E=F");
 
-  net::CookieMonster::CookieList list = cm->GetAllCookies();
+  net::CookieList list = cm->GetAllCookies();
   CookiesTreeModel* model = [controller_ treeModel];
   // Root --> foo.com --> Cookies.
   CookieTreeNode* parent = model->GetRoot()->GetChild(0)->GetChild(0);

@@ -29,6 +29,8 @@ class Histogram;
 
 namespace net {
 
+class CookieList;
+
 // The cookie monster is the system for storing and retrieving cookies. It has
 // an in-memory list of all cookies, and synchronizes non-session cookies to an
 // optional permanent storage that implements the PersistentCookieStore
@@ -94,7 +96,6 @@ class CookieMonster : public CookieStore {
   // subtantially more entries in the map.
   typedef std::multimap<std::string, CanonicalCookie*> CookieMap;
   typedef std::pair<CookieMap::iterator, CookieMap::iterator> CookieMapItPair;
-  typedef std::vector<CanonicalCookie> CookieList;
 
   // The key and expiry scheme to be used by the monster.
   // EKS_KEEP_RECENT_AND_PURGE_ETLDP1 means to use
@@ -691,6 +692,9 @@ class CookieMonster::PersistentCookieStore
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PersistentCookieStore);
+};
+
+class CookieList : public std::vector<CookieMonster::CanonicalCookie> {
 };
 
 }  // namespace net

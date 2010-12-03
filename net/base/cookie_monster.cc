@@ -1318,7 +1318,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
   }
 }
 
-CookieMonster::CookieList CookieMonster::GetAllCookies() {
+CookieList CookieMonster::GetAllCookies() {
   AutoLock autolock(lock_);
   InitIfNecessary();
 
@@ -1351,7 +1351,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
   return cookie_list;
 }
 
-CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
+CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
   AutoLock autolock(lock_);
   InitIfNecessary();
 

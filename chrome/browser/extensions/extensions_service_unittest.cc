@@ -2509,8 +2509,7 @@ TEST_F(ExtensionsServiceTest, ClearExtensionData) {
   ASSERT_TRUE(cookie_monster);
   net::CookieOptions options;
   cookie_monster->SetCookieWithOptions(ext_url, "dummy=value", options);
-  net::CookieMonster::CookieList list =
-      cookie_monster->GetAllCookiesForURL(ext_url);
+  net::CookieList list = cookie_monster->GetAllCookiesForURL(ext_url);
   EXPECT_EQ(1U, list.size());
 
   // Open a database.

@@ -191,7 +191,7 @@ void GetCookieFunction::GetCookieOnIOThread() {
 void GetCookieFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  net::CookieMonster::CookieList::iterator it;
+  net::CookieList::iterator it;
   for (it = cookie_list_.begin(); it != cookie_list_.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
