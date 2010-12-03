@@ -60,6 +60,7 @@
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -229,43 +230,29 @@ void SetupSocket(const std::string& path, int* sock, struct sockaddr_un* addr) {
   SetupSockAddr(path, addr);
 }
 
-// Read a symbolic link, return empty string if given path is not a
-// symbol link. This version does not interpret the errno, leaving
-// the caller to do so.
-bool ReadLinkSilent(const std::string& path, std::string* output) {
-  char buf[PATH_MAX];
-  ssize_t len = readlink(path.c_str(), buf, PATH_MAX);
-  if (len >= 0) {
-    output->assign(buf, len);
-    return true;
-  }
-  output->clear();
-  return false;
-}
-
 // Read a symbolic link, return empty string if given path is not a symbol link.
-std::string ReadLink(const std::string& path) {
-  std::string target;
-  if (!ReadLinkSilent(path, &target)) {
+FilePath ReadLink(const FilePath& path) {
+  FilePath target;
+  if (!file_util::ReadSymbolicLink(path, &target)) {
     // The only errno that should occur is ENOENT.
     if (errno != 0 && errno != ENOENT)
-      PLOG(ERROR) << "readlink(" << path << ") failed";
+      PLOG(ERROR) << "readlink(" << path.value() << ") failed";
   }
   return target;
 }
 
 // Unlink a path. Return true on success.
-bool UnlinkPath(const std::string& path) {
-  int rv = unlink(path.c_str());
+bool UnlinkPath(const FilePath& path) {
+  int rv = unlink(path.value().c_str());
   if (rv < 0 && errno != ENOENT)
-    PLOG(ERROR) << "Failed to unlink " << path;
+    PLOG(ERROR) << "Failed to unlink " << path.value();
 
   return rv == 0;
 }
 
 // Create a symlink. Returns true on success.
-bool SymlinkPath(const std::string& target, const std::string& path) {
-  if (symlink(target.c_str(), path.c_str()) < 0) {
+bool SymlinkPath(const FilePath& target, const FilePath& path) {
+  if (!file_util::CreateSymbolicLink(target, path)) {
     // Double check the value in case symlink suceeded but we got an incorrect
     // failure due to NFS packet loss & retry.
     int saved_errno = errno;
@@ -273,7 +260,7 @@ bool SymlinkPath(const std::string& target, const std::string& path) {
       // If we failed to create the lock, most likely another instance won the
       // startup race.
       errno = saved_errno;
-      PLOG(ERROR) << "Failed to create " << path;
+      PLOG(ERROR) << "Failed to create " << path.value();
       return false;
     }
   }
@@ -282,10 +269,10 @@ bool SymlinkPath(const std::string& target, const std::string& path) {
 
 // Extract the hostname and pid from the lock symlink.
 // Returns true if the lock existed.
-bool ParseLockPath(const std::string& path,
+bool ParseLockPath(const FilePath& path,
                    std::string* hostname,
                    int* pid) {
-  std::string real_path = ReadLink(path);
+  std::string real_path = ReadLink(path).value();
   if (real_path.empty())
     return false;
 
@@ -350,13 +337,13 @@ bool IsSameChromeInstance(pid_t pid) {
 // If the process is part of the same chrome instance, unlink the lock file and
 // return true without killing it.
 // If the process is on a different host, return false.
-bool KillProcessByLockPath(const std::string& path) {
+bool KillProcessByLockPath(const FilePath& path) {
   std::string hostname;
   int pid;
   ParseLockPath(path, &hostname, &pid);
 
   if (!hostname.empty() && hostname != net::GetHostName()) {
-    DisplayProfileInUseError(path, hostname, pid);
+    DisplayProfileInUseError(path.value(), hostname, pid);
     return false;
   }
   UnlinkPath(path);
@@ -374,7 +361,7 @@ bool KillProcessByLockPath(const std::string& path) {
     return true;
   }
 
-  LOG(ERROR) << "Failed to extract pid from path: " << path;
+  LOG(ERROR) << "Failed to extract pid from path: " << path.value();
   return true;
 }
 
@@ -402,21 +389,21 @@ std::string GenerateCookie() {
   return base::Uint64ToString(base::RandUint64());
 }
 
-bool CheckCookie(const FilePath& path, const std::string& cookie) {
-  return (cookie == ReadLink(path.value()));
+bool CheckCookie(const FilePath& path, const FilePath& cookie) {
+  return (cookie == ReadLink(path));
 }
 
 bool ConnectSocket(ScopedSocket* socket,
                    const FilePath& socket_path,
                    const FilePath& cookie_path) {
-  std::string socket_target;
-  if (ReadLinkSilent(socket_path.value(), &socket_target)) {
+  FilePath socket_target;
+  if (file_util::ReadSymbolicLink(socket_path, &socket_target)) {
     // It's a symlink. Read the cookie.
-    std::string cookie = ReadLink(cookie_path.value());
+    FilePath cookie = ReadLink(cookie_path);
     if (cookie.empty())
       return false;
-    FilePath remote_cookie = FilePath(socket_target).DirName().
-        Append(chrome::kSingletonCookieFilename);
+    FilePath remote_cookie = socket_target.DirName().
+                             Append(chrome::kSingletonCookieFilename);
     // Verify the cookie before connecting.
     if (!CheckCookie(remote_cookie, cookie))
       return false;
@@ -794,14 +781,14 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
     std::string hostname;
     int pid;
-    if (!ParseLockPath(lock_path_.value(), &hostname, &pid)) {
+    if (!ParseLockPath(lock_path_, &hostname, &pid)) {
       // No lockfile exists.
       return PROCESS_NONE;
     }
 
     if (hostname.empty()) {
       // Invalid lockfile.
-      UnlinkPath(lock_path_.value());
+      UnlinkPath(lock_path_);
       return PROCESS_NONE;
     }
 
@@ -813,20 +800,20 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
     if (!IsChromeProcess(pid)) {
       // Orphaned lockfile (no process with pid, or non-chrome process.)
-      UnlinkPath(lock_path_.value());
+      UnlinkPath(lock_path_);
       return PROCESS_NONE;
     }
 
     if (IsSameChromeInstance(pid)) {
       // Orphaned lockfile (pid is part of same chrome instance we are, even
       // though we haven't tried to create a lockfile yet).
-      UnlinkPath(lock_path_.value());
+      UnlinkPath(lock_path_);
       return PROCESS_NONE;
     }
 
     if (retries == timeout_seconds) {
       // Retries failed.  Kill the unresponsive chrome process and continue.
-      if (!kill_unresponsive || !KillProcessByLockPath(lock_path_.value()))
+      if (!kill_unresponsive || !KillProcessByLockPath(lock_path_))
         return PROFILE_IN_USE;
       return PROCESS_NONE;
     }
@@ -857,7 +844,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   // Send the message
   if (!WriteToSocket(socket.fd(), to_send.data(), to_send.length())) {
     // Try to kill the other process, because it might have been dead.
-    if (!kill_unresponsive || !KillProcessByLockPath(lock_path_.value()))
+    if (!kill_unresponsive || !KillProcessByLockPath(lock_path_))
       return PROFILE_IN_USE;
     return PROCESS_NONE;
   }
@@ -873,7 +860,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
   // Failed to read ACK, the other process might have been frozen.
   if (len <= 0) {
-    if (!kill_unresponsive || !KillProcessByLockPath(lock_path_.value()))
+    if (!kill_unresponsive || !KillProcessByLockPath(lock_path_))
       return PROFILE_IN_USE;
     return PROCESS_NONE;
   }
@@ -928,15 +915,15 @@ bool ProcessSingleton::Create() {
 
   // The symlink lock is pointed to the hostname and process id, so other
   // processes can find it out.
-  std::string symlink_content = StringPrintf(
+  FilePath symlink_content(StringPrintf(
       "%s%c%u",
       net::GetHostName().c_str(),
       kLockDelimiter,
-      base::GetCurrentProcId());
+      base::GetCurrentProcId()));
 
   // Create symbol link before binding the socket, to ensure only one instance
   // can have the socket open.
-  if (!SymlinkPath(symlink_content, lock_path_.value())) {
+  if (!SymlinkPath(symlink_content, lock_path_)) {
       // If we failed to create the lock, most likely another instance won the
       // startup race.
       return false;
@@ -952,14 +939,14 @@ bool ProcessSingleton::Create() {
   // Setup the socket symlink and the two cookies.
   FilePath socket_target_path =
       socket_dir_.path().Append(chrome::kSingletonSocketFilename);
-  std::string cookie = GenerateCookie();
+  FilePath cookie(GenerateCookie());
   FilePath remote_cookie_path =
       socket_dir_.path().Append(chrome::kSingletonCookieFilename);
-  UnlinkPath(socket_path_.value());
-  UnlinkPath(cookie_path_.value());
-  if (!SymlinkPath(socket_target_path.value(), socket_path_.value()) ||
-      !SymlinkPath(cookie, cookie_path_.value()) ||
-      !SymlinkPath(cookie, remote_cookie_path.value())) {
+  UnlinkPath(socket_path_);
+  UnlinkPath(cookie_path_);
+  if (!SymlinkPath(socket_target_path, socket_path_) ||
+      !SymlinkPath(cookie, cookie_path_) ||
+      !SymlinkPath(cookie, remote_cookie_path)) {
     // We've already locked things, so we can't have lost the startup race,
     // but something doesn't like us.
     LOG(ERROR) << "Failed to create symlinks.";
@@ -992,7 +979,7 @@ bool ProcessSingleton::Create() {
 }
 
 void ProcessSingleton::Cleanup() {
-  UnlinkPath(socket_path_.value());
-  UnlinkPath(cookie_path_.value());
-  UnlinkPath(lock_path_.value());
+  UnlinkPath(socket_path_);
+  UnlinkPath(cookie_path_);
+  UnlinkPath(lock_path_);
 }

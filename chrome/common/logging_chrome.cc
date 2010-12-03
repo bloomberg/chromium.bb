@@ -164,23 +164,17 @@ FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
     target_path = GenerateTimestampedName(symlink_path, base::Time::Now());
 
     // We don't care if the unlink fails; we're going to continue anyway.
-    if (unlink(symlink_path.value().c_str()) == -1) {
+    if (::unlink(symlink_path.value().c_str()) == -1) {
       if (symlink_exists) // only warn if we might expect it to succeed.
         PLOG(WARNING) << "Unable to unlink " << symlink_path.value();
     }
-    if (symlink(target_path.value().c_str(),
-                symlink_path.value().c_str()) == -1) {
+    if (!file_util::CreateSymbolicLink(target_path, symlink_path)) {
       PLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
                   << " pointing at " << target_path.value();
     }
   } else {
-    char buf[PATH_MAX];
-    ssize_t count = readlink(symlink_path.value().c_str(), buf, arraysize(buf));
-    if (count > 0) {
-      target_path = FilePath(FilePath::StringType(buf, count));
-    } else {
+    if (!file_util::ReadSymbolicLink(symlink_path, &target_path))
       PLOG(ERROR) << "Unable to read symlink " << symlink_path.value();
-    }
   }
   return target_path;
 }
