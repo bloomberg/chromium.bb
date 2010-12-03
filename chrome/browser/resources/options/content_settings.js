@@ -104,6 +104,7 @@ cr.define('options', function() {
   ContentSettings.setOTRExceptions = function(type, list) {
     var exceptionsList =
         document.querySelector('div[contentType=' + type + ']' +
+                               ' div list[mode=normal]');
 
     exceptionsList.parentNode.classList.remove('hidden');
 
