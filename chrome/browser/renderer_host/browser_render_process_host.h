@@ -22,7 +22,6 @@
 #include "chrome/common/notification_registrar.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
-class AudioRendererHost;
 class CommandLine;
 class GURL;
 class RendererMainThread;
@@ -184,9 +183,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.
   scoped_refptr<RenderWidgetHelper> widget_helper_;
-
-  // The host of audio renderers in the renderer process.
-  scoped_refptr<AudioRendererHost> audio_renderer_host_;
 
   // A map of transport DIB ids to cached TransportDIBs
   std::map<TransportDIB::Id, TransportDIB*> cached_dibs_;

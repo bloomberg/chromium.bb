@@ -32,7 +32,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
 class AppCacheDispatcherHost;
-class AudioRendererHost;
 class BlobDispatcherHost;
 class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
@@ -98,7 +97,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // Create the filter.
   ResourceMessageFilter(ResourceDispatcherHost* resource_dispatcher_host,
                         int child_id,
-                        AudioRendererHost* audio_renderer_host,
                         PluginService* plugin_service,
                         printing::PrintJobManager* print_job_manager,
                         Profile* profile,
@@ -446,9 +444,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   scoped_refptr<URLRequestContextGetter> extensions_request_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
-
-  // Object that should take care of audio related resource requests.
-  scoped_refptr<AudioRendererHost> audio_renderer_host_;
 
   // Handles AppCache related messages.
   scoped_ptr<AppCacheDispatcherHost> appcache_dispatcher_host_;

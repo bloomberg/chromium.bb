@@ -6,17 +6,12 @@
 // lives inside the render process and provide access to audio hardware.
 //
 // This class is owned by BrowserRenderProcessHost, and instantiated on UI
-// thread, but all other operations and method calls (except Destroy()) happens
-// in IO thread, so we need to be extra careful about the lifetime of this
-// object. AudioManager is a singleton and created in IO thread, audio output
-// streams are also created in the IO thread, so we need to destroy them also
-// in IO thread. After this class is created, a task of OnInitialized() is
-// posted on IO thread in which singleton of AudioManager is created and
-// AddRef() is called to increase one ref count of this object. Owner of this
-// class should call Destroy() before decrementing the ref count to this object,
-// which essentially post a task of OnDestroyed() on IO thread. Inside
-// OnDestroyed(), audio output streams are destroyed and Release() is called
-// which may result in self-destruction.
+// thread, but all other operations and method calls happen on IO thread, so we
+// need to be extra careful about the lifetime of this object. AudioManager is a
+// singleton and created in IO thread, audio output streams are also created in
+// the IO thread, so we need to destroy them also in IO thread. After this class
+// is created, a task of OnInitialized() is posted on IO thread in which
+// singleton of AudioManager is created and.
 //
 // Here's an example of a typical IPC dialog for audio:
 //
@@ -65,6 +60,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "chrome/browser/browser_io_message_filter.h"
 #include "chrome/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 #include "media/audio/audio_io.h"
@@ -74,9 +70,7 @@
 class AudioManager;
 struct ViewHostMsg_Audio_CreateStream_Params;
 
-class AudioRendererHost : public base::RefCountedThreadSafe<
-                              AudioRendererHost,
-                              BrowserThread::DeleteOnIOThread>,
+class AudioRendererHost : public BrowserIOMessageFilter,
                           public media::AudioOutputController::EventHandler {
  public:
   typedef std::pair<int32, int> AudioEntryId;
@@ -112,24 +106,11 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
   // Called from UI thread from the owner of this object.
   AudioRendererHost();
 
-  // Called from UI thread from the owner of this object to kick start
-  // destruction of streams in IO thread.
-  void Destroy();
 
-  /////////////////////////////////////////////////////////////////////////////
-  // The following public methods are called from ResourceMessageFilter in the
-  // IO thread.
-
-  // Event received when IPC channel is connected with the renderer process.
-  void IPCChannelConnected(int process_id, base::ProcessHandle process_handle,
-                           IPC::Message::Sender* ipc_sender);
-
-  // Event received when IPC channel is closing.
-  void IPCChannelClosing();
-
-  // Returns true if the message is a audio related message and was processed.
-  // If it was, message_was_ok will be false iff the message was corrupt.
-  bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
+  // BrowserIOMessageFilter implementation
+  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnChannelClosing();
+  virtual void OnDestruct() const;
 
   /////////////////////////////////////////////////////////////////////////////
   // AudioOutputController::EventHandler implementations.
@@ -187,9 +168,6 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
   void OnNotifyPacketReady(const IPC::Message& msg, int stream_id,
                            uint32 packet_size);
 
-  // Release all acquired resources and decrease reference to this object.
-  void DoDestroy();
-
   // Complete the process of creating an audio stream. This will set up the
   // shared memory or shared socket in low latency mode.
   void DoCompleteCreation(media::AudioOutputController* controller);
@@ -205,10 +183,6 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
 
   // Handle error coming from audio stream.
   void DoHandleError(media::AudioOutputController* controller, int error_code);
-
-  // A helper method to send an IPC message to renderer process on IO thread.
-  // This method is virtual for testing purpose.
-  virtual void SendMessage(IPC::Message* message);
 
   // Send an error message to the renderer.
   void SendErrorMessage(int32 render_view_id, int32 stream_id);
@@ -238,10 +212,6 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
   // This method is used to look up an AudioEntry after a controller
   // event is received.
   AudioEntry* LookupByController(media::AudioOutputController* controller);
-
-  int process_id_;
-  base::ProcessHandle process_handle_;
-  IPC::Message::Sender* ipc_sender_;
 
   // A map of id to audio sources.
   AudioEntryMap audio_entries_;

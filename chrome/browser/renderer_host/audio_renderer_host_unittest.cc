@@ -67,7 +67,7 @@ class MockAudioRendererHost : public AudioRendererHost {
   // This method is used to dispatch IPC messages to the renderer. We intercept
   // these messages here and dispatch to our mock methods to verify the
   // conversation between this object and the renderer.
-  virtual void SendMessage(IPC::Message* message) {
+  virtual bool Send(IPC::Message* message) {
     CHECK(message);
 
     // In this method we dispatch the messages to the according handlers as if
@@ -86,6 +86,7 @@ class MockAudioRendererHost : public AudioRendererHost {
     EXPECT_TRUE(handled);
 
     delete message;
+    return true;
   }
 
   // These handler methods do minimal things and delegate to the mock methods.
@@ -175,20 +176,15 @@ class AudioRendererHostTest : public testing::Test {
     host_ = new MockAudioRendererHost();
 
     // Simulate IPC channel connected.
-    host_->IPCChannelConnected(base::GetCurrentProcId(),
-                               base::GetCurrentProcessHandle(),
-                               NULL);
+    host_->OnChannelConnected(base::GetCurrentProcId());
   }
 
   virtual void TearDown() {
     // Simulate closing the IPC channel.
-    host_->IPCChannelClosing();
+    host_->OnChannelClosing();
 
-    // This task post a task to message_loop_ to do internal destruction on
-    // message_loop_.
-    host_->Destroy();
-
-    // Release the reference to the mock object.
+    // Release the reference to the mock object.  The object will be destructed
+    // on message_loop_.
     host_ = NULL;
 
     // We need to continue running message_loop_ to complete all destructions.

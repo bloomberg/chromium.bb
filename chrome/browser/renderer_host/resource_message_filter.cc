@@ -44,7 +44,6 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
@@ -243,7 +242,6 @@ class OpenChannelToPluginCallback : public PluginProcessHost::Client {
 ResourceMessageFilter::ResourceMessageFilter(
     ResourceDispatcherHost* resource_dispatcher_host,
     int child_id,
-    AudioRendererHost* audio_renderer_host,
     PluginService* plugin_service,
     printing::PrintJobManager* print_job_manager,
     Profile* profile,
@@ -258,7 +256,6 @@ ResourceMessageFilter::ResourceMessageFilter(
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
-      audio_renderer_host_(audio_renderer_host),
       appcache_dispatcher_host_(
           new AppCacheDispatcherHost(profile->GetRequestContext())),
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
@@ -297,7 +294,6 @@ ResourceMessageFilter::ResourceMessageFilter(
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
-  DCHECK(audio_renderer_host_.get());
   DCHECK(appcache_dispatcher_host_.get());
   DCHECK(dom_storage_dispatcher_host_.get());
 
@@ -361,10 +357,6 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   }
   set_handle(peer_handle);
 
-  // Hook AudioRendererHost to this object after channel is connected so it can
-  // this object for sending messages.
-  audio_renderer_host_->IPCChannelConnected(id(), handle(), this);
-
   WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
   appcache_dispatcher_host_->Initialize(this);
   dom_storage_dispatcher_host_->Init(id(), handle());
@@ -388,9 +380,6 @@ void ResourceMessageFilter::OnChannelClosing() {
   // Unhook us from all pending network requests so they don't get sent to a
   // deleted object.
   resource_dispatcher_host_->CancelRequestsForProcess(id());
-
-  // Unhook AudioRendererHost.
-  audio_renderer_host_->IPCChannelClosing();
 }
 
 // Called on the IPC thread:
@@ -402,7 +391,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       appcache_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       indexed_db_dispatcher_host_->OnMessageReceived(msg) ||
-      audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(
           msg, this, next_route_id_callback(), &msg_is_ok) ||

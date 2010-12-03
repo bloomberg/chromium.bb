@@ -273,10 +273,6 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
     queued_messages_.pop();
   }
 
-  // Destroy the AudioRendererHost properly.
-  if (audio_renderer_host_.get())
-    audio_renderer_host_->Destroy();
-
   ClearTransportDIBCache();
 }
 
@@ -377,22 +373,17 @@ bool BrowserRenderProcessHost::Init(
 }
 
 void BrowserRenderProcessHost::CreateMessageFilters() {
-  // Construct the AudioRendererHost with the IO thread.
-  audio_renderer_host_ = new AudioRendererHost();
-
   scoped_refptr<ResourceMessageFilter> resource_message_filter(
       new ResourceMessageFilter(g_browser_process->resource_dispatcher_host(),
                                 id(),
-                                audio_renderer_host_.get(),
                                 PluginService::GetInstance(),
                                 g_browser_process->print_job_manager(),
                                 profile(),
                                 widget_helper_));
   channel_->AddFilter(resource_message_filter);
 
-  scoped_refptr<PepperFileMessageFilter> pepper_file_message_filter(
-      new PepperFileMessageFilter(id(), profile()));
-  channel_->AddFilter(pepper_file_message_filter);
+  channel_->AddFilter(new AudioRendererHost());
+  channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

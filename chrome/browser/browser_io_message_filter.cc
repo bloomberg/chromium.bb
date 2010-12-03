@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "chrome/browser/renderer_host/browser_render_process_host.h"
 
 BrowserIOMessageFilter::BrowserIOMessageFilter() : channel_(NULL) {
 }
@@ -33,4 +34,8 @@ bool BrowserIOMessageFilter::Send(IPC::Message* msg) {
 
   delete msg;
   return false;
+}
+
+void BrowserIOMessageFilter::BadMessageReceived(uint32 msg_type) {
+  BrowserRenderProcessHost::BadMessageTerminateProcess(msg_type, peer_handle());
 }

@@ -29,6 +29,9 @@ class BrowserIOMessageFilter : public IPC::ChannelProxy::MessageFilter,
  protected:
   base::ProcessHandle peer_handle() { return peer_handle_; }
 
+  // Call this if a message couldn't be deserialized.  This kills the renderer.
+  void BadMessageReceived(uint32 msg_type);
+
  private:
   IPC::Channel* channel_;
   base::ProcessHandle peer_handle_;

@@ -48,52 +48,22 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
-AudioRendererHost::AudioRendererHost()
-    : process_id_(0),
-      process_handle_(0),
-      ipc_sender_(NULL) {
-  // Increase the ref count of this object so it is active until we do
-  // Release().
-  AddRef();
+AudioRendererHost::AudioRendererHost() {
 }
 
 AudioRendererHost::~AudioRendererHost() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(audio_entries_.empty());
-
-  // Make sure we received IPCChannelClosing() signal.
-  DCHECK(!ipc_sender_);
-  DCHECK(!process_handle_);
 }
 
-void AudioRendererHost::Destroy() {
-  // Post a message to the thread where this object should live and do the
-  // actual operations there.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::DoDestroy));
-}
-
-// Event received when IPC channel is connected to the renderer process.
-void AudioRendererHost::IPCChannelConnected(int process_id,
-                                            base::ProcessHandle process_handle,
-                                            IPC::Message::Sender* ipc_sender) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  process_handle_ = process_handle;
-  ipc_sender_ = ipc_sender;
-}
-
-// Event received when IPC channel is closing.
-void AudioRendererHost::IPCChannelClosing() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Reset IPC related member variables.
-  ipc_sender_ = NULL;
-  process_handle_ = 0;
+void AudioRendererHost::OnChannelClosing() {
+  BrowserIOMessageFilter::OnChannelClosing();
 
   // Since the IPC channel is gone, close all requested audio streams.
   DeleteEntries();
+}
+
+void AudioRendererHost::OnDestruct() const {
+  BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,7 +128,7 @@ void AudioRendererHost::DoCompleteCreation(
   if (!entry)
     return;
 
-  if (!process_handle_) {
+  if (!peer_handle()) {
     NOTREACHED() << "Renderer process handle is invalid.";
     DeleteEntryOnError(entry);
     return;
@@ -167,8 +137,8 @@ void AudioRendererHost::DoCompleteCreation(
   // Once the audio stream is created then complete the creation process by
   // mapping shared memory and sharing with the renderer process.
   base::SharedMemoryHandle foreign_memory_handle;
-  if (!entry->shared_memory.ShareToProcess(process_handle_,
-                                            &foreign_memory_handle)) {
+  if (!entry->shared_memory.ShareToProcess(peer_handle(),
+                                           &foreign_memory_handle)) {
     // If we failed to map and share the shared memory then close the audio
     // stream and send an error message.
     DeleteEntryOnError(entry);
@@ -187,13 +157,13 @@ void AudioRendererHost::DoCompleteCreation(
 
     // If we failed to prepare the sync socket for the renderer then we fail
     // the construction of audio stream.
-    if (!reader->PrepareForeignSocketHandle(process_handle_,
+    if (!reader->PrepareForeignSocketHandle(peer_handle(),
                                             &foreign_socket_handle)) {
       DeleteEntryOnError(entry);
       return;
     }
 
-    SendMessage(new ViewMsg_NotifyLowLatencyAudioStreamCreated(
+    Send(new ViewMsg_NotifyLowLatencyAudioStreamCreated(
         entry->render_view_id, entry->stream_id, foreign_memory_handle,
         foreign_socket_handle, entry->shared_memory.created_size()));
     return;
@@ -201,7 +171,7 @@ void AudioRendererHost::DoCompleteCreation(
 
   // The normal audio stream has created, send a message to the renderer
   // process.
-  SendMessage(new ViewMsg_NotifyAudioStreamCreated(
+  Send(new ViewMsg_NotifyAudioStreamCreated(
       entry->render_view_id, entry->stream_id, foreign_memory_handle,
       entry->shared_memory.created_size()));
 }
@@ -216,7 +186,7 @@ void AudioRendererHost::DoSendPlayingMessage(
 
   ViewMsg_AudioStreamState_Params params;
   params.state = ViewMsg_AudioStreamState_Params::kPlaying;
-  SendMessage(new ViewMsg_NotifyAudioStreamStateChanged(
+  Send(new ViewMsg_NotifyAudioStreamStateChanged(
       entry->render_view_id, entry->stream_id, params));
 }
 
@@ -230,7 +200,7 @@ void AudioRendererHost::DoSendPausedMessage(
 
   ViewMsg_AudioStreamState_Params params;
   params.state = ViewMsg_AudioStreamState_Params::kPaused;
-  SendMessage(new ViewMsg_NotifyAudioStreamStateChanged(
+  Send(new ViewMsg_NotifyAudioStreamStateChanged(
       entry->render_view_id, entry->stream_id, params));
 }
 
@@ -246,9 +216,8 @@ void AudioRendererHost::DoRequestMoreData(
 
   DCHECK(!entry->controller->LowLatencyMode());
   entry->pending_buffer_request = true;
-  SendMessage(
-      new ViewMsg_RequestAudioPacket(
-          entry->render_view_id, entry->stream_id, buffers_state));
+  Send(new ViewMsg_RequestAudioPacket(
+      entry->render_view_id, entry->stream_id, buffers_state));
 }
 
 void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,
@@ -264,13 +233,10 @@ void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,
 
 ///////////////////////////////////////////////////////////////////////////////
 // IPC Messages handler
-bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
-                                          bool* message_was_ok) {
-  if (!IsAudioRendererHostMessage(message))
-    return false;
-  *message_was_ok = true;
-
-  IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, *message_was_ok)
+bool AudioRendererHost::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  bool message_was_ok = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, message_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateAudioStream, OnCreateStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PlayAudioStream, OnPlayStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PauseAudioStream, OnPauseStream)
@@ -279,27 +245,13 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_NotifyAudioPacketReady, OnNotifyPacketReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioVolume, OnGetVolume)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetAudioVolume, OnSetVolume)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
-  return true;
-}
+  if (!message_was_ok)
+    BadMessageReceived(message.type());
 
-bool AudioRendererHost::IsAudioRendererHostMessage(
-    const IPC::Message& message) {
-  switch (message.type()) {
-    case ViewHostMsg_CreateAudioStream::ID:
-    case ViewHostMsg_PlayAudioStream::ID:
-    case ViewHostMsg_PauseAudioStream::ID:
-    case ViewHostMsg_FlushAudioStream::ID:
-    case ViewHostMsg_CloseAudioStream::ID:
-    case ViewHostMsg_NotifyAudioPacketReady::ID:
-    case ViewHostMsg_GetAudioVolume::ID:
-    case ViewHostMsg_SetAudioVolume::ID:
-      return true;
-    default:
-      break;
-    }
-    return false;
+  return handled;
 }
 
 void AudioRendererHost::OnCreateStream(
@@ -452,32 +404,11 @@ void AudioRendererHost::OnNotifyPacketReady(
       packet_size);
 }
 
-void AudioRendererHost::DoDestroy() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Reset IPC releated members.
-  ipc_sender_ = NULL;
-  process_handle_ = 0;
-
-  // Close all audio streams.
-  DeleteEntries();
-
-  // Decrease the reference to this object, which may lead to self-destruction.
-  Release();
-}
-
-void AudioRendererHost::SendMessage(IPC::Message* message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (ipc_sender_)
-    ipc_sender_->Send(message);
-}
-
 void AudioRendererHost::SendErrorMessage(int32 render_view_id,
                                          int32 stream_id) {
   ViewMsg_AudioStreamState_Params state;
   state.state = ViewMsg_AudioStreamState_Params::kError;
-  SendMessage(new ViewMsg_NotifyAudioStreamStateChanged(
+  Send(new ViewMsg_NotifyAudioStreamStateChanged(
       render_view_id, stream_id, state));
 }
 
