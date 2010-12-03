@@ -551,15 +551,6 @@ void RenderViewContextMenu::AppendFrameItems() {
   menu_model_.AddSeparator();
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOADFRAME,
                                   IDS_CONTENT_CONTEXT_RELOADFRAME);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENFRAMENEWTAB,
-                                  IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENFRAMENEWWINDOW,
-                                  IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW);
-  if (!external_) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD,
-                                    IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD);
-  }
-
   menu_model_.AddSeparator();
   // These two menu items have yet to be implemented.
   // http://code.google.com/p/chromium/issues/detail?id=11827
@@ -912,8 +903,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     }
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
-    case IDC_CONTENT_CONTEXT_OPENFRAMENEWTAB:
-    case IDC_CONTENT_CONTEXT_OPENFRAMENEWWINDOW:
       return params_.frame_url.is_valid();
 
     case IDC_CONTENT_CONTEXT_UNDO:
@@ -939,9 +928,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       return !profile_->IsOffTheRecord() && params_.link_url.is_valid();
-
-    case IDC_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD:
-      return !profile_->IsOffTheRecord() && params_.frame_url.is_valid();
 
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY:
       return !params_.misspelled_word.empty();
@@ -1267,18 +1253,6 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
       source_tab_contents_->render_view_host()->ReloadFrame();
-      break;
-
-    case IDC_CONTENT_CONTEXT_OPENFRAMENEWTAB:
-      OpenURL(params_.frame_url, NEW_BACKGROUND_TAB, PageTransition::LINK);
-      break;
-
-    case IDC_CONTENT_CONTEXT_OPENFRAMENEWWINDOW:
-      OpenURL(params_.frame_url, NEW_WINDOW, PageTransition::LINK);
-      break;
-
-    case IDC_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD:
-      OpenURL(params_.frame_url, OFF_THE_RECORD, PageTransition::LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:

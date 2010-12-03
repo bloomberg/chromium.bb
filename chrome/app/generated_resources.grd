@@ -351,15 +351,6 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="The name of the Reload Frame command in the content area context menu">
           Reload frame
         </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW" desc="The name of the Open Frame in New Window command in the content area context menu">
-          Open frame in new &amp;window
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD" desc="The name of the open frame in incognito window command">
-          Open frame in inco&amp;gnito window
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB" desc="The name of the Open Frame in New Tab command in the content area context menu">
-          Open frame in new &amp;tab
-        </message>
         <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="The name of the Save Frame As command in the content area context menu">
           Save &amp;frame as...
         </message>
@@ -541,15 +532,6 @@ each locale. -->
 
         <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="In Title Case: The name of the Reload Frame command in the content area context menu">
           Reload Frame
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW" desc="In Title Case: The name of the Open Frame in New Window command in the content area context menu">
-          Open Frame in New &amp;Window
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD" desc="In Title Case: The name of the open frame in incognito window command">
-          Open Frame in Inco&amp;gnito Window
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB" desc="In Title Case: The name of the Open Frame in New Tab command in the content area context menu">
-          Open Frame in New &amp;Tab
         </message>
         <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="In Title Case: The name of the Save Frame As command in the content area context menu">
           Save &amp;Frame As...
