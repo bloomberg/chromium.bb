@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "net/http/http_stream_factory.h"
 

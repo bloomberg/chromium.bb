@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/prefs/pref_service.h"

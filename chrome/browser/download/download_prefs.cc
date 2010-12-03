@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"

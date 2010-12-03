@@ -1508,7 +1508,7 @@ void ExtensionsService::ReloadExtensions() {
 }
 
 void ExtensionsService::GarbageCollectExtensions() {
-  if (extension_prefs_->pref_service()->read_only())
+  if (extension_prefs_->pref_service()->ReadOnly())
     return;
 
   scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(

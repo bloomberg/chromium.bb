@@ -4,6 +4,8 @@
 
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 
+#include "base/message_loop.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"

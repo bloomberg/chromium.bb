@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/google/google_url_tracker.h"
+
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/net/url_fetcher.h"

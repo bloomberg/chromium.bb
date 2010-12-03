@@ -16,6 +16,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer_mock.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/signaling_task.h"

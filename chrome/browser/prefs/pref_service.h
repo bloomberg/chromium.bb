@@ -12,15 +12,16 @@
 #include <string>
 
 #include "base/non_thread_safe.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/pref_store.h"
 
 class FilePath;
 class NotificationObserver;
 class PrefChangeObserver;
 class PrefNotifier;
+class PrefValueStore;
 class Profile;
 
 namespace subtle {
@@ -218,7 +219,7 @@ class PrefService : public NonThreadSafe {
   // preference is not registered.
   const Preference* FindPreference(const char* pref_name) const;
 
-  bool read_only() const { return pref_value_store_->ReadOnly(); }
+  bool ReadOnly() const;
 
   PrefNotifier* pref_notifier() const { return pref_notifier_.get(); }
 

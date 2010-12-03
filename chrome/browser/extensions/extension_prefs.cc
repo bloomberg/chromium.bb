@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/notification_service.h"
