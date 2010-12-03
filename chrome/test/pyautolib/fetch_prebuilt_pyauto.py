@@ -55,7 +55,8 @@ class FetchPrebuilt(object):
     self._url = self._args[0]
 
     # Setup urls to download
-    self._chrome_zip_name = 'chrome-%s' % { 'linux': 'linux',
+    self._chrome_zip_name = 'chrome-%s' % { 'linux64': 'linux64bit',
+                                            'linux32': 'linux32bit',
                                             'mac': 'mac',
                                             'win': 'win32'
                                           }[self._options.platform]
@@ -63,7 +64,8 @@ class FetchPrebuilt(object):
     chrome_test_url = '%s/%s.test' % (self._url, self._chrome_zip_name)
     self._pyautolib_py_url = '%s/pyautolib.py' % chrome_test_url
     self._pyautolib_so_url = '%s/%s' % (chrome_test_url,
-                                        { 'linux': 'lib.target/_pyautolib.so',
+                                        { 'linux64': 'lib.target/_pyautolib.so',
+                                          'linux32': 'lib.target/_pyautolib.so',
                                           'mac': '_pyautolib.so',
                                           'win': '_pyautolib.pyd',
                                          }[self._options.platform])
@@ -95,7 +97,8 @@ class FetchPrebuilt(object):
     items_to_copy = {
       pyautolib_py: os.path.join(self._outdir, 'pyautolib.py'),
       pyautolib_so: os.path.join(self._outdir,
-                                 { 'linux': '_pyautolib.so',
+                                 { 'linux64': '_pyautolib.so',
+                                   'linux32': '_pyautolib.so',
                                    'mac': '_pyautolib.so',
                                    'win': '_pyautolib.pyd'
                                   }[self._options.platform])
