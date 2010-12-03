@@ -12,8 +12,8 @@
 
 namespace browser {
 
-// TODO: get the right url.
-const char kInstantLearnMoreURL[] = "http://www.google.com";
+const char kInstantLearnMoreURL[] =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=180655";
 
 void ShowInstantConfirmDialogIfNecessary(gfx::NativeWindow parent,
                                          Profile* profile) {
