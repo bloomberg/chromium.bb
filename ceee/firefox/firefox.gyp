@@ -8,6 +8,22 @@
     '../../ceee/common.gypi',
     'xpi_file_list.gypi',
   ],
+  'variables': {
+    'version_path': '<(DEPTH)/chrome/VERSION',
+  },
+  'conditions': [
+    [ 'branding == "Chrome"', {
+      'variables': {
+        'branding_path':
+            '<(DEPTH)/chrome/app/theme/google_chrome/BRANDING',
+      },
+    }, { # else branding!="Chrome"
+      'variables': {
+        'branding_path':
+            '<(DEPTH)/chrome/app/theme/chromium/BRANDING',
+      },
+    }],
+  ],
   'targets': [
     {
       'target_name': 'xpi',
@@ -22,6 +38,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/ceee_ff.xpi',
         '<(SHARED_INTERMEDIATE_DIR)/event_bindings.js',
         '<(SHARED_INTERMEDIATE_DIR)/renderer_extension_bindings.js',
+        '<(version_path)',
+        '<(branding_path)',
       ],
       'actions': [
         {
@@ -36,13 +54,19 @@
           'action': [
             '<@(python)',
             '$(ProjectDir)\zipfiles.py',
-            '-c',
+            '--config',
             '$(ConfigurationName)',
-            '-i',
+            '--input',
             '<(SHARED_INTERMEDIATE_DIR)/ceee_ff.xpi',
-            '-o',
+            '--version',
+            '<(version_path)',
+            '--branding',
+            '<(branding_path)',
+            '--ignore_extensions',
+            '<(xpi_no_expand_extensions)',
+            '--output',
             '<(_outputs)',
-            '-p',
+            '--path',
             'content/us',
             '<(SHARED_INTERMEDIATE_DIR)/event_bindings.js',
             '<(SHARED_INTERMEDIATE_DIR)/renderer_extension_bindings.js',
@@ -53,13 +77,12 @@
     {
       'target_name': 'create_xpi',
       'type': 'none',
-      # TODO(rogerta@chromium.org): This needs to be conditional on
-      # configuration.  We should only include _xpi_test_files for
-      # debug builds, or when we want to test the add-on.
       'sources': [
         'zipfiles.py',
         '<@(_xpi_files)',
         '<@(_xpi_test_files)',
+        '<(version_path)',
+        '<(branding_path)',
       ],
       'actions': [
         {
@@ -79,13 +102,19 @@
             # one of the form "-o >(_outputs)".
             '<@(python)',
             '$(ProjectDir)\zipfiles.py',
-            '-c',
+            '--config',
             '$(ConfigurationName)',
-            '-o',
+            '--version',
+            '<(version_path)',
+            '--branding',
+            '<(branding_path)',
+            '--ignore_extensions',
+            '<(xpi_no_expand_extensions)',
+            '--output',
             '<(_outputs)',
             '<@(_xpi_files)',
             '##',
-            '<@(_xpi_test_files)',
+            '<@(_xpi_test_files)',  # Included only in Debug build config.
           ],
         },
       ],

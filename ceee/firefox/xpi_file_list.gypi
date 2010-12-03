@@ -14,7 +14,11 @@
 # xpi_files_test lists additional files needed for testing.
 {
   'variables': {
-    'xpi_file_root%': '',
+    'xpi_file_root': '',
+
+    # Comma-separated list of extensions to ignore when expanding
+    # version and branding strings.
+    'xpi_no_expand_extensions': 'png',
   },
   'xpi_files': [
     '<(xpi_file_root)chrome.manifest',

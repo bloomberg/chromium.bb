@@ -4,8 +4,8 @@
 
      Defines string substitutions for the overlay.xul file.
   -->
-<!ENTITY ceee.browser.label "Google Chrome Extensions Execution Environment">
-<!ENTITY ceee.browser.tooltip "Google Chrome Extensions Execution Environment">
+<!ENTITY ceee.browser.label "@CEEE_PRODUCT_FULLNAME@">
+<!ENTITY ceee.browser.tooltip "@CEEE_PRODUCT_FULLNAME@">
 
-<!ENTITY ceee.toolstrip.label "Google Chrome Extensions Execution Environment">
+<!ENTITY ceee.toolstrip.label "@CEEE_PRODUCT_FULLNAME@">
 <!ENTITY ceee.toolstrip.accesskey "G">

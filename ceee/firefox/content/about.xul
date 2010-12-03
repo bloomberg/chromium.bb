@@ -9,17 +9,17 @@
 
 <!DOCTYPE dialog SYSTEM "chrome://ceee/locale/about.dtd">
 
-<dialog title="&about; Google Chrome Extensions Execution Environment" orient="vertical" autostretch="always"
+<dialog title="&about; @CEEE_PRODUCT_FULLNAME@" orient="vertical" autostretch="always"
         onload="sizeToContent()" buttons="accept"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <groupbox align="center" orient="horizontal">
     <vbox>
-      <text value="Google Chrome Extensions Execution Environment"
+      <text value="@CEEE_PRODUCT_FULLNAME@"
 	    style="font-weight: bold; font-size: x-large;"/>
       <text value="&version; 0.2"/>
       <separator class="thin"/>
       <text value="&createdBy;" style="font-weight: bold;"/>
-      <text value="Google Inc."/>
+      <text value="@COMPANY_FULLNAME@"/>
       <separator class="thin"/>
         <text value="&homepage;" style="font-weight: bold;"/>
         <text value="http://www.google.com" class="url"

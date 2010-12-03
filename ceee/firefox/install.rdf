@@ -10,10 +10,10 @@
  xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>ceee@google.com</em:id>
-    <em:name>Google Chrome Extensions Execution Environment for Firefox</em:name>
-    <em:version>0.1</em:version>
-    <em:creator>Google Inc.</em:creator>
-    <em:description>Enable Google Chrome Extensions in Firefox.</em:description>
+    <em:name>@CEEE_PRODUCT_FULLNAME@</em:name>
+    <em:version>@MAJOR@.@MINOR@.@BUILD@.@PATCH@</em:version>
+    <em:creator>@COMPANY_FULLNAME@</em:creator>
+    <em:description>Enables @CEEE_PRODUCT_FULLNAME@ in Firefox.</em:description>
     <em:homepageURL>http://www.google.com</em:homepageURL>
     <em:aboutURL>chrome://ceee/content/about.xul</em:aboutURL>
     <em:optionsURL>chrome://ceee/content/options.xul</em:optionsURL>

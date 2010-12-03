@@ -4,7 +4,7 @@
 
      Defines string substitutions for the overlay.xul file.
   -->
-<!ENTITY options.title "Google Chrome Extensions Execution Environment Options">
+<!ENTITY options.title "@CEEE_PRODUCT_FULLNAME@ Options">
 <!ENTITY options.path.accesskey "P">
 <!ENTITY options.path.label "Chrome Extension Path (Set to load extension from a specific location on disk)">
 <!ENTITY options.url.accesskey "U">
