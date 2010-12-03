@@ -378,8 +378,11 @@
     }, 
     {
       "api_calls": [
+        "chrome.omnibox.onInputCancelled", 
         "chrome.omnibox.onInputChanged", 
         "chrome.omnibox.onInputEntered", 
+        "chrome.omnibox.onInputStarted", 
+        "chrome.omnibox.setDefaultSuggestion", 
         "chrome.tabs.get", 
         "chrome.tabs.getSelected", 
         "chrome.tabs.update"
@@ -396,12 +399,12 @@
       "protocols": [
         "http://"
       ], 
-      "search_string": "CHROMIUM SEARCH ADD SUPPORT TO THE OMNIBOX TO SEARCH THE CHROMIUM SOURCE CODE. BACKGROUND_PAGE TABS CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE", 
+      "search_string": "CHROMIUM SEARCH ADD SUPPORT TO THE OMNIBOX TO SEARCH THE CHROMIUM SOURCE CODE. BACKGROUND_PAGE TABS CHROME.OMNIBOX.ONINPUTCANCELLED CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED CHROME.OMNIBOX.ONINPUTSTARTED CHROME.OMNIBOX.SETDEFAULTSUGGESTION CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE", 
       "source_files": [
         "background.html", 
         "manifest.json"
       ], 
-      "source_hash": "13c2e6bad7d930e6127a1964b2e8564de3f11ad9", 
+      "source_hash": "1b58516fac8ed4dc97854e0bccb286a77e829a64", 
       "zip_path": "examples/extensions/chrome_search.zip"
     }, 
     {
@@ -910,7 +913,7 @@
         "info.html", 
         "manifest.json"
       ], 
-      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991", 
+      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a", 
       "zip_path": "examples/extensions/imageinfo.zip"
     }, 
     {
