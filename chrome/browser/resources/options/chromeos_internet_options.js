@@ -103,7 +103,7 @@ cr.define('options', function() {
     if (data.certInPkcs) {
       chrome.send('loginToCertNetwork',[String(servicePath),
                                         String(data.certPath),
-                                        String($('inetIdentPkcs').value)]);
+                                        String(data.ident)]);
     } else {
       chrome.send('loginToCertNetwork',[String(servicePath),
                                         String($('inetCert').value),
@@ -121,7 +121,7 @@ cr.define('options', function() {
       newinfo.push($('autoConnectNetwork').checked ? "true" : "false");
       if (data.encrypted && data.certNeeded) {
         if (data.certInPkcs) {
-          newinfo.push($('inetIdentPkcs').value);
+          newinfo.push(data.ident);
         } else {
           newinfo.push($('inetIdent').value);
           newinfo.push($('inetCert').value);
@@ -285,7 +285,7 @@ cr.define('options', function() {
         if (data.certNeeded) {
           if (data.certInPkcs) {
             page.setAttribute('certPkcs', true);
-            $('inetIdentPkcs').value = data.ident;
+            $('inetIdentPkcs').textContent = data.ident;
           } else {
             page.setAttribute('cert', true);
             $('inetIdent').value = data.ident;
