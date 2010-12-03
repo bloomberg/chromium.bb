@@ -63,7 +63,7 @@ class ExampleTestShell : public TestShell {
   // When called by WebViewDelegate::WindowObjectCleared method, this binds a
   // CppExampleObject to window.example.
   virtual void BindJSObjectsToWindow(WebFrame* frame) {
-    example_bound_class_.BindToJavascript(frame, L"example");
+    example_bound_class_.BindToJavascript(frame, "example");
     // We use the layoutTestController binding for notifyDone.
     TestShell::BindJSObjectsToWindow(frame);
   }

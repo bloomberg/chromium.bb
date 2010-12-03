@@ -34,7 +34,7 @@ AccessibilityController::AccessibilityController(TestShell* shell)
 }
 
 void AccessibilityController::BindToJavascript(
-    WebFrame* frame, const std::wstring& classname) {
+    WebFrame* frame, const std::string& classname) {
   WebAccessibilityCache::enableAccessibility();
   CppBoundClass::BindToJavascript(frame, classname);
 }

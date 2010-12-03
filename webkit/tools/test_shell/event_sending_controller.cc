@@ -149,19 +149,17 @@ void InitMouseEvent(WebInputEvent::Type t, WebMouseEvent::Button b,
 }
 
 // Returns true if the specified key is the system key.
-bool ApplyKeyModifier(const std::wstring& arg, WebInputEvent* event) {
+bool ApplyKeyModifier(const std::string& key, WebInputEvent* event) {
   bool system_key = false;
-  const wchar_t* arg_string = arg.c_str();
-  if (!wcscmp(arg_string, L"ctrlKey")
+  if (key == "ctrlKey"
 #if !defined(OS_MACOSX)
-      || !wcscmp(arg_string, L"addSelectionKey")
+      || key == "addSelectionKey"
 #endif
       ) {
     event->modifiers |= WebInputEvent::ControlKey;
-  } else if (!wcscmp(arg_string, L"shiftKey")
-      || !wcscmp(arg_string, L"rangeSelectionKey")) {
+  } else if (key == "shiftKey" || key == "rangeSelectionKey") {
     event->modifiers |= WebInputEvent::ShiftKey;
-  } else if (!wcscmp(arg_string, L"altKey")) {
+  } else if (key == "altKey") {
     event->modifiers |= WebInputEvent::AltKey;
 #if !defined(OS_MACOSX)
     // On Windows all keys with Alt modifier will be marked as system key.
@@ -172,8 +170,7 @@ bool ApplyKeyModifier(const std::wstring& arg, WebInputEvent* event) {
     system_key = true;
 #endif
 #if defined(OS_MACOSX)
-  } else if (!wcscmp(arg_string, L"metaKey")
-      || !wcscmp(arg_string, L"addSelectionKey")) {
+  } else if (key == "metaKey" || key == "addSelectionKey") {
     event->modifiers |= WebInputEvent::MetaKey;
     // On Mac only command key presses are marked as system key.
     // See the related code in:
@@ -181,7 +178,7 @@ bool ApplyKeyModifier(const std::wstring& arg, WebInputEvent* event) {
     // It must be kept in sync with the related code in above file.
     system_key = true;
 #else
-  } else if (!wcscmp(arg_string, L"metaKey")) {
+  } else if (key == "metaKey") {
     event->modifiers |= WebInputEvent::MetaKey;
 #endif
   }
@@ -191,13 +188,13 @@ bool ApplyKeyModifier(const std::wstring& arg, WebInputEvent* event) {
 bool ApplyKeyModifiers(const CppVariant* arg, WebInputEvent* event) {
   bool system_key = false;
   if (arg->isObject()) {
-    std::vector<std::wstring> args = arg->ToStringVector();
-    for (std::vector<std::wstring>::const_iterator i = args.begin();
+    std::vector<std::string> args = arg->ToStringVector();
+    for (std::vector<std::string>::const_iterator i = args.begin();
          i != args.end(); ++i) {
       system_key |= ApplyKeyModifier(*i, event);
     }
   } else if (arg->isString()) {
-    system_key = ApplyKeyModifier(UTF8ToWide(arg->ToString()), event);
+    system_key = ApplyKeyModifier(arg->ToString(), event);
   }
   return system_key;
 }
@@ -863,9 +860,10 @@ void EventSendingController::scheduleAsynchronousClick(
 void EventSendingController::beginDragWithFiles(
     const CppArgumentList& args, CppVariant* result) {
   current_drag_data.initialize();
-  std::vector<std::wstring> files = args[0].ToStringVector();
+  std::vector<std::string> files = args[0].ToStringVector();
   for (size_t i = 0; i < files.size(); ++i) {
-    FilePath file_path = FilePath::FromWStringHack(files[i]);
+    std::wstring file = UTF8ToWide(files[i]);
+    FilePath file_path = FilePath::FromWStringHack(file);
     file_util::AbsolutePath(&file_path);
     current_drag_data.appendToFilenames(
         webkit_glue::FilePathStringToWebString(file_path.value()));

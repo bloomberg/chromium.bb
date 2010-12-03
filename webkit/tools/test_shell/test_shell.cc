@@ -555,11 +555,11 @@ void TestShell::BindJSObjectsToWindow(WebFrame* frame) {
   // Only bind the test classes if we're running tests.
   if (layout_test_mode_) {
     accessibility_controller_->BindToJavascript(
-        frame, L"accessibilityController");
-    layout_test_controller_->BindToJavascript(frame, L"layoutTestController");
-    event_sending_controller_->BindToJavascript(frame, L"eventSender");
-    plain_text_controller_->BindToJavascript(frame, L"plainText");
-    text_input_controller_->BindToJavascript(frame, L"textInputController");
+        frame, "accessibilityController");
+    layout_test_controller_->BindToJavascript(frame, "layoutTestController");
+    event_sending_controller_->BindToJavascript(frame, "eventSender");
+    plain_text_controller_->BindToJavascript(frame, "plainText");
+    text_input_controller_->BindToJavascript(frame, "textInputController");
   }
 }
 

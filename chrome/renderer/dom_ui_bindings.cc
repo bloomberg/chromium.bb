@@ -6,7 +6,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/stl_util-inl.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -43,13 +42,10 @@ void DOMUIBindings::send(const CppArgumentList& args, CppVariant* result) {
   if (args.size() == 2) {
     if (!args[1].isObject())
       return;
-    // TODO(evanm): we ought to support more than just sending arrays of
-    // strings, but it's not yet necessary for the current code.
-    std::vector<std::wstring> strings = args[1].ToStringVector();
+    std::vector<std::string> strings = args[1].ToStringVector();
     ListValue value;
     for (size_t i = 0; i < strings.size(); ++i) {
-      // TODO(viettrungluu): remove conversion and utf_string_conversions.h
-      value.Append(Value::CreateStringValue(WideToUTF16Hack(strings[i])));
+      value.Append(Value::CreateStringValue(strings[i]));
     }
     base::JSONWriter::Write(&value, /* pretty_print= */ false, &content);
   }

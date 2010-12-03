@@ -65,8 +65,7 @@ class CppBoundClass {
   // as window.<classname>. The owner of the CppBoundObject is responsible for
   // keeping the object around while the frame is alive, and for destroying it
   // afterwards.
-  void BindToJavascript(
-      WebKit::WebFrame* frame, const std::wstring& classname);
+  void BindToJavascript(WebKit::WebFrame* frame, const std::string& classname);
 
   // The type of callbacks.
   typedef Callback2<const CppArgumentList&, CppVariant*>::Type Callback;

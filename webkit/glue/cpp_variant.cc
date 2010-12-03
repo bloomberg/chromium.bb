@@ -211,10 +211,9 @@ bool CppVariant::ToBoolean() const {
   return value.boolValue;
 }
 
-std::vector<std::wstring> CppVariant::ToStringVector() const {
-
+std::vector<std::string> CppVariant::ToStringVector() const {
   DCHECK(isObject());
-  std::vector<std::wstring> wstring_vector;
+  std::vector<std::string> string_vector;
   NPObject* np_value = value.objectValue;
   NPIdentifier length_id = WebBindings::getStringIdentifier("length");
 
@@ -242,7 +241,7 @@ std::vector<std::wstring> CppVariant::ToStringVector() const {
               std::string string(
                   NPVARIANT_TO_STRING(index_value).UTF8Characters,
                   NPVARIANT_TO_STRING(index_value).UTF8Length);
-              wstring_vector.push_back(UTF8ToWide(string));
+              string_vector.push_back(string);
             }
             WebBindings::releaseVariantValue(&index_value);
           }
@@ -250,7 +249,7 @@ std::vector<std::wstring> CppVariant::ToStringVector() const {
       }
     }
   }
-  return wstring_vector;
+  return string_vector;
 }
 
 bool CppVariant::Invoke(const std::string& method, const CppVariant* args,

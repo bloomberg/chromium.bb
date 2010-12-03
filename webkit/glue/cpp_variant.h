@@ -96,7 +96,7 @@ class CppVariant : public NPVariant {
   bool ToBoolean() const;
   // Returns a vector of strings for the specified argument. This is useful
   // for converting a JavaScript array of strings into a vector of strings.
-  std::vector<std::wstring> ToStringVector() const;
+  std::vector<std::string> ToStringVector() const;
 
   // Invoke method of the given name on an object with the supplied arguments.
   // The first argument should be the object on which the method is to be

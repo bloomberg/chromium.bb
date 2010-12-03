@@ -66,7 +66,7 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
 BlockedPlugin::~BlockedPlugin() {}
 
 void BlockedPlugin::BindWebFrame(WebFrame* frame) {
-  BindToJavascript(frame, L"plugin");
+  BindToJavascript(frame, "plugin");
   BindMethod("load", &BlockedPlugin::Load);
 }
 

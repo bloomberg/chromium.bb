@@ -1862,7 +1862,7 @@ void RenderView::BindDOMAutomationController(WebFrame* frame) {
   dom_automation_controller_->set_message_sender(this);
   dom_automation_controller_->set_routing_id(routing_id_);
   dom_automation_controller_->BindToJavascript(frame,
-                                               L"domAutomationController");
+                                               "domAutomationController");
 }
 
 bool RenderView::RunJavaScriptMessage(int type,
@@ -3429,12 +3429,12 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
       frame_url.SchemeIs(chrome::kDataScheme))) {
     GetDOMUIBindings()->set_message_sender(this);
     GetDOMUIBindings()->set_routing_id(routing_id_);
-    GetDOMUIBindings()->BindToJavascript(frame, L"chrome");
+    GetDOMUIBindings()->BindToJavascript(frame, "chrome");
   }
   if (BindingsPolicy::is_external_host_enabled(enabled_bindings_)) {
     GetExternalHostBindings()->set_message_sender(this);
     GetExternalHostBindings()->set_routing_id(routing_id_);
-    GetExternalHostBindings()->BindToJavascript(frame, L"externalHost");
+    GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
   }
 }
 

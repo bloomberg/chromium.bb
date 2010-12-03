@@ -22,8 +22,7 @@ class AccessibilityController : public CppBoundClass {
   explicit AccessibilityController(TestShell* shell);
 
   // shadow to include accessibility initialization.
-  void BindToJavascript(
-      WebKit::WebFrame* frame, const std::wstring& classname);
+  void BindToJavascript(WebKit::WebFrame* frame, const std::string& classname);
   void Reset();
 
   void SetFocusedElement(const WebKit::WebAccessibilityObject& focused_element);
