@@ -190,6 +190,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'built_elsewhere', default=False,
     desc="The programs have already been built by another system")
 
+  BitFromArgument(env, 'nacl_pic', default=False,
+    desc="generate position indepent code for (P)NaCl modules")
+
   # Defaults on when --verbose is specified.
   # --verbose sets 'brief_comstr' to False, so this looks a little strange
   BitFromArgument(env, 'target_stats', default=not GetOption('brief_comstr'),
@@ -1758,6 +1761,11 @@ nacl_env = pre_base_env.Clone(
 if nacl_env.Bit('bitcode'):
   target_root = nacl_env.subst('${TARGET_ROOT}') + '-pnacl'
   nacl_env.Replace(TARGET_ROOT=target_root)
+
+if nacl_env.Bit('nacl_pic'):
+  target_root = nacl_env.subst('${TARGET_ROOT}') + '-pic'
+  nacl_env.Replace(TARGET_ROOT=target_root)
+
 
 if nacl_env.Bit('running_on_valgrind'):
   nacl_env.Append(CCFLAGS = ['-g', '-Wno-overlength-strings',

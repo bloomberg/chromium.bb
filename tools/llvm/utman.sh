@@ -2643,11 +2643,10 @@ test-scons-common () {
 test-scons-pic-common () {
   local platform=$1
   shift
-  local pic_flags="pnacl_bcldflags=-fPIC nacl_ccflags=-fPIC"
   scons-clean-pnacl-build-dir ${platform}
 
   test_setup=$(scons-determine-tests "$@")
-  run-scons-tests ${platform} ${test_setup} ${pic_flags}
+  run-scons-tests ${platform} ${test_setup} nacl_pic=1
 }
 
 #@ test-arm              - run arm tests via pnacl toolchain

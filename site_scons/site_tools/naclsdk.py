@@ -218,6 +218,12 @@ def _SetEnvForPnacl(env, arch):
   pnacl_sdk_cc_native_flags = ' -std=gnu99 -arch %s' % arch
   pnacl_sdk_ld_flags = ' -arch %s' % arch
   pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
+  if env.Bit('nacl_pic'):
+    pnacl_sdk_cc_flags += ' -fPIC'
+    pnacl_sdk_cxx_flags += ' -fPIC'
+    # NOTE: this is a special hack for the pnacl backend which
+    #       does more than linking
+    pnacl_sdk_ld_flags += ' -fPIC'
 
   cc_other_map = {
       'arm':    pnacl_sdk_cc + pnacl_sdk_cc_native_flags,

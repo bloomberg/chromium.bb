@@ -70,11 +70,6 @@ sloppy_env.AddNodeToTestSuite(node,
                               ['toolchain_tests', 'small_tests'],
                               'run_return_address_test')
 
-
-def IsPicBuild(env):
-  return 'PNACL_BCLDFLAGS' in env and '-fPIC' in env.get('PNACL_BCLDFLAGS', [])
-
-
 # NOTE: we assume that the incoming env contains '-O2', '-fomit-frame-pointer'
 def MakeEnv(use_opts, use_frames):
   new_env = env.Clone()
@@ -113,15 +108,17 @@ for tag, e in ENVIRONMENTS_TO_TRY:
     # http://code.google.com/p/nativeclient/issues/detail?id=720
     if e.Bit('target_arm'):
       # this test needs a lot more work for ARM and does not even compile
-      if  src =='stack_frame.cc':
+      if src =='stack_frame.cc':
         continue
       tests = ['broken_tests']
     # http://code.google.com/p/nativeclient/issues/detail?id=1106
-    if IsPicBuild(e):
-      tests = ['broken_tests']
-    # the tracing gets messed up by inlining
-    if src =='unwind_trace.cc' and tag.startswith('opt'):
-      tests = ['broken_tests']
+    if src =='unwind_trace.cc':
+      if e.Bit('nacl_pic') and e.Bit('target_x86_64'):
+        tests = ['broken_tests']
+
+      # the tracing gets messed up by inlining
+      if tag.startswith('opt'):
+        tests = ['broken_tests']
     name = src.split('.')[0] + '_' + tag
     nobj = e.ComponentObject(name + '.o', src)
     nexe = e.ComponentProgram(name + '.nexe', nobj)
