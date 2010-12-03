@@ -87,14 +87,11 @@ cr.define('options', function() {
 
       var list = $('startupPages');
       options.browser_options.StartupPageList.decorate(list);
+      list.autoExpands = true;
       list.selectionModel = new ListSelectionModel;
 
       list.selectionModel.addEventListener(
           'change', this.updateRemoveButtonState_.bind(this));
-
-      this.addEventListener('visibleChange', function(event) {
-        $('startupPages').redraw();
-      });
 
       // Check if we are in the guest mode.
       if (cr.commandLine.options['--bwsi']) {
@@ -187,6 +184,7 @@ cr.define('options', function() {
      * @param {Array} pages List of startup pages.
      */
     updateStartupPages_: function(pages) {
+      // TODO(stuartmorgan): Once the sub-page is done, handle 0 and > 10 pages.
       $('startupPages').dataModel = new ArrayDataModel(pages);
       this.updateRemoveButtonState_();
     },

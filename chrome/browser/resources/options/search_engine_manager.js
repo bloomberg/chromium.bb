@@ -31,6 +31,7 @@ cr.define('options', function() {
       options.search_engines.SearchEngineList.decorate(this.list_);
       var selectionModel = new ListSingleSelectionModel
       this.list_.selectionModel = selectionModel;
+      this.list_.autoExpands = true;
 
       selectionModel.addEventListener('change',
           this.selectionChanged_.bind(this));
@@ -58,10 +59,6 @@ cr.define('options', function() {
           localStrings.getStringWithoutAccelerator('addSearchEngineButton');
       $('removeSearchEngineButton').textContent =
           localStrings.getStringWithoutAccelerator('removeSearchEngineButton');
-
-      this.addEventListener('visibleChange', function(event) {
-          $('searchEngineList').redraw();
-      });
     },
 
     /**

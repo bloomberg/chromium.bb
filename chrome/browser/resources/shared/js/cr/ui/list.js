@@ -88,6 +88,14 @@ cr.define('cr.ui', function() {
      */
     itemHeight_: 0,
 
+    /**
+     * Whether or not the list is autoexpanding. If true, the list resizes
+     * its height to accomadate all children.
+     * @type {boolean}
+     * @private
+     */
+    autoExpands_: false,
+
     dataModel_: null,
 
     /**
@@ -162,6 +170,20 @@ cr.define('cr.ui', function() {
         sm.addEventListener('change', this.boundHandleOnChange_);
         sm.addEventListener('leadIndexChange', this.boundHandleLeadChange_);
       }
+    },
+
+    /**
+     * Whether or not the list auto-expands.
+     * @type {boolean}
+     */
+    get autoExpands() {
+      return this.autoExpands_;
+    },
+    set autoExpands(autoExpands) {
+      if (this.autoExpands_ == autoExpands)
+        return;
+      this.autoExpands_ = autoExpands;
+      this.redraw();
     },
 
     /**
@@ -464,8 +486,10 @@ cr.define('cr.ui', function() {
 
       var desiredScrollHeight = dataModel.length * itemHeight;
 
-      var firstIndex = Math.floor(scrollTop / itemHeight);
-      var itemsInViewPort = Math.min(dataModel.length - firstIndex,
+      var autoExpands = this.autoExpands_
+      var firstIndex = autoExpands ? 0 : Math.floor(scrollTop / itemHeight);
+      var itemsInViewPort = autoExpands ? dataModel.length : Math.min(
+          dataModel.length - firstIndex,
           Math.ceil((scrollTop + clientHeight - firstIndex * itemHeight) /
                     itemHeight));
       var lastIndex = firstIndex + itemsInViewPort;

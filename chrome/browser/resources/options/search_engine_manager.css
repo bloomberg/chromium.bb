@@ -1,3 +1,8 @@
+#searchEngineList {
+  height: auto;
+  padding-bottom: 1px;
+}
+
 #searchEngineList > div, #searchEngineHeading {
   display: -webkit-box;
 }

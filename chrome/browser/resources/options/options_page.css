@@ -339,6 +339,29 @@ select {
   background-color: pink;
 }
 
+list > * {
+  -webkit-box-align: center;
+  -webkit-box-sizing: border-box;
+  border-radius: 0px;
+  display: -webkit-box;
+  height: 32px;
+  border: none;
+}
+
+list > :hover {
+  background-color: #f2f2f2;
+}
+
+list > [selected],
+list:focus > [selected],
+list:focus > [lead][selected],
+list > [selected]:hover {
+  background-color: #f2f2f2;
+  border-top: 1px solid #b2b2b2;
+  border-bottom: 1px solid #b2b2b2;
+  background-image: none;
+}
+
 list > .heading {
   color: #666666;
 }
@@ -376,6 +399,11 @@ html[dir=rtl].option-name {
   -webkit-padding-start: 20px;
   background-position: left;
   background-repeat: no-repeat;
+}
+
+list .favicon-cell {
+  -webkit-margin-start: 7px;
+  -webkit-padding-start: 26px;
 }
 
 html[dir=rtl] .favicon-cell {

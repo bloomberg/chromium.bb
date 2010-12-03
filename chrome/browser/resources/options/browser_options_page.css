@@ -1,6 +1,16 @@
+#startupPageManagement {
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+}
+
 #startupPages {
-  border: solid 1px #999999;
-  height: 100px;
+  height: auto;
+  padding-bottom: 1px;
+}
+
+#startupPageManagement > :last-child {
+  border-top: 1px solid #d9d9d9;
+  padding: 5px 10px;
 }
 
 #customHomePageGroup {
