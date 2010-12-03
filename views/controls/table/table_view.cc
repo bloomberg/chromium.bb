@@ -680,13 +680,10 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
               // Unselect everything.
               ListView_SetItemState(window, -1, 0, LVIS_SELECTED);
               select = false;
-
-              // Select from mark to mouse down location.
-              for (int i = std::min(view_index, mark_view_index),
-                   max_i = std::max(view_index, mark_view_index); i <= max_i;
-                   ++i) {
-                table_view->SetSelectedState(table_view->ViewToModel(i),
-                                             true);
+              if (!table_view->SelectMultiple(view_index, mark_view_index)) {
+                // Selection spans group boundary - reset selection to current.
+                table_view->SetSelectedState(model_index, true);
+                ListView_SetSelectionMark(window, view_index);
               }
             }
           }
@@ -916,6 +913,32 @@ void TableView::SortItemsAndUpdateMapping() {
     view_to_model_[i] = model_index;
     model_to_view_[model_index] = i;
   }
+}
+
+bool TableView::SelectMultiple(int view_index, int mark_view_index) {
+  int group_id = 0;
+  if (model_->HasGroups()) {
+    group_id = model_->GetGroupID(ViewToModel(view_index));
+    if (group_id != model_->GetGroupID(ViewToModel(mark_view_index))) {
+      // User is trying to do a cross-group selection - bail out.
+      return false;
+    }
+  }
+
+  // Select from mark to mouse down location.
+  for (int i = std::min(view_index, mark_view_index),
+       max_i = std::max(view_index, mark_view_index); i <= max_i;
+       ++i) {
+    // Items between the view_index and mark_view_index are not necessarily in
+    // the same group, so don't select anything outside the group the user
+    // just clicked in.
+    if (model_->HasGroups() &&
+        model_->GetGroupID(ViewToModel(i)) != group_id) {
+      continue;
+    }
+    SetSelectedState(ViewToModel(i), true);
+  }
+  return true;
 }
 
 // static

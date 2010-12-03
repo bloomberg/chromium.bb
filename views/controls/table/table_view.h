@@ -18,6 +18,7 @@ typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 
 #include "app/keyboard_codes.h"
 #include "app/table_model_observer.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #if defined(OS_WIN)
 // TODO(port): remove the ifdef when native_control.h is ported.
@@ -323,6 +324,9 @@ class TableView : public NativeControl,
 
   friend class ListViewParent;
   friend class TableSelectionIterator;
+  friend class GroupModelTableViewTest;
+  FRIEND_TEST_ALL_PREFIXES(GroupModelTableViewTest, ShiftSelectAcrossGroups);
+  FRIEND_TEST_ALL_PREFIXES(GroupModelTableViewTest, ShiftSelectSameGroup);
 
   LRESULT OnCustomDraw(NMLVCUSTOMDRAW* draw_info);
 
@@ -339,6 +343,13 @@ class TableView : public NativeControl,
   // Does the actual sort and updates the mappings (view_to_model and
   // model_to_view) appropriately.
   void SortItemsAndUpdateMapping();
+
+  // Selects multiple items from the current view row to the marked view row
+  // (implements shift-click behavior). |view_index| is the most recent row
+  // that the user clicked on, and so there is no guarantee that
+  // |view_index| > |mark_view_index| or vice-versa. Returns false if the
+  // selection attempt was rejected because it crossed group boundaries.
+  bool SelectMultiple(int view_index, int mark_view_index);
 
   // Method invoked by ListView to compare the two values. Invokes CompareRows.
   static int CALLBACK SortFunc(LPARAM model_index_1_p,
