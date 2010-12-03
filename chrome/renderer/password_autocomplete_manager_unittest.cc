@@ -49,6 +49,8 @@ const char* const kFormHTML =
     "  <INPUT type='submit' value='Login'/>"
     "</FORM>";
 
+}  // namespace
+
 class PasswordAutocompleteManagerTest : public RenderViewTest {
  public:
   PasswordAutocompleteManagerTest() {
@@ -328,6 +330,4 @@ TEST_F(PasswordAutocompleteManagerTest, SuggestionSelect) {
 
   // Autocomplete should have kicked in.
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
-}
-
 }
