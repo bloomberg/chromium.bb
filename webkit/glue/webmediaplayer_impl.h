@@ -69,10 +69,6 @@
 
 class GURL;
 
-namespace WebKit {
-class WebFrame;
-}
-
 namespace webkit_glue {
 
 class MediaResourceLoaderBridgeFactory;
@@ -180,7 +176,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   // Finalizes initialization of the object.
   bool Initialize(
-      WebKit::WebFrame* frame,
+      MediaResourceLoaderBridgeFactory* bridge_factory_simple,
+      MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
       bool use_simple_data_source,
       scoped_refptr<WebVideoRenderer> web_video_renderer);
 

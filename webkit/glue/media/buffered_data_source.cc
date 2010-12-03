@@ -4,32 +4,18 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "media/base/filter_host.h"
 #include "media/base/media_format.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
+#include "net/http/http_response_headers.h"
 #include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
-
-using WebKit::WebFrame;
-using WebKit::WebString;
-using WebKit::WebURLError;
-using WebKit::WebURLLoader;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
-using webkit_glue::MultipartResponseDelegate;
 
 namespace {
 
@@ -84,10 +70,10 @@ bool IsDataProtocol(const GURL& url) {
 }  // namespace
 
 namespace webkit_glue {
-
 /////////////////////////////////////////////////////////////////////////////
 // BufferedResourceLoader
 BufferedResourceLoader::BufferedResourceLoader(
+    webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory,
     const GURL& url,
     int64 first_byte_position,
     int64 last_byte_position)
@@ -97,10 +83,12 @@ BufferedResourceLoader::BufferedResourceLoader(
       completed_(false),
       range_requested_(false),
       partial_response_(false),
+      bridge_factory_(bridge_factory),
       url_(url),
       first_byte_position_(first_byte_position),
       last_byte_position_(last_byte_position),
       start_callback_(NULL),
+      bridge_(NULL),
       offset_(0),
       content_length_(kPositionNotSpecified),
       instance_size_(kPositionNotSpecified),
@@ -109,24 +97,20 @@ BufferedResourceLoader::BufferedResourceLoader(
       read_size_(0),
       read_buffer_(NULL),
       first_offset_(0),
-      last_offset_(0),
-      keep_test_loader_(false) {
+      last_offset_(0) {
 }
 
 BufferedResourceLoader::~BufferedResourceLoader() {
-  if (!completed_ && url_loader_.get())
-    url_loader_->cancel();
 }
 
 void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
-                                   NetworkEventCallback* event_callback,
-                                   WebFrame* frame) {
+                                   NetworkEventCallback* event_callback) {
   // Make sure we have not started.
+  DCHECK(!bridge_.get());
   DCHECK(!start_callback_.get());
   DCHECK(!event_callback_.get());
   DCHECK(start_callback);
   DCHECK(event_callback);
-  CHECK(frame);
 
   start_callback_.reset(start_callback);
   event_callback_.reset(event_callback);
@@ -138,26 +122,21 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
     offset_ = first_byte_position_;
   }
 
+  // Creates the bridge on render thread since we can only access
+  // ResourceDispatcher on this thread.
+  bridge_.reset(
+      bridge_factory_->CreateBridge(
+          url_,
+          net::LOAD_NORMAL,
+          first_byte_position_,
+          last_byte_position_));
+
   // Increment the reference count right before we start the request. This
   // reference will be release when this request has ended.
   AddRef();
 
-  // Prepare the request.
-  WebURLRequest request(url_);
-  request.setHTTPHeaderField(WebString::fromUTF8("Range"),
-                             WebString::fromUTF8(GenerateHeaders(
-                                                 first_byte_position_,
-                                                 last_byte_position_)));
-  frame->setReferrerForRequest(request, WebKit::WebURL());
-  // TODO(annacc): we should be using createAssociatedURLLoader() instead?
-  frame->dispatchWillSendRequest(request);
-
-  // This flag is for unittests as we don't want to reset |url_loader|
-  if (!keep_test_loader_)
-    url_loader_.reset(WebKit::webKitClient()->createURLLoader());
-
-  // Start the resource loading.
-  url_loader_->loadAsynchronously(request, this);
+  // And start the resource loading.
+  bridge_->Start(this);
 }
 
 void BufferedResourceLoader::Stop() {
@@ -174,15 +153,14 @@ void BufferedResourceLoader::Stop() {
   // Destroy internal buffer.
   buffer_.reset();
 
-  if (url_loader_.get()) {
+  if (bridge_.get()) {
+    // Cancel the request. This method call will cancel the request
+    // asynchronously. We may still get data or messages until we receive
+    // a response completed message.
     if (deferred_)
-      url_loader_->setDefersLoading(false);
+      bridge_->SetDefersLoading(false);
     deferred_ = false;
-
-    if (!completed_) {
-      url_loader_->cancel();
-      completed_ = true;
-    }
+    bridge_->Cancel();
   }
 }
 
@@ -253,47 +231,38 @@ void BufferedResourceLoader::SetAllowDefer(bool is_allowed) {
   DisableDeferIfNeeded();
 }
 
-void BufferedResourceLoader::SetURLLoaderForTest(WebURLLoader* mock_loader) {
-  url_loader_.reset(mock_loader);
-  keep_test_loader_ = true;
-}
-
 /////////////////////////////////////////////////////////////////////////////
-// BufferedResourceLoader, WebKit::WebURLLoaderClient implementations.
-void BufferedResourceLoader::willSendRequest(
-    WebURLLoader* loader,
-    WebURLRequest& newRequest,
-    const WebURLResponse& redirectResponse) {
+// BufferedResourceLoader,
+//     webkit_glue::ResourceLoaderBridge::Peer implementations
+bool BufferedResourceLoader::OnReceivedRedirect(
+    const GURL& new_url,
+    const webkit_glue::ResourceResponseInfo& info,
+    bool* has_new_first_party_for_cookies,
+    GURL* new_first_party_for_cookies) {
+  DCHECK(bridge_.get());
+
+  // Save the new URL.
+  url_ = new_url;
+  // TODO(wtc): should we return a new first party for cookies URL?
+  *has_new_first_party_for_cookies = false;
 
   // The load may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.
-  if (!start_callback_.get()) {
-    // Set the url in the request to an invalid value (empty url).
-    newRequest.setURL(WebKit::WebURL());
-    return;
-  }
+  if (!start_callback_.get())
+    return true;
 
-  if (!IsProtocolSupportedForMedia(newRequest.url())) {
-    // Set the url in the request to an invalid value (empty url).
-    newRequest.setURL(WebKit::WebURL());
+  if (!IsProtocolSupportedForMedia(new_url)) {
     DoneStart(net::ERR_ADDRESS_INVALID);
     Stop();
-    return;
+    return false;
   }
-
-  url_ = newRequest.url();
+  return true;
 }
 
-void BufferedResourceLoader::didSendData(
-    WebURLLoader* loader,
-    unsigned long long bytes_sent,
-    unsigned long long total_bytes_to_be_sent) {
-  NOTIMPLEMENTED();
-}
-
-void BufferedResourceLoader::didReceiveResponse(
-    WebURLLoader* loader,
-    const WebURLResponse& response) {
+void BufferedResourceLoader::OnReceivedResponse(
+    const webkit_glue::ResourceResponseInfo& info,
+    bool content_filtered) {
+  DCHECK(bridge_.get());
 
   // The loader may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.
@@ -306,18 +275,23 @@ void BufferedResourceLoader::didReceiveResponse(
   // response for HTTP and HTTPS protocol.
   if (IsHttpProtocol(url_)) {
     int error = net::OK;
+    if (!info.headers) {
+      // We expect to receive headers because this is a HTTP or HTTPS protocol,
+      // if not report failure.
+      error = net::ERR_INVALID_RESPONSE;
+    } else {
+      if (info.headers->response_code() == kHttpPartialContent)
+        partial_response_ = true;
 
-    if (response.httpStatusCode() == kHttpPartialContent)
-      partial_response_ = true;
-
-    if (range_requested_ && partial_response_) {
-      // If we have verified the partial response and it is correct, we will
-      // return net::OK.
-      if (!VerifyPartialResponse(response))
-        error = net::ERR_INVALID_RESPONSE;
-    } else if (response.httpStatusCode() != kHttpOK) {
-      // We didn't request a range but server didn't reply with "200 OK".
-      error = net::ERR_FAILED;
+      if (range_requested_ && partial_response_) {
+        // If we have verified the partial response and it is correct, we will
+        // return net::OK.
+        if (!VerifyPartialResponse(info))
+          error = net::ERR_INVALID_RESPONSE;
+      } else if (info.headers->response_code() != kHttpOK) {
+        // We didn't request a range but server didn't reply with "200 OK".
+        error = net::ERR_FAILED;
+      }
     }
 
     if (error != net::OK) {
@@ -331,9 +305,9 @@ void BufferedResourceLoader::didReceiveResponse(
     partial_response_ = range_requested_;
   }
 
-  // Expected content length can be -1, in that case |content_length_| is
+  // |info.content_length| can be -1, in that case |content_length_| is
   // not specified and this is a streaming response.
-  content_length_ = response.expectedContentLength();
+  content_length_ = info.content_length;
 
   // If we have not requested a range, then the size of the instance is equal
   // to the content length.
@@ -344,12 +318,8 @@ void BufferedResourceLoader::didReceiveResponse(
   DoneStart(net::OK);
 }
 
-void BufferedResourceLoader::didReceiveData(
-    WebURLLoader* loader,
-    const char* data,
-    int data_length) {
-  DCHECK(!completed_);
-  DCHECK_GT(data_length, 0);
+void BufferedResourceLoader::OnReceivedData(const char* data, int len) {
+  DCHECK(bridge_.get());
 
   // If this loader has been stopped, |buffer_| would be destroyed.
   // In this case we shouldn't do anything.
@@ -357,7 +327,7 @@ void BufferedResourceLoader::didReceiveData(
     return;
 
   // Writes more data to |buffer_|.
-  buffer_->Append(reinterpret_cast<const uint8*>(data), data_length);
+  buffer_->Append(reinterpret_cast<const uint8*>(data), len);
 
   // If there is an active read request, try to fulfill the request.
   if (HasPendingRead() && CanFulfillRead()) {
@@ -380,28 +350,18 @@ void BufferedResourceLoader::didReceiveData(
   NotifyNetworkEvent();
 }
 
-void BufferedResourceLoader::didDownloadData(
-    WebKit::WebURLLoader* loader,
-    int dataLength) {
-  NOTIMPLEMENTED();
-}
+void BufferedResourceLoader::OnCompletedRequest(
+    const URLRequestStatus& status,
+    const std::string& security_info,
+    const base::Time& completion_time) {
+  DCHECK(bridge_.get());
 
-void BufferedResourceLoader::didReceiveCachedMetadata(
-    WebURLLoader* loader,
-    const char* data,
-    int data_length) {
-  NOTIMPLEMENTED();
-}
-
-void BufferedResourceLoader::didFinishLoading(
-    WebURLLoader* loader,
-    double finishTime) {
-  DCHECK(!completed_);
+  // Saves the information that the request has completed.
   completed_ = true;
 
   // If there is a start callback, calls it.
   if (start_callback_.get()) {
-    DoneStart(net::OK);
+    DoneStart(status.os_error());
   }
 
   // If there is a pending read but the request has ended, returns with what
@@ -410,11 +370,16 @@ void BufferedResourceLoader::didFinishLoading(
     // Make sure we have a valid buffer before we satisfy a read request.
     DCHECK(buffer_.get());
 
-    // Try to fulfill with what is in the buffer.
-    if (CanFulfillRead())
-      ReadInternal();
-    else
-      DoneRead(net::ERR_CACHE_MISS);
+    if (status.is_success()) {
+      // Try to fulfill with what is in the buffer.
+      if (CanFulfillRead())
+        ReadInternal();
+      else
+        DoneRead(net::ERR_CACHE_MISS);
+    } else {
+      // If the request has failed, then fail the read.
+      DoneRead(net::ERR_FAILED);
+    }
   }
 
   // There must not be any outstanding read request.
@@ -423,31 +388,10 @@ void BufferedResourceLoader::didFinishLoading(
   // Notify that network response is completed.
   NotifyNetworkEvent();
 
-  url_loader_.reset();
-  Release();
-}
-
-void BufferedResourceLoader::didFail(
-    WebURLLoader* loader,
-    const WebURLError& error) {
-  DCHECK(!completed_);
-  completed_ = true;
-
-  // If there is a start callback, calls it.
-  if (start_callback_.get()) {
-    DoneStart(error.reason);
-  }
-
-  // If there is a pending read but the request failed, return with the
-  // reason for the error.
-  if (HasPendingRead()) {
-    DoneRead(error.reason);
-  }
-
-  // Notify that network response is completed.
-  NotifyNetworkEvent();
-
-  url_loader_.reset();
+  // We incremented the reference count when the loader was started. We balance
+  // that reference here so that we get destroyed. This is also the only safe
+  // place to destroy the ResourceLoaderBridge.
+  bridge_.reset();
   Release();
 }
 
@@ -461,8 +405,8 @@ void BufferedResourceLoader::EnableDeferIfNeeded() {
       buffer_->forward_bytes() >= buffer_->forward_capacity()) {
     deferred_ = true;
 
-  if (url_loader_.get())
-    url_loader_->setDefersLoading(true);
+    if (bridge_.get())
+      bridge_->SetDefersLoading(true);
 
     NotifyNetworkEvent();
   }
@@ -474,8 +418,8 @@ void BufferedResourceLoader::DisableDeferIfNeeded() {
        buffer_->forward_bytes() < buffer_->forward_capacity() / 2)) {
     deferred_ = false;
 
-    if (url_loader_.get())
-      url_loader_->setDefersLoading(false);
+    if (bridge_.get())
+      bridge_->SetDefersLoading(false);
 
     NotifyNetworkEvent();
   }
@@ -536,21 +480,18 @@ void BufferedResourceLoader::ReadInternal() {
 }
 
 bool BufferedResourceLoader::VerifyPartialResponse(
-    const WebURLResponse& response) {
-  int first_byte_position, last_byte_position, instance_size;
-
-  if (!MultipartResponseDelegate::ReadContentRanges(response,
-                         &first_byte_position,
-                         &last_byte_position,
-                         &instance_size)) {
+    const ResourceResponseInfo& info) {
+  int64 first_byte_position, last_byte_position, instance_size;
+  if (!info.headers->GetContentRange(&first_byte_position,
+                                     &last_byte_position,
+                                     &instance_size)) {
     return false;
   }
 
-  if (instance_size != kPositionNotSpecified) {
+  if (instance_size != kPositionNotSpecified)
     instance_size_ = instance_size;
-  }
 
-  if (first_byte_position_ != kPositionNotSpecified &&
+  if (first_byte_position_ != -1 &&
       first_byte_position_ != first_byte_position) {
     return false;
   }
@@ -558,27 +499,6 @@ bool BufferedResourceLoader::VerifyPartialResponse(
   // TODO(hclam): I should also check |last_byte_position|, but since
   // we will never make such a request that it is ok to leave it unimplemented.
   return true;
-}
-
-std::string BufferedResourceLoader::GenerateHeaders(
-    int64 first_byte_position,
-    int64 last_byte_position) {
-  // Construct the value for the range header.
-  std::string header;
-  if (first_byte_position > kPositionNotSpecified &&
-      last_byte_position > kPositionNotSpecified) {
-    if (first_byte_position <= last_byte_position) {
-      header = base::StringPrintf("bytes=%" PRId64 "-%" PRId64,
-                                  first_byte_position,
-                                  last_byte_position);
-    }
-  } else if (first_byte_position > kPositionNotSpecified) {
-    header = base::StringPrintf("bytes=%" PRId64 "-",
-                                first_byte_position);
-  } else if (last_byte_position > kPositionNotSpecified) {
-    NOTIMPLEMENTED() << "Suffix range not implemented";
-  }
-  return header;
 }
 
 void BufferedResourceLoader::DoneRead(int error) {
@@ -605,12 +525,12 @@ void BufferedResourceLoader::NotifyNetworkEvent() {
 // BufferedDataSource
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
-    WebFrame* frame)
+    webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory)
     : total_bytes_(kPositionNotSpecified),
       loaded_(false),
       streaming_(false),
-      frame_(frame),
       single_origin_(true),
+      bridge_factory_(bridge_factory),
       loader_(NULL),
       network_activity_(false),
       initialize_callback_(NULL),
@@ -638,7 +558,7 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
     int64 first_byte_position, int64 last_byte_position) {
   DCHECK(MessageLoop::current() == render_loop_);
 
-  return new BufferedResourceLoader(url_,
+  return new BufferedResourceLoader(bridge_factory_.get(), url_,
                                     first_byte_position,
                                     last_byte_position);
 }
@@ -738,12 +658,12 @@ void BufferedDataSource::Abort() {
   // If we are told to abort, immediately return from any pending read
   // with an error.
   if (read_callback_.get()) {
+    {
       AutoLock auto_lock(lock_);
       DoneRead_Locked(net::ERR_FAILED);
+    }
+    CleanupTask();
   }
-
-  CleanupTask();
-  frame_ = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -770,8 +690,7 @@ void BufferedDataSource::InitializeTask() {
     loader_ = CreateResourceLoader(0, 1024);
     loader_->Start(
         NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),
-        NewCallback(this, &BufferedDataSource::NetworkEventCallback),
-        frame_);
+        NewCallback(this, &BufferedDataSource::NetworkEventCallback));
   } else {
     // For all other protocols, assume they support range request. We fetch
     // the full range of the resource to obtain the instance size because
@@ -779,8 +698,7 @@ void BufferedDataSource::InitializeTask() {
     loader_ = CreateResourceLoader(-1, -1);
     loader_->Start(
         NewCallback(this, &BufferedDataSource::NonHttpInitialStartCallback),
-        NewCallback(this, &BufferedDataSource::NetworkEventCallback),
-        frame_);
+        NewCallback(this, &BufferedDataSource::NetworkEventCallback));
   }
 }
 
@@ -857,8 +775,7 @@ void BufferedDataSource::RestartLoadingTask() {
   loader_->SetAllowDefer(!media_is_paused_);
   loader_->Start(
       NewCallback(this, &BufferedDataSource::PartialReadStartCallback),
-      NewCallback(this, &BufferedDataSource::NetworkEventCallback),
-      frame_);
+      NewCallback(this, &BufferedDataSource::NetworkEventCallback));
 }
 
 void BufferedDataSource::WatchDogTask() {
@@ -889,8 +806,7 @@ void BufferedDataSource::WatchDogTask() {
   loader_->SetAllowDefer(!media_is_paused_);
   loader_->Start(
       NewCallback(this, &BufferedDataSource::PartialReadStartCallback),
-      NewCallback(this, &BufferedDataSource::NetworkEventCallback),
-      frame_);
+      NewCallback(this, &BufferedDataSource::NetworkEventCallback));
 }
 
 void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
@@ -913,7 +829,7 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
 // prior to make this method call.
 void BufferedDataSource::ReadInternal() {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(loader_);
+  DCHECK(loader_.get());
 
   // First we prepare the intermediate read buffer for BufferedResourceLoader
   // to write to.
@@ -988,8 +904,7 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
     loader_ = CreateResourceLoader(-1, -1);
     loader_->Start(
         NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),
-        NewCallback(this, &BufferedDataSource::NetworkEventCallback),
-        frame_);
+        NewCallback(this, &BufferedDataSource::NetworkEventCallback));
     return;
   }
 

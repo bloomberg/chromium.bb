@@ -96,12 +96,10 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   // response.
   virtual void didReceiveResponse(
       WebURLLoader*, const WebURLResponse& response) {
-    int instance_size;
     if (!MultipartResponseDelegate::ReadContentRanges(
             response,
             &byte_range_lower_bound_,
-            &byte_range_upper_bound_,
-            &instance_size)) {
+            &byte_range_upper_bound_)) {
       NOTREACHED();
       return;
     }

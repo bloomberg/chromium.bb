@@ -244,7 +244,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 }
 
 bool WebMediaPlayerImpl::Initialize(
-    WebKit::WebFrame* frame,
+    MediaResourceLoaderBridgeFactory* bridge_factory_simple,
+    MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
     bool use_simple_data_source,
     scoped_refptr<WebVideoRenderer> web_video_renderer) {
   // Create the pipeline and its thread.
@@ -274,11 +275,11 @@ bool WebMediaPlayerImpl::Initialize(
 
   // A simple data source that keeps all data in memory.
   scoped_refptr<SimpleDataSource> simple_data_source(
-    new SimpleDataSource(MessageLoop::current(), frame));
+      new SimpleDataSource(MessageLoop::current(), bridge_factory_simple));
 
   // A sophisticated data source that does memory caching.
   scoped_refptr<BufferedDataSource> buffered_data_source(
-      new BufferedDataSource(MessageLoop::current(), frame));
+      new BufferedDataSource(MessageLoop::current(), bridge_factory_buffered));
   proxy_->SetDataSource(buffered_data_source);
 
   if (use_simple_data_source) {

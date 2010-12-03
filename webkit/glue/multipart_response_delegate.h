@@ -92,8 +92,7 @@ class MultipartResponseDelegate {
   // Returns true on success.
   static bool ReadContentRanges(const WebKit::WebURLResponse& response,
                                 int* content_range_lower_bound,
-                                int* content_range_upper_bound,
-                                int* content_range_instance_size);
+                                int* content_range_upper_bound);
 
  private:
   friend class MultipartResponseDelegateTester;  // For unittests.
