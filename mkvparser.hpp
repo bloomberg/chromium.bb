@@ -532,6 +532,7 @@ public:
     //for incremental loading
     long long Unparsed() const;
     long long ParseHeaders();  //stops when first cluster is found
+    //long FindNextCluster(long long& pos, long& size) const;
     long LoadCluster(long long& pos, long& size);  //load one cluster
     long LoadCluster();
 

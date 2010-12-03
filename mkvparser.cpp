@@ -874,8 +874,10 @@ long long Segment::CreateInstance(
             else if ((pos + size) > total)
                 return E_FILE_FORMAT_INVALID;
 
-            pSegment = new  Segment(pReader, pos, size);
-            assert(pSegment);  //TODO
+            pSegment = new (std::nothrow) Segment(pReader, pos, size);
+
+            if (pSegment == 0)
+                return -1;  //generic error
 
             return 0;    //success
         }
@@ -886,12 +888,7 @@ long long Segment::CreateInstance(
         pos += size;  //consume payload
     }
 
-    assert(pos == total);
-
-    pSegment = new Segment(pReader, pos, 0);
-    assert(pSegment);  //TODO
-
-    return 0;  //success (sort of)
+    return E_FILE_FORMAT_INVALID;  //there is no segment
 }
 
 
@@ -1008,6 +1005,93 @@ long long Segment::ParseHeaders()
 
     return 0;  //success
 }
+
+
+#if 0
+long Segment::FindNextCluster(long long& pos, size& len) const
+{
+    //Outermost (level 0) segment object has been constructed,
+    //and pos designates start of payload.  We need to find the
+    //inner (level 1) elements.
+    long long total, available;
+
+    const int status = m_pReader->Length(&total, &available);
+    assert(status == 0);
+    assert(total >= 0);
+    assert(available <= total);
+
+    const long long stop = m_start + m_size;
+    assert(stop <= total);
+    assert(m_pos <= stop);
+
+    pos = m_pos;
+
+    while (pos < stop)
+    {
+        long long result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)
+            return static_cast<long>(result);
+
+        if (result > 0)
+            return E_BUFFER_NOT_FULL;
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        if ((pos + len) > available)
+            return E_BUFFER_NOT_FULL;
+
+        const long long idpos = pos;
+        const long long id = ReadUInt(m_pReader, idpos, len);
+
+        if (id < 0)  //error
+            return static_cast<long>(id);
+
+        pos += len;  //consume ID
+
+        //Read Size
+        result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+
+        if (result > 0)
+            return E_BUFFER_NOT_FULL;
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        if ((pos + len) > available)
+            return E_BUFFER_NOT_FULL;
+
+        const long long size = ReadUInt(m_pReader, pos, len);
+
+        if (size < 0)  //error
+            return static_cast<long>(size);
+
+        pos += len;  //consume length of size of element
+
+        //Pos now points to start of payload
+
+        if ((pos + size) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        if ((pos + size) > available)
+            return E_BUFFER_NOT_FULL;
+
+        if (id == 0x0F43B675)  //Cluster ID
+        {
+            len = static_cast<long>(size);
+            return 0;  //success
+        }
+
+        pos += size;  //consume payload
+    }
+
+    return E_FILE_FORMAT_INVALID;
+}
+#endif
 
 
 long Segment::ParseCluster(long long& off, long long& new_pos) const
