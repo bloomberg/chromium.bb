@@ -645,6 +645,7 @@ bool SafeBrowsingStoreSqlite::DoUpdate(
 
 bool SafeBrowsingStoreSqlite::FinishUpdate(
     const std::vector<SBAddFullHash>& pending_adds,
+    const std::set<SBPrefix>& prefix_misses,
     std::vector<SBAddPrefix>* add_prefixes_result,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
   bool ret = DoUpdate(pending_adds,

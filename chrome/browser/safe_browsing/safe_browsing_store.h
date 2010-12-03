@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_H_
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -145,6 +146,11 @@ void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
                    const base::hash_set<int32>& add_chunks_deleted,
                    const base::hash_set<int32>& sub_chunks_deleted);
 
+// Records a histogram of the number of items in |prefix_misses| which
+// are not in |add_prefixes|.
+void SBCheckPrefixMisses(const std::vector<SBAddPrefix>& add_prefixes,
+                         const std::set<SBPrefix>& prefix_misses);
+
 // TODO(shess): This uses int32 rather than int because it's writing
 // specifically-sized items to files.  SBPrefix should likewise be
 // explicitly sized.
@@ -212,9 +218,12 @@ class SafeBrowsingStore {
   // |pending_adds| is the set of full hashes which have been received
   // since the previous update, and is provided as a convenience
   // (could be written via WriteAddHash(), but that would flush the
-  // chunk to disk).
+  // chunk to disk).  |prefix_misses| is the set of prefixes where the
+  // |GetHash()| request returned no full hashes, used for diagnostic
+  // purposes.
   virtual bool FinishUpdate(
       const std::vector<SBAddFullHash>& pending_adds,
+      const std::set<SBPrefix>& prefix_misses,
       std::vector<SBAddPrefix>* add_prefixes_result,
       std::vector<SBAddFullHash>* add_full_hashes_result) = 0;
 

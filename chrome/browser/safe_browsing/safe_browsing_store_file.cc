@@ -437,6 +437,7 @@ bool SafeBrowsingStoreFile::FinishChunk() {
 
 bool SafeBrowsingStoreFile::DoUpdate(
     const std::vector<SBAddFullHash>& pending_adds,
+    const std::set<SBPrefix>& prefix_misses,
     std::vector<SBAddPrefix>* add_prefixes_result,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
   DCHECK(old_store_.get() || file_.get() || empty_);
@@ -577,6 +578,10 @@ bool SafeBrowsingStoreFile::DoUpdate(
   add_full_hashes.insert(add_full_hashes.end(),
                          pending_adds.begin(), pending_adds.end());
 
+  // Check how often a prefix was checked which wasn't in the
+  // database.
+  SBCheckPrefixMisses(add_prefixes, prefix_misses);
+
   // Knock the subs from the adds and process deleted chunks.
   SBProcessSubs(&add_prefixes, &sub_prefixes,
                 &add_full_hashes, &sub_full_hashes,
@@ -658,9 +663,10 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
 bool SafeBrowsingStoreFile::FinishUpdate(
     const std::vector<SBAddFullHash>& pending_adds,
+    const std::set<SBPrefix>& prefix_misses,
     std::vector<SBAddPrefix>* add_prefixes_result,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
-  bool ret = DoUpdate(pending_adds,
+  bool ret = DoUpdate(pending_adds, prefix_misses,
                       add_prefixes_result, add_full_hashes_result);
 
   if (!ret) {

@@ -546,7 +546,7 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
 
   std::vector<SBAddPrefix> add_prefixes;
   std::vector<SBAddFullHash> add_full_hashes;
-  if (!store_->FinishUpdate(pending_add_hashes,
+  if (!store_->FinishUpdate(pending_add_hashes, prefix_miss_cache_,
                             &add_prefixes, &add_full_hashes)) {
     RecordFailure(FAILURE_DATABASE_UPDATE_FINISH);
     return;

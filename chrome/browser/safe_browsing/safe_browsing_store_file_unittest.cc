@@ -99,10 +99,11 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
 
   // Can successfully open and read the store.
   std::vector<SBAddFullHash> pending_adds;
+  std::set<SBPrefix> prefix_misses;
   std::vector<SBAddPrefix> orig_prefixes;
   std::vector<SBAddFullHash> orig_hashes;
   EXPECT_TRUE(test_store.BeginUpdate());
-  EXPECT_TRUE(test_store.FinishUpdate(pending_adds,
+  EXPECT_TRUE(test_store.FinishUpdate(pending_adds, prefix_misses,
                                       &orig_prefixes, &orig_hashes));
   EXPECT_GT(orig_prefixes.size(), 0U);
   EXPECT_GT(orig_hashes.size(), 0U);
@@ -125,7 +126,7 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   std::vector<SBAddFullHash> add_hashes;
   corruption_detected_ = false;
   EXPECT_TRUE(test_store.BeginUpdate());
-  EXPECT_FALSE(test_store.FinishUpdate(pending_adds,
+  EXPECT_FALSE(test_store.FinishUpdate(pending_adds, prefix_misses,
                                        &add_prefixes, &add_hashes));
   EXPECT_TRUE(corruption_detected_);
   EXPECT_EQ(add_prefixes.size(), 0U);
@@ -178,9 +179,11 @@ void LoadStore(SafeBrowsingStore* store) {
   EXPECT_TRUE(store->FinishChunk());
 
   std::vector<SBAddFullHash> pending_adds;
+  std::set<SBPrefix> prefix_misses;
   std::vector<SBAddPrefix> add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
-  EXPECT_TRUE(store->FinishUpdate(pending_adds, &add_prefixes, &add_hashes));
+  EXPECT_TRUE(store->FinishUpdate(pending_adds, prefix_misses,
+                                  &add_prefixes, &add_hashes));
   EXPECT_EQ(3U, add_prefixes.size());
 }
 
@@ -221,9 +224,11 @@ void UpdateStore(SafeBrowsingStore* store) {
   store->DeleteAddChunk(kAddChunk2);
 
   std::vector<SBAddFullHash> pending_adds;
+  std::set<SBPrefix> prefix_misses;
   std::vector<SBAddPrefix> add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
-  EXPECT_TRUE(store->FinishUpdate(pending_adds, &add_prefixes, &add_hashes));
+  EXPECT_TRUE(store->FinishUpdate(pending_adds, prefix_misses,
+                                  &add_prefixes, &add_hashes));
   EXPECT_EQ(2U, add_prefixes.size());
 }
 

@@ -64,7 +64,10 @@ class SafeBrowsingStoreSqlite : public SafeBrowsingStore {
   virtual bool DoUpdate(const std::vector<SBAddFullHash>& pending_adds,
                         std::vector<SBAddPrefix>* add_prefixes_result,
                         std::vector<SBAddFullHash>* add_full_hashes_result);
+  // NOTE: |prefix_misses| is ignored, as it will be handled in
+  // |SafeBrowsingStoreFile::DoUpdate()|.
   virtual bool FinishUpdate(const std::vector<SBAddFullHash>& pending_adds,
+                            const std::set<SBPrefix>& prefix_misses,
                             std::vector<SBAddPrefix>* add_prefixes_result,
                             std::vector<SBAddFullHash>* add_full_hashes_result);
   virtual bool CancelUpdate();
