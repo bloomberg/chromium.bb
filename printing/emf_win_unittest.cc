@@ -78,7 +78,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
 
   // Initialize it.
   scoped_ptr<printing::PrintingContext> context(
-      printing::PrintingContext::Create());
+      printing::PrintingContext::Create(std::string()));
   EXPECT_EQ(context->InitWithSettings(settings), printing::PrintingContext::OK);
 
   FilePath emf_file;

@@ -19,7 +19,7 @@ namespace printing {
 
 class PrintingContextWin : public PrintingContext {
  public:
-  PrintingContextWin();
+  explicit PrintingContextWin(const std::string& app_locale);
   ~PrintingContextWin();
 
   // PrintingContext implementation.

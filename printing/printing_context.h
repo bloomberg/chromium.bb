@@ -84,7 +84,7 @@ class PrintingContext {
   // Creates an instance of this object. Implementers of this interface should
   // implement this method to create an object of their implementation. The
   // caller owns the returned object.
-  static PrintingContext* Create();
+  static PrintingContext* Create(const std::string& app_locale);
 
   void set_use_overlays(bool use_overlays) {
     settings_.use_overlays = use_overlays;
@@ -95,7 +95,7 @@ class PrintingContext {
   }
 
  protected:
-  PrintingContext();
+  explicit PrintingContext(const std::string& app_locale);
 
   // Reinitializes the settings for object reuse.
   void ResetSettings();
@@ -114,6 +114,9 @@ class PrintingContext {
 
   // Did the user cancel the print job.
   volatile bool abort_printing_;
+
+  // The application locale.
+  std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingContext);
 };

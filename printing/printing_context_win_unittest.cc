@@ -112,7 +112,7 @@ TEST_F(PrintingContextTest, Base) {
   settings.set_device_name(GetDefaultPrinter());
   // Initialize it.
   scoped_ptr<printing::PrintingContext> context(
-      printing::PrintingContext::Create());
+      printing::PrintingContext::Create(std::string()));
   EXPECT_EQ(printing::PrintingContext::OK, context->InitWithSettings(settings));
 
   // The print may lie to use and may not support world transformation.
@@ -127,7 +127,8 @@ TEST_F(PrintingContextTest, PrintAll) {
   if (IsTestCaseDisabled())
     return;
 
-  printing::PrintingContextWin context;
+  std::string dummy_locale;
+  printing::PrintingContextWin context(dummy_locale);
   context.SetPrintDialog(&PrintDlgExMock);
   context.AskUserForSettings(
       NULL,

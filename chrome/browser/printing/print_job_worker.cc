@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_job_worker.h"
 
 #include "base/message_loop.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/common/notification_service.h"
@@ -53,7 +54,8 @@ PrintJobWorker::PrintJobWorker(PrintJobWorkerOwner* owner)
   // The object is created in the IO thread.
   DCHECK_EQ(owner_->message_loop(), MessageLoop::current());
 
-  printing_context_.reset(PrintingContext::Create());
+  printing_context_.reset(PrintingContext::Create(
+      g_browser_process->GetApplicationLocale()));
 }
 
 PrintJobWorker::~PrintJobWorker() {

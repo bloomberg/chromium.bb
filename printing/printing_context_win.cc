@@ -122,12 +122,12 @@ class PrintingContextWin::CallbackHandler : public IPrintDialogCallback,
 };
 
 // static
-PrintingContext* PrintingContext::Create() {
-  return static_cast<PrintingContext*>(new PrintingContextWin);
+PrintingContext* PrintingContext::Create(const std::string& app_locale) {
+  return static_cast<PrintingContext*>(new PrintingContextWin(app_locale));
 }
 
-PrintingContextWin::PrintingContextWin()
-    : PrintingContext(),
+PrintingContextWin::PrintingContextWin(const std::string& app_locale)
+    : PrintingContext(app_locale),
       context_(NULL),
       dialog_box_(NULL),
       print_dialog_func_(&PrintDlgEx) {

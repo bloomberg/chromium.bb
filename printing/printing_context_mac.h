@@ -5,6 +5,8 @@
 #ifndef PRINTING_PRINTING_CONTEXT_MAC_H_
 #define PRINTING_PRINTING_CONTEXT_MAC_H_
 
+#include <string>
+
 #include "printing/printing_context.h"
 
 #ifdef __OBJC__
@@ -17,7 +19,7 @@ namespace printing {
 
 class PrintingContextMac : public PrintingContext {
  public:
-  PrintingContextMac();
+  explicit PrintingContextMac(const std::string& app_locale);
   ~PrintingContextMac();
 
   // PrintingContext implementation.

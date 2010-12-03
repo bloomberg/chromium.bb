@@ -15,12 +15,12 @@
 namespace printing {
 
 // static
-PrintingContext* PrintingContext::Create() {
-  return static_cast<PrintingContext*>(new PrintingContextMac);
+PrintingContext* PrintingContext::Create(const std::string& app_locale) {
+  return static_cast<PrintingContext*>(new PrintingContextMac(app_locale));
 }
 
-PrintingContextMac::PrintingContextMac()
-    : PrintingContext(),
+PrintingContextMac::PrintingContextMac(const std::string& app_locale)
+    : PrintingContext(app_locale),
       print_info_(NULL),
       context_(NULL) {
 }

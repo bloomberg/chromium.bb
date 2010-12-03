@@ -5,13 +5,15 @@
 #ifndef PRINTING_PRINTING_CONTEXT_CAIRO_H_
 #define PRINTING_PRINTING_CONTEXT_CAIRO_H_
 
+#include <string>
+
 #include "printing/printing_context.h"
 
 namespace printing {
 
 class PrintingContextCairo : public PrintingContext {
  public:
-  PrintingContextCairo();
+  explicit PrintingContextCairo(const std::string& app_locale);
   ~PrintingContextCairo();
 
   // PrintingContext implementation.
