@@ -37,7 +37,7 @@ PpapiThread::~PpapiThread() {
 // channel that ends up at Dispatcher::OnMessageReceived.
 void PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiThread, msg)
-    IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnLoadPlugin)
+    IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnMsgLoadPlugin)
 
     // The rest of the messages go to the dispatcher.
     /*IPC_MESSAGE_UNHANDLED(
@@ -47,9 +47,9 @@ void PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-void PpapiThread::OnLoadPlugin(base::ProcessHandle host_process_handle,
-                               const FilePath& path,
-                               int renderer_id) {
+void PpapiThread::OnMsgLoadPlugin(base::ProcessHandle host_process_handle,
+                                  const FilePath& path,
+                                  int renderer_id) {
   IPC::ChannelHandle channel_handle;
   if (!LoadPluginLib(host_process_handle, path) ||
       !SetupRendererChannel(renderer_id, &channel_handle)) {

@@ -70,7 +70,8 @@ void PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Handle some plugin-specific control messages.
     IPC_BEGIN_MESSAGE_MAP(PluginDispatcher, msg)
-      IPC_MESSAGE_HANDLER(PpapiMsg_InitializeModule, OnInitializeModule)
+      IPC_MESSAGE_HANDLER(PpapiMsg_InitializeModule, OnMsgInitializeModule)
+      IPC_MESSAGE_HANDLER(PpapiMsg_Shutdown, OnMsgShutdown)
 
       // Forward all other control messages to the superclass.
       IPC_MESSAGE_UNHANDLED(Dispatcher::OnMessageReceived(msg))
@@ -82,9 +83,16 @@ void PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   Dispatcher::OnMessageReceived(msg);
 }
 
-void PluginDispatcher::OnInitializeModule(PP_Module pp_module, bool* result) {
+void PluginDispatcher::OnMsgInitializeModule(PP_Module pp_module,
+                                             bool* result) {
   set_pp_module(pp_module);
   *result = init_module_(pp_module, &GetInterfaceFromDispatcher) == PP_OK;
+}
+
+void PluginDispatcher::OnMsgShutdown() {
+  if (shutdown_module_)
+    shutdown_module_();
+  MessageLoop::current()->Quit();
 }
 
 }  // namespace proxy

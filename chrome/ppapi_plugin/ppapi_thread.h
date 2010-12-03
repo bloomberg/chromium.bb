@@ -35,9 +35,9 @@ class PpapiThread : public ChildThread {
   virtual void OnMessageReceived(const IPC::Message& msg);
 
   // Message handlers.
-  void OnLoadPlugin(base::ProcessHandle renderer_handle,
-                    const FilePath& path,
-                    int renderer_id);
+  void OnMsgLoadPlugin(base::ProcessHandle renderer_handle,
+                       const FilePath& path,
+                       int renderer_id);
 
   bool LoadPluginLib(base::ProcessHandle host_process_handle,
                      const FilePath& path);

@@ -61,8 +61,9 @@ class PluginDispatcher : public Dispatcher {
   }
 
  private:
-  // IPC message handler.
-  void OnInitializeModule(PP_Module pp_module, bool* result);
+  // IPC message handlers.
+  void OnMsgInitializeModule(PP_Module pp_module, bool* result);
+  void OnMsgShutdown();
 
   InitModuleFunc init_module_;
   ShutdownModuleFunc shutdown_module_;

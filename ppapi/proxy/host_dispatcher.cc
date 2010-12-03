@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "ppapi/proxy/host_var_serialization_rules.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 namespace pp {
 namespace proxy {
@@ -28,6 +29,8 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
 }
 
 HostDispatcher::~HostDispatcher() {
+  // Notify the plugin that it should exit.
+  Send(new PpapiMsg_Shutdown());
 }
 
 // static

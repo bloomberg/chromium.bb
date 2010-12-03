@@ -22,6 +22,8 @@ IPC_BEGIN_MESSAGES(Ppapi)
                               PP_Module /* module_id */,
                               bool /* result */)
 
+  IPC_MESSAGE_CONTROL0(PpapiMsg_Shutdown)
+
   // Sent in both directions to see if the other side supports the given
   // interface.
   IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
