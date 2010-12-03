@@ -19,8 +19,14 @@
 
 namespace {
 
+// Avoid using objects requiring unwind in functions that use __try.
 void LogRpcException(const char* str, unsigned int exception_code) {
   LOG(ERROR) << str << com::LogWe(exception_code);
+}
+
+// Avoid using objects requiring unwind in functions that use __try.
+void RpcDcheck(const char* message) {
+  NOTREACHED() << message;
 }
 
 HRESULT BindRpc(std::wstring endpoint, RPC_BINDING_HANDLE* binding_handle) {
@@ -157,7 +163,9 @@ template<class Function, class Params>
 HRESULT BrokerRpcClient::RunRpc(bool allow_restart,
                                 Function rpc_function,
                                 const Params& params) {
-  DCHECK(rpc_function);
+  if (!rpc_function) {
+    RpcDcheck("rpc_function is NULL");
+  }
   if (!is_connected())
     return RPC_E_FAULT;
   RpcTryExcept {
