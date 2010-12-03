@@ -173,6 +173,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
   EXPECT_TRUE(result);
 }
 
+// Tests that GPU-related WebKit preferences are set for extension background
+// pages. See http://crbug.com/64512.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
+                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                    .AppendASCII("1.0.0.0")));
+
+  ExtensionProcessManager* manager =
+        browser()->profile()->GetExtensionProcessManager();
+  ExtensionHost* host = FindHostWithPath(manager, "/backgroundpage.html", 1);
+  WebPreferences prefs = host->GetWebkitPrefs();
+  ASSERT_FALSE(prefs.experimental_webgl_enabled);
+  ASSERT_FALSE(prefs.accelerated_compositing_enabled);
+  ASSERT_FALSE(prefs.accelerated_2d_canvas_enabled);
+}
+
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());

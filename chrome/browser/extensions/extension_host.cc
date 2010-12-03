@@ -487,6 +487,14 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
       extension_host_type_ == ViewType::EXTENSION_INFOBAR)
     webkit_prefs.allow_scripts_to_close_windows = true;
 
+  // Disable anything that requires the GPU process for background pages.
+  // See http://crbug.com/64512 and http://crbug.com/64841.
+  if (extension_host_type_ == ViewType::EXTENSION_BACKGROUND_PAGE) {
+    webkit_prefs.experimental_webgl_enabled = false;
+    webkit_prefs.accelerated_compositing_enabled = false;
+    webkit_prefs.accelerated_2d_canvas_enabled = false;
+  }
+
   // TODO(dcheng): incorporate this setting into kClipboardPermission check.
   webkit_prefs.javascript_can_access_clipboard = true;
 
