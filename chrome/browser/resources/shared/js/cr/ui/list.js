@@ -278,6 +278,16 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Returns the height of an item, measuring it if necessary.
+     * @private
+     */
+    getItemHeight_: function() {
+      if (!this.itemHeight_)
+        this.itemHeight_ = measureItem(this);
+      return this.itemHeight_;
+    },
+
+    /**
      * Callback for mousedown and mouseup events.
      * @param {Event} e The mouse event object.
      * @private
@@ -300,7 +310,7 @@ cr.define('cr.ui', function() {
         var cs = getComputedStyle(target);
         var top = target.offsetTop -
                   parseFloat(cs.marginTop);
-        var index = Math.floor(top / this.itemHeight_);
+        var index = Math.floor(top / this.getItemHeight_());
         this.selectionController_.handleMouseDownUp(e, index);
       }
     },
@@ -376,7 +386,7 @@ cr.define('cr.ui', function() {
       if (!dataModel || index < 0 || index >= dataModel.length)
         return false;
 
-      var itemHeight = this.itemHeight_;
+      var itemHeight = this.getItemHeight_();
       var scrollTop = this.scrollTop;
       var top = index * itemHeight;
 
@@ -474,10 +484,7 @@ cr.define('cr.ui', function() {
       var scrollTop = this.scrollTop;
       var clientHeight = this.clientHeight;
 
-      if (!this.itemHeight_)
-        this.itemHeight_ = measureItem(this);
-
-      var itemHeight = this.itemHeight_;
+      var itemHeight = this.getItemHeight_();
 
       // We cache the list items since creating the DOM nodes is the most
       // expensive part of redrawing.
