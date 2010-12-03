@@ -10,3 +10,8 @@ BUG_LOISLO WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 // This test failed on mac because this line was removed by webkit
 // patch http://trac.webkit.org/changeset/73059
 BUG22777 MAC : fast/overflow/hit-test-overflow-controls.html = IMAGE+TEXT
+
+// Temp disable so we can roll webkit 73207
+BUG_VICTORW : fast/dom/vertical-scrollbar-in-rtl.html = TEXT
+BUG_VICTORW : fast/frames/location-redirect-user-gesture.html = TEXT
+BUG_VICTORW : fast/frames/meta-refresh-user-gesture.html = TEXT
