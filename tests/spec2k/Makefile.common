@@ -121,30 +121,28 @@ $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
 ## NACL-GCC TOOLCHAINS
 ######################################################################
 NACL_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl-gcc
-NACL_GCC_FLAGS_COMMON=$(CFLAGS) -static -lstdc++ -lm -lnosys
 
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O0 -m32 $(NACL_GCC_FLAGS_COMMON) $^ -o $@
+	$(NACL_GCC) -O0 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86 gcc
 $(IT).nacl.opt.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O3 -m32 $(NACL_GCC_FLAGS_COMMON) $^ -o $@
+	$(NACL_GCC) -O3 -m32 $(CFLAGS) $^ -static -lstdc++ -lm  -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
-
 
 ######################################################################
 NACL64_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl64-gcc
 
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC) -O0 $(NACL_GCC_FLAGS_COMMON) $^ -o $@
+	$(NACL64_GCC) -O0 $(CFLAGS) $^  -static -lstdc++ -lm  -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 # nacl optimized x86-64 gcc
 $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC) -O3 $(NACL_GCC_FLAGS_COMMON) $^ -o $@
+	$(NACL64_GCC) -O3 $(CFLAGS) $^  -static -lstdc++ -lm  -lnosys -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
@@ -203,10 +201,6 @@ $(IT).pnacl.opt.arm: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch arm $(PNACL_FLAGS) -o $@ -lm
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
-$(IT).pnacl.opt.pic.arm: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch arm $(PNACL_FLAGS) -fPIC -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
-
 ######################################################################
 # BITCODE - BACKEND - X8632
 
@@ -218,9 +212,6 @@ $(IT).pnacl.opt.x8632: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
-$(IT).pnacl.opt.pic.x8632: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-32 $(PNACL_FLAGS) -fPIC -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 ######################################################################
 # BITCODE - BACKEND - X8664
@@ -231,10 +222,6 @@ $(IT).pnacl.x8664: $(IT).bc
 
 $(IT).pnacl.opt.x8664: $(IT).opt.bc
 	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
-	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
-
-$(IT).pnacl.opt.pic.x8664: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-64 $(PNACL_FLAGS) -fPIC -o $@ -lm
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 ######################################################################
