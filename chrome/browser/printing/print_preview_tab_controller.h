@@ -43,11 +43,11 @@ class PrintPreviewTabController
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Returns true if |tab| is a print preview tab.
+  static bool IsPrintPreviewTab(TabContents* tab);
+
  private:
   friend class base::RefCounted<PrintPreviewTabController>;
-
-  // Returns true if |tab| is a print preview tab.
-  bool IsPrintPreviewTab(TabContents* tab);
 
   // Returns initiator tab for |preview_tab|.
   // Returns NULL if no initiator tab exists for |preview_tab|.

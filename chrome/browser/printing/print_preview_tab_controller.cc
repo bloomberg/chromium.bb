@@ -35,9 +35,6 @@ TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
     TabContents* initiator_tab, int browser_window_id ) {
   DCHECK(initiator_tab);
 
-  if (IsPrintPreviewTab(initiator_tab))
-    return initiator_tab;
-
   // Get the print preview tab for |initiator_tab|.
   TabContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
   if (preview_tab) {
@@ -48,6 +45,7 @@ TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
   return CreatePrintPreviewTab(initiator_tab, browser_window_id);
 }
 
+// static
 bool PrintPreviewTabController::IsPrintPreviewTab(TabContents* tab) {
   const GURL& url = tab->GetURL();
   return (url.SchemeIs(chrome::kChromeUIScheme) &&
@@ -192,4 +190,4 @@ void PrintPreviewTabController::Observe(NotificationType type,
     RemoveObservers(initiator_tab);
 }
 
-} // namespace printing
+}  // namespace printing
