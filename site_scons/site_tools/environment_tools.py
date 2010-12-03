@@ -55,18 +55,14 @@ def FilterOut(self, **kw):
   """
 
   kw = SCons.Environment.copy_non_reserved_keywords(kw)
+
   for key, val in kw.items():
-    envval = self.get(key, None)
-    if envval is None:
-      # No existing variable in the environment, so nothing to delete.
-      continue
-
-    for vremove in val:
-      # Use while not if, so we can handle duplicates.
-      while vremove in envval:
-        envval.remove(vremove)
-
-    self[key] = envval
+    if key in self:
+      # Filter out the specified values without modifying the original list.
+      # This helps isolate us if a list is accidently shared
+      # NOTE if self[key] is a UserList, this changes the type into a plain
+      # list.  This is OK because SCons also does this in semi_deepcopy
+      self[key] = [item for item in self[key] if item not in val]
 
     # TODO: SCons.Environment.Append() has much more logic to deal with various
     # types of values.  We should handle all those cases in here too.  (If
