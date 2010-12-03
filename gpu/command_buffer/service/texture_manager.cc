@@ -299,6 +299,9 @@ void TextureManager::TextureInfo::Update(const FeatureInfo* feature_info) {
       max_level_set_ >= 0;
   cube_complete_ = (level_infos_.size() == 6) &&
                    (first_face.width == first_face.height);
+  if (first_face.width == 0 || first_face.height == 0) {
+    texture_complete_ = false;
+  }
   if (first_face.type == GL_FLOAT &&
       !feature_info->feature_flags().enable_texture_float_linear &&
       (min_filter_ != GL_NEAREST_MIPMAP_NEAREST ||

@@ -2373,11 +2373,12 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     // parent is later destroyed.
     GLuint service_id = offscreen_saved_color_texture_->id();
     GLuint client_id;
-    CHECK(parent_->texture_manager()->GetClientId(service_id, &client_id));
+    TextureManager* parent_texture_manager = parent_->texture_manager();
+    CHECK(parent_texture_manager->GetClientId(service_id, &client_id));
     TextureManager::TextureInfo* info = parent_->GetTextureInfo(client_id);
     DCHECK(info);
 
-    texture_manager()->SetLevelInfo(
+    parent_texture_manager->SetLevelInfo(
         feature_info_,
         info,
         GL_TEXTURE_2D,
@@ -2389,22 +2390,22 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
         0,  // border
         GL_RGBA,
         GL_UNSIGNED_BYTE);
-    texture_manager()->SetParameter(
+    parent_texture_manager->SetParameter(
         feature_info_,
         info,
         GL_TEXTURE_MAG_FILTER,
         GL_NEAREST);
-    texture_manager()->SetParameter(
+    parent_texture_manager->SetParameter(
         feature_info_,
         info,
         GL_TEXTURE_MIN_FILTER,
         GL_NEAREST);
-    texture_manager()->SetParameter(
+    parent_texture_manager->SetParameter(
         feature_info_,
         info,
         GL_TEXTURE_WRAP_S,
         GL_CLAMP_TO_EDGE);
-    texture_manager()->SetParameter(
+    parent_texture_manager->SetParameter(
         feature_info_,
         info,
         GL_TEXTURE_WRAP_T,
@@ -4325,7 +4326,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
     bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(info->source());
+  bucket->SetFromString(info->source().c_str());
   return error::kNoError;
 }
 
@@ -4339,7 +4340,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   if (!info) {
     return error::kNoError;
   }
-  bucket->SetFromString(info->log_info());
+  bucket->SetFromString(info->log_info().c_str());
   return error::kNoError;
 }
 
@@ -4354,7 +4355,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(info->log_info());
+  bucket->SetFromString(info->log_info().c_str());
   return error::kNoError;
 }
 
@@ -5751,7 +5752,7 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   result->size = uniform_info->size;
   result->type = uniform_info->type;
   Bucket* bucket = CreateBucket(name_bucket_id);
-  bucket->SetFromString(uniform_info->name);
+  bucket->SetFromString(uniform_info->name.c_str());
   return error::kNoError;
 }
 
@@ -5785,7 +5786,7 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   result->size = attrib_info->size;
   result->type = attrib_info->type;
   Bucket* bucket = CreateBucket(name_bucket_id);
-  bucket->SetFromString(attrib_info->name);
+  bucket->SetFromString(attrib_info->name.c_str());
   return error::kNoError;
 }
 
