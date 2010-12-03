@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
@@ -302,6 +303,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   friend class base::RefCounted<Context>;
   ~Context() {}
 
+  // We can optimize the handling of data URLs in most cases.
+  bool CanHandleDataURL(const GURL& url) const;
   void HandleDataURL();
 
   WebURLLoaderImpl* loader_;
@@ -350,7 +353,7 @@ void WebURLLoaderImpl::Context::Start(
   request_ = request;  // Save the request.
 
   GURL url = request.url();
-  if (url.SchemeIs("data")) {
+  if (url.SchemeIs("data") && CanHandleDataURL(url)) {
     if (sync_load_response) {
       // This is a sync load. Do the work now.
       sync_load_response->url = url;
@@ -660,6 +663,29 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   // to ourselves that we took on behalf of the bridge.  This may cause our
   // destruction.
   Release();
+}
+
+bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
+  DCHECK(url.SchemeIs("data"));
+
+  // Optimize for the case where we can handle a data URL locally.  We must
+  // skip this for data URLs targetted at frames since those could trigger a
+  // download.
+  //
+  // NOTE: We special case MIME types we can render both for performance
+  // reasons as well as to support unit tests, which do not have an underlying
+  // ResourceLoaderBridge implementation.
+
+  if (request_.targetType() != WebURLRequest::TargetIsMainFrame &&
+      request_.targetType() != WebURLRequest::TargetIsSubframe)
+    return true;
+
+  std::string mime_type, unused_charset;
+  if (net::DataURL::Parse(url, &mime_type, &unused_charset, NULL) &&
+      net::IsSupportedMimeType(mime_type))
+    return true;
+
+  return false;
 }
 
 void WebURLLoaderImpl::Context::HandleDataURL() {
