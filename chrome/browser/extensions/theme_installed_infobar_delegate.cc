@@ -98,8 +98,22 @@ void ThemeInstalledInfoBarDelegate::Observe(
   // If the new theme is different from what this info bar is associated
   // with, close this info bar since it is no longer relevant.
   const Extension* extension = Details<const Extension>(details).ptr();
-  if (!extension || theme_id_ != extension->id())
-    tab_contents_->RemoveInfoBar(this);
+  if (!extension || theme_id_ != extension->id()) {
+    if (tab_contents_ && !tab_contents_->is_being_destroyed()) {
+      tab_contents_->RemoveInfoBar(this);
+      // The infobar is gone so there is no reason for this delegate to keep
+      // a pointer to the TabContents (the TabContents has deleted its
+      // reference to this delegate and a new delegate will be created if
+      // a new infobar is created).
+      tab_contents_ = NULL;
+      // Although it's not being used anymore, this delegate is never deleted.
+      // It can not be deleted now because it is still needed if we
+      // "undo" the theme change that triggered this notification
+      // (when InfoBar::OnBackgroundExpose() is called). This will likely
+      // be fixed when infobar delegate deletion is cleaned up for
+      // http://crbug.com/62154.
+    }
+  }
 }
 
 bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) {
