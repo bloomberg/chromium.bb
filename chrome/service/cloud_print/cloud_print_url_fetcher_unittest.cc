@@ -67,7 +67,7 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
 };
 
 class CloudPrintURLFetcherTest : public testing::Test,
-                                 public CloudPrintURLFetcher::Delegate {
+                                 public CloudPrintURLFetcherDelegate {
  public:
   CloudPrintURLFetcherTest() : max_retries_(0), fetcher_(NULL) { }
 
