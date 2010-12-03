@@ -25,7 +25,6 @@ RendererWebIDBFactoryImpl::~RendererWebIDBFactoryImpl() {
 
 void RendererWebIDBFactoryImpl::open(
     const WebString& name,
-    const WebString& description,
     WebIDBCallbacks* callbacks,
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
@@ -35,6 +34,5 @@ void RendererWebIDBFactoryImpl::open(
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBFactoryOpen(
-      name, description, callbacks, origin.databaseIdentifier(), web_frame,
-      maximum_size);
+      name, callbacks, origin.databaseIdentifier(), web_frame, maximum_size);
 }

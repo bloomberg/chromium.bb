@@ -35,7 +35,6 @@ class IndexedDBDispatcher {
 
   void RequestIDBFactoryOpen(
       const string16& name,
-      const string16& description,
       WebKit::WebIDBCallbacks* callbacks,
       const string16& origin,
       WebKit::WebFrame* web_frame,
@@ -53,7 +52,7 @@ class IndexedDBDispatcher {
       int32 idb_cursor_id,
       WebKit::WebExceptionCode* ec);
 
-  void RequestIDBCursorRemove(
+  void RequestIDBCursorDelete(
       WebKit::WebIDBCallbacks* callbacks_ptr,
       int32 idb_cursor_id,
       WebKit::WebExceptionCode* ec);
@@ -106,7 +105,7 @@ class IndexedDBDispatcher {
                                 const WebKit::WebIDBTransaction& transaction,
                                 WebKit::WebExceptionCode* ec);
 
-  void RequestIDBObjectStoreRemove(
+  void RequestIDBObjectStoreDelete(
       const IndexedDBKey& key,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,

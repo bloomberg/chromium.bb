@@ -74,5 +74,5 @@ void RendererWebIDBCursorImpl::remove(WebIDBCallbacks* callbacks,
                                       WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBCursorRemove(callbacks, idb_cursor_id_, &ec);
+  dispatcher->RequestIDBCursorDelete(callbacks, idb_cursor_id_, &ec);
 }

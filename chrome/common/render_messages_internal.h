@@ -2454,7 +2454,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        WebKit::WebExceptionCode /* ec */)
 
   // WebIDBCursor::remove() message.
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_IDBCursorRemove,
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_IDBCursorDelete,
                        int32, /* idb_cursor_id */
                        int32, /* response_id */
                        WebKit::WebExceptionCode /* ec */)
@@ -2485,7 +2485,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               WebKit::WebExceptionCode /* ec */)
 
   // WebIDBDatabase::removeObjectStore() message.
-  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBDatabaseRemoveObjectStore,
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBDatabaseDeleteObjectStore,
                               int32, /* idb_database_id */
                               string16, /* name */
                               int32, /* transaction_id */
@@ -2593,8 +2593,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               ViewHostMsg_IDBObjectStorePut_Params,
                               WebKit::WebExceptionCode /* ec */)
 
-  // WebIDBObjectStore::remove() message.
-  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_IDBObjectStoreRemove,
+  // WebIDBObjectStore::delete() message.
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_IDBObjectStoreDelete,
                               int32, /* idb_object_store_id */
                               int32, /* response_id */
                               IndexedDBKey, /* key */
@@ -2614,8 +2614,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int32, /* idb_index_id */
                               WebKit::WebExceptionCode /* ec */)
 
-  // WebIDBObjectStore::removeIndex() message.
-  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBObjectStoreRemoveIndex,
+  // WebIDBObjectStore::deleteIndex() message.
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBObjectStoreDeleteIndex,
                               int32, /* idb_object_store_id */
                               string16, /* name */
                               int32, /* transaction_id */

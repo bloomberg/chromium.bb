@@ -1255,7 +1255,6 @@ void ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Write(
   WriteParam(m, p.response_id_);
   WriteParam(m, p.origin_);
   WriteParam(m, p.name_);
-  WriteParam(m, p.description_);
   WriteParam(m, p.maximum_size_);
 }
 
@@ -1267,7 +1266,6 @@ bool ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Read(const Message* m,
       ReadParam(m, iter, &p->response_id_) &&
       ReadParam(m, iter, &p->origin_) &&
       ReadParam(m, iter, &p->name_) &&
-      ReadParam(m, iter, &p->description_) &&
       ReadParam(m, iter, &p->maximum_size_);
 }
 
@@ -1281,8 +1279,6 @@ void ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Log(const param_type& p,
   LogParam(p.origin_, l);
   l->append(", ");
   LogParam(p.name_, l);
-  l->append(", ");
-  LogParam(p.description_, l);
   l->append(", ");
   LogParam(p.maximum_size_, l);
   l->append(")");

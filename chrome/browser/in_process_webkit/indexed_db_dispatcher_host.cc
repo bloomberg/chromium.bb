@@ -126,14 +126,14 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBCursorValue::ID:
     case ViewHostMsg_IDBCursorUpdate::ID:
     case ViewHostMsg_IDBCursorContinue::ID:
-    case ViewHostMsg_IDBCursorRemove::ID:
+    case ViewHostMsg_IDBCursorDelete::ID:
     case ViewHostMsg_IDBCursorDestroyed::ID:
     case ViewHostMsg_IDBFactoryOpen::ID:
     case ViewHostMsg_IDBDatabaseName::ID:
     case ViewHostMsg_IDBDatabaseVersion::ID:
     case ViewHostMsg_IDBDatabaseObjectStoreNames::ID:
     case ViewHostMsg_IDBDatabaseCreateObjectStore::ID:
-    case ViewHostMsg_IDBDatabaseRemoveObjectStore::ID:
+    case ViewHostMsg_IDBDatabaseDeleteObjectStore::ID:
     case ViewHostMsg_IDBDatabaseSetVersion::ID:
     case ViewHostMsg_IDBDatabaseTransaction::ID:
     case ViewHostMsg_IDBDatabaseDestroyed::ID:
@@ -151,10 +151,10 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBObjectStoreIndexNames::ID:
     case ViewHostMsg_IDBObjectStoreGet::ID:
     case ViewHostMsg_IDBObjectStorePut::ID:
-    case ViewHostMsg_IDBObjectStoreRemove::ID:
+    case ViewHostMsg_IDBObjectStoreDelete::ID:
     case ViewHostMsg_IDBObjectStoreCreateIndex::ID:
     case ViewHostMsg_IDBObjectStoreIndex::ID:
-    case ViewHostMsg_IDBObjectStoreRemoveIndex::ID:
+    case ViewHostMsg_IDBObjectStoreDeleteIndex::ID:
     case ViewHostMsg_IDBObjectStoreOpenCursor::ID:
     case ViewHostMsg_IDBObjectStoreDestroyed::ID:
     case ViewHostMsg_IDBTransactionAbort::ID:
@@ -272,7 +272,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   CallRenderViewHostContentSettingsDelegate(
       process_id_, params.routing_id_,
       &RenderViewHostDelegate::ContentSettings::OnIndexedDBAccessed,
-      host, params.description_, content_setting == CONTENT_SETTING_BLOCK);
+      host, params.name_, content_setting == CONTENT_SETTING_BLOCK);
 
   if (content_setting == CONTENT_SETTING_BLOCK) {
     // TODO(jorlow): Change this to the proper error code once we figure out
@@ -294,7 +294,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   }
 
   Context()->GetIDBFactory()->open(
-      params.name_, params.description_,
+      params.name_,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL,
       webkit_glue::FilePathToWebString(indexed_db_path), quota);
@@ -366,8 +366,8 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                                     OnObjectStoreNames)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseCreateObjectStore,
                                     OnCreateObjectStore)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseRemoveObjectStore,
-                                    OnRemoveObjectStore)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseDeleteObjectStore,
+                                    OnDeleteObjectStore)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseSetVersion,
                                     OnSetVersion)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseTransaction,
@@ -438,7 +438,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
   parent_->Send(reply_msg);
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRemoveObjectStore(
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
     int32 idb_database_id,
     const string16& name,
     int32 transaction_id,
@@ -446,16 +446,16 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRemoveObjectStore(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
       &map_, idb_database_id, NULL,
-      ViewHostMsg_IDBDatabaseRemoveObjectStore::ID);
+      ViewHostMsg_IDBDatabaseDeleteObjectStore::ID);
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
       &parent_->transaction_dispatcher_host_->map_, transaction_id, NULL,
-      ViewHostMsg_IDBDatabaseRemoveObjectStore::ID);
+      ViewHostMsg_IDBDatabaseDeleteObjectStore::ID);
   if (!idb_database || !idb_transaction)
     return;
 
   WebExceptionCode ec = 0;
-  idb_database->removeObjectStore(name, *idb_transaction, ec);
-  ViewHostMsg_IDBDatabaseRemoveObjectStore::WriteReplyParams(reply_msg, ec);
+  idb_database->deleteObjectStore(name, *idb_transaction, ec);
+  ViewHostMsg_IDBDatabaseDeleteObjectStore::WriteReplyParams(reply_msg, ec);
   parent_->Send(reply_msg);
 }
 
@@ -704,12 +704,12 @@ bool IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnMessageReceived(
                                     OnIndexNames)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStoreGet, OnGet);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStorePut, OnPut);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStoreRemove, OnRemove);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStoreDelete, OnDelete);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStoreCreateIndex,
                                     OnCreateIndex);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStoreIndex, OnIndex);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStoreRemoveIndex,
-                                    OnRemoveIndex);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStoreDeleteIndex,
+                                    OnDeleteIndex);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBObjectStoreOpenCursor,
                                     OnOpenCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBObjectStoreDestroyed, OnDestroyed)
@@ -801,7 +801,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnPut(
   parent_->Send(reply_msg);
 }
 
-void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemove(
+void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDelete(
     int idb_object_store_id,
     int32 response_id,
     const IndexedDBKey& key,
@@ -809,18 +809,18 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemove(
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
-      &map_, idb_object_store_id, NULL, ViewHostMsg_IDBObjectStoreRemove::ID);
+      &map_, idb_object_store_id, NULL, ViewHostMsg_IDBObjectStoreDelete::ID);
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
       &parent_->transaction_dispatcher_host_->map_, transaction_id, NULL,
-      ViewHostMsg_IDBObjectStoreRemove::ID);
+      ViewHostMsg_IDBObjectStoreDelete::ID);
   if (!idb_transaction || !idb_object_store)
     return;
 
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<void>(parent_, response_id));
   WebExceptionCode ec = 0;
-  idb_object_store->remove(key, callbacks.release(), *idb_transaction, ec);
-  ViewHostMsg_IDBObjectStoreRemove::WriteReplyParams(reply_msg, ec);
+  idb_object_store->deleteFunction(key, callbacks.release(), *idb_transaction, ec);
+  ViewHostMsg_IDBObjectStoreDelete::WriteReplyParams(reply_msg, ec);
   parent_->Send(reply_msg);
 }
 
@@ -862,7 +862,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndex(
   parent_->Send(reply_msg);
 }
 
-void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemoveIndex(
+void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDeleteIndex(
     int32 idb_object_store_id,
     const string16& name,
     int32 transaction_id,
@@ -870,16 +870,16 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemoveIndex(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, idb_object_store_id, NULL,
-      ViewHostMsg_IDBObjectStoreRemoveIndex::ID);
+      ViewHostMsg_IDBObjectStoreDeleteIndex::ID);
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
       &parent_->transaction_dispatcher_host_->map_, transaction_id, NULL,
-      ViewHostMsg_IDBObjectStoreRemoveIndex::ID);
+      ViewHostMsg_IDBObjectStoreDeleteIndex::ID);
   if (!idb_object_store || !idb_transaction)
     return;
 
   WebExceptionCode ec = 0;
   idb_object_store->deleteIndex(name, *idb_transaction, ec);
-  ViewHostMsg_IDBObjectStoreRemoveIndex::WriteReplyParams(reply_msg, ec);
+  ViewHostMsg_IDBObjectStoreDeleteIndex::WriteReplyParams(reply_msg, ec);
   parent_->Send(reply_msg);
 }
 
@@ -938,7 +938,7 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorValue, OnValue)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorUpdate, OnUpdate)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorContinue, OnContinue)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorRemove, OnRemove)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorDelete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBCursorDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -1032,7 +1032,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
   parent_->Send(reply_msg);
 }
 
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnRemove(
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
     int32 cursor_id,
     int32 response_id,
     IPC::Message* reply_msg) {
@@ -1043,6 +1043,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnRemove(
     return;
 
   WebExceptionCode ec = 0;
+  // TODO(jorlow): This should be delete.
   idb_cursor->remove(new IndexedDBCallbacks<void>(parent_, response_id), ec);
   ViewHostMsg_IDBCursorUpdate::WriteReplyParams(reply_msg, ec);
   parent_->Send(reply_msg);

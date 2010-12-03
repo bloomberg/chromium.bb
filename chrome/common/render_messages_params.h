@@ -669,9 +669,6 @@ struct ViewHostMsg_IDBFactoryOpen_Params {
   // The name of the database.
   string16 name_;
 
-  // The description of the database.
-  string16 description_;
-
   // The maximum size of the database.
   uint64 maximum_size_;
 };

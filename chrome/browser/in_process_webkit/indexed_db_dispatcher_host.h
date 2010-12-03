@@ -104,7 +104,7 @@ class IndexedDBDispatcherHost
     void OnCreateObjectStore(
         const ViewHostMsg_IDBDatabaseCreateObjectStore_Params& params,
         IPC::Message* reply_msg);
-    void OnRemoveObjectStore(int32 idb_database_id,
+    void OnDeleteObjectStore(int32 idb_database_id,
                              const string16& name,
                              int32 transaction_id,
                              IPC::Message* reply_msg);
@@ -173,7 +173,7 @@ class IndexedDBDispatcherHost
                IPC::Message* reply_msg);
     void OnPut(const ViewHostMsg_IDBObjectStorePut_Params& params,
                IPC::Message* reply_msg);
-    void OnRemove(int idb_object_store_id,
+    void OnDelete(int idb_object_store_id,
                   int32 response_id,
                   const IndexedDBKey& key,
                   int32 transaction_id,
@@ -184,7 +184,7 @@ class IndexedDBDispatcherHost
     void OnIndex(int32 idb_object_store_id,
                  const string16& name,
                  IPC::Message* reply_msg);
-    void OnRemoveIndex(int32 idb_object_store_id,
+    void OnDeleteIndex(int32 idb_object_store_id,
                        const string16& name,
                        int32 transaction_id,
                        IPC::Message* reply_msg);
@@ -216,7 +216,7 @@ class IndexedDBDispatcherHost
                     int32 response_id,
                     const IndexedDBKey& key,
                     IPC::Message* reply_msg);
-    void OnRemove(int32 idb_object_store_id,
+    void OnDelete(int32 idb_object_store_id,
                   int32 response_id,
                   IPC::Message* reply_msg);
     void OnDestroyed(int32 idb_cursor_id);

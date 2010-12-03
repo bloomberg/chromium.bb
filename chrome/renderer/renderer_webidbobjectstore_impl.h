@@ -39,10 +39,10 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
            WebKit::WebIDBCallbacks* callbacks,
            const WebKit::WebIDBTransaction& transaction,
            WebKit::WebExceptionCode& ec);
-  void remove(const WebKit::WebIDBKey& key,
-              WebKit::WebIDBCallbacks* callbacks,
-              const WebKit::WebIDBTransaction& transaction,
-              WebKit::WebExceptionCode& ec);
+  void deleteFunction(const WebKit::WebIDBKey& key,
+                      WebKit::WebIDBCallbacks* callbacks,
+                      const WebKit::WebIDBTransaction& transaction,
+                      WebKit::WebExceptionCode& ec);
 
   WebKit::WebIDBIndex* createIndex(
       const WebKit::WebString& name,

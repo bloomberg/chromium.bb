@@ -91,14 +91,14 @@ void RendererWebIDBObjectStoreImpl::put(
       idb_object_store_id_, transaction, &ec);
 }
 
-void RendererWebIDBObjectStoreImpl::remove(
+void RendererWebIDBObjectStoreImpl::deleteFunction(
     const WebIDBKey& key,
     WebIDBCallbacks* callbacks,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBObjectStoreRemove(
+  dispatcher->RequestIDBObjectStoreDelete(
       IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
 }
 
@@ -140,7 +140,7 @@ void RendererWebIDBObjectStoreImpl::deleteIndex(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBObjectStoreRemoveIndex(
+      new ViewHostMsg_IDBObjectStoreDeleteIndex(
           idb_object_store_id_, name,
           IndexedDBDispatcher::TransactionId(transaction), &ec));
 }

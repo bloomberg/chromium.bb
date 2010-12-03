@@ -78,12 +78,12 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
   return new RendererWebIDBObjectStoreImpl(object_store);
 }
 
-void RendererWebIDBDatabaseImpl::removeObjectStore(
+void RendererWebIDBDatabaseImpl::deleteObjectStore(
     const WebString& name,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBDatabaseRemoveObjectStore(
+      new ViewHostMsg_IDBDatabaseDeleteObjectStore(
           idb_database_id_, name,
           IndexedDBDispatcher::TransactionId(transaction), &ec));
 }

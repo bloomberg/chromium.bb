@@ -97,7 +97,7 @@ void IndexedDBDispatcher::RequestIDBCursorContinue(
     pending_callbacks_.Remove(response_id);
 }
 
-void IndexedDBDispatcher::RequestIDBCursorRemove(
+void IndexedDBDispatcher::RequestIDBCursorDelete(
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_cursor_id,
     WebExceptionCode* ec) {
@@ -105,14 +105,13 @@ void IndexedDBDispatcher::RequestIDBCursorRemove(
 
   int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBCursorRemove(idb_cursor_id, response_id, ec));
+      new ViewHostMsg_IDBCursorDelete(idb_cursor_id, response_id, ec));
   if (*ec)
     pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryOpen(
     const string16& name,
-    const string16& description,
     WebIDBCallbacks* callbacks_ptr,
     const string16& origin,
     WebFrame* web_frame,
@@ -130,7 +129,6 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
   params.origin_ = origin;
   params.name_ = name;
-  params.description_ = description;
   params.maximum_size_ = maximum_size;
   RenderThread::current()->Send(new ViewHostMsg_IDBFactoryOpen(params));
 }
@@ -268,7 +266,7 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
     pending_callbacks_.Remove(params.response_id_);
 }
 
-void IndexedDBDispatcher::RequestIDBObjectStoreRemove(
+void IndexedDBDispatcher::RequestIDBObjectStoreDelete(
     const IndexedDBKey& key,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_object_store_id,
@@ -278,7 +276,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreRemove(
 
   int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBObjectStoreRemove(
+      new ViewHostMsg_IDBObjectStoreDelete(
           idb_object_store_id, response_id,
           key, TransactionId(transaction), ec));
   if (*ec)
