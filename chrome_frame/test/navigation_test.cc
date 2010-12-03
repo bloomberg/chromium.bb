@@ -1026,5 +1026,82 @@ TEST_F(FullTabSeleniumTest, Core) {
   LaunchIENavigateAndLoop(url, kSeleniumTestTimeout);
 }
 
+// See bug http://code.google.com/p/chromium/issues/detail?id=64901
+// This test does the following:-
+// Navigates IE to a non ChromeFrame URL.
+// Performs a top level form post in the document
+// In response to the POST send over a html document containing a meta tag
+// This would cause IE to switch to ChromeFrame.
+// Refresh the page in ChromeFrame.
+// This should bring up a confirmation dialog which we hit yes on. This should
+// reissue the top level post request in response to which the html content
+// containing the meta tag is sent again.
+TEST_F(FullTabDownloadTest, TopLevelPostReissueFromChromeFramePage) {
+  chrome_frame_test::MockWindowObserver post_reissue_watcher;
+  post_reissue_watcher.WatchWindow("Confirm Form Resubmission", "");
+
+  EXPECT_CALL(server_mock_, Get(_, StrEq(L"/post_source.html"), _))
+    .WillOnce(SendFast(
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html\r\n",
+        "<html>"
+        "<head>"
+        " <script type=\"text/javascript\">"
+        " function onLoad() {"
+        " document.getElementById(\"myform\").submit();}</script></head>"
+        " <body onload=\"setTimeout(onLoad, 2000);\">"
+        " <form id=\"myform\" action=\"post_target.html\" method=\"POST\">"
+        "</form></body></html>"));
+
+  EXPECT_CALL(server_mock_, Post(_, StrEq(L"/post_target.html"), _))
+    .Times(2)
+    .WillRepeatedly(
+        SendFast(
+          "HTTP/1.1 200 OK\r\n"
+          "Content-Type: text/html\r\n",
+          "<html>"
+          "<head><meta http-equiv=\"x-ua-compatible\" content=\"chrome=1\" />"
+          "</head>"
+          "<body> Target page in ChromeFrame </body>"
+          "</html>"));
+
+  EXPECT_CALL(post_reissue_watcher, OnWindowOpen(_))
+      .WillOnce(DelayAccDoDefaultAction(
+          AccObjectMatcher(L"Yes", L"push button"),
+          1000));
+
+  EXPECT_CALL(post_reissue_watcher, OnWindowClose(_));
+
+  std::wstring src_url = server_mock_.Resolve(L"/post_source.html");
+  std::wstring tgt_url = server_mock_.Resolve(L"/post_target.html");
+
+  EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
+
+  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              StrEq(src_url)), _, _, _, _, _));
+  EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              StrEq(src_url))));
+  EXPECT_CALL(ie_mock_, OnLoad(false, StrEq(src_url)));
+
+  EXPECT_CALL(ie_mock_, OnLoad(true, StrEq(tgt_url)))
+      .Times(2);
+
+  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              StrEq(tgt_url)), _, _, _, _, _))
+      .Times(2);
+
+  EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              StrEq(tgt_url))))
+      .Times(2)
+      .WillOnce(testing::DoAll(DelayRefresh(&ie_mock_, &loop_, 2000),
+                DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)))
+      .WillOnce(testing::Return());
+
+  LaunchIENavigateAndLoop(src_url, kChromeFrameLongNavigationTimeoutInSeconds);
+}
 
 }  // namespace chrome_frame_test

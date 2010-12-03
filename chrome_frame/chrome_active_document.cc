@@ -74,6 +74,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
   // optimization to get Chrome active documents to load faster.
   ChromeActiveDocument* cached_document = g_active_doc_cache.Get();
   if (cached_document && cached_document->IsValid()) {
+    SetResourceModule();
     DCHECK(automation_client_.get() == NULL);
     automation_client_.swap(cached_document->automation_client_);
     DVLOG(1) << "Reusing automation client instance from " << cached_document;
@@ -1068,6 +1069,37 @@ HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
     // visible.
     IEExec(&CGID_DocHostCommandHandler, OLECMDID_PAGEACTIONBLOCKED,
         0x80000000 | OLECMDIDF_WINDOWSTATE_USERVISIBLE_VALID, NULL, NULL);
+  }
+
+  NavigationManager* mgr = NavigationManager::GetThreadInstance();
+  DLOG_IF(ERROR, !mgr) << "Couldn't get instance of NavigationManager";
+
+  // If ChromeFrame was activated on this page as a result of a document
+  // received in response to a top level post, then we ask the user for
+  // permission to repost and issue a navigation with the saved post data
+  // which reinitates the whole sequence, i.e. the server receives the top
+  // level post and chrome frame will be reactivated in response.
+  if (mgr && mgr->post_data().type() != VT_EMPTY) {
+    if (MessageBox(
+            SimpleResourceLoader::Get(IDS_HTTP_POST_WARNING).c_str(),
+            SimpleResourceLoader::Get(IDS_HTTP_POST_WARNING_TITLE).c_str(),
+            MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+      base::win::ScopedComPtr<IWebBrowser2> web_browser2;
+      DoQueryService(SID_SWebBrowserApp, m_spClientSite,
+                     web_browser2.Receive());
+      DCHECK(web_browser2);
+      VARIANT empty = base::win::ScopedVariant::kEmptyVariant;
+      VARIANT flags = { VT_I4 };
+      V_I4(&flags) = navNoHistory;
+
+      return web_browser2->Navigate2(base::win::ScopedVariant(url_).AsInput(),
+                                     &flags,
+                                     &empty,
+                                     const_cast<VARIANT*>(&mgr->post_data()),
+                                     const_cast<VARIANT*>(&mgr->headers()));
+    } else {
+      return S_OK;
+    }
   }
 
   TabProxy* tab_proxy = GetTabProxy();

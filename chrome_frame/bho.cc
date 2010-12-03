@@ -132,6 +132,8 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   if (is_top_level) {
     set_url(url->bstrVal);
     set_referrer("");
+    set_post_data(post_data);
+    set_headers(headers);
   }
   return S_OK;
 }

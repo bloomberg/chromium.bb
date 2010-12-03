@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/thread_local.h"
+#include "base/win/scoped_variant.h"
 #include "googleurl/src/gurl.h"
 #include "chrome_frame/utils.h"
 
@@ -122,9 +123,38 @@ class NavigationManager {
   // and need to switch over from mshtml to CF.
   virtual HRESULT NavigateToCurrentUrlInCF(IBrowserService* browser);
 
+  void set_post_data(VARIANT* post_data) {
+    post_data_.Reset();
+    if (post_data) {
+      if (V_VT(post_data) == (VT_BYREF | VT_VARIANT)) {
+        post_data_.Set(*post_data->pvarVal);
+      } else {
+        NOTREACHED() << "unexpected type for post_data: "
+            << std::hex << post_data->vt;
+      }
+    }
+  }
+
+  const base::win::ScopedVariant& post_data() const {
+    return post_data_;
+  }
+
+  void set_headers(VARIANT* headers) {
+    headers_.Reset();
+    if (headers) {
+      headers_ = *headers;
+    }
+  }
+
+  const base::win::ScopedVariant& headers() const {
+    return headers_;
+  }
+
  protected:
   std::string referrer_;
   std::wstring url_;
+  base::win::ScopedVariant post_data_;
+  base::win::ScopedVariant headers_;
 
   static base::LazyInstance<base::ThreadLocalPointer<NavigationManager> >
       thread_singleton_;

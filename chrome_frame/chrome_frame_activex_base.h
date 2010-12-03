@@ -251,17 +251,12 @@ END_MSG_MAP()
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-  virtual void SetResourceModule() {
+  void SetResourceModule() {
     DCHECK(NULL == prev_resource_instance_);
     SimpleResourceLoader* loader_instance = SimpleResourceLoader::instance();
     DCHECK(loader_instance);
     HMODULE res_dll = loader_instance->GetResourceModuleHandle();
-    prev_resource_instance_ = _AtlBaseModule.SetResourceInstance(res_dll);
-  }
-
-  virtual void ClearResourceModule() {
-    _AtlBaseModule.SetResourceInstance(prev_resource_instance_);
-    prev_resource_instance_ = NULL;
+    _AtlBaseModule.SetResourceInstance(res_dll);
   }
 
   HRESULT FinalConstruct() {
@@ -286,8 +281,6 @@ END_MSG_MAP()
 
   void FinalRelease() {
     Uninitialize();
-
-    ClearResourceModule();
   }
 
   void ResetUrlRequestManager() {
