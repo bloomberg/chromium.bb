@@ -16,7 +16,6 @@
 
 #include "base/lock.h"
 #include "base/singleton.h"
-#include "base/task.h"
 #include "ceee/common/window_utils.h"
 #include "ceee/ie/broker/window_events_funnel.h"
 
@@ -120,10 +119,6 @@ class ExecutorsManager {
 
   // Unregister the HWND and its corresponding tab ID and tool band tab ID.
   virtual void DeleteTabHandle(HWND handle);
-
-  // Cleans up the maps from all handles that would be associated to the given
-  // thread id.
-  virtual void CleanupMapsForThread(DWORD thread_id);
 
   // Traits for Singleton<ExecutorsManager> so that we can pass an argument
   // to the constructor.
