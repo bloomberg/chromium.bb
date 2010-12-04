@@ -41,6 +41,19 @@ class FormGroupGUIDMatchesFunctor {
 };
 
 template<typename T>
+class FormGroupGUIDMatchesFunctor<T *> {
+ public:
+  explicit FormGroupGUIDMatchesFunctor(const std::string& guid) : guid_(guid) {}
+
+  bool operator()(const T* form_group) {
+    return form_group->guid() == guid_;
+  }
+
+ private:
+  std::string guid_;
+};
+
+template<typename T>
 class DereferenceFunctor {
  public:
   template<typename T_Iterator>
@@ -54,49 +67,10 @@ T* address_of(T& v) {
   return &v;
 }
 
-bool FindInProfilesByGUID(const std::vector<AutoFillProfile>& profiles,
-                          const std::string& guid) {
-  for (std::vector<AutoFillProfile>::const_iterator iter = profiles.begin();
-       iter != profiles.end();
-       ++iter) {
-    if (iter->guid() == guid)
-      return true;
-  }
-  return false;
-}
-
-bool FindInScopedProfilesByGUID(const ScopedVector<AutoFillProfile>& profiles,
-                                const std::string& guid) {
-  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
-       iter != profiles.end();
-       ++iter) {
-    if ((*iter)->guid() == guid)
-      return true;
-  }
-  return false;
-}
-
-bool FindInCreditCardsByGUID(const std::vector<CreditCard>& credit_cards,
-                             const std::string& guid) {
-  for (std::vector<CreditCard>::const_iterator iter = credit_cards.begin();
-       iter != credit_cards.end();
-       ++iter) {
-    if (iter->guid() == guid)
-      return true;
-  }
-  return false;
-}
-
-bool FindInScopedCreditCardsByGUID(
-    const ScopedVector<CreditCard>& credit_cards, const std::string& guid) {
-  for (std::vector<CreditCard*>::const_iterator iter =
-          credit_cards.begin();
-       iter != credit_cards.end();
-       ++iter) {
-    if ((*iter)->guid() == guid)
-      return true;
-  }
-  return false;
+template<typename T, typename C>
+bool FindByGUID(const C& container, const std::string& guid) {
+  return std::find_if(container.begin(), container.end(),
+                      FormGroupGUIDMatchesFunctor<T>(guid)) != container.end();
 }
 
 }  // namespace
@@ -328,21 +302,21 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   for (std::vector<AutoFillProfile*>::const_iterator iter =
            web_profiles_.begin();
        iter != web_profiles_.end(); ++iter) {
-    if (!FindInProfilesByGUID(*profiles, (*iter)->guid()))
+    if (!FindByGUID<AutoFillProfile>(*profiles, (*iter)->guid()))
       wds->RemoveAutoFillProfileGUID((*iter)->guid());
   }
 
   // Update the web database with the existing profiles.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    if (FindInScopedProfilesByGUID(web_profiles_, iter->guid()))
+    if (FindByGUID<AutoFillProfile*>(web_profiles_, iter->guid()))
       wds->UpdateAutoFillProfileGUID(*iter);
   }
 
   // Add the new profiles to the web database.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    if (!FindInScopedProfilesByGUID(web_profiles_, iter->guid()))
+    if (!FindByGUID<AutoFillProfile*>(web_profiles_, iter->guid()))
       wds->AddAutoFillProfileGUID(*iter);
   }
 
@@ -381,21 +355,21 @@ void PersonalDataManager::SetCreditCards(
   // removed.
   for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
-    if (!FindInCreditCardsByGUID(*credit_cards, (*iter)->guid()))
+    if (!FindByGUID<CreditCard>(*credit_cards, (*iter)->guid()))
       wds->RemoveCreditCardGUID((*iter)->guid());
   }
 
   // Update the web database with the existing credit cards.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
-    if (FindInScopedCreditCardsByGUID(credit_cards_, iter->guid()))
+    if (FindByGUID<CreditCard*>(credit_cards_, iter->guid()))
       wds->UpdateCreditCardGUID(*iter);
   }
 
   // Add the new credit cards to the web database.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
-    if (!FindInScopedCreditCardsByGUID(credit_cards_, iter->guid()))
+    if (!FindByGUID<CreditCard*>(credit_cards_, iter->guid()))
       wds->AddCreditCardGUID(*iter);
   }
 
