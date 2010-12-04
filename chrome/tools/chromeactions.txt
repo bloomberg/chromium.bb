@@ -13,6 +13,7 @@
 0x307b8a127f85947e	AboutFlags_expose-for-tabs
 0x2c97f94b6aca4a22	AboutFlags_extension-apis
 0x66a2e456dfe783d3	AboutFlags_gpu-canvas-2d
+0x67b7031bb00a6917	AboutFlags_instant-type
 0x681dbf08b11af420	AboutFlags_match-preview
 0x0156f26c1be32122	AboutFlags_my-special-feature
 0xb41d9c886871e31a	AboutFlags_page-prerender
@@ -885,6 +886,8 @@
 0x69fae31849862d21	OverrideEncoding
 0xdcb4676e49e95259	PDF.FitToHeightButton
 0x5f58a2db6428c1a0	PDF.FitToWidthButton
+0xc3c876c4e5846f66	PDF.LoadFailure
+0x9c67afdea49aa8c1	PDF.LoadSuccess
 0x95be082d470e41c9	PDF.PrintPage
 0xf7d4dd6244747179	PDF.SavePage
 0x99ed44568e5ff51a	PDF.ZoomFromBrowser
