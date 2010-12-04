@@ -222,12 +222,13 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
   if (!TemplateURL::SupportsReplacement(template_url))
     return false;
 
-  // Don't provide a hint if this is an extension keyword not enabled for
-  // incognito mode (and if this is an incognito profile).
-  if (template_url->IsExtensionKeyword() && profile_->IsOffTheRecord()) {
+  // Don't provide a hint for inactive/disabled extension keywords.
+  if (template_url->IsExtensionKeyword()) {
     const Extension* extension = profile_->GetExtensionsService()->
         GetExtensionById(template_url->GetExtensionId(), false);
-    if (!profile_->GetExtensionsService()->IsIncognitoEnabled(extension))
+    if (!extension ||
+        (profile_->IsOffTheRecord() &&
+         !profile_->GetExtensionsService()->IsIncognitoEnabled(extension)))
       return false;
   }
 
