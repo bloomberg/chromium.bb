@@ -94,7 +94,8 @@ TEST_F(WebResourceServiceTest, UnpackLogoSignal) {
   ASSERT_EQ(logo_end, 0);  // date value reset to 0;
 }
 
-TEST_F(WebResourceServiceTest, UnpackPromoSignal) {
+// Crashing. See http://crbug.com/65462.
+TEST_F(WebResourceServiceTest, DISABLED_UnpackPromoSignal) {
   // Set up a testing profile and create a web resource service.
   TestingProfile profile;
   scoped_refptr<WebResourceService> web_resource_service(
