@@ -54,8 +54,11 @@ class CookieAccountant {
   // queue the events sent to the broker. They don't need to be sent to the BHO
   // because they don't need tab_id anyway.
   CookieAccountant()
-      : cookie_events_funnel_(new BrokerRpcClient(true)),
+      : broker_rpc_client_(true),
+        cookie_events_funnel_(&broker_rpc_client_),
         patching_wininet_functions_(false) {
+    HRESULT hr = broker_rpc_client_.Connect(true);
+    DCHECK(SUCCEEDED(hr));
   }
 
   virtual ~CookieAccountant();
@@ -109,6 +112,9 @@ class CookieAccountant {
 
   // Sets the cookie store ID for a script cookie event.
   void SetScriptCookieStoreId(cookie_api::CookieInfo* cookie);
+
+  // Broker RPC client.
+  BrokerRpcClient broker_rpc_client_;
 
   // The funnel for sending cookie events to the broker.
   CookieEventsFunnel cookie_events_funnel_;

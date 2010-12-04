@@ -32,7 +32,10 @@ WebRequestNotifier::WebRequestNotifier()
         : internet_status_callback_stub_(NULL),
           start_count_(0),
           initialize_state_(NOT_INITIALIZED),
-          webrequest_events_funnel_(new BrokerRpcClient(true)) {
+          broker_rpc_client_(true),
+          webrequest_events_funnel_(&broker_rpc_client_) {
+  HRESULT hr = broker_rpc_client_.Connect(true);
+  DCHECK(SUCCEEDED(hr));
 }
 
 WebRequestNotifier::~WebRequestNotifier() {

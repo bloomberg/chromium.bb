@@ -272,6 +272,9 @@ class ATL_NO_VTABLE CeeeExecutor
   // Mainly for unit testing purposes.
   void set_cookie_store_is_registered(bool is_registered);
 
+  // Broker RPC client.
+  BrokerRpcClient broker_rpc_client_;
+
   // Instance of InfobarManager for the tab associated with the thread to which
   // the executor is attached.
   scoped_ptr<infobar_api::InfobarManager> infobar_manager_;
