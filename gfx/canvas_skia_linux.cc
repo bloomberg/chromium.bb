@@ -278,6 +278,7 @@ void DrawStringContext::DrawWithHalo(const SkColor& text_color,
                         SkColorGetB(halo_color) / 255.0,
                         SkColorGetA(halo_color) / 255.0);
   cairo_set_line_width(text_cr, 2.0);
+  cairo_set_line_join(text_cr, CAIRO_LINE_JOIN_ROUND);
   cairo_stroke_preserve(text_cr);
 
   cairo_set_operator(text_cr, CAIRO_OPERATOR_SOURCE);
