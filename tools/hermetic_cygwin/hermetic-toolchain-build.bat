@@ -30,12 +30,12 @@
 @echo off
 if exist "%~dp0..\..\cygwin" goto skip_cygwin
 if exist "%~dp0hermetic_cygwin_1_7_5-1_0.exe" goto setup_downloaded
-wget http://build.chromium.org/mirror/nacl/cygwin_mirror/hermetic_cygwin_1_7_5-1_0.exe -O "%~dp0hermetic_cygwin_1_7_5-1_0.exe"
+wget http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/hermetic_cygwin_1_7_5-1_0.exe -O "%~dp0hermetic_cygwin_1_7_5-1_0.exe"
 if errorlevel 1 GoTo cyg_wget
 chmod a+x "%~dp0\hermetic_cygwin_1_7_5-1_0.exe"
 GoTo setup_downloaded
 :cyg_wget
-\cygwin\bin\wget http://build.chromium.org/mirror/nacl/cygwin_mirror/hermetic_cygwin_1_7_5-1_0.exe -O "%~dp0hermetic_cygwin_1_7_5-1_0.exe"
+\cygwin\bin\wget http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/hermetic_cygwin_1_7_5-1_0.exe -O "%~dp0hermetic_cygwin_1_7_5-1_0.exe"
 \cygwin\bin\chmod a+x "%~dp0hermetic_cygwin_1_7_5-1_0.exe"
 :setup_downloaded
 start /WAIT hermetic_cygwin_1_7_5-1_0.exe /DEVEL /S /D=%~dp0..\..\cygwin

@@ -63,12 +63,12 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
     print 'Extracting from %s...' % tgz_filename
   if sys.platform == 'win32':
     os.makedirs(os.path.join(target, 'tmptar'))
-    tarfiles = [ 'cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
-                 'cygwin1.dll', 'gzip.exe', 'tar.exe']
+    tarfiles = ['cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
+                'cygwin1.dll', 'gzip.exe', 'tar.exe']
     for filename in tarfiles:
       http_download.HttpDownload(
-        'http://build.chromium.org/mirror/nacl/cygwin_mirror/cygwin/' +
-          filename,
+        'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
+        'cygwin_mirror/cygwin/' + filename,
         os.path.join(target, 'tmptar', filename))
     saveddir = os.getcwd()
     os.chdir(target)
