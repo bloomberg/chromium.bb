@@ -41,7 +41,6 @@
 
 using base::win::RegKey;
 using base::win::ScopedComPtr;
-using base::win::ScopedVariant;
 
 // Note that these values are all lower case and are compared to
 // lower-case-transformed values.
@@ -825,7 +824,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
   ScopedComPtr<IUriContainer> uri_container;
   hr = uri_container.QueryFrom(moniker);
 
-  ScopedVariant headers_var;
+  base::win::ScopedVariant headers_var;
   if (headers && headers[0])
     headers_var.Set(headers);
 
@@ -880,7 +879,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
           fragment = NULL;
         }
 
-        ScopedVariant var_url(UTF8ToWide(target_url.spec()).c_str());
+        base::win::ScopedVariant var_url(UTF8ToWide(target_url.spec()).c_str());
         hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), NULL, NULL,
                                                NULL, headers_var.AsInput(),
                                                bind_ctx,

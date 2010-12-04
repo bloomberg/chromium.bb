@@ -269,7 +269,7 @@ TEST_P(FullTabUITest, ViewSource) {
   InSequence expect_in_sequence_for_scope;
 
   // After navigation invoke view soruce action using IWebBrowser2::ExecWB
-  VARIANT empty = ScopedVariant::kEmptyVariant;
+  VARIANT empty = base::win::ScopedVariant::kEmptyVariant;
   EXPECT_CALL(ie_mock_, OnLoad(in_cf,
                                StrEq(GetSimplePageUrl())))
       .WillOnce(DelayExecCommand(&ie_mock_, &loop_, 0, &CGID_MSHTML,
@@ -309,7 +309,7 @@ void NavigateToCurrentUrl(MockIEEventSink* mock) {
   EXPECT_HRESULT_SUCCEEDED(hr);
   if (SUCCEEDED(hr)) {
     DCHECK(bstr.Length());
-    VARIANT empty = ScopedVariant::kEmptyVariant;
+    VARIANT empty = base::win::ScopedVariant::kEmptyVariant;
     hr = browser->Navigate(bstr, &empty, &empty, &empty, &empty);
     EXPECT_HRESULT_SUCCEEDED(hr);
   }
@@ -365,7 +365,7 @@ TEST_P(FullTabUITest, TabCrashRefresh) {
           ConnectDocPropNotifySink(&ie_mock_, &prop_listener),
           KillChromeFrameProcesses()));
 
-  VARIANT empty = ScopedVariant::kEmptyVariant;
+  VARIANT empty = base::win::ScopedVariant::kEmptyVariant;
   EXPECT_CALL(prop_listener, OnChanged(/*DISPID_READYSTATE*/_))
       .WillOnce(DoAll(
           DisconnectDocPropNotifySink(&prop_listener),

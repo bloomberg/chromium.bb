@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::ScopedBstr;
-using base::win::ScopedVariant;
 
 namespace chrome_frame_test {
 
@@ -180,7 +179,7 @@ bool IEEventSink::IsCFRendering() {
 void IEEventSink::PostMessageToCF(const std::wstring& message,
                                   const std::wstring& target) {
   ScopedBstr message_bstr(message.c_str());
-  ScopedVariant target_variant(target.c_str());
+  base::win::ScopedVariant target_variant(target.c_str());
   EXPECT_HRESULT_SUCCEEDED(
       chrome_frame_->postMessage(message_bstr, target_variant));
 }
@@ -335,8 +334,8 @@ HRESULT IEEventSink::LaunchIEAndNavigate(
 }
 
 HRESULT IEEventSink::Navigate(const std::wstring& navigate_url) {
-  VARIANT empty = ScopedVariant::kEmptyVariant;
-  ScopedVariant url;
+  VARIANT empty = base::win::ScopedVariant::kEmptyVariant;
+  base::win::ScopedVariant url;
   url.Set(navigate_url.c_str());
 
   HRESULT hr = S_OK;
@@ -355,7 +354,7 @@ HRESULT IEEventSink::CloseWebBrowser() {
 }
 
 void IEEventSink::Refresh() {
-  ScopedVariant refresh_level(REFRESH_NORMAL);
+  base::win::ScopedVariant refresh_level(REFRESH_NORMAL);
   web_browser2_->Refresh2(refresh_level.AsInput());
 }
 
@@ -377,9 +376,9 @@ void IEEventSink::ConnectToChromeFrame() {
     }
 
     if (chrome_frame_) {
-      ScopedVariant onmessage(onmessage_.ToDispatch());
-      ScopedVariant onloaderror(onloaderror_.ToDispatch());
-      ScopedVariant onload(onload_.ToDispatch());
+      base::win::ScopedVariant onmessage(onmessage_.ToDispatch());
+      base::win::ScopedVariant onloaderror(onloaderror_.ToDispatch());
+      base::win::ScopedVariant onload(onload_.ToDispatch());
       EXPECT_HRESULT_SUCCEEDED(chrome_frame_->put_onmessage(onmessage));
       EXPECT_HRESULT_SUCCEEDED(chrome_frame_->put_onloaderror(onloaderror));
       EXPECT_HRESULT_SUCCEEDED(chrome_frame_->put_onload(onload));
@@ -394,7 +393,7 @@ void IEEventSink::DisconnectFromChromeFrame() {
     // pump running in the context of the outgoing call.
     ScopedComPtr<IChromeFrame> chrome_frame(chrome_frame_);
     chrome_frame_.Release();
-    ScopedVariant dummy(static_cast<IDispatch*>(NULL));
+    base::win::ScopedVariant dummy(static_cast<IDispatch*>(NULL));
     chrome_frame->put_onmessage(dummy);
     chrome_frame->put_onload(dummy);
     chrome_frame->put_onloaderror(dummy);
@@ -514,7 +513,7 @@ STDMETHODIMP_(void) IEEventSink::OnQuit() {
 
 HRESULT IEEventSink::OnLoad(const VARIANT* param) {
   DVLOG(1) << __FUNCTION__ << " " << param->bstrVal;
-  ScopedVariant stack_object(*param);
+  base::win::ScopedVariant stack_object(*param);
   if (chrome_frame_) {
     if (listener_)
       listener_->OnLoad(param->bstrVal);
@@ -542,7 +541,7 @@ HRESULT IEEventSink::OnMessage(const VARIANT* param) {
     return S_OK;
   }
 
-  ScopedVariant data, origin, source;
+  base::win::ScopedVariant data, origin, source;
   if (param && (V_VT(param) == VT_DISPATCH)) {
     wchar_t* properties[] = { L"data", L"origin", L"source" };
     const int prop_count = arraysize(properties);

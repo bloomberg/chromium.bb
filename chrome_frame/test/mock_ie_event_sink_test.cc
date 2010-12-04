@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#include "base/scoped_variant_win.h"
+#include "base/win/scoped_variant.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 
@@ -160,7 +160,7 @@ void MockIEEventSink::ExpectDocumentReadystate(int ready_state) {
     EXPECT_TRUE(document != NULL);
     if (document) {
       DISPPARAMS params = { 0 };
-      ScopedVariant result;
+      base::win::ScopedVariant result;
       EXPECT_HRESULT_SUCCEEDED(document->Invoke(DISPID_READYSTATE, IID_NULL,
           LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &params,
           result.Receive(), NULL, NULL));
@@ -214,4 +214,3 @@ std::wstring MockIEEventSinkTest::GetTestUrl(
 }
 
 }  // namespace chrome_frame_test
-

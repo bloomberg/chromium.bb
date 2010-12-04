@@ -60,7 +60,7 @@ AccObject* AccObject::CreateFromWindow(HWND hwnd) {
 AccObject* AccObject::CreateFromEvent(HWND hwnd, LONG object_id,
                                       LONG child_id) {
   ScopedComPtr<IAccessible> accessible;
-  ScopedVariant acc_child_id;
+  base::win::ScopedVariant acc_child_id;
   ::AccessibleObjectFromEvent(hwnd, object_id, child_id, accessible.Receive(),
                               acc_child_id.Receive());
   if (accessible && acc_child_id.type() == VT_I4)
@@ -82,7 +82,7 @@ AccObject* AccObject::CreateFromDispatch(IDispatch* dispatch) {
 // static
 AccObject* AccObject::CreateFromPoint(int x, int y) {
   ScopedComPtr<IAccessible> accessible;
-  ScopedVariant child_id;
+  base::win::ScopedVariant child_id;
   POINT point = {x, y};
   ::AccessibleObjectFromPoint(point, accessible.Receive(), child_id.Receive());
   if (accessible && child_id.type() == VT_I4)
@@ -119,7 +119,7 @@ bool AccObject::Focus() {
   // Double check that the object actually received focus. In some cases
   // the parent object must have the focus first.
   bool did_focus = false;
-  ScopedVariant focused;
+  base::win::ScopedVariant focused;
   if (SUCCEEDED(accessible_->get_accFocus(focused.Receive()))) {
     if (focused.type() != VT_EMPTY)
       did_focus = true;
@@ -136,7 +136,7 @@ bool AccObject::Select() {
 
   // Double check that the object actually received selection.
   bool did_select = false;
-  ScopedVariant selected;
+  base::win::ScopedVariant selected;
   if (SUCCEEDED(accessible_->get_accSelection(selected.Receive()))) {
     if (selected.type() != VT_EMPTY)
       did_select = true;
@@ -172,7 +172,7 @@ bool AccObject::GetName(std::wstring* name) {
 
 bool AccObject::GetRoleText(std::wstring* role_text) {
   DCHECK(role_text);
-  ScopedVariant role_variant;
+  base::win::ScopedVariant role_variant;
   if (SUCCEEDED(accessible_->get_accRole(child_id_, role_variant.Receive()))) {
     if (role_variant.type() == VT_I4) {
       wchar_t role_text_array[50];
@@ -207,7 +207,7 @@ bool AccObject::GetValue(std::wstring* value) {
 
 bool AccObject::GetState(int* state) {
   DCHECK(state);
-  ScopedVariant state_variant;
+  base::win::ScopedVariant state_variant;
   if (SUCCEEDED(accessible_->get_accState(child_id_,
                                           state_variant.Receive()))) {
     if (state_variant.type() == VT_I4) {
@@ -334,7 +334,7 @@ bool AccObject::GetFromNavigation(long navigation_type,
   bool is_child_navigation = navigation_type == NAVDIR_FIRSTCHILD ||
                              navigation_type == NAVDIR_LASTCHILD;
   DCHECK(!is_child_navigation || !IsSimpleElement());
-  ScopedVariant object_variant;
+  base::win::ScopedVariant object_variant;
   HRESULT result = accessible_->accNavigate(navigation_type,
                                             child_id_,
                                             object_variant.Receive());

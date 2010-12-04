@@ -12,7 +12,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
+#include "base/win/scoped_variant.h"
 #include "chrome_frame/test/win_event_receiver.h"
 
 namespace gfx {
@@ -155,7 +155,7 @@ class AccObject : public base::RefCounted<AccObject> {
   bool PostMouseButtonMessages(int button_up, int button_down);
 
   ScopedComPtr<IAccessible> accessible_;
-  ScopedVariant child_id_;
+  base::win::ScopedVariant child_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AccObject);
 };
@@ -229,7 +229,7 @@ class AccEventObserver : public WinEventListener {
  private:
   class EventHandler : public base::RefCounted<EventHandler> {
    public:
-    EventHandler(AccEventObserver* observer);
+    explicit EventHandler(AccEventObserver* observer);
 
     // Examines the given event and invokes the corresponding method of its
     // observer.
