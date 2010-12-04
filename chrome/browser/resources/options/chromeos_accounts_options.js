@@ -44,8 +44,8 @@ cr.define('options', function() {
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);
 
-      $('allowGuestCheck').addEventListener('click',
-          this.handleAllowGuestCheckClick_);
+      $('useWhitelistCheck').addEventListener('click',
+          this.handleUseWhitelistCheckClick_);
     },
 
     /**
@@ -65,9 +65,9 @@ cr.define('options', function() {
      * Handler for allow guest check click.
      * @private
      */
-    handleAllowGuestCheckClick_: function(e) {
+    handleUseWhitelistCheckClick_: function(e) {
       // Whitelist existing users when guest login is being disabled.
-      if (!$('allowGuestCheck').checked) {
+      if ($('useWhitelistCheck').checked) {
         chrome.send('whitelistExistingUsers', []);
       }
     },

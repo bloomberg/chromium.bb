@@ -43,8 +43,8 @@ void AccountsOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString("allow_BWSI", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION));
-  localized_strings->SetString("allow_guest",l10n_util::GetStringUTF16(
-      IDS_OPTIONS_ACCOUNTS_ALLOW_GUEST_DESCRIPTION));
+  localized_strings->SetString("use_whitelist",l10n_util::GetStringUTF16(
+      IDS_OPTIONS_ACCOUNTS_USE_WHITELIST_DESCRIPTION));
   localized_strings->SetString("show_user_on_signin",l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION));
   localized_strings->SetString("username_edit_hint",l10n_util::GetStringUTF16(
