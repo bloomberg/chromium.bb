@@ -69,8 +69,6 @@ WorkerProcessHost::WorkerProcessHost(
     ChromeURLRequestContext *request_context)
     : BrowserChildProcessHost(WORKER_PROCESS, resource_dispatcher_host),
       request_context_(request_context),
-      appcache_dispatcher_host_(
-          new AppCacheDispatcherHost(request_context)),
       ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
           new BlobDispatcherHost(
               this->id(), request_context->blob_storage_context()))),
@@ -85,10 +83,14 @@ WorkerProcessHost::WorkerProcessHost(
   db_dispatcher_host_ = new DatabaseDispatcherHost(
       request_context->database_tracker(), this,
       request_context_->host_content_settings_map());
-  appcache_dispatcher_host_->Initialize(this);
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
+  for (size_t i = 0; i < filters_.size(); ++i) {
+    filters_[i]->OnChannelClosing();
+    filters_[i]->OnFilterRemoved();
+  }
+
   // Shut down the database dispatcher host.
   db_dispatcher_host_->Shutdown();
 
@@ -215,7 +217,16 @@ bool WorkerProcessHost::Init() {
           base::PLATFORM_FILE_WRITE_ATTRIBUTES);
   }
 
+  CreateMessageFilters();
+
   return true;
+}
+
+void WorkerProcessHost::CreateMessageFilters() {
+  filters_.push_back(new AppCacheDispatcherHost(request_context_, id()));
+
+  for (size_t i = 0; i < filters_.size(); ++i)
+    filters_[i]->OnFilterAdded(channel());
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
@@ -280,9 +291,13 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
 }
 
 void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
+  for (size_t i = 0; i < filters_.size(); ++i) {
+    if (filters_[i]->OnMessageReceived(message))
+      return;
+  }
+
   bool msg_is_ok = true;
   bool handled =
-      appcache_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       blob_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       file_system_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
@@ -334,6 +349,16 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
       break;
     }
   }
+}
+
+void WorkerProcessHost::OnChannelConnected(int32 peer_pid) {
+  for (size_t i = 0; i < filters_.size(); ++i)
+    filters_[i]->OnChannelConnected(peer_pid);
+}
+
+void WorkerProcessHost::OnChannelError() {
+  for (size_t i = 0; i < filters_.size(); ++i)
+    filters_[i]->OnChannelError();
 }
 
 void WorkerProcessHost::OnProcessLaunched() {

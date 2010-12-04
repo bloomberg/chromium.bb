@@ -26,6 +26,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/thread_restrictions.h"
+#include "chrome/browser/appcache/appcache_dispatcher_host.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -383,6 +384,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(resource_message_filter);
 
   channel_->AddFilter(new AudioRendererHost());
+  channel_->AddFilter(
+      new AppCacheDispatcherHost(profile()->GetRequestContext(), id()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
 }
 

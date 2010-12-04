@@ -15,9 +15,7 @@
 // Sends appcache related messages to a child process.
 class AppCacheFrontendProxy : public appcache::AppCacheFrontend {
  public:
-  AppCacheFrontendProxy() : sender_(NULL) {}
-  void set_sender(IPC::Message::Sender* sender) { sender_ = sender; }
-  IPC::Message::Sender* sender() const { return sender_; }
+  explicit AppCacheFrontendProxy(IPC::Message::Sender* sender);
 
   // AppCacheFrontend methods
   virtual void OnCacheSelected(int host_id, const appcache::AppCacheInfo& info);

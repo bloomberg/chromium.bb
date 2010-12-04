@@ -13,7 +13,6 @@
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/worker_pool.h"
-#include "chrome/browser/appcache/appcache_dispatcher_host.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -256,8 +255,6 @@ ResourceMessageFilter::ResourceMessageFilter(
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
-      appcache_dispatcher_host_(
-          new AppCacheDispatcherHost(profile->GetRequestContext())),
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(indexed_db_dispatcher_host_(
@@ -294,7 +291,6 @@ ResourceMessageFilter::ResourceMessageFilter(
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
-  DCHECK(appcache_dispatcher_host_.get());
   DCHECK(dom_storage_dispatcher_host_.get());
 
   render_widget_helper_->Init(id(), resource_dispatcher_host_);
@@ -358,7 +354,6 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   set_handle(peer_handle);
 
   WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
-  appcache_dispatcher_host_->Initialize(this);
   dom_storage_dispatcher_host_->Init(id(), handle());
   indexed_db_dispatcher_host_->Init(id(), handle());
   db_dispatcher_host_->Init(handle());
@@ -388,7 +383,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   bool handled =
       resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
-      appcache_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       indexed_db_dispatcher_host_->OnMessageReceived(msg) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||

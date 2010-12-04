@@ -7,18 +7,19 @@
 #pragma once
 
 #include <list>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_child_process_host.h"
+#include "chrome/browser/browser_io_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 
-class AppCacheDispatcherHost;
 class BlobDispatcherHost;
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
@@ -159,8 +160,14 @@ class WorkerProcessHost : public BrowserChildProcessHost {
       uint32 request_id,
       const ViewHostMsg_Resource_Request& request_data);
 
+  // IPC::Channel::Listener implementation:
   // Called when a message arrives from the worker process.
   virtual void OnMessageReceived(const IPC::Message& message);
+  virtual void OnChannelConnected(int32 peer_pid);
+  virtual void OnChannelError();
+
+  // Creates and adds the message filters.
+  void CreateMessageFilters();
 
   // Called when the process has been launched successfully.
   virtual void OnProcessLaunched();
@@ -207,12 +214,16 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   Instances instances_;
 
   scoped_refptr<ChromeURLRequestContext> request_context_;
-  scoped_ptr<AppCacheDispatcherHost> appcache_dispatcher_host_;
   scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;
   scoped_ptr<BlobDispatcherHost> blob_dispatcher_host_;
   scoped_refptr<FileSystemDispatcherHost> file_system_dispatcher_host_;
   scoped_refptr<FileUtilitiesDispatcherHost> file_utilities_dispatcher_host_;
   scoped_refptr<MimeRegistryDispatcher> mime_registry_dispatcher_;
+
+  // Holds all the IPC message filters.  Since the worker process host is on the
+  // IO thread, we don't have a IPC::ChannelProxy and so we manage filters
+  // manually.
+  std::vector<scoped_refptr<BrowserIOMessageFilter> > filters_;
 
   // A callback to create a routing id for the associated worker process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;

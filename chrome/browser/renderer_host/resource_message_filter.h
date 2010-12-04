@@ -31,7 +31,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
-class AppCacheDispatcherHost;
 class BlobDispatcherHost;
 class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
@@ -444,9 +443,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   scoped_refptr<URLRequestContextGetter> extensions_request_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
-
-  // Handles AppCache related messages.
-  scoped_ptr<AppCacheDispatcherHost> appcache_dispatcher_host_;
 
   // Handles DOM Storage related messages.
   scoped_refptr<DOMStorageDispatcherHost> dom_storage_dispatcher_host_;
