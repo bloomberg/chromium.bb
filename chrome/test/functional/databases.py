@@ -124,6 +124,14 @@ class DatabasesTest(pyauto.PyUITest):
     json = self.CallJavascriptFunc('getRecords', [], tab_index, windex)
     return self._ParseAndCheckResultFromTestPage(json)['returnValue']
 
+  def _HasTable(self, tab_index=0, windex=0):
+    """Returns whether the page has a table in its database."""
+    try:
+      self._GetRecords(tab_index, windex)
+    except SQLExecutionError:
+      return False
+    return True
+
   def testInsertRecord(self):
     """Insert records to the database."""
     self.NavigateToURL(self.TEST_PAGE_URL)
@@ -176,7 +184,7 @@ class DatabasesTest(pyauto.PyUITest):
     did_throw_exception = False
     try:
       self._DeleteRecord(1)
-    except:
+    except SQLExecutionError:
       did_throw_exception = True
     self.assertTrue(did_throw_exception)
     self.assertEquals(['text'], self._GetRecords())
@@ -217,16 +225,9 @@ class DatabasesTest(pyauto.PyUITest):
     self._InsertRecord('text')
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(self.TEST_PAGE_URL, 1, 0)
-    can_read_regular_database = False
-    try:
-      # |_GetRecords| should throw an error because the table does not exist.
-      if len(self._GetRecords(windex=1)) == 1:
-        can_read_regular_database = True
-    except SQLExecutionError:
-      pass
-    self.assertFalse(can_read_regular_database)
+    self.assertFalse(self._HasTable(windex=1))
     self._CreateTable(windex=1)
-    self.assertEqual(0, len(self._GetRecords(windex=1)))
+    self.assertFalse(self._GetRecords(windex=1))
 
   def testRegularCannotReadIncognitoDatabase(self):
     """Attempt to read a database created in an incognito browser from a regular
@@ -239,14 +240,9 @@ class DatabasesTest(pyauto.PyUITest):
 
     # Verify a regular browser cannot read the incognito database.
     self.NavigateToURL(self.TEST_PAGE_URL)
-    can_read_incognito_database = False
-    try:
-      # |_GetRecords| should throw an error because the table does not exist.
-      if len(self._GetRecords()) == 1:
-        can_read_incognito_database = True
-    except SQLExecutionError:
-      pass
-    self.assertFalse(can_read_incognito_database)
+    self.assertFalse(self._HasTable())
+    self._CreateTable()
+    self.assertFalse(self._GetRecords())
 
   def testDbModificationPersistInSecondTab(self):
     """Verify DB changes within first tab are present in the second tab."""
@@ -261,6 +257,39 @@ class DatabasesTest(pyauto.PyUITest):
     self.assertEquals('0', tab1_records[0])
     self.assertEquals(1, len(tab2_records))
     self.assertEquals(tab1_records[0], tab2_records[0])
+
+  def testIncognitoDatabaseNotPersistent(self):
+    """Verify incognito database is removed after incognito window closes."""
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(self.TEST_PAGE_URL, 1, 0)
+    self._CreateTable(windex=1)
+    self._InsertRecord('text', windex=1)
+    self.CloseBrowserWindow(1)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(self.TEST_PAGE_URL, 1, 0)
+    self.assertFalse(self._HasTable(windex=1))
+
+  def testModificationsPersistAfterRendererCrash(self):
+    """Verify database modifications persist after crashing tab."""
+    self.AppendTab(pyauto.GURL('about:blank'))
+    self.ActivateTab(0)
+    self.NavigateToURL(self.TEST_PAGE_URL)
+    self._CreateTable()
+    self._InsertRecord('1')
+    self.Kill(self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
+    self.ReloadActiveTab()
+    self.assertEqual(['1'], self._GetRecords())
+
+  def testIncognitoDBPersistentAcrossTabs(self):
+    """Test to check if database modifications are persistent across tabs
+    in incognito window.
+    """
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(self.TEST_PAGE_URL, 1, 0)
+    self._CreateTable(windex=1)
+    self._InsertRecord('text', windex=1)
+    self.AppendTab(pyauto.GURL(self.TEST_PAGE_URL), 1)
+    self.assertEquals(['text'], self._GetRecords(1, 1))
 
 
 if __name__ == '__main__':
