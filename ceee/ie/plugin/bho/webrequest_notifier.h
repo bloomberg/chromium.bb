@@ -400,6 +400,9 @@ class WebRequestNotifier {
   app::win::IATPatchFunction http_send_request_w_patch_;
   app::win::IATPatchFunction internet_read_file_patch_;
 
+  // Broker RPC client.
+  BrokerRpcClient broker_rpc_client_;
+
   // The funnel for sending webRequest events to the broker.
   WebRequestEventsFunnel webrequest_events_funnel_;
 
