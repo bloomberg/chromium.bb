@@ -43,6 +43,8 @@
     'infobars',
     'navigation',
     'notifications',
+    # Sometimes notification process hasn't been created yet, crbug.com/65408
+    '-notifications.NotificationsTest.testKillNotificationProcess',
     'ntp',
     'omnibox',
     'passwords',
