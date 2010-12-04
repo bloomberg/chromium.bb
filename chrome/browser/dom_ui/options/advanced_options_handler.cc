@@ -86,8 +86,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON));
   localized_strings->SetString("translateEnableTranslate",
       l10n_util::GetStringUTF16(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE));
-  localized_strings->SetString("certificatesLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CERTIFICATES_LABEL));
   localized_strings->SetString("certificatesManageButton",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON));
   localized_strings->SetString("proxiesLabel",
