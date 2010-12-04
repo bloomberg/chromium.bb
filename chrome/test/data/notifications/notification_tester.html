@@ -79,6 +79,7 @@ function onPermissionGranted() {
 // Helper function that shows the notification and adds it to
 // |g_notifications|.
 function createNotificationHelper(note, replaceId) {
+  note.replaceId = replaceId;
   note.show();
   // |push| returns the length of the array after the add.
   return g_notifications.push(note) - 1;
