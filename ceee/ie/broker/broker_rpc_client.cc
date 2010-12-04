@@ -166,8 +166,10 @@ HRESULT BrokerRpcClient::RunRpc(bool allow_restart,
   if (!rpc_function) {
     RpcDcheck("rpc_function is NULL");
   }
-  if (!is_connected())
+  if (!is_connected()) {
+    RpcDcheck("BrokerRpcClient is not connected");
     return RPC_E_FAULT;
+  }
   RpcTryExcept {
     DispatchToFunction(rpc_function, params);
     return S_OK;
