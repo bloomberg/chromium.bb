@@ -42,6 +42,10 @@ struct ClassInfo {
 
 class ClassRegistrar {
  public:
+  static ClassRegistrar* GetInstance() {
+    return Singleton<ClassRegistrar>::get();
+  }
+
   ~ClassRegistrar() {
     for (RegisteredClasses::iterator i = registered_classes_.begin();
          i != registered_classes_.end(); ++i) {
@@ -198,7 +202,7 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
 std::wstring WindowImpl::GetWindowClassName() {
   ClassInfo class_info(initial_class_style());
   std::wstring name;
-  if (Singleton<ClassRegistrar>()->RetrieveClassName(class_info, &name))
+  if (ClassRegistrar::GetInstance()->RetrieveClassName(class_info, &name))
     return name;
 
   // No class found, need to register one.

@@ -10,9 +10,9 @@
 #include "app/l10n_util.h"
 #include "base/hash_tables.h"
 #include "base/i18n/rtl.h"
+#include "base/lazy_instance.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -316,18 +316,30 @@ std::string ExtensionMessageBundle::GetL10nMessage(
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+// Unique class for Singleton.
+struct ExtensionToMessagesMap {
+  ExtensionToMessagesMap();
+  ~ExtensionToMessagesMap();
+
+  // Maps extension ID to message map.
+  ExtensionToL10nMessagesMap messages_map;
+};
+
+static base::LazyInstance<ExtensionToMessagesMap> g_extension_to_messages_map(
+    base::LINKER_INITIALIZED);
+
 ExtensionToMessagesMap::ExtensionToMessagesMap() {}
 
 ExtensionToMessagesMap::~ExtensionToMessagesMap() {}
 
 ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap() {
-  return &Singleton<ExtensionToMessagesMap>()->messages_map;
+  return &g_extension_to_messages_map.Get().messages_map;
 }
 
 L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id) {
   ExtensionToL10nMessagesMap::iterator it =
-      Singleton<ExtensionToMessagesMap>()->messages_map.find(extension_id);
-  if (it != Singleton<ExtensionToMessagesMap>()->messages_map.end())
+      g_extension_to_messages_map.Get().messages_map.find(extension_id);
+  if (it != g_extension_to_messages_map.Get().messages_map.end())
     return &(it->second);
 
   return NULL;

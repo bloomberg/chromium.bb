@@ -22,6 +22,13 @@ namespace {
 
 class CSSMInitSingleton {
  public:
+  static CSSMInitSingleton* GetInstance() {
+    return Singleton<CSSMInitSingleton>::get();
+  }
+
+  CSSM_CSP_HANDLE csp_handle() const  {return csp_handle_;}
+
+ private:
   CSSMInitSingleton() : inited_(false), loaded_(false), csp_handle_(NULL) {
     static CSSM_VERSION version = {2, 0};
     // TODO(wtc): what should our caller GUID be?
@@ -68,18 +75,21 @@ class CSSMInitSingleton {
     }
   }
 
-  CSSM_CSP_HANDLE csp_handle() const  {return csp_handle_;}
-
- private:
   bool inited_;  // True if CSSM_Init has been called successfully.
   bool loaded_;  // True if CSSM_ModuleLoad has been called successfully.
   CSSM_CSP_HANDLE csp_handle_;
+
+  friend struct DefaultSingletonTraits<CSSMInitSingleton>;
 };
 
 // This singleton is separate as it pertains to Apple's wrappers over
 // their own CSSM handles, as opposed to our own CSSM_CSP_HANDLE.
 class SecurityServicesSingleton {
  public:
+  static SecurityServicesSingleton* GetInstance() {
+    return Singleton<SecurityServicesSingleton>::get();
+  }
+
   ~SecurityServicesSingleton() {}
 
   Lock& lock() { return lock_; }
@@ -100,11 +110,11 @@ class SecurityServicesSingleton {
 namespace base {
 
 void EnsureCSSMInit() {
-  Singleton<CSSMInitSingleton>::get();
+  CSSMInitSingleton::GetInstance();
 }
 
 CSSM_CSP_HANDLE GetSharedCSPHandle() {
-  return Singleton<CSSMInitSingleton>::get()->csp_handle();
+  return CSSMInitSingleton::GetInstance()->csp_handle();
 }
 
 void* CSSMMalloc(CSSM_SIZE size, void *alloc_ref) {
@@ -145,7 +155,7 @@ void LogCSSMError(const char *fn_name, CSSM_RETURN err) {
 }
 
 Lock& GetMacSecurityServicesLock() {
-  return Singleton<SecurityServicesSingleton>::get()->lock();
+  return SecurityServicesSingleton::GetInstance()->lock();
 }
 
 }  // namespace base

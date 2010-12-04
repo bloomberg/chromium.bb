@@ -80,10 +80,8 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
   DISALLOW_COPY_AND_ASSIGN(IOSurfaceSupportImpl);
 };
 
-static Singleton<IOSurfaceSupportImpl> sole_instance_;
-
 IOSurfaceSupportImpl* IOSurfaceSupportImpl::Initialize() {
-  IOSurfaceSupportImpl* impl = sole_instance_.get();
+  IOSurfaceSupportImpl* impl = Singleton<IOSurfaceSupportImpl>::get();
   if (impl->InitializedSuccessfully())
     return impl;
   return NULL;

@@ -11,8 +11,8 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/lazy_instance.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -78,21 +78,23 @@ struct SingletonData {
   ExtensionPermissionsList permissions_;
 };
 
+static base::LazyInstance<SingletonData> g_singleton_data(
+    base::LINKER_INITIALIZED);
+
 static std::set<std::string>* GetFunctionNameSet() {
-  return &Singleton<SingletonData>()->function_names_;
+  return &g_singleton_data.Get().function_names_;
 }
 
 static PageActionIdMap* GetPageActionMap() {
-  return &Singleton<SingletonData>()->page_action_ids_;
+  return &g_singleton_data.Get().page_action_ids_;
 }
 
 static PermissionsList* GetPermissionsList(const std::string& extension_id) {
-  return &Singleton<SingletonData>()->permissions_[extension_id];
+  return &g_singleton_data.Get().permissions_[extension_id];
 }
 
 static void GetActiveExtensionIDs(std::set<std::string>* extension_ids) {
-  ExtensionPermissionsList& permissions =
-      Singleton<SingletonData>()->permissions_;
+  ExtensionPermissionsList& permissions = g_singleton_data.Get().permissions_;
 
   for (ExtensionPermissionsList::iterator iter = permissions.begin();
        iter != permissions.end(); ++iter) {

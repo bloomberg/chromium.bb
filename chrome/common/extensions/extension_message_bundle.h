@@ -155,15 +155,6 @@ typedef std::map<std::string, std::string> L10nMessagesMap;
 // A map of extension ID to l10n message map.
 typedef std::map<std::string, L10nMessagesMap > ExtensionToL10nMessagesMap;
 
-// Unique class for Singleton.
-struct ExtensionToMessagesMap {
-  ExtensionToMessagesMap();
-  ~ExtensionToMessagesMap();
-
-  // Maps extension ID to message map.
-  ExtensionToL10nMessagesMap messages_map;
-};
-
 // Returns the extension_id to messages map.
 ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap();
 

@@ -28,6 +28,9 @@ class IconTheme;
 
 class MimeUtilConstants {
  public:
+  static MimeUtilConstants* GetInstance() {
+    return Singleton<MimeUtilConstants>::get();
+  }
 
   // In seconds, specified by icon theme specs.
   const int kUpdateInterval;
@@ -157,7 +160,7 @@ IconTheme::IconTheme(const std::string& name)
   std::map<FilePath, int>::iterator iter;
   FilePath theme_path;
   std::map<FilePath, int>* icon_dirs =
-      Singleton<MimeUtilConstants>::get()->icon_dirs_;
+      MimeUtilConstants::GetInstance()->icon_dirs_;
   for (iter = icon_dirs->begin(); iter != icon_dirs->end(); ++iter) {
     theme_path = iter->first.Append(name);
     if (!file_util::DirectoryExists(theme_path))
@@ -218,7 +221,7 @@ FilePath IconTheme::GetIconPath(const std::string& icon_name, int size,
 IconTheme* IconTheme::LoadTheme(const std::string& theme_name) {
   scoped_ptr<IconTheme> theme;
   std::map<std::string, IconTheme*>* icon_themes =
-      Singleton<MimeUtilConstants>::get()->icon_themes_;
+      MimeUtilConstants::GetInstance()->icon_themes_;
   if (icon_themes->find(theme_name) != icon_themes->end()) {
     theme.reset((*icon_themes)[theme_name]);
   } else {
@@ -235,7 +238,7 @@ FilePath IconTheme::GetIconPathUnderSubdir(const std::string& icon_name,
   FilePath icon_path;
   std::list<FilePath>::iterator dir_iter;
   std::vector<std::string>* icon_formats =
-      &Singleton<MimeUtilConstants>::get()->icon_formats_;
+      &MimeUtilConstants::GetInstance()->icon_formats_;
   for (dir_iter = dirs_.begin(); dir_iter != dirs_.end(); ++dir_iter) {
     for (size_t i = 0; i < icon_formats->size(); ++i) {
       icon_path = dir_iter->Append(subdir);
@@ -383,7 +386,7 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
 void TryAddIconDir(const FilePath& dir) {
   if (!file_util::DirectoryExists(dir))
     return;
-  (*Singleton<MimeUtilConstants>::get()->icon_dirs_)[dir] = 0;
+  (*MimeUtilConstants::GetInstance()->icon_dirs_)[dir] = 0;
 }
 
 // For a xdg directory |dir|, add the appropriate icon sub-directories.
@@ -396,7 +399,7 @@ void AddXDGDataDir(const FilePath& dir) {
 
 // Add all the xdg icon directories.
 void InitIconDir() {
-  Singleton<MimeUtilConstants>::get()->icon_dirs_->clear();
+  MimeUtilConstants::GetInstance()->icon_dirs_->clear();
   FilePath home = file_util::GetHomeDir();
   if (!home.empty()) {
       FilePath legacy_data_dir(home);
@@ -435,7 +438,7 @@ void EnsureUpdated() {
   struct timeval t;
   gettimeofday(&t, NULL);
   time_t now = t.tv_sec;
-  MimeUtilConstants* constants = Singleton<MimeUtilConstants>::get();
+  MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
 
   if (constants->last_check_time_ == 0) {
     constants->icon_dirs_ = new std::map<FilePath, int>;
@@ -453,7 +456,7 @@ void EnsureUpdated() {
 // Find a fallback icon if we cannot find it in the default theme.
 FilePath LookupFallbackIcon(const std::string& icon_name) {
   FilePath icon;
-  MimeUtilConstants* constants = Singleton<MimeUtilConstants>::get();
+  MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
   std::map<FilePath, int>::iterator iter;
   std::map<FilePath, int>* icon_dirs = constants->icon_dirs_;
   std::vector<std::string>* icon_formats = &constants->icon_formats_;
@@ -470,7 +473,7 @@ FilePath LookupFallbackIcon(const std::string& icon_name) {
 // Initialize the list of default themes.
 void InitDefaultThemes() {
   IconTheme** default_themes =
-      Singleton<MimeUtilConstants>::get()->default_themes_;
+      MimeUtilConstants::GetInstance()->default_themes_;
 
   char* env = getenv("KDE_FULL_SESSION");
   if (env) {
@@ -498,7 +501,7 @@ void InitDefaultThemes() {
   } else {
     // Assume it's Gnome and use GTK to figure out the theme.
     default_themes[1] = IconTheme::LoadTheme(
-        Singleton<MimeUtilConstants>::get()->gtk_theme_name_);
+        MimeUtilConstants::GetInstance()->gtk_theme_name_);
     default_themes[2] = IconTheme::LoadTheme("gnome");
   }
   // hicolor needs to be last per icon theme spec.
@@ -518,7 +521,7 @@ void InitDefaultThemes() {
 // Try to find an icon with the name |icon_name| that's |size| pixels.
 FilePath LookupIconInDefaultTheme(const std::string& icon_name, int size) {
   EnsureUpdated();
-  MimeUtilConstants* constants = Singleton<MimeUtilConstants>::get();
+  MimeUtilConstants* constants = MimeUtilConstants::GetInstance();
   std::map<std::string, IconTheme*>* icon_themes = constants->icon_themes_;
   if (icon_themes->size() == 0)
     InitDefaultThemes();
@@ -558,7 +561,7 @@ void DetectGtkTheme() {
   // If the theme name is already loaded, do nothing. Chrome doesn't respond
   // to changes in the system theme, so we never need to set this more than
   // once.
-  if (!Singleton<MimeUtilConstants>::get()->gtk_theme_name_.empty())
+  if (!MimeUtilConstants::GetInstance()->gtk_theme_name_.empty())
     return;
 
   // We should only be called on the UI thread.
@@ -568,7 +571,7 @@ void DetectGtkTheme() {
   g_object_get(gtk_settings_get_default(),
                "gtk-icon-theme-name",
                &gtk_theme_name, NULL);
-  Singleton<MimeUtilConstants>::get()->gtk_theme_name_.assign(gtk_theme_name);
+  MimeUtilConstants::GetInstance()->gtk_theme_name_.assign(gtk_theme_name);
   g_free(gtk_theme_name);
 }
 

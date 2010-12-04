@@ -75,6 +75,10 @@ namespace {
 
 class PipeMap {
  public:
+  static PipeMap* GetInstance() {
+    return Singleton<PipeMap>::get();
+  }
+
   // Lookup a given channel id. Return -1 if not found.
   int Lookup(const std::string& channel_id) {
     AutoLock locked(lock_);
@@ -115,13 +119,15 @@ class PipeMap {
   Lock lock_;
   typedef std::map<std::string, int> ChannelToFDMap;
   ChannelToFDMap map_;
+
+  friend struct DefaultSingletonTraits<PipeMap>;
 };
 
 // Used to map a channel name to the equivalent FD # in the current process.
 // Returns -1 if the channel is unknown.
 int ChannelNameToFD(const std::string& channel_id) {
   // See the large block comment above PipeMap for the reasoning here.
-  const int fd = Singleton<PipeMap>()->Lookup(channel_id);
+  const int fd = PipeMap::GetInstance()->Lookup(channel_id);
 
   if (fd != -1) {
     int dup_fd = dup(fd);
@@ -305,17 +311,17 @@ Channel::ChannelImpl::~ChannelImpl() {
 
 // static
 void AddChannelSocket(const std::string& name, int socket) {
-  Singleton<PipeMap>()->Insert(name, socket);
+  PipeMap::GetInstance()->Insert(name, socket);
 }
 
 // static
 void RemoveAndCloseChannelSocket(const std::string& name) {
-  Singleton<PipeMap>()->RemoveAndClose(name);
+  PipeMap::GetInstance()->RemoveAndClose(name);
 }
 
 // static
 bool ChannelSocketExists(const std::string& name) {
-  return Singleton<PipeMap>()->Lookup(name) != -1;
+  return PipeMap::GetInstance()->Lookup(name) != -1;
 }
 
 // static
@@ -512,7 +518,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
     DCHECK(bytes_read);
 
     if (client_pipe_ != -1) {
-      Singleton<PipeMap>()->RemoveAndClose(pipe_name_);
+      PipeMap::GetInstance()->RemoveAndClose(pipe_name_);
       client_pipe_ = -1;
     }
 
@@ -1021,7 +1027,7 @@ void Channel::ChannelImpl::Close() {
     pipe_ = -1;
   }
   if (client_pipe_ != -1) {
-    Singleton<PipeMap>()->RemoveAndClose(pipe_name_);
+    PipeMap::GetInstance()->RemoveAndClose(pipe_name_);
     client_pipe_ = -1;
   }
 #if !defined(OS_MACOSX)

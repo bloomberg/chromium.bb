@@ -5,7 +5,7 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
@@ -61,8 +61,11 @@ struct SingletonData {
   std::map<std::string, EventListenerCounts> listener_counts_;
 };
 
+static base::LazyInstance<SingletonData> g_singleton_data(
+    base::LINKER_INITIALIZED);
+
 static EventListenerCounts& GetListenerCounts(const std::string& extension_id) {
-  return Singleton<SingletonData>()->listener_counts_[extension_id];
+  return g_singleton_data.Get().listener_counts_[extension_id];
 }
 
 class ExtensionImpl : public ExtensionBase {
