@@ -281,10 +281,17 @@ int TestSemNormalOperation() {
 
 int main() {
   int fail_count = 0;
+  fail_count += TestSemNormalOperation();
+
+  // A semaphore implementation is not required to check for the
+  // errors that are tested for here.  nacl-newlib checks, but glibc
+  // does not.
+#ifndef __GLIBC__
   fail_count += TestSemInitErrors();
   fail_count += TestSemDestroy();
   fail_count += TestSemPostErrors();
   fail_count += TestSemWaitErrors();
-  fail_count += TestSemNormalOperation();
+#endif
+
   std::exit(fail_count);
 }
