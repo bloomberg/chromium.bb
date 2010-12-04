@@ -70,8 +70,8 @@ void BrowserOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON));
   localized_strings->SetString("defaultSearchGroupName",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME));
-  localized_strings->SetString("defaultSearchManageEnginesLink",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK));
+  localized_strings->SetString("defaultSearchManageEngines",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES));
   localized_strings->SetString("instantName",
       l10n_util::GetStringUTF16(IDS_INSTANT_PREF));
   localized_strings->SetString("instantWarningText",

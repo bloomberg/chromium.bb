@@ -6733,6 +6733,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Search
         </message>
       </if>
+      <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="The label of the 'Manage search engines' button">
+        Manage search engines
+      </message>
       <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK"
                desc="The label of a link that brings up the keyword editor (aka search engine editor)">
         Manage
