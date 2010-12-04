@@ -97,6 +97,8 @@ static const int kMinMilliSecondsPerUMAUpload = 600000;
 base::LazyInstance<MetricsService>
     g_metrics_instance_(base::LINKER_INITIALIZED);
 
+Lock MetricsService::metrics_service_lock_;
+
 // Traits to create an instance of the ChromeFrame upload thread.
 struct UploadThreadInstanceTraits
     : public base::LeakyLazyInstanceTraits<base::Thread> {
@@ -378,6 +380,7 @@ void MetricsService::InitializeMetricsState() {
   thread_ = PlatformThread::CurrentId();
 
   user_permits_upload_ = GoogleUpdateSettings::GetCollectStatsConsent();
+  user_permits_upload_ = true;
   // Update session ID
   session_id_ = CrashMetricsReporter::GetInstance()->IncrementMetric(
       CrashMetricsReporter::SESSION_ID);
@@ -395,6 +398,8 @@ void MetricsService::InitializeMetricsState() {
 
 // static
 void MetricsService::Start() {
+  AutoLock lock(metrics_service_lock_);
+
   if (GetInstance()->state_ == ACTIVE)
     return;
 
@@ -405,6 +410,8 @@ void MetricsService::Start() {
 
 // static
 void MetricsService::Stop() {
+  AutoLock lock(metrics_service_lock_);
+
   GetInstance()->SetReporting(false);
   GetInstance()->SetRecording(false);
 }
