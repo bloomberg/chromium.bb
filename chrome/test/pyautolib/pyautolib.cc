@@ -171,6 +171,15 @@ bool PyUITestBase::OpenNewBrowserWindow(bool show) {
   return automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, show);
 }
 
+bool PyUITestBase::CloseBrowserWindow(int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(window_index);
+  if (!browser_proxy.get())
+    return false;
+  bool app_closed;
+  return CloseBrowser(browser_proxy.get(), &app_closed);
+}
+
 int PyUITestBase::GetBrowserWindowCount() {
   int num_windows = 0;
   EXPECT_TRUE(automation()->GetBrowserWindowCount(&num_windows));

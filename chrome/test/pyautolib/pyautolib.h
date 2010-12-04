@@ -103,6 +103,9 @@ class PyUITestBase : public UITestBase {
   // Open a new browser window. Returns false on failure.
   bool OpenNewBrowserWindow(bool show);
 
+  // Close a browser window. Returns false on failure.
+  bool CloseBrowserWindow(int window_index);
+
   // Fetch the number of browser windows. Includes popups.
   int GetBrowserWindowCount();
 

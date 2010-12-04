@@ -7,6 +7,7 @@ import os
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class NTPTest(pyauto.PyUITest):
@@ -34,6 +35,14 @@ class NTPTest(pyauto.PyUITest):
     self.PAGES = map(lambda url, title: {'url': url, 'title': title},
                      urls, titles)
 
+  def _NTPContainsThumbnail(self, check_thumbnail):
+    """Returns whether the NTP's Most Visited section contains the given
+    thumbnail."""
+    for thumbnail in self.GetNTPThumbnails():
+      if check_thumbnail['url'] == thumbnail['url']:
+        return True
+    return False
+
   def testFreshProfile(self):
     """Tests that the NTP with a fresh profile is correct"""
     thumbnails = self.GetNTPThumbnails()
@@ -57,19 +66,10 @@ class NTPTest(pyauto.PyUITest):
     """Tests that a site is added to the most visited sites"""
     self.RemoveNTPDefaultThumbnails()
     self.NavigateToURL(self.PAGES[1]['url'])
-    self.assertEqual(self.PAGES[1]['url'], self.GetNTPThumbnails()[0]['url'])
-    self.assertEqual(self.PAGES[1]['title'],
-                     self.GetNTPThumbnails()[0]['title'])
-
-  def testOneRecentlyClosedTab(self):
-    """Tests that closing a tab populates the recently closed tabs list"""
-    self.RemoveNTPDefaultThumbnails()
-    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']))
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
-    self.assertEqual(self.PAGES[1]['url'],
-                     self.GetNTPRecentlyClosed()[0]['url'])
-    self.assertEqual(self.PAGES[1]['title'],
-                     self.GetNTPRecentlyClosed()[0]['title'])
+    thumbnail = self.GetNTPThumbnails()[0]
+    self.assertEqual(self.PAGES[1]['url'], thumbnail['url'])
+    self.assertEqual(self.PAGES[1]['title'], thumbnail['title'])
+    self.assertFalse(thumbnail['is_pinned'])
 
   def testMoveThumbnailBasic(self):
     """Tests moving a thumbnail to a different index"""
@@ -93,6 +93,205 @@ class NTPTest(pyauto.PyUITest):
     self.assertTrue(self.IsNTPThumbnailPinned(thumbnail1))
     self.UnpinNTPThumbnail(thumbnail1)
     self.assertFalse(self.IsNTPThumbnailPinned(thumbnail1))
+
+  def testRemoveThumbnail(self):
+    """Tests removing a thumbnail works"""
+    self.RemoveNTPDefaultThumbnails()
+    for page in self.PAGES:
+      self.AppendTab(pyauto.GURL(page['url']))
+
+    thumbnails = self.GetNTPThumbnails()
+    for thumbnail in thumbnails:
+      self.assertEquals(thumbnail, self.GetNTPThumbnails()[0])
+      self.RemoveNTPThumbnail(thumbnail)
+      self.assertFalse(self._NTPContainsThumbnail(thumbnail))
+    self.assertFalse(self.GetNTPThumbnails())
+
+  def testIncognitoNotAppearInMostVisited(self):
+    """Tests that visiting a page in incognito mode does cause it to appear in
+    the Most Visited section"""
+    self.RemoveNTPDefaultThumbnails()
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
+    self.assertFalse(self.GetNTPThumbnails())
+
+  def testRestoreOncePinnedThumbnail(self):
+    """Tests that after restoring a once pinned thumbnail, the thumbnail is
+    not pinned"""
+    self.RemoveNTPDefaultThumbnails()
+    self.NavigateToURL(self.PAGES[0]['url'])
+    thumbnail1 = self.GetNTPThumbnails()[0]
+    self.PinNTPThumbnail(thumbnail1)
+    self.RemoveNTPThumbnail(thumbnail1)
+    self.RestoreAllNTPThumbnails()
+    self.RemoveNTPDefaultThumbnails()
+    self.assertFalse(self.IsNTPThumbnailPinned(thumbnail1))
+
+  def testThumbnailPersistence(self):
+    """Tests that thumbnails persist across Chrome restarts"""
+    self.RemoveNTPDefaultThumbnails()
+    for page in self.PAGES:
+      self.AppendTab(pyauto.GURL(page['url']))
+    thumbnails = self.GetNTPThumbnails()
+    self.MoveNTPThumbnail(thumbnails[0], 1)
+    thumbnails = self.GetNTPThumbnails()
+
+    self.RestartBrowser(clear_profile=False)
+    self.assertEqual(thumbnails, self.GetNTPThumbnails())
+
+  def testRestoreAllRemovedThumbnails(self):
+    """Tests restoring all removed thumbnails"""
+    for page in self.PAGES:
+      self.AppendTab(pyauto.GURL(page['url']))
+
+    thumbnails = self.GetNTPThumbnails()
+    for thumbnail in thumbnails:
+      self.RemoveNTPThumbnail(thumbnail)
+
+    self.RestoreAllNTPThumbnails()
+    self.assertEquals(thumbnails, self.GetNTPThumbnails())
+
+  def testThumbnailRanking(self):
+    """Tests that the thumbnails are ordered according to visit count"""
+    self.RemoveNTPDefaultThumbnails()
+    for page in self.PAGES:
+      self.AppendTab(pyauto.GURL(page['url']))
+    thumbnails = self.GetNTPThumbnails()
+    self.assertEqual(self.PAGES[0]['url'], self.GetNTPThumbnails()[0]['url'])
+    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']))
+    self.assertEqual(self.PAGES[1]['url'], self.GetNTPThumbnails()[0]['url'])
+    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
+    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
+    self.assertEqual(self.PAGES[0]['url'], self.GetNTPThumbnails()[0]['url'])
+
+  def testPinnedThumbnailNeverMoves(self):
+    """Tests that once a thumnail is pinned it never moves"""
+    self.RemoveNTPDefaultThumbnails()
+    for page in self.PAGES:
+      self.AppendTab(pyauto.GURL(page['url']))
+    self.PinNTPThumbnail(self.GetNTPThumbnails()[0])
+    thumbnails = self.GetNTPThumbnails()
+    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']))
+    self.assertEqual(thumbnails, self.GetNTPThumbnails())
+
+  def testThumbnailTitleChangeAfterPageTitleChange(self):
+    """Tests that once a page title changes, the thumbnail title changes too"""
+    self.RemoveNTPDefaultThumbnails()
+    self.NavigateToURL(self.PAGES[0]['url'])
+    self.assertEqual(self.PAGES[0]['title'],
+                     self.GetNTPThumbnails()[0]['title'])
+    self.ExecuteJavascript('window.domAutomationController.send(' +
+                           'document.title = "new title")')
+    self.assertEqual('new title', self.GetNTPThumbnails()[0]['title'])
+
+  def testCloseOneTab(self):
+    """Tests that closing a tab populates the recently closed list"""
+    self.RemoveNTPDefaultThumbnails()
+    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']))
+    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.assertEqual(self.PAGES[1]['url'],
+                     self.GetNTPRecentlyClosed()[0]['url'])
+    self.assertEqual(self.PAGES[1]['title'],
+                     self.GetNTPRecentlyClosed()[0]['title'])
+
+  def testCloseOneWindow(self):
+    """Tests that closing a window populates the recently closed list"""
+    self.RemoveNTPDefaultThumbnails()
+    self.OpenNewBrowserWindow(True)
+    self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
+    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']), 1)
+    self.CloseBrowserWindow(1)
+    expected = [{ u'type': u'window',
+                  u'tabs': [
+                  { u'type': u'tab',
+                    u'url': self.PAGES[0]['url'],
+                    u'direction': u'ltr' },
+                  { u'type': u'tab',
+                    u'url': self.PAGES[1]['url']}]
+                }]
+    self.assertEquals(expected, test_utils.StripUnmatchedKeys(
+        self.GetNTPRecentlyClosed(), expected))
+
+  def testCloseMultipleTabs(self):
+    """Tests closing multiple tabs populates the Recently Closed section in
+    order"""
+    self.RemoveNTPDefaultThumbnails()
+    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
+    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']))
+    self.GetBrowserWindow(0).GetTab(2).Close(True)
+    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    expected = [{ u'type': u'tab',
+                  u'url': self.PAGES[0]['url']
+                },
+                { u'type': u'tab',
+                  u'url': self.PAGES[1]['url']
+                }]
+    self.assertEquals(expected, test_utils.StripUnmatchedKeys(
+        self.GetNTPRecentlyClosed(), expected))
+
+  def testCloseWindowWithOneTab(self):
+    """Tests that closing a window with only one tab only shows up as a tab in
+    the Recently Closed section"""
+    self.RemoveNTPDefaultThumbnails()
+    self.OpenNewBrowserWindow(True)
+    self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
+    self.CloseBrowserWindow(1)
+    expected = [{ u'type': u'tab',
+                  u'url': self.PAGES[0]['url']
+                }]
+    self.assertEquals(expected, test_utils.StripUnmatchedKeys(
+        self.GetNTPRecentlyClosed(), expected))
+
+  def testCloseMultipleWindows(self):
+    """Tests closing multiple windows populates the Recently Closed list"""
+    self.RemoveNTPDefaultThumbnails()
+    self.OpenNewBrowserWindow(True)
+    self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
+    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']), 1)
+    self.OpenNewBrowserWindow(True)
+    self.NavigateToURL(self.PAGES[1]['url'], 2, 0)
+    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']), 2)
+    self.CloseBrowserWindow(2)
+    self.CloseBrowserWindow(1)
+    expected = [{ u'type': u'window',
+                  u'tabs': [
+                  { u'type': u'tab',
+                    u'url': self.PAGES[0]['url'],
+                    u'direction': u'ltr' },
+                  { u'type': u'tab',
+                    u'url': self.PAGES[1]['url']}]
+                },
+                { u'type': u'window',
+                  u'tabs': [
+                  { u'type': u'tab',
+                    u'url': self.PAGES[1]['url'],
+                    u'direction': u'ltr' },
+                  { u'type': u'tab',
+                    u'url': self.PAGES[0]['url']}]
+                }]
+    self.assertEquals(expected, test_utils.StripUnmatchedKeys(
+        self.GetNTPRecentlyClosed(), expected))
+
+  def testRecentlyClosedShowsUniqueItems(self):
+    """Tests that the Recently Closed section does not show duplicate items"""
+    self.RemoveNTPDefaultThumbnails()
+    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
+    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
+    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.assertEquals(1, len(self.GetNTPRecentlyClosed()))
+
+  def testRecentlyClosedIncognito(self):
+    """Tests that we don't record closure of Incognito tabs or windows"""
+    #self.RemoveNTPDefaultThumbnails()
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
+    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']), 1)
+    self.AppendTab(pyauto.GURL(self.PAGES[1]['url']), 1)
+    self.GetBrowserWindow(1).GetTab(0).Close(True)
+    self.assertFalse(self.GetNTPRecentlyClosed())
+    self.CloseBrowserWindow(1)
+    self.assertFalse(self.GetNTPRecentlyClosed())
 
 
 if __name__ == '__main__':

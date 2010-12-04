@@ -302,6 +302,9 @@ class PyUITestBase {
   %feature("docstring", "Open a new browser window.") OpenNewBrowserWindow;
   bool OpenNewBrowserWindow(bool show);
 
+  %feature("docstring", "Close a browser window.") CloseBrowserWindow;
+  bool CloseBrowserWindow(int window_index);
+
   %feature("docstring", "Fetch the number of browser windows. Includes popups.")
       GetBrowserWindowCount;
   int GetBrowserWindowCount();

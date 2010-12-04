@@ -4,9 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import email
 import os
 import smtplib
+import types
 
 import pyauto_functional
 import pyauto_utils
@@ -138,3 +140,52 @@ def SendMail(send_from, send_to, subject, text, smtp, file_to_send=None):
   smtp_obj.sendmail(send_from, send_to, msg.as_string())
   smtp_obj.close()
 
+
+def StripUnmatchedKeys(item_to_strip, reference_item):
+  """Returns a copy of 'item_to_strip' where unmatched key-value pairs in
+  every dictionary are removed.
+
+  This will examine each dictionary in 'item_to_strip' recursively, and will
+  remove keys that are not found in the corresponding dictionary in
+  'reference_item'. This is useful for testing equality of a subset of data.
+
+  Items may contain dictionaries, lists, or primitives, but only corresponding
+  dictionaries will be stripped. A corresponding entry is one which is found
+  in the same index in the corresponding parent array or at the same key in the
+  corresponding parent dictionary.
+
+  Arg:
+    item_to_strip: item to copy and remove all unmatched key-value pairs
+    reference_item: item that serves as a reference for which keys-value pairs
+                    to strip from 'item_to_strip'
+
+  Returns:
+    a copy of 'item_to_strip' where all key-value pairs that do not have a
+    matching key in 'reference_item' are removed
+
+  Example:
+    item_to_strip = {'tabs': 3,
+                     'time': 5908}
+    reference_item = {'tabs': 2}
+    StripUnmatchedKeys(item_to_strip, reference_item) will return {'tabs': 3}
+  """
+  def StripList(list1, list2):
+    return_list = copy.deepcopy(list2)
+    for i in range(min(len(list1), len(list2))):
+      return_list[i] = StripUnmatchedKeys(list1[i], list2[i])
+    return return_list
+
+  def StripDict(dict1, dict2):
+    return_dict = {}
+    for key in dict1:
+      if key in dict2:
+        return_dict[key] = StripUnmatchedKeys(dict1[key], dict2[key])
+    return return_dict
+
+  item_to_strip_type = type(item_to_strip)
+  if item_to_strip_type is type(reference_item):
+    if item_to_strip_type is types.ListType:
+      return StripList(item_to_strip, reference_item)
+    elif item_to_strip_type is types.DictType:
+      return StripDict(item_to_strip, reference_item)
+  return copy.deepcopy(item_to_strip)
