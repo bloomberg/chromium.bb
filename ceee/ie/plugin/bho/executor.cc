@@ -370,11 +370,7 @@ HRESULT AsyncTabCall::Signal() {
   return hr;
 }
 
-CeeeExecutor::CeeeExecutor()
-    : hwnd_(NULL),
-      // Don't restart on broker crash. It won't work because executor was
-      // already registered in dead broker.
-      broker_rpc_client_(false) {
+CeeeExecutor::CeeeExecutor() : hwnd_(NULL) {
 }
 
 CeeeExecutor::~CeeeExecutor() {
@@ -430,13 +426,9 @@ HRESULT CeeeExecutor::Initialize(CeeeWindowHandle hwnd) {
   // Infobar. In any case, the construction below should have a reference to
   // a BHO and its EventSender so we don't create Infobars before the tab_id
   // is ready.
-  if (window_utils::GetTopLevelParent(hwnd_) != hwnd_) {
-    hr = broker_rpc_client_.Connect(true);
-    if (FAILED(hr))
-      return hr;
+  if (window_utils::GetTopLevelParent(hwnd_) != hwnd_)
     infobar_manager_.reset(
-        new infobar_api::InfobarManager(hwnd_, &broker_rpc_client_));
-  }
+        new infobar_api::InfobarManager(hwnd_, new BrokerRpcClient(false)));
 
   return S_OK;
 }
