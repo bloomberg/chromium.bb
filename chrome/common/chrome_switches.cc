@@ -830,7 +830,7 @@ const char kNoExperiments[]                 = "no-experiments";
 // you're for some reason tempted to pass them both.
 const char kNoFirstRun[]                    = "no-first-run";
 
-// Runs just the GPU process outside the sandbox.
+// Don't Sandbox the GPU process, does not affect other sandboxed processes.
 const char kNoGpuSandbox[]                  = "no-gpu-sandbox";
 
 // Support a separate switch that enables the v8 playback extension.

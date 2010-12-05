@@ -7,12 +7,17 @@
 #include "base/debug_util.h"
 
 #import <Cocoa/Cocoa.h>
+#import <OpenGL/OpenGL.h>
+
 extern "C" {
 #include <sandbox.h>
 }
+#include <signal.h>
 #include <sys/param.h>
 
+#include "app/gfx/gl/gl_context.h"
 #include "base/basictypes.h"
+#include "base/chrome_application_mac.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/mac_util.h"
@@ -177,7 +182,7 @@ bool Sandbox::QuoteStringForRegex(const std::string& str_utf8,
 //     10.5.6, 10.6.0
 
 // static
-void Sandbox::SandboxWarmup() {
+void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
   base::mac::ScopedNSAutoreleasePool scoped_pool;
 
   { // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
@@ -228,8 +233,45 @@ void Sandbox::SandboxWarmup() {
     CGImageSourceGetStatus(img);
   }
 
-  { // Native Client access to /dev/random.
-    GetUrandomFD();
+  // Process-type dependent warm-up.
+  switch (sandbox_type) {
+    case SANDBOX_TYPE_NACL_LOADER:
+      {
+        // Native Client access to /dev/random.
+        GetUrandomFD();
+      }
+      break;
+
+    case SANDBOX_TYPE_GPU:
+      {  // GPU-related stuff is very slow without this, probably because
+         // the sandbox prevents loading graphics drivers or some such.
+         CGLPixelFormatAttribute attribs[] = { (CGLPixelFormatAttribute)0 };
+         CGLPixelFormatObj format;
+         GLint n;
+         CGLChoosePixelFormat(attribs, &format, &n);
+         if (format)
+           CGLReleasePixelFormat(format);
+      }
+
+      {
+         // Preload either the desktop GL or the osmesa so, depending on the
+         // --use-gl flag.
+         gfx::GLContext::InitializeOneOff();
+      }
+
+      {
+        // Access to /dev/random is required for the field trial code.
+        GetUrandomFD();
+      }
+
+      { // Without this, the GPU process dies during [CrApplication init].
+        [CrApplication sharedApplication];
+      }
+      break;
+
+    default:
+      // To shut up a gcc warning.
+      break;
   }
 }
 

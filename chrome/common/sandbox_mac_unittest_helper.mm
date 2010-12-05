@@ -58,12 +58,6 @@ bool MacSandboxTest::RunTestInAllSandboxTypes(const char* test_name,
       i < Sandbox::SANDBOX_AFTER_TYPE_LAST_TYPE;
       ++i) {
 
-    if (i == Sandbox::SANDBOX_TYPE_GPU) {
-      // TODO(thakis): Remove this once the gpu sandbox is more restricted.
-      // http://crbug.com/48607
-      continue;
-    }
-
     if (!RunTestInSandbox(static_cast<Sandbox::SandboxProcessType>(i),
             test_name, test_data)) {
       LOG(ERROR) << "Sandboxed test (" << test_name << ")" <<
@@ -150,7 +144,7 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
     return -1;
   }
 
-  Sandbox::SandboxWarmup();
+  Sandbox::SandboxWarmup(sandbox_type);
 
   if (!Sandbox::EnableSandbox(sandbox_type, FilePath())) {
     LOG(ERROR) << "Failed to initialize sandbox " << sandbox_type;

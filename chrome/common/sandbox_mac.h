@@ -82,8 +82,8 @@ class Sandbox {
   };
 
   // Warm up System APIs that empirically need to be accessed before the Sandbox
-  // is turned on.
-  static void SandboxWarmup();
+  // is turned on. |sandbox_type| is the type of sandbox to warm up.
+  static void SandboxWarmup(SandboxProcessType sandbox_type);
 
   // Turns on the OS X sandbox for this process.
   // |sandbox_type| - type of Sandbox to use.

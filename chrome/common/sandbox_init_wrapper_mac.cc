@@ -67,7 +67,7 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   }
 
   // Warm up APIs before turning on the sandbox.
-  Sandbox::SandboxWarmup();
+  Sandbox::SandboxWarmup(sandbox_process_type);
 
   // Actually sandbox the process.
   return Sandbox::EnableSandbox(sandbox_process_type, allowed_dir);
