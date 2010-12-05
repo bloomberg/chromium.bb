@@ -8,4 +8,6 @@
 
 namespace ceee_event_names {
   const char kCeeeOnTabUnmapped[] = "ceee.OnTabUnmapped";
+  const char kCeeeMapTabIdToHandle[] = "ceee.MapTabIdToHandle";
+  const char kCeeeMapToolbandIdToHandle[] = "ceee.MapToolbandIdToHandle";
 }

@@ -12,6 +12,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/tuple.h"
@@ -20,6 +21,7 @@
 #include "ceee/common/window_utils.h"
 #include "ceee/common/windows_constants.h"
 #include "ceee/ie/broker/tab_api_module.h"
+#include "ceee/ie/common/constants.h"
 #include "ceee/ie/common/extension_manifest.h"
 #include "ceee/ie/common/ie_util.h"
 #include "ceee/ie/common/metrics_util.h"
@@ -327,24 +329,6 @@ HRESULT BrowserHelperObject::UnregisterExecutor(DWORD thread_id) {
   return registrar->UnregisterExecutor(thread_id);
 }
 
-HRESULT BrowserHelperObject::SetTabToolBandIdForHandle(int tool_band_id,
-                                                       long tab_handle) {
-  base::win::ScopedComPtr<ICeeeBrokerRegistrar> registrar;
-  HRESULT hr = GetBrokerRegistrar(registrar.Receive());
-  if (FAILED(hr))
-    return hr;
-  return registrar->SetTabToolBandIdForHandle(tool_band_id, tab_handle);
-}
-
-HRESULT BrowserHelperObject::SetTabIdForHandle(int tool_band_id,
-                                               long tab_handle) {
-  base::win::ScopedComPtr<ICeeeBrokerRegistrar> registrar;
-  HRESULT hr = GetBrokerRegistrar(registrar.Receive());
-  if (FAILED(hr))
-    return hr;
-  return registrar->SetTabIdForHandle(tool_band_id, tab_handle);
-}
-
 HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   TRACE_EVENT_INSTANT("ceee.bho.initialize", this, "");
   mu::ScopedTimer metrics_timer("ceee/BHO.Initialize", &broker_rpc());
@@ -646,15 +630,14 @@ bool BrowserHelperObject::EnsureTabId() {
     return false;
   }
 
-  CeeeWindowHandle handle = reinterpret_cast<CeeeWindowHandle>(tab_window_);
-  hr = SetTabIdForHandle(tab_id_, handle);
+  hr = FireMapTabIdToHandle();
   if (FAILED(hr)) {
     DCHECK(SUCCEEDED(hr)) << "An error occured when setting the tab_id: " <<
         com::LogHr(hr);
     tab_id_ = kInvalidChromeSessionId;
     return false;
   }
-  VLOG(2) << "TabId(" << tab_id_ << ") set for Handle(" << handle << ")";
+  VLOG(2) << "TabId(" << tab_id_ << ") set for Handle(" << tab_window_ << ")";
 
   // Call back all the events we deferred. In order, please.
   while (!deferred_events_call_.empty()) {
@@ -721,6 +704,34 @@ HRESULT BrowserHelperObject::ConnectSinks(IServiceProvider* service_provider) {
 HRESULT BrowserHelperObject::CreateChromeFrameHost() {
   return ChromeFrameHost::CreateInitializedIID(chrome_frame_host_.iid(),
                                                chrome_frame_host_.Receive());
+}
+
+HRESULT BrowserHelperObject::SendIdMappingToBroker(const char* event_name,
+                                                   int id) {
+  // Event arguments for FireEvent need to be stored in a list.
+  VLOG(1) << "SendIdMappingToBroker(" << event_name << ", " << id << ")";
+  DCHECK(id != kInvalidChromeSessionId);
+  DCHECK(tab_window_ != NULL);
+
+  ListValue mapping_args;
+  mapping_args.Append(Value::CreateIntegerValue(id));
+  mapping_args.Append(Value::CreateIntegerValue(
+      reinterpret_cast<int>(tab_window_)));
+
+  std::string event_args_str;
+  base::JSONWriter::Write(&mapping_args, false, &event_args_str);
+  // We go directly to Impl version since we know we have Ensured Id...
+  return SendEventToBrokerImpl(event_name, event_args_str);
+}
+
+HRESULT BrowserHelperObject::FireMapTabIdToHandle() {
+  return SendIdMappingToBroker(ceee_event_names::kCeeeMapTabIdToHandle,
+                               tab_id_);
+}
+
+HRESULT BrowserHelperObject::FireMapToolbandIdToHandle(int toolband_id) {
+  return SendIdMappingToBroker(ceee_event_names::kCeeeMapToolbandIdToHandle,
+                               toolband_id);
 }
 
 void BrowserHelperObject::FireOnCreatedEvent(BSTR url) {
@@ -1575,15 +1586,14 @@ void BrowserHelperObject::UnregisterSink(Sink* sink) {
 }
 
 STDMETHODIMP BrowserHelperObject::SetToolBandSessionId(long session_id) {
-  CeeeWindowHandle handle = reinterpret_cast<CeeeWindowHandle>(tab_window_);
-  HRESULT hr = SetTabToolBandIdForHandle(session_id, handle);
+  HRESULT hr = FireMapToolbandIdToHandle(session_id);
   if (FAILED(hr)) {
     DCHECK(SUCCEEDED(hr)) << "An error occured when setting the toolband " <<
         "tab ID: " << com::LogHr(hr);
     return hr;
   }
-  VLOG(2) << "ToolBandTabId(" << session_id << ") set for Handle(" << handle <<
-      ")";
+  VLOG(2) << "ToolBandTabId(" << session_id << ") set for Handle(" <<
+      tab_window_ << ")";
   return hr;
 }
 

@@ -126,6 +126,53 @@ bool CeeeUnmapTabEventHandler(const std::string& input_args,
   return false;
 }
 
+bool GetIdAndHandleFromArgs(const std::string& input_args, int* id,
+                            HWND* handle) {
+  DCHECK(id != NULL);
+  DCHECK(handle != NULL);
+  scoped_ptr<ListValue> input_list;
+  *id = kInvalidChromeSessionId;
+  if (!api_module_util::GetListAndIntegerValue(input_args, &input_list, id) ||
+      *id == kInvalidChromeSessionId) {
+    NOTREACHED() << "An invalid argument was passed to GetIdAndHandleFromArgs";
+    return false;
+  }
+
+  int tab_handle = 0;
+  if (!input_list->GetInteger(1, &tab_handle) || tab_handle == 0) {
+    NOTREACHED() << "An invalid argument was passed to GetIdAndHandleFromArgs";
+    return false;
+  }
+  *handle = reinterpret_cast<HWND>(tab_handle);
+  return true;
+}
+
+bool CeeeMapTabIdToHandle(const std::string& input_args,
+                          std::string* converted_args,
+                          ApiDispatcher* dispatcher) {
+  int tab_id = kInvalidChromeSessionId;
+  HWND tab_handle = NULL;
+  if (GetIdAndHandleFromArgs(input_args, &tab_id, &tab_handle)) {
+    Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
+        SetTabIdForHandle(tab_id, tab_handle);
+    return true;
+  }
+  return false;
+}
+
+bool CeeeMapToolbandIdToHandle(const std::string& input_args,
+                               std::string* converted_args,
+                               ApiDispatcher* dispatcher) {
+  int toolband_id = kInvalidChromeSessionId;
+  HWND tab_handle = NULL;
+  if (GetIdAndHandleFromArgs(input_args, &toolband_id, &tab_handle)) {
+    Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
+        SetTabToolBandIdForHandle(toolband_id, tab_handle);
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 void RegisterInvocations(ApiDispatcher* dispatcher) {
@@ -137,6 +184,10 @@ void RegisterInvocations(ApiDispatcher* dispatcher) {
   // Registers our private events.
   dispatcher->RegisterPermanentEventHandler(
       ceee_event_names::kCeeeOnTabUnmapped, CeeeUnmapTabEventHandler);
+  dispatcher->RegisterPermanentEventHandler(
+      ceee_event_names::kCeeeMapTabIdToHandle, CeeeMapTabIdToHandle);
+  dispatcher->RegisterPermanentEventHandler(
+      ceee_event_names::kCeeeMapToolbandIdToHandle, CeeeMapToolbandIdToHandle);
 
   // And now register the permanent event handlers.
   dispatcher->RegisterPermanentEventHandler(ext_event_names::kOnTabCreated,

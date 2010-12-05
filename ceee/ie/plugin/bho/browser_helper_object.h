@@ -262,6 +262,13 @@ class ATL_NO_VTABLE BrowserHelperObject
   // Accessor so that we can mock it in unit tests.
   virtual BrokerRpcClient& broker_rpc() { return broker_rpc_; }
 
+  // Fires the private message to map a tab id to its associated tab handle.
+  virtual HRESULT FireMapTabIdToHandle();
+
+  // Fires the private message to map a tool band id to its associated tab
+  // handle.
+  virtual HRESULT FireMapToolbandIdToHandle(int toolband_id);
+
   // Fires the tab.onCreated event via the tab event funnel.
   virtual void FireOnCreatedEvent(BSTR url);
 
@@ -435,6 +442,10 @@ class ATL_NO_VTABLE BrowserHelperObject
     BrowserHelperObject* bho_;
     DISALLOW_COPY_AND_ASSIGN(BrokerEventQueue);
   };
+
+  // This synchronously send the association between the given ID and our
+  // current tab handle using the given event name.
+  HRESULT SendIdMappingToBroker(const char* event_name, int id);
 
   // This either calls its Impl or queues the call for later, when we have a
   // tab_id.

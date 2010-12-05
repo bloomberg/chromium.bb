@@ -8,6 +8,8 @@
 namespace ceee_event_names {
   // Private messages used by the ApiDispatcher and the funnels.
   extern const char kCeeeOnTabUnmapped[];
+  extern const char kCeeeMapTabIdToHandle[];
+  extern const char kCeeeMapToolbandIdToHandle[];
 }
 
 #endif  // CEEE_IE_COMMON_CONSTANTS_H_

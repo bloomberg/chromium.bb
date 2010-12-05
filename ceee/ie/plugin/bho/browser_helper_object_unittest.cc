@@ -9,6 +9,7 @@
 #include <shlguid.h>
 
 #include "ceee/common/initializing_coclass.h"
+#include "ceee/ie/common/constants.h"
 #include "ceee/ie/common/mock_ceee_module_util.h"
 #include "ceee/ie/testing/mock_broker_and_friends.h"
 #include "ceee/ie/testing/mock_browser_and_friends.h"
@@ -866,12 +867,14 @@ TEST_F(BrowserHelperObjectTest, SetToolBandSessionId) {
   CreateBrowser();
 
   ASSERT_HRESULT_SUCCEEDED(bho_with_site_->SetSite(site_keeper_));
-  EXPECT_CALL(*(bho_->broker_), SetTabToolBandIdForHandle(kGoodTabId,
-        kGoodTabHandle)).WillOnce(Return(S_OK));
+  EXPECT_CALL(bho_->mock_broker_rpc_client_, FireEvent(
+      StrEq(ceee_event_names::kCeeeMapToolbandIdToHandle), _)).
+          WillOnce(Return(S_OK));
   EXPECT_EQ(S_OK, bho_->SetToolBandSessionId(kGoodTabId));
 
-  EXPECT_CALL(*(bho_->broker_), SetTabToolBandIdForHandle(kGoodTabId,
-        kGoodTabHandle)).WillOnce(Return(E_FAIL));
+  EXPECT_CALL(bho_->mock_broker_rpc_client_, FireEvent(
+      StrEq(ceee_event_names::kCeeeMapToolbandIdToHandle), _)).
+          WillOnce(Return(E_FAIL));
   EXPECT_EQ(E_FAIL, bho_->SetToolBandSessionId(kGoodTabId));
 
   ExpectFireOnRemovedEvent(0);
