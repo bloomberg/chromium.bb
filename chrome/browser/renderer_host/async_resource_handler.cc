@@ -4,11 +4,13 @@
 
 #include "chrome/browser/renderer_host/async_resource_handler.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/load_timing_observer.h"

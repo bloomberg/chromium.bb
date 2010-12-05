@@ -7,7 +7,6 @@
 #include "base/scoped_vector.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_HISTORY_MENU
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"

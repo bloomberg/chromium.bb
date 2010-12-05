@@ -4,10 +4,11 @@
 
 #include "chrome/browser/dom_ui/shared_resources_data_source.h"
 
+#include <string>
+
 #include "app/resource_bundle.h"
 #include "base/singleton.h"
 #include "base/thread_restrictions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/io_thread.h"
@@ -89,4 +90,3 @@ std::string SharedResourcesDataSource::GetMimeType(
   net::GetMimeTypeFromFile(FilePath().AppendASCII(path), &mime_type);
   return mime_type;
 }
-

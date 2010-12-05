@@ -4,6 +4,8 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
@@ -18,7 +20,6 @@
 #include "chrome/browser/accessibility/browser_accessibility_win.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/plugin_process_host.h"

@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"

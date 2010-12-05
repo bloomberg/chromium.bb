@@ -7,7 +7,6 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_input_method_library.h"
 #include "chrome/browser/chromeos/cros/mock_keyboard_library.h"
@@ -336,7 +335,6 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
-
 }
 
 void CrosMock::SetPowerLibraryStatusAreaExpectations() {

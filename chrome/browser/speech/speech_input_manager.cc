@@ -4,12 +4,14 @@
 
 #include "chrome/browser/speech/speech_input_manager.h"
 
+#include <map>
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
@@ -20,9 +22,9 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager.h"
-#include <map>
 
 #if defined(OS_WIN)
+#include "chrome/browser/browser_process.h"
 #include "chrome/installer/util/wmi.h"
 #endif
 
@@ -71,15 +73,15 @@ class HardwareInfo : public base::RefCountedThreadSafe<HardwareInfo> {
   Lock lock_;
   std::string value_;
 
-#else // defined(OS_WIN)
+#else  // defined(OS_WIN)
   void Refresh() {}
   std::string value() { return std::string(); }
-#endif // defined(OS_WIN)
+#endif  // defined(OS_WIN)
 
   DISALLOW_COPY_AND_ASSIGN(HardwareInfo);
 };
 
-}
+}  // namespace
 
 namespace speech_input {
 

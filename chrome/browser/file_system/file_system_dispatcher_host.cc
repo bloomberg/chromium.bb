@@ -4,10 +4,12 @@
 
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
 
+#include <string>
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/file_system/browser_file_system_context.h"

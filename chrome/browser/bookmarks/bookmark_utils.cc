@@ -4,6 +4,8 @@
 
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 
+#include <utility>
+
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/tree_node_iterator.h"
@@ -19,7 +21,6 @@
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #endif
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/platform_util.h"

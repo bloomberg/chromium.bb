@@ -12,7 +12,6 @@
 #include "base/file_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/logging_chrome.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +41,7 @@ class SignedSettingsTempStorageTest : public ::testing::Test {
 };
 
 TEST_F(SignedSettingsTempStorageTest, Basic) {
-  EXPECT_GT(ref_map_.size(), 3u); // Number above 3 is many.
+  EXPECT_GT(ref_map_.size(), 3u);  // Number above 3 is many.
   typedef std::map<std::string, std::string>::iterator It;
   std::vector<It> a_list;
   for (It it = ref_map_.begin(); it != ref_map_.end(); ++it) {
@@ -75,4 +74,3 @@ TEST_F(SignedSettingsTempStorageTest, Basic) {
 }
 
 }  // namespace chromeos
-

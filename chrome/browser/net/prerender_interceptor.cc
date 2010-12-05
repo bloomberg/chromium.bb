@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -76,4 +75,3 @@ void PrerenderInterceptor::PrerenderDispatch(
 }
 
 }  // namespace chrome_browser_net
-

@@ -8,9 +8,12 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+
+#if !defined(OS_MACOSX)
+#include "chrome/browser/browser_process.h"
+#endif
 
 typedef testing::Test BookmarkUtilsTest;
 
@@ -127,4 +130,3 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
       bookmark_utils::CanPasteFromClipboard(model.GetBookmarkBarNode()));
 }
 #endif
-

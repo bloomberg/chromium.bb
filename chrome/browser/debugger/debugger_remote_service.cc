@@ -12,7 +12,6 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"

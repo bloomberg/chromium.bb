@@ -4,6 +4,10 @@
 
 #include "chrome/browser/views/about_chrome_view.h"
 
+#if defined(OS_WIN)
+#include <commdlg.h>
+#endif  // defined(OS_WIN)
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -16,7 +20,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -41,12 +44,14 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
-#include <commdlg.h>
-
 #include "base/win_util.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/installer/util/install_util.h"
-#endif
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 namespace {
 // The pixel width of the version text field. Ideally, we'd like to have the

@@ -12,7 +12,6 @@
 #include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"

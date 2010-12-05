@@ -15,7 +15,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/thread_restrictions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"

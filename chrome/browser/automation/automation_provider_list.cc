@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/automation/automation_provider.h"
-#include "chrome/browser/browser_process.h"
 
 AutomationProviderList* AutomationProviderList::instance_ = NULL;
 

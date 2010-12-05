@@ -10,7 +10,6 @@
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

@@ -4,17 +4,18 @@
 
 #include "chrome/browser/gtk/first_run_dialog.h"
 
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -29,6 +30,11 @@
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
+#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #endif
 
 namespace {

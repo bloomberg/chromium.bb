@@ -13,7 +13,6 @@
 #include "base/scoped_vector.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -416,4 +415,3 @@ class MultipleClientLiveSessionsSyncTest : public LiveSessionsSyncTest {
 };
 
 #endif  // CHROME_TEST_LIVE_SYNC_LIVE_SESSIONS_SYNC_TEST_H_
-

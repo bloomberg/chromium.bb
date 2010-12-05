@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/debugger/devtools_remote_service.h"
+
+#include <string>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
-#include "chrome/browser/debugger/devtools_remote_service.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"

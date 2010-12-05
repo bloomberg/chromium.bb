@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sessions/session_restore.h"
 
+#include <algorithm>
+#include <list>
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
@@ -11,7 +14,6 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"

@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -24,12 +23,13 @@
 #include "media/base/media_switches.h"
 
 #if defined(OS_LINUX)
-#include <gdk/gdkwindow.h>
-#include <gdk/gdkx.h>
+// These two #includes need to come after render_messages.h.
+#include <gdk/gdkwindow.h>  // NOLINT
+#include <gdk/gdkx.h>  // NOLINT
 #include "app/x11_util.h"
 #include "gfx/gtk_native_view_id_manager.h"
 #include "gfx/size.h"
-#endif
+#endif  // defined(OS_LINUX)
 
 namespace {
 
@@ -536,4 +536,3 @@ bool GpuProcessHost::LaunchGpuProcess() {
                             kLaunched, kGPUProcessLifetimeEvent_Max);
   return true;
 }
-

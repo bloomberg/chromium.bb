@@ -5,7 +5,6 @@
 #include <map>
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"

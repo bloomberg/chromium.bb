@@ -7,7 +7,6 @@
 #include "app/keyboard_codes.h"
 #include "app/slide_animation.h"
 #include "base/scoped_handle.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/browser.h"

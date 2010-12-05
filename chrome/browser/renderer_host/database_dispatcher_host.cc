@@ -4,13 +4,10 @@
 
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
-#endif
+#include <string>
 
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -21,6 +18,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"
+
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif
 
 using WebKit::WebSecurityOrigin;
 using webkit_database::DatabaseTracker;

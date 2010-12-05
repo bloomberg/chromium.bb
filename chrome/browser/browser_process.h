@@ -23,8 +23,9 @@ class DevToolsManager;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class GoogleURLTracker;
-class IntranetRedirectDetector;
 class IconManager;
+class IntranetRedirectDetector;
+class IOThread;
 class MetricsService;
 class NotificationUIManager;
 class PrefService;
@@ -43,8 +44,6 @@ namespace printing {
 class PrintJobManager;
 class PrintPreviewTabController;
 }
-
-class IOThread;
 
 // NOT THREAD SAFE, call only from the main thread.
 // These functions shouldn't return NULL unless otherwise noted.

@@ -12,7 +12,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/accessibility_events.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"

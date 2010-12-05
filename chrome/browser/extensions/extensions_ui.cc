@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extensions_ui.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/base64.h"
@@ -16,7 +18,6 @@
 #include "base/thread.h"
 #include "base/version.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/extensions/crx_installer.h"

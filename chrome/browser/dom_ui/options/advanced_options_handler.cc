@@ -4,13 +4,14 @@
 
 #include "chrome/browser/dom_ui/options/advanced_options_handler.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -35,6 +36,7 @@
 #include "grit/locale_settings.h"
 
 #if !defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/options/advanced_options_utils.h"
 #endif
 

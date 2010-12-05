@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/prefs/pref_service.h"

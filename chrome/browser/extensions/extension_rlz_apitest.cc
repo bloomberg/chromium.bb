@@ -5,7 +5,6 @@
 #include <map>
 
 #include "base/win/registry.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_apitest.h"

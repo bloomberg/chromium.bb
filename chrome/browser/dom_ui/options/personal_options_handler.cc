@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_ui/options/personal_options_handler.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -13,14 +15,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#endif  // defined(TOOLKIT_GTK)
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -36,6 +31,13 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif  // defined(OS_CHROMEOS)
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/gtk_theme_provider.h"
+#endif  // defined(TOOLKIT_GTK)
 
 PersonalOptionsHandler::PersonalOptionsHandler() {
 }

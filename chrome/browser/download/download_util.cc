@@ -26,8 +26,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -699,7 +697,7 @@ void DeleteUniqueDownloadFile(const FilePath& path, int index) {
   file_util::Delete(new_path, false);
 }
 
-}
+}  // namespace
 
 void EraseUniqueDownloadFiles(const FilePath& path) {
   FilePath cr_path = GetCrDownloadPath(path);

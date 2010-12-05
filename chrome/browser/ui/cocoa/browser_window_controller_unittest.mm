@@ -6,7 +6,6 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/find_bar_bridge.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 

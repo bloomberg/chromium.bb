@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
 #include "chrome/browser/sessions/session_service.h"
 
+#include <algorithm>
 #include <limits>
+#include <set>
+#include <vector>
 
-#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -16,9 +16,7 @@
 #include "base/scoped_vector.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_backend.h"

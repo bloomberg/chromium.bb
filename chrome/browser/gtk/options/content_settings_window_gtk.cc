@@ -9,7 +9,6 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"

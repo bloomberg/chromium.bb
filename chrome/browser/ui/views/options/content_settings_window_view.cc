@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/options/advanced_page_view.h"

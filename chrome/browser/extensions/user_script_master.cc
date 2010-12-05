@@ -15,7 +15,6 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/version.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"

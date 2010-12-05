@@ -4,11 +4,12 @@
 
 #include "chrome/browser/worker_host/worker_service.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/singleton.h"
 #include "base/sys_info.h"
 #include "base/thread.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -292,7 +293,6 @@ void WorkerService::DocumentDetached(IPC::Message::Sender* sender,
       ++iter;
     }
   }
-
 }
 
 void WorkerService::CancelCreateDedicatedWorker(IPC::Message::Sender* sender,

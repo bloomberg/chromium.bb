@@ -4,19 +4,23 @@
 
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 
+#include <string>
+
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/basictypes.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#if defined(OS_MACOSX)
-#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
-#endif
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/browser/browser_process.h"
 #include "net/base/escape.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#else
+#include "chrome/browser/browser_process.h"
+#endif
 
 const char* BookmarkNodeData::kClipboardFormatString =
     "chromium/x-bookmark-entries";

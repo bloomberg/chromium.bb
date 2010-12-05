@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "base/time.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

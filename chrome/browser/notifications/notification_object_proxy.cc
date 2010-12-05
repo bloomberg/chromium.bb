@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/render_messages.h"

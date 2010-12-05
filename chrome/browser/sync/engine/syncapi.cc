@@ -4,15 +4,12 @@
 
 #include "chrome/browser/sync/engine/syncapi.h"
 
-#include "build/build_config.h"
-
 #include <bitset>
 #include <iomanip>
 #include <list>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/base64.h"
 #include "base/lock.h"
 #include "base/logging.h"
@@ -23,7 +20,6 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "chrome/browser/sync/engine/all_status.h"
@@ -40,7 +36,6 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"

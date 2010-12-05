@@ -29,7 +29,6 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

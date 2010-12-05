@@ -5,7 +5,6 @@
 #include "chrome/browser/views/find_bar_host.h"
 
 #include "app/keyboard_codes.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"

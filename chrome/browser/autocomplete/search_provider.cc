@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/instant/instant_controller.h"

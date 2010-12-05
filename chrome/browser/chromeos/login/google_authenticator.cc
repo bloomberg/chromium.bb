@@ -16,7 +16,6 @@
 #include "base/string_util.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
@@ -205,8 +204,7 @@ void GoogleAuthenticator::OnClientLoginSuccess(
 }
 
 void GoogleAuthenticator::OnClientLoginFailure(
-   const GoogleServiceAuthError& error) {
-
+    const GoogleServiceAuthError& error) {
   if (error.state() == GoogleServiceAuthError::REQUEST_CANCELED) {
     if (try_again_) {
       try_again_ = false;
