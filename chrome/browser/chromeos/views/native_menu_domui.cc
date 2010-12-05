@@ -19,11 +19,13 @@
 #include "chrome/common/url_constants.h"
 #include "gfx/rect.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/controls/menu/native_menu_gtk.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 
 #if defined(TOUCH_UI)
 #include "views/focus/accelerator_handler.h"
+#include "views/controls/menu/native_menu_x.h"
+#else
+#include "views/controls/menu/native_menu_gtk.h"
 #endif
 
 namespace {
@@ -249,8 +251,12 @@ bool NativeMenuDOMUI::Dispatch(GdkEvent* event) {
 }
 
 #if defined(TOUCH_UI)
-bool NativeMenuDOMUI::Dispatch(XEvent* xevent) {
-  return views::DispatchXEvent(xevent);
+base::MessagePumpGlibXDispatcher::DispatchStatus NativeMenuDOMUI::Dispatch(
+    XEvent* xevent) {
+  return views::DispatchXEvent(xevent) ?
+      base::MessagePumpGlibXDispatcher::EVENT_PROCESSED :
+      base::MessagePumpGlibXDispatcher::EVENT_IGNORED;
+
 }
 #endif
 
@@ -406,7 +412,11 @@ MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
   if (chromeos::MenuUI::IsEnabled()) {
     return new chromeos::NativeMenuDOMUI(model, true);
   } else {
+#if defined(TOUCH_UI)
+    return new NativeMenuX(menu);
+#else
     return new NativeMenuGtk(menu);
+#endif
   }
 }
 

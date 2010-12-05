@@ -43,7 +43,7 @@ class AcceleratorHandler : public MessageLoopForUI::Dispatcher {
 #else
   virtual bool Dispatch(GdkEvent* event);
 #if defined(TOUCH_UI)
-  virtual bool Dispatch(XEvent* xev);
+  virtual MessagePumpGlibXDispatcher::DispatchStatus Dispatch(XEvent* xev);
 #endif
 #endif
 

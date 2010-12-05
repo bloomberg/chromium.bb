@@ -33,6 +33,8 @@
       ]}],
       ['touchui==0', {'sources/': [
         ['exclude', 'event_x.cc$'],
+        ['exclude', 'native_menu_x.cc$'],
+        ['exclude', 'native_menu_x.h$'],
         ['exclude', 'touchui/'],
         ['exclude', '_(touch)\\.cc$'],
       ]}],
@@ -146,6 +148,8 @@
         'controls/menu/native_menu_gtk.h',
         'controls/menu/native_menu_win.cc',
         'controls/menu/native_menu_win.h',
+        'controls/menu/native_menu_x.cc',
+        'controls/menu/native_menu_x.h',
         'controls/menu/nested_dispatcher_gtk.cc',
         'controls/menu/nested_dispatcher_gtk.h',
         'controls/menu/radio_button_image_gtk.cc',
@@ -380,6 +384,7 @@
           'defines': ['TOUCH_UI=1'],
           'sources/': [
             ['exclude', 'focus/accelerator_handler_gtk.cc'],
+            ['exclude', 'controls/menu/native_menu_gtk.cc'],
           ],
         }],
         ['OS=="win"', {

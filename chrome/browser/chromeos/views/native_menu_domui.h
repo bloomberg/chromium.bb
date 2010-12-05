@@ -64,7 +64,8 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   // Overriden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);
 #if defined(TOUCH_UI)
-  virtual bool Dispatch(XEvent* xevent);
+  virtual base::MessagePumpGlibXDispatcher::DispatchStatus Dispatch(
+      XEvent* xevent);
 #endif
 
   // Overriden from DOMUIMenuControl;

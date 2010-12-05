@@ -18,9 +18,18 @@ namespace base {
 // GdkEvents. This class provides additional mechanism for dispatching XEvents.
 class MessagePumpGlibXDispatcher : public MessagePumpForUI::Dispatcher {
  public:
-  // Dispatches the event. If true is returned processing continues as
-  // normal. If false is returned, the nested loop exits immediately.
-  virtual bool Dispatch(XEvent* xevent) = 0;
+
+  typedef enum {
+    EVENT_IGNORED,    // The event was not processed.
+    EVENT_PROCESSED,  // The event has been processed.
+    EVENT_QUIT        // The event was processed and the message-loop should
+                      // terminate.
+  } DispatchStatus;
+
+  // Dispatches the event. EVENT_IGNORED is returned if the event was ignored
+  // (i.e. not processed). EVENT_PROCESSED is returned if the event was
+  // processed. The nested loop exits immediately if EVENT_QUIT is returned.
+  virtual DispatchStatus Dispatch(XEvent* xevent) = 0;
 };
 
 }  // namespace base

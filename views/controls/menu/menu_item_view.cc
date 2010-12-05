@@ -5,6 +5,7 @@
 #include "views/controls/menu/menu_item_view.h"
 
 #include "app/l10n_util.h"
+#include "app/menus/menu_model.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
@@ -235,6 +236,43 @@ void MenuItemView::Cancel() {
     canceled_ = true;
     controller_->Cancel(MenuController::EXIT_ALL);
   }
+}
+
+MenuItemView* MenuItemView::AppendMenuItemFromModel(menus::MenuModel* model,
+                                                    int index,
+                                                    int id) {
+  SkBitmap icon;
+  std::wstring label;
+  MenuItemView::Type type;
+  menus::MenuModel::ItemType menu_type = model->GetTypeAt(index);
+  switch (menu_type) {
+    case menus::MenuModel::TYPE_COMMAND:
+      model->GetIconAt(index, &icon);
+      type = MenuItemView::NORMAL;
+      label = UTF16ToWide(model->GetLabelAt(index));
+      break;
+    case menus::MenuModel::TYPE_CHECK:
+      type = MenuItemView::CHECKBOX;
+      label = UTF16ToWide(model->GetLabelAt(index));
+      break;
+    case menus::MenuModel::TYPE_RADIO:
+      type = MenuItemView::RADIO;
+      label = UTF16ToWide(model->GetLabelAt(index));
+      break;
+    case menus::MenuModel::TYPE_SEPARATOR:
+      type = MenuItemView::SEPARATOR;
+      break;
+    case menus::MenuModel::TYPE_SUBMENU:
+      type = MenuItemView::SUBMENU;
+      label = UTF16ToWide(model->GetLabelAt(index));
+      break;
+    default:
+      NOTREACHED();
+      type = MenuItemView::NORMAL;
+      break;
+  }
+
+  return AppendMenuItemImpl(id, label, icon, type);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,

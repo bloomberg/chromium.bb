@@ -683,40 +683,11 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
                                          MenuModel::ItemType menu_type,
                                          int* next_id) {
   int id = (*next_id)++;
-  SkBitmap icon;
-  std::wstring label;
-  MenuItemView::Type type;
-  switch (menu_type) {
-    case MenuModel::TYPE_COMMAND:
-      model->GetIconAt(index, &icon);
-      type = MenuItemView::NORMAL;
-      label = UTF16ToWide(model->GetLabelAt(index));
-      break;
-    case MenuModel::TYPE_CHECK:
-      type = MenuItemView::CHECKBOX;
-      label = UTF16ToWide(model->GetLabelAt(index));
-      break;
-    case MenuModel::TYPE_RADIO:
-      type = MenuItemView::RADIO;
-      label = UTF16ToWide(model->GetLabelAt(index));
-      break;
-    case MenuModel::TYPE_SEPARATOR:
-      type = MenuItemView::SEPARATOR;
-      break;
-    case MenuModel::TYPE_SUBMENU:
-      type = MenuItemView::SUBMENU;
-      label = UTF16ToWide(model->GetLabelAt(index));
-      break;
-    default:
-      NOTREACHED();
-      type = MenuItemView::NORMAL;
-      break;
-  }
 
   id_to_entry_[id].first = model;
   id_to_entry_[id].second = index;
 
-  MenuItemView* menu_item = parent->AppendMenuItemImpl(id, label, icon, type);
+  MenuItemView* menu_item = parent->AppendMenuItemFromModel(model, index, id);
 
   if (menu_item)
     menu_item->SetVisible(model->IsVisibleAt(index));

@@ -85,6 +85,8 @@ MessagePumpGlibX::~MessagePumpGlibX() {
 bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   GdkDisplay* gdisp = gdk_display_get_default();
   Display* display = GDK_DISPLAY_XDISPLAY(gdisp);
+  bool should_quit = false;
+
   if (XPending(display)) {
     XEvent xev;
     XPeekEvent(display, &xev);
@@ -95,10 +97,22 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
         ) {
       XNextEvent(display, &xev);
 
-      bool processed = static_cast<MessagePumpGlibXDispatcher*>
+#if defined(HAVE_XINPUT2)
+      bool have_cookie = false;
+      if (xev.type == GenericEvent &&
+          XGetEventData(xev.xgeneric.display, &xev.xcookie)) {
+        have_cookie = true;
+      }
+#endif
+
+      MessagePumpGlibXDispatcher::DispatchStatus status =
+          static_cast<MessagePumpGlibXDispatcher*>
           (GetDispatcher())->Dispatch(&xev);
 
-      if (!processed) {
+      if (status == MessagePumpGlibXDispatcher::EVENT_QUIT) {
+        should_quit = true;
+        Quit();
+      } else if (status == MessagePumpGlibXDispatcher::EVENT_IGNORED) {
         DLOG(WARNING) << "Event (" << xev.type << ") not handled.";
 
         // TODO(sad): It is necessary to put back the event so that the default
@@ -106,15 +120,28 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
         // impossible to use the omnibox at the moment. However, this will
         // eventually be removed once the omnibox code is updated for touchui.
         XPutBackEvent(display, &xev);
+        if (gdksource_)
+          gdksource_->source_funcs->dispatch = gdkdispatcher_;
         g_main_context_iteration(context, FALSE);
       }
+
+#if defined(HAVE_XINPUT2)
+      if (have_cookie) {
+        XFreeEventData(xev.xgeneric.display, &xev.xcookie);
+      }
+#endif
     } else {
       // TODO(sad): A couple of extra events can still sneak in during this.
       // Those should be sent back to the X queue from the dispatcher
       // EventDispatcherX.
+      if (gdksource_)
+        gdksource_->source_funcs->dispatch = gdkdispatcher_;
       g_main_context_iteration(context, FALSE);
     }
   }
+
+  if (should_quit)
+    return true;
 
   bool retvalue;
   if (gdksource_) {
@@ -178,6 +205,9 @@ void MessagePumpGlibX::InitializeXInput2(void) {
     return;
   }
 
+  // TODO(sad): Here, we only setup so that the X windows created by GTK+ are
+  // setup for XInput2 events. We need a way to listen for XInput2 events for X
+  // windows created by other means (e.g. for context menus).
   SetupGtkWidgetRealizeNotifier(this);
 
   // Instead of asking X for the list of devices all the time, let's maintain a
@@ -242,6 +272,7 @@ void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
 
   if (!pump_x->gdksource_) {
     pump_x->gdksource_ = g_main_current_source();
+    pump_x->gdkdispatcher_ = pump_x->gdksource_->source_funcs->dispatch;
   } else if (!pump_x->IsDispatchingEvent()) {
     if (event->type != GDK_NOTHING &&
         pump_x->capture_gdk_events_[event->type]) {

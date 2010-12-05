@@ -19,6 +19,10 @@
 #include "gfx/native_theme_win.h"
 #endif
 
+namespace menus {
+class MenuModel;
+}
+
 namespace views {
 
 class MenuButton;
@@ -174,6 +178,13 @@ class MenuItemView : public View {
                               const SkBitmap& icon) {
     AppendMenuItemImpl(item_id, label, icon, NORMAL);
   }
+
+  // Creates a menu item for the specified entry in the model and appends it as
+  // a child. |index| should be offset by GetFirstItemIndex() before calling
+  // this function.
+  MenuItemView* AppendMenuItemFromModel(menus::MenuModel* model,
+                                        int index,
+                                        int id);
 
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,

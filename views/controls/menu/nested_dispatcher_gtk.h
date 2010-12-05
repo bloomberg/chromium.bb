@@ -41,7 +41,8 @@ class NestedDispatcherGtk : public MessageLoopForUI::Dispatcher {
   virtual bool Dispatch(GdkEvent* event);
 
 #if defined(TOUCH_UI)
-  virtual bool Dispatch(XEvent* xevent);
+  virtual base::MessagePumpGlibXDispatcher::DispatchStatus Dispatch(
+      XEvent* xevent);
 #endif
 
   // Creator of the nested loop.

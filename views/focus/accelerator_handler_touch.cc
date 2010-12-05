@@ -143,14 +143,9 @@ bool DispatchXEvent(XEvent* xev) {
 
 #if defined(HAVE_XINPUT2)
   if (xev->type == GenericEvent) {
-    if (XGetEventData(xev->xgeneric.display, &xev->xcookie)) {
-      XGenericEventCookie* cookie = &xev->xcookie;
-      XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(cookie->data);
-      xwindow = xiev->event;
-    } else {
-      DLOG(WARNING) << "Error fetching XGenericEventCookie for event.";
-      return false;
-    }
+    XGenericEventCookie* cookie = &xev->xcookie;
+    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(cookie->data);
+    xwindow = xiev->event;
   }
 #endif
 
@@ -202,9 +197,7 @@ bool DispatchXEvent(XEvent* xev) {
 
 #if defined(HAVE_XINPUT2)
       case GenericEvent: {
-        bool ret = DispatchX2Event(root, xev);
-        XFreeEventData(xev->xgeneric.display, &xev->xcookie);
-        return ret;
+        return DispatchX2Event(root, xev);
       }
 #endif
     }
@@ -226,8 +219,11 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   return true;
 }
 
-bool AcceleratorHandler::Dispatch(XEvent* xev) {
-  return DispatchXEvent(xev);
+base::MessagePumpGlibXDispatcher::DispatchStatus AcceleratorHandler::Dispatch(
+    XEvent* xev) {
+  return DispatchXEvent(xev) ?
+      base::MessagePumpGlibXDispatcher::EVENT_PROCESSED :
+      base::MessagePumpGlibXDispatcher::EVENT_IGNORED;
 }
 
 }  // namespace views

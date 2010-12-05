@@ -860,8 +860,14 @@ bool MenuController::Dispatch(GdkEvent* event) {
 }
 
 #if defined(TOUCH_UI)
-bool MenuController::Dispatch(XEvent* xev) {
-  return DispatchXEvent(xev);
+base::MessagePumpGlibXDispatcher::DispatchStatus MenuController::Dispatch(
+    XEvent* xev) {
+  if (!DispatchXEvent(xev))
+    return EVENT_IGNORED;
+
+  return exit_type_ != EXIT_NONE ?
+      base::MessagePumpGlibXDispatcher::EVENT_QUIT :
+      base::MessagePumpGlibXDispatcher::EVENT_PROCESSED;
 }
 #endif
 

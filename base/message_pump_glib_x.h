@@ -60,6 +60,10 @@ class MessagePumpGlibX : public MessagePumpForUI {
   // The event source for GDK events.
   GSource* gdksource_;
 
+  // The default GDK event dispatcher. This is stored so that it can be restored
+  // when necessary during nested event dispatching.
+  gboolean (*gdkdispatcher_)(GSource*, GSourceFunc, void*);
+
   // Indicates whether a GDK event was injected by chrome (when |true|) or if it
   // was captured and being processed by GDK (when |false|).
   bool dispatching_event_;
