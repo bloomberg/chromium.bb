@@ -6,12 +6,12 @@
 #include "ceee/ie/broker/chrome_postman.h"
 
 #include "base/string_util.h"
+#include "ceee/common/com_utils.h"
 #include "ceee/ie/broker/api_dispatcher.h"
 #include "ceee/ie/common/api_registration.h"
 #include "ceee/ie/common/ceee_module_util.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/common/url_constants.h"
-#include "ceee/common/com_utils.h"
 
 namespace ext = extension_automation_constants;
 
@@ -117,6 +117,16 @@ void ChromePostman::PostMessage(BSTR message, BSTR target) {
                                               message, target));
   } else {
     LOG(ERROR) << "Trying to post a message before the postman thread is"
+                  "completely initialized and ready.";
+  }
+}
+
+void ChromePostman::QueueApiInvocationThreadTask(Task* task) {
+  MessageLoop* message_loop = api_worker_thread_.message_loop();
+  if (message_loop) {
+    message_loop->PostTask(FROM_HERE, task);
+  } else {
+    LOG(ERROR) << "Trying to queue a task before the API worker thread is"
                   "completely initialized and ready.";
   }
 }

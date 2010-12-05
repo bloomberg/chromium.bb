@@ -45,6 +45,9 @@ class ChromePostman
   // This posts a tasks to the Api Invocation thread to fire the given event.
   virtual void FireEvent(const char* event_name, const char* event_args);
 
+  // This queues a generic tasks to be executed in the Api Invocation thread.
+  virtual void QueueApiInvocationThreadTask(Task* task);
+
   // This creates both an STA and an MTA threads. We must make sure we only call
   // Chrome Frame from this STA. And since we can't block Chrome Frame we use
   // the MTA thread to executes API Invocation we receive from Chrome Frame.
