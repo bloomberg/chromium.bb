@@ -50,6 +50,24 @@
 #include "gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
+namespace {
+
+// Returns the appropriate message prefix ID for tabs and extensions,
+// reflecting whether they are apps or in incognito mode.
+int GetMessagePrefixID(bool is_app, bool is_extension,
+    bool is_off_the_record) {
+  return is_app ?
+      (is_off_the_record ?
+          IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX :
+          IDS_TASK_MANAGER_APP_PREFIX) :
+      (is_extension ?
+          (is_off_the_record ?
+              IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX :
+              IDS_TASK_MANAGER_EXTENSION_PREFIX) :
+          IDS_TASK_MANAGER_TAB_PREFIX);
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerRendererResource class
@@ -131,6 +149,10 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
 TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
 }
 
+TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
+  return tab_contents_->HostsExtension() ? EXTENSION : RENDERER;
+}
+
 std::wstring TaskManagerTabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
   std::wstring tab_title(UTF16ToWideHack(tab_contents_->GetTitle()));
@@ -152,9 +174,14 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
     base::i18n::AdjustStringForLocaleDirection(&tab_title);
   }
 
-  return l10n_util::GetStringF(IDS_TASK_MANAGER_TAB_PREFIX, tab_title);
+  ExtensionsService* extensions_service =
+      tab_contents_->profile()->GetExtensionsService();
+  int message_id = GetMessagePrefixID(
+      extensions_service->IsInstalledApp(tab_contents_->GetURL()),
+      tab_contents_->HostsExtension(),
+      tab_contents_->profile()->IsOffTheRecord());
+  return l10n_util::GetStringF(message_id, tab_title);
 }
-
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
   return tab_contents_->GetFavIcon();
@@ -162,6 +189,16 @@ SkBitmap TaskManagerTabContentsResource::GetIcon() const {
 
 TabContents* TaskManagerTabContentsResource::GetTabContents() const {
   return static_cast<TabContents*>(tab_contents_);
+}
+
+const Extension* TaskManagerTabContentsResource::GetExtension() const {
+  if (tab_contents_->HostsExtension()) {
+    ExtensionsService* extensions_service =
+        tab_contents_->profile()->GetExtensionsService();
+    return extensions_service->GetExtensionByURL(tab_contents_->GetURL());
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -267,11 +304,8 @@ void TaskManagerTabContentsResourceProvider::Add(TabContents* tab_contents) {
     return;
 
   // Don't add dead tabs or tabs that haven't yet connected.
-  // Also ignore tabs which display extension content. We collapse
-  // all of these into one extension row.
   if (!tab_contents->GetRenderProcessHost()->GetHandle() ||
-      !tab_contents->notify_disconnection() ||
-      tab_contents->HostsExtension()) {
+      !tab_contents->notify_disconnection()) {
     return;
   }
 
@@ -826,14 +860,8 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   std::wstring extension_name(UTF8ToWide(GetExtension()->name()));
   DCHECK(!extension_name.empty());
 
-  int message_id =
-      GetExtension()->is_app() ?
-          (extension_host_->profile()->IsOffTheRecord() ?
-              IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX :
-              IDS_TASK_MANAGER_APP_PREFIX) :
-          (extension_host_->profile()->IsOffTheRecord() ?
-              IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX :
-              IDS_TASK_MANAGER_EXTENSION_PREFIX);
+  int message_id = GetMessagePrefixID(GetExtension()->is_app(), true,
+      extension_host_->profile()->IsOffTheRecord());
   title_ = l10n_util::GetStringF(message_id, extension_name);
 }
 

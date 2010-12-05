@@ -524,6 +524,16 @@ bool ExtensionsService::IsDownloadFromMiniGallery(const GURL& download_url) {
                          false);  // case_sensitive
 }
 
+bool ExtensionsService::IsInstalledApp(const GURL& url) {
+  // Check for hosted app.
+  if (GetExtensionByWebExtent(url) != NULL)
+    return true;
+
+  // Check for packaged app.
+  const Extension* extension = GetExtensionByURL(url);
+  return extension != NULL && extension->is_app();
+}
+
 // static
 bool ExtensionsService::UninstallExtensionHelper(
     ExtensionsService* extensions_service,

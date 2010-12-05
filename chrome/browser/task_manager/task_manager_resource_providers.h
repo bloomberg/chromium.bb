@@ -36,7 +36,7 @@ class TaskManagerRendererResource : public TaskManager::Resource {
 
   // TaskManager::Resource methods:
   base::ProcessHandle GetProcess() const;
-  Type GetType() const { return RENDERER; }
+  virtual Type GetType() const { return RENDERER; }
   virtual bool ReportsCacheStats() const { return true; }
   virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
   virtual bool ReportsV8MemoryStats() const { return true; }
@@ -81,9 +81,11 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   ~TaskManagerTabContentsResource();
 
   // TaskManager::Resource methods:
+  virtual Type GetType() const;
   virtual std::wstring GetTitle() const;
   virtual SkBitmap GetIcon() const;
   virtual TabContents* GetTabContents() const;
+  virtual const Extension* GetExtension() const;
 
  private:
   TabContents* tab_contents_;
