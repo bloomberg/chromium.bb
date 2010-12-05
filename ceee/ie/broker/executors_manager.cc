@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "ceee/ie/broker/broker_module_util.h"
+#include "ceee/ie/broker/chrome_postman.h"
 #include "ceee/ie/broker/common_api_module.h"
 #include "ceee/common/com_utils.h"
 
@@ -192,6 +193,7 @@ HRESULT ExecutorsManager::RegisterWindowExecutor(ThreadId thread_id,
 
 HRESULT ExecutorsManager::GetExecutor(ThreadId thread_id, HWND window,
                                       REFIID riid, void** executor) {
+  VLOG(1) << "Thread: " << thread_id << ", window: " << window;
   DCHECK(executor != NULL);
   // We may need to wait for either a currently pending
   // or own newly created registration of a new executor.
@@ -410,9 +412,11 @@ void ExecutorsManager::DeleteTabHandle(HWND handle) {
   AutoLock lock(lock_);
   {
     HandleMap::iterator handle_it = handle_map_.find(handle);
-    DCHECK(handle_map_.end() != handle_it);
+    // Don't DCHECK, we may be called more than once, but it's fine,
+    // we just ignore subsequent calls.
     if (handle_map_.end() != handle_it) {
       TabIdMap::iterator tab_id_it = tab_id_map_.find(handle_it->second);
+      // But if we have it in one map, we must have it in the reverse map.
       DCHECK(tab_id_map_.end() != tab_id_it);
       if (tab_id_map_.end() != tab_id_it) {
 #ifdef DEBUG
@@ -472,6 +476,31 @@ void ExecutorsManager::DeleteTabHandle(HWND handle) {
   // Safer to send notifications outside of our lock.
   if (send_on_removed)
     windows_events_funnel().OnRemoved(frame_window);
+}
+
+// This is for using CleanupMapsForThread() into a runnable object without
+// the need to AddRef/Release the ExecutorsManager which is a Singleton.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ExecutorsManager);
+
+void ExecutorsManager::CleanupMapsForThread(DWORD thread_id) {
+  // We collect the tab handles to remove so that we can do it outside of lock.
+  // This is because 1) it's not trivial to do it while we loop through the map,
+  // since there are multiple maps to deal with and the DeleteHandle takes care
+  // of that for us, and 2) we can't call DeleteHandle from within a lock.
+  std::vector<HWND> tab_handles_to_remove;
+  {
+    AutoLock lock(lock_);
+    HandleMap::iterator handle_it = handle_map_.begin();
+    for (; handle_it != handle_map_.end(); ++ handle_it) {
+      if (::GetWindowThreadProcessId(handle_it->first, NULL) == thread_id)
+        tab_handles_to_remove.push_back(handle_it->first);
+    }
+  }  // AutoLock end
+
+  std::vector<HWND>::iterator tab_handle_it = tab_handles_to_remove.begin();
+  for (; tab_handle_it != tab_handles_to_remove.end(); ++tab_handle_it) {
+    DeleteTabHandle(*tab_handle_it);
+  }
 }
 
 bool ExecutorsManager::IsTabIdValid(int tab_id) {
@@ -607,7 +636,21 @@ DWORD ExecutorsManager::ThreadProc(LPVOID parameter) {
     } else if (result >= WAIT_OBJECT_0 &&
                result < WAIT_OBJECT_0 + num_threads) {
       // One of our threads have died, cleanup time.
-      me->RemoveExecutor(thread_ids[result - WAIT_OBJECT_0]);
+      DWORD thread_id = thread_ids[result - WAIT_OBJECT_0];
+      VLOG(1) << "Thread: " << thread_id << " is dying on us!";
+      me->RemoveExecutor(thread_id);
+      // We must asynchronously post this change in case there are pending
+      // asynchronous notifications (e.g., tabs.onRemoved) that would still
+      // need the handle to tab id mapping.
+      // NOTE: No need to worry about the lifespan of the executors manager
+      // referred by the me variable since it's a singleton released at exit.
+      ChromePostman* single_instance = ChromePostman::GetInstance();
+      // This is not intialized in unittests yet.
+      if (single_instance) {
+        single_instance->QueueApiInvocationThreadTask(
+            NewRunnableMethod(me, &ExecutorsManager::CleanupMapsForThread,
+                              thread_id));
+      }
     } else if (result == WAIT_OBJECT_0 + num_threads +
                kTerminationHandleIndexOffset) {
       // we are being terminated, break the cycle.
