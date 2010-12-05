@@ -16,7 +16,7 @@ using gpu::Buffer;
 
 #if defined(OS_WIN)
 #define kCompositorWindowOwner L"CompositorWindowOwner"
-#endif
+#endif  // defined(OS_WIN)
 
 GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
@@ -38,6 +38,9 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       requested_attribs_(attribs),
       parent_texture_id_(parent_texture_id),
       route_id_(route_id),
+#if defined(OS_WIN)
+      compositor_window_(NULL),
+#endif  // defined(OS_WIN)
       renderer_id_(renderer_id),
       render_view_id_(render_view_id) {
 }
@@ -163,7 +166,7 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
   ChildThread* gpu_thread = ChildThread::current();
   gpu_thread->Send(
       new GpuHostMsg_ReleaseXID(handle_));
-#endif
+#endif  // defined(OS_WIN)
 }
 
 void GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
@@ -183,7 +186,7 @@ void GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnResizeOffscreenFrameBuffer);
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetWindowSize, OnSetWindowSize);
-#endif
+#endif  // defined(OS_MACOSX)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -214,7 +217,7 @@ void GpuCommandBufferStub::OnInitialize(
   }
 #else
   gfx::PluginWindowHandle output_window_handle = handle_;
-#endif
+#endif  // defined(OS_WIN)
 
   // Initialize the CommandBufferService and GPUProcessor.
   if (command_buffer_->Initialize(size)) {
@@ -258,7 +261,7 @@ void GpuCommandBufferStub::OnInitialize(
               NewCallback(this,
                           &GpuCommandBufferStub::ResizeCallback));
         }
-#endif
+#endif  // defined(OS_MACOSX)
       } else {
         processor_.reset();
         command_buffer_.reset();
@@ -352,7 +355,7 @@ void GpuCommandBufferStub::SwapBuffersCallback() {
   params.route_id = route_id();
 #if defined(OS_MACOSX)
   params.swap_buffers_count = processor_->swap_buffers_count();
-#endif
+#endif  // defined(OS_MACOSX)
   gpu_thread->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
 }
 
@@ -378,7 +381,7 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
   UINT swp_flags = SWP_NOSENDCHANGING | SWP_NOOWNERZORDER | SWP_NOCOPYBITS |
     SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_DEFERERASE;
   SetWindowPos(hwnd, NULL, 0, 0, size.width(), size.height(), swp_flags);
-#endif
+#endif  // defined(OS_LINUX)
 }
 
-#endif  // ENABLE_GPU
+#endif  // defined(ENABLE_GPU)

@@ -60,6 +60,7 @@ void SearchProvider::Providers::Set(const TemplateURL* default_provider,
 SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Search"),
       suggest_results_pending_(0),
+      have_suggest_results_(false),
       instant_finalized_(false) {
 }
 

@@ -50,7 +50,8 @@ const FilePath::CharType IndexedDBContext::kIndexedDBDirectory[] =
 const FilePath::CharType IndexedDBContext::kIndexedDBExtension[] =
     FILE_PATH_LITERAL(".indexeddb");
 
-IndexedDBContext::IndexedDBContext(WebKitContext* webkit_context) {
+IndexedDBContext::IndexedDBContext(WebKitContext* webkit_context)
+    : clear_local_state_on_exit_(false) {
   data_path_ = webkit_context->data_path().Append(kIndexedDBDirectory);
 }
 

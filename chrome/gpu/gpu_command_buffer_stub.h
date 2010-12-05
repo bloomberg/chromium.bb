@@ -54,12 +54,12 @@ class GpuCommandBufferStub
 #if defined(OS_WIN)
   // Called only by the compositor window's window proc
   void OnCompositorWindowPainted();
-#endif
+#endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
   // Called only by the GpuChannel.
   void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
-#endif
+#endif  // defined(OS_MACOSX)
 
  private:
   // Message handlers:
@@ -80,10 +80,11 @@ class GpuCommandBufferStub
 #if defined(OS_MACOSX)
   void OnSetWindowSize(const gfx::Size& size);
   void SwapBuffersCallback();
-#elif defined(OS_WIN)
+#endif  // defined(OS_MACOSX)
+
+#if defined(OS_WIN)
   bool CreateCompositorWindow();
-  HWND compositor_window_;
-#endif
+#endif  // defined(OS_WIN)
 
   void ResizeCallback(gfx::Size size);
 
@@ -100,6 +101,10 @@ class GpuCommandBufferStub
   uint32 parent_texture_id_;
   int32 route_id_;
 
+#if defined(OS_WIN)
+  HWND compositor_window_;
+#endif  // defined(OS_WIN)
+
   // The following two fields are used on Mac OS X to identify the window
   // for the rendering results on the browser side.
   int32 renderer_id_;
@@ -111,6 +116,6 @@ class GpuCommandBufferStub
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };
 
-#endif  // ENABLE_GPU
+#endif  // defined(ENABLE_GPU)
 
 #endif  // CHROME_GPU_GPU_COMMAND_BUFFER_STUB_H_
