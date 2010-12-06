@@ -276,10 +276,6 @@ env.DualLibrary('gio_wrapped_desc',
                  'gio_nacl_desc.c',
                 ])
 
-env.DualLibrary('expiration',
-                ['expiration.c',
-                ])
-
 
 # NOTE(robertm): these extra libs were orignially only added to the
 #                sel_ldr binary
@@ -510,16 +506,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
       'nacl_sync_cond_test.out',
       command=[nacl_sync_cond_test_exe])
   sdl_env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nacl_sync_cond_test')
-
-
-expiration_test_exe = env.ComponentProgram('expiration_test',
-                                           ['expiration_test.c'],
-                                           EXTRA_LIBS=['expiration'])
-node = env.CommandTest(
-    'expiration_test.out',
-    command=[expiration_test_exe])
-env.Requires(expiration_test_exe, crt)
-env.AddNodeToTestSuite(node, ['medium_tests'])
 
 
 env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',

@@ -6,7 +6,7 @@
 
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
-#include "native_client/src/trusted/service_runtime/expiration.h"
+#include "native_client/src/trusted/expiration/expiration.h"
 
 #include "ppapi/cpp/module.h"
 

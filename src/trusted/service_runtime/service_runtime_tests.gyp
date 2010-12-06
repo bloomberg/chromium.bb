@@ -212,16 +212,6 @@
       ],
     },
     {
-      'target_name': 'expiration_test',
-      'type': 'executable',
-      'dependencies': [
-        'service_runtime.gyp:expiration',
-      ],
-      'sources': [
-        'expiration_test.c',
-      ],
-    },
-    {
     'target_name': 'env_cleanser_test',
     'type': 'executable',
     'dependencies': [

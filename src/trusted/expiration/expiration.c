@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2010 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -10,7 +10,7 @@
 
 #include <string.h>
 #include <time.h>
-#include "native_client/src/trusted/service_runtime/expiration.h"
+#include "native_client/src/trusted/expiration/expiration.h"
 
 /* NOTE: the timefn and mktimefn params will usually be the corresponding
  *  libc functions except for unittesting

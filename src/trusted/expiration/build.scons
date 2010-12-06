@@ -1,0 +1,34 @@
+# -* python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.  Use
+# of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import platform
+import sys
+
+Import('env')
+
+
+env.DualLibrary('expiration',
+                ['expiration.c',
+                ])
+
+# Make a copy of debug CRT for now.
+# TODO(bradnelson): there should be a better way to generalize this requirement.
+crt = []
+if env.AllBits('windows', 'debug'):
+  for i in ['.', '${STAGING_DIR}']:
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
+                         'x86/Microsoft.VC80.DebugCRT')
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+
+expiration_test_exe = env.ComponentProgram('expiration_test',
+                                           ['expiration_test.c'],
+                                           EXTRA_LIBS=['expiration'])
+node = env.CommandTest(
+    'expiration_test.out',
+    command=[expiration_test_exe])
+env.Requires(expiration_test_exe, crt)
+env.AddNodeToTestSuite(node, ['medium_tests'])
+

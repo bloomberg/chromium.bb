@@ -259,12 +259,6 @@
         'generic_container/container.c',
       ],
     }, {
-      'target_name': 'expiration',
-      'type': 'static_library',
-      'sources': [
-        'expiration.c',
-      ],
-    }, {
       'target_name': 'nacl_xdr',
       'type': 'static_library',
       'sources': [
@@ -290,9 +284,9 @@
       'type': 'executable',
       # TODO(gregoryd): currently building sel_ldr without SDL
       'dependencies': [
-        'expiration',
         'sel',
         'gio_wrapped_desc',
+        '<(DEPTH)/native_client/src/trusted/expiration/expiration.gyp:expiration',
         '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:*',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
@@ -347,15 +341,6 @@
             'generic_container/container.c',
           ],
         }, {
-          'target_name': 'expiration64',
-          'type': 'static_library',
-          'variables': {
-            'win_target': 'x64',
-          },
-          'sources': [
-            'expiration.c',
-          ],
-        }, {
           'target_name': 'nacl_xdr64',
           'type': 'static_library',
           'variables': {
@@ -390,10 +375,10 @@
           },
           # TODO(gregoryd): currently building sel_ldr without SDL
           'dependencies': [
-            'expiration64',
             'sel64',
             'gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/trusted/expiration/expiration.gyp:expiration64',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
           ],
           'sources': [

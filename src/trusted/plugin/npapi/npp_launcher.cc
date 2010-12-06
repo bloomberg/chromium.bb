@@ -35,9 +35,9 @@
 #if NACL_OSX
 #include "native_client/src/trusted/plugin/osx/open_mac_file.h"
 #endif  // NACL_OSX
+#include "native_client/src/trusted/expiration/expiration.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
-#include "native_client/src/trusted/service_runtime/expiration.h"
 
 using nacl::DebugPrintf;
 
