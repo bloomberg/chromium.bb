@@ -1092,30 +1092,37 @@ FcStartElement(void *userData, const XML_Char *name, const XML_Char **attr)
 static void
 FcParseBlank (FcConfigParse *parse)
 {
-    int	    n = FcVStackElements (parse);
+    int		n = FcVStackElements (parse);
+    FcChar32	i;
     while (n-- > 0)
     {
 	FcVStack    *v = FcVStackFetch (parse, n);
-	if (v->tag != FcVStackInteger)
-	    FcConfigMessage (parse, FcSevereError, "non-integer blank");
-	else
+	if (!parse->config->blanks)
 	{
+	    parse->config->blanks = FcBlanksCreate ();
 	    if (!parse->config->blanks)
-	    {
-		parse->config->blanks = FcBlanksCreate ();
-		if (!parse->config->blanks)
-		{
-		    FcConfigMessage (parse, FcSevereError, "out of memory");
-		    break;
-		}
-	    }
+		goto bail;
+	}
+	switch (v->tag) {
+	case FcVStackInteger:
 	    if (!FcBlanksAdd (parse->config->blanks, v->u.integer))
+		goto bail;
+	    break;
+	case FcVStackRange:
+	    for (i = v->u.range.begin; i <= v->u.range.end; i++)
 	    {
-		FcConfigMessage (parse, FcSevereError, "out of memory");
-		break;
+		if (!FcBlanksAdd (parse->config->blanks, i))
+		    goto bail;
 	    }
+	    break;
+	default:
+	    FcConfigMessage (parse, FcSevereError, "invalid element in blank");
+	    break;
 	}
     }
+    return;
+  bail:
+    FcConfigMessage (parse, FcSevereError, "out of memory");
 }
 
 static void
