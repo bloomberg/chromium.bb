@@ -24,20 +24,27 @@ cr.define('options', function() {
     this.managed = false;
   }
 
-  OptionsPage.registeredPages_ = {};
+  /**
+   * Main level option pages.
+   * @protected
+   */
+  OptionsPage.registeredPages = {};
 
   /**
-   * Pages which are nested under a main page.
+   * Pages which are nested under a main level page.
+   * @protected
    */
-  OptionsPage.registeredSubPages_ = {};
+  OptionsPage.registeredSubPages = {};
 
   /**
    * Pages which are meant to behave like modal dialogs.
+   * @protected
    */
-  OptionsPage.registeredOverlayPages_ = {};
+  OptionsPage.registeredOverlayPages = {};
 
   /**
    * Whether or not |initialize| has been called.
+   * @private
    */
   OptionsPage.initialized_ = false;
 
@@ -46,16 +53,33 @@ cr.define('options', function() {
    * @param {string} pageName Page name.
    */
   OptionsPage.showPageByName = function(pageName) {
-    for (var name in OptionsPage.registeredPages_) {
-      var page = OptionsPage.registeredPages_[name];
+    // Notify main pages if they will be hidden.
+    for (var name in this.registeredPages) {
+      var page = this.registeredPages[name];
+      if (name != pageName && page.willHidePage)
+        page.willHidePage();
+    }
+
+    // Update the visibility attribute for main pages.
+    for (var name in this.registeredPages) {
+      var page = this.registeredPages[name];
       page.visible = name == pageName;
     }
-    for (var name in OptionsPage.registeredSubPages_) {
-      var pageInfo = OptionsPage.registeredSubPages_[name];
+
+    // Update the visibility attribute for sub-pages.
+    for (var name in this.registeredSubPages) {
+      var pageInfo = this.registeredSubPages[name];
       var match = name == pageName;
       if (match)
         pageInfo.parentPage.visible = true;
       pageInfo.page.visible = match;
+    }
+
+    // Notify main pages if they were shown.
+    for (var name in this.registeredPages) {
+      var page = this.registeredPages[name];
+      if (name == pageName && page.didShowPage)
+        page.didShowPage();
     }
   };
 
@@ -66,9 +90,9 @@ cr.define('options', function() {
    * @param {string} hash The value of the hash component of the URL.
    */
   OptionsPage.handleHashForPage = function(pageName, hash) {
-    var page = OptionsPage.registeredPages_[pageName];
+    var page = this.registeredPages[pageName];
     if (!page) {
-      page = OptionsPage.registeredSubPages_[pageName].page;
+      page = this.registeredSubPages[pageName].page;
     }
     page.handleHash(hash);
   };
@@ -78,8 +102,8 @@ cr.define('options', function() {
    * @param {string} overlayName Page name.
    */
   OptionsPage.showOverlay = function(overlayName) {
-    if (OptionsPage.registeredOverlayPages_[overlayName]) {
-      OptionsPage.registeredOverlayPages_[overlayName].visible = true;
+    if (this.registeredOverlayPages[overlayName]) {
+      this.registeredOverlayPages[overlayName].visible = true;
     }
   };
 
@@ -87,20 +111,20 @@ cr.define('options', function() {
    * Clears overlays (i.e. hide all overlays).
    */
   OptionsPage.clearOverlays = function() {
-     for (var name in OptionsPage.registeredOverlayPages_) {
-       var page = OptionsPage.registeredOverlayPages_[name];
+     for (var name in this.registeredOverlayPages) {
+       var page = this.registeredOverlayPages[name];
        page.visible = false;
      }
   };
 
   /**
-   * Clears overlays if the key event is ESC.
+   * Handle 'keydown' events.
    * @param {Event} e Key event.
    * @private
    */
-  OptionsPage.clearOverlaysOnEsc_ = function(e) {
+  OptionsPage.onKeyDown_ = function(e) {
     if (e.keyCode == 27) { // Esc
-      OptionsPage.clearOverlays();
+      this.clearOverlays();
     }
   };
 
@@ -108,8 +132,8 @@ cr.define('options', function() {
    * Closes any currently-open subpage.
    */
   OptionsPage.closeSubPage = function() {
-    for (var name in OptionsPage.registeredSubPages_) {
-      var pageInfo = OptionsPage.registeredSubPages_[name];
+    for (var name in this.registeredSubPages) {
+      var pageInfo = this.registeredSubPages[name];
       if (pageInfo.page.visible) {
         pageInfo.page.visible = false;
         // Since the managed pref banner lives outside the overlay, and the
@@ -149,7 +173,7 @@ cr.define('options', function() {
    * @param {OptionsPage} page Page to register.
    */
   OptionsPage.register = function(page) {
-    OptionsPage.registeredPages_[page.name] = page;
+    this.registeredPages[page.name] = page;
     // Create and add new page <li> element to navbar.
     var pageNav = document.createElement('li');
     pageNav.id = page.name + 'PageNav';
@@ -177,7 +201,7 @@ cr.define('options', function() {
    * @param {OptionsPage} page Page to register.
    */
   OptionsPage.registerSubPage = function(subPage, parentPage) {
-    OptionsPage.registeredSubPages_[subPage.name] = {
+    this.registeredSubPages[subPage.name] = {
         page: subPage, parentPage: parentPage };
     subPage.tab = undefined;
     subPage.isSubPageSheet = true;
@@ -190,7 +214,7 @@ cr.define('options', function() {
    * OptionsPage.
    */
   OptionsPage.registerOverlay = function(page) {
-    OptionsPage.registeredOverlayPages_[page.name] = page;
+    this.registeredOverlayPages[page.name] = page;
     page.tab = undefined;
     page.isOverlay = true;
     page.initializePage();
@@ -202,7 +226,7 @@ cr.define('options', function() {
    */
   OptionsPage.setState = function(data) {
     if (data && data.pageName) {
-      OptionsPage.showPageByName(data.pageName);
+      this.showPageByName(data.pageName);
     }
   };
 
@@ -218,7 +242,7 @@ cr.define('options', function() {
     // should close the overlay, not fall through to the parent page.
     $('subpage-sheet-container').onclick = function(event) {
       if (!$('subpage-sheet').contains(event.target))
-        OptionsPage.closeSubPage();
+        this.closeSubPage();
       event.stopPropagation();
     }
   };
@@ -284,8 +308,7 @@ cr.define('options', function() {
         this.pageDiv.classList.remove('hidden');
         if (this.isOverlay) {
           $('overlay').classList.remove('hidden');
-          document.addEventListener('keydown',
-                                    OptionsPage.clearOverlaysOnEsc_);
+          document.addEventListener('keydown', OptionsPage.onKeyDown_);
         } else {
           if (this.isSubPageSheet)
             $('subpage-sheet-container').classList.remove('hidden');
@@ -302,8 +325,7 @@ cr.define('options', function() {
         this.pageDiv.classList.add('hidden');
         if (this.isOverlay) {
           $('overlay').classList.add('hidden');
-          document.removeEventListener('keydown',
-                                       OptionsPage.clearOverlaysOnEsc_);
+          document.removeEventListener('keydown', OptionsPage.onKeyDown_);
         } else if (this.isSubPageSheet) {
           $('subpage-sheet-container').classList.add('hidden');
         }

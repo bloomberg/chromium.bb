@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="options/personal_options.css">
 <link rel="stylesheet" href="options/import_data_overlay.css">
 <link rel="stylesheet" href="options/search_engine_manager.css">
+<link rel="stylesheet" href="options/search_page.css">
 <link rel="stylesheet" href="options/subpages_tab_controls.css">
 <if expr="pp_ifdef('chromeos')">
   <link rel="stylesheet" href="options/about_page.css">
@@ -316,7 +317,7 @@ window.onpopstate = function(e) {
      </ul>
   </div>
   <div id="mainview">
-     <div class="hidden" id="managed-prefs-banner">
+     <div id="managed-prefs-banner" class="hidden">
        <span id="managed-prefs-icon"></span>
        <span id="managed-prefs-text"
              i18n-content="managedPrefsBannerText"></span>
