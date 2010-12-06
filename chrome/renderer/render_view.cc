@@ -5663,6 +5663,14 @@ void RenderView::OnAsyncFileOpened(base::PlatformFileError error_code,
 
 #if defined(OS_MACOSX)
 void RenderView::OnSelectPopupMenuItem(int selected_index) {
+  if (external_popup_menu_ == NULL) {
+    // Crash reports from the field indicate that we can be notified with a
+    // NULL external popup menu (we probably get notified twice).
+    // If you hit this please file a bug against jcivelli and include the page
+    // and steps to repro.
+    NOTREACHED();
+    return;
+  }
   external_popup_menu_->DidSelectItem(selected_index);
   external_popup_menu_.reset();
 }
