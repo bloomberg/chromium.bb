@@ -12,7 +12,7 @@
 
 // TODO(robertm): eliminate need for this
 #if NACL_WINDOWS
-#include "native_client/src/trusted/service_runtime/win/mman.h"
+#include "native_client/src/include/win/mman.h"
 #endif
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 

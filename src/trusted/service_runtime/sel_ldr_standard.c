@@ -17,6 +17,7 @@
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/win/mman.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -37,7 +38,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
-#include "native_client/src/trusted/service_runtime/win/mman.h"
 
 #if !defined(SIZE_T_MAX)
 # define SIZE_T_MAX     (~(size_t) 0)

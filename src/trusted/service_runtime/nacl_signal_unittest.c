@@ -18,7 +18,7 @@
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 #ifdef WIN32
-#include "native_client/src/trusted/service_runtime/win/mman.h"
+#include "native_client/src/include/win/mman.h"
 /*
  * For Windows, we use __try, and __except as a means of safely returning
  * from the signal handler instead of re-executing the same code.

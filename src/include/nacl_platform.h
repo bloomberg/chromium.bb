@@ -48,7 +48,7 @@
 
 /* mmap enums, e.g.  PROT_READ, PROT_WRITE*/
 #if NACL_WINDOWS
-#include "native_client/src/trusted/service_runtime/win/mman.h"
+#include "native_client/src/include/win/mman.h"
 #elif NACL_OSX
 # include <sys/mman.h>
 #ifndef MAP_ANONYMOUS

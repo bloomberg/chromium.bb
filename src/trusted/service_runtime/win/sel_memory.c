@@ -8,6 +8,7 @@
  * NaCl Service Runtime memory allocation code
  */
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/win/mman.h"
 
 #include <errno.h>
 #include <windows.h>
@@ -16,7 +17,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 
-#include "native_client/src/trusted/service_runtime/win/mman.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
