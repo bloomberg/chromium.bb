@@ -398,6 +398,8 @@
         '../../glue/media/simple_data_source_unittest.cc',
         '../../glue/mimetype_unittest.cc',
         '../../glue/mock_resource_loader_bridge.h',
+        '../../glue/mock_webframe.h',
+        '../../glue/mock_weburlloader_impl.h',
         '../../glue/multipart_response_delegate_unittest.cc',
         '../../glue/plugins/plugin_group_unittest.cc',
         '../../glue/plugins/plugin_lib_unittest.cc',

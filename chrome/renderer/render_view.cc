@@ -2818,28 +2818,9 @@ WebMediaPlayer* RenderView::createMediaPlayer(
         MessageLoop::current(), context->context()));
   }
 
-  WebApplicationCacheHostImpl* appcache_host =
-      WebApplicationCacheHostImpl::FromFrame(frame);
-
-  // TODO(hclam): obtain the following parameters from |client|.
-  // Create two bridge factory for two data sources.
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_simple =
-      new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL(frame->url()),  // referrer
-          "null",  // frame origin
-          "null",  // main_frame_origin
-          base::GetCurrentProcId(),
-          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
-          routing_id());
-
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_buffered =
-      new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL(frame->url()),  // referrer
-          "null",  // frame origin
-          "null",  // main_frame_origin
-          base::GetCurrentProcId(),
-          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
-          routing_id());
+  // TODO(annacc): do we still need appcache_host?  http://crbug.com/65135
+  // WebApplicationCacheHostImpl* appcache_host =
+  //     WebApplicationCacheHostImpl::FromFrame(frame);
 
   scoped_refptr<webkit_glue::WebVideoRenderer> video_renderer;
   bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
@@ -2850,8 +2831,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
       new webkit_glue::WebMediaPlayerImpl(client, collection.release()));
-  if (!result->Initialize(bridge_factory_simple,
-                          bridge_factory_buffered,
+  if (!result->Initialize(frame,
                           cmd_line->HasSwitch(switches::kSimpleDataSource),
                           video_renderer)) {
     return NULL;

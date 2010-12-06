@@ -7,10 +7,10 @@
 #include "media/base/filter_host.h"
 #include "net/base/load_flags.h"
 #include "net/base/data_url.h"
-#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "webkit/glue/media/simple_data_source.h"
-#include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -30,12 +30,13 @@ namespace webkit_glue {
 
 SimpleDataSource::SimpleDataSource(
     MessageLoop* render_loop,
-    webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory)
+    WebKit::WebFrame* frame)
     : render_loop_(render_loop),
-      bridge_factory_(bridge_factory),
+      frame_(frame),
       size_(-1),
       single_origin_(true),
-      state_(UNINITIALIZED) {
+      state_(UNINITIALIZED),
+      keep_test_loader_(false) {
   DCHECK(render_loop);
 }
 
@@ -108,34 +109,59 @@ bool SimpleDataSource::IsStreaming() {
   return false;
 }
 
-bool SimpleDataSource::OnReceivedRedirect(
-    const GURL& new_url,
-    const webkit_glue::ResourceResponseInfo& info,
-    bool* has_new_first_party_for_cookies,
-    GURL* new_first_party_for_cookies) {
-  DCHECK(MessageLoop::current() == render_loop_);
-  single_origin_ = url_.GetOrigin() == new_url.GetOrigin();
-
-  // TODO(wtc): should we return a new first party for cookies URL?
-  *has_new_first_party_for_cookies = false;
-  return true;
+void SimpleDataSource::SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader) {
+  url_loader_.reset(mock_loader);
+  keep_test_loader_ = true;
 }
 
-void SimpleDataSource::OnReceivedResponse(
-    const webkit_glue::ResourceResponseInfo& info,
-    bool content_filtered) {
+void SimpleDataSource::willSendRequest(
+    WebKit::WebURLLoader* loader,
+    WebKit::WebURLRequest& newRequest,
+    const WebKit::WebURLResponse& redirectResponse) {
   DCHECK(MessageLoop::current() == render_loop_);
-  size_ = info.content_length;
+  single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
+
+  url_ = newRequest.url();
 }
 
-void SimpleDataSource::OnReceivedData(const char* data, int len) {
-  DCHECK(MessageLoop::current() == render_loop_);
-  data_.append(data, len);
+void SimpleDataSource::didSendData(
+    WebKit::WebURLLoader* loader,
+    unsigned long long bytesSent,
+    unsigned long long totalBytesToBeSent) {
+  NOTIMPLEMENTED();
 }
 
-void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
-                                          const std::string& security_info,
-                                          const base::Time& completion_time) {
+void SimpleDataSource::didReceiveResponse(
+    WebKit::WebURLLoader* loader,
+    const WebKit::WebURLResponse& response) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  size_ = response.expectedContentLength();
+}
+
+void SimpleDataSource::didDownloadData(
+    WebKit::WebURLLoader* loader,
+    int dataLength) {
+  NOTIMPLEMENTED();
+}
+
+void SimpleDataSource::didReceiveData(
+    WebKit::WebURLLoader* loader,
+    const char* data,
+    int data_length) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  data_.append(data, data_length);
+}
+
+void SimpleDataSource::didReceiveCachedMetadata(
+    WebKit::WebURLLoader* loader,
+    const char* data,
+    int dataLength) {
+  NOTIMPLEMENTED();
+}
+
+void SimpleDataSource::didFinishLoading(
+    WebKit::WebURLLoader* loader,
+    double finishTime) {
   DCHECK(MessageLoop::current() == render_loop_);
   AutoLock auto_lock(lock_);
   // It's possible this gets called after Stop(), in which case |host_| is no
@@ -143,10 +169,8 @@ void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
   if (state_ == STOPPED)
     return;
 
-  // Otherwise we should be initializing and have created a bridge.
+  // Otherwise we should be initializing and have created a WebURLLoader.
   DCHECK_EQ(state_, INITIALIZING);
-  DCHECK(bridge_.get());
-  bridge_.reset();
 
   // If we don't get a content length or the request has failed, report it
   // as a network error.
@@ -154,7 +178,29 @@ void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
     size_ = data_.length();
   DCHECK(static_cast<size_t>(size_) == data_.length());
 
-  DoneInitialization_Locked(status.is_success());
+  DoneInitialization_Locked(true);
+}
+
+void SimpleDataSource::didFail(
+    WebKit::WebURLLoader* loader,
+    const WebKit::WebURLError& error) {
+  DCHECK(MessageLoop::current() == render_loop_);
+  AutoLock auto_lock(lock_);
+  // It's possible this gets called after Stop(), in which case |host_| is no
+  // longer valid.
+  if (state_ == STOPPED)
+    return;
+
+  // Otherwise we should be initializing and have created a WebURLLoader.
+  DCHECK_EQ(state_, INITIALIZING);
+
+  // If we don't get a content length or the request has failed, report it
+  // as a network error.
+  if (size_ == -1)
+    size_ = data_.length();
+  DCHECK(static_cast<size_t>(size_) == data_.length());
+
+  DoneInitialization_Locked(false);
 }
 
 bool SimpleDataSource::HasSingleOrigin() {
@@ -164,7 +210,7 @@ bool SimpleDataSource::HasSingleOrigin() {
 
 void SimpleDataSource::Abort() {
   DCHECK(MessageLoop::current() == render_loop_);
-  NOTIMPLEMENTED();
+  frame_ = NULL;
 }
 
 void SimpleDataSource::SetURL(const GURL& url) {
@@ -183,6 +229,8 @@ void SimpleDataSource::StartTask() {
   if (state_ == STOPPED)
     return;
 
+  CHECK(frame_);
+
   DCHECK_EQ(state_, INITIALIZING);
 
   if (IsDataProtocol(url_)) {
@@ -194,10 +242,19 @@ void SimpleDataSource::StartTask() {
     size_ = data_.length();
     DoneInitialization_Locked(success);
   } else {
-    // Create our bridge and start loading the resource.
-    bridge_.reset(bridge_factory_->CreateBridge(
-        url_, net::LOAD_BYPASS_CACHE, -1, -1));
-    bridge_->Start(this);
+    // Prepare the request.
+    WebKit::WebURLRequest request(url_);
+
+    frame_->setReferrerForRequest(request, WebKit::WebURL());
+    // TODO(annacc): we should be using createAssociatedURLLoader() instead?
+    frame_->dispatchWillSendRequest(request);
+
+    // This flag is for unittests as we don't want to reset |url_loader|
+    if (!keep_test_loader_)
+      url_loader_.reset(WebKit::webKitClient()->createURLLoader());
+
+    // Start the resource loading.
+    url_loader_->loadAsynchronously(request, this);
   }
 }
 
@@ -207,9 +264,9 @@ void SimpleDataSource::CancelTask() {
   DCHECK_EQ(state_, STOPPED);
 
   // Cancel any pending requests.
-  if (bridge_.get()) {
-    bridge_->Cancel();
-    bridge_.reset();
+  if (url_loader_.get()) {
+    url_loader_->cancel();
+    url_loader_.reset();
   }
 }
 

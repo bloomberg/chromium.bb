@@ -10,10 +10,17 @@
 #ifndef WEBKIT_GLUE_MEDIA_SIMPLE_DATA_SOURCE_H_
 #define WEBKIT_GLUE_MEDIA_SIMPLE_DATA_SOURCE_H_
 
+#include <algorithm>
+#include <string>
+
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "media/base/filters.h"
-#include "webkit/glue/media/media_resource_loader_bridge_factory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/media/web_data_source.h"
 
 class MessageLoop;
@@ -22,11 +29,9 @@ class WebMediaPlayerDelegateImpl;
 namespace webkit_glue {
 
 class SimpleDataSource : public WebDataSource,
-                         public webkit_glue::ResourceLoaderBridge::Peer {
+                         public WebKit::WebURLLoaderClient {
  public:
-  SimpleDataSource(
-      MessageLoop* render_loop,
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory);
+  SimpleDataSource(MessageLoop* render_loop, WebKit::WebFrame* frame);
   virtual ~SimpleDataSource();
 
   // media::Filter implementation.
@@ -41,21 +46,37 @@ class SimpleDataSource : public WebDataSource,
   virtual bool GetSize(int64* size_out);
   virtual bool IsStreaming();
 
-  // webkit_glue::ResourceLoaderBridge::Peer implementation.
-  virtual void OnUploadProgress(uint64 position, uint64 size) {}
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const webkit_glue::ResourceResponseInfo& info,
-      bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies);
-  virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info,
-      bool content_filtered);
-  virtual void OnDownloadedData(int len) {}
-  virtual void OnReceivedData(const char* data, int len);
-  virtual void OnCompletedRequest(const URLRequestStatus& status,
-                                  const std::string& security_info,
-                                  const base::Time& completion_time);
+  // Used to inject a mock used for unittests.
+  virtual void SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader);
+
+  // WebKit::WebURLLoaderClient implementations.
+  virtual void willSendRequest(
+      WebKit::WebURLLoader* loader,
+      WebKit::WebURLRequest& newRequest,
+      const WebKit::WebURLResponse& redirectResponse);
+  virtual void didSendData(
+      WebKit::WebURLLoader* loader,
+      unsigned long long bytesSent,
+      unsigned long long totalBytesToBeSent);
+  virtual void didReceiveResponse(
+      WebKit::WebURLLoader* loader,
+      const WebKit::WebURLResponse& response);
+  virtual void didDownloadData(
+      WebKit::WebURLLoader* loader,
+      int dataLength);
+  virtual void didReceiveData(
+      WebKit::WebURLLoader* loader,
+      const char* data,
+      int dataLength);
+  virtual void didReceiveCachedMetadata(
+      WebKit::WebURLLoader* loader,
+      const char* data, int dataLength);
+  virtual void didFinishLoading(
+      WebKit::WebURLLoader* loader,
+      double finishTime);
+  virtual void didFail(
+      WebKit::WebURLLoader* loader,
+      const WebKit::WebURLError&);
 
   // webkit_glue::WebDataSource implementation.
   virtual bool HasSingleOrigin();
@@ -77,11 +98,11 @@ class SimpleDataSource : public WebDataSource,
   // Primarily used for asserting the bridge is loading on the render thread.
   MessageLoop* render_loop_;
 
-  // Factory to create a bridge.
-  scoped_ptr<webkit_glue::MediaResourceLoaderBridgeFactory> bridge_factory_;
+  // A webframe for loading.
+  WebKit::WebFrame* frame_;
 
-  // Bridge used to load the media resource.
-  scoped_ptr<webkit_glue::ResourceLoaderBridge> bridge_;
+  // Does the work of loading and sends data back to this client.
+  scoped_ptr<WebKit::WebURLLoader> url_loader_;
 
   media::MediaFormat media_format_;
   GURL url_;
@@ -103,6 +124,9 @@ class SimpleDataSource : public WebDataSource,
 
   // Filter callbacks.
   scoped_ptr<media::FilterCallback> initialize_callback_;
+
+  // Used to ensure mocks for unittests are used instead of reset in Start().
+  bool keep_test_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDataSource);
 };

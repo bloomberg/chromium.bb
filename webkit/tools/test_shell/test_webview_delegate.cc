@@ -729,27 +729,9 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
 
-  appcache::WebApplicationCacheHostImpl* appcache_host =
-      appcache::WebApplicationCacheHostImpl::FromFrame(frame);
-
-  // TODO(hclam): this is the same piece of code as in RenderView, maybe they
-  // should be grouped together.
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_simple =
-      new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL(frame->url()),  // referrer
-          "null",  // frame origin
-          "null",  // main_frame_origin
-          base::GetCurrentProcId(),
-          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
-          0);
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_buffered =
-      new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL(frame->url()),  // referrer
-          "null",  // frame origin
-          "null",  // main_frame_origin
-          base::GetCurrentProcId(),
-          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
-          0);
+  // TODO(annacc): do we still need appcache_host?  http://crbug.com/65135
+  // appcache::WebApplicationCacheHostImpl* appcache_host =
+  //     appcache::WebApplicationCacheHostImpl::FromFrame(frame);
 
   scoped_refptr<webkit_glue::VideoRendererImpl> video_renderer(
       new webkit_glue::VideoRendererImpl(false));
@@ -757,10 +739,7 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
 
   scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
       new webkit_glue::WebMediaPlayerImpl(client, collection.release()));
-  if (!result->Initialize(bridge_factory_simple,
-                          bridge_factory_buffered,
-                          false,
-                          video_renderer)) {
+  if (!result->Initialize(frame, false, video_renderer)) {
     return NULL;
   }
   return result.release();

@@ -550,10 +550,12 @@ TEST(MultipartResponseTest, MultipartContentRangesTest) {
 
   int content_range_lower_bound = 0;
   int content_range_upper_bound = 0;
+  int content_range_instance_size = 0;
 
   bool result = MultipartResponseDelegate::ReadContentRanges(
       response1, &content_range_lower_bound,
-      &content_range_upper_bound);
+      &content_range_upper_bound,
+      &content_range_instance_size);
 
   EXPECT_EQ(result, true);
   EXPECT_EQ(content_range_lower_bound, 1000);
@@ -567,10 +569,12 @@ TEST(MultipartResponseTest, MultipartContentRangesTest) {
 
   content_range_lower_bound = 0;
   content_range_upper_bound = 0;
+  content_range_instance_size = 0;
 
   result = MultipartResponseDelegate::ReadContentRanges(
       response2, &content_range_lower_bound,
-      &content_range_upper_bound);
+      &content_range_upper_bound,
+      &content_range_instance_size);
 
   EXPECT_EQ(result, false);
 
@@ -582,10 +586,12 @@ TEST(MultipartResponseTest, MultipartContentRangesTest) {
 
   content_range_lower_bound = 0;
   content_range_upper_bound = 0;
+  content_range_instance_size = 0;
 
   result = MultipartResponseDelegate::ReadContentRanges(
       response3, &content_range_lower_bound,
-      &content_range_upper_bound);
+      &content_range_upper_bound,
+      &content_range_instance_size);
 
   EXPECT_EQ(result, true);
   EXPECT_EQ(content_range_lower_bound, 1000);
@@ -598,10 +604,12 @@ TEST(MultipartResponseTest, MultipartContentRangesTest) {
 
   content_range_lower_bound = 0;
   content_range_upper_bound = 0;
+  content_range_instance_size = 0;
 
   result = MultipartResponseDelegate::ReadContentRanges(
       response4, &content_range_lower_bound,
-      &content_range_upper_bound);
+      &content_range_upper_bound,
+      &content_range_instance_size);
 
   EXPECT_EQ(result, false);
 }

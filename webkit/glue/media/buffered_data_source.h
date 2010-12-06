@@ -19,33 +19,38 @@
 #include "media/base/seekable_buffer.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
-#include "webkit/glue/media/media_resource_loader_bridge_factory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "webkit/glue/media/web_data_source.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 
+namespace WebKit {
+class WebURLResponse;
+}
+
 namespace webkit_glue {
+
 /////////////////////////////////////////////////////////////////////////////
 // BufferedResourceLoader
 // This class works inside demuxer thread and render thread. It contains a
-// resource loader bridge and does the actual resource loading. This object
-// does buffering internally, it defers the resource loading if buffer is
-// full and un-defers the resource loading if it is under buffered.
+// WebURLLoader and does the actual resource loading. This object does
+// buffering internally, it defers the resource loading if buffer is full
+// and un-defers the resource loading if it is under buffered.
 class BufferedResourceLoader :
     public base::RefCountedThreadSafe<BufferedResourceLoader>,
-    public webkit_glue::ResourceLoaderBridge::Peer {
+    public WebKit::WebURLLoaderClient {
  public:
   typedef Callback0::Type NetworkEventCallback;
 
-  // |bridge_factory| - Factory to create a ResourceLoaderBridge.
   // |url| - URL for the resource to be loaded.
   // |first_byte_position| - First byte to start loading from, -1 for not
   // specified.
   // |last_byte_position| - Last byte to be loaded, -1 for not specified.
-  BufferedResourceLoader(
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory,
-      const GURL& url,
-      int64 first_byte_position,
-      int64 last_byte_position);
+  BufferedResourceLoader(const GURL& url,
+                         int64 first_byte_position,
+                         int64 last_byte_position);
 
   // Start the resource loading with the specified URL and range.
   // This method operates in asynchronous mode. Once there's a response from the
@@ -62,7 +67,8 @@ class BufferedResourceLoader :
   // |event_callback| is called when the response is completed, data is
   // received, the request is suspended or resumed.
   virtual void Start(net::CompletionCallback* callback,
-                     NetworkEventCallback* event_callback);
+                     NetworkEventCallback* event_callback,
+                     WebKit::WebFrame* frame);
 
   // Stop this loader, cancels and request and release internal buffer.
   virtual void Stop();
@@ -109,23 +115,38 @@ class BufferedResourceLoader :
   // Returns resulting URL.
   virtual const GURL& url() { return url_; }
 
+  // Used to inject a mock used for unittests.
+  virtual void SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader);
+
   /////////////////////////////////////////////////////////////////////////////
-  // webkit_glue::ResourceLoaderBridge::Peer implementations.
-  virtual void OnUploadProgress(uint64 position, uint64 size) {}
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const webkit_glue::ResourceResponseInfo& info,
-      bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies);
-  virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info,
-      bool content_filtered);
-  virtual void OnDownloadedData(int len) {}
-  virtual void OnReceivedData(const char* data, int len);
-  virtual void OnCompletedRequest(
-      const URLRequestStatus& status,
-      const std::string& security_info,
-      const base::Time& completion_time);
+  // WebKit::WebURLLoaderClient implementations.
+  virtual void willSendRequest(
+      WebKit::WebURLLoader* loader,
+      WebKit::WebURLRequest& newRequest,
+      const WebKit::WebURLResponse& redirectResponse);
+  virtual void didSendData(
+      WebKit::WebURLLoader* loader,
+      unsigned long long bytesSent,
+      unsigned long long totalBytesToBeSent);
+  virtual void didReceiveResponse(
+      WebKit::WebURLLoader* loader,
+      const WebKit::WebURLResponse& response);
+  virtual void didDownloadData(
+      WebKit::WebURLLoader* loader,
+      int dataLength);
+  virtual void didReceiveData(
+      WebKit::WebURLLoader* loader,
+      const char* data,
+      int dataLength);
+  virtual void didReceiveCachedMetadata(
+      WebKit::WebURLLoader* loader,
+      const char* data, int dataLength);
+  virtual void didFinishLoading(
+      WebKit::WebURLLoader* loader,
+      double finishTime);
+  virtual void didFail(
+      WebKit::WebURLLoader* loader,
+      const WebKit::WebURLError&);
 
  protected:
   friend class base::RefCountedThreadSafe<BufferedResourceLoader>;
@@ -153,7 +174,16 @@ class BufferedResourceLoader :
   void ReadInternal();
 
   // If we have made a range request, verify the response from the server.
-  bool VerifyPartialResponse(const ResourceResponseInfo& info);
+  bool VerifyPartialResponse(const WebKit::WebURLResponse& response);
+
+  // Returns the value for a range request header using parameters
+  // |first_byte_position| and |last_byte_position|. Negative numbers other
+  // than -1 are not allowed for |first_byte_position| and |last_byte_position|.
+  // |first_byte_position| should always be less than or equal to
+  // |last_byte_position| if they are both not -1.
+  // Empty string is returned on invalid parameters.
+  std::string GenerateHeaders(int64 first_byte_position,
+                              int64 last_byte_position);
 
   // Done with read. Invokes the read callback and reset parameters for the
   // read request.
@@ -185,7 +215,9 @@ class BufferedResourceLoader :
   // True if response data received is a partial range.
   bool partial_response_;
 
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_;
+  // Does the work of loading and sends data back to this client.
+  scoped_ptr<WebKit::WebURLLoader> url_loader_;
+
   GURL url_;
   int64 first_byte_position_;
   int64 last_byte_position_;
@@ -195,7 +227,6 @@ class BufferedResourceLoader :
 
   // Members used during request start.
   scoped_ptr<net::CompletionCallback> start_callback_;
-  scoped_ptr<webkit_glue::ResourceLoaderBridge> bridge_;
   int64 offset_;
   int64 content_length_;
   int64 instance_size_;
@@ -212,14 +243,16 @@ class BufferedResourceLoader :
   int first_offset_;
   int last_offset_;
 
+  // Used to ensure mocks for unittests are used instead of reset in Start().
+  bool keep_test_loader_;
+
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceLoader);
 };
 
 class BufferedDataSource : public WebDataSource {
  public:
-  BufferedDataSource(
-      MessageLoop* render_loop,
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory);
+  BufferedDataSource(MessageLoop* render_loop,
+                     WebKit::WebFrame* frame);
 
   virtual ~BufferedDataSource();
 
@@ -337,11 +370,11 @@ class BufferedDataSource : public WebDataSource {
   // i.e. range request is not supported.
   bool streaming_;
 
+  // A webframe for loading.
+  WebKit::WebFrame* frame_;
+
   // True if the media resource has a single origin.
   bool single_origin_;
-
-  // A factory object to produce ResourceLoaderBridge.
-  scoped_ptr<webkit_glue::MediaResourceLoaderBridgeFactory> bridge_factory_;
 
   // A resource loader for the media resource.
   scoped_refptr<BufferedResourceLoader> loader_;
