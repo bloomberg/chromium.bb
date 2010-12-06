@@ -23,16 +23,11 @@ body {
 .header .form {
   float: left;
   margin-top: 22px;
-  margin-left: 12px;
+  -webkit-margin-start: 12px;
 }
 
-html[dir=rtl] .logo {
+html[dir=rtl] .logo, html[dir=rtl] .form {
   float: right;
-}
-
-html[dir=rtl] .form {
-  float: right;
-  margin-right: 12px;
 }
 
 #downloads-summary {
@@ -62,16 +57,9 @@ html[dir=rtl] #downloads-summary > a {
 .download {
   position: relative;
   margin-top: 6px;
-  margin-left: 114px;
-  padding-left: 56px;
+  -webkit-margin-start: 114px;
+  -webkit-padding-start: 56px;
   margin-bottom: 15px;
-}
-
-html[dir=rtl] .download {
-  padding-left: 0px;
-  margin-left: 0px;
-  margin-right: 114px;
-  padding-right: 56px;
 }
 
 .date-container {
@@ -146,14 +134,9 @@ html[dir=rtl] .progress {
 
 .name {
   display: none;
-  padding-right: 16px;
+  -webkit-padding-end: 16px;
   max-width: 450px;
   word-break: break-all;
-}
-
-html[dir=rtl] .name {
-  padding-right: 0px;
-  padding-left: 16px;
 }
 
 .download .status {

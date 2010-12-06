@@ -16,7 +16,7 @@ body {
 .header .form {
   float:left;
   margin-top:22px;
-  margin-left:12px;
+  -webkit-margin-start:12px;
 }
 
 html[dir='rtl'] .logo {
@@ -25,13 +25,12 @@ html[dir='rtl'] .logo {
 
 html[dir='rtl'] .form {
   float:right;
-  margin-right:12px;
 }
 
 .page-navigation {
   padding:8px;
   background-color:#ebeff9;
-  margin-right:4px;
+  -webkit-margin-end:4px;
 }
 
 .footer {

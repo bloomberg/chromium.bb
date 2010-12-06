@@ -20,14 +20,10 @@ div#header {
   min-height: 67px;
   overflow: hidden;
   padding-bottom: 20px;
-  padding-left: 0;
+  -webkit-padding-start: 0;
   padding-top: 20px;
   position: relative;
   -webkit-box-sizing: border-box;
-}
-
-html[dir=rtl] #header {
-  padding-right: 0;
 }
 
 #header h1 {
@@ -62,14 +58,9 @@ div.content {
   border-top: 1px solid #b5c7de;
   font-size: 99%;
   padding-bottom: 2px;
-  padding-left: 5px;
+  -webkit-padding-start: 5px;
   padding-top: 3px;
   width: 100%;
-}
-
-html[dir=rtl] .section-header {
-  padding-right: 5px;
-  padding-left: 0;
 }
 
 .section-header > table tr td:first-child {
@@ -96,12 +87,7 @@ html[dir=rtl] .section-header {
 }
 
 #top {
-  padding-right: 5px;
-}
-
-html[dir=rtl] #top {
-  padding-left: 5px;
-  padding-right: 0;
+  -webkit-padding-end: 5px;
 }
 
 .showInTmiMode {
@@ -153,14 +139,9 @@ body.showTmiMode .showInTmiMode {
   border-bottom: 1px solid #edeff5;
   font-size: 89%;
   padding-bottom: 0.8em;
-  padding-left: 10px;
+  -webkit-padding-start: 10px;
   padding-top: 0.8em;
   width: 100%;
-}
-
-html[dir=rtl] .tmi-mode {
-  padding-right: 10px;
-  padding-left: 0;
 }
 
 .plugin-disabled > td {
@@ -197,12 +178,7 @@ html[dir=rtl] .tmi-mode {
 
 /* Indent the text related to each plug-in. */
 .plugin-text {
-  padding-left: 5px;
-}
-
-html[dir=rtl] .plugin-text {
-  padding-right: 5px;
-  padding-left: 0;
+  -webkit-padding-start: 5px;
 }
 
 .plugin-name {
@@ -237,12 +213,7 @@ html[dir=rtl] .plugin-text {
 
 /* Separate columns by 1em for the most part. */
 .plugin-details td+td {
-  padding-left: 1em;
-}
-
-html[dir=rtl] .plugin-details td+td {
-  padding-right: 1em;
-  padding-left: 0;
+  -webkit-padding-start: 1em;
 }
 
 /* Make the MIME Types tables smaller. */
@@ -258,24 +229,14 @@ html[dir=rtl] .plugin-details td+td {
 
 /* Separate the columns for tables used for horizontal listings only a bit. */
 .hlisting td+td {
-  padding-left: 0.4em;
-}
-
-html[dir=rtl] .hlisting td+td {
-  padding-right: 0.4em;
-  padding-left: 0;
+  -webkit-padding-start: 0.4em;
 }
 
 /* Match the indentation of .plugin-text. */
 .plugin-actions {
-  padding-left: 5px;
+  -webkit-padding-start: 5px;
   margin-top: 0.2em;
   margin-bottom: 0.2em;
-}
-
-html[dir=rtl] .plugin-actions {
-  padding-right: 5px;
-  padding-left: 0;
 }
 
 button {

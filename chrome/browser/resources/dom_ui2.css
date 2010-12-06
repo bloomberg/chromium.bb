@@ -13,14 +13,13 @@ body {
 .header .form {
   float:left;
   margin-top:22px;
-  margin-left:12px;
+  -webkit-margin-start:12px;
 }
 html[dir='rtl'] .logo {
   float:right;
 }
 html[dir='rtl'] .form {
   float:right;
-  margin-right:12px;
 }
 .page-navigation {
   padding:8px;

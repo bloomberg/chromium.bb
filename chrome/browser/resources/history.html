@@ -1068,7 +1068,7 @@ function historyDeleted() {
   width: 50%;
 }
 #edit-button {
-  text-align: right;
+  text-align: end;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -1116,13 +1116,11 @@ table.results {
   color:#888;
   float:left;
   min-width:56px;
-  margin-right:5px;
+  -webkit-margin-end:5px;
   padding-top:1px;
   white-space:nowrap;
 }
 html[dir='rtl'] .time {
-  margin-right:0px;
-  margin-left:5px;
   float:right;
 }
 .entry .title {
@@ -1138,14 +1136,10 @@ html[dir='rtl'] .time {
   background:url('shared/images/star_small.png');
   background-repeat:no-repeat;
   display:inline-block;
-  margin-left:12px;
-  margin-right:0;
+  -webkit-margin-start:12px;
+  -webkit-margin-end:0;
   width:11px;
   height:11px;
-}
-html[dir='rtl'] .title > .starred {
-  margin-left:0;
-  margin-right:12px;
 }
 .entry .title > a {
   -webkit-box-sizing: border-box;
@@ -1164,7 +1158,7 @@ html[dir='rtl'] .entry .title > a {
 }
 #results-pagination {
   padding-top:24px;
-  margin-left:18px;
+  -webkit-margin-start:18px;
 }
 
 </style>
