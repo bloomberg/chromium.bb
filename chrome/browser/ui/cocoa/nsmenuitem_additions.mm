@@ -11,10 +11,13 @@
 @implementation NSMenuItem(ChromeAdditions)
 
 - (BOOL)cr_firesForKeyEvent:(NSEvent*)event {
-  DCHECK([event type] == NSKeyDown);
   if (![self isEnabled])
     return NO;
+  return [self cr_firesForKeyEventIfEnabled:event];
+}
 
+- (BOOL)cr_firesForKeyEventIfEnabled:(NSEvent*)event {
+  DCHECK([event type] == NSKeyDown);
   // In System Preferences->Keyboard->Keyboard Shortcuts, it is possible to add
   // arbitrary keyboard shortcuts to applications. It is not documented how this
   // works in detail, but |NSMenuItem| has a method |userKeyEquivalent| that

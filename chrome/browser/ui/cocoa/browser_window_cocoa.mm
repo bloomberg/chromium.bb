@@ -465,7 +465,7 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
       if (submenu != [NSApp servicesMenu])
         result = [self itemForKeyEquivalent:key
                                        menu:submenu];
-    } else if ([item cr_firesForKeyEvent:key]) {
+    } else if ([item cr_firesForKeyEventIfEnabled:key]) {
       result = item;
     }
 

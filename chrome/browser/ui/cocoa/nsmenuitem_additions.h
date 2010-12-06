@@ -12,7 +12,12 @@
 
 // Returns true exactly if the menu item would fire if it would be put into
 // a menu and then |menu performKeyEquivalent:event| was called.
+// This method always returns NO if the menu item is not enabled.
 - (BOOL)cr_firesForKeyEvent:(NSEvent*)event;
+
+// Like above method, but this method matches the key equivalent regardless of
+// the menu item's enable state.
+- (BOOL)cr_firesForKeyEventIfEnabled:(NSEvent*)event;
 
 @end
 

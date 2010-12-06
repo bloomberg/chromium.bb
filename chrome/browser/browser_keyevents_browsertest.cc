@@ -636,14 +636,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
 #endif
 }
 
-#if defined(OS_MACOSX)
-// See http://crbug.com/50447 for details.
-#define MAYBE_ReservedAccelerators FLAKY_ReservedAccelerators
-#else
-#define MAYBE_ReservedAccelerators ReservedAccelerators
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -653,6 +646,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
+  ASSERT_EQ(1, browser()->tab_count());
+
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
   static const KeyEventTestData kTestCtrlT = {
     app::VKEY_T, true, false, false, false,
@@ -660,8 +655,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
     { "D 17 0 true false false false" }
   };
 
-  ASSERT_EQ(1, browser()->tab_count());
-  // Press Ctrl+T, which will open a new tab.
+  // Press Ctrl+T, which will open a new tab. It cannot be suppressed.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlT));
   EXPECT_EQ(2, browser()->tab_count());
   browser()->SelectNumberedTab(0);
@@ -670,6 +664,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   int result_length;
   ASSERT_NO_FATAL_FAILURE(GetResultLength(0, &result_length));
   EXPECT_EQ(1, result_length);
+
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Reserved accelerators can't be suppressed.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
@@ -684,19 +680,35 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
     { "D 91 0 false false false true" }
   };
 
-  ASSERT_EQ(1, browser()->tab_count());
-  // Press Cmd+T, which will open a new tab.
+  ui_test_utils::WindowedNotificationObserver wait_for_new_tab(
+      NotificationType::TAB_PARENTED,
+      NotificationService::AllSources());
+
+  // Press Cmd+T, which will open a new tab. It cannot be suppressed.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCmdT));
-  EXPECT_EQ(2, browser()->tab_count());
-  browser()->SelectNumberedTab(0);
-  ASSERT_EQ(0, browser()->selected_index());
+
+  wait_for_new_tab.WaitFor(Source<NavigationController>(
+      &browser()->GetTabContentsAt(1)->controller()));
 
   int result_length;
   ASSERT_NO_FATAL_FAILURE(GetResultLength(0, &result_length));
   EXPECT_EQ(1, result_length);
 
+  EXPECT_EQ(2, browser()->tab_count());
+  ASSERT_EQ(1, browser()->selected_index());
+
+  // Because of issue http://crbug.com/65375, switching back to the first tab
+  // may cause the focus to be grabbed by omnibox. So instead, we load our
+  // testing page in the newly created tab and try Cmd-W here.
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Make sure the focus is in the testing page.
+  ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
   // Reserved accelerators can't be suppressed.
-  ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
+  ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(1, true));
+
   // Press Cmd+W, which will close the tab.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), app::VKEY_W, false, false, false, true));
@@ -740,8 +752,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
       "U 17 0 true false false false" }
   };
 
-  ASSERT_EQ(1, browser()->tab_count());
-
   // Ctrl+T should be blockable.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlTBlocked));
   ASSERT_EQ(1, browser()->tab_count());
@@ -751,6 +761,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   ASSERT_EQ(1, browser()->selected_index());
   browser()->SelectNumberedTab(0);
   ASSERT_EQ(0, browser()->selected_index());
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Ctrl+PageDown and Ctrl+Tab switches to the next tab.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlPageDown));
@@ -758,12 +769,16 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
 
   browser()->SelectNumberedTab(0);
   ASSERT_EQ(0, browser()->selected_index());
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlTab));
   ASSERT_EQ(1, browser()->selected_index());
 
   // Ctrl+W should be blockable.
   browser()->SelectNumberedTab(0);
   ASSERT_EQ(0, browser()->selected_index());
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlWBlocked));
   ASSERT_EQ(2, browser()->tab_count());
 
