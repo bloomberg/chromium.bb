@@ -166,7 +166,7 @@ bool PreferenceModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 }
 
 int64 PreferenceModelAssociator::GetSyncIdFromChromeId(
-    const std::string preference_name) {
+    const std::string& preference_name) {
   PreferenceNameToSyncIdMap::const_iterator iter =
       id_map_.find(preference_name);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;

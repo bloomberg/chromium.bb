@@ -81,12 +81,12 @@ class AutofillModelAssociator2
   virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id);
 
   // Not implemented.
-  virtual bool InitSyncNodeFromChromeId(std::string node_id,
+  virtual bool InitSyncNodeFromChromeId(const std::string& node_id,
                                         sync_api::BaseNode* sync_node);
 
   // Returns the sync id for the given autofill name, or sync_api::kInvalidId
   // if the autofill name is not associated to any sync id.
-  virtual int64 GetSyncIdFromChromeId(std::string node_id);
+  virtual int64 GetSyncIdFromChromeId(const std::string& node_id);
 
   // Associates the given autofill name with the given sync id.
   virtual void Associate(const std::string* node, int64 sync_id);

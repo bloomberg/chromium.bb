@@ -99,7 +99,7 @@ bool SessionModelAssociator::GetSyncIdForTaggedNode(const std::string* tag,
   return true;
 }
 
-int64 SessionModelAssociator::GetSyncIdFromChromeId(std::string id) {
+int64 SessionModelAssociator::GetSyncIdFromChromeId(const std::string& id) {
   sync_api::ReadTransaction trans(
       sync_service_->backend()->GetUserShareHandle());
   sync_api::ReadNode node(&trans);

@@ -60,7 +60,7 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
   // Returns sync id for the given chrome model id.
   // Returns sync_api::kInvalidId if the sync node is not found for the given
   // chrome id.
-  virtual int64 GetSyncIdFromChromeId(IDType id) = 0;
+  virtual int64 GetSyncIdFromChromeId(const IDType& id) = 0;
 
   // Returns the chrome node for the given sync id.
   // Returns NULL if no node is found for the given sync id.
@@ -69,7 +69,7 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
   // Initializes the given sync node from the given chrome node id.
   // Returns false if no sync node was found for the given chrome node id or
   // if the initialization of sync node fails.
-  virtual bool InitSyncNodeFromChromeId(IDType node_id,
+  virtual bool InitSyncNodeFromChromeId(const IDType& node_id,
                                         sync_api::BaseNode* sync_node) = 0;
 
   // Associates the given chrome node with the given sync id.

@@ -75,14 +75,14 @@ class AutofillProfileModelAssociator
     return NULL;
   }
 
-  virtual bool InitSyncNodeFromChromeId(std::string node_id,
+  virtual bool InitSyncNodeFromChromeId(const std::string& node_id,
                                         sync_api::BaseNode* sync_node) {
     return false;
   }
 
   // Returns the sync id for the given autofill name, or sync_api::kInvalidId
   // if the autofill name is not associated to any sync id.
-  virtual int64 GetSyncIdFromChromeId(std::string node_id);
+  virtual int64 GetSyncIdFromChromeId(const std::string& node_id);
 
   // Associates the given autofill name with the given sync id.
   virtual void Associate(const std::string* node, int64 sync_id);
@@ -196,4 +196,3 @@ struct AutofillProfileModelAssociator::DataBundle {
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_MODEL_ASSOCIATOR_H_
-

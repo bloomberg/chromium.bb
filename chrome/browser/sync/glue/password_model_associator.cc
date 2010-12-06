@@ -205,7 +205,7 @@ bool PasswordModelAssociator::IsAbortPending() {
 }
 
 int64 PasswordModelAssociator::GetSyncIdFromChromeId(
-    const std::string password) {
+    const std::string& password) {
   PasswordToSyncIdMap::const_iterator iter = id_map_.find(password);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
 }

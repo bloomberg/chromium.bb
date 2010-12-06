@@ -351,7 +351,7 @@ void AutofillProfileModelAssociator::Disassociate(int64 sync_id) {
 }
 
 int64 AutofillProfileModelAssociator::GetSyncIdFromChromeId(
-    const std::string autofill) {
+    const std::string& autofill) {
   AutofillToSyncIdMap::const_iterator iter = id_map_.find(autofill);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
 }

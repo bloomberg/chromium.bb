@@ -176,7 +176,7 @@ bool BookmarkModelAssociator::DisassociateModels() {
   return true;
 }
 
-int64 BookmarkModelAssociator::GetSyncIdFromChromeId(int64 node_id) {
+int64 BookmarkModelAssociator::GetSyncIdFromChromeId(const int64& node_id) {
   BookmarkIdToSyncIdMap::const_iterator iter = id_map_.find(node_id);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
 }
@@ -188,7 +188,7 @@ const BookmarkNode* BookmarkModelAssociator::GetChromeNodeFromSyncId(
 }
 
 bool BookmarkModelAssociator::InitSyncNodeFromChromeId(
-    int64 node_id,
+    const int64& node_id,
     sync_api::BaseNode* sync_node) {
   DCHECK(sync_node);
   int64 sync_id = GetSyncIdFromChromeId(node_id);

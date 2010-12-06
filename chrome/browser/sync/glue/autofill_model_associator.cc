@@ -393,13 +393,13 @@ AutofillModelAssociator::GetChromeNodeFromSyncId(int64 sync_id) {
 }
 
 bool AutofillModelAssociator::InitSyncNodeFromChromeId(
-    std::string node_id,
+    const std::string& node_id,
     sync_api::BaseNode* sync_node) {
   return false;
 }
 
 int64 AutofillModelAssociator::GetSyncIdFromChromeId(
-    const std::string autofill) {
+    const std::string& autofill) {
   AutofillToSyncIdMap::const_iterator iter = id_map_.find(autofill);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
 }
