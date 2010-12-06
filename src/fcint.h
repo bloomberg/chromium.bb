@@ -216,7 +216,7 @@ struct _FcPattern {
 				 fs->fonts[i])
 						
 typedef enum _FcOp {
-    FcOpInteger, FcOpDouble, FcOpString, FcOpMatrix, FcOpRange, FcOpBool, FcOpCharSet,
+    FcOpInteger, FcOpDouble, FcOpString, FcOpMatrix, FcOpRange, FcOpBool, FcOpCharSet, FcOpLangSet,
     FcOpNil,
     FcOpField, FcOpConst,
     FcOpAssign, FcOpAssignReplace,
@@ -239,6 +239,7 @@ typedef struct _FcExpr {
 	FcMatrix    *mval;
 	FcBool	    bval;
 	FcCharSet   *cval;
+	FcLangSet   *lval;
 	FcObject    object;
 	FcChar8	    *constant;
 	struct {

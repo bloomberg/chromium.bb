@@ -897,6 +897,11 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	v.u.c = e->u.cval;
 	v = FcValueSave (v);
 	break;
+    case FcOpLangSet:
+	v.type = FcTypeLangSet;
+	v.u.l = e->u.lval;
+	v = FcValueSave (v);
+	break;
     case FcOpBool:
 	v.type = FcTypeBool;
 	v.u.b = e->u.bval;
@@ -1048,6 +1053,25 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		    v.type = FcTypeCharSet;
 		    v.u.c = FcCharSetSubtract (vl.u.c, vr.u.c);
 		    if (!v.u.c)
+			v.type = FcTypeVoid;
+		    break;
+		default:
+		    v.type = FcTypeVoid;
+		    break;
+		}
+		break;
+	    case FcTypeLangSet:
+		switch (e->op) {
+		case FcOpPlus:
+		    v.type = FcTypeLangSet;
+		    v.u.l = FcLangSetUnion (vl.u.l, vr.u.l);
+		    if (!v.u.l)
+			v.type = FcTypeVoid;
+		    break;
+		case FcOpMinus:
+		    v.type = FcTypeLangSet;
+		    v.u.l = FcLangSetSubtract (vl.u.l, vr.u.l);
+		    if (!v.u.l)
 			v.type = FcTypeVoid;
 		    break;
 		default:

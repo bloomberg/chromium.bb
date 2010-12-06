@@ -107,7 +107,7 @@
 
 <!ELEMENT pattern (patelt)*>
 
-<!ENTITY % constant 'int|double|string|matrix|bool|charset|const'>
+<!ENTITY % constant 'int|double|string|matrix|bool|charset|langset|const'>
 
 <!ELEMENT patelt (%constant;)*>
 <!ATTLIST patelt
@@ -122,7 +122,7 @@
 <!ELEMENT family (#PCDATA)>
 <!ATTLIST family xml:space (default|preserve) 'preserve'>
 
-<!ENTITY % expr 'int|double|string|matrix|bool|charset
+<!ENTITY % expr 'int|double|string|matrix|bool|charset|langset
 		|name|const
 		|or|and|eq|not_eq|less|less_eq|more|more_eq|contains|not_contains
 		|plus|minus|times|divide|not|if|floor|ceil|round|trunc'>
@@ -198,6 +198,7 @@
 <!ELEMENT bool (#PCDATA)>
 <!ELEMENT charset (int|range)*>
 <!ELEMENT range (int,int)>
+<!ELEMENT langset (string)*>
 <!ELEMENT name (#PCDATA)>
 <!ATTLIST name xml:space (default|preserve) 'preserve'>
 <!ELEMENT const (#PCDATA)>

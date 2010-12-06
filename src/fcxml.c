@@ -146,6 +146,18 @@ FcExprCreateCharSet (FcConfig *config, FcCharSet *charset)
 }
 
 static FcExpr *
+FcExprCreateLangSet (FcConfig *config, FcLangSet *langset)
+{
+    FcExpr *e = FcConfigAllocExpr (config);
+    if (e)
+    {
+	e->op = FcOpLangSet;
+	e->u.lval = FcLangSetCopy (langset);
+    }
+    return e;
+}
+
+static FcExpr *
 FcExprCreateField (FcConfig *config, const char *field)
 {
     FcExpr *e = FcConfigAllocExpr (config);
@@ -201,6 +213,9 @@ FcExprDestroy (FcExpr *e)
 	break;
     case FcOpCharSet:
 	FcCharSetDestroy (e->u.cval);
+	break;
+    case FcOpLangSet:
+	FcLangSetDestroy (e->u.lval);
 	break;
     case FcOpBool:
 	break;
@@ -294,6 +309,7 @@ typedef enum _FcElement {
     FcElementRange,
     FcElementBool,
     FcElementCharSet,
+    FcElementLangSet,
     FcElementName,
     FcElementConst,
     FcElementOr,
@@ -356,6 +372,7 @@ static const struct {
     { "range",		FcElementRange },
     { "bool",		FcElementBool },
     { "charset",	FcElementCharSet },
+    { "langset",	FcElementLangSet },
     { "name",		FcElementName },
     { "const",		FcElementConst },
     { "or",		FcElementOr },
@@ -420,6 +437,7 @@ typedef enum _FcVStackTag {
     FcVStackRange,
     FcVStackBool,
     FcVStackCharSet,
+    FcVStackLangSet,
 
     FcVStackTest,
     FcVStackExpr,
@@ -439,6 +457,7 @@ typedef struct _FcVStack {
 	FcRange		range;
 	FcBool		bool_;
 	FcCharSet	*charset;
+	FcLangSet	*langset;
 
 	FcTest		*test;
 	FcQual		qual;
@@ -570,6 +589,9 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
 	break;
     case FcOpCharSet:
 	FcTypecheckValue (parse, FcTypeCharSet, type);
+	break;
+    case FcOpLangSet:
+	FcTypecheckValue (parse, FcTypeLangSet, type);
 	break;
     case FcOpNil:
 	break;
@@ -799,6 +821,20 @@ FcVStackPushCharSet (FcConfigParse *parse, FcCharSet *charset)
 }
 
 static FcBool
+FcVStackPushLangSet (FcConfigParse *parse, FcLangSet *langset)
+{
+    FcVStack	*vstack;
+    if (!langset)
+	return FcFalse;
+    vstack = FcVStackCreateAndPush (parse);
+    if (!vstack)
+	return FcFalse;
+    vstack->u.langset = langset;
+    vstack->tag = FcVStackLangSet;
+    return FcTrue;
+}
+
+static FcBool
 FcVStackPushTest (FcConfigParse *parse, FcTest *test)
 {
     FcVStack    *vstack = FcVStackCreateAndPush (parse);
@@ -894,6 +930,9 @@ FcVStackPopAndDestroy (FcConfigParse *parse)
 	break;
     case FcVStackCharSet:
 	FcCharSetDestroy (vstack->u.charset);
+	break;
+    case FcVStackLangSet:
+	FcLangSetDestroy (vstack->u.langset);
 	break;
     case FcVStackTest:
 	FcTestDestroy (vstack->u.test);
@@ -1411,6 +1450,36 @@ FcParseCharSet (FcConfigParse *parse)
 	    FcCharSetDestroy (charset);
 }
 
+static void
+FcParseLangSet (FcConfigParse *parse)
+{
+    FcVStack	*vstack;
+    FcLangSet	*langset = FcLangSetCreate ();
+    int n = 0;
+
+    while ((vstack = FcVStackPeek (parse)))
+    {
+	switch (vstack->tag) {
+	case FcVStackString:
+	    if (!FcLangSetAdd (langset, vstack->u.string))
+	    {
+		FcConfigMessage (parse, FcSevereWarning, "invalid langset: %s", vstack->u.string);
+	    }
+	    else
+		n++;
+	    break;
+	default:
+		FcConfigMessage (parse, FcSevereError, "invalid element in langset");
+		break;
+	}
+	FcVStackPopAndDestroy (parse);
+    }
+    if (n > 0)
+	    FcVStackPushLangSet (parse, langset);
+    else
+	    FcLangSetDestroy (langset);
+}
+
 static FcBool
 FcConfigLexBinding (FcConfigParse   *parse,
 		    const FcChar8   *binding_string,
@@ -1664,6 +1733,9 @@ FcPopExpr (FcConfigParse *parse)
 	break;
     case FcVStackCharSet:
 	expr = FcExprCreateCharSet (parse->config, vstack->u.charset);
+	break;
+    case FcVStackLangSet:
+	expr = FcExprCreateLangSet (parse->config, vstack->u.langset);
 	break;
     case FcVStackTest:
 	break;
@@ -2086,6 +2158,11 @@ FcPopValue (FcConfigParse *parse)
 	if (value.u.c)
 	    value.type = FcTypeCharSet;
 	break;
+    case FcVStackLangSet:
+	value.u.l = FcLangSetCopy (vstack->u.langset);
+	if (value.u.l)
+	    value.type = FcTypeLangSet;
+	break;
     default:
 	FcConfigMessage (parse, FcSevereWarning, "unknown pattern element %d",
 			 vstack->tag);
@@ -2359,6 +2436,9 @@ FcEndElement(void *userData, const XML_Char *name)
 	break;
     case FcElementCharSet:
 	FcParseCharSet (parse);
+	break;
+    case FcElementLangSet:
+	FcParseLangSet (parse);
 	break;
     case FcElementSelectfont:
 	break;
