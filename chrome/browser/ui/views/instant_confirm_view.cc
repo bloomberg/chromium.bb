@@ -81,7 +81,7 @@ bool InstantConfirmView::IsModal() const {
 
 void InstantConfirmView::LinkActivated(views::Link* source, int event_flags) {
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(GURL(browser::kInstantLearnMoreURL), GURL(),
+  browser->OpenURL(browser::InstantLearnMoreURL(), GURL(),
                    NEW_FOREGROUND_TAB, PageTransition::TYPED);
 }
 

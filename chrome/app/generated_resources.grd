@@ -4205,6 +4205,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_INSTANT_PREF_WARNING" desc="Warning displayed beneath instant pref">
         Omnibox input may be logged
       </message>
+      <message name="IDS_INSTANT_LEARN_MORE_URL" desc="URL of help center page that explains browser instant" translateable="false">
+        http://www.google.com/support/chrome/bin/answer.py?answer=180655&amp;hl=[GRITLANGCODE]
+      </message>
 
       <!-- Conflicts page -->
       <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE" desc="What gets appended after the page title if no conflicts were found.">
@@ -4261,7 +4264,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CONFLICTS_NOT_LOADED_YET" desc="Shown next to a module that has not been loaded into memory yet">
         Not loaded yet
       </message>
-      <message name="IDS_HELP_CENTER_VIEW_CONFLICTS" desc="The url of the Help center article for the View Conflicts page">
+      <message name="IDS_HELP_CENTER_VIEW_CONFLICTS" desc="The url of the Help center article for the View Conflicts page" translateable="false">
         http://www.google.com/support/chrome/bin/answer.py?answer=666386&amp;hl=[GRITLANGCODE]&amp;n=<ph name="NAME">$1<ex>Hash</ex></ph>&amp;l=<ph name="LOCATION">$2<ex>Hash</ex></ph>&amp;d=<ph name="DESC">$3<ex>Hash</ex></ph>&amp;s=<ph name="SIGNER">$4<ex>Hash</ex></ph>
       </message>
 

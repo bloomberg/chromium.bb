@@ -4,16 +4,20 @@
 
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 
+#include "app/l10n_util.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 
 namespace browser {
 
-const char kInstantLearnMoreURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=180655";
+GURL InstantLearnMoreURL() {
+  return GURL(l10n_util::GetStringUTF8(IDS_INSTANT_LEARN_MORE_URL));
+}
 
 void ShowInstantConfirmDialogIfNecessary(gfx::NativeWindow parent,
                                          Profile* profile) {

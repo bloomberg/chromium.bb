@@ -8,12 +8,13 @@
 
 #include "gfx/native_widget_types.h"
 
+class GURL;
 class Profile;
 
 namespace browser {
 
 // URL for learning more about instant.
-extern const char kInstantLearnMoreURL[];
+GURL InstantLearnMoreURL();
 
 // Invoked from the opt-in and preferences when the user toggles instant. If the
 // instant confirm dialog hasn't been shown, it's shown. If the instant dialog

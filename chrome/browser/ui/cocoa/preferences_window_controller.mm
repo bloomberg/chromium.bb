@@ -1259,7 +1259,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
 }
 
 - (IBAction)learnMoreAboutInstant:(id)sender {
-  browser::ShowOptionsURL(profile_, GURL(browser::kInstantLearnMoreURL));
+  browser::ShowOptionsURL(profile_, browser::InstantLearnMoreURL());
 }
 
 // Called when the user clicks the button to make Chromium the default

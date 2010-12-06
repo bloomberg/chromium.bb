@@ -60,7 +60,7 @@ void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
 }
 
 - (IBAction)learnMore:(id)sender {
-  browser::ShowOptionsURL(profile_, GURL(browser::kInstantLearnMoreURL));
+  browser::ShowOptionsURL(profile_, browser::InstantLearnMoreURL());
 }
 
 - (IBAction)ok:(id)sender {

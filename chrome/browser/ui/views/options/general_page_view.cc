@@ -453,8 +453,7 @@ void GeneralPageView::HighlightGroup(OptionsGroup highlight_group) {
 
 void GeneralPageView::LinkActivated(views::Link* source, int event_flags) {
   DCHECK(source == instant_link_);
-  browser::ShowOptionsURL(profile(),
-                          GURL(browser::kInstantLearnMoreURL));
+  browser::ShowOptionsURL(profile(), browser::InstantLearnMoreURL());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

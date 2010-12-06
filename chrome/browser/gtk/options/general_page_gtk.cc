@@ -803,5 +803,5 @@ void GeneralPageGtk::OnInstantLabelSizeAllocate(GtkWidget* sender,
 }
 
 void GeneralPageGtk::OnSearchLearnMoreClicked(GtkWidget* sender) {
-  browser::ShowOptionsURL(profile(), GURL(browser::kInstantLearnMoreURL));
+  browser::ShowOptionsURL(profile(), browser::InstantLearnMoreURL());
 }

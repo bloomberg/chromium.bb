@@ -73,5 +73,5 @@ void InstantConfirmDialogGtk::OnDialogResponse(GtkWidget* dialog,
 }
 
 void InstantConfirmDialogGtk::OnLinkButtonClicked(GtkWidget* button) {
-  browser::ShowOptionsURL(profile_, GURL(browser::kInstantLearnMoreURL));
+  browser::ShowOptionsURL(profile_, browser::InstantLearnMoreURL());
 }
