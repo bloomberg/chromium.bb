@@ -38,21 +38,31 @@ body {
   -webkit-box-pack: center;
 }
 
-#close-overlay {
+.close-subpage {
+  /* TODO(stuartmorgan): Replace with real images once they are available. */
+  background-image: url("../../../app/theme/close_bar.png");
   position: relative;
-  top: -20px;
-  width: 20px;
-  height: 20px;
+  top: 12px;
+  height: 16px;
+  width: 16px;
 }
 
-html[dir='ltr'] #close-overlay {
+.close-subpage:hover {
+  background-image: url("../../../app/theme/close_bar_h.png");
+}
+
+.close-subpage:active {
+  background-image: url("../../../app/theme/close_bar_p.png");
+}
+
+html[dir='ltr'] .close-subpage {
   float: right;
-  right: -20px;
+  right: 0;
 }
 
-html[dir='rtl'] #close-overlay {
+html[dir='rtl'] .close-subpage {
   float: left;
-  left: -20px;
+  left: 0;
 }
 
 .action-area {

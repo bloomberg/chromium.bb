@@ -337,6 +337,8 @@ window.onpopstate = function(e) {
        <!-- End main pages -->
        <div id="subpage-sheet-container" class="hidden">
          <div id="subpage-sheet">
+           <div class="close-subpage"
+               onclick="OptionsPage.closeSubPage();"></div>
            <if expr="pp_ifdef('chromeos')">
              <include src="options/about_page.html">
              <include src="options/chromeos_language_options.html">
