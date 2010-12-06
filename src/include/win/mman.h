@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2010 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -10,8 +10,8 @@
  * compatible with linux or osx values.
  */
 
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_WIN_MMAN_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_WIN_MMAN_H_
+#ifndef NATIVE_CLIENT_SRC_INCLUDE_WIN_MMAN_H_
+#define NATIVE_CLIENT_SRC_INCLUDE_WIN_MMAN_H_
 
 #include "native_client/src/include/nacl_base.h"
 
@@ -37,4 +37,4 @@ EXTERN_C_BEGIN
 
 EXTERN_C_END
 
-#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_WIN_MMAN_H_ */
+#endif  /* NATIVE_CLIENT_SRC_INCLUDE_WIN_MMAN_H_ */

@@ -13,12 +13,12 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_assert.h"
+#include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 
 /*
  * This redefines main when SDL is used to allow SDL to keep the main loop.

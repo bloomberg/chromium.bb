@@ -12,7 +12,7 @@
 #endif
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/nacl_assert.h"
+#include "native_client/src/include/nacl_assert.h"
 
 
 int main(int  ac,

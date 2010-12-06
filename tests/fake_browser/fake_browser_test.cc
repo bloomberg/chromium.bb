@@ -23,7 +23,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/third_party/npapi/files/include/npupp.h"
-#include "native_client/src/trusted/service_runtime/nacl_assert.h"
+#include "native_client/src/include/nacl_assert.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 

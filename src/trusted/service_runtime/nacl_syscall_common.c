@@ -12,9 +12,10 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 
-#include "native_client/src/include/portability_string.h"
-#include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/include/portability_string.h"
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
@@ -34,7 +35,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_assert.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"

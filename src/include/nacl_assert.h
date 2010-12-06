@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2010 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -9,8 +9,8 @@
  *
  * THIS FILE SHOULD BE USED ONLY IN TEST CODE.
  */
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_ASSERT_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_ASSERT_H_
+#ifndef NATIVE_CLIENT_SRC_INCLUDE_NACL_ASSERT_H_
+#define NATIVE_CLIENT_SRC_INCLUDE_NACL_ASSERT_H_
 
 #include "native_client/src/include/portability.h"
 /* get NACL_PRIxPTR */
@@ -78,4 +78,4 @@
 #define ASSERT_NE(lhs, rhs) ASSERT_OP(lhs, !=, rhs, #lhs, #rhs)
 #define ASSERT_LE(lhs, rhs) ASSERT_OP(lhs, <=, rhs, #lhs, #rhs)
 
-#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_ASSERT_H_ */
+#endif  /* NATIVE_CLIENT_SRC_INCLUDE_NACL_ASSERT_H_ */

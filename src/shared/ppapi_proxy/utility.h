@@ -7,8 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_UTILITY_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_UTILITY_H_
 
+#include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/trusted/service_runtime/nacl_assert.h"
 
 namespace ppapi_proxy {
 
