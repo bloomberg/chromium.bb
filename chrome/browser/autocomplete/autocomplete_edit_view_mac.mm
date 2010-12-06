@@ -478,6 +478,8 @@ bool AutocompleteEditViewMac::CommitSuggestText() {
     return false;
 
   suggest_text_length_ = 0;
+  // Call SetText() to force a redraw and move the cursor to the end.
+  SetText(GetText());
   model()->FinalizeInstantQuery(GetText());
   return true;
 }
