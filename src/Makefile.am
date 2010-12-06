@@ -140,7 +140,7 @@ PUBLIC_FILES = \
 	$(top_srcdir)/fontconfig/fontconfig.h \
 	$(top_srcdir)/src/fcdeprecate.h \
 	$(top_srcdir)/fontconfig/fcprivate.h
-	
+
 PUBLIC_FT_FILES = \
 	$(top_srcdir)/fontconfig/fcfreetype.h
 
@@ -160,7 +160,7 @@ fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
 	echo Generating $@
 	(echo EXPORTS; \
 	(cat $(PUBLIC_FILES) $(PUBLIC_FT_FILES) || echo 'FcERROR ()' ) | \
- 	grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$$//' -e 's/^/	/' | \
+	grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$$//' -e 's/^/	/' | \
 	sort; \
 	echo LIBRARY libfontconfig-@LIBT_CURRENT_MINUS_AGE@.dll; \
 	echo VERSION @LIBT_CURRENT@.@LIBT_REVISION@) >$@

@@ -1036,6 +1036,25 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 		    break;
 		}
 		break;
+	    case FcTypeCharSet:
+		switch (e->op) {
+		case FcOpPlus:
+		    v.type = FcTypeCharSet;
+		    v.u.c = FcCharSetUnion (vl.u.c, vr.u.c);
+		    if (!v.u.c)
+			v.type = FcTypeVoid;
+		    break;
+		case FcOpMinus:
+		    v.type = FcTypeCharSet;
+		    v.u.c = FcCharSetSubtract (vl.u.c, vr.u.c);
+		    if (!v.u.c)
+			v.type = FcTypeVoid;
+		    break;
+		default:
+		    v.type = FcTypeVoid;
+		    break;
+		}
+		break;
 	    default:
 		v.type = FcTypeVoid;
 		break;

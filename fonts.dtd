@@ -196,8 +196,8 @@
 <!ATTLIST string xml:space (default|preserve) 'preserve'>
 <!ELEMENT matrix (double,double,double,double)>
 <!ELEMENT bool (#PCDATA)>
-<!ELEMENT charset (#PCDATA)>
-<!ATTLIST charset xml:space (default|preserve) 'preserve'>
+<!ELEMENT charset (int|range)*>
+<!ELEMENT range (int,int)>
 <!ELEMENT name (#PCDATA)>
 <!ATTLIST name xml:space (default|preserve) 'preserve'>
 <!ELEMENT const (#PCDATA)>

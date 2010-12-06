@@ -216,7 +216,7 @@ struct _FcPattern {
 				 fs->fonts[i])
 						
 typedef enum _FcOp {
-    FcOpInteger, FcOpDouble, FcOpString, FcOpMatrix, FcOpBool, FcOpCharSet,
+    FcOpInteger, FcOpDouble, FcOpString, FcOpMatrix, FcOpRange, FcOpBool, FcOpCharSet,
     FcOpNil,
     FcOpField, FcOpConst,
     FcOpAssign, FcOpAssignReplace,
@@ -506,6 +506,13 @@ typedef struct _FcFileTime {
 } FcFileTime;
 
 typedef struct _FcCharMap FcCharMap;
+
+typedef struct _FcRange	    FcRange;
+
+struct _FcRange {
+    FcChar32 begin;
+    FcChar32 end;
+};
 
 /* fcblanks.c */
 

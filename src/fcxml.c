@@ -134,6 +134,18 @@ FcExprCreateBool (FcConfig *config, FcBool b)
 }
 
 static FcExpr *
+FcExprCreateCharSet (FcConfig *config, FcCharSet *charset)
+{
+    FcExpr *e = FcConfigAllocExpr (config);
+    if (e)
+    {
+	e->op = FcOpCharSet;
+	e->u.cval = FcCharSetCopy (charset);
+    }
+    return e;
+}
+
+static FcExpr *
 FcExprCreateField (FcConfig *config, const char *field)
 {
     FcExpr *e = FcConfigAllocExpr (config);
@@ -184,6 +196,8 @@ FcExprDestroy (FcExpr *e)
 	break;
     case FcOpMatrix:
 	FcMatrixFree (e->u.mval);
+	break;
+    case FcOpRange:
 	break;
     case FcOpCharSet:
 	FcCharSetDestroy (e->u.cval);
@@ -277,8 +291,9 @@ typedef enum _FcElement {
     FcElementDouble,
     FcElementString,
     FcElementMatrix,
+    FcElementRange,
     FcElementBool,
-    FcElementCharset,
+    FcElementCharSet,
     FcElementName,
     FcElementConst,
     FcElementOr,
@@ -338,8 +353,9 @@ static const struct {
     { "double",		FcElementDouble },
     { "string",		FcElementString },
     { "matrix",		FcElementMatrix },
+    { "range",		FcElementRange },
     { "bool",		FcElementBool },
-    { "charset",	FcElementCharset },
+    { "charset",	FcElementCharSet },
     { "name",		FcElementName },
     { "const",		FcElementConst },
     { "or",		FcElementOr },
@@ -401,7 +417,9 @@ typedef enum _FcVStackTag {
     FcVStackInteger,
     FcVStackDouble,
     FcVStackMatrix,
+    FcVStackRange,
     FcVStackBool,
+    FcVStackCharSet,
 
     FcVStackTest,
     FcVStackExpr,
@@ -418,7 +436,9 @@ typedef struct _FcVStack {
 	int		integer;
 	double		_double;
 	FcMatrix	*matrix;
+	FcRange		range;
 	FcBool		bool_;
+	FcCharSet	*charset;
 
 	FcTest		*test;
 	FcQual		qual;
@@ -742,6 +762,18 @@ FcVStackPushMatrix (FcConfigParse *parse, FcMatrix *matrix)
 }
 
 static FcBool
+FcVStackPushRange (FcConfigParse *parse, FcRange *range)
+{
+    FcVStack	*vstack = FcVStackCreateAndPush (parse);
+    if (!vstack)
+	return FcFalse;
+    vstack->u.range.begin = range->begin;
+    vstack->u.range.end = range->end;
+    vstack->tag = FcVStackRange;
+    return FcTrue;
+}
+
+static FcBool
 FcVStackPushBool (FcConfigParse *parse, FcBool bool_)
 {
     FcVStack    *vstack = FcVStackCreateAndPush (parse);
@@ -749,6 +781,20 @@ FcVStackPushBool (FcConfigParse *parse, FcBool bool_)
 	return FcFalse;
     vstack->u.bool_ = bool_;
     vstack->tag = FcVStackBool;
+    return FcTrue;
+}
+
+static FcBool
+FcVStackPushCharSet (FcConfigParse *parse, FcCharSet *charset)
+{
+    FcVStack	*vstack;
+    if (!charset)
+	return FcFalse;
+    vstack = FcVStackCreateAndPush (parse);
+    if (!vstack)
+	return FcFalse;
+    vstack->u.charset = charset;
+    vstack->tag = FcVStackCharSet;
     return FcTrue;
 }
 
@@ -843,7 +889,11 @@ FcVStackPopAndDestroy (FcConfigParse *parse)
     case FcVStackMatrix:
 	FcMatrixFree (vstack->u.matrix);
 	break;
+    case FcVStackRange:
     case FcVStackBool:
+	break;
+    case FcVStackCharSet:
+	FcCharSetDestroy (vstack->u.charset);
 	break;
     case FcVStackTest:
 	FcTestDestroy (vstack->u.test);
@@ -1241,6 +1291,49 @@ FcParseMatrix (FcConfigParse *parse)
 	FcVStackPushMatrix (parse, &m);
 }
 
+static void
+FcParseRange (FcConfigParse *parse)
+{
+    FcVStack	*vstack;
+    FcRange	r;
+    FcChar32	n;
+    int		count = 1;
+
+    while ((vstack = FcVStackPeek (parse)))
+    {
+	if (count < 0)
+	{
+	    FcConfigMessage (parse, FcSevereError, "too many elements in range");
+	    return;
+	}
+	switch (vstack->tag) {
+	case FcVStackInteger:
+	    n = vstack->u.integer;
+	    break;
+	default:
+	    FcConfigMessage (parse, FcSevereError, "invalid element in range");
+	    break;
+	}
+	if (count == 1)
+	    r.end = n;
+	else
+	    r.begin = n;
+	count--;
+	FcVStackPopAndDestroy (parse);
+    }
+    if (count < 0)
+    {
+	if (r.begin > r.end)
+	{
+	    FcConfigMessage (parse, FcSevereError, "invalid range");
+	    return;
+	}
+	FcVStackPushRange (parse, &r);
+    }
+    else
+	FcConfigMessage (parse, FcSevereError, "invalid range");
+}
+
 static FcBool
 FcConfigLexBool (FcConfigParse *parse, const FcChar8 *bool_)
 {
@@ -1267,6 +1360,48 @@ FcParseBool (FcConfigParse *parse)
     }
     FcVStackPushBool (parse, FcConfigLexBool (parse, s));
     FcStrBufDestroy (&parse->pstack->str);
+}
+
+static void
+FcParseCharSet (FcConfigParse *parse)
+{
+    FcVStack	*vstack;
+    FcCharSet	*charset = FcCharSetCreate ();
+    FcChar32	i;
+    int n = 0;
+
+    while ((vstack = FcVStackPeek (parse)))
+    {
+	switch (vstack->tag) {
+	case FcVStackInteger:
+	    if (!FcCharSetAddChar (charset, vstack->u.integer))
+	    {
+		FcConfigMessage (parse, FcSevereWarning, "invalid character: 0x%04x", vstack->u.integer);
+	    }
+	    else
+		n++;
+	    break;
+	case FcVStackRange:
+	    for (i = vstack->u.range.begin; i <= vstack->u.range.end; i++)
+	    {
+		if (!FcCharSetAddChar (charset, i))
+		{
+		    FcConfigMessage (parse, FcSevereWarning, "invalid character: 0x%04x", i);
+		}
+		else
+		    n++;
+	    }
+	    break;
+	default:
+		FcConfigMessage (parse, FcSevereError, "invalid element in charset");
+		break;
+	}
+	FcVStackPopAndDestroy (parse);
+    }
+    if (n > 0)
+	    FcVStackPushCharSet (parse, charset);
+    else
+	    FcCharSetDestroy (charset);
 }
 
 static FcBool
@@ -1515,8 +1650,13 @@ FcPopExpr (FcConfigParse *parse)
     case FcVStackMatrix:
 	expr = FcExprCreateMatrix (parse->config, vstack->u.matrix);
 	break;
+    case FcVStackRange:
+	break;
     case FcVStackBool:
 	expr = FcExprCreateBool (parse->config, vstack->u.bool_);
+	break;
+    case FcVStackCharSet:
+	expr = FcExprCreateCharSet (parse->config, vstack->u.charset);
 	break;
     case FcVStackTest:
 	break;
@@ -1934,6 +2074,11 @@ FcPopValue (FcConfigParse *parse)
 	value.u.b = vstack->u.bool_;
 	value.type = FcTypeBool;
 	break;
+    case FcVStackCharSet:
+	value.u.c = FcCharSetCopy (vstack->u.charset);
+	if (value.u.c)
+	    value.type = FcTypeCharSet;
+	break;
     default:
 	FcConfigMessage (parse, FcSevereWarning, "unknown pattern element %d",
 			 vstack->tag);
@@ -2199,11 +2344,14 @@ FcEndElement(void *userData, const XML_Char *name)
     case FcElementMatrix:
 	FcParseMatrix (parse);
 	break;
+    case FcElementRange:
+	FcParseRange (parse);
+	break;
     case FcElementBool:
 	FcParseBool (parse);
 	break;
-    case FcElementCharset:
-/*	FcParseCharset (parse); */
+    case FcElementCharSet:
+	FcParseCharSet (parse);
 	break;
     case FcElementSelectfont:
 	break;
