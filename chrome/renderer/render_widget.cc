@@ -467,8 +467,8 @@ void RenderWidget::DoDeferredUpdate() {
 
   // OK, save the pending update to a local since painting may cause more
   // invalidation.  Some WebCore rendering objects only layout when painted.
-  PaintAggregator::PendingUpdate update = paint_aggregator_.GetPendingUpdate();
-  paint_aggregator_.ClearPendingUpdate();
+  PaintAggregator::PendingUpdate update;
+  paint_aggregator_.PopPendingUpdate(&update);
 
   gfx::Rect scroll_damage = update.GetScrollDamage();
   gfx::Rect bounds = update.GetPaintBounds().Union(scroll_damage);
@@ -504,13 +504,6 @@ void RenderWidget::DoDeferredUpdate() {
     bounds.set_height(canvas->getDevice()->height());
 
     HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
-
-    // TODO(darin): Re-enable painting multiple damage rects once the
-    // page-cycler regressions are resolved.  See bug 29589.
-    if (update.scroll_rect.IsEmpty()) {
-      update.paint_rects.clear();
-      update.paint_rects.push_back(bounds);
-    }
 
     // The scroll damage is just another rectangle to paint and copy.
     copy_rects.swap(update.paint_rects);

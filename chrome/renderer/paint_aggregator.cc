@@ -34,6 +34,10 @@ static const float kMaxRedundantPaintToScrollArea = 0.8f;
 // a paint rect can be significant.
 static const size_t kMaxPaintRects = 5;
 
+// If the combined area of paint rects divided by the area of the union of all
+// paint rects exceeds this threshold, then we will combine the paint rects.
+static const float kMaxPaintRectsAreaRatio = 0.3f;
+
 PaintAggregator::PendingUpdate::PendingUpdate() {}
 
 PaintAggregator::PendingUpdate::~PendingUpdate() {}
@@ -89,6 +93,25 @@ void PaintAggregator::ClearPendingUpdate() {
   update_ = PendingUpdate();
 }
 
+void PaintAggregator::PopPendingUpdate(PendingUpdate* update) {
+  // Combine paint rects if their combined area is not sufficiently less than
+  // the area of the union of all paint rects.  We skip this if there is a
+  // scroll rect since scrolling benefits from smaller paint rects.
+  if (update_.scroll_rect.IsEmpty() && update_.paint_rects.size() > 1) {
+    int paint_area = 0;
+    gfx::Rect union_rect;
+    for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
+      paint_area += update_.paint_rects[i].size().GetArea();
+      union_rect = union_rect.Union(update_.paint_rects[i]);
+    }
+    int union_area = union_rect.size().GetArea();
+    if (float(paint_area) / float(union_area) > kMaxPaintRectsAreaRatio)
+      CombinePaintRects();
+  }
+  *update = update_;
+  ClearPendingUpdate();
+}
+
 void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
   // Combine overlapping paints using smallest bounding box.
   for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
@@ -127,7 +150,7 @@ void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
   // Track how large the paint_rects vector grows during an invalidation
   // sequence.  Note: A subsequent invalidation may end up being combined
   // with all existing paints, which means that tracking the size of
-  // paint_rects at the time when GetPendingUpdate() is called may mask
+  // paint_rects at the time when PopPendingUpdate() is called may mask
   // certain performance problems.
   HISTOGRAM_COUNTS_100("MPArch.RW_IntermediatePaintRectCount",
                        update_.paint_rects.size());

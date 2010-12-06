@@ -43,7 +43,8 @@ class PaintAggregator {
   bool HasPendingUpdate() const;
   void ClearPendingUpdate();
 
-  const PendingUpdate& GetPendingUpdate() const { return update_; }
+  // Fills |update| and clears the pending update.
+  void PopPendingUpdate(PendingUpdate* update);
 
   // The given rect should be repainted.
   void InvalidateRect(const gfx::Rect& rect);
