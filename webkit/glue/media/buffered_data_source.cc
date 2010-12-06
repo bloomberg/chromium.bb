@@ -671,7 +671,8 @@ void BufferedDataSource::Abort() {
 void BufferedDataSource::InitializeTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!loader_.get());
-  DCHECK(!stopped_on_render_loop_);
+  if (stopped_on_render_loop_)
+    return;
 
   // Kick starts the watch dog task that will handle connection timeout.
   // We run the watch dog 2 times faster the actual timeout so as to catch
@@ -706,11 +707,6 @@ void BufferedDataSource::ReadTask(
      int64 position, int read_size, uint8* buffer,
      media::DataSource::ReadCallback* read_callback) {
   DCHECK(MessageLoop::current() == render_loop_);
-
-  // If CleanupTask() was executed we should return immediately. We check this
-  // variable to prevent doing any actual work after clean up was done. We do
-  // not check |stop_signal_received_| because anything use of it has to be
-  // within |lock_| which is not desirable.
   if (stopped_on_render_loop_)
     return;
 
@@ -731,8 +727,6 @@ void BufferedDataSource::ReadTask(
 
 void BufferedDataSource::CleanupTask() {
   DCHECK(MessageLoop::current() == render_loop_);
-
-  // If we have already stopped, do nothing.
   if (stopped_on_render_loop_)
     return;
 
@@ -757,13 +751,6 @@ void BufferedDataSource::CleanupTask() {
 
 void BufferedDataSource::RestartLoadingTask() {
   DCHECK(MessageLoop::current() == render_loop_);
-
-  // This variable is set in CleanupTask(). We check this and do an early
-  // return. The sequence of actions which enable this conditions is:
-  // 1. Stop() is called from the pipeline.
-  // 2. ReadCallback() is called from the resource loader.
-  // 3. CleanupTask() is executed.
-  // 4. RestartLoadingTask() is executed.
   if (stopped_on_render_loop_)
     return;
 
@@ -780,7 +767,8 @@ void BufferedDataSource::RestartLoadingTask() {
 
 void BufferedDataSource::WatchDogTask() {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!stopped_on_render_loop_);
+  if (stopped_on_render_loop_)
+    return;
 
   // We only care if there is an active read request.
   if (!read_callback_.get())

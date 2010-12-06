@@ -384,7 +384,7 @@ class BufferedDataSource : public WebDataSource {
   bool stop_signal_received_;
 
   // This variable is set by CleanupTask() that indicates this object is stopped
-  // on the render thread.
+  // on the render thread and work should no longer progress.
   bool stopped_on_render_loop_;
 
   // This variable is true when we are in a paused state and false when we
