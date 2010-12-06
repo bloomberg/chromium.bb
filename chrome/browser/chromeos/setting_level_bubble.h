@@ -25,7 +25,9 @@ class SettingLevelBubble : public InfoBubbleDelegate,
   void ShowBubble(int percent);
 
  protected:
-  explicit SettingLevelBubble(SkBitmap* icon);
+  explicit SettingLevelBubble(SkBitmap* increase_icon,
+                              SkBitmap* decrease_icon,
+                              SkBitmap* zero_icon);
   virtual ~SettingLevelBubble() {}
 
  private:
@@ -45,8 +47,11 @@ class SettingLevelBubble : public InfoBubbleDelegate,
   int previous_percent_;
   int current_percent_;
 
-  // Icon displayed in the bubble.  Not owned by us.
-  SkBitmap* icon_;
+  // Icons displayed in the bubble when increasing or decreasing the level or
+  // setting it to zero.  Not owned by us.
+  SkBitmap* increase_icon_;
+  SkBitmap* decrease_icon_;
+  SkBitmap* zero_icon_;
 
   // Currently shown bubble or NULL.
   InfoBubble* bubble_;

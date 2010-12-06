@@ -27,6 +27,9 @@ class SettingLevelBubbleView : public views::View {
   // instance from ResourceBundle).
   void Init(SkBitmap* icon, int level_percent);
 
+  // Change the icon that we're currently displaying.
+  void SetIcon(SkBitmap* icon);
+
   // Set the progress bar to the specified position and redraw it.
   void Update(int level_percent);
 

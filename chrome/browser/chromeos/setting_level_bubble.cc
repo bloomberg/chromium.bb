@@ -55,10 +55,14 @@ static views::Widget* GetToplevelWidget() {
   return root->GetWidget();
 }
 
-SettingLevelBubble::SettingLevelBubble(SkBitmap* icon)
+SettingLevelBubble::SettingLevelBubble(SkBitmap* increase_icon,
+                                       SkBitmap* decrease_icon,
+                                       SkBitmap* zero_icon)
     : previous_percent_(-1),
       current_percent_(-1),
-      icon_(icon),
+      increase_icon_(increase_icon),
+      decrease_icon_(decrease_icon),
+      zero_icon_(zero_icon),
       bubble_(NULL),
       view_(NULL),
       animation_(this) {
@@ -74,13 +78,20 @@ void SettingLevelBubble::ShowBubble(int percent) {
   if (previous_percent_ == -1)
     previous_percent_ = percent;
   current_percent_ = percent;
+
+  SkBitmap* icon = increase_icon_;
+  if (current_percent_ == 0)
+    icon = zero_icon_;
+  else if (current_percent_ < previous_percent_)
+    icon = decrease_icon_;
+
   if (!bubble_) {
     views::Widget* widget = GetToplevelWidget();
     if (widget == NULL)
       return;
     DCHECK(view_ == NULL);
     view_ = new SettingLevelBubbleView;
-    view_->Init(icon_, previous_percent_);
+    view_->Init(icon, previous_percent_);
     // Calculate position of the bubble.
     gfx::Rect bounds;
     widget->GetBounds(&bounds, false);
@@ -94,6 +105,7 @@ void SettingLevelBubble::ShowBubble(int percent) {
   } else {
     DCHECK(view_);
     timeout_timer_.Stop();
+    view_->SetIcon(icon);
   }
   if (animation_.is_animating())
     animation_.End();

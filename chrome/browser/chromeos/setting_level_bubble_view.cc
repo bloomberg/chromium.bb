@@ -18,9 +18,10 @@ using views::Widget;
 namespace {
 
 // Bubble metrics.
-const int kWidth = 300, kHeight = 75;
-const int kMargin = 25;
-const int kProgressBarHeight = 20;
+const int kWidth = 350, kHeight = 100;
+const int kPadding = 20;
+const int kProgressBarWidth = 211;
+const int kProgressBarHeight = 17;
 
 }  // namespace
 
@@ -32,11 +33,18 @@ SettingLevelBubbleView::SettingLevelBubbleView()
 }
 
 void SettingLevelBubbleView::Init(SkBitmap* icon, int level_percent) {
+  DCHECK(icon);
   DCHECK(level_percent >= 0 && level_percent <= 100);
   icon_ = icon;
   progress_bar_ = new views::ProgressBar();
   AddChildView(progress_bar_);
   Update(level_percent);
+}
+
+void SettingLevelBubbleView::SetIcon(SkBitmap* icon) {
+  DCHECK(icon);
+  icon_ = icon;
+  SchedulePaint();
 }
 
 void SettingLevelBubbleView::Update(int level_percent) {
@@ -46,15 +54,13 @@ void SettingLevelBubbleView::Update(int level_percent) {
 
 void SettingLevelBubbleView::Paint(gfx::Canvas* canvas) {
   views::View::Paint(canvas);
-  canvas->DrawBitmapInt(*icon_,
-                        icon_->width(), (height() - icon_->height()) / 2);
+  canvas->DrawBitmapInt(*icon_, kPadding, (height() - icon_->height()) / 2);
 }
 
 void SettingLevelBubbleView::Layout() {
-  progress_bar_->SetBounds(icon_->width() + kMargin * 2,
+  progress_bar_->SetBounds(width() - kPadding - kProgressBarWidth,
                            (height() - kProgressBarHeight) / 2,
-                           width() - icon_->width() - kMargin * 3,
-                           kProgressBarHeight);
+                           kProgressBarWidth, kProgressBarHeight);
 }
 
 gfx::Size SettingLevelBubbleView::GetPreferredSize() {
