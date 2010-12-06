@@ -295,7 +295,10 @@ def SourceTargetGit(name, dest_dir, url, commit_id):
                             cwd=dest_dir)
     else:
       # Set the URL again in case it has changed.
-      subprocess.check_call(["git", "remote", "set-url", "origin", url],
+      # This should be equivalent to
+      #   git remote set-url origin url
+      # except it will work on the older version of Git in Ubuntu Hardy.
+      subprocess.check_call(["git", "config", "remote.origin.url", url],
                             cwd=dest_dir)
     # We only need to run "git fetch" if our repository does not
     # already contain the commit object we need.
