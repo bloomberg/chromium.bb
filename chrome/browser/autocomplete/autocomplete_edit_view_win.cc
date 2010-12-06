@@ -2130,7 +2130,7 @@ LONG AutocompleteEditViewWin::ClipXCoordToVisibleText(
   if (end_position_x >= first_position_x) {
     right_bound = std::min(right_bound, end_position_x);  // LTR case.
   }
-  // For trailing characters that are 2 pixels wide of less (like "l" in some
+  // For trailing characters that are 2 pixels wide or less (like "l" in some
   // fonts), we have a problem:
   //   * Clicks on any pixel within the character will place the cursor before
   //     the character.
