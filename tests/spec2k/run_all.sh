@@ -5,7 +5,7 @@
 # be found in the LICENSE file.
 
 set -o nounset
-set -o errexit
+#set -o errexit
 
 ######################################################################
 # CONFIGURATION
@@ -142,6 +142,62 @@ SetupNaclX8664() {
 SetupNaclX8664Opt() {
   SetupNaclX8664Common
   SUFFIX=nacl.opt.x8664
+}
+
+SetupNaclDynX8632Common() {
+  SEL_LDR=../../scons-out/opt-linux-x86-32/staging/sel_ldr
+  if [[ ! -x ${SEL_LDR} ]] ; then
+    echo "you have not build the sel_ldr yet"
+    exit 1
+  fi
+  SEL_LDR=$(readlink -f ${SEL_LDR})
+  RUNNABLE_LD=../../toolchain/linux_x86/nacl/lib/runnable-ld.so
+  RUNNABLE_LD=$(readlink -f ${RUNNABLE_LD})
+  PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD}"
+}
+
+#@
+#@ SetupNaclDynX8632
+#@   use nacl-gcc compiler with glibc toolchain and dynamic linking
+SetupNaclDynX8632() {
+  SetupNaclDynX8632Common
+  SUFFIX=nacl.dyn.x8632
+}
+
+#@
+#@ SetupNaclDynX8632Opt
+#@   use nacl-gcc compiler with glibc toolchain and dynamic linking
+SetupNaclDynX8632Opt() {
+  SetupNaclDynX8632Common
+  SUFFIX=nacl.dyn.opt.x8632
+}
+
+SetupNaclDynX8664Common() {
+  SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
+  if [[ ! -x ${SEL_LDR} ]] ; then
+    echo "you have not build the sel_ldr yet"
+    exit 1
+  fi
+  SEL_LDR=$(readlink -f ${SEL_LDR})
+  RUNNABLE_LD=../../toolchain/linux_x86/nacl64/lib/runnable-ld.so
+  RUNNABLE_LD=$(readlink -f ${RUNNABLE_LD})
+  PREFIX="${SEL_LDR} -a -c -f ${RUNNABLE_LD}"
+}
+
+#@
+#@ SetupNaclDynX8664
+#@   use nacl64-gcc compiler with glibc toolchain and dynamic linking
+SetupNaclDynX8664() {
+  SetupNaclDynX8664Common
+  SUFFIX=nacl.dyn.x8664
+}
+
+#@
+#@ SetupNaclDynX8664Opt
+#@   use nacl64-gcc compiler with glibc toolchain and dynamic linking
+SetupNaclDynX8664Opt() {
+  SetupNaclDynX8664Common
+  SUFFIX=nacl.dyn.opt.x8664
 }
 
 ######################################################################
