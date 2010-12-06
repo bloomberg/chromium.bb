@@ -264,14 +264,6 @@ def GetTargets():
       deps=[],
       scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update_header",
                   "naclsdk_validate=0"])
-  # Before full-gcc is built, we cannot build any C++ code, and
-  # tools/Makefile builds the following with nocpp=yes.  However,
-  # full-gcc does not actually depend on it, so we do not use it.
-  AddSconsModule(
-      "libnacl_nocpp",
-      deps=["binutils", "pre-gcc", "newlib", "libnacl_headers", "nc_threads"] +
-          gcc_libs,
-      scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update", "nocpp=yes"])
 
   AddAutoconfModule(
       "full-gcc", "gcc",
