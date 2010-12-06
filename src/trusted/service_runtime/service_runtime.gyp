@@ -286,8 +286,6 @@
       'dependencies': [
         'sel',
         'gio_wrapped_desc',
-        '<(DEPTH)/native_client/src/trusted/expiration/expiration.gyp:expiration',
-        '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:*',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
       ],
@@ -378,7 +376,6 @@
             'sel64',
             'gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
-            '<(DEPTH)/native_client/src/trusted/expiration/expiration.gyp:expiration64',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
           ],
           'sources': [

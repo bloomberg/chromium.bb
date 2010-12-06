@@ -350,8 +350,6 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                                                       'platform',
                                                       'platform_qual_lib',
                                                       'gio',
-                                                      'expiration',
-                                                      'nacl_perf_counter',
                                                       ] + VALIDATOR_LIBS
                                                       + DEBUG_LIBS)
 
