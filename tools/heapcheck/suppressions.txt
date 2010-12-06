@@ -1092,3 +1092,24 @@
    fun:webkit_glue::SimpleDataSourceTest_InitializeData_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
 }
+{
+   bug_65680a
+   Heapcheck:Leak
+   fun:remoting::ScreenRecorderTest_OneRecordCycle_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
+}
+{
+   bug_65680b
+   Heapcheck:Leak
+   fun:remoting::ScreenRecorder::DoSendVideoPacket
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:MessageLoop::RunTask
+   fun:MessageLoop::DeferOrRunPendingTask
+   fun:MessageLoop::DoWork
+   fun:base::MessagePumpDefault::Run
+   fun:MessageLoop::RunInternal
+   fun:MessageLoop::RunHandler
+   fun:MessageLoop::RunAllPending
+   fun:remoting::ScreenRecorderTest_OneRecordCycle_Test::TestBody
+}
