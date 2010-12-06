@@ -35,7 +35,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
-#include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/plugin_updater.h"
@@ -504,8 +503,6 @@ bool BrowserProcessImpl::have_inspector_files() const {
 }
 
 void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
-  SQLitePersistentCookieStore::ClearLocalState(profile_path.Append(
-      chrome::kCookieFilename));
   webkit_database::DatabaseTracker::ClearLocalState(profile_path);
   ChromeAppCacheService::ClearLocalState(profile_path);
 }

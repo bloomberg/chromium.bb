@@ -315,6 +315,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
         new SQLitePersistentCookieStore(cookie_store_path_);
+    cookie_db->SetClearLocalStateOnExit(clear_local_state_on_exit_);
     context->set_cookie_store(new net::CookieMonster(cookie_db.get(),
         cookie_monster_delegate_));
   }
@@ -705,6 +706,15 @@ void ChromeURLRequestContextGetter::Observe(
               this,
               &ChromeURLRequestContextGetter::OnDefaultCharsetChange,
               default_charset));
+    } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
+      bool clear_site_data =
+          prefs->GetBoolean(prefs::kClearSiteDataOnExit);
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange,
+              clear_site_data));
     }
   } else {
     NOTREACHED();
@@ -717,6 +727,7 @@ void ChromeURLRequestContextGetter::RegisterPrefsObserver(Profile* profile) {
   registrar_.Init(profile->GetPrefs());
   registrar_.Add(prefs::kAcceptLanguages, this);
   registrar_.Add(prefs::kDefaultCharset, this);
+  registrar_.Add(prefs::kClearSiteDataOnExit, this);
 }
 
 // static
@@ -740,6 +751,12 @@ void ChromeURLRequestContextGetter::OnAcceptLanguageChange(
 void ChromeURLRequestContextGetter::OnDefaultCharsetChange(
     const std::string& default_charset) {
   GetIOContext()->OnDefaultCharsetChange(default_charset);
+}
+
+void ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange(
+    bool clear_site_data) {
+  GetCookieStore()->GetCookieMonster()->
+      SetClearPersistentStoreOnExit(clear_site_data);
 }
 
 void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
@@ -882,6 +899,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   std::string default_charset = prefs->GetString(prefs::kDefaultCharset);
   accept_charset_ =
       net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
+  clear_local_state_on_exit_ = prefs->GetBoolean(prefs::kClearSiteDataOnExit);
 
   // At this point, we don't know the charset of the referring page
   // where a url request originates from. This is used to get a suggested

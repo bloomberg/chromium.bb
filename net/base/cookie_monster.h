@@ -207,6 +207,10 @@ class CookieMonster : public CookieStore {
   // function must be called before initialization.
   void SetExpiryAndKeyScheme(ExpiryAndKeyScheme key_scheme);
 
+  // Delegates the call to set the |clear_local_store_on_exit_| flag of the
+  // PersistentStore if it exists.
+  void SetClearPersistentStoreOnExit(bool clear_local_store);
+
   // There are some unknowns about how to correctly handle file:// cookies,
   // and our implementation for this is not robust enough. This allows you
   // to enable support, but it should only be used for testing. Bug 1157243.
@@ -677,18 +681,22 @@ typedef base::RefCountedThreadSafe<CookieMonster::PersistentCookieStore>
 class CookieMonster::PersistentCookieStore
     : public RefcountedPersistentCookieStore {
  public:
-  virtual ~PersistentCookieStore() { }
+  virtual ~PersistentCookieStore() {}
 
   // Initializes the store and retrieves the existing cookies. This will be
   // called only once at startup.
-  virtual bool Load(std::vector<CookieMonster::CanonicalCookie*>*) = 0;
+  virtual bool Load(std::vector<CookieMonster::CanonicalCookie*>* cookies) = 0;
 
-  virtual void AddCookie(const CanonicalCookie&) = 0;
-  virtual void UpdateCookieAccessTime(const CanonicalCookie&) = 0;
-  virtual void DeleteCookie(const CanonicalCookie&) = 0;
+  virtual void AddCookie(const CanonicalCookie& cc) = 0;
+  virtual void UpdateCookieAccessTime(const CanonicalCookie& cc) = 0;
+  virtual void DeleteCookie(const CanonicalCookie& cc) = 0;
+
+  // Sets the value of the user preference whether the persistent storage
+  // must be deleted upon destruction.
+  virtual void SetClearLocalStateOnExit(bool clear_local_state) = 0;
 
  protected:
-  PersistentCookieStore() { }
+  PersistentCookieStore() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PersistentCookieStore);

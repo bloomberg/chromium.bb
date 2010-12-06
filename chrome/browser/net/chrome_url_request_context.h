@@ -310,6 +310,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // ChromeURLRequestContext.
   void OnAcceptLanguageChange(const std::string& accept_language);
   void OnDefaultCharsetChange(const std::string& default_charset);
+  void OnClearSiteDataOnExitChange(bool clear_site_data);
 
   // Saves the cookie store to |result| and signals |completion|.
   void GetCookieStoreAsyncHelper(base::WaitableEvent* completion,
@@ -362,6 +363,7 @@ class ChromeURLRequestContextFactory {
   // ApplyProfileParametersToContext().
   bool is_media_;
   bool is_off_the_record_;
+  bool clear_local_state_on_exit_;
   std::string accept_language_;
   std::string accept_charset_;
   std::string referrer_charset_;

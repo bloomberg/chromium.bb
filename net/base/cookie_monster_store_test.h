@@ -66,6 +66,9 @@ class MockPersistentCookieStore
         CookieStoreCommand(CookieStoreCommand::REMOVE, cookie));
   }
 
+  // No files are created so nothing to clear either
+  virtual void SetClearLocalStateOnExit(bool clear_local_state) {}
+
   void SetLoadExpectation(
       bool return_value,
       const std::vector<net::CookieMonster::CanonicalCookie*>& result) {
@@ -184,6 +187,8 @@ class MockSimplePersistentCookieStore
     ASSERT_TRUE(it != cookies_.end());
     cookies_.erase(it);
   }
+
+  virtual void SetClearLocalStateOnExit(bool clear_local_state) {}
 
  private:
   CanonicalCookieMap cookies_;

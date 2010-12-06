@@ -31,7 +31,8 @@ class SQLitePersistentCookieStore::Backend
   explicit Backend(const FilePath& path)
       : path_(path),
         db_(NULL),
-        num_pending_(0) {
+        num_pending_(0),
+        clear_local_state_on_exit_(false) {
   }
 
   // Creates or load the SQLite database.
@@ -49,6 +50,8 @@ class SQLitePersistentCookieStore::Backend
   // Commit any pending operations and close the database.  This must be called
   // before the object is destructed.
   void Close();
+
+  void SetClearLocalStateOnExit(bool clear_local_state);
 
  private:
   friend class base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend>;
@@ -98,7 +101,10 @@ class SQLitePersistentCookieStore::Backend
   typedef std::list<PendingOperation*> PendingOperationsList;
   PendingOperationsList pending_;
   PendingOperationsList::size_type num_pending_;
-  Lock pending_lock_;  // Guard pending_ and num_pending_
+  // True if the persistent store should be deleted upon destruction.
+  bool clear_local_state_on_exit_;
+  // Guard |pending_|, |num_pending_| and |clear_local_state_on_exit_|.
+  Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
@@ -297,7 +303,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
 
   PendingOperationsList::size_type num_pending;
   {
-    AutoLock locked(pending_lock_);
+    AutoLock locked(lock_);
     pending_.push_back(po.release());
     num_pending = ++num_pending_;
   }
@@ -319,7 +325,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   PendingOperationsList ops;
   {
-    AutoLock locked(pending_lock_);
+    AutoLock locked(lock_);
     pending_.swap(ops);
     num_pending_ = 0;
   }
@@ -420,8 +426,16 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
   Commit();
 
   db_.reset();
+
+  if (clear_local_state_on_exit_)
+    file_util::Delete(path_, false);
 }
 
+void SQLitePersistentCookieStore::Backend::SetClearLocalStateOnExit(
+    bool clear_local_state) {
+  AutoLock locked(lock_);
+  clear_local_state_on_exit_ = clear_local_state;
+}
 SQLitePersistentCookieStore::SQLitePersistentCookieStore(const FilePath& path)
     : backend_(new Backend(path)) {
 }
@@ -458,8 +472,8 @@ void SQLitePersistentCookieStore::DeleteCookie(
     backend_->DeleteCookie(cc);
 }
 
-// static
-void SQLitePersistentCookieStore::ClearLocalState(
-    const FilePath& path) {
-  file_util::Delete(path, false);
+void SQLitePersistentCookieStore::SetClearLocalStateOnExit(
+    bool clear_local_state) {
+  if (backend_.get())
+    backend_->SetClearLocalStateOnExit(clear_local_state);
 }

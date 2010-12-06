@@ -1234,6 +1234,7 @@
         'browser/net/pref_proxy_config_service_unittest.cc',
         'browser/net/prerender_interceptor_unittest.cc',
         'browser/net/resolve_proxy_msg_helper_unittest.cc',
+        'browser/net/sqlite_persistent_cookie_store_unittest.cc',
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
