@@ -11,6 +11,3 @@ BUG_LOISLO WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 // patch http://trac.webkit.org/changeset/73059
 BUG22777 MAC : fast/overflow/hit-test-overflow-controls.html = IMAGE+TEXT
 
-// Crash between chromium r68249-r68258
-BUG65404 WIN MAC DEBUG : editing/pasteboard/drop-text-events.html = CRASH
-BUG65404 WIN MAC DEBUG : editing/pasteboard/paste-text-events.html = CRASH
