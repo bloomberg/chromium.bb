@@ -1533,8 +1533,11 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
 // Creates a HWND within the RenderWidgetHostView that will serve as a host
 // for a HWND that the GPU process will create. The host window is used
 // to Z-position the GPU's window relative to other plugin windows.
-gfx::PluginWindowHandle RenderWidgetHostViewWin::CreateCompositorHostWindow() {
-  DCHECK(!compositor_host_window_);
+gfx::PluginWindowHandle RenderWidgetHostViewWin::GetCompositorHostWindow() {
+  // If the window has been created, don't recreate it a second time
+  if (compositor_host_window_)
+    return compositor_host_window_;
+
   static ATOM window_class = 0;
   if (!window_class) {
     WNDCLASSEX wcex;

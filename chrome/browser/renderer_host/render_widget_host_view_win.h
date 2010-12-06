@@ -158,7 +158,7 @@ class RenderWidgetHostViewWin
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void SetVisuallyDeemphasized(bool deemphasized);
 
-  virtual gfx::PluginWindowHandle CreateCompositorHostWindow();
+  virtual gfx::PluginWindowHandle GetCompositorHostWindow();
   virtual void ShowCompositorHostWindow(bool show);
 
   virtual void OnAccessibilityNotifications(

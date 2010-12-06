@@ -247,7 +247,7 @@ class RenderWidgetHostView {
 #endif
 
 #if defined(OS_WIN)
-  virtual gfx::PluginWindowHandle CreateCompositorHostWindow() = 0;
+  virtual gfx::PluginWindowHandle GetCompositorHostWindow() = 0;
   virtual void WillWmDestroy() = 0;
   virtual void ShowCompositorHostWindow(bool show) = 0;
 #endif
@@ -261,7 +261,7 @@ class RenderWidgetHostView {
   }
   WebKit::WebPopupType popup_type() const { return popup_type_; }
 
-  // Subclasses should override this method to do whatever is appropriate to set
+  // Subclasses should override this method to do  is appropriate to set
   // the custom background for their platform.
   virtual void SetBackground(const SkBitmap& background) {
     background_ = background;

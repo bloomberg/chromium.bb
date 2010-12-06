@@ -126,7 +126,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange();
 #elif defined(OS_WIN)
-  virtual gfx::PluginWindowHandle CreateCompositorHostWindow();
+  virtual gfx::PluginWindowHandle GetCompositorHostWindow();
   virtual void WillWmDestroy();
   virtual void ShowCompositorHostWindow(bool show);
 #endif

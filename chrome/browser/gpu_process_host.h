@@ -95,7 +95,7 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #elif defined(OS_WIN)
-  void OnCreateCompositorHostWindow(int renderer_id,
+  void OnGetCompositorHostWindow(int renderer_id,
                                     int render_view_id,
                                     IPC::Message* reply_message);
 #endif

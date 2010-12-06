@@ -119,8 +119,8 @@ IPC_BEGIN_MESSAGES(GpuHost)
   IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                        GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
 #elif defined(OS_WIN)
-  // Create and get the HWND for the compositor window
-  IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateCompositorHostWindow,
+  // Get the HWND for the compositor window and if necessary, create it
+  IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_GetCompositorHostWindow,
                               int32, /* renderer_id */
                               int32, /* render_view_id */
                               gfx::PluginWindowHandle /* compositor_host_id */)

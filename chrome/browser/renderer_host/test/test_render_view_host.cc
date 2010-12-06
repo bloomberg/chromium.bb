@@ -188,7 +188,7 @@ void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
 void TestRenderWidgetHostView::GpuRenderingStateDidChange() {
 }
 #elif defined(OS_WIN)
-gfx::PluginWindowHandle TestRenderWidgetHostView::CreateCompositorHostWindow() {
+gfx::PluginWindowHandle TestRenderWidgetHostView::GetCompositorHostWindow() {
   return gfx::kNullPluginWindow;
 }
 

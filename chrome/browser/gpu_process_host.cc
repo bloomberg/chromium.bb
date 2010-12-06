@@ -186,8 +186,8 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
 #elif defined(OS_WIN)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_CreateCompositorHostWindow,
-                                    OnCreateCompositorHostWindow)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_GetCompositorHostWindow,
+                                    OnGetCompositorHostWindow)
 #endif
     // If the IO thread does not handle the message then automatically route it
     // to the UI thread. The UI thread will report an error if it does not
@@ -398,14 +398,14 @@ void SendDelayedReply(IPC::Message* reply_msg) {
   GpuProcessHost::Get()->Send(reply_msg);
 }
 
-void CreateCompositorHostWindowDispatcher(
+void GetCompositorHostWindowDispatcher(
     int renderer_id,
     int render_view_id,
     IPC::Message* reply_msg) {
   RenderViewHost* host = RenderViewHost::FromID(renderer_id,
                                                 render_view_id);
   if (!host) {
-    GpuHostMsg_CreateCompositorHostWindow::WriteReplyParams(reply_msg,
+    GpuHostMsg_GetCompositorHostWindow::WriteReplyParams(reply_msg,
         gfx::kNullPluginWindow);
     BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -414,10 +414,10 @@ void CreateCompositorHostWindowDispatcher(
   }
 
   RenderWidgetHostView* view = host->view();
-  gfx::PluginWindowHandle id = view->CreateCompositorHostWindow();
+  gfx::PluginWindowHandle id = view->GetCompositorHostWindow();
 
 
-  GpuHostMsg_CreateCompositorHostWindow::WriteReplyParams(reply_msg, id);
+  GpuHostMsg_GetCompositorHostWindow::WriteReplyParams(reply_msg, id);
   BrowserThread::PostTask(
     BrowserThread::IO, FROM_HERE,
     NewRunnableFunction(&SendDelayedReply, reply_msg));
@@ -425,13 +425,13 @@ void CreateCompositorHostWindowDispatcher(
 
 }  // namespace
 
-void GpuProcessHost::OnCreateCompositorHostWindow(
+void GpuProcessHost::OnGetCompositorHostWindow(
     int renderer_id,
     int render_view_id,
     IPC::Message* reply_message) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&CreateCompositorHostWindowDispatcher,
+      NewRunnableFunction(&GetCompositorHostWindowDispatcher,
           renderer_id, render_view_id, reply_message));
 }
 
