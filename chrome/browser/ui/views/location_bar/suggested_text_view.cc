@@ -10,12 +10,6 @@
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 
-// Amount of time to wait before starting the animation.
-static const int kPauseTimeMS = 1000;
-
-// Duration of the animation in which the colors change.
-static const int kFadeInTimeMS = 300;
-
 SuggestedTextView::SuggestedTextView(LocationBarView* location_bar)
     : location_bar_(location_bar),
       bg_color_(0) {
@@ -78,8 +72,10 @@ void SuggestedTextView::AnimationCanceled(const Animation* animation) {
 
 Animation* SuggestedTextView::CreateAnimation() {
   MultiAnimation::Parts parts;
-  parts.push_back(MultiAnimation::Part(kPauseTimeMS, Tween::ZERO));
-  parts.push_back(MultiAnimation::Part(kFadeInTimeMS, Tween::EASE_IN));
+  parts.push_back(MultiAnimation::Part(
+      InstantController::kAutoCommitPauseTimeMS, Tween::ZERO));
+  parts.push_back(MultiAnimation::Part(
+      InstantController::kAutoCommitFadeInTimeMS, Tween::EASE_IN));
   MultiAnimation* animation = new MultiAnimation(parts);
   animation->set_delegate(this);
   animation->set_continuous(false);

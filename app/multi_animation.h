@@ -61,6 +61,7 @@ class MultiAnimation : public Animation {
  protected:
   // Animation overrides.
   virtual void Step(base::TimeTicks time_now);
+  virtual void SetStartTime(base::TimeTicks start_time);
 
  private:
   // Returns the part containing the specified time. |time_ms| is reset to be

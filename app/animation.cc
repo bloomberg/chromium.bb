@@ -65,7 +65,6 @@ double Animation::CurrentValueBetween(double start, double target) const {
 
 int Animation::CurrentValueBetween(int start, int target) const {
   return Tween::ValueBetween(GetCurrentValue(), start, target);
-
 }
 
 gfx::Rect Animation::CurrentValueBetween(const gfx::Rect& start_bounds,

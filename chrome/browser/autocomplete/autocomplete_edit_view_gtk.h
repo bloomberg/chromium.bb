@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <string>
 
+#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
 #include "base/basictypes.h"
@@ -28,6 +29,7 @@
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
+class MultiAnimation;
 class Profile;
 class TabContents;
 
@@ -44,7 +46,8 @@ class GtkThemeProvider;
 #endif
 
 class AutocompleteEditViewGtk : public AutocompleteEditView,
-                                public NotificationObserver {
+                                public NotificationObserver,
+                                public AnimationDelegate {
  public:
   // Modeled like the Windows CHARRANGE.  Represent a pair of cursor position
   // offsets.  Since GtkTextIters are invalid after the buffer is changed, we
@@ -146,7 +149,16 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Overridden from AnimationDelegate.
+  virtual void AnimationEnded(const Animation* animation);
+  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationCanceled(const Animation* animation);
+
+  // Sets the colors of the text view according to the theme.
   void SetBaseColor();
+  // Sets the colors of the instant suggestion view according to the theme and
+  // the animation state.
+  void UpdateInstantViewColors();
 
   void SetInstantSuggestion(const std::string& suggestion);
   bool CommitInstantSuggestion();
@@ -349,6 +361,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // A widget for displaying instant suggestion text. It'll be attached to a
   // child anchor in the |text_buffer_| object.
   GtkWidget* instant_view_;
+  // Animation from instant suggest (faded text) to autocomplete (selected
+  // text).
+  scoped_ptr<MultiAnimation> instant_animation_;
 
   // A mark to split the content and the instant anchor. Wherever the end
   // iterator of the text buffer is required, the iterator to this mark should

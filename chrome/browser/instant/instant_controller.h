@@ -60,6 +60,12 @@ class InstantController : public InstantLoaderDelegate {
     LAST_TYPE = PREDICTIVE_NO_AUTO_COMPLETE_TYPE
   };
 
+
+  // Amount of time to wait before starting the instant animation.
+  static const int kAutoCommitPauseTimeMS = 1000;
+  // Duration of the instant animation in which the colors change.
+  static const int kAutoCommitFadeInTimeMS = 300;
+
   InstantController(Profile* profile, InstantDelegate* delegate);
   ~InstantController();
 

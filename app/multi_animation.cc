@@ -55,6 +55,12 @@ void MultiAnimation::Step(base::TimeTicks time_now) {
   }
 }
 
+void MultiAnimation::SetStartTime(base::TimeTicks start_time) {
+  Animation::SetStartTime(start_time);
+  current_value_ = 0;
+  current_part_index_ = 0;
+}
+
 const MultiAnimation::Part& MultiAnimation::GetPart(int* time_ms,
                                                     size_t* part_index) {
   DCHECK(*time_ms < cycle_time_ms_);

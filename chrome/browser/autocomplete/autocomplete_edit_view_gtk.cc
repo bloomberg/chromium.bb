@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
+#include "app/multi_animation.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -22,10 +23,12 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/notification_service.h"
+#include "gfx/color_utils.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
 #include "gfx/skia_utils_gtk.h"
@@ -336,6 +339,7 @@ void AutocompleteEditViewGtk::Init() {
   // GtkLabel is used instead of GtkTextView to get transparent background.
   instant_view_ = gtk_label_new(NULL);
   gtk_widget_set_no_show_all(instant_view_, TRUE);
+  gtk_label_set_selectable(GTK_LABEL(instant_view_), TRUE);
 
   GtkTextIter end_iter;
   gtk_text_buffer_get_end_iter(text_buffer_, &end_iter);
@@ -371,6 +375,14 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleInsertTextThunk), this);
 
   AdjustVerticalAlignmentOfInstantView();
+
+  MultiAnimation::Parts parts;
+  parts.push_back(MultiAnimation::Part(
+      InstantController::kAutoCommitPauseTimeMS, Tween::ZERO));
+  parts.push_back(MultiAnimation::Part(
+      InstantController::kAutoCommitFadeInTimeMS, Tween::EASE_IN));
+  instant_animation_.reset(new MultiAnimation(parts));
+  instant_animation_->set_continuous(false);
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
@@ -740,6 +752,18 @@ void AutocompleteEditViewGtk::Observe(NotificationType type,
   SetBaseColor();
 }
 
+void AutocompleteEditViewGtk::AnimationEnded(const Animation* animation) {
+  controller_->OnCommitSuggestedText(GetText());
+}
+
+void AutocompleteEditViewGtk::AnimationProgressed(const Animation* animation) {
+  UpdateInstantViewColors();
+}
+
+void AutocompleteEditViewGtk::AnimationCanceled(const Animation* animation) {
+  UpdateInstantViewColors();
+}
+
 void AutocompleteEditViewGtk::SetBaseColor() {
 #if defined(TOOLKIT_VIEWS)
   bool use_gtk = false;
@@ -769,9 +793,6 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     g_object_set(faded_text_tag_, "foreground-gdk", &average_color, NULL);
     g_object_set(normal_text_tag_, "foreground-gdk",
                  &style->text[GTK_STATE_NORMAL], NULL);
-
-    // GtkLabel uses fg color instead of text color.
-    gtk_widget_modify_fg(instant_view_, GTK_STATE_NORMAL, &average_color);
   } else {
     const GdkColor* background_color_ptr;
 #if defined(TOOLKIT_VIEWS)
@@ -786,8 +807,8 @@ void AutocompleteEditViewGtk::SetBaseColor() {
         text_view_, &gtk_util::kGdkBlack, &gtk_util::kGdkGray);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
 
-    GdkColor c;
 #if !defined(TOOLKIT_VIEWS)
+    GdkColor c;
     // Override the selected colors so we don't leak colors from the current
     // gtk theme into the chrome-theme.
     c = gfx::SkColorToGdkColor(
@@ -807,9 +828,6 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
 #endif
 
-    gdk_color_parse(kTextBaseColor, &c);
-    gtk_widget_modify_fg(instant_view_, GTK_STATE_NORMAL, &c);
-
     // Until we switch to vector graphics, force the font size.
     gtk_util::ForceFontSizePixels(text_view_,
         popup_window_mode_ ?
@@ -826,6 +844,50 @@ void AutocompleteEditViewGtk::SetBaseColor() {
   }
 
   AdjustVerticalAlignmentOfInstantView();
+  UpdateInstantViewColors();
+}
+
+void AutocompleteEditViewGtk::UpdateInstantViewColors() {
+#if !defined(TOOLKIT_VIEWS)
+  SkColor selection_text, selection_bg;
+  GdkColor faded_text, normal_bg;
+
+  if (theme_provider_->UseGtkTheme()) {
+    GtkStyle* style = gtk_rc_get_style(text_view_);
+
+    faded_text = gtk_util::AverageColors(
+        style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
+    normal_bg = style->base[GTK_STATE_NORMAL];
+
+    selection_text = gfx::GdkColorToSkColor(style->text[GTK_STATE_SELECTED]);
+    selection_bg = gfx::GdkColorToSkColor(style->base[GTK_STATE_SELECTED]);
+  } else {
+    gdk_color_parse(kTextBaseColor, &faded_text);
+    normal_bg = LocationBarViewGtk::kBackgroundColor;
+
+    selection_text =
+        theme_provider_->get_active_selection_fg_color();
+    selection_bg =
+        theme_provider_->get_active_selection_bg_color();
+  }
+
+  double alpha = instant_animation_->GetCurrentValue();
+  GdkColor text = gfx::SkColorToGdkColor(color_utils::AlphaBlend(
+      selection_text,
+      gfx::GdkColorToSkColor(faded_text),
+      alpha * 0xff));
+  GdkColor bg = gfx::SkColorToGdkColor(color_utils::AlphaBlend(
+      selection_bg,
+      gfx::GdkColorToSkColor(normal_bg),
+      alpha * 0xff));
+
+  // ACTIVE is the state for text that is selected, but not focused (the
+  // instant view is always fully selected and never has focus).
+  gtk_widget_modify_text(instant_view_, GTK_STATE_ACTIVE, &text);
+  gtk_widget_modify_base(instant_view_, GTK_STATE_ACTIVE, &bg);
+#else  // defined(TOOLKIT_VIEWS)
+  // We don't worry about views because it doesn't use the instant view.
+#endif
 }
 
 void AutocompleteEditViewGtk::HandleBeginUserAction(GtkTextBuffer* sender) {
@@ -1697,11 +1759,25 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
 void AutocompleteEditViewGtk::SetInstantSuggestion(
     const std::string& suggestion) {
   gtk_label_set_text(GTK_LABEL(instant_view_), suggestion.c_str());
+  // Select the whole thing.
+  gtk_label_select_region(GTK_LABEL(instant_view_), 0, -1);
+
+  // Clear the animation delegate so we don't get an AnimationEnded() callback.
+  instant_animation_->set_delegate(NULL);
+  instant_animation_->Stop();
+
   if (suggestion.empty()) {
     gtk_widget_hide(instant_view_);
   } else {
+    if (InstantController::IsEnabled(model_->profile(),
+                                     InstantController::PREDICTIVE_TYPE)) {
+      instant_animation_->set_delegate(this);
+      instant_animation_->Start();
+    }
+
     gtk_widget_show(instant_view_);
     AdjustVerticalAlignmentOfInstantView();
+    UpdateInstantViewColors();
   }
 }
 
