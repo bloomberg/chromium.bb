@@ -1896,7 +1896,8 @@
         }],
         ['use_openssl==1', {
           'sources/': [
-            # OpenSSL build does not support firefox importer. See http://crbug.com/64926
+            # OpenSSL build does not support firefox importer. See
+            # http://crbug.com/64926
             ['exclude', '^browser/importer/'],
           ],
         }],

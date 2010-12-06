@@ -113,8 +113,8 @@ bool VerifyHostname(const std::string& hostname,
     // it's needed by the test server. TODO(joth): Replace this with full IP
     // address support. See http://crbug.com/62973
     if (hostname == "127.0.0.1" &&
-        std::find(cert_names.begin(), cert_names.end(), hostname)
-            != cert_names.end()) {
+        std::find(cert_names.begin(), cert_names.end(), hostname) !=
+            cert_names.end()) {
       DVLOG(1) << "Allowing localhost IP certificate: " << hostname;
       return true;
     }
