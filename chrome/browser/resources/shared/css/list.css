@@ -37,7 +37,7 @@ list > [anchor] {
 
 }
 
-list > :hover {
+list:not([disabled]) > :hover {
   border-color: hsl(214, 91%, 85%);
   z-index: 1;
   background-color: hsl(214, 91%, 97%);

@@ -358,7 +358,7 @@ list > * {
   border: none;
 }
 
-list > :hover {
+list:not([disabled]) > :hover {
   background-color: #f2f2f2;
 }
 
@@ -367,9 +367,23 @@ list:focus > [selected],
 list:focus > [lead][selected],
 list > [selected]:hover {
   background-color: #f2f2f2;
+  background-image: none;
+}
+
+list > [lead][selected],
+list:focus > [lead][selected] {
   border-top: 1px solid #b2b2b2;
   border-bottom: 1px solid #b2b2b2;
-  background-image: none;
+  z-index: 3;
+}
+
+list[disabled] > [lead][selected],
+list[disabled]:focus > [lead][selected] {
+  border: none;
+}
+
+list[disabled] {
+  opacity: 0.6;
 }
 
 list > .heading {

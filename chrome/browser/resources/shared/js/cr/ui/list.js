@@ -293,6 +293,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMouseDownUp_: function(e) {
+      if (this.disabled)
+        return;
+
       var target = e.target;
 
       // If the target was this element we need to make sure that the user did
@@ -321,6 +324,9 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether the key event was handled.
      */
     handleKeyDown: function(e) {
+      if (this.disabled)
+        return;
+
       return this.selectionController_.handleKeyDown(e);
     },
 
@@ -564,6 +570,8 @@ cr.define('cr.ui', function() {
       }
     }
   };
+
+  cr.defineProperty(List, 'disabled', cr.PropertyKind.BOOL_ATTR);
 
   return {
     List: List

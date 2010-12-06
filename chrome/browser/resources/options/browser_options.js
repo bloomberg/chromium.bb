@@ -348,6 +348,7 @@ cr.define('options', function() {
      */
     updateCustomStartupPageControlStates_: function() {
       var disable = !this.shouldEnableCustomStartupPageControls_();
+      $('startupPages').disabled = disable;
       $('startupAddButton').disabled = disable;
       $('startupUseCurrentButton').disabled = disable;
       this.updateRemoveButtonState_();
