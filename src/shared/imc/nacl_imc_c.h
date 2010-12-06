@@ -133,7 +133,7 @@ int NaClWouldBlock();
 /*
  * Sends a message on a socket.
  *
- * NaClSendDatagram() and NaClSend() send the message to the remote peer
+ * NaClSendDatagram() sends the message to the remote peer
  * of the connection created by SocketPair().
  *
  * NaClSendDatagramTo() sends the message to the socket specified by
@@ -151,7 +151,6 @@ int NaClWouldBlock();
  */
 int NaClSendDatagram(NaClHandle socket, const NaClMessageHeader* message,
                      int flags);
-int NaClSend(NaClHandle socket, const void* buffer, size_t length, int flags);
 int NaClSendDatagramTo(const NaClMessageHeader* message,
                        int flags, const NaClSocketAddress* name);
 
@@ -174,7 +173,6 @@ int NaClSendDatagramTo(const NaClMessageHeader* message,
 
 int NaClReceiveDatagram(NaClHandle socket, NaClMessageHeader* message,
                         int flags);
-int NaClReceive(NaClHandle socket, void* buffer, size_t length, int flags);
 
 /*
  * Creates a memory object of length bytes.

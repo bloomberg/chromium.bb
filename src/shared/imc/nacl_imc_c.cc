@@ -43,10 +43,6 @@ int NaClSendDatagram(NaClHandle socket, const NaClMessageHeader* message,
       flags);
 }
 
-int NaClSend(NaClHandle socket, const void* buffer, size_t length, int flags) {
-  return nacl::Send(socket, buffer, length, flags);
-}
-
 int NaClSendDatagramTo(const NaClMessageHeader* message,
                        int flags, const NaClSocketAddress* name) {
   return nacl::SendDatagramTo(
@@ -60,10 +56,6 @@ int NaClReceiveDatagram(NaClHandle socket, NaClMessageHeader* message,
   return nacl::ReceiveDatagram(socket,
                                reinterpret_cast<nacl::MessageHeader*>(message),
                                flags);
-}
-
-int NaClReceive(NaClHandle socket, void* buffer, size_t length, int flags) {
-  return nacl::Receive(socket, buffer, length, flags);
 }
 
 NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
