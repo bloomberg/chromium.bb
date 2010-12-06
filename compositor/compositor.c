@@ -129,6 +129,8 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	if (surface == NULL)
 		return NULL;
 
+	wl_list_init(&surface->surface.destroy_listener_list);
+
 	glGenTextures(1, &surface->texture);
 	glBindTexture(GL_TEXTURE_2D, surface->texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -159,13 +161,17 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	struct wlsc_surface *surface =
 		container_of(resource, struct wlsc_surface, surface.resource);
 	struct wlsc_compositor *compositor = surface->compositor;
-	struct wlsc_listener *l;
+	struct wl_listener *l, *next;
 
 	wl_list_remove(&surface->link);
 	glDeleteTextures(1, &surface->texture);
 
 	wl_list_for_each(l, &compositor->surface_destroy_listener_list, link)
-		l->func(l, surface);
+		l->func(l, &surface->surface);
+
+	wl_list_for_each_safe(l, next,
+			      &surface->surface.destroy_listener_list, link)
+		l->func(l, &surface->surface);
 
 	free(surface);
 
@@ -574,7 +580,7 @@ get_time(void)
 
 struct wlsc_drag {
 	struct wl_drag drag;
-	struct wlsc_listener listener;
+	struct wl_listener listener;
 };
 
 static void
@@ -596,14 +602,14 @@ destroy_drag(struct wl_resource *resource, struct wl_client *client)
 const static struct wl_drag_interface drag_interface;
 
 static void
-drag_handle_surface_destroy(struct wlsc_listener *listener,
-			    struct wlsc_surface *surface)
+drag_handle_surface_destroy(struct wl_listener *listener,
+			    struct wl_surface *surface)
 {
 	struct wlsc_drag *drag =
 		container_of(listener, struct wlsc_drag, listener);
 	uint32_t time = get_time();
 
-	if (drag->drag.pointer_focus == &surface->surface)
+	if (drag->drag.pointer_focus == surface)
 		wl_drag_set_pointer_focus(&drag->drag, NULL, time, 0, 0, 0, 0);
 }
 
@@ -984,24 +990,6 @@ const static struct wl_input_device_interface input_device_interface = {
 	input_device_attach,
 };
 
-static void
-handle_surface_destroy(struct wlsc_listener *listener,
-		       struct wlsc_surface *surface)
-{
-	struct wlsc_input_device *device =
-		container_of(listener, struct wlsc_input_device, listener);
-	uint32_t time = get_time();
-
-	if (device->input_device.keyboard_focus == &surface->surface)
-		wl_input_device_set_keyboard_focus(&device->input_device, NULL, time);
-	if (device->input_device.pointer_focus == &surface->surface)
-		wl_input_device_set_pointer_focus(&device->input_device, NULL, time,
-						    0, 0, 0, 0);
-	if (device->input_device.pointer_focus == &surface->surface ||
-	    (device->input_device.pointer_focus == &wl_grab_surface &&
-	     device->grab_surface == surface))
-		wlsc_input_device_end_grab(device, time);
-}
 
 static void
 wl_drag_set_pointer_focus(struct wl_drag *drag,
@@ -1165,6 +1153,32 @@ static const struct wl_drag_interface drag_interface = {
 	drag_cancel,
 };
 
+static void
+lose_pointer_focus(struct wl_listener *listener,
+		   struct wl_surface *surface)
+{
+	uint32_t time = get_time();
+	struct wlsc_input_device *device =
+		container_of(listener, struct wlsc_input_device,
+			     input_device.pointer_focus_listener);
+
+	wl_input_device_set_pointer_focus(&device->input_device,
+					  NULL, time, 0, 0, 0, 0);
+	wlsc_input_device_end_grab(device, time);
+}
+
+static void
+lose_keyboard_focus(struct wl_listener *listener,
+		    struct wl_surface *surface)
+{
+	uint32_t time = get_time();
+	struct wlsc_input_device *device =
+		container_of(listener, struct wlsc_input_device,
+			     input_device.keyboard_focus_listener);
+
+	wl_input_device_set_keyboard_focus(&device->input_device, NULL, time);
+}
+
 void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec)
@@ -1183,9 +1197,11 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	device->hotspot_x = 16;
 	device->hotspot_y = 16;
 
-	device->listener.func = handle_surface_destroy;
-	wl_list_insert(ec->surface_destroy_listener_list.prev,
-		       &device->listener.link);
+	wl_list_init(&device->input_device.pointer_focus_listener.link);
+	device->input_device.pointer_focus_listener.func = lose_pointer_focus;
+	wl_list_init(&device->input_device.keyboard_focus_listener.link);
+	device->input_device.keyboard_focus_listener.func = lose_keyboard_focus;
+
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 
 	wlsc_input_device_set_pointer_image(device, WLSC_POINTER_LEFT_PTR);

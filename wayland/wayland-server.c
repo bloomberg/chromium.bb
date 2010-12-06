@@ -79,7 +79,14 @@ struct wl_global {
 	struct wl_list link;
 };
 
-WL_EXPORT struct wl_surface wl_grab_surface;
+WL_EXPORT struct wl_surface wl_grab_surface = {
+	{},
+	NULL,
+	{
+		&wl_grab_surface.destroy_listener_list,
+		&wl_grab_surface.destroy_listener_list
+	}
+};
 
 static int wl_debug = 0;
 
@@ -333,6 +340,11 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 
 	device->pointer_focus = surface;
 	device->pointer_focus_time = time;
+
+	wl_list_remove(&device->pointer_focus_listener.link);
+	if (surface)
+		wl_list_insert(surface->destroy_listener_list.prev,
+			       &device->pointer_focus_listener.link);
 }
 
 WL_EXPORT void
@@ -358,6 +370,11 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 
 	device->keyboard_focus = surface;
 	device->keyboard_focus_time = time;
+
+	wl_list_remove(&device->keyboard_focus_listener.link);
+	if (surface)
+		wl_list_insert(surface->destroy_listener_list.prev,
+			       &device->keyboard_focus_listener.link);
 }
 
 static void

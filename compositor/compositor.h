@@ -41,12 +41,6 @@ struct wlsc_matrix {
 
 struct wlsc_surface;
 
-struct wlsc_listener {
-	struct wl_list link;
-	void (*func)(struct wlsc_listener *listener,
-		     struct wlsc_surface *surface);
-};
-
 struct wlsc_output {
 	struct wl_object object;
 	struct wl_list link;
@@ -106,7 +100,7 @@ struct wlsc_input_device {
 	uint32_t grab_button;
 	struct wl_drag *drag;
 
-	struct wlsc_listener listener;
+	struct wl_listener listener;
 };
 
 struct wlsc_drm {

@@ -119,9 +119,16 @@ struct wl_buffer {
 		       int32_t x, int32_t y, int32_t width, int32_t height);
 };
 
+struct wl_listener {
+	struct wl_list link;
+	void (*func)(struct wl_listener *listener,
+		     struct wl_surface *surface);
+};
+
 struct wl_surface {
 	struct wl_resource resource;
 	struct wl_client *client;
+	struct wl_list destroy_listener_list;
 };
 
 struct wl_shell {
@@ -135,6 +142,8 @@ struct wl_input_device {
 	struct wl_array keys;
 	uint32_t pointer_focus_time;
 	uint32_t keyboard_focus_time;
+	struct wl_listener pointer_focus_listener;
+	struct wl_listener keyboard_focus_listener;
 };
 
 struct wl_visual {
