@@ -1054,3 +1054,19 @@
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
 }
+{
+   bug_65642a
+   Heapcheck:Leak
+   ...
+   fun:ExtensionPrefsNotifyWhenNeeded::Initialize
+   fun:ExtensionPrefsTest::SetUp
+}
+{
+   bug_65642b
+   Heapcheck:Leak
+   fun:Value::CreateStringValue
+   fun:ExtensionPrefsNotifyWhenNeeded::Initialize
+   fun:ExtensionPrefsTest::SetUp
+}
+
+
