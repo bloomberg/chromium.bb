@@ -201,6 +201,8 @@
   OP(BlitFramebufferEXT)                                       /* 446 */ \
   OP(CopyTextureToParentTextureCHROMIUM)                       /* 447 */ \
   OP(ResizeCHROMIUM)                                           /* 448 */ \
+  OP(GetRequestableExtensionsCHROMIUM)                         /* 449 */ \
+  OP(RequestExtensionCHROMIUM)                                 /* 450 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

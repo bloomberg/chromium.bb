@@ -215,21 +215,32 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   bool enable_texture_float_linear = false;
   bool enable_texture_half_float = false;
   bool enable_texture_half_float_linear = false;
-  if (ext.HaveAndDesire("GL_ARB_texture_float")) {
+
+  bool have_arb_texture_float = ext.Have("GL_ARB_texture_float");
+
+  if (have_arb_texture_float && ext.Desire("GL_ARB_texture_float")) {
     enable_texture_float = true;
     enable_texture_float_linear = true;
     enable_texture_half_float = true;
     enable_texture_half_float_linear = true;
   } else {
-    if (ext.HaveAndDesire("GL_OES_texture_float")) {
+    if (ext.HaveAndDesire("GL_OES_texture_float") ||
+        (have_arb_texture_float &&
+         ext.Desire("GL_OES_texture_float"))) {
       enable_texture_float = true;
-      if (ext.HaveAndDesire("GL_OES_texture_float_linear")) {
+      if (ext.HaveAndDesire("GL_OES_texture_float_linear") ||
+          (have_arb_texture_float &&
+           ext.Desire("GL_OES_texture_float_linear"))) {
         enable_texture_float_linear = true;
       }
     }
-    if (ext.HaveAndDesire("GL_OES_texture_half_float")) {
+    if (ext.HaveAndDesire("GL_OES_texture_half_float") ||
+        (have_arb_texture_float &&
+         ext.Desire("GL_OES_texture_half_float"))) {
       enable_texture_half_float = true;
-      if (ext.HaveAndDesire("GL_OES_texture_half_float_linear")) {
+      if (ext.HaveAndDesire("GL_OES_texture_half_float_linear") ||
+          (have_arb_texture_float &&
+           ext.Desire("GL_OES_texture_half_float_linear"))) {
         enable_texture_half_float_linear = true;
       }
     }

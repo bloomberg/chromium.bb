@@ -844,6 +844,17 @@ void GLES2ResizeCHROMIUM(GLuint width, GLuint height) {
   GPU_CLIENT_LOG("ResizeCHROMIUM" << "(" << width << ", " << height << ")");
   gles2::GetGLContext()->ResizeCHROMIUM(width, height);
 }
+const GLchar* GLES2GetRequestableExtensionsCHROMIUM() {
+  GPU_CLIENT_LOG("GetRequestableExtensionsCHROMIUM" << "(" << ")");
+  const GLchar* result =
+      gles2::GetGLContext()->GetRequestableExtensionsCHROMIUM();
+  GPU_CLIENT_LOG("return:" << result)
+  return result;
+}
+void GLES2RequestExtensionCHROMIUM(const char* extension) {
+  GPU_CLIENT_LOG("RequestExtensionCHROMIUM" << "(" << extension << ")");
+  gles2::GetGLContext()->RequestExtensionCHROMIUM(extension);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

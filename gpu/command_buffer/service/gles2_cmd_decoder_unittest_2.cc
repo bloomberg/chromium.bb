@@ -224,18 +224,6 @@ void GLES2DecoderTestBase::SpecializedSetup<TexParameterivImmediate, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<GetVertexAttribfv, 0>(bool valid) {
-  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
-  DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);
-  if (valid) {
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<GetVertexAttribiv, 0>(bool valid) {
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   DoVertexAttribPointer(1, 1, GL_FLOAT, 0, 0);

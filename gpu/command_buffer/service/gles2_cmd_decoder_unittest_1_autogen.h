@@ -1755,5 +1755,47 @@ TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_1) {
 
 // TODO(gman): GetUniformLocationBucket
 
+
+TEST_F(GLES2DecoderTest1, GetVertexAttribfvValidArgs) {
+  SpecializedSetup<GetVertexAttribfv, 0>(true);
+  typedef GetVertexAttribfv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  result->size = 0;
+  GetVertexAttribfv cmd;
+  cmd.Init(
+      1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
+      shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+                GL_VERTEX_ATTRIB_ARRAY_NORMALIZED),
+            result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, GetVertexAttribfvInvalidArgs2_0) {
+  EXPECT_CALL(*gl_, GetVertexAttribfv(_, _, _)).Times(0);
+  SpecializedSetup<GetVertexAttribfv, 0>(false);
+  GetVertexAttribfv::Result* result =
+      static_cast<GetVertexAttribfv::Result*>(shared_memory_address_);
+  result->size = 0;
+  GetVertexAttribfv cmd;
+  cmd.Init(1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, kInvalidSharedMemoryId, 0);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
+
+TEST_F(GLES2DecoderTest1, GetVertexAttribfvInvalidArgs2_1) {
+  EXPECT_CALL(*gl_, GetVertexAttribfv(_, _, _)).Times(0);
+  SpecializedSetup<GetVertexAttribfv, 0>(false);
+  GetVertexAttribfv::Result* result =
+      static_cast<GetVertexAttribfv::Result*>(shared_memory_address_);
+  result->size = 0;
+  GetVertexAttribfv cmd;
+  cmd.Init(
+      1, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, shared_memory_id_,
+      kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_
 

@@ -888,5 +888,9 @@ void ResizeCHROMIUM(GLuint width, GLuint height) {
   helper_->ResizeCHROMIUM(width, height);
 }
 
+const GLchar* GetRequestableExtensionsCHROMIUM();
+
+void RequestExtensionCHROMIUM(const char* extension);
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

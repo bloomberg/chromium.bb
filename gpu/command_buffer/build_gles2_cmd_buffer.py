@@ -209,6 +209,8 @@ GL_APICALL void*        GL_APIENTRY glMapTexSubImage2DCHROMIUM (GLenum target, G
 GL_APICALL void         GL_APIENTRY glUnmapTexSubImage2DCHROMIUM (const void* mem);
 GL_APICALL void         GL_APIENTRY glCopyTextureToParentTextureCHROMIUM (GLidBindTexture client_child_id, GLidBindTexture client_parent_id);
 GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height);
+GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* extension);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -410,6 +412,8 @@ _CMD_ID_TABLE = {
   'BlitFramebufferEXT':                                        446,
   'CopyTextureToParentTextureCHROMIUM':                        447,
   'ResizeCHROMIUM':                                            448,
+  'GetRequestableExtensionsCHROMIUM':                          449,
+  'RequestExtensionCHROMIUM':                                  450,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1578,6 +1582,22 @@ _FUNCTION_INFO = {
       'unit_test': False,
       'extension': True,
       'chromium': True,
+  },
+  'GetRequestableExtensionsCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'immediate': False,
+    'cmd_args': 'uint32 bucket_id',
+    'extension': True,
+    'chromium': True,
+  },
+  'RequestExtensionCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'immediate': False,
+    'cmd_args': 'uint32 bucket_id',
+    'extension': True,
+    'chromium': True,
   },
 }
 

@@ -922,6 +922,34 @@ typedef void (GL_APIENTRYP PFNGLRESIZECHROMIUM) (GLuint width, GLuint height);
 #endif
 #endif
 
+/* GL_CHROMIUM_request_extension */
+/*
+ * This extension allows other extensions to be turned on at run time.
+ *
+ * glGetRequestableExtensionsCHROMIUM returns a space-separated and
+ * null-terminated string containing all of the extension names that
+ * can be successfully requested on the current hardware. This may
+ * include the names of extensions that have already been enabled.
+ *
+ * glRequestExtensionCHROMIUM requests that the given extension be
+ * enabled. Call glGetString(GL_EXTENSIONS) to find out whether the
+ * extension request succeeded.
+ */
+#ifndef GL_CHROMIUM_request_extension
+#define GL_CHROMIUM_request_extension 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glGetRequestableExtensionsCHROMIUM GLES2_GET_FUN(GetRequestableExtensionsCHROMIUM)
+#define glRequestExtensionCHROMIUM GLES2_GET_FUN(RequestExtensionCHROMIUM)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
+GL_APICALL void GL_APIENTRY glRequestExtensionCHROMIUM (const GLchar *extension);
+#endif
+#else
+typedef const GLchar* (GL_APIENTRYP PFNGLGETREQUESTABLEEXTENSIONSCHROMIUM) (void);
+typedef void (GL_APIENTRYP PFNGLREQUESTEXTENSIONCHROMIUM) (const GLchar *extension);
+#endif
+#endif
+
 
 #ifdef __cplusplus
 }

@@ -15,7 +15,8 @@
 namespace gpu {
 namespace gles2 {
 
-// Translates GLSL ES 2.0 shader to desktop GLSL shader.
+// Translates a GLSL ES 2.0 shader to desktop GLSL shader, or just
+// validates GLSL ES 2.0 shaders on a true GLSL ES implementation.
 class ShaderTranslatorInterface {
  public:
   virtual ~ShaderTranslatorInterface() { }
@@ -25,7 +26,8 @@ class ShaderTranslatorInterface {
   virtual bool Init(
       ShShaderType shader_type,
       ShShaderSpec shader_spec,
-      const ShBuiltInResources* resources) = 0;
+      const ShBuiltInResources* resources,
+      bool implementation_is_glsl_es) = 0;
 
   // Translates the given shader source.
   // Returns true if translation is successful, false otherwise.
@@ -66,7 +68,8 @@ class ShaderTranslator : public ShaderTranslatorInterface {
   virtual bool Init(
       ShShaderType shader_type,
       ShShaderSpec shader_spec,
-      const ShBuiltInResources* resources);
+      const ShBuiltInResources* resources,
+      bool implementation_is_glsl_es);
 
   // Overridden from ShaderTranslatorInterface.
   virtual bool Translate(const char* shader);
@@ -88,6 +91,7 @@ class ShaderTranslator : public ShaderTranslatorInterface {
   scoped_array<char> info_log_;
   VariableMap attrib_map_;
   VariableMap uniform_map_;
+  bool implementation_is_glsl_es_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderTranslator);
 };

@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/shader_translator.h"
 
+#include <string.h>
+
 #include "base/at_exit.h"
 #include "base/logging.h"
 
@@ -62,7 +64,9 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
 namespace gpu {
 namespace gles2 {
 
-ShaderTranslator::ShaderTranslator() : compiler_(NULL) {
+ShaderTranslator::ShaderTranslator()
+    : compiler_(NULL),
+      implementation_is_glsl_es_(false) {
 }
 
 ShaderTranslator::~ShaderTranslator() {
@@ -72,7 +76,8 @@ ShaderTranslator::~ShaderTranslator() {
 
 bool ShaderTranslator::Init(ShShaderType shader_type,
                             ShShaderSpec shader_spec,
-                            const ShBuiltInResources* resources) {
+                            const ShBuiltInResources* resources,
+                            bool implementation_is_glsl_es) {
   // Make sure Init is called only once.
   DCHECK(compiler_ == NULL);
   DCHECK(shader_type == SH_FRAGMENT_SHADER || shader_type == SH_VERTEX_SHADER);
@@ -83,6 +88,7 @@ bool ShaderTranslator::Init(ShShaderType shader_type,
     return false;
 
   compiler_ = ShConstructCompiler(shader_type, shader_spec, resources);
+  implementation_is_glsl_es_ = implementation_is_glsl_es;
   return compiler_ != NULL;
 }
 
@@ -96,12 +102,23 @@ bool ShaderTranslator::Translate(const char* shader) {
   int compile_options = SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS;
   if (ShCompile(compiler_, &shader, 1, compile_options)) {
     success = true;
-    // Get translated shader.
-    int obj_code_len = 0;
-    ShGetInfo(compiler_, SH_OBJECT_CODE_LENGTH, &obj_code_len);
-    if (obj_code_len > 1) {
-      translated_shader_.reset(new char[obj_code_len]);
-      ShGetObjectCode(compiler_, translated_shader_.get());
+    if (!implementation_is_glsl_es_) {
+      // Get translated shader.
+      int obj_code_len = 0;
+      ShGetInfo(compiler_, SH_OBJECT_CODE_LENGTH, &obj_code_len);
+      if (obj_code_len > 1) {
+        translated_shader_.reset(new char[obj_code_len]);
+        ShGetObjectCode(compiler_, translated_shader_.get());
+      }
+    } else {
+      // Pass down the original shader's source rather than the
+      // compiler's output. TODO(kbr): once the shader compiler has a
+      // GLSL ES backend, use its output.
+      int shader_code_len = 1 + strlen(shader);
+      if (shader_code_len > 1) {
+        translated_shader_.reset(new char[shader_code_len]);
+        strncpy(translated_shader_.get(), shader, shader_code_len);
+      }
     }
     // Get info for attribs and uniforms.
     GetVariableInfo(compiler_, SH_ACTIVE_ATTRIBUTES, &attrib_map_);

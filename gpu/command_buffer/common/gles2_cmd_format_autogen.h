@@ -8833,6 +8833,74 @@ COMPILE_ASSERT(offsetof(ResizeCHROMIUM, width) == 4,
 COMPILE_ASSERT(offsetof(ResizeCHROMIUM, height) == 8,
                OffsetOf_ResizeCHROMIUM_height_not_8);
 
+struct GetRequestableExtensionsCHROMIUM {
+  typedef GetRequestableExtensionsCHROMIUM ValueType;
+  static const CommandId kCmdId = kGetRequestableExtensionsCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _bucket_id) {
+    SetHeader();
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, uint32 _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(GetRequestableExtensionsCHROMIUM) == 8,
+               Sizeof_GetRequestableExtensionsCHROMIUM_is_not_8);
+COMPILE_ASSERT(offsetof(GetRequestableExtensionsCHROMIUM, header) == 0,
+               OffsetOf_GetRequestableExtensionsCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(GetRequestableExtensionsCHROMIUM, bucket_id) == 4,
+               OffsetOf_GetRequestableExtensionsCHROMIUM_bucket_id_not_4);
+
+struct RequestExtensionCHROMIUM {
+  typedef RequestExtensionCHROMIUM ValueType;
+  static const CommandId kCmdId = kRequestExtensionCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _bucket_id) {
+    SetHeader();
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, uint32 _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(RequestExtensionCHROMIUM) == 8,
+               Sizeof_RequestExtensionCHROMIUM_is_not_8);
+COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, header) == 0,
+               OffsetOf_RequestExtensionCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, bucket_id) == 4,
+               OffsetOf_RequestExtensionCHROMIUM_bucket_id_not_4);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

@@ -1203,5 +1203,17 @@
     c.Init(width, height);
   }
 
+  void GetRequestableExtensionsCHROMIUM(uint32 bucket_id) {
+    gles2::GetRequestableExtensionsCHROMIUM& c =
+        GetCmdSpace<gles2::GetRequestableExtensionsCHROMIUM>();
+    c.Init(bucket_id);
+  }
+
+  void RequestExtensionCHROMIUM(uint32 bucket_id) {
+    gles2::RequestExtensionCHROMIUM& c =
+        GetCmdSpace<gles2::RequestExtensionCHROMIUM>();
+    c.Init(bucket_id);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

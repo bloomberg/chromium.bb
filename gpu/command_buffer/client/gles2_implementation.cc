@@ -1581,5 +1581,36 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   mapped_textures_.erase(it);
 }
 
+const GLchar* GLES2Implementation::GetRequestableExtensionsCHROMIUM() {
+  const char* result = NULL;
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  helper_->GetRequestableExtensionsCHROMIUM(kResultBucketId);
+  std::string str;
+  if (GetBucketAsString(kResultBucketId, &str)) {
+    // The set of requestable extensions shrinks as we enable
+    // them. Because we don't know when the client will stop referring
+    // to a previous one it queries (see GetString) we need to cache
+    // the unique results.
+    std::set<std::string>::const_iterator sit =
+        requestable_extensions_set_.find(str);
+    if (sit != requestable_extensions_set_.end()) {
+      result = sit->c_str();
+    } else {
+      std::pair<std::set<std::string>::const_iterator, bool> insert_result =
+          requestable_extensions_set_.insert(str);
+      GPU_DCHECK(insert_result.second);
+      result = insert_result.first->c_str();
+    }
+  }
+  return reinterpret_cast<const GLchar*>(result);
+}
+
+void GLES2Implementation::RequestExtensionCHROMIUM(const char* extension) {
+  SetBucketAsCString(kResultBucketId, extension);
+  helper_->RequestExtensionCHROMIUM(kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+}
+
 }  // namespace gles2
 }  // namespace gpu

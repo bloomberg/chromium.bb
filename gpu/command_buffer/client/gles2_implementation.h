@@ -379,6 +379,10 @@ class GLES2Implementation {
   typedef std::map<uint32, std::set<std::string> > GLStringMap;
   GLStringMap gl_strings_;
 
+  // Similar cache for glGetRequestableExtensionsCHROMIUM. We don't
+  // have an enum for this so handle it separately.
+  std::set<std::string> requestable_extensions_set_;
+
   typedef std::map<const void*, MappedBuffer> MappedBufferMap;
   MappedBufferMap mapped_buffers_;
 

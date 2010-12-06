@@ -22,9 +22,9 @@ class ShaderTranslatorTest : public testing::Test {
     ShInitBuiltInResources(&resources);
 
     ASSERT_TRUE(vertex_translator_.Init(
-        SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources));
+        SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources, false));
     ASSERT_TRUE(fragment_translator_.Init(
-        SH_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources));
+        SH_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources, false));
     // Post-init the results must be empty.
     // Vertex translator results.
     EXPECT_TRUE(vertex_translator_.translated_shader() == NULL);

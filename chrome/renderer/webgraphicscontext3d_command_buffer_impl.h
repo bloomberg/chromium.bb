@@ -361,6 +361,9 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void copyTextureToParentTextureCHROMIUM(
       unsigned texture, unsigned parentTexture);
 
+  virtual WebKit::WebString getRequestableExtensionsCHROMIUM();
+  virtual void requestExtensionCHROMIUM(const char*);
+
   virtual unsigned createCompositorTexture(unsigned width, unsigned height);
   virtual void deleteCompositorTexture(unsigned parent_texture);
   virtual void copyTextureToCompositor(unsigned texture,

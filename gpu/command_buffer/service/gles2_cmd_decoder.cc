@@ -708,6 +708,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     TextureManager::TextureInfo::Ref bound_texture_cube_map;
   };
 
+  // Initialize or re-initialize the shader translator.
+  bool InitializeShaderTranslator();
+
   // Helpers for the glGen and glDelete functions.
   bool GenTexturesHelper(GLsizei n, const GLuint* client_ids);
   void DeleteTexturesHelper(GLsizei n, const GLuint* client_ids);
@@ -1767,12 +1770,15 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
   attrib_0_value_.v[2] = 0.0f;
   attrib_0_value_.v[3] = 1.0f;
 
-  // The shader translator is not needed for EGL because it already uses the
-  // GLSL ES syntax. It is translated for the unit tests because
-  // GLES2DecoderWithShaderTest.GetShaderInfoLogValidArgs passes the empty
-  // string to CompileShader and this is not a valid shader. TODO(apatrick):
-  // fix this test.
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ||
+  // The shader translator is used for WebGL even when running on EGL
+  // because additional restrictions are needed (like only enabling
+  // GL_OES_standard_derivatives on demand).  It is used for the unit
+  // tests because
+  // GLES2DecoderWithShaderTest.GetShaderInfoLogValidArgs passes the
+  // empty string to CompileShader and this is not a valid shader.
+  // TODO(apatrick): fix this test.
+  if ((gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+       !feature_info_->feature_flags().chromium_webglsl) ||
       gfx::GetGLImplementation() == gfx::kGLImplementationMockGL) {
     use_shader_translator_ = false;
   }
@@ -1981,39 +1987,56 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     glEnable(GL_POINT_SPRITE);
   }
 
-  if (use_shader_translator_) {
-    ShBuiltInResources resources;
-    ShInitBuiltInResources(&resources);
-    resources.MaxVertexAttribs = group_->max_vertex_attribs();
-    resources.MaxVertexUniformVectors =
-        group_->max_vertex_uniform_vectors();
-    resources.MaxVaryingVectors = group_->max_varying_vectors();
-    resources.MaxVertexTextureImageUnits =
-        group_->max_vertex_texture_image_units();
-    resources.MaxCombinedTextureImageUnits = group_->max_texture_units();
-    resources.MaxTextureImageUnits = group_->max_texture_image_units();
-    resources.MaxFragmentUniformVectors =
-        group_->max_fragment_uniform_vectors();
-    resources.MaxDrawBuffers = 1;
-    resources.OES_standard_derivatives =
-        feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
-    vertex_translator_.reset(new ShaderTranslator);
-    ShShaderSpec shader_spec = feature_info_->feature_flags().chromium_webglsl ?
-        SH_WEBGL_SPEC : SH_GLES2_SPEC;
-    if (!vertex_translator_->Init(SH_VERTEX_SHADER, shader_spec, &resources)) {
-        LOG(ERROR) << "Could not initialize vertex shader translator.";
-        Destroy();
-        return false;
-    }
-    fragment_translator_.reset(new ShaderTranslator);
-    if (!fragment_translator_->Init(
-        SH_FRAGMENT_SHADER, shader_spec, &resources)) {
-        LOG(ERROR) << "Could not initialize fragment shader translator.";
-        Destroy();
-        return false;
-    }
+  if (!InitializeShaderTranslator()) {
+    return false;
   }
 
+  return true;
+}
+
+bool GLES2DecoderImpl::InitializeShaderTranslator() {
+  // Re-check the state of use_shader_translator_ each time this is called.
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+      feature_info_->feature_flags().chromium_webglsl &&
+      !use_shader_translator_) {
+    use_shader_translator_ = true;
+  }
+  if (!use_shader_translator_) {
+    return true;
+  }
+  ShBuiltInResources resources;
+  ShInitBuiltInResources(&resources);
+  resources.MaxVertexAttribs = group_->max_vertex_attribs();
+  resources.MaxVertexUniformVectors =
+      group_->max_vertex_uniform_vectors();
+  resources.MaxVaryingVectors = group_->max_varying_vectors();
+  resources.MaxVertexTextureImageUnits =
+      group_->max_vertex_texture_image_units();
+  resources.MaxCombinedTextureImageUnits = group_->max_texture_units();
+  resources.MaxTextureImageUnits = group_->max_texture_image_units();
+  resources.MaxFragmentUniformVectors =
+      group_->max_fragment_uniform_vectors();
+  resources.MaxDrawBuffers = 1;
+  resources.OES_standard_derivatives =
+      feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
+  vertex_translator_.reset(new ShaderTranslator);
+  ShShaderSpec shader_spec = feature_info_->feature_flags().chromium_webglsl ?
+      SH_WEBGL_SPEC : SH_GLES2_SPEC;
+  bool is_glsl_es =
+      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+  if (!vertex_translator_->Init(
+          SH_VERTEX_SHADER, shader_spec, &resources, is_glsl_es)) {
+    LOG(ERROR) << "Could not initialize vertex shader translator.";
+    Destroy();
+    return false;
+  }
+  fragment_translator_.reset(new ShaderTranslator);
+  if (!fragment_translator_->Init(
+          SH_FRAGMENT_SHADER, shader_spec, &resources, is_glsl_es)) {
+    LOG(ERROR) << "Could not initialize fragment shader translator.";
+    Destroy();
+    return false;
+  }
   return true;
 }
 
@@ -5932,6 +5955,43 @@ error::Error GLES2DecoderImpl::HandleCommandBufferEnableCHROMIUM(
   }
 
   *result = 1;  // true.
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetRequestableExtensionsCHROMIUM(
+    uint32 immediate_data_size,
+    const gles2::GetRequestableExtensionsCHROMIUM& c) {
+  Bucket* bucket = CreateBucket(c.bucket_id);
+  scoped_ptr<FeatureInfo> info(new FeatureInfo());
+  info->Initialize(NULL);
+  bucket->SetFromString(info->extensions().c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
+    uint32 immediate_data_size, const gles2::RequestExtensionCHROMIUM& c) {
+  Bucket* bucket = GetBucket(c.bucket_id);
+  std::string feature_str;
+  if (!bucket->GetAsString(&feature_str)) {
+    return error::kInvalidArguments;
+  }
+
+  bool std_derivatives_enabled =
+      feature_info_->feature_flags().oes_standard_derivatives;
+  bool webglsl_enabled =
+      feature_info_->feature_flags().chromium_webglsl;
+
+  feature_info_->AddFeatures(feature_str.c_str());
+
+  // If we just enabled a feature which affects the shader translator,
+  // we may need to re-initialize it.
+  if (std_derivatives_enabled !=
+          feature_info_->feature_flags().oes_standard_derivatives ||
+      webglsl_enabled !=
+          feature_info_->feature_flags().chromium_webglsl) {
+    InitializeShaderTranslator();
+  }
+
   return error::kNoError;
 }
 

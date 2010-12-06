@@ -90,7 +90,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   GPUInfo gpu_info = host->gpu_info();
   UMA_HISTOGRAM_ENUMERATION(
       "GPU.WebGraphicsContext3D_Init_CanLoseContext",
-      attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context(), 
+      attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context(),
       4);
   if (attributes.canRecoverFromContextLoss == false) {
     if (gpu_info.can_lose_context())
@@ -369,6 +369,16 @@ void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
 void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
     unsigned texture, unsigned parentTexture) {
   copyTextureToCompositor(texture, parentTexture);
+}
+
+WebKit::WebString WebGraphicsContext3DCommandBufferImpl::
+    getRequestableExtensionsCHROMIUM() {
+  return WebKit::WebString::fromUTF8(glGetRequestableExtensionsCHROMIUM());
+}
+
+void WebGraphicsContext3DCommandBufferImpl::requestExtensionCHROMIUM(
+    const char* extension) {
+  glRequestExtensionCHROMIUM(extension);
 }
 
 // Helper macros to reduce the amount of code.
