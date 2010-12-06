@@ -28,7 +28,6 @@
 #include <unistd.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <math.h>
-#include <time.h>
 #include <linux/input.h>
 
 #include "wayland-server-protocol.h"
@@ -568,16 +567,6 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 	wlsc_input_device_set_pointer_image(wd, pointer);
 }
 
-static uint32_t
-get_time(void)
-{
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
-
 struct wlsc_drag {
 	struct wl_drag drag;
 	struct wl_listener listener;
@@ -607,7 +596,8 @@ drag_handle_surface_destroy(struct wl_listener *listener,
 {
 	struct wlsc_drag *drag =
 		container_of(listener, struct wlsc_drag, listener);
-	uint32_t time = get_time();
+	uint32_t time =
+		wl_display_get_time(wl_client_get_display(surface->client));
 
 	if (drag->drag.pointer_focus == surface)
 		wl_drag_set_pointer_focus(&drag->drag, NULL, time, 0, 0, 0, 0);
@@ -1139,11 +1129,13 @@ drag_cancel(struct wl_client *client, struct wl_drag *drag)
 {
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) drag->input_device;
+	uint32_t time;
 
 	if (drag->source == NULL || drag->source->client != client)
 		return;
 
-	wlsc_input_device_end_grab(device, get_time());
+	time = wl_display_get_time(wl_client_get_display(client));
+	wlsc_input_device_end_grab(device, time);
 	device->drag = NULL;
 }
 
@@ -1157,11 +1149,12 @@ static void
 lose_pointer_focus(struct wl_listener *listener,
 		   struct wl_surface *surface)
 {
-	uint32_t time = get_time();
 	struct wlsc_input_device *device =
 		container_of(listener, struct wlsc_input_device,
 			     input_device.pointer_focus_listener);
+	uint32_t time;
 
+	time = wl_display_get_time(wl_client_get_display(surface->client));
 	wl_input_device_set_pointer_focus(&device->input_device,
 					  NULL, time, 0, 0, 0, 0);
 	wlsc_input_device_end_grab(device, time);
@@ -1171,11 +1164,12 @@ static void
 lose_keyboard_focus(struct wl_listener *listener,
 		    struct wl_surface *surface)
 {
-	uint32_t time = get_time();
 	struct wlsc_input_device *device =
 		container_of(listener, struct wlsc_input_device,
 			     input_device.keyboard_focus_listener);
+	uint32_t time;
 
+	time = wl_display_get_time(wl_client_get_display(surface->client));
 	wl_input_device_set_keyboard_focus(&device->input_device, NULL, time);
 }
 

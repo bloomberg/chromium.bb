@@ -32,6 +32,7 @@
 #include <sys/un.h>
 #include <dlfcn.h>
 #include <assert.h>
+#include <sys/time.h>
 #include <ffi.h>
 
 #include "wayland-server.h"
@@ -482,6 +483,16 @@ wl_display_destroy(struct wl_display *display)
 	}
 
 	free(display);
+}
+
+WL_EXPORT uint32_t
+wl_display_get_time(struct wl_display *display)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 WL_EXPORT void
