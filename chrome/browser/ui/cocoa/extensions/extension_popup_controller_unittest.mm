@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
@@ -25,9 +26,12 @@ class ExtensionTestingProfile : public TestingProfile {
     DCHECK(!GetExtensionsService());
 
     manager_.reset(ExtensionProcessManager::Create(this));
+    extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
+                                              GetExtensionsInstallDir()));
     service_ = new ExtensionsService(this,
                                      CommandLine::ForCurrentProcess(),
-                                    GetExtensionsInstallDir(),
+                                     GetExtensionsInstallDir(),
+                                     extension_prefs_.get(),
                                      false);
     service_->set_extensions_enabled(true);
     service_->set_show_extensions_prompts(false);
@@ -38,6 +42,7 @@ class ExtensionTestingProfile : public TestingProfile {
   void ShutdownExtensionProfile() {
     manager_.reset();
     service_ = NULL;
+    extension_prefs_.reset();
   }
 
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
@@ -50,6 +55,7 @@ class ExtensionTestingProfile : public TestingProfile {
 
  private:
   scoped_ptr<ExtensionProcessManager> manager_;
+  scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_refptr<ExtensionsService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestingProfile);

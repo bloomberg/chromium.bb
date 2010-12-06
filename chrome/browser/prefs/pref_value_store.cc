@@ -5,7 +5,6 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/in_memory_pref_store.h"
@@ -41,13 +40,13 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
   using policy::ConfigurationPolicyPrefStore;
   ConfigurationPolicyPrefStore* managed = NULL;
   ConfigurationPolicyPrefStore* device_management = NULL;
-  ExtensionPrefStore* extension = NULL;
   CommandLinePrefStore* command_line = NULL;
   ConfigurationPolicyPrefStore* recommended = NULL;
 
   JsonPrefStore* user = new JsonPrefStore(
       pref_filename,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  InMemoryPrefStore* extension = new InMemoryPrefStore();
   InMemoryPrefStore* default_store = new InMemoryPrefStore();
 
   if (!user_only) {
@@ -56,7 +55,6 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
     device_management =
         ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
             profile);
-    extension = new ExtensionPrefStore(profile, PrefNotifier::EXTENSION_STORE);
     command_line = new CommandLinePrefStore(CommandLine::ForCurrentProcess());
     recommended =
         ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
@@ -148,13 +146,19 @@ bool PrefValueStore::HasPrefPath(const char* path) const {
 bool PrefValueStore::PrefHasChanged(const char* path,
                                     PrefNotifier::PrefStoreType new_store) {
   DCHECK(new_store != PrefNotifier::INVALID_STORE);
+  // If we get a change notification about an unregistered preference,
+  // discard it silently because there cannot be any listeners.
+  if (pref_types_.find(path) == pref_types_.end())
+    return false;
+
   // Replying that the pref has changed may cause problems, but it's the safer
   // choice.
   if (new_store == PrefNotifier::INVALID_STORE)
     return true;
 
   PrefNotifier::PrefStoreType controller = ControllingPrefStoreForPref(path);
-  DCHECK(controller != PrefNotifier::INVALID_STORE);
+  DCHECK(controller != PrefNotifier::INVALID_STORE)
+      << "Invalid controller for path " << path;
   if (controller == PrefNotifier::INVALID_STORE)
     return true;
 
@@ -461,6 +465,10 @@ bool PrefValueStore::HasPolicyConflictingUserProxySettings() {
       return true;
   }
   return false;
+}
+
+PrefStore* PrefValueStore::GetExtensionPrefStore() const {
+  return pref_stores_[PrefNotifier::EXTENSION_STORE].get();
 }
 
 PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,

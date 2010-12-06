@@ -14,13 +14,13 @@
 // which they want, and expand usage of this class to more unit tests.
 TestingPrefService::TestingPrefService()
     : PrefService(new TestingPrefValueStore(
-        managed_platform_prefs_ = new DummyPrefStore(),
-        device_management_prefs_ = new DummyPrefStore(),
-        NULL,
-        NULL,
-        user_prefs_ = new DummyPrefStore(),
-        NULL,
-        default_prefs_ = new DummyPrefStore())) {
+          managed_platform_prefs_ = new DummyPrefStore(),
+          device_management_prefs_ = new DummyPrefStore(),
+          NULL,
+          NULL,
+          user_prefs_ = new DummyPrefStore(),
+          NULL,
+          default_prefs_ = new DummyPrefStore())) {
 }
 
 TestingPrefService::TestingPrefService(

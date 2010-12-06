@@ -7,8 +7,8 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -159,11 +159,6 @@ bool UseCustomProxySettingsFunction::ApplyProxyRules(
 
 void UseCustomProxySettingsFunction::SendNotification(const char* pref_path,
                                                       Value* pref_value) {
-  ExtensionPrefStore::ExtensionPrefDetails details =
-      std::make_pair(GetExtension(), std::make_pair(pref_path, pref_value));
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_PREF_CHANGED,
-      Source<Profile>(profile_),
-      Details<ExtensionPrefStore::ExtensionPrefDetails>(&details));
+  profile()->GetExtensionsService()->extension_prefs()
+      ->SetExtensionControlledPref(extension_id(), pref_path, pref_value);
 }

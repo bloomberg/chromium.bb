@@ -11,13 +11,28 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_observer_mock.h"
+#include "chrome/common/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 using base::TimeDelta;
+
+const char kPref1[] = "path1.subpath";
+const char kPref2[] = "path2";
+const char kPref3[] = "path3";
+const char kPref4[] = "path4";
+
+// Default values in case an extension pref value is not overridden.
+const char kDefaultPref1[] = "default pref 1";
+const char kDefaultPref2[] = "default pref 2";
+const char kDefaultPref3[] = "default pref 3";
+const char kDefaultPref4[] = "default pref 4";
 
 static void AddPattern(ExtensionExtent* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
@@ -55,7 +70,11 @@ class ExtensionPrefsTest : public testing::Test {
   // things don't break after any ExtensionPrefs startup work.
   virtual void Verify() = 0;
 
+  // This function is called to Register preference default values.
+  virtual void RegisterPreferences() {}
+
   virtual void SetUp() {
+    RegisterPreferences();
     Initialize();
   }
 
@@ -64,6 +83,7 @@ class ExtensionPrefsTest : public testing::Test {
 
     // Reset ExtensionPrefs, and re-verify.
     prefs_.RecreateExtensionPrefs();
+    RegisterPreferences();
     Verify();
   }
 
@@ -525,3 +545,314 @@ class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
   scoped_refptr<Extension> extension_;
 };
 TEST_F(ExtensionPrefsAppLaunchIndex, ExtensionPrefsAppLaunchIndex) {}
+
+namespace keys = extension_manifest_keys;
+
+class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
+ public:
+  ExtensionPrefsPreferencesBase()
+      : ExtensionPrefsTest(),
+        ext1_(NULL),
+        ext2_(NULL),
+        ext3_(NULL),
+        installed() {
+    DictionaryValue simple_dict;
+    std::string error;
+
+    simple_dict.SetString(keys::kVersion, "1.0.0.0");
+    simple_dict.SetString(keys::kName, "unused");
+
+    ext1_scoped_ = Extension::Create(
+        prefs_.temp_dir().AppendASCII("ext1_"), Extension::INVALID,
+        simple_dict, false, &error);
+    ext2_scoped_ = Extension::Create(
+        prefs_.temp_dir().AppendASCII("ext2_"), Extension::INVALID,
+        simple_dict, false, &error);
+    ext3_scoped_ = Extension::Create(
+        prefs_.temp_dir().AppendASCII("ext3_"), Extension::INVALID,
+        simple_dict, false, &error);
+
+    ext1_ = ext1_scoped_.get();
+    ext2_ = ext2_scoped_.get();
+    ext3_ = ext3_scoped_.get();
+
+    for (size_t i = 0; i < arraysize(installed); ++i)
+      installed[i] = false;
+  }
+
+  void RegisterPreferences() {
+    prefs()->pref_service()->RegisterStringPref(kPref1, kDefaultPref1);
+    prefs()->pref_service()->RegisterStringPref(kPref2, kDefaultPref2);
+    prefs()->pref_service()->RegisterStringPref(kPref3, kDefaultPref3);
+    prefs()->pref_service()->RegisterStringPref(kPref4, kDefaultPref4);
+  }
+
+  void InstallExtControlledPref(Extension *ext,
+                                const std::string& key,
+                                Value* val) {
+    // Install extension the first time a preference is set for it.
+    Extension* extensions[] = {ext1_, ext2_, ext3_};
+    for (int i = 0; i < 3; ++i) {
+      if (ext == extensions[i] && !installed[i]) {
+        prefs()->OnExtensionInstalled(ext, Extension::ENABLED, true);
+        installed[i] = true;
+        break;
+      }
+    }
+
+    prefs()->SetExtensionControlledPref(ext->id(), key, val);
+  }
+
+  void UninstallExtension(const std::string& extension_id) {
+    prefs()->OnExtensionUninstalled(extension_id, Extension::INTERNAL, false);
+  }
+
+  // Weak references, for convenience.
+  Extension* ext1_;
+  Extension* ext2_;
+  Extension* ext3_;
+
+  // Flags indicating whether each of the extensions has been installed, yet.
+  bool installed[3];
+
+ private:
+  scoped_refptr<Extension> ext1_scoped_;
+  scoped_refptr<Extension> ext2_scoped_;
+  scoped_refptr<Extension> ext3_scoped_;
+};
+
+class ExtensionPrefsInstallOneExtension
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+  }
+  virtual void Verify() {
+    std::string actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val1", actual);
+  }
+};
+TEST_F(ExtensionPrefsInstallOneExtension, ExtensionPrefsInstallOneExtension) {}
+
+// Make sure the last-installed extension wins for each preference.
+class ExtensionPrefsInstallOverwrittenExtensions
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    InstallExtControlledPref(ext2_, kPref1, Value::CreateStringValue("val2"));
+    InstallExtControlledPref(ext3_, kPref1, Value::CreateStringValue("val3"));
+
+    InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val4"));
+    InstallExtControlledPref(ext2_, kPref2, Value::CreateStringValue("val5"));
+
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val6"));
+    InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val7"));
+    InstallExtControlledPref(ext1_, kPref3, Value::CreateStringValue("val8"));
+  }
+  virtual void Verify() {
+    std::string actual;
+    actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val3", actual);
+    actual = prefs()->pref_service()->GetString(kPref2);
+    EXPECT_EQ("val5", actual);
+    actual = prefs()->pref_service()->GetString(kPref3);
+    EXPECT_EQ("val8", actual);
+  }
+};
+TEST_F(ExtensionPrefsInstallOverwrittenExtensions,
+    ExtensionPrefsInstallOverwrittenExtensions) {}
+
+// Make sure the last-installed extension wins even if other extensions set
+// the same or different preferences later.
+class ExtensionPrefsInstallInterleavedExtensions
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    InstallExtControlledPref(ext2_, kPref2, Value::CreateStringValue("val2"));
+    InstallExtControlledPref(ext3_, kPref3, Value::CreateStringValue("val3"));
+
+    InstallExtControlledPref(ext3_, kPref3, Value::CreateStringValue("val4"));
+    InstallExtControlledPref(ext2_, kPref3, Value::CreateStringValue("val5"));
+    InstallExtControlledPref(ext1_, kPref3, Value::CreateStringValue("val6"));
+
+    InstallExtControlledPref(ext3_, kPref1, Value::CreateStringValue("val7"));
+  }
+  virtual void Verify() {
+    std::string actual;
+    actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val7", actual);
+    actual = prefs()->pref_service()->GetString(kPref2);
+    EXPECT_EQ("val2", actual);
+    actual = prefs()->pref_service()->GetString(kPref3);
+    EXPECT_EQ("val4", actual);
+  }
+};
+TEST_F(ExtensionPrefsInstallInterleavedExtensions,
+    ExtensionPrefsInstallInterleavedExtensions) {}
+
+class ExtensionPrefsUninstallOnlyExtension
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val2"));
+
+    UninstallExtension(ext1_->id());
+  }
+  virtual void Verify() {
+    std::string actual;
+    actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ(kDefaultPref1, actual);
+    actual = prefs()->pref_service()->GetString(kPref2);
+    EXPECT_EQ(kDefaultPref2, actual);
+  }
+};
+TEST_F(ExtensionPrefsUninstallOnlyExtension,
+    ExtensionPrefsUninstallOnlyExtension) {}
+
+// Tests uninstalling an extension that wasn't winning for any preferences.
+class ExtensionPrefsUninstallIrrelevantExtension
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    InstallExtControlledPref(ext2_, kPref1, Value::CreateStringValue("val2"));
+
+    InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val3"));
+    InstallExtControlledPref(ext2_, kPref2, Value::CreateStringValue("val4"));
+
+    UninstallExtension(ext1_->id());
+  }
+  virtual void Verify() {
+    std::string actual;
+    actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val2", actual);
+    actual = prefs()->pref_service()->GetString(kPref2);
+    EXPECT_EQ("val4", actual);
+  }
+};
+TEST_F(ExtensionPrefsUninstallIrrelevantExtension,
+    ExtensionPrefsUninstallIrrelevantExtension) {}
+
+// Tests uninstalling an extension that was winning for all preferences.
+class ExtensionPrefsUninstallExtensionFromTop
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    InstallExtControlledPref(ext2_, kPref1, Value::CreateStringValue("val2"));
+    InstallExtControlledPref(ext3_, kPref1, Value::CreateStringValue("val3"));
+
+    InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val4"));
+    InstallExtControlledPref(ext3_, kPref2, Value::CreateStringValue("val5"));
+
+    UninstallExtension(ext3_->id());
+  }
+  virtual void Verify() {
+    std::string actual;
+    actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val2", actual);
+    actual = prefs()->pref_service()->GetString(kPref2);
+    EXPECT_EQ("val4", actual);
+  }
+};
+TEST_F(ExtensionPrefsUninstallExtensionFromTop,
+    ExtensionPrefsUninstallExtensionFromTop) {}
+
+// Tests uninstalling an extension that was winning for only some preferences.
+class ExtensionPrefsUninstallExtensionFromMiddle
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    InstallExtControlledPref(ext2_, kPref1, Value::CreateStringValue("val2"));
+    InstallExtControlledPref(ext3_, kPref1, Value::CreateStringValue("val3"));
+
+    InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val4"));
+    InstallExtControlledPref(ext2_, kPref2, Value::CreateStringValue("val5"));
+
+    InstallExtControlledPref(ext1_, kPref3, Value::CreateStringValue("val6"));
+
+    InstallExtControlledPref(ext2_, kPref4, Value::CreateStringValue("val7"));
+
+    UninstallExtension(ext2_->id());
+  }
+  virtual void Verify() {
+    std::string actual;
+    actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val3", actual);
+    actual = prefs()->pref_service()->GetString(kPref2);
+    EXPECT_EQ("val4", actual);
+    actual = prefs()->pref_service()->GetString(kPref3);
+    EXPECT_EQ("val6", actual);
+    actual = prefs()->pref_service()->GetString(kPref4);
+    EXPECT_EQ(kDefaultPref4, actual);
+  }
+};
+TEST_F(ExtensionPrefsUninstallExtensionFromMiddle,
+    ExtensionPrefsUninstallExtensionFromMiddle) {}
+
+// Tests triggering of notifications to registered observers
+class ExtensionPrefsNotifyWhenNeeded
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    using testing::_;
+    using testing::Mock;
+    using testing::StrEq;
+
+    scoped_ptr<NotificationObserverMock> observer(
+        new NotificationObserverMock());
+    PrefChangeRegistrar registrar;
+    registrar.Init(prefs()->pref_service());
+    registrar.Add(kPref1, observer.get());
+
+    EXPECT_CALL(*observer, Observe(_, _, _));
+    InstallExtControlledPref(ext1_, kPref1,
+        Value::CreateStringValue("https://www.chromium.org"));
+    Mock::VerifyAndClearExpectations(observer.get());
+
+    EXPECT_CALL(*observer, Observe(_, _, _)).Times(0);
+    InstallExtControlledPref(ext1_, kPref1,
+        Value::CreateStringValue("https://www.chromium.org"));
+    Mock::VerifyAndClearExpectations(observer.get());
+
+    EXPECT_CALL(*observer, Observe(_, _, _)).Times(2);
+    InstallExtControlledPref(ext1_, kPref1,
+        Value::CreateStringValue("chrome://newtab"));
+
+    UninstallExtension(ext1_->id());
+    registrar.Remove(kPref1, observer.get());
+  }
+  virtual void Verify() {
+    std::string actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ(kDefaultPref1, actual);
+  }
+};
+TEST_F(ExtensionPrefsNotifyWhenNeeded,
+    ExtensionPrefsNotifyWhenNeeded) {}
+
+// Tests disabling an extension
+class ExtensionPrefsDisableExt
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    std::string actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val1", actual);
+    prefs()->SetExtensionState(ext1_, Extension::DISABLED);
+  }
+  virtual void Verify() {
+    std::string actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ(kDefaultPref1, actual);
+  }
+};
+TEST_F(ExtensionPrefsDisableExt,  ExtensionPrefsDisableExt) {}
+
+// Tests disabling and reenabling an extension
+class ExtensionPrefsReenableExt
+    : public ExtensionPrefsPreferencesBase {
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    prefs()->SetExtensionState(ext1_, Extension::DISABLED);
+    prefs()->SetExtensionState(ext1_, Extension::ENABLED);
+  }
+  virtual void Verify() {
+    std::string actual = prefs()->pref_service()->GetString(kPref1);
+    EXPECT_EQ("val1", actual);
+  }
+};
+TEST_F(ExtensionPrefsDisableExt,  ExtensionPrefsReenableExt) {}

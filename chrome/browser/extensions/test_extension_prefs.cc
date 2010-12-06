@@ -17,7 +17,27 @@
 #include "chrome/common/json_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TestExtensionPrefs::TestExtensionPrefs() {
+// Mock ExtensionPrefs class with artificial clock to guarantee that no two
+// extensions get the same installation time stamp and we can reliably
+// assert the installation order in the tests below.
+class MockExtensionPrefs : public ExtensionPrefs {
+ public:
+  MockExtensionPrefs(PrefService* prefs, const FilePath& root_dir_)
+    : ExtensionPrefs(prefs, root_dir_),
+      currentTime(base::Time::Now())
+  {}
+  ~MockExtensionPrefs() {}
+
+ protected:
+  mutable base::Time currentTime;
+
+  virtual base::Time GetCurrentTime() const {
+    currentTime += base::TimeDelta::FromSeconds(10);
+    return currentTime;
+  }
+};
+
+TestExtensionPrefs::TestExtensionPrefs() : pref_service_(NULL) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   preferences_file_ = temp_dir_.path().AppendASCII("Preferences");
   extensions_dir_ = temp_dir_.path().AppendASCII("Extensions");
@@ -29,6 +49,9 @@ TestExtensionPrefs::TestExtensionPrefs() {
 TestExtensionPrefs::~TestExtensionPrefs() {}
 
 void TestExtensionPrefs::RecreateExtensionPrefs() {
+  // We persist and reload the PrefService's PrefStores because this process
+  // deletes all empty dictionaries. The ExtensionPrefs implementation
+  // needs to be able to handle this situation.
   if (pref_service_.get()) {
     // The PrefService writes its persistent file on the file thread, so we
     // need to wait for any pending I/O to complete before creating a new
@@ -42,7 +65,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   // Create a |PrefService| instance that contains only user defined values.
   pref_service_.reset(PrefService::CreateUserPrefService(preferences_file_));
   ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
-  prefs_.reset(new ExtensionPrefs(pref_service_.get(), temp_dir_.path()));
+  prefs_.reset(new MockExtensionPrefs(pref_service_.get(), temp_dir_.path()));
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {

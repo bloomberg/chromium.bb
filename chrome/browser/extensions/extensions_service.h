@@ -38,7 +38,6 @@ class ExtensionsServiceBackend;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
 class GURL;
-class PrefService;
 class Profile;
 class Version;
 
@@ -150,9 +149,12 @@ class ExtensionsService
   static bool UninstallExtensionHelper(ExtensionsService* extensions_service,
                                        const std::string& extension_id);
 
+  // Constructor stores pointers to |profile| and |extension_prefs| but
+  // ownership remains at caller.
   ExtensionsService(Profile* profile,
                     const CommandLine* command_line,
                     const FilePath& install_directory,
+                    ExtensionPrefs* extension_prefs,
                     bool autoupdate_enabled);
 
   // Gets the list of currently installed extensions.
@@ -404,7 +406,7 @@ class ExtensionsService
   // it.
   void DestroyingProfile();
 
-  ExtensionPrefs* extension_prefs() { return extension_prefs_.get(); }
+  ExtensionPrefs* extension_prefs() { return extension_prefs_; }
 
   // Whether the extension service is ready.
   // TODO(skerner): Get rid of this method.  crbug.com/63756
@@ -507,8 +509,8 @@ class ExtensionsService
   // The profile this ExtensionsService is part of.
   Profile* profile_;
 
-  // Preferences for the owning profile.
-  scoped_ptr<ExtensionPrefs> extension_prefs_;
+  // Preferences for the owning profile (weak reference).
+  ExtensionPrefs* extension_prefs_;
 
   // The current list of installed extensions.
   ExtensionList extensions_;

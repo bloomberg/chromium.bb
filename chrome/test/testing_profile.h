@@ -25,6 +25,7 @@ class BookmarkModel;
 class BrowserThemeProvider;
 class CommandLine;
 class DesktopNotificationService;
+class ExtensionPrefs;
 class FaviconService;
 class FindBarState;
 class GeolocationContentSettingsMap;
@@ -328,7 +329,7 @@ class TestingProfile : public Profile {
   // from the destructor.
   void DestroyWebDataService();
 
-  // Creates a TestingPrefService and associates it with the TestingProfile
+  // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
 
   // The favicon service. Only created if CreateFaviconService is invoked.
@@ -403,6 +404,10 @@ class TestingProfile : public Profile {
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
+
+  // The Extension Preferences. Only created if CreateExtensionsService is
+  // invoked.
+  scoped_ptr<ExtensionPrefs> extension_prefs_;
 
   // For properly notifying the ExtensionsService when the profile
   // is disposed.

@@ -225,6 +225,8 @@ class PrefService : public NonThreadSafe {
 
   PrefValueStore* pref_value_store() const { return pref_value_store_.get(); }
 
+  PrefStore* GetExtensionPrefStore() const;
+
  protected:
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for

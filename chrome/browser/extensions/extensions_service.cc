@@ -554,10 +554,10 @@ bool ExtensionsService::UninstallExtensionHelper(
 ExtensionsService::ExtensionsService(Profile* profile,
                                      const CommandLine* command_line,
                                      const FilePath& install_directory,
+                                     ExtensionPrefs* extension_prefs,
                                      bool autoupdate_enabled)
     : profile_(profile),
-      extension_prefs_(new ExtensionPrefs(profile->GetPrefs(),
-                                          install_directory)),
+      extension_prefs_(extension_prefs),
       install_directory_(install_directory),
       extensions_enabled_(true),
       show_extensions_prompts_(true),

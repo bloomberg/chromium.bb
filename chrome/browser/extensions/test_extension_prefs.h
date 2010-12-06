@@ -16,7 +16,6 @@ class DictionaryValue;
 class ExtensionPrefs;
 class PrefService;
 
-
 // This is a test class intended to make it easier to work with ExtensionPrefs
 // in tests.
 class TestExtensionPrefs {

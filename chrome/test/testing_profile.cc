@@ -249,7 +249,7 @@ void TestingProfile::DestroyHistoryService() {
 void TestingProfile::CreateTopSites() {
   DestroyTopSites();
   top_sites_ = new history::TopSites(this);
-  FilePath file_name = temp_dir_.path().Append(chrome::kTopSitesFilename);
+  FilePath file_name = GetPath().Append(chrome::kTopSitesFilename);
   top_sites_->Init(file_name);
 }
 
@@ -347,9 +347,11 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
 scoped_refptr<ExtensionsService> TestingProfile::CreateExtensionsService(
     const CommandLine* command_line,
     const FilePath& install_directory) {
+  extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),install_directory));
   extensions_service_ = new ExtensionsService(this,
                                               command_line,
                                               install_directory,
+                                              extension_prefs_.get(),
                                               false);
   return extensions_service_;
 }

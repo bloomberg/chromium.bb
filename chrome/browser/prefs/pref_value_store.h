@@ -172,6 +172,10 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // that conflict with proxy settings specified by proxy policy.
   bool HasPolicyConflictingUserProxySettings();
 
+  // TODO(mnissler) delete after applying your patch.
+  // This is only called only by PrefService.
+  PrefStore* GetExtensionPrefStore() const;
+
  protected:
   // In decreasing order of precedence:
   //   |managed_platform_prefs| contains all managed platform (non-cloud policy)

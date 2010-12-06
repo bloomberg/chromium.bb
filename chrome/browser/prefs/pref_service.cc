@@ -579,6 +579,10 @@ void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
     pref_notifier_->OnUserPreferenceSet(path);
 }
 
+PrefStore* PrefService::GetExtensionPrefStore() const {
+  return pref_value_store()->GetExtensionPrefStore();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PrefService::Preference
 

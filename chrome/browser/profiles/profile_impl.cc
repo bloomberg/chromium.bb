@@ -276,6 +276,12 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
   pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
 
+  // Ensure that preferences set by extensions are restored in the profile
+  // as early as possible. The constructor takes care of that.
+  extension_prefs_.reset(new ExtensionPrefs(
+      GetPrefs(),
+      GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName)));
+
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(prefs, CommandLine::ForCurrentProcess());
 
@@ -354,6 +360,7 @@ void ProfileImpl::InitExtensions() {
       this,
       CommandLine::ForCurrentProcess(),
       GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName),
+      extension_prefs_.get(),
       true);
 
   RegisterComponentExtensions();

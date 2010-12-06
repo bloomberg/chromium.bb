@@ -18,6 +18,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class ExtensionPrefs;
 class PrefService;
 
 #if defined(OS_CHROMEOS)
@@ -169,8 +170,15 @@ class ProfileImpl : public Profile,
 
   FilePath path_;
   FilePath base_cache_path_;
+  // Keep prefs_ on top for destruction order because extension_prefs_,
+  // net_pref_observer_, web_resource_service_ and background_contents_service_
+  // store pointers to prefs_ and shall be destructed first.
+  scoped_ptr<PrefService> prefs_;
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
+  // Keep extension_prefs_ on top of extensions_service_ because the latter
+  // maintains a pointer to the first and shall be destructed first.
+  scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_refptr<ExtensionsService> extensions_service_;
   scoped_refptr<UserScriptMaster> user_script_master_;
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
@@ -183,7 +191,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<TransportSecurityPersister>
       transport_security_persister_;
   scoped_ptr<policy::ProfilePolicyContext> profile_policy_context_;
-  scoped_ptr<PrefService> prefs_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   scoped_ptr<TemplateURLModel> template_url_model_;
