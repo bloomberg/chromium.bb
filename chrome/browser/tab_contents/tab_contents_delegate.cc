@@ -45,6 +45,10 @@ void TabContentsDelegate::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                                          gfx::NativeWindow parent_window) {
 }
 
+bool TabContentsDelegate::ShouldSuppressDialogs() {
+  return false;
+}
+
 void TabContentsDelegate::BeforeUnloadFired(TabContents* tab,
                                             bool proceed,
                                             bool* proceed_to_fire_unload) {

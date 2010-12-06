@@ -154,6 +154,10 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window);
 
+  // Returns true if javascript dialogs and unload alerts are suppressed.
+  // Default is false.
+  virtual bool ShouldSuppressDialogs();
+
   // Tells us that we've finished firing this tab's beforeunload event.
   // The proceed bool tells us whether the user chose to proceed closing the
   // tab. Returns true if the tab can continue on firing it's unload event.

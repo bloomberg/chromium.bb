@@ -276,6 +276,10 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual bool CanReloadContents(TabContents* source) const { return true; }
   virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window) {}
+  virtual bool ShouldSuppressDialogs() {
+    // Any message shown during instant cancels instant, so we suppress them.
+    return true;
+  }
   virtual void BeforeUnloadFired(TabContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) {}

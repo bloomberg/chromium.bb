@@ -2754,8 +2754,10 @@ void TabContents::RunJavaScriptMessage(
   // Also suppress messages when showing an interstitial. The interstitial is
   // shown over the previous page, we don't want the hidden page dialogs to
   // interfere with the interstitial.
-  bool suppress_this_message = suppress_javascript_messages_ ||
-                               showing_interstitial_page();
+  bool suppress_this_message =
+      suppress_javascript_messages_ ||
+      showing_interstitial_page() ||
+      (delegate() && delegate()->ShouldSuppressDialogs());
   if (delegate())
     suppress_this_message |=
         (delegate()->GetConstrainingContents(this) != this);
@@ -2783,6 +2785,11 @@ void TabContents::RunJavaScriptMessage(
 
 void TabContents::RunBeforeUnloadConfirm(const std::wstring& message,
                                          IPC::Message* reply_msg) {
+  if (delegate() && delegate()->ShouldSuppressDialogs()) {
+    render_view_host()->JavaScriptMessageBoxClosed(reply_msg, true,
+                                                   std::wstring());
+    return;
+  }
   is_showing_before_unload_dialog_ = true;
   RunBeforeUnloadDialog(this, message, reply_msg);
 }
