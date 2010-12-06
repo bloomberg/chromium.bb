@@ -6,7 +6,7 @@
 #include "base/task.h"
 #include "remoting/base/mock_objects.h"
 #include "remoting/host/mock_objects.h"
-#include "remoting/host/session_manager.h"
+#include "remoting/host/screen_recorder.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,33 +28,32 @@ static const media::VideoFrame::Format kFormat = media::VideoFrame::RGB32;
 static const VideoPacketFormat::Encoding kEncoding =
     VideoPacketFormat::ENCODING_VERBATIM;
 
-class SessionManagerTest : public testing::Test {
+class ScreenRecorderTest : public testing::Test {
  public:
-  SessionManagerTest() {
+  ScreenRecorderTest() {
   }
 
- protected:
-  void Init() {
+  virtual void SetUp() {
+    // Capturer and Encoder are owned by ScreenRecorder.
     capturer_ = new MockCapturer();
     encoder_ = new MockEncoder();
     connection_ = new MockConnectionToClient();
-    record_ = new SessionManager(
+    record_ = new ScreenRecorder(
         &message_loop_, &message_loop_, &message_loop_,
         capturer_, encoder_);
   }
 
-  scoped_refptr<SessionManager> record_;
+ protected:
+  scoped_refptr<ScreenRecorder> record_;
   scoped_refptr<MockConnectionToClient> connection_;
+
+  // The following mock objects are owned by ScreenRecorder.
   MockCapturer* capturer_;
   MockEncoder* encoder_;
   MessageLoop message_loop_;
  private:
-  DISALLOW_COPY_AND_ASSIGN(SessionManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(ScreenRecorderTest);
 };
-
-TEST_F(SessionManagerTest, Init) {
-  Init();
-}
 
 ACTION_P2(RunCallback, rects, data) {
   InvalidRects& dirty_rects = data->mutable_dirty_rects();
@@ -72,10 +71,7 @@ ACTION_P(FinishEncode, msg) {
   delete arg2;
 }
 
-// BUG 57351
-TEST_F(SessionManagerTest, DISABLED_OneRecordCycle) {
-  Init();
-
+TEST_F(ScreenRecorderTest, OneRecordCycle) {
   InvalidRects update_rects;
   update_rects.insert(gfx::Rect(0, 0, 10, 10));
   DataPlanes planes;

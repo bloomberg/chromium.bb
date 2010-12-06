@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/session_manager.h"
+#include "remoting/host/screen_recorder.h"
 
 #include <algorithm>
 
@@ -39,7 +39,7 @@ static const int kSlowDownFactor = 10;
 // capture rate.
 static const int kRateDividers[] = {1, 2, 4, 8, 16};
 
-SessionManager::SessionManager(
+ScreenRecorder::ScreenRecorder(
     MessageLoop* capture_loop,
     MessageLoop* encode_loop,
     MessageLoop* network_loop,
@@ -60,63 +60,63 @@ SessionManager::SessionManager(
   DCHECK(network_loop_);
 }
 
-SessionManager::~SessionManager() {
+ScreenRecorder::~ScreenRecorder() {
   connections_.clear();
 }
 
 // Public methods --------------------------------------------------------------
 
-void SessionManager::Start() {
+void ScreenRecorder::Start() {
   capture_loop_->PostTask(
-      FROM_HERE, NewTracedMethod(this, &SessionManager::DoStart));
+      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoStart));
 }
 
-void SessionManager::Pause() {
+void ScreenRecorder::Pause() {
   capture_loop_->PostTask(
-      FROM_HERE, NewTracedMethod(this, &SessionManager::DoPause));
+      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoPause));
 }
 
-void SessionManager::SetMaxRate(double rate) {
+void ScreenRecorder::SetMaxRate(double rate) {
   capture_loop_->PostTask(
-      FROM_HERE, NewTracedMethod(this, &SessionManager::DoSetMaxRate, rate));
+      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoSetMaxRate, rate));
 }
 
-void SessionManager::AddConnection(
+void ScreenRecorder::AddConnection(
     scoped_refptr<ConnectionToClient> connection) {
   // Gets the init information for the connection.
   capture_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoGetInitInfo, connection));
+      NewTracedMethod(this, &ScreenRecorder::DoGetInitInfo, connection));
 }
 
-void SessionManager::RemoveConnection(
+void ScreenRecorder::RemoveConnection(
     scoped_refptr<ConnectionToClient> connection) {
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoRemoveClient, connection));
+      NewTracedMethod(this, &ScreenRecorder::DoRemoveClient, connection));
 }
 
-void SessionManager::RemoveAllConnections() {
+void ScreenRecorder::RemoveAllConnections() {
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoRemoveAllClients));
+      NewTracedMethod(this, &ScreenRecorder::DoRemoveAllClients));
 }
 
 // Private accessors -----------------------------------------------------------
 
-Capturer* SessionManager::capturer() {
+Capturer* ScreenRecorder::capturer() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
   return capturer_.get();
 }
 
-Encoder* SessionManager::encoder() {
+Encoder* ScreenRecorder::encoder() {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
   return encoder_.get();
 }
 
 // Capturer thread -------------------------------------------------------------
 
-void SessionManager::DoStart() {
+void ScreenRecorder::DoStart() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   if (started_) {
@@ -130,10 +130,10 @@ void SessionManager::DoStart() {
   // Starts the rate regulation.
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoStartRateControl));
+      NewTracedMethod(this, &ScreenRecorder::DoStartRateControl));
 }
 
-void SessionManager::DoPause() {
+void ScreenRecorder::DoPause() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   if (!started_) {
@@ -146,10 +146,10 @@ void SessionManager::DoPause() {
   // Pause the rate regulation.
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoPauseRateControl));
+      NewTracedMethod(this, &ScreenRecorder::DoPauseRateControl));
 }
 
-void SessionManager::DoSetRate(double rate) {
+void ScreenRecorder::DoSetRate(double rate) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
   if (rate == rate_)
     return;
@@ -163,7 +163,7 @@ void SessionManager::DoSetRate(double rate) {
     ScheduleNextCapture();
 }
 
-void SessionManager::DoSetMaxRate(double max_rate) {
+void ScreenRecorder::DoSetMaxRate(double max_rate) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   // TODO(hclam): Should also check for small epsilon.
@@ -175,7 +175,7 @@ void SessionManager::DoSetMaxRate(double max_rate) {
   }
 }
 
-void SessionManager::ScheduleNextCapture() {
+void ScreenRecorder::ScheduleNextCapture() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   ScopedTracer tracer("capture");
@@ -189,11 +189,11 @@ void SessionManager::ScheduleNextCapture() {
       static_cast<int>(base::Time::kMillisecondsPerSecond / rate_));
   capture_loop_->PostDelayedTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoCapture),
+      NewTracedMethod(this, &ScreenRecorder::DoCapture),
       interval.InMilliseconds());
 }
 
-void SessionManager::DoCapture() {
+void ScreenRecorder::DoCapture() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
   // Make sure we have at most two oustanding recordings. We can simply return
   // if we can't make a capture now, the next capture will be started by the
@@ -225,10 +225,10 @@ void SessionManager::DoCapture() {
   DCHECK(capturer());
 
   capturer()->CaptureInvalidRects(
-      NewCallback(this, &SessionManager::CaptureDoneCallback));
+      NewCallback(this, &ScreenRecorder::CaptureDoneCallback));
 }
 
-void SessionManager::CaptureDoneCallback(
+void ScreenRecorder::CaptureDoneCallback(
     scoped_refptr<CaptureData> capture_data) {
   // TODO(hclam): There is a bug if the capturer doesn't produce any dirty
   // rects.
@@ -236,10 +236,10 @@ void SessionManager::CaptureDoneCallback(
   TraceContext::tracer()->PrintString("Capture Done");
   encode_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoEncode, capture_data));
+      NewTracedMethod(this, &ScreenRecorder::DoEncode, capture_data));
 }
 
-void SessionManager::DoFinishEncode() {
+void ScreenRecorder::DoFinishEncode() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   // Decrement the number of recording in process since we have completed
@@ -252,7 +252,7 @@ void SessionManager::DoFinishEncode() {
     DoCapture();
 }
 
-void SessionManager::DoGetInitInfo(
+void ScreenRecorder::DoGetInitInfo(
     scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
@@ -261,12 +261,12 @@ void SessionManager::DoGetInitInfo(
   // Add the client to the list so it can receive update stream.
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoAddClient, connection));
+      NewTracedMethod(this, &ScreenRecorder::DoAddClient, connection));
 }
 
 // Network thread --------------------------------------------------------------
 
-void SessionManager::DoStartRateControl() {
+void ScreenRecorder::DoStartRateControl() {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   if (rate_control_started_) {
@@ -277,7 +277,7 @@ void SessionManager::DoStartRateControl() {
   ScheduleNextRateControl();
 }
 
-void SessionManager::DoPauseRateControl() {
+void ScreenRecorder::DoPauseRateControl() {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   if (!rate_control_started_) {
@@ -287,15 +287,15 @@ void SessionManager::DoPauseRateControl() {
   rate_control_started_ = false;
 }
 
-void SessionManager::ScheduleNextRateControl() {
+void ScreenRecorder::ScheduleNextRateControl() {
   ScopedTracer tracer("Rate Control");
   network_loop_->PostDelayedTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoRateControl),
+      NewTracedMethod(this, &ScreenRecorder::DoRateControl),
       kRateControlInterval.InMilliseconds());
 }
 
-void SessionManager::DoRateControl() {
+void ScreenRecorder::DoRateControl() {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // If we have been paused then shutdown the rate regulation loop.
@@ -326,11 +326,11 @@ void SessionManager::DoRateControl() {
   // Then set the rate.
   capture_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoSetRate, new_rate));
+      NewTracedMethod(this, &ScreenRecorder::DoSetRate, new_rate));
   ScheduleNextRateControl();
 }
 
-void SessionManager::DoSendVideoPacket(VideoPacket* packet) {
+void ScreenRecorder::DoSendVideoPacket(VideoPacket* packet) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   TraceContext::tracer()->PrintString("DoSendUpdate");
@@ -344,14 +344,14 @@ void SessionManager::DoSendVideoPacket(VideoPacket* packet) {
   TraceContext::tracer()->PrintString("DoSendUpdate done");
 }
 
-void SessionManager::DoAddClient(scoped_refptr<ConnectionToClient> connection) {
+void ScreenRecorder::DoAddClient(scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // TODO(hclam): Force a full frame for next encode.
   connections_.push_back(connection);
 }
 
-void SessionManager::DoRemoveClient(
+void ScreenRecorder::DoRemoveClient(
     scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
@@ -363,7 +363,7 @@ void SessionManager::DoRemoveClient(
   }
 }
 
-void SessionManager::DoRemoveAllClients() {
+void ScreenRecorder::DoRemoveAllClients() {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // Clear the list of connections.
@@ -372,7 +372,7 @@ void SessionManager::DoRemoveAllClients() {
 
 // Encoder thread --------------------------------------------------------------
 
-void SessionManager::DoEncode(
+void ScreenRecorder::DoEncode(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
   TraceContext::tracer()->PrintString("DoEncode called");
@@ -380,7 +380,7 @@ void SessionManager::DoEncode(
   // Early out if there's nothing to encode.
   if (!capture_data->dirty_rects().size()) {
     capture_loop_->PostTask(
-        FROM_HERE, NewTracedMethod(this, &SessionManager::DoFinishEncode));
+        FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishEncode));
     return;
   }
 
@@ -388,11 +388,11 @@ void SessionManager::DoEncode(
   // added.
   TraceContext::tracer()->PrintString("Encode start");
   encoder_->Encode(capture_data, false,
-                   NewCallback(this, &SessionManager::EncodeDataAvailableTask));
+                   NewCallback(this, &ScreenRecorder::EncodeDataAvailableTask));
   TraceContext::tracer()->PrintString("Encode Done");
 }
 
-void SessionManager::EncodeDataAvailableTask(VideoPacket* packet) {
+void ScreenRecorder::EncodeDataAvailableTask(VideoPacket* packet) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
   bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
@@ -403,11 +403,11 @@ void SessionManager::EncodeDataAvailableTask(VideoPacket* packet) {
   // task. The ownership will eventually pass to the ConnectionToClients.
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoSendVideoPacket, packet));
+      NewTracedMethod(this, &ScreenRecorder::DoSendVideoPacket, packet));
 
   if (last) {
     capture_loop_->PostTask(
-        FROM_HERE, NewTracedMethod(this, &SessionManager::DoFinishEncode));
+        FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishEncode));
   }
 }
 

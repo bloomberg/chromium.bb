@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_RECORD_SESSION_H_
-#define REMOTING_HOST_RECORD_SESSION_H_
+#ifndef REMOTING_HOST_SCREEN_RECORDER_H_
+#define REMOTING_HOST_SCREEN_RECORDER_H_
 
 #include <vector>
 
@@ -56,22 +56,22 @@ class CaptureData;
 // | Time
 // v
 //
-// SessionManager has the following responsibilities:
+// ScreenRecorder has the following responsibilities:
 // 1. Make sure capture and encode occurs no more frequently than |rate|.
 // 2. Make sure there is at most one outstanding capture not being encoded.
 // 3. Distribute tasks on three threads on a timely fashion to minimize latency.
-class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
+class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
  public:
 
-  // Construct a SessionManager. Message loops and threads are provided.
+  // Construct a ScreenRecorder. Message loops and threads are provided.
   // This object does not own capturer and encoder.
-  SessionManager(MessageLoop* capture_loop,
+  ScreenRecorder(MessageLoop* capture_loop,
                  MessageLoop* encode_loop,
                  MessageLoop* network_loop,
                  Capturer* capturer,
                  Encoder* encoder);
 
-  virtual ~SessionManager();
+  virtual ~ScreenRecorder();
 
   // Start recording.
   void Start();
@@ -179,9 +179,9 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   // The following member is accessed on the network thread.
   bool rate_control_started_;
 
-  DISALLOW_COPY_AND_ASSIGN(SessionManager);
+  DISALLOW_COPY_AND_ASSIGN(ScreenRecorder);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_RECORD_SESSION_H_
+#endif  // REMOTING_HOST_SCREEN_RECORDER_H_

@@ -16,7 +16,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_stub_fake.h"
-#include "remoting/host/session_manager.h"
+#include "remoting/host/screen_recorder.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
@@ -122,9 +122,9 @@ void ChromotingHost::Shutdown() {
   }
 
   // Tell the session to pause and then disconnect all clients.
-  if (session_.get()) {
-    session_->Pause();
-    session_->RemoveAllConnections();
+  if (recorder_.get()) {
+    recorder_->Pause();
+    recorder_->RemoveAllConnections();
   }
 
   // Disconnect the client.
@@ -159,23 +159,23 @@ void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Create a new RecordSession if there was none.
-  if (!session_.get()) {
-    // Then we create a SessionManager passing the message loops that
+  if (!recorder_.get()) {
+    // Then we create a ScreenRecorder passing the message loops that
     // it should run on.
     DCHECK(capturer_.get());
 
     Encoder* encoder = CreateEncoder(connection->session()->config());
 
-    session_ = new SessionManager(context_->main_message_loop(),
-                                  context_->encode_message_loop(),
-                                  context_->network_message_loop(),
-                                  capturer_.release(),
-                                  encoder);
+    recorder_ = new ScreenRecorder(context_->main_message_loop(),
+                                   context_->encode_message_loop(),
+                                   context_->network_message_loop(),
+                                   capturer_.release(),
+                                   encoder);
   }
 
   // Immediately add the connection and start the session.
-  session_->AddConnection(connection);
-  session_->Start();
+  recorder_->AddConnection(connection);
+  recorder_->Start();
   VLOG(1) << "Session manager started";
 }
 
@@ -184,9 +184,9 @@ void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
 
   // Remove the connection from the session manager and pause the session.
   // TODO(hclam): Pause only if the last connection disconnected.
-  if (session_.get()) {
-    session_->RemoveConnection(connection);
-    session_->Pause();
+  if (recorder_.get()) {
+    recorder_->RemoveConnection(connection);
+    recorder_->Pause();
   }
 
   // Close the connection to connection just to be safe.

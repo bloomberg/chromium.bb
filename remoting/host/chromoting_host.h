@@ -33,7 +33,7 @@ class Capturer;
 class ChromotingHostContext;
 class Encoder;
 class MutableHostConfig;
-class SessionManager;
+class ScreenRecorder;
 
 // A class to implement the functionality of a host process.
 //
@@ -45,17 +45,17 @@ class SessionManager;
 //
 // 2. We listen for incoming connection using libjingle. We will create
 //    a ConnectionToClient object that wraps around linjingle for transport.
-//    Also create a SessionManager with appropriate Encoder and Capturer and
-//    add the ConnectionToClient to this SessionManager for transporting the
-//    screen captures. An InputStub is created and registered with the
+//    A ScreenRecorder is created with an Encoder and a Capturer.
+//    A ConnectionToClient is added to the ScreenRecorder for transporting
+//    the screen captures. An InputStub is created and registered with the
 //    ConnectionToClient to receive mouse / keyboard events from the remote
 //    client.
 //    This is also the right time to create multiple threads to host
 //    the above objects. After we have done all the initialization
-//    we'll start the SessionManager. We'll then enter the running state
+//    we'll start the ScreenRecorder. We'll then enter the running state
 //    of the host process.
 //
-// 3. When the user is disconencted, we will pause the SessionManager
+// 3. When the user is disconnected, we will pause the ScreenRecorder
 //    and try to terminate the threads we have created. This will allow
 //    all pending tasks to complete. After all of that completed we
 //    return to the idle state. We then go to step (2) if there a new
@@ -136,12 +136,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   scoped_refptr<MutableHostConfig> config_;
 
-  // Capturer to be used by SessionManager. Once the SessionManager is
+  // Capturer to be used by ScreenRecorder. Once the ScreenRecorder is
   // constructed this is set to NULL.
   scoped_ptr<Capturer> capturer_;
-
-  // constructed this is set to NULL.
-  scoped_ptr<Encoder> encoder_;
 
   // InputStub in the host executes input events received from the client.
   scoped_ptr<protocol::InputStub> input_stub_;
@@ -165,7 +162,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   scoped_refptr<protocol::ConnectionToClient> connection_;
 
   // Session manager for the host process.
-  scoped_refptr<SessionManager> session_;
+  scoped_refptr<ScreenRecorder> recorder_;
 
   // This task gets executed when this object fails to connect to the
   // talk network or Shutdown() is called.
