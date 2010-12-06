@@ -147,8 +147,6 @@ struct wlsc_compositor {
 	struct wl_list input_device_list;
 	struct wl_list surface_list;
 
-	struct wl_list surface_destroy_listener_list;
-
 	/* Repaint state. */
 	struct wl_event_source *timer_source;
 	int repaint_needed;

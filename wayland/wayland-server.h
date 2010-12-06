@@ -158,13 +158,14 @@ struct wl_drag {
 	struct wl_resource resource;
 	struct wl_drag_offer drag_offer;
 	struct wl_surface *source;
-	struct wl_surface *pointer_focus;
+	struct wl_surface *drag_focus;
 	struct wl_client *target;
 	int32_t x, y, sx, sy;
 	struct wl_input_device *input_device;
 	struct wl_array types;
 	const char *type;
 	uint32_t pointer_focus_time;
+	struct wl_listener drag_focus_listener;
 };
 
 void

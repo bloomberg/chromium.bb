@@ -165,9 +165,6 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	wl_list_remove(&surface->link);
 	glDeleteTextures(1, &surface->texture);
 
-	wl_list_for_each(l, &compositor->surface_destroy_listener_list, link)
-		l->func(l, &surface->surface);
-
 	wl_list_for_each_safe(l, next,
 			      &surface->surface.destroy_listener_list, link)
 		l->func(l, &surface->surface);
@@ -567,23 +564,18 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 	wlsc_input_device_set_pointer_image(wd, pointer);
 }
 
-struct wlsc_drag {
-	struct wl_drag drag;
-	struct wl_listener listener;
-};
-
 static void
 wl_drag_set_pointer_focus(struct wl_drag *drag,
-			  struct wlsc_surface *surface, uint32_t time,
+			  struct wl_surface *surface, uint32_t time,
 			  int32_t x, int32_t y, int32_t sx, int32_t sy);
 
 static void
 destroy_drag(struct wl_resource *resource, struct wl_client *client)
 {
-	struct wlsc_drag *drag =
-		container_of(resource, struct wlsc_drag, drag.resource);
+	struct wl_drag *drag =
+		container_of(resource, struct wl_drag, resource);
 
-	wl_list_remove(&drag->listener.link);
+	wl_list_remove(&drag->drag_focus_listener.link);
 
 	free(drag);
 }
@@ -594,22 +586,20 @@ static void
 drag_handle_surface_destroy(struct wl_listener *listener,
 			    struct wl_surface *surface)
 {
-	struct wlsc_drag *drag =
-		container_of(listener, struct wlsc_drag, listener);
+	struct wl_drag *drag =
+		container_of(listener, struct wl_drag, drag_focus_listener);
 	uint32_t time =
 		wl_display_get_time(wl_client_get_display(surface->client));
 
-	if (drag->drag.pointer_focus == surface)
-		wl_drag_set_pointer_focus(&drag->drag, NULL, time, 0, 0, 0, 0);
+	if (drag->drag_focus == surface)
+		wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);
 }
 
 static void
 shell_create_drag(struct wl_client *client,
 		  struct wl_shell *shell, uint32_t id)
 {
-	struct wlsc_drag *drag;
-	struct wlsc_compositor *ec =
-		container_of(shell, struct wlsc_compositor, shell);
+	struct wl_drag *drag;
 
 	drag = malloc(sizeof *drag);
 	if (drag == NULL) {
@@ -618,18 +608,17 @@ shell_create_drag(struct wl_client *client,
 	}
 
 	memset(drag, 0, sizeof *drag);
-	drag->drag.resource.object.id = id;
-	drag->drag.resource.object.interface = &wl_drag_interface;
-	drag->drag.resource.object.implementation =
+	drag->resource.object.id = id;
+	drag->resource.object.interface = &wl_drag_interface;
+	drag->resource.object.implementation =
 		(void (**)(void)) &drag_interface;
 
-	drag->drag.resource.destroy = destroy_drag;
+	drag->resource.destroy = destroy_drag;
 
-	drag->listener.func = drag_handle_surface_destroy;
-	wl_list_insert(ec->surface_destroy_listener_list.prev,
-		       &drag->listener.link);
+	drag->drag_focus_listener.func = drag_handle_surface_destroy;
+	wl_list_init(&drag->drag_focus_listener.link);
 
-	wl_client_add_resource(client, &drag->drag.resource);
+	wl_client_add_resource(client, &drag->resource);
 }
 
 const static struct wl_shell_interface shell_interface = {
@@ -795,7 +784,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	case WLSC_DEVICE_GRAB_DRAG:
 		es = pick_surface(device, &sx, &sy);
 		wl_drag_set_pointer_focus(device->drag,
-					  es, time, x, y, sx, sy);
+					  &es->surface, time, x, y, sx, sy);
 		if (es)
 			wl_client_post_event(es->surface.client,
 					     &device->drag->drag_offer.object,
@@ -983,46 +972,51 @@ const static struct wl_input_device_interface input_device_interface = {
 
 static void
 wl_drag_set_pointer_focus(struct wl_drag *drag,
-			  struct wlsc_surface *surface, uint32_t time,
+			  struct wl_surface *surface, uint32_t time,
 			  int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	char **p, **end;
 
-	if (drag->pointer_focus == &surface->surface)
+	if (drag->drag_focus == surface)
 		return;
 
-	if (drag->pointer_focus &&
-	    (!surface || drag->pointer_focus->client != surface->surface.client))
-		wl_client_post_event(drag->pointer_focus->client,
+	if (drag->drag_focus &&
+	    (!surface || drag->drag_focus->client != surface->client))
+		wl_client_post_event(drag->drag_focus->client,
 				      &drag->drag_offer.object,
 				      WL_DRAG_OFFER_POINTER_FOCUS,
 				      time, NULL, 0, 0, 0, 0);
 
 	if (surface &&
-	    (!drag->pointer_focus ||
-	     drag->pointer_focus->client != surface->surface.client)) {
-		wl_client_post_global(surface->surface.client,
+	    (!drag->drag_focus ||
+	     drag->drag_focus->client != surface->client)) {
+		wl_client_post_global(surface->client,
 				      &drag->drag_offer.object);
 
 		end = drag->types.data + drag->types.size;
 		for (p = drag->types.data; p < end; p++)
-			wl_client_post_event(surface->surface.client,
+			wl_client_post_event(surface->client,
 					      &drag->drag_offer.object,
 					      WL_DRAG_OFFER_OFFER, *p);
 	}
 
 	if (surface) {
-		wl_client_post_event(surface->surface.client,
+		wl_client_post_event(surface->client,
 				     &drag->drag_offer.object,
 				     WL_DRAG_OFFER_POINTER_FOCUS,
-				     time, &surface->surface,
+				     time, surface,
 				     x, y, sx, sy);
 
 	}
 
-	drag->pointer_focus = &surface->surface;
+	drag->drag_focus = surface;
 	drag->pointer_focus_time = time;
 	drag->target = NULL;
+
+	wl_list_remove(&drag->drag_focus_listener.link);
+	if (surface)
+		wl_list_insert(surface->destroy_listener_list.prev,
+			       &drag->drag_focus_listener.link);
 }
 
 static void
@@ -1120,7 +1114,7 @@ drag_activate(struct wl_client *client,
 
 	device->drag = drag;
 	target = pick_surface(device, &sx, &sy);
-	wl_drag_set_pointer_focus(device->drag, target, time,
+	wl_drag_set_pointer_focus(device->drag, &target->surface, time,
 				  device->x, device->y, sx, sy);
 }
 
@@ -1388,7 +1382,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->input_device_list);
 	wl_list_init(&ec->output_list);
-	wl_list_init(&ec->surface_destroy_listener_list);
 
 	create_pointer_images(ec);
 
