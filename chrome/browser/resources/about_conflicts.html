@@ -143,6 +143,20 @@ html[dir=rtl] #top {
   margin-top: -1em;
   margin-bottom: 1em;
 }
+
+.clearing {
+  clear: left;
+  float: left;
+}
+
+html[dir=rtl] .clearing {
+  clear: right;
+  float: right;
+}
+
+.datacell {
+  border-bottom: 1px solid #aaa;
+}
 </style>
 <script>
 
@@ -245,31 +259,37 @@ html[dir=rtl] #top {
       <td valign="top">
         <table cellpadding="2" cellspacing="0" border="0">
           <tr jsselect="moduleList">
-            <td valign="top">
+            <td valign="top" class="datacell">
               <span dir="ltr"
-                    jsvalues=".innerHTML:description" class="nowrap"></span>
+                    jsvalues=".innerHTML:description"
+                    class="clearing nowrap"></span>
               <div jsdisplay="status == 2 || status == 3"
-                   class="extra-info-text"><br>
-                <span jsdisplay="status == 2"
-                      i18n-content="moduleSuspectedBad"
-                      class="suspected-bad">SUSPECTED_BAD</span>
-                <span jsdisplay="status == 3"
-                      i18n-content="moduleConfirmedBad"
-                      class="confirmed-bad">CONFIRMED_BAD</span>
-                <a jsdisplay="help_url.length &gt; 0"
-                   jsvalues=".href:help_url"><span
-                      i18n-content="helpCenterLink">HELP_CENTER</span></a>
-                <span jsdisplay="possibleResolution.length &gt; 0"><br>
-                  <span jscontent="possibleResolution"
+                   class="extra-info-text">
+                <span class="clearing">
+                  <span jsdisplay="status == 2"
+                        i18n-content="moduleSuspectedBad"
+                        class="suspected-bad">SUSPECTED_BAD</span>
+                  <span jsdisplay="status == 3"
+                        i18n-content="moduleConfirmedBad"
+                        class="confirmed-bad">CONFIRMED_BAD</span>
+                  <a jsdisplay="help_url.length &gt; 0"
+                     jsvalues=".href:help_url"
+                     i18n-content="helpCenterLink">HELP_CENTER</a>
+                </span>
+                <span jsdisplay="possibleResolution.length &gt; 0">
+                  <span jscontent="possibleResolution" class="clearing"
                       >POSSIBLE_RESOLUTION</span>
                 </span>
               </div>
             </td>
-            <td valign="top"><span dir="ltr" jscontent="digital_signer"
+            <td valign="top" class="datacell"><span dir="ltr"
+                                                    jscontent="digital_signer"
                                    class="nowrap">SIGNER</span></td>
-            <td valign="top"><span dir="ltr" jscontent="version"
-                                   class="nowrap">VERSION</span></td>
-            <td valign="top">
+            <td valign="top" class="datacell"><span dir="ltr"
+                                                    jscontent="version"
+                                                    class="nowrap">VERSION</span
+            ></td>
+            <td valign="top" class="datacell">
               <span class="nowrap">
                 <span dir="ltr" jscontent="location">LOCATION</span><strong
                     ><span dir="ltr" jscontent="name">NAME</span></strong>
