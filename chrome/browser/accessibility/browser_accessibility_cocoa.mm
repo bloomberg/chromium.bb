@@ -300,8 +300,11 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
   [ret addObject:NSAccessibilityShowMenuAction];
 
   // TODO(dtseng): this should only get set when there's a default action.
-  if ([self role] != NSAccessibilityStaticTextRole)
+  if ([self role] != NSAccessibilityStaticTextRole &&
+      [self role] != NSAccessibilityTextAreaRole &&
+      [self role] != NSAccessibilityTextFieldRole) {
     [ret addObject:NSAccessibilityPressAction];
+  }
 
   return ret;
 }
@@ -410,7 +413,11 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 // that backs this object.
 - (void)accessibilityPerformAction:(NSString*)action {
   // TODO(feldstein): Support more actions.
-  [delegate_ doDefaultAction:browserAccessibility_->renderer_id()];
+  if ([action isEqualToString:NSAccessibilityPressAction]) {
+    [delegate_ doDefaultAction:browserAccessibility_->renderer_id()];
+  } else if ([action isEqualToString:NSAccessibilityShowMenuAction]) {
+    // TODO(dtseng): implement.
+  }
 }
 
 // Returns the description of the given action.
