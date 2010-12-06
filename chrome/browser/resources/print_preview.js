@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var localStrings = new LocalStrings();
+var hasPDFPlugin = true;
 
 /**
  * Window onload handler, sets up the page.
@@ -43,20 +44,30 @@ function onPDFLoad() {
  * Create the PDF plugin or reload the existing one.
  */
 function createPDFPlugin(url) {
+  if (!hasPDFPlugin) {
+    return;
+  }
+
   if ($('pdf-viewer')) {
-    pdfPlugin.reload();
+    $('pdf-viewer').reload();
     return;
   }
 
   var loadingElement = $('loading');
+  loadingElement.classList.add('hidden');
   var mainView = loadingElement.parentNode;
-  mainView.removeChild(loadingElement);
 
-  pdfPlugin = document.createElement('object');
+  var pdfPlugin = document.createElement('object');
   pdfPlugin.setAttribute('id', 'pdf-viewer');
   pdfPlugin.setAttribute('type', 'application/pdf');
   pdfPlugin.setAttribute('src', url);
   mainView.appendChild(pdfPlugin);
+  if (!pdfPlugin.onload) {
+    hasPDFPlugin = false;
+    mainView.removeChild(pdfPlugin);
+    $('no-plugin').classList.remove('hidden');
+    return;
+  }
   pdfPlugin.onload('onPDFLoad()');
 }
 
