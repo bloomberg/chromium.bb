@@ -39,8 +39,10 @@ body {
 }
 
 .close-subpage {
+  background-color: transparent;
   /* TODO(stuartmorgan): Replace with real images once they are available. */
   background-image: url("../../../app/theme/close_bar.png");
+  border: none;
   position: relative;
   top: 12px;
   height: 16px;
