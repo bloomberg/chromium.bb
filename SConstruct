@@ -397,6 +397,8 @@ nacl_glibc_skiplist = [
     # Syscall wrappers not implemented yet.
     'run_sysbasic_test',
     'run_sysbrk_test',
+    # Fails because clock() is not hooked up.
+    'run_timefuncs_test',
     # Needs further investigation.
     'sdk_minimal_test',
     # TODO(elijahtaylor) add apropriate syscall hooks for glibc
