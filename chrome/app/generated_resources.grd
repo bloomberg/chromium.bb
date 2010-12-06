@@ -6606,9 +6606,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- The About page is now part of options. -->
-      <message name="IDS_ABOUT_PAGE_TITLE" desc="Title used for about options panel">
-      	About
-      </message>
       <message name="IDS_ABOUT_PAGE_LOADING" desc="Label used for async data before data is available. Example is Chrome OS version.">
       	Loading&#x2026;
       </message>

@@ -87,7 +87,7 @@ const LocalizeEntry localize_table[] = {
     { "channel_warning_text", IDS_ABOUT_PAGE_CHANNEL_WARNING_TEXT },
     { "user_agent", IDS_ABOUT_VERSION_USER_AGENT },
     { "command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
-    { "aboutPage", IDS_ABOUT_PAGE_TITLE }
+    { "aboutPage", IDS_ABOUT }
 };
 
 void LocalizedStrings(DictionaryValue* localized_strings) {
