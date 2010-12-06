@@ -370,6 +370,55 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
   ui_test_utils::NavigateToURL(browser(), blank_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }
+
+// Change a tab into an application window.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ConvertTabToAppShortcut) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL http_url(test_server()->GetURL(""));
+  ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
+
+  ASSERT_EQ(1, browser()->tab_count());
+  TabContents* initial_tab = browser()->GetTabContentsAt(0);
+  TabContents* app_tab = browser()->AddSelectedTabWithURL(
+      http_url, PageTransition::TYPED)->tab_contents();
+  ASSERT_EQ(2, browser()->tab_count());
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
+
+  // Normal tabs should accept load drops.
+  EXPECT_TRUE(initial_tab->GetMutableRendererPrefs()->can_accept_load_drops);
+  EXPECT_TRUE(app_tab->GetMutableRendererPrefs()->can_accept_load_drops);
+
+  // Turn |app_tab| into a tab in an app panel.
+  browser()->ConvertContentsToApplication(app_tab);
+
+  // The launch should have created a new browser.
+  ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
+
+  // Find the new browser.
+  Browser* app_browser = NULL;
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end() && !app_browser; ++i) {
+    if (*i != browser())
+      app_browser = *i;
+  }
+  ASSERT_TRUE(app_browser);
+
+  // Check that the tab contents is in the new browser, and not in the old.
+  ASSERT_EQ(1, browser()->tab_count());
+  ASSERT_EQ(initial_tab, browser()->GetTabContentsAt(0));
+
+  // Check that the appliaction browser has a single tab, and that tab contains
+  // the content that we app-ified.
+  ASSERT_EQ(1, app_browser->tab_count());
+  ASSERT_EQ(app_tab, app_browser->GetTabContentsAt(0));
+
+  // Normal tabs should accept load drops.
+  EXPECT_TRUE(initial_tab->GetMutableRendererPrefs()->can_accept_load_drops);
+
+  // The tab in an aopp window should not.
+  EXPECT_FALSE(app_tab->GetMutableRendererPrefs()->can_accept_load_drops);
+}
+
 #endif  // !defined(OS_MACOSX)
 
 // Test RenderView correctly send back favicon url for web page that redirects

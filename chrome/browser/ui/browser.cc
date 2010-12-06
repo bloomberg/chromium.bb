@@ -2951,13 +2951,13 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   RegisterAppPrefs(app_name);
 
   DetachContents(contents);
-  Browser* browser = Browser::CreateForApp(app_name, NULL, profile_, false);
+  Browser* app_browser = Browser::CreateForApp(app_name, NULL, profile_, false);
   TabContentsWrapper* wrapper = new TabContentsWrapper(contents);
-  browser->tabstrip_model()->AppendTabContents(wrapper, true);
-  TabContents* tab_contents = GetSelectedTabContents();
-  tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  tab_contents->render_view_host()->SyncRendererPrefs();
-  browser->window()->Show();
+  app_browser->tabstrip_model()->AppendTabContents(wrapper, true);
+
+  contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
+  contents->render_view_host()->SyncRendererPrefs();
+  app_browser->window()->Show();
 }
 
 bool Browser::ShouldDisplayURLField() {
