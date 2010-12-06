@@ -453,10 +453,11 @@ display_create_surface(struct display *display,
 		       struct rectangle *rectangle)
 {
 #ifdef HAVE_CAIRO_GL
-	return display_create_drm_surface(display, rectangle);
-#else
-	return display_create_shm_surface(display, rectangle);
+	if (display->drm) {
+		return display_create_drm_surface(display, rectangle);
+	}
 #endif
+	return display_create_shm_surface(display, rectangle);
 }
 
 static cairo_surface_t *
@@ -465,13 +466,13 @@ display_create_surface_from_file(struct display *display,
 				 struct rectangle *rectangle)
 {
 #ifdef HAVE_CAIRO_GL
-	return display_create_drm_surface_from_file(display, filename, rectangle);
-#else
-	return display_create_shm_surface_from_file(display, filename, rectangle);
+	if (display->drm) {
+		return display_create_drm_surface_from_file(display, filename, rectangle);
+	}
 #endif
+	return display_create_shm_surface_from_file(display, filename, rectangle);
 }
-
-static const struct {
+ static const struct {
 	const char *filename;
 	int hotspot_x, hotspot_y;
 } pointer_images[] = {
@@ -1231,11 +1232,10 @@ window_create(struct display *display, const char *title,
 	window->margin = 16;
 	window->decoration = 1;
 
-#ifdef HAVE_CAIRO_GL
-	window->buffer_type = WINDOW_BUFFER_TYPE_DRM;
-#else
-	window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
-#endif
+	if (display->drm)
+		window->buffer_type = WINDOW_BUFFER_TYPE_DRM;
+	else
+		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 
 	wl_surface_set_user_data(window->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
@@ -1389,16 +1389,70 @@ init_xkb(struct display *d)
 	}
 }
 
+static int
+init_drm(struct display *d)
+{
+	EGLint major, minor;
+	int fd;
+	drm_magic_t magic;
+
+	fd = open(d->device_name, O_RDWR);
+	if (fd < 0) {
+		fprintf(stderr, "drm open failed: %m\n");
+		return -1;
+	}
+
+	if (drmGetMagic(fd, &magic)) {
+		fprintf(stderr, "DRI2: failed to get drm magic");
+		return -1;
+	}
+
+	/* Wait for authenticated event */
+	wl_drm_authenticate(d->drm, magic);
+	wl_display_iterate(d->display, WL_DISPLAY_WRITABLE);
+	while (!d->authenticated)
+		wl_display_iterate(d->display, WL_DISPLAY_READABLE);
+
+	d->dpy = eglGetDRMDisplayMESA(fd);
+	if (!eglInitialize(d->dpy, &major, &minor)) {
+		fprintf(stderr, "failed to initialize display\n");
+		return -1;
+	}
+
+	if (!eglBindAPI(EGL_OPENGL_API)) {
+		fprintf(stderr, "failed to bind api EGL_OPENGL_API\n");
+		return -1;
+	}
+
+	d->ctx = eglCreateContext(d->dpy, NULL, EGL_NO_CONTEXT, NULL);
+	if (d->ctx == NULL) {
+		fprintf(stderr, "failed to create context\n");
+		return -1;
+	}
+
+	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->ctx)) {
+		fprintf(stderr, "faile to make context current\n");
+		return -1;
+	}
+
+#ifdef HAVE_CAIRO_GL
+	d->device = cairo_egl_device_create(d->dpy, d->ctx);
+	if (d->device == NULL) {
+		fprintf(stderr, "failed to get cairo drm device\n");
+		return -1;
+	}
+#endif
+
+	return 0;
+}
+
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 {
 	struct display *d;
-	EGLint major, minor;
-	int fd;
 	GOptionContext *context;
 	GOptionGroup *xkb_option_group;
 	GError *error;
-	drm_magic_t magic;
 
 	g_type_init();
 
@@ -1438,52 +1492,8 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	/* Process connection events. */
 	wl_display_iterate(d->display, WL_DISPLAY_READABLE);
 
-	fd = open(d->device_name, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
+	if (d->device_name && init_drm(d) < 0)
 		return NULL;
-	}
-
-	if (drmGetMagic(fd, &magic)) {
-		fprintf(stderr, "DRI2: failed to get drm magic");
-		return NULL;
-	}
-
-	/* Wait for authenticated event */
-	wl_drm_authenticate(d->drm, magic);
-	wl_display_iterate(d->display, WL_DISPLAY_WRITABLE);
-	while (!d->authenticated)
-		wl_display_iterate(d->display, WL_DISPLAY_READABLE);
-
-	d->dpy = eglGetDRMDisplayMESA(fd);
-	if (!eglInitialize(d->dpy, &major, &minor)) {
-		fprintf(stderr, "failed to initialize display\n");
-		return NULL;
-	}
-
-	if (!eglBindAPI(EGL_OPENGL_API)) {
-		fprintf(stderr, "failed to bind api EGL_OPENGL_API\n");
-		return NULL;
-	}
-
-	d->ctx = eglCreateContext(d->dpy, NULL, EGL_NO_CONTEXT, NULL);
-	if (d->ctx == NULL) {
-		fprintf(stderr, "failed to create context\n");
-		return NULL;
-	}
-
-	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->ctx)) {
-		fprintf(stderr, "faile to make context current\n");
-		return NULL;
-	}
-
-#ifdef HAVE_CAIRO_GL
-	d->device = cairo_egl_device_create(d->dpy, d->ctx);
-	if (d->device == NULL) {
-		fprintf(stderr, "failed to get cairo drm device\n");
-		return NULL;
-	}
-#endif
 
 	create_pointer_surfaces(d);
 
