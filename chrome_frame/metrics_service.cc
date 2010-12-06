@@ -380,7 +380,6 @@ void MetricsService::InitializeMetricsState() {
   thread_ = PlatformThread::CurrentId();
 
   user_permits_upload_ = GoogleUpdateSettings::GetCollectStatsConsent();
-  user_permits_upload_ = true;
   // Update session ID
   session_id_ = CrashMetricsReporter::GetInstance()->IncrementMetric(
       CrashMetricsReporter::SESSION_ID);
