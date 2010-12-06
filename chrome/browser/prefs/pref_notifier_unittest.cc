@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/default_pref_store.h"
+#include "chrome/browser/prefs/in_memory_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -62,7 +62,7 @@ class MockPrefValueStore : public PrefValueStore {
  public:
   MockPrefValueStore()
       : PrefValueStore(NULL, NULL, NULL, NULL, NULL, NULL,
-                       new DefaultPrefStore(), NULL) {}
+                       new InMemoryPrefStore(), NULL) {}
 
   virtual ~MockPrefValueStore() {}
 

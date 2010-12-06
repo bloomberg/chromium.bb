@@ -9,7 +9,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/browser/prefs/default_pref_store.h"
+#include "chrome/browser/prefs/in_memory_pref_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/extensions/extension.h"
@@ -337,7 +337,7 @@ TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
   using testing::Mock;
 
   TestExtensionPrefStore* eps = new TestExtensionPrefStore;
-  DefaultPrefStore* dps = new DefaultPrefStore;
+  InMemoryPrefStore* dps = new InMemoryPrefStore;
   ASSERT_TRUE(eps->ext1 != NULL);
 
   // The PrefValueStore takes ownership of the PrefStores; in this case, that's

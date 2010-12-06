@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_DEFAULT_PREF_STORE_H_
-#define CHROME_BROWSER_PREFS_DEFAULT_PREF_STORE_H_
+#ifndef CHROME_BROWSER_PREFS_IN_MEMORY_PREF_STORE_H_
+#define CHROME_BROWSER_PREFS_IN_MEMORY_PREF_STORE_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/pref_store.h"
 
-// This PrefStore keeps track of default preference values set when a
-// preference is registered with the PrefService.
-class DefaultPrefStore : public PrefStore {
+// This PrefStore keeps track of preference values in memory and can be used,
+// e.g., for default preference values set when a preference is registered with
+// the PrefService.
+class InMemoryPrefStore : public PrefStore {
  public:
-  DefaultPrefStore();
-  virtual ~DefaultPrefStore();
+  InMemoryPrefStore();
+  virtual ~InMemoryPrefStore();
 
   // PrefStore methods:
   virtual DictionaryValue* prefs() const;
@@ -25,7 +26,7 @@ class DefaultPrefStore : public PrefStore {
   // The default preference values.
   scoped_ptr<DictionaryValue> prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultPrefStore);
+  DISALLOW_COPY_AND_ASSIGN(InMemoryPrefStore);
 };
 
-#endif  // CHROME_BROWSER_PREFS_DEFAULT_PREF_STORE_H_
+#endif  // CHROME_BROWSER_PREFS_IN_MEMORY_PREF_STORE_H_

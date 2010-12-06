@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/default_pref_store.h"
+#include "chrome/browser/prefs/in_memory_pref_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 
@@ -48,7 +48,7 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
   JsonPrefStore* user = new JsonPrefStore(
       pref_filename,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  DefaultPrefStore* default_store = new DefaultPrefStore();
+  InMemoryPrefStore* default_store = new InMemoryPrefStore();
 
   if (!user_only) {
     managed =
