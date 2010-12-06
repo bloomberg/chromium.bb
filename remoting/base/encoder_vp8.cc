@@ -126,13 +126,13 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data) {
     for (int j = 0; j < capture_data->width(); ++j) {
       // Since the input pixel format is RGB32, there are 4 bytes per pixel.
       uint8* pixel = in + 4 * j;
-      y_out[j] = clip_byte(((pixel[2] * 66 + pixel[1] * 129 +
-                             pixel[0] * 25 + 128) >> 8) + 16);
+      y_out[j] = clip_byte(((pixel[0] * 66 + pixel[1] * 129 +
+                             pixel[2] * 25 + 128) >> 8) + 16);
       if (i % 2 == 0 && j % 2 == 0) {
-        u_out[j / 2] = clip_byte(((pixel[2] * -38 + pixel[1] * -74 +
-                                   pixel[0] * 112 + 128) >> 8) + 128);
-        v_out[j / 2] = clip_byte(((pixel[2] * 112 + pixel[1] * -94 +
-                                   pixel[1] * -18 + 128) >> 8) + 128);
+        u_out[j / 2] = clip_byte(((pixel[0] * -38 + pixel[1] * -74 +
+                                   pixel[2] * 112 + 128) >> 8) + 128);
+        v_out[j / 2] = clip_byte(((pixel[0] * 112 + pixel[1] * -94 +
+                                   pixel[2] * -18 + 128) >> 8) + 128);
       }
     }
     in += in_stride;
