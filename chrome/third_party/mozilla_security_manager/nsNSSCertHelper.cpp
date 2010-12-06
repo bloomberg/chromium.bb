@@ -774,7 +774,9 @@ std::string ProcessCrlDistPoints(SECItem* extension_data) {
     point = *points;
     switch (point->distPointType) {
       case generalName:
-        rv += ProcessGeneralName(arena.get(), point->distPoint.fullName);
+        // generalName is a typo in upstream NSS; fullName is actually a
+        // GeneralNames (SEQUENCE OF GeneralName). See Mozilla Bug #615100.
+        rv += ProcessGeneralNames(arena.get(), point->distPoint.fullName);
         break;
       case relativeDistinguishedName:
         rv += ProcessRDN(&point->distPoint.relativeName);
