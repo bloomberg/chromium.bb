@@ -37,6 +37,10 @@ HttpConnectionCUPS::~HttpConnectionCUPS() {
     httpClose(http_);
 }
 
+void HttpConnectionCUPS::SetBlocking(bool blocking) {
+  httpBlocking(http_, blocking ?  1 : 0);
+}
+
 http_t* HttpConnectionCUPS::http() {
   return http_;
 }

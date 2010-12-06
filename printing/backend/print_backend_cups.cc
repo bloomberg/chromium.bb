@@ -218,12 +218,41 @@ FilePath PrintBackendCUPS::GetPPD(const char* name) {
   const char* ppd_file_path = NULL;
   if (print_server_url_.is_empty()) {  // Use default (local) print server.
     ppd_file_path = cupsGetPPD(name);
+    if (ppd_file_path)
+      ppd_path = FilePath(ppd_file_path);
   } else {
+    // cupsGetPPD2 gets stuck sometimes in an infinite time due to network
+    // configuration/issues. To prevent that, use non-blocking http connection
+    // here.
+    // Note: After looking at CUPS sources, it looks like non-blocking
+    // connection will timeout after 10 seconds of no data period. And it will
+    // return the same way as if data was completely and sucessfully downloaded.
+    // To distinguish error case from the normal return, will check result file
+    // size agains content length.
     HttpConnectionCUPS http(print_server_url_);
+    http.SetBlocking(false);
     ppd_file_path = cupsGetPPD2(http.http(), name);
+    // Check if the get full PPD, since non-blocking call may simply return
+    // normally after timeout expired.
+    if (ppd_file_path) {
+      ppd_path = FilePath(ppd_file_path);
+      off_t content_len = httpGetLength2(http.http());
+      int64 ppd_size = 0;
+      // This is a heuristic to detect if we reached timeout. If we see content
+      // length is larger that the actual file we downloaded it means timeout
+      // reached. Sometimes http can be compressed, and in that case the
+      // the content length will be smaller than the actual payload (not sure
+      // if CUPS support such responses).
+      if (!file_util::GetFileSize(ppd_path, &ppd_size) ||
+          content_len > ppd_size) {
+        LOG(ERROR) << "Error downloading PPD file for: " << name
+                   << ", file size: "  << ppd_size
+                   << ", content length: " << content_len;
+        file_util::Delete(ppd_path, false);
+        ppd_path.clear();
+      }
+    }
   }
-  if (ppd_file_path)
-    ppd_path = FilePath(ppd_file_path);
   return ppd_path;
 }
 

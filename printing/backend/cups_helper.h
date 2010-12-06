@@ -20,6 +20,8 @@ class HttpConnectionCUPS {
   explicit HttpConnectionCUPS(const GURL& print_server_url);
   ~HttpConnectionCUPS();
 
+  void SetBlocking(bool blocking);
+
   http_t* http();
 
  private:
