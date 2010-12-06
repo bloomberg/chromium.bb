@@ -55,7 +55,7 @@ found in the LICENSE file.
   <button class="logo" tabindex=3></button>
   <form onsubmit="setSearch(this.term.value); return false;"
       class="form">
-    <input type="search" id="term" tabindex=1 autofocus
+    <input type="search" id="term" tabindex=1 autofocus incremental
         i18n-values="placeholder:search_button">
   </form>
 </div>
@@ -330,18 +330,8 @@ list.addEventListener('urlClicked', function(e) {
   getLinkController().openUrlFromEvent(e.url, e.originalEvent);
 });
 
-/**
- * Timer id used for delaying find-as-you-type
- */
-var inputDelayTimer;
-
-// Capture input changes to the search term input element and delay searching
-// for 250ms to reduce flicker.
-$('term').oninput = function(e) {
-  clearTimeout(inputDelayTimer);
-  inputDelayTimer = setTimeout(function() {
-    setSearch($('term').value);
-  }, 250);
+$('term').onsearch = function(e) {
+  setSearch(this.value);
 };
 
 /**
