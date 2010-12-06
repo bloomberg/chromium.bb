@@ -80,6 +80,29 @@ drm_buffer_damage(struct wl_buffer *buffer,
 {
 }
 
+static struct wlsc_drm_buffer *
+wlsc_drm_buffer_create_for_image(struct wlsc_compositor *compositor,
+				 EGLImageKHR *image,
+				 int32_t width, int32_t height,
+				 struct wl_visual *visual)
+{
+	struct wlsc_drm_buffer *buffer;
+
+	buffer = malloc(sizeof *buffer);
+	if (buffer == NULL)
+		return NULL;
+
+	buffer->buffer.compositor = &compositor->compositor;
+	buffer->buffer.width = width;
+	buffer->buffer.height = height;
+	buffer->buffer.visual = visual;
+	buffer->buffer.attach = drm_buffer_attach;
+	buffer->buffer.damage = drm_buffer_damage;
+	buffer->image = image;
+
+	return buffer;
+}
+
 static void
 drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 		  uint32_t id, uint32_t name, int32_t width, int32_t height,
@@ -89,6 +112,7 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	struct wlsc_compositor *compositor =
 		container_of(drm, struct wlsc_compositor, drm);
 	struct wlsc_drm_buffer *buffer;
+	EGLImageKHR image;
 	EGLint attribs[] = {
 		EGL_WIDTH,		0,
 		EGL_HEIGHT,		0,
@@ -109,34 +133,28 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 		return;
 	}
 
-	buffer = malloc(sizeof *buffer);
-	if (buffer == NULL) {
-		wl_client_post_no_memory(client);
-		return;
-	}
-
 	attribs[1] = width;
 	attribs[3] = height;
 	attribs[5] = stride / 4;
-
-	buffer->buffer.compositor = &compositor->compositor;
-	buffer->buffer.width = width;
-	buffer->buffer.height = height;
-	buffer->buffer.visual = visual;
-	buffer->buffer.attach = drm_buffer_attach;
-	buffer->buffer.damage = drm_buffer_damage;
-	buffer->image = eglCreateImageKHR(compositor->display,
-					  compositor->context,
-					  EGL_DRM_BUFFER_MESA,
-					  (EGLClientBuffer) name, attribs);
-	if (buffer->image == NULL) {
+	image = eglCreateImageKHR(compositor->display,
+				  compositor->context,
+				  EGL_DRM_BUFFER_MESA,
+				  (EGLClientBuffer) name, attribs);
+	if (image == NULL) {
 		/* FIXME: Define a real exception event instead of
 		 * abusing this one */
-		free(buffer);
 		wl_client_post_event(client,
 				     (struct wl_object *) compositor->wl_display,
 				     WL_DISPLAY_INVALID_OBJECT, 0);
 		fprintf(stderr, "failed to create image for name %d\n", name);
+		return;
+	}
+
+	buffer = wlsc_drm_buffer_create_for_image(compositor, image,
+						  width, height, visual);
+	if (buffer == NULL) {
+		eglDestroyImageKHR(compositor->display, image);
+		wl_client_post_no_memory(client);
 		return;
 	}
 
@@ -186,6 +204,7 @@ wlsc_drm_buffer_create(struct wlsc_compositor *ec,
 		       int width, int height, struct wl_visual *visual)
 {
 	struct wlsc_drm_buffer *buffer;
+	EGLImageKHR image;
 
 	EGLint image_attribs[] = {
 		EGL_WIDTH,		0,
@@ -198,22 +217,12 @@ wlsc_drm_buffer_create(struct wlsc_compositor *ec,
 	image_attribs[1] = width;
 	image_attribs[3] = height;
 
-	buffer = malloc(sizeof *buffer);
-	if (buffer == NULL)
+	image = eglCreateDRMImageMESA(ec->display, image_attribs);
+	if (image == NULL)
 		return NULL;
 
-	buffer->image =
-		eglCreateDRMImageMESA(ec->display, image_attribs);
-	if (buffer->image == NULL) {
-		free(buffer);
-		return NULL;
-	}
-
-	buffer->buffer.visual = visual;
-	buffer->buffer.width = width;
-	buffer->buffer.height = height;
-	buffer->buffer.attach = drm_buffer_attach;
-	buffer->buffer.damage = drm_buffer_damage;
+	buffer = wlsc_drm_buffer_create_for_image(ec, image,
+						  width, height, visual);
 
 	return buffer;
 }
