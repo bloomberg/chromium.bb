@@ -33,13 +33,10 @@ StatefulExternalExtensionProvider::~StatefulExternalExtensionProvider() {
 }
 
 void StatefulExternalExtensionProvider::VisitRegisteredExtension(
-    Visitor* visitor, const std::set<std::string>& ids_to_ignore) const {
+    Visitor* visitor) const {
   for (DictionaryValue::key_iterator i = prefs_->begin_keys();
        i != prefs_->end_keys(); ++i) {
     const std::string& extension_id = *i;
-    if (ids_to_ignore.find(extension_id) != ids_to_ignore.end())
-      continue;
-
     DictionaryValue* extension;
     if (!prefs_->GetDictionaryWithoutPathExpansion(extension_id, &extension))
       continue;

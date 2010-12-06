@@ -208,8 +208,7 @@ class ExtensionsServiceBackend
   // Check externally updated extensions for updates and install if necessary.
   // Errors are reported through ExtensionErrorReporter. Succcess is not
   // reported.
-  void CheckForExternalUpdates(const std::set<std::string>& ids_to_ignore,
-                               scoped_refptr<ExtensionsService> frontend);
+  void CheckForExternalUpdates(scoped_refptr<ExtensionsService> frontend);
 
   // For the extension in |version_path| with |id|, check to see if it's an
   // externally managed extension.  If so, tell the frontend to uninstall it.
@@ -370,7 +369,6 @@ void ExtensionsServiceBackend::ReportExtensionLoadError(
 // check that location for a .crx file, which it will then install locally if
 // a new version is available.
 void ExtensionsServiceBackend::CheckForExternalUpdates(
-    const std::set<std::string>& ids_to_ignore,
     scoped_refptr<ExtensionsService> frontend) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -389,7 +387,7 @@ void ExtensionsServiceBackend::CheckForExternalUpdates(
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
     ExternalExtensionProvider* provider = i->get();
-    provider->VisitRegisteredExtension(this, ids_to_ignore);
+    provider->VisitRegisteredExtension(this);
   }
 
   if (external_extension_added_ && frontend->updater()) {
@@ -733,6 +731,8 @@ void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
   const bool kInstallSilently = true;
   const bool kEnableOnInstall = true;
   const bool kEnableIncognitoOnInstall = false;
+  if (extension_prefs_->IsExtensionKilled(id))
+    return;
 
   if (GetExtensionByIdInternal(id, true, true)) {
     LOG(DFATAL) << "Trying to add extension " << id
@@ -1431,16 +1431,11 @@ void ExtensionsService::SetBrowserActionVisibility(const Extension* extension,
 }
 
 void ExtensionsService::CheckForExternalUpdates() {
-  // This installs or updates externally provided extensions.
-  // TODO(aa): Why pass this list into the provider, why not just filter it
-  // later?
-  std::set<std::string> killed_extensions;
-  extension_prefs_->GetKilledExtensionIds(&killed_extensions);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           backend_.get(), &ExtensionsServiceBackend::CheckForExternalUpdates,
-          killed_extensions, scoped_refptr<ExtensionsService>(this)));
+          scoped_refptr<ExtensionsService>(this)));
 }
 
 void ExtensionsService::UpdateExternalPolicyExtensionProvider() {
@@ -1932,6 +1927,8 @@ void ExtensionsService::OnExternalExtensionFileFound(
          const FilePath& path,
          Extension::Location location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (extension_prefs_->IsExtensionKilled(id))
+    return;
 
   // Before even bothering to unpack, check and see if we already have this
   // version. This is important because these extensions are going to get

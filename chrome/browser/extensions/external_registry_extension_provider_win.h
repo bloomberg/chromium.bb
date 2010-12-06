@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_REGISTRY_EXTENSION_PROVIDER_WIN_H_
 #pragma once
 
-#include <set>
-#include <string>
-
 #include "chrome/browser/extensions/external_extension_provider.h"
 
 class Version;
@@ -21,8 +18,7 @@ class ExternalRegistryExtensionProvider : public ExternalExtensionProvider {
   virtual ~ExternalRegistryExtensionProvider();
 
   // ExternalExtensionProvider implementation:
-  virtual void VisitRegisteredExtension(
-      Visitor* visitor, const std::set<std::string>& ids_to_ignore) const;
+  virtual void VisitRegisteredExtension(Visitor* visitor) const;
 
   virtual bool HasExtension(const std::string& id) const;
 

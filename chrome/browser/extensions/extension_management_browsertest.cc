@@ -293,25 +293,33 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
   UninstallExtension(kExtensionId);
 
-  std::set<std::string> killed_ids;
-  service->extension_prefs()->GetKilledExtensionIds(&killed_ids);
-  EXPECT_TRUE(killed_ids.end() != killed_ids.find(kExtensionId))
+  ExtensionPrefs* extension_prefs = service->extension_prefs();
+  EXPECT_TRUE(extension_prefs->IsExtensionKilled(kExtensionId))
       << "Uninstalling should set kill bit on externaly installed extension.";
+
+  // Try to install the extension again from an external source. It should fail
+  // because of the killbit.
+  service->AddPendingExtensionFromExternalUpdateUrl(
+      kExtensionId, GURL("http://localhost/autoupdate/manifest"),
+      Extension::EXTERNAL_PREF_DOWNLOAD);
+  const PendingExtensionMap& pending_extensions =
+      service->pending_extensions();
+  EXPECT_TRUE(
+      pending_extensions.find(kExtensionId) == pending_extensions.end())
+      << "External reinstall of a killed extension shouldn't work.";
+  EXPECT_TRUE(extension_prefs->IsExtensionKilled(kExtensionId))
+      << "External reinstall of a killed extension should leave it killed.";
 
   // Installing from non-external source.
   ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
 
-  killed_ids.clear();
-  service->extension_prefs()->GetKilledExtensionIds(&killed_ids);
-  EXPECT_TRUE(killed_ids.end() == killed_ids.find(kExtensionId))
+  EXPECT_FALSE(extension_prefs->IsExtensionKilled(kExtensionId))
       << "Reinstalling should clear the kill bit.";
 
   // Uninstalling from a non-external source should not set the kill bit.
   UninstallExtension(kExtensionId);
 
-  killed_ids.clear();
-  service->extension_prefs()->GetKilledExtensionIds(&killed_ids);
-  EXPECT_TRUE(killed_ids.end() == killed_ids.find(kExtensionId))
+  EXPECT_FALSE(extension_prefs->IsExtensionKilled(kExtensionId))
       << "Uninstalling non-external extension should not set kill bit.";
 }
 

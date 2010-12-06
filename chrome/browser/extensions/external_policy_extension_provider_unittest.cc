@@ -32,7 +32,7 @@ class MockExternalPolicyExtensionProviderVisitor
     // Extensions will be removed from this list as they visited,
     // so it should be emptied by the end.
     remaining_extensions = policy_validlist;
-    provider_->VisitRegisteredExtension(this, ignore_list);
+    provider_->VisitRegisteredExtension(this);
     EXPECT_EQ(0u, remaining_extensions->GetSize());
   }
 

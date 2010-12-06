@@ -41,7 +41,7 @@ ExternalRegistryExtensionProvider::~ExternalRegistryExtensionProvider() {
 }
 
 void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
-    Visitor* visitor, const std::set<std::string>& ids_to_ignore) const {
+    Visitor* visitor) const {
   base::win::RegistryKeyIterator iterator(
       kRegRoot, ASCIIToWide(kRegistryExtensions).c_str());
   while (iterator.Valid()) {
@@ -56,10 +56,6 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
         if (key.ReadValue(kRegistryExtensionVersion, &extension_version)) {
           std::string id = WideToASCII(iterator.Name());
           StringToLowerASCII(&id);
-          if (ids_to_ignore.find(id) != ids_to_ignore.end()) {
-            ++iterator;
-            continue;
-          }
 
           scoped_ptr<Version> version;
           version.reset(Version::GetVersionFromString(extension_version));

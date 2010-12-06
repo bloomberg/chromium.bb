@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_STATEFUL_EXTERNAL_EXTENSION_PROVIDER_H_
 #pragma once
 
-#include <set>
-#include <string>
-
 #include "chrome/browser/extensions/external_extension_provider.h"
 
 class DictionaryValue;
@@ -35,8 +32,7 @@ class StatefulExternalExtensionProvider : public ExternalExtensionProvider {
   virtual ~StatefulExternalExtensionProvider();
 
   // ExternalExtensionProvider implementation:
-  virtual void VisitRegisteredExtension(
-      Visitor* visitor, const std::set<std::string>& ids_to_ignore) const;
+  virtual void VisitRegisteredExtension(Visitor* visitor) const;
 
   virtual bool HasExtension(const std::string& id) const;
 

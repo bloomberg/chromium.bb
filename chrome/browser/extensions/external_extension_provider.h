@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_EXTENSION_PROVIDER_H_
 #pragma once
 
-#include <set>
-#include <string>
-
 #include "chrome/common/extensions/extension.h"
 
 class FilePath;
@@ -44,8 +41,7 @@ class ExternalExtensionProvider {
   // Enumerate registered extension, calling OnExternalExtensionFound on
   // the |visitor| object for each registered extension found. |ids_to_ignore|
   // contains a list of extension ids that should not result in a call back.
-  virtual void VisitRegisteredExtension(
-      Visitor* visitor, const std::set<std::string>& ids_to_ignore) const = 0;
+  virtual void VisitRegisteredExtension(Visitor* visitor) const = 0;
 
   // Test if this provider has an extension with id |id| registered.
   virtual bool HasExtension(const std::string& id) const = 0;

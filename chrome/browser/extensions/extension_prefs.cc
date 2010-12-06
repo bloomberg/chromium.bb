@@ -614,32 +614,13 @@ void ExtensionPrefs::SetLaunchType(const std::string& extension_id,
   SavePrefsAndNotify();
 }
 
-void ExtensionPrefs::GetKilledExtensionIds(std::set<std::string>* killed_ids) {
-  const DictionaryValue* dict = prefs_->GetDictionary(kExtensionsPref);
-  if (!dict || dict->empty())
-    return;
-
-  for (DictionaryValue::key_iterator i = dict->begin_keys();
-       i != dict->end_keys(); ++i) {
-    const std::string& key_name(*i);
-    if (!Extension::IdIsValid(key_name)) {
-      LOG(WARNING) << "Invalid external extension ID encountered: " << key_name;
-      continue;
-    }
-
-    DictionaryValue* extension;
-    if (!dict->GetDictionary(key_name, &extension)) {
-      NOTREACHED();
-      continue;
-    }
-
-    // Check to see if the extension has been killed.
-    int state;
-    if (extension->GetInteger(kPrefState, &state) &&
-        state == static_cast<int>(Extension::KILLBIT)) {
-      killed_ids->insert(StringToLowerASCII(key_name));
-    }
-  }
+bool ExtensionPrefs::IsExtensionKilled(const std::string& id) {
+  DictionaryValue* extension = GetExtensionPref(id);
+  if (!extension)
+    return false;
+  int state = 0;
+  return extension->GetInteger(kPrefState, &state) &&
+         state == static_cast<int>(Extension::KILLBIT);
 }
 
 std::vector<std::string> ExtensionPrefs::GetToolbarOrder() {

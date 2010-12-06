@@ -140,13 +140,10 @@ class MockExtensionProvider : public ExternalExtensionProvider {
   }
 
   // ExternalExtensionProvider implementation:
-  virtual void VisitRegisteredExtension(
-      Visitor* visitor, const std::set<std::string>& ids_to_ignore) const {
+  virtual void VisitRegisteredExtension(Visitor* visitor) const {
     visit_count_++;
     for (DataMap::const_iterator i = extension_map_.begin();
          i != extension_map_.end(); ++i) {
-      if (ids_to_ignore.find(i->first) != ids_to_ignore.end())
-        continue;
       scoped_ptr<Version> version;
       version.reset(Version::GetVersionFromString(i->second.first));
 
@@ -198,8 +195,7 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
   MockProviderVisitor() : ids_found_(0) {
   }
 
-  int Visit(const std::string& json_data,
-            const std::set<std::string>& ignore_list) {
+  int Visit(const std::string& json_data) {
     // Give the test json file to the provider for parsing.
     provider_.reset(new ExternalPrefExtensionProvider());
     provider_->SetPreferencesForTesting(json_data);
@@ -220,9 +216,8 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
 
     // Reset our counter.
     ids_found_ = 0;
-    // Ask the provider to look up all extensions (and return the ones
-    // found (that are not on the ignore list).
-    provider_->VisitRegisteredExtension(this, ignore_list);
+    // Ask the provider to look up all extensions and return them.
+    provider_->VisitRegisteredExtension(this);
 
     return ids_found_;
   }
@@ -1060,6 +1055,52 @@ TEST_F(ExtensionsServiceTest, InstallExtension) {
 
   // TODO(erikkay): add more tests for many of the failure cases.
   // TODO(erikkay): add tests for upgrade cases.
+}
+
+// Test the handling of killed extensions.
+TEST_F(ExtensionsServiceTest, KilledExtensions) {
+  InitializeEmptyExtensionsService();
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  set_extensions_enabled(true);
+
+  // Install an external extension.
+  service_->OnExternalExtensionFileFound(good_crx, "1.0.0.0",
+                                         path, Extension::EXTERNAL_PREF);
+  loop_.RunAllPending();
+  ASSERT_TRUE(NULL != service_->GetExtensionById(good_crx, false));
+
+  // Uninstall it and check that its killbit gets set.
+  service_->UninstallExtension(good_crx, false);
+  loop_.RunAllPending();
+  ValidateIntegerPref(good_crx, "location", Extension::KILLBIT);
+
+  // Try to re-install it externally. This should fail because of the killbit.
+  service_->OnExternalExtensionFileFound(good_crx, "1.0.0.0",
+                                         path, Extension::EXTERNAL_PREF);
+  loop_.RunAllPending();
+  ASSERT_TRUE(NULL == service_->GetExtensionById(good_crx, false));
+  ValidateIntegerPref(good_crx, "location", Extension::KILLBIT);
+
+  // Repeat the same thing with a newer version of the extension.
+  path = extensions_path.AppendASCII("good2.crx");
+  service_->OnExternalExtensionFileFound(good_crx, "1.0.0.1",
+                                         path, Extension::EXTERNAL_PREF);
+  loop_.RunAllPending();
+  ASSERT_TRUE(NULL == service_->GetExtensionById(good_crx, false));
+  ValidateIntegerPref(good_crx, "location", Extension::KILLBIT);
+
+  // Try adding the same extension from an external update URL.
+  service_->AddPendingExtensionFromExternalUpdateUrl(
+      good_crx,
+      GURL("http:://fake.update/url"),
+      Extension::EXTERNAL_PREF_DOWNLOAD);
+  const PendingExtensionMap& pending_extensions =
+      service_->pending_extensions();
+  ASSERT_TRUE(pending_extensions.find(good_crx) == pending_extensions.end());
 }
 
 // Install a user script (they get converted automatically to an extension)
@@ -2871,14 +2912,6 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
       "}";
 
   MockProviderVisitor visitor;
-  std::set<std::string> ignore_list;
-  EXPECT_EQ(3, visitor.Visit(json_data, ignore_list));
-  ignore_list.insert("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  EXPECT_EQ(2, visitor.Visit(json_data, ignore_list));
-  ignore_list.insert("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  EXPECT_EQ(1, visitor.Visit(json_data, ignore_list));
-  ignore_list.insert("cccccccccccccccccccccccccccccccc");
-  EXPECT_EQ(0, visitor.Visit(json_data, ignore_list));
 
   // Simulate an external_extensions.json file that contains seven invalid
   // extensions:
@@ -2922,8 +2955,7 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
       "    \"external_version\": \"1.0\""
       "  }"
       "}";
-  ignore_list.clear();
-  EXPECT_EQ(1, visitor.Visit(json_data, ignore_list));
+  EXPECT_EQ(1, visitor.Visit(json_data));
 }
 
 // Test loading good extensions from the profile directory.
