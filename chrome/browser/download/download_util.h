@@ -150,17 +150,6 @@ void DragDownload(const DownloadItem* download,
                   SkBitmap* icon,
                   gfx::NativeView view);
 
-// Executable file support -----------------------------------------------------
-
-// Tests if a file is considered executable, based on its type.
-bool IsExecutableFile(const FilePath& path);
-
-// Determine if the specified extension is an executable extension.
-bool IsExecutableExtension(const FilePath::StringType& extension);
-
-// Tests if we think the server means for this mime_type to be executable.
-bool IsExecutableMimeType(const std::string& mime_type);
-
 // Helpers ---------------------------------------------------------------------
 
 // Creates a representation of a download in a format that the downloads

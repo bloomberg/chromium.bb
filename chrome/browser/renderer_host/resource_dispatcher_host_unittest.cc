@@ -1003,7 +1003,7 @@ class ApplyExtensionLocalizationFilterTest : public testing::Test {
     return new ResourceDispatcherHostRequestInfo(
         resource_handler_.get(), ChildProcessInfo::RENDER_PROCESS, 0, 0, 0,
         "not important", "not important",
-        ResourceType::STYLESHEET, 0U, false, false, -1, -1);
+        ResourceType::STYLESHEET, 0U, false, false, false, -1, -1);
   }
 
   scoped_ptr<GURL> url_;

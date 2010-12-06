@@ -469,6 +469,9 @@ struct ViewHostMsg_Resource_Request {
 
   bool download_to_file;
 
+  // True if the request was user initiated.
+  bool has_user_gesture;
+
   // The following two members are specified if the request is initiated by
   // a plugin like Gears.
 

@@ -66,6 +66,7 @@ ViewHostMsg_Resource_Request::ViewHostMsg_Resource_Request()
       request_context(0),
       appcache_host_id(0),
       download_to_file(false),
+      has_user_gesture(false),
       host_renderer_id(0),
       host_render_view_id(0) {
 }
@@ -938,6 +939,7 @@ void ParamTraits<ViewHostMsg_Resource_Request>::Write(Message* m,
   WriteParam(m, p.appcache_host_id);
   WriteParam(m, p.upload_data);
   WriteParam(m, p.download_to_file);
+  WriteParam(m, p.has_user_gesture);
   WriteParam(m, p.host_renderer_id);
   WriteParam(m, p.host_render_view_id);
 }
@@ -960,6 +962,7 @@ bool ParamTraits<ViewHostMsg_Resource_Request>::Read(const Message* m,
       ReadParam(m, iter, &r->appcache_host_id) &&
       ReadParam(m, iter, &r->upload_data) &&
       ReadParam(m, iter, &r->download_to_file) &&
+      ReadParam(m, iter, &r->has_user_gesture) &&
       ReadParam(m, iter, &r->host_renderer_id) &&
       ReadParam(m, iter, &r->host_render_view_id);
 }
@@ -988,6 +991,8 @@ void ParamTraits<ViewHostMsg_Resource_Request>::Log(const param_type& p,
   LogParam(p.appcache_host_id, l);
   l->append(", ");
   LogParam(p.download_to_file, l);
+  l->append(", ");
+  LogParam(p.has_user_gesture, l);
   l->append(", ");
   LogParam(p.host_renderer_id, l);
   l->append(", ");

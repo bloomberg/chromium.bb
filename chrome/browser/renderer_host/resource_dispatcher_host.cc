@@ -519,6 +519,7 @@ void ResourceDispatcherHost::BeginRequest(
           upload_size,
           false,  // is download
           ResourceType::IsFrame(request_data.resource_type), // allow_download
+          request_data.has_user_gesture,
           request_data.host_renderer_id,
           request_data.host_render_view_id);
   ApplyExtensionLocalizationFilter(request_data.url, request_data.resource_type,
@@ -650,14 +651,15 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                child_id,
                                                route_id,
                                                request_id_,
-                                               "null",  // frame_origin
-                                               "null",  // main_frame_origin
+                                               "null",    // frame_origin
+                                               "null",    // main_frame_origin
                                                ResourceType::SUB_RESOURCE,
-                                               0,  // upload_size
+                                               0,         // upload_size
                                                download,  // is_download
                                                download,  // allow_download
-                                               -1,  // Host renderer id
-                                               -1);  // Host render view id
+                                               false,     // has_user_gesture
+                                               -1,        // host renderer id
+                                               -1);       // host render view id
 }
 
 void ResourceDispatcherHost::OnClosePageACK(

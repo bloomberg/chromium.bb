@@ -3211,7 +3211,7 @@ void RenderView::didStartProvisionalLoad(WebFrame* frame) {
   bool is_top_most = !frame->parent();
   if (is_top_most) {
     navigation_gesture_ = frame->isProcessingUserGesture() ?
-        NavigationGestureUnknown : NavigationGestureAuto;
+        NavigationGestureUser : NavigationGestureAuto;
 
     // Make sure redirect tracking state is clear for the new load.
     completed_client_redirect_src_ = GURL();
@@ -3579,6 +3579,8 @@ void RenderView::willSendRequest(
   }
 
   request.setRequestorID(routing_id_);
+  request.setHasUserGesture(frame->isProcessingUserGesture());
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoReferrers))
     request.clearHTTPHeaderField("Referer");
 

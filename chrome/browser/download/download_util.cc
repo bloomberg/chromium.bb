@@ -27,6 +27,7 @@
 #include "base/values.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
@@ -719,18 +720,22 @@ FilePath GetCrDownloadPath(const FilePath& suggested_path) {
 
 // TODO(erikkay,phajdan.jr): This is apparently not being exercised in tests.
 bool IsDangerous(DownloadCreateInfo* info, Profile* profile) {
-  // Downloads can be marked as dangerous for two reasons:
-  // a) They have a dangerous-looking filename
-  // b) They are an extension that is not from the gallery
-  if (IsExecutableFile(info->suggested_path.BaseName())) {
+  DownloadDangerLevel danger_level = GetFileDangerLevel(
+      info->suggested_path.BaseName());
+
+  if (danger_level == Dangerous) {
+    return true;
+  } else if (danger_level == AllowOnUserGesture && !info->has_user_gesture) {
     return true;
   } else if (info->is_extension_install) {
     ExtensionsService* service = profile->GetExtensionsService();
     if (!service ||
         !service->IsDownloadFromGallery(info->url, info->referrer_url)) {
+      // Extensions that are not from the gallery are considered dangerous.
       return true;
     }
   }
+
   return false;
 }
 

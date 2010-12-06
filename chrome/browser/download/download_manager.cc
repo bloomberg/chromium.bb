@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
@@ -836,7 +837,7 @@ bool DownloadManager::ShouldOpenFileBasedOnExtension(
   FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
-  if (download_util::IsExecutableExtension(extension))
+  if (!download_util::IsFileExtensionSafe(extension))
     return false;
   if (Extension::IsExtension(path))
     return false;

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ ResourceDispatcherHostRequestInfo* GetRequestInfo(int request_id) {
   return new ResourceDispatcherHostRequestInfo(
       new DummyResourceHandler(), ChildProcessInfo::RENDER_PROCESS, 0, 0,
       request_id, "null", "null", ResourceType::MAIN_FRAME,
-      0, false, false, -1, -1);
+      0, false, false, false, -1, -1);
 }
 
 void InitializeQueue(ResourceQueue* queue, ResourceQueueDelegate* delegate) {

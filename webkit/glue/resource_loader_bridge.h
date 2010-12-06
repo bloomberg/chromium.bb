@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -236,6 +236,9 @@ class ResourceLoaderBridge {
     // If true, then the response body will be downloaded to a file and the
     // path to that file will be provided in ResponseInfo::download_file_path.
     bool download_to_file;
+
+    // True if the request was user initiated.
+    bool has_user_gesture;
   };
 
   // See the SyncLoad method declared below.  (The name of this struct is not

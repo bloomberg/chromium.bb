@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
@@ -69,6 +70,9 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   set_content_disposition(content_disposition);
   set_content_length(response->response_head.content_length);
 
+  const ResourceDispatcherHostRequestInfo* request_info =
+    ResourceDispatcherHost::InfoForRequest(request_);
+
   download_id_ = download_file_manager_->GetNextId();
   // |download_file_manager_| consumes (deletes):
   DownloadCreateInfo* info = new DownloadCreateInfo;
@@ -79,6 +83,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->total_bytes = content_length_;
   info->state = DownloadItem::IN_PROGRESS;
   info->download_id = download_id_;
+  info->has_user_gesture = request_info->has_user_gesture();
   info->child_id = global_id_.child_id;
   info->render_view_id = render_view_id_;
   info->request_id = global_id_.request_id;

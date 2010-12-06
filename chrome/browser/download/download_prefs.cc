@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -31,7 +32,7 @@ DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
 #elif defined(OS_WIN)
     FilePath path(UTF8ToWide(extensions[i]));
 #endif
-    if (!extensions[i].empty() && !download_util::IsExecutableFile(path))
+    if (!extensions[i].empty() && download_util::IsFileSafe(path))
       auto_open_.insert(path.value());
   }
 }
@@ -88,7 +89,7 @@ bool DownloadPrefs::EnableAutoOpenBasedOnExtension(const FilePath& file_name) {
     return false;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);
-  if (download_util::IsExecutableExtension(extension))
+  if (!download_util::IsFileExtensionSafe(extension))
     return false;
 
   auto_open_.insert(extension);

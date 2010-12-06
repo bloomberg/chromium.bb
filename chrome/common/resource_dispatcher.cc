@@ -111,6 +111,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.request_context = request_info.request_context;
   request_.appcache_host_id = request_info.appcache_host_id;
   request_.download_to_file = request_info.download_to_file;
+  request_.has_user_gesture = request_info.has_user_gesture;
   request_.host_renderer_id = host_renderer_id_;
   request_.host_render_view_id = host_render_view_id_;
 }

@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_manager.h"
@@ -196,7 +197,7 @@ void DownloadItem::NotifyObserversDownloadFileCompleted() {
 
 bool DownloadItem::CanOpenDownload() {
   return !Extension::IsExtension(target_name_) &&
-      !download_util::IsExecutableFile(target_name_);
+      download_util::IsFileSafe(target_name_);
 }
 
 bool DownloadItem::ShouldOpenFileBasedOnExtension() {

@@ -42,6 +42,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       uint64 upload_size,
       bool is_download,
       bool allow_download,
+      bool has_user_gesture,
       int host_renderer_id,
       int host_render_view_id);
   virtual ~ResourceDispatcherHostRequestInfo();
@@ -94,6 +95,8 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
 
   // Downloads are allowed only as a top level request.
   bool allow_download() const { return allow_download_; }
+
+  bool has_user_gesture() const { return has_user_gesture_; }
 
   // Whether this is a download.
   bool is_download() const { return is_download_; }
@@ -214,6 +217,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   int pending_data_count_;
   bool is_download_;
   bool allow_download_;
+  bool has_user_gesture_;
   int pause_count_;
   std::string frame_origin_;
   std::string main_frame_origin_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,8 @@ ResourceLoaderBridge::RequestInfo::RequestInfo()
       request_context(0),
       appcache_host_id(0),
       routing_id(0),
-      download_to_file(false) {
+      download_to_file(false),
+      has_user_gesture(false) {
 }
 
 ResourceLoaderBridge::RequestInfo::~RequestInfo() {

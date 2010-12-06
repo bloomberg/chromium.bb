@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -27,7 +27,8 @@ struct DownloadCreateInfo {
                      int64 received_bytes,
                      int64 total_bytes,
                      int32 state,
-                     int32 download_id);
+                     int32 download_id,
+                     bool has_user_gesture);
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
@@ -46,6 +47,7 @@ struct DownloadCreateInfo {
   int64 total_bytes;
   int32 state;
   int32 download_id;
+  bool has_user_gesture;
   int child_id;
   int render_view_id;
   int request_id;

@@ -435,6 +435,7 @@ void WebURLLoaderImpl::Context::Start(
   request_info.appcache_host_id = request.appCacheHostID();
   request_info.routing_id = request.requestorID();
   request_info.download_to_file = request.downloadToFile();
+  request_info.has_user_gesture = request.hasUserGesture();
   bridge_.reset(ResourceLoaderBridge::Create(request_info));
 
   if (!request.httpBody().isNull()) {
