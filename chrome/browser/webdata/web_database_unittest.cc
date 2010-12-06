@@ -1635,6 +1635,168 @@ TEST_F(WebDatabaseTest, CreditCard) {
                                        &db_creditcard));
 }
 
+TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  // Add a profile to the db.
+  AutoFillProfile profile;
+  profile.set_label(ASCIIToUTF16("Test Profile"));
+  profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
+  profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
+  profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Smith"));
+  profile.SetInfo(AutoFillType(EMAIL_ADDRESS), ASCIIToUTF16("js@example.com"));
+  profile.SetInfo(AutoFillType(COMPANY_NAME), ASCIIToUTF16("Google"));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                  ASCIIToUTF16("1234 Apple Way"));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2), ASCIIToUTF16("unit 5"));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_CITY), ASCIIToUTF16("Los Angeles"));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16("CA"));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16("90025"));
+  profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"));
+  profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
+                  ASCIIToUTF16("18181234567"));
+  profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
+                  ASCIIToUTF16("1915243678"));
+  db.AddAutoFillProfile(profile);
+
+  // Set a mocked value for the profile's creation time.
+  const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
+  sql::Statement s_mock_creation_date(db.db_.GetUniqueStatement(
+      "UPDATE autofill_profiles SET date_modified = ?"));
+  ASSERT_TRUE(s_mock_creation_date);
+  s_mock_creation_date.BindInt64(0, mock_creation_date);
+  ASSERT_TRUE(s_mock_creation_date.Run());
+
+  // Get the profile.
+  AutoFillProfile* tmp_profile;
+  ASSERT_TRUE(db.GetAutoFillProfileForGUID(profile.guid(), &tmp_profile));
+  scoped_ptr<AutoFillProfile> db_profile(tmp_profile);
+  EXPECT_EQ(profile, *db_profile);
+  sql::Statement s_original(db.db_.GetUniqueStatement(
+      "SELECT date_modified FROM autofill_profiles"));
+  ASSERT_TRUE(s_original);
+  ASSERT_TRUE(s_original.Step());
+  EXPECT_EQ(mock_creation_date, s_original.ColumnInt64(0));
+  EXPECT_FALSE(s_original.Step());
+
+  // Now, update the profile and save the update to the database.
+  // The modification date should change to reflect the update.
+  profile.SetInfo(AutoFillType(EMAIL_ADDRESS), ASCIIToUTF16("js@smith.xyz"));
+  db.UpdateAutoFillProfile(profile);
+
+  // Get the profile.
+  ASSERT_TRUE(db.GetAutoFillProfileForGUID(profile.guid(), &tmp_profile));
+  db_profile.reset(tmp_profile);
+  EXPECT_EQ(profile, *db_profile);
+  sql::Statement s_updated(db.db_.GetUniqueStatement(
+      "SELECT date_modified FROM autofill_profiles"));
+  ASSERT_TRUE(s_updated);
+  ASSERT_TRUE(s_updated.Step());
+  EXPECT_LT(mock_creation_date, s_updated.ColumnInt64(0));
+  EXPECT_FALSE(s_updated.Step());
+
+  // Set a mocked value for the profile's modification time.
+  const time_t mock_modification_date = Time::Now().ToTimeT() - 7;
+  sql::Statement s_mock_modification_date(db.db_.GetUniqueStatement(
+      "UPDATE autofill_profiles SET date_modified = ?"));
+  ASSERT_TRUE(s_mock_modification_date);
+  s_mock_modification_date.BindInt64(0, mock_modification_date);
+  ASSERT_TRUE(s_mock_modification_date.Run());
+
+  // Finally, call into |UpdateAutoFillProfile()| without changing the profile.
+  // The modification date should not change.
+  db.UpdateAutoFillProfile(profile);
+
+  // Get the profile.
+  ASSERT_TRUE(db.GetAutoFillProfileForGUID(profile.guid(), &tmp_profile));
+  db_profile.reset(tmp_profile);
+  EXPECT_EQ(profile, *db_profile);
+  sql::Statement s_unchanged(db.db_.GetUniqueStatement(
+      "SELECT date_modified FROM autofill_profiles"));
+  ASSERT_TRUE(s_unchanged);
+  ASSERT_TRUE(s_unchanged.Step());
+  EXPECT_EQ(mock_modification_date, s_unchanged.ColumnInt64(0));
+  EXPECT_FALSE(s_unchanged.Step());
+}
+
+TEST_F(WebDatabaseTest, UpdateCreditCard) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  // Add a credit card to the db.
+  CreditCard credit_card;
+  credit_card.set_label(ASCIIToUTF16("Test Credit Card"));
+  credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME),
+                      ASCIIToUTF16("Jack Torrance"));
+  credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
+                      ASCIIToUTF16("1234567890123456"));
+  credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+                      ASCIIToUTF16("04"));
+  credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+                      ASCIIToUTF16("2013"));
+  db.AddCreditCard(credit_card);
+
+  // Set a mocked value for the credit card's creation time.
+  const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
+  sql::Statement s_mock_creation_date(db.db_.GetUniqueStatement(
+      "UPDATE credit_cards SET date_modified = ?"));
+  ASSERT_TRUE(s_mock_creation_date);
+  s_mock_creation_date.BindInt64(0, mock_creation_date);
+  ASSERT_TRUE(s_mock_creation_date.Run());
+
+  // Get the credit card.
+  CreditCard* tmp_credit_card;
+  ASSERT_TRUE(db.GetCreditCardForGUID(credit_card.guid(), &tmp_credit_card));
+  scoped_ptr<CreditCard> db_credit_card(tmp_credit_card);
+  EXPECT_EQ(credit_card, *db_credit_card);
+  sql::Statement s_original(db.db_.GetUniqueStatement(
+      "SELECT date_modified FROM credit_cards"));
+  ASSERT_TRUE(s_original);
+  ASSERT_TRUE(s_original.Step());
+  EXPECT_EQ(mock_creation_date, s_original.ColumnInt64(0));
+  EXPECT_FALSE(s_original.Step());
+
+  // Now, update the credit card and save the update to the database.
+  // The modification date should change to reflect the update.
+  credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH), ASCIIToUTF16("01"));
+  db.UpdateCreditCard(credit_card);
+
+  // Get the credit card.
+  ASSERT_TRUE(db.GetCreditCardForGUID(credit_card.guid(), &tmp_credit_card));
+  db_credit_card.reset(tmp_credit_card);
+  EXPECT_EQ(credit_card, *db_credit_card);
+  sql::Statement s_updated(db.db_.GetUniqueStatement(
+      "SELECT date_modified FROM credit_cards"));
+  ASSERT_TRUE(s_updated);
+  ASSERT_TRUE(s_updated.Step());
+  EXPECT_LT(mock_creation_date, s_updated.ColumnInt64(0));
+  EXPECT_FALSE(s_updated.Step());
+
+  // Set a mocked value for the credit card's modification time.
+  const time_t mock_modification_date = Time::Now().ToTimeT() - 7;
+  sql::Statement s_mock_modification_date(db.db_.GetUniqueStatement(
+      "UPDATE credit_cards SET date_modified = ?"));
+  ASSERT_TRUE(s_mock_modification_date);
+  s_mock_modification_date.BindInt64(0, mock_modification_date);
+  ASSERT_TRUE(s_mock_modification_date.Run());
+
+  // Finally, call into |UpdateCreditCard()| without changing the credit card.
+  // The modification date should not change.
+  db.UpdateCreditCard(credit_card);
+
+  // Get the profile.
+  ASSERT_TRUE(db.GetCreditCardForGUID(credit_card.guid(), &tmp_credit_card));
+  db_credit_card.reset(tmp_credit_card);
+  EXPECT_EQ(credit_card, *db_credit_card);
+  sql::Statement s_unchanged(db.db_.GetUniqueStatement(
+      "SELECT date_modified FROM credit_cards"));
+  ASSERT_TRUE(s_unchanged);
+  ASSERT_TRUE(s_unchanged.Step());
+  EXPECT_EQ(mock_modification_date, s_unchanged.ColumnInt64(0));
+  EXPECT_FALSE(s_unchanged.Step());
+}
+
 TEST_F(WebDatabaseTest, RemoveAutoFillProfilesAndCreditCardsModifiedBetween) {
   WebDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));

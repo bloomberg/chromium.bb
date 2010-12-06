@@ -1693,6 +1693,14 @@ bool WebDatabase::GetAutoFillProfiles(
 
 bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
   DCHECK(guid::IsValidGUID(profile.guid()));
+
+  // Preserve appropriate modification dates by not updating unchanged profiles.
+  AutoFillProfile* tmp_profile = NULL;
+  DCHECK(GetAutoFillProfileForGUID(profile.guid(), &tmp_profile));
+  scoped_ptr<AutoFillProfile> old_profile(tmp_profile);
+  if (*old_profile == profile)
+    return true;
+
   sql::Statement s(db_.GetUniqueStatement(
       "UPDATE autofill_profiles "
       "SET guid=?, label=?, first_name=?, middle_name=?, last_name=?, "
@@ -1813,6 +1821,14 @@ bool WebDatabase::GetCreditCards(
 
 bool WebDatabase::UpdateCreditCard(const CreditCard& credit_card) {
   DCHECK(guid::IsValidGUID(credit_card.guid()));
+
+  // Preserve appropriate modification dates by not updating unchanged cards.
+  CreditCard* tmp_credit_card = NULL;
+  DCHECK(GetCreditCardForGUID(credit_card.guid(), &tmp_credit_card));
+  scoped_ptr<CreditCard> old_credit_card(tmp_credit_card);
+  if (*old_credit_card == credit_card)
+    return true;
+
   sql::Statement s(db_.GetUniqueStatement(
       "UPDATE credit_cards "
       "SET guid=?, label=?, name_on_card=?, expiration_month=?, "

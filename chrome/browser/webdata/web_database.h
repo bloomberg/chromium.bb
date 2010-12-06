@@ -322,6 +322,8 @@ class WebDatabase {
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_AddFormFieldValues);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutoFillProfile);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, CreditCard);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateAutoFillProfile);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, UpdateCreditCard);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
                            RemoveAutoFillProfilesAndCreditCardsModifiedBetween);
 
