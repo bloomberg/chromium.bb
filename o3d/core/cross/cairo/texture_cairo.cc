@@ -174,6 +174,10 @@ void TextureCairo::SetRect(int level,
 
   // Discard our reference to the source surface.
   cairo_surface_destroy(source_image_surface);
+
+  if (level == 0) {
+    TextureUpdated();
+  }
 }
 
 // Locks the given mipmap level of this texture for loading from main memory,

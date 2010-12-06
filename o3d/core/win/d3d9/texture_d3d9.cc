@@ -260,7 +260,7 @@ void SetTextureRectCompressed(Texture::Format format,
   }
 }
 
-void SetTextureRect(
+bool SetTextureRect(
     ServiceLocator* service_locator,
     IDirect3DTexture9* d3d_texture,
     Texture::Format format,
@@ -280,7 +280,7 @@ void SetTextureRect(
   if (!HR(d3d_texture->LockRect(
       level, &out_rect, compressed ? NULL : &rect, 0))) {
     O3D_ERROR(service_locator) << "Failed to Lock Texture2D (D3D9)";
-    return;
+    return false;
   }
 
   const uint8* src = static_cast<const uint8*>(src_data);
@@ -294,11 +294,12 @@ void SetTextureRect(
   }
   if (!HR(d3d_texture->UnlockRect(level))) {
     O3D_ERROR(service_locator) << "Failed to Unlock Texture2D (D3D9)";
-    return;
+    return false;
   }
+  return true;
 }
 
-void SetTextureFaceRect(
+bool SetTextureFaceRect(
     ServiceLocator* service_locator,
     IDirect3DCubeTexture9* d3d_texture,
     Texture::Format format,
@@ -321,7 +322,7 @@ void SetTextureFaceRect(
   if (!HR(d3d_texture->LockRect(
       d3d_face, level, &out_rect, compressed ? NULL : &rect, 0))) {
     O3D_ERROR(service_locator) << "Failed to Lock TextureCUBE (D3D9)";
-    return;
+    return false;
   }
 
   const uint8* src = static_cast<const uint8*>(src_data);
@@ -335,8 +336,9 @@ void SetTextureFaceRect(
   }
   if (!HR(d3d_texture->UnlockRect(d3d_face, level))) {
     O3D_ERROR(service_locator) << "Failed to Unlock TextureCUBE (D3D9)";
-    return;
+    return false;
   }
+  return true;
 }
 
 }  // unnamed namespace
@@ -550,6 +552,7 @@ void Texture2DD3D9::SetRect(int level,
     return;
   }
 
+  bool success = true;
   if (resize_to_pot_) {
     DCHECK(backing_bitmap_->image_data());
     DCHECK(!compressed);
@@ -559,16 +562,19 @@ void Texture2DD3D9::SetRect(int level,
         level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
     UpdateBackedMipLevel(level);
   } else {
-    SetTextureRect(service_locator(),
-                   d3d_texture_,
-                   format(),
-                   level,
-                   dst_left,
-                   dst_top,
-                   src_width,
-                   src_height,
-                   src_data,
-                   src_pitch);
+    success = SetTextureRect(service_locator(),
+                             d3d_texture_,
+                             format(),
+                             level,
+                             dst_left,
+                             dst_top,
+                             src_width,
+                             src_height,
+                             src_data,
+                             src_pitch);
+  }
+  if (success && level == 0) {
+    TextureUpdated();
   }
 }
 
@@ -877,6 +883,7 @@ void TextureCUBED3D9::SetRect(TextureCUBE::CubeFace face,
     return;
   }
 
+  bool success = true;
   if (resize_to_pot_) {
     Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
     DCHECK(backing_bitmap->image_data());
@@ -887,17 +894,20 @@ void TextureCUBED3D9::SetRect(TextureCUBE::CubeFace face,
         level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
     UpdateBackedMipLevel(face, level);
   } else {
-    SetTextureFaceRect(service_locator(),
-                       d3d_cube_texture_,
-                       format(),
-                       face,
-                       level,
-                       dst_left,
-                       dst_top,
-                       src_width,
-                       src_height,
-                       src_data,
-                       src_pitch);
+    success = SetTextureFaceRect(service_locator(),
+                                 d3d_cube_texture_,
+                                 format(),
+                                 face,
+                                 level,
+                                 dst_left,
+                                 dst_top,
+                                 src_width,
+                                 src_height,
+                                 src_data,
+                                 src_pitch);
+  }
+  if (success && level == 0) {
+    TextureUpdated();
   }
 }
 

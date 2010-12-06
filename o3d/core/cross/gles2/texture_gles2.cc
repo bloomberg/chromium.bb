@@ -493,6 +493,9 @@ void Texture2DGLES2::SetRect(int level,
           src_data);
     }
   }
+  if (level == 0) {
+    TextureUpdated();
+  }
 }
 
 // Locks the given mipmap level of this texture for loading from main memory,
@@ -842,6 +845,9 @@ void TextureCUBEGLES2::SetRect(TextureCUBE::CubeFace face,
           image::ComputeMipChainSize(src_width, src_height, format(), 1),
           src_data);
     }
+  }
+  if (level == 0) {
+    TextureUpdated();
   }
 }
 

@@ -109,6 +109,16 @@ namespace o3d {
   [getter, getter, setter] bool alpha_is_one;
 
   %[
+    The count of total updates made to this texture.
+  %]
+  [getter] int update_count;
+
+  %[
+    The count of updates made to this texture that were rendered to the screen.
+  %]
+  [getter] int render_count;
+
+  %[
     Generates Mips.
     \param source_level the mip to use as the source.
     \param num_levels the number of mips from the source to generate.

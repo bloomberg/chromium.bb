@@ -33,8 +33,10 @@
 // This file contains the definition of the Texture class.
 
 #include "core/cross/texture_base.h"
-#include "core/cross/pack.h"
+
 #include "core/cross/bitmap.h"
+#include "core/cross/pack.h"
+#include "core/cross/renderer.h"
 
 namespace o3d {
 
@@ -49,12 +51,34 @@ Texture::Texture(ServiceLocator* service_locator,
                  int levels,
                  bool enable_render_surfaces)
     : ParamObject(service_locator),
+      renderer_(service_locator->GetService<Renderer>()),
       alpha_is_one_(false),
       format_(format),
       weak_pointer_manager_(this),
-      render_surfaces_enabled_(enable_render_surfaces) {
+      render_surfaces_enabled_(enable_render_surfaces),
+      has_unrendered_update_(false),
+      last_render_frame_count_(0),
+      update_count_(0),
+      render_count_(0) {
   RegisterReadOnlyParamRef(kLevelsParamName, &levels_param_);
   levels_param_->set_read_only_value(levels);
+}
+
+void Texture::TextureUpdated() {
+  CheckLastTextureUpdateRendered();
+  last_render_frame_count_ = renderer_->render_frame_count();
+  update_count_++;
+  has_unrendered_update_ = true;
+}
+
+void Texture::CheckLastTextureUpdateRendered() {
+  if (has_unrendered_update_ && 
+      renderer_->render_frame_count() != last_render_frame_count_) {
+    // Then a new frame has been rendered to the screen since we last
+    // updated this texture, so that update has been rendered to the screen.
+    render_count_++;
+    has_unrendered_update_ = false;
+  }
 }
 
 ObjectBase::Ref ParamTexture::Create(ServiceLocator* service_locator) {

@@ -117,6 +117,15 @@ class Texture : public ParamObject {
     return format_;
   }
 
+  int update_count() {
+    return update_count_;
+  }
+
+  int render_count() {
+    CheckLastTextureUpdateRendered();
+    return render_count_;
+  }
+
   bool render_surfaces_enabled() const {
     return render_surfaces_enabled_;
   }
@@ -142,7 +151,13 @@ class Texture : public ParamObject {
     format_ = format;
   }
 
+  void TextureUpdated();
+
+  Renderer* renderer_;
+
  private:
+  void CheckLastTextureUpdateRendered();
+
   // The number of mipmap levels contained in this texture.
   ParamInteger::Ref levels_param_;
 
@@ -156,6 +171,13 @@ class Texture : public ParamObject {
   WeakPointerType::WeakPointerManager weak_pointer_manager_;
 
   bool render_surfaces_enabled_;
+
+  // Counting of frames, to allow the page to determine the framerate of dynamic
+  // textures.
+  bool has_unrendered_update_;
+  int last_render_frame_count_;
+  int update_count_;
+  int render_count_;
 
   O3D_DECL_CLASS(Texture, ParamObject);
   DISALLOW_COPY_AND_ASSIGN(Texture);
