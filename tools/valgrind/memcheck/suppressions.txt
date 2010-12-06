@@ -3457,3 +3457,12 @@
    fun:*ThemeMapENS_25DefaultLazyInstanceTraitsIS2_EEE3GetEv
    fun:_ZN13ResourcesUtil18GetThemeResourceIdERKSs
 }
+{
+   bug_65642
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5Value17CreateStringValueERKSs
+   fun:_ZN30ExtensionPrefsNotifyWhenNeeded10InitializeEv
+   fun:_ZN18ExtensionPrefsTest5SetUpEv
+}
+
