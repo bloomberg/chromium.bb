@@ -157,3 +157,16 @@ node = env.CommandSelLdrTestNacl(
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'], 'run_timefuncs_test')
+
+raw_syscall_timefunc_objects = env.RawSyscallObjects(['timefuncs_test.cc'])
+env.ComponentProgram('raw_timefuncs_test.nexe',
+                     raw_syscall_timefunc_objects,
+                     EXTRA_LIBS=['syscall_test_framework'])
+
+node = env.CommandSelLdrTestNacl(
+    'raw_timefuncs_test.out',
+    command=[env.File('raw_timefuncs_test.nexe')]
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_raw_timefuncs_test')

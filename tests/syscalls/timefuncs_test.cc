@@ -20,6 +20,11 @@
 #include <errno.h>
 
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+
+// #include "native_client/tests/syscalls/test.h"
+#ifdef USE_RAW_SYSCALLS
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#endif
 #include "native_client/tests/syscalls/test.h"
 
 /*
@@ -31,14 +36,36 @@
 #define MICROS_PER_UNIT   (1000 * 1000)
 
 
+#ifdef USE_RAW_SYSCALLS
+#define CLOCK NACL_SYSCALL(clock)
+#define NANOSLEEP(REQ, REM)  NACL_SYSCALL(nanosleep)(REQ, REM)
+#define GETTIMEOFDAY(TV, TZ) NACL_SYSCALL(gettimeofday)(TV, TZ)
+#else
+#define CLOCK clock
+#define NANOSLEEP(REQ, REM)  nanosleep(REQ, REM)
+#define GETTIMEOFDAY(TV, TZ) gettimeofday(TV, TZ)
+#endif
+
+#define MAX_COUNTER 100000
 
 int TestClockFunction() {
   START_TEST("test clock function");
 
-  clock_t clock_time = 1;
-  /* NOTE: Re-enable call to clock after linking issue with clock is resolved
-   * clock_time = clock();
-   */
+  clock_t clock_time = 0;
+  int counter = 0;
+
+  // clock returns how much cpu time has been used so far. If the test is fast
+  // and/or granularity not very fine, then clock() can return 0 sometimes.
+  // It should (eventually) return a non-zero value.
+  // This loop will keep calling clock() until it returns non-zero or until the
+  // counter is larger than |MAX_COUNTER| (so that we don't hang if clock()
+  //  is broken).
+  while (counter < MAX_COUNTER && clock_time == 0) {
+    clock_time = CLOCK();
+    ++counter;
+  }
+  printf("Called clock.  clock_time=%ld, CLOCKS_PER_SEC=%d\n", clock_time,
+         (int) CLOCKS_PER_SEC);
   EXPECT(clock_time > 0);
 
   END_TEST();
@@ -50,7 +77,7 @@ int TestTimeFuncs() {
 
   /* Passing NULL as the first argument causes a warning with glibc. */
 #ifndef __GLIBC__
-  EXPECT(0 != gettimeofday(NULL, NULL));
+  EXPECT(0 != GETTIMEOFDAY(NULL, NULL));
 #endif
 
   /*
@@ -58,16 +85,16 @@ int TestTimeFuncs() {
    * The use of the timezone structure is obsolete; the tz argument should
    * normally be specified as  NULL.
    */
-  EXPECT(0 == gettimeofday(&tv1, NULL));
+  EXPECT(0 == GETTIMEOFDAY(&tv1, NULL));
 
   struct timespec ts;  // Used by nanosleep.
 
   ts.tv_sec = 1;
   ts.tv_nsec = 5000000;
-  EXPECT(0 == nanosleep(&ts, NULL));   // Sleep 1 second
+  EXPECT(0 == NANOSLEEP(&ts, NULL));   // Sleep 1 second
 
   struct timeval tv2;
-  EXPECT(0 == gettimeofday(&tv2, NULL));   // Get time of day again
+  EXPECT(0 == GETTIMEOFDAY(&tv2, NULL));   // Get time of day again
 
   /*
    * Because of our nanosleep call, tv2 should have a later time than tv1
@@ -82,7 +109,7 @@ int TestTimeFuncs() {
   /*
    * Test gettimeofday using obselete timezone struct pointer
    */
-  EXPECT(0 == gettimeofday(&tv3, &tz));  // Get time of day again
+  EXPECT(0 == GETTIMEOFDAY(&tv3, &tz));  // Get time of day again
 
   /*
    * The time of day (tv3) should not be earlier than time of day (tv2)
@@ -92,7 +119,7 @@ int TestTimeFuncs() {
   /*
    * Test nanosleep error conditions
    */
-  EXPECT(0 != nanosleep(NULL, NULL));
+  EXPECT(0 != NANOSLEEP(NULL, NULL));
   END_TEST();
 }
 
@@ -121,14 +148,14 @@ int TestNanoSleep(struct timespec *t_suspend) {
    * BUG: time-of-day clock resolution may be not be fine enough to
    * measure nanosleep duration.
    */
-  EXPECT(-1 != gettimeofday(&t_start, NULL));
+  EXPECT(-1 != GETTIMEOFDAY(&t_start, NULL));
 
-  while (-1 == (rv = nanosleep(&t_remain, &t_remain)) &&
+  while (-1 == (rv = NANOSLEEP(&t_remain, &t_remain)) &&
          EINTR == errno) {
   }
   EXPECT(-1 != rv);
 
-  EXPECT(-1 != gettimeofday(&t_end, NULL));
+  EXPECT(-1 != GETTIMEOFDAY(&t_end, NULL));
 
   t_elapsed.tv_sec = t_end.tv_sec - t_start.tv_sec;
   t_elapsed.tv_usec = t_end.tv_usec - t_start.tv_usec;
@@ -175,7 +202,6 @@ bool TestSuite() {
   int fail_count = 0;
 
   fail_count += TestTimeFuncs();
-  fail_count += TestClockFunction();
 
   /*
    * Copied from tests/nanosleep.c
@@ -198,6 +224,9 @@ bool TestSuite() {
     fail_count += TestNanoSleep(&t_suspend[ix]);
   }
 
+  // run clock() tests last, so that the test has been running as long as
+  // possible -- to get a non-zero return for clock()
+  fail_count += TestClockFunction();
   return fail_count;
 }
 
