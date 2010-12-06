@@ -22,7 +22,6 @@ class MockConnectionToClient : public ConnectionToClient {
   MockConnectionToClient() {}
 
   MOCK_METHOD1(Init, void(ChromotocolConnection* connection));
-  MOCK_METHOD2(SendInitClientMessage, void(int width, int height));
   MOCK_METHOD0(video_stub, VideoStub*());
   MOCK_METHOD0(Disconnect, void());
 

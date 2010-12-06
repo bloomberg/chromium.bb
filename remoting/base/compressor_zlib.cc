@@ -21,6 +21,17 @@
 namespace remoting {
 
 CompressorZlib::CompressorZlib() {
+  Reset();
+}
+
+CompressorZlib::~CompressorZlib() {
+  deflateEnd(stream_.get());
+}
+
+void CompressorZlib::Reset() {
+  if (stream_.get())
+    deflateEnd(stream_.get());
+
   stream_.reset(new z_stream());
 
   stream_->next_in = Z_NULL;
@@ -29,10 +40,6 @@ CompressorZlib::CompressorZlib() {
   stream_->opaque = Z_NULL;
 
   deflateInit(stream_.get(), Z_BEST_SPEED);
-}
-
-CompressorZlib::~CompressorZlib() {
-  deflateEnd(stream_.get());
 }
 
 bool CompressorZlib::Process(const uint8* input_data, int input_size,

@@ -9,9 +9,8 @@
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/encoder.h"
-#include "remoting/base/encoder_verbatim.h"
+#include "remoting/base/encoder_row_based.h"
 #include "remoting/base/encoder_vp8.h"
-#include "remoting/base/encoder_zlib.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/event_executor.h"
@@ -324,9 +323,9 @@ Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig* config) {
   const protocol::ChannelConfig& video_config = config->video_config();
 
   if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return new remoting::EncoderVerbatim();
+    return EncoderRowBased::CreateVerbatimEncoder();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_ZIP) {
-    return new remoting::EncoderZlib();
+    return EncoderRowBased::CreateZlibEncoder();
   }
   // TODO(sergeyu): Enable VP8 on ARM builds.
 #if !defined(ARCH_CPU_ARM_FAMILY)

@@ -25,6 +25,10 @@ class Compressor {
   };
   virtual ~Compressor() {}
 
+  // Resets all the internal state so the compressor behaves as if it
+  // was just created.
+  virtual void Reset() = 0;
+
   // Compress |input_data| with |input_size| bytes.
   //
   // |output_data| is provided by the caller and |output_size| is the

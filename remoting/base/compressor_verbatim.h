@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_COMPRESSOR_ZLIB_H_
-#define REMOTING_BASE_COMPRESSOR_ZLIB_H_
+#ifndef REMOTING_BASE_COMPRESSOR_VERBATIM_H_
+#define REMOTING_BASE_COMPRESSOR_VERBATIM_H_
 
-#include "base/scoped_ptr.h"
 #include "remoting/base/compressor.h"
-
-typedef struct z_stream_s z_stream;
 
 namespace remoting {
 
-// A lossless compressor using zlib.
-class CompressorZlib : public Compressor {
+// Compressor for verbatim streams.
+class CompressorVerbatim : public Compressor {
  public:
-  CompressorZlib();
-  virtual ~CompressorZlib();
+  CompressorVerbatim();
+  virtual ~CompressorVerbatim();
 
   // Compressor implementations.
   virtual bool Process(const uint8* input_data, int input_size,
@@ -24,11 +21,8 @@ class CompressorZlib : public Compressor {
                        CompressorFlush flush, int* consumed, int* written);
 
   virtual void Reset();
-
- private:
-  scoped_ptr<z_stream> stream_;
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_COMPRESSOR_ZLIB_H_
+#endif  // REMOTING_BASE_COMPRESSOR_VERBATIM_H_
