@@ -46,6 +46,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "cros/chromeos_wm_ipc_enums.h"
 #include "unicode/timezone.h"
@@ -266,6 +267,10 @@ WizardController::WizardController()
       observer_(NULL) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
+  registrar_.Add(
+      this,
+      NotificationType::APP_TERMINATING,
+      NotificationService::AllSources());
 }
 
 WizardController::~WizardController() {
@@ -511,6 +516,18 @@ void WizardController::SkipRegistration() {
     OnRegistrationSkipped();
   else
     LOG(ERROR) << "Registration screen is not active.";
+}
+
+void WizardController::Observe(NotificationType type,
+                               const NotificationSource& source,
+                               const NotificationDetails& details) {
+  CHECK(type == NotificationType::APP_TERMINATING);
+
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  MessageLoop::current()->Quit();
+  registrar_.Remove(this,
+                    NotificationType::APP_TERMINATING,
+                    NotificationService::AllSources());
 }
 
 // static
