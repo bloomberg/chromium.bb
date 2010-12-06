@@ -94,8 +94,7 @@ TEST_F(WebResourceServiceTest, UnpackLogoSignal) {
   ASSERT_EQ(logo_end, 0);  // date value reset to 0;
 }
 
-// Crashing. See http://crbug.com/65462.
-TEST_F(WebResourceServiceTest, DISABLED_UnpackPromoSignal) {
+TEST_F(WebResourceServiceTest, UnpackPromoSignal) {
   // Set up a testing profile and create a web resource service.
   TestingProfile profile;
   scoped_refptr<WebResourceService> web_resource_service(
@@ -120,6 +119,9 @@ TEST_F(WebResourceServiceTest, DISABLED_UnpackPromoSignal) {
                      "}";
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
       base::JSONReader::Read(json, false)));
+
+  // Initialize a message loop for this to run on.
+  MessageLoop loop;
 
   // Check that prefs are set correctly.
   web_resource_service->UnpackPromoSignal(*(test_json.get()));
