@@ -3465,4 +3465,31 @@
    fun:_ZN30ExtensionPrefsNotifyWhenNeeded10InitializeEv
    fun:_ZN18ExtensionPrefsTest5SetUpEv
 }
-
+{
+   bug_65664a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue26BufferedResourceLoaderTest10InitializeEPKcii
+   fun:_ZN11webkit_glue49BufferedResourceLoaderTest*
+}
+{
+   bug_65664b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue22BufferedDataSourceTest20InitializeDataSource*
+   fun:_ZN11webkit_glue40BufferedDataSourceTest*
+}
+{
+   bug_65664c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue20SimpleDataSourceTest20InitializeDataSourceEPKc
+   fun:_ZN11webkit_glue45SimpleDataSourceTest*
+}
+{
+   bug_65664d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue40SimpleDataSourceTest_InitializeData_Test8TestBodyEv
+   fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
