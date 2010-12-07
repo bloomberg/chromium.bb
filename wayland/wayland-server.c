@@ -80,15 +80,6 @@ struct wl_global {
 	struct wl_list link;
 };
 
-WL_EXPORT struct wl_surface wl_grab_surface = {
-	{},
-	NULL,
-	{
-		&wl_grab_surface.destroy_listener_list,
-		&wl_grab_surface.destroy_listener_list
-	}
-};
-
 static int wl_debug = 0;
 
 WL_EXPORT void
@@ -97,10 +88,6 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 {
 	struct wl_closure *closure;
 	va_list ap;
-
-	if (client == NULL)
-		/* wl_grab_surface case */
-		return;
 
 	va_start(ap, opcode);
 	closure = wl_connection_vmarshal(client->connection,

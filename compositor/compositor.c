@@ -516,7 +516,6 @@ wlsc_input_device_start_grab(struct wlsc_input_device *device,
 		(struct wlsc_surface *) device->input_device.pointer_focus;
 
 	device->grab = grab;
-	device->grab_surface = focus;
 	device->grab_button = button;
 	device->grab_time = time;
 	device->grab_x = device->x;
@@ -542,8 +541,6 @@ wlsc_input_device_update_grab(struct wlsc_input_device *device,
 		return -1;
 
 	device->grab = grab;
-	wl_input_device_set_pointer_focus(&device->input_device,
-					  &wl_grab_surface, time, 0, 0, 0, 0);
 
 	return 0;
 }
@@ -769,7 +766,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 		break;
 
 	case WLSC_DEVICE_GRAB_MOVE:
-		es = device->grab_surface;
+		es = (struct wlsc_surface *) device->input_device.pointer_focus;
 		es->x = x + device->grab_dx;
 		es->y = y + device->grab_dy;;
 		wl_client_post_event(es->surface.client,
@@ -792,8 +789,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	case WLSC_DEVICE_GRAB_RESIZE_TOP_RIGHT:
 	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT:
 	case WLSC_DEVICE_GRAB_RESIZE_MASK:
-		es = device->grab_surface;
-
+		es = (struct wlsc_surface *) device->input_device.pointer_focus;
 		if (device->grab & WLSC_DEVICE_GRAB_RESIZE_LEFT) {
 			sx = x + device->grab_dx;
 			width = device->grab_x - x + device->grab_width;
@@ -993,9 +989,7 @@ input_device_attach(struct wl_client *client,
 	if (device->input_device.pointer_focus == NULL)
 		return;
 
-	if (device->input_device.pointer_focus->client != client &&
-	    !(device->input_device.pointer_focus == &wl_grab_surface &&
-	      device->grab_surface->surface.client == client))
+	if (device->input_device.pointer_focus->client != client)
 		return;
 
 	if (buffer == NULL) {

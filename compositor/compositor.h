@@ -92,7 +92,6 @@ struct wlsc_input_device {
 	uint32_t modifier_state;
 
 	enum wlsc_grab_type grab;
-	struct wlsc_surface *grab_surface;
 	uint32_t grab_time;
 	int32_t grab_x, grab_y;
 	int32_t grab_width, grab_height;
