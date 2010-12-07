@@ -47,7 +47,7 @@ GLuint LoadShader(GLenum type, const char* shaderSrc) {
   // Compile the shader
   glCompileShader(shader);
   // Check the compile status
-  GLint value;
+  GLint value = 0;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
   if (value == 0) {
     char buffer[1024];
@@ -100,7 +100,7 @@ void InitShaders() {
   // Link the program
   glLinkProgram(programObject);
   // Check the link status
-  GLint linked;
+  GLint linked = 0;
   glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
   if (linked == 0) {
     char buffer[1024];
@@ -173,6 +173,10 @@ void GLFromCPPInit() {
   g_texture = CreateCheckerboardTexture();
   InitShaders();
   CheckGLError("GLFromCPPInit", __LINE__);
+
+  char buf[128];
+  glReadPixels(0, 0, 1, 1, 0, 0, buf);
+  CheckGLError("GLFromCPPInit:ReadPixels", __LINE__);
 }
 
 void GLFromCPPDraw() {
