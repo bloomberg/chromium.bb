@@ -516,16 +516,6 @@ wl_display_destroy(struct wl_display *display)
 	free(display);
 }
 
-WL_EXPORT uint32_t
-wl_display_get_time(struct wl_display *display)
-{
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
-
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
-
 WL_EXPORT void
 wl_display_add_object(struct wl_display *display, struct wl_object *object)
 {

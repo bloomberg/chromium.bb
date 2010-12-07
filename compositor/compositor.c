@@ -154,6 +154,16 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	return surface;
 }
 
+static uint32_t
+get_time(void)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
 static void
 destroy_surface(struct wl_resource *resource, struct wl_client *client)
 {
@@ -166,7 +176,7 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 	wl_list_remove(&surface->link);
 	glDeleteTextures(1, &surface->texture);
 
-	time = wl_display_get_time(compositor->wl_display);
+	time = get_time();
 	wl_list_for_each_safe(l, next,
 			      &surface->surface.destroy_listener_list, link)
 		l->func(l, &surface->surface, time);
@@ -1149,7 +1159,7 @@ drag_cancel(struct wl_client *client, struct wl_drag *drag)
 	if (drag->source == NULL || drag->source->client != client)
 		return;
 
-	time = wl_display_get_time(wl_client_get_display(client));
+	time = get_time();
 	wlsc_input_device_end_grab(device, time);
 }
 

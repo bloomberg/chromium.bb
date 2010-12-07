@@ -178,9 +178,6 @@ wl_display_set_compositor(struct wl_display *display,
 			  struct wl_compositor *compositor,
 			  const struct wl_compositor_interface *implementation);
 
-uint32_t
-wl_display_get_time(struct wl_display *display);
-
 void
 wl_display_post_frame(struct wl_display *display, uint32_t msecs);
 
