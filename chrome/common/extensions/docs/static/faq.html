@@ -6,33 +6,35 @@
 <p>
 If you don't find an answer to your question here,
 try the
-<a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">group</a> or the
+<a href="http://code.google.com/chrome/webstore/faq.html">Chrome Web Store FAQ</a>, the
+<a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">group</a>, or the
 <a href="http://www.google.com/support/chrome/bin/answer.py?answer=113909">gallery help</a>.
+<!-- PENDING: add a link to store help -->
 </p>
 
 <div id="faq-TOC">
   <h4>General</h4>
   <ul>
     <li><a href="#faq-gen-01">What are Google Chrome Extensions?</a></li>
-    <li><a href="#faq-gen-02">What technologies are used to write extensions for Google Chrome?</a></li>
+    <li><a href="#faq-gen-02">What technologies are used to write extensions for Chrome?</a></li>
     <li><a href="#faq-gen-03">Are extensions fetched from the web every time the browser is loaded?</a></li>
   </ul>
   <h4>Development</h4>
   <ul>
-    <li><a href="#faq-dev-01">How can I set up Google Chrome for extension development?</a></li>
+    <li><a href="#faq-dev-01">How can I set up Chrome for extension development?</a></li>
     <li><a href="#faq-dev-02">Can I make cross-domain Ajax requests in an extension?</a></li>
     <li><a href="#faq-dev-03">Can I use 3rd party web services in my extension?</a></li>
     <li><a href="#faq-dev-04">Can I use OAuth in my extensions?</a></li>
     <li><a href="#faq-dev-05">What UI controls can I create for my extension?</a></li>
     <li><a href="#faq-dev-06">Can I load DLLs in my extension?</a></li>
-    <li><a href="#faq-dev-07">Can Google Chrome Extensions encode/decode JSON data?</a></li>
+    <li><a href="#faq-dev-07">Can extensions encode/decode JSON data?</a></li>
     <li><a href="#faq-dev-08">Can I store data locally in my extension?</a></li>
     <li><a href="#faq-dev-09">How much data can I store in localStorage?</a></li>
     <li><a href="#faq-dev-10">Can I create an options menu for my application?</a></li>
     <li><a href="#faq-dev-11">Can two extensions communicate with each other?</a></li>
     <li><a href="#faq-dev-12">What debugging tools are available to extension developers?</a></li>
     <li><a href="#faq-dev-13">Can extensions use Google Analytics?</a></li>
-    <li><a href="#faq-dev-14">How do I determine which version of Google Chrome is deployed to which channel?</a></li>
+    <li><a href="#faq-dev-14">How do I determine which version of Chrome is deployed to which channel?</a></li>
     <li><a href="#faq-dev-15">Can I add a content script to chrome:// URLs?</a></li>
     <li><a href="#faq-dev-16">Why do wildcard matches not work for top level domains (TLDs)?</a></li>
   </ul>
@@ -47,17 +49,17 @@ try the
 
 <h3 id="faq-gen-01">What are Google Chrome Extensions?</h3>
 <p>
-  Google Chrome Extensions are applications that run inside the Google
+  Google Chrome Extensions are applications that run inside the
   Chrome browser and provide additional functionality, integration with third
   party websites or services, and customized browsing experiences.
 </p>
 
-<h3 id="faq-gen-02">What technologies are used to write extensions for Google Chrome?</h3>
+<h3 id="faq-gen-02">What technologies are used to write extensions for Chrome?</h3>
 <p>
-  Google Chrome Extensions are written using the same standard web
+  Extensions are written using the same standard web
   technologies that developers use to create websites. HTML is used as a
   content markup language, CSS is used for styling, and JavaScript for
-  scripting. Because Google Chrome supports HTML5 and CSS3, developers can
+  scripting. Because Chrome supports HTML5 and CSS3, developers can
   use the latest open web technologies such as canvas and CSS animations in
   their extensions. Extensions also have access to several
   <a href="http://code.google.com/chrome/extensions/api_other.html">JavaScript APIs</a>
@@ -68,7 +70,7 @@ try the
 
 <h3 id="faq-gen-03">Are extensions fetched from the web every time the browser is loaded?</h3>
 <p>
-  Extensions are downloaded by the Google Chrome browser upon install, and
+  Extensions are downloaded by the Chrome browser upon install, and
   are subsequently run off of the local disk in order to speed up
   performance. However, if a new version of the extension is pushed online,
   it will be automatically downloaded in the background to any users who
@@ -81,9 +83,9 @@ try the
 <h2>Development</h2>
 
 
-<h3 id="faq-dev-01">How can I set up Google Chrome for extension development?</h3>
+<h3 id="faq-dev-01">How can I set up Chrome for extension development?</h3>
 <p>
-  As long as you are using a version of Google Chrome that supports
+  As long as you are using a version of Chrome that supports
   extensions, you already have everything you need to start writing an
   extension of your own.
   You can start by turning on Developer mode.
@@ -93,8 +95,7 @@ try the
   Click the wrench icon
   <img src="images/toolsmenu.gif" height="29" width="29" alt=""
     class="nomargin" />
-  and select <b>Extensions</b> from the <b>Tools</b> menu
-  (or from the <b>Window</b> menu on Mac).
+  and select <b>Extensions</b> from the <b>Tools</b> menu.
   If there's a "+" next to "Developer mode",
   click the "+" so it turns into a "-".
   Now you can reload extensions,
@@ -112,14 +113,14 @@ try the
 
 <h3 id="faq-dev-03">Can I use 3rd party web services in my extension?</h3>
 <p>
-  Yes. Google Chrome Extensions are capable of making cross-domain Ajax
-  requests, so they can call remote APIs directly. APIs which provide data
+  Yes. Extensions are capable of making cross-domain Ajax
+  requests, so they can call remote APIs directly. APIs that provide data
   in JSON format are particularly easy to use.
 </p>
 
 <h3 id="faq-dev-04">Can I use OAuth in my extensions?</h3>
 <p>
-  Absolutely, there are extensions which use OAuth to access remote data
+  Absolutely, there are extensions that use OAuth to access remote data
   APIs. Most developers find it convenient to use a
   <a href="http://unitedheroes.net/OAuthSimple/js/OAuthSimple.js">JavaScript OAuth library</a>
   in order to simplify the process of signing OAuth requests.
@@ -130,7 +131,7 @@ try the
   Extensions use HTML and CSS to define their user interfaces, so you can use
   standard form controls to build your UI, or style the interface with CSS,
   as you would a web page.  Additionally, your extension may add buttons
-  to the Google Chrome browser itself.  See
+  to the Chrome browser itself.  See
   <a href="http://code.google.com/chrome/extensions/browserAction.html">browser actions</a>
   and
   <a href="http://code.google.com/chrome/extensions/pageAction.html">page actions</a>
@@ -142,12 +143,13 @@ try the
   Yes, using the
   <a href="http://code.google.com/chrome/extensions/trunk/npapi.html">NPAPI interface</a>.
   Because of the possibility for abuse, though, we will review your extension
-  before hosting it in the Google Chrome Extensions Gallery.
+  before hosting it in the Google Chrome Extensions Gallery
+  or Chrome Web Store.
 </p>
 
-<h3 id="faq-dev-07">Can Google Chrome Extensions encode/decode JSON data?</h3>
+<h3 id="faq-dev-07">Can extensions encode/decode JSON data?</h3>
 <p>
-  Yes, because V8 (Google Chrome's JavaScript engine) supports
+  Yes, because V8 (Chrome's JavaScript engine) supports
   JSON.stringify and JSON.parse natively, you may use these functions in your
   extensions
   <a href="http://json.org/js.html">as described here</a> without including
@@ -157,11 +159,11 @@ try the
 <h3 id="faq-dev-08">Can I store data locally in my extension?</h3>
 <p>
   Yes, extensions can use <a href="http://dev.w3.org/html5/webstorage/">localStorage</a>
-  to store string data permanently. Using Google Chrome's built-in JSON
+  to store string data permanently. Using Chrome's built-in JSON
   functions, you can store complex data structures in localStorage.  For
-  extensions which have the need to execute SQL queries on their stored data,
-  Google Chrome implements
-  <a href="http://dev.w3.org/html5/webdatabase/">client side SQL databases</a>
+  extensions that need to execute SQL queries on their stored data,
+  Chrome implements
+  <a href="http://dev.w3.org/html5/webdatabase/">client side SQL databases</a>,
   which may be used as well.
 </p>
 
@@ -173,7 +175,7 @@ try the
 <h3 id="faq-dev-10">Can I create an options menu for my application?</h3>
 <p>
   You can let users set options for your extension by creating an
-  <a href="http://code.google.com/chrome/extensions/trunk/options.html">options page</a>
+  <a href="http://code.google.com/chrome/extensions/trunk/options.html">options page</a>,
   which is a simple HTML page that will be loaded when a user clicks the
   "options" button for your extension. This page can read and write settings
   to localStorage, or even send options to a web server so that they can be
@@ -189,7 +191,7 @@ try the
 
 <h3 id="faq-dev-12">What debugging tools are available to extension developers?</h3>
 <p>
-  Google Chrome's built-in developer tools can be used to debug extensions
+  Chrome's built-in developer tools can be used to debug extensions
   as well as web pages. See this
   <a href="http://code.google.com/chrome/extensions/tut_debugging.html ">tutorial on debugging extensions</a>
   for more information.
@@ -205,9 +207,9 @@ try the
   this.
 </p>
 
-<h3 id="faq-dev-14">How do I determine which version of Google Chrome is deployed to which channel?</h3>
+<h3 id="faq-dev-14">How do I determine which version of Chrome is deployed to which channel?</h3>
 <p>
-  To determine which version of Google Chrome is currently available on each
+  To determine which version of Chrome is currently available on each
   of the different platforms, visit
   <a href="http://omahaproxy.appspot.com">omahaproxy.appspot.com</a>.  On that
   site you will see data in a format similar to:
@@ -233,7 +235,7 @@ win,stable,#.#.###.#,#.#.###.#</pre>
   channels are <code>canary</code>, <code>dev</code>, <code>beta</code>,
   and <code>stable</code>.
   The two four-part numbers at the end of each line represent the range of
-  versions of Google Chrome currently deployed to that platform-channel
+  versions of Chrome currently deployed to that platform-channel
   combination.
 </p>
 
@@ -289,7 +291,7 @@ win,stable,#.#.###.#,#.#.###.#</pre>
 <p>
   While developing an extension, you may find behavior that does not
   match the extensions documentation and may be the result of a bug in
-  Google Chrome.  The best thing to do is to make sure an appropriate issue
+  Chrome.  The best thing to do is to make sure an appropriate issue
   report is filed, and the Chromium team has enough information to reproduce
   the behavior.
 </p>
@@ -312,8 +314,8 @@ win,stable,#.#.###.#,#.#.###.#</pre>
     extensions are filed under <strong>Feature=Extensions</strong>, so to
     look for an extension bug related to the
     chrome.tabs.executeScript function (for example), search for
-    "<code>Feature=Extensions Type=Bug chrome.tabs.executeScript</code>" which
-    will give you
+    "<code>Feature=Extensions Type=Bug chrome.tabs.executeScript</code>",
+    which will give you
     <a href="http://code.google.com/p/chromium/issues/list?can=2&q=Feature%3DExtensions+Type%3DBug+chrome.tabs.executeScript&colspec=ID+Stars+Pri+Area+Feature+Type+Status+Summary+Modified+Owner+Mstone+OS&x=mstone&y=area&cells=tiles">
     this list of results</a>.
   </li>
@@ -367,8 +369,8 @@ win,stable,#.#.###.#,#.#.###.#</pre>
     extensions are filed under <strong>Feature=Extensions</strong>, so to
     look for an extension feature request related to keyboard shortcuts
     (for example), search
-    for "<code>Feature=Extensions Type=Feature shortcuts</code>" which will
-    give you
+    for "<code>Feature=Extensions Type=Feature shortcuts</code>",
+    which will give you
     <a href="http://code.google.com/p/chromium/issues/list?can=2&q=Feature%3DExtensions+Type%3DFeature+shortcuts&colspec=ID+Stars+Pri+Area+Feature+Type+Status+Summary+Modified+Owner+Mstone+OS&x=mstone&y=area&cells=tiles">
     this list of results</a>.
   </li>

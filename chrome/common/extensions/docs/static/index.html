@@ -20,100 +20,85 @@ cs {
 
 <tr>
 <td>
-<h3>What are Google Chrome Extensions?</h3>
+<h3>What are extensions?</h3>
 
 <p>
-<em>Extensions</em> are small software programs
-that can modify and enhance the functionality of Google Chrome.
+Extensions are small software programs that
+can modify and enhance the functionality of the Chrome browser.
 You write them using web technologies such as
 HTML, JavaScript, and CSS.
+You can also use the extension system to build
+<a href="apps.html">packaged apps</a>,
+a downloadable kind of
+<a href="http://code.google.com/chrome/apps/index.html">installable web app</a>.
 </p>
 
 <p>
-Here are some examples of extensions:
+<img src="images/index/NEW/gmail.png" width="91" height="35"
+  align="right" style="margin-top:0px; margin-left:0.5em"
+  alt="A screenshot of an extension's icon in the browser bar" />
+From a user's point of view,
+extensions and packaged apps are very different 
+because they present very different user interfaces.
+Extensions have little to no user interface.
+For example, the image to the right shows the icon
+that provides the UI for the
+<a href="samples.html#gmail">Gmail extension</a>.
 </p>
 
-<table class="columns" id="pics">
-<tr>
-  <td>
-    <img src="images/index/gmail.png" width="150" height="79">
-  </td>
-  <td>
-      <p>
-      <b><a href="samples.html#gmail">Google Mail Checker</a></b><br>
-      Uses a <em>browser action</em>
-      (icon in the toolbar)
-      to display how many unread messages
-      are in your Gmail inbox.
-      Click the icon to go to your inbox.
-      </p>
-  </td>
-</tr>
-
-<tr>
-  <td>
-    <img src="images/index/news.png" width="150" height="79">
-  </td>
-  <td>
-      <p>
-      <b><a href="samples.html#news">News Reader</a></b><br>
-      Features a browser action that, when clicked,
-      shows a popup summarizing the top news items.
-      </p>
-  </td>
-</tr>
-
-<tr>
-  <td>
-    <img src="images/index/rss.png" width="150" height="79">
-  </td>
-  <td>
-      <p>
-      <b><a href="samples.html#subscribe_page_action">Subscribe in Feed Reader</a></b><br>
-      Uses a <em>page action</em>
-      (icon in the address bar)
-      and <em>content script</em>
-      (code injected into a web page)
-      to let you subscribe to a feed in the current web page.
-      </p>
-  </td>
-</tr>
-</table>
-<br />
+<p>
+<img src="images/index/html5app.png" width="200" height="160"
+  align="right" style="margin-top:0px; margin-left:0.5em"
+  alt="A screenshot of a packaged app that implements a jigsaw puzzle" />
+Packaged apps, on the other hand,
+look and feel like regular web apps,
+with a big-screen design
+and rich UI.
+The image to the right shows a jigsaw puzzle game
+implemented by a packaged app.
+</p>
 
 <p>
-To keep up with the latest news on extensions, read the
-<a href="http://blog.chromium.org/">Chromium blog</a> and the
-<a href="http://chrome.blogspot.com/">Google Chrome blog</a>,
-and subscribe to the
-<a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">chromium-extensions group</a>.
+Both extensions and packaged apps bundle all their files
+into a single file that the user downloads and installs.
+This bundling means that, unlike ordinary web apps,
+extensions and packaged apps don't need to depend
+on content from the web.
+</p>
 
+<p>
+You can distribute your extension or packaged app
+by using the
+<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>
+to publish to the
+<a href="http://chrome.google.com/webstore">Chrome Web Store</a>.
+For more information, see the
+<a href="http://code.google.com/chrome/webstore">store developer documentation</a>.
 </p>
 
 </td>
-
 <td style="width:330px">
 <h3>How do I start?</h3>
 
 <p>
 <ol>
   <li>
-    Follow the
-    <a href="getstarted.html">Getting Started tutorial</a>
+    Follow the <a href="getstarted.html">Getting Started tutorial</a>
+    <!-- PENDING: once we have one for packaged apps, change to
+      "for _extensions_ or _packaged_apps_" -->
   </li>
   <li>
     Read the
     <a href="overview.html">Overview</a>
   </li>
   <li>
-    <a href="devguide.html">Write</a> and
-    <a href="tut_debugging.html">debug</a>
-    your extension
+    Keep up-to-date by reading the
+    <a href="http://blog.chromium.org/">Chromium blog</a>
   </li>
   <li>
-    Submit your extension to the
-    <a href="https://chrome.google.com/extensions">gallery</a>
-  </li>
+    Subscribe to the
+    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">chromium-extensions group</a>
+    </li>
 </ol>
 </p>
 

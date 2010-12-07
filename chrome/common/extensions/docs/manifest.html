@@ -170,7 +170,6 @@
                   <li><a href="options.html">Options Pages</a></li>
                   <li><a href="override.html">Override Pages</a></li>
                   <li><a href="pageAction.html">Page Actions</a></li>
-                  <li><a href="themes.html">Themes</a></li>
                 </ul>
               </li>
               <li>Browser Interaction
@@ -204,6 +203,7 @@
               </li>
             </ul>
           </li>
+          <li><h2><a href="apps.html">Packaged Apps</a></h2></li>
           <li><h2><a href="tutorials.html">Tutorials</a></h2>
             <ul>
               <li><a href="tut_debugging.html">Debugging</a></li>
@@ -217,9 +217,9 @@
                 <ul>
                   <li class="leftNavSelected">Manifest Files</li>
                   <li><a href="match_patterns.html">Match Patterns</a></li>
-                  <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
+              <li><a href="permission_warnings.html">Permission Warnings</a></li>
               <li><a href="api_index.html">chrome.* APIs</a></li>
               <li><a href="api_other.html">Other APIs</a></li>
             </ul>
@@ -229,7 +229,7 @@
           <li><h2>More</h2>
             <ul>
               <li><a href="http://code.google.com/chrome/webstore/docs/index.html">Chrome Web Store</a></li>
-              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Installable Web Apps</a></li>
+              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Hosted Apps</a></li>
               <li><a href="themes.html">Themes</a></li>
             </ul>
           </li>
@@ -258,6 +258,8 @@
               <a href="#H2-1">Field details</a>
               <ol>
                 <li>
+                  <a href="#app">app</a>
+                </li><li>
                   <a href="#default_locale">default_locale</a>
                 </li><li>
                   <a href="#description">description</a>
@@ -331,10 +333,10 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-Every extension has a
+Every extension, installable web app, and theme has a
 <a href="http://www.json.org">JSON</a>-formatted manifest file,
 named <code>manifest.json</code>,
-that provides important information about the extension.
+that provides important information.
 </p>
 
 <h2 id="overview"> Field summary </h2>
@@ -342,7 +344,7 @@ that provides important information about the extension.
 <p>
 The following code shows the supported manifest fields,
 with links to the page that discusses each field.
-The only fields that are required for every extension
+The only fields that are always required
 are <b>name</b> and <b>version</b>.
 </p>
 
@@ -360,6 +362,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="browserAction.html">browser_action</a>": {...},
   "<a href="pageAction.html">page_action</a>": {...},
   "<a href="themes.html">theme</a>": {...},
+  "<a href="#app">app</a>": {...},
 
   <em>// Add any of these that you need</em>
   "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html",
@@ -387,6 +390,24 @@ with links to where they're described in detail,
 see the <a href="#overview">Field summary</a>.
 </p>
 
+
+<h3 id="app">app</h3>
+
+<p>
+Used by installable web apps,
+including packaged apps,
+to specify the URLs that the app uses.
+Most important is the <em>launch page</em> for the app—the
+page that the browser goes to when the user clicks the app's icon
+in the New Tab page.
+</p>
+
+<p>
+For details, see the documentation for
+<a href="http://code.google.com/chrome/apps/docs/developers_guide.html">hosted apps</a> and
+<a href="apps.html">packaged apps</a>.
+</p>
+
 <h3 id="default_locale">default_locale</h3>
 
 <p>
@@ -409,7 +430,7 @@ no more than 132 characters)
 that describes the extension.
 The description should be suitable for both
 the browser's extension management UI
-and the <a href="https://chrome.google.com/extensions">extension gallery</a>.
+and the <a href="https://chrome.google.com/webstore">Chrome Web Store</a>.
 You can specify locale-specific strings for this field;
 see <a href="i18n.html">Internationalization</a> for details.
 </p>
@@ -420,22 +441,23 @@ see <a href="i18n.html">Internationalization</a> for details.
 The URL of the homepage for this extension. The extensions management page (chrome://extensions)
 will contain a link to this URL.  This field is particularly useful if you
 <a href="hosting.html">host the extension on your own site</a>. If you distribute your
-extension using the <a href="http://chrome.google.com/extensions">gallery</a>,
+extension using the <a href="https://chrome.google.com/extensions">Extensions Gallery</a>,
 the homepage URL defaults to the extension's own gallery page.
+<!-- PENDING: check whether the same is true of the store -->
 </p>
 
 <h3 id="icons">icons</h3>
 
 <p>
-One or more icons that represent the extension.
-You should provide icons in at least two sizes —
-48x48 and 128x128 pixels.
-The 48x48 icon is used in the extensions management page
+One or more icons that represent the extension, app, or theme.
+You should always provide a 128x128 icon;
+it's used during installation and by the Chrome Web Store.
+Extensions should also provide a 48x48 icon,
+which is used in the extensions management page
 (chrome://extensions).
-The 128x128 icon is used when the user installs the extension.
 You can also specify a 16x16 icon to be used as the favicon
-for the extension's pages.
-The 16x16 icon is also displayed in the experimental
+for an extension's pages.
+The 16x16 icon is also displayed in the experimental extension
 <a href="experimental.infobars.html">infobar</a>
 feature.
 </p>
@@ -454,28 +476,28 @@ Here's an example of specifying the icons:
 </pre>
 
 <p class="note">
-<b>Note:</b>
+<b>Important:</b>
 Use only the documented icon sizes.
 <br><br>
-You may notice that Google Chrome sometimes resizes these icons down to smaller
-sizes. For example, as of this writing, the install dialog shrinks the 128-pixel
+You might notice that Chrome sometimes resizes these icons down to smaller
+sizes. For example, the install dialog might shrink the 128-pixel
 icon down to 69 pixels.
 <br><br>
-Nevertheless, you should use only the documented sizes. The details of Google
-Chrome's UI may change between versions. These changes are made assuming that
-extension developers are using the documented sizes. If you use other sizes,
+However, the details of
+Chrome's UI may change between versions, and these changes assume that
+developers are using the documented sizes. If you use other sizes,
 your icon may look bad in future versions of the browser.
 </p>
 
 <p>
-If you submit your extension to the
-<a href="https://chrome.google.com/extensions">gallery</a>,
+If you upload your extension, app, or theme using the
+<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>,
 you'll need to upload additional images,
-including a 32x32-pixel logo
-and at least one screenshot of your extension.
-For more information on gallery requirements,
+including at least one screenshot of your extension.
+For more information,
 see the
-<a href="http://www.google.com/support/chrome/bin/answer.py?answer=113909">gallery help</a>.
+<a href="http://code.google.com/chrome/webstore/">Chrome Web Store
+developer documentation</a>.
 </p>
 
 <h3 id="incognito">incognito</h3>
@@ -513,12 +535,12 @@ incognito behavior.
 
 <p>
 This value can be used to control
-the unique ID of an extension when
+the unique ID of an extension, app, or theme when
 it is loaded during development.
 </p>
 
 <p class="note">
-<b>Note:</b> Most extensions should not need to
+<b>Note:</b> You don't usually need to
 use this value. Instead, write your
 code so that the key value doesn't matter
 by using <a href="overview.html#relative-urls">relative paths</a>
@@ -529,7 +551,7 @@ and <a href="extension.html#method-getURL">chrome.extension.getURL()</a>.
 To get a suitable key value, first
 install your extension from a <code>.crx</code> file
 (you may need to
-<a href="hosting.html#gallery">upload your extension to the gallery</a>,
+<a href="https://chrome.google.com/webstore/developer/dashboard">upload your extension</a>
 or <a href="packaging.html">package it manually</a>).
 Then, in your
 <a href="http://www.chromium.org/user-experience/user-data-directory">user
@@ -541,7 +563,7 @@ You will see the key value filled in there.
 <h3 id="minimum_chrome_version">minimum_chrome_version</h3>
 
 <p>
-The version of Google Chrome that your extension requires, if any.
+The version of Chrome that your extension, app, or theme requires, if any.
 The format for this string is the same as for the
 <a href="#version">version</a> field.
 
@@ -553,7 +575,7 @@ A short, plain text string
 that identifies the extension.
 The name is used in the install dialog,
 extension management UI,
-and the <a href="https://chrome.google.com/extensions">extension gallery</a>.
+and the <a href="https://chrome.google.com/webstore">store</a>.
 You can specify locale-specific strings for this field;
 see <a href="i18n.html">Internationalization</a> for details.
 </p>
@@ -561,18 +583,20 @@ see <a href="i18n.html">Internationalization</a> for details.
 <h3 id="permissions">permissions</h3>
 
 <p>
-An array of permissions that the extension might use.
+An array of permissions that the extension or app might use.
 Each permission can be either one of a list of known strings
-(such as "tabs")
+(such as "geolocation")
 or a match pattern
 that gives access to one or more hosts.
-These permissions are displayed to users before installation.
-Permissions might also help to limit damage
-if your extension is attacked.
+Permissions can help to limit damage
+if your extension or app is attacked.
+Some permissions are also displayed to users before installation,
+as detailed in
+<a href="permission_warnings.html">Permission Warnings</a>.
 </p>
 
 <p>
-If an API requires you to declare a permission in the manifest,
+If an extension API requires you to declare a permission in the manifest,
 then its documentation tells you how to do so.
 For example,
 the <a href="tabs.html">Tabs</a> page
@@ -581,7 +605,8 @@ declare the "tabs" permission.
 </p>
 
 <p>
-Here's an example of the permissions part of a manifest file:
+Here's an example of the permissions part of a manifest file
+for an extension:
 </p>
 
 <pre>"permissions": [
@@ -594,7 +619,15 @@ Here's an example of the permissions part of a manifest file:
 </pre>
 
 <p>
-The following table lists the permissions an extension can use.
+The following table lists the permissions an extension
+or packaged app can use.
+</p>
+
+<p class="note">
+<strong>Note:</strong>
+Hosted apps can use the
+"geolocation", "notifications", and "unlimitedStorage" permissions,
+but not any other permissions listed in this table.
 </p>
 
 <table>
@@ -749,7 +782,7 @@ For more information, see
 <a href="autoupdate.html">Autoupdating</a>.
 </p>
 
-<!-- [PENDING: Possibly: point to the gallery and make a big deal of the fact that autoupdating is free if you use the gallery.] -->
+<!-- [PENDING: Possibly: point to the store/dashboard and make a big deal of the fact that autoupdating is free if you use them.] -->
 </div>
 
         <!-- API PAGE -->

@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>Google Chrome Extensions - Google Code</title></head>
+  <title>Packaged Apps - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -128,7 +128,7 @@
       </tr>
     </tbody></table>
 
-    <div id="codesiteContent" class="hideSideNav">
+    <div id="codesiteContent" class="">
 
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
@@ -154,7 +154,7 @@
 
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
-      <div class="g-unit g-first" id="gc-toc" style="display: none; ">
+      <div class="g-unit g-first" id="gc-toc">
         <ul>
           <li><a href="getstarted.html">Getting Started</a></li>
           <li><a href="overview.html">Overview</a></li>
@@ -228,7 +228,7 @@
           <div class="line"> </div>
           <li><h2>More</h2>
             <ul>
-              <li class="leftNavSelected">Chrome Web Store</li>
+              <li><a href="http://code.google.com/chrome/webstore/docs/index.html">Chrome Web Store</a></li>
               <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Hosted Apps</a></li>
               <li><a href="themes.html">Themes</a></li>
             </ul>
@@ -241,21 +241,35 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title"></h1>
+        <h1 class="page_title">Packaged Apps</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
+        <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a>h2Name</a>
+              <a href="#overview">Overview</a>
               <ol>
-                <li>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#manifest"> The manifest </a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#next">What next?</a>
+              <ol>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li>
+              <li style="display: none; ">
                 <a href="#apiReference">API reference</a>
                 <ol>
                   <li>
@@ -302,119 +316,176 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData"></div>
-<div id="pageData-showSideNav" class="pageData">false</div>
-
-<style>
-cs {
-  border:none;
-  margin:0;
-}
-
-#pics td {
-  padding:0 1em 0 0;
-}
-
-#pics img {
-  border:none;
-}
-</style>
-
-<table class="columns" style="margin:0">
-
-<tbody><tr>
-<td>
-<h3>What are extensions?</h3>
+        <div id="static"><div id="pageData-name" class="pageData">Packaged Apps</div>
+<div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-Extensions are small software programs that
-can modify and enhance the functionality of the Chrome browser.
-You write them using web technologies such as
-HTML, JavaScript, and CSS.
-You can also use the extension system to build
-<a href="apps.html">packaged apps</a>,
-a downloadable kind of
-<a href="http://code.google.com/chrome/apps/index.html">installable web app</a>.
+This page talks about packaged apps—how
+you implement them,
+and how they're different from
+extensions and ordinary web apps.
+</p>
+
+
+<h2 id="overview">Overview</h2>
+
+<p>
+A packaged app is a web app
+that's bundled into a <code>.crx</code> file
+and can use Chrome extension features.
+You build a packaged app just like you build an extension,
+except that a packaged app can't include a
+<a href="browserAction.html">browser action</a> or
+<a href="pageAction.html">page action</a>.
+Instead, a packaged app includes at least one HTML file
+within its <code>.crx</code> file
+that provides the app's user interface.
 </p>
 
 <p>
-<img src="images/index/NEW/gmail.png" width="91" height="35" align="right" style="margin-top:0px; margin-left:0.5em" alt="A screenshot of an extension's icon in the browser bar">
-From a user's point of view,
-extensions and packaged apps are very different 
-because they present very different user interfaces.
-Extensions have little to no user interface.
-For example, the image to the right shows the icon
-that provides the UI for the
-<a href="samples.html#gmail">Gmail extension</a>.
+Packaged apps are a type of
+<a href="http://code.google.com/chrome/apps/">installable web app</a>—a
+web app that can be installed in Chrome.
+The other type of installable web app is a
+<a href="http://code.google.com/chrome/apps/docs/developers_guide.html">hosted app</a>,
+which is an ordinary web app with a bit of additional metadata.
 </p>
 
 <p>
-<img src="images/index/html5app.png" width="200" height="160" align="right" style="margin-top:0px; margin-left:0.5em" alt="A screenshot of a packaged app that implements a jigsaw puzzle">
-Packaged apps, on the other hand,
-look and feel like regular web apps,
-with a big-screen design
-and rich UI.
-The image to the right shows a jigsaw puzzle game
-implemented by a packaged app.
+If you're developing a web app for the Chrome Web Store,
+you might want to use a packaged app
+instead of a hosted app if any of the following are true:
 </p>
 
-<p>
-Both extensions and packaged apps bundle all their files
-into a single file that the user downloads and installs.
-This bundling means that, unlike ordinary web apps,
-extensions and packaged apps don't need to depend
-on content from the web.
-</p>
-
-<p>
-You can distribute your extension or packaged app
-by using the
-<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>
-to publish to the
-<a href="http://chrome.google.com/webstore">Chrome Web Store</a>.
-For more information, see the
-<a href="http://code.google.com/chrome/webstore">store developer documentation</a>.
-</p>
-
-</td>
-<td style="width:330px">
-<h3>How do I start?</h3>
-
-<p>
-</p><ol>
+<ul>
   <li>
-    Follow the <a href="getstarted.html">Getting Started tutorial</a>
-    <!-- PENDING: once we have one for packaged apps, change to
-      "for _extensions_ or _packaged_apps_" -->
+    You don't want to run a service to host your app.
   </li>
   <li>
-    Read the
-    <a href="overview.html">Overview</a>
+    You want to build an app that works really well offline.
   </li>
   <li>
-    Keep up-to-date by reading the
-    <a href="http://blog.chromium.org/">Chromium blog</a>
+    You want tighter integration with Chrome,
+    using the extension APIs.
   </li>
-  <li>
-    Subscribe to the
-    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">chromium-extensions group</a>
-    </li>
-</ol>
-<p></p>
-
-<h3>Featured videos</h3>
+</ul>
 
 <p>
-<a href="http://www.youtube.com/view_play_list?p=CA101D6A85FE9D4B">Technical videos</a> <br>
-<a href="http://www.youtube.com/view_play_list?p=38DF05697DE372B1">Developer snapshots</a> (below)
+The following articles can help you understand
+the differences between web apps and websites,
+extensions and packaged apps, and packaged apps and hosted apps:
+</p>
+
+<ul>
+  <li> <a href="http://code.google.com/chrome/apps/articles/thinking_in_web_apps.html">Thinking in Web Apps</a> </li>
+  <li> <a href="http://codesite-staging:29006/chrome/webstore/articles/apps_vs_extensions.html">Extensions, Packaged Apps, and Hosted Apps in the Chrome Web Store</a> </li>
+</ul>
+
+
+<h2 id="manifest"> The manifest </h2>
+
+<p>
+A packaged app's manifest can have any field
+that's available to extensions,
+except for "browser_action" and "page_action".
+In addition, a packaged app's manifest <b>must</b>
+have an "app" field.
+Here is a typical manifest for a packaged app:
+</p>
+
+<pre>{
+  "name": "My Awesome Racing Game",
+  "description": "Enter a world where a Vanagon can beat a Maserati",
+  "version": "1",
+  <b>"app": {
+    "launch": {
+      "local_path": "main.html"
+    }
+  },</b>
+  "icons": {
+    "16": "icon_16.png",
+    "128": "icon_128.png"
+  },
+  "permissions": [
+    "unlimitedStorage",
+    "notifications"
+  ]
+}
+</pre>
+
+<p>
+The "app" field has one subfield, "launch",
+which specifies the <em>launch page</em> for the app—the
+page (HTML file bundled into the <code>.crx</code> file)
+that the browser goes to when the user clicks the app's icon
+in the New Tab page.
+The "launch" field can contain the following:
+</p>
+
+<dl>
+  <dt>local_path:</dt>
+    <dd><em>Required.</em>
+    Specifies the launch page
+    as a relative path referring to a file
+    in the <code>.crx</code> package.
+    </dd>
+  <dt>container:</dt>
+    <dd> The value "panel" makes the app appear
+    in an app panel.
+    By default, or when you specify "tab",
+    the app appears in a tab.
+
+    <!-- PENDING: In the overview
+    (or somewhere else before here)
+    we should show and define both app panels and tabs.
+    We should link to that place from here. -->
+    </dd>
+  <dt>height:</dt>
+    <dd>
+    If the container is set to "panel",
+    this integer specifies the height
+    of the panel in pixels.
+    For example, you might specify
+    <code>"height":400</code>.
+    Note that you don't use quotation marks in the value.
+    This field specifies the height of the area
+    to display contents in;
+    window decorations add a few more pixels to the total height.
+    If the container isn't a panel, this field is ignored.
+    </dd>
+  <dt>width:</dt>
+    <dd>
+    Similar to "height",
+    but specifies the width of the panel.
+    </dd>
+  
+</dl>
+
+<p>
+Packaged apps usually provide a 16x16 icon
+to be used as the favicon for
+tabs that contain app's pages.
+They also should provide a 128x128 icon,
+but not a 48x48 icon.
+See the manifest documentation for the
+<a href="manifest.html#icons">"icons" field</a>
+for more information.
 </p>
 
 <p>
-<object width="300" height="250"><param name="movie" value="http://www.youtube.com/p/38DF05697DE372B1&amp;hl=en_US&amp;fs=1"><param name="allowFullScreen" value="true"><param name="allowscriptaccess" value="always"><embed src="http://www.youtube.com/p/38DF05697DE372B1&amp;hl=en_US&amp;fs=1" type="application/x-shockwave-flash" width="300" height="250" allowscriptaccess="always" allowfullscreen="true"></object>
+For further details on what a packaged app's manifest can contain, see the
+<a href="manifest.html">manifest documentation</a>.
 </p>
-</td>
-</tr>
-</tbody></table>
+
+<h2 id="next">What next?</h2>
+
+<p>
+Read the <a href="overview.html">Overview</a> to learn
+basic concepts about extensions.
+</p>
+
+<p class="backtotop"><a href="#top">Back to top</a></p>
+
 </div>
 
         <!-- API PAGE -->

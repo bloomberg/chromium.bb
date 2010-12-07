@@ -1,122 +1,51 @@
 <div id="pageData-name" class="pageData">Hosting</div>
-<div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-Until the
-<a href="http://code.google.com/chrome/webstore/">Chrome Web Store</a>
-is available to the public,
-you can host your extension
-using the <a href="https://chrome.google.com/extensions">Extensions Gallery</a>.
-Once the store is public,
-the gallery's contents will be merged into the store.
-Another option
-is hosting your extension on other servers.
-</p>
-
-<p>
-This page gives tips for using the gallery,
-as well as details on how to host extensions on your own server.
-</p>
-
-<h2 id="gallery">Publishing to the Extensions Gallery</h2>
-
-<p>
-To publish extensions,
-you first need to pay a one-time
-<a href="http://blog.chromium.org/2010/08/security-improvements-and-registration.html">$5 developer registration fee</a>.
+This page tells you how to host <code>.crx</code> files
+on your own server.
+If you distribute your extension, app, or theme solely through the
+<a href="http://chrome.google.com/webstore">Chrome Web Store</a>,
+you don't need this page.
+Instead, consult the store help and
+<a href="http://code.google.com/chrome/webstore/index.html">developer documentation</a>.
+<!-- PENDING: add a link to the help -->
 </p>
 
 <p class="note">
-<b>Note:</b>
-If you used the Chrome Developer Dashboard before
-the first developer preview release of the Chrome Web Store &mdash;
-to publish an extension, for example &mdash;
-you don't need to pay the fee.
+<strong>Note:</strong>
+If you've already published extensions to the 
+<a href="https://chrome.google.com/extensions">Extensions Gallery</a>,
+they will be merged into the store.
 </p>
 
 <p>
-Publishing to the gallery is easy,
-but your extension might be more popular
-if you take a little time to prepare:
-</p>
-
-<ul>
-  <li> Visit the
-    <a href="https://chrome.google.com/extensions">gallery</a>
-    and look at similar extensions' pages.
-    Your extension's page should look at least as good as theirs. </li>
-  <li> Consider creating a support site for your extension,
-    maybe a <a href="http://groups.google.com">Google Group</a>.
-    If your extension's page has a link to your support site,
-    people will be less likely to
-    complain in the user comments. </li>
-  <li> Consider creating a custom Gmail account
-    for this extension or for all of your extensions.
-    Only one account can upload, publish, and update your extension. </li>
-  <li> Create some great text (titles and descriptions)
-    and images (maybe even video) for your extension.
-    See the
-    <a href="http://www.google.com/support/chrome/bin/answer.py?answer=113909">gallery help</a>
-    for details on screenshot and text requirements. </li>
-</ul>
-
-<p>
-To upload your extension,
-just zip up your extension's directory,
-go to the
-<a href="https://chrome.google.com/extensions/developer/dashboard">Developer Dashboard</a>,
-and add your extension.
-This creates a page for your extension,
-viewable only by you.
-Now you can edit your extension's page &mdash;
-uploading images, specifying text, and so on.
+By convention, extensions,
+installable web apps, and themes are served&mdash;whether
+by the Chrome Web Store or by a custom server&mdash;as
+<code>.crx</code> files.
+When you upload a ZIP file with the
+<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>,
+the dashboard creates the <code>.crx</code> file for you.
 </p>
 
 <p>
-Once you verify that your extension's page looks good
-and all links are valid,
-publish your extension.
-</p>
-
-<p>
-When you want to update your extension,
-use the dashboard to upload and publish the new version.
-Your users will automatically get the new version
-over the next few hours.
-</p>
-
-
-<h2 id="server">Hosting on your own server</h2>
-
-<p>
-By convention, extensions are served &mdash;
-whether by the gallery or by a custom server &mdash;
-as <code>.crx</code> files.
-When you upload an extension to the gallery,
-the gallery creates the <code>.crx</code> file for you.
-If you aren't using the gallery,
+If you aren't publishing using the dashboard,
 you need to create the <code>.crx</code> file yourself,
 as described in <a href="packaging.html">Packaging</a>.
-</p>
-
-<p class="note">
-<b>Note:</b>
-If you do your own hosting,
-don't forget to set up
-<a href="autoupdate.html">autoupdate</a>,
-so you can be sure that
-your extension's users have the latest version.
+You can also specify
+<a href="autoupdate.html">autoupdate</a> information to ensure that
+your users will have the latest copy of the <code>.crx</code> file.
 </p>
 
 <p>
-A server that hosts extensions
+A server that hosts <code>.crx</code> files
 must use appropriate HTTP headers,
-so that users can install your extension
+so that users can install the file
 by clicking a link to it.
 </p>
 
 <p>
-Google Chrome considers a file to be an extension
+Google Chrome considers a file to be installable
 if <b>either</b> of the following is true:
 </p>
 
@@ -150,13 +79,13 @@ if <b>either</b> of the following is true:
 </ul>
 
 <p>
-The most common reason for failing to recognize an extension
+The most common reason for failing to recognize an installable file
 is that the server sends the header
 <code>X-Content-Type-Options: no sniff</code>.
 The second most common reason
-is that the server sends an unknown content type &mdash;
-one that isn't in the previous list.
+is that the server sends an unknown content type&mdash;one
+that isn't in the previous list.
 To fix an HTTP header issue,
 either change the configuration of the server
-or try hosting the extension at another server.
+or try hosting the <code>.crx</code> file at another server.
 </p>

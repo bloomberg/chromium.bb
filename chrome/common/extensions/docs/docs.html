@@ -170,7 +170,6 @@
                   <li><a href="options.html">Options Pages</a></li>
                   <li><a href="override.html">Override Pages</a></li>
                   <li><a href="pageAction.html">Page Actions</a></li>
-                  <li><a href="themes.html">Themes</a></li>
                 </ul>
               </li>
               <li>Browser Interaction
@@ -204,6 +203,7 @@
               </li>
             </ul>
           </li>
+          <li><h2><a href="apps.html">Packaged Apps</a></h2></li>
           <li><h2><a href="tutorials.html">Tutorials</a></h2>
             <ul>
               <li><a href="tut_debugging.html">Debugging</a></li>
@@ -217,9 +217,9 @@
                 <ul>
                   <li><a href="manifest.html">Manifest Files</a></li>
                   <li><a href="match_patterns.html">Match Patterns</a></li>
-                  <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
+              <li><a href="permission_warnings.html">Permission Warnings</a></li>
               <li><a href="api_index.html">chrome.* APIs</a></li>
               <li><a href="api_other.html">Other APIs</a></li>
             </ul>
@@ -229,7 +229,7 @@
           <li><h2>More</h2>
             <ul>
               <li><a href="http://code.google.com/chrome/webstore/docs/index.html">Chrome Web Store</a></li>
-              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Installable Web Apps</a></li>
+              <li><a href="http://code.google.com/chrome/apps/docs/developers_guide.html">Hosted Apps</a></li>
               <li><a href="themes.html">Themes</a></li>
             </ul>
           </li>
@@ -305,16 +305,26 @@
         <div id="static"><div id="pageData-name" class="pageData">Hello There!</div>
 
 <p>
-This documentation tells you how to write <em>Google Chrome Extensions</em> —
-small software programs
-that can modify and enhance the functionality of the
+This documentation tells you how to write extensions
+and packaged apps for the
 <a href="http://www.google.com/chrome">Google Chrome browser</a>.
+Because extensions came first,
+the APIs and these docs say <em>extension</em> everywhere,
+even though almost everything applies to packaged apps, as well.
 </p>
+
+<p class="caution">
+<b>Note:</b>
+Unless you see a note
+describing an exception for packaged apps,
+everything in this documentation applies to both extensions and packaged apps.
+</p>
+
 
 <h2 id="readme"> Where to start </h2>
 
 <p>
-Before you write an extension,
+Before you code,
 read these:
 </p>
 
@@ -341,10 +351,11 @@ Also check out these:
     <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions">Group: chromium-extensions</a>
   </li>
   <li>
-    <a href="http://code.google.com/chrome/extensions/index.html">Home: Google Chrome Extensions</a>
+    <a href="http://chrome.google.com/webstore">Chrome Web Store</a>
   </li>
   <li>
-    <a href="https://chrome.google.com/extensions">Gallery</a>
+    <a href="http://code.google.com/chrome/webstore/">Chrome Web Store
+      developer documentation</a>
   </li>
 </ul>
 

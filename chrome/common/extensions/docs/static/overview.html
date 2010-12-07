@@ -5,16 +5,22 @@
 Once you've finished this page
 and the
 <a href="getstarted.html">Getting Started</a> tutorial,
-you'll be all set to start writing extensions.
+you'll be all set to start writing extensions and packaged apps.
 </p>
 
+<p class="caution">
+<strong>Note:</strong>
+<em>Packaged apps</em> are implemented as extensions,
+so unless otherwise stated,
+everything in this page applies to packaged apps.
+</p>
 
 <h2 id="what">The basics</h2>
 
 <p>
-An extension is a zipped bundle of files &mdash;
-HTML, CSS, JavaScript, images, and anything else you need &mdash;
-that adds functionality to the Google Chrome browser.
+An extension is a zipped bundle of files&mdash;HTML,
+CSS, JavaScript, images, and anything else you need&mdash;that
+adds functionality to the Google Chrome browser.
 Extensions are essentially web pages,
 and they can use all the
 <a href="api_other.html">APIs that the browser provides to web pages</a>,
@@ -22,22 +28,22 @@ from XMLHttpRequest to JSON to HTML5.
 </p>
 
 <p>
-Many extensions add UI to Google Chrome,
-in the form of
-<a href="browserAction.html">browser actions</a>
-or <a href="pageAction.html">page actions</a>.
+Extensions can interact with web pages or servers using
+<a href="content_scripts.html">content scripts</a> or
+<a href="xhr.html">cross-origin XMLHttpRequests</a>.
 Extensions can also interact programmatically
 with browser features such as
 <a href="bookmarks.html">bookmarks</a>
 and <a href="tabs.html">tabs</a>.
-To interact with web pages or servers,
-extensions can use
-<a href="content_scripts.html">content scripts</a> or
-<a href="xhr.html">cross-origin XMLHttpRequests</a>.
 </p>
 
+<h3 id="extension-ui">Extension UIs</h3>
+
 <p>
-<b>Note:</b>
+Many extensions&mdash;but not packaged apps&mdash;add
+UI to Google Chrome in the form of
+<a href="browserAction.html">browser actions</a>
+or <a href="pageAction.html">page actions</a>.
 Each extension can have at most one browser action or page action.
 Choose a <b>browser action</b> when the extension is relevant to most pages.
 Choose a <b>page action</b> when the extension's icon
@@ -45,11 +51,75 @@ should appear or disappear,
 depending on the page.
 </p>
 
+<table class="columns">
+<tr>
+  <td>
+    <img src="images/index/gmail.png"
+      width="150" height="79"
+      alt="screenshot" />
+  </td>
+  <td>
+    <img src="images/index/news.png"
+      width="150" height="79"
+      alt="screenshot" />
+  </td>
+  <td>
+    <img src="images/index/rss.png"
+      width="150" height="79"
+      alt="screenshot" />
+  </td>
+</tr>
+
+<tr>
+  <td>
+    This <a href="samples.html#gmail">mail extension</a>
+    uses a <em>browser action</em>
+    (icon in the toolbar).
+  </td>
+  <td>
+    This <a href="samples.html#news">news reader extension</a>
+    features a browser action that,
+    when clicked,
+    shows a <em>popup</em>.
+  </td>
+  <td>
+    This <a href="samples.html#mappy">map extension</a>
+    uses a <em>page action</em>
+    (icon in the address bar)
+    and <em>content script</em>
+    (code injected into a web page).
+  </td>
+</tr>
+</table>
+
 <p>
+Extensions (and packaged apps) can also present a UI in other ways,
+such as adding to the Chrome context menu,
+providing an options page,
+or using a content script that changes how pages look.
 See the <a href="devguide.html">Developer's Guide</a>
 for a complete list of extension features,
-with implementation details
+with links to implementation details
 for each one.
+</p>
+
+
+<h3 id="packagedapp-ui">Packaged app UIs</h3>
+
+<p>
+A packaged app usually presents its main functionality using
+an HTML page that's bundled into the app.
+For example, the following packaged app
+displays a Flash file within an HTML page.
+</p>
+
+<img src="images/index/flashapp.png"
+  width="372" height="300"
+  alt="screenshot" />
+
+<p>
+For more information,
+see <a href="apps.html">Packaged Apps</a>.
 </p>
 
 <h2 id="files">Files</h2>
@@ -62,8 +132,8 @@ Each extension has the following files:
   <li>A <b>manifest file</b></li>
   <li>One or more <b>HTML files</b> (unless the extension is a theme)</li>
   <li><em>Optional:</em> One or more <b>JavaScript files</b></li>
-  <li><em>Optional:</em> Any other files your extension needs &mdash;
-  for example, image files</li>
+  <li><em>Optional:</em> Any other files your extension needs&mdash;for
+  example, image files</li>
 </ul>
 
 <p>
@@ -72,8 +142,9 @@ you put all these files into a single folder.
 When you distribute your extension,
 the contents of the folder are packaged into a special ZIP file
 that has a <code>.crx</code> suffix.
-If you put your extension in the gallery,
-the gallery creates the <code>.crx</code> file for you.
+If you upload your extension using the
+<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>,
+the <code>.crx</code> file is created for you.
 For details on distributing extensions,
 see <a href="hosting.html">Hosting</a>.
 </p>
@@ -309,10 +380,11 @@ or by making server requests that result in saving data.
 Whenever you want to save something,
 first consider whether it's
 from a window that's in incognito mode.
-By default, extensions don't run in incognito windows.
-However, users can selectively enable your extension for incognito mode,
-so you need to consider what a user expects
-from your extension in that case.
+By default, extensions don't run in incognito windows,
+and packaged apps <em>do</em>.
+You need to consider what a user expects
+from your extension or packaged app
+when the browser is incognito.
 </p>
 
 <p>
