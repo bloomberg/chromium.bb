@@ -81,6 +81,18 @@ enum wlsc_pointer_type {
 	WLSC_POINTER_IBEAM,
 };
 
+struct wl_grab;
+struct wl_grab_interface {
+	void (*motion)(struct wl_grab *grab,
+		       uint32_t time, int32_t x, int32_t y);
+	void (*end)(struct wl_grab *grab);
+};
+
+struct wl_grab {
+	struct wl_grab_interface *interface;
+	struct wl_input_device *input_device;
+};
+
 struct wlsc_input_device {
 	struct wl_input_device input_device;
 	int32_t x, y;
@@ -91,6 +103,7 @@ struct wlsc_input_device {
 
 	uint32_t modifier_state;
 
+	struct wl_grab *grab_object;
 	enum wlsc_grab_type grab;
 	uint32_t grab_time;
 	int32_t grab_x, grab_y;

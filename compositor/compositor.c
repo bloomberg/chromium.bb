@@ -727,6 +727,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	struct wlsc_surface *es;
 	struct wlsc_compositor *ec = device->ec;
 	struct wlsc_output *output;
+	struct wl_grab_interface *interface;
 	int32_t sx, sy, width, height;
 
 	/* FIXME: We need some multi head love here. */
@@ -743,7 +744,10 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	device->x = x;
 	device->y = y;
 
-	switch (device->grab) {
+	if (device->grab_object) {
+		interface = device->grab_object->interface;
+		interface->motion(device->grab_object, time, x, y);
+	} else switch (device->grab) {
 	case WLSC_DEVICE_GRAB_NONE:
 		es = pick_surface(device, &sx, &sy);
 		wl_input_device_set_pointer_focus(&device->input_device,
@@ -868,6 +872,7 @@ notify_button(struct wlsc_input_device *device,
 {
 	struct wlsc_surface *surface;
 	struct wlsc_compositor *compositor = device->ec;
+	struct wl_grab_interface *interface;
 	struct wl_drag *drag = device->drag;
 
 	surface = (struct wlsc_surface *) device->input_device.pointer_focus;
@@ -908,8 +913,14 @@ notify_button(struct wlsc_input_device *device,
 				     time, button, state);
 
 	if (!state &&
-	    device->grab != WLSC_DEVICE_GRAB_NONE &&
+	    device->grab_object &&
 	    device->grab_button == button) {
+		interface = device->grab_object->interface;
+		interface->end(device->grab_object);
+		
+	} else if (!state &&
+		   device->grab != WLSC_DEVICE_GRAB_NONE &&
+		   device->grab_button == button) {
 		drag = device->drag;
 		if (drag && drag->target)
 			wl_client_post_event(drag->target,
