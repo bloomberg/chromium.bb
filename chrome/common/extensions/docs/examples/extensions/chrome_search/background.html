@@ -3,10 +3,6 @@ var currentRequest = null;
 
 chrome.omnibox.onInputChanged.addListener(
   function(text, suggest) {
-    if (text == '') {
-      return;
-    }
-
     if (currentRequest != null) {
       currentRequest.onreadystatechange = null;
       currentRequest.abort();
@@ -14,8 +10,7 @@ chrome.omnibox.onInputChanged.addListener(
     }
 
     updateDefaultSuggestion(text);
-
-    if (text == 'halp')
+    if (text == '' || text == 'halp')
       return;
 
     currentRequest = search(text, function(xml) {
@@ -32,25 +27,32 @@ chrome.omnibox.onInputChanged.addListener(
         if (/^file:/.test(text)) {
           description += ' <dim>' + path + '</dim>';
         } else {
-          description += ' ';
-
-          // Highlight all occurrences of the match text.
           var content = entry.getElementsByTagName("content")[0].textContent;
-          var start = 0;
-          var index = 0;
-          for (;;) {
-            var index = content.toLowerCase().indexOf(
-                text.toLowerCase(), start);
-            if (index < 0) {
-              description += content.substring(start);
+
+          // There can be multiple lines. Kill all the ones except the one that
+          // contains the first match. We can ocassionally fail to find a single
+          // line that matches, so we still handle multiple lines below.
+          var matches = content.split(/\n/);
+          for (var j = 0, match; match = matches[j]; j++) {
+            if (match.indexOf('<b>') > -1) {
+              content = match;
               break;
             }
-
-            description += content.substring(start, index);
-            description +=
-                '<match>' + content.substr(index, text.length) + '</match>';
-            start = index + text.length;
           }
+
+          // Replace any extraneous whitespace to make it look nicer.
+          content = content.replace(/[\n\t]/g, ' ');
+          content = content.replace(/ {2,}/g, ' ');
+
+          // Codesearch wraps the result in <pre> tags. Remove those if they're
+          // still there.
+          content = content.replace(/<\/?pre>/g, '');
+
+          // Codesearch highlights the matches with 'b' tags. Replaces those
+          // with 'match'.
+          content = content.replace(/<(\/)?b>/g, '<$1match>');
+
+          description += ' ' + content;
         }
 
         results.push({
