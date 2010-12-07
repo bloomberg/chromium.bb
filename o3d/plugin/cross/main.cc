@@ -332,7 +332,7 @@ NPError EXPORT_SYMBOL OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs
 
   FilePath log;
   file_util::GetTempDir(&log);
-  log.Append(O3D_DEBUG_LOG_FILENAME);
+  log = log.Append(O3D_DEBUG_LOG_FILENAME);
 
   InitLogging(log.value().c_str(),
               logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
