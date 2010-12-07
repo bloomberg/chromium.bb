@@ -3369,38 +3369,6 @@
    fun:_ZN7testing14InitGoogleTestEPiPPc
 }
 {
-   bug_64894a
-   Memcheck:Cond
-   fun:_ZN3net11SpdySession10GetSSLInfoEPNS_7SSLInfoEPb
-   fun:_ZN3net10SpdyStream10GetSSLInfoEPNS_7SSLInfoEPb
-   fun:_ZN3net14SpdyHttpStream18OnResponseReceivedERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEN4base4TimeEi
-}
-{
-   bug_64894b
-   Memcheck:Cond
-   fun:_ZN3net11SpdySession16CreateStreamImplERK4GURLNS_15RequestPriorityEP13scoped_refptrINS_10SpdyStreamEERKNS_11BoundNetLogE
-   fun:_ZN3net11SpdySession27ProcessPendingCreateStreamsEv
-   fun:_ZN3net11SpdySession12DeleteStreamEji
-   fun:_ZN3net11SpdySession11CloseStreamEji
-   fun:_ZN3net10SpdyStream14OnDataReceivedEPKci
-   fun:_ZN3net11SpdySession17OnStreamFrameDataEjPKcm
-   fun:_ZN4spdy10SpdyFramer23ProcessDataFramePayloadEPKcm
-   fun:_ZN4spdy10SpdyFramer12ProcessInputEPKcm
-   fun:_ZN3net11SpdySession14OnReadCompleteEi
-}
-{
-   bug_64894c
-   Memcheck:Cond
-   ...
-   fun:_ZN3net11SpdySession*
-   fun:_ZN3net14SpdyHttpStream16InitializeStreamEPKNS_15HttpRequestInfoERKNS_11BoundNetLogEP14CallbackRunnerI6Tuple1IiEE
-   fun:_ZN3net22HttpNetworkTransaction12DoInitStreamEv
-   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
-   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
-   fun:_ZN3net22HttpNetworkTransaction13OnStreamReadyEPNS_10HttpStreamE
-   fun:_ZN3net17HttpStreamRequest21OnStreamReadyCallbackEv
-}
-{
    bug_64930a
    Memcheck:Leak
    fun:_Znw*
