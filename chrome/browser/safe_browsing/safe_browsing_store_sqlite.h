@@ -32,6 +32,9 @@ class SafeBrowsingStoreSqlite : public SafeBrowsingStore {
   virtual bool BeginChunk() {
     return true;
   }
+
+  // Get all Add prefixes out from the store.
+  virtual bool GetAddPrefixes(std::vector<SBAddPrefix>* add_prefixes);
   virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
     const std::vector<SBAddPrefix> prefixes(1, SBAddPrefix(chunk_id, prefix));
     return WriteAddPrefixes(prefixes);

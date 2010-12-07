@@ -40,6 +40,18 @@ bool FileRewind(FILE* fp) {
   return rv == 0;
 }
 
+// Move file read pointer forward by |bytes| relative to current position.
+bool FileSkip(size_t bytes, FILE* fp) {
+  // Although fseek takes negative values, for this case, we only want
+  // to skip forward.
+  DCHECK(static_cast<long>(bytes) > 0);
+  if (static_cast<long>(bytes) < 0)
+    return false;
+  int rv = fseek(fp, static_cast<long>(bytes), SEEK_CUR);
+  DCHECK_EQ(rv, 0);
+  return rv == 0;
+}
+
 // Read an array of |nmemb| items from |fp| into |ptr|, and fold the
 // input data into the checksum in |context|, if non-NULL.  Return
 // true on success.
@@ -169,6 +181,21 @@ bool FileHeaderSanityCheck(const FilePath& filename,
   return true;
 }
 
+// This a helper function that reads header to |header|. Returns true if the
+// magic number is correct and santiy check passes.
+bool ReadAndVerifyHeader(const FilePath& filename,
+                         FILE* fp,
+                         FileHeader* header,
+                         MD5Context* context) {
+  if (!ReadArray(header, 1, fp, context))
+    return false;
+  if (header->magic != kFileMagic || header->version != kFileVersion)
+    return false;
+  if (!FileHeaderSanityCheck(filename, *header))
+    return false;
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -260,6 +287,28 @@ bool SafeBrowsingStoreFile::BeginChunk() {
 
 bool SafeBrowsingStoreFile::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
   add_prefixes_.push_back(SBAddPrefix(chunk_id, prefix));
+  return true;
+}
+
+bool SafeBrowsingStoreFile::GetAddPrefixes(
+   std::vector<SBAddPrefix>* add_prefixes) {
+  add_prefixes->clear();
+
+  file_util::ScopedFILE file(file_util::OpenFile(filename_, "rb"));
+  if (file.get() == NULL) return false;
+
+  FileHeader header;
+  if (!ReadAndVerifyHeader(filename_, file.get(), &header, NULL))
+    return OnCorruptDatabase();
+
+  size_t add_prefix_offset = header.add_chunk_count * sizeof(int32) +
+      header.sub_chunk_count * sizeof(int32);
+  if (!FileSkip(add_prefix_offset, file.get()))
+    return false;
+
+  if (!ReadToVector(add_prefixes, header.add_prefix_count, file.get(), NULL))
+    return false;
+
   return true;
 }
 
@@ -442,6 +491,8 @@ bool SafeBrowsingStoreFile::DoUpdate(
     std::vector<SBAddFullHash>* add_full_hashes_result) {
   DCHECK(old_store_.get() || file_.get() || empty_);
   DCHECK(new_file_.get());
+  CHECK(add_prefixes_result);
+  CHECK(add_full_hashes_result);
 
   std::vector<SBAddPrefix> add_prefixes;
   std::vector<SBSubPrefix> sub_prefixes;
@@ -471,7 +522,6 @@ bool SafeBrowsingStoreFile::DoUpdate(
     if (!old_store_->CancelUpdate())
       return OnCorruptDatabase();
   } else if (!empty_) {
-    // Read |file_| into the vectors.
     DCHECK(file_.get());
 
     if (!FileRewind(file_.get()))
@@ -482,13 +532,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
     // Read the file header and make sure it looks right.
     FileHeader header;
-    if (!ReadArray(&header, 1, file_.get(), &context))
-      return OnCorruptDatabase();
-
-    if (header.magic != kFileMagic || header.version != kFileVersion)
-      return OnCorruptDatabase();
-
-    if (!FileHeaderSanityCheck(filename_, header))
+    if (!ReadAndVerifyHeader(filename_, file_.get(), &header, &context))
       return OnCorruptDatabase();
 
     // Re-read the chunks-seen data to get to the later data in the
@@ -518,6 +562,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
     MD5Digest file_digest;
     if (!ReadArray(&file_digest, 1, file_.get(), NULL))
       return OnCorruptDatabase();
+
     if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest)))
       return OnCorruptDatabase();
 
@@ -666,6 +711,9 @@ bool SafeBrowsingStoreFile::FinishUpdate(
     const std::set<SBPrefix>& prefix_misses,
     std::vector<SBAddPrefix>* add_prefixes_result,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
+  DCHECK(add_prefixes_result);
+  DCHECK(add_full_hashes_result);
+
   bool ret = DoUpdate(pending_adds, prefix_misses,
                       add_prefixes_result, add_full_hashes_result);
 

@@ -84,6 +84,15 @@ void SafeBrowsingStoreSqlite::Init(const FilePath& filename,
   corruption_callback_.reset(corruption_callback);
 }
 
+bool SafeBrowsingStoreSqlite::GetAddPrefixes(
+    std::vector<SBAddPrefix>* add_prefixes) {
+  add_prefixes->clear();
+  if (!Open()) return false;
+  bool ret = ReadAddPrefixes(add_prefixes);
+  Close();
+  return ret;
+}
+
 bool SafeBrowsingStoreSqlite::OnCorruptDatabase() {
   if (corruption_callback_.get())
     corruption_callback_->Run();

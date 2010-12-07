@@ -124,7 +124,11 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // Delete any on-disk files, including the permanent storage.
   virtual bool Delete();
 
+  // Get all Add prefixes from the store.
+  virtual bool GetAddPrefixes(std::vector<SBAddPrefix>* add_prefixes);
+
   virtual bool BeginChunk();
+
   virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix);
   virtual bool WriteAddHash(int32 chunk_id,
                             base::Time receive_time,
@@ -136,10 +140,8 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   virtual bool FinishChunk();
 
   virtual bool BeginUpdate();
-  virtual bool DoUpdate(const std::vector<SBAddFullHash>& pending_adds,
-                        const std::set<SBPrefix>& prefix_misses,
-                        std::vector<SBAddPrefix>* add_prefixes_result,
-                        std::vector<SBAddFullHash>* add_full_hashes_result);
+  // Store updates with pending add full hashes in file store and
+  // return |add_prefixes_result| and |add_full_hashes_result|.
   virtual bool FinishUpdate(const std::vector<SBAddFullHash>& pending_adds,
                             const std::set<SBPrefix>& prefix_misses,
                             std::vector<SBAddPrefix>* add_prefixes_result,
@@ -163,6 +165,11 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   }
 
  private:
+  // Update store file with pending full hashes.
+  virtual bool DoUpdate(const std::vector<SBAddFullHash>& pending_adds,
+                        const std::set<SBPrefix>& prefix_misses,
+                        std::vector<SBAddPrefix>* add_prefixes_result,
+                        std::vector<SBAddFullHash>* add_full_hashes_result);
   // Enumerate different format-change events for histogramming
   // purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
   // TODO(shess): Remove this once the format change is complete.
