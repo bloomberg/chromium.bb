@@ -6,6 +6,7 @@
 
 #include "webkit/appcache/appcache_url_request_job.h"
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -27,7 +28,8 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       cache_id_(kNoCacheId), is_fallback_(false),
       cache_entry_not_found_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
-          this, &AppCacheURLRequestJob::OnReadComplete)) {
+          this, &AppCacheURLRequestJob::OnReadComplete)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(storage_);
 }
 
@@ -67,8 +69,10 @@ void AppCacheURLRequestJob::MaybeBeginDelivery() {
   if (has_been_started() && has_delivery_orders()) {
     // Start asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &AppCacheURLRequestJob::BeginDelivery));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &AppCacheURLRequestJob::BeginDelivery));
   }
 }
 
@@ -210,6 +214,7 @@ void AppCacheURLRequestJob::Kill() {
       storage_ = NULL;
     }
     URLRequestJob::Kill();
+    method_factory_.RevokeAll();
   }
 }
 
@@ -278,4 +283,3 @@ void AppCacheURLRequestJob::SetExtraRequestHeaders(
 }
 
 }  // namespace appcache
-

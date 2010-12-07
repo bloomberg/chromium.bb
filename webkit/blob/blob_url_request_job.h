@@ -9,6 +9,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
 #include "net/http/http_byte_range.h"
@@ -78,6 +79,7 @@ class BlobURLRequestJob : public net::URLRequestJob {
   bool byte_range_set_;
   net::HttpByteRange byte_range_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
+  ScopedRunnableMethodFactory<BlobURLRequestJob> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobURLRequestJob);
 };

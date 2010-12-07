@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/task.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/appcache/appcache_entry.h"
@@ -20,8 +21,7 @@ namespace appcache {
 class AppCacheURLRequestJob : public net::URLRequestJob,
                               public AppCacheStorage::Delegate {
  public:
-  explicit AppCacheURLRequestJob(net::URLRequest* request,
-                                 AppCacheStorage* storage);
+  AppCacheURLRequestJob(net::URLRequest* request, AppCacheStorage* storage);
   virtual ~AppCacheURLRequestJob();
 
   // Informs the job of what response it should deliver. Only one of these
@@ -143,9 +143,9 @@ class AppCacheURLRequestJob : public net::URLRequestJob,
   scoped_ptr<net::HttpResponseInfo> range_response_info_;
   scoped_ptr<AppCacheResponseReader> reader_;
   net::CompletionCallbackImpl<AppCacheURLRequestJob> read_callback_;
+  ScopedRunnableMethodFactory<AppCacheURLRequestJob> method_factory_;
 };
 
 }  // namespace appcache
 
 #endif  // WEBKIT_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
-

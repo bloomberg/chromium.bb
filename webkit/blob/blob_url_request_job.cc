@@ -4,6 +4,7 @@
 
 #include "webkit/blob/blob_url_request_job.h"
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
@@ -30,14 +31,14 @@ static const int kHTTPMethodNotAllow = 405;
 static const int kHTTPRequestedRangeNotSatisfiable = 416;
 static const int kHTTPInternalError = 500;
 
-static const char* kHTTPOKText = "OK";
-static const char* kHTTPPartialContentText = "Partial Content";
-static const char* kHTTPNotAllowedText = "Not Allowed";
-static const char* kHTTPNotFoundText = "Not Found";
-static const char* kHTTPMethodNotAllowText = "Method Not Allowed";
-static const char* kHTTPRequestedRangeNotSatisfiableText =
+static const char kHTTPOKText[] = "OK";
+static const char kHTTPPartialContentText[] = "Partial Content";
+static const char kHTTPNotAllowedText[] = "Not Allowed";
+static const char kHTTPNotFoundText[] = "Not Found";
+static const char kHTTPMethodNotAllowText[] = "Method Not Allowed";
+static const char kHTTPRequestedRangeNotSatisfiableText[] =
     "Requested Range Not Satisfiable";
-static const char* kHTTPInternalErrorText = "Internal Server Error";
+static const char kHTTPInternalErrorText[] = "Internal Server Error";
 
 BlobURLRequestJob::BlobURLRequestJob(
     net::URLRequest* request,
@@ -58,7 +59,8 @@ BlobURLRequestJob::BlobURLRequestJob(
       read_buf_remaining_bytes_(0),
       error_(false),
       headers_set_(false),
-      byte_range_set_(false) {
+      byte_range_set_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 BlobURLRequestJob::~BlobURLRequestJob() {
@@ -66,8 +68,9 @@ BlobURLRequestJob::~BlobURLRequestJob() {
 
 void BlobURLRequestJob::Start() {
   // Continue asynchronously.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &BlobURLRequestJob::DidStart));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(&BlobURLRequestJob::DidStart));
 }
 
 void BlobURLRequestJob::DidStart() {
@@ -90,6 +93,8 @@ void BlobURLRequestJob::Kill() {
   stream_.Close();
 
   URLRequestJob::Kill();
+  callback_factory_.RevokeAll();
+  method_factory_.RevokeAll();
 }
 
 void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
@@ -109,18 +114,16 @@ void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
   bool exists = file_util::GetFileInfo(file_path, &file_info);
 
   // Continue asynchronously.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &BlobURLRequestJob::DidResolve,
-      (exists ? base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_NOT_FOUND),
-      file_info));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &BlobURLRequestJob::DidResolve,
+          exists ? base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_NOT_FOUND,
+          file_info));
 }
 
 void BlobURLRequestJob::DidResolve(base::PlatformFileError rv,
                                    const base::PlatformFileInfo& file_info) {
-  // We may have been orphaned...
-  if (!request_)
-    return;
-
   // If an error occured, bail out.
   if (rv == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
     NotifyFailure(net::ERR_FILE_NOT_FOUND);

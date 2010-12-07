@@ -124,4 +124,3 @@ class AppCacheRequestHandler : public net::URLRequest::UserData,
 }  // namespace appcache
 
 #endif  // WEBKIT_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
-

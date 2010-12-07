@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/task.h"
 #include "net/url_request/url_request_simple_job.h"
 
 namespace net {
@@ -30,6 +31,7 @@ class ViewBlobInternalsJob : public URLRequestSimpleJob {
                        std::string* charset,
                        std::string* data) const;
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
+  virtual void Kill();
 
  private:
   ~ViewBlobInternalsJob();
@@ -40,6 +42,7 @@ class ViewBlobInternalsJob : public URLRequestSimpleJob {
                                       std::string* out);
 
   BlobStorageController* blob_storage_controller_;
+  ScopedRunnableMethodFactory<ViewBlobInternalsJob> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewBlobInternalsJob);
 };
