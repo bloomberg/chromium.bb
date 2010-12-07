@@ -3470,21 +3470,21 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11webkit_glue26BufferedResourceLoaderTest10InitializeEPKcii
-   fun:_ZN11webkit_glue49BufferedResourceLoaderTest*
+   fun:_ZN11webkit_glue*BufferedResourceLoaderTest*
 }
 {
    bug_65664b
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11webkit_glue22BufferedDataSourceTest20InitializeDataSource*
-   fun:_ZN11webkit_glue40BufferedDataSourceTest*
+   fun:_ZN11webkit_glue*BufferedDataSourceTest*
 }
 {
    bug_65664c
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11webkit_glue20SimpleDataSourceTest20InitializeDataSourceEPKc
-   fun:_ZN11webkit_glue45SimpleDataSourceTest*
+   fun:_ZN11webkit_glue*SimpleDataSourceTest*
 }
 {
    bug_65664d
