@@ -571,7 +571,7 @@ move_grab_motion(struct wl_grab *grab,
 }
 
 static void
-move_grab_end(struct wl_grab *grab)
+move_grab_end(struct wl_grab *grab, uint32_t time)
 {
 	free(grab);
 }
@@ -655,7 +655,7 @@ resize_grab_motion(struct wl_grab *grab,
 }
 
 static void
-resize_grab_end(struct wl_grab *grab)
+resize_grab_end(struct wl_grab *grab, uint32_t time)
 {
 	free(grab);
 }
@@ -894,17 +894,6 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 				     time, x, y, sx, sy);
 		break;
 
-	case WLSC_DEVICE_GRAB_DRAG:
-		es = pick_surface(device, &sx, &sy);
-		wl_drag_set_pointer_focus(device->drag,
-					  &es->surface, time, x, y, sx, sy);
-		if (es)
-			wl_client_post_event(es->surface.client,
-					     &device->drag->drag_offer.object,
-					     WL_DRAG_OFFER_MOTION,
-					     time, x, y, sx, sy);
-		break;
-
 	default:
 		/* Other grabs are handled as grab objects. */
 		break;
@@ -920,24 +909,14 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 static void
 wlsc_input_device_end_grab(struct wlsc_input_device *device, uint32_t time)
 {
-	struct wl_drag *drag = device->drag;
 	struct wlsc_surface *es;
 	const struct wl_grab_interface *interface;
 	int32_t sx, sy;
 
 	if (device->grab_object) {
 		interface = device->grab_object->interface;
-		interface->end(device->grab_object);
+		interface->end(device->grab_object, time);
 		device->grab_object = NULL;
-	}
-
-	switch (device->grab) {
-	case WLSC_DEVICE_GRAB_DRAG:
-		wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);
-		device->drag = NULL;
-		break;
-	default:
-		break;
 	}
 
 	wl_list_remove(&device->grab_listener.link);
@@ -954,7 +933,6 @@ notify_button(struct wlsc_input_device *device,
 {
 	struct wlsc_surface *surface;
 	struct wlsc_compositor *compositor = device->ec;
-	struct wl_drag *drag = device->drag;
 
 	surface = (struct wlsc_surface *) device->input_device.pointer_focus;
 	if (!surface)
@@ -1000,11 +978,6 @@ notify_button(struct wlsc_input_device *device,
 	} else if (!state &&
 		   device->grab != WLSC_DEVICE_GRAB_NONE &&
 		   device->grab_button == button) {
-		drag = device->drag;
-		if (drag && drag->target)
-			wl_client_post_event(drag->target,
-					     &drag->drag_offer.object,
-					     WL_DRAG_OFFER_DROP);
 		wlsc_input_device_end_grab(device, time);
 	}
 }
@@ -1210,6 +1183,43 @@ drag_offer(struct wl_client *client, struct wl_drag *drag, const char *type)
 }
 
 static void
+drag_grab_motion(struct wl_grab *grab,
+		   uint32_t time, int32_t x, int32_t y)
+{
+	struct wl_drag *drag = container_of(grab, struct wl_drag, grab);
+	struct wlsc_input_device *device =
+		(struct wlsc_input_device *) grab->input_device;
+	struct wlsc_surface *es;
+	int32_t sx, sy;
+
+	es = pick_surface(device, &sx, &sy);
+	wl_drag_set_pointer_focus(drag, &es->surface, time, x, y, sx, sy);
+	if (es)
+		wl_client_post_event(es->surface.client,
+				     &drag->drag_offer.object,
+				     WL_DRAG_OFFER_MOTION,
+				     time, x, y, sx, sy);
+}
+
+static void
+drag_grab_end(struct wl_grab *grab, uint32_t time)
+{
+	struct wl_drag *drag = container_of(grab, struct wl_drag, grab);
+
+	if (drag->target)
+		wl_client_post_event(drag->target,
+				     &drag->drag_offer.object,
+				     WL_DRAG_OFFER_DROP);
+
+	wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);
+}
+
+static const struct wl_grab_interface drag_grab_interface = {
+	drag_grab_motion,
+	drag_grab_end
+};
+
+static void
 drag_activate(struct wl_client *client,
 	      struct wl_drag *drag,
 	      struct wl_surface *surface,
@@ -1225,8 +1235,11 @@ drag_activate(struct wl_client *client,
 					  surface, time) < 0)
 		return;
 
+	device->grab_object = &drag->grab;
+	drag->grab.interface = &drag_grab_interface;
+	drag->grab.input_device = input_device;
+
 	drag->source = surface;
-	drag->input_device = input_device;
 
 	drag->drag_offer.object.interface = &wl_drag_offer_interface;
 	drag->drag_offer.object.implementation =
@@ -1234,17 +1247,16 @@ drag_activate(struct wl_client *client,
 
 	wl_display_add_object(display, &drag->drag_offer.object);
 
-	device->drag = drag;
 	target = pick_surface(device, &sx, &sy);
-	wl_drag_set_pointer_focus(device->drag, &target->surface, time,
+	wl_drag_set_pointer_focus(drag, &target->surface, time,
 				  device->x, device->y, sx, sy);
 }
 
 static void
-drag_cancel(struct wl_client *client, struct wl_drag *drag)
+drag_destroy(struct wl_client *client, struct wl_drag *drag)
 {
 	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) drag->input_device;
+		(struct wlsc_input_device *) drag->grab.input_device;
 	uint32_t time;
 
 	if (drag->source == NULL || drag->source->client != client)
@@ -1252,12 +1264,13 @@ drag_cancel(struct wl_client *client, struct wl_drag *drag)
 
 	time = get_time();
 	wlsc_input_device_end_grab(device, time);
+	wl_resource_destroy(&drag->resource, client);
 }
 
 static const struct wl_drag_interface drag_interface = {
 	drag_offer,
 	drag_activate,
-	drag_cancel,
+	drag_destroy,
 };
 
 void

@@ -144,18 +144,31 @@ struct wl_visual {
 	struct wl_object object;
 };
 
+struct wl_grab;
+struct wl_grab_interface {
+	void (*motion)(struct wl_grab *grab,
+		       uint32_t time, int32_t x, int32_t y);
+	void (*end)(struct wl_grab *grab, uint32_t time);
+};
+
+struct wl_grab {
+	const struct wl_grab_interface *interface;
+	struct wl_input_device *input_device;
+};
+
+
 struct wl_drag_offer {
 	struct wl_object object;
 };
 
 struct wl_drag {
 	struct wl_resource resource;
+	struct wl_grab grab;
 	struct wl_drag_offer drag_offer;
 	struct wl_surface *source;
 	struct wl_surface *drag_focus;
 	struct wl_client *target;
 	int32_t x, y, sx, sy;
-	struct wl_input_device *input_device;
 	struct wl_array types;
 	const char *type;
 	uint32_t pointer_focus_time;
