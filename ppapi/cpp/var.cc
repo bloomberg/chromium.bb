@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/var.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include <algorithm>
@@ -16,10 +17,9 @@
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 
-// Defining snprintf
-#include <stdio.h>
+// Define equivalent to snprintf on Windows.
 #if defined(_MSC_VER)
-#  define snprintf _snprintf_s
+#  define snprintf sprintf_s
 #endif
 
 namespace {
@@ -343,23 +343,32 @@ Var Var::Call(const Var& method_name, const Var& arg1, const Var& arg2,
 
 std::string Var::DebugString() const {
   char buf[256];
-  if (is_undefined())
+  if (is_undefined()) {
     snprintf(buf, sizeof(buf), "Var<UNDEFINED>");
-  else if (is_null())
+  } else if (is_null()) {
     snprintf(buf, sizeof(buf), "Var<NULL>");
-  else if (is_bool())
+  } else if (is_bool()) {
     snprintf(buf, sizeof(buf), AsBool() ? "Var<true>" : "Var<false>");
-  else if (is_int())
+  } else if (is_int()) {
     // Note that the following static_cast is necessary because
     // NativeClient's int32_t is actually "long".
     // TODO(sehr,polina): remove this after newlib is changed.
     snprintf(buf, sizeof(buf), "Var<%d>", static_cast<int>(AsInt()));
-  else if (is_double())
+  } else if (is_double()) {
     snprintf(buf, sizeof(buf), "Var<%f>", AsDouble());
-  else if (is_string())
-    snprintf(buf, sizeof(buf), "Var<'%s'>", AsString().c_str());
-  else if (is_object())
+  } else if (is_string()) {
+    char format[] = "Var<'%s'>";
+    size_t decoration = sizeof(format) - 2;  // The %s is removed.
+    size_t available = sizeof(buf) - decoration;
+    std::string str = AsString();
+    if (str.length() > available) {
+      str.resize(available - 3);  // Reserve space for ellipsis.
+      str.append("...");
+    }
+    snprintf(buf, sizeof(buf), format, str.c_str());
+  } else if (is_object()) {
     snprintf(buf, sizeof(buf), "Var<OBJECT>");
+  }
   return buf;
 }
 
