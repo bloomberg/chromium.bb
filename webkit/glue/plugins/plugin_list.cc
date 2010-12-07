@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -19,6 +20,10 @@
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_switches.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_POSIX)
+#include "base/third_party/valgrind/valgrind.h"
+#endif  // defined(OS_POSIX)
 
 namespace NPAPI {
 
@@ -294,7 +299,7 @@ void PluginList::LoadPlugins(bool refresh) {
     LoadPluginsFromDir(directories_to_scan[i], &new_plugins, &visited_plugins);
   }
 
-#if defined OS_WIN
+#if defined(OS_WIN)
   LoadPluginsFromRegistry(&new_plugins, &visited_plugins);
 #endif
 
@@ -431,12 +436,12 @@ void PluginList::GetEnabledPlugins(bool refresh,
   }
 }
 
-void PluginList::GetPluginInfoArray(const GURL& url,
-                                    const std::string& mime_type,
-                                    bool allow_wildcard,
-                                    std::vector<WebPluginInfo>* info,
-                                    std::vector<std::string>* actual_mime_types)
-{
+void PluginList::GetPluginInfoArray(
+    const GURL& url,
+    const std::string& mime_type,
+    bool allow_wildcard,
+    std::vector<WebPluginInfo>* info,
+    std::vector<std::string>* actual_mime_types) {
   DCHECK(mime_type == StringToLowerASCII(mime_type));
   DCHECK(info);
 
@@ -715,6 +720,14 @@ void PluginList::Shutdown() {
   // Note: plugin_groups_ contains simple pointers of type PluginGroup*, but
   // since this singleton lives until the process is destroyed, no explicit
   // cleanup is necessary.
+  // However, when running on Valgrind, we need to do the cleanup to keep the
+  // memory tree green.
+#if defined(OS_POSIX)
+  if (RUNNING_ON_VALGRIND) {
+    STLDeleteContainerPairSecondPointers(plugin_groups_.begin(),
+                                         plugin_groups_.end());
+  }
+#endif
 }
 
 }  // namespace NPAPI
