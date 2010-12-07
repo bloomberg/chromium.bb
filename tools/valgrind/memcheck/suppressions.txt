@@ -3491,7 +3491,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11webkit_glue40SimpleDataSourceTest_InitializeData_Test8TestBodyEv
-   fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+   fun:_ZN7testing*HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_65680a
