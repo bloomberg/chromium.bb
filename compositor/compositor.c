@@ -522,8 +522,6 @@ wlsc_input_device_start_grab(struct wlsc_input_device *device,
 	device->grab_y = device->y;
 	device->grab_dx = focus->x - device->grab_x;
 	device->grab_dy = focus->y - device->grab_y;
-	device->grab_width = focus->width;
-	device->grab_height = focus->height;
 
 	device->grab_listener.func = lose_grab_surface;
 	wl_list_insert(focus->surface.destroy_listener_list.prev,
@@ -559,13 +557,85 @@ shell_move(struct wl_client *client, struct wl_shell *shell,
 	wlsc_input_device_set_pointer_image(wd, WLSC_POINTER_DRAGGING);
 }
 
+struct wlsc_resize_grab {
+	struct wl_grab grab;
+	uint32_t edges;
+	int32_t dx, dy, width, height;
+};
+
+static void
+resize_grab_motion(struct wl_grab *grab,
+		   uint32_t time, int32_t x, int32_t y)
+{
+	struct wlsc_resize_grab *resize = (struct wlsc_resize_grab *) grab;
+	struct wlsc_input_device *device =
+		(struct wlsc_input_device *) grab->input_device;
+	struct wlsc_surface *es =
+		(struct wlsc_surface *) device->input_device.pointer_focus;
+	int32_t sx, sy, width, height;
+
+	if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_LEFT) {
+		sx = x + resize->dx;
+		width = device->grab_x - x + resize->width;
+	} else if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_RIGHT) {
+		sx = device->grab_x + resize->dx;
+		width = x - device->grab_x + resize->width;
+	} else {
+		sx = device->grab_x + resize->dx;
+		width = resize->width;
+	}
+
+	if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_TOP) {
+		sy = y + resize->dy;
+		height = device->grab_y - y + resize->height;
+	} else if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_BOTTOM) {
+		sy = device->grab_y + resize->dy;
+		height = y - device->grab_y + resize->height;
+	} else {
+		sy = device->grab_y + resize->dy;
+		height = resize->height;
+	}
+
+	wl_client_post_event(es->surface.client,
+			     &device->ec->shell.object,
+			     WL_SHELL_CONFIGURE, time, resize->edges,
+			     &es->surface, sx, sy, width, height);
+}
+
+static void
+resize_grab_end(struct wl_grab *grab)
+{
+	free(grab);
+}
+
+struct wl_grab_interface resize_grab_interface = {
+	resize_grab_motion,
+	resize_grab_end
+};
+
 static void
 shell_resize(struct wl_client *client, struct wl_shell *shell,
 	     struct wl_surface *surface,
 	     struct wl_input_device *device, uint32_t time, uint32_t edges)
 {
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_resize_grab *resize;
 	enum wlsc_pointer_type pointer = WLSC_POINTER_LEFT_PTR;
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+
+	resize = malloc(sizeof *resize);
+	if (!resize) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	resize->grab.interface = &resize_grab_interface;
+	resize->grab.input_device = device;
+	resize->edges = edges;
+	resize->dx = es->x - wd->grab_x;
+	resize->dy = es->y - wd->grab_y;
+	resize->width = es->width;
+	resize->height = es->height;
 
 	if (edges == 0 || edges > 15 ||
 	    (edges & 3) == 3 || (edges & 12) == 12)
@@ -602,6 +672,7 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 		return;
 
 	wlsc_input_device_set_pointer_image(wd, pointer);
+	wd->grab_object = &resize->grab;
 }
 
 static void
@@ -728,7 +799,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	struct wlsc_compositor *ec = device->ec;
 	struct wlsc_output *output;
 	struct wl_grab_interface *interface;
-	int32_t sx, sy, width, height;
+	int32_t sx, sy;
 
 	/* FIXME: We need some multi head love here. */
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
@@ -747,7 +818,9 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	if (device->grab_object) {
 		interface = device->grab_object->interface;
 		interface->motion(device->grab_object, time, x, y);
-	} else switch (device->grab) {
+	}
+
+	switch (device->grab) {
 	case WLSC_DEVICE_GRAB_NONE:
 		es = pick_surface(device, &sx, &sy);
 		wl_input_device_set_pointer_focus(&device->input_device,
@@ -784,44 +857,6 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 
 		break;
 
-	case WLSC_DEVICE_GRAB_RESIZE_TOP:
-	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM:
-	case WLSC_DEVICE_GRAB_RESIZE_LEFT:
-	case WLSC_DEVICE_GRAB_RESIZE_TOP_LEFT:
-	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM_LEFT:
-	case WLSC_DEVICE_GRAB_RESIZE_RIGHT:
-	case WLSC_DEVICE_GRAB_RESIZE_TOP_RIGHT:
-	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT:
-	case WLSC_DEVICE_GRAB_RESIZE_MASK:
-		es = (struct wlsc_surface *) device->input_device.pointer_focus;
-		if (device->grab & WLSC_DEVICE_GRAB_RESIZE_LEFT) {
-			sx = x + device->grab_dx;
-			width = device->grab_x - x + device->grab_width;
-		} else if (device->grab & WLSC_DEVICE_GRAB_RESIZE_RIGHT) {
-			sx = device->grab_x + device->grab_dx;
-			width = x - device->grab_x + device->grab_width;
-		} else {
-			sx = device->grab_x + device->grab_dx;
-			width = device->grab_width;
-		}
-
-		if (device->grab & WLSC_DEVICE_GRAB_RESIZE_TOP) {
-			sy = y + device->grab_dy;
-			height = device->grab_y - y + device->grab_height;
-		} else if (device->grab & WLSC_DEVICE_GRAB_RESIZE_BOTTOM) {
-			sy = device->grab_y + device->grab_dy;
-			height = y - device->grab_y + device->grab_height;
-		} else {
-			sy = device->grab_y + device->grab_dy;
-			height = device->grab_height;
-		}
-
-		wl_client_post_event(es->surface.client,
-				     &ec->shell.object,
-				     WL_SHELL_CONFIGURE, time, device->grab,
-				     &es->surface, sx, sy, width, height);
-		break;
-
 	case WLSC_DEVICE_GRAB_DRAG:
 		es = pick_surface(device, &sx, &sy);
 		wl_drag_set_pointer_focus(device->drag,
@@ -833,6 +868,9 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 					     time, x, y, sx, sy);
 		break;
 
+	default:
+		/* Other grabs are handled as grab objects. */
+		break;
 	}
 
 	device->sprite->x = device->x - device->hotspot_x;
@@ -847,7 +885,14 @@ wlsc_input_device_end_grab(struct wlsc_input_device *device, uint32_t time)
 {
 	struct wl_drag *drag = device->drag;
 	struct wlsc_surface *es;
+	struct wl_grab_interface *interface;
 	int32_t sx, sy;
+
+	if (device->grab_object) {
+		interface = device->grab_object->interface;
+		interface->end(device->grab_object);
+		device->grab_object = NULL;
+	}
 
 	switch (device->grab) {
 	case WLSC_DEVICE_GRAB_DRAG:
