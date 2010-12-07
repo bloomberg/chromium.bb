@@ -41,7 +41,7 @@ DownloadCreateInfo::DownloadCreateInfo()
       total_bytes(0),
       state(-1),
       download_id(-1),
-      has_user_gesture(has_user_gesture),
+      has_user_gesture(false),
       child_id(-1),
       render_view_id(-1),
       request_id(-1),
