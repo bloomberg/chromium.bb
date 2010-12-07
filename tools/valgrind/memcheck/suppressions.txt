@@ -3493,3 +3493,29 @@
    fun:_ZN11webkit_glue40SimpleDataSourceTest_InitializeData_Test8TestBodyEv
    fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_65680a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting12TraceContext3GetEv
+   fun:_ZN8remoting12TraceContext6tracerEv
+   fun:_ZN8remoting14ScreenRecorder9DoCaptureEv
+   fun:_ZN8remoting14ScreenRecorder7DoStartEv
+   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   ...
+   fun:_ZN8remoting38ScreenRecorderTest_OneRecordCycle_Test8TestBodyEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
+{
+   bug_65680b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting14ScreenRecorder17DoSendVideoPacketEPNS_11VideoPacketE
+   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvPNS0_11VideoPacketEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvPNS0_11VideoPacketEE6Tuple1IS3_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   ...
+   fun:_ZN8remoting38ScreenRecorderTest_OneRecordCycle_Test8TestBodyEv
+}
