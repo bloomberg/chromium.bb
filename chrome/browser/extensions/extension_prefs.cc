@@ -1125,7 +1125,7 @@ base::Time ExtensionPrefs::GetInstallTime(
   const DictionaryValue* extension = GetExtensionPref(extension_id);
   if (!extension) {
     NOTREACHED();
-    return base::Time::Time();
+    return base::Time();
   }
   std::string install_time_str("0");
   extension->GetString(kPrefInstallTime, &install_time_str);
@@ -1158,7 +1158,7 @@ void ExtensionPrefs::FixMissingPrefs(const ExtensionIdSet& extension_ids) {
     DictionaryValue* extension = GetExtensionPref(*ext_id);
     CHECK(extension);
 
-    if (GetInstallTime(*ext_id) == base::Time::Time()) {
+    if (GetInstallTime(*ext_id) == base::Time()) {
       const base::Time install_time = GetCurrentTime();
       extension->Set(kPrefInstallTime,
                      Value::CreateStringValue(
@@ -1191,7 +1191,7 @@ void ExtensionPrefs::InitPrefStore() {
 const Value* ExtensionPrefs::GetWinningExtensionControlledPrefValue(
     const std::string& key) const {
   Value *winner = NULL;
-  base::Time winners_install_time = base::Time::Time();
+  base::Time winners_install_time = base::Time();
 
   ExtensionIdSet extension_ids;
   GetEnabledExtensions(&extension_ids);
