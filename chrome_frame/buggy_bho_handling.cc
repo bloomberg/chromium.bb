@@ -35,6 +35,7 @@ const ModuleAndVersion kBuggyModules[] = {
   { "rpshell32.dll", 6, 0 },  // troublemaker: 6.0.6000.1389
   { "msgsres.dll", 6, 0 },  // troublemaker: 6.0.6000.1389
   { "limewireinttb.dll", 4, 1  },  // troublemaker: 4.1.1.1000
+  { "pxsecure.dll", 3, 0  },  // troublemaker: 3.0.5.220
 
   // These BHOs seem to be out of the same buggy BHO factory
   { "tbabso.dll", 4, 5 },  // troublemaker: 4.5.156.0
@@ -215,4 +216,3 @@ HRESULT BuggyBhoTls::PatchBuggyBHOs(IWebBrowser2* browser) {
 }
 
 }  // end namespace buggy_bho
-
