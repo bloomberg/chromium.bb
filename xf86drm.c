@@ -370,6 +370,7 @@ wait_for_udev:
     if (fd >= 0)
 	return fd;
 
+#if !defined(UDEV)
     /* Check if the device node is not what we expect it to be, and recreate it
      * and try again if so.
      */
@@ -391,6 +392,7 @@ wait_for_udev:
 
     drmMsg("drmOpenDevice: Open failed\n");
     remove(buf);
+#endif
     return -errno;
 }
 
