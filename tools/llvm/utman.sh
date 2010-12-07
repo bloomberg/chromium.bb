@@ -151,13 +151,13 @@ CXX=${CXX:-g++}
 
 ## TODO jasonwkim [2010/08/16 23:06:21 PDT (Monday)]
 ## change this variable
-readonly LLVM_WRAPPER=llvm-fake
+readonly PNACL_DRIVER=llvm-fake
 readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-as
 readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ld
 readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-nm
 readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ranlib
-readonly ILLEGAL_TOOL=${INSTALL_DIR}/${LLVM_WRAPPER}-illegal
+readonly ILLEGAL_TOOL=${INSTALL_DIR}/${PNACL_DRIVER}-illegal
 
 setup-tools-common() {
   AR_FOR_SFI_TARGET="${CROSS_TARGET_AR}"
@@ -231,16 +231,16 @@ setup-tools-common() {
 # NOTE: we need to rethink the setup mechanism when we want to
 #       produce libgcc for other archs
 setup-tools-arm() {
-  CC_FOR_SFI_TARGET="${INSTALL_DIR}/${LLVM_WRAPPER}-sfigcc -arch arm"
-  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/${LLVM_WRAPPER}-sfig++ -arch arm"
+  CC_FOR_SFI_TARGET="${INSTALL_DIR}/${PNACL_DRIVER}-sfigcc -arch arm"
+  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/${PNACL_DRIVER}-sfig++ -arch arm"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
 }
 
 setup-tools-bitcode() {
-  CC_FOR_SFI_TARGET="${INSTALL_DIR}/${LLVM_WRAPPER}-sfigcc -emit-llvm"
-  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/${LLVM_WRAPPER}-sfig++ -emit-llvm"
+  CC_FOR_SFI_TARGET="${INSTALL_DIR}/${PNACL_DRIVER}-sfigcc -emit-llvm"
+  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/${PNACL_DRIVER}-sfig++ -emit-llvm"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
@@ -1019,8 +1019,8 @@ gcc-stage1-configure() {
   spushd "${objdir}"
 
   # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
-  local x86_32_as="${INSTALL_ROOT}/../linux_x86/bin/nacl-as"
-  local x86_64_as="${INSTALL_ROOT}/../linux_x86/bin/nacl64-as"
+  local x86_32_as="${INSTALL_DIR}/llvm-fake-as_x86_32"
+  local x86_64_as="${INSTALL_DIR}/llvm-fake-as_x86_64"
   local config_opts=""
   case ${target} in
       arm-*)
@@ -1176,7 +1176,7 @@ xgcc-patch() {
   cat > "${XGCC}" <<EOF
 #!/bin/sh
 XGCC="\$(readlink -m \${0})"
-${INSTALL_DIR}/${LLVM_WRAPPER}-sfigcc \\
+${INSTALL_DIR}/${PNACL_DRIVER}-sfigcc \\
 --driver="\${XGCC}-real" -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
 EOF
 
@@ -2268,13 +2268,12 @@ driver() {
   # TODO(jasonwkim) [2010/08/17 09:20:17 PDT (Tuesday)]
   # llvm-fake-install can be removed once the rest of the build
   # scripts are updated.
-  llvm-fake-install
-  llvm-wrapper-install
+  driver-install
 }
 
 # print out the name of the llvm-wrapper, for other scripts to use
 llvm-wrapper() {
-  echo ${LLVM_WRAPPER}
+  echo ${PNACL_DRIVER}
 }
 
 # Just in case we're calling this manually
@@ -2292,34 +2291,18 @@ linker-install() {
 # depending under the name it is invoked as
 # TODO(jasonwkim) [2010/08/17 09:20:24 PDT (Tuesday)]
 # This routine can be deleted once the rest of the build scripts are updated
-llvm-fake-install() {
+driver-install() {
   StepBanner "DRIVER" "Installing driver adaptors to ${INSTALL_DIR}"
   # TODO(robertm): move the driver to their own dir
   # rm -rf  ${INSTALL_DIR}
-  cp tools/llvm/llvm-fake.py ${INSTALL_DIR}
-  for s in sfigcc sfig++ bcld translate illegal nop ; do
+  cp tools/llvm/driver.py ${INSTALL_DIR}
+  for s in sfigcc sfig++ gcc g++ as as_x86_32 as_x86_64 \
+           dis bcld translate illegal nop ; do
     local t="llvm-fake-$s"
     rm -f ${INSTALL_DIR}/$t
-    ln -fs llvm-fake.py ${INSTALL_DIR}/$t
+    ln -fs driver.py ${INSTALL_DIR}/$t
   done
 }
-
-llvm-wrapper-install() {
-  StepBanner "DRIVER" "Installing llvm-wrapper to ${INSTALL_DIR}"
-  # TODO(robertm): move the driver to their own dir
-  # rm -rf  ${INSTALL_DIR}
-  if [ -f tools/llvm/llvm-wrapper.py ]; then
-    cp tools/llvm/llvm-wrapper.py ${INSTALL_DIR}
-  else
-    cp tools/llvm/llvm-fake.py ${INSTALL_DIR}
-  fi
-  for s in sfigcc sfig++ bcld illegal nop ; do
-    local t="llvm-wrapper-$s"
-    rm -f ${INSTALL_DIR}/$t
-    ln -fs llvm-wrapper.py ${INSTALL_DIR}/$t
-  done
-}
-
 
 ######################################################################
 ######################################################################
