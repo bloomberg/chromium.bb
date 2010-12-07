@@ -99,8 +99,7 @@ struct wlsc_input_device {
 	int32_t grab_dx, grab_dy;
 	uint32_t grab_button;
 	struct wl_drag *drag;
-
-	struct wl_listener listener;
+	struct wl_listener grab_listener;
 };
 
 struct wlsc_drm {
