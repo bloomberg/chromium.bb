@@ -15,9 +15,6 @@
 #include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/history2_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
-#if defined(TOUCH_UI)
-#include "chrome/browser/dom_ui/keyboard_ui.h"
-#endif
 #include "chrome/browser/dom_ui/flags_ui.h"
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
@@ -49,6 +46,11 @@
 #include "chrome/browser/chromeos/dom_ui/network_menu_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
+#endif
+
+#if defined(TOUCH_UI)
+#include "chrome/browser/dom_ui/keyboard_ui.h"
+#include "chrome/browser/chromeos/dom_ui/login/login_ui.h"
 #endif
 
 #if defined(OS_WIN)
@@ -155,6 +157,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
 #if defined(TOUCH_UI)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewDOMUI<KeyboardUI>;
+  if (url.host() == chrome::kChromeUILoginHost)
+    return &NewDOMUI<chromeos::LoginUI>;
 #endif
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewDOMUI<NetInternalsUI>;

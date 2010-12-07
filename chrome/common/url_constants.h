@@ -108,6 +108,7 @@ extern const char kChromeUIFlagsHost[];
 extern const char kChromeUIHistory2Host[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIKeyboardHost[];
+extern const char kChromeUILoginHost[];
 extern const char kChromeUINetInternalsHost[];
 extern const char kChromeUINewTabHost[];
 extern const char kChromeUIPluginsHost[];

@@ -117,6 +117,7 @@ const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistory2Host[] = "history2";
 const char kChromeUIInspectorHost[] = "inspector";
 const char kChromeUIKeyboardHost[] = "keyboard";
+const char kChromeUILoginHost[] = "login";
 const char kChromeUINetInternalsHost[] = "net-internals";
 const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIPluginsHost[] = "plugins";

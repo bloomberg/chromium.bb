@@ -1068,6 +1068,10 @@
         'browser/chrome_plugin_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/dom_ui/language_options_handler_unittest.cc',
+        'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc',
+        'browser/chromeos/dom_ui/login/login_ui_unittest.cc',
+        'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h',
+        'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
@@ -1689,15 +1693,34 @@
           'sources!': [
              'browser/renderer_host/gtk_im_context_wrapper_unittest.cc',
           ],
+        }, { # else: touchui == 0
+          'sources/': [
+            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc'],
+            ['exclude', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
+            ['exclude', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h'],
+            ['exclude', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
+          ],
         }],
         ['chromeos==1', {
-          'sources!': [
-             'browser/notifications/desktop_notifications_unittest.cc',
+          'sources/': [
+            ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
           ],
         }, { # else: chromeos == 0
-          'sources/': [
-            ['exclude', '^browser/chromeos/'],
-          ],
+          'conditions': [
+            ['touchui==1', {
+              'sources/': [
+                ['exclude', '^browser/chromeos/'],
+                ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc'],
+                ['include', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
+                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h'],
+                ['include', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
+              ],
+             }, { # else: touchui == 0
+               'sources/': [
+                 ['exclude', '^browser/chromeos/'],
+               ],
+             }],
+           ],
         }],
         ['OS=="linux"', {
           'conditions': [
