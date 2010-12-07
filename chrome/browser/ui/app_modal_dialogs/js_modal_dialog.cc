@@ -110,46 +110,30 @@ void JavaScriptAppModalDialog::OnCancel(bool suppress_js_messages) {
   // is a temporary workaround.
   CompleteDialog();
 
-  if (!skip_this_dialog_) {
-    delegate_->OnMessageBoxClosed(reply_msg_, false, std::wstring());
-    if (suppress_js_messages)
-      delegate_->SetSuppressMessageBoxes(true);
-  }
-
-  Cleanup();
+  NotifyDelegate(false, L"", suppress_js_messages);
 }
 
 void JavaScriptAppModalDialog::OnAccept(const std::wstring& prompt_text,
                                         bool suppress_js_messages) {
   CompleteDialog();
-
-  if (!skip_this_dialog_) {
-    delegate_->OnMessageBoxClosed(reply_msg_, true, prompt_text);
-    if (suppress_js_messages)
-      delegate_->SetSuppressMessageBoxes(true);
-  }
-
-  Cleanup();
+  NotifyDelegate(true, prompt_text, suppress_js_messages);
 }
 
 void JavaScriptAppModalDialog::OnClose() {
-  Cleanup();
+  NotifyDelegate(false, L"", false);
 }
 
-void JavaScriptAppModalDialog::Cleanup() {
-  if (skip_this_dialog_) {
-    // We can't use the |delegate_|, because we might be in the process of
-    // destroying it.
-    if (tab_contents_)
-      tab_contents_->OnMessageBoxClosed(reply_msg_, false, L"");
-// The extension_host_ will always be a dirty pointer on OS X because the alert
-// window will cause the extension popup to close since it is resigning its key
-// state, destroying the host. http://crbug.com/29355
-#if !defined(OS_MACOSX)
-    else if (extension_host_)
-      extension_host_->OnMessageBoxClosed(reply_msg_, false, L"");
-    else
-      NOTREACHED();
-#endif
-  }
+void JavaScriptAppModalDialog::NotifyDelegate(bool success,
+                                              const std::wstring& prompt_text,
+                                              bool suppress_js_messages) {
+  if (skip_this_dialog_)
+    return;
+
+  delegate_->OnMessageBoxClosed(reply_msg_, success, prompt_text);
+  if (suppress_js_messages)
+    delegate_->SetSuppressMessageBoxes(true);
+
+  // On Views, we can end up coming through this code path twice :(.
+  // See crbug.com/63732.
+  skip_this_dialog_ = true;
 }

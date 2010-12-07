@@ -69,6 +69,9 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel(bool suppress_js_messages);
   void OnAccept(const std::wstring& prompt_text, bool suppress_js_messages);
+
+  // NOTE: This is only called under Views, and should be removed. Any critical
+  // work should be done in OnCancel or OnAccept. See crbug.com/63732 for more.
   void OnClose();
 
   // Accessors
@@ -78,10 +81,6 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   bool display_suppress_checkbox() const { return display_suppress_checkbox_; }
   bool is_before_unload_dialog() const { return is_before_unload_dialog_; }
 
- protected:
-  // Overridden from AppModalDialog:
-  virtual void Cleanup();
-
  private:
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -90,6 +89,10 @@ class JavaScriptAppModalDialog : public AppModalDialog,
 
   // Initializes for notifications to listen.
   void InitNotifications();
+
+  // Notifies the delegate with the result of the dialog.
+  void NotifyDelegate(bool success, const std::wstring& prompt_text,
+                      bool suppress_js_messages);
 
   NotificationRegistrar registrar_;
 
