@@ -774,7 +774,7 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
       # It's possible that condition[0] won't work in which case this
       # attempt will raise its own IndexError.  That's probably fine.
       raise IndexError, conditions_key + ' ' + condition[0] + \
-                        ' must be length 2 or 3, not ' + len(condition)
+                        ' must be length 2 or 3, not ' + str(len(condition))
 
     [cond_expr, true_dict] = condition[0:2]
     false_dict = None
