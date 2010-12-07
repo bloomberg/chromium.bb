@@ -5,6 +5,7 @@
 #include "app/l10n_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -44,6 +45,32 @@ TEST_F(PrintPreviewUITest, LoadPrintPreviewByURL) {
   // Go to the print preview tab via URL.
   NavigateToURL(GURL(chrome::kChromeUIPrintURL));
   AssertIsPrintPage(tab);
+}
+
+TEST_F(PrintPreviewUITest, PrintCommandDisabled) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
+  // Go to the about:blank page.
+  NavigateToURL(GURL(chrome::kAboutBlankURL));
+
+  // Make sure there is 1 tab and print is enabled. Create print preview tab.
+  int tab_count;
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(1, tab_count);
+  bool enabled;
+  ASSERT_TRUE(browser->IsMenuCommandEnabled(IDC_PRINT, &enabled));
+  ASSERT_TRUE(enabled);
+  ASSERT_TRUE(browser->RunCommand(IDC_PRINT));
+
+  // Make sure there are 2 tabs and print is disabled.
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(2, tab_count);
+  scoped_refptr<TabProxy> tab = browser->GetActiveTab();
+  ASSERT_TRUE(tab.get());
+  AssertIsPrintPage(tab);
+  ASSERT_TRUE(browser->IsMenuCommandEnabled(IDC_PRINT, &enabled));
+  ASSERT_FALSE(enabled);
 }
 
 }  // namespace

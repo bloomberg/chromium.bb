@@ -5,6 +5,8 @@
 #include "chrome/browser/automation/automation_provider_observers.h"
 
 #include <deque>
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -756,6 +758,7 @@ const struct CommandNotification command_notifications[] = {
   // load to finish, and title to change.
   {IDC_MANAGE_EXTENSIONS, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
   {IDC_OPTIONS, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
+  {IDC_PRINT, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
   {IDC_SHOW_DOWNLOADS, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
   {IDC_SHOW_HISTORY, NotificationType::TAB_CONTENTS_TITLE_UPDATED},
 };

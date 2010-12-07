@@ -85,6 +85,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_restriction.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -2649,9 +2650,14 @@ void TabContents::RequestMove(const gfx::Rect& new_bounds) {
 void TabContents::DidStartLoading() {
   SetIsLoading(true, NULL);
 
-  if (content_restrictions_) {
-    content_restrictions_= 0;
-    delegate()->ContentRestrictionsChanged(this);
+  if (delegate()) {
+    bool is_print_preview_tab =
+        printing::PrintPreviewTabController::IsPrintPreviewTab(this);
+    if (content_restrictions_ || is_print_preview_tab) {
+      content_restrictions_= is_print_preview_tab ?
+          CONTENT_RESTRICTION_PRINT : 0;
+      delegate()->ContentRestrictionsChanged(this);
+    }
   }
 
   // Notify observers about navigation.
