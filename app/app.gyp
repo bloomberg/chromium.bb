@@ -33,9 +33,9 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/zlib/zlib.gyp:zlib',
+        '<(libjpeg_gyp_path):libjpeg',
       ],
       'sources': [
         'animation_container_unittest.cc',

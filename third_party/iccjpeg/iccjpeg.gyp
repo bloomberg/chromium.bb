@@ -9,7 +9,7 @@
       'product_name': 'iccjpeg',
       'type': '<(library)',
       'dependencies': [
-        '../libjpeg/libjpeg.gyp:libjpeg',
+        '<(libjpeg_gyp_path):libjpeg',
       ],
       'sources': [
         'iccjpeg.c',

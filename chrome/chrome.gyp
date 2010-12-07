@@ -1646,7 +1646,6 @@
             '../third_party/codesighs/codesighs.gyp:*',
             '../third_party/iccjpeg/iccjpeg.gyp:*',
             '../third_party/icu/icu.gyp:*',
-            '../third_party/libjpeg/libjpeg.gyp:*',
             '../third_party/libpng/libpng.gyp:*',
             '../third_party/libwebp/libwebp.gyp:*',
             '../third_party/libxslt/libxslt.gyp:*',
@@ -1668,6 +1667,7 @@
             '../sandbox/sandbox.gyp:*',
             '../tools/memory_watcher/memory_watcher.gyp:*',
             '../v8/tools/gyp/v8.gyp:v8_shell',
+            '<(libjpeg_gyp_path):*',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {

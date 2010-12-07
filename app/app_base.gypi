@@ -75,10 +75,10 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
+        '<(libjpeg_gyp_path):libjpeg',
       ],
       'include_dirs': [
         '../third_party/mesa/MesaLib/include',

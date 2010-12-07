@@ -79,10 +79,10 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/zlib/zlib.gyp:zlib',
         'gfx_resources',
+        '<(libjpeg_gyp_path):libjpeg',
       ],
       'sources': [
         'blit.cc',
