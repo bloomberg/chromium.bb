@@ -31,14 +31,6 @@
   'includes': [
     '../../../build/common.gypi',
   ],
-  'variables': {
-    'SRPCDIR' : '<(DEPTH)/srpc/trusted',
-    'SRPC_OUT': [
-      '<(SRPCDIR)/srpcgen/ppp_rpc_client.cc',
-      '<(SRPCDIR)/srpcgen/ppb_rpc_server.cc',
-      '<(SRPCDIR)/srpcgen/upcall_server.cc',
-    ],
-  },
   'targets': [
     {
       'target_name': 'nacl_ppapi_browser',
@@ -57,10 +49,13 @@
         'object_proxy.cc',
         'object_serialize.cc',
         'objectstub_rpc_impl.cc',
-        '<@(SRPC_OUT)',
+        # Autogerated files
+        'ppp_rpc_client.cc',
+        'ppb_rpc_server.cc',
+        'upcall_server.cc',
       ],
       'include_dirs': [
-        '<(SRPCDIR)',
+        '<(DEPTH)/native_client/src/shared/ppapi_proxy/trusted',
       ],
     },
     {
@@ -72,7 +67,7 @@
         'plugin_var.cc',
       ],
       'include_dirs': [
-        '<(SRPCDIR)',
+        '<(DEPTH)/native_client/src/shared/ppapi_proxy/trusted',
       ],
     },
   ],

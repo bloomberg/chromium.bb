@@ -324,10 +324,13 @@ def MakePath(name):
 
 
 def main(argv):
-  usage = 'Usage: srpcgen.py [-c] [-s] <iname> <gname> <.h> <.cc> <specs>'
-  mode = 'header'
+  usage = 'Usage: srpcgen.py <-c | -s> [--include=<name>] <iname> <gname>'
+  usage = usage + ' <.h> <.cc> <specs>'
+
+  mode = None
   try:
-    opts, pargs = getopt.getopt(argv[1:], 'cs')
+    long_opts = ['include=']
+    opts, pargs = getopt.getopt(argv[1:], 'cs', long_opts)
   except getopt.error, e:
     print >>sys.stderr, 'Illegal option:', str(e)
     print >>sys.stderr, usage
@@ -354,9 +357,17 @@ def main(argv):
       mode = 'client'
     elif opt == '-s':
       mode = 'server'
-    else:
-      print >>sys.stderr, 'Neither -c nor -s specified'
-      return 1
+    elif opt == '--include':
+      h_file_name = val
+
+  # Convert to forward slash paths if needed
+  h_file_name = "/".join(h_file_name.split("\\"))
+
+  # Verify we picked server or client mode
+  if not mode:
+    print >>sys.stderr, 'Neither -c nor -s specified'
+    usage()
+    return 1
 
   # Combine the rpc specs from spec_files into rpcs.
   specs = []
