@@ -505,6 +505,7 @@ FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb)
 
 /*
  * Used in computing values -- mustn't allocate any storage
+ * XXX Not thread-safe
  */
 FcLangSet *
 FcLangSetPromote (const FcChar8 *lang)
@@ -515,6 +516,7 @@ FcLangSetPromote (const FcChar8 *lang)
     int			id;
 
     memset (ls.map, '\0', sizeof (ls.map));
+    ls.map_size = NUM_LANG_SET_MAP;
     ls.extra = 0;
     id = FcLangSetIndex (lang);
     if (id > 0)
