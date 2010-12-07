@@ -382,7 +382,7 @@ class Zygote {
       close(kBrowserDescriptor);  // our socket from the browser
       if (g_suid_sandbox_active)
         close(kZygoteIdDescriptor);  // another socket from the browser
-      Singleton<base::GlobalDescriptors>()->Reset(mapping);
+      base::GlobalDescriptors::GetInstance()->Reset(mapping);
 
 #if defined(CHROMIUM_SELINUX)
       SELinuxTransitionToTypeOrDie("chromium_renderer_t");

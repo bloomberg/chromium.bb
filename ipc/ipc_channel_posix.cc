@@ -396,7 +396,7 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
         }
         used_initial_channel = true;
 
-        pipe_ = Singleton<base::GlobalDescriptors>()->Get(kPrimaryIPCChannel);
+        pipe_ = base::GlobalDescriptors::GetInstance()->Get(kPrimaryIPCChannel);
       }
     } else {
       waiting_connect_ = mode == MODE_SERVER;

@@ -15,6 +15,14 @@ GlobalDescriptors::GlobalDescriptors() {}
 
 GlobalDescriptors::~GlobalDescriptors() {}
 
+// static
+GlobalDescriptors* GlobalDescriptors::GetInstance() {
+  typedef Singleton<base::GlobalDescriptors,
+                    LeakySingletonTraits<base::GlobalDescriptors> >
+      GlobalDescriptorsSingleton;
+  return GlobalDescriptorsSingleton::get();
+}
+
 int GlobalDescriptors::MaybeGet(Key key) const {
   for (Mapping::const_iterator
        i = descriptors_.begin(); i != descriptors_.end(); ++i) {

@@ -729,7 +729,7 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
 }
 
 void EnableNonBrowserCrashDumping() {
-  const int fd = Singleton<base::GlobalDescriptors>()->Get(kCrashDumpSignal);
+  const int fd = base::GlobalDescriptors::GetInstance()->Get(kCrashDumpSignal);
   is_crash_reporter_enabled = true;
   // We deliberately leak this object.
   google_breakpad::ExceptionHandler* handler =

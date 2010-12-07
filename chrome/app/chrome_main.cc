@@ -250,10 +250,7 @@ void LowLevelInit() {
 
   SetupSignalHandlers();
 
-  typedef Singleton<base::GlobalDescriptors,
-                    LeakySingletonTraits<base::GlobalDescriptors> >
-      GlobalDescriptorsSingleton;
-  base::GlobalDescriptors* g_fds = GlobalDescriptorsSingleton::get();
+  base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
   g_fds->Set(kPrimaryIPCChannel,
              kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #if defined(OS_LINUX)

@@ -41,6 +41,9 @@ class GlobalDescriptors {
   // the following constant to the key value:
   static const int kBaseDescriptor = 3;  // 0, 1, 2 are already taken.
 
+  // Return the singleton instance of GlobalDescriptors.
+  static GlobalDescriptors* GetInstance();
+
   // Get a descriptor given a key. It is a fatal error if the key is not known.
   int Get(Key key) const;
   // Get a descriptor give a key. Returns -1 on error.

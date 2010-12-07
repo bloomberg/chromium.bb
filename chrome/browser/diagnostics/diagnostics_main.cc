@@ -315,8 +315,8 @@ class TestController : public DiagnosticsModel::Observer {
 // -(all)   RegisterInvalidParamHandler()
 // -(all)   base::AtExitManager::AtExitManager()
 // -(macOS) base::ScopedNSAutoreleasePool
-// -(posix) Singleton<base::GlobalDescriptors>::Set(kPrimaryIPCChannel)
-// -(linux) Singleton<base::GlobalDescriptors>::Set(kCrashDumpSignal)
+// -(posix) base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel)
+// -(linux) base::GlobalDescriptors::GetInstance()->Set(kCrashDumpSignal)
 // -(posix) setlocale(LC_ALL,..)
 // -(all)   CommandLine::Init();
 
