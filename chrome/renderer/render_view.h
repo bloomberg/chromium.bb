@@ -999,7 +999,7 @@ class RenderView : public RenderWidget,
   WebKit::WebPlugin* CreateOutdatedPluginPlaceholder(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
-      PluginGroup* group);
+      const PluginGroup& group);
 
   // Sends an IPC notification that the specified content type was blocked.
   // If the content type requires it, |resource_identifier| names the specific

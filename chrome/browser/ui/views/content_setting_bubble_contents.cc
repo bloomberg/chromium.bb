@@ -229,12 +229,9 @@ void ContentSettingBubbleContents::InitControlLayout() {
   if (!plugins.empty()) {
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
-      std::wstring name;
-      NPAPI::PluginList::PluginMap groups;
-      NPAPI::PluginList::Singleton()->GetPluginGroups(false, &groups);
-      if (groups.find(*it) != groups.end())
-        name = UTF16ToWide(groups[*it]->GetGroupName());
-      else
+      std::wstring name = UTF16ToWide(
+          NPAPI::PluginList::Singleton()->GetPluginGroupName(*it));
+      if (name.empty())
         name = UTF8ToWide(*it);
       layout->StartRow(0, single_column_set_id);
       layout->AddView(new views::Label(name));

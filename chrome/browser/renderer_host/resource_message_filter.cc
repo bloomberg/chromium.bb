@@ -859,21 +859,20 @@ void ResourceMessageFilter::OnGotPluginInfo(bool found,
                                             const GURL& policy_url,
                                             IPC::Message* reply_msg) {
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  WebPluginInfo info_copy = info;
   if (found) {
-    WebPluginInfo info_copy = info;
     info_copy.enabled = info_copy.enabled &&
         plugin_service_->PrivatePluginAllowedForURL(info_copy.path, policy_url);
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-    scoped_ptr<PluginGroup> group(
-        PluginGroup::CopyOrCreatePluginGroup(info_copy));
-    std::string resource = group->identifier();
+    std::string resource =
+        NPAPI::PluginList::Singleton()->GetPluginGroupIdentifier(info_copy);
     setting = map->GetContentSetting(policy_url,
                                      CONTENT_SETTINGS_TYPE_PLUGINS,
                                      resource);
   }
 
   ViewHostMsg_GetPluginInfo::WriteReplyParams(
-      reply_msg, found, info, setting, actual_mime_type);
+      reply_msg, found, info_copy, setting, actual_mime_type);
   Send(reply_msg);
 }
 

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/plugin_updater.h"
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -45,16 +45,13 @@ DictionaryValue* PluginUpdater::CreatePluginFileSummary(
 
 // static
 ListValue* PluginUpdater::GetPluginGroupsData() {
-  NPAPI::PluginList::PluginMap plugin_groups;
+  std::vector<PluginGroup> plugin_groups;
   NPAPI::PluginList::Singleton()->GetPluginGroups(true, &plugin_groups);
 
   // Construct DictionaryValues to return to the UI
   ListValue* plugin_groups_data = new ListValue();
-  for (NPAPI::PluginList::PluginMap::const_iterator it =
-       plugin_groups.begin();
-       it != plugin_groups.end();
-       ++it) {
-    plugin_groups_data->Append(it->second->GetDataForUI());
+  for (size_t i = 0; i < plugin_groups.size(); ++i) {
+    plugin_groups_data->Append(plugin_groups[i].GetDataForUI());
   }
   return plugin_groups_data;
 }
@@ -244,7 +241,7 @@ void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
 
-  NPAPI::PluginList::PluginMap groups;
+  std::vector<PluginGroup> groups;
   NPAPI::PluginList::Singleton()->GetPluginGroups(false, &groups);
 
   BrowserThread::PostTask(
@@ -258,7 +255,7 @@ void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
 void PluginUpdater::OnUpdatePreferences(
     Profile* profile,
     const std::vector<WebPluginInfo>& plugins,
-    const NPAPI::PluginList::PluginMap& groups) {
+    const std::vector<PluginGroup>& groups) {
   ListValue* plugins_list = profile->GetPrefs()->GetMutableList(
       prefs::kPluginsPluginsList);
   plugins_list->Clear();
@@ -276,13 +273,12 @@ void PluginUpdater::OnUpdatePreferences(
   }
 
   // Add the groups as well.
-  for (NPAPI::PluginList::PluginMap::const_iterator it = groups.begin();
-       it != groups.end(); ++it) {
+  for (size_t i = 0; i < groups.size(); ++i) {
     // Don't save preferences for vulnerable pugins.
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableOutdatedPlugins) ||
-        !it->second->IsVulnerable()) {
-      plugins_list->Append(it->second->GetSummary());
+        !groups[i].IsVulnerable()) {
+      plugins_list->Append(groups[i].GetSummary());
     }
   }
 }

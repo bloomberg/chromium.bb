@@ -82,20 +82,22 @@ class PluginExceptionsTableModelTest : public testing::Test {
 
     table_model_.reset(new MockPluginExceptionsTableModel(map, NULL));
 
-    NPAPI::PluginList::PluginMap plugins;
+    std::vector<PluginGroup> plugins;
     WebPluginInfo foo_plugin;
     foo_plugin.path = FilePath(FILE_PATH_LITERAL("a-foo"));
     foo_plugin.name = ASCIIToUTF16("FooPlugin");
     foo_plugin.enabled = true;
-    PluginGroup* foo_group = PluginGroup::FromWebPluginInfo(foo_plugin);
-    plugins[foo_group->identifier()] = linked_ptr<PluginGroup>(foo_group);
+    scoped_ptr<PluginGroup> foo_group(
+        PluginGroup::FromWebPluginInfo(foo_plugin));
+    plugins.push_back(*foo_group);
 
     WebPluginInfo bar_plugin;
     bar_plugin.path = FilePath(FILE_PATH_LITERAL("b-bar"));
     bar_plugin.name = ASCIIToUTF16("BarPlugin");
     bar_plugin.enabled = true;
-    PluginGroup* bar_group = PluginGroup::FromWebPluginInfo(bar_plugin);
-    plugins[bar_group->identifier()] = linked_ptr<PluginGroup>(bar_group);
+    scoped_ptr<PluginGroup> bar_group(
+        PluginGroup::FromWebPluginInfo(bar_plugin));
+    plugins.push_back(*bar_group);
 
     table_model_->set_plugins(plugins);
     table_model_->ReloadSettings();

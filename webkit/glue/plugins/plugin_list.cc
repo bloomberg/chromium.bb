@@ -22,6 +22,78 @@
 
 namespace NPAPI {
 
+#if defined(OS_MACOSX)
+// Plugin Groups for Mac.
+// Plugins are listed here as soon as vulnerabilities and solutions
+// (new versions) are published.
+// TODO(panayiotis): Get the Real Player version on Mac, somehow.
+static const PluginGroupDefinition kGroupDefinitions[] = {
+  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", "", "", "7.6.6",
+    "http://www.apple.com/quicktime/download/" },
+  { "java-runtime-environment", "Java", "Java", "", "", "",
+    "http://support.apple.com/kb/HT1338" },
+  { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.102",
+    "http://get.adobe.com/flashplayer/" },
+  { "silverlight-3", "Silverlight 3", "Silverlight", "0", "4", "3.0.50106.0",
+    "http://www.microsoft.com/getsilverlight/" },
+  { "silverlight-4", "Silverlight 4", "Silverlight", "4", "5", "",
+    "http://www.microsoft.com/getsilverlight/" },
+  { "flip4mac", "Flip4Mac", "Flip4Mac", "", "", "2.2.1",
+    "http://www.telestream.net/flip4mac-wmv/overview.htm" },
+  { "shockwave", "Shockwave", "Shockwave for Director", "",  "", "11.5.9.615",
+    "http://www.adobe.com/shockwave/download/" }
+};
+
+#elif defined(OS_WIN)
+// TODO(panayiotis): We should group "RealJukebox NS Plugin" with the rest of
+// the RealPlayer files.
+static const PluginGroupDefinition kGroupDefinitions[] = {
+  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", "", "", "7.6.8",
+    "http://www.apple.com/quicktime/download/" },
+  { "java-runtime-environment", "Java 6", "Java", "", "6", "6.0.220",
+    "http://www.java.com/" },
+  { "adobe-reader", PluginGroup::kAdobeReader9GroupName, "Adobe Acrobat", "9",
+    "10", "9.4.1", "http://get.adobe.com/reader/" },
+  { "adobe-reader-8", PluginGroup::kAdobeReader8GroupName, "Adobe Acrobat", "0",
+    "9", "8.2.5", "http://get.adobe.com/reader/" },
+  { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.102",
+    "http://get.adobe.com/flashplayer/" },
+  { "silverlight-3", "Silverlight 3", "Silverlight", "0", "4", "3.0.50106.0",
+    "http://www.microsoft.com/getsilverlight/" },
+  { "silverlight-4", "Silverlight 4", "Silverlight", "4", "5", "",
+    "http://www.microsoft.com/getsilverlight/" },
+  { "shockwave", "Shockwave", "Shockwave for Director", "", "", "11.5.9.615",
+    "http://www.adobe.com/shockwave/download/" },
+  { "divx-player", "DivX Player", "DivX Web Player", "", "", "1.4.3.4",
+    "http://download.divx.com/divx/autoupdate/player/"
+    "DivXWebPlayerInstaller.exe" },
+  // These are here for grouping, no vulnerabilies known.
+  { "windows-media-player", "Windows Media Player", "Windows Media Player",
+    "", "", "", "" },
+  { "microsoft-office", "Microsoft Office", "Microsoft Office",
+    "", "", "", "" },
+  // TODO(panayiotis): The vulnerable versions are
+  //  (v >=  6.0.12.1040 && v <= 6.0.12.1663)
+  //  || v == 6.0.12.1698  || v == 6.0.12.1741
+  { "realplayer", "RealPlayer", "RealPlayer", "", "", "",
+    "http://www.adobe.com/shockwave/download/" },
+};
+
+#else
+static const PluginGroupDefinition kGroupDefinitions[] = {};
+#endif
+
+// static
+const PluginGroupDefinition* PluginList::GetPluginGroupDefinitions() {
+  return kGroupDefinitions;
+}
+
+// static
+size_t PluginList::GetPluginGroupDefinitionsSize() {
+  // TODO(viettrungluu): |arraysize()| doesn't work with zero-size arrays.
+  return ARRAYSIZE_UNSAFE(kGroupDefinitions);
+}
+
 base::LazyInstance<PluginList> g_singleton(base::LINKER_INITIALIZED);
 
 // static
@@ -157,8 +229,10 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
 PluginList::PluginList()
     : plugins_loaded_(false),
       plugins_need_refresh_(false),
-      disable_outdated_plugins_(false) {
+      disable_outdated_plugins_(false),
+      next_priority_(0) {
   PlatformInit();
+  AddHardcodedPluginGroups();
 }
 
 bool PluginList::ShouldDisableGroup(const string16& group_name) {
@@ -233,33 +307,25 @@ void PluginList::LoadPlugins(bool refresh) {
   // plugins or plugin-groups to their original, "pre-policy" state, so
   // plugins and groups are only changed to a more "safe" state after a policy
   // change, i.e. from enabled to disabled. See bug 54681.
-  PluginMap plugin_groups;
-  GetPluginGroups(&new_plugins, &plugin_groups);
-  for (PluginMap::const_iterator it = plugin_groups.begin();
-       it != plugin_groups.end(); ++it) {
-    PluginGroup* group = it->second.get();
+  for (PluginGroup::PluginMap::iterator it = plugin_groups_.begin();
+       it != plugin_groups_.end(); ++it) {
+    PluginGroup* group = it->second;
     string16 group_name = group->GetGroupName();
     if (ShouldDisableGroup(group_name)) {
-      it->second->Enable(false);
+      group->Enable(false);
     }
 
     if (disable_outdated_plugins_) {
       group->DisableOutdatedPlugins();
-      if (!group->Enabled()) {
-        AutoLock lock(lock_);
-        disabled_groups_.insert(group_name);
-      }
+    }
+    if (!group->Enabled()) {
+      AutoLock lock(lock_);
+      disabled_groups_.insert(group_name);
     }
   }
 
   // Only update the data now since loading plugins can take a while.
   AutoLock lock(lock_);
-
-  // Mark disabled plugins as such.
-  for (size_t i = 0; i < new_plugins.size(); ++i) {
-    if (disabled_plugins_.count(new_plugins[i].path))
-      new_plugins[i].enabled = false;
-  }
 
   plugins_ = new_plugins;
   plugins_loaded_ = true;
@@ -294,7 +360,17 @@ void PluginList::LoadPlugin(const FilePath& path,
     }
   }
 
+  // Mark disabled plugins as such. (This has to happen before calling
+  // |AddToPluginGroups(plugin_info)|.)
+  if (disabled_plugins_.count(plugin_info.path)) {
+    plugin_info.enabled = false;
+  } else {
+    plugin_info.enabled = true;
+  }
+
+  AutoLock lock(lock_);
   plugins->push_back(plugin_info);
+  AddToPluginGroups(plugin_info);
 }
 
 bool PluginList::SupportsType(const WebPluginInfo& info,
@@ -476,45 +552,75 @@ bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
   return false;
 }
 
-void PluginList::GetPluginGroups(bool load_if_necessary,
-                                 PluginMap* plugin_groups) {
+void PluginList::GetPluginGroups(
+    bool load_if_necessary,
+    std::vector<PluginGroup>* plugin_groups) {
   if (load_if_necessary)
     LoadPlugins(false);
-
-  AutoLock lock(lock_);
-  GetPluginGroups(&plugins_, plugin_groups);
+  plugin_groups->clear();
+  for (PluginGroup::PluginMap::const_iterator it = plugin_groups_.begin();
+       it != plugin_groups_.end(); ++it) {
+    plugin_groups->push_back(*it->second);
+  }
 }
 
-// static
-void PluginList::GetPluginGroups(const std::vector<WebPluginInfo>* plugins,
-                                 PluginMap* plugin_groups) {
-  plugin_groups->clear();
-  // We first search for an existing group that matches our name,
-  // and only create a new group if we can't find any.
-  for (size_t i = 0; i < plugins->size(); ++i) {
-    const WebPluginInfo& web_plugin = (*plugins)[i];
-    PluginGroup* group = PluginGroup::FindGroupMatchingPlugin(
-        *plugin_groups, web_plugin);
-    if (!group) {
-      group = PluginGroup::CopyOrCreatePluginGroup(web_plugin);
-      std::string identifier = group->identifier();
-      // If the identifier is not unique, use the full path. This means that we
-      // probably won't be able to search for this group by identifier, but at
-      // least it's going to be in the set of plugin groups, and if there
-      // is already a plug-in with the same filename, it's probably going to
-      // handle the same MIME types (and it has a higher priority), so this one
-      // is not going to run anyway.
-      if (plugin_groups->find(identifier) != plugin_groups->end())
-#if defined(OS_POSIX)
-        identifier = web_plugin.path.value();
-#elif defined(OS_WIN)
-        identifier = base::SysWideToUTF8(web_plugin.path.value());
-#endif
-      DCHECK(plugin_groups->find(identifier) == plugin_groups->end());
-      (*plugin_groups)[identifier] = linked_ptr<PluginGroup>(group);
-    }
-    group->AddPlugin(web_plugin, i);
+const PluginGroup* PluginList::GetPluginGroup(
+    const WebPluginInfo& web_plugin_info) {
+  AutoLock lock(lock_);
+  return AddToPluginGroups(web_plugin_info);
+}
+
+string16 PluginList::GetPluginGroupName(std::string identifier) {
+  PluginGroup::PluginMap::iterator it = plugin_groups_.find(identifier);
+  if (it == plugin_groups_.end()) {
+    return string16();
   }
+  return it->second->GetGroupName();
+}
+
+std::string PluginList::GetPluginGroupIdentifier(
+    const WebPluginInfo& web_plugin_info) {
+  AutoLock lock(lock_);
+  PluginGroup* group = AddToPluginGroups(web_plugin_info);
+  return group->identifier();
+}
+
+void PluginList::AddHardcodedPluginGroups() {
+  AutoLock lock(lock_);
+  const PluginGroupDefinition* definitions = GetPluginGroupDefinitions();
+  for (size_t i = 0; i < GetPluginGroupDefinitionsSize(); ++i) {
+    PluginGroup* definition_group = PluginGroup::FromPluginGroupDefinition(
+        definitions[i]);
+    std::string identifier = definition_group->identifier();
+    DCHECK(plugin_groups_.find(identifier) == plugin_groups_.end());
+    plugin_groups_.insert(std::make_pair(identifier, definition_group));
+  }
+}
+
+PluginGroup* PluginList::AddToPluginGroups(
+    const WebPluginInfo& web_plugin_info) {
+  PluginGroup* group = NULL;
+  for (PluginGroup::PluginMap::iterator it = plugin_groups_.begin();
+       it != plugin_groups_.end(); ++it) {
+    if (it->second->Match(web_plugin_info))
+      group = it->second;
+  }
+  if (!group) {
+    group = PluginGroup::FromWebPluginInfo(web_plugin_info);
+    std::string identifier = group->identifier();
+    // If the identifier is not unique, use the full path. This means that we
+    // probably won't be able to search for this group by identifier, but at
+    // least it's going to be in the set of plugin groups, and if there
+    // is already a plug-in with the same filename, it's probably going to
+    // handle the same MIME types (and it has a higher priority), so this one
+    // is not going to run anyway.
+    if (plugin_groups_.find(identifier) != plugin_groups_.end())
+      identifier = PluginGroup::GetLongIdentifier(web_plugin_info);
+    DCHECK(plugin_groups_.find(identifier) == plugin_groups_.end());
+    plugin_groups_.insert(std::make_pair(identifier, group));
+  }
+  group->AddPlugin(web_plugin_info, next_priority_++);
+  return group;
 }
 
 bool PluginList::EnablePlugin(const FilePath& filename) {
@@ -583,10 +689,8 @@ bool PluginList::EnableGroup(bool enable, const string16& group_name) {
     }
   }
 
-  PluginMap plugin_groups;
-  GetPluginGroups(false, &plugin_groups);
-  for (PluginMap::const_iterator it = plugin_groups.begin();
-       it != plugin_groups.end(); ++it) {
+  for (PluginGroup::PluginMap::iterator it = plugin_groups_.begin();
+       it != plugin_groups_.end(); ++it) {
     if (it->second->GetGroupName() == group_name) {
       if (it->second->Enabled() != enable) {
         it->second->Enable(enable);
@@ -608,6 +712,9 @@ PluginList::~PluginList() {
 
 void PluginList::Shutdown() {
   // TODO
+  // Note: plugin_groups_ contains simple pointers of type PluginGroup*, but
+  // since this singleton lives until the process is destroyed, no explicit
+  // cleanup is necessary.
 }
 
 }  // namespace NPAPI

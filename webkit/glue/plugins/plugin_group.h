@@ -8,6 +8,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -22,9 +23,9 @@ struct WebPluginInfo;
 namespace NPAPI {
   class PluginList;
 };
-
-template <typename T>
-class linked_ptr;
+namespace plugin_test_internal {
+class PluginExceptionsTableModelTest;
+}
 
 // Hard-coded definitions of plugin groups.
 struct PluginGroupDefinition {
@@ -51,23 +52,11 @@ class PluginGroup {
   static const char* kAdobeReader8GroupName;
   static const char* kAdobeReader9GroupName;
 
-  typedef std::map<std::string, linked_ptr<PluginGroup> > PluginMap;
-
-  // Creates a PluginGroup from a PluginGroupDefinition.
-  static PluginGroup* FromPluginGroupDefinition(
-      const PluginGroupDefinition& definition);
+  PluginGroup(const PluginGroup& other);
 
   ~PluginGroup();
 
-  // Creates a PluginGroup from a WebPluginInfo -- when no hard-coded
-  // definition is found.
-  static PluginGroup* FromWebPluginInfo(const WebPluginInfo& wpi);
-
-  // Find a plugin group matching |info| in the list of hardcoded plugins and
-  // returns a copy of it if found, or a new group matching exactly this plugin
-  // otherwise.
-  // The caller should take ownership of the return PluginGroup.
-  static PluginGroup* CopyOrCreatePluginGroup(const WebPluginInfo& info);
+  PluginGroup& operator=(const PluginGroup& other);
 
   // Configures the set of plugin name patterns for disabling plugins via
   // enterprise configuration management.
@@ -80,19 +69,6 @@ class PluginGroup {
   // Tests to see if a plugin is on the blacklist using its path as
   // the lookup key.
   static bool IsPluginPathDisabledByPolicy(const FilePath& plugin_path);
-
-  // Find the PluginGroup matching a Plugin in a list of plugin groups. Returns
-  // NULL if no matching PluginGroup is found.
-  static PluginGroup* FindGroupMatchingPlugin(
-      const std::map<std::string, linked_ptr<PluginGroup> >& plugin_groups,
-      const WebPluginInfo& plugin);
-
-  // Creates a copy of this plugin group.
-  PluginGroup* Copy() {
-    return new PluginGroup(group_name_, name_matcher_, version_range_low_str_,
-                           version_range_high_str_, min_version_str_,
-                           update_url_, identifier_);
-  }
 
   // Returns true if the given plugin matches this group.
   bool Match(const WebPluginInfo& plugin) const;
@@ -137,10 +113,28 @@ class PluginGroup {
   void DisableOutdatedPlugins();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PluginGroupTest, PluginGroupDefinition);
+  typedef std::map<std::string, PluginGroup*> PluginMap;
 
-  static const PluginGroupDefinition* GetPluginGroupDefinitions();
-  static size_t GetPluginGroupDefinitionsSize();
+  friend class NPAPI::PluginList;
+  friend class PluginGroupTest;
+  friend class TableModelArrayControllerTest;
+  friend class plugin_test_internal::PluginExceptionsTableModelTest;
+
+  // Generates the (short) identifier string for the given plugin.
+  static std::string GetIdentifier(const WebPluginInfo& wpi);
+
+  // Generates the long identifier (based on the full file path) for the given
+  // plugin, to be called when the short identifier is not unique.
+  static std::string GetLongIdentifier(const WebPluginInfo& wpi);
+
+  // Creates a PluginGroup from a PluginGroupDefinition. The caller takes
+  // ownership of the created PluginGroup.
+  static PluginGroup* FromPluginGroupDefinition(
+      const PluginGroupDefinition& definition);
+
+  // Creates a PluginGroup from a WebPluginInfo. The caller takes ownership of
+  // the created PluginGroup.
+  static PluginGroup* FromWebPluginInfo(const WebPluginInfo& wpi);
 
   PluginGroup(const string16& group_name,
               const string16& name_matcher,
@@ -149,6 +143,8 @@ class PluginGroup {
               const std::string& min_version,
               const std::string& update_url,
               const std::string& identifier);
+
+  void InitFrom(const PluginGroup& other);
 
   Version* CreateVersionFromString(const string16& version_string);
 
@@ -177,8 +173,6 @@ class PluginGroup {
   scoped_ptr<Version> version_;
   std::vector<WebPluginInfo> web_plugin_infos_;
   std::vector<int> web_plugin_positions_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginGroup);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PLUGIN_GROUP_H_

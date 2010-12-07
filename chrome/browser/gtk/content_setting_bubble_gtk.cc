@@ -4,6 +4,10 @@
 
 #include "chrome/browser/gtk/content_setting_bubble_gtk.h"
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
@@ -104,12 +108,9 @@ void ContentSettingBubbleGtk::BuildBubble() {
 
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
-      std::string name;
-      NPAPI::PluginList::PluginMap groups;
-      NPAPI::PluginList::Singleton()->GetPluginGroups(false, &groups);
-      if (groups.find(*it) != groups.end())
-        name = UTF16ToUTF8(groups[*it]->GetGroupName());
-      else
+      std::string name = UTF16ToUTF8(
+          NPAPI::PluginList::Singleton()->GetPluginGroupName(*it));
+      if (name.empty())
         name = *it;
 
       GtkWidget* label = gtk_label_new(BuildElidedText(name).c_str());

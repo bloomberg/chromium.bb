@@ -130,17 +130,16 @@ void PluginExceptionsTableModel::ClearSettings() {
 }
 
 void PluginExceptionsTableModel::GetPlugins(
-    NPAPI::PluginList::PluginMap* plugins) {
-  NPAPI::PluginList::Singleton()->GetPluginGroups(false, plugins);
+    std::vector<PluginGroup>* plugin_groups) {
+  NPAPI::PluginList::Singleton()->GetPluginGroups(false, plugin_groups);
 }
 
 void PluginExceptionsTableModel::LoadSettings() {
   int group_id = 0;
-  NPAPI::PluginList::PluginMap plugins;
+  std::vector<PluginGroup> plugins;
   GetPlugins(&plugins);
-  for (NPAPI::PluginList::PluginMap::iterator it = plugins.begin();
-       it != plugins.end(); ++it) {
-    std::string plugin = it->first;
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    std::string plugin = plugins[i].identifier();
     HostContentSettingsMap::SettingsForOneType settings;
     map_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 plugin,
@@ -151,7 +150,7 @@ void PluginExceptionsTableModel::LoadSettings() {
                                       plugin,
                                       &otr_settings);
     }
-    std::wstring title = UTF16ToWide(it->second->GetGroupName());
+    std::wstring title = UTF16ToWide(plugins[i].GetGroupName());
     for (HostContentSettingsMap::SettingsForOneType::iterator setting_it =
              settings.begin(); setting_it != settings.end(); ++setting_it) {
       SettingsEntry entry = {

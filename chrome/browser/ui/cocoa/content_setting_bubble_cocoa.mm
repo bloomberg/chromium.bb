@@ -242,12 +242,9 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   } else {
     for (std::set<std::string>::iterator it = plugins.begin();
          it != plugins.end(); ++it) {
-      NSString* name;
-      NPAPI::PluginList::PluginMap groups;
-      NPAPI::PluginList::Singleton()->GetPluginGroups(false, &groups);
-      if (groups.find(*it) != groups.end())
-        name = base::SysUTF16ToNSString(groups[*it]->GetGroupName());
-      else
+      NSString* name = SysUTF16ToNSString(
+          NPAPI::PluginList::Singleton()->GetPluginGroupName(*it));
+      if ([name length] == 0)
         name = base::SysUTF8ToNSString(*it);
       [pluginArray addObject:name];
     }

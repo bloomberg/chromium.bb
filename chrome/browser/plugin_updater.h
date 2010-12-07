@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_PLUGIN_UPDATER_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/singleton.h"
@@ -54,9 +56,10 @@ class PluginUpdater : public NotificationObserver {
   static void GetPreferencesDataOnFileThread(void* profile);
 
   // Called on the UI thread with the plugin data to save the preferences.
-  static void OnUpdatePreferences(Profile* profile,
-                                  const std::vector<WebPluginInfo>& plugins,
-                                  const NPAPI::PluginList::PluginMap& groups);
+  static void OnUpdatePreferences(
+      Profile* profile,
+      const std::vector<WebPluginInfo>& plugins,
+      const std::vector<PluginGroup>& groups);
 
   // Queues sending the notification that plugin data has changed.  This is done
   // so that if a bunch of changes happen, we only send one notification.

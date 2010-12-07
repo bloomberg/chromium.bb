@@ -14,13 +14,16 @@
 #include "base/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/plugins/webplugininfo.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 static const PluginGroupDefinition kPluginDef = {
     "myplugin", "MyPlugin", "MyPlugin", "", "", "3.0.44", "http://latest/" };
 static const PluginGroupDefinition kPluginDef3 = {
-    "myplugin-3", "MyPlugin 3", "MyPlugin", "0", "4", "3.0.44", "http://latest" };
+    "myplugin-3", "MyPlugin 3", "MyPlugin", "0", "4", "3.0.44",
+    "http://latest" };
 static const PluginGroupDefinition kPluginDef4 = {
-    "myplugin-4", "MyPlugin 4", "MyPlugin", "4", "5", "4.0.44", "http://latest" };
+    "myplugin-4", "MyPlugin 4", "MyPlugin", "4", "5", "4.0.44",
+    "http://latest" };
 static const PluginGroupDefinition kPluginDefNotVulnerable = {
     "myplugin-latest", "MyPlugin", "MyPlugin", "", "", "", "http://latest" };
 
@@ -42,6 +45,14 @@ static WebPluginInfo kPlugin4043 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin version 4.0.43"));
 
 class PluginGroupTest : public testing::Test {
+ public:
+  static PluginGroup* CreatePluginGroup(
+      const PluginGroupDefinition& definition) {
+    return PluginGroup::FromPluginGroupDefinition(definition);
+  }
+  static PluginGroup* CreatePluginGroup(const WebPluginInfo& wpi) {
+    return PluginGroup::FromWebPluginInfo(wpi);
+  }
  protected:
   virtual void TearDown() {
     PluginGroup::SetPolicyDisabledPluginPatterns(std::set<string16>());
@@ -49,7 +60,7 @@ class PluginGroupTest : public testing::Test {
 };
 
 TEST(PluginGroupTest, PluginGroupMatch) {
-  scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
+  scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
       kPluginDef3));
   EXPECT_TRUE(group->Match(kPlugin3045));
   group->AddPlugin(kPlugin3045, 0);
@@ -57,13 +68,13 @@ TEST(PluginGroupTest, PluginGroupMatch) {
 }
 
 TEST(PluginGroupTest, PluginGroupMatchCorrectVersion) {
-  scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
+  scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
       kPluginDef3));
   EXPECT_TRUE(group->Match(kPlugin2043));
   EXPECT_TRUE(group->Match(kPlugin3043));
   EXPECT_FALSE(group->Match(kPlugin4043));
 
-  group.reset(PluginGroup::FromPluginGroupDefinition(kPluginDef4));
+  group.reset(PluginGroupTest::CreatePluginGroup(kPluginDef4));
   EXPECT_FALSE(group->Match(kPlugin2043));
   EXPECT_FALSE(group->Match(kPlugin3043));
   EXPECT_TRUE(group->Match(kPlugin4043));
@@ -76,7 +87,7 @@ TEST(PluginGroupTest, PluginGroupDescription) {
   WebPluginInfo plugin3045(kPlugin3045);
 
   {
-    scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
+    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
         kPluginDef3));
     EXPECT_TRUE(group->Match(plugin3043));
     group->AddPlugin(plugin3043, 0);
@@ -91,7 +102,7 @@ TEST(PluginGroupTest, PluginGroupDescription) {
   {
     // Disable the first plugin.
     plugin3043.enabled = false;
-    scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
+    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
         kPluginDef3));
     EXPECT_TRUE(group->Match(plugin3043));
     group->AddPlugin(plugin3043, 0);
@@ -106,7 +117,7 @@ TEST(PluginGroupTest, PluginGroupDescription) {
   {
     // Disable the second plugin.
     plugin3045.enabled = false;
-    scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
+    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
         kPluginDef3));
     EXPECT_TRUE(group->Match(plugin3043));
     group->AddPlugin(plugin3043, 1);
@@ -121,17 +132,19 @@ TEST(PluginGroupTest, PluginGroupDescription) {
 
 TEST(PluginGroupTest, PluginGroupDefinition) {
   const PluginGroupDefinition* definitions =
-      PluginGroup::GetPluginGroupDefinitions();
-  for (size_t i = 0; i < PluginGroup::GetPluginGroupDefinitionsSize(); ++i) {
+      NPAPI::PluginList::GetPluginGroupDefinitions();
+  for (size_t i = 0;
+       i < NPAPI::PluginList::GetPluginGroupDefinitionsSize();
+       ++i) {
     scoped_ptr<PluginGroup> def_group(
-        PluginGroup::FromPluginGroupDefinition(definitions[i]));
+        PluginGroupTest::CreatePluginGroup(definitions[i]));
     ASSERT_TRUE(def_group.get() != NULL);
     EXPECT_FALSE(def_group->Match(kPlugin2043));
   }
 }
 
 TEST(PluginGroupTest, DisableOutdated) {
-  scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
+  scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
       kPluginDef3));
   group->AddPlugin(kPlugin3043, 0);
   group->AddPlugin(kPlugin3045, 1);
@@ -157,7 +170,7 @@ TEST(PluginGroupTest, VersionExtraction) {
   for (size_t i = 0; i < arraysize(versions); i++) {
     const WebPluginInfo plugin = WebPluginInfo(
         ASCIIToUTF16("Blah Plugin"), ASCIIToUTF16(versions[i][0]), string16());
-    scoped_ptr<PluginGroup> group(PluginGroup::FromWebPluginInfo(plugin));
+    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(plugin));
     EXPECT_TRUE(group->Match(plugin));
     group->AddPlugin(plugin, 0);
     scoped_ptr<DictionaryValue> data(group->GetDataForUI());

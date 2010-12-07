@@ -7,6 +7,8 @@
 #pragma once
 
 #include <deque>
+#include <string>
+#include <vector>
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/remove_rows_table_model.h"
@@ -49,7 +51,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
 
  protected:
   // Subclasses can override this method for testing.
-  virtual void GetPlugins(NPAPI::PluginList::PluginMap* plugins);
+  virtual void GetPlugins(std::vector<PluginGroup>* plugin_groups);
 
  private:
   friend class plugin_test_internal::PluginExceptionsTableModelTest;

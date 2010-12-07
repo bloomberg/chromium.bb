@@ -5,11 +5,9 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_
 #define WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -79,6 +77,9 @@ class PluginList {
   // Returns true if we're in debug-plugin-loading mode. This is controlled
   // by a command line switch.
   static bool DebugPluginLoading();
+
+  static const PluginGroupDefinition* GetPluginGroupDefinitions();
+  static size_t GetPluginGroupDefinitionsSize();
 
   // Returns true iff the plugin list has been loaded already.
   bool PluginsLoaded();
@@ -157,13 +158,28 @@ class PluginList {
   bool GetPluginInfoByPath(const FilePath& plugin_path,
                            WebPluginInfo* info);
 
-  typedef std::map<std::string, linked_ptr<PluginGroup> > PluginMap;
+  // Populates the given vector with all available plugin groups.
+  void GetPluginGroups(bool load_if_necessary,
+                       std::vector<PluginGroup>* plugin_groups);
 
-  // Fill the map from identifier to plugin group for all plugin groups.  If
-  // |load_if_necessary| is set, the plugins will be loaded if they haven't
-  // already been loaded, or if Refresh() has been called in the meantime;
-  // otherwise a possibly empty or stale list may be returned.
-  void GetPluginGroups(bool load_if_necessary, PluginMap* plugin_groups);
+  // Returns the PluginGroup corresponding to the given WebPluginInfo. If no
+  // such group exists, it is created and added to the cache.
+  // Beware: when calling this from the Browser process, the group that the
+  // returned pointer points to might disappear suddenly. This happens when
+  // |RefreshPlugins()| is called and then |LoadPlugins()| is triggered by a
+  // call to |GetPlugins()|, |GetEnabledPlugins()|, |GetPluginInfoArray()|,
+  // |GetPluginInfoByPath()|, or |GetPluginGroups(true, _)|. It is the caller's
+  // responsibility to make sure this doesn't happen.
+  const PluginGroup* GetPluginGroup(const WebPluginInfo& web_plugin_info);
+
+  // Returns the name of the PluginGroup with the given identifier.
+  // If no such group exists, an empty string is returned.
+  string16 GetPluginGroupName(std::string identifier);
+
+  // Returns the identifier string of the PluginGroup corresponding to the given
+  // WebPluginInfo. If no such group exists, it is created and added to the
+  // cache.
+  std::string GetPluginGroupIdentifier(const WebPluginInfo& web_plugin_info);
 
   // Load a specific plugin with full path.
   void LoadPlugin(const FilePath& filename,
@@ -198,8 +214,19 @@ class PluginList {
   ~PluginList();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PluginGroupTest, PluginGroupDefinition);
+
   // Constructors are private for singletons
   PluginList();
+
+  // Creates PluginGroups for the static group definitions, and adds them to
+  // the PluginGroup cache of this PluginList.
+  void AddHardcodedPluginGroups();
+
+  // Adds the given WebPluginInfo to its corresponding group, creating it if
+  // necessary, and returns the group.
+  // Callers need to protect calls to this method by a lock themselves.
+  PluginGroup* AddToPluginGroups(const WebPluginInfo& web_plugin_info);
 
   // Load all plugins from the default plugins directory
   void LoadPlugins(bool refresh);
@@ -223,10 +250,6 @@ class PluginList {
   // is blacklisted by a policy. In the latter case, add the plugin group to the
   // list of disabled groups as well.
   bool ShouldDisableGroup(const string16& group_name);
-
-  // Like GetPluginGroups above, but works on a given vector of plugins.
-  static void GetPluginGroups(const std::vector<WebPluginInfo>* plugins,
-                              PluginMap* plugin_groups);
 
   // Returns true if the given WebPluginInfo supports "mime-type".
   // mime_type should be all lower case.
@@ -291,10 +314,15 @@ class PluginList {
   // Path names of plugins to disable (the default is to enable them all).
   std::set<FilePath> disabled_plugins_;
 
-  // Group names disable (the default is to enable them all).
+  // Group names to disable (the default is to enable them all).
   std::set<string16> disabled_groups_;
 
   bool disable_outdated_plugins_;
+
+  // Holds the currently available plugin groups.
+  PluginGroup::PluginMap plugin_groups_;
+
+  int next_priority_;
 
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.

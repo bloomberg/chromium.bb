@@ -2723,8 +2723,9 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return NULL;
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
-  scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
-  group->AddPlugin(info, 0);
+  const PluginGroup* group =
+      NPAPI::PluginList::Singleton()->GetPluginGroup(info);
+  DCHECK(group != NULL);
 
   if (!info.enabled) {
     if (cmd->HasSwitch(switches::kDisableOutdatedPlugins) &&
@@ -2732,7 +2733,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
       Send(new ViewHostMsg_DisabledOutdatedPlugin(routing_id_,
                                                   group->GetGroupName(),
                                                   GURL(group->GetUpdateURL())));
-      return CreateOutdatedPluginPlaceholder(frame, params, group.get());
+      return CreateOutdatedPluginPlaceholder(frame, params, *group);
     }
     return NULL;
   }
@@ -4417,7 +4418,7 @@ WebPlugin* RenderView::CreateNPAPIPlugin(WebFrame* frame,
 WebPlugin* RenderView::CreateOutdatedPluginPlaceholder(
     WebFrame* frame,
     const WebPluginParams& params,
-    PluginGroup* group) {
+    const PluginGroup& group) {
   int resource_id = IDR_OUTDATED_PLUGIN_HTML;
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
@@ -4427,8 +4428,8 @@ WebPlugin* RenderView::CreateOutdatedPluginPlaceholder(
 
   DictionaryValue values;
   values.SetString("message",
-      l10n_util::GetStringFUTF8(IDS_PLUGIN_OUTDATED, group->GetGroupName()));
-  values.Set("pluginGroup", group->GetDataForUI());
+      l10n_util::GetStringFUTF8(IDS_PLUGIN_OUTDATED, group.GetGroupName()));
+  values.Set("pluginGroup", group.GetDataForUI());
 
   // "t" is the id of the templates root node.
   std::string htmlData = jstemplate_builder::GetTemplatesHtml(
