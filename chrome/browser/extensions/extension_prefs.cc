@@ -608,6 +608,11 @@ extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
   extension_misc::LaunchContainer launch_container =
       extension->launch_container();
 
+  // Apps with app.launch.container = 'panel' should always
+  // open in a panel.
+  if (launch_container == extension_misc::LAUNCH_PANEL)
+    return extension_misc::LAUNCH_PANEL;
+
   ExtensionPrefs::LaunchType prefs_launch_type =
       GetLaunchType(extension->id(), default_pref_value);
 

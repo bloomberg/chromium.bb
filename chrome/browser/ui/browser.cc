@@ -525,12 +525,18 @@ TabContents* Browser::OpenApplication(
 
   switch (container) {
     case extension_misc::LAUNCH_WINDOW:
-      tab = Browser::OpenApplicationWindow(profile,
-                                           extension->GetFullLaunchURL());
+      // TODO(skerner): Setting |extension| to NULL is odd.
+      // Not doing so triggers some vestigial extensions app window
+      // behavior that leads to crashes.  This sort of window is no
+      // longer supported, and its remains need to be cleaned up.
+      // crbug/65630 tracks this cleanup.
+      tab = Browser::OpenApplicationWindow(profile, NULL, container,
+                                           extension->GetFullLaunchURL(),
+                                           NULL);
       break;
     case extension_misc::LAUNCH_PANEL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
-                                           GURL());
+                                           GURL(), NULL);
       break;
     case extension_misc::LAUNCH_TAB: {
       tab = Browser::OpenApplicationTab(profile, extension, existing_tab);
@@ -548,7 +554,8 @@ TabContents* Browser::OpenApplicationWindow(
     Profile* profile,
     const Extension* extension,
     extension_misc::LaunchContainer container,
-    const GURL& url_input) {
+    const GURL& url_input,
+    Browser** app_browser) {
   GURL url;
   if (!url_input.is_empty()) {
     if (extension)
@@ -566,6 +573,9 @@ TabContents* Browser::OpenApplicationWindow(
   bool as_panel = extension && (container == extension_misc::LAUNCH_PANEL);
   Browser* browser = Browser::CreateForApp(app_name, extension, profile,
                                            as_panel);
+  if (app_browser)
+    *app_browser = browser;
+
   TabContentsWrapper* wrapper =
       browser->AddSelectedTabWithURL(url, PageTransition::START_PAGE);
   TabContents* contents = wrapper->tab_contents();
@@ -576,24 +586,33 @@ TabContents* Browser::OpenApplicationWindow(
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
   contents->view()->SetInitialFocus();
+  return contents;
+}
 
-  if (!as_panel) {
+TabContents* Browser::OpenAppShortcutWindow(Profile* profile,
+                                            const GURL& url,
+                                            bool update_shortcut) {
+  Browser* app_browser;
+  TabContents* tab = OpenApplicationWindow(
+      profile,
+      NULL,  // this is a URL app.  No extension.
+      extension_misc::LAUNCH_WINDOW,
+      url,
+      &app_browser);
+
+  if (!tab)
+    return NULL;
+
+  if (update_shortcut) {
     // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
     // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
     // the web app info is available, TabContents notifies Browser via
     // OnDidGetApplicationInfo, which calls
     // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
     // pending web app action.
-    browser->pending_web_app_action_ = UPDATE_SHORTCUT;
+    app_browser->pending_web_app_action_ = UPDATE_SHORTCUT;
   }
-
-  return contents;
-}
-
-// static
-TabContents* Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
-  return OpenApplicationWindow(profile, NULL, extension_misc::LAUNCH_WINDOW,
-                               url);
+  return tab;
 }
 
 // static

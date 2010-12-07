@@ -628,12 +628,12 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
     const Extension* extension =
         extensions_service->GetExtensionById(app_id, false);
 
-    // The extension with |app_id| may have been uninstalled.
+    // The extension with id |app_id| may have been uninstalled.
     if (!extension)
       return false;
 
-    // Look at prefs to find the container in which an app should launch.
-    // If no preference is set, launch in a window.
+    // Look at preferences to find the right launch container.  If no
+    // preference is set, launch as a window.
     extension_misc::LaunchContainer launch_container =
         extensions_service->extension_prefs()->GetLaunchContainer(
             extension, ExtensionPrefs::LAUNCH_WINDOW);
@@ -657,8 +657,11 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
-      Browser::OpenApplicationWindow(profile, url);
-      return true;
+      TabContents* app_tab = Browser::OpenAppShortcutWindow(
+          profile,
+          url,
+          true);  // Update app info.
+      return (app_tab != NULL);
     }
   }
   return false;

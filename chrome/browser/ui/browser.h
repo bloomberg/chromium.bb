@@ -245,15 +245,24 @@ class Browser : public TabHandlerDelegate,
   // app panel window, otherwise it will be opened as as either
   // Browser::Type::APP a.k.a. "thin frame" (if |extension| is NULL) or
   // Browser::Type::EXTENSION_APP (if |extension| is non-NULL).
+  // If |app_browser| is not NULL, it is set to the browser that hosts the
+  // returned tab.
   static TabContents* OpenApplicationWindow(
       Profile* profile,
       const Extension* extension,
       extension_misc::LaunchContainer container,
-      const GURL& url);
+      const GURL& url,
+      Browser** app_browser);
 
-  // Open an application in a new application window.  Used to implement
-  // app shortcuts.
-  static TabContents* OpenApplicationWindow(Profile* profile, const GURL& url);
+  // Open |url| in an app shortcut window.  If |update_shortcut| is true,
+  // update the name, description, and favicon of the shortcut.
+  // There are two kinds of app shortcuts: Shortcuts to a URL,
+  // and shortcuts that open an installed application.  This function
+  // is used to open the former.  To open the latter, use
+  // Browser::OpenApplicationWindow().
+  static TabContents* OpenAppShortcutWindow(Profile* profile,
+                                            const GURL& url,
+                                            bool update_shortcut);
 
   // Open an application for |extension| in a new application tab, or
   // |existing_tab| if not NULL.  Returns NULL if there are no appropriate
