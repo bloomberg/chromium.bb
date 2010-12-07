@@ -44,7 +44,8 @@ class PepperPluginDelegateImpl
   explicit PepperPluginDelegateImpl(RenderView* render_view);
   virtual ~PepperPluginDelegateImpl();
 
-  scoped_refptr<pepper::PluginModule> CreatePepperPlugin(const FilePath& path);
+  scoped_refptr<pepper::PluginModule> CreateOutOfProcessPepperPlugin(
+      const FilePath& path);
 
   // Called by RenderView to tell us about painting events, these two functions
   // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..

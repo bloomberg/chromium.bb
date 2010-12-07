@@ -48,6 +48,8 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "webkit/glue/plugins/pepper_audio.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_common.h"
@@ -82,6 +84,10 @@
 #ifdef ENABLE_GPU
 #include "webkit/glue/plugins/pepper_graphics_3d.h"
 #endif  // ENABLE_GPU
+
+#if defined(OS_POSIX)
+#include "ipc/ipc_channel_posix.h"
+#endif
 
 namespace pepper {
 
@@ -286,49 +292,11 @@ const void* GetInterface(const char* name) {
   return NULL;
 }
 
-// Gets the PPAPI entry points from the given library and places them into the
-// given structure. Returns true on success.
-bool LoadEntryPointsFromLibrary(const base::NativeLibrary& library,
-                                PluginModule::EntryPoints* entry_points) {
-  entry_points->get_interface =
-      reinterpret_cast<PluginModule::GetInterfaceFunc>(
-          base::GetFunctionPointerFromNativeLibrary(library,
-                                                    "PPP_GetInterface"));
-  if (!entry_points->get_interface) {
-    LOG(WARNING) << "No PPP_GetInterface in plugin library";
-    return false;
-  }
-
-  entry_points->initialize_module =
-      reinterpret_cast<PluginModule::PPP_InitializeModuleFunc>(
-          base::GetFunctionPointerFromNativeLibrary(library,
-                                                    "PPP_InitializeModule"));
-  if (!entry_points->initialize_module) {
-    LOG(WARNING) << "No PPP_InitializeModule in plugin library";
-    return false;
-  }
-
-  // It's okay for PPP_ShutdownModule to not be defined and shutdown_module to
-  // be NULL.
-  entry_points->shutdown_module =
-      reinterpret_cast<PluginModule::PPP_ShutdownModuleFunc>(
-          base::GetFunctionPointerFromNativeLibrary(library,
-                                                    "PPP_ShutdownModule"));
-
-  return true;
-}
-
 }  // namespace
 
-PluginModule::EntryPoints::EntryPoints()
-    : get_interface(NULL),
-      initialize_module(NULL),
-      shutdown_module(NULL) {
-}
-
-// PluginModule ----------------------------------------------------------------
-
-PluginModule::PluginModule() : library_(NULL) {
+PluginModule::PluginModule()
+    : initialized_(false),
+      library_(NULL) {
   pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
@@ -361,30 +329,39 @@ PluginModule::~PluginModule() {
   ResourceTracker::Get()->ModuleDeleted(pp_module_);
 }
 
-bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {
-  entry_points_ = entry_points;
-  return InitializeModule();
+// static
+scoped_refptr<PluginModule> PluginModule::CreateModule(
+    const FilePath& path) {
+  // FIXME(brettw) do uniquifying of the plugin here like the NPAPI one.
+
+  scoped_refptr<PluginModule> lib(new PluginModule());
+  if (!lib->InitFromFile(path))
+    return NULL;
+
+  return lib;
 }
 
-bool PluginModule::InitAsLibrary(const FilePath& path) {
-  base::NativeLibrary library = base::LoadNativeLibrary(path);
-  if (!library)
-    return false;
+// static
+scoped_refptr<PluginModule> PluginModule::CreateInternalModule(
+    EntryPoints entry_points) {
+  scoped_refptr<PluginModule> lib(new PluginModule());
+  if (!lib->InitFromEntryPoints(entry_points))
+    return NULL;
 
-  if (!LoadEntryPointsFromLibrary(library, &entry_points_) ||
-      !InitializeModule()) {
-    base::UnloadNativeLibrary(library);
-    return false;
-  }
-
-  library_ = library;
-  return true;
+  return lib;
 }
 
-void PluginModule::InitAsProxied(
-    PluginDelegate::OutOfProcessProxy* out_of_process_proxy) {
-  DCHECK(!out_of_process_proxy_.get());
-  out_of_process_proxy_.reset(out_of_process_proxy);
+// static
+scoped_refptr<PluginModule> PluginModule::CreateOutOfProcessModule(
+    MessageLoop* ipc_message_loop,
+    base::ProcessHandle plugin_process_handle,
+    const IPC::ChannelHandle& handle,
+    base::WaitableEvent* shutdown_event) {
+  scoped_refptr<PluginModule> lib(new PluginModule);
+  if (!lib->InitForOutOfProcess(ipc_message_loop, plugin_process_handle,
+                                handle, shutdown_event))
+    return NULL;
+  return lib;
 }
 
 // static
@@ -392,9 +369,104 @@ const PPB_Core* PluginModule::GetCore() {
   return &core_interface;
 }
 
+bool PluginModule::InitFromEntryPoints(const EntryPoints& entry_points) {
+  if (initialized_)
+    return true;
+
+  // Attempt to run the initialization funciton.
+  int retval = entry_points.initialize_module(pp_module(), &GetInterface);
+  if (retval != 0) {
+    LOG(WARNING) << "PPP_InitializeModule returned failure " << retval;
+    return false;
+  }
+
+  entry_points_ = entry_points;
+  initialized_ = true;
+  return true;
+}
+
+bool PluginModule::InitFromFile(const FilePath& path) {
+  if (initialized_)
+    return true;
+
+  base::NativeLibrary library = base::LoadNativeLibrary(path);
+  if (!library)
+    return false;
+
+  EntryPoints entry_points;
+  if (!LoadEntryPoints(library, &entry_points) ||
+      !InitFromEntryPoints(entry_points)) {
+    base::UnloadNativeLibrary(library);
+    return false;
+  }
+
+  // We let InitFromEntryPoints() handle setting the all the internal state
+  // of the object other than the |library_| reference.
+  library_ = library;
+  return true;
+}
+
+bool PluginModule::InitForOutOfProcess(MessageLoop* ipc_message_loop,
+                                       base::ProcessHandle remote_process,
+                                       const IPC::ChannelHandle& handle,
+                                       base::WaitableEvent* shutdown_event) {
+  const PPB_Var_Deprecated* var_interface =
+      reinterpret_cast<const PPB_Var_Deprecated*>(
+          GetInterface(PPB_VAR_DEPRECATED_INTERFACE));
+  dispatcher_.reset(new pp::proxy::HostDispatcher(
+      remote_process, var_interface, pp_module(), &GetInterface));
+
+#if defined(OS_POSIX)
+  // If we received a ChannelHandle, register it now.
+  if (handle.socket.fd >= 0)
+    IPC::AddChannelSocket(handle.name, handle.socket.fd);
+#endif
+
+  if (!dispatcher_->InitWithChannel(ipc_message_loop, handle.name, true,
+                                    shutdown_event)) {
+    dispatcher_.reset();
+    return false;
+  }
+
+  bool init_result = false;
+  dispatcher_->Send(new PpapiMsg_InitializeModule(pp_module(), &init_result));
+  if (!init_result) {
+    // TODO(brettw) does the module get unloaded in this case?
+    dispatcher_.reset();
+    return false;
+  }
+  return true;
+}
+
 // static
-PluginModule::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
-  return &GetInterface;
+bool PluginModule::LoadEntryPoints(const base::NativeLibrary& library,
+                                   EntryPoints* entry_points) {
+  entry_points->get_interface =
+      reinterpret_cast<PPP_GetInterfaceFunc>(
+          base::GetFunctionPointerFromNativeLibrary(library,
+                                                    "PPP_GetInterface"));
+  if (!entry_points->get_interface) {
+    LOG(WARNING) << "No PPP_GetInterface in plugin library";
+    return false;
+  }
+
+  entry_points->initialize_module =
+      reinterpret_cast<PPP_InitializeModuleFunc>(
+          base::GetFunctionPointerFromNativeLibrary(library,
+                                                    "PPP_InitializeModule"));
+  if (!entry_points->initialize_module) {
+    LOG(WARNING) << "No PPP_InitializeModule in plugin library";
+    return false;
+  }
+
+  // It's okay for PPP_ShutdownModule to not be defined and shutdown_module to
+  // be NULL.
+  entry_points->shutdown_module =
+      reinterpret_cast<PPP_ShutdownModuleFunc>(
+          base::GetFunctionPointerFromNativeLibrary(library,
+                                                    "PPP_ShutdownModule"));
+
+  return true;
 }
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
@@ -407,8 +479,10 @@ PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
   }
   PluginInstance* instance = new PluginInstance(delegate, this,
                                                 plugin_instance_interface);
-  if (out_of_process_proxy_.get())
-    out_of_process_proxy_->AddInstance(instance->pp_instance());
+  if (dispatcher_.get()) {
+    pp::proxy::HostDispatcher::SetForInstance(instance->pp_instance(),
+                                              dispatcher_.get());
+  }
   return instance;
 }
 
@@ -420,8 +494,8 @@ PluginInstance* PluginModule::GetSomeInstance() const {
 }
 
 const void* PluginModule::GetPluginInterface(const char* name) const {
-  if (out_of_process_proxy_.get())
-    return out_of_process_proxy_->GetProxiedInterface(name);
+  if (dispatcher_.get())
+    return dispatcher_->GetProxiedInterface(name);
 
   // In-process plugins.
   if (!entry_points_.get_interface)
@@ -434,8 +508,7 @@ void PluginModule::InstanceCreated(PluginInstance* instance) {
 }
 
 void PluginModule::InstanceDeleted(PluginInstance* instance) {
-  if (out_of_process_proxy_.get())
-    out_of_process_proxy_->RemoveInstance(instance->pp_instance());
+  pp::proxy::HostDispatcher::RemoveForInstance(instance->pp_instance());
   instances_.erase(instance);
 }
 
@@ -477,16 +550,6 @@ void PluginModule::RemovePluginObject(PluginObject* plugin_object) {
   // Don't actually verify that the object is in the set since during module
   // deletion we'll be in the process of freeing them.
   live_plugin_objects_.erase(plugin_object);
-}
-
-bool PluginModule::InitializeModule() {
-  DCHECK(!out_of_process_proxy_.get()) << "Don't call for proxied modules.";
-  int retval = entry_points_.initialize_module(pp_module(), &GetInterface);
-  if (retval != 0) {
-    LOG(WARNING) << "PPP_InitializeModule returned failure " << retval;
-    return false;
-  }
-  return true;
 }
 
 }  // namespace pepper

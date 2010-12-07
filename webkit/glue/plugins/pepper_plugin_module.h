@@ -16,7 +16,6 @@
 #include "base/weak_ptr.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
-#include "webkit/glue/plugins/pepper_plugin_delegate.h"
 
 class FilePath;
 class MessageLoop;
@@ -53,46 +52,35 @@ class PluginObject;
 class PluginModule : public base::RefCounted<PluginModule>,
                      public base::SupportsWeakPtr<PluginModule> {
  public:
-  typedef const void* (*GetInterfaceFunc)(const char*);
+  typedef const void* (*PPP_GetInterfaceFunc)(const char*);
   typedef int (*PPP_InitializeModuleFunc)(PP_Module, PPB_GetInterface);
   typedef void (*PPP_ShutdownModuleFunc)();
 
   struct EntryPoints {
-    // This structure is POD, with the constructor initializing to NULL.
-    EntryPoints();
+    EntryPoints()
+        : get_interface(NULL),
+          initialize_module(NULL),
+          shutdown_module(NULL) {
+    }
 
-    GetInterfaceFunc get_interface;
+    PPP_GetInterfaceFunc get_interface;
     PPP_InitializeModuleFunc initialize_module;
-    PPP_ShutdownModuleFunc shutdown_module;  // Optional, may be NULL.
+    PPP_ShutdownModuleFunc shutdown_module;
   };
-
-  // You must call one of the Init functions to create a module of the type
-  // you desire.
-  PluginModule();
 
   ~PluginModule();
 
-  // Initializes this module as an internal plugin with the given entrypoints.
-  // This is used for "plugins" compiled into Chrome. Returns true on success.
-  // False means that the plugin can not be used.
-  bool InitAsInternalPlugin(const EntryPoints& entry_points);
-
-  // Initializes this module using the given library path as the plugin.
-  // Returns true on success. False means that the plugin can not be used.
-  bool InitAsLibrary(const FilePath& path);
-
-  // Initializes this module for the given out of process proxy. This takes
-  // ownership of the given pointer, even in the failure case.
-  void InitAsProxied(PluginDelegate::OutOfProcessProxy* out_of_process_proxy);
+  static scoped_refptr<PluginModule> CreateModule(const FilePath& path);
+  static scoped_refptr<PluginModule> CreateInternalModule(
+      EntryPoints entry_points);
+  static scoped_refptr<PluginModule> CreateOutOfProcessModule(
+      MessageLoop* ipc_message_loop,
+      base::ProcessHandle plugin_process_handle,
+      const IPC::ChannelHandle& handle,
+      base::WaitableEvent* shutdown_event);
 
   static const PPB_Core* GetCore();
 
-  // Returns a pointer to the local GetInterface function for retrieving
-  // PPB interfaces.
-  static GetInterfaceFunc GetLocalGetInterfaceFunc();
-
-  // Returns the module handle. This may be used before Init() is called (the
-  // proxy needs this information to set itself up properly).
   PP_Module pp_module() const { return pp_module_; }
 
   void set_name(const std::string& name) { name_ = name; }
@@ -106,8 +94,6 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // but the delegate lives only on the plugin instance so we need one of them.
   PluginInstance* GetSomeInstance() const;
 
-  // Calls the plugin's GetInterface and returns the given interface pointer,
-  // which could be NULL.
   const void* GetPluginInterface(const char* name) const;
 
   // This module is associated with a set of instances. The PluginInstance
@@ -133,17 +119,24 @@ class PluginModule : public base::RefCounted<PluginModule>,
   void RemovePluginObject(PluginObject* plugin_object);
 
  private:
-  // Calls the InitializeModule entrypoint. The entrypoint must have been
-  // set and the plugin must not be out of process (we don't maintain
-  // entrypoints in that case).
-  bool InitializeModule();
+  PluginModule();
+
+  bool InitFromEntryPoints(const EntryPoints& entry_points);
+  bool InitFromFile(const FilePath& path);
+  bool InitForOutOfProcess(MessageLoop* ipc_message_loop,
+                           base::ProcessHandle remote_process,
+                           const IPC::ChannelHandle& handle,
+                           base::WaitableEvent* shutdown_event);
+  static bool LoadEntryPoints(const base::NativeLibrary& library,
+                              EntryPoints* entry_points);
+
+  // Dispatcher for out-of-process plugins. This will be null when the plugin
+  // is being run in-process.
+  scoped_ptr<pp::proxy::HostDispatcher> dispatcher_;
 
   PP_Module pp_module_;
 
-  // Manages the out of process proxy interface. The presence of this
-  // pointer indicates that the plugin is running out of process and that the
-  // entry_points_ aren't valid.
-  scoped_ptr<PluginDelegate::OutOfProcessProxy> out_of_process_proxy_;
+  bool initialized_;
 
   // Holds a reference to the base::NativeLibrary handle if this PluginModule
   // instance wraps functions loaded from a library.  Can be NULL.  If
@@ -151,9 +144,8 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // during destruction.
   base::NativeLibrary library_;
 
-  // Contains pointers to the entry points of the actual plugin implementation.
-  // These will be NULL for out-of-process plugins, which is indicated by the
-  // presence of the out_of_process_proxy_ value.
+  // Contains pointers to the entry points of the actual plugin
+  // implementation. These will be NULL for out-of-process plugins.
   EntryPoints entry_points_;
 
   // The name of the module.

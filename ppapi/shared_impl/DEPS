@@ -1,9 +1,4 @@
 include_rules = [
   "+base",
-
-  # Since this is used by the implementation in /webkit, we don't want it to
-  # depend on IPC.
-  "-ipc",
-
   "-ppapi/cpp",
 ]

@@ -16,7 +16,6 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/glue/plugins/pepper_dir_contents.h"
@@ -68,36 +67,6 @@ class FullscreenContainer;
 // Pepper plugins.
 class PluginDelegate {
  public:
-  // This class is implemented by the PluginDelegate implementation and is
-  // designed to manage the lifetime and communicatin with the proxy's
-  // HostDispatcher for out-of-process pepper plugins.
-  //
-  // The point of this is to avoid having a relationship from the pepper plugin
-  // implementation to the ppapi proxy code. Otherwise, things like the IPC
-  // system will be dependencies of the webkit directory, which we don't want.
-  //
-  // The PluginModule will scope the lifetime of this object to its own
-  // lifetime, so the implementation can use this to manage the HostDispatcher
-  // lifetime without introducing the dependency.
-  class OutOfProcessProxy {
-   public:
-    virtual ~OutOfProcessProxy() {}
-
-    // Implements GetInterface for the proxied plugin.
-    virtual const void* GetProxiedInterface(const char* name) = 0;
-
-    // Notification to the out-of-process layer that the given plugin instance
-    // has been created. This will happen before the normal PPB_Instance method
-    // calls so the out-of-process code can set up the tracking information for
-    // the new instance.
-    virtual void AddInstance(PP_Instance instance) = 0;
-
-    // Like AddInstance but removes the given instance. This is called after
-    // regular instance shutdown so the out-of-process code can clean up its
-    // tracking information.
-    virtual void RemoveInstance(PP_Instance instance) = 0;
-  };
-
   // Represents an image. This is to allow the browser layer to supply a correct
   // image representation. In Chrome, this will be a TransportDIB.
   class PlatformImage2D {
