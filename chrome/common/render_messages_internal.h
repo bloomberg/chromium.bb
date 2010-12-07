@@ -45,6 +45,7 @@
 // Substitution map for l10n messages.
 typedef std::map<std::string, std::string> SubstitutionMap;
 
+class Value;
 class GPUInfo;
 class SerializedScriptValue;
 class SkBitmap;
@@ -3029,11 +3030,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       SkBitmap /* thumbnail */)
 
   // Response from ViewMsg_ScriptEvalRequest. The ID is the parameter supplied
-  // to ViewMsg_ScriptEvalRequest. The result is true if the script evaluated
-  // to the boolean result true, false otherwise.
+  // to ViewMsg_ScriptEvalRequest. The result has the value returned by the
+  // script as it's only element, one of Null, Boolean, Integer, Real, Date, or
+  // String.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
                       int  /* id */,
-                      bool  /* result */)
+                      ListValue  /* result */)
 
   // Updates the content restrictions, i.e. to disable print/copy.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,

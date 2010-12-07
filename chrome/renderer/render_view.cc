@@ -466,6 +466,39 @@ static bool WebAccessibilityNotificationToViewHostMsg(
   return true;
 }
 
+// Conversion for the incoming value.  The map isn't perfect; v8 has Uint32,
+// and int64 which don't fit as Value::TYPE_INTEGER, so we let them fall into
+// being TYPE_REALs.  Dates are converted to a string (which can then be parsed
+// into a base::Time), as are regexps.  Arrays are converted into lists,
+// recursively.  We don't deal with binary objects or functions - they become
+// null values.
+static Value* ConvertV8Value(const v8::Handle<v8::Value>& v8value) {
+  if (v8value->IsBoolean()) {
+    return Value::CreateBooleanValue(v8value->BooleanValue());
+  } else if (v8value->IsInt32()) {
+    return Value::CreateIntegerValue(v8value->Int32Value());
+  } else if (v8value->IsNumber()) {
+    return Value::CreateRealValue(v8value->NumberValue());
+  } else if (v8value->IsString()) {
+    return Value::CreateStringValue(*v8::String::Utf8Value(v8value));
+  } else if (v8value->IsDate()) {
+    v8::Date* date = v8::Date::Cast(*v8value);
+    return Value::CreateRealValue(date->NumberValue() / 1000.0);
+  } else if (v8value->IsRegExp()) {
+    return Value::CreateStringValue(
+        *v8::String::Utf8Value(v8value->ToString()));
+  } else if (v8value->IsArray()) {
+    v8::Array* array = v8::Array::Cast(*v8value);
+    uint32_t length = array->Length();
+    scoped_ptr<ListValue> list(new ListValue);
+    for (uint32_t i = 0 ; i < length ; ++i) {
+      list->Set(i, ConvertV8Value(array->Get(i)));
+    }
+    return list.release();
+  }
+  return Value::CreateNullValue();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int32 RenderView::next_page_id_ = 1;
@@ -4524,9 +4557,16 @@ void RenderView::EvaluateScript(const string16& frame_xpath,
   if (web_frame)
     result = web_frame->executeScriptAndReturnValue(WebScriptSource(script));
   if (notify_result) {
-    bool bool_result = !result.IsEmpty() && result->IsBoolean() ?
-        result->BooleanValue() : false;
-    Send(new ViewHostMsg_ScriptEvalResponse(routing_id_, id, bool_result));
+    ListValue list;
+    if (web_frame) {
+      v8::HandleScope handle_scope;
+      v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
+      v8::Context::Scope context_scope(context);
+      list.Set(0, ConvertV8Value(result));
+    } else {
+      list.Set(0, Value::CreateNullValue());
+    }
+    Send(new ViewHostMsg_ScriptEvalResponse(routing_id_, id, list));
   }
 }
 

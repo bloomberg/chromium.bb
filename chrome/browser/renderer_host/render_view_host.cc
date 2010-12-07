@@ -2195,9 +2195,10 @@ void RenderViewHost::OnDetectedPhishingSite(const GURL& phishing_url,
   // to confirm that the URL is really phishing.
 }
 
-void RenderViewHost::OnScriptEvalResponse(int id, bool result) {
-  scoped_ptr<Value> result_value(Value::CreateBooleanValue(result));
-  std::pair<int, Value*> details(id, result_value.get());
+void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {
+  Value* result_value;
+  result.Get(0, &result_value);
+  std::pair<int, Value*> details(id, result_value);
   NotificationService::current()->Notify(
       NotificationType::EXECUTE_JAVASCRIPT_RESULT,
       Source<RenderViewHost>(this),

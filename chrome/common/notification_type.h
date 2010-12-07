@@ -510,7 +510,7 @@ class NotificationType {
     // invoked on. The details are a std::pair<int, Value*> with the int giving
     // the id returned from ExecuteJavascriptInWebFrameNotifyResult and the
     // Value the results of the javascript expression. The Value is owned by
-    // RenderViewHost.
+    // RenderViewHost and may be a Null Value.
     EXECUTE_JAVASCRIPT_RESULT,
 
     // BackgroundContents ------------------------------------------------------

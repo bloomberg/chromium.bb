@@ -721,7 +721,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnDetectedPhishingSite(const GURL& phishing_url,
                               double phishing_score,
                               const SkBitmap& thumbnail);
-  void OnScriptEvalResponse(int id, bool result);
+  void OnScriptEvalResponse(int id, const ListValue& result);
   void OnUpdateContentRestrictions(int restrictions);
   void OnPagesReadyForPreview(int document_cookie, int fd_in_browser);
 
