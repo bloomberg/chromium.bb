@@ -557,6 +557,17 @@ string16 FindBarGtk::GetFindText() {
   return UTF8ToUTF16(contents);
 }
 
+string16 FindBarGtk::GetFindSelectedText() {
+  gint cursor_pos;
+  gint selection_bound;
+  g_object_get(G_OBJECT(text_entry_), "cursor-position", &cursor_pos,
+               NULL);
+  g_object_get(G_OBJECT(text_entry_), "selection-bound", &selection_bound,
+               NULL);
+  std::string contents(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
+  return UTF8ToUTF16(contents.substr(cursor_pos, selection_bound));
+}
+
 string16 FindBarGtk::GetMatchCountText() {
   std::string contents(gtk_label_get_text(GTK_LABEL(match_count_label_)));
   return UTF8ToUTF16(contents);

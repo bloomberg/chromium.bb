@@ -72,6 +72,7 @@ class FindBarHost : public DropdownBarHost,
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible);
   virtual string16 GetFindText();
+  virtual string16 GetFindSelectedText();
   virtual string16 GetMatchCountText();
 
   // Overridden from DropdownBarHost:

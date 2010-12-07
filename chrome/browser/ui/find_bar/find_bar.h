@@ -91,6 +91,9 @@ class FindBarTesting {
   // Gets the search string currently visible in the Find box.
   virtual string16 GetFindText() = 0;
 
+  // Gets the search string currently selected in the Find box.
+  virtual string16 GetFindSelectedText() = 0;
+
   // Gets the match count text (ie. 1 of 3) visible in the Find box.
   virtual string16 GetMatchCountText() = 0;
 };

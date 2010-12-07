@@ -47,6 +47,9 @@ class FindBarView : public DropdownBarView,
   string16 GetFindText() const;
   void SetFindText(const string16& find_text);
 
+  // Gets the selected text in the text box.
+  string16 GetFindSelectedText() const;
+
   // Gets the match count text displayed in the text box.
   string16 GetMatchCountText() const;
 
@@ -105,12 +108,25 @@ class FindBarView : public DropdownBarView,
     DISALLOW_COPY_AND_ASSIGN(FocusForwarderView);
   };
 
+  // A wrapper of views::TextField that allows us to select all text when we
+  // get focus. Represents the text field where the user enters a search term.
+  class SearchTextfieldView : public views::Textfield {
+   public:
+     SearchTextfieldView();
+     virtual ~SearchTextfieldView();
+
+     virtual void RequestFocus();
+
+   private:
+     DISALLOW_COPY_AND_ASSIGN(SearchTextfieldView);
+  };
+
   // Returns the OS-specific view for the find bar that acts as an intermediary
   // between us and the TabContentsView.
   FindBarHost* find_bar_host() const;
 
 #if defined(OS_LINUX)
-  // In gtk we get changed signals if we programatically set the text. If we
+  // In GTK we get changed signals if we programmatically set the text. If we
   // don't ignore them we run into problems. For example, switching tabs back
   // to one with the find bar visible will cause a search to the next found
   // text. Also if the find bar had been visible and then hidden and the user
@@ -119,7 +135,7 @@ class FindBarView : public DropdownBarView,
 #endif
 
   // The controls in the window.
-  views::Textfield* find_text_;
+  SearchTextfieldView* find_text_;
   views::Label* match_count_text_;
   FocusForwarderView* focus_forwarder_view_;
   views::ImageButton* find_previous_button_;

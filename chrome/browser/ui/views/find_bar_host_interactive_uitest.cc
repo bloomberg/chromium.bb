@@ -174,6 +174,77 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
 }
 
+IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  Checkpoint("Starting test server", start_time);
+
+  ASSERT_TRUE(test_server()->Start());
+
+  // First we navigate to our test page (tab A).
+  GURL url = test_server()->GetURL(kSimplePage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  Checkpoint("Calling Find", start_time);
+
+  browser()->Find();
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  Checkpoint("GetFindBarTesting", start_time);
+
+  FindBarTesting* find_bar =
+      browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
+
+  Checkpoint("Search for 'a'", start_time);
+
+  // Search for 'a'.
+  ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
+                            ASCIIToUTF16("a"), true, false, NULL);
+  EXPECT_TRUE(ASCIIToUTF16("a") == find_bar->GetFindSelectedText());
+
+  Checkpoint("Open tab B", start_time);
+
+  // Open another tab (tab B).
+  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+
+  Checkpoint("Open find", start_time);
+
+  // Make sure Find box is open.
+  browser()->Find();
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  Checkpoint("Search for 'b'", start_time);
+
+  // Search for 'b'.
+  ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
+                            ASCIIToUTF16("b"), true, false, NULL);
+  EXPECT_TRUE(ASCIIToUTF16("b") == find_bar->GetFindSelectedText());
+
+  Checkpoint("Focus location bar", start_time);
+
+  // Set focus away from the Find bar (to the Location bar).
+  browser()->FocusLocationBar();
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
+
+  Checkpoint("Select tab A", start_time);
+
+  // Select tab A. Find bar should get focus.
+  browser()->SelectTabContentsAt(0, true);
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+  EXPECT_TRUE(ASCIIToUTF16("a") == find_bar->GetFindSelectedText());
+
+  Checkpoint("Select tab B", start_time);
+
+  // Select tab B. Location bar should get focus.
+  browser()->SelectTabContentsAt(1, true);
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
+
+  Checkpoint("Test done", start_time);
+}
+
 // This tests that whenever you clear values from the Find box and close it that
 // it respects that and doesn't show you the last search, as reported in bug:
 // http://crbug.com/40121.

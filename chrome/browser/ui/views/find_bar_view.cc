@@ -97,7 +97,7 @@ FindBarView::FindBarView(FindBarHost* host)
   SetID(VIEW_ID_FIND_IN_PAGE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  find_text_ = new views::Textfield();
+  find_text_ = new SearchTextfieldView();
   find_text_->SetID(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
   find_text_->SetFont(rb.GetFont(ResourceBundle::BaseFont));
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
@@ -185,6 +185,10 @@ void FindBarView::SetFindText(const string16& find_text) {
 
 string16 FindBarView::GetFindText() const {
   return find_text_->text();
+}
+
+string16 FindBarView::GetFindSelectedText() const {
+  return find_text_->GetSelectedText();
 }
 
 string16 FindBarView::GetMatchCountText() const {
@@ -539,6 +543,17 @@ bool FindBarView::FocusForwarderView::OnMousePressed(
     view_to_focus_on_mousedown_->RequestFocus();
   }
   return true;
+}
+
+FindBarView::SearchTextfieldView::SearchTextfieldView() {
+}
+
+FindBarView::SearchTextfieldView::~SearchTextfieldView() {
+}
+
+void FindBarView::SearchTextfieldView::RequestFocus() {
+  views::View::RequestFocus();
+  SelectAll();
 }
 
 FindBarHost* FindBarView::find_bar_host() const {

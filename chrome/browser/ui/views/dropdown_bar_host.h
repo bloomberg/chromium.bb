@@ -139,7 +139,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Allows implementation to tweak widget position.
   void SetWidgetPositionNative(const gfx::Rect& new_pos, bool no_redraw);
 
-  // Returns a keyboard event suitable for fowarding.
+  // Returns a keyboard event suitable for forwarding.
   NativeWebKeyboardEvent GetKeyboardEvent(
       const TabContents* contents,
       const views::Textfield::Keystroke& key_stroke);
@@ -178,7 +178,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // dropdown bar. It contains the DropdownBarView.
   scoped_ptr<views::Widget> host_;
 
-  // A flag to manually manage visibility. GTK/X11 is asynchrnous and
+  // A flag to manually manage visibility. GTK/X11 is asynchronous and
   // the state of the widget can be out of sync.
   bool is_visible_;
 

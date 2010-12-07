@@ -214,6 +214,10 @@ string16 FindBarHost::GetFindText() {
   return find_bar_view()->GetFindText();
 }
 
+string16 FindBarHost::GetFindSelectedText() {
+  return find_bar_view()->GetFindSelectedText();
+}
+
 string16 FindBarHost::GetMatchCountText() {
   return find_bar_view()->GetMatchCountText();
 }
