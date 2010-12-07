@@ -827,7 +827,7 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     const char* granted_apis[10];
     const char* granted_hosts[10];
     bool full_access;
-    bool expect_success;
+    bool expect_increase;
   } kTests[] = {
     { "allhosts1", {NULL}, {"http://*/", NULL}, false,
       false },  // all -> all
@@ -839,7 +839,7 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
       false },  // http://a,http://b -> http://a,http://b
     { "hosts2", {NULL},
       {"http://www.google.com/", "http://www.reddit.com/", NULL}, false,
-      false },  // http://a,http://b -> https://a,http://*.b
+      true },  // http://a,http://b -> https://a,http://*.b
     { "hosts3", {NULL},
       {"http://www.google.com/", "http://www.reddit.com/", NULL}, false,
       false },  // http://a,http://b -> http://a
@@ -899,7 +899,7 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     if (!new_extension.get())
       continue;
 
-    EXPECT_EQ(kTests[i].expect_success,
+    EXPECT_EQ(kTests[i].expect_increase,
               Extension::IsPrivilegeIncrease(kTests[i].full_access,
                                              granted_apis,
                                              granted_hosts,
@@ -1103,7 +1103,7 @@ TEST(ExtensionTest, ApiPermissions) {
   }
 }
 
-TEST(ExtensionTest, GetDistinctHosts) {
+TEST(ExtensionTest, GetDistinctHostsForDisplay) {
   std::vector<std::string> expected;
   expected.push_back("www.foo.com");
   expected.push_back("www.bar.com");
@@ -1121,7 +1121,7 @@ TEST(ExtensionTest, GetDistinctHosts) {
     actual.push_back(
         URLPattern(URLPattern::SCHEME_HTTP, "http://www.baz.com/path"));
     CompareLists(expected,
-                 Extension::GetDistinctHosts(actual));
+                 Extension::GetDistinctHostsForDisplay(actual));
   }
 
   {
@@ -1133,7 +1133,7 @@ TEST(ExtensionTest, GetDistinctHosts) {
     actual.push_back(
         URLPattern(URLPattern::SCHEME_HTTP, "http://www.baz.com/path"));
     CompareLists(expected,
-                 Extension::GetDistinctHosts(actual));
+                 Extension::GetDistinctHostsForDisplay(actual));
   }
 
   {
@@ -1143,7 +1143,7 @@ TEST(ExtensionTest, GetDistinctHosts) {
     actual.push_back(
         URLPattern(URLPattern::SCHEME_HTTPS, "https://www.bar.com/path"));
     CompareLists(expected,
-                 Extension::GetDistinctHosts(actual));
+                 Extension::GetDistinctHostsForDisplay(actual));
   }
 
   {
@@ -1153,7 +1153,7 @@ TEST(ExtensionTest, GetDistinctHosts) {
     actual.push_back(
         URLPattern(URLPattern::SCHEME_HTTP, "http://www.bar.com/pathypath"));
     CompareLists(expected,
-                 Extension::GetDistinctHosts(actual));
+                 Extension::GetDistinctHostsForDisplay(actual));
   }
 
   {
@@ -1169,7 +1169,7 @@ TEST(ExtensionTest, GetDistinctHosts) {
     expected.push_back("bar.com");
 
     CompareLists(expected,
-                 Extension::GetDistinctHosts(actual));
+                 Extension::GetDistinctHostsForDisplay(actual));
   }
 
   {
@@ -1196,8 +1196,77 @@ TEST(ExtensionTest, GetDistinctHosts) {
     expected.push_back("www.foo.xyzzy");
 
     CompareLists(expected,
-                 Extension::GetDistinctHosts(actual));
+                 Extension::GetDistinctHostsForDisplay(actual));
   }
+
+  {
+    SCOPED_TRACE("wildcards");
+
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://*.google.com/*"));
+
+    expected.push_back("*.google.com");
+
+    CompareLists(expected,
+                 Extension::GetDistinctHostsForDisplay(actual));
+  }
+}
+
+TEST(ExtensionTest, IsElevatedHostList) {
+  URLPatternList list1;
+  URLPatternList list2;
+
+  list1.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com.hk/path"));
+  list1.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com/path"));
+
+  // Test that the host order does not matter.
+  list2.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com/path"));
+  list2.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com.hk/path"));
+
+  EXPECT_FALSE(Extension::IsElevatedHostList(list1, list2));
+  EXPECT_FALSE(Extension::IsElevatedHostList(list2, list1));
+
+  // Test that paths are ignored.
+  list2.clear();
+  list2.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com/*"));
+  EXPECT_FALSE(Extension::IsElevatedHostList(list1, list2));
+  EXPECT_FALSE(Extension::IsElevatedHostList(list2, list1));
+
+  // Test that RCDs are ignored.
+  list2.clear();
+  list2.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com.hk/*"));
+  EXPECT_FALSE(Extension::IsElevatedHostList(list1, list2));
+  EXPECT_FALSE(Extension::IsElevatedHostList(list2, list1));
+
+  // Test that subdomain wildcards are handled properly.
+  list2.clear();
+  list2.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://*.google.com.hk/*"));
+  EXPECT_TRUE(Extension::IsElevatedHostList(list1, list2));
+  //TODO(jstritar): Does not match subdomains properly. http://crbug.com/65337
+  //EXPECT_FALSE(Extension::IsElevatedHostList(list2, list1));
+
+  // Test that different domains count as different hosts.
+  list2.clear();
+  list2.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com/path"));
+  list2.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.example.org/path"));
+  EXPECT_TRUE(Extension::IsElevatedHostList(list1, list2));
+  EXPECT_FALSE(Extension::IsElevatedHostList(list2, list1));
+
+  // Test that different subdomains count as different hosts.
+  list2.clear();
+  list2.push_back(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://mail.google.com/*"));
+  EXPECT_TRUE(Extension::IsElevatedHostList(list1, list2));
+  EXPECT_TRUE(Extension::IsElevatedHostList(list2, list1));
 }
 
 TEST(ExtensionTest, GenerateId) {

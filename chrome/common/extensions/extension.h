@@ -123,13 +123,21 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // should display at install time.
   std::vector<string16> GetPermissionMessages() const;
 
-  // Returns the distinct hosts that should be displayed in the install UI. This
-  // discards some of the detail that is present in the manifest to make it as
-  // easy as possible to process by users. In particular we disregard the scheme
-  // and path components of URLPatterns and de-dupe the result.
-  static std::vector<std::string> GetDistinctHosts(
-      const URLPatternList& host_patterns);
-  std::vector<std::string> GetDistinctHosts() const;
+  // Returns the distinct hosts that should be displayed in the install UI
+  // for the URL patterns |list|. This discards some of the detail that is
+  // present in the manifest to make it as easy as possible to process by
+  // users. In particular we disregard the scheme and path components of
+  // URLPatterns and de-dupe the result, which includes filtering out common
+  // hosts with differing RCDs. (NOTE: when de-duping hosts with common RCDs,
+  // the first pattern is returned and the rest discarded)
+  static std::vector<std::string> GetDistinctHostsForDisplay(
+      const URLPatternList& list);
+
+  // Compares two URLPatternLists for security equality by returning whether
+  // the URL patterns in |new_list| contain additional distinct hosts compared
+  // to |old_list|.
+  static bool IsElevatedHostList(
+      const URLPatternList& old_list, const URLPatternList& new_list);
 
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
@@ -455,6 +463,22 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Normalize the path for use by the extension. On Windows, this will make
   // sure the drive letter is uppercase.
   static FilePath MaybeNormalizePath(const FilePath& path);
+
+  // Returns the distinct hosts that can be displayed in the install UI or be
+  // used for privilege comparisons. This discards some of the detail that is
+  // present in the manifest to make it as easy as possible to process by users.
+  // In particular we disregard the scheme and path components of URLPatterns
+  // and de-dupe the result, which includes filtering out common hosts with
+  // differing RCDs. If |include_rcd| is true, then the de-duped result
+  // will be the first full entry, including its RCD. So if the list was
+  // "*.google.co.uk" and "*.google.com", the returned value would just be
+  // "*.google.co.uk". Keeping the RCD in the result is useful for display
+  // purposes when you want to show the user one sample hostname from the list.
+  // If you need to compare two URLPatternLists for security equality, then set
+  // |include_rcd| to false, which will return a result like "*.google.",
+  // regardless of the order of the patterns.
+  static std::vector<std::string> GetDistinctHosts(
+      const URLPatternList& host_patterns, bool include_rcd);
 
   Extension(const FilePath& path, Location location);
   ~Extension();

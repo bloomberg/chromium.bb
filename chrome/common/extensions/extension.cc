@@ -320,20 +320,47 @@ std::set<string16> Extension::GetSimplePermissionMessages() const {
   return messages;
 }
 
-std::vector<std::string> Extension::GetDistinctHosts() const {
-  return GetDistinctHosts(GetEffectiveHostPermissions().patterns());
+// static
+std::vector<std::string> Extension::GetDistinctHostsForDisplay(
+    const URLPatternList& list) {
+  return GetDistinctHosts(list, true);
+}
+
+// static
+bool Extension::IsElevatedHostList(
+    const URLPatternList& old_list, const URLPatternList& new_list) {
+  // TODO(jstritar): This is overly conservative with respect to subdomains.
+  // For example, going from *.google.com to www.google.com will be
+  // considered an elevation, even though it is not (http://crbug.com/65337).
+
+  std::vector<std::string> new_hosts = GetDistinctHosts(new_list, false);
+  std::vector<std::string> old_hosts = GetDistinctHosts(old_list, false);
+
+  std::set<std::string> old_hosts_set(old_hosts.begin(), old_hosts.end());
+  std::set<std::string> new_hosts_set(new_hosts.begin(), new_hosts.end());
+  std::set<std::string> new_hosts_only;
+
+  std::set_difference(new_hosts_set.begin(), new_hosts_set.end(),
+                      old_hosts_set.begin(), old_hosts_set.end(),
+                      std::inserter(new_hosts_only, new_hosts_only.begin()));
+
+  return new_hosts_only.size() > 0;
 }
 
 // static
 std::vector<std::string> Extension::GetDistinctHosts(
-    const URLPatternList& host_patterns) {
-
+    const URLPatternList& host_patterns, bool include_rcd) {
   // Vector because we later want to access these by index.
   std::vector<std::string> distinct_hosts;
 
   std::set<std::string> rcd_set;
   for (size_t i = 0; i < host_patterns.size(); ++i) {
     std::string candidate = host_patterns[i].host();
+
+    // Add the subdomain wildcard back to the host, if necessary.
+    if (host_patterns[i].match_subdomains())
+      candidate = "*." + candidate;
+
     size_t registry = net::RegistryControlledDomainService::GetRegistryLength(
         candidate, false);
     if (registry && registry != std::string::npos) {
@@ -341,6 +368,8 @@ std::vector<std::string> Extension::GetDistinctHosts(
       if (rcd_set.count(no_rcd))
         continue;
       rcd_set.insert(no_rcd);
+      if (!include_rcd)
+        candidate = no_rcd;
     }
     if (std::find(distinct_hosts.begin(), distinct_hosts.end(), candidate) ==
                   distinct_hosts.end()) {
@@ -355,7 +384,9 @@ string16 Extension::GetHostPermissionMessage() const {
   if (HasEffectiveAccessToAllHosts())
     return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS);
 
-  std::vector<std::string> hosts = GetDistinctHosts();
+  std::vector<std::string> hosts = GetDistinctHostsForDisplay(
+      GetEffectiveHostPermissions().patterns());
+
   if (hosts.size() == 1) {
     return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_1_HOST,
                                       UTF8ToUTF16(hosts[0]));
@@ -1120,20 +1151,8 @@ bool Extension::IsPrivilegeIncrease(const bool granted_full_access,
 
     const ExtensionExtent new_extent =
         new_extension->GetEffectiveHostPermissions();
-    std::vector<std::string> new_hosts =
-        GetDistinctHosts(new_extent.patterns());
-    std::vector<std::string> old_hosts =
-        GetDistinctHosts(granted_extent.patterns());
 
-    std::set<std::string> old_hosts_set(old_hosts.begin(), old_hosts.end());
-    std::set<std::string> new_hosts_set(new_hosts.begin(), new_hosts.end());
-    std::set<std::string> new_hosts_only;
-
-    std::set_difference(new_hosts_set.begin(), new_hosts_set.end(),
-                        old_hosts_set.begin(), old_hosts_set.end(),
-                        std::inserter(new_hosts_only, new_hosts_only.begin()));
-
-    if (new_hosts_only.size())
+    if (IsElevatedHostList(granted_extent.patterns(), new_extent.patterns()))
       return true;
   }
 
