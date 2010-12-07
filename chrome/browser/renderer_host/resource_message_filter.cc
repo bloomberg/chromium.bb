@@ -669,7 +669,7 @@ void ResourceMessageFilter::OnSetCookie(const IPC::Message& message,
 void ResourceMessageFilter::OnGetCookies(const GURL& url,
                                          const GURL& first_party_for_cookies,
                                          IPC::Message* reply_msg) {
-  URLRequestContext* context = GetRequestContextForURL(url);
+  ChromeURLRequestContext* context = GetRequestContextForURL(url);
 
   GetCookiesCompletion* callback =
       new GetCookiesCompletion(id(), reply_msg->routing_id(), url, reply_msg,
@@ -1748,7 +1748,7 @@ void SetCookieCompletion::RunWithParams(const Tuple1<int>& params) {
   if (!context_->IsExternal()) {
     CallRenderViewHostContentSettingsDelegate(
         render_process_id_, render_view_id_,
-        &RenderViewHostDelegate::ContentSettings::OnCookieAccessed,
+        &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
         url_, cookie_line_, options, blocked_by_policy);
   }
   delete this;
@@ -1759,7 +1759,7 @@ GetCookiesCompletion::GetCookiesCompletion(int render_process_id,
                                            const GURL& url,
                                            IPC::Message* reply_msg,
                                            ResourceMessageFilter* filter,
-                                           URLRequestContext* context,
+                                           ChromeURLRequestContext* context,
                                            bool raw_cookies)
     : url_(url),
       reply_msg_(reply_msg),
@@ -1781,6 +1781,17 @@ void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
       cookies = cookie_store()->GetCookies(url_);
     ViewHostMsg_GetCookies::WriteReplyParams(reply_msg_, cookies);
     filter_->Send(reply_msg_);
+    if (!context_->IsExternal()) {
+      net::CookieMonster* cookie_monster =
+          context_->cookie_store()->GetCookieMonster();
+      net::CookieList cookie_list =
+          cookie_monster->GetAllCookiesForURLWithOptions(
+              url_, net::CookieOptions());
+      CallRenderViewHostContentSettingsDelegate(
+          render_process_id_, render_view_id_,
+          &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
+          url_, cookie_list, result != net::OK);
+    }
     delete this;
   } else {
     // Ignore the policy result.  We only waited on the policy result so that

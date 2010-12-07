@@ -96,10 +96,13 @@ class TabSpecificContentSettings
   // RenderViewHostDelegate::ContentSettings implementation.
   virtual void OnContentBlocked(ContentSettingsType type,
                                 const std::string& resource_identifier);
-  virtual void OnCookieAccessed(const GURL& url,
-                                const std::string& cookie_line,
-                                const net::CookieOptions& options,
-                                bool blocked_by_policy);
+  virtual void OnCookiesRead(const GURL& url,
+                             const net::CookieList& cookie_list,
+                             bool blocked_by_policy);
+  virtual void OnCookieChanged(const GURL& url,
+                               const std::string& cookie_line,
+                               const net::CookieOptions& options,
+                               bool blocked_by_policy);
   virtual void OnIndexedDBAccessed(const GURL& url,
                                    const string16& description,
                                    bool blocked_by_policy);

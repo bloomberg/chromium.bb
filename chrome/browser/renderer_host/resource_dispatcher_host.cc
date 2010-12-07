@@ -1081,6 +1081,30 @@ void ResourceDispatcherHost::OnSSLCertificateError(
   SSLManager::OnSSLCertificateError(this, request, cert_error, cert);
 }
 
+void ResourceDispatcherHost::OnGetCookies(
+    net::URLRequest* request,
+    bool blocked_by_policy) {
+  VLOG(1) << "OnGetCookies: " << request->url().spec();
+
+  int render_process_id, render_view_id;
+  if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
+    return;
+
+  ChromeURLRequestContext* context =
+      static_cast<ChromeURLRequestContext*>(request->context());
+  if (context->IsExternal())
+    return;
+
+  net::CookieMonster* cookie_monster =
+      context->cookie_store()->GetCookieMonster();
+  net::CookieList cookie_list =
+      cookie_monster->GetAllCookiesForURL(request->url());
+  CallRenderViewHostContentSettingsDelegate(
+      render_process_id, render_view_id,
+      &RenderViewHostDelegate::ContentSettings::OnCookiesRead,
+      request->url(), cookie_list, blocked_by_policy);
+}
+
 void ResourceDispatcherHost::OnSetCookie(net::URLRequest* request,
                                          const std::string& cookie_line,
                                          const net::CookieOptions& options,
@@ -1093,7 +1117,7 @@ void ResourceDispatcherHost::OnSetCookie(net::URLRequest* request,
 
   CallRenderViewHostContentSettingsDelegate(
       render_process_id, render_view_id,
-      &RenderViewHostDelegate::ContentSettings::OnCookieAccessed,
+      &RenderViewHostDelegate::ContentSettings::OnCookieChanged,
       request->url(), cookie_line, options, blocked_by_policy);
 }
 

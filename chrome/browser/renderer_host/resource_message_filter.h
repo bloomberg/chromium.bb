@@ -538,7 +538,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
                        int render_view_id,
                        const GURL& url, IPC::Message* reply_msg,
                        ResourceMessageFilter* filter,
-                       URLRequestContext* context,
+                       ChromeURLRequestContext* context,
                        bool raw_cookies);
   virtual ~GetCookiesCompletion();
 
@@ -562,7 +562,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
   GURL url_;
   IPC::Message* reply_msg_;
   scoped_refptr<ResourceMessageFilter> filter_;
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<ChromeURLRequestContext> context_;
   int render_process_id_;
   int render_view_id_;
   bool raw_cookies_;

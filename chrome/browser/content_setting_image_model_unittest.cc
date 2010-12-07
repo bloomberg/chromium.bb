@@ -59,7 +59,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   EXPECT_EQ(std::string(), content_setting_image_model->get_tooltip());
 
   net::CookieOptions options;
-  content_settings->OnCookieAccessed(
+  content_settings->OnCookieChanged(
       GURL("http://google.com"), "A=B", options, false);
   content_setting_image_model->UpdateFromTabContents(&tab_contents);
   EXPECT_TRUE(content_setting_image_model->is_visible());

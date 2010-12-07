@@ -103,7 +103,31 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
   }
 }
 
-void TabSpecificContentSettings::OnCookieAccessed(
+void TabSpecificContentSettings::OnCookiesRead(
+    const GURL& url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
+  LocalSharedObjectsContainer& container = blocked_by_policy ?
+      blocked_local_shared_objects_ : allowed_local_shared_objects_;
+  typedef net::CookieList::const_iterator cookie_iterator;
+  for (cookie_iterator cookie = cookie_list.begin();
+       cookie != cookie_list.end(); ++cookie) {
+    container.cookies()->SetCookieWithDetails(url,
+                                              cookie->Name(),
+                                              cookie->Value(),
+                                              cookie->Domain(),
+                                              cookie->Path(),
+                                              cookie->ExpiryDate(),
+                                              cookie->IsSecure(),
+                                              cookie->IsHttpOnly());
+  }
+  if (blocked_by_policy)
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+  else
+    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+}
+
+void TabSpecificContentSettings::OnCookieChanged(
     const GURL& url,
     const std::string& cookie_line,
     const net::CookieOptions& options,

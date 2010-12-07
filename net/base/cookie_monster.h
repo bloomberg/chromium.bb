@@ -169,10 +169,15 @@ class CookieMonster : public CookieStore {
   CookieList GetAllCookies();
 
   // Returns all the cookies, for use in management UI, etc. Filters results
-  // using given url scheme, host / domain and path. This does not mark the
-  // cookies as having been accessed.
+  // using given url scheme, host / domain and path and options. This does not
+  // mark the cookies as having been accessed.
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
+  CookieList GetAllCookiesForURLWithOptions(const GURL& url,
+                                            const CookieOptions& options);
+
+  // Invokes GetAllCookiesForURLWithOptions with options set to include HTTP
+  // only cookies.
   CookieList GetAllCookiesForURL(const GURL& url);
 
   // Deletes all of the cookies.

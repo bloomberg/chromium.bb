@@ -71,6 +71,7 @@ class Message;
 }
 
 namespace net {
+class CookieList;
 class CookieOptions;
 }
 
@@ -395,14 +396,23 @@ class RenderViewHostDelegate {
     virtual void OnContentBlocked(ContentSettingsType type,
                                   const std::string& resource_identifier) = 0;
 
-    // Called when a specific cookie in the current page was accessed.
+    // Called when cookies for the given URL were read either from within the
+    // current page or while loading it. |blocked_by_policy| should be true, if
+    // reading cookies was blocked due to the user's content settings. In that
+    // case, this function should invoke OnContentBlocked.
+    virtual void OnCookiesRead(
+        const GURL& url,
+        const net::CookieList& cookie_list,
+        bool blocked_by_policy) = 0;
+
+    // Called when a specific cookie in the current page was changed.
     // |blocked_by_policy| should be true, if the cookie was blocked due to the
     // user's content settings. In that case, this function should invoke
     // OnContentBlocked.
-    virtual void OnCookieAccessed(const GURL& url,
-                                  const std::string& cookie_line,
-                                  const net::CookieOptions& options,
-                                  bool blocked_by_policy) = 0;
+    virtual void OnCookieChanged(const GURL& url,
+                                 const std::string& cookie_line,
+                                 const net::CookieOptions& options,
+                                 bool blocked_by_policy) = 0;
 
     // Called when a specific indexed db factory in the current page was
     // accessed. If access was blocked due to the user's content settings,

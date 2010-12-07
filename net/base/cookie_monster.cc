@@ -1356,12 +1356,11 @@ CookieList CookieMonster::GetAllCookies() {
   return cookie_list;
 }
 
-CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
+CookieList CookieMonster::GetAllCookiesForURLWithOptions(
+    const GURL& url,
+    const CookieOptions& options) {
   AutoLock autolock(lock_);
   InitIfNecessary();
-
-  CookieOptions options;
-  options.set_include_httponly();
 
   std::vector<CanonicalCookie*> cookie_ptrs;
   FindCookiesForHostAndDomain(url, options, false, &cookie_ptrs);
@@ -1373,6 +1372,13 @@ CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
     cookies.push_back(**it);
 
   return cookies;
+}
+
+CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
+  CookieOptions options;
+  options.set_include_httponly();
+
+  return GetAllCookiesForURLWithOptions(url, options);
 }
 
 void CookieMonster::FindCookiesForHostAndDomain(

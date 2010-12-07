@@ -1217,6 +1217,17 @@ TEST(CookieMonsterTest, GetAllCookiesForURL) {
 
   ASSERT_TRUE(++it == cookies.end());
 
+  // Check cookies for url excluding http-only cookies.
+  cookies =
+      cm->GetAllCookiesForURLWithOptions(url_google, net::CookieOptions());
+  it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ(".google.izzle", it->Domain());
+  EXPECT_EQ("C", it->Name());
+
+  ASSERT_TRUE(++it == cookies.end());
+
   // Test secure cookies.
   cookies = cm->GetAllCookiesForURL(url_google_secure);
   it = cookies.begin();
