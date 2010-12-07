@@ -11,32 +11,52 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_type.h"
 
 class DictionaryValue;
+class ImporterHost;
 class TemplateURLModel;
 
 // This is an automation provider containing testing calls.
 class TestingAutomationProvider : public AutomationProvider,
                                   public BrowserList::Observer,
+                                  public ImporterList::Observer,
                                   public NotificationObserver {
  public:
   explicit TestingAutomationProvider(Profile* profile);
 
-  // BrowserList::Observer implementation
+  // BrowserList::Observer implementation.
   virtual void OnBrowserAdded(const Browser* browser);
   virtual void OnBrowserRemoved(const Browser* browser);
 
-  // IPC implementations
+  // IPC::Channel::Listener implementation.
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
  private:
   class PopupMenuWaiter;
 
+  // Storage for ImportSettings() to resume operations after a callback.
+  struct ImportSettingsData {
+    string16 browser_name;
+    int import_items;
+    bool first_run;
+    Browser* browser;
+    IPC::Message* reply_message;
+  };
+
   virtual ~TestingAutomationProvider();
+
+  // ImporterList::Observer implementation.
+  virtual void SourceProfilesLoaded();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // IPC Message callbacks.
   void CloseBrowser(int handle, IPC::Message* reply_message);
@@ -756,10 +776,6 @@ class TestingAutomationProvider : public AutomationProvider,
       bool success,
       history::RedirectList* redirects);
 
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   void OnRemoveProvider();  // Called via PostTask
 
 #if defined(TOOLKIT_VIEWS)
@@ -781,6 +797,12 @@ class TestingAutomationProvider : public AutomationProvider,
   HistoryService::Handle redirect_query_;
 
   NotificationRegistrar registrar_;
+
+  // Used to import settings from browser profiles.
+  scoped_refptr<ImporterHost> importer_host_;
+
+  // The stored data for the ImportSettings operation.
+  ImportSettingsData import_settings_data_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingAutomationProvider);
 };

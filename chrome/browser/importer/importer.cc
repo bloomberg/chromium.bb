@@ -85,8 +85,23 @@ ImporterHost::ImporterHost()
       installed_bookmark_observer_(false),
       is_source_readable_(true),
       headless_(false),
-      parent_window_(NULL) {
-  importer_list_.DetectSourceProfiles();
+      parent_window_(NULL),
+      importer_list_(new ImporterList) {
+  importer_list_->DetectSourceProfilesHack();
+}
+
+ImporterHost::ImporterHost(ImporterList::Observer* observer)
+    : profile_(NULL),
+      observer_(NULL),
+      task_(NULL),
+      importer_(NULL),
+      waiting_for_bookmarkbar_model_(false),
+      installed_bookmark_observer_(false),
+      is_source_readable_(true),
+      headless_(false),
+      parent_window_(NULL),
+      importer_list_(new ImporterList) {
+  importer_list_->DetectSourceProfiles(observer);
 }
 
 ImporterHost::~ImporterHost() {
@@ -171,7 +186,7 @@ void ImporterHost::StartImportSettings(
   // so that it doesn't block the UI. When the import is complete, observer
   // will be notified.
   writer_ = writer;
-  importer_ = importer_list_.CreateImporterByType(profile_info.browser_type);
+  importer_ = ImporterList::CreateImporterByType(profile_info.browser_type);
   // If we fail to create Importer, exit as we cannot do anything.
   if (!importer_) {
     ImportEnded();
@@ -302,6 +317,15 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
 
 ExternalProcessImporterHost::ExternalProcessImporterHost()
     : items_(0),
+      import_to_bookmark_bar_(false),
+      cancelled_(false),
+      import_process_launched_(false) {
+}
+
+ExternalProcessImporterHost::ExternalProcessImporterHost(
+    ImporterList::Observer* observer)
+    : ImporterHost(observer),
+      items_(0),
       import_to_bookmark_bar_(false),
       cancelled_(false),
       import_process_launched_(false) {

@@ -19,7 +19,7 @@ class Profile;
  @private
   NSWindow* parentWindow_;  // weak
   Profile* profile_;  // weak
-  scoped_ptr<ImporterList> importerList_;
+  scoped_refptr<ImporterList> importerList_;
   scoped_nsobject<NSArray> sourceBrowsersList_;
   NSUInteger sourceBrowserIndex_;
   // The following are all bound via the properties below.

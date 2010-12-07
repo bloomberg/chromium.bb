@@ -12,20 +12,24 @@
 class AccessibleWidgetHelper;
 class Profile;
 
-class ImportDialogGtk : public ImportObserver {
+class ImportDialogGtk : public ImportObserver,
+                        public ImporterList::Observer {
  public:
   // Displays the import box to import data from another browser into |profile|
   // |initial_state| is a bitmask of ImportItems. Each checkbox for the bits in
   // is checked.
   static void Show(GtkWindow* parent, Profile* profile, int initial_state);
 
-  // Overridden from ImportObserver:
+  // ImportObserver implementation.
   virtual void ImportCanceled();
   virtual void ImportComplete();
 
  private:
   ImportDialogGtk(GtkWindow* parent, Profile* profile, int initial_state);
   ~ImportDialogGtk();
+
+  // ImporterList::Observer implementation.
+  virtual void SourceProfilesLoaded();
 
   // Handler to respond to OK or Cancel responses from the dialog.
   CHROMEGTK_CALLBACK_1(ImportDialogGtk, void, OnDialogResponse, int);
@@ -36,6 +40,10 @@ class ImportDialogGtk : public ImportObserver {
   // Enable or disable the dialog buttons depending on the state of the
   // checkboxes.
   void UpdateDialogButtons();
+
+  // Sets the sensitivity of all controls on the dialog except the cancel
+  // button.
+  void SetDialogControlsSensitive(bool sensitive);
 
   // Create a bitmask from the checkboxes of the dialog.
   uint16 GetCheckedItems();
@@ -60,6 +68,9 @@ class ImportDialogGtk : public ImportObserver {
 
   // History checkbox
   GtkWidget* history_;
+
+  // Import button.
+  GtkWidget* import_button_;
 
   // Our current profile
   Profile* profile_;

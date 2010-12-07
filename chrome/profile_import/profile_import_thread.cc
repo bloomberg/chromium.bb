@@ -52,8 +52,8 @@ void ProfileImportThread::OnImportStart(
     bool import_to_bookmark_bar) {
   bridge_ = new ExternalProcessImporterBridge(this, localized_strings);
 
-  ImporterList importer_list;
-  importer_ = importer_list.CreateImporterByType(profile_info.browser_type);
+  scoped_refptr<ImporterList> importer_list(new ImporterList);
+  importer_ = importer_list->CreateImporterByType(profile_info.browser_type);
   if (!importer_) {
     Send(new ProfileImportProcessHostMsg_Import_Finished(false,
         "Importer could not be created."));

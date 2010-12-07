@@ -9,23 +9,42 @@
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
 #include "base/basictypes.h"
+#include "base/platform_thread.h"
+#include "base/ref_counted.h"
+#include "base/scoped_vector.h"
+#include "build/build_config.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/importer/importer_data_types.h"
 
 class Importer;
 
-class ImporterList {
+class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
  public:
+  // Any class calling DetectSourceProfiles() must implement this interface in
+  // order to be called back when the source profiles are loaded.
+  class Observer {
+   public:
+    virtual void SourceProfilesLoaded() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
+  static Importer* CreateImporterByType(importer::ProfileType type);
+
   ImporterList();
-  ~ImporterList();
 
   // Detects the installed browsers and their associated profiles, then
   // stores their information in a list. It returns the list of description
-  // of all profiles.
-  void DetectSourceProfiles();
+  // of all profiles. Calls into DetectSourceProfilesWorker() on the FILE thread
+  // to do the real work of detecting source profiles. |observer| must be
+  // non-NULL.
+  void DetectSourceProfiles(Observer* observer);
 
-  Importer* CreateImporterByType(importer::ProfileType type);
+  // DEPRECATED: This method is synchronous and performs file operations which
+  // may end up blocking the current thread, which is usually the UI thread.
+  void DetectSourceProfilesHack();
 
   // Returns the number of different browser profiles you can import from.
   int GetAvailableProfileCount() const;
@@ -42,19 +61,35 @@ class ImporterList {
   const importer::ProfileInfo& GetSourceProfileInfoForBrowserType(
       int browser_type) const;
 
-  // Helper methods for detecting available profiles.
-#if defined(OS_WIN)
-  void DetectIEProfiles();
-#endif
-  void DetectFirefoxProfiles();
-  void DetectGoogleToolbarProfiles();
-#if defined(OS_MACOSX)
-  void DetectSafariProfiles();
-#endif
-
  private:
+  friend class base::RefCountedThreadSafe<ImporterList>;
+
+  ~ImporterList();
+
+  // The worker method for DetectSourceProfiles(). Must be called on the FILE
+  // thread.
+  void DetectSourceProfilesWorker();
+
+  // Called by DetectSourceProfilesWorker() on the source thread. This method
+  // notifies |observer_| that the source profiles are loaded. |profiles| is
+  // the vector of loaded profiles.
+  void SourceProfilesLoaded(
+      const std::vector<importer::ProfileInfo*>& profiles);
+
   // The list of profiles with the default one first.
-  std::vector<importer::ProfileInfo*> source_profiles_;
+  ScopedVector<importer::ProfileInfo> source_profiles_;
+
+  // The ID of the thread DetectSourceProfiles() is called on. Only valid after
+  // DetectSourceProfiles() is called and until SourceProfilesLoaded() has
+  // returned.
+  BrowserThread::ID source_thread_id_;
+
+  // Weak reference. Only valid after DetectSourceProfiles() is called and until
+  // SourceProfilesLoaded() has returned.
+  Observer* observer_;
+
+  // True if source profiles are loaded.
+  bool source_profiles_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(ImporterList);
 };

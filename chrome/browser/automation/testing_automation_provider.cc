@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
@@ -240,6 +241,49 @@ TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
 
 TestingAutomationProvider::~TestingAutomationProvider() {
   BrowserList::RemoveObserver(this);
+}
+
+void TestingAutomationProvider::SourceProfilesLoaded() {
+  DCHECK_NE(static_cast<ImporterHost*>(NULL), importer_host_.get());
+
+  // Get the correct ProfileInfo based on the browser the user provided.
+  importer::ProfileInfo profile_info;
+  int num_browsers = importer_host_->GetAvailableProfileCount();
+  int i = 0;
+  for ( ; i < num_browsers; i++) {
+    string16 name = WideToUTF16Hack(importer_host_->GetSourceProfileNameAt(i));
+    if (name == import_settings_data_.browser_name) {
+      profile_info = importer_host_->GetSourceProfileInfoAt(i);
+      break;
+    }
+  }
+  // If we made it to the end of the loop, then the input was bad.
+  if (i == num_browsers) {
+    AutomationJSONReply(this, import_settings_data_.reply_message).SendError(
+        "Invalid browser name string found.");
+    return;
+  }
+
+  importer_host_->SetObserver(
+      new AutomationProviderImportSettingsObserver(
+          this, import_settings_data_.reply_message));
+
+  Profile* profile = import_settings_data_.browser->profile();
+  importer_host_->StartImportSettings(profile_info,
+                                      profile,
+                                      import_settings_data_.import_items,
+                                      new ProfileWriter(profile),
+                                      import_settings_data_.first_run);
+}
+
+void TestingAutomationProvider::Observe(NotificationType type,
+                                        const NotificationSource& source,
+                                        const NotificationDetails& details) {
+  DCHECK(type == NotificationType::SESSION_END);
+  // OnBrowserRemoved does a ReleaseLater. When session end is received we exit
+  // before the task runs resulting in this object not being deleted. This
+  // Release balance out the Release scheduled by OnBrowserRemoved.
+  Release();
 }
 
 void TestingAutomationProvider::OnMessageReceived(
@@ -3149,19 +3193,16 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
   string_to_import_item["HOME_PAGE"] = importer::HOME_PAGE;
   string_to_import_item["ALL"] = importer::ALL;
 
-  string16 browser_name;
-  int import_items = 0;
   ListValue* import_items_list = NULL;
-  bool first_run;
-
-  if (!args->GetString("import_from", &browser_name) ||
-      !args->GetBoolean("first_run", &first_run) ||
+  if (!args->GetString("import_from", &import_settings_data_.browser_name) ||
+      !args->GetBoolean("first_run", &import_settings_data_.first_run) ||
       !args->GetList("import_items", &import_items_list)) {
     AutomationJSONReply(this, reply_message).SendError(
         "Incorrect type for one or more of the arguments.");
     return;
   }
 
+  import_settings_data_.import_items = 0;
   int num_items = import_items_list->GetSize();
   for (int i = 0; i < num_items; i++) {
     std::string item;
@@ -3172,34 +3213,16 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
           "Invalid item string found in import_items.");
       return;
     }
-    import_items |= string_to_import_item[item];
+    import_settings_data_.import_items |= string_to_import_item[item];
   }
 
-  ImporterHost* importer_host = new ImporterHost();
-  // Get the correct ProfileInfo based on the browser they user provided.
-  importer::ProfileInfo profile_info;
-  int num_browsers = importer_host->GetAvailableProfileCount();
-  int i = 0;
-  for ( ; i < num_browsers; i++) {
-    string16 name = WideToUTF16Hack(importer_host->GetSourceProfileNameAt(i));
-    if (name == browser_name) {
-      profile_info = importer_host->GetSourceProfileInfoAt(i);
-      break;
-    }
-  }
-  // If we made it to the end of the loop, then the input was bad.
-  if (i == num_browsers) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Invalid browser name string found.");
-    return;
-  }
+  import_settings_data_.browser = browser;
+  import_settings_data_.reply_message = reply_message;
 
-  Profile* profile = browser->profile();
-
-  importer_host->SetObserver(
-      new AutomationProviderImportSettingsObserver(this, reply_message));
-  importer_host->StartImportSettings(profile_info, profile, import_items,
-                                     new ProfileWriter(profile), first_run);
+  // The remaining functionality of importing settings is in
+  // SourceProfilesLoaded(), which is called by |importer_host_| once the source
+  // profiles are loaded.
+  importer_host_ = new ImporterHost(this);
 }
 
 namespace {
@@ -4560,16 +4583,6 @@ void TestingAutomationProvider::OnBrowserRemoved(const Browser* browser) {
     MessageLoop::current()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &TestingAutomationProvider::OnRemoveProvider));
   }
-}
-
-void TestingAutomationProvider::Observe(NotificationType type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
-  DCHECK(type == NotificationType::SESSION_END);
-  // OnBrowserRemoved does a ReleaseLater. When session end is received we exit
-  // before the task runs resulting in this object not being deleted. This
-  // Release balance out the Release scheduled by OnBrowserRemoved.
-  Release();
 }
 
 void TestingAutomationProvider::OnRemoveProvider() {

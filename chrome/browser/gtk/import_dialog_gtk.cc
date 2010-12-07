@@ -44,7 +44,7 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
                                  int initial_state)
     : parent_(parent),
       profile_(profile),
-      importer_host_(new ImporterHost()),
+      importer_host_(new ImporterHost(this)),
       initial_state_(initial_state) {
   // Build the dialog.
   std::string dialog_name = l10n_util::GetStringUTF8(
@@ -65,10 +65,10 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
 
   // Add import button separately as we might need to disable it, if
   // no supported browsers found.
-  GtkWidget* import_button = gtk_util::AddButtonToDialog(dialog_,
+  import_button_ = gtk_util::AddButtonToDialog(dialog_,
       l10n_util::GetStringUTF8(IDS_IMPORT_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
-  GTK_WIDGET_SET_FLAGS(import_button, GTK_CAN_DEFAULT);
+  GTK_WIDGET_SET_FLAGS(import_button_, GTK_CAN_DEFAULT);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT);
 
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
@@ -125,26 +125,13 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
 
   gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
-  // Detect any supported browsers that we can import from and fill
-  // up the combo box. If none found, disable all controls except cancel.
-  int profiles_count = importer_host_->GetAvailableProfileCount();
-  if (profiles_count > 0) {
-    for (int i = 0; i < profiles_count; i++) {
-      std::wstring profile = importer_host_->GetSourceProfileNameAt(i);
-      gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
-                                WideToUTF8(profile).c_str());
-    }
-    gtk_widget_grab_focus(import_button);
-  } else {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
-        l10n_util::GetStringUTF8(IDS_IMPORT_NO_PROFILE_FOUND).c_str());
-    gtk_widget_set_sensitive(bookmarks_, FALSE);
-    gtk_widget_set_sensitive(search_engines_, FALSE);
-    gtk_widget_set_sensitive(passwords_, FALSE);
-    gtk_widget_set_sensitive(history_, FALSE);
-    gtk_widget_set_sensitive(import_button, FALSE);
-  }
+  // Let the user know profiles are being loaded.
+  gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
+      l10n_util::GetStringUTF8(IDS_IMPORT_LOADING_PROFILES).c_str());
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo_), 0);
+
+  // Disable controls until source profiles are loaded.
+  SetDialogControlsSensitive(false);
 
   g_signal_connect(dialog_, "response",
                    G_CALLBACK(OnDialogResponseThunk), this);
@@ -158,6 +145,26 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
 }
 
 ImportDialogGtk::~ImportDialogGtk() {
+}
+
+void ImportDialogGtk::SourceProfilesLoaded() {
+  // Detect any supported browsers that we can import from and fill
+  // up the combo box. If none found, disable all controls except cancel.
+  int profiles_count = importer_host_->GetAvailableProfileCount();
+  SetDialogControlsSensitive(profiles_count != 0);
+  gtk_combo_box_remove_text(GTK_COMBO_BOX(combo_), 0);
+  if (profiles_count > 0) {
+    for (int i = 0; i < profiles_count; i++) {
+      std::wstring profile = importer_host_->GetSourceProfileNameAt(i);
+      gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
+                                WideToUTF8(profile).c_str());
+    }
+    gtk_widget_grab_focus(import_button_);
+  } else {
+    gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
+      l10n_util::GetStringUTF8(IDS_IMPORT_NO_PROFILE_FOUND).c_str());
+  }
+  gtk_combo_box_set_active(GTK_COMBO_BOX(combo_), 0);
 }
 
 void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
@@ -185,6 +192,14 @@ void ImportDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {
 void ImportDialogGtk::UpdateDialogButtons() {
   gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT,
                                     GetCheckedItems() != 0);
+}
+
+void ImportDialogGtk::SetDialogControlsSensitive(bool sensitive) {
+  gtk_widget_set_sensitive(bookmarks_, sensitive);
+  gtk_widget_set_sensitive(search_engines_, sensitive);
+  gtk_widget_set_sensitive(passwords_, sensitive);
+  gtk_widget_set_sensitive(history_, sensitive);
+  gtk_widget_set_sensitive(import_button_, sensitive);
 }
 
 uint16 ImportDialogGtk::GetCheckedItems() {

@@ -35,6 +35,8 @@ void ImportDataHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_IMPORT_SETTINGS_TITLE));
   localized_strings->SetString("importFromLabel",
       l10n_util::GetStringUTF16(IDS_IMPORT_FROM_LABEL));
+  localized_strings->SetString("importLoading",
+      l10n_util::GetStringUTF16(IDS_IMPORT_LOADING_PROFILES));
   localized_strings->SetString("importDescription",
       l10n_util::GetStringUTF16(IDS_IMPORT_ITEMS_LABEL));
   localized_strings->SetString("importHistory",
@@ -52,44 +54,8 @@ void ImportDataHandler::GetLocalizedValues(
 }
 
 void ImportDataHandler::Initialize() {
-  importer_list_.reset(new ImporterList);
-
-  // The ImporterHost object creates an ImporterList, which calls PathExists
-  // one or more times.  Because we are currently in the UI thread, this will
-  // trigger a DCHECK due to IO being done on the UI thread.  For now we will
-  // suppress the DCHECK.  See the following bug for more detail:
-  // http://crbug.com/60825
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  importer_list_->DetectSourceProfiles();
-  int profiles_count = importer_list_->GetAvailableProfileCount();
-
-  ListValue browser_profiles;
-  if (profiles_count > 0) {
-    for (int i = 0; i < profiles_count; i++) {
-      const importer::ProfileInfo& source_profile =
-          importer_list_->GetSourceProfileInfoAt(i);
-      string16 browser_name = WideToUTF16Hack(source_profile.description);
-      uint16 browser_services = source_profile.services_supported;
-
-      DictionaryValue* browser_profile = new DictionaryValue();
-      browser_profile->SetString("name", browser_name);
-      browser_profile->SetInteger("index", i);
-      browser_profile->SetBoolean("history",
-          (browser_services & importer::HISTORY) != 0);
-      browser_profile->SetBoolean("favorites",
-          (browser_services & importer::FAVORITES) != 0);
-      browser_profile->SetBoolean("passwords",
-          (browser_services & importer::PASSWORDS) != 0);
-      browser_profile->SetBoolean("search",
-          (browser_services & importer::SEARCH_ENGINES) != 0);
-
-      browser_profiles.Append(browser_profile);
-    }
-  }
-
-  dom_ui_->CallJavascriptFunction(
-      L"options.ImportDataOverlay.updateSupportedBrowsers",
-      browser_profiles);
+  importer_list_ = new ImporterList;
+  importer_list_->DetectSourceProfiles(this);
 }
 
 void ImportDataHandler::RegisterMessages() {
@@ -131,21 +97,14 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     dom_ui_->CallJavascriptFunction(
         L"ImportDataOverlay.setImportingState", state);
 
-    // The ImporterHost object creates an ImporterList, which calls PathExists
-    // one or more times.  Because we are currently in the UI thread, this will
-    // trigger a DCHECK due to IO being done on the UI thread.  For now we will
-    // supress the DCHECK.  See the following bug for more detail:
-    // http://crbug.com/60825
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-
     // TODO(csilv): Out-of-process import has only been qualified on MacOS X,
     // so we will only use it on that platform since it is required. Remove this
     // conditional logic once oop import is qualified for Linux/Windows.
     // http://crbug.com/22142
 #if defined(OS_MACOSX)
-    importer_host_ = new ExternalProcessImporterHost;
+    importer_host_ = new ExternalProcessImporterHost(this);
 #else
-    importer_host_ = new ImporterHost;
+    importer_host_ = new ImporterHost(this);
 #endif
     importer_host_->SetObserver(this);
     Profile* profile = dom_ui_->GetProfile();
@@ -174,4 +133,33 @@ void ImportDataHandler::ImportEnded() {
   importer_host_ = NULL;
 
   dom_ui_->CallJavascriptFunction(L"ImportDataOverlay.dismiss");
+}
+
+void ImportDataHandler::SourceProfilesLoaded() {
+  ListValue browser_profiles;
+  int profiles_count = importer_list_->GetAvailableProfileCount();
+  for (int i = 0; i < profiles_count; i++) {
+    const importer::ProfileInfo& source_profile =
+        importer_list_->GetSourceProfileInfoAt(i);
+    string16 browser_name = WideToUTF16Hack(source_profile.description);
+    uint16 browser_services = source_profile.services_supported;
+
+    DictionaryValue* browser_profile = new DictionaryValue();
+    browser_profile->SetString("name", browser_name);
+    browser_profile->SetInteger("index", i);
+    browser_profile->SetBoolean("history",
+        (browser_services & importer::HISTORY) != 0);
+    browser_profile->SetBoolean("favorites",
+        (browser_services & importer::FAVORITES) != 0);
+    browser_profile->SetBoolean("passwords",
+        (browser_services & importer::PASSWORDS) != 0);
+    browser_profile->SetBoolean("search",
+        (browser_services & importer::SEARCH_ENGINES) != 0);
+
+    browser_profiles.Append(browser_profile);
+  }
+
+  dom_ui_->CallJavascriptFunction(
+      L"options.ImportDataOverlay.updateSupportedBrowsers",
+      browser_profiles);
 }

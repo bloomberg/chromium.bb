@@ -120,6 +120,7 @@ cr.define('options', function() {
     updateSupportedBrowsers_: function(browsers) {
       ImportDataOverlay.browserProfiles = browsers;
       var browserSelect = $('import-browsers');
+      browserSelect.remove(0);  // Remove the 'Loading...' option.
       browserSelect.textContent = '';
       var browserCount = browsers.length;
 

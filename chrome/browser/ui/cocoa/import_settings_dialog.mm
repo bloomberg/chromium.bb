@@ -112,9 +112,9 @@ bool importSettingsDialogVisible = false;
   // are bound to the Browser List array controller and the popup name
   // presentation.  The services element is used to indirectly control
   // checkbox enabling.
-  importerList_.reset(new ImporterList);
+  importerList_ = new ImporterList;
   ImporterList& importerList(*(importerList_.get()));
-  importerList.DetectSourceProfiles();
+  importerList.DetectSourceProfilesHack();
   int profilesCount = importerList.GetAvailableProfileCount();
   // There shoule be at least the default profile so this should never be zero.
   DCHECK(profilesCount > 0);
@@ -146,9 +146,9 @@ bool importSettingsDialogVisible = false;
     sourceBrowsersList_.reset([profiles retain]);
     // Create and initialize an importerList_ when running unit tests.
     if (!importerList_.get()) {
-      importerList_.reset(new ImporterList);
+      importerList_ = new ImporterList;
       ImporterList& importerList(*(importerList_.get()));
-      importerList.DetectSourceProfiles();
+      importerList.DetectSourceProfilesHack();
     }
   }
   return self;
