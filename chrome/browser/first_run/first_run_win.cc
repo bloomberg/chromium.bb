@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/views/first_run_search_engine_view.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -256,8 +257,7 @@ bool Upgrade::IsBrowserAlreadyRunning() {
 
 bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->UnSetVar(WideToUTF8(
-      BrowserDistribution::GetDistribution()->GetEnvVersionKey()).c_str());
+  env->UnSetVar(chrome::kChromeVersionEnvVar);
   return base::LaunchApp(command_line.command_line_string(),
                          false, false, NULL);
 }

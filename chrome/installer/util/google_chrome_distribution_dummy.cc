@@ -98,11 +98,6 @@ std::wstring GoogleChromeDistribution::GetVersionKey() {
   return std::wstring();
 }
 
-std::wstring GoogleChromeDistribution::GetEnvVersionKey() {
-  NOTREACHED();
-  return std::wstring();
-}
-
 void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
       bool incremental_install, installer_util::InstallStatus install_status) {
   NOTREACHED();

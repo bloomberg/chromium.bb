@@ -198,10 +198,6 @@ std::wstring BrowserDistribution::GetVersionKey() {
   return L"Software\\Chromium";
 }
 
-std::wstring BrowserDistribution::GetEnvVersionKey() {
-  return L"CHROMIUM_VERSION";
-}
-
 bool BrowserDistribution::CanSetAsDefault() {
   return true;
 }

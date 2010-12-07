@@ -22,6 +22,8 @@
 
 namespace chrome {
 
+const char kChromeVersionEnvVar[] = "CHROME_VERSION";
+
 // The following should not be used for UI strings; they are meant
 // for system strings only. UI changes should be made in the GRD.
 #if defined(OS_WIN)

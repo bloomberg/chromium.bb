@@ -63,8 +63,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   virtual std::wstring GetVersionKey();
 
-  virtual std::wstring GetEnvVersionKey();
-
   virtual void UpdateDiffInstallStatus(bool system_install,
       bool incremental_install, installer_util::InstallStatus install_status);
 

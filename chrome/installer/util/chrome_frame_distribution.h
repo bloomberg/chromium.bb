@@ -44,8 +44,6 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual std::wstring GetVersionKey();
 
-  virtual std::wstring GetEnvVersionKey();
-
   virtual bool CanSetAsDefault();
 
   // This is the point at which the Google Chrome installer removes the Google

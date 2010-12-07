@@ -492,10 +492,6 @@ std::wstring GoogleChromeDistribution::GetVersionKey() {
   return key;
 }
 
-std::wstring GoogleChromeDistribution::GetEnvVersionKey() {
-  return L"CHROME_VERSION";
-}
-
 // This method checks if we need to change "ap" key in Google Update to try
 // full installer as fall back method in case incremental installer fails.
 // - If incremental installer fails we append a magic string ("-full"), if

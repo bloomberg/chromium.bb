@@ -95,10 +95,6 @@ std::wstring ChromeFrameDistribution::GetVersionKey() {
   return key;
 }
 
-std::wstring ChromeFrameDistribution::GetEnvVersionKey() {
-  return L"CHROME_FRAME_VERSION";
-}
-
 bool ChromeFrameDistribution::CanSetAsDefault() {
   return false;
 }

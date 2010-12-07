@@ -15,6 +15,7 @@
 #include "base/version.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -229,9 +230,8 @@ HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
   }
 
   if (!version.get()) {
-    if (EnvQueryStr(
-            BrowserDistribution::GetDistribution()->GetEnvVersionKey().c_str(),
-            &version_env_string)) {
+    if (EnvQueryStr(ASCIIToWide(chrome::kChromeVersionEnvVar).c_str(),
+                    &version_env_string)) {
       version.reset(Version::GetVersionFromString(version_env_string));
     }
   }
@@ -267,9 +267,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
     return ResultCodes::MISSING_DATA;
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar(WideToUTF8(
-      BrowserDistribution::GetDistribution()->GetEnvVersionKey()).c_str(),
-      WideToUTF8(version));
+  env->SetVar(chrome::kChromeVersionEnvVar, WideToUTF8(version));
 
   InitCrashReporterWithDllPath(file);
   OnBeforeLaunch();
