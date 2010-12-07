@@ -610,6 +610,9 @@ struct MostVisitedURLWithRank {
 typedef std::vector<MostVisitedURLWithRank> MostVisitedURLWithRankList;
 
 struct TopSitesDelta {
+  TopSitesDelta();
+  ~TopSitesDelta();
+
   MostVisitedURLList deleted;
   MostVisitedURLWithRankList added;
   MostVisitedURLWithRankList moved;
@@ -619,6 +622,9 @@ typedef std::map<GURL, scoped_refptr<RefCountedBytes> > URLToThumbnailMap;
 
 // Used when migrating most visited thumbnails out of history and into topsites.
 struct ThumbnailMigration {
+  ThumbnailMigration();
+  ~ThumbnailMigration();
+
   MostVisitedURLList most_visited;
   URLToThumbnailMap url_to_thumbnail_map;
 };
@@ -629,6 +635,7 @@ class MostVisitedThumbnails
     : public base::RefCountedThreadSafe<MostVisitedThumbnails> {
  public:
   MostVisitedThumbnails();
+  virtual ~MostVisitedThumbnails();
 
   MostVisitedURLList most_visited;
   URLToImagesMap url_to_images_map;

@@ -1460,6 +1460,8 @@ NTPInfoObserver::NTPInfoObserver(
   }
 }
 
+NTPInfoObserver::~NTPInfoObserver() {}
+
 void NTPInfoObserver::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {

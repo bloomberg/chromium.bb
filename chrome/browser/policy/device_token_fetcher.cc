@@ -57,6 +57,31 @@ namespace policy {
 
 namespace em = enterprise_management;
 
+DeviceTokenFetcher::ObserverRegistrar::ObserverRegistrar() {}
+
+DeviceTokenFetcher::ObserverRegistrar::~ObserverRegistrar() {
+  RemoveAll();
+}
+
+void DeviceTokenFetcher::ObserverRegistrar::Init(
+    DeviceTokenFetcher* token_fetcher) {
+  token_fetcher_ = token_fetcher;
+}
+
+void DeviceTokenFetcher::ObserverRegistrar::AddObserver(
+    DeviceTokenFetcher::Observer* observer) {
+  observers_.push_back(observer);
+  token_fetcher_->AddObserver(observer);
+}
+
+void DeviceTokenFetcher::ObserverRegistrar::RemoveAll() {
+  for (std::vector<DeviceTokenFetcher::Observer*>::iterator it =
+           observers_.begin(); it != observers_.end(); ++it) {
+    token_fetcher_->RemoveObserver(*it);
+  }
+  observers_.clear();
+}
+
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementBackend* backend,
     Profile* profile,
@@ -87,6 +112,8 @@ DeviceTokenFetcher::DeviceTokenFetcher(
                  Source<Profile>(profile_));
 #endif
 }
+
+DeviceTokenFetcher::~DeviceTokenFetcher() {}
 
 void DeviceTokenFetcher::Observe(NotificationType type,
                                  const NotificationSource& source,

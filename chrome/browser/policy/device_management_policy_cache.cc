@@ -70,6 +70,8 @@ DeviceManagementPolicyCache::DeviceManagementPolicyCache(
       is_device_unmanaged_(false) {
 }
 
+DeviceManagementPolicyCache::~DeviceManagementPolicyCache() {}
+
 void DeviceManagementPolicyCache::LoadPolicyFromFile() {
   if (!file_util::PathExists(backing_file_path_) || fresh_policy_)
     return;

@@ -30,6 +30,8 @@ class PluginVarTracker {
   // which is probably just being created from our constructor.
   PluginVarTracker(PluginDispatcher* dispatcher);
 
+  ~PluginVarTracker();
+
   // Must be called after construction.
   void Init();
 

@@ -324,6 +324,8 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
       use_system_proxy_(false) {
 }
 
+ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {}
+
 PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
   proxy_disabled_ = false;
   proxy_configuration_specified_ = false;

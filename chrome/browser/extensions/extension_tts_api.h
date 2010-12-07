@@ -97,7 +97,7 @@ class ExtensionTtsController {
 
  private:
   ExtensionTtsController();
-  virtual ~ExtensionTtsController() {}
+  virtual ~ExtensionTtsController();
 
   // Get the platform TTS implementation (or injected mock).
   ExtensionTtsPlatformImpl* GetPlatformImpl();

@@ -22,6 +22,8 @@ SandboxedFileSystemOperation::SandboxedFileSystemOperation(
   DCHECK(file_system_context_);
 }
 
+SandboxedFileSystemOperation::~SandboxedFileSystemOperation() {}
+
 void SandboxedFileSystemOperation::OpenFileSystem(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) {
 #ifndef NDEBUG

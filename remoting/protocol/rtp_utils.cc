@@ -27,6 +27,28 @@ const int kRtcpReceiverReportTotalSize =
 const int kRtcpReceiverReportPacketType = 201;
 }  // namespace
 
+RtpHeader::RtpHeader()
+    : padding(false),
+      extension(false),
+      sources(0),
+      marker(false),
+      payload_type(0),
+      sequence_number(0),
+      timestamp(0),
+      sync_source_id(0) {
+}
+
+RtcpReceiverReport::RtcpReceiverReport()
+    : receiver_ssrc(0),
+      sender_ssrc(0),
+      loss_fraction(0),
+      total_lost_packets(0),
+      last_sequence_number(0),
+      jitter(0),
+      last_sender_report_timestamp(0),
+      last_sender_report_delay(0) {
+}
+
 static inline uint8 ExtractBits(uint8 byte, int bits_count, int shift) {
   return (byte >> shift) & ((1 << bits_count) - 1);
 }

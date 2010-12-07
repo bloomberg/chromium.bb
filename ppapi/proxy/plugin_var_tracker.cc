@@ -42,6 +42,8 @@ PluginVarTracker::PluginVarTracker(PluginDispatcher* dispatcher)
     : dispatcher_(dispatcher) {
 }
 
+PluginVarTracker::~PluginVarTracker() {}
+
 int64 PluginVarTracker::MakeString(const std::string& str) {
   RefCountedString* out = new RefCountedString(str);
   out->AddRef();

@@ -10,6 +10,19 @@
 namespace pp {
 namespace proxy {
 
+SerializedFontDescription::SerializedFontDescription()
+    : face(),
+      family(0),
+      size(0),
+      weight(0),
+      italic(PP_FALSE),
+      small_caps(PP_FALSE),
+      letter_spacing(0),
+      word_spacing(0) {
+}
+
+SerializedFontDescription::~SerializedFontDescription() {}
+
 void SerializedFontDescription::SetFromPPFontDescription(
     Dispatcher* dispatcher,
     const PP_FontDescription_Dev& desc,
@@ -48,6 +61,14 @@ void SerializedFontDescription::SetToPPFontDescription(
   desc->letter_spacing = letter_spacing;
   desc->word_spacing = word_spacing;
 }
+
+PPBFlash_DrawGlyphs_Params::PPBFlash_DrawGlyphs_Params()
+    : pp_image_data(0),
+      font_desc(),
+      color(0) {
+}
+
+PPBFlash_DrawGlyphs_Params::~PPBFlash_DrawGlyphs_Params() {}
 
 }  // namespace proxy
 }  // namespace pp

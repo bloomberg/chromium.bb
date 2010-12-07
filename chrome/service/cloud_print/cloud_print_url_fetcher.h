@@ -92,6 +92,9 @@ class CloudPrintURLFetcher
                                   const ResponseCookies& cookies,
                                   const std::string& data);
  protected:
+  friend class base::RefCountedThreadSafe<CloudPrintURLFetcher>;
+  virtual ~CloudPrintURLFetcher();
+
   // Virtual for testing.
   virtual URLRequestContextGetter* GetRequestContextGetter();
 

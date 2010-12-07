@@ -133,6 +133,8 @@ void CloudPrintURLFetcher::StartRequestHelper(
   request_->Start();
 }
 
+CloudPrintURLFetcher::~CloudPrintURLFetcher() {}
+
 URLRequestContextGetter* CloudPrintURLFetcher::GetRequestContextGetter() {
   ServiceURLRequestContextGetter* getter =
       new ServiceURLRequestContextGetter();

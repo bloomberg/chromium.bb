@@ -10,6 +10,43 @@
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 #endif
 
+BugReportData::BugReportData()
+    : profile_(NULL),
+      problem_type_(0)
+#if defined(OS_CHROMEOS)
+    , sent_report_(false), send_sys_info_(false)
+#endif
+{
+}
+
+BugReportData::~BugReportData() {}
+
+void BugReportData::UpdateData(Profile* profile,
+                               const std::string& target_tab_url,
+                               const string16& target_tab_title,
+                               const int problem_type,
+                               const std::string& page_url,
+                               const std::string& description,
+                               const std::vector<unsigned char>& image
+#if defined(OS_CHROMEOS)
+                               , const std::string& user_email
+                               , const bool send_sys_info
+                               , const bool sent_report
+#endif
+                               ) {
+  profile_ = profile;
+  target_tab_url_ = target_tab_url;
+  target_tab_title_ = target_tab_title;
+  problem_type_ = problem_type;
+  page_url_ = page_url;
+  description_ = description;
+  image_ = image;
+#if defined(OS_CHROMEOS)
+  user_email_ = user_email;
+  send_sys_info_ = send_sys_info;
+  sent_report_ = sent_report;
+#endif
+}
 
 
 #if defined(OS_CHROMEOS)

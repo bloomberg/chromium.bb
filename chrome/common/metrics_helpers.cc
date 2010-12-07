@@ -499,6 +499,10 @@ void MetricsServiceBase::SnapshotProblemResolved(int amount) {
                        std::abs(amount));
 }
 
+HistogramSender::HistogramSender() {}
+
+HistogramSender::~HistogramSender() {}
+
 void HistogramSender::TransmitAllHistograms(Histogram::Flags flag_to_set,
                                             bool send_only_uma) {
   StatisticsRecorder::Histograms histograms;

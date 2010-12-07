@@ -24,6 +24,9 @@ class Dispatcher;
 // PP_FontDescript_Dev has to be redefined with a SerializedVar in place of
 // the PP_Var used for the face name.
 struct SerializedFontDescription {
+  SerializedFontDescription();
+  ~SerializedFontDescription();
+
   // Converts a PP_FontDescription_Dev to a SerializedFontDescription.
   //
   // If source_owns_ref is true, the reference owned by the
@@ -80,6 +83,9 @@ struct PPBFont_DrawTextAt_Params {
 };
 
 struct PPBFlash_DrawGlyphs_Params {
+  PPBFlash_DrawGlyphs_Params();
+  ~PPBFlash_DrawGlyphs_Params();
+
   PP_Resource pp_image_data;
   SerializedFontDescription font_desc;
   uint32_t color;

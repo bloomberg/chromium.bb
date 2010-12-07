@@ -113,6 +113,8 @@ class JSONSchemaValidator {
   // not be used with untrusted schemas.
   JSONSchemaValidator(DictionaryValue* schema, ListValue* types);
 
+  ~JSONSchemaValidator();
+
   // Whether the validator allows additional items for objects and lists, beyond
   // those defined by their schema, by default.
   //

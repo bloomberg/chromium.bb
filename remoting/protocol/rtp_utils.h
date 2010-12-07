@@ -11,16 +11,7 @@ namespace remoting {
 namespace protocol {
 
 struct RtpHeader {
-  RtpHeader()
-      : padding(false),
-        extension(false),
-        sources(0),
-        marker(false),
-        payload_type(0),
-        sequence_number(0),
-        timestamp(0),
-        sync_source_id(0) {
-  }
+  RtpHeader();
 
   // RTP version is always set to 2.
   // version = 2
@@ -36,16 +27,7 @@ struct RtpHeader {
 };
 
 struct RtcpReceiverReport {
-  RtcpReceiverReport()
-      : receiver_ssrc(0),
-        sender_ssrc(0),
-        loss_fraction(0),
-        total_lost_packets(0),
-        last_sequence_number(0),
-        jitter(0),
-        last_sender_report_timestamp(0),
-        last_sender_report_delay(0) {
-  }
+  RtcpReceiverReport();
 
   uint32 receiver_ssrc;
   uint32 sender_ssrc;

@@ -335,6 +335,12 @@ Images::Images() {}
 
 Images::~Images() {}
 
+// TopSitesDelta --------------------------------------------------------------
+
+TopSitesDelta::TopSitesDelta() {}
+
+TopSitesDelta::~TopSitesDelta() {}
+
 // HistoryAddPageArgs ---------------------------------------------------------
 
 HistoryAddPageArgs::HistoryAddPageArgs(
@@ -366,7 +372,12 @@ HistoryAddPageArgs* HistoryAddPageArgs::Clone() const {
       visit_source, did_replace_entry);
 }
 
-MostVisitedThumbnails::MostVisitedThumbnails() {
-}
+ThumbnailMigration::ThumbnailMigration() {}
+
+ThumbnailMigration::~ThumbnailMigration() {}
+
+MostVisitedThumbnails::MostVisitedThumbnails() {}
+
+MostVisitedThumbnails::~MostVisitedThumbnails() {}
 
 }  // namespace history

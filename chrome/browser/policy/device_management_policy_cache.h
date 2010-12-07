@@ -28,6 +28,7 @@ namespace em = enterprise_management;
 class DeviceManagementPolicyCache {
  public:
   explicit DeviceManagementPolicyCache(const FilePath& backing_file_path);
+  ~DeviceManagementPolicyCache();
 
   // Loads policy information from the backing file. Non-existing or erroneous
   // cache files are ignored.

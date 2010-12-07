@@ -25,8 +25,13 @@
 
 namespace pp {
 
-PaintAggregator::InternalPaintUpdate::InternalPaintUpdate() {
-}
+PaintAggregator::PaintUpdate::PaintUpdate() {}
+
+PaintAggregator::PaintUpdate::~PaintUpdate() {}
+
+PaintAggregator::InternalPaintUpdate::InternalPaintUpdate() {}
+
+PaintAggregator::InternalPaintUpdate::~InternalPaintUpdate() {}
 
 Rect PaintAggregator::InternalPaintUpdate::GetScrollDamage() const {
   // Should only be scrolling in one direction at a time.

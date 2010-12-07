@@ -932,6 +932,7 @@ class NTPInfoObserver : public NotificationObserver {
   NTPInfoObserver(AutomationProvider* automation,
                   IPC::Message* reply_message,
                   CancelableRequestConsumer* consumer);
+  virtual ~NTPInfoObserver();
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

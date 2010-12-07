@@ -22,6 +22,9 @@ namespace pp {
 class PaintAggregator {
  public:
   struct PaintUpdate {
+    PaintUpdate();
+    ~PaintUpdate();
+
     // True if there is a scroll applied. This indicates that the scroll delta
     // and scroll_rect are nonzero (just as a convenience).
     bool has_scroll;
@@ -86,6 +89,7 @@ class PaintAggregator {
   class InternalPaintUpdate {
    public:
     InternalPaintUpdate();
+    ~InternalPaintUpdate();
 
     // Computes the rect damaged by scrolling within |scroll_rect| by
     // |scroll_delta|. This rect must be repainted. It is not included in

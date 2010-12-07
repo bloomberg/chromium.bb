@@ -29,6 +29,8 @@ ExtensionTtsController::ExtensionTtsController()
       platform_impl_(NULL) {
 }
 
+ExtensionTtsController::~ExtensionTtsController() {}
+
 void ExtensionTtsController::SpeakOrEnqueue(
     Utterance* utterance, bool can_enqueue) {
   if (IsSpeaking() && can_enqueue) {

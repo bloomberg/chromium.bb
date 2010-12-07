@@ -159,6 +159,7 @@ JSONSchemaValidator::JSONSchemaValidator(DictionaryValue* schema,
   }
 }
 
+JSONSchemaValidator::~JSONSchemaValidator() {}
 
 bool JSONSchemaValidator::Validate(Value* instance) {
   errors_.clear();

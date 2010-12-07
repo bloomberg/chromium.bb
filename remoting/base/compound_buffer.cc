@@ -17,6 +17,8 @@ CompoundBuffer::DataChunk::DataChunk(
       size(size_value) {
 }
 
+CompoundBuffer::DataChunk::~DataChunk() {}
+
 CompoundBuffer::CompoundBuffer()
     : total_bytes_(0),
       locked_(false) {

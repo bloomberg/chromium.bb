@@ -29,6 +29,7 @@ class SandboxedFileSystemOperation : public FileSystemOperation {
   SandboxedFileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
                                scoped_refptr<base::MessageLoopProxy> proxy,
                                SandboxedFileSystemContext* file_system_context);
+  virtual ~SandboxedFileSystemOperation();
 
   void OpenFileSystem(const GURL& origin_url,
                       fileapi::FileSystemType type,

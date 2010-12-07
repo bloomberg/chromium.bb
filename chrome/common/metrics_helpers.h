@@ -185,8 +185,8 @@ class MetricsLogBase {
 // onward.
 class HistogramSender {
  protected:
-  HistogramSender() {}
-  virtual ~HistogramSender() {}
+  HistogramSender();
+  virtual ~HistogramSender();
 
   // Snapshot all histograms, and transmit the delta.
   // The arguments allow a derived class to select only a subset for
