@@ -202,6 +202,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
     AddPattern(&host_perm_set1_, "http://*.google.com/*");
     AddPattern(&host_perm_set1_, "http://example.com/*");
+    AddPattern(&host_perm_set1_, "chrome://favicon/*");
 
     AddPattern(&host_perm_set2_, "https://*.google.com/*");
     // with duplicate:
@@ -213,6 +214,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
     AddPattern(&host_permissions_, "http://*.google.com/*");
     AddPattern(&host_permissions_, "http://example.com/*");
+    AddPattern(&host_permissions_, "chrome://favicon/*");
     AddPattern(&host_permissions_, "https://*.google.com/*");
 
     std::set<std::string> empty_set;

@@ -495,10 +495,14 @@ bool ExtensionPrefs::GetGrantedPermissions(
   ReadExtensionPrefStringSet(
       extension_id, kPrefGrantedPermissionsHost, &host_permissions);
 
+  // The granted host permissions contain hosts from the manifest's
+  // "permissions" array and from the content script "matches" arrays,
+  // so the URLPattern needs to accept valid schemes from both types.
   for (std::set<std::string>::iterator i = host_permissions.begin();
        i != host_permissions.end(); ++i)
     host_extent->AddPattern(URLPattern(
-        Extension::kValidWebExtentSchemes | UserScript::kValidUserScriptSchemes,
+        Extension::kValidHostPermissionSchemes |
+        UserScript::kValidUserScriptSchemes,
         *i));
 
   return true;

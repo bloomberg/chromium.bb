@@ -250,6 +250,10 @@ const char Extension::kOldUnlimitedStoragePermission[] = "unlimited_storage";
 const int Extension::kValidWebExtentSchemes =
     URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
 
+const int Extension::kValidHostPermissionSchemes =
+    (UserScript::kValidUserScriptSchemes |
+     URLPattern::SCHEME_CHROMEUI) & ~URLPattern::SCHEME_FILE;
+
 //
 // Extension
 //
@@ -1741,9 +1745,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
 
       // Check if it's a host pattern permission.
       URLPattern pattern = URLPattern(CanExecuteScriptEverywhere() ?
-          URLPattern::SCHEME_ALL :
-          (UserScript::kValidUserScriptSchemes |
-              URLPattern::SCHEME_CHROMEUI) & ~URLPattern::SCHEME_FILE);
+          URLPattern::SCHEME_ALL : kValidHostPermissionSchemes);
+
 
       if (URLPattern::PARSE_SUCCESS == pattern.Parse(permission_str)) {
         if (!CanSpecifyHostPermission(pattern)) {

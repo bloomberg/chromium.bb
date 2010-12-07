@@ -169,6 +169,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Valid schemes for web extent URLPatterns.
   static const int kValidWebExtentSchemes;
 
+  // Valid schemes for host permission URLPatterns.
+  static const int kValidHostPermissionSchemes;
+
   // Returns true if the string is one of the known hosted app permissions (see
   // kHostedAppPermissionNames).
   static bool IsHostedAppPermission(const std::string& permission);
