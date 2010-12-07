@@ -25,9 +25,7 @@ class UpdateStreamPacket;
 class EncoderRowBased : public Encoder {
  public:
   static EncoderRowBased* CreateZlibEncoder();
-  static EncoderRowBased* CreateZlibEncoder(int packet_size);
   static EncoderRowBased* CreateVerbatimEncoder();
-  static EncoderRowBased* CreateVerbatimEncoder(int packet_size);
 
   virtual ~EncoderRowBased();
 

@@ -3,19 +3,20 @@
 // found in the LICENSE file.
 
 #include "remoting/base/codec_test.h"
-#include "remoting/base/encoder_row_based.h"
+#include "remoting/base/encoder_zlib.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
 TEST(EncoderZlibTest, TestEncoder) {
-  scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder());
-  TestEncoder(encoder.get(), true);
+  EncoderZlib encoder;
+  TestEncoder(&encoder, true);
 }
 
+
 TEST(EncoderZlibTest, TestEncoderSmallOutputBuffer) {
-  scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder(16));
-  TestEncoder(encoder.get(), true);
+  EncoderZlib encoder(16);
+  TestEncoder(&encoder, true);
 }
 
 }  // namespace remoting

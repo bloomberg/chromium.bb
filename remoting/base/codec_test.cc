@@ -29,6 +29,42 @@ static const gfx::Rect kTestRects[] = {
 
 namespace remoting {
 
+// A class to test that the state transition of the Encoder is correct.
+class EncoderStateTester {
+ public:
+  EncoderStateTester()
+      : next_state_(Encoder::EncodingStarting) {
+  }
+
+  ~EncoderStateTester() {
+    EXPECT_EQ(Encoder::EncodingStarting, next_state_);
+  }
+
+  // Set the state output of the Encoder.
+  void ReceivedState(Encoder::EncodingState state) {
+    if (state & Encoder::EncodingStarting) {
+      EXPECT_EQ(Encoder::EncodingStarting, next_state_);
+      next_state_ = Encoder::EncodingInProgress | Encoder::EncodingEnded;
+    } else {
+      EXPECT_FALSE(next_state_ & Encoder::EncodingStarting);
+    }
+
+    if (state & Encoder::EncodingInProgress) {
+      EXPECT_TRUE(next_state_ & Encoder::EncodingInProgress);
+    }
+
+    if (state & Encoder::EncodingEnded) {
+      EXPECT_TRUE(next_state_ & Encoder::EncodingEnded);
+      next_state_ = Encoder::EncodingStarting;
+    }
+  }
+
+ private:
+  Encoder::EncodingState next_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(EncoderStateTester);
+};
+
 // A class to test the message output of the encoder.
 class EncoderMessageTester {
  public:
@@ -50,31 +86,35 @@ class EncoderMessageTester {
     }
   }
 
-  // Test that we received the correct packet.
-  void ReceivedPacket(VideoPacket* packet) {
+  // Test that we received the correct message.
+  void ReceivedMessage(ChromotingHostMessage* message) {
+    EXPECT_TRUE(message->has_update_stream_packet());
+
     if (state_ == kWaitingForBeginRect) {
-      EXPECT_TRUE((packet->flags() & VideoPacket::FIRST_PACKET) != 0);
+      EXPECT_TRUE(message->update_stream_packet().has_begin_rect());
       state_ = kWaitingForRectData;
       ++begin_rect_;
 
       if (strict_) {
         gfx::Rect rect = rects_.front();
         rects_.pop_front();
-        EXPECT_EQ(rect.x(), packet->format().x());
-        EXPECT_EQ(rect.y(), packet->format().y());
-        EXPECT_EQ(rect.width(), packet->format().width());
-        EXPECT_EQ(rect.height(), packet->format().height());
+        EXPECT_EQ(rect.x(), message->update_stream_packet().begin_rect().x());
+        EXPECT_EQ(rect.y(), message->update_stream_packet().begin_rect().y());
+        EXPECT_EQ(rect.width(),
+                  message->update_stream_packet().begin_rect().width());
+        EXPECT_EQ(rect.height(),
+                  message->update_stream_packet().begin_rect().height());
       }
     } else {
-      EXPECT_FALSE((packet->flags() & VideoPacket::FIRST_PACKET) != 0);
+      EXPECT_FALSE(message->update_stream_packet().has_begin_rect());
     }
 
     if (state_ == kWaitingForRectData) {
-      if (packet->has_data()) {
+      if (message->update_stream_packet().has_rect_data()) {
         ++rect_data_;
       }
 
-      if ((packet->flags() & VideoPacket::LAST_PACKET) != 0) {
+      if (message->update_stream_packet().has_end_rect()) {
         // Expect that we have received some data.
         EXPECT_GT(rect_data_, 0);
         rect_data_ = 0;
@@ -115,28 +155,32 @@ class DecoderTester {
  public:
   DecoderTester(Decoder* decoder)
       : strict_(false),
-        decoder_(decoder) {
+        decoder_(decoder),
+        decode_done_(false) {
     media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
                                    kWidth, kHeight,
                                    base::TimeDelta(),
                                    base::TimeDelta(), &frame_);
     EXPECT_TRUE(frame_.get());
-    decoder_->Initialize(frame_);
   }
 
-  void Reset() {
-    rects_.clear();
-    update_rects_.clear();
-  }
-
-  void ReceivedPacket(VideoPacket* packet) {
-    Decoder::DecodeResult result = decoder_->DecodePacket(packet);
-
-    ASSERT_NE(Decoder::DECODE_ERROR, result);
-
-    if (result == Decoder::DECODE_DONE) {
-      decoder_->GetUpdatedRects(&update_rects_);
+  void ReceivedMessage(ChromotingHostMessage* message) {
+    if (message->has_update_stream_packet()) {
+      EXPECT_TRUE(decoder_->PartialDecode(message));
+      return;
     }
+
+    if (message->has_begin_update_stream()) {
+      EXPECT_TRUE(decoder_->BeginDecode(
+          frame_, &update_rects_,
+          NewRunnableMethod(this, &DecoderTester::OnPartialDecodeDone),
+          NewRunnableMethod(this, &DecoderTester::OnDecodeDone)));
+    }
+
+    if (message->has_end_update_stream()) {
+      decoder_->EndDecode();
+    }
+    delete message;
   }
 
   void set_strict(bool strict) {
@@ -151,16 +195,19 @@ class DecoderTester {
     rects_.insert(rects_.begin() + rects_.size(), rects, rects + count);
   }
 
-  void VerifyResults() {
+  bool decode_done() const { return decode_done_; }
+  void reset_decode_done() { decode_done_ = false; }
+
+ private:
+  void OnPartialDecodeDone() {
     if (!strict_)
       return;
 
-    ASSERT_TRUE(capture_data_.get());
-
     // Test the content of the update rect.
-    ASSERT_EQ(rects_.size(), update_rects_.size());
     for (size_t i = 0; i < update_rects_.size(); ++i) {
-      gfx::Rect rect = rects_[i];
+      EXPECT_FALSE(rects_.empty());
+      gfx::Rect rect = rects_.front();
+      rects_.pop_front();
       EXPECT_EQ(rect, update_rects_[i]);
 
       EXPECT_EQ(frame_->stride(0), capture_data_->data_planes().strides[0]);
@@ -179,13 +226,29 @@ class DecoderTester {
     }
   }
 
- private:
+  void OnDecodeDone() {
+    decode_done_ = true;
+    if (!strict_)
+      return;
+
+    EXPECT_TRUE(capture_data_.get());
+    for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
+      if (!frame_->data(i) || !capture_data_->data_planes().data[i])
+        continue;
+      // TODO(hclam): HAndle YUV.
+      int size = capture_data_->data_planes().strides[i] * kHeight;
+      EXPECT_EQ(0, memcmp(capture_data_->data_planes().data[i],
+                          frame_->data(i), size));
+    }
+  }
+
   bool strict_;
   std::deque<gfx::Rect> rects_;
   UpdatedRects update_rects_;
   Decoder* decoder_;
   scoped_refptr<media::VideoFrame> frame_;
   scoped_refptr<CaptureData> capture_data_;
+  bool decode_done_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderTester);
 };
@@ -194,8 +257,10 @@ class DecoderTester {
 // message to other subprograms for validaton.
 class EncoderTester {
  public:
-  EncoderTester(EncoderMessageTester* message_tester)
+  EncoderTester(EncoderMessageTester* message_tester,
+                EncoderStateTester* state_tester)
       : message_tester_(message_tester),
+        state_tester_(state_tester),
         decoder_tester_(NULL),
         data_available_(0) {
   }
@@ -204,16 +269,32 @@ class EncoderTester {
     EXPECT_GT(data_available_, 0);
   }
 
-  void DataAvailable(VideoPacket *packet) {
+  void DataAvailable(ChromotingHostMessage* message,
+                     Encoder::EncodingState state) {
     ++data_available_;
-    message_tester_->ReceivedPacket(packet);
+    message_tester_->ReceivedMessage(message);
+    state_tester_->ReceivedState(state);
 
     // Send the message to the DecoderTester.
     if (decoder_tester_) {
-      decoder_tester_->ReceivedPacket(packet);
-    }
+      if (state & Encoder::EncodingStarting) {
+        ChromotingHostMessage* begin_update = new ChromotingHostMessage();
+        begin_update->mutable_begin_update_stream();
+        decoder_tester_->ReceivedMessage(begin_update);
+      }
 
-    delete packet;
+      if (state & Encoder::EncodingInProgress) {
+        decoder_tester_->ReceivedMessage(message);
+      }
+
+      if (state & Encoder::EncodingEnded) {
+        ChromotingHostMessage* end_update = new ChromotingHostMessage();
+        end_update->mutable_end_update_stream();
+        decoder_tester_->ReceivedMessage(end_update);
+      }
+    } else {
+      delete message;
+    }
   }
 
   void AddRects(const gfx::Rect* rects, int count) {
@@ -226,16 +307,17 @@ class EncoderTester {
 
  private:
   EncoderMessageTester* message_tester_;
+  EncoderStateTester* state_tester_;
   DecoderTester* decoder_tester_;
   int data_available_;
 
   DISALLOW_COPY_AND_ASSIGN(EncoderTester);
 };
 
-scoped_refptr<CaptureData> PrepareEncodeData(media::VideoFrame::Format format,
+scoped_refptr<CaptureData> PrepareEncodeData(PixelFormat format,
                                              uint8** memory) {
   // TODO(hclam): Support also YUV format.
-  CHECK_EQ(format, media::VideoFrame::RGB32);
+  CHECK(format == PIXEL_FORMAT_RGB32);
   int size = kWidth * kHeight * kBytesPerPixel;
 
   *memory = new uint8[size];
@@ -273,11 +355,12 @@ void TestEncoder(Encoder* encoder, bool strict) {
   EncoderMessageTester message_tester;
   message_tester.set_strict(strict);
 
-  EncoderTester tester(&message_tester);
+  EncoderStateTester state_tester;
+  EncoderTester tester(&message_tester, &state_tester);
 
   uint8* memory;
   scoped_refptr<CaptureData> data =
-      PrepareEncodeData(media::VideoFrame::RGB32, &memory);
+      PrepareEncodeData(PIXEL_FORMAT_RGB32, &memory);
 
   TestEncodingRects(encoder, &tester, data, kTestRects, 1);
   TestEncodingRects(encoder, &tester, data, kTestRects + 1, 1);
@@ -297,6 +380,7 @@ static void TestEncodingRects(Encoder* encoder,
   }
   encoder_tester->AddRects(rects, count);
   decoder_tester->AddRects(rects, count);
+  decoder_tester->reset_decode_done();
 
   // Generate random data for the updated rects.
   srand(0);
@@ -316,19 +400,19 @@ static void TestEncodingRects(Encoder* encoder,
 
   encoder->Encode(data, true,
                   NewCallback(encoder_tester, &EncoderTester::DataAvailable));
-  decoder_tester->VerifyResults();
-  decoder_tester->Reset();
+  EXPECT_TRUE(decoder_tester->decode_done());
 }
 
 void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
   EncoderMessageTester message_tester;
   message_tester.set_strict(strict);
 
-  EncoderTester encoder_tester(&message_tester);
+  EncoderStateTester state_tester;
+  EncoderTester encoder_tester(&message_tester, &state_tester);
 
   uint8* memory;
   scoped_refptr<CaptureData> data =
-      PrepareEncodeData(media::VideoFrame::RGB32, &memory);
+      PrepareEncodeData(PIXEL_FORMAT_RGB32, &memory);
   DecoderTester decoder_tester(decoder);
   decoder_tester.set_strict(strict);
   decoder_tester.set_capture_data(data);
