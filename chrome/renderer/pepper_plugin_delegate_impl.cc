@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cmath>
-
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
+
+#include <cmath>
 
 #include "app/l10n_util.h"
 #include "app/surface/transport_dib.h"
@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
+#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/audio_message_filter.h"
@@ -32,6 +33,7 @@
 #include "grit/locale_settings.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/proxy/host_dispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
@@ -45,6 +47,10 @@
 #if defined(OS_MACOSX)
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "ipc/ipc_channel_posix.h"
 #endif
 
 using WebKit::WebView;
@@ -413,6 +419,60 @@ class PlatformVideoDecoderImpl
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
 };
 
+class DispatcherWrapper : public pepper::PluginDelegate::OutOfProcessProxy {
+ public:
+  DispatcherWrapper() {}
+  virtual ~DispatcherWrapper() {}
+
+  bool Init(base::ProcessHandle plugin_process_handle,
+            IPC::ChannelHandle channel_handle,
+            PP_Module pp_module,
+            pp::proxy::Dispatcher::GetInterfaceFunc local_get_interface);
+
+  // OutOfProcessProxy implementation.
+  virtual const void* GetProxiedInterface(const char* name) {
+    return dispatcher_->GetProxiedInterface(name);
+  }
+  virtual void AddInstance(PP_Instance instance) {
+    pp::proxy::HostDispatcher::SetForInstance(instance, dispatcher_.get());
+  }
+  virtual void RemoveInstance(PP_Instance instance) {
+    pp::proxy::HostDispatcher::RemoveForInstance(instance);
+  }
+
+ private:
+  scoped_ptr<pp::proxy::HostDispatcher> dispatcher_;
+};
+
+bool DispatcherWrapper::Init(
+    base::ProcessHandle plugin_process_handle,
+    IPC::ChannelHandle channel_handle,
+    PP_Module pp_module,
+    pp::proxy::Dispatcher::GetInterfaceFunc local_get_interface) {
+  dispatcher_.reset(new pp::proxy::HostDispatcher(
+      plugin_process_handle, pp_module, local_get_interface));
+
+#if defined(OS_POSIX)
+  // If we received a ChannelHandle, register it now.
+  if (channel_handle.socket.fd >= 0)
+    IPC::AddChannelSocket(channel_handle.name, channel_handle.socket.fd);
+#endif
+
+  if (!dispatcher_->InitWithChannel(
+          ChildProcess::current()->io_message_loop(), channel_handle.name,
+          true, ChildProcess::current()->GetShutDownEvent())) {
+    dispatcher_.reset();
+    return false;
+  }
+
+  if (!dispatcher_->InitializeModule()) {
+    // TODO(brettw) does the module get unloaded in this case?
+    dispatcher_.reset();
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
@@ -424,19 +484,29 @@ PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
 }
 
 scoped_refptr<pepper::PluginModule>
-PepperPluginDelegateImpl::CreateOutOfProcessPepperPlugin(
-    const FilePath& path) {
+PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
+  // Easy case is in-process plugins.
+  if (!PepperPluginRegistry::GetInstance()->RunOutOfProcessForPlugin(path))
+    return PepperPluginRegistry::GetInstance()->GetModule(path);
+
+  // Out of process: have the browser start the plugin process for us.
   base::ProcessHandle plugin_process_handle = NULL;
   IPC::ChannelHandle channel_handle;
   render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
       path, &plugin_process_handle, &channel_handle));
   if (channel_handle.name.empty())
     return scoped_refptr<pepper::PluginModule>();  // Couldn't be initialized.
-  return pepper::PluginModule::CreateOutOfProcessModule(
-      ChildProcess::current()->io_message_loop(),
-      plugin_process_handle,
-      channel_handle,
-      ChildProcess::current()->GetShutDownEvent());
+
+  // Create a new HostDispatcher for the proxying, and hook it to a new
+  // PluginModule.
+  scoped_refptr<pepper::PluginModule> module(new pepper::PluginModule);
+  scoped_ptr<DispatcherWrapper> dispatcher(new DispatcherWrapper);
+  if (!dispatcher->Init(plugin_process_handle, channel_handle,
+                        module->pp_module(),
+                        pepper::PluginModule::GetLocalGetInterfaceFunc()))
+    return scoped_refptr<pepper::PluginModule>();
+  module->InitAsProxied(dispatcher.release());
+  return module;
 }
 
 void PepperPluginDelegateImpl::ViewInitiatedPaint() {
