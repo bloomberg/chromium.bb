@@ -333,7 +333,7 @@ HRESULT TabApiResult::IsTabFromSameOrUnspecifiedFrameWindow(
   DCHECK(dispatcher != NULL);
   if (!dispatcher->IsTabIdValid(tab_id)) {
     // This can happen if the tab died before we get here.
-    LOG(WARNING) << "Ta ID: " << tab_id << ", not recognized.";
+    LOG(WARNING) << "Tab ID: " << tab_id << ", not recognized.";
     return E_UNEXPECTED;
   }
   HWND input_tab_window = dispatcher->GetTabHandleFromId(tab_id);
@@ -1011,6 +1011,7 @@ HRESULT CreateTab::ContinueExecution(const std::string& input_args,
   if (FAILED(hr)) {
     // The ApiDispatcher will forget about us and result's destructor will
     // free the allocation of user_data.
+    result->PostError("Internal error while trying to finish tab creation.");
     return hr;
   }
   if (hr == S_FALSE) {
