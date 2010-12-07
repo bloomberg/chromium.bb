@@ -875,53 +875,54 @@ notify_button(struct wlsc_input_device *device,
 	struct wl_drag *drag = device->drag;
 
 	surface = (struct wlsc_surface *) device->input_device.pointer_focus;
-	if (surface) {
-		if (state && device->grab == WLSC_DEVICE_GRAB_NONE) {
-			wlsc_surface_raise(surface);
+	if (!surface)
+		return;
 
-			wlsc_input_device_start_grab(device,
-						     WLSC_DEVICE_GRAB_MOTION,
-						     button, time);
-			wl_input_device_set_keyboard_focus(&device->input_device,
-							   &surface->surface,
-							   time);
-		}
+	if (state && device->grab == WLSC_DEVICE_GRAB_NONE) {
+		wlsc_surface_raise(surface);
 
-		if (state && button == BTN_LEFT &&
-		    device->grab == WLSC_DEVICE_GRAB_MOTION &&
-		    (device->modifier_state & MODIFIER_SUPER))
-			shell_move(NULL,
-				   (struct wl_shell *) &compositor->shell,
-				   &surface->surface,
-				   &device->input_device, time);
-		else if (state && button == BTN_MIDDLE &&
-			   device->grab == WLSC_DEVICE_GRAB_MOTION &&
-			   (device->modifier_state & MODIFIER_SUPER))
-			shell_resize(NULL,
-				     (struct wl_shell *) &compositor->shell,
-				     &surface->surface,
-				     &device->input_device, time,
-				     WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT);
-		else if (device->grab == WLSC_DEVICE_GRAB_NONE ||
-			 device->grab == WLSC_DEVICE_GRAB_MOTION)
-			wl_client_post_event(surface->surface.client,
-					     &device->input_device.object,
-					     WL_INPUT_DEVICE_BUTTON,
-					     time, button, state);
-
-		if (!state &&
-		    device->grab != WLSC_DEVICE_GRAB_NONE &&
-		    device->grab_button == button) {
-			drag = device->drag;
-			if (drag && drag->target)
-				wl_client_post_event(drag->target,
-						     &drag->drag_offer.object,
-						     WL_DRAG_OFFER_DROP);
-			wlsc_input_device_end_grab(device, time);
-		}
-
-		wlsc_compositor_schedule_repaint(compositor);
+		wlsc_input_device_start_grab(device,
+					     WLSC_DEVICE_GRAB_MOTION,
+					     button, time);
+		wl_input_device_set_keyboard_focus(&device->input_device,
+						   &surface->surface,
+						   time);
 	}
+
+	if (state && button == BTN_LEFT &&
+	    device->grab == WLSC_DEVICE_GRAB_MOTION &&
+	    (device->modifier_state & MODIFIER_SUPER))
+		shell_move(NULL,
+			   (struct wl_shell *) &compositor->shell,
+			   &surface->surface,
+			   &device->input_device, time);
+	else if (state && button == BTN_MIDDLE &&
+		 device->grab == WLSC_DEVICE_GRAB_MOTION &&
+		 (device->modifier_state & MODIFIER_SUPER))
+		shell_resize(NULL,
+			     (struct wl_shell *) &compositor->shell,
+			     &surface->surface,
+			     &device->input_device, time,
+			     WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT);
+	else if (device->grab == WLSC_DEVICE_GRAB_NONE ||
+		 device->grab == WLSC_DEVICE_GRAB_MOTION)
+		wl_client_post_event(surface->surface.client,
+				     &device->input_device.object,
+				     WL_INPUT_DEVICE_BUTTON,
+				     time, button, state);
+
+	if (!state &&
+	    device->grab != WLSC_DEVICE_GRAB_NONE &&
+	    device->grab_button == button) {
+		drag = device->drag;
+		if (drag && drag->target)
+			wl_client_post_event(drag->target,
+					     &drag->drag_offer.object,
+					     WL_DRAG_OFFER_DROP);
+		wlsc_input_device_end_grab(device, time);
+	}
+
+	wlsc_compositor_schedule_repaint(compositor);
 }
 
 void
