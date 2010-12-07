@@ -1303,7 +1303,7 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *) target_bo;
-	int fenced_command = need_fence;
+	int fenced_command;
 
 	if (bo_gem->has_error)
 		return -ENOMEM;
@@ -1313,11 +1313,12 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 		return -ENOMEM;
 	}
 
-	if (target_bo_gem->tiling_mode == I915_TILING_NONE)
-		need_fence = 0;
-
 	/* We never use HW fences for rendering on 965+ */
 	if (bufmgr_gem->gen >= 4)
+		need_fence = 0;
+
+	fenced_command = need_fence;
+	if (target_bo_gem->tiling_mode == I915_TILING_NONE)
 		need_fence = 0;
 
 	/* Create a new relocation list if needed */
