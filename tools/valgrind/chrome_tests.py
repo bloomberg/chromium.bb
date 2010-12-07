@@ -269,18 +269,24 @@ class ChromeTests:
   def TestGfx(self):
     return self.SimpleTest("chrome", "gfx_unittests")
 
+  UI_VALGRIND_ARGS = ["--timeout=180000", "--trace_children", "--indirect"]
+  UI_TEST_ARGS = ["--ui-test-timeout=240000",
+                  "--ui-test-action-timeout=120000",
+                  "--ui-test-action-max-timeout=280000",
+                  "--ui-test-sleep-timeout=120000",
+                  "--ui-test-terminate-timeout=120000"]
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",
-                           valgrind_test_args=[
-                            "--timeout=180000",
-                            "--trace_children",
-                            "--indirect"],
-                           cmd_args=[
-                            "--ui-test-timeout=240000",
-                            "--ui-test-action-timeout=120000",
-                            "--ui-test-action-max-timeout=280000",
-                            "--ui-test-sleep-timeout=120000",
-                            "--ui-test-terminate-timeout=120000"])
+                           valgrind_test_args=self.UI_VALGRIND_ARGS,
+                           cmd_args=self.UI_TEST_ARGS)
+
+  def TestReliability(self):
+    script_dir = path_utils.ScriptDir()
+    url_list_file = os.path.join(script_dir, "reliability", "url_list.txt")
+    return self.SimpleTest("chrome", "reliability_tests",
+                           valgrind_test_args=self.UI_VALGRIND_ARGS,
+                           cmd_args=(self.UI_TEST_ARGS +
+                                     ["--list=%s" % url_list_file]))
 
   def TestSync(self):
     return self.SimpleTest("chrome", "sync_unit_tests")
@@ -399,6 +405,7 @@ class ChromeTests:
     "net": TestNet,              "net_unittests": TestNet,
     "notifier": TestNotifier,    "notifier_unittests": TestNotifier,
     "printing": TestPrinting,    "printing_unittests": TestPrinting,
+    "reliability": TestReliability, "reliability_tests": TestReliability,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
     "startup": TestStartup,      "startup_tests": TestStartup,
     "sync": TestSync,            "sync_unit_tests": TestSync,
