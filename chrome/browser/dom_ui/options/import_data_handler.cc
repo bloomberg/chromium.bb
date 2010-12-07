@@ -31,23 +31,23 @@ ImportDataHandler::~ImportDataHandler() {
 void ImportDataHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString("import_data_title",
+  localized_strings->SetString("importDataTitle",
       l10n_util::GetStringUTF16(IDS_IMPORT_SETTINGS_TITLE));
-  localized_strings->SetString("import_from_label",
+  localized_strings->SetString("importFromLabel",
       l10n_util::GetStringUTF16(IDS_IMPORT_FROM_LABEL));
-  localized_strings->SetString("import_commit",
-      l10n_util::GetStringUTF16(IDS_IMPORT_COMMIT));
-  localized_strings->SetString("import_description",
+  localized_strings->SetString("importDescription",
       l10n_util::GetStringUTF16(IDS_IMPORT_ITEMS_LABEL));
-  localized_strings->SetString("import_favorites",
-      l10n_util::GetStringUTF16(IDS_IMPORT_FAVORITES_CHKBOX));
-  localized_strings->SetString("import_search",
-      l10n_util::GetStringUTF16(IDS_IMPORT_SEARCH_ENGINES_CHKBOX));
-  localized_strings->SetString("import_passwords",
-      l10n_util::GetStringUTF16(IDS_IMPORT_PASSWORDS_CHKBOX));
-  localized_strings->SetString("import_history",
+  localized_strings->SetString("importHistory",
       l10n_util::GetStringUTF16(IDS_IMPORT_HISTORY_CHKBOX));
-  localized_strings->SetString("no_profile_found",
+  localized_strings->SetString("importFavorites",
+      l10n_util::GetStringUTF16(IDS_IMPORT_FAVORITES_CHKBOX));
+  localized_strings->SetString("importSearch",
+      l10n_util::GetStringUTF16(IDS_IMPORT_SEARCH_ENGINES_CHKBOX));
+  localized_strings->SetString("importPasswords",
+      l10n_util::GetStringUTF16(IDS_IMPORT_PASSWORDS_CHKBOX));
+  localized_strings->SetString("importCommit",
+      l10n_util::GetStringUTF16(IDS_IMPORT_COMMIT));
+  localized_strings->SetString("noProfileFound",
       l10n_util::GetStringUTF16(IDS_IMPORT_NO_PROFILE_FOUND));
 }
 
@@ -57,7 +57,7 @@ void ImportDataHandler::Initialize() {
   // The ImporterHost object creates an ImporterList, which calls PathExists
   // one or more times.  Because we are currently in the UI thread, this will
   // trigger a DCHECK due to IO being done on the UI thread.  For now we will
-  // supress the DCHECK.  See the following bug for more detail:
+  // suppress the DCHECK.  See the following bug for more detail:
   // http://crbug.com/60825
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   importer_list_->DetectSourceProfiles();

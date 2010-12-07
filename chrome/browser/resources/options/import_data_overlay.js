@@ -12,9 +12,10 @@ cr.define('options', function() {
    * @class
    */
   function ImportDataOverlay() {
-    OptionsPage.call(this, 'importDataOverlay',
+    OptionsPage.call(this,
+                     'importDataOverlay',
                      templateData.import_data_title,
-                     'importDataOverlay');
+                     'import-data-overlay');
   }
 
   ImportDataOverlay.throbIntervalId = 0;
@@ -29,7 +30,7 @@ cr.define('options', function() {
      * Initialize the page.
      */
     initializePage: function() {
-      // Call base class implementation to starts preference initialization.
+      // Call base class implementation to start preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
@@ -44,7 +45,7 @@ cr.define('options', function() {
       $('import-browsers').onchange = function() {
         self.updateCheckboxes_();
         self.validateCommitButton_();
-      }
+      };
 
       $('import-data-commit').onclick = function() {
         chrome.send('importData', [
@@ -53,11 +54,14 @@ cr.define('options', function() {
             String($('import-favorites').checked),
             String($('import-passwords').checked),
             String($('import-search').checked)]);
-      }
+      };
 
       $('import-data-cancel').onclick = function() {
         ImportDataOverlay.dismiss();
-      }
+      };
+
+      // Form controls are disabled until the profile list has been loaded.
+      self.setControlsSensitive_(false);
     },
 
     /**
@@ -69,6 +73,18 @@ cr.define('options', function() {
           $('import-history').checked || $('import-favorites').checked ||
           $('import-passwords').checked || $('import-search').checked;
       $('import-data-commit').disabled = !somethingToImport;
+    },
+
+    /**
+     * Sets the sensitivity of all the checkboxes and the commit button.
+     * @private
+     */
+    setControlsSensitive_: function(sensitive) {
+      var checkboxes =
+          document.querySelectorAll('#import-checkboxes input[type=checkbox]');
+      for (var i = 0; i < checkboxes.length; i++)
+        this.setUpCheckboxState_(checkboxes[i], sensitive);
+      $('import-data-commit').disabled = !sensitive;
     },
 
     /**
@@ -108,16 +124,12 @@ cr.define('options', function() {
       var browserCount = browsers.length;
 
       if (browserCount == 0) {
-        var option = new Option(templateData.no_profile_found, 0);
+        var option = new Option(templateData.noProfileFound, 0);
         browserSelect.appendChild(option);
 
-        var checkboxes =
-            document.querySelectorAll(
-                '#import-checkboxes input[type=checkbox]');
-        for (var i = 0; i < checkboxes.length; i++) {
-          this.setUpCheckboxState_(checkboxes[i], false);
-        }
+        this.setControlsSensitive_(false);
       } else {
+        this.setControlsSensitive_(true);
         for (var i = 0; i < browserCount; i++) {
           var browser = browsers[i]
           var option = new Option(browser['name'], browser['index']);
