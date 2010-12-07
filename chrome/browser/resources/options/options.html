@@ -1,0 +1,211 @@
+<!DOCTYPE HTML>
+<html
+    i18n-values="dir:textdirection;
+                 enable-cloud-print-proxy:enable-cloud-print-proxy"
+    id="t">
+<head>
+<meta charset="utf-8">
+<title i18n-content="title"></title>
+
+<link rel="icon" href="../../../app/theme/settings_favicon.png">
+<link rel="stylesheet" href="chrome://resources/css/list.css">
+<link rel="stylesheet" href="chrome://resources/css/tree.css">
+<link rel="stylesheet" href="../dom_ui.css">
+<link rel="stylesheet" href="options_page.css">
+<link rel="stylesheet" href="add_startup_page_overlay.css">
+<link rel="stylesheet" href="advanced_options.css">
+<link rel="stylesheet" href="alert_overlay.css">
+<link rel="stylesheet" href="autofill_edit_address_overlay.css">
+<link rel="stylesheet" href="autofill_edit_creditcard_overlay.css">
+<link rel="stylesheet" href="autofill_options_page.css">
+<link rel="stylesheet" href="browser_options_page.css">
+<link rel="stylesheet" href="clear_browser_data_overlay.css">
+<link rel="stylesheet" href="content_settings.css">
+<link rel="stylesheet" href="content_settings_exceptions_area.css">
+<link rel="stylesheet" href="cookies_view.css">
+<link rel="stylesheet" href="edit_search_engine_overlay.css">
+<link rel="stylesheet" href="passwords_exceptions_list.css">
+<link rel="stylesheet" href="personal_options.css">
+<link rel="stylesheet" href="import_data_overlay.css">
+<link rel="stylesheet" href="search_engine_manager.css">
+<link rel="stylesheet" href="search_page.css">
+<link rel="stylesheet" href="subpages_tab_controls.css">
+<if expr="pp_ifdef('chromeos')">
+  <link rel="stylesheet" href="about_page.css">
+  <link rel="stylesheet" href="chromeos_accounts_options_page.css">
+  <link rel="stylesheet" href="chromeos_internet_options_page.css">
+  <link rel="stylesheet" href="chromeos_language_options.css">
+  <link rel="stylesheet" href="chromeos_proxy.css">
+</if>
+
+<if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+  <link rel="stylesheet" href="certificate_manager.css">
+</if>
+
+<script src="chrome://resources/css/tree.css.js"></script>
+
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/command_line.js"></script>
+<script src="chrome://resources/js/cr/event_target.js"></script>
+<script src="chrome://resources/js/cr/ui.js"></script>
+<script src="chrome://resources/js/cr/ui/array_data_model.js"></script>
+<script src="chrome://resources/js/cr/ui/list_selection_model.js"></script>
+<script src="chrome://resources/js/cr/ui/list_selection_controller.js"></script>
+<script src="chrome://resources/js/cr/ui/list_single_selection_model.js"></script>
+<script src="chrome://resources/js/cr/ui/list_item.js"></script>
+<script src="chrome://resources/js/cr/ui/list.js"></script>
+<script src="chrome://resources/js/cr/ui/tree.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script src="preferences.js"></script>
+<script src="pref_ui.js"></script>
+<script src="list_inline_header_selection_controller.js"></script>
+<script src="options_page.js"></script>
+<if expr="pp_ifdef('chromeos')">
+  <script src="about_page.js"></script>
+  <script src="chromeos_cellular_plan_element.js"></script>
+  <script src="chromeos_internet_network_element.js"></script>
+  <script src="chromeos_internet_options.js"></script>
+  <script src="chromeos_language_add_language_overlay.js"></script>
+  <script src="chromeos_language_list.js"></script>
+  <script src="chromeos_language_options.js"></script>
+  <script src="chromeos_system_options.js"></script>
+  <script src="chromeos_accounts_options.js"></script>
+  <script src="chromeos_proxy_options.js"></script>
+  <script src="chromeos_proxy_rules_list.js"></script>
+  <script src="chromeos_accounts_user_list.js"></script>
+  <script src="chromeos_accounts_user_name_edit.js"></script>
+  <script>
+    var AboutPage = options.AboutPage;
+    var AccountsOptions = options.AccountsOptions;
+    var InternetOptions = options.InternetOptions;
+    var LanguageHangulOptions = options.LanguageHangulOptions;
+    var LanguageOptions = options.LanguageOptions;
+    var SystemOptions = options.SystemOptions;
+  </script>
+</if>
+<if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+  <script src="certificate_tree.js"></script>
+  <script src="certificate_manager.js"></script>
+  <script src="certificate_restore_overlay.js"></script>
+  <script src="certificate_backup_overlay.js"></script>
+  <script src="certificate_edit_ca_trust_overlay.js"></script>
+  <script src="certificate_import_error_overlay.js"></script>
+  <script>
+    var CertificateManager = options.CertificateManager;
+    var CertificateRestoreOverlay = options.CertificateRestoreOverlay;
+    var CertificateBackupOverlay = options.CertificateBackupOverlay;
+    var CertificateEditCaTrustOverlay = options.CertificateEditCaTrustOverlay;
+    var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
+  </script>
+</if>
+<script src="add_startup_page_overlay.js"></script>
+<script src="add_startup_page_recent_pages_list.js"></script>
+<script src="advanced_options.js"></script>
+<script src="alert_overlay.js"></script>
+<script src="autofill_edit_address_overlay.js"></script>
+<script src="autofill_edit_creditcard_overlay.js"></script>
+<script src="autofill_options.js"></script>
+<script src="browser_options.js"></script>
+<script src="browser_options_startup_page_list.js"></script>
+<script src="clear_browser_data_overlay.js"></script>
+<script src="content_settings.js"></script>
+<script src="content_settings_exceptions_area.js"></script>
+<script src="content_settings_ui.js"></script>
+<script src="cookies_tree.js"></script>
+<script src="cookies_view.js"></script>
+<script src="edit_search_engine_overlay.js"></script>
+<script src="font_settings.js"></script>
+<script src="font_settings_ui.js"></script>
+<script src="import_data_overlay.js"></script>
+<script src="instant_confirm_overlay.js"></script>
+<script src="passwords_exceptions.js"></script>
+<script src="passwords_exceptions_list.js"></script>
+<script src="personal_options.js"></script>
+<script src="search_engine_manager.js"></script>
+<script src="search_engine_manager_engine_list.js"></script>
+<script src="search_page.js"></script>
+<script src="sync_options.js"></script>
+<script src="options.js"></script>
+
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div class="header">
+</div>
+<div id="overlay" class="overlay hidden">
+  <include src="add_startup_page_overlay.html">
+  <include src="alert_overlay.html">
+  <include src="autofill_edit_address_overlay.html">
+  <include src="autofill_edit_creditcard_overlay.html">
+  <include src="clear_browser_data_overlay.html">
+  <include src="edit_search_engine_overlay.html">
+  <include src="import_data_overlay.html">
+  <include src="instant_confirm_overlay.html">
+  <if expr="pp_ifdef('chromeos')">
+     <include src="chromeos_language_add_language_overlay.html">
+     <include
+         src="chromeos_language_customize_modifier_keys_overlay.html">
+     <include src="chromeos_internet_detail.html">
+  </if>
+  <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+    <include src="certificate_restore_overlay.html">
+    <include src="certificate_backup_overlay.html">
+    <include src="certificate_edit_ca_trust_overlay.html">
+    <include src="certificate_import_error_overlay.html">
+  </if>
+</div>
+<div id="main-content">
+  <div id="navbar-container">
+     <h1 id="settings-title" i18n-content="title"></h1>
+     <ul id="navbar">
+     </ul>
+  </div>
+  <div id="mainview">
+     <div id="managed-prefs-banner" class="hidden">
+       <span id="managed-prefs-icon"></span>
+       <span id="managed-prefs-text"
+             i18n-content="managedPrefsBannerText"></span>
+     </div>
+     <div id="mainview-content">
+       <!-- Start main pages -->
+       <!-- Please keep the main pages in desired order of display.  This will
+            allow search results to display in the desired order. -->
+       <include src="search_page.html">
+       <include src="browser_options.html">
+       <include src="personal_options.html">
+       <if expr="pp_ifdef('chromeos')">
+         <include src="chromeos_system_options.html">
+         <include src="chromeos_internet_options.html">
+         <include src="chromeos_accounts_options.html">
+       </if>
+       <include src="advanced_options.html">
+       <!-- End main pages -->
+       <div id="subpage-sheet-container" class="hidden">
+         <div id="subpage-sheet">
+           <button id="subpage-close" class="close-subpage"></button>
+           <if expr="pp_ifdef('chromeos')">
+             <include src="about_page.html">
+             <include src="chromeos_language_options.html">
+             <include src="chromeos_language_chewing_options.html">
+             <include src="chromeos_language_hangul_options.html">
+             <include src="chromeos_language_mozc_options.html">
+             <include src="chromeos_language_pinyin_options.html">
+             <include src="chromeos_proxy.html">
+           </if>
+           <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+             <include src="certificate_manager.html">
+           </if>
+           <include src="autofill_options.html">
+           <include src="content_settings.html">
+           <include src="cookies_view.html">
+           <include src="font_settings.html">
+           <include src="passwords_exceptions.html">
+           <include src="search_engine_manager.html">
+           <include src="sync_options.html">
+         </div>
+       </div>
+     </div>
+  </div>
+</div>
+</body>
+</html>

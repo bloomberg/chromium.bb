@@ -1,0 +1,169 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+var AddStartupPageOverlay = options.AddStartupPageOverlay;
+var AdvancedOptions = options.AdvancedOptions;
+var AlertOverlay = options.AlertOverlay;
+var AutoFillEditAddressOverlay = options.AutoFillEditAddressOverlay;
+var AutoFillEditCreditCardOverlay = options.AutoFillEditCreditCardOverlay;
+var AutoFillOptions = options.AutoFillOptions;
+var BrowserOptions = options.BrowserOptions;
+var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
+var ContentSettings = options.ContentSettings;
+var CookiesView = options.CookiesView;
+var EditSearchEngineOverlay = options.EditSearchEngineOverlay;
+var FontSettings = options.FontSettings;
+var ImportDataOverlay = options.ImportDataOverlay;
+var InstantConfirmOverlay = options.InstantConfirmOverlay;
+var OptionsPage = options.OptionsPage;
+var PasswordsExceptions = options.PasswordsExceptions;
+var PersonalOptions = options.PersonalOptions;
+var Preferences = options.Preferences;
+var SearchEngineManager = options.SearchEngineManager;
+var SearchPage = options.SearchPage;
+var ProxyOptions = options.ProxyOptions;
+var SyncOptions = options.SyncOptions;
+
+/**
+ * DOMContentLoaded handler, sets up the page.
+ */
+function load() {
+  // Decorate the existing elements in the document.
+  cr.ui.decorate('input[pref][type=checkbox]', options.PrefCheckbox);
+  cr.ui.decorate('input[pref][type=number]', options.PrefNumber);
+  cr.ui.decorate('input[pref][type=radio]', options.PrefRadio);
+  cr.ui.decorate('input[pref][type=range]', options.PrefRange);
+  cr.ui.decorate('select[pref]', options.PrefSelect);
+  cr.ui.decorate('input[pref][type=text]', options.PrefTextField);
+  cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
+  cr.ui.decorate('#contentSettingsPage input[type=radio]',
+      options.ContentSettingsRadio);
+  cr.ui.decorate('#fontSettingsMinimumSizeSelector',
+      options.MinimumFontSizeSelect);
+
+  var menuOffPattern = /(^\?|&)menu=off($|&)/;
+  var menuDisabled = menuOffPattern.test(window.location.search);
+  document.documentElement.setAttribute('hide-menu', menuDisabled);
+
+  localStrings = new LocalStrings();
+
+  OptionsPage.register(SearchPage.getInstance());
+
+  OptionsPage.register(BrowserOptions.getInstance());
+  OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
+                              BrowserOptions.getInstance());
+  OptionsPage.register(PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
+                              PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(PasswordsExceptions.getInstance(),
+                              PersonalOptions.getInstance());
+  OptionsPage.registerSubPage(SyncOptions.getInstance(),
+                              PersonalOptions.getInstance());
+  if (cr.isChromeOS) {
+    OptionsPage.register(SystemOptions.getInstance());
+    OptionsPage.registerSubPage(AboutPage.getInstance(),
+                                SystemOptions.getInstance());
+    OptionsPage.registerSubPage(LanguageOptions.getInstance(),
+                                SystemOptions.getInstance());
+    OptionsPage.registerSubPage(
+        new OptionsPage('languageChewing',
+                        localStrings.getString('languageChewingPage'),
+                        'languageChewingPage'),
+        SystemOptions.getInstance());
+    OptionsPage.registerSubPage(
+        new OptionsPage('languageHangul',
+                        localStrings.getString('languageHangulPage'),
+                        'languageHangulPage'),
+        SystemOptions.getInstance());
+    OptionsPage.registerSubPage(
+        new OptionsPage('languageMozc',
+                        localStrings.getString('languageMozcPage'),
+                        'languageMozcPage'),
+        SystemOptions.getInstance());
+    OptionsPage.registerSubPage(
+        new OptionsPage('languagePinyin',
+                        localStrings.getString('languagePinyinPage'),
+                        'languagePinyinPage'),
+        SystemOptions.getInstance());
+    OptionsPage.register(InternetOptions.getInstance());
+  }
+  OptionsPage.register(AdvancedOptions.getInstance());
+  OptionsPage.registerSubPage(ContentSettings.getInstance(),
+                              AdvancedOptions.getInstance());
+  OptionsPage.registerSubPage(CookiesView.getInstance(),
+                              AdvancedOptions.getInstance());
+  OptionsPage.registerSubPage(FontSettings.getInstance(),
+                              AdvancedOptions.getInstance());
+  if (!cr.isWindows && !cr.isMac) {
+    OptionsPage.registerSubPage(CertificateManager.getInstance(),
+                                AdvancedOptions.getInstance());
+    OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance());
+    OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance());
+    OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance());
+    OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance());
+  }
+  OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
+  OptionsPage.registerOverlay(AlertOverlay.getInstance());
+  OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
+  OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance());
+  OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
+  OptionsPage.registerOverlay(EditSearchEngineOverlay.getInstance());
+  OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
+  OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance());
+
+  if (cr.isChromeOS) {
+    OptionsPage.register(AccountsOptions.getInstance());
+    OptionsPage.registerSubPage(ProxyOptions.getInstance(),
+                                InternetOptions.getInstance());
+    OptionsPage.registerOverlay(new OptionsPage(
+        'detailsInternetPage',
+        'detailsInternetPage',
+        'detailsInternetPage'));
+  }
+
+  var languageModifierKeysOverlay = new OptionsPage(
+      'languageCustomizeModifierKeysOverlay',
+      localStrings.getString('languageCustomizeModifierKeysOverlay'),
+      'languageCustomizeModifierKeysOverlay')
+  OptionsPage.registerOverlay(languageModifierKeysOverlay);
+
+  Preferences.getInstance().initialize();
+  OptionsPage.initialize();
+
+  var path = document.location.pathname;
+  var hash = document.location.hash;
+
+  if (path.length > 1) {
+    var pageName = path.slice(1);
+    OptionsPage.showPageByName(pageName);
+    if (hash.length > 1)
+      OptionsPage.handleHashForPage(pageName, hash.slice(1));
+  } else {
+    // TODO(csilv): Save/restore last selected page.
+    OptionsPage.showPageByName(BrowserOptions.getInstance().name);
+  }
+
+  var subpagesNavTabs = document.querySelectorAll('.subpages-nav-tabs');
+  for(var i = 0; i < subpagesNavTabs.length; i++) {
+    subpagesNavTabs[i].onclick = function(event) {
+      OptionsPage.showTab(event.srcElement);
+    }
+  }
+
+  // Allow platform specific CSS rules.
+  if (cr.isMac)
+    document.documentElement.setAttribute('os', 'mac');
+  if (cr.isViews)
+    document.documentElement.setAttribute('toolkit', 'views');
+
+  $('subpage-close').onclick = function() {
+    OptionsPage.closeSubPage();
+  };
+}
+
+document.addEventListener('DOMContentLoaded', load);
+
+window.onpopstate = function(e) {
+  options.OptionsPage.setState(e.state);
+};
