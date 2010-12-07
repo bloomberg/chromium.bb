@@ -480,8 +480,12 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
   // modifies the text of the omnibox in anyway the URL changes. We also need to
   // update if verbatim changes and we're showing instant results. We have to be
   // careful in checking user_text as in some situations InstantController
-  // passes in an empty string (when it knows the user_text won't matter).
-  if (url_ == url && (!template_url || verbatim == verbatim_)) {
+  // passes in an empty string (when it knows the user_text won't matter). In
+  // these cases, we don't worry about whether the new user text matches the old
+  // user text.
+  if ((url_ == url) &&
+      (new_user_text.empty() || user_text_ == new_user_text) &&
+      (!template_url || verbatim == verbatim_)) {
     suggested_text->assign(last_suggestion_);
     return;
   }
