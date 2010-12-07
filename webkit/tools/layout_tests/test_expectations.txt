@@ -11,3 +11,5 @@ BUG_LOISLO WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 // patch http://trac.webkit.org/changeset/73059
 BUG22777 MAC : fast/overflow/hit-test-overflow-controls.html = IMAGE+TEXT
 
+// Remove this once we rebaseline upstream
+BUG_VICTORW MAC : fast/repaint/box-shadow-h.html = IMAGE
