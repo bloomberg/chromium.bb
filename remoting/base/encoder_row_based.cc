@@ -21,9 +21,21 @@ EncoderRowBased* EncoderRowBased::CreateZlibEncoder() {
                              VideoPacketFormat::ENCODING_ZLIB);
 }
 
+EncoderRowBased* EncoderRowBased::CreateZlibEncoder(int packet_size) {
+  return new EncoderRowBased(new CompressorZlib(),
+                             VideoPacketFormat::ENCODING_ZLIB,
+                             packet_size);
+}
+
 EncoderRowBased* EncoderRowBased::CreateVerbatimEncoder() {
   return new EncoderRowBased(new CompressorVerbatim(),
                              VideoPacketFormat::ENCODING_VERBATIM);
+}
+
+EncoderRowBased* EncoderRowBased::CreateVerbatimEncoder(int packet_size) {
+  return new EncoderRowBased(new CompressorVerbatim(),
+                             VideoPacketFormat::ENCODING_VERBATIM,
+                             packet_size);
 }
 
 EncoderRowBased::EncoderRowBased(Compressor* compressor,
