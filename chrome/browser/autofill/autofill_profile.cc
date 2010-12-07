@@ -379,6 +379,9 @@ bool AutoFillProfile::IsEmpty() const {
 }
 
 void AutoFillProfile::operator=(const AutoFillProfile& source) {
+  if (this == &source)
+    return;
+
   label_ = source.label_;
   guid_ = source.guid_;
 

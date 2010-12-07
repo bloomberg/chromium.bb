@@ -67,5 +67,19 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   EXPECT_EQ(string16(ASCIIToUTF16("************9012")), obfuscated4);
 }
 
+TEST(CreditCardTest, AssignmentOperator){
+  CreditCard a, b;
+
+  // Result of assignment should be logically equal to the original profile.
+  autofill_test::SetCreditCardInfo(&a, "Corporate", "John Dillinger",
+                                   "123456789012", "01", "2010");
+  b = a;
+  EXPECT_TRUE(a == b);
+
+  // Assignment to self should not change the profile value.
+  a = a;
+  EXPECT_TRUE(a == b);
+}
+
 }  // namespace
 

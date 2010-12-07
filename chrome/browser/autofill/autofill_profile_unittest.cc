@@ -495,6 +495,22 @@ TEST(AutoFillProfileTest, MergeWith) {
   EXPECT_EQ(0, expected_b.Compare(*b));
 }
 
+TEST(AutoFillProfileTest, AssignmentOperator){
+  AutoFillProfile a, b;
+
+  // Result of assignment should be logically equal to the original profile.
+  autofill_test::SetProfileInfo(&a, "Billing", "Marion", "Mitchell", "Morrison",
+                                "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                                "Hollywood", "CA", "91601", "US", "12345678910",
+                                "01987654321");
+  b = a;
+  EXPECT_TRUE(a == b);
+
+  // Assignment to self should not change the profile value.
+  a = a;
+  EXPECT_TRUE(a == b);
+}
+
 TEST(AutoFillProfileTest, Compare) {
   AutoFillProfile a, b;
 

@@ -375,6 +375,9 @@ string16 CreditCard::LastFourDigits() const {
 }
 
 void CreditCard::operator=(const CreditCard& credit_card) {
+  if (this == &credit_card)
+    return;
+
   number_ = credit_card.number_;
   name_on_card_ = credit_card.name_on_card_;
   type_ = credit_card.type_;
