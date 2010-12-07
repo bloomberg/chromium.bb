@@ -17,29 +17,35 @@
 namespace sync_notifier {
 
 ChromeSystemResources::ChromeSystemResources(StateWriter* state_writer)
-    : state_writer_(state_writer) {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+    : state_writer_(state_writer),
+      created_on_loop_(MessageLoop::current()) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK(created_on_loop_);
   DCHECK(state_writer_);
 }
 
 ChromeSystemResources::~ChromeSystemResources() {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   StopScheduler();
 }
 
 invalidation::Time ChromeSystemResources::current_time() {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   return base::Time::Now();
 }
 
 void ChromeSystemResources::StartScheduler() {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   scoped_runnable_method_factory_.reset(
       new ScopedRunnableMethodFactory<ChromeSystemResources>(this));
 }
 
 void ChromeSystemResources::StopScheduler() {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   scoped_runnable_method_factory_.reset();
   STLDeleteElements(&posted_tasks_);
 }
@@ -47,7 +53,8 @@ void ChromeSystemResources::StopScheduler() {
 void ChromeSystemResources::ScheduleWithDelay(
     invalidation::TimeDelta delay,
     invalidation::Closure* task) {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   Task* task_to_post = MakeTaskToPost(task);
   if (!task_to_post) {
     return;
@@ -58,7 +65,8 @@ void ChromeSystemResources::ScheduleWithDelay(
 
 void ChromeSystemResources::ScheduleImmediately(
     invalidation::Closure* task) {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   Task* task_to_post = MakeTaskToPost(task);
   if (!task_to_post) {
     return;
@@ -70,14 +78,16 @@ void ChromeSystemResources::ScheduleImmediately(
 // notifications thread).
 void ChromeSystemResources::ScheduleOnListenerThread(
     invalidation::Closure* task) {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   ScheduleImmediately(task);
 }
 
 // 'Internal thread' means 'not the listener thread'.  Since the
 // listener thread is the notifications thread, always return false.
 bool ChromeSystemResources::IsRunningOnInternalThread() {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   return false;
 }
 
@@ -134,8 +144,9 @@ void ChromeSystemResources::WriteState(
 
 Task* ChromeSystemResources::MakeTaskToPost(
     invalidation::Closure* task) {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   DCHECK(invalidation::IsCallbackRepeatable(task));
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   if (!scoped_runnable_method_factory_.get()) {
     delete task;
     return NULL;
@@ -148,7 +159,8 @@ Task* ChromeSystemResources::MakeTaskToPost(
 }
 
 void ChromeSystemResources::RunPostedTask(invalidation::Closure* task) {
-  CHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  CHECK_EQ(created_on_loop_, MessageLoop::current());
   RunAndDeleteClosure(task);
   posted_tasks_.erase(task);
 }

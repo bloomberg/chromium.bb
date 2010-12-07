@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 
+#include "base/message_loop.h"
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -57,6 +58,9 @@ class ChromeSystemResources : public invalidation::SystemResources {
   // Holds all posted tasks that have not yet been run.
   std::set<invalidation::Closure*> posted_tasks_;
   StateWriter* state_writer_;
+
+  // TODO(tim): Trying to debug bug crbug.com/64652.
+  const MessageLoop* created_on_loop_;
 
   // If the scheduler has been started, inserts |task| into
   // |posted_tasks_| and returns a Task* to post.  Otherwise,
