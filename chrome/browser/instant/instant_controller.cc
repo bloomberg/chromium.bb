@@ -146,12 +146,13 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
     DestroyPreviewContents();
 
   const GURL& url = match.destination_url;
-
   tab_contents_ = tab_contents;
   commit_on_mouse_up_ = false;
   last_transition_type_ = match.transition;
+  const TemplateURL* template_url = NULL;
 
-  if (url.is_empty() || !url.is_valid() || !ShouldShowPreviewFor(match)) {
+  if (url.is_empty() || !url.is_valid() ||
+      !ShouldShowPreviewFor(match, &template_url)) {
     DestroyPreviewContents();
     return;
   }
@@ -162,7 +163,6 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
   if (!is_active_)
     delegate_->PrepareForInstant();
 
-  const TemplateURL* template_url = GetTemplateURL(match);
   TemplateURLID template_url_id = template_url ? template_url->id() : 0;
   // Verbatim only makes sense if the search engines supports instant.
   bool real_verbatim = template_url_id ? verbatim : false;
@@ -450,7 +450,21 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
     delegate_->ShowInstant(new_loader->preview_contents());
 }
 
-bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match) {
+bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match,
+                                             const TemplateURL** template_url) {
+  const TemplateURL* t_url = GetTemplateURL(match);
+  if (t_url) {
+    if (!t_url->id() ||
+        !t_url->instant_url() ||
+        IsBlacklistedFromInstant(t_url->id()) ||
+        !t_url->instant_url()->SupportsReplacement()) {
+      // To avoid extra load on other search engines we only enable previews if
+      // they support the instant API.
+      return false;
+    }
+  }
+  *template_url = t_url;
+
   if (match.destination_url.SchemeIs(chrome::kJavaScriptScheme))
     return false;
 
@@ -492,13 +506,7 @@ const TemplateURL* InstantController::GetTemplateURL(
     TemplateURLModel* model = tab_contents_->profile()->GetTemplateURLModel();
     template_url = model ? model->GetDefaultSearchProvider() : NULL;
   }
-  if (template_url && template_url->id() &&
-      template_url->instant_url() &&
-      !IsBlacklistedFromInstant(template_url->id()) &&
-      template_url->instant_url()->SupportsReplacement()) {
-    return template_url;
-  }
-  return NULL;
+  return template_url;
 }
 
 // static

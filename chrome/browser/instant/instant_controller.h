@@ -192,8 +192,10 @@ class InstantController : public InstantLoaderDelegate {
                     bool verbatim,
                     string16* suggested_text);
 
-  // Returns true if we should show preview for |match|.
-  bool ShouldShowPreviewFor(const AutocompleteMatch& match);
+  // Returns true if a preview should be shown for |match|. If |match| has
+  // a TemplateURL that supports the instant API it is set in |template_url|.
+  bool ShouldShowPreviewFor(const AutocompleteMatch& match,
+                            const TemplateURL** template_url);
 
   // Marks the specified search engine id as not supporting instant.
   void BlacklistFromInstant(TemplateURLID id);
@@ -205,8 +207,8 @@ class InstantController : public InstantLoaderDelegate {
   // Clears the set of search engines blacklisted.
   void ClearBlacklist();
 
-  // Returns the TemplateURL to use for the specified AutocompleteMatch, or NULL
-  // if non TemplateURL should be used.
+  // Returns the TemplateURL to use for the specified AutocompleteMatch, or
+  // NULL if there is no TemplateURL for |match|.
   const TemplateURL* GetTemplateURL(const AutocompleteMatch& match);
 
   // If instant is enabled for the specified profile the type of instant is set
