@@ -685,7 +685,6 @@ void ExternalTabContainer::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
 void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
                                              bool proceed,
                                              bool* proceed_to_fire_unload) {
-  DCHECK(unload_reply_message_);
   *proceed_to_fire_unload = true;
 
   if (!automation_) {
@@ -695,6 +694,7 @@ void ExternalTabContainer::BeforeUnloadFired(TabContents* tab,
   }
 
   if (!proceed) {
+    DCHECK(unload_reply_message_);
     AutomationMsg_RunUnloadHandlers::WriteReplyParams(unload_reply_message_,
                                                       false);
     automation_->Send(unload_reply_message_);
