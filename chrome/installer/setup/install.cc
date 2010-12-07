@@ -517,7 +517,10 @@ bool DoPostInstallTasks(const FilePath& setup_path,
       FindProduct(products, BrowserDistribution::CEEE)) {
     // TODO(robershield): move the "which DLLs should be registered" policy
     // into the installer.
-    RegisterComDlls(package, current_version, new_version);
+    if (!RegisterComDlls(package, current_version, new_version)) {
+      LOG(ERROR) << "RegisterComDlls failed.  Aborting.";
+      return false;
+    }
   }
 
   // If we're told that we're an MSI install, make sure to set the marker
