@@ -260,7 +260,7 @@ void ApiDispatcher::InvocationResult::PostResult() {
 // Invocations can use this method to post an error to Chrome when it
 // couldn't complete the invocation successfully.
 void ApiDispatcher::InvocationResult::PostError(const std::string& error) {
-  LOG(ERROR) << error;
+  LOG(WARNING) << error;
   // Event handlers reuse InvocationResult code without a requestId,
   // so don't DCHECK as in PostResult here.
   // TODO(mad@chromium.org): Might be better to use a derived class instead.
