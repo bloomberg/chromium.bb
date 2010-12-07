@@ -26,6 +26,7 @@ class HttpAlternateProtocols {
     NPN_SPDY_2,
     NUM_ALTERNATE_PROTOCOLS,
     BROKEN,  // The alternate protocol is known to be broken.
+    UNINITIALIZED,
   };
 
   struct PortProtocolPair {

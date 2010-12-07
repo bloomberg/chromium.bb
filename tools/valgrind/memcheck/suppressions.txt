@@ -3401,33 +3401,6 @@
    fun:_ZN3net17HttpStreamRequest21OnStreamReadyCallbackEv
 }
 {
-   bug_64918a
-   Memcheck:Cond
-   ...
-   fun:_ZN3net17HttpStreamRequest*DoInitConnection*
-   fun:_ZN3net17HttpStreamRequest6DoLoopEi
-   fun:_ZN3net17HttpStreamRequest7RunLoopEi
-   fun:_ZN3net17HttpStreamRequest*
-}
-{
-   bug_64918b
-   Memcheck:Cond
-   fun:_ZN3net13SSLConnectJob20DoSSLConnectCompleteEi
-   fun:_ZN3net13SSLConnectJob6DoLoopEi
-   fun:_ZN3net13SSLConnectJob12OnIOCompleteEi
-}
-{
-   bug_64918c
-   Memcheck:Cond
-   ...
-   fun:_ZN3net19HttpProxyConnectJob6DoLoopEi
-   fun:_ZN3net19HttpProxyConnectJob12OnIOCompleteEi
-   ...
-   fun:_ZN3net18ClientSocketHandle12OnIOCompleteEi
-   ...
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelper18InvokeUserCallbackEPNS_18ClientSocketHandleE
-}
-{
    bug_64930a
    Memcheck:Leak
    fun:_Znw*
