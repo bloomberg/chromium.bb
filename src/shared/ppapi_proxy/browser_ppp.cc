@@ -29,7 +29,7 @@ int32_t BrowserPpp::InitializeModule(
     PP_Module module_id,
     PPB_GetInterface get_browser_interface,
     PP_Instance instance) {
-  DebugPrintf("BrowserPpp::InitializeModule(%"NACL_PRIu64", %p)\n",
+  DebugPrintf("Browser::PPP_InitializeModule(%"NACL_PRIu64", %p)\n",
               module_id, get_browser_interface);
   SetBrowserGetInterface(get_browser_interface);
   SetBrowserPppForInstance(instance, this);
@@ -42,11 +42,13 @@ int32_t BrowserPpp::InitializeModule(
   NaClSrpcService* service = reinterpret_cast<NaClSrpcService*>(
       calloc(1, sizeof(*service)));
   if (NULL == service) {
-    DebugPrintf("Couldn't create callback services.\n");
+    DebugPrintf("Browser::PPP_InitializeModule: "
+                "could not create callback services.\n");
     return PP_ERROR_FAILED;
   }
   if (!NaClSrpcServiceHandlerCtor(service, PpbRpcs::srpc_methods)) {
-    DebugPrintf("Couldn't construct callback services.\n");
+    DebugPrintf("Browser::PPP_InitializeModule: "
+                "could not construct callback services.\n");
     free(service);
     return PP_ERROR_FAILED;
   }
@@ -66,33 +68,33 @@ int32_t BrowserPpp::InitializeModule(
                                          &plugin_pid_,
                                          &success);
   if (retval != NACL_SRPC_RESULT_OK) {
-    DebugPrintf("InitializeModule failed %02x\n", retval);
+    DebugPrintf("Browser::PPP_InitializeModule failed %02x\n", retval);
     return PP_ERROR_FAILED;
   }
-  DebugPrintf("InitializeModule succeeded %02x\n", success);
+  DebugPrintf("Browser::PPP_InitializeModule succeeded %02x\n", success);
   return success;
 }
 
 void BrowserPpp::ShutdownModule() {
-  DebugPrintf("BrowserPpp::ShutdownModule\n");
+  DebugPrintf("Browser::PPP_ShutdownModule\n");
   PppRpcClient::PPP_ShutdownModule(channel_);
   NaClThreadJoin(&upcall_thread_);
   UnsetModuleIdForSrpcChannel(channel_);
 }
 
 const void* BrowserPpp::GetInterface(const char* interface_name) {
-  DebugPrintf("BrowserPpp::GetInterface('%s')\n", interface_name);
+  DebugPrintf("Browser::PPP_GetInterface('%s')\n", interface_name);
   int32_t exports_interface_name;
   NaClSrpcError retval =
       PppRpcClient::PPP_GetInterface(channel_,
                                      const_cast<char*>(interface_name),
                                      &exports_interface_name);
   if (retval != NACL_SRPC_RESULT_OK || !exports_interface_name) {
-    DebugPrintf("    Interface '%s' not supported\n", interface_name);
+    DebugPrintf("Browser::PPP_GetInterface: '%s' not found\n", interface_name);
     return NULL;
   }
   if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0) {
-    DebugPrintf("    Interface '%s' proxied\n", interface_name);
+    DebugPrintf("Browser::PPP_GetInterface: '%s' proxied\n", interface_name);
     return reinterpret_cast<const void*>(BrowserInstance::GetInterface());
   }
   // TODO(sehr): other interfaces go here.

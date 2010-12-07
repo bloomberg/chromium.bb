@@ -84,12 +84,12 @@ static StrImpl* VarToStrImpl(PP_Var var) {
 void AddRef(PP_Var var) {
   ObjImpl* obj_impl = VarToObjImpl(var);
   if (obj_impl != NULL) {
-    DebugPrintf("PluginVar::AddRef: %"NACL_PRIu64"\n", obj_impl->id());
+    DebugPrintf("Plugin::PPB_Var::AddRef: %"NACL_PRIu64"\n", obj_impl->id());
     obj_impl->AddRef();
   }
   StrImpl* str_impl = VarToStrImpl(var);
   if (str_impl != NULL) {
-    DebugPrintf("PluginVar::AddRef: '%s'\n", str_impl->str().c_str());
+    DebugPrintf("Plugin::PPB_Var::AddRef: '%s'\n", str_impl->str().c_str());
     str_impl->AddRef();
   }
 }
@@ -97,7 +97,8 @@ void AddRef(PP_Var var) {
 void Release(PP_Var var) {
   ObjImpl* obj_impl = VarToObjImpl(var);
   if (obj_impl != NULL) {
-    DebugPrintf("PluginVar::Release: object(%"NACL_PRIu64")\n", obj_impl->id());
+    DebugPrintf("Plugin::PPB_Var::Release: object(%"NACL_PRIu64")\n",
+                obj_impl->id());
     obj_impl->Release();
     if (obj_impl->ref_count() == 0) {
       if (obj_impl->object_class() == NULL) {
@@ -110,7 +111,8 @@ void Release(PP_Var var) {
   }
   StrImpl* str_impl = VarToStrImpl(var);
   if (str_impl != NULL) {
-    DebugPrintf("PluginVar::Release: string('%s')\n", str_impl->str().c_str());
+    DebugPrintf("Plugin::PPB_Var::Release: string('%s')\n",
+                str_impl->str().c_str());
     str_impl->Release();
     if (str_impl->ref_count() == 0) {
       delete str_impl;
@@ -145,8 +147,9 @@ bool HasProperty(PP_Var object,
   if (impl == NULL) {
     return false;
   }
-  DebugPrintf("PluginVar::HasProperty: %"NACL_PRIu64"\n", impl->id());
-  DebugPrintf("  object.type = %d; name.type = %d\n", object.type, name.type);
+  DebugPrintf("Plugin::PPB_Var::HasProperty: id=%"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::HasProperty: "
+              "object.type = %d; name.type = %d\n", object.type, name.type);
   const PPP_Class_Deprecated* object_class = impl->object_class();
   if (object_class == NULL || object_class->HasProperty == NULL) {
     return false;
@@ -161,7 +164,7 @@ bool HasMethod(PP_Var object,
   if (impl == NULL) {
     return false;
   }
-  DebugPrintf("PluginVar::HasMethod: %"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::HasMethod: id=%"NACL_PRIu64"\n", impl->id());
   const PPP_Class_Deprecated* object_class = impl->object_class();
   if (object_class == NULL || object_class->HasMethod == NULL) {
     return false;
@@ -176,7 +179,7 @@ PP_Var GetProperty(PP_Var object,
   if (impl == NULL) {
     return PP_MakeUndefined();
   }
-  DebugPrintf("PluginVar::GetProperty: %"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::GetProperty: id=%"NACL_PRIu64"\n", impl->id());
   const PPP_Class_Deprecated* object_class = impl->object_class();
   if (object_class == NULL || object_class->GetProperty == NULL) {
     return PP_MakeUndefined();
@@ -192,7 +195,8 @@ void GetAllPropertyNames(PP_Var object,
   if (impl == NULL) {
     return;
   }
-  DebugPrintf("PluginVar::GetAllPropertyNames: %"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::GetAllPropertyNames: id=%"NACL_PRIu64"\n",
+              impl->id());
   const PPP_Class_Deprecated* object_class = impl->object_class();
   if (object_class == NULL || object_class->GetAllPropertyNames == NULL) {
     return;
@@ -211,7 +215,7 @@ void SetProperty(PP_Var object,
   if (impl == NULL) {
     return;
   }
-  DebugPrintf("PluginVar::SetProperty: %"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::SetProperty: id=%"NACL_PRIu64"\n", impl->id());
   const PPP_Class_Deprecated* object_class = impl->object_class();
   if (object_class == NULL || object_class->SetProperty == NULL) {
     return;
@@ -226,7 +230,8 @@ void RemoveProperty(PP_Var object,
   if (impl == NULL) {
     return;
   }
-  DebugPrintf("PluginVar::RemoveProperty: %"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::RemoveProperty: id=%"NACL_PRIu64"\n",
+              impl->id());
   const PPP_Class_Deprecated* object_class = impl->object_class();
   if (object_class == NULL || object_class->RemoveProperty == NULL) {
     return;
@@ -243,7 +248,7 @@ PP_Var Call(PP_Var object,
   if (impl == NULL) {
     return PP_MakeUndefined();
   }
-  DebugPrintf("PluginVar::Call: %"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::Call: id=%"NACL_PRIu64"\n", impl->id());
   const PPP_Class_Deprecated* object_class = impl->object_class();
   if (object_class == NULL || object_class->Call == NULL) {
     return PP_MakeUndefined();
@@ -263,7 +268,7 @@ PP_Var Construct(PP_Var object,
   if (impl == NULL) {
     return PP_MakeUndefined();
   }
-  DebugPrintf("PluginVar::Construct: %"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::Construct: %"NACL_PRIu64"\n", impl->id());
   const PPP_Class_Deprecated* object_class = impl->object_class();
   if (object_class == NULL || object_class->Construct == NULL) {
     return PP_MakeUndefined();
@@ -279,10 +284,10 @@ bool IsInstanceOf(PP_Var var,
   if (impl == NULL) {
     return false;
   }
-  DebugPrintf("PluginVar::IsInstanceOf: %"NACL_PRIu64"\n", impl->id());
-  DebugPrintf("is instance %p %p\n",
+  DebugPrintf("Plugin::PPB_Var::IsInstanceOf: id=%"NACL_PRIu64"\n", impl->id());
+  DebugPrintf("Plugin::PPB_Var::IsInstanceOf: is instance %p %p\n",
               reinterpret_cast<const void*>(impl->object_class()),
-         reinterpret_cast<const void*>(object_class));
+              reinterpret_cast<const void*>(object_class));
   if (object_class != impl->object_class()) {
     return false;
   }

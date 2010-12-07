@@ -10,15 +10,15 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/ppapi_proxy/utility.h"
 
 #include "native_client/tests/fake_browser_ppapi/fake_resource.h"
+#include "native_client/tests/fake_browser_ppapi/utility.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_resource.h"
 
-using ppapi_proxy::DebugPrintf;
+using fake_browser_ppapi::DebugPrintf;
 
 namespace fake_browser_ppapi {
 

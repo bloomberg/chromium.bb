@@ -11,9 +11,9 @@
 
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
 #include "native_client/tests/fake_browser_ppapi/fake_object.h"
+#include "native_client/tests/fake_browser_ppapi/utility.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_var.h"
 

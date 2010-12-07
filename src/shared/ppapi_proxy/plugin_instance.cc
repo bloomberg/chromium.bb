@@ -20,21 +20,21 @@ static PluginInstance* GetInstancePointer(PP_Instance instance) {
 }
 
 static PP_Var GetWindowObjectThunk(PP_Instance instance) {
-  DebugPrintf("PluginInstance::GetWindowObject: instance=%" NACL_PRIx64"\n",
-              instance);
+  DebugPrintf("Plugin::PPB_Instance::GetWindowObject: instance=%"
+              NACL_PRIx64"\n", instance);
   return GetInstancePointer(instance)->GetWindowObject();
 }
 
 static PP_Var GetOwnerElementObjectThunk(PP_Instance instance) {
-  DebugPrintf("PluginInstance::GetOwnerElementObject: instance=%"
+  DebugPrintf("Plugin::PPB_Instance::GetOwnerElementObject: instance=%"
               NACL_PRIx64 "\n",
               instance);
   return GetInstancePointer(instance)->GetOwnerElementObject();
 }
 
 static PP_Bool BindGraphicsThunk(PP_Instance instance,
-                              PP_Resource device) {
-  DebugPrintf("PluginInstance::BindGraphicsDeviceContext: instance=%"
+                                 PP_Resource device) {
+  DebugPrintf("Plugin::PPB_Instance::BindGraphicsDeviceContext: instance=%"
               NACL_PRIx64 ", device=%" NACL_PRIu64 "\n",
               instance, device);
   return static_cast<PP_Bool>
@@ -42,7 +42,7 @@ static PP_Bool BindGraphicsThunk(PP_Instance instance,
 }
 
 static PP_Bool IsFullFrameThunk(PP_Instance instance) {
-  DebugPrintf("PluginInstance::IsFullFrame: instance=%" NACL_PRIx64 "\n",
+  DebugPrintf("Plugin::PPB_Instance::IsFullFrame: instance=%" NACL_PRIx64 "\n",
               instance);
   return static_cast<PP_Bool>(GetInstancePointer(instance)->IsFullFrame());
 }
@@ -50,7 +50,7 @@ static PP_Bool IsFullFrameThunk(PP_Instance instance) {
 static PP_Var ExecuteScriptThunk(PP_Instance instance,
                                  PP_Var script,
                                  PP_Var* exception) {
-  DebugPrintf("PluginInstance::ExecuteScript: instance=%" NACL_PRIx64"\n",
+  DebugPrintf("Plugin::PPB_Instance::ExecuteScript: instance=%" NACL_PRIx64"\n",
               instance);
   return GetInstancePointer(instance)->ExecuteScript(script, exception);
 }

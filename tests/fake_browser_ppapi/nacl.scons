@@ -67,7 +67,8 @@ fake_browser = trusted_env.ComponentProgram('fake_browser_ppapi',
                                              'fake_url_response_info.cc',
                                              'fake_window.cc',
                                              'main.cc',
-                                             'test_scriptable.cc'])
+                                             'test_scriptable.cc',
+                                             'utility.cc'])
 
 ppapi_basic_object_nexe = env.File('${STAGING_DIR}/ppapi_basic_object.nexe')
 

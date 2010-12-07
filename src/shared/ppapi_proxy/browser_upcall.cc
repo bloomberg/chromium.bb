@@ -51,7 +51,8 @@ static void CallOnMainThreadThunk(void* arg, int32_t res) {
   UNREFERENCED_PARAMETER(res);
   if (closure != NULL) {
     // TODO(sehr): Send an RPC back to the NaCl module to run it's closure.
-    ppapi_proxy::DebugPrintf("Closure run was invoked!\n");
+    ppapi_proxy::DebugPrintf("Browser::CallOnMainThread: "
+                             "closure run was invoked!\n");
   }
 }
 

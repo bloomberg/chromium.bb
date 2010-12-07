@@ -11,7 +11,6 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
 #include "native_client/tests/fake_browser_ppapi/fake_core.h"
 #include "native_client/tests/fake_browser_ppapi/fake_file_io.h"
@@ -24,6 +23,7 @@
 #include "native_client/tests/fake_browser_ppapi/fake_url_response_info.h"
 #include "native_client/tests/fake_browser_ppapi/fake_window.h"
 #include "native_client/tests/fake_browser_ppapi/test_scriptable.h"
+#include "native_client/tests/fake_browser_ppapi/utility.h"
 
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_core.h"
@@ -31,7 +31,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/pp_errors.h"
 
-using ppapi_proxy::DebugPrintf;
+using fake_browser_ppapi::DebugPrintf;
 using fake_browser_ppapi::Host;
 using fake_browser_ppapi::FakeWindow;
 

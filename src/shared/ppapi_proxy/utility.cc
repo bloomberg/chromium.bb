@@ -22,9 +22,10 @@ void DebugPrintf(const char* format, ...) {
   if (printf_enabled == 1) {
     va_list argptr;
     va_start(argptr, format);
-    vfprintf(stderr, format, argptr);
+    fprintf(stdout, "ppapi_proxy: ");
+    vfprintf(stdout, format, argptr);
     va_end(argptr);
-    fflush(stderr);
+    fflush(stdout);
   }
 }
 
