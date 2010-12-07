@@ -189,6 +189,9 @@ BrowserMainParts::~BrowserMainParts() {
 void BrowserMainParts::EarlyInitialization() {
   PreEarlyInitialization();
 
+  if (parsed_command_line().HasSwitch(switches::kEnableBenchmarking))
+    base::FieldTrial::EnableBenchmarking();
+
   // Note: make sure to call ConnectionFieldTrial() before
   // ProxyConnectionsFieldTrial().
   ConnectionFieldTrial();
@@ -675,7 +678,8 @@ MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
 
   MetricsService* metrics = g_browser_process->metrics_service();
 
-  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly)) {
+  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly) ||
+      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
     // If we're testing then we don't care what the user preference is, we turn
     // on recording, but not reporting, otherwise tests fail.
     metrics->StartRecordingOnly();
