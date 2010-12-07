@@ -5,29 +5,29 @@
 #include "media/base/video_frame.h"
 #include "remoting/base/codec_test.h"
 #include "remoting/base/decoder_row_based.h"
-#include "remoting/base/encoder_zlib.h"
+#include "remoting/base/encoder_row_based.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
 TEST(EncodeDecodeTest, EncodeAndDecodeZlib) {
-  EncoderZlib encoder;
+  scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder());
   scoped_ptr<DecoderRowBased> decoder(DecoderRowBased::CreateZlibDecoder());
   decoder->set_reverse_rows(false);
-  TestEncoderDecoder(&encoder, decoder.get(), true);
+  TestEncoderDecoder(encoder.get(), decoder.get(), true);
 }
 
 TEST(EncodeDecodeTest, EncodeAndDecodeSmallOutputBufferZlib) {
-  EncoderZlib encoder(64);
+  scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder(64));
   scoped_ptr<DecoderRowBased> decoder(DecoderRowBased::CreateZlibDecoder());
   decoder->set_reverse_rows(false);
-  TestEncoderDecoder(&encoder, decoder.get(), true);
+  TestEncoderDecoder(encoder.get(), decoder.get(), true);
 }
 
 TEST(EncodeDecodeTest, EncodeAndDecodeNoneStrictZlib) {
-  EncoderZlib encoder;
+  scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder());
   scoped_ptr<DecoderRowBased> decoder(DecoderRowBased::CreateZlibDecoder());
-  TestEncoderDecoder(&encoder, decoder.get(), false);
+  TestEncoderDecoder(encoder.get(), decoder.get(), false);
 }
 
 }  // namespace remoting

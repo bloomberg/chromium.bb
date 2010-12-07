@@ -16,7 +16,7 @@ class Encoder;
 
 // Prepare testing data for encoding. Memory created is written to |memory|.
 // Returns randomly generated data in CaptureData.
-scoped_refptr<CaptureData> PrepareEncodeData(PixelFormat format,
+scoped_refptr<CaptureData> PrepareEncodeData(media::VideoFrame::Format format,
                                              uint8** memory);
 
 // Generate test data and test the encoder for a regular encoding sequence.
