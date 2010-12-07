@@ -89,7 +89,7 @@ struct wl_grab_interface {
 };
 
 struct wl_grab {
-	struct wl_grab_interface *interface;
+	const struct wl_grab_interface *interface;
 	struct wl_input_device *input_device;
 };
 
