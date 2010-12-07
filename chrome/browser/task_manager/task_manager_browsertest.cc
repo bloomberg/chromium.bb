@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   browser()->window()->ShowTaskManager();
 
   // Browser and the New Tab Page.
-  EXPECT_EQ(2, model()->ResourceCount());
+  WaitForResourceChange(2);
 
   // Open a new tab and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
   browser()->window()->ShowTaskManager();
 
   // Browser and the New Tab Page.
-  EXPECT_EQ(2, model()->ResourceCount());
+  WaitForResourceChange(2);
 
   // Open a new background contents and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
@@ -149,15 +149,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
   WaitForResourceChange(2);
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/31663
-#define MAYBE_NoticeExtensionChanges DISABLED_NoticeExtensionChanges
-#else
-// Flaky test bug filed in http://crbug.com/51701
-#define MAYBE_NoticeExtensionChanges FLAKY_NoticeExtensionChanges
-#endif
-
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticeExtensionChanges) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager. This populates the model, and helps with debugging
@@ -165,13 +157,17 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticeExtensionChanges) {
   browser()->window()->ShowTaskManager();
 
   // Browser and the New Tab Page.
-  EXPECT_EQ(2, model()->ResourceCount());
+  WaitForResourceChange(2);
 
   // Loading an extension with a background page should result in a new
   // resource being created for it.
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
   WaitForResourceChange(3);
+
+  // Unload extension to avoid crash on Windows (see http://crbug.com/31663).
+  UnloadExtension(last_loaded_extension_id_);
+  WaitForResourceChange(2);
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
@@ -252,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeNotificationChanges) {
   // Show the task manager.
   browser()->window()->ShowTaskManager();
   // Expect to see the browser and the New Tab Page renderer.
-  EXPECT_EQ(2, model()->ResourceCount());
+  WaitForResourceChange(2);
 
   // Show a notification.
   NotificationUIManager* notifications =
@@ -377,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   browser()->window()->ShowTaskManager();
 
   // Browser and the New Tab Page.
-  EXPECT_EQ(2, model()->ResourceCount());
+  WaitForResourceChange(2);
 
   // Open a new tab and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
