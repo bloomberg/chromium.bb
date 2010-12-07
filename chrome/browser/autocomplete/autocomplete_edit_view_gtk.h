@@ -341,6 +341,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // make sure they have the same baseline.
   void AdjustVerticalAlignmentOfInstantView();
 
+  // Stop showing the instant suggest auto-commit animation.
+  void StopAnimation();
+
   // The widget we expose, used for vertically centering the real text edit,
   // since the height will change based on the font / font size, etc.
   OwnedWidgetGtk alignment_;
