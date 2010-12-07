@@ -693,10 +693,10 @@ void BrowserRenderProcessHost::InitSpeechInput() {
   } else if (!command_line.HasSwitch(switches::kEnableSpeechInput)) {
     // We need to evaluate whether IO is OK here. http://crbug.com/63335.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    // Official Chrome builds don't have speech input enabled by default in the
-    // beta and stable channels.
+    // Official Chrome builds have speech input enabled by default only in the
+    // dev channel.
     std::string channel = platform_util::GetVersionStringModifier();
-    enabled = (!channel.empty() && channel != "beta");
+    enabled = (channel == "dev");
 #endif
   }
 
