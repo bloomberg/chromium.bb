@@ -395,6 +395,10 @@ digraph {
     os.mkdir(repo_dir)
     dirtree.WriteFile(os.path.join(repo_dir, "myfile"), "File contents")
     subprocess.check_call(["git", "init", "-q"], cwd=repo_dir)
+    # Set user name info in order to make this work on some of the Buildbots.
+    subprocess.check_call(["git", "config", "user.name", "Bob"], cwd=repo_dir)
+    subprocess.check_call(["git", "config", "user.email", "bob@example.com"],
+                          cwd=repo_dir)
     subprocess.check_call(["git", "add", "."], cwd=repo_dir)
     subprocess.check_call(["git", "commit", "-q", "-a", "-m", "initial"],
                           cwd=repo_dir)

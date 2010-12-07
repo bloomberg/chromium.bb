@@ -20,6 +20,9 @@ import build
 
 
 def Main(args):
+  sys.stderr.write("Running the unit tests...\n")
+  subprocess.check_call(["python", "test_all.py"])
+
   if args == ["trybot"] or args == ["buildbot_incremental"]:
     # We use --allow-overwrite because the source trees are not
     # modified by hand on the trybots/buildbots, but if there are
