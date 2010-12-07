@@ -1161,37 +1161,12 @@ static const struct wl_drag_interface drag_interface = {
 	drag_cancel,
 };
 
-static void
-lose_pointer_focus(struct wl_listener *listener,
-		   struct wl_surface *surface)
-{
-	struct wlsc_input_device *device =
-		container_of(listener, struct wlsc_input_device,
-			     input_device.pointer_focus_listener);
-	uint32_t time;
-
-	time = wl_display_get_time(wl_client_get_display(surface->client));
-	wl_input_device_set_pointer_focus(&device->input_device,
-					  NULL, time, 0, 0, 0, 0);
-}
-
-static void
-lose_keyboard_focus(struct wl_listener *listener,
-		    struct wl_surface *surface)
-{
-	struct wlsc_input_device *device =
-		container_of(listener, struct wlsc_input_device,
-			     input_device.keyboard_focus_listener);
-	uint32_t time;
-
-	time = wl_display_get_time(wl_client_get_display(surface->client));
-	wl_input_device_set_keyboard_focus(&device->input_device, NULL, time);
-}
-
 void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec)
 {
+	wl_input_device_init(&device->input_device);
+
 	device->input_device.object.interface = &wl_input_device_interface;
 	device->input_device.object.implementation =
 		(void (**)(void)) &input_device_interface;
@@ -1205,11 +1180,6 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 					     device->x, device->y, 32, 32);
 	device->hotspot_x = 16;
 	device->hotspot_y = 16;
-
-	wl_list_init(&device->input_device.pointer_focus_listener.link);
-	device->input_device.pointer_focus_listener.func = lose_pointer_focus;
-	wl_list_init(&device->input_device.keyboard_focus_listener.link);
-	device->input_device.keyboard_focus_listener.func = lose_keyboard_focus;
 
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 

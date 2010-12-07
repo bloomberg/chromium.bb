@@ -317,6 +317,41 @@ wl_client_destroy(struct wl_client *client)
 	free(client);
 }
 
+static void
+lose_pointer_focus(struct wl_listener *listener,
+		   struct wl_surface *surface)
+{
+	struct wl_input_device *device =
+		container_of(listener, struct wl_input_device,
+			     pointer_focus_listener);
+	uint32_t time;
+
+	time = wl_display_get_time(wl_client_get_display(surface->client));
+	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
+}
+
+static void
+lose_keyboard_focus(struct wl_listener *listener,
+		    struct wl_surface *surface)
+{
+	struct wl_input_device *device =
+		container_of(listener, struct wl_input_device,
+			     keyboard_focus_listener);
+	uint32_t time;
+
+	time = wl_display_get_time(wl_client_get_display(surface->client));
+	wl_input_device_set_keyboard_focus(device, NULL, time);
+}
+
+WL_EXPORT void
+wl_input_device_init(struct wl_input_device *device)
+{
+	wl_list_init(&device->pointer_focus_listener.link);
+	device->pointer_focus_listener.func = lose_pointer_focus;
+	wl_list_init(&device->keyboard_focus_listener.link);
+	device->keyboard_focus_listener.func = lose_keyboard_focus;
+}
+
 WL_EXPORT void
 wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				  struct wl_surface *surface,
