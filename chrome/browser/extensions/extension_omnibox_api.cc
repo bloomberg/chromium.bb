@@ -164,6 +164,11 @@ bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
       profile_->GetExtensionsService()->GetPropertyBag(GetExtension()),
       suggestion);
 
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
+      Source<Profile>(profile_),
+      NotificationService::NoDetails());
+
   return true;
 }
 
