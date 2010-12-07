@@ -921,8 +921,6 @@ notify_button(struct wlsc_input_device *device,
 					     WL_DRAG_OFFER_DROP);
 		wlsc_input_device_end_grab(device, time);
 	}
-
-	wlsc_compositor_schedule_repaint(compositor);
 }
 
 void
