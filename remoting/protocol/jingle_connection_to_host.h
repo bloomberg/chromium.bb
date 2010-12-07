@@ -27,7 +27,6 @@
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
-#include "remoting/protocol/stream_writer.h"
 
 class MessageLoop;
 

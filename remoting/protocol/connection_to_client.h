@@ -12,7 +12,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/protocol/session.h"
-#include "remoting/protocol/stream_writer.h"
 #include "remoting/protocol/video_writer.h"
 
 namespace remoting {

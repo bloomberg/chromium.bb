@@ -405,8 +405,6 @@
         'protocol/session_manager.h',
         'protocol/socket_reader_base.cc',
         'protocol/socket_reader_base.h',
-        'protocol/stream_writer.cc',
-        'protocol/stream_writer.h',
         'protocol/util.cc',
         'protocol/util.h',
         'protocol/video_reader.cc',

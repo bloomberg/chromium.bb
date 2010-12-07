@@ -12,7 +12,6 @@
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/stream_writer.h"
 
 namespace remoting {
 namespace protocol {
