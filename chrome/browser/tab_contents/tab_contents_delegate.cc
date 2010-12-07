@@ -7,6 +7,10 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "gfx/rect.h"
 
+std::string TabContentsDelegate::GetNavigationHeaders(const GURL& url) {
+  return std::string();
+}
+
 void TabContentsDelegate::DetachContents(TabContents* source) {
 }
 

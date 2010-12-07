@@ -886,6 +886,10 @@ bool TabContents::NavigateToEntry(
   // Navigate in the desired RenderViewHost.
   ViewMsg_Navigate_Params navigate_params;
   MakeNavigateParams(entry, controller_, reload_type, &navigate_params);
+  if (delegate_) {
+    navigate_params.extra_headers =
+        delegate_->GetNavigationHeaders(navigate_params.url);
+  }
   dest_render_view_host->Navigate(navigate_params);
 
   if (entry.page_id() == -1) {

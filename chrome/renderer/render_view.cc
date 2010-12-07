@@ -106,6 +106,7 @@
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_util.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
@@ -1413,6 +1414,15 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
     if (params.referrer.is_valid()) {
       request.setHTTPHeaderField(WebString::fromUTF8("Referer"),
                                  WebString::fromUTF8(params.referrer.spec()));
+    }
+
+    if (!params.extra_headers.empty()) {
+      for (net::HttpUtil::HeadersIterator i(params.extra_headers.begin(),
+                                            params.extra_headers.end(), "\n");
+           i.GetNext(); ) {
+        request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
+                                   WebString::fromUTF8(i.values()));
+      }
     }
 
     if (navigation_state)

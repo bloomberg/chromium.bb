@@ -571,6 +571,7 @@ void ParamTraits<ViewMsg_Navigate_Params>::Write(Message* m,
   WriteParam(m, p.state);
   WriteParam(m, p.navigation_type);
   WriteParam(m, p.request_time);
+  WriteParam(m, p.extra_headers);
 }
 
 bool ParamTraits<ViewMsg_Navigate_Params>::Read(const Message* m, void** iter,
@@ -585,7 +586,8 @@ bool ParamTraits<ViewMsg_Navigate_Params>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->transition) &&
       ReadParam(m, iter, &p->state) &&
       ReadParam(m, iter, &p->navigation_type) &&
-      ReadParam(m, iter, &p->request_time);
+      ReadParam(m, iter, &p->request_time) &&
+      ReadParam(m, iter, &p->extra_headers);
 }
 
 void ParamTraits<ViewMsg_Navigate_Params>::Log(const param_type& p,
@@ -602,6 +604,8 @@ void ParamTraits<ViewMsg_Navigate_Params>::Log(const param_type& p,
   LogParam(p.navigation_type, l);
   l->append(", ");
   LogParam(p.request_time, l);
+  l->append(", ");
+  LogParam(p.extra_headers, l);
   l->append(")");
 }
 

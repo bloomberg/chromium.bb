@@ -92,6 +92,7 @@ struct ViewMsg_Navigate_Params {
 
   // The URL to send in the "Referer" header field. Can be empty if there is
   // no referrer.
+  // TODO: consider folding this into extra_headers.
   GURL referrer;
 
   // The type of transition.
@@ -105,6 +106,9 @@ struct ViewMsg_Navigate_Params {
 
   // The time the request was created
   base::Time request_time;
+
+  // Extra headers (separated by \n) to send during the request.
+  std::string extra_headers;
 };
 
 // Current status of the audio output stream in the browser process. Browser

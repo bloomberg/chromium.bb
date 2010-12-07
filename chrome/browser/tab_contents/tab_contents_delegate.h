@@ -62,6 +62,10 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) = 0;
 
+  // Returns the set of headers to add to the navigation request. Use
+  // net::HttpUtil::AppendHeaderIfMissing to build the set of headers.
+  virtual std::string GetNavigationHeaders(const GURL& url);
+
   // Creates a new tab with the already-created TabContents 'new_contents'.
   // The window for the added contents should be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
