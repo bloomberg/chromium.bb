@@ -8,6 +8,7 @@
 #include <GLES2/gl2.h>
 
 #include <map>
+#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -69,6 +70,9 @@ class GLES2Implementation {
   // GL names for the buffers used to emulate client side buffers.
   static const GLuint kClientSideArrayId = 0xFEDCBA98u;
   static const GLuint kClientSideElementArrayId = 0xFEDCBA99u;
+
+  // Number of swap buffers allowed before waiting.
+  static const size_t kMaxSwapBuffers = 2;
 
   GLES2Implementation(
       GLES2CmdHelper* helper,
@@ -346,6 +350,8 @@ class GLES2Implementation {
   void* result_buffer_;
   uint32 result_shm_offset_;
   std::string last_error_;
+
+  std::queue<int32> swap_buffers_tokens_;
 
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;

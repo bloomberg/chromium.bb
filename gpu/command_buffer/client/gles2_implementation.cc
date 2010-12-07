@@ -651,7 +651,13 @@ void GLES2Implementation::Finish() {
 }
 
 void GLES2Implementation::SwapBuffers() {
+  // Wait if this would add too many swap buffers.
+  if (swap_buffers_tokens_.size() == kMaxSwapBuffers) {
+    helper_->WaitForToken(swap_buffers_tokens_.front());
+    swap_buffers_tokens_.pop();
+  }
   helper_->SwapBuffers();
+  swap_buffers_tokens_.push(helper_->InsertToken());
   Flush();
 }
 
