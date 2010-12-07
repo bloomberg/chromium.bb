@@ -1,8 +1,6 @@
-diff --git a/third_party/sqlite/src/src/attach.c b/third_party/sqlite/src/src/attach.c
-index e3dc49d..462602d 100644
---- a/third_party/sqlite/src/src/attach.c
-+++ b/third_party/sqlite/src/src/attach.c
-@@ -313,6 +313,12 @@ static void codeAttach(
+--- src/attach.c.orig	2010-03-21 21:28:14.144127448 -0700
++++ src/attach.c	2010-03-21 21:55:58.224754199 -0700
+@@ -313,6 +313,12 @@
  #ifndef SQLITE_OMIT_AUTHORIZATION
    if( pAuthArg ){
      char *zAuthArg = pAuthArg->u.zToken;

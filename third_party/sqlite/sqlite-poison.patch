@@ -1,8 +1,8 @@
-diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
-index f57f132..b5c3ba8 100644
---- a/third_party/sqlite/src/src/btree.c
-+++ b/third_party/sqlite/src/src/btree.c
-@@ -22,6 +22,12 @@
+Index: src/btree.c
+===================================================================
+--- src/btree.c	2009-09-09 06:45:19.000000000 -0700
++++ src/btree.c	2009-09-14 18:17:53.000000000 -0700
+@@ -24,6 +24,12 @@
  static const char zMagicHeader[] = SQLITE_FILE_HEADER;
  
  /*
@@ -15,17 +15,17 @@ index f57f132..b5c3ba8 100644
  ** Set this global variable to 1 to enable tracing using the TRACE
  ** macro.
  */
-@@ -2335,6 +2341,7 @@ static int lockBtree(BtShared *pBt){
-     ** in WAL mode. If the log is not already open, open it now. Then 
-     ** return SQLITE_OK and return without populating BtShared.pPage1.
-     ** The caller detects this and calls this function again. This is
+@@ -2337,6 +2343,7 @@
+   if( rc ) return rc;
+   memcpy(data, zMagicHeader, sizeof(zMagicHeader));
+   assert( sizeof(zMagicHeader)==16 );
 +  assert( sizeof(zMagicHeader)==sizeof(zPoisonHeader) );
-     ** required as the version of page 1 currently in the page1 buffer
-     ** may not be the latest version - there may be a newer one in the log
-     ** file.
-@@ -7949,6 +7956,74 @@ int sqlite3BtreeCheckpoint(Btree *p){
-   }
-   return rc;
+   put2byte(&data[16], pBt->pageSize);
+   data[18] = 1;
+   data[19] = 1;
+@@ -7804,4 +7811,72 @@
+   assert(!pCur->aOverflow);
+   pCur->isIncrblobHandle = 1;
  }
 +
 +/* Poison the db so that other clients error out as quickly as
@@ -96,5 +96,3 @@ index f57f132..b5c3ba8 100644
 +}
 +
  #endif
- 
- /*
