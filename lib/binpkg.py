@@ -10,6 +10,7 @@ import operator
 import os
 import tempfile
 import time
+import urllib
 import urllib2
 
 class PackageIndex(object):
@@ -52,7 +53,7 @@ class PackageIndex(object):
     for pkg in self.packages:
       cpv, sha1 = pkg['CPV'], pkg.get('SHA1')
       if sha1:
-        path = pkg.get('PATH', cpv + '.tbz2')
+        path = pkg.get('PATH', urllib.quote(cpv + '.tbz2'))
         db[sha1] = '%s/%s' % (uri.rstrip('/'), path)
 
   def _ReadPkgIndex(self, pkgfile):
@@ -200,7 +201,8 @@ class PackageIndex(object):
     """
     self.header['URI'] = base_uri
     for pkg in self.packages:
-      pkg['PATH'] = '%s/%s' % (path_prefix.rstrip('/'), pkg['CPV'] + '.tbz2')
+      path = urllib.quote(pkg['CPV'] + '.tbz2')
+      pkg['PATH'] = '%s/%s' % (path_prefix.rstrip('/'), path)
 
   def Write(self, pkgfile):
     """Write a packages file to disk.
