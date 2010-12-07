@@ -161,13 +161,15 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 		container_of(resource, struct wlsc_surface, surface.resource);
 	struct wlsc_compositor *compositor = surface->compositor;
 	struct wl_listener *l, *next;
+	uint32_t time;
 
 	wl_list_remove(&surface->link);
 	glDeleteTextures(1, &surface->texture);
 
+	time = wl_display_get_time(compositor->wl_display);
 	wl_list_for_each_safe(l, next,
 			      &surface->surface.destroy_listener_list, link)
-		l->func(l, &surface->surface);
+		l->func(l, &surface->surface, time);
 
 	free(surface);
 
@@ -486,14 +488,12 @@ wlsc_input_device_end_grab(struct wlsc_input_device *device, uint32_t time);
 
 static void
 lose_grab_surface(struct wl_listener *listener,
-		  struct wl_surface *surface)
+		  struct wl_surface *surface, uint32_t time)
 {
 	struct wlsc_input_device *device =
 		container_of(listener,
 			     struct wlsc_input_device, grab_listener);
-	uint32_t time;
 
-	time = wl_display_get_time(device->ec->wl_display);
 	wlsc_input_device_end_grab(device, time);
 }
 
@@ -604,12 +604,10 @@ const static struct wl_drag_interface drag_interface;
 
 static void
 drag_handle_surface_destroy(struct wl_listener *listener,
-			    struct wl_surface *surface)
+			    struct wl_surface *surface, uint32_t time)
 {
 	struct wl_drag *drag =
 		container_of(listener, struct wl_drag, drag_focus_listener);
-	uint32_t time =
-		wl_display_get_time(wl_client_get_display(surface->client));
 
 	if (drag->drag_focus == surface)
 		wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);

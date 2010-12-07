@@ -122,7 +122,7 @@ struct wl_buffer {
 struct wl_listener {
 	struct wl_list link;
 	void (*func)(struct wl_listener *listener,
-		     struct wl_surface *surface);
+		     struct wl_surface *surface, uint32_t time);
 };
 
 struct wl_surface {
