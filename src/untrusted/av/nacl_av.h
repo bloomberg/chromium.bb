@@ -4,6 +4,8 @@
  * be found in the LICENSE file.
  */
 
+/* libav is obsolete and will only work in the NaCl SRPC Firefox plugin */
+
 /*
  * NaCl low-level runtime library interfaces.
  */

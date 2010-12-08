@@ -4,6 +4,8 @@
  * be found in the LICENSE file.
  */
 
+/* libav is obsolete and will only work in the NaCl SRPC Firefox plugin */
+
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,14 +16,13 @@
 #include <errno.h>
 
 /* from sdk */
-#include <sys/nacl_syscalls.h>
+#include <sys/stat.h>
 #include <pthread.h>
 #include <nacl/nacl_srpc.h>
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/untrusted/av/nacl_av.h"
 #include "native_client/src/untrusted/av/nacl_av_priv.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 static const float NACL_BRIDGE_TIMEOUT = 2.0f;
 
@@ -29,7 +30,6 @@ struct NaClMultimedia {
   int initialized;
   int embedded;
   int subsystems;
-  int sr_subsystems;
   int have_video;
 
   int display_shm_desc;
@@ -43,7 +43,7 @@ struct NaClMultimedia {
 
 static pthread_mutex_t nacl_multimedia_mutex = PTHREAD_MUTEX_INITIALIZER;
 static volatile __thread int nacl_multimedia_thread_id;
-static struct NaClMultimedia nacl_multimedia = {0, 0, 0, 0, 0,
+static struct NaClMultimedia nacl_multimedia = {0, 0, 0, 0,
                                                 -1, -1, NULL,
                                                 NULL, NULL, 0};
 
@@ -248,9 +248,7 @@ static int nacl_video_bridge_update(const void *data) {
  * There is one event stream, attached to the video region.
  */
 int nacl_multimedia_init(int subsystems) {
-  int inited = 0;
   int m;
-  int r;
 
   m = pthread_mutex_lock(&nacl_multimedia_mutex);
   if (0 != m) {
@@ -284,26 +282,17 @@ int nacl_multimedia_init(int subsystems) {
     /* embedded in browser */
     nacl_multimedia.embedded = 1;
     nacl_multimedia.subsystems = subsystems;
-    nacl_multimedia.sr_subsystems = subsystems;
-    /* strip out video from service runtime when embeding */
-    /* in a browser -- srpc methods will be used instead */
-    nacl_multimedia.sr_subsystems &= (~NACL_SUBSYSTEM_VIDEO);
-    nacl_multimedia.sr_subsystems &= (~NACL_SUBSYSTEM_EMBED);
-    inited = 1;
-  }
-
-  if (0 == inited) {
+  } else {
     /* not in browser */
     Log("nacl_av: NOT embedded in browser\n");
     nacl_multimedia.embedded = 0;
     nacl_multimedia.subsystems = subsystems;
-    nacl_multimedia.sr_subsystems = (subsystems & (~NACL_SUBSYSTEM_EMBED));
     nacl_multimedia.video_data = NULL;
   }
 
-  /* initialize service runtime portion of multimedia */
-  r = NACL_SYSCALL(multimedia_init)(nacl_multimedia.sr_subsystems);
-  if (0 == r) {
+  /* validate that we've initialized everything requested */
+  /* there is no longer a fallback path to use SDL */
+  if (0 == (subsystems & ~(NACL_SUBSYSTEM_VIDEO|NACL_SUBSYSTEM_EMBED))) {
     Log("nacl_av: multimedia initialized\n");
     nacl_multimedia.initialized = 1;
   } else {
@@ -315,14 +304,13 @@ int nacl_multimedia_init(int subsystems) {
     Fatal("nacl_multimedia_init: mutex unlock failed\n");
   }
 
-  return RetValErrno(r);
+  return 0;
 }
 
 int nacl_multimedia_shutdown() {
   /* if we're embedded...
    * verify thread id via tls.
    */
-  int r;
   int m = pthread_mutex_lock(&nacl_multimedia_mutex);
   if (0 != m) {
     Fatal("nacl_multimedia_shutdown: mutex lock failed\n");
@@ -333,24 +321,20 @@ int nacl_multimedia_shutdown() {
   if (nacl_multimedia.thread_id != &nacl_multimedia_thread_id) {
     Fatal("nacl_multimedia_shutdown: called from different thread\n");
   }
-  if (nacl_multimedia.embedded) {
+  if (0 != nacl_multimedia.embedded) {
     if (0 != nacl_multimedia.have_video) {
       Fatal("nacl_multimedia_shutdown: video not shutdown\n");
     }
   }
-  r = NACL_SYSCALL(multimedia_shutdown)();
-  if (0 == r) {
-    nacl_multimedia.embedded = 0;
-    nacl_multimedia.subsystems = 0;
-    nacl_multimedia.sr_subsystems = 0;
-    nacl_multimedia.thread_id = NULL;
-    nacl_multimedia.initialized = 0;
-  }
+  nacl_multimedia.embedded = 0;
+  nacl_multimedia.subsystems = 0;
+  nacl_multimedia.thread_id = NULL;
+  nacl_multimedia.initialized = 0;
   m = pthread_mutex_unlock(&nacl_multimedia_mutex);
   if (0 != m) {
     Fatal("nacl_multimedia_shutdown: mutex unlock failed\n");
   }
-  return RetValErrno(r);
+  return 0;
 }
 
 int nacl_multimedia_is_embedded(int *val) {
@@ -435,7 +419,8 @@ int nacl_video_init(int width, int height) {
     r = nacl_video_bridge_init();
   } else {
     /* running in a seperate SDL window */
-    r = NACL_SYSCALL(video_init)(width, height);
+    /* NOTE: This functionality is no longer supported */
+    r = -ENOSYS;
   }
   /* on success, set that we have video */
   if (0 == r) {
@@ -471,7 +456,8 @@ int nacl_video_shutdown() {
     r = nacl_video_bridge_shutdown();
   } else {
     /* running in a seperate SDL window */
-    r = NACL_SYSCALL(video_shutdown)();
+    /* NOTE: This functionality is no longer supported */
+    r = -ENOSYS;
   }
   /* on success, release video */
   if (0 == r) {
@@ -500,12 +486,13 @@ int nacl_video_update(const void* data) {
   if (nacl_multimedia.thread_id != &nacl_multimedia_thread_id) {
     Fatal("nacl_video_update: called from different thread\n");
   }
-  if (nacl_multimedia.embedded) {
+  if (0 != nacl_multimedia.embedded) {
     /* update via bridge to browser */
     r = nacl_video_bridge_update(data);
   } else {
     /* update via service runtime */
-    r = NACL_SYSCALL(video_update)(data);
+    /* NOTE: This functionality is no longer supported */
+    r = -ENOSYS;
   }
   m = pthread_mutex_unlock(&nacl_multimedia_mutex);
   if (0 != m) {
@@ -530,12 +517,13 @@ int nacl_video_poll_event(union NaClMultimediaEvent *event) {
   if (nacl_multimedia.thread_id != &nacl_multimedia_thread_id) {
     Fatal("nacl_video_poll_event: called from different thread\n");
   }
-  if (nacl_multimedia.embedded) {
+  if (0 != nacl_multimedia.embedded) {
     /* poll event via bridge to browser */
     r = nacl_video_bridge_poll_event(event);
   } else {
     /* poll event via service runtime */
-    r = NACL_SYSCALL(video_poll_event)(event);
+    /* NOTE: This functionality is no longer supported */
+    r = -ENOSYS;
   }
   m = pthread_mutex_unlock(&nacl_multimedia_mutex);
   if (0 != m) {
@@ -546,16 +534,18 @@ int nacl_video_poll_event(union NaClMultimediaEvent *event) {
 
 int nacl_audio_init(enum NaClAudioFormat format,
                     int desired_samples, int *obtained_samples) {
-  int r = NACL_SYSCALL(audio_init)(format, desired_samples, obtained_samples);
-  return RetValErrno(r);
+  /* NOTE: This functionality is no longer supported */
+  /* This function explicitly fails because if nacl_audio_stream is a NOP
+   * it won't block the audio thread, and the audio thread will keep looping */
+  return RetValErrno(-ENOSYS);
 }
 
 int nacl_audio_shutdown() {
-  int r = NACL_SYSCALL(audio_shutdown)();
-  return RetValErrno(r);
+  /* NOTE: This functionality is no longer supported */
+  return RetValErrno(-ENOSYS);
 }
 
 int nacl_audio_stream(const void *data, size_t *size) {
-  int r = NACL_SYSCALL(audio_stream)(data, size);
-  return RetValErrno(r);
+  /* NOTE: This functionality is no longer supported */
+  return RetValErrno(-ENOSYS);
 }
