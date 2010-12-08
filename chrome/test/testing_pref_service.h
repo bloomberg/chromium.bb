@@ -25,10 +25,10 @@ class TestingPrefService : public PrefService {
   // Create an instance that has a managed PrefStore and a command- line
   // PrefStore. |managed_platform_provider| contains the provider with which to
   // initialize the managed platform PrefStore. If it is NULL, then a
-  // DummyPrefStore will be created. |device_management_provider| contains the
+  // TestingPrefStore will be created. |device_management_provider| contains the
   // provider with which to initialize the device management
   // PrefStore. |command_line| contains the provider with which to initialize
-  // the command line PrefStore. If it is NULL then a DummyPrefStore will be
+  // the command line PrefStore. If it is NULL then a TestingPrefStore will be
   // created as the command line PrefStore.
   TestingPrefService(
       policy::ConfigurationPolicyProvider* managed_platform_provider,
@@ -66,12 +66,12 @@ class TestingPrefService : public PrefService {
 
  private:
   // Creates a ConfigurationPolicyPrefStore based on the provided
-  // |provider| or a DummyPrefStore if |provider| is NULL.
+  // |provider| or a TestingPrefStore if |provider| is NULL.
   PrefStore* CreatePolicyPrefStoreFromProvider(
       policy::ConfigurationPolicyProvider* provider);
 
   // Creates a CommandLinePrefStore based on the supplied
-  // |command_line| or a DummyPrefStore if |command_line| is NULL.
+  // |command_line| or a TestingPrefStore if |command_line| is NULL.
   PrefStore* CreateCommandLinePrefStore(CommandLine* command_line);
 
   // Reads the value of the preference indicated by |path| from |pref_store|.

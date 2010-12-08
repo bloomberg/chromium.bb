@@ -6,15 +6,33 @@
 #define CHROME_COMMON_PREF_STORE_H_
 #pragma once
 
+#include <string>
+
+#include "base/basictypes.h"
+
 class DictionaryValue;
 class Value;
 
 // This is an abstract interface for reading and writing from/to a persistent
-// preference store, used by |PrefService|. An implementation using a JSON file
-// can be found in |JsonPrefStore|, while an implementation without any backing
-// store (currently used for testing) can be found in |DummyPrefStore|.
+// preference store, used by PrefService. An implementation using a JSON file
+// can be found in JsonPrefStore, while an implementation without any backing
+// store for testing can be found in TestingPrefStore. Furthermore, there is
+// CommandLinePrefStore, which bridges command line options to preferences and
+// ConfigurationPolicyPrefStore, which is used for hooking up configuration
+// policy with the preference subsystem.
 class PrefStore {
  public:
+  // Observer interface for monitoring PrefStore.
+  class ObserverInterface {
+   public:
+    virtual ~ObserverInterface() {}
+
+    // Called when the value for the given |key| in the store changes.
+    virtual void OnPrefValueChanged(const std::string& key) = 0;
+    // Notification about the PrefStore being fully initialized.
+    virtual void OnInitializationCompleted() = 0;
+  };
+
   // Unique integer code for each type of error so we can report them
   // distinctly in a histogram.
   // NOTE: Don't change the order here as it will change the server's meaning
@@ -44,12 +62,20 @@ class PrefStore {
   // CreateUseDefaultSentinelValue.
   static bool IsUseDefaultSentinelValue(Value* value);
 
-  virtual ~PrefStore() { }
+  PrefStore() {}
+  virtual ~PrefStore() {}
+
+  // Add and remove observers.
+  virtual void AddObserver(ObserverInterface* observer) {}
+  virtual void RemoveObserver(ObserverInterface* observer) {}
+
+  // Whether the store has completed all asynchronous initialization.
+  virtual bool IsInitializationComplete() { return true; }
 
   // Whether the store is in a pseudo-read-only mode where changes are not
   // actually persisted to disk.  This happens in some cases when there are
   // read errors during startup.
-  virtual bool ReadOnly() { return true; }
+  virtual bool ReadOnly() const { return true; }
 
   // TODO(danno): PrefValueStore shouldn't allow direct access to the
   // DictionaryValue. Instead, it should have getters that return a
@@ -62,6 +88,8 @@ class PrefStore {
   virtual bool WritePrefs() { return true; }
 
   virtual void ScheduleWritePrefs() { }
+
+  DISALLOW_COPY_AND_ASSIGN(PrefStore);
 };
 
 #endif  // CHROME_COMMON_PREF_STORE_H_

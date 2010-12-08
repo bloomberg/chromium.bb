@@ -5,13 +5,13 @@
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/scoped_vector.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,40 +91,32 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
 // Verifies that default search providers from the preferences file
 // override the built-in ones.
 TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
-  const char pref_data[] =
-      "{ "
-      "  \"search_provider_overrides_version\":1,"
-      "  \"search_provider_overrides\": ["
-      "     { \"name\":\"foo\","
-      "       \"keyword\":\"fook\","
-      "       \"search_url\":\"http://foo.com/s?q={searchTerms}\","
-      "       \"favicon_url\":\"http://foi.com/favicon.ico\","
-      "       \"suggest_url\":\"\","
-      "       \"instant_url\":\"\","
-      "       \"encoding\":\"UTF-8\","
-      "       \"search_engine_type\":1,"
-      "       \"logo_id\":0,"
-      "       \"id\":1001"
-      "     }"
-      "   ]"
-      "}";
+  TestingPrefService prefs;
+  TemplateURLPrepopulateData::RegisterUserPrefs(&prefs);
+  prefs.SetUserPref(prefs::kSearchProviderOverridesVersion,
+                    Value::CreateIntegerValue(1));
+  ListValue* overrides = new ListValue;
+  DictionaryValue* entry = new DictionaryValue;
+  entry->SetString("name", "foo");
+  entry->SetString("keyword", "fook");
+  entry->SetString("search_url", "http://foo.com/s?q={searchTerms}");
+  entry->SetString("favicon_url", "http://foi.com/favicon.ico");
+  entry->SetString("suggest_url", "");
+  entry->SetString("instant_url", "");
+  entry->SetString("encoding", "UTF-8");
+  entry->SetInteger("search_engine_type", 1);
+  entry->SetInteger("logo_id", 0);
+  entry->SetInteger("id", 1001);
+  overrides->Append(entry);
+  prefs.SetUserPref(prefs::kSearchProviderOverrides, overrides);
 
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath preferences_file = temp_dir.path().AppendASCII("Preferences");
-  file_util::WriteFile(preferences_file, pref_data, sizeof(pref_data));
-
-  scoped_ptr<PrefService> prefs(
-      PrefService::CreateUserPrefService(preferences_file));
-  TemplateURLPrepopulateData::RegisterUserPrefs(prefs.get());
-
-  int version = TemplateURLPrepopulateData::GetDataVersion(prefs.get());
+  int version = TemplateURLPrepopulateData::GetDataVersion(&prefs);
   EXPECT_EQ(1, version);
 
   ScopedVector<TemplateURL> t_urls;
   size_t default_index;
   TemplateURLPrepopulateData::GetPrepopulatedEngines(
-      prefs.get(), &(t_urls.get()), &default_index);
+      &prefs, &(t_urls.get()), &default_index);
 
   ASSERT_EQ(1u, t_urls.size());
   EXPECT_EQ(L"foo", t_urls[0]->short_name());

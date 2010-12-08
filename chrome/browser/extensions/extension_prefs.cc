@@ -334,7 +334,9 @@ void ExtensionPrefs::AddToExtensionPrefStringSet(
 
 void ExtensionPrefs::SavePrefsAndNotify() {
   prefs_->ScheduleSavePersistentPrefs();
-  prefs_->pref_notifier()->OnUserPreferenceSet(kExtensionsPref);
+  // TODO(mnissler, danno): Don't use pref_notifier() here, but tell the
+  // PrefService by some other means that we changed the pref value.
+  prefs_->pref_notifier()->OnPreferenceChanged(kExtensionsPref);
 }
 
 bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
@@ -1244,10 +1246,8 @@ void ExtensionPrefs::UpdatePrefStore(const std::string& pref_key) {
     extension_pref_store->prefs()->Remove(pref_key, NULL);
   }
 
-  if (changed) {
-    pref_service()->pref_notifier()->OnPreferenceSet(
-        pref_key.c_str(), PrefNotifier::EXTENSION_STORE);
-  }
+  if (changed)
+    pref_service()->pref_notifier()->OnPreferenceChanged(pref_key.c_str());
 }
 
 void ExtensionPrefs::SetExtensionControlledPref(const std::string& extension_id,

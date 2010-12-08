@@ -17,15 +17,17 @@
 #include "base/values.h"
 #include "chrome/common/pref_store.h"
 
+class DefaultPrefStore;
 class FilePath;
 class NotificationObserver;
 class PrefChangeObserver;
 class PrefNotifier;
+class PrefNotifierImpl;
 class PrefValueStore;
 class Profile;
 
 namespace subtle {
-  class PrefMemberBase;
+class PrefMemberBase;
 };
 
 class PrefService : public NonThreadSafe {
@@ -95,11 +97,11 @@ class PrefService : public NonThreadSafe {
     DISALLOW_COPY_AND_ASSIGN(Preference);
   };
 
-  // Factory method that creates a new instance of a PrefService with
-  // a PrefValueStore containing all platform-applicable PrefStores.
-  // The |pref_filename| points to the user preference file. The |profile| is
-  // the one to which these preferences apply; it may be NULL if we're dealing
-  // with the local state. This is the usual way to create a new PrefService.
+  // Factory method that creates a new instance of a PrefService with the
+  // applicable PrefStores. The |pref_filename| points to the user preference
+  // file. The |profile| is the one to which these preferences apply; it may be
+  // NULL if we're dealing with the local state. This is the usual way to create
+  // a new PrefService.
   static PrefService* CreatePrefService(const FilePath& pref_filename,
                                         Profile* profile);
 
@@ -108,10 +110,6 @@ class PrefService : public NonThreadSafe {
   // |pref_filename|, a default PrefStore, and no other PrefStores (i.e., no
   // other types of preferences).
   static PrefService* CreateUserPrefService(const FilePath& pref_filename);
-
-  // This constructor is primarily used by tests. The |pref_value_store|
-  // provides preference values.
-  explicit PrefService(PrefValueStore* pref_value_store);
 
   virtual ~PrefService();
 
@@ -221,19 +219,33 @@ class PrefService : public NonThreadSafe {
 
   bool ReadOnly() const;
 
-  PrefNotifier* pref_notifier() const { return pref_notifier_.get(); }
+  // TODO(mnissler): This should not be public. Change client code to call a
+  // preference setter or use ScopedPrefUpdate.
+  PrefNotifier* pref_notifier() const;
 
-  PrefValueStore* pref_value_store() const { return pref_value_store_.get(); }
-
-  PrefStore* GetExtensionPrefStore() const;
+  // Get the extension PrefStore.
+  PrefStore* GetExtensionPrefStore();
 
  protected:
+  // Construct a new pref service, specifying the pref sources as explicit
+  // PrefStore pointers. This constructor is what CreatePrefService() ends up
+  // calling. It's also used for unit tests.
+  PrefService(PrefStore* managed_platform_prefs,
+              PrefStore* device_management_prefs,
+              PrefStore* extension_prefs,
+              PrefStore* command_line_prefs,
+              PrefStore* user_prefs,
+              PrefStore* recommended_prefs,
+              Profile* profile);
+
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
   // unit testing.
-  scoped_ptr<PrefNotifier> pref_notifier_;
+  scoped_ptr<PrefNotifierImpl> pref_notifier_;
 
  private:
+  friend class TestingPrefService;
+
   // Registration of pref change observers must be done using the
   // PrefChangeRegistrar, which is declared as a friend here to grant it
   // access to the otherwise protected members Add/RemovePrefObserver.
@@ -272,6 +284,12 @@ class PrefService : public NonThreadSafe {
   // The PrefValueStore provides prioritized preference values. It is created
   // and owned by this PrefService. Subclasses may access it for unit testing.
   scoped_refptr<PrefValueStore> pref_value_store_;
+
+  // The extension pref store registered with the PrefValueStore.
+  PrefStore* extension_store_;
+
+  // Points to the default pref store we passed to the PrefValueStore.
+  PrefStore* default_store_;
 
   // A set of all the registered Preference objects.
   PreferenceSet prefs_;

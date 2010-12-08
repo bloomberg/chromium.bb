@@ -5,52 +5,52 @@
 #include "chrome/test/testing_pref_service.h"
 
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/dummy_pref_store.h"
+#include "chrome/browser/prefs/testing_pref_store.h"
+#include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/test/testing_pref_value_store.h"
 
 // TODO(pamg): Instantiate no PrefStores by default. Allow callers to specify
 // which they want, and expand usage of this class to more unit tests.
 TestingPrefService::TestingPrefService()
-    : PrefService(new TestingPrefValueStore(
-          managed_platform_prefs_ = new DummyPrefStore(),
-          device_management_prefs_ = new DummyPrefStore(),
-          NULL,
-          NULL,
-          user_prefs_ = new DummyPrefStore(),
-          NULL,
-          default_prefs_ = new DummyPrefStore())) {
+    : PrefService(
+        managed_platform_prefs_ = new TestingPrefStore(),
+        device_management_prefs_ = new TestingPrefStore(),
+        NULL,
+        NULL,
+        user_prefs_ = new TestingPrefStore(),
+        NULL,
+        NULL) {
 }
 
 TestingPrefService::TestingPrefService(
     policy::ConfigurationPolicyProvider* managed_platform_provider,
     policy::ConfigurationPolicyProvider* device_management_provider,
     CommandLine* command_line)
-    : PrefService(new TestingPrefValueStore(
+    : PrefService(
         managed_platform_prefs_ = CreatePolicyPrefStoreFromProvider(
             managed_platform_provider),
         device_management_prefs_ =
             CreatePolicyPrefStoreFromProvider(device_management_provider),
         NULL,
         CreateCommandLinePrefStore(command_line),
-        user_prefs_ = new DummyPrefStore(),
+        user_prefs_ = new TestingPrefStore(),
         NULL,
-        default_prefs_ = new DummyPrefStore())) {
+        NULL) {
 }
 
 PrefStore* TestingPrefService::CreatePolicyPrefStoreFromProvider(
     policy::ConfigurationPolicyProvider* provider) {
   if (provider)
     return new policy::ConfigurationPolicyPrefStore(provider);
-  return new DummyPrefStore();
+  return new TestingPrefStore();
 }
 
 PrefStore* TestingPrefService::CreateCommandLinePrefStore(
     CommandLine* command_line) {
   if (command_line)
     return new CommandLinePrefStore(command_line);
-  return new DummyPrefStore();
+  return new TestingPrefStore();
 }
 
 const Value* TestingPrefService::GetManagedPref(const char* path) {
@@ -97,11 +97,11 @@ void TestingPrefService::SetPref(PrefStore* pref_store,
                                  const char* path,
                                  Value* value) {
   pref_store->prefs()->Set(path, value);
-  pref_notifier()->FireObservers(path);
+  pref_notifier()->OnPreferenceChanged(path);
 }
 
 void TestingPrefService::RemovePref(PrefStore* pref_store,
                                     const char* path) {
   pref_store->prefs()->Remove(path, NULL);
-  pref_notifier()->FireObservers(path);
+  pref_notifier()->OnPreferenceChanged(path);
 }

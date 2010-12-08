@@ -12,5 +12,8 @@ ScopedPrefUpdate::ScopedPrefUpdate(PrefService* service, const char* path)
       path_(path) {}
 
 ScopedPrefUpdate::~ScopedPrefUpdate() {
-  service_->pref_notifier()->FireObservers(path_.c_str());
+  // TODO(mnissler, danno): This sends a notification unconditionally, which is
+  // wrong. We should rather tell the PrefService that the user pref got
+  // updated.
+  service_->pref_notifier()->OnPreferenceChanged(path_.c_str());
 }

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/managed_prefs_banner_base.h"
-#include "chrome/browser/prefs/dummy_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"

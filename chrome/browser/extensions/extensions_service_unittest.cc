@@ -35,6 +35,7 @@
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -2376,9 +2377,9 @@ TEST_F(ExtensionsServiceTest, BlacklistedByPolicyWillNotInstall) {
   InitializeEmptyExtensionsService();
 
   ListValue* whitelist =
-      profile_->GetPrefs()->GetMutableList("extensions.install.allowlist");
+      profile_->GetPrefs()->GetMutableList(prefs::kExtensionInstallAllowList);
   ListValue* blacklist =
-      profile_->GetPrefs()->GetMutableList("extensions.install.denylist");
+      profile_->GetPrefs()->GetMutableList(prefs::kExtensionInstallDenyList);
   ASSERT_TRUE(whitelist != NULL && blacklist != NULL);
 
   // Blacklist everything.
@@ -2415,18 +2416,17 @@ TEST_F(ExtensionsServiceTest, BlacklistedByPolicyRemovedIfRunning) {
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
 
-  PrefService* prefs = profile_->GetPrefs();
-  ListValue* blacklist =
-      prefs->GetMutableList("extensions.install.denylist");
-  ASSERT_TRUE(blacklist != NULL);
+  { // Scope for pref update notification.
+    PrefService* prefs = profile_->GetPrefs();
+    ScopedPrefUpdate pref_update(prefs, prefs::kExtensionInstallDenyList);
+    ListValue* blacklist =
+        prefs->GetMutableList(prefs::kExtensionInstallDenyList);
+    ASSERT_TRUE(blacklist != NULL);
 
-  // Blacklist this extension.
-  blacklist->Append(Value::CreateStringValue(good_crx));
-  prefs->ScheduleSavePersistentPrefs();
-
-  // Programmatically appending to the prefs doesn't seem to notify the
-  // observers... :/
-  prefs->pref_notifier()->FireObservers("extensions.install.denylist");
+    // Blacklist this extension.
+    blacklist->Append(Value::CreateStringValue(good_crx));
+    prefs->ScheduleSavePersistentPrefs();
+  }
 
   // Extension should not be running now.
   loop_.RunAllPending();

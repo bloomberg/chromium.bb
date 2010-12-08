@@ -9,8 +9,8 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_updater.h"
-#include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/browser.h"
@@ -344,15 +344,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(service->disabled_extensions()->empty());
 
-  // Set the policy as a user preference and fire notification observers.
   PrefService* prefs = browser()->profile()->GetPrefs();
-  ListValue* forcelist =
-      prefs->GetMutableList(prefs::kExtensionInstallForceList);
-  ASSERT_TRUE(forcelist->empty());
-  forcelist->Append(Value::CreateStringValue(
-      "ogjcoiohnmldgjemafoockdghcjciccf;"
-      "http://localhost/autoupdate/manifest"));
-  prefs->pref_notifier()->FireObservers(prefs::kExtensionInstallForceList);
+  {
+    // Set the policy as a user preference and fire notification observers.
+    ScopedPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    ListValue* forcelist =
+        prefs->GetMutableList(prefs::kExtensionInstallForceList);
+    ASSERT_TRUE(forcelist->empty());
+    forcelist->Append(Value::CreateStringValue(
+        "ogjcoiohnmldgjemafoockdghcjciccf;"
+        "http://localhost/autoupdate/manifest"));
+  }
 
   // Check if the extension got installed.
   ASSERT_TRUE(WaitForExtensionInstall());
@@ -365,5 +367,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   // Check that emptying the list doesn't cause any trouble.
   prefs->ClearPref(prefs::kExtensionInstallForceList);
-  prefs->pref_notifier()->FireObservers(prefs::kExtensionInstallForceList);
 }

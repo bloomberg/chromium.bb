@@ -736,6 +736,10 @@ class NotificationType {
     // PrefService and the details a std::string of the changed path.
     PREF_CHANGED,
 
+    // This is broadcast after the preference subsystem has completed
+    // asynchronous initalization of a PrefService.
+    PREF_INITIALIZATION_COMPLETED,
+
     // Sent when a default request context has been created, so calling
     // Profile::GetDefaultRequestContext() will not return NULL.  This is sent
     // on the thread where Profile::GetRequestContext() is first called, which

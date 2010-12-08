@@ -21,9 +21,13 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/prefs/pref_notifier.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/in_memory_pref_store.h"
+#include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -83,6 +87,8 @@ void NotifyReadError(PrefService* pref, int message_id) {
 // static
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
                                             Profile* profile) {
+  using policy::ConfigurationPolicyPrefStore;
+
 #if defined(OS_LINUX)
   // We'd like to see what fraction of our users have the preferences
   // stored on a network file system, as we've had no end of troubles
@@ -96,19 +102,54 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
   }
 #endif
 
-  return new PrefService(
-      PrefValueStore::CreatePrefValueStore(pref_filename, profile, false));
+  ConfigurationPolicyPrefStore* managed =
+      ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore();
+  ConfigurationPolicyPrefStore* device_management =
+      ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
+          profile);
+  InMemoryPrefStore* extension = new InMemoryPrefStore();
+  CommandLinePrefStore* command_line =
+      new CommandLinePrefStore(CommandLine::ForCurrentProcess());
+  JsonPrefStore* user = new JsonPrefStore(
+      pref_filename,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  ConfigurationPolicyPrefStore* recommended =
+      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
+
+  return new PrefService(managed, device_management, extension, command_line,
+                         user, recommended, profile);
 }
 
 // static
 PrefService* PrefService::CreateUserPrefService(const FilePath& pref_filename) {
-  return new PrefService(
-      PrefValueStore::CreatePrefValueStore(pref_filename, NULL, true));
+  JsonPrefStore* user = new JsonPrefStore(
+      pref_filename,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  InMemoryPrefStore* extension = new InMemoryPrefStore();
+
+  return new PrefService(NULL, NULL, extension, NULL, user, NULL, NULL);
 }
 
-PrefService::PrefService(PrefValueStore* pref_value_store)
-    : pref_value_store_(pref_value_store) {
-  pref_notifier_.reset(new PrefNotifier(this, pref_value_store));
+PrefService::PrefService(PrefStore* managed_platform_prefs,
+                         PrefStore* device_management_prefs,
+                         PrefStore* extension_prefs,
+                         PrefStore* command_line_prefs,
+                         PrefStore* user_prefs,
+                         PrefStore* recommended_prefs,
+                         Profile* profile) {
+  pref_notifier_.reset(new PrefNotifierImpl(this));
+  extension_store_ = extension_prefs;
+  default_store_ = new InMemoryPrefStore();
+  pref_value_store_ =
+      new PrefValueStore(managed_platform_prefs,
+                         device_management_prefs,
+                         extension_store_,
+                         command_line_prefs,
+                         user_prefs,
+                         recommended_prefs,
+                         default_store_,
+                         pref_notifier_.get(),
+                         profile);
   InitFromStorage();
 }
 
@@ -319,6 +360,18 @@ const PrefService::Preference* PrefService::FindPreference(
   return it == prefs_.end() ? NULL : *it;
 }
 
+bool PrefService::ReadOnly() const {
+  return pref_value_store_->ReadOnly();
+}
+
+PrefNotifier* PrefService::pref_notifier() const {
+  return pref_notifier_.get();
+}
+
+PrefStore* PrefService::GetExtensionPrefStore() {
+  return extension_store_;
+}
+
 bool PrefService::IsManagedPreference(const char* pref_name) const {
   const Preference* pref = FindPreference(pref_name);
   if (pref && pref->IsManaged()) {
@@ -355,10 +408,6 @@ const ListValue* PrefService::GetList(const char* path) const {
   return static_cast<const ListValue*>(value);
 }
 
-bool PrefService::ReadOnly() const {
-  return pref_value_store_->ReadOnly();
-}
-
 void PrefService::AddPrefObserver(const char* path,
                                   NotificationObserver* obs) {
   pref_notifier_->AddPrefObserver(path, obs);
@@ -388,11 +437,11 @@ void PrefService::RegisterPreference(const char* path, Value* default_value) {
   // easier for callers to check for empty dict/list prefs. The PrefValueStore
   // accepts ownership of the value (null or default_value).
   if (Value::TYPE_LIST == orig_type || Value::TYPE_DICTIONARY == orig_type) {
-    pref_value_store_->SetDefaultPrefValue(path, Value::CreateNullValue());
+    default_store_->prefs()->Set(path, Value::CreateNullValue());
   } else {
     // Hand off ownership.
     DCHECK(!PrefStore::IsUseDefaultSentinelValue(default_value));
-    pref_value_store_->SetDefaultPrefValue(path, scoped_value.release());
+    default_store_->prefs()->Set(path, scoped_value.release());
   }
 
   pref_value_store_->RegisterPreferenceType(path, orig_type);
@@ -407,8 +456,7 @@ void PrefService::ClearPref(const char* path) {
     NOTREACHED() << "Trying to clear an unregistered pref: " << path;
     return;
   }
-  if (pref_value_store_->RemoveUserPrefValue(path))
-    pref_notifier_->OnUserPreferenceSet(path);
+  pref_value_store_->RemoveUserPrefValue(path);
 }
 
 void PrefService::Set(const char* path, const Value& value) {
@@ -422,21 +470,17 @@ void PrefService::Set(const char* path, const Value& value) {
 
   // Allow dictionary and list types to be set to null, which removes their
   // user values.
-  bool value_changed = false;
   if (value.GetType() == Value::TYPE_NULL &&
       (pref->GetType() == Value::TYPE_DICTIONARY ||
        pref->GetType() == Value::TYPE_LIST)) {
-    value_changed = pref_value_store_->RemoveUserPrefValue(path);
+    pref_value_store_->RemoveUserPrefValue(path);
   } else if (pref->GetType() != value.GetType()) {
     NOTREACHED() << "Trying to set pref " << path
                  << " of type " << pref->GetType()
                  << " to value of type " << value.GetType();
   } else {
-    value_changed = pref_value_store_->SetUserPrefValue(path, value.DeepCopy());
+    pref_value_store_->SetUserPrefValue(path, value.DeepCopy());
   }
-
-  if (value_changed)
-    pref_notifier_->OnUserPreferenceSet(path);
 }
 
 void PrefService::SetBoolean(const char* path, bool value) {
@@ -514,7 +558,7 @@ DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
   if (!pref_value_store_->GetUserValue(path, &tmp_value) ||
       !tmp_value->IsType(Value::TYPE_DICTIONARY)) {
     dict = new DictionaryValue;
-    pref_value_store_->SetUserPrefValue(path, dict);
+    pref_value_store_->SetUserPrefValueSilently(path, dict);
   } else {
     dict = static_cast<DictionaryValue*>(tmp_value);
   }
@@ -541,7 +585,7 @@ ListValue* PrefService::GetMutableList(const char* path) {
   if (!pref_value_store_->GetUserValue(path, &tmp_value) ||
       !tmp_value->IsType(Value::TYPE_LIST)) {
     list = new ListValue;
-    pref_value_store_->SetUserPrefValue(path, list);
+    pref_value_store_->SetUserPrefValueSilently(path, list);
   } else {
     list = static_cast<ListValue*>(tmp_value);
   }
@@ -575,12 +619,7 @@ void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
     return;
   }
 
-  if (pref_value_store_->SetUserPrefValue(path, new_value))
-    pref_notifier_->OnUserPreferenceSet(path);
-}
-
-PrefStore* PrefService::GetExtensionPrefStore() const {
-  return pref_value_store()->GetExtensionPrefStore();
+  pref_value_store_->SetUserPrefValue(path, new_value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

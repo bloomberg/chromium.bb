@@ -288,6 +288,8 @@
         'common/plugin_messages_internal.h',
         'common/pref_store.cc',
         'common/pref_store.h',
+        'common/pref_store_base.cc',
+        'common/pref_store_base.h',
         'common/render_messages.cc',
         'common/render_messages.h',
         'common/render_messages_internal.h',

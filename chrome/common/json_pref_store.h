@@ -29,7 +29,7 @@ class JsonPrefStore : public PrefStore,
   virtual ~JsonPrefStore();
 
   // PrefStore methods:
-  virtual bool ReadOnly() { return read_only_; }
+  virtual bool ReadOnly() const { return read_only_; }
 
   virtual DictionaryValue* prefs() const { return prefs_.get(); }
 
