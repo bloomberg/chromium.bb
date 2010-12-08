@@ -56,13 +56,6 @@
 }
 
 {
-  bug_61210
-  ThreadSanitizer:Race
-  ...
-  fun:linked_ptr<PluginGroup>*
-}
-
-{
   bug_62880
   ThreadSanitizer:Race
   fun:ObserverListBase*Iterator*
