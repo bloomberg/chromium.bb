@@ -616,6 +616,12 @@ bool BrowserHelperObject::EnsureTabId() {
     return true;
   }
 
+  // We might get here AFTER TearDown if onCreated successfully got deferred
+  // yet we never got a valid tab_id_ before we got torn down, and then
+  // onRemoved is called AFTER TearDown, which releases chrome_frame_host_.
+  if (chrome_frame_host_ == NULL)
+    return false;
+
   HRESULT hr = chrome_frame_host_->GetSessionId(&tab_id_);
   DCHECK(SUCCEEDED(hr));
   if (hr == S_FALSE) {
