@@ -112,7 +112,6 @@ struct wlsc_shm_buffer {
 
 struct wlsc_compositor {
 	struct wl_compositor compositor;
-	struct wl_visual argb_visual, premultiplied_argb_visual, rgb_visual;
 
 	struct wlsc_drm drm;
 	struct wlsc_shm shm;

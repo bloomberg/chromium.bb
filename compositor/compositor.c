@@ -251,7 +251,7 @@ create_pointer_images(struct wlsc_compositor *ec)
 	for (i = 0; i < count; i++) {
 		ec->pointer_buffers[i] =
 			wlsc_drm_buffer_create(ec, width, height,
-					       &ec->argb_visual);
+					       &ec->compositor.argb_visual);
 		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,
 					     ec->pointer_buffers[i]->image);
 		texture_from_png(pointer_images[i].filename, width, height);
@@ -268,7 +268,7 @@ background_create(struct wlsc_output *output, const char *filename)
 	GLenum format;
 
 	background = wlsc_surface_create(output->compositor,
-					 &output->compositor->rgb_visual,
+					 &output->compositor->compositor.rgb_visual,
 					 output->x, output->y,
 					 output->width, output->height);
 	if (background == NULL)
@@ -308,10 +308,10 @@ wlsc_surface_draw(struct wlsc_surface *es, struct wlsc_output *output)
 	glUniformMatrix4fv(ec->proj_uniform, 1, GL_FALSE, tmp.d);
 	glUniform1i(ec->tex_uniform, 0);
 
-	if (es->visual == &ec->argb_visual) {
+	if (es->visual == &ec->compositor.argb_visual) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
-	} else if (es->visual == &ec->premultiplied_argb_visual) {
+	} else if (es->visual == &ec->compositor.premultiplied_argb_visual) {
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
 	} else {
@@ -1303,7 +1303,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	wl_display_add_object(ec->wl_display, &device->input_device.object);
 	wl_display_add_global(ec->wl_display, &device->input_device.object, NULL);
 
-	device->sprite = wlsc_surface_create(ec, &ec->argb_visual,
+	device->sprite = wlsc_surface_create(ec, &ec->compositor.argb_visual,
 					     device->input_device.x,
 					     device->input_device.y, 32, 32);
 	device->hotspot_x = 16;
@@ -1428,27 +1428,6 @@ init_shaders(struct wlsc_compositor *ec)
 	return 0;
 }
 
-static void
-add_visuals(struct wlsc_compositor *ec)
-{
-	ec->argb_visual.object.interface = &wl_visual_interface;
-	ec->argb_visual.object.implementation = NULL;
-	wl_display_add_object(ec->wl_display, &ec->argb_visual.object);
-	wl_display_add_global(ec->wl_display, &ec->argb_visual.object, NULL);
-
-	ec->premultiplied_argb_visual.object.interface = &wl_visual_interface;
-	ec->premultiplied_argb_visual.object.implementation = NULL;
-	wl_display_add_object(ec->wl_display,
-			      &ec->premultiplied_argb_visual.object);
-	wl_display_add_global(ec->wl_display,
-			      &ec->premultiplied_argb_visual.object, NULL);
-
-	ec->rgb_visual.object.interface = &wl_visual_interface;
-	ec->rgb_visual.object.implementation = NULL;
-	wl_display_add_object(ec->wl_display, &ec->rgb_visual.object);
-	wl_display_add_global(ec->wl_display, &ec->rgb_visual.object, NULL);
-}
-
 void
 wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 		 int x, int y, int width, int height)
@@ -1482,13 +1461,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 	ec->wl_display = display;
 
-	ec->compositor.object.interface = &wl_compositor_interface;
-	ec->compositor.object.implementation =
-		(void (**)(void)) &compositor_interface;
-
-	wl_display_add_object(display, &ec->compositor.object);
-	if (wl_display_add_global(display, &ec->compositor.object, NULL))
-		return -1;
+	wl_compositor_init(&ec->compositor, &compositor_interface, display);
 
 	wlsc_shm_init(ec);
 
@@ -1497,8 +1470,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_display_add_object(display, &ec->shell.object);
 	if (wl_display_add_global(display, &ec->shell.object, NULL))
 		return -1;
-
-	add_visuals(ec);
 
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->input_device_list);

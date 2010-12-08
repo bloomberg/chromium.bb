@@ -91,8 +91,15 @@ void wl_client_destroy(struct wl_client *client);
 void wl_client_post_no_memory(struct wl_client *client);
 void wl_client_post_global(struct wl_client *client, struct wl_object *object);
 
+struct wl_visual {
+	struct wl_object object;
+};
+
 struct wl_compositor {
 	struct wl_object object;
+	struct wl_visual argb_visual;
+	struct wl_visual premultiplied_argb_visual;
+	struct wl_visual rgb_visual;
 };
 
 struct wl_resource {
@@ -126,10 +133,6 @@ struct wl_surface {
 };
 
 struct wl_shell {
-	struct wl_object object;
-};
-
-struct wl_visual {
 	struct wl_object object;
 };
 
@@ -224,6 +227,10 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 				   struct wl_surface *surface,
 				   uint32_t time);
 
+int
+wl_compositor_init(struct wl_compositor *compositor,
+		   const struct wl_compositor_interface *interface,
+		   struct wl_display *display);
 
 #ifdef  __cplusplus
 }
