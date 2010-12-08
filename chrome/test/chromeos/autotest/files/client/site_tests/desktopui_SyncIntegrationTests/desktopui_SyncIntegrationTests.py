@@ -8,7 +8,7 @@ class desktopui_SyncIntegrationTests(site_chrome_test.ChromeTestBase):
     version = 1
 
     def run_once(self):
-        password_file = '%s/sync_password.txt' % self.dep_dir
+        password_file = '%s/sync_password.txt' % self.bindir
 
         self.run_chrome_test('sync_integration_tests',
             ('--password-file-for-test=%s ' +
