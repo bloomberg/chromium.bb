@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -22,6 +21,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_POSIX)
+#include "base/stl_util-inl.h"
 #include "base/third_party/valgrind/valgrind.h"
 #endif  // defined(OS_POSIX)
 
@@ -713,6 +713,7 @@ void PluginList::DisableOutdatedPluginGroups() {
 }
 
 PluginList::~PluginList() {
+  Shutdown();
 }
 
 void PluginList::Shutdown() {
