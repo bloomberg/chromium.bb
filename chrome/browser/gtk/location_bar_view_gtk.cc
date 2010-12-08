@@ -547,11 +547,14 @@ void LocationBarViewGtk::OnChanged() {
           WideToUTF16(location_entry_->GetText()),
           location_entry_->model()->UseVerbatimInstant(),
           &suggested_text);
-      if (!instant->MightSupportInstant())
-        location_entry_->model()->FinalizeInstantQuery(std::wstring());
+      if (!instant->MightSupportInstant()) {
+        location_entry_->model()->FinalizeInstantQuery(std::wstring(),
+                                                       std::wstring());
+      }
     } else {
       instant->DestroyPreviewContents();
-      location_entry_->model()->FinalizeInstantQuery(std::wstring());
+      location_entry_->model()->FinalizeInstantQuery(std::wstring(),
+                                                     std::wstring());
     }
   }
 

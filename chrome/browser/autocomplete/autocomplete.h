@@ -188,6 +188,9 @@ class AutocompleteInput {
                     bool synchronous_only);
   ~AutocompleteInput();
 
+  // If type is |FORCED_QUERY| and |text| starts with '?', it is removed.
+  static void RemoveForcedQueryStringIfNecessary(Type type, std::wstring* text);
+
   // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(Type type);
 

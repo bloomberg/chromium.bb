@@ -477,10 +477,12 @@ bool AutocompleteEditViewMac::CommitSuggestText() {
   if (suggest_text_length_ == 0)
     return false;
 
+  std::wstring input_text(GetText());
   suggest_text_length_ = 0;
+  std::wstring text(GetText());
   // Call SetText() to force a redraw and move the cursor to the end.
-  SetText(GetText());
-  model()->FinalizeInstantQuery(GetText());
+  SetText(text);
+  model()->FinalizeInstantQuery(input_text, text.substr(input_text.size()));
   return true;
 }
 

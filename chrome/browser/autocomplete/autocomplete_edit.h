@@ -214,7 +214,8 @@ class AutocompleteEditModel : public NotificationObserver {
   void SetUserText(const std::wstring& text);
 
   // Calls through to SearchProvider::FinalizeInstantQuery.
-  void FinalizeInstantQuery(const std::wstring& text);
+  void FinalizeInstantQuery(const std::wstring& input_text,
+                            const std::wstring& suggest_text);
 
   // Reverts the edit model back to its unedited state (permanent text showing,
   // no user input in progress).

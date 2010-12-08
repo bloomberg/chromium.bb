@@ -779,7 +779,8 @@ bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
     return false;
   }
   location_entry_->model()->FinalizeInstantQuery(
-      typed_text + suggested_text_view_->GetText());
+      typed_text,
+      suggested_text_view_->GetText());
   return true;
 }
 
@@ -852,11 +853,14 @@ void LocationBarView::OnChanged() {
                       WideToUTF16(location_entry_->GetText()),
                       location_entry_->model()->UseVerbatimInstant(),
                       &suggested_text);
-      if (!instant->MightSupportInstant())
-        location_entry_->model()->FinalizeInstantQuery(std::wstring());
+      if (!instant->MightSupportInstant()) {
+        location_entry_->model()->FinalizeInstantQuery(std::wstring(),
+                                                       std::wstring());
+      }
     } else {
       instant->DestroyPreviewContents();
-      location_entry_->model()->FinalizeInstantQuery(std::wstring());
+      location_entry_->model()->FinalizeInstantQuery(std::wstring(),
+                                                     std::wstring());
     }
   }
 

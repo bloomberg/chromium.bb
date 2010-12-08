@@ -82,11 +82,17 @@ AutocompleteInput::AutocompleteInput(const std::wstring& text,
       canonicalized_url_ = canonicalized_url;
   }
 
-  if (type_ == FORCED_QUERY && text_[0] == L'?')
-    text_.erase(0, 1);
+  RemoveForcedQueryStringIfNecessary(type_, &text_);
 }
 
 AutocompleteInput::~AutocompleteInput() {
+}
+
+// static
+void AutocompleteInput::RemoveForcedQueryStringIfNecessary(Type type,
+                                                           std::wstring* text) {
+  if (type == FORCED_QUERY && !text->empty() && (*text)[0] == L'?')
+    text->erase(0, 1);
 }
 
 // static

@@ -236,10 +236,12 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
   return true;
 }
 
-void AutocompletePopupModel::FinalizeInstantQuery(const std::wstring& text) {
+void AutocompletePopupModel::FinalizeInstantQuery(
+    const std::wstring& input_text,
+    const std::wstring& suggest_text) {
   if (IsOpen()) {
     SearchProvider* search_provider = controller_->search_provider();
-    search_provider->FinalizeInstantQuery(text);
+    search_provider->FinalizeInstantQuery(input_text, suggest_text);
   }
 }
 
