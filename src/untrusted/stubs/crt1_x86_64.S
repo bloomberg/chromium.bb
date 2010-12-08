@@ -10,7 +10,7 @@
     .globl environ
 
     .text
-    .p2align NACLENTRYALIGN,0xf4,
+    .p2align NACLENTRYALIGN,0xf4
 
     .global _start
 _start:
