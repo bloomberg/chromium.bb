@@ -137,6 +137,8 @@ struct wl_grab;
 struct wl_grab_interface {
 	void (*motion)(struct wl_grab *grab,
 		       uint32_t time, int32_t x, int32_t y);
+	void (*button)(struct wl_grab *grab,
+		       uint32_t time, int32_t button, int32_t state);
 	void (*end)(struct wl_grab *grab, uint32_t time);
 };
 

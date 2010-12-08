@@ -572,6 +572,12 @@ move_grab_motion(struct wl_grab *grab,
 }
 
 static void
+move_grab_button(struct wl_grab *grab,
+		 uint32_t time, int32_t button, int32_t state)
+{
+}
+
+static void
 move_grab_end(struct wl_grab *grab, uint32_t time)
 {
 	free(grab);
@@ -579,6 +585,7 @@ move_grab_end(struct wl_grab *grab, uint32_t time)
 
 static const struct wl_grab_interface move_grab_interface = {
 	move_grab_motion,
+	move_grab_button,
 	move_grab_end
 };
 
@@ -653,6 +660,12 @@ resize_grab_motion(struct wl_grab *grab,
 }
 
 static void
+resize_grab_button(struct wl_grab *grab,
+		   uint32_t time, int32_t button, int32_t state)
+{
+}
+
+static void
 resize_grab_end(struct wl_grab *grab, uint32_t time)
 {
 	free(grab);
@@ -660,6 +673,7 @@ resize_grab_end(struct wl_grab *grab, uint32_t time)
 
 static const struct wl_grab_interface resize_grab_interface = {
 	resize_grab_motion,
+	resize_grab_button,
 	resize_grab_end
 };
 
@@ -863,12 +877,23 @@ motion_grab_motion(struct wl_grab *grab,
 }
 
 static void
+motion_grab_button(struct wl_grab *grab,
+		   uint32_t time, int32_t button, int32_t state)
+{
+	wl_client_post_event(grab->input_device->pointer_focus->client,
+			     &grab->input_device->object,
+			     WL_INPUT_DEVICE_BUTTON,
+			     time, button, state);
+}
+
+static void
 motion_grab_end(struct wl_grab *grab, uint32_t time)
 {
 }
 
 static const struct wl_grab_interface motion_grab_interface = {
 	motion_grab_motion,
+	motion_grab_button,
 	motion_grab_end
 };
 
@@ -973,11 +998,8 @@ notify_button(struct wl_input_device *device,
 			     (struct wl_shell *) &compositor->shell,
 			     &surface->surface, device, time,
 			     WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT);
-	else if (device->grab == NULL || device->grab == &device->motion_grab)
-		wl_client_post_event(surface->surface.client,
-				     &device->object,
-				     WL_INPUT_DEVICE_BUTTON,
-				     time, button, state);
+
+	device->grab->interface->button(device->grab, time, button, state);
 
 	if (!state && device->grab && device->grab_button == button)
 		wl_input_device_end_grab(device, time);
@@ -1204,6 +1226,12 @@ drag_grab_motion(struct wl_grab *grab,
 }
 
 static void
+drag_grab_button(struct wl_grab *grab,
+		 uint32_t time, int32_t button, int32_t state)
+{
+}
+
+static void
 drag_grab_end(struct wl_grab *grab, uint32_t time)
 {
 	struct wl_drag *drag = container_of(grab, struct wl_drag, grab);
@@ -1218,6 +1246,7 @@ drag_grab_end(struct wl_grab *grab, uint32_t time)
 
 static const struct wl_grab_interface drag_grab_interface = {
 	drag_grab_motion,
+	drag_grab_button,
 	drag_grab_end
 };
 
