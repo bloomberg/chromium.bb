@@ -74,6 +74,7 @@ class PinnedTabService;
 class PrefService;
 class ExtensionInfoMap;
 class PrefProxyConfigTracker;
+class PrerenderManager;
 class PromoCounter;
 class ProfileSyncService;
 class ProfileSyncFactory;
@@ -130,7 +131,7 @@ class Profile {
   // Value that represents no profile Id.
   static const ProfileId InvalidProfileId;
 
-  Profile() : restored_last_session_(false), accessibility_pause_level_(0) {}
+  Profile();
   virtual ~Profile() {}
 
   // Profile prefs are registered as soon as the prefs are loaded for the first
@@ -494,6 +495,10 @@ class Profile {
   // Returns the helper object that provides the proxy configuration service
   // access to the the proxy configuration possibly defined by preferences.
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() = 0;
+
+  // Returns the PrerenderManager used to prerender entire webpages for this
+  // profile.
+  virtual PrerenderManager* GetPrerenderManager() = 0;
 
 #ifdef UNIT_TEST
   // Use with caution.  GetDefaultRequestContext may be called on any thread!

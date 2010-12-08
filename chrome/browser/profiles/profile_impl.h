@@ -133,6 +133,7 @@ class ProfileImpl : public Profile,
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker();
+  virtual PrerenderManager* GetPrerenderManager();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -295,6 +296,8 @@ class ProfileImpl : public Profile,
 #endif
 
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+
+  scoped_ptr<PrerenderManager> prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

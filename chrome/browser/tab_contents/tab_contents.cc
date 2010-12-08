@@ -57,6 +57,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -2451,6 +2452,16 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   int extra_invalidate_flags = 0;
 
   if (PageTransition::IsMainFrame(params.transition)) {
+    PrerenderManager* pm = profile()->GetPrerenderManager();
+    if (pm != NULL) {
+      if (pm->MaybeUsePreloadedPage(this, params.url)) {
+        // TODO(tburkard): If the preloaded page has not finished preloading
+        // yet, we should not do this.
+        DidStopLoading();
+        return;
+      }
+    }
+
     bool was_bookmark_bar_visible = ShouldShowBookmarkBar();
 
     render_manager_.DidNavigateMainFrame(rvh);
@@ -3259,4 +3270,13 @@ void TabContents::set_encoding(const std::string& encoding) {
 void TabContents::SetAppIcon(const SkBitmap& app_icon) {
   app_icon_ = app_icon;
   NotifyNavigationStateChanged(INVALIDATE_TITLE);
+}
+
+void TabContents::SwapInRenderViewHost(RenderViewHost* rvh) {
+  render_manager_.SwapInRenderViewHost(rvh);
+}
+
+void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
+  RenderWidgetHostView* rwh_view = view()->CreateViewForWidget(rvh);
+  rwh_view->SetSize(view()->GetContainerSize());
 }

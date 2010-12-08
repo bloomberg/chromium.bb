@@ -59,6 +59,7 @@
 #include "chrome/browser/policy/profile_policy_context.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -1351,4 +1352,13 @@ PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
     pref_proxy_config_tracker_ = new PrefProxyConfigTracker(GetPrefs());
 
   return pref_proxy_config_tracker_;
+}
+
+PrerenderManager* ProfileImpl::GetPrerenderManager() {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (!cl->HasSwitch(switches::kEnablePagePrerender))
+    return NULL;
+  if (!prerender_manager_.get())
+    prerender_manager_.reset(new PrerenderManager(this));
+  return prerender_manager_.get();
 }

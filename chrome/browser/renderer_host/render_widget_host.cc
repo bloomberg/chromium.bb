@@ -1083,7 +1083,7 @@ void RenderWidgetHost::OnMsgCreatePluginContainer(gfx::PluginWindowHandle id) {
   if (view_) {
     view_->CreatePluginContainer(id);
   } else {
-    NOTIMPLEMENTED();
+    deferred_plugin_handles_.push_back(id);
   }
 }
 
@@ -1091,7 +1091,14 @@ void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
   if (view_) {
     view_->DestroyPluginContainer(id);
   } else {
-    NOTIMPLEMENTED();
+    for (int i = 0;
+         i < static_cast<int>(deferred_plugin_handles_.size());
+         i++) {
+      if (deferred_plugin_handles_[i] == id) {
+        deferred_plugin_handles_.erase(deferred_plugin_handles_.begin() + i);
+        i--;
+      }
+    }
   }
 }
 #endif
@@ -1217,4 +1224,17 @@ void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {
       // UnhandledKeyboardEvent destroys this RenderWidgetHost).
     }
   }
+}
+
+void RenderWidgetHost::ActivateDeferredPluginHandles() {
+  if (view_ == NULL)
+    return;
+
+  for (int i = 0; i < static_cast<int>(deferred_plugin_handles_.size()); i++) {
+#if defined(TOOLKIT_USES_GTK)
+    view_->CreatePluginContainer(deferred_plugin_handles_[i]);
+#endif
+  }
+
+  deferred_plugin_handles_.clear();
 }

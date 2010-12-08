@@ -404,6 +404,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
     return ignore_input_events_;
   }
 
+  // Activate deferred plugin handles.
+  void ActivateDeferredPluginHandles();
+
  protected:
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
@@ -682,6 +685,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
+
+  std::vector<gfx::PluginWindowHandle> deferred_plugin_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };

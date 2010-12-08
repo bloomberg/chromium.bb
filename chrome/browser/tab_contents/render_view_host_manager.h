@@ -69,6 +69,9 @@ class RenderViewHostManager
     // Focuses the location bar.
     virtual void SetFocusToLocationBar(bool select_all) = 0;
 
+    // Creates a view and sets the size for the specified RVH.
+    virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -171,6 +174,11 @@ class RenderViewHostManager
 
   // Called when a RenderViewHost is about to be deleted.
   void RenderViewDeleted(RenderViewHost* rvh);
+
+  // Allows a caller to swap in a provided RenderViewHost to replace the
+  // current RenderViewHost.  The current RVH will be shutdown and ultimately
+  // deleted.
+  void SwapInRenderViewHost(RenderViewHost* rvh);
 
  private:
   friend class TestTabContents;

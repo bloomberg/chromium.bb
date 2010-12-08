@@ -17,6 +17,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -676,4 +677,46 @@ void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
     NOTREACHED();
     pending_render_view_host_ = NULL;
   }
+}
+
+void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
+  dom_ui_.reset();
+
+  // Hide the current view and prepare to destroy it.
+  if (render_view_host_->view())
+    render_view_host_->view()->Hide();
+  RenderViewHost* old_render_view_host = render_view_host_;
+
+  // Swap in the new view and make it active.
+  render_view_host_ = rvh;
+  render_view_host_->set_delegate(render_view_delegate_);
+  delegate_->CreateViewAndSetSizeForRVH(render_view_host_);
+  render_view_host_->ActivateDeferredPluginHandles();
+  // If the view is gone, then this RenderViewHost died while it was hidden.
+  // We ignored the RenderViewGone call at the time, so we should send it now
+  // to make sure the sad tab shows up, etc.
+  if (render_view_host_->view()) {
+    // TODO(tburkard,cbentzel): Figure out why this hack is needed and/or
+    // if it can be removed.  On Windows, prerendering will not work without
+    // doing a Hide before the Show.
+    render_view_host_->view()->Hide();
+    render_view_host_->view()->Show();
+  }
+
+  delegate_->UpdateRenderViewSizeForRenderManager();
+
+  RenderViewHostSwitchedDetails details;
+  details.new_host = render_view_host_;
+  details.old_host = old_render_view_host;
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_VIEW_HOST_CHANGED,
+      Source<NavigationController>(&delegate_->GetControllerForRenderManager()),
+      Details<RenderViewHostSwitchedDetails>(&details));
+
+  // This will cause the old RenderViewHost to delete itself.
+  old_render_view_host->Shutdown();
+
+  // Let the task manager know that we've swapped RenderViewHosts, since it
+  // might need to update its process groupings.
+  delegate_->NotifySwappedFromRenderManager();
 }

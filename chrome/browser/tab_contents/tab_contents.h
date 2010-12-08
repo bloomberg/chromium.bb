@@ -71,6 +71,7 @@ class LoadNotificationDetails;
 class OmniboxSearchHint;
 class PluginInstaller;
 class Profile;
+class PrerenderManager;
 struct RendererPreferences;
 class RenderViewHost;
 class SessionStorageNamespace;
@@ -350,6 +351,11 @@ class TabContents : public PageNavigator,
   RenderViewHostManager* render_manager() { return &render_manager_; }
 #endif
 
+  // In the underlying RenderViewHostManager, swaps in the provided
+  // RenderViewHost to replace the current RenderViewHost.  The current RVH
+  // will be shutdown and ultimately deleted.
+  void SwapInRenderViewHost(RenderViewHost* rvh);
+
   // Commands ------------------------------------------------------------------
 
   // Implementation of PageNavigator.
@@ -455,6 +461,9 @@ class TabContents : public PageNavigator,
 
   // Focuses the location bar.
   virtual void SetFocusToLocationBar(bool select_all);
+
+  // Creates a view and sets the size for the specified RVH.
+  virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh);
 
   // Infobars ------------------------------------------------------------------
 
@@ -747,6 +756,9 @@ class TabContents : public PageNavigator,
 
   // Used to access the CreateHistoryAddPageArgs member function.
   friend class ExternalTabContainer;
+
+  // Used to access RVH Delegates.
+  friend class PrerenderManager;
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

@@ -70,6 +70,11 @@ void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
 
 } // namespace
 
+Profile::Profile()
+    : restored_last_session_(false),
+      accessibility_pause_level_(0) {
+}
+
 // static
 const ProfileId Profile::InvalidProfileId = static_cast<ProfileId>(0);
 
@@ -596,6 +601,13 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() {
     return profile_->GetProxyConfigTracker();
+  }
+
+  virtual PrerenderManager* GetPrerenderManager() {
+    // We do not allow prerendering in OTR profiles at this point.
+    // TODO(tburkard): Figure out if we want to support this, and how, at some
+    // point in the future.
+    return NULL;
   }
 
  private:

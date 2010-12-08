@@ -314,6 +314,7 @@ class TestingProfile : public Profile {
   virtual ExtensionInfoMap* GetExtensionInfoMap() { return NULL; }
   virtual PromoCounter* GetInstantPromoCounter() { return NULL; }
   virtual policy::ProfilePolicyContext* GetPolicyContext() { return NULL; }
+  virtual PrerenderManager* GetPrerenderManager() { return NULL; }
 
  protected:
   base::Time start_time_;

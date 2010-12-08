@@ -116,6 +116,7 @@ class RenderViewHost : public RenderWidgetHost {
 
   SiteInstance* site_instance() const { return instance_; }
   RenderViewHostDelegate* delegate() const { return delegate_; }
+  void set_delegate(RenderViewHostDelegate* d) { delegate_ = d; }
 
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost. If the |frame_name| parameter is non-empty, it is used
