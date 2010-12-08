@@ -37,6 +37,11 @@ static const int kModuleCheckDelayMs = 60 * 1000;
 static const wchar_t kRegPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved";
 
+// Short-hand for things on the blacklist you should simply get rid of.
+static const ModuleEnumerator::RecommendedAction kUninstallLink =
+    static_cast<ModuleEnumerator::RecommendedAction>(
+        ModuleEnumerator::UNINSTALL | ModuleEnumerator::SEE_LINK);
+
 // A sort method that sorts by bad modules first, then by full name (including
 // path).
 static bool ModuleSort(const ModuleEnumerator::Module& a,
@@ -72,7 +77,7 @@ struct FindModule {
 
 }
 
-// The browser process module blacklist. This lists all modules that are known
+// The browser process module blacklist. This lists modules that are known
 // to cause compatibility issues within the browser process. When adding to this
 // list, make sure that all paths are lower-case, in long pathname form, end
 // with a slash and use environments variables (or just look at one of the
@@ -85,36 +90,118 @@ struct FindModule {
 const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // NOTE: Please keep this list sorted by dll name, then location.
 
-  // foldersizecolumn.dll.
-  {"5ec91bd7", "", "", "", "", NONE},
+  // apiqq0.dll, "%temp%\\".
+  { "26134911", "59145acf", "", "", "", kUninstallLink },
 
-  // idmmbc.dll, "%programfiles%\\internet download manager\\", "Tonec Inc.".
-  // See: http://crbug.com/26892/.
-  {"b8dce5c3", "94541bf5", "d33ad640", "", "6.03", UPDATE},
+  // arking0.dll, "%systemroot%\\system32\\".
+  { "f5d8f549", "23d01d5b", "", "", "", kUninstallLink },
 
-  // imon.dll.  See: http://crbug.com/21715.
-  {"8f42f22e", "", "", "", "", NONE},
+  // arking1.dll, "%systemroot%\\system32\\".
+  { "c60ca062", "23d01d5b", "", "", "", kUninstallLink },
 
-  // is3lsp.dll.  See: http://crbug.com/26892.
-  {"7ffbdce9", "", "", "", "", NONE},
+  // clickpotatolitesahook.dll, "". Different version each report.
+  { "0396e037.dll", "", "", "", "", kUninstallLink },
 
-  // nvlsp.dll.  See: http://crbug.com/22083.
-  {"37f907e2", "", "", "", "", NONE},
+  // cvasds0.dll, "%temp%\\".
+  { "5ce0037c", "59145acf", "", "", "", kUninstallLink },
 
-  // nvshell.dll.  See: http://crbug.com/3269.
-  {"9290318f", "", "", "", "", NONE},
+  // cwalsp.dll, "%systemroot%\\system32\\".
+  { "e579a039", "23d01d5b", "", "", "", kUninstallLink },
 
-  // securenet.dll.  See: http://crbug.com/5165.
-  {"9b266e1c", "", "", "", "", NONE},
+  // dsoqq0.dll, "%temp%\\".
+  { "1c4df325", "59145acf", "", "", "", kUninstallLink },
 
-  // sgprxy.dll.
-  {"005965ea", "", "", "", "", NONE},
+  // hblitesahook.dll. Each report has different version number in location.
+  { "5d10b363", "", "", "", "", kUninstallLink },
 
-  // vaproxyd.dll.  See: http://crbug.com/42445.
-  {"0a1c7f81", "", "", "", "", NONE},
+  // icf.dll, "%systemroot%\\system32\\".
+  { "303825ed", "23d01d5b", "", "", "", kUninstallLink },
 
-  // vlsp.dll.  See: http://crbug.com/22826.
-  {"2e4eb93d", "", "", "", "", NONE},
+  // idmmbc.dll (IDM), "%systemroot%\\system32\\". See: http://crbug.com/26892/.
+  { "b8dce5c3", "23d01d5b", "", "", "6.03",
+      static_cast<RecommendedAction>(UPDATE | DISABLE) },
+
+  // imon.dll (NOD32), "%systemroot%\\system32\\". See: http://crbug.com/21715.
+  { "8f42f22e", "23d01d5b", "", "", "4.0",
+      static_cast<RecommendedAction>(UPDATE | DISABLE) },
+
+  // is3lsp.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
+  { "7ffbdce9", "bc5673f2", "", "", "",
+      static_cast<RecommendedAction>(UPDATE | DISABLE) },
+
+  // jsi.dll, "%programfiles%\\profilecraze\\".
+  { "f9555eea", "e3548061", "", "", "", kUninstallLink },
+
+  // kernel.dll, "%programfiles%\\contentwatch\\internet protection\\modules\\".
+  { "ead2768e", "4e61ce60", "", "", "", kUninstallLink },
+
+  // mgking0.dll, "%systemroot%\\system32\\".
+  { "d0893e38", "23d01d5b", "", "", "", kUninstallLink },
+
+  // mgking0.dll, "%temp%\\".
+  { "d0893e38", "59145acf", "", "", "", kUninstallLink },
+
+  // mgking1.dll, "%systemroot%\\system32\\".
+  { "3e837222", "23d01d5b", "", "", "", kUninstallLink },
+
+  // mgking1.dll, "%temp%\\".
+  { "3e837222", "59145acf", "", "", "", kUninstallLink },
+
+  // mstcipha.ime, "%systemroot%\\system32\\".
+  { "5523579e", "23d01d5b", "", "", "", kUninstallLink },
+
+  // mwtsp.dll, "%systemroot%\\system32\\".
+  { "9830bff6", "23d01d5b", "", "", "", kUninstallLink },
+
+  // nodqq0.dll, "%temp%\\".
+  { "b86ce04d", "59145acf", "", "", "", kUninstallLink },
+
+  // nvlsp.dll,
+  // "%programfiles%\\nvidia corporation\\networkaccessmanager\\bin32\\".
+  { "37f907e2", "3ad0ff23", "", "", "", kUninstallLink },
+
+  // radhslib.dll (Naomi web filter), "%programfiles%\\rnamfler\\".
+  // See http://crbug.com/12517.
+  { "7edcd250", "0733dc3e", "", "", "", kUninstallLink },
+
+  // rlls.dll, "%programfiles%\\relevantknowledge\\".
+  { "a1ed94a7", "ea9d6b36", "", "", "", kUninstallLink },
+
+  // rooksdol.dll, "%programfiles%\\trusteer\\rapport\\bin\\".
+  { "802aefef", "06120e13", "", "", "", kUninstallLink },
+
+  // searchtree.dll,
+  // "%programfiles%\\contentwatch\\internet protection\\modules\\".
+  { "f6915a31", "4e61ce60", "", "", "", kUninstallLink },
+
+  // sgprxy.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
+  { "005965ea", "bc5673f2", "", "", "",
+      static_cast<RecommendedAction>(UPDATE | DISABLE) },
+
+  // twking0.dll, "%systemroot%\\system32\\".
+  { "0355549b", "23d01d5b", "", "", "", kUninstallLink },
+
+  // twking1.dll, "%systemroot%\\system32\\".
+  { "02e44508", "23d01d5b", "", "", "", kUninstallLink },
+
+  // vksaver.dll, "%systemroot%\\system32\\".
+  { "c4a784d5", "23d01d5b", "", "", "", kUninstallLink },
+
+  // vlsp.dll, "%systemroot%\\system32\\".
+  { "2e4eb93d", "23d01d5b", "", "", "", kUninstallLink },
+
+  // vmn3_1dn.dll, "%appdata%\\roaming\\vmndtxtb\\".
+  { "bba2037d", "9ab68585", "", "", "", kUninstallLink },
+
+  // webanalyzer.dll,
+  // "%programfiles%\\contentwatch\\internet protection\\modules\\".
+  { "c70b697d", "4e61ce60", "", "", "", kUninstallLink },
+
+  // wowst0.dll, "%systemroot%\\system32\\".
+  { "38ad9963", "23d01d5b", "", "", "", kUninstallLink },
+
+  // wxbase28u_vc_cw.dll, "%systemroot%\\system32\\".
+  { "e967210d", "23d01d5b", "", "", "", kUninstallLink },
 };
 
 // Generates an 8 digit hash from the input given.
@@ -424,6 +511,7 @@ void ModuleEnumerator::PreparePathMappings() {
   env_vars.push_back(L"SystemRoot");
   env_vars.push_back(L"TEMP");
   env_vars.push_back(L"TMP");
+  env_vars.push_back(L"CommonProgramFiles");
   for (std::vector<string16>::const_iterator variable = env_vars.begin();
        variable != env_vars.end(); ++variable) {
     std::string path;
@@ -479,7 +567,7 @@ void ModuleEnumerator::MatchAgainstBlacklist() {
 
     // Modules loaded from these locations are frequently malicious
     // and notorious for changing frequently so they are not good candidates
-    // for blacklising individually. Mark them as suspicious if we haven't
+    // for blacklisting individually. Mark them as suspicious if we haven't
     // classified them as bad yet.
     if (module->status == NOT_MATCHED || module->status == GOOD) {
       if (StartsWith(module->location, L"%temp%", false) ||
