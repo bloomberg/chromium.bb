@@ -35,7 +35,6 @@ class Profile;
 namespace net {
 class DnsCertProvenanceChecker;
 class NetworkDelegate;
-class ProxyConfig;
 }
 
 class ChromeURLRequestContext;

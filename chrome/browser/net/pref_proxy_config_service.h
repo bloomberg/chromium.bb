@@ -26,9 +26,9 @@ class PrefProxyConfigTracker
  public:
   // Observer interface used to send out notifications on the IO thread about
   // changes to the proxy configuration.
-  class ObserverInterface {
+  class Observer {
    public:
-    virtual ~ObserverInterface() {}
+    virtual ~Observer() {}
     virtual void OnPrefProxyConfigChanged() = 0;
   };
 
@@ -36,8 +36,8 @@ class PrefProxyConfigTracker
   virtual ~PrefProxyConfigTracker();
 
   // Observer manipulation is only valid on the IO thread.
-  void AddObserver(ObserverInterface* observer);
-  void RemoveObserver(ObserverInterface* observer);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Get the proxy configuration currently defined by preferences. Writes the
   // configuration to |config| and returns true on success. |config| is not
@@ -68,14 +68,14 @@ class PrefProxyConfigTracker
   bool ReadPrefConfig(net::ProxyConfig* config);
 
   // Configuration as defined by prefs. Only to be accessed from the IO thread
-  // (expect for construction).
+  // (except for construction).
   net::ProxyConfig pref_config_;
 
   // Whether |pref_config_| is valid. Only accessed from the IO thread.
   bool valid_;
 
   // List of observers, accessed exclusively from the IO thread.
-  ObserverList<ObserverInterface, true> observers_;
+  ObserverList<Observer, true> observers_;
 
   // Pref-related members that should only be accessed from the UI thread.
   PrefService* pref_service_;
@@ -90,7 +90,7 @@ class PrefProxyConfigTracker
 class PrefProxyConfigService
     : public net::ProxyConfigService,
       public net::ProxyConfigService::Observer,
-      public PrefProxyConfigTracker::ObserverInterface {
+      public PrefProxyConfigTracker::Observer {
  public:
   // Takes ownership of the passed |base_service|.
   PrefProxyConfigService(PrefProxyConfigTracker* tracker,

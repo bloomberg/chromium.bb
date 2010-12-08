@@ -38,13 +38,13 @@ void PrefProxyConfigTracker::DetachFromPrefService() {
 }
 
 void PrefProxyConfigTracker::AddObserver(
-    PrefProxyConfigTracker::ObserverInterface* observer) {
+    PrefProxyConfigTracker::Observer* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.AddObserver(observer);
 }
 
 void PrefProxyConfigTracker::RemoveObserver(
-    PrefProxyConfigTracker::ObserverInterface* observer) {
+    PrefProxyConfigTracker::Observer* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.RemoveObserver(observer);
 }
@@ -70,12 +70,11 @@ void PrefProxyConfigTracker::Observe(NotificationType type,
 void PrefProxyConfigTracker::InstallProxyConfig(const net::ProxyConfig& config,
                                                 bool valid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (valid_ != valid || !pref_config_.Equals(config)) {
+  if (valid_ != valid || (valid && !pref_config_.Equals(config))) {
     valid_ = valid;
     if (valid_)
       pref_config_ = config;
-    FOR_EACH_OBSERVER(ObserverInterface, observers_,
-                      OnPrefProxyConfigChanged());
+    FOR_EACH_OBSERVER(Observer, observers_, OnPrefProxyConfigChanged());
   }
 }
 
@@ -169,9 +168,11 @@ void PrefProxyConfigService::RemoveObserver(
 
 bool PrefProxyConfigService::GetLatestProxyConfig(net::ProxyConfig* config) {
   RegisterObservers();
-  const net::ProxyConfig pref_config;
-  if (pref_config_tracker_->GetProxyConfig(config))
+  net::ProxyConfig pref_config;
+  if (pref_config_tracker_->GetProxyConfig(&pref_config)) {
+    *config = pref_config;
     return true;
+  }
 
   return base_service_->GetLatestProxyConfig(config);
 }
