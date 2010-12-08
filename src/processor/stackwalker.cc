@@ -98,7 +98,7 @@ bool Stackwalker::Walk(CallStack *stack) {
                 module->code_file()) == no_symbol_modules_.end() &&
             supplier_) {
           string symbol_file;
-          char *symbol_data;
+          char *symbol_data = NULL;
           SymbolSupplier::SymbolResult symbol_result =
               supplier_->GetCStringSymbolData(module,
                                               system_info_,
@@ -214,7 +214,7 @@ bool Stackwalker::InstructionAddressSeemsValid(u_int64_t address) {
 
   if (!resolver_->HasModule(module)) {
     string symbol_file;
-    char *symbol_data;
+    char *symbol_data = NULL;
     SymbolSupplier::SymbolResult symbol_result =
       supplier_->GetCStringSymbolData(module, system_info_,
                                       &symbol_file, &symbol_data);
