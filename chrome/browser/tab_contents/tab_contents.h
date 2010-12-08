@@ -1002,7 +1002,7 @@ class TabContents : public PageNavigator,
                                 uint64 upload_position, uint64 upload_size);
   virtual bool IsExternalTabContainer() const;
   virtual void DidInsertCSS();
-  virtual void FocusedNodeChanged();
+  virtual void FocusedNodeChanged(bool is_editable_node);
   virtual void UpdateZoomLimits(int minimum_percent,
                                 int maximum_percent,
                                 bool remember);

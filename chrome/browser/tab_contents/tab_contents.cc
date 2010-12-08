@@ -3018,11 +3018,11 @@ void TabContents::DidInsertCSS() {
   // This RVHDelegate function is used for extensions and not us.
 }
 
-void TabContents::FocusedNodeChanged() {
+void TabContents::FocusedNodeChanged(bool is_editable_node) {
   NotificationService::current()->Notify(
       NotificationType::FOCUS_CHANGED_IN_PAGE,
       Source<RenderViewHost>(render_view_host()),
-      NotificationService::NoDetails());
+      Details<const bool>(&is_editable_node));
 }
 
 void TabContents::UpdateZoomLimits(int minimum_percent,

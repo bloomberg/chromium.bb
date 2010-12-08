@@ -116,11 +116,11 @@ class TestInterstitialPage : public InterstitialPage {
   }
 
  protected:
-  virtual void FocusedNodeChanged() {
+  virtual void FocusedNodeChanged(bool is_editable_node) {
     NotificationService::current()->Notify(
         NotificationType::FOCUS_CHANGED_IN_PAGE,
         Source<RenderViewHost>(render_view_host()),
-        NotificationService::NoDetails());
+        Details<const bool>(&is_editable_node));
   }
 
  private:
@@ -401,10 +401,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 
   browser()->FocusLocationBar();
 
+  const char* kTextElementID = "textEdit";
   const char* kExpElementIDs[] = {
     "",  // Initially no element in the page should be focused
          // (the location bar is focused).
-    "textEdit", "searchButton", "luckyButton", "googleLink", "gmailLink",
+    kTextElementID, "searchButton", "luckyButton", "googleLink", "gmailLink",
     "gmapLink"
   };
 
@@ -426,22 +427,26 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
           &actual));
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      NotificationType::Type notification_type;
-      NotificationSource notification_source =
-          NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
-        notification_type = NotificationType::FOCUS_CHANGED_IN_PAGE;
-        notification_source = Source<RenderViewHost>(
-            browser()->GetSelectedTabContents()->render_view_host());
+        // If the next element is the kTextElementID, we expect to be
+        // notified we have switched to an editable node.
+        bool is_editable_node =
+            (strcmp(kTextElementID, kExpElementIDs[j + 1]) == 0);
+        Details<bool> details(&is_editable_node);
+
+        ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
+            browser(), app::VKEY_TAB, false, false, false, false,
+            NotificationType::FOCUS_CHANGED_IN_PAGE,
+            NotificationSource(Source<RenderViewHost>(
+                browser()->GetSelectedTabContents()->render_view_host())),
+            details));
       } else {
         // On the last tab key press, the focus returns to the browser.
-        notification_type = NotificationType::FOCUS_RETURNED_TO_BROWSER;
-        notification_source = Source<Browser>(browser());
+        ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+            browser(), app::VKEY_TAB, false, false, false, false,
+            NotificationType::FOCUS_RETURNED_TO_BROWSER,
+            NotificationSource(Source<Browser>(browser()))));
       }
-
-      ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-          browser(), app::VKEY_TAB, false, false, false, false,
-          notification_type, notification_source));
     }
 
     // At this point the renderer has sent us a message asking to advance the
@@ -459,23 +464,28 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
     // Now let's press shift-tab to move the focus in reverse.
     for (size_t j = 0; j < arraysize(kExpElementIDs); ++j) {
       SCOPED_TRACE(StringPrintf("inner loop: %" PRIuS, j));
+      const char* next_element =
+          kExpElementIDs[arraysize(kExpElementIDs) - 1 - j];
 
-      NotificationType::Type notification_type;
-      NotificationSource notification_source =
-          NotificationService::AllSources();
       if (j < arraysize(kExpElementIDs) - 1) {
-        notification_type = NotificationType::FOCUS_CHANGED_IN_PAGE;
-        notification_source = Source<RenderViewHost>(
-            browser()->GetSelectedTabContents()->render_view_host());
+        // If the next element is the kTextElementID, we expect to be
+        // notified we have switched to an editable node.
+        bool is_editable_node = (strcmp(kTextElementID, next_element) == 0);
+        Details<bool> details(&is_editable_node);
+
+        ASSERT_TRUE(ui_test_utils::SendKeyPressAndWaitWithDetails(
+            browser(), app::VKEY_TAB, false, true, false, false,
+            NotificationType::FOCUS_CHANGED_IN_PAGE,
+            NotificationSource(Source<RenderViewHost>(
+                browser()->GetSelectedTabContents()->render_view_host())),
+            details));
       } else {
         // On the last tab key press, the focus returns to the browser.
-        notification_type = NotificationType::FOCUS_RETURNED_TO_BROWSER;
-        notification_source = Source<Browser>(browser());
+        ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+            browser(), app::VKEY_TAB, false, true, false, false,
+            NotificationType::FOCUS_RETURNED_TO_BROWSER,
+            NotificationSource(Source<Browser>(browser()))));
       }
-
-      ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-          browser(), app::VKEY_TAB, false, true, false, false,
-          notification_type, notification_source));
 
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
@@ -484,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
           L"",
           L"window.domAutomationController.send(getFocusedElement());",
           &actual));
-      ASSERT_STREQ(kExpElementIDs[6 - j], actual.c_str());
+      ASSERT_STREQ(next_element, actual.c_str());
     }
 
     // At this point the renderer has sent us a message asking to advance the

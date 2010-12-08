@@ -865,7 +865,7 @@ class RenderViewHostDelegate {
   virtual void DidInsertCSS() {}
 
   // A different node in the page got focused.
-  virtual void FocusedNodeChanged() {}
+  virtual void FocusedNodeChanged(bool is_editable_node) {}
 
   // Updates the minimum and maximum zoom percentages.
   virtual void UpdateZoomLimits(int minimum_percent,

@@ -23,6 +23,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "gfx/native_widget_types.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 class AppModalDialog;
 class BookmarkModel;
@@ -403,9 +404,9 @@ class WindowedNotificationObserverWithDetails
       : WindowedNotificationObserver(notification_type, source) {}
 
   // Fills |details| with the details of the notification received for |source|.
-  bool GetDetailsFor(const void* source, U* details) {
+  bool GetDetailsFor(uintptr_t source, U* details) {
     typename std::map<uintptr_t, U>::const_iterator iter =
-        details_.find(reinterpret_cast<uintptr_t>(source));
+        details_.find(source);
     if (iter == details_.end())
       return false;
     *details = iter->second;
@@ -415,7 +416,9 @@ class WindowedNotificationObserverWithDetails
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    details_[source.map_key()] = *Details<U>(details).ptr();
+    const U* details_ptr = Details<U>(details).ptr();
+    if (details_ptr)
+      details_[source.map_key()] = *details_ptr;
     WindowedNotificationObserver::Observe(type, source, details);
   }
 
@@ -424,6 +427,45 @@ class WindowedNotificationObserverWithDetails
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserverWithDetails);
 };
+
+// See SendKeyPressAndWait.  This function additionally performs a check on the
+// NotificationDetails using the provided Details<U>.
+template <class U>
+bool SendKeyPressAndWaitWithDetails(
+    const Browser* browser,
+    app::KeyboardCode key,
+    bool control,
+    bool shift,
+    bool alt,
+    bool command,
+    NotificationType type,
+    const NotificationSource& source,
+    const Details<U>& details) WARN_UNUSED_RESULT;
+
+template <class U>
+bool SendKeyPressAndWaitWithDetails(
+    const Browser* browser,
+    app::KeyboardCode key,
+    bool control,
+    bool shift,
+    bool alt,
+    bool command,
+    NotificationType type,
+    const NotificationSource& source,
+    const Details<U>& details) {
+  WindowedNotificationObserverWithDetails<U> observer(type, source);
+
+  if (!SendKeyPressSync(browser, key, control, shift, alt, command))
+    return false;
+
+  observer.Wait();
+
+  U my_details;
+  if (!observer.GetDetailsFor(source.map_key(), &my_details))
+    return false;
+
+  return *details.ptr() == my_details && !testing::Test::HasFatalFailure();
+}
 
 // Hide a native window.
 void HideNativeWindow(gfx::NativeWindow window);

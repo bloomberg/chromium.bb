@@ -513,7 +513,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   EXPECT_TRUE(current_tab->language_state().original_language().empty());
   en_language_detected_signal.Wait();
   std::string lang;
-  EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(current_tab, &lang));
+  EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(
+        source.map_key(), &lang));
   EXPECT_EQ("en", lang);
   EXPECT_EQ("en", current_tab->language_state().original_language());
 
@@ -526,7 +527,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   EXPECT_TRUE(current_tab->language_state().original_language().empty());
   fr_language_detected_signal.Wait();
   lang.clear();
-  EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(current_tab, &lang));
+  EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
+        source.map_key(), &lang));
   EXPECT_EQ("fr", lang);
   EXPECT_EQ("fr", current_tab->language_state().original_language());
 }

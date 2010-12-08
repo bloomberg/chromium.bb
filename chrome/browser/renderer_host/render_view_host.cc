@@ -1844,21 +1844,7 @@ void RenderViewHost::NotifyRendererResponsive() {
 }
 
 void RenderViewHost::OnMsgFocusedNodeChanged(bool is_editable_node) {
-  delegate_->FocusedNodeChanged();
-
-#if defined(TOUCH_UI)
-  if (is_editable_node) {
-    // Need to summon on-screen keyboard
-    // TODO(bryeung): implement this
-
-    // The currently focused element can be placed out of the view as the screen
-    // is now shared by the keyboard. Hence, we tell the renderer to scroll
-    // until the focused element comes in view.
-    Send(new ViewMsg_ScrollFocusedEditableNodeIntoView(routing_id()));
-  } else {
-    // TODO(bryeung): implement this. Should hide the on-screen keyboard.
-  }
-#endif
+  delegate_->FocusedNodeChanged(is_editable_node);
 }
 
 void RenderViewHost::OnMsgFocus() {
