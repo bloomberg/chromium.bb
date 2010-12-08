@@ -37,6 +37,10 @@ import sys
 # Environment Settings
 ######################################################################
 
+# This dictionary initializes a shell-like environment.
+# Shell escaping and ${} substitution are provided.
+# See "class env" defined later for the implementation.
+
 INITIAL_ENV = {
   # Internal settings
   'EMIT_LL'     : '0',   # Produce an intermediate .ll file
@@ -72,7 +76,7 @@ INITIAL_ENV = {
   'BASE_ARM_INCLUDE': '${BASE_ARM}/arm-none-linux-gnueabi/include',
 
   'LOG_TO_FILE'          : '1',
-  'LOG_FILENAME'         : '${BASE_NACL}/toolchain/hg-log/llvm-fake.log',
+  'LOG_FILENAME'         : '${BASE_NACL}/toolchain/hg-log/driver.log',
   'LOG_FILE_SIZE_LIMIT'  : '20971520', # 20 MB
   'LOG_PRETTY_PRINT'     : '1',
 
@@ -122,10 +126,12 @@ INITIAL_ENV = {
   'AS_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/bin/as',
   'LD_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/bin/ld',
 
-  'LLVM_MC'       : '${BASE_ARM}/bin/llvm-mc',
+  'LD_SB_FLAGS'   : '-nostdlib -T ${BASE_SB_%arch%}/script/ld_script -static',
 
+  'LLVM_MC'       : '${BASE_ARM}/bin/llvm-mc',
   'LLVM_AS'       : '${BASE_ARM}/bin/llvm-as',
   'LLVM_DIS'      : '${BASE_ARM}/bin/llvm-dis',
+  'LLVM_LINK'     : '${BASE_ARM}/bin/llvm-link',
 
   'LLC'           : '${BASE_ARM}/bin/llc',
 
@@ -155,9 +161,6 @@ INITIAL_ENV = {
   'AS_X8632'      : '${BASE_NACL}/toolchain/linux_x86/bin/nacl-as',
   'AS_X8664'      : '${BASE_NACL}/toolchain/linux_x86/bin/nacl64-as',
 
-  'LD'            : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
-
-
   'AS_FLAGS_ARM'  : '-mfpu=vfp -march=armv7-a',
   'AS_FLAGS_X8632': '--32 --nacl-align 5 -n -march=pentium4 -mtune=i386',
   'AS_FLAGS_X8664': '--64 --nacl-align 5 -n -mtune=core2',
@@ -166,8 +169,12 @@ INITIAL_ENV = {
   'MC_FLAGS_X8632' : '-assemble -filetype=obj -arch=i686 -triple=i686-nacl',
   'MC_FLAGS_X8664' : '-assemble -filetype=obj -arch=x86_64 -triple=x86_64-nacl',
 
-  'LD_FLAGS_NATIVE' : '--native-client -Ttext=0x00020000 -nostdlib -static',
-  'LD_FLAGS_BITCODE': '',
+  'LD'       : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
+  'LD_FLAGS' : '--native-client -Ttext=0x00020000 -nostdlib -static',
+
+  'BCLD'      : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
+  'BCLD_FLAGS': '${GOLD_PLUGIN_ARGS}',
+
 
   'STDLIB_NATIVE_PREFIX': '${ROOT_%arch%}/crt1.o ${ROOT_%arch%}/crti.o ' +
                           '${ROOT_%arch%}/crtbegin.o',
@@ -188,7 +195,8 @@ INITIAL_ENV = {
              '-filetype=${filetype} ' +
              '"${input}" -o "${output}"',
 
-  'RUN_LLVM_AS': '${LLVM_AS} "${input}" -o "${output}"',
+  'RUN_LLVM_AS'  : '${LLVM_AS} "${input}" -o "${output}"',
+  'RUN_LLVM_LINK': '${LLVM_LINK} ${inputs} -o "${output}"',
 
   'RUN_NACL_AS' : '${AS_%arch%} ${AS_FLAGS_%arch%} "${input}" -o "${output}"',
   'RUN_LLVM_MC' : '${LLVM_MC} ${MC_FLAGS_%arch%} "${input}" -o "${output}"',
@@ -203,13 +211,13 @@ INITIAL_ENV = {
   'RUN_NATIVE_DIS'  : '${OBJDUMP_%arch%} -d "${input}"',
 
   # Multiple input actions
-  'RUN_LD' : '${LD} ${LD_FLAGS_NATIVE} ${STDLIB_NATIVE_PREFIX} ${inputs} ' +
+  'RUN_LD' : '${LD} ${LD_FLAGS} ${STDLIB_NATIVE_PREFIX} ${inputs} ' +
              '${STDLIB_NATIVE_SUFFIX} -o "${output}"',
 
-  'RUN_BCLD': '${LD} ${LD_FLAGS_BITCODE} ' +
+  'RUN_BCLD': '${BCLD} ${BCLD_FLAGS} ' +
               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
               '${STDLIB_BC_SUFFIX} ${STDLIB_NATIVE_SUFFIX} ' +
-              '-o "${output}" ${GOLD_PLUGIN_ARGS}'
+              '-o "${output}"'
 }
 
 ######################################################################
@@ -274,8 +282,8 @@ GCCPatterns = [
   ( '(-g.*)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-xassembler-with-cpp)', "env.append('CC_FLAGS', $0)"),
 
-  ( ('-L','(.+)'),            "env.append('LD_FLAGS_BITCODE', '-L' + $0)"),
-  ( '(-L.+)',                 "env.append('LD_FLAGS_BITCODE', $0)"),
+  ( ('-L','(.+)'),            "env.append('BCLD_FLAGS', '-L' + $0)"),
+  ( '(-L.+)',                 "env.append('BCLD_FLAGS', $0)"),
   ( '(-Wp,.*)',               "env.append('CC_FLAGS', $0)"),
 
   # Ignore these gcc flags
@@ -326,6 +334,8 @@ def PrepareFlags():
   if sbtc != '':
     env.set('LLC', '${LLC_SB_%s}' % sbtc)
     env.set('AS', '${AS_SB_%s}' % sbtc)
+    env.set('LD', '${LD_SB_%s}' % sbtc)
+    env.set('LD_FLAGS', '${LD_SB_FLAGS}')
 
 ######################################################################
 # Chain Map
@@ -348,8 +358,18 @@ def PrepareFlags():
 # As a result, the c -> bc rule will be selected first, and no
 # intermediate .ll file will be produced.
 def PrepareChainMap():
-  ChainOrder = \
-    ['src','pp','ll','bc','pexe','S','s','o','nexe','lib']
+  ChainOrder = [
+    'src',
+    'pp',
+    'll',
+    'bc',
+    'pexe',
+    'S',
+    's',
+    'o',
+    'nexe',
+    'lib'
+  ]
 
   ChainMapInit = [
     # Inputs -> Out   , Function, ExtraArgs
@@ -477,6 +497,9 @@ def Incarnation_bcld():
   emit_llvm = env.getbool('EMIT_LLVM')
   output_type = 'pexe' if emit_llvm else 'nexe'
   arch = None if emit_llvm else GetArch()
+  for i in inputs:
+    if FileType(i) not in ('bc','o','lib'):
+      Log.Fatal("Expecting only bitcode files for bcld invocation")
   Compile(arch, inputs, output, output_type)
   return 0
 
@@ -516,6 +539,26 @@ def Incarnation_as():
   Compile(arch, inputs, output, output_type)
   return 0
 
+def Incarnation_bclink():
+  inputs = shell.split(env.get('INPUTS'))
+  output = env.get('OUTPUT')
+  if output == '':
+    Log.Fatal("Please specify output name")
+  RunWithEnv('RUN_LLVM_LINK',
+             inputs=shell.join(inputs),
+             output=output)
+  return 0
+
+def Incarnation_bcopt():
+  inputs = shell.split(env.get('INPUTS'))
+  output = env.get('OUTPUT')
+  if len(inputs) != 1:
+    Log.Fatal("Expected exactly one input")
+  if output == '':
+    Log.Fatal("Please specify output name")
+  OptimizeBC(inputs[0], output)
+  return 0
+
 def Incarnation_dis():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
@@ -541,7 +584,6 @@ def Incarnation_nop():
   NiceExit(0)
 
 def NiceExit(code):
-  Log.flush()
   sys.exit(code)
 
 ######################################################################
@@ -625,11 +667,7 @@ def Compile(arch, inputs, output, output_type):
   if output_type == 'nexe':
     LinkAll(arch, inputs, output)
   elif output_type == 'pexe':
-    combined_bitcode = TempNameForOutput(output, 'bc')
-    if not LinkBC(inputs, combined_bitcode):
-      Log.Fatal('No bitcode specified!')
-    assert(not env.getbool('SKIP_OPT'))
-    OptimizeBC(combined_bitcode, output)
+    LinkBC(inputs, output)
   else:
     Log.Fatal("Unexpected case")
 
@@ -637,18 +675,12 @@ def Compile(arch, inputs, output, output_type):
 
 def LinkAll(arch, inputs, output):
   if not env.getbool('PRELINKED'):
-    combined_bitcode = TempNameForOutput(output, 'bc')
-    HasBitcode = LinkBC(inputs, combined_bitcode)
-    if HasBitcode and not env.getbool('SKIP_OPT'):
-      combined_bitcode_opt = TempNameForOutput(output, 'opt.bc')
-      OptimizeBC(combined_bitcode, combined_bitcode_opt)
-      combined_bitcode = combined_bitcode_opt
+    combined_bitcode = LinkBC(inputs)
   else:
     assert(len(inputs) == 1)
     combined_bitcode = inputs[0]
-    HasBitcode = True
 
-  if HasBitcode:
+  if combined_bitcode:
     # Translate it to an object
     combined_obj = CompileOne(arch, 'o', combined_bitcode)
 
@@ -662,17 +694,29 @@ def LinkAll(arch, inputs, output):
 
 # Input: a bunch of bc/o/lib input files
 # Output: a combined & optimized bitcode file
-def LinkBC(inputs, output):
+def LinkBC(inputs, output = None):
+  assert(output is None or output != '')
+
   # Make sure our inputs are only .bc, .o, and -l
-  HasBitcode = False
+  NeedsLinking = False
   for i in xrange(0, len(inputs)):
     intype = FileType(inputs[i])
     assert(intype in ('bc', 'pexe', 'o', 'lib'))
     if intype == 'bc':
-      HasBitcode = True
+      NeedsLinking = True
 
-  if not HasBitcode:
-    return False
+  if not NeedsLinking:
+    return None
+
+  SkipOpt = env.getbool('SKIP_OPT')
+  if SkipOpt:
+    if output is None:
+      output = TempNameForOutput('bc')
+    bcld_output = output
+  else:
+    if output is None:
+      output = TempNameForOutput('opt.bc')
+    bcld_output = TempNameForOutput('bc')
 
   # Produce combined bitcode file
   # There is an architecture bias here. To link the bitcode together,
@@ -681,16 +725,18 @@ def LinkBC(inputs, output):
   # this somehow.
   RunWithEnv('RUN_BCLD', arch = 'ARM',
              inputs = shell.join(inputs),
-             output = output)
-  return True
+             output = bcld_output)
+
+  if not SkipOpt:
+    OptimizeBC(bcld_output, output)
+
+  return output
 
 def OptimizeBC(input, output):
   # Optimize combined bitcode file
   RunWithEnv('RUN_OPT',
              input = input,
              output = output)
-
-
 
 # Final native linking step
 def LinkNative(arch, inputs, output):
@@ -879,40 +925,42 @@ def FindBaseDir():
 # Argument Parsing
 ######################################################################
 
+def MatchOne(argv, i, patternlist):
+  """Find a pattern which matches argv starting at position i"""
+  for (regex, action) in patternlist:
+    if isinstance(regex, str):
+      regex = [regex]
+    j = 0
+    matches = []
+    for r in regex:
+      if i+j < len(argv):
+        match = re.compile('^'+r+'$').match(argv[i+j])
+      else:
+        match = None
+      matches.append(match)
+      j += 1
+    if None in matches:
+      continue
+    groups = [ list(m.groups()) for m in matches ]
+    groups = reduce(lambda x,y: x+y, groups, [])
+    return (len(regex), action, groups)
+  return (0, '', [])
+
 def ParseArgs(argv, patternlist):
   """Parse argv using the patterns in patternlist"""
 
   i = 0
   while i < len(argv):
-    FoundMatch = False
-    for (regex, action) in patternlist:
-      if isinstance(regex, str):
-        regex = [regex]
-      j = 0
-      matches = []
-      for r in regex:
-        if i+j < len(argv):
-          match = re.compile('^'+r+'$').match(argv[i+j])
-        else:
-          match = None
-        matches.append(match)
-        j += 1
-      if None in matches:
-        continue
-      FoundMatch = True
-      break
-    if not FoundMatch:
+    num_matched, action, groups = MatchOne(argv, i, patternlist)
+    if num_matched == 0:
       Log.Fatal('Unrecognized argument: ' + argv[i])
-    groups = [ list(m.groups()) for m in matches ]
-    groups = reduce(lambda x,y: x+y, groups, [])
     for g in xrange(0, len(groups)):
       action = action.replace('$%d' % g, 'groups[%d]' % g)
     try:
       exec(action)
     except Exception:
-      Log.Fatal("ParseArgs failed: %s" % action)
-
-    i += len(regex)
+      Log.Fatal("ParseArgs action failed: %s" % action)
+    i += num_matched
   return
 
 ######################################################################
@@ -1042,9 +1090,10 @@ def InitTempNames(inputs, output):
   TempMap = NewMap
   return
 
-def TempNameForOutput(output, imtype):
-  global TempList
-  temp = output + '.' + imtype
+def TempNameForOutput(imtype):
+  global TempList, TempBase
+
+  temp = TempBase + '.' + imtype
   TempList.append(temp)
   return temp
 
@@ -1110,10 +1159,11 @@ class shell:
       out.append(buf)
     return out
 
-  # join: Turn a list into a shell-style string
-  # [ 'a', 'b', 'c d e' ] --> 'a b "c d e"'
   @staticmethod
   def join(args):
+    """Turn a list into a shell-style string For example:
+       shell.join([ 'a', 'b', 'c d e' ]) = 'a b "c d e"'
+    """
     if isinstance(args, str):
       return args
 
@@ -1123,10 +1173,11 @@ class shell:
 
     return out[0:-1]
 
-  # Shell-escape special characters in a string
-  # Surround with quotes if necessary
   @staticmethod
   def escape(s):
+    """Shell-escape special characters in a string
+       Surround with quotes if necessary
+    """
     s = s.replace('\\', '\\\\')
     s = s.replace('"', '\\"')
     if ' ' in s:
@@ -1142,9 +1193,6 @@ class Log:
   prefix = ''
   LOG_OUT = []
   ERROR_OUT = [sys.stderr]
-
-  LOG_BUF = ''
-  ERROR_BUF = ''
 
   @classmethod
   def reset(cls):
@@ -1166,26 +1214,29 @@ class Log:
 
   @classmethod
   def Banner(cls, argv):
-    Log.Info('PNaCl Driver Invoked With:\n' + StringifyCommand(argv))
-    cls.LOG_BUF += '-'*60 + '\n'
+    cls.Info('PNaCl Driver Invoked With:\n' + StringifyCommand(argv))
+    cls.Info('-'*60)
 
   @classmethod
   def Info(cls, m):
-    cls.LOG_BUF += m + '\n'
+    cls.LogPrint(m)
 
   @classmethod
   def Fatal(cls, m, ret=-1):
-    m = 'FATAL: ' + m + '\n'
-    cls.LOG_BUF += m
-    cls.ERROR_BUF += m
+    m = 'FATAL: ' + m
+    cls.LogPrint(m)
+    cls.ErrorPrint(m)
     NiceExit(ret)
 
   @classmethod
-  def flush(cls):
+  def LogPrint(cls, m):
     for o in cls.LOG_OUT:
-      print >> o, cls.LOG_BUF,
+      print >> o, m
+
+  @classmethod
+  def ErrorPrint(cls, m):
     for o in cls.ERROR_OUT:
-      print >> o, cls.ERROR_BUF,
+      print >> o, m
 
 def StringifyCommand(a):
   if env.getbool('LOG_PRETTY_PRINT'):

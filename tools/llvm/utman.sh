@@ -47,6 +47,7 @@ readonly CROSS_TARGET_X86_64=x86_64-none-linux-gnu
 readonly REAL_CROSS_TARGET=pnacl
 
 readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
+readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
 readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
@@ -110,14 +111,17 @@ readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm"
 readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632"
 readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664"
 readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
-readonly PNACL_BC_X8632_ROOT="${PNACL_X8632_ROOT}-bc"
-readonly PNACL_BC_X8664_ROOT="${PNACL_X8664_ROOT}-bc"
-readonly PNACL_BC_ARM_ROOT="${PNACL_ARM_ROOT}-bc"
 
 # PNaCl client-translators (sandboxed) binary locations
 readonly PNACL_SB_ROOT="${INSTALL_ROOT}/tools-sb"
 readonly PNACL_SB_X8632="${PNACL_SB_ROOT}/x8632"
 readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
+
+# Location of PNaCl gcc/g++/as
+readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
+readonly PNACL_GPP="${INSTALL_BIN}/pnacl-g++"
+readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-as_x86_32"
+readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-as_x86_64"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
@@ -151,13 +155,12 @@ CXX=${CXX:-g++}
 
 ## TODO jasonwkim [2010/08/16 23:06:21 PDT (Monday)]
 ## change this variable
-readonly PNACL_DRIVER=llvm-fake
 readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-as
 readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ld
 readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-nm
 readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ranlib
-readonly ILLEGAL_TOOL=${INSTALL_DIR}/${PNACL_DRIVER}-illegal
+readonly ILLEGAL_TOOL=${INSTALL_DIR}/pnacl-illegal
 
 setup-tools-common() {
   AR_FOR_SFI_TARGET="${CROSS_TARGET_AR}"
@@ -231,16 +234,16 @@ setup-tools-common() {
 # NOTE: we need to rethink the setup mechanism when we want to
 #       produce libgcc for other archs
 setup-tools-arm() {
-  CC_FOR_SFI_TARGET="${INSTALL_DIR}/${PNACL_DRIVER}-sfigcc -arch arm"
-  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/${PNACL_DRIVER}-sfig++ -arch arm"
+  CC_FOR_SFI_TARGET="${PNACL_GCC} -arch arm"
+  CXX_FOR_SFI_TARGET="${PNACL_GPP} -arch arm"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
 }
 
 setup-tools-bitcode() {
-  CC_FOR_SFI_TARGET="${INSTALL_DIR}/${PNACL_DRIVER}-sfigcc -emit-llvm"
-  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/${PNACL_DRIVER}-sfig++ -emit-llvm"
+  CC_FOR_SFI_TARGET="${PNACL_GCC} -emit-llvm"
+  CXX_FOR_SFI_TARGET="${PNACL_GPP} -emit-llvm"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
@@ -1019,18 +1022,16 @@ gcc-stage1-configure() {
   spushd "${objdir}"
 
   # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
-  local x86_32_as="${INSTALL_DIR}/llvm-fake-as_x86_32"
-  local x86_64_as="${INSTALL_DIR}/llvm-fake-as_x86_64"
   local config_opts=""
   case ${target} in
       arm-*)
           config_opts="--with-arch=${ARM_ARCH} --with-fpu=${ARM_FPU}"
           ;;
       i686-*)
-          config_opts="--with-as=${x86_32_as}"
+          config_opts="--with-as=${PNACL_AS_X8632}"
           ;;
       x86_64-*)
-          config_opts="--with-as=${x86_64_as}"
+          config_opts="--with-as=${PNACL_AS_X8664}"
           ;;
   esac
 
@@ -1176,7 +1177,7 @@ xgcc-patch() {
   cat > "${XGCC}" <<EOF
 #!/bin/sh
 XGCC="\$(readlink -m \${0})"
-${INSTALL_DIR}/${PNACL_DRIVER}-sfigcc \\
+${PNACL_GCC} \\
 --driver="\${XGCC}-real" -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
 EOF
 
@@ -2265,15 +2266,7 @@ driver() {
   prep-install-dir
   # otherwise linker-install will stomp it.
   linker-install
-  # TODO(jasonwkim) [2010/08/17 09:20:17 PDT (Tuesday)]
-  # llvm-fake-install can be removed once the rest of the build
-  # scripts are updated.
   driver-install
-}
-
-# print out the name of the llvm-wrapper, for other scripts to use
-llvm-wrapper() {
-  echo ${PNACL_DRIVER}
 }
 
 # Just in case we're calling this manually
@@ -2295,12 +2288,13 @@ driver-install() {
   StepBanner "DRIVER" "Installing driver adaptors to ${INSTALL_DIR}"
   # TODO(robertm): move the driver to their own dir
   # rm -rf  ${INSTALL_DIR}
-  cp tools/llvm/driver.py ${INSTALL_DIR}
-  for s in sfigcc sfig++ gcc g++ as as_x86_32 as_x86_64 \
-           dis bcld translate illegal nop ; do
-    local t="llvm-fake-$s"
-    rm -f ${INSTALL_DIR}/$t
-    ln -fs driver.py ${INSTALL_DIR}/$t
+  mkdir -p "${INSTALL_BIN}"
+  cp tools/llvm/driver.py "${INSTALL_BIN}"
+  for s in gcc g++ as as_x86_32 as_x86_64 \
+           bclink bcopt dis bcld translate illegal nop ; do
+    local t="pnacl-$s"
+    rm -f "${INSTALL_BIN}/$t"
+    ln -fs driver.py "${INSTALL_BIN}/$t"
   done
 }
 
