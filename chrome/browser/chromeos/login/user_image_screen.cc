@@ -133,13 +133,6 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
 void UserImageScreen::OnSkip() {
   if (camera_.get())
     camera_->Uninitialize();
-  UserManager* user_manager = UserManager::Get();
-  DCHECK(user_manager);
-
-  const UserManager::User& user = user_manager->logged_in_user();
-  DCHECK(!user.email().empty());
-
-  user_manager->SetDefaultUserImage(user.email());
   if (delegate())
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SKIPPED);
 }

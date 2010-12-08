@@ -273,6 +273,8 @@ void UserManager::UserLoggedIn(const std::string& email) {
   }
   prefs->SavePersistentPrefs();
   NotifyOnLogin();
+  if (current_user_is_new_)
+    SetDefaultUserImage(email);
 }
 
 void UserManager::RemoveUser(const std::string& email) {
