@@ -1147,7 +1147,7 @@ void UrlmonUrlRequestManager::StopAll() {
     it->second->Stop();
   }
 
-  request_map_.empty();
+  request_map_.clear();
 }
 
 void UrlmonUrlRequestManager::OnResponseStarted(int request_id,
