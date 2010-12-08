@@ -1253,6 +1253,7 @@ void ExtensionPrefs::UpdatePrefStore(const std::string& pref_key) {
 void ExtensionPrefs::SetExtensionControlledPref(const std::string& extension_id,
                                                 const std::string& pref_key,
                                                 Value* value) {
+  scoped_ptr<Value> scoped_value(value);
   DCHECK(pref_service()->FindPreference(pref_key.c_str()))
       << "Extension controlled preference key " << pref_key
       << " not registered.";
@@ -1271,14 +1272,15 @@ void ExtensionPrefs::SetExtensionControlledPref(const std::string& extension_id,
 
   Value* oldValue = NULL;
   extension_preferences->GetWithoutPathExpansion(pref_key, &oldValue);
-  bool modified = !Value::Equals(oldValue, value);
+  bool modified = !Value::Equals(oldValue, scoped_value.get());
   if (!modified)
     return;
 
-  if (value == NULL)
+  if (scoped_value.get() == NULL)
     extension_preferences->RemoveWithoutPathExpansion(pref_key, NULL);
   else
-    extension_preferences->SetWithoutPathExpansion(pref_key, value);
+    extension_preferences->SetWithoutPathExpansion(pref_key,
+                                                   scoped_value.release());
   pref_service()->ScheduleSavePersistentPrefs();
 
   UpdatePrefStore(pref_key);

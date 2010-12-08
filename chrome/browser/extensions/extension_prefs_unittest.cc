@@ -858,3 +858,38 @@ class ExtensionPrefsReenableExt
   }
 };
 TEST_F(ExtensionPrefsDisableExt,  ExtensionPrefsReenableExt) {}
+
+// Mock class to test whether objects are deleted correctly.
+class MockStringValue : public StringValue {
+ public:
+  explicit MockStringValue(const std::string& in_value)
+      : StringValue(in_value) {
+  }
+  virtual ~MockStringValue() {
+    Die();
+  }
+  MOCK_METHOD0(Die, void());
+};
+
+class ExtensionPrefsSetExtensionControlledPref
+    : public ExtensionPrefsPreferencesBase {
+ public:
+  virtual void Initialize() {
+    MockStringValue* v1 = new MockStringValue("https://www.chromium.org");
+    MockStringValue* v2 = new MockStringValue("https://www.chromium.org");
+    // Ownership is taken, value shall not be deleted.
+    EXPECT_CALL(*v1, Die()).Times(0);
+    InstallExtControlledPref(ext1_, kPref1, v1);
+    testing::Mock::VerifyAndClearExpectations(v1);
+    // Make sure there is no memory leak and both values are deleted.
+    EXPECT_CALL(*v2, Die()).Times(1);
+    EXPECT_CALL(*v1, Die()).Times(1);
+    InstallExtControlledPref(ext1_, kPref1, v2);
+    prefs_.RecreateExtensionPrefs();
+  }
+
+  virtual void Verify() {
+  }
+};
+TEST_F(ExtensionPrefsSetExtensionControlledPref,
+    ExtensionPrefsSetExtensionControlledPref) {}
