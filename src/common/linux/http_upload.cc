@@ -145,6 +145,9 @@ bool HTTPUpload::SendRequest(const string &url,
                      reinterpret_cast<void *>(response_body));
   }
 
+  // Fail if 400+ is returned from the web server.
+  (*curl_easy_setopt)(curl, CURLOPT_FAILONERROR, 1);
+
   CURLcode (*curl_easy_perform)(CURL *);
   *(void**) (&curl_easy_perform) = dlsym(curl_lib, "curl_easy_perform");
   err_code = (*curl_easy_perform)(curl);
