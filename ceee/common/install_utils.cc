@@ -18,8 +18,8 @@ namespace installer_util {
     // TODO(joi@chromium.org) Move to chrome/installer/util_constants.h
     // when we refactor this logic to be in the installer rather than
     // on the registration entrypoints.
-    const wchar_t kEnableCeee[] = L"enable-ceee";
-    const wchar_t kEnableFfCeee[] = L"enable-ff-ceee";
+    const char kEnableCeee[] = "enable-ceee";
+    const char kEnableFfCeee[] = "enable-ff-ceee";
   }
 }
 

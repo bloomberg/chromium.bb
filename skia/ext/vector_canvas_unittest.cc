@@ -22,7 +22,7 @@ namespace skia {
 
 namespace {
 
-const wchar_t* const kGenerateSwitch = L"vector-canvas-generate";
+const char kGenerateSwitch[] = "vector-canvas-generate";
 
 // Lightweight HDC management.
 class Context {

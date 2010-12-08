@@ -24,12 +24,13 @@
 
 namespace {
 
+const char kVisibleModeFlag[] = "d2d-canvas-visible";
+
 class TestWindow : public gfx::WindowImpl {
  public:
   static const int kWindowSize = 500;
   static const int kWindowPosition = 10;
 
-  static const wchar_t* kVisibleModeFlag;
 
   TestWindow() {
     if (CommandLine::ForCurrentProcess()->HasSwitch(kVisibleModeFlag))
@@ -74,9 +75,6 @@ class TestWindow : public gfx::WindowImpl {
 
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
-
-// static
-const wchar_t* TestWindow::kVisibleModeFlag = L"d2d-canvas-visible";
 
 // Loads a png data blob from the data resources associated with this
 // executable, decodes it and returns a SkBitmap.

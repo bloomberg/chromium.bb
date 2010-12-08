@@ -19,7 +19,7 @@
 // See player_wtl.h to enable timing code by turning on TESTING macro.
 
 namespace switches {
-const wchar_t* const kExit = L"exit";
+const char kExit[] = "exit";
 }  // namespace switches
 
 CAppModule g_module;

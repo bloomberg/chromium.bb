@@ -23,7 +23,7 @@ class ChromeFrameUnittestsModule
 
 ChromeFrameUnittestsModule _AtlModule;
 
-const wchar_t kNoRegistrationSwitch[] = L"no-registration";
+const char kNoRegistrationSwitch[] = "no-registration";
 
 void PureCall() {
   __debugbreak();

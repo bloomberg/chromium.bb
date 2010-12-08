@@ -45,12 +45,12 @@ namespace {
 
 // A special command line switch to allow developers to manually launch the
 // browser and debug CF inside the browser.
-const wchar_t kManualBrowserLaunch[] = L"manual-browser";
+const char kManualBrowserLaunch[] = "manual-browser";
 
 // Pops up a message box after the test environment has been set up
 // and before tearing it down.  Useful for when debugging tests and not
 // the test environment that's been set up.
-const wchar_t kPromptAfterSetup[] = L"prompt-after-setup";
+const char kPromptAfterSetup[] = "prompt-after-setup";
 
 const int kTestServerPort = 4666;
 // The test HTML we use to initialize Chrome Frame.

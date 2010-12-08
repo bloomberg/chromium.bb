@@ -14,7 +14,7 @@ namespace {
 
 // A special command line switch to just run the unit tests without CF in
 // the picture.  Can be useful when the harness itself needs to be debugged.
-const wchar_t kNoCfTestRun[] = L"no-cf-test-run";
+const char kNoCfTestRun[] = "no-cf-test-run";
 
 bool CFTestsDisabled() {
   static bool switch_present = CommandLine::ForCurrentProcess()->

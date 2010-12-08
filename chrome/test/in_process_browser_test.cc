@@ -66,7 +66,7 @@ void InitializeBrowser(Browser* browser) {
 
 extern int BrowserMain(const MainFunctionParams&);
 
-const wchar_t kUnitTestShowWindows[] = L"show-windows";
+const char kUnitTestShowWindows[] = "show-windows";
 
 // Passed as value of kTestType.
 static const char kBrowserTestType[] = "browser";
