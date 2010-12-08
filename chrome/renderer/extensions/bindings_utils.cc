@@ -22,6 +22,20 @@ struct SingletonData {
   PendingRequestMap pending_requests;
 };
 
+typedef std::map<int, std::string> StringMap;
+
+const char* GetStringResource(int resource_id) {
+  StringMap* strings = Singleton<StringMap>::get();
+  StringMap::iterator it = strings->find(resource_id);
+  if (it == strings->end()) {
+    it = strings->insert(std::make_pair(
+        resource_id,
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            resource_id).as_string())).first;
+  }
+  return it->second.c_str();
+}
+
 // ExtensionBase
 
 v8::Handle<v8::FunctionTemplate>

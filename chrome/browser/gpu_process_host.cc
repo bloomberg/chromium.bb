@@ -222,7 +222,7 @@ void SendDelayedReply(IPC::Message* reply_msg) {
 void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
   XID xid;
 
-  GtkNativeViewManager* manager = Singleton<GtkNativeViewManager>::get();
+  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
   if (!manager->GetPermanentXIDForId(&xid, id)) {
     DLOG(ERROR) << "Can't find XID for view id " << id;
     xid = 0;

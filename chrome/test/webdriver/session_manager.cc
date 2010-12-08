@@ -183,4 +183,9 @@ Session* SessionManager::GetSession(const std::string& id) const {
   return it->second;
 }
 
+// static
+SessionManager* SessionManager::GetInstance() {
+  return Singleton<SessionManager>::get();
+}
+
 }  // namespace webdriver

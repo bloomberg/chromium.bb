@@ -14,6 +14,6 @@ const char* DomAutomationV8Extension::kName = "chrome/domautomation";
 v8::Extension* DomAutomationV8Extension::Get() {
   static v8::Extension* extension =
       new bindings_utils::ExtensionBase(
-          kName, GetStringResource<IDR_DOM_AUTOMATION_JS>(), 0, NULL);
+          kName, GetStringResource(IDR_DOM_AUTOMATION_JS), 0, NULL);
   return extension;
 }

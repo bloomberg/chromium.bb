@@ -88,8 +88,9 @@ SimpleResourceLoader::SimpleResourceLoader()
   std::vector<std::wstring> language_tags;
 
   // First, try the locale dictated by policy and its fallback.
-  PushBackWithFallbackIfAbsent(Singleton<PolicySettings>()->ApplicationLocale(),
-                               &language_tags);
+  PushBackWithFallbackIfAbsent(
+      PolicySettings::GetInstance()->ApplicationLocale(),
+      &language_tags);
 
   // Next, try the thread, process, user, system languages.
   GetPreferredLanguages(&language_tags);
@@ -112,6 +113,11 @@ SimpleResourceLoader::SimpleResourceLoader()
 
 SimpleResourceLoader::~SimpleResourceLoader() {
   locale_dll_handle_ = NULL;
+}
+
+// static
+SimpleResourceLoader* SimpleResourceLoader::instance() {
+  return Singleton<SimpleResourceLoader>::get();
 }
 
 // static

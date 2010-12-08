@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/at_exit.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
@@ -132,14 +133,34 @@ bool SetChromeApplicationLocale(HKEY policy_root, const wchar_t* locale) {
 
 }  // end namespace
 
-TEST(PolicySettings, RendererForUrl) {
-  TempRegKeyOverride::DeleteAllTempKeys();
+class PolicySettingsTest : public testing::Test {
+ protected:
+  void SetUp() {
+    TempRegKeyOverride::DeleteAllTempKeys();
 
-  scoped_ptr<TempRegKeyOverride> hklm_pol(
-      new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_pol"));
-  scoped_ptr<TempRegKeyOverride> hkcu_pol(
-      new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_pol"));
+    hklm_pol_.reset(new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_pol"));
+    hkcu_pol_.reset(new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_pol"));
 
+    ResetPolicySettings();
+  }
+
+  void TearDown() {
+    hkcu_pol_.reset(NULL);
+    hklm_pol_.reset(NULL);
+    TempRegKeyOverride::DeleteAllTempKeys();
+  }
+
+  void ResetPolicySettings() {
+    at_exit_manager_.ProcessCallbacksNow();
+  }
+
+  // This is used to manage life cycle of PolicySettings singleton.
+  base::ShadowingAtExitManager at_exit_manager_;
+  scoped_ptr<TempRegKeyOverride> hklm_pol_;
+  scoped_ptr<TempRegKeyOverride> hkcu_pol_;
+};
+
+TEST_F(PolicySettingsTest, RendererForUrl) {
   const wchar_t* kTestUrls[] = {
     L"http://www.example.com",
     L"http://www.pattern.com",
@@ -152,11 +173,10 @@ TEST(PolicySettings, RendererForUrl) {
   };
   const wchar_t kNoMatchUrl[] = L"http://www.chromium.org";
 
-  scoped_ptr<PolicySettings> settings(new PolicySettings());
   EXPECT_EQ(PolicySettings::RENDERER_NOT_SPECIFIED,
-            settings->default_renderer());
+            PolicySettings::GetInstance()->default_renderer());
   EXPECT_EQ(PolicySettings::RENDERER_NOT_SPECIFIED,
-            settings->GetRendererForUrl(kNoMatchUrl));
+            PolicySettings::GetInstance()->GetRendererForUrl(kNoMatchUrl));
 
   HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
   for (int i = 0; i < arraysize(root); ++i) {
@@ -164,44 +184,33 @@ TEST(PolicySettings, RendererForUrl) {
         PolicySettings::RENDER_IN_CHROME_FRAME, kTestFilters,
         arraysize(kTestFilters)));
 
-    settings.reset(new PolicySettings());
+    ResetPolicySettings();
     EXPECT_EQ(PolicySettings::RENDER_IN_CHROME_FRAME,
-              settings->GetRendererForUrl(kNoMatchUrl));
+              PolicySettings::GetInstance()->GetRendererForUrl(kNoMatchUrl));
     for (int j = 0; j < arraysize(kTestUrls); ++j) {
       EXPECT_EQ(PolicySettings::RENDER_IN_HOST,
-                settings->GetRendererForUrl(kTestUrls[j]));
+                PolicySettings::GetInstance()->GetRendererForUrl(kTestUrls[j]));
     }
 
     EXPECT_TRUE(SetRendererSettings(root[i],
         PolicySettings::RENDER_IN_HOST, NULL, 0));
 
-    settings.reset(new PolicySettings());
+    ResetPolicySettings();
     EXPECT_EQ(PolicySettings::RENDER_IN_HOST,
-              settings->GetRendererForUrl(kNoMatchUrl));
+              PolicySettings::GetInstance()->GetRendererForUrl(kNoMatchUrl));
     for (int j = 0; j < arraysize(kTestUrls); ++j) {
       EXPECT_EQ(PolicySettings::RENDER_IN_HOST,
-                settings->GetRendererForUrl(kTestUrls[j]));
+                PolicySettings::GetInstance()->GetRendererForUrl(kTestUrls[j]));
     }
 
     DeleteChromeFramePolicyEntries(root[i]);
   }
-
-  hkcu_pol.reset(NULL);
-  hklm_pol.reset(NULL);
-  TempRegKeyOverride::DeleteAllTempKeys();
 }
 
-TEST(PolicySettings, RendererForContentType) {
-  TempRegKeyOverride::DeleteAllTempKeys();
-
-  scoped_ptr<TempRegKeyOverride> hklm_pol(
-      new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_pol"));
-  scoped_ptr<TempRegKeyOverride> hkcu_pol(
-      new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_pol"));
-
-  scoped_ptr<PolicySettings> settings(new PolicySettings());
+TEST_F(PolicySettingsTest, RendererForContentType) {
   EXPECT_EQ(PolicySettings::RENDERER_NOT_SPECIFIED,
-            settings->GetRendererForContentType(L"text/xml"));
+            PolicySettings::GetInstance()->GetRendererForContentType(
+                L"text/xml"));
 
   const wchar_t* kTestPolicyContentTypes[] = {
     L"application/xml",
@@ -213,39 +222,32 @@ TEST(PolicySettings, RendererForContentType) {
   for (int i = 0; i < arraysize(root); ++i) {
     SetCFContentTypes(root[i], kTestPolicyContentTypes,
                       arraysize(kTestPolicyContentTypes));
-    settings.reset(new PolicySettings());
+    ResetPolicySettings();
     for (int type = 0; type < arraysize(kTestPolicyContentTypes); ++type) {
       EXPECT_EQ(PolicySettings::RENDER_IN_CHROME_FRAME,
-                settings->GetRendererForContentType(
+                PolicySettings::GetInstance()->GetRendererForContentType(
                     kTestPolicyContentTypes[type]));
     }
 
     EXPECT_EQ(PolicySettings::RENDERER_NOT_SPECIFIED,
-              settings->GetRendererForContentType(L"text/html"));
+              PolicySettings::GetInstance()->GetRendererForContentType(
+                  L"text/html"));
 
     DeleteChromeFramePolicyEntries(root[i]);
   }
 }
 
-TEST(PolicySettings, ApplicationLocale) {
-  TempRegKeyOverride::DeleteAllTempKeys();
-
-  scoped_ptr<TempRegKeyOverride> hklm_pol(
-      new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_pol"));
-  scoped_ptr<TempRegKeyOverride> hkcu_pol(
-      new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_pol"));
-
-  scoped_ptr<PolicySettings> settings(new PolicySettings());
-  EXPECT_TRUE(settings->ApplicationLocale().empty());
+TEST_F(PolicySettingsTest, ApplicationLocale) {
+  EXPECT_TRUE(PolicySettings::GetInstance()->ApplicationLocale().empty());
 
   static const wchar_t kTestApplicationLocale[] = L"fr-CA";
 
   HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
   for (int i = 0; i < arraysize(root); ++i) {
     SetChromeApplicationLocale(root[i], kTestApplicationLocale);
-    settings.reset(new PolicySettings());
+    ResetPolicySettings();
     EXPECT_EQ(std::wstring(kTestApplicationLocale),
-              settings->ApplicationLocale());
+              PolicySettings::GetInstance()->ApplicationLocale());
 
     DeleteChromeFramePolicyEntries(root[i]);
   }

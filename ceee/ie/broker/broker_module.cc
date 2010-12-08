@@ -197,8 +197,7 @@ HRESULT CeeeBrokerModule::PostMessageLoop() {
 
 void CeeeBrokerModule::TearDown() {
   rpc_server_.Stop();
-  Singleton<ExecutorsManager,
-            ExecutorsManager::SingletonTraits>()->Terminate();
+  ExecutorsManager::GetInstance()->Terminate();
   WindowEventsFunnel::Terminate();
 
   // Upload data if necessary.

@@ -15,7 +15,7 @@
 namespace webdriver {
 
 void CreateSession::ExecutePost(Response* const response) {
-  SessionManager* session_manager = Singleton<SessionManager>::get();
+  SessionManager* session_manager = SessionManager::GetInstance();
   std::string session_id;
 
   if (!session_manager->Create(&session_id)) {

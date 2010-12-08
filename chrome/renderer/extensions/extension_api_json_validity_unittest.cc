@@ -130,7 +130,7 @@ TEST_F(ExtensionApiJsonValidityTest, Basic) {
 // chrome/renderer/resources/extension_process_bindings.js .
 TEST_F(ExtensionApiJsonValidityTest, MAYBE_WithV8) {
   std::string ext_api_string =
-      bindings_utils::GetStringResource<IDR_EXTENSION_API_JSON>();
+      bindings_utils::GetStringResource(IDR_EXTENSION_API_JSON);
 
   // Create a global variable holding the text of extension_api.json .
   SetGlobalStringVar("ext_api_json_text", ext_api_string);

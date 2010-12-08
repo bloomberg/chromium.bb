@@ -106,8 +106,7 @@ int main(int argc, char *argv[]) {
   }
 
   VLOG(1) << "Using port: " << port;
-  webdriver::SessionManager* session =
-      Singleton<webdriver::SessionManager>::get();
+  webdriver::SessionManager* session = webdriver::SessionManager::GetInstance();
   session->SetIPAddress(port);
 
   // Initialize SHTTPD context.

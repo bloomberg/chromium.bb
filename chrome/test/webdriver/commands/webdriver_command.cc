@@ -51,7 +51,7 @@ bool WebDriverCommand::Init(Response* const response) {
   }
 
   VLOG(1) << "Fetching session: " << session_id;
-  session_ = Singleton<SessionManager>::get()->GetSession(session_id);
+  session_ = SessionManager::GetInstance()->GetSession(session_id);
   if (session_ == NULL) {
     response->set_value(Value::CreateStringValue(
         "Session not found: " + session_id));

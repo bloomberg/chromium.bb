@@ -21,6 +21,9 @@ namespace webdriver {
 // their own profiles.
 class SessionManager {
  public:
+  // Returns the singleton instance.
+  static SessionManager* GetInstance();
+
   std::string GetIPAddress();
   bool SetIPAddress(const std::string& port);
 

@@ -212,7 +212,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     logging::InitLogging(NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
                         logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
 
-    DllRedirector* dll_redirector = Singleton<DllRedirector>::get();
+    DllRedirector* dll_redirector = DllRedirector::GetInstance();
     DCHECK(dll_redirector);
 
     if (!dll_redirector->RegisterAsFirstCFModule()) {
@@ -227,7 +227,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     // Enable ETW logging.
     logging::LogEventProvider::Initialize(kChromeFrameProvider);
   } else if (reason == DLL_PROCESS_DETACH) {
-    DllRedirector* dll_redirector = Singleton<DllRedirector>::get();
+    DllRedirector* dll_redirector = DllRedirector::GetInstance();
     DCHECK(dll_redirector);
 
     dll_redirector->UnregisterAsFirstCFModule();

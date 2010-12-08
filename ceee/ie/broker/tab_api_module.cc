@@ -153,8 +153,7 @@ bool CeeeMapTabIdToHandle(const std::string& input_args,
   int tab_id = kInvalidChromeSessionId;
   HWND tab_handle = NULL;
   if (GetIdAndHandleFromArgs(input_args, &tab_id, &tab_handle)) {
-    Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-        SetTabIdForHandle(tab_id, tab_handle);
+    ExecutorsManager::GetInstance()->SetTabIdForHandle(tab_id, tab_handle);
     return true;
   }
   return false;
@@ -166,8 +165,8 @@ bool CeeeMapToolbandIdToHandle(const std::string& input_args,
   int toolband_id = kInvalidChromeSessionId;
   HWND tab_handle = NULL;
   if (GetIdAndHandleFromArgs(input_args, &toolband_id, &tab_handle)) {
-    Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-        SetTabToolBandIdForHandle(toolband_id, tab_handle);
+    ExecutorsManager::GetInstance()->SetTabToolBandIdForHandle(toolband_id,
+                                                               tab_handle);
     return true;
   }
   return false;

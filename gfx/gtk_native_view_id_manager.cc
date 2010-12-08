@@ -41,6 +41,11 @@ GtkNativeViewManager::GtkNativeViewManager() {
 GtkNativeViewManager::~GtkNativeViewManager() {
 }
 
+// static
+GtkNativeViewManager* GtkNativeViewManager::GetInstance() {
+  return Singleton<GtkNativeViewManager>::get();
+}
+
 gfx::NativeViewId GtkNativeViewManager::GetIdForWidget(gfx::NativeView widget) {
   // This is just for unit tests:
   if (!widget)

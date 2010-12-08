@@ -60,7 +60,7 @@ class ApiExecutionTask : public Task {
   explicit ApiExecutionTask(BSTR message) : message_(message) {}
 
   virtual void Run() {
-    ProductionApiDispatcher::get()->HandleApiRequest(message_, NULL);
+    ProductionApiDispatcher::GetInstance()->HandleApiRequest(message_, NULL);
   }
  private:
   CComBSTR message_;
@@ -72,8 +72,8 @@ class FireEventTask : public Task {
       : event_name_(event_name), event_args_(event_args) {}
 
   virtual void Run() {
-    ProductionApiDispatcher::get()->FireEvent(event_name_.c_str(),
-                                              event_args_.c_str());
+    ProductionApiDispatcher::GetInstance()->FireEvent(event_name_.c_str(),
+                                                      event_args_.c_str());
   }
  private:
   std::string event_name_;
@@ -318,11 +318,11 @@ ChromePostman::ApiInvocationWorkerThread::ApiInvocationWorkerThread()
 
 void ChromePostman::ApiInvocationWorkerThread::Init() {
   ::CoInitializeEx(0, COINIT_MULTITHREADED);
-  ProductionApiDispatcher::get()->SetApiInvocationThreadId(
+  ProductionApiDispatcher::GetInstance()->SetApiInvocationThreadId(
       ::GetCurrentThreadId());
 }
 
 void ChromePostman::ApiInvocationWorkerThread::CleanUp() {
   ::CoUninitialize();
-  ProductionApiDispatcher::get()->SetApiInvocationThreadId(0);
+  ProductionApiDispatcher::GetInstance()->SetApiInvocationThreadId(0);
 }

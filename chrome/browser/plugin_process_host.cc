@@ -87,7 +87,7 @@ void PluginProcessHost::AddWindow(HWND window) {
 void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
                                           gfx::PluginWindowHandle* output) {
   *output = 0;
-  Singleton<GtkNativeViewManager>()->GetXIDForId(output, id);
+  GtkNativeViewManager::GetInstance()->GetXIDForId(output, id);
 }
 #endif  // defined(TOOLKIT_USES_GTK)
 

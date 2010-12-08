@@ -46,6 +46,11 @@ DllRedirector::~DllRedirector() {
   UnregisterAsFirstCFModule();
 }
 
+// static
+DllRedirector* DllRedirector::GetInstance() {
+  return Singleton<DllRedirector>::get();
+}
+
 bool DllRedirector::BuildSecurityAttributesForLock(
     CSecurityAttributes* sec_attr) {
   DCHECK(sec_attr);

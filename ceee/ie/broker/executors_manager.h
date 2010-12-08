@@ -34,6 +34,9 @@ class ExecutorsManager {
   // Identifiers for destination threads where to run executors.
   typedef DWORD ThreadId;
 
+  // Returns the singleton instance.
+  static ExecutorsManager* GetInstance();
+
   // To avoid lint errors, even though we are only virtual for unittests.
   virtual ~ExecutorsManager() {}
 
@@ -125,6 +128,7 @@ class ExecutorsManager {
   // thread id.
   virtual void CleanupMapsForThread(DWORD thread_id);
 
+ protected:
   // Traits for Singleton<ExecutorsManager> so that we can pass an argument
   // to the constructor.
   struct SingletonTraits : public DefaultSingletonTraits<ExecutorsManager> {
@@ -136,7 +140,6 @@ class ExecutorsManager {
     }
   };
 
- protected:
   // The data we pass to start our worker thread.
   // THERE IS A COPY OF THIS CLASS IN THE UNITTEST WHICH YOU NEED TO UPDATE IF
   // you change this one...

@@ -16,9 +16,8 @@
 
 HRESULT CeeeBroker::FinalConstruct() {
   // So that we get a pointer to the ExecutorsManager and let tests override it.
-  executors_manager_ = Singleton<ExecutorsManager,
-                                 ExecutorsManager::SingletonTraits>::get();
-  api_dispatcher_ = ProductionApiDispatcher::get();
+  executors_manager_ = ExecutorsManager::GetInstance();
+  api_dispatcher_ = ProductionApiDispatcher::GetInstance();
   return S_OK;
 }
 

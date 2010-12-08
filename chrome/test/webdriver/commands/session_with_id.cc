@@ -41,7 +41,7 @@ void SessionWithID::ExecuteGet(Response* const response) {
 }
 
 void SessionWithID::ExecuteDelete(Response* const response) {
-  Singleton<SessionManager>::get()->Delete(session_->id());
+  SessionManager::GetInstance()->Delete(session_->id());
   response->set_status(kSuccess);
 }
 

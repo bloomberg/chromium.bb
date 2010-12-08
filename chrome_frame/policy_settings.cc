@@ -153,3 +153,7 @@ void PolicySettings::RefreshFromRegistry() {
   swap(application_locale_, application_locale);
 }
 
+// static
+PolicySettings* PolicySettings::GetInstance() {
+  return Singleton<PolicySettings>::get();
+}

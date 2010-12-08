@@ -29,6 +29,11 @@ ResourceTracker::ResourceTracker()
 ResourceTracker::~ResourceTracker() {
 }
 
+// static
+ResourceTracker* ResourceTracker::Get() {
+  return Singleton<ResourceTracker>::get();
+}
+
 PP_Resource ResourceTracker::AddResource(Resource* resource) {
   // If the plugin manages to create 4B resources...
   if (last_id_ == std::numeric_limits<PP_Resource>::max()) {

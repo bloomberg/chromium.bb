@@ -9,7 +9,7 @@
 namespace gfx {
 
 NativeViewId IdFromNativeView(NativeView view) {
-  return Singleton<GtkNativeViewManager>()->GetIdForWidget(view);
+  return GtkNativeViewManager::GetInstance()->GetIdForWidget(view);
 }
 
 }  // namespace gfx

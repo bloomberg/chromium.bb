@@ -69,8 +69,8 @@ void ResourceMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
   gfx::Rect rect;
   XID window;
 
-  AutoLock lock(Singleton<GtkNativeViewManager>()->unrealize_lock());
-  if (Singleton<GtkNativeViewManager>()->GetXIDForId(&window, view)) {
+  AutoLock lock(GtkNativeViewManager::GetInstance()->unrealize_lock());
+  if (GtkNativeViewManager::GetInstance()->GetXIDForId(&window, view)) {
     if (window) {
       int x, y;
       unsigned width, height;
@@ -109,8 +109,8 @@ void ResourceMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
   gfx::Rect rect;
   XID window;
 
-  AutoLock lock(Singleton<GtkNativeViewManager>()->unrealize_lock());
-  if (Singleton<GtkNativeViewManager>()->GetXIDForId(&window, view)) {
+  AutoLock lock(GtkNativeViewManager::GetInstance()->unrealize_lock());
+  if (GtkNativeViewManager::GetInstance()->GetXIDForId(&window, view)) {
     if (window) {
       const XID toplevel = GetTopLevelWindow(window);
       if (toplevel) {

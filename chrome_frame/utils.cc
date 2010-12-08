@@ -723,8 +723,8 @@ bool IsGcfDefaultRenderer() {
   DWORD is_default = 0;  // NOLINT
 
   // First check policy settings
-  Singleton<PolicySettings> policy;
-  PolicySettings::RendererForUrl renderer = policy->default_renderer();
+  PolicySettings::RendererForUrl renderer =
+      PolicySettings::GetInstance()->default_renderer();
   if (renderer != PolicySettings::RENDERER_NOT_SPECIFIED) {
     is_default = (renderer == PolicySettings::RENDER_IN_CHROME_FRAME);
   } else {
@@ -742,9 +742,8 @@ bool IsGcfDefaultRenderer() {
 RendererType RendererTypeForUrl(const std::wstring& url) {
   // First check if the default renderer settings are specified by policy.
   // If so, then that overrides the user settings.
-  Singleton<PolicySettings> policy;
-  PolicySettings::RendererForUrl renderer = policy->GetRendererForUrl(
-      url.c_str());
+  PolicySettings::RendererForUrl renderer =
+      PolicySettings::GetInstance()->GetRendererForUrl(url.c_str());
   if (renderer != PolicySettings::RENDERER_NOT_SPECIFIED) {
     // We may know at this point that policy says do NOT render in Chrome Frame.
     // To maintain consistency, we return RENDERER_TYPE_UNDETERMINED so that

@@ -80,6 +80,11 @@ FocusManager::~FocusManager() {
   DCHECK(focus_change_listeners_.empty());
 }
 
+// static
+FocusManager::WidgetFocusManager* FocusManager::GetWidgetFocusManager() {
+  return Singleton<WidgetFocusManager>::get();
+}
+
 bool FocusManager::OnKeyEvent(const KeyEvent& event) {
 #if defined(OS_WIN)
   // If the focused view wants to process the key event as is, let it be.

@@ -162,7 +162,7 @@ INTERNET_STATUS_CALLBACK STDAPICALLTYPE
     WebRequestNotifier::InternetSetStatusCallbackAPatch(
         HINTERNET internet,
         INTERNET_STATUS_CALLBACK callback) {
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   INTERNET_STATUS_CALLBACK new_callback =
       instance->HandleBeforeInternetSetStatusCallback(internet, callback);
   return ::InternetSetStatusCallbackA(internet, new_callback);
@@ -172,7 +172,7 @@ INTERNET_STATUS_CALLBACK STDAPICALLTYPE
     WebRequestNotifier::InternetSetStatusCallbackWPatch(
         HINTERNET internet,
         INTERNET_STATUS_CALLBACK callback) {
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   INTERNET_STATUS_CALLBACK new_callback =
       instance->HandleBeforeInternetSetStatusCallback(internet, callback);
   return ::InternetSetStatusCallbackW(internet, new_callback);
@@ -187,7 +187,7 @@ HINTERNET STDAPICALLTYPE WebRequestNotifier::InternetConnectAPatch(
     DWORD service,
     DWORD flags,
     DWORD_PTR context) {
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   instance->HandleBeforeInternetConnect(internet);
 
   HINTERNET server = ::InternetConnectA(internet, server_name, server_port,
@@ -208,7 +208,7 @@ HINTERNET STDAPICALLTYPE WebRequestNotifier::InternetConnectWPatch(
     DWORD service,
     DWORD flags,
     DWORD_PTR context) {
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   instance->HandleBeforeInternetConnect(internet);
 
   HINTERNET server = ::InternetConnectW(internet, server_name, server_port,
@@ -233,7 +233,7 @@ HINTERNET STDAPICALLTYPE WebRequestNotifier::HttpOpenRequestAPatch(
                                          referrer, accept_types, flags,
                                          context);
 
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   instance->HandleAfterHttpOpenRequest(connect, request, verb,
                                        CA2W(object_name), flags);
   return request;
@@ -252,7 +252,7 @@ HINTERNET STDAPICALLTYPE WebRequestNotifier::HttpOpenRequestWPatch(
                                          referrer, accept_types, flags,
                                          context);
 
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   instance->HandleAfterHttpOpenRequest(connect, request, CW2A(verb),
                                        object_name, flags);
   return request;
@@ -264,7 +264,7 @@ BOOL STDAPICALLTYPE WebRequestNotifier::HttpSendRequestAPatch(
     DWORD headers_length,
     LPVOID optional,
     DWORD optional_length) {
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   instance->HandleBeforeHttpSendRequest(request);
   return ::HttpSendRequestA(request, headers, headers_length, optional,
                             optional_length);
@@ -276,7 +276,7 @@ BOOL STDAPICALLTYPE WebRequestNotifier::HttpSendRequestWPatch(
     DWORD headers_length,
     LPVOID optional,
     DWORD optional_length) {
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   instance->HandleBeforeHttpSendRequest(request);
   return ::HttpSendRequestW(request, headers, headers_length, optional,
                             optional_length);
@@ -289,7 +289,7 @@ void CALLBACK WebRequestNotifier::InternetStatusCallbackPatch(
     DWORD internet_status,
     LPVOID status_information,
     DWORD status_information_length) {
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   instance->HandleBeforeInternetStatusCallback(original, internet, context,
                                                internet_status,
                                                status_information,
@@ -305,7 +305,7 @@ BOOL STDAPICALLTYPE WebRequestNotifier::InternetReadFilePatch(
     LPDWORD number_of_bytes_read) {
   BOOL result = ::InternetReadFile(file, buffer, number_of_bytes_to_read,
                                    number_of_bytes_read);
-  WebRequestNotifier* instance = ProductionWebRequestNotifier::get();
+  WebRequestNotifier* instance = ProductionWebRequestNotifier::GetInstance();
   instance->HandleAfterInternetReadFile(file, result, number_of_bytes_read);
 
   return result;
@@ -812,4 +812,9 @@ void WebRequestNotifier::TransitRequestToNextState(
         info->id, info->url.c_str(), L"", base::Time::Now());
   }
   info->state = next_state;
+}
+
+// static
+ProductionWebRequestNotifier* ProductionWebRequestNotifier::GetInstance() {
+  return Singleton<ProductionWebRequestNotifier>::get();
 }

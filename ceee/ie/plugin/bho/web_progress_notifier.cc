@@ -339,7 +339,7 @@ WebNavigationEventsFunnel* WebProgressNotifier::webnavigation_events_funnel() {
 
 WebRequestNotifier* WebProgressNotifier::webrequest_notifier() {
   if (cached_webrequest_notifier_ == NULL) {
-    cached_webrequest_notifier_ = ProductionWebRequestNotifier::get();
+    cached_webrequest_notifier_ = ProductionWebRequestNotifier::GetInstance();
   }
   return cached_webrequest_notifier_;
 }

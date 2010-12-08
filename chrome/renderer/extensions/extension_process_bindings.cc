@@ -194,7 +194,7 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
 class ExtensionImpl : public ExtensionBase {
  public:
   ExtensionImpl() : ExtensionBase(
-      kExtensionName, GetStringResource<IDR_EXTENSION_PROCESS_BINDINGS_JS>(),
+      kExtensionName, GetStringResource(IDR_EXTENSION_PROCESS_BINDINGS_JS),
       arraysize(kExtensionDeps), kExtensionDeps) {}
 
   static void SetFunctionNames(const std::vector<std::string>& names) {
@@ -253,7 +253,7 @@ class ExtensionImpl : public ExtensionBase {
  private:
   static v8::Handle<v8::Value> GetExtensionAPIDefinition(
       const v8::Arguments& args) {
-    return v8::String::New(GetStringResource<IDR_EXTENSION_API_JSON>());
+    return v8::String::New(GetStringResource(IDR_EXTENSION_API_JSON));
   }
 
   static v8::Handle<v8::Value> PopupViewFinder(

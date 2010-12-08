@@ -63,7 +63,7 @@ class ExtensionImpl : public ExtensionBase {
  public:
   ExtensionImpl()
       : ExtensionBase(RendererExtensionBindings::kName,
-                      GetStringResource<IDR_RENDERER_EXTENSION_BINDINGS_JS>(),
+                      GetStringResource(IDR_RENDERER_EXTENSION_BINDINGS_JS),
                       arraysize(kExtensionDeps), kExtensionDeps) {
   }
   ~ExtensionImpl() {}

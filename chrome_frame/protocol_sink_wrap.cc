@@ -232,9 +232,8 @@ bool IsAdditionallySupportedContentType(const wchar_t* status_text) {
       return true;
   }
 
-  Singleton<PolicySettings> policy;
-  if (policy->GetRendererForContentType(status_text) ==
-      PolicySettings::RENDER_IN_CHROME_FRAME) {
+  if (PolicySettings::GetInstance()->GetRendererForContentType(
+      status_text) == PolicySettings::RENDER_IN_CHROME_FRAME) {
     return true;
   }
 

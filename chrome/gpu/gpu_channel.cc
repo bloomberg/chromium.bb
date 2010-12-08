@@ -206,7 +206,7 @@ void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
                                       int32 decoder_host_id) {
 #if defined(ENABLE_GPU)
   VLOG(1) << "GpuChannel::OnCreateVideoDecoder";
-  GpuVideoService* service = GpuVideoService::get();
+  GpuVideoService* service = GpuVideoService::GetInstance();
   if (service == NULL) {
     // TODO(hclam): Need to send a failure message.
     return;
@@ -228,7 +228,7 @@ void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
 void GpuChannel::OnDestroyVideoDecoder(int32 decoder_id) {
 #if defined(ENABLE_GPU)
   LOG(ERROR) << "GpuChannel::OnDestroyVideoDecoder";
-  GpuVideoService* service = GpuVideoService::get();
+  GpuVideoService* service = GpuVideoService::GetInstance();
   if (service == NULL)
     return;
   service->DestroyVideoDecoder(&router_, decoder_id);

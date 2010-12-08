@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include "base/singleton.h"
 
 #include "base/basictypes.h"
 
@@ -21,12 +22,7 @@ class PolicySettings {
     RENDER_IN_CHROME_FRAME,
   };
 
-  PolicySettings() : default_renderer_(RENDERER_NOT_SPECIFIED) {
-    RefreshFromRegistry();
-  }
-
-  ~PolicySettings() {
-  }
+  static PolicySettings* GetInstance();
 
   RendererForUrl default_renderer() const {
     return default_renderer_;
@@ -50,6 +46,13 @@ class PolicySettings {
   static void ReadApplicationLocaleSetting(std::wstring* application_locale);
 
  protected:
+  PolicySettings() : default_renderer_(RENDERER_NOT_SPECIFIED) {
+    RefreshFromRegistry();
+  }
+
+  ~PolicySettings() {
+  }
+
   // Protected for now since the class is not thread safe.
   void RefreshFromRegistry();
 
@@ -60,8 +63,9 @@ class PolicySettings {
   std::wstring application_locale_;
 
  private:
+  // This ensures no construction is possible outside of the class itself.
+  friend struct DefaultSingletonTraits<PolicySettings>;
   DISALLOW_COPY_AND_ASSIGN(PolicySettings);
 };
-
 
 #endif  // CHROME_FRAME_POLICY_SETTINGS_H_

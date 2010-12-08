@@ -44,10 +44,15 @@ CookieAccountant::~CookieAccountant() {
 ProductionCookieAccountant::ProductionCookieAccountant() {
 }
 
+// static
+ProductionCookieAccountant* ProductionCookieAccountant::GetInstance() {
+  return Singleton<ProductionCookieAccountant>::get();
+}
+
 CookieAccountant* CookieAccountant::GetInstance() {
   // Unit tests can set singleton_instance_ directly.
   if (singleton_instance_ == NULL)
-    singleton_instance_ = ProductionCookieAccountant::get();
+    singleton_instance_ = ProductionCookieAccountant::GetInstance();
   return singleton_instance_;
 }
 

@@ -443,9 +443,10 @@ class WebRequestNotifier {
 };
 
 // A singleton that keeps the WebRequestNotifier used by production code.
-class ProductionWebRequestNotifier
-    : public WebRequestNotifier,
-      public Singleton<ProductionWebRequestNotifier> {
+class ProductionWebRequestNotifier : public WebRequestNotifier {
+ public:
+  static ProductionWebRequestNotifier* GetInstance();
+
  private:
   ProductionWebRequestNotifier() {}
 

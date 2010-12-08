@@ -29,9 +29,7 @@ class Resource;
 class ResourceTracker {
  public:
   // Returns the pointer to the singleton object.
-  static ResourceTracker* Get() {
-    return Singleton<ResourceTracker>::get();
-  }
+  static ResourceTracker* Get();
 
   // PP_Resources --------------------------------------------------------------
 

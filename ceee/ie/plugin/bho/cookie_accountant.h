@@ -125,8 +125,10 @@ class CookieAccountant {
 // A singleton that initializes and keeps the CookieAccountant used by
 // production code. This class is separate so that CookieAccountant can still
 // be accessed for unit testing.
-class ProductionCookieAccountant : public CookieAccountant,
-    public Singleton<ProductionCookieAccountant> {
+class ProductionCookieAccountant : public CookieAccountant {
+ public:
+  static ProductionCookieAccountant* GetInstance();
+
  private:
   // This ensures no construction is possible outside of the class itself.
   friend struct DefaultSingletonTraits<ProductionCookieAccountant>;

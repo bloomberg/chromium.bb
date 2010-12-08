@@ -69,6 +69,11 @@ ExecutorsManager::ExecutorsManager(bool no_thread)
   }
 }
 
+// static
+ExecutorsManager* ExecutorsManager::GetInstance() {
+  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get();
+}
+
 bool ExecutorsManager::IsKnownWindow(HWND window) {
   return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
       IsKnownWindowImpl(window);

@@ -142,26 +142,23 @@ void ApiDispatcher::FireEvent(const char* event_name, const char* event_args) {
 
 void ApiDispatcher::GetExecutor(HWND window, REFIID iid, void** executor) {
   DWORD thread_id = ::GetWindowThreadProcessId(window, NULL);
-  HRESULT hr = Singleton<ExecutorsManager,
-                         ExecutorsManager::SingletonTraits>::get()->
-                            GetExecutor(thread_id, window, iid, executor);
+  HRESULT hr = ExecutorsManager::GetInstance()->GetExecutor(thread_id, window,
+                                                            iid, executor);
   DLOG_IF(INFO, FAILED(hr)) << "Failed to get executor for window: " <<
       window << ". In thread: " << thread_id << ". " << com::LogHr(hr);
 }
 
 bool ApiDispatcher::IsTabIdValid(int tab_id) const {
-  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      IsTabIdValid(tab_id);
+  return ExecutorsManager::GetInstance()->IsTabIdValid(tab_id);
 }
 
 HWND ApiDispatcher::GetTabHandleFromId(int tab_id) const {
-  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      GetTabHandleFromId(tab_id);
+  return ExecutorsManager::GetInstance()->GetTabHandleFromId(tab_id);
 }
 
 HWND ApiDispatcher::GetTabHandleFromToolBandId(int tool_band_id) const {
-  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      GetTabHandleFromToolBandId(tool_band_id);
+  return ExecutorsManager::GetInstance()->GetTabHandleFromToolBandId(
+      tool_band_id);
 }
 
 HWND ApiDispatcher::GetWindowHandleFromId(int window_id) const {
@@ -169,13 +166,11 @@ HWND ApiDispatcher::GetWindowHandleFromId(int window_id) const {
 }
 
 bool ApiDispatcher::IsTabHandleValid(HWND tab_handle) const {
-  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      IsTabHandleValid(tab_handle);
+  return ExecutorsManager::GetInstance()->IsTabHandleValid(tab_handle);
 }
 
 int ApiDispatcher::GetTabIdFromHandle(HWND tab_handle) const {
-  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      GetTabIdFromHandle(tab_handle);
+  return ExecutorsManager::GetInstance()->GetTabIdFromHandle(tab_handle);
 }
 
 int ApiDispatcher::GetWindowIdFromHandle(HWND window_handle) const {
@@ -183,8 +178,7 @@ int ApiDispatcher::GetWindowIdFromHandle(HWND window_handle) const {
 }
 
 void ApiDispatcher::DeleteTabHandle(HWND handle) {
-  Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      DeleteTabHandle(handle);
+  ExecutorsManager::GetInstance()->DeleteTabHandle(handle);
 }
 
 void ApiDispatcher::RegisterInvocation(const char* function_name,
@@ -297,11 +291,11 @@ const Value* ApiDispatcher::InvocationResult::GetValue(const char* name) {
 }
 
 ApiDispatcher* ApiDispatcher::InvocationResult::GetDispatcher() {
-  return ProductionApiDispatcher::get();
+  return ProductionApiDispatcher::GetInstance();
 }
 
 ApiDispatcher* ApiDispatcher::Invocation::GetDispatcher() {
-  return ProductionApiDispatcher::get();
+  return ProductionApiDispatcher::GetInstance();
 }
 
 // Function registration preprocessor magic. See api_registration.h for details.
@@ -321,4 +315,9 @@ ApiDispatcher* ApiDispatcher::Invocation::GetDispatcher() {
 
 ProductionApiDispatcher::ProductionApiDispatcher() {
   REGISTER_ALL_API_FUNCTIONS();
+}
+
+// static
+ProductionApiDispatcher* ProductionApiDispatcher::GetInstance() {
+  return Singleton<ProductionApiDispatcher>::get();
 }

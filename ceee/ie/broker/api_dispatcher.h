@@ -307,8 +307,10 @@ ApiDispatcher::Invocation* NewApiInvocation() {
 
 // A singleton that initializes and keeps the ApiDispatcher used by production
 // code.
-class ProductionApiDispatcher : public ApiDispatcher,
-    public Singleton<ProductionApiDispatcher> {
+class ProductionApiDispatcher : public ApiDispatcher {
+ public:
+  static ProductionApiDispatcher* GetInstance();
+
  private:
   // This ensures no construction is possible outside of the class itself.
   friend struct DefaultSingletonTraits<ProductionApiDispatcher>;

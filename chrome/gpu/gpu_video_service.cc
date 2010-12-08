@@ -23,6 +23,11 @@ GpuVideoService::~GpuVideoService() {
   UnintializeGpuVideoService();
 }
 
+// static
+GpuVideoService* GpuVideoService::GetInstance() {
+  return Singleton<GpuVideoService>::get();
+}
+
 void GpuVideoService::OnChannelConnected(int32 peer_pid) {
   LOG(ERROR) << "GpuVideoService::OnChannelConnected";
 }

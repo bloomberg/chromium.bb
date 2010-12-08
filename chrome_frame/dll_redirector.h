@@ -33,6 +33,9 @@ class Version;
 //  3) The module this is compiled into is built with version info.
 class DllRedirector {
  public:
+  // Returns the singleton instance.
+  static DllRedirector* GetInstance();
+
   virtual ~DllRedirector();
 
   // Attempts to register this Chrome Frame version as the first loaded version

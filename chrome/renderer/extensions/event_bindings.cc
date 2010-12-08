@@ -72,7 +72,7 @@ class ExtensionImpl : public ExtensionBase {
  public:
   ExtensionImpl()
       : ExtensionBase(EventBindings::kName,
-                      GetStringResource<IDR_EVENT_BINDINGS_JS>(),
+                      GetStringResource(IDR_EVENT_BINDINGS_JS),
                       0, NULL) {
   }
   ~ExtensionImpl() {}
