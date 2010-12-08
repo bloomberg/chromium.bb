@@ -97,9 +97,9 @@ class BrowsingDataRemover : public NotificationObserver {
   // NotificationObserver method. Callback when TemplateURLModel has finished
   // loading. Deletes the entries from the model, and if we're not waiting on
   // anything else notifies observers and deletes this BrowsingDataRemover.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // If we're not waiting on anything, notifies observers and deletes this
   // object.

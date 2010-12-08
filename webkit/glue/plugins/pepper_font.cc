@@ -199,6 +199,10 @@ const PPB_Font_Dev* Font::GetInterface() {
   return &ppb_font;
 }
 
+Font* Font::AsFont() {
+  return this;
+}
+
 bool Font::Describe(PP_FontDescription_Dev* description,
                     PP_FontMetrics_Dev* metrics) {
   if (description->face.type != PP_VARTYPE_UNDEFINED)

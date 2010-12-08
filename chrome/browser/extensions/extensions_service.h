@@ -219,10 +219,8 @@ class ExtensionsService
   void InitEventRouters();
 
   // Look up an extension by ID.
-  const Extension* GetExtensionById(const std::string& id,
-                                    bool include_disabled) {
-    return GetExtensionByIdInternal(id, true, include_disabled);
-  }
+  virtual const Extension* GetExtensionById(const std::string& id,
+                                            bool include_disabled);
 
   // Install the extension file at |extension_path|.  Will install as an
   // update if an older version is already installed.
@@ -406,7 +404,7 @@ class ExtensionsService
   // it.
   void DestroyingProfile();
 
-  ExtensionPrefs* extension_prefs() { return extension_prefs_; }
+  virtual ExtensionPrefs* extension_prefs() { return extension_prefs_; }
 
   // Whether the extension service is ready.
   // TODO(skerner): Get rid of this method.  crbug.com/63756

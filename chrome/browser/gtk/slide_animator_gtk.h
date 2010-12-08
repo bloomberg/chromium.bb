@@ -83,8 +83,8 @@ class SlideAnimatorGtk : public AnimationDelegate {
   bool IsAnimating();
 
   // AnimationDelegate implementation.
-  void AnimationProgressed(const Animation* animation);
-  void AnimationEnded(const Animation* animation);
+  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationEnded(const Animation* animation);
 
   // Used during testing; disable or enable animations (default is enabled).
   static void SetAnimationsForTesting(bool enable);

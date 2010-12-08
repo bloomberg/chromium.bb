@@ -23,10 +23,10 @@ class SpeechInputDispatcherHost
   explicit SpeechInputDispatcherHost(int resource_message_filter_process_id);
 
   // SpeechInputManager::Delegate methods.
-  void SetRecognitionResult(int caller_id,
-                            const SpeechInputResultArray& result);
-  void DidCompleteRecording(int caller_id);
-  void DidCompleteRecognition(int caller_id);
+  virtual void SetRecognitionResult(int caller_id,
+                                    const SpeechInputResultArray& result);
+  virtual void DidCompleteRecording(int caller_id);
+  virtual void DidCompleteRecognition(int caller_id);
 
   // Called to possibly handle the incoming IPC message. Returns true if
   // handled.

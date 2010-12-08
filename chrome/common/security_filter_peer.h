@@ -110,10 +110,10 @@ class ReplaceContentPeer : public SecurityFilterPeer {
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceResponseInfo& info,
       bool content_filtered);
-  void OnReceivedData(const char* data, int len);
-  void OnCompletedRequest(const URLRequestStatus& status,
-                          const std::string& security_info,
-                          const base::Time& completion_time);
+  virtual void OnReceivedData(const char* data, int len);
+  virtual void OnCompletedRequest(const URLRequestStatus& status,
+                                  const std::string& security_info,
+                                  const base::Time& completion_time);
 
  private:
   webkit_glue::ResourceResponseInfo response_info_;

@@ -92,9 +92,9 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                              Browser* browser);
 
   // NotificationObserver.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
  private:
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.
   void TabCreatedAt(TabContents* contents, int index, bool foreground);

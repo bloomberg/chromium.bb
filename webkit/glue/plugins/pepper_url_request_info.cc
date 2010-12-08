@@ -168,6 +168,10 @@ const PPB_URLRequestInfo* URLRequestInfo::GetInterface() {
   return &ppb_urlrequestinfo;
 }
 
+URLRequestInfo* URLRequestInfo::AsURLRequestInfo() {
+  return this;
+}
+
 bool URLRequestInfo::SetBooleanProperty(PP_URLRequestProperty property,
                                         bool value) {
   switch (property) {

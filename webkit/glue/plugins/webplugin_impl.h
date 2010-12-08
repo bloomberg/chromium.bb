@@ -104,11 +104,11 @@ class WebPluginImpl : public WebPlugin,
   virtual void stopFind();
 
   // WebPlugin implementation:
-  void SetWindow(gfx::PluginWindowHandle window);
+  virtual void SetWindow(gfx::PluginWindowHandle window);
   virtual void SetAcceptsInputEvents(bool accepts) {
     accepts_input_events_ = accepts;
   }
-  void WillDestroyWindow(gfx::PluginWindowHandle window);
+  virtual void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event) { }
 #endif
@@ -220,24 +220,24 @@ class WebPluginImpl : public WebPlugin,
   // request given a handle.
   void RemoveClient(WebKit::WebURLLoader* loader);
 
-  void HandleURLRequest(const char* url,
-                        const char *method,
-                        const char* target,
-                        const char* buf,
-                        unsigned int len,
-                        int notify_id,
-                        bool popups_allowed,
-                        bool notify_redirects);
+  virtual void HandleURLRequest(const char* url,
+                                const char *method,
+                                const char* target,
+                                const char* buf,
+                                unsigned int len,
+                                int notify_id,
+                                bool popups_allowed,
+                                bool notify_redirects);
 
-  void CancelDocumentLoad();
+  virtual void CancelDocumentLoad();
 
-  void InitiateHTTPRangeRequest(
+  virtual void InitiateHTTPRangeRequest(
       const char* url, const char* range_info, int pending_request_id);
 
-  void SetDeferResourceLoading(unsigned long resource_id, bool defer);
+  virtual void SetDeferResourceLoading(unsigned long resource_id, bool defer);
 
   // Ignore in-process plugins mode for this flag.
-  bool IsOffTheRecord() { return false; }
+  virtual bool IsOffTheRecord() { return false; }
 
   // Handles HTTP multipart responses, i.e. responses received with a HTTP
   // status code of 206.

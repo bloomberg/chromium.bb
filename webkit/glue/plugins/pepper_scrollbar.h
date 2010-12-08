@@ -27,7 +27,7 @@ class Scrollbar : public Widget, public WebKit::WebScrollbarClient {
   static const PPB_Scrollbar_Dev* GetInterface();
 
   // Resource overrides.
-  Scrollbar* AsScrollbar() { return this; }
+  virtual Scrollbar* AsScrollbar();
 
   // PPB_Scrollbar implementation.
   uint32_t GetValue();

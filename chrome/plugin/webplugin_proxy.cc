@@ -115,6 +115,10 @@ void WebPluginProxy::SetWindow(gfx::PluginWindowHandle window) {
   Send(new PluginHostMsg_SetWindow(route_id_, window));
 }
 
+void WebPluginProxy::SetAcceptsInputEvents(bool accepts) {
+  NOTREACHED();
+}
+
 void WebPluginProxy::WillDestroyWindow(gfx::PluginWindowHandle window) {
 #if defined(OS_WIN)
   PluginThread::current()->Send(

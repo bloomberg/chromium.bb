@@ -94,14 +94,16 @@ class SpeechRecognizer
   void CancelRecognition();
 
   // AudioInputController::EventHandler methods.
-  void OnCreated(media::AudioInputController* controller) { }
-  void OnRecording(media::AudioInputController* controller) { }
-  void OnError(media::AudioInputController* controller, int error_code);
-  void OnData(media::AudioInputController* controller, const uint8* data,
-              uint32 size);
+  virtual void OnCreated(media::AudioInputController* controller) { }
+  virtual void OnRecording(media::AudioInputController* controller) { }
+  virtual void OnError(media::AudioInputController* controller, int error_code);
+  virtual void OnData(media::AudioInputController* controller,
+                      const uint8* data,
+                      uint32 size);
 
   // SpeechRecognitionRequest::Delegate methods.
-  void SetRecognitionResult(bool error, const SpeechInputResultArray& result);
+  virtual void SetRecognitionResult(bool error,
+                                    const SpeechInputResultArray& result);
 
   static const int kAudioSampleRate;
   static const int kAudioPacketIntervalMs;  // Duration of each audio packet.

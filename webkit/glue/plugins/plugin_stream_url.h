@@ -43,21 +43,17 @@ class PluginStreamUrl : public PluginStream,
   //
   // WebPluginResourceClient methods
   //
-  void WillSendRequest(const GURL& url, int http_status_code);
-  void DidReceiveResponse(const std::string& mime_type,
-                          const std::string& headers,
-                          uint32 expected_length,
-                          uint32 last_modified,
-                          bool request_is_seekable);
-  void DidReceiveData(const char* buffer, int length, int data_offset);
-  void DidFinishLoading();
-  void DidFail();
-  bool IsMultiByteResponseExpected() {
-    return seekable();
-  }
-  int ResourceId() {
-    return id_;
-  }
+  virtual void WillSendRequest(const GURL& url, int http_status_code);
+  virtual void DidReceiveResponse(const std::string& mime_type,
+                                  const std::string& headers,
+                                  uint32 expected_length,
+                                  uint32 last_modified,
+                                  bool request_is_seekable);
+  virtual void DidReceiveData(const char* buffer, int length, int data_offset);
+  virtual void DidFinishLoading();
+  virtual void DidFail();
+  virtual bool IsMultiByteResponseExpected();
+  virtual int ResourceId();
 
  private:
   GURL url_;

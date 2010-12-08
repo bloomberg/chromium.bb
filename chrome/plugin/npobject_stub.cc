@@ -54,6 +54,14 @@ void NPObjectStub::OnPluginDestroyed() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
+NPObject* NPObjectStub::GetUnderlyingNPObject() {
+  return npobject_;
+}
+
+IPC::Channel::Listener* NPObjectStub::GetChannelListener() {
+  return static_cast<IPC::Channel::Listener*>(this);
+}
+
 void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
   child_process_logging::SetActiveURL(page_url_);
 

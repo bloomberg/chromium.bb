@@ -27,7 +27,7 @@ class Font : public Resource {
   static const PPB_Font_Dev* GetInterface();
 
   // Resource overrides.
-  Font* AsFont() { return this; }
+  virtual Font* AsFont();
 
   // PPB_Font implementation.
   bool Describe(PP_FontDescription_Dev* description,

@@ -66,9 +66,9 @@ class MessagePortDispatcher : public NotificationObserver {
                      const std::vector<int>& sent_message_port_ids);
 
   // NotificationObserver interface.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Handles the details of removing a message port id. Before calling this,
   // verify that the message port id exists.

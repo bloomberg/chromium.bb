@@ -38,9 +38,9 @@ class PasswordsPageGtk : public NotificationObserver {
   void HidePassword();
 
   // NotificationObserver implementation.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Handles changes to the observed preferences and updates the UI.
   void OnPrefChanged(const std::string& pref_name);

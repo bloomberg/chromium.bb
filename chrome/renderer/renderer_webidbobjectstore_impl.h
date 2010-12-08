@@ -25,39 +25,39 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
   ~RendererWebIDBObjectStoreImpl();
 
   // WebKit::WebIDBObjectStore
-  WebKit::WebString name() const;
-  WebKit::WebString keyPath() const;
-  WebKit::WebDOMStringList indexNames() const;
+  virtual WebKit::WebString name() const;
+  virtual WebKit::WebString keyPath() const;
+  virtual WebKit::WebDOMStringList indexNames() const;
 
-  void get(const WebKit::WebIDBKey& key,
-           WebKit::WebIDBCallbacks* callbacks,
-           const WebKit::WebIDBTransaction& transaction,
-           WebKit::WebExceptionCode& ec);
-  void put(const WebKit::WebSerializedScriptValue& value,
-           const WebKit::WebIDBKey& key,
-           bool add_only,
-           WebKit::WebIDBCallbacks* callbacks,
-           const WebKit::WebIDBTransaction& transaction,
-           WebKit::WebExceptionCode& ec);
-  void deleteFunction(const WebKit::WebIDBKey& key,
-                      WebKit::WebIDBCallbacks* callbacks,
-                      const WebKit::WebIDBTransaction& transaction,
-                      WebKit::WebExceptionCode& ec);
+  virtual void get(const WebKit::WebIDBKey& key,
+                   WebKit::WebIDBCallbacks* callbacks,
+                   const WebKit::WebIDBTransaction& transaction,
+                   WebKit::WebExceptionCode& ec);
+  virtual void put(const WebKit::WebSerializedScriptValue& value,
+                   const WebKit::WebIDBKey& key,
+                   bool add_only,
+                   WebKit::WebIDBCallbacks* callbacks,
+                   const WebKit::WebIDBTransaction& transaction,
+                   WebKit::WebExceptionCode& ec);
+  virtual void deleteFunction(const WebKit::WebIDBKey& key,
+                              WebKit::WebIDBCallbacks* callbacks,
+                              const WebKit::WebIDBTransaction& transaction,
+                              WebKit::WebExceptionCode& ec);
 
-  WebKit::WebIDBIndex* createIndex(
+  virtual WebKit::WebIDBIndex* createIndex(
       const WebKit::WebString& name,
       const WebKit::WebString& key_path,
       bool unique,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);
   // Transfers ownership of the WebIDBIndex to the caller.
-  WebKit::WebIDBIndex* index(const WebKit::WebString& name,
-                             WebKit::WebExceptionCode& ec);
-  void deleteIndex(const WebKit::WebString& name,
-                   const WebKit::WebIDBTransaction& transaction,
-                   WebKit::WebExceptionCode& ec);
+  virtual WebKit::WebIDBIndex* index(const WebKit::WebString& name,
+                                     WebKit::WebExceptionCode& ec);
+  virtual void deleteIndex(const WebKit::WebString& name,
+                           const WebKit::WebIDBTransaction& transaction,
+                           WebKit::WebExceptionCode& ec);
 
-  void openCursor(const WebKit::WebIDBKeyRange& idb_key_range,
+  virtual void openCursor(const WebKit::WebIDBKeyRange& idb_key_range,
                   unsigned short direction,
                   WebKit::WebIDBCallbacks* callbacks,
                   const WebKit::WebIDBTransaction& transaction,

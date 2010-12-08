@@ -33,16 +33,18 @@ class GeolocationDispatcherOld : public WebKit::WebGeolocationService {
   bool OnMessageReceived(const IPC::Message& msg);
 
   // WebKit::WebGeolocationService.
-  void requestPermissionForFrame(int bridge_id, const WebKit::WebURL& url);
-  void cancelPermissionRequestForFrame(
+  virtual void requestPermissionForFrame(int bridge_id,
+                                         const WebKit::WebURL& url);
+  virtual void cancelPermissionRequestForFrame(
       int bridge_id, const WebKit::WebURL& url);
-  void startUpdating(
+  virtual void startUpdating(
       int bridge_id, const WebKit::WebURL& url, bool enableHighAccuracy);
-  void stopUpdating(int bridge_id);
-  void suspend(int bridge_id);
-  void resume(int bridge_id);
-  int attachBridge(WebKit::WebGeolocationServiceBridge* geolocation_service);
-  void detachBridge(int bridge_id);
+  virtual void stopUpdating(int bridge_id);
+  virtual void suspend(int bridge_id);
+  virtual void resume(int bridge_id);
+  virtual int attachBridge(
+      WebKit::WebGeolocationServiceBridge* geolocation_service);
+  virtual void detachBridge(int bridge_id);
 
  private:
   // Permission for using geolocation has been set.

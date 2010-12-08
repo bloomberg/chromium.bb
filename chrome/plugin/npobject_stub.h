@@ -39,7 +39,7 @@ class NPObjectStub : public IPC::Channel::Listener,
   ~NPObjectStub();
 
   // IPC::Message::Sender implementation:
-  bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg);
 
   // Called when the plugin widget that this NPObject came from is destroyed.
   // This is needed because the renderer calls NPN_DeallocateObject on the
@@ -47,18 +47,14 @@ class NPObjectStub : public IPC::Channel::Listener,
   void OnPluginDestroyed();
 
   // NPObjectBase implementation.
-  virtual NPObject* GetUnderlyingNPObject() {
-    return npobject_;
-  }
+  virtual NPObject* GetUnderlyingNPObject();
 
-  IPC::Channel::Listener* GetChannelListener() {
-    return static_cast<IPC::Channel::Listener*>(this);
-  }
+  virtual IPC::Channel::Listener* GetChannelListener();
 
  private:
   // IPC::Channel::Listener implementation:
-  void OnMessageReceived(const IPC::Message& message);
-  void OnChannelError();
+  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual void OnChannelError();
 
   // message handlers
   void OnRelease(IPC::Message* reply_msg);

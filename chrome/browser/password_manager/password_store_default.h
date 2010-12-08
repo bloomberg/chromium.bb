@@ -27,26 +27,26 @@ class PasswordStoreDefault : public PasswordStore,
   virtual ~PasswordStoreDefault();
 
   // Implements PasswordStore interface.
-  void ReportMetricsImpl();
-  void AddLoginImpl(const webkit_glue::PasswordForm& form);
-  void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
-  void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
-  void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
-                                      const base::Time& delete_end);
-  void GetLoginsImpl(GetLoginsRequest* request,
-                     const webkit_glue::PasswordForm& form);
-  void GetAutofillableLoginsImpl(GetLoginsRequest* request);
-  void GetBlacklistLoginsImpl(GetLoginsRequest* request);
-  bool FillAutofillableLogins(
+  virtual void ReportMetricsImpl();
+  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
+                                              const base::Time& delete_end);
+  virtual void GetLoginsImpl(GetLoginsRequest* request,
+                             const webkit_glue::PasswordForm& form);
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request);
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request);
+  virtual bool FillAutofillableLogins(
       std::vector<webkit_glue::PasswordForm*>* forms);
-  bool FillBlacklistLogins(
+  virtual bool FillBlacklistLogins(
       std::vector<webkit_glue::PasswordForm*>* forms);
 
   scoped_refptr<WebDataService> web_data_service_;
 
   // Implements the WebDataService consumer interface.
-  void OnWebDataServiceRequestDone(WebDataService::Handle handle,
-                                   const WDTypedResult *result);
+  virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
+                                           const WDTypedResult *result);
 
  protected:
   inline bool DeleteAndRecreateDatabaseFile() {

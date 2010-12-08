@@ -74,7 +74,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   virtual void CheckForInspectorFiles();
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
-  void StartAutoupdateTimer();
+  virtual void StartAutoupdateTimer();
 #endif
 
   virtual bool have_inspector_files() const;

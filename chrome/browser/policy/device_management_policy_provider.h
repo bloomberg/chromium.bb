@@ -48,9 +48,9 @@ class DeviceManagementPolicyProvider
   virtual void OnError(DeviceManagementBackend::ErrorCode code);
 
   // DeviceTokenFetcher::Observer implementation:
-  void OnTokenSuccess();
-  void OnTokenError();
-  void OnNotManaged();
+  virtual void OnTokenSuccess();
+  virtual void OnTokenError();
+  virtual void OnNotManaged();
 
   // True if a policy request has been sent to the device management backend
   // server and no response or error has yet been received.

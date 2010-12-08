@@ -66,7 +66,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
   bool Init(const WebPluginInfo& info, const std::string& locale);
 
   // Force the plugin process to shutdown (cleanly).
-  void ForceShutdown();
+  virtual void ForceShutdown();
 
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);

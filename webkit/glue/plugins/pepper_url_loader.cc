@@ -214,6 +214,10 @@ const PPB_URLLoaderTrusted* URLLoader::GetTrustedInterface() {
   return &ppb_urlloadertrusted;
 }
 
+URLLoader* URLLoader::AsURLLoader() {
+  return this;
+}
+
 int32_t URLLoader::Open(URLRequestInfo* request,
                         PP_CompletionCallback callback) {
   if (loader_.get())

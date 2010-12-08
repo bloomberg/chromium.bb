@@ -30,8 +30,9 @@ class ForeignSessionHandler : public DOMMessageHandler,
   void Init();
 
   // Determines how ForeignSessionHandler will interact with the new tab page.
-  void Observe(NotificationType type, const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Returns a pointer to the current session model associator or NULL.
   SessionModelAssociator* GetModelAssociator();

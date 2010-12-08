@@ -142,9 +142,9 @@ class WorkerService : public NotificationObserver {
       int renderer_id, int render_view_route_id, bool* hit_total_worker_limit);
 
   // NotificationObserver interface.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Notifies us that a process that's talking to a worker has shut down.
   void SenderShutdown(IPC::Message::Sender* sender);

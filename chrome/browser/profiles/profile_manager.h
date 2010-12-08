@@ -68,8 +68,8 @@ class ProfileManager : public NonThreadSafe,
   const_iterator end() const { return profiles_.end(); }
 
   // PowerObserver notifications
-  void OnSuspend();
-  void OnResume();
+  virtual void OnSuspend();
+  virtual void OnResume();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

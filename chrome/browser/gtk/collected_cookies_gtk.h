@@ -53,9 +53,9 @@ class CollectedCookiesGtk : public ConstrainedDialogDelegate,
                      ContentSetting setting);
 
   // Notification Observer implementation.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Callbacks.
   CHROMEGTK_CALLBACK_2(CollectedCookiesGtk, void, OnTreeViewRowExpanded,

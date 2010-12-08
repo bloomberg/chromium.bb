@@ -65,13 +65,13 @@ class SlideAnimation : public LinearAnimation {
   int GetSlideDuration() const { return slide_duration_; }
   void SetTweenType(Tween::Type tween_type) { tween_type_ = tween_type; }
 
-  double GetCurrentValue() const { return value_current_; }
+  virtual double GetCurrentValue() const { return value_current_; }
   bool IsShowing() const { return showing_; }
   bool IsClosing() const { return !showing_ && value_end_ < value_current_; }
 
  private:
   // Overridden from Animation.
-  void AnimateToState(double state);
+  virtual void AnimateToState(double state);
 
   AnimationDelegate* target_;
 

@@ -110,6 +110,10 @@ const PPB_Scrollbar_Dev* Scrollbar::GetInterface() {
   return &ppb_scrollbar;
 }
 
+Scrollbar* Scrollbar::AsScrollbar() {
+  return this;
+}
+
 uint32_t Scrollbar::GetValue() {
   return scrollbar_->value();
 }

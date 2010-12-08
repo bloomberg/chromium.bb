@@ -46,6 +46,14 @@ NPObjectProxy* NPObjectProxy::GetProxy(NPObject* object) {
   return proxy;
 }
 
+NPObject* NPObjectProxy::GetUnderlyingNPObject() {
+  return NULL;
+}
+
+IPC::Channel::Listener* NPObjectProxy::GetChannelListener() {
+  return static_cast<IPC::Channel::Listener*>(this);
+}
+
 NPObjectProxy::NPObjectProxy(
     PluginChannelBase* channel,
     int route_id,

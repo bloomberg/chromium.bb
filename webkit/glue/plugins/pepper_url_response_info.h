@@ -26,7 +26,7 @@ class URLResponseInfo : public Resource {
   static const PPB_URLResponseInfo* GetInterface();
 
   // Resource overrides.
-  URLResponseInfo* AsURLResponseInfo() { return this; }
+  virtual URLResponseInfo* AsURLResponseInfo();
 
   // PPB_URLResponseInfo implementation.
   PP_Var GetProperty(PP_URLResponseProperty property);

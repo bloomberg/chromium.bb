@@ -89,9 +89,9 @@ class NewTabUI : public DOMUI,
  private:
   FRIEND_TEST_ALL_PREFIXES(NewTabUITest, UpdateUserPrefsVersion);
 
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Reset the CSS caches.
   void InitializeCSSCaches();

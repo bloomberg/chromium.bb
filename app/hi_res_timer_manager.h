@@ -16,7 +16,7 @@ class HighResolutionTimerManager : public SystemMonitor::PowerObserver {
   virtual ~HighResolutionTimerManager();
 
   // SystemMonitor::PowerObserver:
-  void OnPowerStateChange(bool on_battery_power);
+  virtual void OnPowerStateChange(bool on_battery_power);
 
  private:
   // Enable or disable the faster multimedia timer.

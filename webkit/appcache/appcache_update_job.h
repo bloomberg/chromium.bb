@@ -102,15 +102,17 @@ class AppCacheUpdateJob : public net::URLRequest::Delegate,
   // TODO(jennb): any other delegate callbacks to handle? certificate?
 
   // Methods for AppCacheStorage::Delegate.
-  void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
-                            int64 response_id);
-  void OnGroupAndNewestCacheStored(AppCacheGroup* group, AppCache* newest_cache,
-                                   bool success, bool would_exceed_quota);
-  void OnGroupMadeObsolete(AppCacheGroup* group, bool success);
+  virtual void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
+                                    int64 response_id);
+  virtual void OnGroupAndNewestCacheStored(AppCacheGroup* group,
+                                           AppCache* newest_cache,
+                                           bool success,
+                                           bool would_exceed_quota);
+  virtual void OnGroupMadeObsolete(AppCacheGroup* group, bool success);
 
   // Methods for AppCacheHost::Observer.
-  void OnCacheSelectionComplete(AppCacheHost* host) {}  // N/A
-  void OnDestructionImminent(AppCacheHost* host);
+  virtual void OnCacheSelectionComplete(AppCacheHost* host) {}  // N/A
+  virtual void OnDestructionImminent(AppCacheHost* host);
 
   void CheckPolicy();
   void OnPolicyCheckComplete(int rv);

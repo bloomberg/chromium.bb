@@ -210,6 +210,10 @@ const PPB_FileIOTrusted_Dev* FileIO::GetTrustedInterface() {
   return &ppb_fileiotrusted;
 }
 
+FileIO* FileIO::AsFileIO() {
+  return this;
+}
+
 int32_t FileIO::Open(FileRef* file_ref,
                      int32_t open_flags,
                      PP_CompletionCallback callback) {

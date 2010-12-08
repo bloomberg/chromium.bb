@@ -183,7 +183,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   virtual void OnMessageReceived(const IPC::Message& msg);
 
   // Sends a message to the corresponding object in the renderer.
-  bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg);
 
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.

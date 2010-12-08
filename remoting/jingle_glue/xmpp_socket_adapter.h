@@ -39,7 +39,7 @@ class XmppSocketAdapter : public buzz::AsyncSocket,
   virtual bool Close();
 
 #if defined(FEATURE_ENABLE_SSL)
-  bool StartTls(const std::string& domainname);
+  virtual bool StartTls(const std::string& domainname);
   bool IsOpen() const { return state_ == STATE_OPEN
                             || state_ == STATE_TLS_OPEN; }
 #else

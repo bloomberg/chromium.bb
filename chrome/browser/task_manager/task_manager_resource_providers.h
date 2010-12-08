@@ -35,7 +35,7 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   virtual ~TaskManagerRendererResource();
 
   // TaskManager::Resource methods:
-  base::ProcessHandle GetProcess() const;
+  virtual base::ProcessHandle GetProcess() const;
   virtual Type GetType() const { return RENDERER; }
   virtual bool ReportsCacheStats() const { return true; }
   virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
@@ -44,8 +44,8 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   virtual size_t GetV8MemoryUsed() const;
 
   // RenderResources always provide the network usage.
-  bool SupportNetworkUsage() const { return true; }
-  void SetSupportNetworkUsage() { }
+  virtual bool SupportNetworkUsage() const { return true; }
+  virtual void SetSupportNetworkUsage() { }
 
   virtual void Refresh();
 
@@ -78,7 +78,7 @@ class TaskManagerRendererResource : public TaskManager::Resource {
 class TaskManagerTabContentsResource : public TaskManagerRendererResource {
  public:
   explicit TaskManagerTabContentsResource(TabContents* tab_contents);
-  ~TaskManagerTabContentsResource();
+  virtual ~TaskManagerTabContentsResource();
 
   // TaskManager::Resource methods:
   virtual Type GetType() const;
@@ -140,7 +140,7 @@ class TaskManagerBackgroundContentsResource
   TaskManagerBackgroundContentsResource(
       BackgroundContents* background_contents,
       const std::wstring& application_name);
-  ~TaskManagerBackgroundContentsResource();
+  virtual ~TaskManagerBackgroundContentsResource();
 
   // TaskManager::Resource methods:
   virtual std::wstring GetTitle() const;
@@ -208,21 +208,15 @@ class TaskManagerBackgroundContentsResourceProvider
 class TaskManagerChildProcessResource : public TaskManager::Resource {
  public:
   explicit TaskManagerChildProcessResource(const ChildProcessInfo& child_proc);
-  ~TaskManagerChildProcessResource();
+  virtual ~TaskManagerChildProcessResource();
 
   // TaskManagerResource methods:
-  std::wstring GetTitle() const;
-  SkBitmap GetIcon() const;
-  base::ProcessHandle GetProcess() const;
-  Type GetType() const;
-
-  bool SupportNetworkUsage() const {
-    return network_usage_support_;
-  }
-
-  void SetSupportNetworkUsage() {
-    network_usage_support_ = true;
-  }
+  virtual std::wstring GetTitle() const;
+  virtual SkBitmap GetIcon() const;
+  virtual base::ProcessHandle GetProcess() const;
+  virtual Type GetType() const;
+  virtual bool SupportNetworkUsage() const;
+  virtual void SetSupportNetworkUsage();
 
   // Returns the pid of the child process.
   int process_id() const { return pid_; }
@@ -298,22 +292,23 @@ class TaskManagerChildProcessResourceProvider
 class TaskManagerExtensionProcessResource : public TaskManager::Resource {
  public:
   explicit TaskManagerExtensionProcessResource(ExtensionHost* extension_host);
-  ~TaskManagerExtensionProcessResource();
+  virtual ~TaskManagerExtensionProcessResource();
 
   // TaskManagerResource methods:
-  std::wstring GetTitle() const;
-  SkBitmap GetIcon() const;
-  base::ProcessHandle GetProcess() const;
-  Type GetType() const { return EXTENSION; }
-  bool SupportNetworkUsage() const { return true; }
-  void SetSupportNetworkUsage() { NOTREACHED(); }
-  const Extension* GetExtension() const;
+  virtual std::wstring GetTitle() const;
+  virtual SkBitmap GetIcon() const;
+  virtual base::ProcessHandle GetProcess() const;
+  virtual Type GetType() const { return EXTENSION; }
+  virtual bool SupportNetworkUsage() const { return true; }
+  virtual void SetSupportNetworkUsage() { NOTREACHED(); }
+  virtual const Extension* GetExtension() const;
 
   // Returns the pid of the extension process.
   int process_id() const { return pid_; }
 
   // Returns true if the associated extension has a background page.
-  bool IsBackground() const;
+  virtual bool IsBackground() const;
+
  private:
   // The icon painted for the extension process.
   static SkBitmap* default_icon_;
@@ -372,13 +367,13 @@ class TaskManagerExtensionProcessResourceProvider
 class TaskManagerNotificationResource : public TaskManager::Resource {
  public:
   explicit TaskManagerNotificationResource(BalloonHost* balloon_host);
-  ~TaskManagerNotificationResource();
+  virtual ~TaskManagerNotificationResource();
 
   // TaskManager::Resource interface
-  std::wstring GetTitle() const { return title_; }
-  SkBitmap GetIcon() const;
-  base::ProcessHandle GetProcess() const;
-  Type GetType() const { return NOTIFICATION; }
+  virtual std::wstring GetTitle() const { return title_; }
+  virtual SkBitmap GetIcon() const;
+  virtual base::ProcessHandle GetProcess() const;
+  virtual Type GetType() const { return NOTIFICATION; }
   virtual bool SupportNetworkUsage() const { return false; }
   virtual void SetSupportNetworkUsage() { }
 
@@ -437,19 +432,19 @@ class TaskManagerNotificationResourceProvider
 class TaskManagerBrowserProcessResource : public TaskManager::Resource {
  public:
   TaskManagerBrowserProcessResource();
-  ~TaskManagerBrowserProcessResource();
+  virtual ~TaskManagerBrowserProcessResource();
 
   // TaskManagerResource methods:
-  std::wstring GetTitle() const;
-  SkBitmap GetIcon() const;
-  base::ProcessHandle GetProcess() const;
-  Type GetType() const { return BROWSER; }
+  virtual std::wstring GetTitle() const;
+  virtual SkBitmap GetIcon() const;
+  virtual base::ProcessHandle GetProcess() const;
+  virtual Type GetType() const { return BROWSER; }
 
-  bool SupportNetworkUsage() const { return true; }
-  void SetSupportNetworkUsage() { NOTREACHED(); }
+  virtual bool SupportNetworkUsage() const { return true; }
+  virtual void SetSupportNetworkUsage() { NOTREACHED(); }
 
-  bool ReportsSqliteMemoryUsed() const { return true; }
-  size_t SqliteMemoryUsedBytes() const;
+  virtual bool ReportsSqliteMemoryUsed() const { return true; }
+  virtual size_t SqliteMemoryUsedBytes() const;
 
   // Returns the pid of the browser process.
   int process_id() const { return pid_; }

@@ -15,7 +15,7 @@ class FormGroup;
 class HomeAddress : public Address {
  public:
   HomeAddress() {}
-  FormGroup* Clone() const { return new HomeAddress(*this); }
+  virtual FormGroup* Clone() const { return new HomeAddress(*this); }
 
  protected:
   virtual AutoFillFieldType GetLine1Type() const {

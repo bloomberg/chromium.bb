@@ -107,7 +107,7 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   bool StartProcess(const FilePath& exposed_dir);
 
   // IPC messages:
-  void OnMessageReceived(const IPC::Message& message);
+  virtual void OnMessageReceived(const IPC::Message& message);
   // Called when at least one page in the specified PDF has been rendered
   // successfully into metafile_path_;
   void OnRenderPDFPagesToMetafileSucceeded(int highest_rendered_page_number);

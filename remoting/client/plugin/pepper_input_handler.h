@@ -20,7 +20,7 @@ class PepperInputHandler : public InputHandler {
                      ChromotingView* view);
   virtual ~PepperInputHandler();
 
-  void Initialize();
+  virtual void Initialize();
 
   void HandleKeyEvent(bool keydown, const PP_InputEvent_Key& event);
   void HandleCharacterEvent(const PP_InputEvent_Character& event);

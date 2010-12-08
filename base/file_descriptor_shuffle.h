@@ -46,9 +46,9 @@ class InjectionDelegate {
 // An implementation of the InjectionDelegate interface using the file
 // descriptor table of the current process as the domain.
 class FileDescriptorTableInjection : public InjectionDelegate {
-  bool Duplicate(int* result, int fd);
-  bool Move(int src, int dest);
-  void Close(int fd);
+  virtual bool Duplicate(int* result, int fd);
+  virtual bool Move(int src, int dest);
+  virtual void Close(int fd);
 };
 
 // A single arc of the directed graph which describes an injective multimapping.

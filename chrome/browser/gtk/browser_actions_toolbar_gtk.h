@@ -61,9 +61,9 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   void Update();
 
   // NotificationObserver implementation.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   bool animating() {
     return resize_animation_.is_animating();

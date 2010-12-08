@@ -150,7 +150,7 @@ class UtilityProcessHost : public BrowserChildProcessHost {
   bool StartProcess(const FilePath& exposed_dir);
 
   // IPC messages:
-  void OnMessageReceived(const IPC::Message& message);
+  virtual void OnMessageReceived(const IPC::Message& message);
 
   // BrowserChildProcessHost:
   virtual void OnProcessCrashed();

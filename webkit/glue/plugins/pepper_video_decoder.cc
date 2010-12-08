@@ -106,6 +106,10 @@ const PPB_VideoDecoder_Dev* VideoDecoder::GetInterface() {
   return &ppb_videodecoder;
 }
 
+VideoDecoder* VideoDecoder::AsVideoDecoder() {
+  return this;
+}
+
 bool VideoDecoder::Init(const PP_VideoDecoderConfig_Dev& decoder_config) {
   if (!instance())
     return false;

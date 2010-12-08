@@ -98,9 +98,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                           menus::Accelerator* accelerator);
 
   // NotificationObserver implementation.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   Profile* profile() { return profile_; }
   void SetProfile(Profile* profile);

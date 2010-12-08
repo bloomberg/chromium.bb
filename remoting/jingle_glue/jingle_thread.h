@@ -42,10 +42,10 @@ class JingleThread : public talk_base::Thread,
   void Start();
 
   // Main function for the thread. Should not be called directly.
-  void Run();
+  virtual void Run();
 
   // Stop the thread.
-  void Stop();
+  virtual void Stop();
 
   // Returns Chromiums message loop for this thread.
   // TODO(sergeyu): remove this method when we use base::Thread instead of

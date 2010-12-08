@@ -44,7 +44,7 @@ class URLLoader : public Resource,
   static const PPB_URLLoaderTrusted* GetTrustedInterface();
 
   // Resource overrides.
-  URLLoader* AsURLLoader() { return this; }
+  virtual URLLoader* AsURLLoader();
 
   // PPB_URLLoader implementation.
   int32_t Open(URLRequestInfo* request, PP_CompletionCallback callback);
@@ -82,7 +82,7 @@ class URLLoader : public Resource,
                        const WebKit::WebURLError& error);
 
   // PluginInstance::Observer implementation.
-  void InstanceDestroyed(PluginInstance* instance);
+  virtual void InstanceDestroyed(PluginInstance* instance);
 
   URLResponseInfo* response_info() const { return response_info_; }
 

@@ -89,6 +89,10 @@ const PPB_DirectoryReader_Dev* DirectoryReader::GetInterface() {
   return &ppb_directoryreader;
 }
 
+DirectoryReader* DirectoryReader::AsDirectoryReader() {
+  return this;
+}
+
 int32_t DirectoryReader::GetNextEntry(PP_DirectoryEntry_Dev* entry,
                                       PP_CompletionCallback callback) {
   if (directory_ref_->GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)

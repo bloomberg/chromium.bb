@@ -26,24 +26,24 @@ class AsyncResourceHandler : public ResourceHandler {
                        ResourceDispatcherHost* resource_dispatcher_host);
 
   // ResourceHandler implementation:
-  bool OnUploadProgress(int request_id, uint64 position, uint64 size);
-  bool OnRequestRedirected(int request_id, const GURL& new_url,
-                           ResourceResponse* response, bool* defer);
-  bool OnResponseStarted(int request_id, ResourceResponse* response);
-  bool OnWillStart(int request_id, const GURL& url, bool* defer);
-  bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
-                  int min_size);
-  bool OnReadCompleted(int request_id, int* bytes_read);
-  bool OnResponseCompleted(int request_id,
-                           const URLRequestStatus& status,
-                           const std::string& security_info);
-  void OnRequestClosed();
-  void OnDataDownloaded(int request_id, int bytes_downloaded);
+  virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+  virtual bool OnRequestRedirected(int request_id, const GURL& new_url,
+                                   ResourceResponse* response, bool* defer);
+  virtual bool OnResponseStarted(int request_id, ResourceResponse* response);
+  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer);
+  virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
+                          int min_size);
+  virtual bool OnReadCompleted(int request_id, int* bytes_read);
+  virtual bool OnResponseCompleted(int request_id,
+                                   const URLRequestStatus& status,
+                                   const std::string& security_info);
+  virtual void OnRequestClosed();
+  virtual void OnDataDownloaded(int request_id, int bytes_downloaded);
 
   static void GlobalCleanup();
 
  private:
-  ~AsyncResourceHandler();
+  virtual ~AsyncResourceHandler();
 
   scoped_refptr<SharedIOBuffer> read_buffer_;
   ResourceDispatcherHost::Receiver* receiver_;

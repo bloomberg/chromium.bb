@@ -74,12 +74,12 @@ class GaiaAuthFetcher : public URLFetcher::Delegate {
                         const std::string& info_key);
 
   // Implementation of URLFetcher::Delegate
-  void OnURLFetchComplete(const URLFetcher* source,
-                          const GURL& url,
-                          const URLRequestStatus& status,
-                          int response_code,
-                          const ResponseCookies& cookies,
-                          const std::string& data);
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const URLRequestStatus& status,
+                                  int response_code,
+                                  const ResponseCookies& cookies,
+                                  const std::string& data);
 
   // StartClientLogin been called && results not back yet?
   bool HasPendingFetch();

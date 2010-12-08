@@ -24,9 +24,9 @@ class OverflowButton : public NotificationObserver {
 
  private:
   // NotificationObserver implementation.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   OwnedWidgetGtk widget_;
 

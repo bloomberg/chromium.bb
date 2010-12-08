@@ -32,7 +32,7 @@ class FileRef : public Resource {
   static const PPB_FileRef_Dev* GetInterface();
 
   // Resource overrides.
-  FileRef* AsFileRef() { return this; }
+  virtual FileRef* AsFileRef();
 
   // PPB_FileRef implementation.
   std::string GetName() const;

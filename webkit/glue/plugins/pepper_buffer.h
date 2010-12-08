@@ -32,7 +32,7 @@ class Buffer : public Resource {
   static const PPB_Buffer_Dev* GetInterface();
 
   // Resource overrides.
-  Buffer* AsBuffer() { return this; }
+  virtual Buffer* AsBuffer();
 
   // PPB_Buffer implementation.
   bool Init(uint32_t size);

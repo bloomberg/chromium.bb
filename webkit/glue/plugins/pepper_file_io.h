@@ -37,7 +37,7 @@ class FileIO : public Resource {
   static const PPB_FileIOTrusted_Dev* GetTrustedInterface();
 
   // Resource overrides.
-  FileIO* AsFileIO() { return this; }
+  virtual FileIO* AsFileIO();
 
   // PPB_FileIO implementation.
   int32_t Open(FileRef* file_ref,

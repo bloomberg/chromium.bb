@@ -28,7 +28,7 @@ class VideoDecoder : public Resource {
   static const PPB_VideoDecoder_Dev* GetInterface();
 
   // Resource overrides.
-  VideoDecoder* AsVideoDecoder() { return this; }
+  virtual VideoDecoder* AsVideoDecoder();
 
   PluginInstance* instance() { return instance_.get(); }
 

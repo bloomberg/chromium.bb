@@ -28,7 +28,7 @@ class DirectoryReader : public Resource {
   static const PPB_DirectoryReader_Dev* GetInterface();
 
   // Resource overrides.
-  DirectoryReader* AsDirectoryReader() { return this; }
+  virtual DirectoryReader* AsDirectoryReader();
 
   // PPB_DirectoryReader implementation.
   int32_t GetNextEntry(PP_DirectoryEntry_Dev* entry,

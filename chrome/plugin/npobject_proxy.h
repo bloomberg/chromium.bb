@@ -39,7 +39,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
                           const GURL& page_url);
 
   // IPC::Message::Sender implementation:
-  bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg);
   int route_id() { return route_id_; }
   PluginChannelBase* channel() { return channel_; }
 
@@ -91,13 +91,9 @@ class NPObjectProxy : public IPC::Channel::Listener,
   static const NPClass* npclass() { return &npclass_proxy_; }
 
   // NPObjectBase implementation.
-  virtual NPObject* GetUnderlyingNPObject() {
-    return NULL;
-  }
+  virtual NPObject* GetUnderlyingNPObject();
 
-  IPC::Channel::Listener* GetChannelListener() {
-    return static_cast<IPC::Channel::Listener*>(this);
-  }
+  virtual IPC::Channel::Listener* GetChannelListener();
 
  private:
   NPObjectProxy(PluginChannelBase* channel,
@@ -106,8 +102,8 @@ class NPObjectProxy : public IPC::Channel::Listener,
                 const GURL& page_url);
 
   // IPC::Channel::Listener implementation:
-  void OnMessageReceived(const IPC::Message& msg);
-  void OnChannelError();
+  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual void OnChannelError();
 
   static NPObject* NPAllocate(NPP, NPClass*);
   static void NPDeallocate(NPObject* npObj);

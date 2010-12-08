@@ -31,13 +31,13 @@ class SpeechInputDispatcher : public WebKit::WebSpeechInputController {
   bool OnMessageReceived(const IPC::Message& msg);
 
   // WebKit::WebSpeechInputController.
-  bool startRecognition(int request_id,
-                        const WebKit::WebRect& element_rect,
-                        const WebKit::WebString& language,
-                        const WebKit::WebString& grammar);
+  virtual bool startRecognition(int request_id,
+                                const WebKit::WebRect& element_rect,
+                                const WebKit::WebString& language,
+                                const WebKit::WebString& grammar);
 
-  void cancelRecognition(int request_id);
-  void stopRecording(int request_id);
+  virtual void cancelRecognition(int request_id);
+  virtual void stopRecording(int request_id);
 
  private:
   void OnSpeechRecognitionResult(

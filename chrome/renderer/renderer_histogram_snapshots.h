@@ -37,12 +37,12 @@ class RendererHistogramSnapshots : public HistogramSender {
       renderer_histogram_snapshots_factory_;
 
   // HistogramSender interface (override) methods.
-  void TransmitHistogramDelta(
+  virtual void TransmitHistogramDelta(
       const base::Histogram& histogram,
       const base::Histogram::SampleSet& snapshot);
-  void InconsistencyDetected(int problem);
-  void UniqueInconsistencyDetected(int problem);
-  void SnapshotProblemResolved(int amount);
+  virtual void InconsistencyDetected(int problem);
+  virtual void UniqueInconsistencyDetected(int problem);
+  virtual void SnapshotProblemResolved(int amount);
 
   // Collection of histograms to send to the browser.
   HistogramPickledList pickled_histograms_;

@@ -73,6 +73,10 @@ const PPB_Widget_Dev* Widget::GetInterface() {
   return &ppb_widget;
 }
 
+Widget* Widget::AsWidget() {
+  return this;
+}
+
 bool Widget::GetLocation(PP_Rect* location) {
   *location = location_;
   return true;

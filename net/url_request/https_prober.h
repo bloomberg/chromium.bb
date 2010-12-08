@@ -53,13 +53,13 @@ class HTTPSProber : public net::URLRequest::Delegate {
                  HTTPSProberDelegate* delegate);
 
   // Implementation of net::URLRequest::Delegate
-  void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info);
-  void OnSSLCertificateError(net::URLRequest* request,
-                             int cert_error,
-                             net::X509Certificate* cert);
-  void OnResponseStarted(net::URLRequest* request);
-  void OnReadCompleted(net::URLRequest* request, int bytes_read);
+  virtual void OnAuthRequired(net::URLRequest* request,
+                              net::AuthChallengeInfo* auth_info);
+  virtual void OnSSLCertificateError(net::URLRequest* request,
+                                     int cert_error,
+                                     net::X509Certificate* cert);
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
  private:
   void Success(net::URLRequest* request);

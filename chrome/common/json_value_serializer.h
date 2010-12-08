@@ -33,12 +33,12 @@ class JSONStringValueSerializer : public ValueSerializer {
         allow_trailing_comma_(false) {
   }
 
-  ~JSONStringValueSerializer();
+  virtual ~JSONStringValueSerializer();
 
   // Attempt to serialize the data structure represented by Value into
   // JSON.  If the return value is true, the result will have been written
   // into the string passed into the constructor.
-  bool Serialize(const Value& root);
+  virtual bool Serialize(const Value& root);
 
   // Attempt to deserialize the data structure encoded in the string passed
   // in to the constructor into a structure of Value objects.  If the return
@@ -47,7 +47,7 @@ class JSONStringValueSerializer : public ValueSerializer {
   // If |error_message| is non-null, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
   // The caller takes ownership of the returned value.
-  Value* Deserialize(int* error_code, std::string* error_message);
+  virtual Value* Deserialize(int* error_code, std::string* error_message);
 
   void set_pretty_print(bool new_value) { pretty_print_ = new_value; }
   bool pretty_print() { return pretty_print_; }
@@ -75,7 +75,7 @@ class JSONFileValueSerializer : public ValueSerializer {
   explicit JSONFileValueSerializer(const FilePath& json_file_path)
     : json_file_path_(json_file_path) {}
 
-  ~JSONFileValueSerializer() {}
+  virtual ~JSONFileValueSerializer() {}
 
   // DO NOT USE except in unit tests to verify the file was written properly.
   // We should never serialize directly to a file since this will block the
@@ -85,7 +85,7 @@ class JSONFileValueSerializer : public ValueSerializer {
   // Attempt to serialize the data structure represented by Value into
   // JSON.  If the return value is true, the result will have been written
   // into the file whose name was passed into the constructor.
-  bool Serialize(const Value& root);
+  virtual bool Serialize(const Value& root);
 
   // Attempt to deserialize the data structure encoded in the file passed
   // in to the constructor into a structure of Value objects.  If the return
@@ -94,7 +94,7 @@ class JSONFileValueSerializer : public ValueSerializer {
   // If |error_message| is non-null, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
   // The caller takes ownership of the returned value.
-  Value* Deserialize(int* error_code, std::string* error_message);
+  virtual Value* Deserialize(int* error_code, std::string* error_message);
 
   // This enum is designed to safely overlap with JSONReader::JsonParseError.
   enum JsonFileError {

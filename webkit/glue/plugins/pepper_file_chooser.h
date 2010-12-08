@@ -29,7 +29,7 @@ class FileChooser : public Resource {
   static const PPB_FileChooser_Dev* GetInterface();
 
   // Resource overrides.
-  FileChooser* AsFileChooser() { return this; }
+  virtual FileChooser* AsFileChooser();
 
   // Stores the list of selected files.
   void StoreChosenFiles(const std::vector<std::string>& files);

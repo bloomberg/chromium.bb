@@ -126,9 +126,9 @@ class KeywordProvider : public AutocompleteProvider,
   void MaybeEndExtensionKeywordMode();
 
   // NotificationObserver interface.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Model for the keywords.  This is only non-null when testing, otherwise the
   // TemplateURLModel from the Profile is used.

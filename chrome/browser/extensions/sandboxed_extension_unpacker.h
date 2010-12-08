@@ -122,9 +122,9 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   void StartProcessOnIOThread(const FilePath& temp_crx_path);
 
   // SandboxedExtensionUnpacker
-  void OnUnpackExtensionSucceeded(const DictionaryValue& manifest);
-  void OnUnpackExtensionFailed(const std::string& error_message);
-  void OnProcessCrashed();
+  virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest);
+  virtual void OnUnpackExtensionFailed(const std::string& error_message);
+  virtual void OnProcessCrashed();
 
   void ReportFailure(const std::string& message);
   void ReportSuccess();

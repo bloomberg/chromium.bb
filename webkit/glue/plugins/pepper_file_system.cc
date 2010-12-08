@@ -78,6 +78,10 @@ FileSystem::FileSystem(PluginInstance* instance, PP_FileSystemType_Dev type)
       opened_(false) {
 }
 
+FileSystem* FileSystem::AsFileSystem() {
+  return this;
+}
+
 const PPB_FileSystem_Dev* FileSystem::GetInterface() {
   return &ppb_filesystem;
 }

@@ -114,8 +114,8 @@ class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
   // The socket's libevent wrapper
   MessageLoopForIO::FileDescriptorWatcher watcher_;
   // Called by MessagePumpLibevent when the socket is ready to do I/O
-  void OnFileCanReadWithoutBlocking(int fd);
-  void OnFileCanWriteWithoutBlocking(int fd);
+  virtual void OnFileCanReadWithoutBlocking(int fd);
+  virtual void OnFileCanWriteWithoutBlocking(int fd);
 #endif
 
   SOCKET socket_;

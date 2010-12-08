@@ -129,8 +129,9 @@ class BookmarkStorage : public NotificationObserver,
   void FinishHistoryMigration();
 
   // NotificationObserver
-  void Observe(NotificationType type, const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Serializes the data and schedules save using ImportantFileWriter.
   // Returns true on successful serialization.

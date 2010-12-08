@@ -684,6 +684,14 @@ TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
   }
 }
 
+bool TaskManagerChildProcessResource::SupportNetworkUsage() const {
+  return network_usage_support_;
+}
+
+void TaskManagerChildProcessResource::SetSupportNetworkUsage() {
+  network_usage_support_ = true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerChildProcessResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////

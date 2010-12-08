@@ -22,7 +22,7 @@ class DatabaseModelWorker : public browser_sync::ModelSafeWorker {
   explicit DatabaseModelWorker() {}
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  void DoWorkAndWaitUntilDone(Callback0::Type* work);
+  virtual void DoWorkAndWaitUntilDone(Callback0::Type* work);
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_DB; }
   virtual bool CurrentThreadIsWorkThread();
 

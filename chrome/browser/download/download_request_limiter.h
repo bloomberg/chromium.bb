@@ -131,9 +131,9 @@ class DownloadRequestLimiter
 
    private:
     // NotificationObserver method.
-    void Observe(NotificationType type,
-                 const NotificationSource& source,
-                 const NotificationDetails& details);
+    virtual void Observe(NotificationType type,
+                         const NotificationSource& source,
+                         const NotificationDetails& details);
 
     // Notifies the callbacks as to whether the download is allowed or not.
     // Updates status_ appropriately.

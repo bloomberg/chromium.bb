@@ -265,6 +265,10 @@ const PPB_FileRef_Dev* FileRef::GetInterface() {
   return &ppb_fileref;
 }
 
+FileRef* FileRef::AsFileRef() {
+  return this;
+}
+
 std::string FileRef::GetName() const {
   if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL) {
     FilePath::StringType path = system_path_.value();

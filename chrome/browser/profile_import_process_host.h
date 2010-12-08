@@ -123,7 +123,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
 
   // Called by the external importer process to send messages back to the
   // ImportProcessClient.
-  void OnMessageReceived(const IPC::Message& message);
+  virtual void OnMessageReceived(const IPC::Message& message);
 
   // Overridden from BrowserChildProcessHost:
   virtual void OnProcessCrashed();

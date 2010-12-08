@@ -145,7 +145,7 @@ class WaitableEventWatcher
   // ---------------------------------------------------------------------------
   // Implementation of MessageLoop::DestructionObserver
   // ---------------------------------------------------------------------------
-  void WillDestroyCurrentMessageLoop();
+  virtual void WillDestroyCurrentMessageLoop();
 
   MessageLoop* message_loop_;
   scoped_refptr<Flag> cancel_flag_;

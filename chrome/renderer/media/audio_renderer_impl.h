@@ -61,13 +61,13 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
-  void OnRequestPacket(AudioBuffersState buffers_state);
-  void OnStateChanged(const ViewMsg_AudioStreamState_Params& state);
-  void OnCreated(base::SharedMemoryHandle handle, uint32 length);
-  void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                           base::SyncSocket::Handle socket_handle,
-                           uint32 length);
-  void OnVolume(double volume);
+  virtual void OnRequestPacket(AudioBuffersState buffers_state);
+  virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state);
+  virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length);
+  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
+                                   base::SyncSocket::Handle socket_handle,
+                                   uint32 length);
+  virtual void OnVolume(double volume);
 
   // Methods called on pipeline thread ----------------------------------------
   // media::Filter implementation.

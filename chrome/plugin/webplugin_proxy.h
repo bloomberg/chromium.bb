@@ -48,31 +48,30 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   void set_delegate(WebPluginDelegateImpl* d) { delegate_ = d; }
 
   // WebPlugin overrides
-  void SetWindow(gfx::PluginWindowHandle window);
+  virtual void SetWindow(gfx::PluginWindowHandle window);
 
   // Whether input events should be sent to the delegate.
-  virtual void SetAcceptsInputEvents(bool accepts) {
-    NOTREACHED();
-  }
+  virtual void SetAcceptsInputEvents(bool accepts);
 
-  void WillDestroyWindow(gfx::PluginWindowHandle window);
+  virtual void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event);
 #endif
 
-  void CancelResource(unsigned long id);
-  void Invalidate();
-  void InvalidateRect(const gfx::Rect& rect);
-  NPObject* GetWindowScriptNPObject();
-  NPObject* GetPluginElement();
-  void SetCookie(const GURL& url,
-                 const GURL& first_party_for_cookies,
-                 const std::string& cookie);
-  std::string GetCookies(const GURL& url, const GURL& first_party_for_cookies);
+  virtual void CancelResource(unsigned long id);
+  virtual void Invalidate();
+  virtual void InvalidateRect(const gfx::Rect& rect);
+  virtual NPObject* GetWindowScriptNPObject();
+  virtual NPObject* GetPluginElement();
+  virtual void SetCookie(const GURL& url,
+                         const GURL& first_party_for_cookies,
+                         const std::string& cookie);
+  virtual std::string GetCookies(const GURL& url,
+                                 const GURL& first_party_for_cookies);
 
-  void ShowModalHTMLDialog(const GURL& url, int width, int height,
-                           const std::string& json_arguments,
-                           std::string* json_retval);
+  virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
+                                   const std::string& json_arguments,
+                                   std::string* json_retval);
 
   // Called by gears over the CPAPI interface to verify that the given event is
   // the current (javascript) drag event the browser is dispatching, and return
@@ -81,7 +80,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
                    int32* event_id, std::string* type, std::string* data);
   bool SetDropEffect(struct NPObject* event, int effect);
 
-  void OnMissingPluginStatus(int status);
+  virtual void OnMissingPluginStatus(int status);
   // class-specific methods
 
   // Retrieves the browsing context associated with the renderer this plugin
@@ -114,14 +113,14 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   void OnResourceCreated(int resource_id,
                          webkit_glue::WebPluginResourceClient* client);
 
-  void HandleURLRequest(const char* url,
-                        const char* method,
-                        const char* target,
-                        const char* buf,
-                        unsigned int len,
-                        int notify_id,
-                        bool popups_allowed,
-                        bool notify_redirects);
+  virtual void HandleURLRequest(const char* url,
+                                const char* method,
+                                const char* target,
+                                const char* buf,
+                                unsigned int len,
+                                int notify_id,
+                                bool popups_allowed,
+                                bool notify_redirects);
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
                       const TransportDIB::Handle& windowless_buffer,
@@ -132,12 +131,12 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
                       int ack_key
 #endif
                       );
-  void CancelDocumentLoad();
-  void InitiateHTTPRangeRequest(
+  virtual void CancelDocumentLoad();
+  virtual void InitiateHTTPRangeRequest(
       const char* url, const char* range_info, int range_request_id);
-  void SetDeferResourceLoading(unsigned long resource_id, bool defer);
-  bool IsOffTheRecord();
-  void ResourceClientDeleted(
+  virtual void SetDeferResourceLoading(unsigned long resource_id, bool defer);
+  virtual bool IsOffTheRecord();
+  virtual void ResourceClientDeleted(
       webkit_glue::WebPluginResourceClient* resource_client);
   gfx::NativeViewId containing_window() { return containing_window_; }
 

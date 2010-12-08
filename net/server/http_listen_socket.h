@@ -44,8 +44,8 @@ class HttpListenSocket : public ListenSocket,
   void Send404();
   void Send500(const std::string& message);
 
-  void Close() { ListenSocket::Close(); }
-  void Listen() { ListenSocket::Listen(); }
+  virtual void Close() { ListenSocket::Close(); }
+  virtual void Listen() { ListenSocket::Listen(); }
 
   // ListenSocketDelegate
   virtual void DidAccept(ListenSocket* server, ListenSocket* connection);

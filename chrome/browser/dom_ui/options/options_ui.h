@@ -81,8 +81,8 @@ class OptionsUI : public DOMUI {
   virtual ~OptionsUI();
 
   static RefCountedMemory* GetFaviconResourceBytes();
-  void RenderViewCreated(RenderViewHost* render_view_host);
-  void DidBecomeActiveForReusedRenderView();
+  virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual void DidBecomeActiveForReusedRenderView();
 
   void InitializeHandlers();
 

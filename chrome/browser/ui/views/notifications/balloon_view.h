@@ -72,11 +72,11 @@ class BalloonViewImpl : public BalloonView,
   }
 
   // views::ViewMenuDelegate interface.
-  void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // views::WidgetDelegate interface.
-  void DisplayChanged();
-  void WorkAreaChanged();
+  virtual void DisplayChanged();
+  virtual void WorkAreaChanged();
 
   // views::ButtonListener interface.
   virtual void ButtonPressed(views::Button* sender, const views::Event&);

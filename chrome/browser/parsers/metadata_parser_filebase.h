@@ -27,7 +27,7 @@ class FileMetadataParser : public MetadataParser {
   virtual bool Parse();
   virtual bool GetProperty(const std::string& key, std::string* value);
 
-  MetadataPropertyIterator* GetPropertyIterator();
+  virtual MetadataPropertyIterator* GetPropertyIterator();
 
  protected:
   PropertyMap properties_;

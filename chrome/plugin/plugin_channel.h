@@ -30,7 +30,7 @@ class PluginChannel : public PluginChannelBase {
   // Send a message to all renderers that the process is going to shutdown.
   static void NotifyRenderersOfPendingShutdown();
 
-  ~PluginChannel();
+  virtual ~PluginChannel();
 
   virtual bool Send(IPC::Message* msg);
   virtual void OnMessageReceived(const IPC::Message& message);
@@ -38,7 +38,7 @@ class PluginChannel : public PluginChannelBase {
   base::ProcessHandle renderer_handle() const { return renderer_handle_; }
   int renderer_id() { return renderer_id_; }
 
-  int GenerateRouteID();
+  virtual int GenerateRouteID();
 
   // Returns the event that's set when a call to the renderer causes a modal
   // dialog to come up.
@@ -69,7 +69,7 @@ class PluginChannel : public PluginChannelBase {
   // Called on the plugin thread
   PluginChannel();
 
-  void OnControlMessageReceived(const IPC::Message& msg);
+  virtual void OnControlMessageReceived(const IPC::Message& msg);
 
   static PluginChannelBase* ClassFactory() { return new PluginChannel(); }
 

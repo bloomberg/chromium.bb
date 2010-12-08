@@ -55,9 +55,9 @@ class StatusBubbleGtk : public StatusBubble,
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
   // Overridden from NotificationObserver:
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Top of the widget hierarchy for a StatusBubble. This top level widget is
   // guarenteed to have its gtk_widget_name set to "status-bubble" for

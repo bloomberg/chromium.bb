@@ -81,6 +81,8 @@ const PPB_Buffer_Dev* Buffer::GetInterface() {
   return &ppb_buffer;
 }
 
+Buffer* Buffer::AsBuffer() { return this; }
+
 bool Buffer::Init(uint32_t size) {
   if (size == 0)
     return false;

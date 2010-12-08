@@ -52,7 +52,7 @@ class AudioImpl : public base::DelegateSimpleThread::Delegate {
   void StartThread();
 
   // DelegateSimpleThread::Delegate implementation. Run on the audio thread.
-  void Run();
+  virtual void Run();
 
   // True if playing the stream.
   bool playing_;

@@ -629,6 +629,11 @@ void ExtensionsService::InitEventRouters() {
   event_routers_initialized_ = true;
 }
 
+const Extension* ExtensionsService::GetExtensionById(const std::string& id,
+                                                     bool include_disabled) {
+  return GetExtensionByIdInternal(id, true, include_disabled);
+}
+
 void ExtensionsService::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

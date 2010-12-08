@@ -106,8 +106,8 @@ class FileBasedPolicyLoader : public FilePathWatcher::Delegate {
   const FilePath& config_file_path() { return delegate_->config_file_path(); }
 
   // FilePathWatcher::Delegate implementation:
-  void OnFilePathChanged(const FilePath& path);
-  void OnError();
+  virtual void OnFilePathChanged(const FilePath& path);
+  virtual void OnError();
 
  private:
   // FileBasedPolicyLoader objects should only be deleted by

@@ -27,7 +27,7 @@ class Widget : public Resource  {
   static const PPB_Widget_Dev* GetInterface();
 
   // Resource overrides.
-  Widget* AsWidget() { return this; }
+  virtual Widget* AsWidget();
 
   // PPB_Widget implementation.
   virtual bool Paint(const PP_Rect* rect, ImageData* image) = 0;

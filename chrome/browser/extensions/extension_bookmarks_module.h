@@ -179,8 +179,9 @@ class BookmarksIOFunction : public BookmarksFunction,
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params) = 0;
-  void MultiFilesSelected(const std::vector<FilePath>& files, void* params);
-  void FileSelectionCanceled(void* params);
+  virtual void MultiFilesSelected(const std::vector<FilePath>& files,
+                                  void* params);
+  virtual void FileSelectionCanceled(void* params);
   void SelectFile(SelectFileDialog::Type type);
 
  protected:
@@ -190,8 +191,8 @@ class BookmarksIOFunction : public BookmarksFunction,
 class ImportBookmarksFunction : public BookmarksIOFunction {
  public:
   // Override BookmarkManagerIOFunction.
-  bool RunImpl();
-  void FileSelected(const FilePath& path, int index, void* params);
+  virtual bool RunImpl();
+  virtual void FileSelected(const FilePath& path, int index, void* params);
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.import");
@@ -200,8 +201,8 @@ class ImportBookmarksFunction : public BookmarksIOFunction {
 class ExportBookmarksFunction : public BookmarksIOFunction {
  public:
   // Override BookmarkManagerIOFunction.
-  bool RunImpl();
-  void FileSelected(const FilePath& path, int index, void* params);
+  virtual bool RunImpl();
+  virtual void FileSelected(const FilePath& path, int index, void* params);
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.export");

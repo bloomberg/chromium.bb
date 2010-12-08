@@ -23,7 +23,7 @@ class FileSystem : public Resource {
   static const PPB_FileSystem_Dev* GetInterface();
 
   FileSystem(PluginInstance* instance, PP_FileSystemType_Dev type);
-  FileSystem* AsFileSystem() { return this; }
+  virtual FileSystem* AsFileSystem();
 
   PluginInstance* instance() { return instance_; }
   PP_FileSystemType_Dev type() { return type_; }

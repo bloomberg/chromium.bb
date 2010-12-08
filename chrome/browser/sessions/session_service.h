@@ -347,7 +347,7 @@ class SessionService : public BaseSessionService,
 
   // Schedules the specified command. This method takes ownership of the
   // command.
-  void ScheduleCommand(SessionCommand* command);
+  virtual void ScheduleCommand(SessionCommand* command);
 
   // Converts all pending tab/window closes to commands and schedules them.
   void CommitPendingCloses();

@@ -109,9 +109,9 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
   // NotificationObserver implementation. Called when TemplateURLModel has been
   // loaded.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // ShowWarningDialog() asks user to close the application that is owning the
   // lock. They can retry or skip the importing process.

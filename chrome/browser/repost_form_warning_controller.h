@@ -32,9 +32,9 @@ class RepostFormWarningController : public NotificationObserver {
  private:
   // NotificationObserver implementation.
   // Watch for a new load or a closed tab and dismiss the dialog if they occur.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Close the warning dialog.
   void CloseDialog();

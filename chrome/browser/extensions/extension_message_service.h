@@ -134,9 +134,9 @@ class ExtensionMessageService
                         bool notify_other_port);
 
   // NotificationObserver interface.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // An IPC sender that might be in our list of channels has closed.
   void OnSenderClosed(IPC::Message::Sender* sender);

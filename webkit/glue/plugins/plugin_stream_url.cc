@@ -106,6 +106,14 @@ void PluginStreamUrl::DidFail() {
   Close(NPRES_NETWORK_ERR);
 }
 
+bool PluginStreamUrl::IsMultiByteResponseExpected() {
+  return seekable();
+}
+
+int PluginStreamUrl::ResourceId() {
+  return id_;
+}
+
 void PluginStreamUrl::CancelRequest() {
   if (id_ > 0) {
     if (instance()->webplugin()) {

@@ -30,7 +30,7 @@ class URLRequestInfo : public Resource {
   static const PPB_URLRequestInfo* GetInterface();
 
   // Resource overrides.
-  URLRequestInfo* AsURLRequestInfo() { return this; }
+  virtual URLRequestInfo* AsURLRequestInfo();
 
   // PPB_URLRequestInfo implementation.
   bool SetBooleanProperty(PP_URLRequestProperty property, bool value);

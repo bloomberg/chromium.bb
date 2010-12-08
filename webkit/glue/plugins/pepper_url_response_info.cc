@@ -92,6 +92,10 @@ const PPB_URLResponseInfo* URLResponseInfo::GetInterface() {
   return &ppb_urlresponseinfo;
 }
 
+URLResponseInfo* URLResponseInfo::AsURLResponseInfo() {
+  return this;
+}
+
 PP_Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) {
   switch (property) {
     case PP_URLRESPONSEPROPERTY_URL:

@@ -119,6 +119,10 @@ const PPB_FileChooser_Dev* FileChooser::GetInterface() {
   return &ppb_filechooser;
 }
 
+FileChooser* FileChooser::AsFileChooser() {
+  return this;
+}
+
 void FileChooser::StoreChosenFiles(const std::vector<std::string>& files) {
   next_chosen_file_index_ = 0;
   std::vector<std::string>::const_iterator end_it = files.end();
