@@ -460,11 +460,7 @@ bool LocationBarViewGtk::OnCommitSuggestedText(
   if (!instant)
     return false;
 
-  bool updating_instant = update_instant_;
-  update_instant_ = false;
-  bool rv = location_entry_->CommitInstantSuggestion();
-  update_instant_ = updating_instant;
-  return rv;
+  return location_entry_->CommitInstantSuggestion();
 }
 
 bool LocationBarViewGtk::AcceptCurrentInstantPreview() {
@@ -551,7 +547,7 @@ void LocationBarViewGtk::OnChanged() {
           WideToUTF16(location_entry_->GetText()),
           location_entry_->model()->UseVerbatimInstant(),
           &suggested_text);
-      if (!instant->IsShowingInstant())
+      if (!instant->MightSupportInstant())
         location_entry_->model()->FinalizeInstantQuery(std::wstring());
     } else {
       instant->DestroyPreviewContents();

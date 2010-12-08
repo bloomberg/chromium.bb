@@ -321,6 +321,11 @@ bool InstantController::IsShowingInstant() {
       loader_manager_->current_loader()->is_showing_instant();
 }
 
+bool InstantController::MightSupportInstant() {
+  return loader_manager_.get() &&
+      loader_manager_->active_loader()->is_showing_instant();
+}
+
 void InstantController::ShowInstantLoader(InstantLoader* loader) {
   DCHECK(loader_manager_.get());
   if (loader_manager_->current_loader() == loader) {

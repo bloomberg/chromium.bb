@@ -68,7 +68,7 @@ gfx::Rect ContentsContainer::GetPreviewBounds() {
 }
 
 void ContentsContainer::FadeActiveContents() {
-  if (active_overlay_)
+  if (active_overlay_ || !Animation::ShouldRenderRichAnimation())
     return;
 
 #if !defined(OS_WIN)

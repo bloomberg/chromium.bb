@@ -162,8 +162,22 @@ class InstantController : public InstantLoaderDelegate {
     return last_transition_type_;
   }
 
-  // Are we showing instant results?
+  // Returns true if we're showing results from a provider that supports the
+  // instant API. See description of |MightSupportInstant| for how this
+  // differs from actual loading state.
   bool IsShowingInstant();
+
+  // Returns true if we're attempting to use the instant API with the last URL
+  // passed to |Update|. The value of this may change if it turns the provider
+  // doesn't really support the instant API.
+  // The value of |IsShowingInstant| indicates whether what is currently
+  // displayed supports instant, whereas this returns the loading state.  The
+  // state of |IsShowingInstant| differs when transitioning from a non-search
+  // provider to a search provider that supports instant (or the other way
+  // around). For example, if |Update| is passed www.foo.com, followed by a
+  // search string then this returns true, but |IsShowingInstant| returns false
+  // (until the search provider loads, then both return true).
+  bool MightSupportInstant();
 
   // InstantLoaderDelegate
   virtual void ShowInstantLoader(InstantLoader* loader);

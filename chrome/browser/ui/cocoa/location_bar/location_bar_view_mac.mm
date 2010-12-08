@@ -324,7 +324,7 @@ void LocationBarViewMac::OnChanged() {
            WideToUTF16(edit_view_->GetText()),
            edit_view_->model()->UseVerbatimInstant(),
            &suggested_text);
-      if (!instant->IsShowingInstant())
+      if (!instant->MightSupportInstant())
         edit_view_->model()->FinalizeInstantQuery(std::wstring());
     } else {
       instant->DestroyPreviewContents();

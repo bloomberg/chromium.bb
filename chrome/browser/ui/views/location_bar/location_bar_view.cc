@@ -852,7 +852,7 @@ void LocationBarView::OnChanged() {
                       WideToUTF16(location_entry_->GetText()),
                       location_entry_->model()->UseVerbatimInstant(),
                       &suggested_text);
-      if (!instant->IsShowingInstant())
+      if (!instant->MightSupportInstant())
         location_entry_->model()->FinalizeInstantQuery(std::wstring());
     } else {
       instant->DestroyPreviewContents();
