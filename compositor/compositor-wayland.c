@@ -95,7 +95,7 @@ wayland_input_create(struct wayland_compositor *c)
 	memset(input, 0, sizeof *input);
 	wlsc_input_device_init(input, &c->base);
 
-	c->base.input_device = input;
+	c->base.input_device = &input->input_device;
 
 	return 0;
 }

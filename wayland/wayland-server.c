@@ -327,12 +327,17 @@ lose_keyboard_focus(struct wl_listener *listener,
 }
 
 WL_EXPORT void
-wl_input_device_init(struct wl_input_device *device)
+wl_input_device_init(struct wl_input_device *device,
+		     struct wl_compositor *compositor)
 {
 	wl_list_init(&device->pointer_focus_listener.link);
 	device->pointer_focus_listener.func = lose_pointer_focus;
 	wl_list_init(&device->keyboard_focus_listener.link);
 	device->keyboard_focus_listener.func = lose_keyboard_focus;
+
+	device->x = 100;
+	device->y = 100;
+	device->compositor = compositor;
 }
 
 WL_EXPORT void

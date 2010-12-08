@@ -129,17 +129,6 @@ struct wl_shell {
 	struct wl_object object;
 };
 
-struct wl_input_device {
-	struct wl_object object;
-	struct wl_surface *pointer_focus;
-	struct wl_surface *keyboard_focus;
-	struct wl_array keys;
-	uint32_t pointer_focus_time;
-	uint32_t keyboard_focus_time;
-	struct wl_listener pointer_focus_listener;
-	struct wl_listener keyboard_focus_listener;
-};
-
 struct wl_visual {
 	struct wl_object object;
 };
@@ -156,6 +145,25 @@ struct wl_grab {
 	struct wl_input_device *input_device;
 };
 
+struct wl_input_device {
+	struct wl_object object;
+	struct wl_compositor *compositor;
+	struct wl_surface *pointer_focus;
+	struct wl_surface *keyboard_focus;
+	struct wl_array keys;
+	uint32_t pointer_focus_time;
+	uint32_t keyboard_focus_time;
+	struct wl_listener pointer_focus_listener;
+	struct wl_listener keyboard_focus_listener;
+
+	int32_t x, y;
+	struct wl_grab *grab;
+	struct wl_grab motion_grab;
+	uint32_t grab_time;
+	int32_t grab_x, grab_y;
+	uint32_t grab_button;
+	struct wl_listener grab_listener;
+};
 
 struct wl_drag_offer {
 	struct wl_object object;
@@ -199,7 +207,8 @@ void
 wl_resource_destroy(struct wl_resource *resource, struct wl_client *client);
 
 void
-wl_input_device_init(struct wl_input_device *device);
+wl_input_device_init(struct wl_input_device *device,
+		     struct wl_compositor *compositor);
 
 void
 wl_input_device_set_pointer_focus(struct wl_input_device *device,

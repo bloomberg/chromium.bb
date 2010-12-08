@@ -92,7 +92,7 @@ x11_input_create(struct x11_compositor *c)
 	memset(input, 0, sizeof *input);
 	wlsc_input_device_init(&input->base, &c->base);
 
-	c->base.input_device = &input->base;
+	c->base.input_device = &input->base.input_device;
 
 	return 0;
 }

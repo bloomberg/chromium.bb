@@ -83,20 +83,10 @@ enum wlsc_pointer_type {
 
 struct wlsc_input_device {
 	struct wl_input_device input_device;
-	int32_t x, y;
-	struct wlsc_compositor *ec;
 	struct wlsc_surface *sprite;
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
-
 	uint32_t modifier_state;
-
-	struct wl_grab *grab;
-	struct wl_grab motion_grab;
-	uint32_t grab_time;
-	int32_t grab_x, grab_y;
-	uint32_t grab_button;
-	struct wl_listener grab_listener;
 };
 
 struct wlsc_drm {
@@ -137,7 +127,7 @@ struct wlsc_compositor {
 	struct wl_shell shell;
 
 	/* There can be more than one, but not right now... */
-	struct wlsc_input_device *input_device;
+	struct wl_input_device *input_device;
 
 	struct wl_list output_list;
 	struct wl_list input_device_list;
@@ -177,13 +167,13 @@ struct wlsc_surface {
 };
 
 void
-notify_motion(struct wlsc_input_device *device,
+notify_motion(struct wl_input_device *device,
 	      uint32_t time, int x, int y);
 void
-notify_button(struct wlsc_input_device *device,
+notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, int32_t state);
 void
-notify_key(struct wlsc_input_device *device,
+notify_key(struct wl_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state);
 
 void

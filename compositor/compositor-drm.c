@@ -85,15 +85,16 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 	int x, y;
 	uint32_t time;
 
-	c = (struct drm_compositor *) device->master->base.ec;
+	c = (struct drm_compositor *)
+		device->master->base.input_device.compositor;
 	if (!c->vt_active)
 		return;
 
 	dx = 0;
 	dy = 0;
 	absolute_event = 0;
-	x = device->master->base.x;
-	y = device->master->base.y;
+	x = device->master->base.input_device.x;
+	y = device->master->base.input_device.y;
 
 	len = read(fd, &ev, sizeof ev);
 	if (len < 0 || len % sizeof e[0] != 0) {
@@ -170,12 +171,12 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 			case BTN_FORWARD:
 			case BTN_BACK:
 			case BTN_TASK:
-				notify_button(&device->master->base,
+				notify_button(&device->master->base.input_device,
 					      time, e->code, value);
 				break;
 
 			default:
-				notify_key(&device->master->base,
+				notify_key(&device->master->base.input_device,
 					   time, e->code, value);
 				break;
 			}
@@ -183,9 +184,10 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 	}
 
 	if (dx != 0 || dy != 0)
-		notify_motion(&device->master->base, time, x + dx, y + dy);
+		notify_motion(&device->master->base.input_device,
+			      time, x + dx, y + dy);
 	if (absolute_event && device->tool)
-		notify_motion(&device->master->base, time, x, y);
+		notify_motion(&device->master->base.input_device, time, x, y);
 }
 
 static struct evdev_input_device *
@@ -252,7 +254,7 @@ drm_input_create(struct drm_compositor *c)
 	}
         udev_enumerate_unref(e);
 
-	c->base.input_device = &input->base;
+	c->base.input_device = &input->base.input_device;
 }
 
 static void
