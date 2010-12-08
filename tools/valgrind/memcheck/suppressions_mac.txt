@@ -1162,3 +1162,14 @@
    fun:_ZN4base16MessageLoopProxy22CreateForCurrentThreadEv
    fun:_ZN3net12CertVerifier7RequestC2EPS0_PNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
 }
+{
+   bug_65940
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncChannelC2ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEP11MessageLoopbPN4base13WaitableEventE
+   fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEP11MessageLoopbPN4base13WaitableEventE
+   fun:_ZN11ChildThread4InitEv
+   fun:_ZN11ChildThreadC2Ev
+   fun:_ZN13UtilityThreadC2Ev
+   fun:_ZN13UtilityThreadC1Ev
+}
