@@ -243,7 +243,12 @@ STDMETHODIMP AsyncTabCall::Begin_GetTabInfo() {
   // We do all the work on Finish_GetTabInfo, so schedule only a noop
   // invocation. Alternatively we could schedule NULL here, though that
   // would make it more difficult to distinguish error cases.
-  return ScheduleTask(NewRunnableFunction(Noop));
+  if (!ScheduleTask(NewRunnableFunction(Noop))) {
+    LOG(ERROR) << "Failed to schedule Noop task";
+    return E_OUTOFMEMORY;
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP AsyncTabCall::Finish_GetTabInfo(CeeeTabInfo *tab_info) {
