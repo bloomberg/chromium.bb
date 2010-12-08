@@ -15,8 +15,6 @@ class NotificationsTest(pyauto.PyUITest):
   def __init__(self, methodName='runTest'):
     super(NotificationsTest, self).__init__(methodName)
     self.NO_SUCH_URL = 'http://no_such_url_exists/'
-    self.NO_SUCH_URL2 = 'http://no_such_url_exists2/'
-    self.NO_SUCH_URL3 = 'http://no_such_url_exists3/'
     # Content settings for default notification permission.
     self.ALLOW_ALL_SETTING = 1
     self.DENY_ALL_SETTING = 2
@@ -514,15 +512,16 @@ class NotificationsTest(pyauto.PyUITest):
     """
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL2)
-    self._CreateHTMLNotification(self.NO_SUCH_URL3)
+    self._CreateSimpleNotification('', 'Title1', '')
+    self._CreateSimpleNotification('', 'Title2', '')
+    self._CreateSimpleNotification('', 'Title3', '')
     self.assertEquals(3, len(self.GetActiveNotifications()))
+    old_notifications = self.GetActiveNotifications()
     self.CloseNotification(1)
     self.assertEquals(2, len(self.GetActiveNotifications()))
-    notifications = self.GetActiveNotifications()
-    self.assertEquals(self.NO_SUCH_URL, notifications[0]['content_url'])
-    self.assertEquals(self.NO_SUCH_URL3, notifications[1]['content_url'])
+    new_notifications = self.GetActiveNotifications()
+    self.assertEquals(old_notifications[0], new_notifications[0])
+    self.assertEquals(old_notifications[2], new_notifications[1])
 
   def testNotificationReplacement(self):
     """Test that we can replace a notification using the replaceId."""
