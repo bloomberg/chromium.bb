@@ -246,7 +246,7 @@ LinuxDumper::ElfFileIdentifierForMapping(unsigned int mapping_id,
 
 void*
 LinuxDumper::FindBeginningOfLinuxGateSharedLibrary(const pid_t pid) const {
-  char auxv_path[80];
+  char auxv_path[NAME_MAX];
   BuildProcPath(auxv_path, pid, "auxv");
 
   // If BuildProcPath errors out due to invalid input, we'll handle it when
@@ -276,7 +276,7 @@ LinuxDumper::FindBeginningOfLinuxGateSharedLibrary(const pid_t pid) const {
 
 bool
 LinuxDumper::EnumerateMappings(wasteful_vector<MappingInfo*>* result) const {
-  char maps_path[80];
+  char maps_path[NAME_MAX];
   BuildProcPath(maps_path, pid_, "maps");
 
   // linux_gate_loc is the beginning of the kernel's mapping of
@@ -338,7 +338,7 @@ LinuxDumper::EnumerateMappings(wasteful_vector<MappingInfo*>* result) const {
 // Parse /proc/$pid/task to list all the threads of the process identified by
 // pid.
 bool LinuxDumper::EnumerateThreads(wasteful_vector<pid_t>* result) const {
-  char task_path[80];
+  char task_path[NAME_MAX];
   BuildProcPath(task_path, pid_, "task");
 
   const int fd = sys_open(task_path, O_RDONLY | O_DIRECTORY, 0);
@@ -373,7 +373,7 @@ bool LinuxDumper::EnumerateThreads(wasteful_vector<pid_t>* result) const {
 // available.
 bool LinuxDumper::ThreadInfoGet(pid_t tid, ThreadInfo* info) {
   assert(info != NULL);
-  char status_path[80];
+  char status_path[NAME_MAX];
   BuildProcPath(status_path, tid, "status");
 
   const int fd = open(status_path, O_RDONLY);

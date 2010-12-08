@@ -1216,12 +1216,8 @@ class MinidumpWriter {
 
   bool WriteProcFile(MDLocationDescriptor* result, pid_t pid,
                      const char* filename) {
-    char buf[80];
-    memcpy(buf, "/proc/", 6);
-    const unsigned pid_len = my_int_len(pid);
-    my_itos(buf + 6, pid, pid_len);
-    buf[6 + pid_len] = '/';
-    memcpy(buf + 6 + pid_len + 1, filename, my_strlen(filename) + 1);
+    char buf[NAME_MAX];
+    dumper_.BuildProcPath(buf, pid, filename);
     return WriteFile(result, buf);
   }
 

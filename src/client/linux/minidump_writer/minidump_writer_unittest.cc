@@ -66,6 +66,8 @@ TEST(MinidumpWriterTest, Setup) {
 
   char templ[] = TEMPDIR "/minidump-writer-unittest-XXXXXX";
   mktemp(templ);
+  // Set a non-zero tid to avoid tripping asserts.
+  context.tid = 1;
   ASSERT_TRUE(WriteMinidump(templ, child, &context, sizeof(context)));
   struct stat st;
   ASSERT_EQ(stat(templ, &st), 0);
