@@ -1560,8 +1560,16 @@ void ExtensionsService::OnExtensionLoaded(const Extension* extension) {
   if (disabled_extension_paths_.erase(extension->id()) > 0)
     EnableExtension(extension->id());
 
-  // Check if the extension's privileges have changed and disable the extension
-  // if necessary.
+  // TODO(jstritar): We may be able to get rid of this branch by overriding the
+  // default extension state to DISABLED when the --disable-extensions flag
+  // is set (http://crbug.com/29067).
+  if (!extensions_enabled() &&
+      !extension->is_theme() &&
+      extension->location() != Extension::COMPONENT)
+    return;
+
+  // Check if the extension's privileges have changed and disable the
+  // extension if necessary.
   DisableIfPrivilegeIncrease(extension);
 
   switch (extension_prefs_->GetExtensionState(extension->id())) {

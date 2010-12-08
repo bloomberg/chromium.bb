@@ -55,14 +55,16 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     extensions_dir_ = profile_dir.AppendASCII("Extensions");
 
     if (enable_extensions_) {
-      FilePath src_dir;
-      PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
-      src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
+      if (load_extension_.empty()) {
+        FilePath src_dir;
+        PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
+        src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
 
-      file_util::CopyFile(src_dir.AppendASCII("Preferences"),
-                          preferences_file_);
-      file_util::CopyDirectory(src_dir.AppendASCII("Extensions"),
-                               profile_dir, true);  // recursive
+        file_util::CopyFile(src_dir.AppendASCII("Preferences"),
+                            preferences_file_);
+        file_util::CopyDirectory(src_dir.AppendASCII("Extensions"),
+                                 profile_dir, true);  // recursive
+      }
     } else {
       command_line->AppendSwitch(switches::kDisableExtensions);
     }
@@ -187,6 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
 class ExtensionsLoadTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadTest() {
+    enable_extensions_ = true;
     PathService::Get(chrome::DIR_TEST_DATA, &load_extension_);
     load_extension_ = load_extension_
         .AppendASCII("extensions")
@@ -198,6 +201,6 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
-  WaitForServicesToStart(1, false);
+  WaitForServicesToStart(1, true);
   TestInjection(true, true);
 }

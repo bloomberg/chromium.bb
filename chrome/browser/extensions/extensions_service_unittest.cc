@@ -2459,6 +2459,44 @@ TEST_F(ExtensionsServiceTest, DisableExtension) {
   EXPECT_FALSE(service_->disabled_extensions()->empty());
 }
 
+// Tests disabling all extensions (simulating --disable-extensions flag).
+TEST_F(ExtensionsServiceTest, DisableAllExtensions) {
+  InitializeEmptyExtensionsService();
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  InstallExtension(path, true);
+
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  // Disable extensions.
+  service_->set_extensions_enabled(false);
+  service_->ReloadExtensions();
+
+  // There shouldn't be extensions in either list.
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  // This shouldn't do anything when all extensions are disabled.
+  service_->EnableExtension(good_crx);
+  service_->ReloadExtensions();
+
+  // There still shouldn't be extensions in either list.
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  // And then re-enable the extensions.
+  service_->set_extensions_enabled(true);
+  service_->ReloadExtensions();
+
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+}
+
 // Tests reloading extensions
 TEST_F(ExtensionsServiceTest, ReloadExtensions) {
   InitializeEmptyExtensionsService();
@@ -2854,9 +2892,7 @@ void ExtensionsServiceTest::TestExternalProvider(
 // Tests the external installation feature
 #if defined(OS_WIN)
 TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
-  // This should all work, even when normal extension installation is disabled.
   InitializeEmptyExtensionsService();
-  set_extensions_enabled(false);
 
   // Now add providers. Extension system takes ownership of the objects.
   MockExtensionProvider* reg_provider =
@@ -2867,9 +2903,7 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
 #endif
 
 TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
-  // This should all work, even when normal extension installation is disabled.
   InitializeEmptyExtensionsService();
-  set_extensions_enabled(false);
 
   // Now add providers. Extension system takes ownership of the objects.
   MockExtensionProvider* pref_provider =
@@ -2880,9 +2914,7 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
 }
 
 TEST_F(ExtensionsServiceTest, ExternalInstallPrefUpdateUrl) {
-  // This should all work, even when normal extension installation is disabled.
   InitializeEmptyExtensionsService();
-  set_extensions_enabled(false);
 
   // TODO(skerner): The mock provider is not a good model of a provider
   // that works with update URLs, because it adds file and version info.
