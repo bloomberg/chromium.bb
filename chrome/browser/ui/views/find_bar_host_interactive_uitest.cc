@@ -85,6 +85,7 @@ bool ChromeInForeground() {
   EXPECT_TRUE(chrome_window_in_foreground)
       << "Chrome must be in the foreground when running interactive tests\n"
       << "Process in foreground: " << filename.c_str() << "\n"
+      << "Window: " << window << "\n"
       << "Caption: " << caption.c_str();
   return chrome_window_in_foreground;
 #else
@@ -261,7 +262,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.
-  ASSERT_TRUE(ChromeInForeground());
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  EXPECT_TRUE(ChromeInForeground());
 
   // First we navigate to any page.
   Checkpoint("Navigating", start_time);
