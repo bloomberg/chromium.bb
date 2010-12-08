@@ -674,18 +674,6 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   verticalShift += AutoSizeGroup(basicsGroupDefaultBrowser_,
                                  kAutoSizeGroupBehaviorVerticalFirstToFit,
                                  verticalShift);
-  // TODO(rsesek/rohitrao): This is ugly, when the instant experiement is no
-  // longer displayed, please remove this code, the NSTextField and IBOutlet
-  // needed.
-  DCHECK(instantExperiment_ != nil);
-  if (verticalShift) {
-    // If the default browser moved things up, move the experiment field up
-    // also, it is not in the SearchEngine group due to its position on screen.
-    NSPoint origin = [instantExperiment_ frame].origin;
-    origin.y += verticalShift;
-    [instantExperiment_ setFrameOrigin:origin];
-  }
-  // End TODO
   verticalShift += AutoSizeGroup(basicsGroupSearchEngine_,
                                  kAutoSizeGroupBehaviorFirstTwoAsRowVerticalToFit,
                                  verticalShift);
@@ -1254,8 +1242,6 @@ enum { kHomepageNewTabPage, kHomepageURL };
   bool enabled = instantEnabled_.GetValue();
   NSInteger state = enabled ? NSOnState : NSOffState;
   [instantCheckbox_ setState:state];
-
-  [instantExperiment_ setStringValue:@""];
 }
 
 - (IBAction)learnMoreAboutInstant:(id)sender {
