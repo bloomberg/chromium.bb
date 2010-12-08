@@ -113,6 +113,10 @@ InstantLoader* InstantLoaderManager::ReleaseCurrentLoader() {
 }
 
 void InstantLoaderManager::DestroyLoader(InstantLoader* loader) {
+  delete ReleaseLoader(loader);
+}
+
+InstantLoader* InstantLoaderManager::ReleaseLoader(InstantLoader* loader) {
   DCHECK(loader == current_loader_ || loader == pending_loader_ ||
          (loader->template_url_id() &&
           instant_loaders_.find(loader->template_url_id()) !=
@@ -126,7 +130,7 @@ void InstantLoaderManager::DestroyLoader(InstantLoader* loader) {
 
   RemoveLoaderFromInstant(loader);
 
-  delete loader;
+  return loader;
 }
 
 void InstantLoaderManager::RemoveLoaderFromInstant(InstantLoader* loader) {

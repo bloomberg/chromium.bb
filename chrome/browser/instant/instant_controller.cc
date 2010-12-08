@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -29,6 +30,9 @@
 // Number of ms to delay between loading urls.
 static const int kUpdateDelayMS = 200;
 
+// static
+InstantController::HostBlacklist* InstantController::host_blacklist_ = NULL;
+
 InstantController::InstantController(Profile* profile,
                                      InstantDelegate* delegate)
     : delegate_(delegate),
@@ -36,6 +40,7 @@ InstantController::InstantController(Profile* profile,
       is_active_(false),
       commit_on_mouse_up_(false),
       last_transition_type_(PageTransition::LINK),
+      ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)),
       type_(FIRST_TYPE) {
   bool enabled = GetType(profile, &type_);
   DCHECK(enabled);
@@ -286,8 +291,12 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
   if (!loader_manager_.get())
     return NULL;
 
-  scoped_ptr<InstantLoader> loader(loader_manager_->ReleaseCurrentLoader());
-  TabContentsWrapper* tab = loader->ReleasePreviewContents(type);
+  // Loader may be null if the url blacklisted instant.
+  scoped_ptr<InstantLoader> loader;
+  if (loader_manager_->current_loader())
+    loader.reset(loader_manager_->ReleaseCurrentLoader());
+  TabContentsWrapper* tab = loader.get() ?
+      loader->ReleasePreviewContents(type) : NULL;
 
   ClearBlacklist();
   is_active_ = false;
@@ -383,6 +392,32 @@ void InstantController::InstantLoaderDoesntSupportInstant(
   }
 }
 
+void InstantController::AddToBlacklist(InstantLoader* loader, const GURL& url) {
+  std::string host = url.host();
+  if (host.empty())
+    return;
+
+  if (!host_blacklist_)
+    host_blacklist_ = new HostBlacklist;
+  host_blacklist_->insert(host);
+
+  if (!loader_manager_.get())
+    return;
+
+  // Because of the state of the stack we can't destroy the loader now.
+  ScheduleDestroy(loader);
+
+  loader_manager_->ReleaseLoader(loader);
+  if (is_active_ &&
+      (!loader_manager_->active_loader() ||
+       !loader_manager_->current_loader()->ready())) {
+    // Hide instant. When the pending loader finishes loading we'll go active
+    // again.
+    is_active_ = false;
+    delegate_->HideInstant();
+  }
+}
+
 bool InstantController::ShouldUpdateNow(TemplateURLID instant_id,
                                         const GURL& url) {
   DCHECK(loader_manager_.get());
@@ -472,6 +507,10 @@ bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match,
   if (match.template_url && match.template_url->IsExtensionKeyword())
     return false;
 
+  // Was the host blacklisted?
+  if (host_blacklist_ && host_blacklist_->count(match.destination_url.host()))
+    return false;
+
   return true;
 }
 
@@ -485,6 +524,19 @@ bool InstantController::IsBlacklistedFromInstant(TemplateURLID id) {
 
 void InstantController::ClearBlacklist() {
   blacklisted_ids_.clear();
+}
+
+void InstantController::ScheduleDestroy(InstantLoader* loader) {
+  loaders_to_destroy_.push_back(loader);
+  if (destroy_factory_.empty()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, destroy_factory_.NewRunnableMethod(
+            &InstantController::DestroyLoaders));
+  }
+}
+
+void InstantController::DestroyLoaders() {
+  loaders_to_destroy_.reset();
 }
 
 const TemplateURL* InstantController::GetTemplateURL(

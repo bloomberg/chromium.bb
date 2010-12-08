@@ -37,11 +37,21 @@
 #include "chrome/common/renderer_preferences.h"
 #include "gfx/codec/png_codec.h"
 #include "ipc/ipc_message.h"
+#include "net/http/http_util.h"
 
 namespace {
+
 // Number of ms to delay before updating the omnibox bounds. This is a bit long
 // as updating the bounds ends up being quite expensive.
 const int kUpdateBoundsDelayMS = 500;
+
+// If this status code is seen instant is disabled for the specified host.
+const int kHostBlacklistStatusCode = 403;
+
+// Header and value set for all loads.
+const char kPreviewHeader[] = "X-Purpose:";
+const char kPreviewHeaderValue[] = "preview";
+
 }  // namespace
 
 // FrameLoadObserver is responsible for determining if the page supports
@@ -234,6 +244,12 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
       paint_observer_ = new PaintObserverImpl(this,
           source->GetRenderWidgetHostView()->GetRenderWidgetHost());
     }
+  }
+  virtual std::string GetNavigationHeaders(const GURL& url) {
+    std::string header;
+    net::HttpUtil::AppendHeaderIfMissing(kPreviewHeader, kPreviewHeaderValue,
+                                         &header);
+    return header;
   }
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
@@ -694,13 +710,22 @@ void InstantLoader::Observe(NotificationType type,
                             const NotificationDetails& details) {
 #if defined(OS_MACOSX)
   if (type.value == NotificationType::RENDER_VIEW_HOST_CHANGED) {
-      if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
-        preview_contents_->tab_contents()->GetRenderWidgetHostView()->
-            SetTakesFocusOnlyOnMouseDown(true);
-      }
-      return;
+    if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
+      preview_contents_->tab_contents()->GetRenderWidgetHostView()->
+          SetTakesFocusOnlyOnMouseDown(true);
+    }
+    return;
   }
 #endif
+  if (type.value == NotificationType::NAV_ENTRY_COMMITTED) {
+    NavigationController::LoadCommittedDetails* load_details =
+        Details<NavigationController::LoadCommittedDetails>(details).ptr();
+    if (load_details->is_main_frame &&
+        load_details->http_status_code == kHostBlacklistStatusCode) {
+      delegate_->AddToBlacklist(this, load_details->entry->url());
+    }
+    return;
+  }
 
   NOTREACHED() << "Got a notification we didn't register for.";
 }
@@ -790,6 +815,11 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
       NotificationType::RENDER_VIEW_HOST_CHANGED,
       Source<NavigationController>(&preview_contents_->controller()));
 #endif
+
+  registrar_.Add(
+      this,
+      NotificationType::NAV_ENTRY_COMMITTED,
+      Source<NavigationController>(&preview_contents_->controller()));
 
   preview_contents_->tab_contents()->ShowContents();
 }

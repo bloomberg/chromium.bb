@@ -43,6 +43,9 @@ class InstantLoaderDelegate {
                                                  bool needs_reload,
                                                  const GURL& url_to_load) = 0;
 
+  // Adds the specified url to the set of urls instant won't prefetch for.
+  virtual void AddToBlacklist(InstantLoader* loader, const GURL& url) = 0;
+
  protected:
   virtual ~InstantLoaderDelegate() {}
 };

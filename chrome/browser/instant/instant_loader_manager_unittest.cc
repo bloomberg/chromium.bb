@@ -35,6 +35,9 @@ class InstantLoaderDelegateImpl : public InstantLoaderDelegate {
                                                  const GURL& url_to_load) {
   }
 
+  virtual void AddToBlacklist(InstantLoader* loader, const GURL& url) {
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantLoaderDelegateImpl);
 };

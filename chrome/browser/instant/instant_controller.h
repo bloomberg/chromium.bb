@@ -11,7 +11,9 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_vector.h"
 #include "base/string16.h"
+#include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
@@ -23,6 +25,7 @@
 
 struct AutocompleteMatch;
 class InstantDelegate;
+class InstantLoader;
 class InstantLoaderManager;
 class PrefService;
 class Profile;
@@ -172,8 +175,12 @@ class InstantController : public InstantLoaderDelegate {
   virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
                                                  bool needs_reload,
                                                  const GURL& url_to_load);
+  virtual void AddToBlacklist(InstantLoader* loader, const GURL& url);
+
 
  private:
+  typedef std::set<std::string> HostBlacklist;
+
   // Returns true if we should update immediately.
   bool ShouldUpdateNow(TemplateURLID instant_id, const GURL& url);
 
@@ -206,6 +213,16 @@ class InstantController : public InstantLoaderDelegate {
 
   // Clears the set of search engines blacklisted.
   void ClearBlacklist();
+
+  // Deletes |loader| after a delay. At the time we determine a site doesn't
+  // want to participate in instant we can't destroy the loader (because
+  // destroying the loader destroys the TabContents and the TabContents is on
+  // the stack). Instead we place the loader in |loaders_to_destroy_| and
+  // schedule a task.
+  void ScheduleDestroy(InstantLoader* loader);
+
+  // Destroys all loaders scheduled for destruction in |ScheduleForDestroy|.
+  void DestroyLoaders();
 
   // Returns the TemplateURL to use for the specified AutocompleteMatch, or
   // NULL if there is no TemplateURL for |match|.
@@ -247,10 +264,20 @@ class InstantController : public InstantLoaderDelegate {
 
   base::OneShotTimer<InstantController> update_timer_;
 
+  // Used by ScheduleForDestroy; see it for details.
+  ScopedRunnableMethodFactory<InstantController> destroy_factory_;
+
   // URL last pased to ScheduleUpdate.
   GURL scheduled_url_;
 
   Type type_;
+
+  // List of InstantLoaders to destroy. See ScheduleForDestroy for details.
+  ScopedVector<InstantLoader> loaders_to_destroy_;
+
+  // The set of hosts that we don't use instant with. This is shared across all
+  // instances and only maintained for the current session.
+  static HostBlacklist* host_blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };
