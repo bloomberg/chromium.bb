@@ -334,7 +334,11 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const url,
   // This is so ugly.  Why are we using char* in here again?
   std::string str_path = gurl.PathForRequest();
   std::string str_scheme = gurl.scheme();
-  std::string str_host = gurl.host();  // TODO(mbelshe): should have a port.
+  std::string str_host = gurl.host();
+  if (gurl.has_port()) {
+    str_host += ":";
+    str_host += gurl.port();
+  }
   scoped_array<char> req(new char[str_path.size() + 1]);
   scoped_array<char> scheme(new char[str_scheme.size() + 1]);
   scoped_array<char> host(new char[str_host.size() + 1]);
@@ -618,8 +622,6 @@ spdy::SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
     "bye",
     "status",
     "200",
-    "url",
-    "/index.php",
     "version",
     "HTTP/1.1"
   };
