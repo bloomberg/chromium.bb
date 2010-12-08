@@ -65,9 +65,43 @@ html[dir='rtl'] .helpbutton {
   border-top:1px solid #ccc;
   padding-top:6px;
 }
-.moreinfotitle {
-  margin-left:5px;
-  margin-right:5px;
+
+.green {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#83c260), color-stop(44%,#71b44c), color-stop(100%,#549d2c));
+  border: 1px solid #4c7336;
+  border-bottom: 1px solid #44692f;
+  -webkit-border-radius: 3px;
+  -webkit-box-shadow: inset 0 1px 0 0 #a0d186, 0px 1px 2px rgba(0,0,0,0.2);
+  color: #fff;
+  font-family: arial, helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  padding: 6px 16px 7px 16px;
+  text-align: center;
+  text-shadow: 0 -1px 0 #4865e4;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block;
+}
+
+.green:hover, .green:focus {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#8bc968), color-stop(44%,#7bbc57), color-stop(100%,#4f9727)); /* webkit */
+  border: 1px solid #456a2f;
+  border-bottom: 1px solid #456a2f;
+  -webkit-box-shadow: inset 0 1px 0 0 #a0d186, 0px 1px 2px rgba(0,0,0,0.3);;
+}
+
+.green:active {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#83c260), color-stop(44%,#71b44c), color-stop(100%,#549d2c)); /* webkit */
+  border: 1px solid #3e612a;
+  border-top:1px solid #4c7336;
+  border-bottom:1px solid #547b3f;
+  -webkit-box-shadow: inset 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.green:focus {
+  border: 1px solid #000;
 }
 </style>
 
@@ -76,11 +110,8 @@ html[dir='rtl'] .helpbutton {
     window.domAutomationController.setAutomationId(1);
     window.domAutomationController.send(cmd);
   }
-
-  function agreed(form) {
-    form.continue_button.disabled = !form.continue_button.disabled;
-  }
 </script>
+
 </head>
 <body oncontextmenu="return false;">
 <div class="background"><img src="../security/resources/ssl_roadblock_background.png" width="100%" height="100%" alt="background" onmousedown="return false;"></div>
@@ -90,14 +121,14 @@ html[dir='rtl'] .helpbutton {
       <div class="icon"><img src="shared/images/phishing_icon.png" alt="Phishing Warning Icon" onmousedown="return false;"></div>
       <div class="title" i18n-content="headLine"></div>
       <div class="main" i18n-values=".innerHTML:description1"></div>
-      <div class="main"><a href="" i18n-content="description2" onclick="sendCommand('learnMore'); return false;" onmousedown="return false;"></a></div>
       <div class="main">
         <form class="submission">
-          <input type="button" name="continue_button" i18n-values="value:continue_button" onclick="sendCommand('proceed')">
-          <input type="button" name="back_button" i18n-values="value:back_button" onclick="sendCommand('takeMeBack')">
+          <input type="button" class="green" id="back" i18n-values="value:back_button" onclick="sendCommand('takeMeBack')">
         </form>
       </div>
+      <div class="main"><a href="" i18n-content="description2" onclick="sendCommand('learnMore'); return false;"></a></div>
       <div class="main"><a href="" onclick="sendCommand('reportError'); return false;" onmousedown="return false;" i18n-content="report_error"></a></div>
+      <div class="main" i18n-values=".innerHTML:description3"></div>
     </div>
   </td>
 </table>

@@ -7653,10 +7653,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION2" desc="SafeBrowsing Malware HTML description, second line">
         Google has found malicious software may be installed onto your computer if you proceed. If you've visited this site in the past or you trust this site, it's possible that it has just recently been compromised by a hacker. You should not proceed, and perhaps try again tomorrow or go somewhere else.
       </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3" desc="SafeBrowsing Malware HTML description, third line">
+      <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3" desc="SafeBrowsing Malware HTML description, last line">
         If you understand that visiting this site may harm your computer, <ph name="PROCEED_LINK">$1<ex>proceed anyway</ex></ph>.
       </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK" desc="SafeBrowsing Malware HTML description, third line proceed link part.">
+      <message name="IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK" desc="SafeBrowsing Malware HTML description, last line proceed link part.">
         proceed anyway
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION4" desc="SafeBrowsing Malware HTML description, first line for case of subresource malicious">
@@ -7694,11 +7694,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAFE_BROWSING_PHISHING_DESCRIPTION2" desc="SafeBrowsing Phishing HTML description, second line, link to more information.">
         Learn more about phishing scams.
       </message>
-      <message name="IDS_SAFE_BROWSING_PHISHING_PROCEED_BUTTON" desc="SafeBrowsing Phishing, proceed button">
-        Proceed anyway
+      <message name="IDS_SAFE_BROWSING_PHISHING_DESCRIPTION3" desc="SafeBrowsing Phishing HTML description, last line">
+        If you feel you understand the risks, you may <ph name="PROCEED_LINK">$1<ex>proceed anyway</ex></ph>.
+      </message>
+      <message name="IDS_SAFE_BROWSING_PHISHING_PROCEED_LINK" desc="SafeBrowsing Phishing HTML description, last line proceed link part.">
+        proceed anyway
       </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_BACK_BUTTON" desc="SafeBrowsing Phishing, back button">
-        Back to safety
+        Go back
       </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_REPORT_ERROR" desc="SafeBrowsing Phishing, report error link">
         Report an error

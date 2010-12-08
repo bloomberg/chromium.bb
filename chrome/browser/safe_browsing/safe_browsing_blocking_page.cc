@@ -288,6 +288,13 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
 
 void SafeBrowsingBlockingPage::PopulatePhishingStringDictionary(
     DictionaryValue* strings) {
+  std::wstring proceed_link = StringPrintf(
+      kPLinkHtml,
+      l10n_util::GetString(IDS_SAFE_BROWSING_PHISHING_PROCEED_LINK).c_str());
+  std::wstring description3 = l10n_util::GetStringF(
+      IDS_SAFE_BROWSING_PHISHING_DESCRIPTION3,
+      proceed_link);
+
   PopulateStringDictionary(
       strings,
       l10n_util::GetString(IDS_SAFE_BROWSING_PHISHING_TITLE),
@@ -295,10 +302,8 @@ void SafeBrowsingBlockingPage::PopulatePhishingStringDictionary(
       l10n_util::GetStringF(IDS_SAFE_BROWSING_PHISHING_DESCRIPTION1,
                             UTF8ToWide(url().host())),
       l10n_util::GetString(IDS_SAFE_BROWSING_PHISHING_DESCRIPTION2),
-      L"");
+      description3);
 
-  strings->SetString("continue_button",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_PROCEED_BUTTON));
   strings->SetString("back_button",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_BACK_BUTTON));
   strings->SetString("report_error",
