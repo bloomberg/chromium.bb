@@ -145,7 +145,11 @@ int ChannelNameToFD(const std::string& channel_id) {
 }
 
 //------------------------------------------------------------------------------
-const size_t kMaxPipeNameLength = sizeof(((sockaddr_un*)0)->sun_path);
+// The standard size on linux is 108, mac is 104. To maintain consistency
+// across platforms we standardize on the smaller value.
+const size_t kMaxPipeNameLength = 104;
+COMPILE_ASSERT(sizeof(((sockaddr_un*)0)->sun_path) >= kMaxPipeNameLength,
+               BAD_SUN_PATH_LENGTH);
 
 // Creates a Fifo with the specified name ready to listen on.
 bool CreateServerFifo(const std::string& pipe_name, int* server_listen_fd) {
