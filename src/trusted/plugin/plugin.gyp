@@ -203,6 +203,31 @@
             'npapi/video_chrome.cc',
           ],
         },
+        {
+          # Static library for linking with Chrome.
+          'target_name': 'ppGoogleNaClPluginChrome',
+          'type': 'static_library',
+          'sources': [
+            '<@(common_sources)',
+            '<@(ppapi_sources)',
+          ],
+          'defines': [
+            'NACL_PPAPI',
+          ],
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_cpp',
+            '<(DEPTH)/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+            '<(DEPTH)/native_client/src/trusted/expiration/expiration.gyp:expiration',
+            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
+            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_wrapped_desc',
+          ],
+        },
       ],
     }],
     ['nacl_standalone==0 and OS=="win"', {

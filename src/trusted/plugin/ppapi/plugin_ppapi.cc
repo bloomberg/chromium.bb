@@ -16,6 +16,7 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
+#include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
