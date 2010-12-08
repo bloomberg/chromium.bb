@@ -1846,7 +1846,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   strip.AddObserver(&tabstrip_observer);
 
   TabContentsWrapper* new_contents = CreateTabContents();
-  strip.ReplaceTabContentsAt(0, new_contents);
+  delete strip.ReplaceTabContentsAt(0, new_contents);
 
   ASSERT_EQ(2, tabstrip_observer.GetStateCount());
 
@@ -1870,7 +1870,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 
   // And replace it.
   new_contents = CreateTabContents();
-  strip.ReplaceTabContentsAt(1, new_contents);
+  delete strip.ReplaceTabContentsAt(1, new_contents);
 
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
 

@@ -158,6 +158,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window);
 
+  // Invoked prior to showing before unload handler confirmation dialog.
+  virtual void WillRunBeforeUnloadConfirm();
+
   // Returns true if javascript dialogs and unload alerts are suppressed.
   // Default is false.
   virtual bool ShouldSuppressDialogs();

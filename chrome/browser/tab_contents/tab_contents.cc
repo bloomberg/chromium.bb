@@ -842,6 +842,13 @@ void TabContents::HideContents() {
   WasHidden();
 }
 
+bool TabContents::NeedToFireBeforeUnload() {
+  // TODO(creis): Should we fire even for interstitial pages?
+  return notify_disconnection() &&
+      !showing_interstitial_page() &&
+      !render_view_host()->SuddenTerminationAllowed();
+}
+
 void TabContents::OpenURL(const GURL& url, const GURL& referrer,
                           WindowOpenDisposition disposition,
                           PageTransition::Type transition) {
@@ -2806,6 +2813,8 @@ void TabContents::RunJavaScriptMessage(
 
 void TabContents::RunBeforeUnloadConfirm(const std::wstring& message,
                                          IPC::Message* reply_msg) {
+  if (delegate())
+    delegate()->WillRunBeforeUnloadConfirm();
   if (delegate() && delegate()->ShouldSuppressDialogs()) {
     render_view_host()->JavaScriptMessageBoxClosed(reply_msg, true,
                                                    std::wstring());

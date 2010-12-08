@@ -372,8 +372,6 @@ class NavigationController {
   // this:   E F *G*   (last must be active or pending)
   // result: A B *G*
   // This ignores the transient index of the source and honors that of 'this'.
-  // This should only be used when you are going to destroy |source| right after
-  // invoking this.
   void CopyStateFromAndPrune(NavigationController* source);
 
   // Removes all the entries except the active entry. If there is a new pending

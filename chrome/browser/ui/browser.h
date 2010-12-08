@@ -40,6 +40,7 @@ class BrowserWindow;
 class Extension;
 class FindBarController;
 class InstantController;
+class InstantUnloadHandler;
 class PrefService;
 class Profile;
 class SessionStorageNamespace;
@@ -1120,6 +1121,7 @@ class Browser : public TabHandlerDelegate,
   TabRestoreService* tab_restore_service_;
 
   scoped_ptr<InstantController> instant_;
+  scoped_ptr<InstantUnloadHandler> instant_unload_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

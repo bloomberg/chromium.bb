@@ -979,8 +979,10 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
   // Take over the session id from source.
   session_id_ = source->session_id_;
 
-  // Reset source's session id as we're taking it over.
-  source->session_id_.clear();
+  // Reset source's session id as we're taking it over. We give it a new id in
+  // case source is added later on, which can happen with instant enabled if the
+  // tab has a before unload handler.
+  source->session_id_ = SessionID();
 }
 
 void NavigationController::PruneAllButActive() {

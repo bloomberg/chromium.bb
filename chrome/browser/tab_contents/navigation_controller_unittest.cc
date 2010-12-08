@@ -1740,9 +1740,9 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(url3, other_controller.GetEntryAtIndex(2)->url());
 
   // The session id of the new tab should be that of the old, and the old should
-  // be set to 0.
+  // get a new id.
   EXPECT_EQ(id.id(), other_controller.session_id().id());
-  EXPECT_EQ(0, controller().session_id().id());
+  EXPECT_NE(id.id(), controller().session_id().id());
 }
 
 // Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
@@ -1770,9 +1770,9 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->url());
 
   // The session id of the new tab should be that of the old, and the old should
-  // be set to 0.
+  // get a new id.
   EXPECT_EQ(id.id(), other_controller.session_id().id());
-  EXPECT_EQ(0, controller().session_id().id());
+  EXPECT_NE(id.id(), controller().session_id().id());
 }
 
 // Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
@@ -1807,9 +1807,9 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   EXPECT_EQ(url3, other_controller.pending_entry()->url());
 
   // The session id of the new tab should be that of the old, and the old should
-  // be set to 0.
+  // be get a new id.
   EXPECT_EQ(id.id(), other_controller.session_id().id());
-  EXPECT_EQ(0, controller().session_id().id());
+  EXPECT_NE(id.id(), controller().session_id().id());
 }
 
 // Tests that navigations initiated from the page (with the history object)

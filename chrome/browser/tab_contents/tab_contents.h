@@ -346,6 +346,12 @@ class TabContents : public PageNavigator,
   virtual void ShowContents();
   virtual void HideContents();
 
+  // Returns true if the before unload and unload listeners need to be
+  // fired. The value of this changes over time. For example, if true and the
+  // before unload listener is executed and allows the user to exit, then this
+  // returns false.
+  bool NeedToFireBeforeUnload();
+
 #ifdef UNIT_TEST
   // Expose the render manager for testing.
   RenderViewHostManager* render_manager() { return &render_manager_; }

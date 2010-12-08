@@ -21,7 +21,6 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
-
 class InstantTest : public InProcessBrowserTest {
  public:
   InstantTest()

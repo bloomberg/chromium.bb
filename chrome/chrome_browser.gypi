@@ -1697,6 +1697,8 @@
         'browser/instant/instant_loader_delegate.h',
         'browser/instant/instant_loader_manager.cc',
         'browser/instant/instant_loader_manager.h',
+        'browser/instant/instant_unload_handler.cc',
+        'browser/instant/instant_unload_handler.h',
         'browser/instant/promo_counter.cc',
         'browser/instant/promo_counter.h',
         'browser/intranet_redirect_detector.cc',

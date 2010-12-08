@@ -195,9 +195,11 @@ class TabStripModel : public NotificationObserver {
   void ReplaceNavigationControllerAt(int index,
                                      TabContentsWrapper* contents);
 
-  // Replaces the tab contents at |index| with |new_contents|. This deletes the
-  // TabContents currently at |index|.
-  void ReplaceTabContentsAt(int index, TabContentsWrapper* new_contents);
+  // Replaces the tab contents at |index| with |new_contents|. The
+  // TabContentsWrapper that was at |index| is returned and ownership returns
+  // to the caller.
+  TabContentsWrapper* ReplaceTabContentsAt(int index,
+                                           TabContentsWrapper* new_contents);
 
   // Detaches the TabContents at the specified index from this strip. The
   // TabContents is not destroyed, just removed from display. The caller is

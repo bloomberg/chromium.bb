@@ -28,9 +28,6 @@ class SessionID {
 
   explicit SessionID(id_type id) : id_(id) {}
 
-  // Resets the ID to 0.
-  void clear() { id_ = 0; }
-
   // Resets the id. This is used when restoring a session
   void set_id(id_type id) { id_ = id; }
 

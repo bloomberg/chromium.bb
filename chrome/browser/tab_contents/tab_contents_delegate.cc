@@ -49,6 +49,9 @@ void TabContentsDelegate::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                                          gfx::NativeWindow parent_window) {
 }
 
+void TabContentsDelegate::WillRunBeforeUnloadConfirm() {
+}
+
 bool TabContentsDelegate::ShouldSuppressDialogs() {
   return false;
 }

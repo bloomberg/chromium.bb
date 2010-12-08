@@ -165,26 +165,28 @@ void TabStripModel::InsertTabContentsAt(int index,
     ChangeSelectedContentsFrom(selected_contents, index, false);
 }
 
-void TabStripModel::ReplaceTabContentsAt(int index,
-                                         TabContentsWrapper* new_contents) {
+TabContentsWrapper* TabStripModel::ReplaceTabContentsAt(
+    int index,
+    TabContentsWrapper* new_contents) {
   // TODO: this should reset group/opener of any tabs that point at
   // old_contents.
   DCHECK(ContainsIndex(index));
-  scoped_ptr<TabContentsWrapper> old_contents(GetContentsAt(index));
+  TabContentsWrapper* old_contents = GetContentsAt(index);
 
   contents_data_[index]->contents = new_contents;
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabReplacedAt(old_contents.get(), new_contents, index));
+                    TabReplacedAt(old_contents, new_contents, index));
 
   // When the selected tab contents is replaced send out selected notification
   // too. We do this as nearly all observers need to treat a replace of the
   // selected contents as selection changing.
   if (selected_index_ == index) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabSelectedAt(old_contents.get(), new_contents,
+                      TabSelectedAt(old_contents, new_contents,
                                     selected_index_, false));
   }
+  return old_contents;
 }
 
 void TabStripModel::ReplaceNavigationControllerAt(
