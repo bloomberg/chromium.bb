@@ -616,6 +616,11 @@ bool BrowserHelperObject::EnsureTabId() {
     return true;
   }
 
+  // We might be called a bit early, and our handle is not quite ready to
+  // be associated to an ID, so no need to ask Chrome Frame for it... yet...
+  if (!::IsWindow(tab_window_))
+    return false;
+
   // We might get here AFTER TearDown if onCreated successfully got deferred
   // yet we never got a valid tab_id_ before we got torn down, and then
   // onRemoved is called AFTER TearDown, which releases chrome_frame_host_.
