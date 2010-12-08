@@ -10,6 +10,10 @@
 
 #include "base/basictypes.h"
 
+namespace installer_util {
+class ChannelInfo;
+}
+
 // This class provides accessors to the Google Update 'ClientState' information
 // that recorded when the user downloads the chrome installer. It is
 // google_update.exe responsability to write the initial values.
@@ -89,7 +93,7 @@ class GoogleUpdateSettings {
                                       int install_return_code,
                                       const std::wstring& product_guid);
 
-  // This method generates the new value for Google Update "ap" key for Chrome
+  // This method updates the value for Google Update "ap" key for Chrome
   // based on whether we are doing incremental install (or not) and whether
   // the install succeeded.
   // - If install worked, remove the magic string (if present).
@@ -101,9 +105,10 @@ class GoogleUpdateSettings {
   // diff_install: tells whether this is incremental install or not.
   // install_return_code: if 0, means installation was successful.
   // value: current value of Google Update "ap" key.
-  static std::wstring GetNewGoogleUpdateApKey(bool diff_install,
-                                              int install_return_code,
-                                              const std::wstring& value);
+  // Returns true if |value| is modified.
+  static bool UpdateGoogleUpdateApKey(bool diff_install,
+                                      int install_return_code,
+                                      installer_util::ChannelInfo* value);
 
   // For system-level installs, we need to be able to communicate the results
   // of the Toast Experiments back to Google Update. The problem is just that

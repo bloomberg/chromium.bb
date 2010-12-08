@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include <windows.h>
-#include <shlwapi.h> // For SHDeleteKey.
+#include <shlwapi.h>  // For SHDeleteKey.
 
 #include "base/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -86,10 +87,10 @@ class GoogleUpdateSettingsTest: public testing::Test {
       const wchar_t* ap_value;
       const wchar_t* channel;
     } expectations[] = {
-      { L"dev", L"unknown" },
+      { L"dev", L"dev" },
       { L"-dev", L"dev" },
       { L"-developer", L"dev" },
-      { L"beta", L"unknown" },
+      { L"beta", L"beta" },
       { L"-beta", L"beta" },
       { L"-betamax", L"beta" },
     };
@@ -211,68 +212,110 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelVariousApValuesUser) {
   TestCurrentChromeChannelWithVariousApValues(USER_INSTALL);
 }
 
-TEST_F(GoogleUpdateSettingsTest, GetNewGoogleUpdateApKeyTest) {
+TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
   installer_util::InstallStatus s = installer_util::FIRST_INSTALL_SUCCESS;
   installer_util::InstallStatus f = installer_util::INSTALL_FAILED;
 
   // Incremental Installer that worked.
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, s, L""), L"");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, s, L"1.1"),
-            L"1.1");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, s, L"1.1-dev"),
-            L"1.1-dev");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, s, L"-full"),
-            L"");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, s, L"1.1-full"),
-            L"1.1");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, s,
-                                                          L"1.1-dev-full"),
-            L"1.1-dev");
+  installer_util::ChannelInfo v;
+  v.set_value(L"");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, s, &v));
+  EXPECT_EQ(v.value(), L"");
+
+  v.set_value(L"1.1");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, s, &v));
+  EXPECT_EQ(v.value(), L"1.1");
+
+  v.set_value(L"1.1-dev");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, s, &v));
+  EXPECT_EQ(v.value(), L"1.1-dev");
+
+  v.set_value(L"-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, s, &v));
+  EXPECT_EQ(v.value(), L"");
+
+  v.set_value(L"1.1-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, s, &v));
+  EXPECT_EQ(v.value(), L"1.1");
+
+  v.set_value(L"1.1-dev-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, s, &v));
+  EXPECT_EQ(v.value(), L"1.1-dev");
 
   // Incremental Installer that failed.
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, f, L""),
-            L"-full");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, f, L"1.1"),
-            L"1.1-full");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, f, L"1.1-dev"),
-            L"1.1-dev-full");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, f, L"-full"),
-            L"-full");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, f, L"1.1-full"),
-            L"1.1-full");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(true, f,
-                                                          L"1.1-dev-full"),
-            L"1.1-dev-full");
+  v.set_value(L"");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, f, &v));
+  EXPECT_EQ(v.value(), L"-full");
+
+  v.set_value(L"1.1");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, f, &v));
+  EXPECT_EQ(v.value(), L"1.1-full");
+
+  v.set_value(L"1.1-dev");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, f, &v));
+  EXPECT_EQ(v.value(), L"1.1-dev-full");
+
+  v.set_value(L"-full");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, f, &v));
+  EXPECT_EQ(v.value(), L"-full");
+
+  v.set_value(L"1.1-full");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, f, &v));
+  EXPECT_EQ(v.value(), L"1.1-full");
+
+  v.set_value(L"1.1-dev-full");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, f, &v));
+  EXPECT_EQ(v.value(), L"1.1-dev-full");
 
   // Full Installer that worked.
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, s, L""), L"");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, s, L"1.1"),
-            L"1.1");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, s, L"1.1-dev"),
-            L"1.1-dev");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, s, L"-full"),
-            L"");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, s,
-                                                          L"1.1-full"),
-            L"1.1");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, s,
-                                                          L"1.1-dev-full"),
-            L"1.1-dev");
+  v.set_value(L"");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, s, &v));
+  EXPECT_EQ(v.value(), L"");
+
+  v.set_value(L"1.1");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, s, &v));
+  EXPECT_EQ(v.value(), L"1.1");
+
+  v.set_value(L"1.1-dev");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, s, &v));
+  EXPECT_EQ(v.value(), L"1.1-dev");
+
+  v.set_value(L"-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, s, &v));
+  EXPECT_EQ(v.value(), L"");
+
+  v.set_value(L"1.1-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, s, &v));
+  EXPECT_EQ(v.value(), L"1.1");
+
+  v.set_value(L"1.1-dev-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, s, &v));
+  EXPECT_EQ(v.value(), L"1.1-dev");
 
   // Full Installer that failed.
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, f, L""), L"");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, f, L"1.1"),
-            L"1.1");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, f, L"1.1-dev"),
-            L"1.1-dev");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, f, L"-full"),
-            L"");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, f,
-                                                          L"1.1-full"),
-            L"1.1");
-  EXPECT_EQ(GoogleUpdateSettings::GetNewGoogleUpdateApKey(false, f,
-                                                          L"1.1-dev-full"),
-            L"1.1-dev");
+  v.set_value(L"");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, f, &v));
+  EXPECT_EQ(v.value(), L"");
+
+  v.set_value(L"1.1");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, f, &v));
+  EXPECT_EQ(v.value(), L"1.1");
+
+  v.set_value(L"1.1-dev");
+  EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, f, &v));
+  EXPECT_EQ(v.value(), L"1.1-dev");
+
+  v.set_value(L"-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, f, &v));
+  EXPECT_EQ(v.value(), L"");
+
+  v.set_value(L"1.1-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, f, &v));
+  EXPECT_EQ(v.value(), L"1.1");
+
+  v.set_value(L"1.1-dev-full");
+  EXPECT_TRUE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(false, f, &v));
+  EXPECT_EQ(v.value(), L"1.1-dev");
 }
 
 TEST_F(GoogleUpdateSettingsTest, UpdateDiffInstallStatusTest) {

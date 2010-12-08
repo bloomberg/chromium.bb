@@ -69,10 +69,6 @@ static const wchar_t kChromeFrameNPAPIKey[] =
     L"Software\\MozillaPlugins\\@google.com/ChromeFrame,version=1.0";
 static const wchar_t kChromeFramePersistNPAPIReg[] = L"PersistNPAPIReg";
 
-// Used to isolate chrome frame builds from google chrome release channels.
-const wchar_t kChromeFrameOmahaSuffix[] = L"-cf";
-const wchar_t kDevChannelName[] = L"-dev";
-
 const char kAttachExternalTabPrefix[] = "attach_external_tab";
 
 // Indicates that we are running in a test environment, where execptions, etc

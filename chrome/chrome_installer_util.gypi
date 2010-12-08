@@ -13,6 +13,8 @@
         'sources': [
           'installer/util/browser_distribution.cc',
           'installer/util/browser_distribution.h',
+          'installer/util/channel_info.cc',
+          'installer/util/channel_info.h',
           'installer/util/chrome_frame_distribution.cc',
           'installer/util/chrome_frame_distribution.h',
           'installer/util/copy_tree_work_item.cc',

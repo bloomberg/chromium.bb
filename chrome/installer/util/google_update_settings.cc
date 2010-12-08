@@ -14,6 +14,7 @@
 #include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 
@@ -164,25 +165,21 @@ bool GoogleUpdateSettings::GetChromeChannel(bool system_install,
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(root_key, reg_path.c_str(), KEY_READ);
-  std::wstring update_branch;
-  if (!key.ReadValue(google_update::kRegApField, &update_branch)) {
+  installer_util::ChannelInfo channel_info;
+  if (!channel_info.Initialize(key)) {
     *channel = L"unknown";
     return false;
   }
 
-  // Map to something pithy for human consumption. There are no rules as to
-  // what the ap string can contain, but generally it will contain a number
-  // followed by a dash followed by the branch name (and then some random
-  // suffix). We fall back on empty string in case we fail to parse.
-  // Only ever return "", "unknown", "dev" or "beta".
-  if (update_branch.find(L"-beta") != std::wstring::npos)
-    *channel = L"beta";
-  else if (update_branch.find(L"-dev") != std::wstring::npos)
-    *channel = L"dev";
-  else if (update_branch.empty())
-    *channel = L"";
-  else
+  if (!channel_info.GetChannelName(channel))
     *channel = L"unknown";
+
+  // Tag the channel name if this is a multi-install product.
+  if (channel_info.IsMultiInstall()) {
+    if (!channel->empty())
+      channel->append(1, L'-');
+    channel->append(1, L'm');
+  }
 
   return true;
 }
@@ -193,12 +190,12 @@ void GoogleUpdateSettings::UpdateDiffInstallStatus(bool system_install,
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   RegKey key;
-  std::wstring ap_key_value;
+  installer_util::ChannelInfo channel_info;
   std::wstring reg_key(google_update::kRegPathClientState);
   reg_key.append(L"\\");
   reg_key.append(product_guid);
   if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
-      !key.ReadValue(google_update::kRegApField, &ap_key_value)) {
+      !channel_info.Initialize(key)) {
     VLOG(1) << "Application key not found.";
     if (!incremental_install || !install_return_code) {
       VLOG(1) << "Returning without changing application key.";
@@ -215,39 +212,36 @@ void GoogleUpdateSettings::UpdateDiffInstallStatus(bool system_install,
     }
   }
 
-  std::wstring new_value = GetNewGoogleUpdateApKey(
-      incremental_install, install_return_code, ap_key_value);
-  if ((new_value.compare(ap_key_value) != 0) &&
-      !key.WriteValue(google_update::kRegApField, new_value.c_str())) {
-    LOG(ERROR) << "Failed to write value " << new_value
+  if (UpdateGoogleUpdateApKey(incremental_install, install_return_code,
+                              &channel_info) &&
+      !channel_info.Write(&key)) {
+    LOG(ERROR) << "Failed to write value " << channel_info.value()
                << " to the registry field " << google_update::kRegApField;
   }
   key.Close();
 }
 
-std::wstring GoogleUpdateSettings::GetNewGoogleUpdateApKey(
-    bool diff_install, int install_return_code, const std::wstring& value) {
-  // Magic suffix that we need to add or remove to "ap" key value.
-  const std::wstring kMagicSuffix = L"-full";
-
-  bool has_magic_string = false;
-  if ((value.length() >= kMagicSuffix.length()) &&
-      (value.rfind(kMagicSuffix) == (value.length() - kMagicSuffix.length()))) {
-    VLOG(1) << "Incremental installer failure key already set.";
-    has_magic_string = true;
+bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
+    bool diff_install, int install_return_code,
+    installer_util::ChannelInfo* value) {
+  if (!diff_install || !install_return_code) {
+    if (value->SetFullInstall(false)) {
+      VLOG(1) << "Removed incremental installer failure key; new value: "
+              << value->value();
+      return true;
+    }
+  } else if (diff_install && install_return_code) {
+    if (value->SetFullInstall(true)) {
+      VLOG(1) << "Incremental installer failed, setting failure key; "
+                 "new value: "
+              << value->value();
+      return true;
+    } else {
+      VLOG(1) << "Incremental installer failure key already set.";
+    }
   }
 
-  std::wstring new_value(value);
-  if ((!diff_install || !install_return_code) && has_magic_string) {
-    VLOG(1) << "Removing failure key from value " << value;
-    new_value = value.substr(0, value.length() - kMagicSuffix.length());
-  } else if ((diff_install && install_return_code) &&
-             !has_magic_string) {
-    VLOG(1) << "Incremental installer failed, setting failure key.";
-    new_value.append(kMagicSuffix);
-  }
-
-  return new_value;
+  return false;
 }
 
 int GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey() {
