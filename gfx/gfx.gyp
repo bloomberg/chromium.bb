@@ -124,6 +124,7 @@
         'point.h',
         'rect.cc',
         'rect.h',
+        'scoped_cg_context_state_mac.h',
         'scoped_image.h',
         'scrollbar_size.cc',
         'scrollbar_size.h',

@@ -26,6 +26,7 @@
 #import "chrome/browser/ui/cocoa/tab_strip_model_observer_bridge.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/scoped_cg_context_state_mac.h"
 #include "grit/app_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
@@ -222,6 +223,8 @@ void ThumbnailLoader::LoadThumbnail() {
   // TODO(thakis): Add a sublayer for each accelerated surface in the rwhv.
   // Until then, accelerated layers (CoreAnimation NPAPI plugins, compositor)
   // won't show up in tabpose.
+  gfx::ScopedCGContextSaveGState CGContextSaveGState(context);
+  CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
   if (backing_store->cg_layer()) {
     CGContextDrawLayerInRect(context, destRect, backing_store->cg_layer());
   } else {
@@ -295,6 +298,8 @@ void ThumbnailLoader::LoadThumbnail() {
     [self drawBackingStore:backing_store inRect:destRect context:context];
   } else if (thumbnail_) {
     // No cache hit, but the renderer returned a thumbnail to us.
+    gfx::ScopedCGContextSaveGState CGContextSaveGState(context);
+    CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
     CGContextDrawImage(context, destRect, thumbnail_.get());
   }
 }
