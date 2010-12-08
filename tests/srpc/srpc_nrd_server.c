@@ -87,12 +87,12 @@ static void GetMsg(NaClSrpcRpc *rpc,
 
   printf("ServerThread: GetMsg\n");
 
-  if (out_args[0]->u.caval.count >= strlen(message)) {
-    strncpy(out_args[0]->u.caval.carr, message, strlen(message) + 1);
+  if (out_args[0]->u.count >= strlen(message)) {
+    strncpy(out_args[0]->arrays.carr, message, strlen(message) + 1);
     rpc->result = NACL_SRPC_RESULT_OK;
   } else {
-    printf("GetMsg: u.caval.count %u is too small %u\n",
-           (unsigned) out_args[0]->u.caval.count,
+    printf("GetMsg: u.count %u is too small %u\n",
+           (unsigned) out_args[0]->u.count,
            (unsigned) strlen(message));
     ++errors_seen;
     rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -160,7 +160,7 @@ void TestSharedMemory(NaClSrpcRpc *rpc,
                       NaClSrpcArg **out_args,
                       NaClSrpcClosure *done) {
   int desc = in_args[0]->u.hval;
-  char* compare_string = in_args[1]->u.sval.str;
+  char* compare_string = in_args[1]->arrays.str;
   char* map_addr;
   struct stat st;
 

@@ -106,7 +106,7 @@ void StringMethod(NaClSrpcRpc *rpc,
                   NaClSrpcArg **in_args,
                   NaClSrpcArg **out_args,
                   NaClSrpcClosure *done) {
-  out_args[0]->u.ival = strlen(in_args[0]->u.sval.str);
+  out_args[0]->u.ival = strlen(in_args[0]->arrays.str);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }
@@ -122,15 +122,15 @@ void CharArrayMethod(NaClSrpcRpc *rpc,
                      NaClSrpcArg **out_args,
                      NaClSrpcClosure *done) {
   int i, length;
-  if (out_args[0]->u.caval.count != in_args[0]->u.caval.count) {
+  if (out_args[0]->u.count != in_args[0]->u.count) {
     printf("CharArrayMethod: count mismatch: in=%d out=%d\n",
-           (int) in_args[0]->u.caval.count, (int) out_args[0]->u.caval.count);
+           (int) in_args[0]->u.count, (int) out_args[0]->u.count);
     rpc->result = NACL_SRPC_RESULT_APP_ERROR;
     done->Run(done);
   }
-  length = in_args[0]->u.caval.count;
+  length = in_args[0]->u.count;
   for (i = 0; i < length; i++) {
-    out_args[0]->u.caval.carr[length - i - 1] = in_args[0]->u.caval.carr[i];
+    out_args[0]->arrays.carr[length - i - 1] = in_args[0]->arrays.carr[i];
   }
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
@@ -141,13 +141,13 @@ void DoubleArrayMethod(NaClSrpcRpc *rpc,
                        NaClSrpcArg **out_args,
                        NaClSrpcClosure *done) {
   int i, length;
-  if (out_args[0]->u.daval.count != in_args[0]->u.daval.count) {
+  if (out_args[0]->u.count != in_args[0]->u.count) {
     rpc->result = NACL_SRPC_RESULT_APP_ERROR;
     done->Run(done);
   }
-  length = in_args[0]->u.daval.count;
+  length = in_args[0]->u.count;
   for (i = 0; i < length; i++) {
-    out_args[0]->u.daval.darr[length - i - 1] = in_args[0]->u.daval.darr[i];
+    out_args[0]->arrays.darr[length - i - 1] = in_args[0]->arrays.darr[i];
   }
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
@@ -158,13 +158,13 @@ void IntArrayMethod(NaClSrpcRpc *rpc,
                     NaClSrpcArg **out_args,
                     NaClSrpcClosure *done) {
   int i, length;
-  if (out_args[0]->u.iaval.count != in_args[0]->u.iaval.count) {
+  if (out_args[0]->u.count != in_args[0]->u.count) {
     rpc->result = NACL_SRPC_RESULT_APP_ERROR;
     done->Run(done);
   }
-  length = in_args[0]->u.iaval.count;
+  length = in_args[0]->u.count;
   for (i = 0; i < length; i++) {
-    out_args[0]->u.iaval.iarr[length - i - 1] = in_args[0]->u.iaval.iarr[i];
+    out_args[0]->arrays.iarr[length - i - 1] = in_args[0]->arrays.iarr[i];
   }
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
@@ -175,13 +175,13 @@ void LongArrayMethod(NaClSrpcRpc *rpc,
                      NaClSrpcArg **out_args,
                      NaClSrpcClosure *done) {
   int i, length;
-  if (out_args[0]->u.laval.count != in_args[0]->u.laval.count) {
+  if (out_args[0]->u.count != in_args[0]->u.count) {
     rpc->result = NACL_SRPC_RESULT_APP_ERROR;
     done->Run(done);
   }
-  length = in_args[0]->u.laval.count;
+  length = in_args[0]->u.count;
   for (i = 0; i < length; i++) {
-    out_args[0]->u.laval.larr[length - i - 1] = in_args[0]->u.laval.larr[i];
+    out_args[0]->arrays.larr[length - i - 1] = in_args[0]->arrays.larr[i];
   }
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
@@ -221,7 +221,7 @@ void ReturnStringMethod(NaClSrpcRpc *rpc,
                          "Und singt ein Lied dabei;"
                          "Das hat eine wundersame,"
                          "Gewalt'ge Melodei.";
-  out_args[0]->u.sval.str = strdup(string + in_args[0]->u.ival);
+  out_args[0]->arrays.str = strdup(string + in_args[0]->u.ival);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

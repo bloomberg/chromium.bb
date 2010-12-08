@@ -93,7 +93,7 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         }
         break;
       case NACL_SRPC_ARG_TYPE_OBJECT:
-        if (!plugin::NPVariantToObject(&args[i], &inputs[i]->u.oval)) {
+        if (!plugin::NPVariantToObject(&args[i], &inputs[i]->arrays.oval)) {
           return false;
         }
         break;
@@ -108,7 +108,7 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         }
         break;
       case NACL_SRPC_ARG_TYPE_STRING:
-        if (!plugin::NPVariantToScalar(&args[i], &inputs[i]->u.sval.str)) {
+        if (!plugin::NPVariantToScalar(&args[i], &inputs[i]->arrays.str)) {
           return false;
         }
         break;
@@ -117,8 +117,8 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         /* SCOPE */ {
           if (!plugin::NPVariantToArray(&args[i],
                                         npp,
-                                        &inputs[i]->u.caval.count,
-                                        &inputs[i]->u.caval.carr)) {
+                                        &inputs[i]->u.count,
+                                        &inputs[i]->arrays.carr)) {
             return false;
           }
         }
@@ -128,8 +128,8 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         /* SCOPE */ {
           if (!plugin::NPVariantToArray(&args[i],
                                         npp,
-                                        &inputs[i]->u.daval.count,
-                                        &inputs[i]->u.daval.darr)) {
+                                        &inputs[i]->u.count,
+                                        &inputs[i]->arrays.darr)) {
             return false;
           }
         }
@@ -139,8 +139,8 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         /* SCOPE */ {
           if (!plugin::NPVariantToArray(&args[i],
                                         npp,
-                                        &inputs[i]->u.iaval.count,
-                                        &inputs[i]->u.iaval.iarr)) {
+                                        &inputs[i]->u.count,
+                                        &inputs[i]->arrays.iarr)) {
             return false;
           }
         }
@@ -150,8 +150,8 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         /* SCOPE */ {
           if (!plugin::NPVariantToArray(&args[i],
                                         npp,
-                                        &inputs[i]->u.laval.count,
-                                        &inputs[i]->u.laval.larr)) {
+                                        &inputs[i]->u.count,
+                                        &inputs[i]->arrays.larr)) {
             return false;
           }
         }
@@ -171,29 +171,29 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
     switch (outputs[i]->tag) {
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
         if (!plugin::NPVariantToAllocatedArray(&args[i + inputs_length],
-                                               &outputs[i]->u.caval.count,
-                                               &outputs[i]->u.caval.carr)) {
+                                               &outputs[i]->u.count,
+                                               &outputs[i]->arrays.carr)) {
           return false;
         }
         break;
       case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
         if (!plugin::NPVariantToAllocatedArray(&args[i + inputs_length],
-                                               &outputs[i]->u.daval.count,
-                                               &outputs[i]->u.daval.darr)) {
+                                               &outputs[i]->u.count,
+                                               &outputs[i]->arrays.darr)) {
           return false;
         }
         break;
       case NACL_SRPC_ARG_TYPE_INT_ARRAY:
         if (!plugin::NPVariantToAllocatedArray(&args[i + inputs_length],
-                                               &outputs[i]->u.iaval.count,
-                                               &outputs[i]->u.iaval.iarr)) {
+                                               &outputs[i]->u.count,
+                                               &outputs[i]->arrays.iarr)) {
           return false;
         }
         break;
       case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
         if (!plugin::NPVariantToAllocatedArray(&args[i + inputs_length],
-                                               &outputs[i]->u.laval.count,
-                                               &outputs[i]->u.laval.larr)) {
+                                               &outputs[i]->u.count,
+                                               &outputs[i]->arrays.larr)) {
           return false;
         }
         break;
@@ -286,7 +286,7 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
       }
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      if (!plugin::ScalarToNPVariant(outs[i]->u.sval.str, retvalue)) {
+      if (!plugin::ScalarToNPVariant(outs[i]->arrays.str, retvalue)) {
         return false;
       }
       break;
@@ -297,32 +297,32 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
       }
       break;
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      if (!plugin::ArrayToNPVariant(outs[i]->u.caval.carr,
-                                    outs[i]->u.caval.count,
+      if (!plugin::ArrayToNPVariant(outs[i]->arrays.carr,
+                                    outs[i]->u.count,
                                     npp,
                                     retvalue)) {
         return false;
       }
       break;
     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      if (!plugin::ArrayToNPVariant(outs[i]->u.daval.darr,
-                                    outs[i]->u.daval.count,
+      if (!plugin::ArrayToNPVariant(outs[i]->arrays.darr,
+                                    outs[i]->u.count,
                                     npp,
                                     retvalue)) {
         return false;
       }
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      if (!plugin::ArrayToNPVariant(outs[i]->u.iaval.iarr,
-                                    outs[i]->u.iaval.count,
+      if (!plugin::ArrayToNPVariant(outs[i]->arrays.iarr,
+                                    outs[i]->u.count,
                                     npp,
                                     retvalue)) {
         return false;
       }
       break;
     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      if (!plugin::ArrayToNPVariant(outs[i]->u.laval.larr,
-                                    outs[i]->u.laval.count,
+      if (!plugin::ArrayToNPVariant(outs[i]->arrays.larr,
+                                    outs[i]->u.count,
                                     npp,
                                     retvalue)) {
         return false;
@@ -336,7 +336,7 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
         // oval contains a ScriptableHandle.  And we need an NPObject.
         // So we have to cast down to ScriptableImplNpapi then back up.
         plugin::ScriptableHandle* handle =
-            reinterpret_cast<plugin::ScriptableHandle*>(outs[i]->u.oval);
+            reinterpret_cast<plugin::ScriptableHandle*>(outs[i]->arrays.oval);
         // This confirms that this this is indeed a valid ScriptableHandle
         // that was created by us. In theory, a predeclared method could
         // receive and return an opaque JavaScript object that is not

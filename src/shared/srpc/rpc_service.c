@@ -434,13 +434,12 @@ static void ServiceDiscovery(NaClSrpcRpc* rpc,
     done->Run(done);
     return;
   }
-  if (out_args[0]->u.caval.count >=
-      rpc->channel->server->service_string_length) {
-    strncpy(out_args[0]->u.caval.carr,
+  if (out_args[0]->u.count >= rpc->channel->server->service_string_length) {
+    strncpy(out_args[0]->arrays.carr,
             rpc->channel->server->service_string,
             rpc->channel->server->service_string_length);
     /* Set the length of the string actually returned. */
-    out_args[0]->u.caval.count = rpc->channel->server->service_string_length;
+    out_args[0]->u.count = rpc->channel->server->service_string_length;
     rpc->result = NACL_SRPC_RESULT_OK;
   }
   done->Run(done);

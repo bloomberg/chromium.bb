@@ -75,7 +75,7 @@ NACL_SRPC_HANDLER("file:shi:", NaClFile) {
   int last;
   struct nacl_file_map *entry;
 
-  pathname = in_args[0]->u.sval;
+  pathname = in_args[0]->arrays.str;
   fd = in_args[1]->u.ival;
   last = in_args[2]->u.hval;
 
