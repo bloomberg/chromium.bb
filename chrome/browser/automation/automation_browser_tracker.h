@@ -7,17 +7,15 @@
 #pragma once
 
 #include "chrome/browser/automation/automation_resource_tracker.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_source.h"
+
+class Browser;
 
 // Tracks Browser objects.
 class AutomationBrowserTracker : public AutomationResourceTracker<Browser*> {
  public:
   explicit AutomationBrowserTracker(IPC::Message::Sender* automation)
       : AutomationResourceTracker<Browser*>(automation) { }
-
-  virtual ~AutomationBrowserTracker() {
-  }
 
   virtual void AddObserver(Browser* resource) {
     registrar_.Add(this, NotificationType::BROWSER_CLOSED,

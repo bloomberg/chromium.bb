@@ -11,10 +11,9 @@
 #include "base/basictypes.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "ipc/ipc_message.h"
-
-template <class T> class Source;
 
 // Template trick so that AutomationResourceTracker can be used with non-pointer
 // types.
@@ -35,6 +34,7 @@ class AutomationResourceTrackerImpl {
   explicit AutomationResourceTrackerImpl(IPC::Message::Sender* sender);
   virtual ~AutomationResourceTrackerImpl();
 
+ protected:
   // These need to be implemented in AutomationResourceTracker,
   // since it needs to call the subclass's type-specific notification
   // registration functions.
@@ -50,16 +50,16 @@ class AutomationResourceTrackerImpl {
   int GetHandleImpl(const void* resource);
   void HandleCloseNotification(const void* resource);
 
- protected:
+ private:
   typedef std::map<const void*, int> ResourceToHandleMap;
   typedef std::map<int, const void*> HandleToResourceMap;
+
   ResourceToHandleMap resource_to_handle_;
   HandleToResourceMap handle_to_resource_;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutomationResourceTrackerImpl);
-
   IPC::Message::Sender* sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationResourceTrackerImpl);
 };
 
 // This template defines a superclass for an object that wants to track
@@ -68,14 +68,11 @@ class AutomationResourceTrackerImpl {
 // define are AddObserver and RemoveObserver for the given resource's
 // close notifications.
 template <class T>
-class AutomationResourceTracker : public NotificationObserver,
-                                  private AutomationResourceTrackerImpl {
+class AutomationResourceTracker : public AutomationResourceTrackerImpl,
+                                  public NotificationObserver {
  public:
   explicit AutomationResourceTracker(IPC::Message::Sender* automation)
     : AutomationResourceTrackerImpl(automation) {}
-
-  virtual ~AutomationResourceTracker() {
-  }
 
   // The implementations for these should call the NotificationService
   // to add and remove this object as an observer for the appropriate
@@ -141,9 +138,6 @@ class AutomationResourceTracker : public NotificationObserver,
     HandleCloseNotification(resource);
   }
 
-  NotificationRegistrar registrar_;
-
- private:
   // These proxy calls from the base Impl class to the template's subclss.
   // The casts here allow this to compile with both T = Foo and T = const Foo.
   virtual void AddObserverTypeProxy(const void* resource) {
@@ -153,6 +147,9 @@ class AutomationResourceTracker : public NotificationObserver,
     RemoveObserver(static_cast<T>(const_cast<void*>(resource)));
   }
 
+  NotificationRegistrar registrar_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(AutomationResourceTracker);
 };
 

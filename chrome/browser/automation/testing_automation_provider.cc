@@ -78,136 +78,51 @@
 
 namespace {
 
-class GetCookiesTask : public Task {
- public:
-  GetCookiesTask(const GURL& url,
-                 URLRequestContextGetter* context_getter,
-                 base::WaitableEvent* event,
-                 std::string* cookies)
-      : url_(url),
-        context_getter_(context_getter),
-        event_(event),
-        cookies_(cookies) {}
-
-  virtual void Run() {
-    *cookies_ = context_getter_->GetCookieStore()->GetCookies(url_);
-    event_->Signal();
-  }
-
- private:
-  const GURL& url_;
-  URLRequestContextGetter* const context_getter_;
-  base::WaitableEvent* const event_;
-  std::string* const cookies_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCookiesTask);
-};
-
-std::string GetCookiesForURL(
+void GetCookiesOnIOThread(
     const GURL& url,
-    URLRequestContextGetter* context_getter) {
-  std::string cookies;
-  base::WaitableEvent event(true /* manual reset */,
-                            false /* not initially signaled */);
-  CHECK(BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new GetCookiesTask(url, context_getter, &event, &cookies)));
-  event.Wait();
-  return cookies;
+    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    base::WaitableEvent* event,
+    std::string* cookies) {
+  *cookies = context_getter->GetCookieStore()->GetCookies(url);
+  event->Signal();
 }
 
-class SetCookieTask : public Task {
- public:
-  SetCookieTask(const GURL& url,
-                const std::string& value,
-                URLRequestContextGetter* context_getter,
-                base::WaitableEvent* event,
-                bool* rv)
-      : url_(url),
-        value_(value),
-        context_getter_(context_getter),
-        event_(event),
-        rv_(rv) {}
-
-  virtual void Run() {
-    *rv_ = context_getter_->GetCookieStore()->SetCookie(url_, value_);
-    event_->Signal();
-  }
-
- private:
-  const GURL& url_;
-  const std::string& value_;
-  URLRequestContextGetter* const context_getter_;
-  base::WaitableEvent* const event_;
-  bool* const rv_;
-
-  DISALLOW_COPY_AND_ASSIGN(SetCookieTask);
-};
-
-bool SetCookieForURL(
+void SetCookieOnIOThread(
     const GURL& url,
     const std::string& value,
-    URLRequestContextGetter* context_getter) {
-  base::WaitableEvent event(true /* manual reset */,
-                            false /* not initially signaled */);
-  bool rv = false;
-  CHECK(BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new SetCookieTask(url, value, context_getter, &event, &rv)));
-  event.Wait();
-  return rv;
+    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    base::WaitableEvent* event,
+    bool* success) {
+  *success = context_getter->GetCookieStore()->SetCookie(url, value);
+  event->Signal();
 }
 
-class DeleteCookieTask : public Task {
- public:
-  DeleteCookieTask(const GURL& url,
-                   const std::string& name,
-                   const scoped_refptr<URLRequestContextGetter>& context_getter)
-      : url_(url),
-        name_(name),
-        context_getter_(context_getter) {}
+void DeleteCookieOnIOThread(
+    const GURL& url,
+    const std::string& name,
+    const scoped_refptr<URLRequestContextGetter>& context_getter,
+    base::WaitableEvent* event) {
+  context_getter->GetCookieStore()->DeleteCookie(url, name);
+  event->Signal();
+}
 
-  virtual void Run() {
-    net::CookieStore* cookie_store = context_getter_->GetCookieStore();
-    cookie_store->DeleteCookie(url_, name_);
+void SendMouseClick(int flags) {
+  ui_controls::MouseButton button = ui_controls::LEFT;
+  if ((flags & views::Event::EF_LEFT_BUTTON_DOWN) ==
+      views::Event::EF_LEFT_BUTTON_DOWN) {
+    button = ui_controls::LEFT;
+  } else if ((flags & views::Event::EF_RIGHT_BUTTON_DOWN) ==
+             views::Event::EF_RIGHT_BUTTON_DOWN) {
+    button = ui_controls::RIGHT;
+  } else if ((flags & views::Event::EF_MIDDLE_BUTTON_DOWN) ==
+             views::Event::EF_MIDDLE_BUTTON_DOWN) {
+    button = ui_controls::MIDDLE;
+  } else {
+    NOTREACHED();
   }
 
- private:
-  const GURL url_;
-  const std::string name_;
-  const scoped_refptr<URLRequestContextGetter> context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteCookieTask);
-};
-
-class ClickTask : public Task {
- public:
-  explicit ClickTask(int flags) : flags_(flags) {}
-  virtual ~ClickTask() {}
-
-  virtual void Run() {
-    ui_controls::MouseButton button = ui_controls::LEFT;
-    if ((flags_ & views::Event::EF_LEFT_BUTTON_DOWN) ==
-        views::Event::EF_LEFT_BUTTON_DOWN) {
-      button = ui_controls::LEFT;
-    } else if ((flags_ & views::Event::EF_RIGHT_BUTTON_DOWN) ==
-        views::Event::EF_RIGHT_BUTTON_DOWN) {
-      button = ui_controls::RIGHT;
-    } else if ((flags_ & views::Event::EF_MIDDLE_BUTTON_DOWN) ==
-        views::Event::EF_MIDDLE_BUTTON_DOWN) {
-      button = ui_controls::MIDDLE;
-    } else {
-      NOTREACHED();
-    }
-
-    ui_controls::SendMouseClick(button);
-  }
-
- private:
-  int flags_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClickTask);
-};
+  ui_controls::SendMouseClick(button);
+}
 
 class AutomationInterstitialPage : public InterstitialPage {
  public:
@@ -221,7 +136,7 @@ class AutomationInterstitialPage : public InterstitialPage {
   virtual std::string GetHTMLContents() { return contents_; }
 
  private:
-  std::string contents_;
+  const std::string contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInterstitialPage);
 };
@@ -490,23 +405,20 @@ void TestingAutomationProvider::OnChannelError() {
 
 void TestingAutomationProvider::CloseBrowser(int browser_handle,
                                              IPC::Message* reply_message) {
-  if (browser_tracker_->ContainsHandle(browser_handle)) {
-    Browser* browser = browser_tracker_->GetResource(browser_handle);
-    new BrowserClosedNotificationObserver(browser, this,
-                                          reply_message);
-    browser->window()->Close();
-  } else {
-    NOTREACHED();
-  }
+  if (!browser_tracker_->ContainsHandle(browser_handle))
+    return;
+
+  Browser* browser = browser_tracker_->GetResource(browser_handle);
+  new BrowserClosedNotificationObserver(browser, this, reply_message);
+  browser->window()->Close();
 }
 
 void TestingAutomationProvider::CloseBrowserAsync(int browser_handle) {
-  if (browser_tracker_->ContainsHandle(browser_handle)) {
-    Browser* browser = browser_tracker_->GetResource(browser_handle);
-    browser->window()->Close();
-  } else {
-    NOTREACHED();
-  }
+  if (!browser_tracker_->ContainsHandle(browser_handle))
+    return;
+
+  Browser* browser = browser_tracker_->GetResource(browser_handle);
+  browser->window()->Close();
 }
 
 void TestingAutomationProvider::ActivateTab(int handle,
@@ -522,7 +434,8 @@ void TestingAutomationProvider::ActivateTab(int handle,
   }
 }
 
-void TestingAutomationProvider::AppendTab(int handle, const GURL& url,
+void TestingAutomationProvider::AppendTab(int handle,
+                                          const GURL& url,
                                           IPC::Message* reply_message) {
   int append_tab_response = -1;  // -1 is the error code
   NotificationObserver* observer = NULL;
@@ -582,10 +495,18 @@ void TestingAutomationProvider::GetCookies(const GURL& url, int handle,
                                            std::string* value) {
   *value_size = -1;
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-
     // Since we are running on the UI thread don't call GetURLRequestContext().
-    *value = GetCookiesForURL(url, tab->profile()->GetRequestContext());
+    scoped_refptr<URLRequestContextGetter> context_getter =
+        tab_tracker_->GetResource(handle)->profile()->GetRequestContext();
+
+    base::WaitableEvent event(true /* manual reset */,
+                              false /* not initially signaled */);
+    CHECK(BrowserThread::PostTask(
+              BrowserThread::IO, FROM_HERE,
+              NewRunnableFunction(&GetCookiesOnIOThread,
+                                  url, context_getter, &event, value)));
+    event.Wait();
+
     *value_size = static_cast<int>(value->size());
   }
 }
@@ -597,9 +518,20 @@ void TestingAutomationProvider::SetCookie(const GURL& url,
   *response_value = -1;
 
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
+    // Since we are running on the UI thread don't call GetURLRequestContext().
+    scoped_refptr<URLRequestContextGetter> context_getter =
+        tab_tracker_->GetResource(handle)->profile()->GetRequestContext();
 
-    if (SetCookieForURL(url, value, tab->profile()->GetRequestContext()))
+    base::WaitableEvent event(true /* manual reset */,
+                              false /* not initially signaled */);
+    bool success = false;
+    CHECK(BrowserThread::PostTask(
+              BrowserThread::IO, FROM_HERE,
+              NewRunnableFunction(&SetCookieOnIOThread,
+                                  url, value, context_getter, &event,
+                                  &success)));
+    event.Wait();
+    if (success)
       *response_value = 1;
   }
 }
@@ -609,12 +541,17 @@ void TestingAutomationProvider::DeleteCookie(const GURL& url,
                                              int handle, bool* success) {
   *success = false;
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        new DeleteCookieTask(
-            url, cookie_name,
-            make_scoped_refptr(tab->profile()->GetRequestContext())));
+    // Since we are running on the UI thread don't call GetURLRequestContext().
+    scoped_refptr<URLRequestContextGetter> context_getter =
+        tab_tracker_->GetResource(handle)->profile()->GetRequestContext();
+
+    base::WaitableEvent event(true /* manual reset */,
+                              false /* not initially signaled */);
+    CHECK(BrowserThread::PostTask(
+              BrowserThread::IO, FROM_HERE,
+              NewRunnableFunction(&DeleteCookieOnIOThread,
+                                  url, cookie_name, context_getter, &event)));
+    event.Wait();
     *success = true;
   }
 }
@@ -650,7 +587,7 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
       AddNavigationStatusListener(tab, reply_message, number_of_navigations,
                                   false);
 
-      // TODO(darin): avoid conversion to GURL
+      // TODO(darin): avoid conversion to GURL.
       browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
       return;
     }
@@ -802,8 +739,9 @@ void TestingAutomationProvider::NeedsAuth(int tab_handle, bool* needs_auth) {
 void TestingAutomationProvider::GetRedirectsFrom(int tab_handle,
                                                  const GURL& source_url,
                                                  IPC::Message* reply_message) {
-  DCHECK(!redirect_query_) << "Can only handle one redirect query at once.";
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
+  if (redirect_query_) {
+    LOG(ERROR) << "Can only handle one redirect query at once.";
+  } else if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     HistoryService* history_service =
         tab->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -927,7 +865,6 @@ void TestingAutomationProvider::ExecuteBrowserCommand(
 }
 
 void TestingAutomationProvider::GetBrowserLocale(string16* locale) {
-  DCHECK(g_browser_process);
   *locale = ASCIIToUTF16(g_browser_process->GetApplicationLocale());
 }
 
@@ -949,8 +886,9 @@ void TestingAutomationProvider::WindowSimulateClick(const IPC::Message& message,
                                                     const gfx::Point& click,
                                                     int flags) {
   if (window_tracker_->ContainsHandle(handle)) {
-    ui_controls::SendMouseMoveNotifyWhenDone(click.x(), click.y(),
-                                             new ClickTask(flags));
+    // TODO(phajdan.jr): This is flaky. We should wait for the final click.
+    ui_controls::SendMouseMoveNotifyWhenDone(
+        click.x(), click.y(), NewRunnableFunction(&SendMouseClick, flags));
   }
 }
 
@@ -973,14 +911,14 @@ void TestingAutomationProvider::WindowSimulateKeyPress(
   gfx::NativeWindow window = window_tracker_->GetResource(handle);
   // The key event is sent to whatever window is active.
   ui_controls::SendKeyPress(window, static_cast<app::KeyboardCode>(key),
-                           ((flags & views::Event::EF_CONTROL_DOWN) ==
-                              views::Event::EF_CONTROL_DOWN),
+                            ((flags & views::Event::EF_CONTROL_DOWN) ==
+                             views::Event::EF_CONTROL_DOWN),
                             ((flags & views::Event::EF_SHIFT_DOWN) ==
-                              views::Event::EF_SHIFT_DOWN),
+                             views::Event::EF_SHIFT_DOWN),
                             ((flags & views::Event::EF_ALT_DOWN) ==
-                              views::Event::EF_ALT_DOWN),
+                             views::Event::EF_ALT_DOWN),
                             ((flags & views::Event::EF_COMMAND_DOWN) ==
-                              views::Event::EF_COMMAND_DOWN));
+                             views::Event::EF_COMMAND_DOWN));
 }
 
 void TestingAutomationProvider::GetTabCount(int handle, int* tab_count) {
@@ -1218,43 +1156,39 @@ void TestingAutomationProvider::ExecuteJavascript(
     const std::wstring& frame_xpath,
     const std::wstring& script,
     IPC::Message* reply_message) {
-  bool succeeded = false;
   TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
-  if (tab_contents) {
-    // Set the routing id of this message with the controller.
-    // This routing id needs to be remembered for the reverse
-    // communication while sending back the response of
-    // this javascript execution.
-    std::wstring set_automation_id;
-    base::SStringPrintf(&set_automation_id,
-        L"window.domAutomationController.setAutomationId(%d);",
-        reply_message->routing_id());
-
-    DCHECK(reply_message_ == NULL);
-    reply_message_ = reply_message;
-
-    tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-        frame_xpath, set_automation_id);
-    tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-        frame_xpath, script);
-    succeeded = true;
-  }
-
-  if (!succeeded) {
+  if (!tab_contents) {
     AutomationMsg_DomOperation::WriteReplyParams(reply_message, std::string());
     Send(reply_message);
+    return;
   }
+
+  // Set the routing id of this message with the controller.
+  // This routing id needs to be remembered for the reverse
+  // communication while sending back the response of
+  // this javascript execution.
+  std::wstring set_automation_id;
+  base::SStringPrintf(&set_automation_id,
+                      L"window.domAutomationController.setAutomationId(%d);",
+                      reply_message->routing_id());
+
+  DCHECK(reply_message_ == NULL);
+  reply_message_ = reply_message;
+
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      frame_xpath, set_automation_id);
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      frame_xpath, script);
 }
 
 void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
                                                           int* count) {
   *count = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
-      NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-      TabContents* tab_contents = nav_controller->tab_contents();
-      if (tab_contents) {
-        *count = static_cast<int>(tab_contents->child_windows_.size());
-      }
+    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
+    TabContents* tab_contents = nav_controller->tab_contents();
+    if (tab_contents)
+      *count = static_cast<int>(tab_contents->child_windows_.size());
   }
 }
 
@@ -1459,24 +1393,22 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
 
 void TestingAutomationProvider::BringBrowserToFront(int browser_handle,
                                                     bool* success) {
+  *success = false;
   if (browser_tracker_->ContainsHandle(browser_handle)) {
     Browser* browser = browser_tracker_->GetResource(browser_handle);
     browser->window()->Activate();
     *success = true;
-  } else {
-    *success = false;
   }
 }
 
 void TestingAutomationProvider::IsMenuCommandEnabled(int browser_handle,
                                                      int message_num,
                                                      bool* menu_item_enabled) {
+  *menu_item_enabled = false;
   if (browser_tracker_->ContainsHandle(browser_handle)) {
     Browser* browser = browser_tracker_->GetResource(browser_handle);
     *menu_item_enabled =
         browser->command_updater()->IsCommandEnabled(message_num);
-  } else {
-    *menu_item_enabled = false;
   }
 }
 
@@ -1500,6 +1432,14 @@ void TestingAutomationProvider::SavePage(int tab_handle,
                                          const FilePath& dir_path,
                                          int type,
                                          bool* success) {
+  SavePackage::SavePackageType save_type =
+      static_cast<SavePackage::SavePackageType>(type);
+  if (save_type < SavePackage::SAVE_AS_ONLY_HTML ||
+      save_type > SavePackage::SAVE_AS_COMPLETE_HTML) {
+    *success = false;
+    return;
+  }
+
   if (!tab_tracker_->ContainsHandle(tab_handle)) {
     *success = false;
     return;
@@ -1507,18 +1447,12 @@ void TestingAutomationProvider::SavePage(int tab_handle,
 
   NavigationController* nav = tab_tracker_->GetResource(tab_handle);
   Browser* browser = FindAndActivateTab(nav);
-  DCHECK(browser);
   if (!browser->command_updater()->IsCommandEnabled(IDC_SAVE_PAGE)) {
     *success = false;
     return;
   }
 
-  SavePackage::SavePackageType save_type =
-      static_cast<SavePackage::SavePackageType>(type);
-  DCHECK(save_type >= SavePackage::SAVE_AS_ONLY_HTML &&
-         save_type <= SavePackage::SAVE_AS_COMPLETE_HTML);
   nav->tab_contents()->SavePage(file_name, dir_path, save_type);
-
   *success = true;
 }
 
