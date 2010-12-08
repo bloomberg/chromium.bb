@@ -41,6 +41,7 @@ IPC::PlatformFileForTransit PlatformFileToPlatformFileForTransit(
   }
   return result;
 */
+  NOTIMPLEMENTED();
   *error = PP_ERROR_NOACCESS;
   return INVALID_HANDLE_VALUE;
 #elif defined(OS_POSIX)
@@ -153,14 +154,32 @@ int32_t GetModuleLocalDirContents(PP_Module module,
       new PpapiHostMsg_PPBFlash_GetModuleLocalDirContents(
           INTERFACE_ID_PPB_FLASH, module, path, &entries, &result));
 
-  // TODO(brettw) implement this.
+  if (result != PP_OK)
+    return result;
+
+  // Copy the serialized dir entries to the output struct.
+  *contents = new PP_DirContents_Dev;
+  (*contents)->count = static_cast<int32_t>(entries.size());
+  (*contents)->entries = new PP_DirEntry_Dev[entries.size()];
+  for (size_t i = 0; i < entries.size(); i++) {
+    const SerializedDirEntry& source = entries[i];
+    PP_DirEntry_Dev* dest = &(*contents)->entries[i];
+
+    char* name_copy = new char[source.name.size() + 1];
+    memcpy(name_copy, source.name.c_str(), source.name.size() + 1);
+    dest->name = name_copy;
+    dest->is_dir = source.is_dir;
+  }
 
   return result;
 }
 
 void FreeModuleLocalDirContents(PP_Module module,
                                 PP_DirContents_Dev* contents) {
-  // TODO(brettw) implement this.
+  for (int32_t i = 0; i < contents->count; ++i)
+    delete[] contents->entries[i].name;
+  delete[] contents->entries;
+  delete contents;
 }
 
 bool NavigateToURL(PP_Instance pp_instance,
@@ -313,7 +332,19 @@ void PPB_Flash_Proxy::OnMsgGetModuleLocalDirContents(
     const std::string& path,
     std::vector<pp::proxy::SerializedDirEntry>* entries,
     int32_t* result) {
-  // TODO(brettw) implement this.
+  PP_DirContents_Dev* contents = NULL;
+  *result = ppb_flash_target()->GetModuleLocalDirContents(module, path.c_str(),
+                                                          &contents);
+  if (*result != PP_OK)
+    return;
+
+  // Convert the list of entries to the serialized version.
+  entries->resize(contents->count);
+  for (int32_t i = 0; i < contents->count; i++) {
+    (*entries)[i].name.assign(contents->entries[i].name);
+    (*entries)[i].is_dir = contents->entries[i].is_dir;
+  }
+  ppb_flash_target()->FreeModuleLocalDirContents(module, contents);
 }
 
 void PPB_Flash_Proxy::OnMsgNavigateToURL(PP_Instance instance,
