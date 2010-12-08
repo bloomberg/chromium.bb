@@ -38,10 +38,13 @@ class HostDispatcher : public Dispatcher {
   //
   // You must call Dispatcher::InitWithChannel after the constructor.
   HostDispatcher(base::ProcessHandle host_process_handle,
-                 const PPB_Var_Deprecated* var_interface,
                  PP_Module module,
                  GetInterfaceFunc local_get_interface);
   ~HostDispatcher();
+
+  // Calls the plugin's PPP_InitializeModule function and returns true if
+  // the call succeeded.
+  bool InitializeModule();
 
   // The host side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel.

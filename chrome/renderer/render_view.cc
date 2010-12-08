@@ -834,12 +834,12 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
       &info, &setting, &mime_type));
   if (!found || !info.enabled)
     return NULL;
+
   scoped_refptr<pepper::PluginModule> pepper_module(
-      PepperPluginRegistry::GetInstance()->GetModule(info.path));
+      pepper_delegate_.CreatePepperPlugin(info.path));
   if (pepper_module)
     return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
-  else
-    return CreateNPAPIPlugin(frame, params, info.path, mime_type);
+  return CreateNPAPIPlugin(frame, params, info.path, mime_type);
 }
 
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
@@ -2753,21 +2753,10 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (info.path.value() == kDefaultPluginLibraryName ||
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {
-    scoped_refptr<pepper::PluginModule> pepper_module;
-    if (PepperPluginRegistry::GetInstance()->RunOutOfProcessForPlugin(
-            info.path)) {
-      pepper_module =
-          pepper_delegate_.CreateOutOfProcessPepperPlugin(info.path);
-    } else {
-      pepper_module =
-          PepperPluginRegistry::GetInstance()->GetModule(info.path);
-    }
-    if (pepper_module) {
-      return CreatePepperPlugin(frame,
-                                params,
-                                info.path,
-                                pepper_module.get());
-    }
+    scoped_refptr<pepper::PluginModule> pepper_module(
+        pepper_delegate_.CreatePepperPlugin(info.path));
+    if (pepper_module)
+      return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
     return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
   }
   std::string resource;

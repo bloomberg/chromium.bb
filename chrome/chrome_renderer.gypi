@@ -15,6 +15,7 @@
         'chrome_resources',
         'chrome_strings',
         'safe_browsing_proto',
+        '../ppapi/ppapi.gyp:ppapi_proxy',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/hunspell/hunspell.gyp:hunspell',

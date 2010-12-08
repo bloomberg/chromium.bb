@@ -27,6 +27,7 @@
         '../app/app.gyp:app_resources',
         '../app/app.gyp:app_strings',
         '../media/media.gyp:media',
+        '../ppapi/ppapi.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/bzip2/bzip2.gyp:bzip2',

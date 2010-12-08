@@ -211,9 +211,8 @@ PepperPluginRegistry::PepperPluginRegistry() {
        it != internal_plugin_info.end();
        ++it) {
     const FilePath& path = it->path;
-    ModuleHandle module =
-        pepper::PluginModule::CreateInternalModule(it->entry_points);
-    if (!module) {
+    ModuleHandle module(new pepper::PluginModule);
+    if (!module->InitAsInternalPlugin(it->entry_points)) {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }
@@ -231,8 +230,8 @@ PepperPluginRegistry::PepperPluginRegistry() {
       continue;  // Only preload in-process plugins.
 
     const FilePath& path = plugins[i].path;
-    ModuleHandle module = pepper::PluginModule::CreateModule(path);
-    if (!module) {
+    ModuleHandle module(new pepper::PluginModule);
+    if (!module->InitAsLibrary(path)) {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }
