@@ -882,10 +882,16 @@ void AutocompleteEditViewGtk::UpdateInstantViewColors() {
       gfx::GdkColorToSkColor(normal_bg),
       alpha * 0xff));
 
-  // ACTIVE is the state for text that is selected, but not focused (the
-  // instant view is always fully selected and never has focus).
-  gtk_widget_modify_text(instant_view_, GTK_STATE_ACTIVE, &text);
-  gtk_widget_modify_base(instant_view_, GTK_STATE_ACTIVE, &bg);
+  if (alpha > 0.0) {
+    gtk_label_select_region(GTK_LABEL(instant_view_), 0, -1);
+    // ACTIVE is the state for text that is selected, but not focused.
+    gtk_widget_modify_text(instant_view_, GTK_STATE_ACTIVE, &text);
+    gtk_widget_modify_base(instant_view_, GTK_STATE_ACTIVE, &bg);
+  } else {
+    // When the text is unselected, fg is used for text color, the state
+    // is NORMAL, and the background is transparent.
+    gtk_widget_modify_fg(instant_view_, GTK_STATE_NORMAL, &text);
+  }
 #else  // defined(TOOLKIT_VIEWS)
   // We don't worry about views because it doesn't use the instant view.
 #endif
@@ -1762,8 +1768,6 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
 void AutocompleteEditViewGtk::SetInstantSuggestion(
     const std::string& suggestion) {
   gtk_label_set_text(GTK_LABEL(instant_view_), suggestion.c_str());
-  // Select the whole thing.
-  gtk_label_select_region(GTK_LABEL(instant_view_), 0, -1);
 
   StopAnimation();
 
