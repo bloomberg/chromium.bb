@@ -589,6 +589,80 @@
       ],
     },
     {
+      'target_name': 'chrome_frame_qa_tests',
+      'msvs_guid': 'D6B3174D-31DD-49D6-83C0-A63A6A135E0E',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:test_support_base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../net/net.gyp:net_test_support',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        'chrome_frame_ie',
+        'chrome_frame_npapi',
+        'chrome_frame_strings',
+        'npchrome_frame',
+      ],
+      'sources': [
+        '../base/test_suite.h',
+        'test/chrome_frame_test_utils.cc',
+        'test/chrome_frame_test_utils.h',
+        'test/chrome_frame_ui_test_utils.cc',
+        'test/chrome_frame_ui_test_utils.h',
+        'test/external_sites_test.cc',
+        'test/http_server.cc',
+        'test/http_server.h',
+        'test/ie_event_sink.cc',
+        'test/ie_event_sink.h',
+        'test/mock_ie_event_sink_actions.h',
+        'test/mock_ie_event_sink_test.cc',
+        'test/mock_ie_event_sink_test.h',
+        'test/run_all_unittests.cc',
+        'test/simulate_input.cc',
+        'test/simulate_input.h',
+        'test/test_server.cc',
+        'test/test_server.h',
+        'test/test_with_web_server.cc',
+        'test/test_with_web_server.h',
+        'test/win_event_receiver.cc',
+        'test/win_event_receiver.h',
+        'chrome_tab.h',
+        'chrome_tab.idl',
+        'renderer_glue.cc',
+        'test_utils.cc',
+        'test_utils.h',
+      ],
+      'include_dirs': [
+        '<@(xul_include_directories)',
+        '<(DEPTH)/third_party/wtl/include',
+        # To allow including "chrome_tab.h"
+        '<(INTERMEDIATE_DIR)',
+      ],
+      'resource_include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-loleacc.lib',
+            ],
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll'],
+            },
+          },
+          'dependencies': [
+            '../chrome/chrome.gyp:crash_service',
+            '../chrome/chrome.gyp:automation',
+            '../chrome/chrome.gyp:installer_util',
+            '../google_update/google_update.gyp:google_update',
+          ]
+        }],
+      ],
+    },
+    {
       'target_name': 'chrome_frame_npapi_core',
       'type': 'static_library',
       'dependencies': [
