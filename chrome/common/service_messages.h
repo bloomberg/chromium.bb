@@ -5,10 +5,7 @@
 #ifndef CHROME_COMMON_SERVICE_MESSAGES_H_
 #define CHROME_COMMON_SERVICE_MESSAGES_H_
 
-#include "ipc/ipc_message_utils.h"
-
-#define MESSAGES_INTERNAL_FILE "chrome/common/service_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/service_messages_internal.h"
 
 #endif  // CHROME_COMMON_SERVICE_MESSAGES_H_
 

@@ -229,15 +229,6 @@ void AutomationProvider::WindowSimulateDrag(int handle,
   }
 }
 
-void AutomationProvider::GetTabHWND(int handle, HWND* tab_hwnd) {
-  *tab_hwnd = NULL;
-
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    *tab_hwnd = tab->tab_contents()->GetNativeView();
-  }
-}
-
 void AutomationProvider::CreateExternalTab(
     const IPC::ExternalTabSettings& settings,
     gfx::NativeWindow* tab_container_window, gfx::NativeWindow* tab_window,

@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This header is meant to be included in multiple passes, hence no traditional
-// header guard.
-// See ipc_message_macros.h for explanation of the macros and passes.
-
 // Developer tools consist of the following parts:
 //
 // DevToolsAgent lives in the renderer of an inspected page and provides access
@@ -44,57 +40,51 @@
 
 #include "ipc/ipc_message_macros.h"
 
+#define IPC_MESSAGE_START DevToolsMsgStart
+
 // These are messages sent from DevToolsAgent to DevToolsClient through the
 // browser.
-IPC_BEGIN_MESSAGES(DevToolsClient)
+// WebKit-level transport.
+IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                     std::string /* message */)
 
-  // WebKit-level transport.
-  IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                       std::string /* message */)
+// Legacy debugger output message.
+IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DebuggerOutput,
+                     std::string /* message */)
 
-  // Legacy debugger output message.
-  IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DebuggerOutput,
-                       std::string /* message */)
-
-  // Legacy APU dispatch message.
-  IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchToAPU,
-                       std::string /* message */)
-
-IPC_END_MESSAGES(DevToolsClient)
+// Legacy APU dispatch message.
+IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchToAPU,
+                     std::string /* message */)
 
 
 //-----------------------------------------------------------------------------
 // These are messages sent from DevToolsClient to DevToolsAgent through the
 // browser.
-IPC_BEGIN_MESSAGES(DevToolsAgent)
+// Tells agent that there is a client host connected to it.
+IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_Attach,
+                     DevToolsRuntimeProperties /* properties */)
 
-  // Tells agent that there is a client host connected to it.
-  IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_Attach,
-                       DevToolsRuntimeProperties /* properties */)
+// Tells agent that there is no longer a client host connected to it.
+IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_Detach)
 
-  // Tells agent that there is no longer a client host connected to it.
-  IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_Detach)
+// Tells agent that the front-end has been loaded
+IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_FrontendLoaded)
 
-  // Tells agent that the front-end has been loaded
-  IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_FrontendLoaded)
+// WebKit-level transport.
+IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DispatchOnInspectorBackend,
+                     std::string /* message */)
 
-  // WebKit-level transport.
-  IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DispatchOnInspectorBackend,
-                       std::string /* message */)
+// Send debugger command to the debugger agent. Debugger commands should
+// be handled on IO thread(while all other devtools messages are handled in
+// the render thread) to allow executing the commands when v8 is on a
+// breakpoint.
+IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DebuggerCommand,
+                     std::string  /* command */)
 
-  // Send debugger command to the debugger agent. Debugger commands should
-  // be handled on IO thread(while all other devtools messages are handled in
-  // the render thread) to allow executing the commands when v8 is on a
-  // breakpoint.
-  IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DebuggerCommand,
-                       std::string  /* command */)
+// Inspect element with the given coordinates.
+IPC_MESSAGE_CONTROL2(DevToolsAgentMsg_InspectElement,
+                     int /* x */,
+                     int /* y */)
 
-  // Inspect element with the given coordinates.
-  IPC_MESSAGE_CONTROL2(DevToolsAgentMsg_InspectElement,
-                       int /* x */,
-                       int /* y */)
-
-  // Enables/disables the apu agent.
-  IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_SetApuAgentEnabled, bool /* enabled */)
-
-IPC_END_MESSAGES(DevToolsAgent)
+// Enables/disables the apu agent.
+IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_SetApuAgentEnabled, bool /* enabled */)

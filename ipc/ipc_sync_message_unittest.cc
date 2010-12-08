@@ -14,9 +14,8 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
-#define MESSAGES_INTERNAL_FILE "ipc/ipc_sync_message_unittest.h"
-#include "ipc/ipc_message_macros.h"
+#define IPC_MESSAGE_IMPL
+#include "ipc/ipc_sync_message_unittest.h"
 
 static IPC::Message* g_reply;
 

@@ -640,7 +640,6 @@ struct ParamTraits<speech_input::SpeechInputResultItem> {
 
 }  // namespace IPC
 
-#define MESSAGES_INTERNAL_FILE "chrome/common/render_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/render_messages_internal.h"
 
 #endif  // CHROME_COMMON_RENDER_MESSAGES_H_

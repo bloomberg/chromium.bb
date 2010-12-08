@@ -253,7 +253,7 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   HWND h1 = ::GetDesktopWindow();
   HWND h2 = ::GetDesktopWindow();
   EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
-      &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
+      &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab::ID),
       testing::NotNull(), _))
           .Times(1).WillOnce(HandleCreateTab(tab_handle_, h1, h2, 99));
 
@@ -287,7 +287,7 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
       .WillRepeatedly(Return(""));
 
   EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
-      &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
+      &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab::ID),
       testing::NotNull(), _))
           .Times(1).WillOnce(HandleCreateTab(tab_handle_, null_wnd, null_wnd,
                                              99));
@@ -350,7 +350,7 @@ TEST_F(CFACMockTest, OnChannelError) {
   HWND h1 = ::GetDesktopWindow();
   HWND h2 = ::GetDesktopWindow();
   EXPECT_CALL(proxy, SendAsAsync(testing::Property(
-    &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
+    &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab::ID),
     testing::NotNull(), _)).Times(3)
         .WillOnce(HandleCreateTab(tab_handle_, h1, h2, 99))
         .WillOnce(HandleCreateTab(tab_handle_ * 2, h1, h2, 100))
@@ -430,7 +430,7 @@ TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
   HWND h1 = ::GetDesktopWindow();
   HWND h2 = ::GetDesktopWindow();
   EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
-      &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
+      &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab::ID),
       testing::NotNull(), _))
           .Times(1).WillOnce(HandleCreateTab(tab_handle_, h1, h2, 99));
 
@@ -443,14 +443,14 @@ TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
                                    std::string(), false));
 
   EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
-      &IPC::SyncMessage::type, AutomationMsg_NavigateInExternalTab__ID),
+      &IPC::SyncMessage::type, AutomationMsg_NavigateInExternalTab::ID),
       testing::NotNull(), _))
           .Times(1).WillOnce(QUIT_LOOP(loop_));
 
   EXPECT_CALL(mock_proxy_, CancelAsync(_)).Times(testing::AnyNumber());
 
   EXPECT_CALL(mock_proxy_, Send(
-      testing::Property(&IPC::Message::type, AutomationMsg_TabReposition__ID)))
+      testing::Property(&IPC::Message::type, AutomationMsg_TabReposition::ID)))
           .Times(1)
           .WillOnce(Return(true));
 

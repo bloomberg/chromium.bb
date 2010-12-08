@@ -366,9 +366,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowDrag,
                                     WindowSimulateDrag)
 #endif  // !defined(OS_MACOSX)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_TabHWND, GetTabHWND)
-#endif  // defined(OS_WIN)
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleUnused, HandleUnused)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetProxyConfig, SetProxyConfig);
     IPC_MESSAGE_HANDLER(AutomationMsg_PrintAsync, PrintAsync)

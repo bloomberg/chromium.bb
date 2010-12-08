@@ -34,7 +34,6 @@
 #include "app/keyboard_codes.h"
 #include "base/file_path.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
-#include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
@@ -46,39 +45,24 @@ static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous mousemove works correctly
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
-  if (!UITest::in_process_renderer()) {
-    scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-    HWND tab_window = NULL;
-    tab_proxy->GetHWND(&tab_window);
+  if (UITest::in_process_renderer())
+    return;
 
-    EXPECT_TRUE(IsWindow(tab_window));
+  show_window_ = true;
+  const FilePath kTestDir(FILE_PATH_LITERAL("npapi"));
+  const FilePath test_case(
+      FILE_PATH_LITERAL("execute_script_delete_in_mouse_move.html"));
+  GURL url = ui_test_utils::GetTestUrl(kTestDir, test_case);
+  NavigateToURL(url);
 
-    show_window_ = true;
-    const FilePath kTestDir(FILE_PATH_LITERAL("npapi"));
-    const FilePath test_case(
-        FILE_PATH_LITERAL("execute_script_delete_in_mouse_move.html"));
-    GURL url = ui_test_utils::GetTestUrl(kTestDir, test_case);
-    NavigateToURL(url);
+  scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
 
-    POINT cursor_position = {130, 130};
-    ClientToScreen(tab_window, &cursor_position);
+  gfx::Point cursor_position(150, 250);
+  window->SimulateOSMouseMove(cursor_position);
 
-    double screen_width = ::GetSystemMetrics(SM_CXSCREEN) - 1;
-    double screen_height = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-    double location_x =  cursor_position.x * (65535.0f / screen_width);
-    double location_y =  cursor_position.y * (65535.0f / screen_height);
-
-    INPUT input_info = {0};
-    input_info.type = INPUT_MOUSE;
-    input_info.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-    input_info.mi.dx = static_cast<long>(location_x);
-    input_info.mi.dy = static_cast<long>(location_y);
-    ::SendInput(1, &input_info, sizeof(INPUT));
-
-    WaitForFinish("execute_script_delete_in_mouse_move", "1", url,
-                  kTestCompleteCookie, kTestCompleteSuccess,
-                  action_max_timeout_ms());
-  }
+  WaitForFinish("execute_script_delete_in_mouse_move", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                action_max_timeout_ms());
 }
 
 // Flaky, http://crbug.com/60071.

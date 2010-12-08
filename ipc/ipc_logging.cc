@@ -5,7 +5,6 @@
 #include "ipc/ipc_logging.h"
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
-// This will cause render_messages.h etc to define ViewMsgLog and friends.
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
 #endif
 
@@ -13,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -38,7 +38,7 @@ const int kLogSendDelayMs = 100;
 
 // We use a pointer to the function table to avoid any linker dependencies on
 // all the traits used as IPC message parameters.
-Logging::LogFunction *Logging::log_function_mapping_;
+LogFunctionMap* Logging::log_function_map_;
 
 Logging::Logging()
     : enabled_(false),
@@ -68,10 +68,6 @@ Logging::~Logging() {
 
 Logging* Logging::current() {
   return Singleton<Logging>::get();
-}
-
-void Logging::SetLoggerFunctions(LogFunction *functions) {
-  log_function_mapping_ = functions;
 }
 
 void Logging::SetConsumer(Consumer* consumer) {
@@ -164,16 +160,20 @@ void Logging::OnPostDispatchMessage(const Message& message,
 void Logging::GetMessageText(uint32 type, std::string* name,
                              const Message* message,
                              std::string* params) {
-  if (!log_function_mapping_)
+  if (!log_function_map_)
     return;
 
-  int message_class = type >> 16;
-  if (log_function_mapping_[message_class] != NULL) {
-    log_function_mapping_[message_class](type, name, message, params);
-  } else {
-    DVLOG(1) << "No logger function associated with message class "
-             << message_class;
+  LogFunctionMap::iterator it = log_function_map_->find(type);
+  if (it == log_function_map_->end()) {
+    if (name) {
+      *name = "[UNKNOWN MSG ";
+      *name += base::IntToString(type);
+      *name += " ]";
+    }
+    return;
   }
+
+  (*it->second)(name, message, params);
 }
 
 void Logging::Log(const LogData& data) {

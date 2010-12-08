@@ -13,8 +13,6 @@
 #include "gfx/native_widget_types.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 
-#define MESSAGES_INTERNAL_FILE \
-    "chrome/common/gpu_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/gpu_messages_internal.h"
 
 #endif  // CHROME_COMMON_GPU_MESSAGES_H_

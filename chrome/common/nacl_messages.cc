@@ -2,8 +2,5 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define IPC_MESSAGE_IMPL
 #include "chrome/common/nacl_messages.h"
-
-#define MESSAGES_INTERNAL_IMPL_FILE \
-  "chrome/common/nacl_messages_internal.h"
-#include "ipc/ipc_message_impl_macros.h"

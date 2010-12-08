@@ -843,7 +843,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
     if (dib) {
       if (dib->size() < size) {
         DLOG(WARNING) << "Transport DIB too small for given rectangle";
-        process()->ReceivedBadMessage(ViewHostMsg_UpdateRect__ID);
+        process()->ReceivedBadMessage(ViewHostMsg_UpdateRect::ID);
       } else {
         // Scroll the backing store.
         if (!params.scroll_rect.IsEmpty()) {
@@ -951,12 +951,12 @@ void RenderWidgetHost::ProcessWheelAck() {
 
 void RenderWidgetHost::OnMsgFocus() {
   // Only RenderViewHost can deal with that message.
-  process()->ReceivedBadMessage(ViewHostMsg_Focus__ID);
+  process()->ReceivedBadMessage(ViewHostMsg_Focus::ID);
 }
 
 void RenderWidgetHost::OnMsgBlur() {
   // Only RenderViewHost can deal with that message.
-  process()->ReceivedBadMessage(ViewHostMsg_Blur__ID);
+  process()->ReceivedBadMessage(ViewHostMsg_Blur::ID);
 }
 
 void RenderWidgetHost::OnMsgSetCursor(const WebCursor& cursor) {

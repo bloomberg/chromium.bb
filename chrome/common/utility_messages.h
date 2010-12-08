@@ -71,7 +71,6 @@ struct ParamTraits<UpdateManifest::Results> {
 
 }  // namespace IPC
 
-#define MESSAGES_INTERNAL_FILE "chrome/common/utility_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/utility_messages_internal.h"
 
 #endif  // CHROME_COMMON_UTILITY_MESSAGES_H_

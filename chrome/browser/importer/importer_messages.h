@@ -363,8 +363,6 @@ struct ParamTraits<TemplateURL> {
 
 }  // namespace IPC
 
-#define MESSAGES_INTERNAL_FILE \
-    "chrome/browser/importer/importer_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/browser/importer/importer_messages_internal.h"
 
 #endif  // CHROME_BROWSER_IMPORTER_IMPORTER_MESSAGES_H_

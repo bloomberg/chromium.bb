@@ -8,11 +8,8 @@
 
 #include <map>
 
-#include "ipc/ipc_message_utils.h"
-
 typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 
-#define MESSAGES_INTERNAL_FILE "chrome/common/devtools_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/devtools_messages_internal.h"
 
 #endif  // CHROME_COMMON_DEVTOOLS_MESSAGES_H_

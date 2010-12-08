@@ -345,25 +345,25 @@ std::wstring BuildCmdLine(const std::string& channel_id,
 
 int IsTabMessage(const IPC::Message& message) {
   switch (message.type()) {
-    case AutomationMsg_NavigationStateChanged__ID:
-    case AutomationMsg_UpdateTargetUrl__ID:
-    case AutomationMsg_HandleAccelerator__ID:
-    case AutomationMsg_TabbedOut__ID:
-    case AutomationMsg_OpenURL__ID:
-    case AutomationMsg_NavigationFailed__ID:
-    case AutomationMsg_DidNavigate__ID:
-    case AutomationMsg_TabLoaded__ID:
-    case AutomationMsg_ForwardMessageToExternalHost__ID:
-    case AutomationMsg_ForwardContextMenuToExternalHost__ID:
-    case AutomationMsg_RequestStart__ID:
-    case AutomationMsg_RequestRead__ID:
-    case AutomationMsg_RequestEnd__ID:
-    case AutomationMsg_DownloadRequestInHost__ID:
-    case AutomationMsg_SetCookieAsync__ID:
-    case AutomationMsg_AttachExternalTab__ID:
-    case AutomationMsg_RequestGoToHistoryEntryOffset__ID:
-    case AutomationMsg_GetCookiesFromHost__ID:
-    case AutomationMsg_CloseExternalTab__ID: {
+    case AutomationMsg_NavigationStateChanged::ID:
+    case AutomationMsg_UpdateTargetUrl::ID:
+    case AutomationMsg_HandleAccelerator::ID:
+    case AutomationMsg_TabbedOut::ID:
+    case AutomationMsg_OpenURL::ID:
+    case AutomationMsg_NavigationFailed::ID:
+    case AutomationMsg_DidNavigate::ID:
+    case AutomationMsg_TabLoaded::ID:
+    case AutomationMsg_ForwardMessageToExternalHost::ID:
+    case AutomationMsg_ForwardContextMenuToExternalHost::ID:
+    case AutomationMsg_RequestStart::ID:
+    case AutomationMsg_RequestRead::ID:
+    case AutomationMsg_RequestEnd::ID:
+    case AutomationMsg_DownloadRequestInHost::ID:
+    case AutomationMsg_SetCookieAsync::ID:
+    case AutomationMsg_AttachExternalTab::ID:
+    case AutomationMsg_RequestGoToHistoryEntryOffset::ID:
+    case AutomationMsg_GetCookiesFromHost::ID:
+    case AutomationMsg_CloseExternalTab::ID: {
       // Read tab handle from the message.
       void* iter = NULL;
       int tab_handle = 0;
@@ -380,7 +380,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
   // The first argument of the message is always the tab handle.
   void* iter = 0;
   switch (m.type()) {
-    case AutomationMsg_NavigationStateChanged__ID: {
+    case AutomationMsg_NavigationStateChanged::ID: {
       // Tuple3<int, int, IPC::NavigationInfo>
       AutomationMsg_NavigationStateChanged::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -388,7 +388,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_UpdateTargetUrl__ID: {
+    case AutomationMsg_UpdateTargetUrl::ID: {
       // Tuple2<int, std::wstring>
       AutomationMsg_UpdateTargetUrl::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -396,7 +396,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_HandleAccelerator__ID: {
+    case AutomationMsg_HandleAccelerator::ID: {
       // Tuple2<int, MSG>
       AutomationMsg_HandleAccelerator::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -404,7 +404,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_TabbedOut__ID: {
+    case AutomationMsg_TabbedOut::ID: {
       // Tuple2<int, bool>
       AutomationMsg_TabbedOut::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -412,7 +412,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_OpenURL__ID: {
+    case AutomationMsg_OpenURL::ID: {
       // Tuple4<int, GURL, GURL, int>
       AutomationMsg_OpenURL::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -420,7 +420,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_NavigationFailed__ID: {
+    case AutomationMsg_NavigationFailed::ID: {
       // Tuple3<int, int, GURL>
       AutomationMsg_NavigationFailed::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -428,7 +428,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_DidNavigate__ID: {
+    case AutomationMsg_DidNavigate::ID: {
       // Tuple2<int, IPC::NavigationInfo>
       AutomationMsg_DidNavigate::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -436,7 +436,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_TabLoaded__ID: {
+    case AutomationMsg_TabLoaded::ID: {
       // Tuple2<int, GURL>
       AutomationMsg_TabLoaded::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -444,7 +444,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_ForwardMessageToExternalHost__ID: {
+    case AutomationMsg_ForwardMessageToExternalHost::ID: {
       // Tuple4<int, string, string, string>
       AutomationMsg_ForwardMessageToExternalHost::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -452,7 +452,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_ForwardContextMenuToExternalHost__ID: {
+    case AutomationMsg_ForwardContextMenuToExternalHost::ID: {
       // Tuple4<int, HANDLE, int, IPC::ContextMenuParams>
       AutomationMsg_ForwardContextMenuToExternalHost::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -460,7 +460,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_RequestStart__ID: {
+    case AutomationMsg_RequestStart::ID: {
       // Tuple3<int, int, IPC::AutomationURLRequest>
       AutomationMsg_RequestStart::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -468,7 +468,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_RequestRead__ID: {
+    case AutomationMsg_RequestRead::ID: {
       // Tuple3<int, int, int>
       AutomationMsg_RequestRead::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -476,7 +476,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_RequestEnd__ID: {
+    case AutomationMsg_RequestEnd::ID: {
       // Tuple3<int, int, URLRequestStatus>
       AutomationMsg_RequestEnd::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -484,7 +484,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_DownloadRequestInHost__ID: {
+    case AutomationMsg_DownloadRequestInHost::ID: {
       // Tuple2<int, int>
       AutomationMsg_DownloadRequestInHost::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -492,7 +492,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_SetCookieAsync__ID: {
+    case AutomationMsg_SetCookieAsync::ID: {
       // Tuple3<int, GURL, string>
       AutomationMsg_SetCookieAsync::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -500,7 +500,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_AttachExternalTab__ID: {
+    case AutomationMsg_AttachExternalTab::ID: {
       // Tuple2<int, IPC::AttachExternalTabParams>
       AutomationMsg_AttachExternalTab::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -508,7 +508,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_RequestGoToHistoryEntryOffset__ID: {
+    case AutomationMsg_RequestGoToHistoryEntryOffset::ID: {
       // Tuple2<int, int>
       AutomationMsg_RequestGoToHistoryEntryOffset::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -516,7 +516,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_GetCookiesFromHost__ID: {
+    case AutomationMsg_GetCookiesFromHost::ID: {
       // Tuple3<int, GURL, int>
       AutomationMsg_GetCookiesFromHost::Param params;
       if (ReadParam(&m, &iter, &params))
@@ -524,7 +524,7 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
       return true;
     }
 
-    case AutomationMsg_CloseExternalTab__ID: {
+    case AutomationMsg_CloseExternalTab::ID: {
       // Tuple1<int>
       delegate->TabClosed();
       return true;

@@ -229,20 +229,6 @@ bool TabProxy::NavigateToURLAsyncWithDisposition(
   return status;
 }
 
-#if defined(OS_WIN)
-// TODO(port): Get rid of HWND.
-bool TabProxy::GetHWND(HWND* hwnd) const {
-  if (!is_valid())
-    return false;
-  if (!hwnd) {
-    NOTREACHED();
-    return false;
-  }
-
-  return sender_->Send(new AutomationMsg_TabHWND(0, handle_, hwnd));
-}
-#endif  // defined(OS_WIN)
-
 bool TabProxy::GetProcessID(int* process_id) const {
   if (!is_valid())
     return false;

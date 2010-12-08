@@ -59,7 +59,7 @@ enum {
 class RegisterLoggerFuncs {
  public:
   RegisterLoggerFuncs() {
-    IPC::Logging::SetLoggerFunctions(g_log_function_mapping);
+    IPC::Logging::set_log_function_map(&g_log_function_mapping);
   }
 };
 
@@ -75,45 +75,8 @@ std::set<int> disabled_messages;
 
 bool init_done = false;
 HWND settings_dialog = NULL;
-
-// Settings lists.
-struct Settings {
-  CListViewCtrl* view;
-  CListViewCtrl* view_host;
-  CListViewCtrl* plugin;
-  CListViewCtrl* plugin_host;
-  CListViewCtrl* npobject;
-  CListViewCtrl* plugin_process;
-  CListViewCtrl* plugin_process_host;
-  CListViewCtrl* devtools_agent;
-  CListViewCtrl* devtools_client;
-
-} settings_views = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-void CreateColumn(uint32 start, uint32 end, HWND hwnd,
-                  CListViewCtrl** control) {
-  DCHECK(*control == NULL);
-  *control = new CListViewCtrl(hwnd);
-  CListViewCtrl* control_ptr = *control;
-  control_ptr->SetViewType(LVS_REPORT);
-  control_ptr->SetExtendedListViewStyle(LVS_EX_CHECKBOXES);
-  control_ptr->ModifyStyle(0, LVS_SORTASCENDING | LVS_NOCOLUMNHEADER);
-  control_ptr->InsertColumn(0, L"id", LVCFMT_LEFT, 230);
-
-  for (uint32 i = start; i < end; i++) {
-    std::string name;
-    IPC::Logging::GetMessageText(i, &name, NULL, NULL);
-    std::wstring wname = UTF8ToWide(name);
-
-    int index = control_ptr->InsertItem(
-        LVIF_TEXT | LVIF_PARAM, 0, wname.c_str(), 0, 0, 0, i);
-
-    control_ptr->SetItemText(index, 0, wname.c_str());
-
-    if (disabled_messages.find(i) == disabled_messages.end())
-      control_ptr->SetCheckState(index, TRUE);
-  }
-}
+// Settings.
+CListViewCtrl* messages = NULL;
 
 void OnCheck(int id, bool checked) {
   if (!init_done)
@@ -125,58 +88,38 @@ void OnCheck(int id, bool checked) {
     disabled_messages.insert(id);
 }
 
-
-void CheckButtons(CListViewCtrl* control, bool check) {
-  int count = control->GetItemCount();
-  for (int i = 0; i < count; ++i)
-    control->SetCheckState(i, check);
-}
-
 void InitDialog(HWND hwnd) {
-  CreateColumn(ViewStart, ViewEnd, ::GetDlgItem(hwnd, IDC_View),
-               &settings_views.view);
-  CreateColumn(ViewHostStart, ViewHostEnd, ::GetDlgItem(hwnd, IDC_ViewHost),
-               &settings_views.view_host);
-  CreateColumn(PluginStart, PluginEnd, ::GetDlgItem(hwnd, IDC_Plugin),
-               &settings_views.plugin);
-  CreateColumn(PluginHostStart, PluginHostEnd,
-               ::GetDlgItem(hwnd, IDC_PluginHost),
-               &settings_views.plugin_host);
-  CreateColumn(NPObjectStart, NPObjectEnd, ::GetDlgItem(hwnd, IDC_NPObject),
-               &settings_views.npobject);
-  CreateColumn(PluginProcessStart, PluginProcessEnd,
-               ::GetDlgItem(hwnd, IDC_PluginProcess),
-               &settings_views.plugin_process);
-  CreateColumn(PluginProcessHostStart, PluginProcessHostEnd,
-               ::GetDlgItem(hwnd, IDC_PluginProcessHost),
-               &settings_views.plugin_process_host);
-  CreateColumn(DevToolsAgentStart, DevToolsAgentEnd,
-               ::GetDlgItem(hwnd, IDC_DevToolsAgent),
-               &settings_views.devtools_agent);
-  CreateColumn(DevToolsClientStart, DevToolsClientEnd,
-               ::GetDlgItem(hwnd, IDC_DevToolsClient),
-               &settings_views.devtools_client);
+  messages = new CListViewCtrl(::GetDlgItem(hwnd, IDC_Messages));
+
+  messages->SetViewType(LVS_REPORT);
+  messages->SetExtendedListViewStyle(LVS_EX_CHECKBOXES);
+  messages->ModifyStyle(0, LVS_SORTASCENDING | LVS_NOCOLUMNHEADER);
+  messages->InsertColumn(0, L"id", LVCFMT_LEFT, 230);
+
+  LogFunctionMap* log_functions = IPC::Logging::log_function_map();
+  for (LogFunctionMap::iterator i = log_functions->begin();
+       i != log_functions->end(); ++i) {
+    std::string name;
+    (*i->second)(&name, NULL, NULL);
+    if (name.empty())
+      continue;  // Will happen if the message file isn't included above.
+    std::wstring wname = UTF8ToWide(name);
+
+    int index = messages->InsertItem(
+        LVIF_TEXT | LVIF_PARAM, 0, wname.c_str(), 0, 0, 0, i->first);
+
+    messages->SetItemText(index, 0, wname.c_str());
+
+    if (disabled_messages.find(i->first) == disabled_messages.end())
+      messages->SetCheckState(index, TRUE);
+  }
+
   init_done = true;
 }
 
 void CloseDialog() {
-  delete settings_views.view;
-  delete settings_views.view_host;
-  delete settings_views.plugin_host;
-  delete settings_views.npobject;
-  delete settings_views.plugin_process;
-  delete settings_views.plugin_process_host;
-  delete settings_views.devtools_agent;
-  delete settings_views.devtools_client;
-  settings_views.view = NULL;
-  settings_views.view_host = NULL;
-  settings_views.plugin = NULL;
-  settings_views.plugin_host = NULL;
-  settings_views.npobject = NULL;
-  settings_views.plugin_process = NULL;
-  settings_views.plugin_process_host = NULL;
-  settings_views.devtools_agent = NULL;
-  settings_views.devtools_client = NULL;
+  delete messages;
+  messages = NULL;
 
   init_done = false;
 
@@ -185,7 +128,7 @@ void CloseDialog() {
 
   /* The old version of this code stored the last settings in the preferences.
      But with this dialog, there currently isn't an easy way to get the profile
-     to asave in the preferences.
+     to save in the preferences.
   Profile* current_profile = profile();
   if (!current_profile)
     return;
@@ -203,38 +146,9 @@ void CloseDialog() {
 }
 
 void OnButtonClick(int id) {
-  switch (id) {
-    case IDC_ViewAll:
-      CheckButtons(settings_views.view, true);
-      break;
-    case IDC_ViewNone:
-      CheckButtons(settings_views.view, false);
-      break;
-    case IDC_ViewHostAll:
-      CheckButtons(settings_views.view_host, true);
-      break;
-    case IDC_ViewHostNone:
-      CheckButtons(settings_views.view_host, false);
-      break;
-    case IDC_PluginAll:
-      CheckButtons(settings_views.plugin, true);
-      break;
-    case IDC_PluginNone:
-      CheckButtons(settings_views.plugin, false);
-      break;
-    case IDC_PluginHostAll:
-      CheckButtons(settings_views.plugin_host, true);
-      break;
-    case IDC_PluginHostNone:
-      CheckButtons(settings_views.plugin_host, false);
-      break;
-    case IDC_NPObjectAll:
-      CheckButtons(settings_views.npobject, true);
-      break;
-    case IDC_NPObjectNone:
-      CheckButtons(settings_views.npobject, false);
-      break;
-  }
+  int count = messages->GetItemCount();
+  for (int i = 0; i < count; ++i)
+    messages->SetCheckState(i, id == IDC_MessagesAll);
 }
 
 INT_PTR CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -250,11 +164,7 @@ INT_PTR CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       break;
     case WM_NOTIFY: {
       NMLISTVIEW* info = reinterpret_cast<NM_LISTVIEW*>(lparam);
-      if ((wparam == IDC_View || wparam == IDC_ViewHost ||
-           wparam == IDC_Plugin ||
-           wparam == IDC_PluginHost || wparam == IDC_NPObject ||
-           wparam == IDC_PluginProcess || wparam == IDC_PluginProcessHost) &&
-          info->hdr.code == LVN_ITEMCHANGED) {
+      if (wparam == IDC_Messages && info->hdr.code == LVN_ITEMCHANGED) {
         if (info->uChanged & LVIF_STATE) {
           bool checked = (info->uNewState >> 12) == 2;
           OnCheck(static_cast<int>(info->lParam), checked);

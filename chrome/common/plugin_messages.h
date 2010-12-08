@@ -236,8 +236,6 @@ struct ParamTraits<PluginMsg_UpdateGeometry_Param> {
 
 }  // namespace IPC
 
-
-#define MESSAGES_INTERNAL_FILE "chrome/common/plugin_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/plugin_messages_internal.h"
 
 #endif  // CHROME_COMMON_PLUGIN_MESSAGES_H_

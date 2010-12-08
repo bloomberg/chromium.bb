@@ -238,11 +238,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                           int flags,
                           bool press_escape_en_route,
                           IPC::Message* reply_message);
-
-#if defined(OS_WIN)
-  // TODO(port): Replace HWND.
-  void GetTabHWND(int handle, HWND* tab_hwnd);
-#endif  // defined(OS_WIN)
   void HandleUnused(const IPC::Message& message, int handle);
   void SetFilteredInet(const IPC::Message& message, bool enabled);
   void GetFilteredInetHitCount(int* hit_count);

@@ -197,14 +197,6 @@ class TabProxy : public AutomationResourceProxy,
   // the last tab.
   bool Close(bool wait_until_closed) WARN_UNUSED_RESULT;
 
-#if defined(OS_WIN)
-  // TODO(port): Use portable replacement for HWND.
-
-  // Gets the HWND that corresponds to the content area of this tab.
-  // Returns true if the call was successful.
-  bool GetHWND(HWND* hwnd) const WARN_UNUSED_RESULT;
-#endif  // defined(OS_WIN)
-
   // Gets the process ID that corresponds to the content area of this tab.
   // Returns true if the call was successful.  If the specified tab has no
   // separate process for rendering its content, the return value is true but

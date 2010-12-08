@@ -8,11 +8,6 @@
 #define CHROME_COMMON_NACL_MESSAGES_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "ipc/ipc_message_utils.h"
-
-#define MESSAGES_INTERNAL_FILE "chrome/common/nacl_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/nacl_messages_internal.h"
 
 #endif  // CHROME_COMMON_NACL_MESSAGES_H_
-

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/render_messages.h"
-
 #include "base/values.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/extension_extent.h"
@@ -23,33 +21,24 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_data.h"
-#include "webkit/glue/context_menu.h"
-#include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
-#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/webplugin.h"
-#include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webmenuitem.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/common/font_descriptor_mac.h"
 #endif
 
-#define MESSAGES_INTERNAL_IMPL_FILE \
-  "chrome/common/render_messages_internal.h"
-#include "ipc/ipc_message_impl_macros.h"
+#define IPC_MESSAGE_IMPL
+#include "chrome/common/render_messages.h"
 
 namespace IPC {
 

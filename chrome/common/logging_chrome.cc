@@ -238,7 +238,7 @@ void InitChromeLogging(const CommandLine& command_line,
     "Attempted to initialize logging when it was already initialized.";
 
 #if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
-  IPC::Logging::SetLoggerFunctions(g_log_function_mapping);
+  IPC::Logging::set_log_function_map(&g_log_function_mapping);
 #endif
 
   FilePath log_path = GetLogFileName();

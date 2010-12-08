@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/plugin_messages.h"
-
 #include "base/utf_string_conversions.h"
 #include "ipc/ipc_channel_handle.h"
 
-#define MESSAGES_INTERNAL_IMPL_FILE \
-  "chrome/common/plugin_messages_internal.h"
-#include "ipc/ipc_message_impl_macros.h"
+#define IPC_MESSAGE_IMPL
+#include "chrome/common/plugin_messages.h"
 
 PluginMsg_Init_Params::PluginMsg_Init_Params()
     : containing_window(0),

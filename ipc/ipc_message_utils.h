@@ -46,41 +46,19 @@
 // base.  Messages have unique IDs across channels in order for the IPC logging
 // code to figure out the message class from its ID.
 enum IPCMessageStart {
-  // By using a start value of 0 for automation messages, we keep backward
-  // compatibility with old builds.
   AutomationMsgStart = 0,
   ViewMsgStart,
-  ViewHostMsgStart,
-  PluginProcessMsgStart,
-  PluginProcessHostMsgStart,
   PluginMsgStart,
-  PluginHostMsgStart,
-  ProfileImportProcessMsgStart,
-  ProfileImportProcessHostMsgStart,
-  NPObjectMsgStart,
+  ProfileImportMsgStart,
   TestMsgStart,
-  DevToolsAgentMsgStart,
-  DevToolsClientMsgStart,
-  WorkerProcessMsgStart,
-  WorkerProcessHostMsgStart,
+  DevToolsMsgStart,
   WorkerMsgStart,
-  WorkerHostMsgStart,
-  NaClProcessMsgStart,
-  GpuCommandBufferMsgStart,
+  NaClMsgStart,
   UtilityMsgStart,
-  UtilityHostMsgStart,
   GpuMsgStart,
-  GpuHostMsgStart,
-  GpuChannelMsgStart,
-  GpuVideoDecoderHostMsgStart,
-  GpuVideoDecoderMsgStart,
   ServiceMsgStart,
-  ServiceHostMsgStart,
   PpapiMsgStart,
-  PpapiHostMsgStart,
-  // NOTE: When you add a new message class, also update
-  // IPCStatusView::IPCStatusView to ensure logging works.
-  LastMsgIndex
+  FirefoxImporterUnittestMsgStart,
 };
 
 class DictionaryValue;

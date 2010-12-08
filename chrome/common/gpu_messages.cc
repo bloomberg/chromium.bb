@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/gpu_messages.h"
-
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/dx_diag_node.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ipc/ipc_message_utils.h"
 
-#define MESSAGES_INTERNAL_IMPL_FILE \
-  "chrome/common/gpu_messages_internal.h"
-#include "ipc/ipc_message_impl_macros.h"
+#define IPC_MESSAGE_IMPL
+#include "chrome/common/gpu_messages.h"
 
 #if defined(OS_MACOSX)
 

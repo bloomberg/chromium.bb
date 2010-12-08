@@ -23,7 +23,6 @@
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/serialized_structs.h"
 
-#define MESSAGES_INTERNAL_FILE "ppapi/proxy/ppapi_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "ppapi/proxy/ppapi_messages_internal.h"
 
 #endif  // PPAPI_PROXY_PPAPI_MESSAGES_H_

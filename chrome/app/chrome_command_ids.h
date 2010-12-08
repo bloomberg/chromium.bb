@@ -5,25 +5,9 @@
 // This file lists all the command IDs understood by e.g. the browser.
 // It is used by Windows RC files, Mac NIB files, and other platforms too.
 
-#define IDC_View                        4000
-#define IDC_ViewHost                    4001
-#define IDC_Plugin                      4002
-#define IDC_PluginHost                  4003
-#define IDC_NPObject                    4004
-#define IDC_PluginProcess               4005
-#define IDC_PluginProcessHost           4006
-#define IDC_ViewAll                     4007
-#define IDC_ViewNone                    4008
-#define IDC_ViewHostAll                 4009
-#define IDC_ViewHostNone                4010
-#define IDC_PluginAll                   4011
-#define IDC_PluginNone                  4012
-#define IDC_NPObjectAll                 4013
-#define IDC_NPObjectNone                4014
-#define IDC_PluginHostAll               4015
-#define IDC_PluginHostNone              4016
-#define IDC_DevToolsAgent               4017
-#define IDC_DevToolsClient              4018
+#define IDC_Messages                    4000
+#define IDC_MessagesAll                 4007
+#define IDC_MessagesNone                4008
 
 // NOTE: Within each of the following sections, the IDs are ordered roughly by
 // how they appear in the GUI/menus (left to right, top to bottom, etc.).

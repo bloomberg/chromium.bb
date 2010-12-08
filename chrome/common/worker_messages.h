@@ -71,7 +71,6 @@ struct ParamTraits<WorkerProcessMsg_CreateWorker_Params> {
 
 }  // namespace IPC
 
-#define MESSAGES_INTERNAL_FILE "chrome/common/worker_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/worker_messages_internal.h"
 
 #endif  // CHROME_COMMON_WORKER_MESSAGES_H_

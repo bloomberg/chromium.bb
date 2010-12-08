@@ -638,8 +638,6 @@ struct ParamTraits<AttachExternalTabParams> {
 
 }  // namespace IPC
 
-#define MESSAGES_INTERNAL_FILE \
-    "chrome/common/automation_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
+#include "chrome/common/automation_messages_internal.h"
 
 #endif  // CHROME_COMMON_AUTOMATION_MESSAGES_H__

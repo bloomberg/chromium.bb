@@ -157,7 +157,7 @@ class Message : public Pickle {
   }
 
   // Used for async messages with no parameters.
-  static void Log(const Message* msg, std::string* l) {
+  static void Log(std::string* name, const Message* msg, std::string* l) {
   }
 
   // Find the end of the message data that starts at range_start.  Returns NULL

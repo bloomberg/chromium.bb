@@ -12,9 +12,18 @@
 
 #include <vector>
 
+#include "base/hash_tables.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+
+// Logging function. |name| is a string in ASCII and |params| is a string in
+// UTF-8.
+typedef void (*LogFunction)(std::string* name,
+                            const IPC::Message* msg,
+                            std::string* params);
+
+typedef base::hash_map<uint32, LogFunction > LogFunctionMap;
 
 namespace IPC {
 
@@ -71,14 +80,13 @@ class Logging {
   static void GetMessageText(uint32 type, std::string* name,
                              const Message* message, std::string* params);
 
-  // Logging function. |name| is a string in ASCII and |params| is a string in
-  // UTF-8.
-  typedef void (*LogFunction)(uint32 type,
-                             std::string* name,
-                             const Message* msg,
-                             std::string* params);
+  static void set_log_function_map(LogFunctionMap* functions) {
+    log_function_map_ = functions;
+  }
 
-  static void SetLoggerFunctions(LogFunction *functions);
+  static LogFunctionMap* log_function_map() {
+    return log_function_map_;
+  }
 
  private:
   friend struct DefaultSingletonTraits<Logging>;
@@ -98,7 +106,7 @@ class Logging {
 
   Consumer* consumer_;
 
-  static LogFunction *log_function_mapping_;
+  static LogFunctionMap* log_function_map_;
 };
 
 }  // namespace IPC

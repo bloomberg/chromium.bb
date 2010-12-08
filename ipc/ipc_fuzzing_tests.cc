@@ -98,8 +98,7 @@ TEST(IPCMessageIntegrity, ReadVectorTooLarge2) {
 
 // We don't actually use the messages defined in this file, but we do this
 // to get to the IPC macros.
-#define MESSAGES_INTERNAL_FILE "ipc/ipc_sync_message_unittest.h"
-#include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_sync_message_unittest.h"
 
 enum IPCMessageIds {
   UNUSED_IPC_TYPE,

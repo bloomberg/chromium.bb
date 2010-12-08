@@ -14,19 +14,11 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_message.h"
-#include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_switches.h"
 #include "testing/multiprocess_func_list.h"
 
-// Declaration of IPC Messages used for this test.
-#define MESSAGES_INTERNAL_FILE \
-    "chrome/browser/importer/firefox_importer_unittest_messages_internal.h"
-#include "ipc/ipc_message_macros.h"
-
-// Definition of IPC Messages used for this test.
-#define MESSAGES_INTERNAL_IMPL_FILE \
-  "chrome/browser/importer/firefox_importer_unittest_messages_internal.h"
-#include "ipc/ipc_message_impl_macros.h"
+#define IPC_MESSAGE_IMPL
+#include "chrome/browser/importer/firefox_importer_unittest_messages_internal.h"
 
 namespace {
 
