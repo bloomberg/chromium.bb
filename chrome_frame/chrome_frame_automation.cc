@@ -1220,6 +1220,11 @@ void ChromeFrameAutomationClient::OnMessageReceivedUIThread(
 
 void ChromeFrameAutomationClient::OnChannelErrorUIThread() {
   DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+
+  // Report a metric that something went wrong unexpectedly.
+  CrashMetricsReporter::GetInstance()->IncrementMetric(
+      CrashMetricsReporter::CHANNEL_ERROR_COUNT);
+
   // Forward to the delegate.
   if (chrome_frame_delegate_)
     chrome_frame_delegate_->OnChannelError();

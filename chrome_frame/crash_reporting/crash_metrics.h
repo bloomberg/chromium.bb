@@ -22,6 +22,7 @@ class CrashMetricsReporter {
     CRASH_COUNT,
     CHROME_FRAME_NAVIGATION_COUNT,
     SESSION_ID,
+    CHANNEL_ERROR_COUNT,
     LAST_METRIC,
   };
   // Returns the global instance of this class.
@@ -62,4 +63,3 @@ class CrashMetricsReporter {
 };
 
 #endif  // CHROME_FRAME_CRASH_REPORTING_CRASH_METRICS_H_
-

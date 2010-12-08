@@ -19,6 +19,7 @@ wchar_t* CrashMetricsReporter::g_metric_names[LAST_METRIC] = {
   L"crashcount",
   L"chrome_frame_navigationcount",
   L"sessionid",
+  L"channel_error",
 };
 
 CrashMetricsReporter* CrashMetricsReporter::GetInstance() {
@@ -88,5 +89,11 @@ void CrashMetricsReporter::RecordCrashMetrics() {
                                       crash_count);
     SetMetric(CRASH_COUNT, 0);
   }
-}
 
+  int channel_error_count = GetMetric(CHANNEL_ERROR_COUNT);
+  if (channel_error_count > 0) {
+    THREAD_SAFE_UMA_HISTOGRAM_COUNTS("ChromeFrame.ChannelErrorCount",
+                                      channel_error_count);
+    SetMetric(CHANNEL_ERROR_COUNT, 0);
+  }
+}
