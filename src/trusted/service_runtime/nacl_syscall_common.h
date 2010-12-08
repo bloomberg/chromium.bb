@@ -17,10 +17,6 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
-#if defined(HAVE_SDL)
-#include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
-#endif
-
 EXTERN_C_BEGIN
 
 struct NaClAbiNaClImcMsgHdr;
@@ -187,38 +183,6 @@ int32_t NaClCommonSysTdbGet(struct NaClAppThread *natp);
 
 int32_t NaClCommonSysThread_Nice(struct NaClAppThread *natp,
                                  const int nice);
-
-#if defined(HAVE_SDL)
-
-int32_t NaClCommonSysMultimedia_Init(struct NaClAppThread *natp,
-                                     int                  subsys);
-
-int32_t NaClCommonSysMultimedia_Shutdown(struct NaClAppThread *natp);
-
-int32_t NaClCommonSysVideo_Init(struct NaClAppThread *natp,
-                                int                  width,
-                                int                  height);
-
-int32_t NaClCommonSysVideo_Shutdown(struct NaClAppThread *natp);
-
-int32_t NaClCommonSysVideo_Update(struct NaClAppThread *natp,
-                                  const void           *data);
-
-int32_t NaClCommonSysVideo_Poll_Event(struct NaClAppThread *natp,
-                                      union NaClMultimediaEvent *event);
-
-int32_t NaClCommonSysAudio_Init(struct NaClAppThread *natp,
-                                enum NaClAudioFormat format,
-                                int                  desired_samples,
-                                int                  *obtained_samples);
-
-int32_t NaClCommonSysAudio_Stream(struct NaClAppThread *natp,
-                                  const void           *data,
-                                  size_t               *size);
-
-int32_t NaClCommonSysAudio_Shutdown(struct NaClAppThread *natp);
-
-#endif /* HAVE_SDL */
 
 /* mutex */
 

@@ -226,25 +226,6 @@ extern int nanosleep(const struct timespec *req, struct timespec *rem);
 extern int stat(const char *path, struct stat *buf);
 #endif
 
-#if defined(HAVE_SDL)
-
-/**
- *  does this show up? (how do we define HAVE_SDL?)
- */
-extern int video_init(int width, int height);
-
-/**
- *  does this show up? (how do we define HAVE_SDL?)
- */
-extern int video_fini(void);
-
-/**
- *  does this show up? (how do we define HAVE_SDL?)
- */
-extern int video_blt_rgb(int width, int height, unsigned char const *data);
-
-#endif
-
 /**
  *  @nacl
  *  Creates a bound IMC socket and returns a descriptor for the socket and the

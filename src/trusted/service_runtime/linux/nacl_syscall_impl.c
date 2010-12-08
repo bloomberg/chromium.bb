@@ -55,10 +55,6 @@
 
 #include "native_client/src/trusted/service_runtime/linux/nacl_syscall_inl.h"
 
-#if defined(HAVE_SDL)
-# include "native_client/src/trusted/service_runtime/nacl_bottom_half.h"
-#endif
-
 struct NaClSyscallTableEntry nacl_syscall[NACL_MAX_SYSCALLS] = {{0}};
 
 
@@ -399,63 +395,6 @@ cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
-
-#if defined(HAVE_SDL)
-
-int32_t NaClSysMultimedia_Init(struct NaClAppThread *natp,
-                               int                  subsys) {
-  /* tail call, should compile to a jump */
-  return NaClCommonSysMultimedia_Init(natp, subsys);
-}
-
-int32_t NaClSysMultimedia_Shutdown(struct NaClAppThread *natp) {
-  return NaClCommonSysMultimedia_Shutdown(natp);
-}
-
-int32_t NaClSysVideo_Init(struct NaClAppThread *natp,
-                          int                  width,
-                          int                  height) {
-  /* tail call, should compile to a jump */
-  return NaClCommonSysVideo_Init(natp, width, height);
-}
-
-int32_t NaClSysVideo_Shutdown(struct NaClAppThread *natp) {
-  return NaClCommonSysVideo_Shutdown(natp);
-}
-
-int32_t NaClSysVideo_Update(struct NaClAppThread *natp,
-                            unsigned char        *data) {
-  /* tail call, should compile to a jump */
-  return NaClCommonSysVideo_Update(natp, data);
-}
-
-int32_t NaClSysVideo_Poll_Event(struct NaClAppThread *natp,
-                                union NaClMultimediaEvent *event) {
-  return NaClCommonSysVideo_Poll_Event(natp, event);
-}
-
-int32_t NaClSysAudio_Init(struct NaClAppThread *natp,
-                          enum NaClAudioFormat format,
-                          int                  desired_samples,
-                          int                  *obtained_samples) {
-  return NaClCommonSysAudio_Init(natp, format,
-                                 desired_samples, obtained_samples);
-}
-
-
-int32_t NaClSysAudio_Stream(struct NaClAppThread *natp,
-                            const void           *data,
-                            size_t               *size) {
-  return NaClSliceSysAudio_Stream(natp, data, size);
-}
-
-
-int32_t NaClSysAudio_Shutdown(struct NaClAppThread *natp) {
-  return NaClCommonSysAudio_Shutdown(natp);
-}
-
-
-#endif /* HAVE_SDL */
 
 int32_t NaClSysImc_MakeBoundSock(struct NaClAppThread *natp,
                                  int32_t              *sap) {

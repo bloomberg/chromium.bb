@@ -45,37 +45,4 @@ void *NaClWaitForAsyncOp(struct NaClAppThread *natp) NACL_WUR;
  */
 int32_t NaClWaitForAsyncOpSysRet(struct NaClAppThread *natp) NACL_WUR;
 
-#if defined(HAVE_SDL)
-
-void NaClBotSysMultimedia_Init(struct NaClAppThread *natp,
-                               int                  subsys);
-
-void NaClBotSysMultimedia_Shutdown(struct NaClAppThread *natp);
-
-void NaClBotSysVideo_Init(struct NaClAppThread *natp,
-                          int                  width,
-                          int                  height);
-
-void NaClBotSysVideo_Shutdown(struct NaClAppThread *natp);
-
-void NaClBotSysVideo_Update(struct NaClAppThread *natp,
-                            const void           *data);
-
-void NaClBotSysVideo_Poll_Event(struct NaClAppThread *natp,
-                                union NaClMultimediaEvent *event);
-
-void NaClBotSysAudio_Init(struct NaClAppThread *natp,
-                          enum NaClAudioFormat format,
-                          int                  desired_samples,
-                          int                  *obtained_samples);
-
-void NaClBotSysAudio_Shutdown(struct NaClAppThread *natp);
-
-int32_t NaClSliceSysAudio_Stream(struct NaClAppThread *natp,
-                                 const void           *data,
-                                 size_t               *size) NACL_WUR;
-
-#endif  /* defined(HAVE_SDL) */
-
-
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_BOTTOM_HALF_H_ */

@@ -11,7 +11,6 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 #include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
-#include "native_client/src/trusted/service_runtime/nacl_audio_video.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
@@ -29,9 +28,6 @@ void  NaClAllModulesInit(void) {
   NaClNrdAllModulesInit();
   NaClGlobalModuleInit();  /* various global variables */
   NaClTlsInit();
-#if defined(HAVE_SDL)
-  NaClMultimediaModuleInit();
-#endif
   NaClSyscallTableInit();
   NaClThreadNiceInit();
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
@@ -43,9 +39,6 @@ void  NaClAllModulesInit(void) {
 
 void NaClAllModulesFini(void) {
   NaClSignalHandlerFini();
-#if defined(HAVE_SDL)
-  NaClMultimediaModuleFini();
-#endif
   NaClTlsFini();
   NaClGlobalModuleFini();
   NaClNrdAllModulesFini();
