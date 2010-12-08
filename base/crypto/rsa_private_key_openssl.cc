@@ -50,9 +50,13 @@ bool ExportKey(EVP_PKEY* key,
 // static
 RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  ScopedOpenSSL<RSA, RSA_free> rsa_key(RSA_generate_key(num_bits, 65537L,
-                                                        NULL, NULL));
-  if (!rsa_key.get())
+
+  ScopedOpenSSL<RSA, RSA_free> rsa_key(RSA_new());
+  ScopedOpenSSL<BIGNUM, BN_free> bn(BN_new());
+  if (!rsa_key.get() || !bn.get() || !BN_set_word(bn.get(), 65537L))
+    return NULL;
+
+  if (!RSA_generate_key_ex(rsa_key.get(), num_bits, bn.get(), NULL))
     return NULL;
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
@@ -75,7 +79,8 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   // BIO_new_mem_buf is not const aware, but it does not modify the buffer.
-  char* data = reinterpret_cast<char*>(const_cast<uint8*>(input.data()));
+  char* data = reinterpret_cast<char*>(const_cast<uint8*>(
+      vector_as_array(&input)));
   ScopedOpenSSL<BIO, BIO_free_all> bio(BIO_new_mem_buf(data, input.size()));
   if (!bio.get())
     return NULL;
