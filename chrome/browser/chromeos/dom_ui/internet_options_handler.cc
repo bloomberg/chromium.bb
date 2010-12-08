@@ -296,11 +296,8 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("generalNetworkingTitle",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE));
-
-  localized_strings->SetString("detailsInternetOk",
-      l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("detailsInternetDismiss",
-      l10n_util::GetStringUTF16(IDS_CANCEL));
+      l10n_util::GetStringUTF16(IDS_CLOSE));
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
@@ -431,6 +428,8 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
   }
   connection_plans.SetString("servicePath", cellular->service_path());
   connection_plans.SetBoolean("needsPlan", cellular->needs_new_plan());
+  connection_plans.SetBoolean("activated",
+      cellular->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED);
   connection_plans.Set("plans", plan_list);
   dom_ui_->CallJavascriptFunction(
       L"options.InternetOptions.updateCellularPlans", connection_plans);

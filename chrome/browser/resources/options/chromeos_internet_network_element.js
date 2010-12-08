@@ -3,6 +3,30 @@
 // found in the LICENSE file.
 
 cr.define('options.internet', function() {
+
+  /**
+   * Network settings constants. These enums usually match their C++
+   * counterparts.
+   */
+  function Constants() {}
+  // Minimum length for wireless network password.
+  Constants.MIN_WIRELESS_PASSWORD_LENGTH = 5;
+  // Minimum length for SSID name.
+  Constants.MIN_WIRELESS_SSID_LENGTH = 1;
+  // Cellular activation states:
+  Constants.ACTIVATION_STATE_UNKNOWN             = 0;
+  Constants.ACTIVATION_STATE_ACTIVATED           = 1;
+  Constants.ACTIVATION_STATE_ACTIVATING          = 2;
+  Constants.ACTIVATION_STATE_NOT_ACTIVATED       = 3;
+  Constants.ACTIVATION_STATE_PARTIALLY_ACTIVATED = 4;
+  // Network types:
+  Constants.TYPE_UNKNOWN   = 0;
+  Constants.TYPE_ETHERNET  = 1;
+  Constants.TYPE_WIFI      = 2;
+  Constants.TYPE_WIMAX     = 3;
+  Constants.TYPE_BLUETOOTH = 4;
+  Constants.TYPE_CELLULAR  = 5;
+
   /**
    * Creates a new network list div.
    * @param {Object=} opt_propertyBag Optional properties.
@@ -115,25 +139,6 @@ cr.define('options.internet', function() {
 
 
   /**
-   * Minimum length for wireless network password.
-   * @type {number}
-   */
-  NetworkItem.MIN_WIRELESS_PASSWORD_LENGTH = 5;
-  NetworkItem.MIN_WIRELESS_SSID_LENGTH = 1;
-  // Cellular activation states:
-  NetworkItem.ACTIVATION_STATE_UNKNOWN             = 0;
-  NetworkItem.ACTIVATION_STATE_ACTIVATED           = 1;
-  NetworkItem.ACTIVATION_STATE_ACTIVATING          = 2;
-  NetworkItem.ACTIVATION_STATE_NOT_ACTIVATED       = 3;
-  NetworkItem.ACTIVATION_STATE_PARTIALLY_ACTIVATED = 4;
-  NetworkItem.TYPE_UNKNOWN   = 0;
-  NetworkItem.TYPE_ETHERNET  = 1;
-  NetworkItem.TYPE_WIFI      = 2;
-  NetworkItem.TYPE_WIMAX     = 3;
-  NetworkItem.TYPE_BLUETOOTH = 4;
-  NetworkItem.TYPE_CELLULAR  = 5;
-
-  /**
    * Decorates an element as a network item.
    * @param {!HTMLElement} el The element to decorate.
    */
@@ -188,28 +193,15 @@ cr.define('options.internet', function() {
       var self = this;
       if (!this.data.remembered) {
         var no_plan =
-            this.data.networkType == NetworkItem.TYPE_CELLULAR &&
+            this.data.networkType == Constants.TYPE_CELLULAR &&
             this.data.needs_new_plan;
         var show_activate =
-          (this.data.networkType == NetworkItem.TYPE_CELLULAR &&
+          (this.data.networkType == Constants.TYPE_CELLULAR &&
            this.data.activation_state !=
-               NetworkItem.ACTIVATION_STATE_ACTIVATED &&
+               Constants.ACTIVATION_STATE_ACTIVATED &&
            this.data.activation_state !=
-               NetworkItem.ACTIVATION_STATE_ACTIVATING);
+               Constants.ACTIVATION_STATE_ACTIVATING);
 
-        // Disconnect button if not ethernet and if cellular it should be
-        // activated.
-        if (this.data.networkType != NetworkItem.TYPE_ETHERNET &&
-            !show_activate && this.data.connected) {
-          buttonsDiv.appendChild(
-              this.createButton_('disconnect_button', 'disconnect',
-                                  function(e) {
-                 chrome.send('buttonClickCallback',
-                             [String(self.data.networkType),
-                              self.data.servicePath,
-                              'disconnect']);
-               }));
-        }
         // Show [Activate] button for non-activated Cellular network.
         if (show_activate || no_plan) {
           var button_name = no_plan ? 'buyplan_button' : 'activate_button';
@@ -222,11 +214,23 @@ cr.define('options.internet', function() {
                              'activate']);
               }));
         }
+        // Show disconnect button if not ethernet.
+        if (this.data.networkType != Constants.TYPE_ETHERNET &&
+            this.data.connected) {
+          buttonsDiv.appendChild(
+              this.createButton_('disconnect_button', 'disconnect',
+                                  function(e) {
+                 chrome.send('buttonClickCallback',
+                             [String(self.data.networkType),
+                              self.data.servicePath,
+                              'disconnect']);
+               }));
+        }
         if (!this.data.connected && !this.data.connecting &&
             this.data.connectable) {
           // connect button (if not ethernet and not showing activate button
           // and connectable)
-          if (this.data.networkType != NetworkItem.TYPE_ETHERNET &&
+          if (this.data.networkType != Constants.TYPE_ETHERNET &&
               !show_activate && !no_plan) {
             buttonsDiv.appendChild(
                 this.createButton_('connect_button', 'connect',
@@ -239,7 +243,7 @@ cr.define('options.internet', function() {
           }
         }
         if (this.data.connected ||
-            this.data.networkType == NetworkItem.TYPE_CELLULAR) {
+            this.data.networkType == Constants.TYPE_CELLULAR) {
           buttonsDiv.appendChild(
               this.createButton_('options_button', 'options',
                                  function(e) {
@@ -305,7 +309,7 @@ cr.define('options.internet', function() {
       // Disable login button if there is no password.
       passInput.addEventListener('keyup', function(e) {
         buttonEl.disabled =
-          passInput.value.length < NetworkItem.MIN_WIRELESS_PASSWORD_LENGTH;
+          passInput.value.length < Constants.MIN_WIRELESS_PASSWORD_LENGTH;
       });
 
       passwordDiv.appendChild(buttonEl);
@@ -414,10 +418,10 @@ cr.define('options.internet', function() {
         // Disable login button if ssid is not long enough or
         // password is not long enough (unless no security)
         var ssid_good =
-          ssidInput.value.length >= NetworkItem.MIN_WIRELESS_SSID_LENGTH;
+          ssidInput.value.length >= Constants.MIN_WIRELESS_SSID_LENGTH;
         var pass_good =
           securityInput.value == 'none' ||
-            passInput.value.length >= NetworkItem.MIN_WIRELESS_PASSWORD_LENGTH;
+            passInput.value.length >= Constants.MIN_WIRELESS_PASSWORD_LENGTH;
         buttonEl.disabled = !ssid_good || !pass_good;
       };
       ssidInput.addEventListener('keyup', keyup_listener);
@@ -494,6 +498,7 @@ cr.define('options.internet', function() {
   cr.defineProperty(NetworkItem, 'connectable', cr.PropertyKind.BOOL_ATTR);
 
   return {
+    Constants: Constants,
     NetworkElement: NetworkElement
   };
 });
