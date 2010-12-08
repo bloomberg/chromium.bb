@@ -99,29 +99,19 @@ bool PpapiThread::LoadPluginLib(base::ProcessHandle host_process_handle,
 
 bool PpapiThread::SetupRendererChannel(int renderer_id,
                                        IPC::ChannelHandle* handle) {
-  std::string channel_key = StringPrintf(
-      "%d.r%d", base::GetCurrentProcId(), renderer_id);
-
-#if defined(OS_POSIX)
-  // This gets called when the PluginChannel is initially created. At this
-  // point, create the socketpair and assign the plugin side FD to the channel
-  // name. Keep the renderer side FD as a member variable in the PluginChannel
-  // to be able to transmit it through IPC.
-  int plugin_fd;
-  if (!IPC::SocketPair(&plugin_fd, &renderer_fd_))
-    return false;
-  IPC::AddChannelSocket(channel_key, plugin_fd);
-#endif
-
+  IPC::ChannelHandle plugin_handle;
+  plugin_handle.name = StringPrintf("%d.r%d", base::GetCurrentProcId(),
+                                    renderer_id);
   if (!dispatcher_->InitWithChannel(
           ChildProcess::current()->io_message_loop(),
-          channel_key, false,
+          plugin_handle, false,
           ChildProcess::current()->GetShutDownEvent()))
     return false;
 
-  handle->name = channel_key;
+  handle->name = plugin_handle.name;
 #if defined(OS_POSIX)
   // On POSIX, pass the renderer-side FD.
+  renderer_fd_ = dispatcher_->channel()->GetClientFileDescriptor();
   handle->socket = base::FileDescriptor(renderer_fd_, false);
 #endif
   return true;

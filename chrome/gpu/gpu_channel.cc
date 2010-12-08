@@ -24,24 +24,12 @@
 #endif
 
 GpuChannel::GpuChannel(int renderer_id)
-    : renderer_id_(renderer_id)
-#if defined(OS_POSIX)
-    , renderer_fd_(-1)
-#endif
-{
+    : renderer_id_(renderer_id) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
 }
 
 GpuChannel::~GpuChannel() {
-#if defined(OS_POSIX)
-  IPC::RemoveAndCloseChannelSocket(GetChannelName());
-
-  // If we still have the renderer FD, close it.
-  if (renderer_fd_ != -1) {
-    close(renderer_fd_);
-  }
-#endif
 }
 
 void GpuChannel::OnChannelConnected(int32 peer_pid) {
@@ -242,15 +230,6 @@ bool GpuChannel::Init() {
 
   // Map renderer ID to a (single) channel to that process.
   std::string channel_name = GetChannelName();
-#if defined(OS_POSIX)
-  // This gets called when the GpuChannel is initially created. At this
-  // point, create the socketpair and assign the GPU side FD to the channel
-  // name. Keep the renderer side FD as a member variable in the PluginChannel
-  // to be able to transmit it through IPC.
-  int gpu_fd;
-  IPC::SocketPair(&gpu_fd, &renderer_fd_);
-  IPC::AddChannelSocket(channel_name, gpu_fd);
-#endif
   channel_.reset(new IPC::SyncChannel(
       channel_name, IPC::Channel::MODE_SERVER, this,
       ChildProcess::current()->io_message_loop(), false,
@@ -262,3 +241,14 @@ bool GpuChannel::Init() {
 std::string GpuChannel::GetChannelName() {
   return StringPrintf("%d.r%d", base::GetCurrentProcId(), renderer_id_);
 }
+
+#if defined(OS_POSIX)
+int GpuChannel::GetRendererFileDescriptor() {
+  int fd = -1;
+  if (channel_.get()) {
+    fd = channel_->GetClientFileDescriptor();
+  }
+  return fd;
+}
+#endif  // defined(OS_POSIX)
+

@@ -355,14 +355,14 @@ void SyncChannel::SyncContext::OnWaitableEventSignaled(WaitableEvent* event) {
 
 
 SyncChannel::SyncChannel(
-    const std::string& channel_id,
+    const IPC::ChannelHandle& channel_handle,
     Channel::Mode mode,
     Channel::Listener* listener,
     MessageLoop* ipc_message_loop,
     bool create_pipe_now,
     WaitableEvent* shutdown_event)
     : ChannelProxy(
-          channel_id, mode, ipc_message_loop,
+          channel_handle, mode, ipc_message_loop,
           new SyncContext(listener, ipc_message_loop, shutdown_event),
           create_pipe_now),
       sync_messages_with_no_timeout_allowed_(true) {

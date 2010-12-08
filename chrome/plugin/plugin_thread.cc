@@ -143,7 +143,7 @@ void PluginThread::OnCreateChannel(int renderer_id,
       renderer_id, ChildProcess::current()->io_message_loop()));
   IPC::ChannelHandle channel_handle;
   if (channel.get()) {
-    channel_handle.name = channel->channel_name();
+    channel_handle.name = channel->channel_handle().name;
 #if defined(OS_POSIX)
     // On POSIX, pass the renderer-side FD.
     channel_handle.socket = base::FileDescriptor(channel->renderer_fd(), false);

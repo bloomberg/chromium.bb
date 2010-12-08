@@ -162,9 +162,6 @@ void PluginChannel::NotifyRenderersOfPendingShutdown() {
 PluginChannel::PluginChannel()
     : renderer_handle_(0),
       renderer_id_(-1),
-#if defined(OS_POSIX)
-      renderer_fd_(-1),
-#endif
       in_send_(0),
       off_the_record_(false),
       filter_(new MessageFilter()) {
@@ -175,11 +172,6 @@ PluginChannel::PluginChannel()
 }
 
 PluginChannel::~PluginChannel() {
-#if defined(OS_POSIX)
-  // Won't be needing this any more.
-  CloseRendererFD();
-#endif
-
   if (renderer_handle_)
     base::CloseProcessHandle(renderer_handle_);
 
@@ -293,12 +285,6 @@ base::WaitableEvent* PluginChannel::GetModalDialogEvent(
 }
 
 void PluginChannel::OnChannelConnected(int32 peer_pid) {
-#if defined(OS_POSIX)
-  // By this point, the renderer must have its own copy of the plugin channel
-  // FD.
-  CloseRendererFD();
-#endif
-
   base::ProcessHandle handle;
   if (!base::OpenProcessHandle(peer_pid, &handle)) {
     NOTREACHED();
@@ -308,11 +294,6 @@ void PluginChannel::OnChannelConnected(int32 peer_pid) {
 }
 
 void PluginChannel::OnChannelError() {
-#if defined(OS_POSIX)
-  // Won't be needing this any more.
-  CloseRendererFD();
-#endif
-
   base::CloseProcessHandle(renderer_handle_);
   renderer_handle_ = 0;
   PluginChannelBase::OnChannelError();
@@ -336,17 +317,6 @@ void PluginChannel::CleanUp() {
 }
 
 bool PluginChannel::Init(MessageLoop* ipc_message_loop, bool create_pipe_now) {
-#if defined(OS_POSIX)
-  // This gets called when the PluginChannel is initially created. At this
-  // point, create the socketpair and assign the plugin side FD to the channel
-  // name. Keep the renderer side FD as a member variable in the PluginChannel
-  // to be able to transmit it through IPC.
-  int plugin_fd;
-  if (!IPC::SocketPair(&plugin_fd, &renderer_fd_))
-    return false;
-  IPC::AddChannelSocket(channel_name(), plugin_fd);
-#endif
-
   if (!PluginChannelBase::Init(ipc_message_loop, create_pipe_now))
     return false;
 
@@ -354,12 +324,3 @@ bool PluginChannel::Init(MessageLoop* ipc_message_loop, bool create_pipe_now) {
   return true;
 }
 
-#if defined(OS_POSIX)
-void PluginChannel::CloseRendererFD() {
-  if (renderer_fd_ != -1) {
-    if (HANDLE_EINTR(close(renderer_fd_)) < 0)
-      PLOG(ERROR) << "close";
-    renderer_fd_ = -1;
-  }
-}
-#endif

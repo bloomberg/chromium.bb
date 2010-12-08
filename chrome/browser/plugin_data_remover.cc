@@ -62,12 +62,7 @@ void PluginDataRemover::SetPluginInfo(const WebPluginInfo& info) {
 void PluginDataRemover::OnChannelOpened(const IPC::ChannelHandle& handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!channel_);
-#if defined(OS_POSIX)
-  // If we received a ChannelHandle, register it now.
-  if (handle.socket.fd >= 0)
-    IPC::AddChannelSocket(handle.name, handle.socket.fd);
-#endif
-  channel_ = new IPC::Channel(handle.name, IPC::Channel::MODE_CLIENT, this);
+  channel_ = new IPC::Channel(handle, IPC::Channel::MODE_CLIENT, this);
   if (!channel_->Connect()) {
     NOTREACHED() << "Couldn't connect to plugin";
     SignalDone();

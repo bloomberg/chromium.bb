@@ -8,6 +8,7 @@
 
 #include "base/hash_tables.h"
 #include "chrome/plugin/plugin_channel_base.h"
+#include "ipc/ipc_channel_handle.h"
 
 class IsListeningFilter;
 class NPObjectBase;
@@ -17,7 +18,7 @@ class NPObjectBase;
 class PluginChannelHost : public PluginChannelBase {
  public:
   static PluginChannelHost* GetPluginChannelHost(
-      const std::string& channel_name, MessageLoop* ipc_message_loop);
+      const IPC::ChannelHandle& channel_handle, MessageLoop* ipc_message_loop);
 
   virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
 

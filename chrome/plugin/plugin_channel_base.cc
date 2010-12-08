@@ -28,11 +28,11 @@ static base::LazyInstance<std::stack<scoped_refptr<PluginChannelBase> > >
 static int next_pipe_id = 0;
 
 PluginChannelBase* PluginChannelBase::GetChannel(
-    const std::string& channel_key, IPC::Channel::Mode mode,
+    const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
     PluginChannelFactory factory, MessageLoop* ipc_message_loop,
     bool create_pipe_now) {
   scoped_refptr<PluginChannelBase> channel;
-
+  std::string channel_key = channel_handle.name;
   PluginChannelMap::const_iterator iter = g_plugin_channels_.find(channel_key);
   if (iter == g_plugin_channels_.end()) {
     channel = factory();
@@ -43,10 +43,10 @@ PluginChannelBase* PluginChannelBase::GetChannel(
   DCHECK(channel != NULL);
 
   if (!channel->channel_valid()) {
-    channel->channel_name_ = channel_key;
+    channel->channel_handle_ = channel_handle;
     if (mode == IPC::Channel::MODE_SERVER) {
-      channel->channel_name_.append(".");
-      channel->channel_name_.append(base::IntToString(next_pipe_id++));
+      channel->channel_handle_.name.append(".");
+      channel->channel_handle_.name.append(base::IntToString(next_pipe_id++));
     }
     channel->mode_ = mode;
     if (channel->Init(ipc_message_loop, create_pipe_now)) {
@@ -115,7 +115,7 @@ NPObjectBase* PluginChannelBase::GetNPObjectListenerForRoute(int route_id) {
 bool PluginChannelBase::Init(MessageLoop* ipc_message_loop,
                              bool create_pipe_now) {
   channel_.reset(new IPC::SyncChannel(
-      channel_name_, mode_, this, ipc_message_loop, create_pipe_now,
+      channel_handle_, mode_, this, ipc_message_loop, create_pipe_now,
       ChildProcess::current()->GetShutDownEvent()));
   channel_valid_ = true;
   return true;
@@ -219,11 +219,6 @@ void PluginChannelBase::RemoveRoute(int route_id) {
     for (PluginChannelMap::iterator iter = g_plugin_channels_.begin();
          iter != g_plugin_channels_.end(); ++iter) {
       if (iter->second == this) {
-#if defined(OS_POSIX)
-        if (channel_valid()) {
-          IPC::RemoveAndCloseChannelSocket(channel_name());
-        }
-#endif
         g_plugin_channels_.erase(iter);
         return;
       }
@@ -239,10 +234,5 @@ void PluginChannelBase::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void PluginChannelBase::OnChannelError() {
-#if defined(OS_POSIX)
-  if (channel_valid()) {
-    IPC::RemoveAndCloseChannelSocket(channel_name());
-  }
-#endif
   channel_valid_ = false;
 }

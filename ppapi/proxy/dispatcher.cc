@@ -77,12 +77,12 @@ Dispatcher::~Dispatcher() {
 }
 
 bool Dispatcher::InitWithChannel(MessageLoop* ipc_message_loop,
-                                 const std::string& channel_name,
+                                 const IPC::ChannelHandle& channel_handle,
                                  bool is_client,
                                  base::WaitableEvent* shutdown_event) {
   IPC::Channel::Mode mode = is_client ? IPC::Channel::MODE_CLIENT
                                       : IPC::Channel::MODE_SERVER;
-  channel_.reset(new IPC::SyncChannel(channel_name, mode, this,
+  channel_.reset(new IPC::SyncChannel(channel_handle, mode, this,
                                       ipc_message_loop, false, shutdown_event));
   return true;
 }

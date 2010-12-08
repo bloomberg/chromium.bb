@@ -50,7 +50,7 @@ class PluginChannel : public PluginChannelBase {
   void set_off_the_record(bool value) { off_the_record_ = value; }
 
 #if defined(OS_POSIX)
-  int renderer_fd() const { return renderer_fd_; }
+  int renderer_fd() const { return channel_->GetClientFileDescriptor(); }
 #endif
 
  protected:
@@ -80,13 +80,6 @@ class PluginChannel : public PluginChannelBase {
                        const std::string& domain,
                        base::Time begin_time);
 
-#if defined(OS_POSIX)
-  // Close the plugin process' copy of the renderer's side of the plugin
-  // channel.  This can be called after the renderer is known to have its own
-  // copy of renderer_fd_.
-  void CloseRendererFD();
-#endif
-
   std::vector<scoped_refptr<WebPluginDelegateStub> > plugin_stubs_;
 
   // Handle to the renderer process who is on the other side of the channel.
@@ -94,13 +87,6 @@ class PluginChannel : public PluginChannelBase {
 
   // The id of the renderer who is on the other side of the channel.
   int renderer_id_;
-
-#if defined(OS_POSIX)
-  // FD for the renderer end of the socket. It is closed when the IPC layer
-  // indicates that the channel is connected, proving that the renderer has
-  // access to its side of the socket.
-  int renderer_fd_;
-#endif
 
   int in_send_;  // Tracks if we're in a Send call.
   bool log_messages_;  // True if we should log sent and received messages.

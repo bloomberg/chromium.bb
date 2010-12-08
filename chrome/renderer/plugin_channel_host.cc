@@ -68,10 +68,10 @@ void PluginChannelHost::SetListening(bool flag) {
 }
 
 PluginChannelHost* PluginChannelHost::GetPluginChannelHost(
-    const std::string& channel_name, MessageLoop* ipc_message_loop) {
+    const IPC::ChannelHandle& channel_handle, MessageLoop* ipc_message_loop) {
   PluginChannelHost* result =
       static_cast<PluginChannelHost*>(PluginChannelBase::GetChannel(
-          channel_name,
+          channel_handle,
           IPC::Channel::MODE_CLIENT,
           ClassFactory,
           ipc_message_loop,
@@ -87,19 +87,6 @@ PluginChannelHost::~PluginChannelHost() {
 
 bool PluginChannelHost::Init(MessageLoop* ipc_message_loop,
                              bool create_pipe_now) {
-#if defined(OS_POSIX)
-  if (!IPC::ChannelSocketExists(channel_name())) {
-    // Attempting to use this IPC channel would result in a crash
-    // inside IPC code within the PluginChannelBase::Init call.  The plugin
-    // channel in the plugin process is supposed to have created this channel
-    // and sent it to this process, the renderer process.  If this channel
-    // closes and is removed, it cannot be reused until the plugin process
-    // recreates it.
-    LOG(ERROR) << "Refusing use of missing IPC channel " << channel_name();
-    return false;
-  }
-#endif
-
   bool ret = PluginChannelBase::Init(ipc_message_loop, create_pipe_now);
   is_listening_filter_ = new IsListeningFilter;
   channel_->AddFilter(is_listening_filter_);

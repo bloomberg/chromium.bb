@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 
 namespace IPC {
@@ -54,7 +55,10 @@ class Channel : public Message::Sender {
 
   // Initialize a Channel.
   //
-  // |channel_id| identifies the communication Channel.
+  // |channel_handle| identifies the communication Channel. For POSIX, if
+  // the file descriptor in the channel handle is != -1, the channel takes
+  // ownership of the file descriptor and will close it appropriately, otherwise
+  // it will create a new descriptor internally.
   // |mode| specifies whether this Channel is to operate in server mode or
   // client mode.  In server mode, the Channel is responsible for setting up the
   // IPC object, whereas in client mode, the Channel merely connects to the
@@ -62,7 +66,8 @@ class Channel : public Message::Sender {
   // |listener| receives a callback on the current thread for each newly
   // received message.
   //
-  Channel(const std::string& channel_id, Mode mode, Listener* listener);
+  Channel(const IPC::ChannelHandle &channel_handle, Mode mode,
+          Listener* listener);
 
   ~Channel();
 

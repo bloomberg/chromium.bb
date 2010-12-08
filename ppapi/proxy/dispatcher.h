@@ -62,7 +62,7 @@ class Dispatcher : public IPC::Channel::Listener,
   ~Dispatcher();
 
   bool InitWithChannel(MessageLoop* ipc_message_loop,
-                       const std::string& channel_name,
+                       const IPC::ChannelHandle& channel_handle,
                        bool is_client,
                        base::WaitableEvent* shutdown_event);
 

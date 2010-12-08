@@ -292,15 +292,9 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
     return false;
   }
 
-#if defined(OS_POSIX)
-  // If we received a ChannelHandle, register it now.
-  if (channel_handle.socket.fd >= 0)
-    IPC::AddChannelSocket(channel_handle.name, channel_handle.socket.fd);
-#endif
-
   scoped_refptr<PluginChannelHost> channel_host(
       PluginChannelHost::GetPluginChannelHost(
-          channel_handle.name, ChildProcess::current()->io_message_loop()));
+          channel_handle, ChildProcess::current()->io_message_loop()));
   if (!channel_host.get())
     return false;
 

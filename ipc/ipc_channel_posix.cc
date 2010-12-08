@@ -79,6 +79,11 @@ class PipeMap {
     return Singleton<PipeMap>::get();
   }
 
+  ~PipeMap() {
+    // Shouldn't have left over pipes.
+    DCHECK(map_.size() == 0);
+  }
+
   // Lookup a given channel id. Return -1 if not found.
   int Lookup(const std::string& channel_id) {
     AutoLock locked(lock_);
@@ -274,8 +279,8 @@ bool SocketWriteErrorIsRecoverable() {
 }  // namespace
 //------------------------------------------------------------------------------
 
-Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
-                                  Listener* listener)
+Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
+                                  Mode mode, Listener* listener)
     : mode_(mode),
       is_blocked_on_write_(false),
       message_send_bytes_written_(0),
@@ -297,9 +302,9 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
   if (mode_ == MODE_NAMED_CLIENT)
     mode_ = MODE_CLIENT;
 
-  if (!CreatePipe(channel_id, mode_)) {
+  if (!CreatePipe(channel_handle, mode_)) {
     // The pipe may have been closed already.
-    PLOG(WARNING) << "Unable to create pipe named \"" << channel_id
+    LOG(WARNING) << "Unable to create pipe named \"" << channel_handle.name
                   << "\" in " << (mode_ == MODE_SERVER ? "server" : "client")
                   << " mode";
   }
@@ -349,16 +354,16 @@ bool SocketPair(int* fd1, int* fd2) {
   return true;
 }
 
-bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
+bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
                                       Mode mode) {
   DCHECK(server_listen_pipe_ == -1 && pipe_ == -1);
-
+  pipe_name_ = channel_handle.name;
+  pipe_ = channel_handle.socket.fd;
   if (uses_fifo_) {
     // This only happens in unit tests; see the comment above PipeMap.
     // TODO(playmobil): We shouldn't need to create fifos on disk.
     // TODO(playmobil): If we do, they should be in the user data directory.
     // TODO(playmobil): Cleanup any stale fifos.
-    pipe_name_ = channel_id;
     if (mode == MODE_SERVER) {
       if (!CreateServerFifo(pipe_name_, &server_listen_pipe_)) {
         return false;
@@ -376,8 +381,9 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
     // 2) It's the initial IPC channel:
     //   2a) Server side: create the pipe.
     //   2b) Client side: Pull the pipe out of the GlobalDescriptors set.
-    pipe_name_ = channel_id;
-    pipe_ = ChannelNameToFD(pipe_name_);
+    if (pipe_ < 0) {
+      pipe_ = ChannelNameToFD(pipe_name_);
+    }
     if (pipe_ < 0) {
       // Initial IPC channel.
       if (mode == MODE_SERVER) {
@@ -1065,9 +1071,9 @@ void Channel::ChannelImpl::Close() {
 
 //------------------------------------------------------------------------------
 // Channel's methods simply call through to ChannelImpl.
-Channel::Channel(const std::string& channel_id, Mode mode,
+Channel::Channel(const IPC::ChannelHandle& channel_handle, Mode mode,
                  Listener* listener)
-    : channel_impl_(new ChannelImpl(channel_id, mode, listener)) {
+    : channel_impl_(new ChannelImpl(channel_handle, mode, listener)) {
 }
 
 Channel::~Channel() {

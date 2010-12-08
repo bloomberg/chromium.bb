@@ -29,18 +29,19 @@ namespace IPC {
 struct ChannelHandle {
   // Note that serialization for this object is defined in the ParamTraits
   // template specialization in ipc_message_utils.h.
-  std::string name;
-#if defined(OS_POSIX)
-  base::FileDescriptor socket;
-#endif
-
   ChannelHandle() {}
+  ChannelHandle(const std::string& n) : name(n) {}
+  ChannelHandle(const char* n) : name(n) {}
 #if defined(OS_POSIX)
   ChannelHandle(const std::string& n, const base::FileDescriptor& s)
       : name(n), socket(s) {}
-#else
-  ChannelHandle(const std::string& n) : name(n) {}
-#endif
+#endif  // defined(OS_POSIX)
+
+  std::string name;
+#if defined(OS_POSIX)
+  base::FileDescriptor socket;
+#endif  // defined(OS_POSIX)
+
 };
 
 }  // namespace IPC

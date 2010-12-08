@@ -19,27 +19,13 @@
 
 namespace IPC {
 
-// Store that channel name |name| is available via socket |socket|.
-// Used when the channel has been precreated by another process on
-// our behalf and they've just shipped us the socket.
-void AddChannelSocket(const std::string& name, int socket);
-
-// Remove the channel name mapping, and close the corresponding socket.
-void RemoveAndCloseChannelSocket(const std::string& name);
-
-// Returns true if a channel named |name| is available.
-bool ChannelSocketExists(const std::string& name);
-
-// Construct a socket pair appropriate for IPC: UNIX domain, nonblocking.
-// Returns false on error.
-bool SocketPair(int* fd1, int* fd2);
-
 // An implementation of ChannelImpl for POSIX systems that works via
 // socketpairs.  See the .cc file for an overview of the implementation.
 class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
-  ChannelImpl(const std::string& channel_id, Mode mode, Listener* listener);
+  ChannelImpl(const IPC::ChannelHandle &channel_handle, Mode mode,
+              Listener* listener);
   ~ChannelImpl();
   bool Connect();
   void Close();
@@ -48,7 +34,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   int GetClientFileDescriptor() const;
 
  private:
-  bool CreatePipe(const std::string& channel_id, Mode mode);
+  bool CreatePipe(const IPC::ChannelHandle &channel_handle, Mode mode);
 
   bool ProcessIncomingMessages();
   bool ProcessOutgoingMessages();

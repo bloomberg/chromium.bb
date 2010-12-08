@@ -16,6 +16,7 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
 
@@ -43,7 +44,7 @@ class GpuChannelHost : public IPC::Channel::Listener,
   ~GpuChannelHost();
 
   // Connect to GPU process channel.
-  void Connect(const std::string& channel_name);
+  void Connect(const IPC::ChannelHandle& channel_handle);
 
   State state() const { return state_; }
 

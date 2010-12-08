@@ -13,6 +13,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event_watcher.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message.h"
 
@@ -34,7 +35,7 @@ class MessageReplyDeserializer;
 class SyncChannel : public ChannelProxy,
                     public base::WaitableEventWatcher::Delegate {
  public:
-  SyncChannel(const std::string& channel_id,
+  SyncChannel(const IPC::ChannelHandle& channel_handle,
               Channel::Mode mode,
               Channel::Listener* listener,
               MessageLoop* ipc_message_loop,

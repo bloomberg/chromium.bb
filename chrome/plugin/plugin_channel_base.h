@@ -16,6 +16,7 @@
 #include "chrome/common/message_router.h"
 #include "chrome/plugin/npobject_base.h"
 #include "gfx/native_widget_types.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 
 // Encapsulates an IPC channel between a renderer and a plugin process.
@@ -38,7 +39,7 @@ class PluginChannelBase : public IPC::Channel::Listener,
   virtual bool Send(IPC::Message* msg);
 
   int peer_pid() { return peer_pid_; }
-  std::string channel_name() const { return channel_name_; }
+  IPC::ChannelHandle channel_handle() const { return channel_handle_; }
 
   // Returns the number of open plugin channels in this process.
   static int Count();
@@ -75,7 +76,7 @@ class PluginChannelBase : public IPC::Channel::Listener,
   // must still ref count the returned value.  When there are no more routes
   // on the channel and its ref count is 0, the object deletes itself.
   static PluginChannelBase* GetChannel(
-      const std::string& channel_key, IPC::Channel::Mode mode,
+      const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
       PluginChannelFactory factory, MessageLoop* ipc_message_loop,
       bool create_pipe_now);
 
@@ -105,7 +106,7 @@ class PluginChannelBase : public IPC::Channel::Listener,
 
  private:
   IPC::Channel::Mode mode_;
-  std::string channel_name_;
+  IPC::ChannelHandle channel_handle_;
   int plugin_count_;
   int peer_pid_;
 

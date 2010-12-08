@@ -36,21 +36,13 @@ class GpuChannel : public IPC::Channel::Listener,
 
   std::string GetChannelName();
 
+#if defined(OS_POSIX)
+  int GetRendererFileDescriptor();
+#endif  // defined(OS_POSIX)
+
   base::ProcessHandle renderer_handle() const {
     return renderer_process_.handle();
   }
-
-#if defined(OS_POSIX)
-  // When first created, the GpuChannel gets assigned the file descriptor
-  // for the renderer.
-  // After the first time we pass it through the IPC, we don't need it anymore,
-  // and we close it. At that time, we reset renderer_fd_ to -1.
-  int DisownRendererFd() {
-    int value = renderer_fd_;
-    renderer_fd_ = -1;
-    return value;
-  }
-#endif
 
   // IPC::Channel::Listener implementation:
   virtual void OnMessageReceived(const IPC::Message& msg);
@@ -95,12 +87,6 @@ class GpuChannel : public IPC::Channel::Listener,
 
   // The id of the renderer who is on the other side of the channel.
   int renderer_id_;
-
-#if defined(OS_POSIX)
-  // FD for the renderer end of the pipe. It is stored until we send it over
-  // IPC after which it is cleared. It will be closed by the IPC mechanism.
-  int renderer_fd_;
-#endif
 
   // Used to implement message routing functionality to CommandBuffer objects
   MessageRouter router_;
