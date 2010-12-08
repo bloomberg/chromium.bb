@@ -26,7 +26,7 @@ list > * {
 }
 
 list > * > * {
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   -webkit-padding-start: 20px;
   background: 0 50% no-repeat;
   overflow: hidden;
@@ -183,7 +183,7 @@ html[os=mac] .tree-row[selected] > .tree-label {
   min-width: 50px;
   max-width: 50%;
   overflow: auto;
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   padding: 5px;
   -webkit-padding-start: 10px;
 }
@@ -196,7 +196,7 @@ html[os=mac] .tree-row[selected] > .tree-label {
 
 #list {
   -webkit-box-flex: 1;
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   padding: 5px;
 }
 
@@ -243,7 +243,7 @@ html[dir=rtl] .header form {
   pointer-events: none;
   border: 1px solid hsl(214, 91%, 85%);;
   border-radius: 3px;
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   background-color: hsla(214, 91%, 85%, .5);
   overflow: hidden;
   z-index: -1;

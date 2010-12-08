@@ -52,14 +52,14 @@ hr {
 .image-thumbnail-container {
   display: inline-block;
   border: 2px solid white;
-  -webkit-border-radius: 3px;
+  border-radius: 3px;
   z-index: 0;
 }
 
 .image-thumbnail-container-selected {
   display: inline-block;
   border: 2px solid green;
-  -webkit-border-radius: 3px;
+  border-radius: 3px;
   z-index: 0;
 }
 

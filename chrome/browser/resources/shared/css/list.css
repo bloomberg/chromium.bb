@@ -67,7 +67,7 @@ list > [selected]:hover {
 
 list > .spacer {
   border: 0;
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   overflow: hidden;
   visibility: hidden;
   margin: 0;

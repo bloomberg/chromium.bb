@@ -353,7 +353,7 @@ select {
 
 list > * {
   -webkit-box-align: center;
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   border-radius: 0px;
   display: -webkit-box;
   height: 32px;

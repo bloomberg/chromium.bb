@@ -24,7 +24,7 @@ html.apps-promo-visible #apps-content {
 
 .app,
 .app[new=installed] {
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   -webkit-perspective: 400;
   border-radius: 10px;
   color: black;

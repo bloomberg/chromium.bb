@@ -195,8 +195,8 @@ html[dir=rtl] .thumbnail-container > .title > div {
 .thumbnail-container:hover .thumbnail {
   border-color: hsl(213, 66%, 57%);
   -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, 0);
-  -webkit-border-top-left-radius: 0;
-  -webkit-border-top-right-radius: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 
   background-image: -webkit-gradient(linear, left top, left bottom,
     from(hsla(0, 0%, 0%, 0)),

@@ -5,7 +5,7 @@ found in the LICENSE file.
 */
 
 * {
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 body {
@@ -170,8 +170,8 @@ body {
   display: inline-block;
   margin-top: 4px;
   padding: 5px 10px 3px 10px;
-  -webkit-border-top-right-radius: 8px;
-  -webkit-border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
   background-clip: border-box;
   background: #ccc;
 }

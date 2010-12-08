@@ -14,8 +14,8 @@ found in the LICENSE file.
   background: white;
   border: 1px solid #A0A0A0;  /* light gray */
   border-bottom: 2px solid white;
-  -webkit-border-top-left-radius: 3px;
-  -webkit-border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
 }
 
 /* To avoid tabs changing size when they are clicked and their labels become

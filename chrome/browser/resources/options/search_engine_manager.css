@@ -8,7 +8,7 @@
 }
 
 #searchEngineManagerPage .name {
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   width: 50%;
 }
 

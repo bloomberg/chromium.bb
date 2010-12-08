@@ -16,7 +16,7 @@ html[mode=app-launcher] {
 }
 
 #main {
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   -webkit-transition: width .15s;
   margin: 0 auto;
   min-height: 100%;
@@ -155,7 +155,7 @@ html[anim=false] *,
   background-color: hsla(213, 63%, 93%, 0);
   display: block;
   line-height: 20px;
-  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
