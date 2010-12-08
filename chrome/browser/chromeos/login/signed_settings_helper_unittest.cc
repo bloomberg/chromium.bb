@@ -85,6 +85,7 @@ class SignedSettingsHelperTest : public ::testing::Test,
 TEST_F(SignedSettingsHelperTest, SerializedOps) {
   MockSignedSettingsHelperCallback cb;
 
+  EXPECT_CALL(m_, IsAlreadyOwned()).Times(2);
   InSequence s;
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
   EXPECT_CALL(cb, OnCheckWhiteListCompleted(true, _))
@@ -116,6 +117,7 @@ TEST_F(SignedSettingsHelperTest, SerializedOps) {
 TEST_F(SignedSettingsHelperTest, CanceledOps) {
   MockSignedSettingsHelperCallback cb;
 
+  EXPECT_CALL(m_, IsAlreadyOwned()).Times(2);
   InSequence s;
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
   EXPECT_CALL(cb, OnCheckWhiteListCompleted(true, _))

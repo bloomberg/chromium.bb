@@ -11,12 +11,16 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/mock_library_loader.h"
+#include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/mock_ownership_service.h"
 #include "chrome/browser/chromeos/login/owner_manager_unittest.h"
+#include "chrome/test/thread_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::_;
@@ -29,6 +33,7 @@ class DummyDelegate : public SignedSettings::Delegate<T> {
  public:
   explicit DummyDelegate(T to_expect)
       : expect_success_(false),
+        expected_failure_(SignedSettings::NOT_FOUND),
         expected_(to_expect),
         run_(false) {}
   virtual ~DummyDelegate() { EXPECT_TRUE(run_); }
@@ -37,29 +42,21 @@ class DummyDelegate : public SignedSettings::Delegate<T> {
     EXPECT_TRUE(expect_success_);
     EXPECT_EQ(expected_, value);
   }
-  virtual void OnSettingsOpFailed() {
+  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code) {
     run_ = true;
     EXPECT_FALSE(expect_success_);
+    EXPECT_EQ(expected_failure_, code);
   }
   virtual void expect_success() { expect_success_ = true; }
+  virtual void expect_failure(SignedSettings::FailureCode code) {
+    expected_failure_ = code;
+  }
   bool expect_success_;
+  SignedSettings::FailureCode expected_failure_;
   T expected_;
   bool run_;
 };
 
-class Quitter : public DummyDelegate<bool> {
- public:
-  explicit Quitter(bool to_expect) : DummyDelegate<bool>(to_expect) {}
-  virtual ~Quitter() {}
-  void OnSettingsOpSucceeded(bool value) {
-    DummyDelegate<bool>::OnSettingsOpSucceeded(value);
-    MessageLoop::current()->Quit();
-  }
-  void OnSettingsOpFailed() {
-    DummyDelegate<bool>::OnSettingsOpFailed();
-    MessageLoop::current()->Quit();
-  }
-};
 }  // anonymous namespace
 
 class SignedSettingsTest : public ::testing::Test {
@@ -93,12 +90,13 @@ class SignedSettingsTest : public ::testing::Test {
     DummyDelegate<bool> d(false);
     scoped_refptr<SignedSettings> s(
         SignedSettings::CreateCheckWhitelistOp(fake_email_, &d));
+    d.expect_failure(SignedSettings::MapKeyOpCode(return_code));
 
     mock_service(s.get(), &m_);
     EXPECT_CALL(m_, StartVerifyAttempt(fake_email_, _, _))
         .Times(1);
 
-    EXPECT_TRUE(s->Execute());
+    s->Execute();
     s->OnKeyOpComplete(return_code, std::vector<uint8>());
   }
 
@@ -106,12 +104,13 @@ class SignedSettingsTest : public ::testing::Test {
     DummyDelegate<bool> d(false);
     scoped_refptr<SignedSettings> s(
         SignedSettings::CreateWhitelistOp(fake_email_, true, &d));
+    d.expect_failure(SignedSettings::MapKeyOpCode(return_code));
 
     mock_service(s.get(), &m_);
     EXPECT_CALL(m_, StartSigningAttempt(fake_email_, _))
         .Times(1);
 
-    EXPECT_TRUE(s->Execute());
+    s->Execute();
     s->OnKeyOpComplete(return_code, std::vector<uint8>());
   }
 
@@ -119,14 +118,17 @@ class SignedSettingsTest : public ::testing::Test {
     DummyDelegate<bool> d(false);
     scoped_refptr<SignedSettings> s(
         SignedSettings::CreateStorePropertyOp(fake_prop_, fake_value_, &d));
+    d.expect_failure(SignedSettings::MapKeyOpCode(return_code));
     std::string to_sign = base::StringPrintf("%s=%s",
                                              fake_prop_.c_str(),
                                              fake_value_.c_str());
     mock_service(s.get(), &m_);
     EXPECT_CALL(m_, StartSigningAttempt(to_sign, _))
         .Times(1);
+    EXPECT_CALL(m_, IsAlreadyOwned())
+        .WillOnce(Return(true));
 
-    EXPECT_TRUE(s->Execute());
+    s->Execute();
     s->OnKeyOpComplete(return_code, std::vector<uint8>());
   }
 
@@ -134,15 +136,47 @@ class SignedSettingsTest : public ::testing::Test {
     DummyDelegate<std::string> d(fake_value_);
     scoped_refptr<SignedSettings> s(
         SignedSettings::CreateRetrievePropertyOp(fake_prop_, &d));
+    d.expect_failure(SignedSettings::MapKeyOpCode(return_code));
     std::string to_verify = base::StringPrintf("%s=%s",
                                                fake_prop_.c_str(),
                                                fake_value_.c_str());
     mock_service(s.get(), &m_);
     EXPECT_CALL(m_, StartVerifyAttempt(to_verify, _, _))
         .Times(1);
+    EXPECT_CALL(m_, IsAlreadyOwned())
+        .WillOnce(Return(true));
 
-    EXPECT_TRUE(s->Execute());
+    s->Execute();
     s->OnKeyOpComplete(return_code, std::vector<uint8>());
+  }
+
+  MockLoginLibrary* MockLoginLib() {
+    chromeos::CrosLibrary::TestApi* test_api =
+        chromeos::CrosLibrary::Get()->GetTestApi();
+
+    // Mocks, ownership transferred to CrosLibrary class on creation.
+    MockLoginLibrary* mock_library;
+    MockLibraryLoader* loader;
+
+    loader = new MockLibraryLoader();
+    ON_CALL(*loader, Load(_))
+        .WillByDefault(Return(true));
+    EXPECT_CALL(*loader, Load(_))
+        .Times(AnyNumber());
+
+    test_api->SetLibraryLoader(loader, true);
+
+    mock_library = new MockLoginLibrary();
+    test_api->SetLoginLibrary(mock_library, true);
+    return mock_library;
+  }
+
+  void UnMockLoginLib() {
+    // Prevent bogus gMock leak check from firing.
+    chromeos::CrosLibrary::TestApi* test_api =
+        chromeos::CrosLibrary::Get()->GetTestApi();
+    test_api->SetLibraryLoader(NULL, false);
+    test_api->SetLoginLibrary(NULL, false);
   }
 
   const std::string fake_email_;
@@ -164,7 +198,6 @@ class SignedSettingsTest : public ::testing::Test {
   MockInjector injector_;
 
   ScopedStubCrosEnabler stub_cros_enabler_;
-
 };
 
 TEST_F(SignedSettingsTest, CheckWhitelist) {
@@ -177,8 +210,21 @@ TEST_F(SignedSettingsTest, CheckWhitelist) {
   EXPECT_CALL(m_, StartVerifyAttempt(fake_email_, _, _))
       .Times(1);
 
-  EXPECT_TRUE(s->Execute());
+  s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
+}
+
+TEST_F(SignedSettingsTest, CheckWhitelistNotFound) {
+  DummyDelegate<bool> d(true);
+  scoped_refptr<SignedSettings> s(
+      SignedSettings::CreateCheckWhitelistOp(fake_email_, &d));
+  d.expect_failure(SignedSettings::NOT_FOUND);
+  MockLoginLibrary* lib = MockLoginLib();
+  EXPECT_CALL(*lib, CheckWhitelist(fake_email_, _))
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
+  s->Execute();
+  UnMockLoginLib();
 }
 
 TEST_F(SignedSettingsTest, CheckWhitelistNoKey) {
@@ -190,7 +236,7 @@ TEST_F(SignedSettingsTest, CheckWhitelistFailed) {
 }
 
 TEST_F(SignedSettingsTest, Whitelist) {
-  Quitter d(true);
+  DummyDelegate<bool> d(true);
   d.expect_success();
   scoped_refptr<SignedSettings> s(
       SignedSettings::CreateWhitelistOp(fake_email_, true, &d));
@@ -199,13 +245,13 @@ TEST_F(SignedSettingsTest, Whitelist) {
   EXPECT_CALL(m_, StartSigningAttempt(fake_email_, _))
       .Times(1);
 
-  EXPECT_TRUE(s->Execute());
+  s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
-  message_loop_.Run();
+  message_loop_.RunAllPending();
 }
 
 TEST_F(SignedSettingsTest, Unwhitelist) {
-  Quitter d(true);
+  DummyDelegate<bool> d(true);
   d.expect_success();
   scoped_refptr<SignedSettings> s(
       SignedSettings::CreateWhitelistOp(fake_email_, false, &d));
@@ -214,9 +260,9 @@ TEST_F(SignedSettingsTest, Unwhitelist) {
   EXPECT_CALL(m_, StartSigningAttempt(fake_email_, _))
       .Times(1);
 
-  EXPECT_TRUE(s->Execute());
+  s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
-  message_loop_.Run();
+  message_loop_.RunAllPending();
 }
 
 TEST_F(SignedSettingsTest, WhitelistNoKey) {
@@ -228,7 +274,7 @@ TEST_F(SignedSettingsTest, WhitelistFailed) {
 }
 
 TEST_F(SignedSettingsTest, StoreProperty) {
-  Quitter d(true);
+  DummyDelegate<bool> d(true);
   d.expect_success();
   scoped_refptr<SignedSettings> s(
       SignedSettings::CreateStorePropertyOp(fake_prop_, fake_value_, &d));
@@ -238,10 +284,12 @@ TEST_F(SignedSettingsTest, StoreProperty) {
   mock_service(s.get(), &m_);
   EXPECT_CALL(m_, StartSigningAttempt(to_sign, _))
       .Times(1);
+  EXPECT_CALL(m_, IsAlreadyOwned())
+      .WillOnce(Return(true));
 
-  EXPECT_TRUE(s->Execute());
+  s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
-  message_loop_.Run();
+  message_loop_.RunAllPending();
 }
 
 TEST_F(SignedSettingsTest, StorePropertyNoKey) {
@@ -263,9 +311,24 @@ TEST_F(SignedSettingsTest, RetrieveProperty) {
   mock_service(s.get(), &m_);
   EXPECT_CALL(m_, StartVerifyAttempt(to_verify, _, _))
       .Times(1);
+  EXPECT_CALL(m_, IsAlreadyOwned())
+      .WillOnce(Return(true));
 
-  EXPECT_TRUE(s->Execute());
+  s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
+}
+
+TEST_F(SignedSettingsTest, RetrievePropertyNotFound) {
+  DummyDelegate<std::string> d(fake_value_);
+  scoped_refptr<SignedSettings> s(
+      SignedSettings::CreateRetrievePropertyOp(fake_prop_, &d));
+  d.expect_failure(SignedSettings::NOT_FOUND);
+  MockLoginLibrary* lib = MockLoginLib();
+  EXPECT_CALL(*lib, RetrieveProperty(fake_prop_, _, _))
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
+  s->Execute();
+  UnMockLoginLib();
 }
 
 TEST_F(SignedSettingsTest, RetrievePropertyNoKey) {

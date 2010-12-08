@@ -131,7 +131,7 @@ void ParallelAuthenticator::OnLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool request_pending) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << "Online login success";
+  VLOG(1) << "Login success";
   // Send notification of success
   AuthenticationNotificationDetails details(true);
   NotificationService::current()->Notify(
@@ -168,7 +168,7 @@ void ParallelAuthenticator::OnPasswordChangeDetected(
 void ParallelAuthenticator::CheckLocalaccount(const LoginFailure& error) {
   {
     AutoLock for_this_block(localaccount_lock_);
-    VLOG(1) << "Checking localaccount";
+    VLOG(2) << "Checking localaccount";
     if (!checked_for_localaccount_) {
       BrowserThread::PostDelayedTask(
           BrowserThread::FILE, FROM_HERE,
@@ -365,11 +365,13 @@ void ParallelAuthenticator::Resolve() {
           NewRunnableMethod(key_migrator_.get(), &CryptohomeOp::Initiate));
       break;
     case OFFLINE_LOGIN:
+      VLOG(2) << "Offline login";
       request_pending = !current_state_->online_complete();
       // Fall through.
     case UNLOCK:
       // Fall through.
     case ONLINE_LOGIN:
+      VLOG(2) << "Online login";
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &ParallelAuthenticator::OnLoginSuccess,
@@ -554,7 +556,7 @@ void ParallelAuthenticator::LoadLocalaccount(const std::string& filename) {
   std::string localaccount;
   if (PathService::Get(base::DIR_EXE, &localaccount_file)) {
     localaccount_file = localaccount_file.Append(filename);
-    VLOG(1) << "Looking for localaccount in " << localaccount_file.value();
+    VLOG(2) << "Looking for localaccount in " << localaccount_file.value();
 
     ReadFileToString(localaccount_file, &localaccount);
     TrimWhitespaceASCII(localaccount, TRIM_TRAILING, &localaccount);

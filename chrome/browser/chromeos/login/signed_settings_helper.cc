@@ -39,13 +39,10 @@ class OpContext {
     // So keep a local copy of delegate and executing flag to use after
     // the call.
     Delegate* delegate = delegate_;
-    bool executing = executing_ = op_->Execute();
-    if (executing) {
-      if (delegate)
-        delegate->OnOpStarted(this);
-    } else {
-      OnOpFailed();
-    }
+    executing_ = true;
+    op_->Execute();
+    if (delegate)
+      delegate->OnOpStarted(this);
   }
 
   // Cancels the callback.
@@ -145,7 +142,7 @@ class WhitelistOpContext : public SignedSettings::Delegate<bool>,
     OnOpCompleted();
   }
 
-  virtual void OnSettingsOpFailed() {
+  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code) {
     OnOpFailed();
   }
 
@@ -215,7 +212,7 @@ class StorePropertyOpContext : public SignedSettings::Delegate<bool>,
     OnOpCompleted();
   }
 
-  virtual void OnSettingsOpFailed() {
+  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code) {
     OnOpFailed();
   }
 
@@ -257,7 +254,7 @@ class RetrievePropertyOpContext
     OnOpCompleted();
   }
 
-  virtual void OnSettingsOpFailed() {
+  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code) {
     OnOpFailed();
   }
 

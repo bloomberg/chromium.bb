@@ -192,7 +192,7 @@ class ProxyConfigServiceImpl
   // Implementation for SignedSettings::Delegate
   virtual void OnSettingsOpSucceeded(bool value);
   virtual void OnSettingsOpSucceeded(std::string value);
-  virtual void OnSettingsOpFailed();
+  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code);
 
  private:
   friend class base::RefCountedThreadSafe<ProxyConfigServiceImpl>;
