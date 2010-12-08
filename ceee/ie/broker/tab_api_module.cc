@@ -569,6 +569,7 @@ HRESULT GetSelectedTab::ContinueExecution(
   if (FAILED(hr)) {
     // The ApiDispatcher will forget about us and result's destructor will
     // free the allocation of user_data.
+    result->PostError("Internal error while trying to finish tab selection.");
     return hr;
   }
   if (hr == S_FALSE) {
