@@ -1062,6 +1062,9 @@ int AeroPeekManager::GetTabID(TabContents* contents) const {
 void AeroPeekManager::TabInsertedAt(TabContentsWrapper* contents,
                                     int index,
                                     bool foreground) {
+  if (!contents)
+    return;
+
   // If there are not any AeroPeekWindow objects associated with the given
   // tab, Create a new AeroPeekWindow object and add it to the list.
   if (GetAeroPeekWindow(GetTabID(contents->tab_contents())))
@@ -1083,6 +1086,9 @@ void AeroPeekManager::TabInsertedAt(TabContentsWrapper* contents,
 void AeroPeekManager::TabClosingAt(TabStripModel* tab_strip_model,
                                    TabContentsWrapper* contents,
                                    int index) {
+  if (!contents)
+    return;
+
   // |tab_strip_model| is NULL when this is being called from TabDetachedAt
   // below.
   // Delete the AeroPeekWindow object associated with this tab and all its
@@ -1098,6 +1104,9 @@ void AeroPeekManager::TabClosingAt(TabStripModel* tab_strip_model,
 }
 
 void AeroPeekManager::TabDetachedAt(TabContentsWrapper* contents, int index) {
+  if (!contents)
+    return;
+
   // Same as TabClosingAt(), we remove this tab from the tab list and delete
   // its AeroPeekWindow.
   // Chrome will call TabInsertedAt() when this tab is inserted to another
@@ -1112,15 +1121,19 @@ void AeroPeekManager::TabSelectedAt(TabContentsWrapper* old_contents,
                                     bool user_gesture) {
   // Deactivate the old window in the thumbnail list and activate the new one
   // to synchronize the thumbnail list with TabStrip.
-  AeroPeekWindow* old_window =
-      GetAeroPeekWindow(GetTabID(old_contents->tab_contents()));
-  if (old_window)
-    old_window->Deactivate();
+  if (old_contents) {
+    AeroPeekWindow* old_window =
+        GetAeroPeekWindow(GetTabID(old_contents->tab_contents()));
+    if (old_window)
+      old_window->Deactivate();
+  }
 
-  AeroPeekWindow* new_window =
-      GetAeroPeekWindow(GetTabID(new_contents->tab_contents()));
-  if (new_window)
-    new_window->Activate();
+  if (new_contents) {
+    AeroPeekWindow* new_window =
+        GetAeroPeekWindow(GetTabID(new_contents->tab_contents()));
+    if (new_window)
+      new_window->Activate();
+  }
 }
 
 void AeroPeekManager::TabMoved(TabContentsWrapper* contents,
@@ -1135,6 +1148,9 @@ void AeroPeekManager::TabMoved(TabContentsWrapper* contents,
 void AeroPeekManager::TabChangedAt(TabContentsWrapper* contents,
                                    int index,
                                    TabChangeType change_type) {
+  if (!contents)
+    return;
+
   // Retrieve the AeroPeekWindow object associated with this tab, update its
   // title, and post a task that update its thumbnail image if necessary.
   AeroPeekWindow* window =
