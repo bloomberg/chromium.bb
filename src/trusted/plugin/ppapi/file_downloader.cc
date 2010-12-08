@@ -4,6 +4,9 @@
 
 #include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
 
+#include <stdio.h>
+
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "ppapi/c/pp_errors.h"
@@ -61,6 +64,22 @@ bool FileDownloader::Open(const nacl::string& url,
   return async_notify_ok;
 }
 
+int32_t FileDownloader::GetPOSIXFileDescriptor() {
+  int32_t file_desc = file_reader_.GetOSFileDescriptor();
+
+#if NACL_WINDOWS
+  // Convert the Windows HANDLE from Pepper to a POSIX file descriptor.
+  int32_t posix_desc = _open_osfhandle(file_desc, _O_RDWR | _O_BINARY);
+  if (posix_desc == -1) {
+    // Close the Windows HANDLE if it can't be converted.
+    CloseHandle(reinterpret_cast<HANDLE>(file_desc));
+    return NACL_NO_FILE_DESC;
+  }
+  file_desc = posix_desc;
+#endif
+
+  return file_desc;
+}
 
 void FileDownloader::URLLoadStartNotify(int32_t pp_error) {
   PLUGIN_PRINTF(("FileDownloader::URLLoadStartNotify (pp_error=%"

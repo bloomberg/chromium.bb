@@ -29,7 +29,16 @@ int32_t GetOSFileDescriptor(PP_Resource file_io_id) {
   FileIO* file_io = GetResource(file_io_id)->AsFileIO();
   if (file_io == NULL)
     return NACL_NO_FILE_DESC;
-  return file_io->file_desc();
+
+  int32_t posix_file_desc = file_io->file_desc();
+
+#if NACL_WINDOWS
+  // On Windows, return the underlying HANDLE to mimic the behavior
+  // of PPAPI in Chrome. Windows HANDLEs can be safely trunated to int32_t.
+  posix_file_desc = static_cast<int32_t>(_get_osfhandle(posix_file_desc));
+#endif
+
+  return posix_file_desc;
 }
 
 int32_t WillWrite(PP_Resource file_io_id,

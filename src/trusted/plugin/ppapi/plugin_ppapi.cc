@@ -272,7 +272,7 @@ void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK) {
     return;
   }
-  int32_t file_desc = url_downloader_.GetOSFileDescriptor();
+  int32_t file_desc = url_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(("PluginPpapi::RemoteFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
   if (file_desc > NACL_NO_FILE_DESC) {
@@ -353,7 +353,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK) {
     return;
   }
-  int32_t file_desc = url_downloader_.GetOSFileDescriptor();
+  int32_t file_desc = url_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(
       ("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"NACL_PRId32")\n",
        file_desc));

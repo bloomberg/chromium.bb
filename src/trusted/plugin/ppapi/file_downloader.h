@@ -37,12 +37,10 @@ class FileDownloader {
   bool Open(const nacl::string& url, const pp::CompletionCallback& callback);
 
   // If downloading and opening succeeded, this returns a valid read-only
-  // descriptor.  On failure, the return value is an invalid descriptor.  The
-  // file descriptor is owned by this instance, so the delegate does not have
-  // to close it.
-  int32_t GetOSFileDescriptor() {
-    return file_reader_.GetOSFileDescriptor();
-  }
+  // POSIX file descriptor.  On failure, the return value is an invalid
+  // descriptor.  The file descriptor is owned by this instance, so the
+  // delegate does not have to close it.
+  int32_t GetPOSIXFileDescriptor();
 
   // The value of |url_| changes over the life of this instance.  When the file
   // is first opened, |url_| is a copy of the URL used to open the file, which
