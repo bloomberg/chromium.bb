@@ -1312,7 +1312,7 @@ static const char vertex_shader[] =
 	"}\n";
 
 static const char fragment_shader[] =
-	/* "precision mediump float;\n" */
+	"precision mediump float;\n"
 	"varying vec2 v_texcoord;\n"
 	"uniform sampler2D tex;\n"
 	"void main()\n"
