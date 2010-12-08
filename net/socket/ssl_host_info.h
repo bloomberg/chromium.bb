@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_SSL_HOST_INFO_H
-#define NET_SOCKET_SSL_HOST_INFO_H
+#ifndef NET_SOCKET_SSL_HOST_INFO_H_
+#define NET_SOCKET_SSL_HOST_INFO_H_
 
 #include <string>
 #include <vector>
@@ -85,9 +85,9 @@ class SSLHostInfo {
 
   // WaitForCertVerification returns ERR_IO_PENDING if the certificate chain in
   // |state().certs| is still being validated and arranges for the given
-  // callback to be called when the verification completes. If the verification has
-  // already finished then WaitForCertVerification returns the result of that
-  // verification.
+  // callback to be called when the verification completes. If the verification
+  // has already finished then WaitForCertVerification returns the result of
+  // that verification.
   int WaitForCertVerification(CompletionCallback* callback);
 
   base::TimeTicks verification_start_time() const {
@@ -134,4 +134,4 @@ class SSLHostInfoFactory {
 
 }  // namespace net
 
-#endif  // NET_SOCKET_SSL_HOST_INFO_H
+#endif  // NET_SOCKET_SSL_HOST_INFO_H_
