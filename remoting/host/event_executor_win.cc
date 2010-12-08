@@ -53,7 +53,7 @@ void EventExecutorWin::InjectMouseEvent(const MouseEvent* event, Task* done) {
 }
 
 void EventExecutorWin::HandleKey(const KeyEvent* event) {
-  int key = event->key();
+  int key = event->keycode();
   bool down = event->pressed();
 
   // Calculate scan code from virtual key.

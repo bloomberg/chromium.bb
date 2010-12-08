@@ -14,7 +14,7 @@ package remoting.protocol;
 // NEXT ID: 3
 message KeyEvent {
   // The POSIX key code.
-  required int32 key = 1;
+  required int32 keycode = 1;
   required bool pressed = 2;
 }
 

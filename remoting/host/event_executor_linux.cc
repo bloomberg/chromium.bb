@@ -292,10 +292,10 @@ bool EventExecutorLinuxPimpl::Init() {
 
 void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
   // TODO(ajwong): This will only work for QWERTY keyboards.
-  int keysym = ChromotocolKeycodeToX11Keysym(key_event->key());
+  int keysym = ChromotocolKeycodeToX11Keysym(key_event->keycode());
 
   if (keysym == -1) {
-    LOG(WARNING) << "Ignoring unknown key: " << key_event->key();
+    LOG(WARNING) << "Ignoring unknown key: " << key_event->keycode();
     return;
   }
 
@@ -303,11 +303,11 @@ void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
   int keycode = XKeysymToKeycode(display_, keysym);
   if (keycode == 0) {
     LOG(WARNING) << "Ignoring undefined keysym: " << keysym
-                 << " for key: " << key_event->key();
+                 << " for key: " << key_event->keycode();
     return;
   }
 
-  VLOG(3) << "Got pepper key: " << key_event->key()
+  VLOG(3) << "Got pepper key: " << key_event->keycode()
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
   XTestFakeKeyEvent(display_, keycode, key_event->pressed(), CurrentTime);

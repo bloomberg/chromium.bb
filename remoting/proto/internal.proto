@@ -19,9 +19,3 @@ message ControlMessage {
   optional SuggestResolutionRequest suggest_resolution = 1;
   optional NotifyResolutionRequest notify_resolution = 2;
 }
-
-// TODO(garykac) This is dead, remove remaining references and delete.
-message ChromotingClientMessage {
-  optional KeyEvent key_event = 1;
-  optional MouseEvent mouse_event = 2;
-}

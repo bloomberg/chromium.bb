@@ -6,7 +6,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
-#include "remoting/proto/internal.pb.h"
+#include "remoting/proto/event.pb.h"
 #include "remoting/protocol/message_decoder.h"
 #include "remoting/protocol/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +16,7 @@ namespace protocol {
 
 static const int kTestKey = 142;
 
-static void AppendMessage(const ChromotingClientMessage& msg,
+static void AppendMessage(const EventMessage& msg,
                           std::string* buffer) {
   // Contains one encoded message.
   scoped_refptr<net::IOBufferWithSize> encoded_msg;
@@ -29,12 +29,14 @@ static void PrepareData(uint8** buffer, int* size) {
   // Contains all encoded messages.
   std::string encoded_data;
 
-  ChromotingClientMessage msg;
+  EventMessage msg;
 
   // Then append 10 update sequences to the data.
   for (int i = 0; i < 10; ++i) {
-    msg.mutable_key_event()->set_key(kTestKey + i);
-    msg.mutable_key_event()->set_pressed((i % 2) != 0);
+    Event* event = msg.add_event();
+    event->set_timestamp(i);
+    event->mutable_key()->set_keycode(kTestKey + i);
+    event->mutable_key()->set_pressed((i % 2) != 0);
     AppendMessage(msg, &encoded_data);
     msg.Clear();
   }
@@ -59,7 +61,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
 
   // Then feed the protocol decoder using the above generated data and the
   // read pattern.
-  std::list<ChromotingClientMessage*> message_list;
+  std::list<EventMessage*> message_list;
   for (int i = 0; i < size;) {
     // First generate the amount to feed the decoder.
     int read = std::min(size - i, read_sequence[i % sequence_size]);
@@ -75,17 +77,18 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   EXPECT_EQ(10u, message_list.size());
 
   int index = 0;
-  for (std::list<ChromotingClientMessage*>::iterator it =
+  for (std::list<EventMessage*>::iterator it =
            message_list.begin();
        it != message_list.end(); ++it) {
-    ChromotingClientMessage* message = *it;
+    EventMessage* message = *it;
     // Partial update stream.
-    EXPECT_TRUE(message->has_key_event());
+    EXPECT_EQ(message->event_size(), 1);
+    EXPECT_TRUE(message->event(0).has_key());
 
     // TODO(sergeyu): Don't use index here. Instead store the expected values
     // in an array.
-    EXPECT_EQ(kTestKey + index, message->key_event().key());
-    EXPECT_EQ((index % 2) != 0, message->key_event().pressed());
+    EXPECT_EQ(kTestKey + index, message->event(0).key().keycode());
+    EXPECT_EQ((index % 2) != 0, message->event(0).key().pressed());
     ++index;
   }
   STLDeleteElements(&message_list);

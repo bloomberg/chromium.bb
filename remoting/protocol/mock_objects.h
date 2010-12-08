@@ -34,9 +34,6 @@ class MockConnectionToClientEventHandler :
  public:
   MockConnectionToClientEventHandler() {}
 
-  MOCK_METHOD2(HandleMessage,
-               void(ConnectionToClient* viewer,
-                    ChromotingClientMessage* message));
   MOCK_METHOD1(OnConnectionOpened, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionClosed, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionFailed, void(ConnectionToClient* connection));
