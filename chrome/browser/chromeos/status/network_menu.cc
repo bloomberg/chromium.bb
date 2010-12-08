@@ -261,7 +261,8 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
     CellularNetwork* cellular = cros->FindCellularNetworkByPath(
         menu_items_[index].wireless_path);
     if (cellular) {
-      if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED ||
+      if ((cellular->activation_state() != ACTIVATION_STATE_ACTIVATED &&
+           cellular->activation_state() != ACTIVATION_STATE_UNKNOWN) ||
           cellular->needs_new_plan()) {
         ActivateCellular(cellular);
         return true;
