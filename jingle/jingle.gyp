@@ -92,6 +92,19 @@
       ],
     },
     {
+      'target_name': 'notifier_test_util',
+      'type': '<(library)',
+      'sources': [
+        'notifier/base/fake_base_task.cc',
+        'notifier/base/fake_base_task.h',
+      ],
+      'dependencies': [
+        'notifier',
+        '../base/base.gyp:base',
+        '../testing/gmock.gyp:gmock',
+      ],
+    },
+    {
       'target_name': 'notifier_unit_tests',
       'type': 'executable',
       'sources': [
@@ -113,6 +126,7 @@
       ],
       'dependencies': [
         'notifier',
+        'notifier_test_util',
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../net/net.gyp:net',

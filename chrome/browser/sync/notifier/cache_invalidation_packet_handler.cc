@@ -198,20 +198,11 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
     base::WeakPtr<talk_base::Task> base_task,
     invalidation::InvalidationClient* invalidation_client)
     : scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      handle_outbound_packet_callback_(
-          scoped_callback_factory_.NewCallback(
-              &CacheInvalidationPacketHandler::HandleOutboundPacket)),
       base_task_(base_task),
       invalidation_client_(invalidation_client),
       seq_(0),
       sid_(MakeSid()) {
   CHECK(base_task_.get());
-  CHECK(invalidation_client_);
-  invalidation::NetworkEndpoint* network_endpoint =
-      invalidation_client_->network_endpoint();
-  CHECK(network_endpoint);
-  network_endpoint->RegisterOutboundListener(
-      handle_outbound_packet_callback_.get());
   // Owned by base_task.  Takes ownership of the callback.
   CacheInvalidationListenTask* listen_task =
       new CacheInvalidationListenTask(
@@ -222,14 +213,10 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
 
 CacheInvalidationPacketHandler::~CacheInvalidationPacketHandler() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  invalidation::NetworkEndpoint* network_endpoint =
-      invalidation_client_->network_endpoint();
-  CHECK(network_endpoint);
-  network_endpoint->RegisterOutboundListener(NULL);
 }
 
 void CacheInvalidationPacketHandler::HandleOutboundPacket(
-    invalidation::NetworkEndpoint* const& network_endpoint) {
+    invalidation::NetworkEndpoint* network_endpoint) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!base_task_.get()) {
     return;
