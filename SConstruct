@@ -1826,8 +1826,6 @@ nacl_env = pre_base_env.Clone(
       ],
 )
 
-AddDualLibrary(nacl_env)
-
 if nacl_env.Bit('bitcode'):
   target_root = nacl_env.subst('${TARGET_ROOT}') + '-pnacl'
   nacl_env.Replace(TARGET_ROOT=target_root)
@@ -1908,7 +1906,6 @@ nacl_env.Append(
     'tests/nullptr/nacl.scons',
     'tests/pepper_plugin/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
-    'tests/pnacl_so/nacl.scons',
     'tests/ppapi_geturl/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',
     # uncomment this test once issue
