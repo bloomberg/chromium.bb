@@ -1,0 +1,22 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+import os
+
+env_shared = env.Clone(OBJSUFFIX='.os')
+env_shared.Append(CCFLAGS=['-fPIC'])
+env_shared['COMPONENT_STATIC'] = False
+
+libctest = env_shared.ComponentLibrary('pnacl_so',
+                                       ['hello.c', 'fortytwo.c'],
+                                       STATIC_LIBRARY=False)
+
+# For now we have to request pnacl_so_client.nexe explicitly because there's
+# no way to run the resulting nexe.
+env.Append(LIBS=['pnacl_so'])
+env.ComponentProgram('pnacl_so_client.nexe',
+                     'pnacl_so_client.c',
+                     LIBPATH='.')
