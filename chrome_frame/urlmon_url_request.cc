@@ -980,18 +980,17 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
   bool is_started = false;
   if (pending_request_) {
     if (pending_request_->url() != request_info.url) {
-      DVLOG(1) << __FUNCTION__
-               << "Received unexpected url request for url:"
-               << request_info.url
-               << ".Pending url request for url:"
-               << pending_request_->url()
-               << " was expected.";
+      DLOG(WARNING) << __FUNCTION__
+                    << "Received unexpected url request for url:"
+                    << request_info.url
+                    << ".Pending url request for url:"
+                    << pending_request_->url()
+                    << " was expected.";
       URLRequestStatus result;
       result.set_status(URLRequestStatus::FAILED);
       OnResponseEnd(request_id, result);
       return;
     }
-    DCHECK_EQ(pending_request_->url(), request_info.url);
     new_request.swap(pending_request_);
     is_started = true;
     DVLOG(1) << __FUNCTION__ << new_request->me()
@@ -1182,9 +1181,9 @@ void UrlmonUrlRequestManager::OnResponseEnd(int request_id,
   DCHECK(status.status() != URLRequestStatus::CANCELED);
   RequestMap::size_type n = request_map_.erase(request_id);
   if (n != 1u) {
-    DVLOG(1) << __FUNCTION__
-             << " Failed to find request id:"
-             << request_id;
+    DLOG(WARNING) << __FUNCTION__
+                  << " Failed to find request id:"
+                  << request_id;
   }
   ++calling_delegate_;
   delegate_->OnResponseEnd(request_id, status);
