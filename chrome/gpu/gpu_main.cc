@@ -9,7 +9,6 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/environment.h"
 #include "base/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
@@ -37,12 +36,7 @@
 #include "gfx/gtk_util.h"
 #endif
 
-// 1% per watchdog trial group.
-const int kFieldTrialSize = 1;
-
-// 5 - 20 seconds timeout.
-const int kMinGpuTimeout = 5;
-const int kMaxGpuTimeout = 20;
+const int kGpuTimeout = 10000;
 
 namespace {
 
@@ -124,25 +118,12 @@ int GpuMain(const MainFunctionParams& parameters) {
   gpu_thread->Init(start_time);
   gpu_process.set_main_thread(gpu_thread);
 
-  // Only enable this experimental feaure for a subset of users.
-  scoped_refptr<base::FieldTrial> watchdog_trial(
-      new base::FieldTrial("GpuWatchdogTrial", 100));
-  int watchdog_timeout = 0;
-  for (int i = kMinGpuTimeout; i <= kMaxGpuTimeout; ++i) {
-    int group = watchdog_trial->AppendGroup(StringPrintf("%dsecs", i),
-                                            kFieldTrialSize);
-    if (group == watchdog_trial->group()) {
-      watchdog_timeout = i;
-      break;
-    }
-  }
 
   // In addition to disabling the watchdog if the command line switch is
   // present, disable it in two other cases. OSMesa is expected to run very
   // slowly.  Also disable the watchdog on valgrind because the code is expected
   // to run slowly in that case.
   bool enable_watchdog =
-      watchdog_timeout != 0 &&
       !command_line.HasSwitch(switches::kDisableGpuWatchdog) &&
       gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL &&
       !RunningOnValgrind();
@@ -153,11 +134,20 @@ int GpuMain(const MainFunctionParams& parameters) {
   enable_watchdog = false;
 #endif
 
+  // Disable the watchdog for Windows. It tends to abort when the GPU process
+  // is not hung but still taking a long time to do something. Instead, the
+  // browser process displays a dialog when it notices that the child window
+  // is hung giving the user an opportunity to terminate it. This is the
+  // same mechanism used to abort hung plugins.
+#if defined(OS_WIN)
+  enable_watchdog = false;
+#endif
+
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
   scoped_refptr<GpuWatchdogThread> watchdog_thread;
   if (enable_watchdog) {
-    watchdog_thread = new GpuWatchdogThread(watchdog_timeout * 1000);
+    watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
     watchdog_thread->Start();
   }
 
