@@ -2267,6 +2267,7 @@ driver() {
   # otherwise linker-install will stomp it.
   linker-install
   driver-install
+  llvm-fake-install
 }
 
 # Just in case we're calling this manually
@@ -2295,6 +2296,16 @@ driver-install() {
     local t="pnacl-$s"
     rm -f "${INSTALL_BIN}/$t"
     ln -fs driver.py "${INSTALL_BIN}/$t"
+  done
+}
+
+llvm-fake-install() {
+  cp tools/llvm/driver.py "${INSTALL_DIR}"
+  for s in sfigcc sfig++ gcc g++ as as_x86_32 as_x86_64 \
+           bclink bcopt dis bcld translate illegal nop ; do
+    local t="llvm-fake-$s"
+    rm -f "${INSTALL_DIR}/$t"
+    ln -fs driver.py "${INSTALL_DIR}/$t"
   done
 }
 

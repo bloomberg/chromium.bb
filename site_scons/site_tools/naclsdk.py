@@ -204,9 +204,12 @@ def _SetEnvForPnacl(env, arch):
   pnacl_sdk_ranlib = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
                       '/bin/arm-none-linux-gnueabi-ranlib')
 
-  pnacl_sdk_cc = (pnacl_sdk_root + '/bin/pnacl-gcc')
-  pnacl_sdk_cxx = (pnacl_sdk_root + '/bin/pnacl-g++')
-  pnacl_sdk_ld =  (pnacl_sdk_root + '/bin/pnacl-bcld')
+  pnacl_sdk_cc = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/llvm-fake-sfigcc')
+  pnacl_sdk_cxx = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/llvm-fake-sfig++')
+  pnacl_sdk_ld =  (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/llvm-fake-bcld')
   pnacl_sdk_disass = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
                   '/bin/llvm-dis')
   # NOTE: XXX_flags start with space for easy concatenation
