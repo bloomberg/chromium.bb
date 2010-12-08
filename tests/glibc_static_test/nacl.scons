@@ -1,0 +1,28 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+if not env.Bit('nacl_glibc'):
+  Return()
+
+# Currently nacl-gcc with -static passes [crt* object files]
+# [user object file] [some libs] -lgcc -lgcc_eh [crt* object files] to
+# the linker but the last -lgcc_eh requires -lc.
+env.Append(
+    LINKFLAGS=[
+        '-static',
+        '-T','${NACL_SDK_INCLUDE}/../lib/ldscripts/elf_nacl.x.static',
+        '-lc']
+    )
+env.ComponentProgram(
+    'glibc_static_hello.nexe',
+    'glibc_static_hello.c')
+node = env.CommandSelLdrTestNacl(
+    'glibc_static_hello.out',
+    command=[env.File('glibc_static_hello.nexe')],
+    stdout_golden=env.File('glibc_static_hello.stdout'),
+    glibc_static=True)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_glibc_static_hello_test')

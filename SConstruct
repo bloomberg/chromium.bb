@@ -1055,6 +1055,8 @@ def CommandSelLdrTestNacl(env, name, command,
                           sel_ldr_flags=None,
                           loader='sel_ldr',
                           size='medium',
+                          # True for *.nexe statically linked with glibc
+                          glibc_static=False,
                           **extra):
   # Disable all sel_ldr tests for windows under coverage.
   # Currently several .S files block sel_ldr from being instrumented.
@@ -1079,8 +1081,9 @@ def CommandSelLdrTestNacl(env, name, command,
     sel_ldr_flags += ['-Q']
 
   if env.Bit('nacl_glibc'):
-    command = ['${NACL_SDK_LIB}/runnable-ld.so',
-               '--library-path', '${NACL_SDK_LIB}'] + command
+    if not glibc_static:
+      command = ['${NACL_SDK_LIB}/runnable-ld.so',
+                 '--library-path', '${NACL_SDK_LIB}'] + command
     # Enable file access.
     sel_ldr_flags += ['-a']
     # TODO(mseaborn): Remove the need for the -s (stub out) option.
@@ -1876,6 +1879,7 @@ nacl_env.Append(
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/gc_instrumentation/nacl.scons',
+    'tests/glibc_static_test/nacl.scons',
     'tests/glibc_syscall_wrappers/nacl.scons',
     'tests/hello_world/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
