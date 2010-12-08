@@ -29,8 +29,8 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/page_info_model.h"
@@ -135,7 +135,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   GeolocationContentSettingsMap::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
   DesktopNotificationService::RegisterUserPrefs(user_prefs);
-  ChromeURLRequestContextGetter::RegisterUserPrefs(user_prefs);
+  PrefProxyConfigService::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)

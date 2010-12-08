@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/pref_proxy_config_service.h"
 
+#include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
@@ -11,6 +12,33 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+
+namespace {
+
+const bool kProxyPrefDefaultBoolean = false;
+const char kProxyPrefDefaultString[] = "";
+
+// Determines if a value of a proxy pref is set to its default. Default values
+// have a special role in the proxy pref system, because if all of the proxy
+// prefs are set to their defaults, then the system proxy settings are applied.
+// TODO(gfeher): Proxy preferences should be refactored to avoid the need
+// for such solutions. See crbug.com/65732
+bool IsDefaultValue(const Value* value) {
+  bool b = false;
+  std::string s;
+  if (value->IsType(Value::TYPE_BOOLEAN) &&
+      value->GetAsBoolean(&b)) {
+    return b == kProxyPrefDefaultBoolean;
+  } else if (value->IsType(Value::TYPE_STRING) &&
+             value->GetAsString(&s)) {
+    return s == kProxyPrefDefaultString;
+  } else {
+    NOTREACHED() << "Invalid type for a proxy preference.";
+    return false;
+  }
+}
+
+}  // namespace
 
 PrefProxyConfigTracker::PrefProxyConfigTracker(PrefService* pref_service)
     : pref_service_(pref_service) {
@@ -97,12 +125,17 @@ bool PrefProxyConfigTracker::ReadPrefConfig(net::ProxyConfig* config) {
   // are ignored. That's because chrome treats the system settings as the
   // default values, which should apply if there's no explicit value forced by
   // policy or the user.
+  // Preferences that are set to their default values are also ignored,
+  // regardless of their controlling source. This is because 'use system proxy
+  // settings' is currently encoded by all the preferences being set to their
+  // defaults. This will change when crbug.com/65732 is addressed.
   bool found_enable_proxy_pref = false;
   for (size_t i = 0; i < arraysize(proxy_prefs); i++) {
     const PrefService::Preference* pref =
         pref_service_->FindPreference(proxy_prefs[i]);
     DCHECK(pref);
-    if (pref && (!pref->IsUserModifiable() || pref->HasUserSetting())) {
+    if (pref && (!pref->IsUserModifiable() || pref->HasUserSetting()) &&
+        !IsDefaultValue(pref->GetValue())) {
       found_enable_proxy_pref = true;
       break;
     }
@@ -220,4 +253,19 @@ void PrefProxyConfigService::RegisterObservers() {
     pref_config_tracker_->AddObserver(this);
     registered_observers_ = true;
   }
+}
+
+// static
+void PrefProxyConfigService::RegisterUserPrefs(
+    PrefService* pref_service) {
+  pref_service->RegisterBooleanPref(prefs::kNoProxyServer,
+                                    kProxyPrefDefaultBoolean);
+  pref_service->RegisterBooleanPref(prefs::kProxyAutoDetect,
+                                    kProxyPrefDefaultBoolean);
+  pref_service->RegisterStringPref(prefs::kProxyServer,
+                                   kProxyPrefDefaultString);
+  pref_service->RegisterStringPref(prefs::kProxyPacUrl,
+                                   kProxyPrefDefaultString);
+  pref_service->RegisterStringPref(prefs::kProxyBypassList,
+                                   kProxyPrefDefaultString);
 }

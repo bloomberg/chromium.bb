@@ -103,6 +103,8 @@ class PrefProxyConfigService
   virtual bool GetLatestProxyConfig(net::ProxyConfig* config);
   virtual void OnLazyPoll();
 
+  static void RegisterUserPrefs(PrefService* user_prefs);
+
  private:
   // ProxyConfigService::Observer implementation:
   virtual void OnProxyConfigChanged(const net::ProxyConfig& config);

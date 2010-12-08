@@ -67,7 +67,7 @@ class PrefProxyConfigServiceTestBase : public TESTBASE {
 
   virtual void SetUp() {
     ASSERT_TRUE(pref_service_.get());
-    ChromeURLRequestContextGetter::RegisterUserPrefs(pref_service_.get());
+    PrefProxyConfigService::RegisterUserPrefs(pref_service_.get());
     fixed_config_.set_pac_url(GURL(kFixedPacUrl));
     delegate_service_ = new TestProxyConfigService(fixed_config_);
     proxy_config_tracker_ = new PrefProxyConfigTracker(pref_service_.get());

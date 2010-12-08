@@ -234,8 +234,6 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   ChromeURLRequestContextGetter(Profile* profile,
                                 ChromeURLRequestContextFactory* factory);
 
-  static void RegisterUserPrefs(PrefService* user_prefs);
-
   // Note that GetURLRequestContext() can only be called from the IO
   // thread (it will assert otherwise). GetCookieStore() and
   // GetIOMessageLoopProxy however can be called from any thread.

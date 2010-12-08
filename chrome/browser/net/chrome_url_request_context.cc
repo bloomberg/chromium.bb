@@ -584,15 +584,6 @@ void ChromeURLRequestContextGetter::ReleaseURLRequestContext() {
   url_request_context_ = NULL;
 }
 
-void ChromeURLRequestContextGetter::RegisterUserPrefs(
-    PrefService* pref_service) {
-  pref_service->RegisterBooleanPref(prefs::kNoProxyServer, false);
-  pref_service->RegisterBooleanPref(prefs::kProxyAutoDetect, false);
-  pref_service->RegisterStringPref(prefs::kProxyServer, "");
-  pref_service->RegisterStringPref(prefs::kProxyPacUrl, "");
-  pref_service->RegisterStringPref(prefs::kProxyBypassList, "");
-}
-
 net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
   // If we are running on the IO thread this is real easy.
   if (BrowserThread::CurrentlyOn(BrowserThread::IO))
