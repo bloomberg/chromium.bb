@@ -13,78 +13,13 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
+#include "ppapi/proxy/image_data.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
-
-#if defined(OS_LINUX)
-#include <sys/shm.h>
-#endif
 
 namespace pp {
 namespace proxy {
-
-class ImageData : public PluginResource {
- public:
-  ImageData(const PP_ImageDataDesc& desc, int memory_handle);
-  virtual ~ImageData();
-
-  // Resource overrides.
-  virtual ImageData* AsImageData() { return this; }
-
-  void* Map();
-  void Unmap();
-
-  const PP_ImageDataDesc& desc() const { return desc_; }
-
- private:
-  PP_ImageDataDesc desc_;
-  int memory_handle_;
-
-  void* mapped_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageData);
-};
-
-ImageData::ImageData(const PP_ImageDataDesc& desc,
-                     int memory_handle)
-    : desc_(desc),
-      memory_handle_(memory_handle),
-      mapped_data_(NULL) {
-}
-
-ImageData::~ImageData() {
-  Unmap();
-}
-
-void* ImageData::Map() {
-#if defined(OS_LINUX)
-  // On linux, the memory handle is a SysV shared memory segment.
-  int shmkey = memory_handle_;
-  void* address = shmat(shmkey, NULL, 0);
-  // Mark for deletion in case we crash so the kernel will clean it up.
-  shmctl(shmkey, IPC_RMID, 0);
-  if (address == (void*)-1)
-    return NULL;
-  mapped_data_ = address;
-  return address;
-#else
-  NOTIMPLEMENTED();
-  return NULL;
-#endif
-}
-
-void ImageData::Unmap() {
-#if defined(OS_LINUX)
-  if (mapped_data_)
-    shmdt(mapped_data_);
-#else
-  NOTIMPLEMENTED();
-#endif
-  mapped_data_ = NULL;
-}
 
 namespace {
 
@@ -111,11 +46,11 @@ PP_Resource Create(PP_Module module_id,
                    PP_Bool init_to_zero) {
   PP_Resource result = 0;
   std::string image_data_desc;
-  int shm_handle = -1;
+  ImageHandle image_handle = ImageData::NullHandle;
   PluginDispatcher::Get()->Send(
       new PpapiHostMsg_PPBImageData_Create(
           INTERFACE_ID_PPB_IMAGE_DATA, module_id, format, *size, init_to_zero,
-          &result, &image_data_desc, &shm_handle));
+          &result, &image_data_desc, &image_handle));
 
   if (result && image_data_desc.size() == sizeof(PP_ImageDataDesc)) {
     // We serialize the PP_ImageDataDesc just by copying to a string.
@@ -123,7 +58,7 @@ PP_Resource Create(PP_Module module_id,
     memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
 
     linked_ptr<ImageData> object(
-        new ImageData(desc, shm_handle));
+        new ImageData(desc, image_handle));
     PluginDispatcher::Get()->plugin_resource_tracker()->AddResource(
         result, object);
   }
@@ -211,10 +146,10 @@ void PPB_ImageData_Proxy::OnMsgCreate(PP_Module module,
                                       PP_Bool init_to_zero,
                                       PP_Resource* result,
                                       std::string* image_data_desc,
-                                      int* result_shm_handle) {
+                                      ImageHandle* result_image_handle) {
   *result = ppb_image_data_target()->Create(
       module, static_cast<PP_ImageDataFormat>(format), &size, init_to_zero);
-  *result_shm_handle = 0;
+  *result_image_handle = ImageData::NullHandle;
   if (*result) {
     // The ImageDesc is just serialized as a string.
     PP_ImageDataDesc desc;
@@ -231,7 +166,7 @@ void PPB_ImageData_Proxy::OnMsgCreate(PP_Module module,
     if (trusted) {
       int32_t handle;
       if (trusted->GetSharedMemory(*result, &handle, &byte_count) == PP_OK)
-        *result_shm_handle = static_cast<int>(handle);
+          *result_image_handle = ImageData::HandleFromInt(handle);
     }
   }
 }

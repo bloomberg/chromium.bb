@@ -12,6 +12,8 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/image_data.h"
+
 
 struct PPB_ImageData;
 
@@ -42,7 +44,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
                    PP_Bool init_to_zero,
                    PP_Resource* result,
                    std::string* image_data_desc,
-                   int* result_shm_handle);
+                   ImageHandle* result_image_handle);
 };
 
 }  // namespace proxy

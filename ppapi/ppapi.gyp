@@ -540,6 +540,8 @@
         'proxy/host_dispatcher.h',
         'proxy/host_var_serialization_rules.cc',
         'proxy/host_var_serialization_rules.h',
+        'proxy/image_data.cc',
+        'proxy/image_data.h',
         'proxy/interface_proxy.cc',
         'proxy/interface_proxy.h',
         'proxy/plugin_dispatcher.cc',

@@ -359,7 +359,7 @@ IPC_BEGIN_MESSAGES(PpapiHost)
                              PP_Bool /* init_to_zero */,
                              PP_Resource /* result_resource */,
                              std::string /* image_data_desc */,
-                             int32_t /* result_shm_handle */)
+                             pp::proxy::ImageHandle /* result */)
 
   // PPB_Instance.
   IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetWindowObject,

@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/shared_memory.h"
+#include "build/build_config.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
@@ -96,9 +98,16 @@ struct PPBFlash_DrawGlyphs_Params {
   std::vector<PP_Point> glyph_advances;
 };
 
+#if defined(OS_WIN)
+typedef HANDLE ImageHandle;
+#elif defined(OS_MACOSX)
+typedef base::SharedMemoryHandle ImageHandle;
+#else
+// On X Windows this is a SysV shared memory key.
+typedef int ImageHandle;
+#endif
+
 }  // namespace proxy
 }  // namespace pp
-
-
 
 #endif  // PPAPI_PROXY_SERIALIZED_STRUCTS_H_
