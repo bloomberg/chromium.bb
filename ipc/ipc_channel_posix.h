@@ -17,6 +17,27 @@
 #include "base/message_loop.h"
 #include "ipc/file_descriptor_set_posix.h"
 
+#if !defined(OS_MACOSX)
+// On Linux, the seccomp sandbox makes it very expensive to call
+// recvmsg() and sendmsg(). The restriction on calling read() and write(), which
+// are cheap, is that we can't pass file descriptors over them.
+//
+// As we cannot anticipate when the sender will provide us with file
+// descriptors, we have to make the decision about whether we call read() or
+// recvmsg() before we actually make the call. The easiest option is to
+// create a dedicated socketpair() for exchanging file descriptors.
+// Mac can also run in IPC_USES_READWRITE mode if necessary, but at this time
+// doesn't take a performance hit from recvmsg and sendmsg, so it doesn't
+// make sense to waste resources on having the separate dedicated socketpair.
+// It is however useful for debugging between Linux and Mac to be able to turn
+// this switch 'on' on the Mac as well.
+
+// The HELLO message from the client to the server is always sent using
+// sendmsg because it will contain the file descriptor that the server
+// needs to send file descriptors in later messages.
+#define IPC_USES_READWRITE 1
+#endif
+
 namespace IPC {
 
 // An implementation of ChannelImpl for POSIX systems that works via
@@ -73,7 +94,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // pipe_ that is passed to the client.
   int client_pipe_;
 
-#if !defined(OS_MACOSX)
+#if defined(IPC_USES_READWRITE)
   // Linux/BSD use a dedicated socketpair() for passing file descriptors.
   int fd_pipe_;
   int remote_fd_pipe_;
