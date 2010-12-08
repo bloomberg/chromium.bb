@@ -21,6 +21,13 @@ void Unlock();
 LONG LockModule();
 LONG UnlockModule();
 
+// Un/Register a hook to be unhooked by our termination safety net.
+// This is to protect ourselves against cases where the hook owner never
+// gets torn down (for whatever reason) and then the hook may be called when
+// we don't expect it to be.
+void RegisterHookForSafetyNet(HHOOK hook);
+void UnregisterHookForSafetyNet(HHOOK hook);
+
 class AutoLock {
  public:
   AutoLock() {

@@ -62,6 +62,13 @@ class ToolbandModule : public CAtlDllModuleT<ToolbandModule> {
     return module_initialized_;
   }
 
+  // Un/Register a hook to be unhooked by our termination safety net.
+  // This is to protect ourselves against cases where the hook owner never
+  // gets torn down (for whatever reason) and then the hook may be called when
+  // we don't expect it to be.
+  void RegisterHookForSafetyNet(HHOOK hook);
+  void UnregisterHookForSafetyNet(HHOOK hook);
+
   // We override reg/unregserver to register proxy/stubs.
   HRESULT DllRegisterServer();
   HRESULT DllUnregisterServer();
@@ -70,6 +77,9 @@ class ToolbandModule : public CAtlDllModuleT<ToolbandModule> {
   base::AtExitManager at_exit_;
   bool module_initialized_;
   bool crash_reporting_initialized_;
+  // Accumulate Hooks that may need to be freed before unloading DLL.
+  // Thread protected by m_csStaticDataInitAndTypeInfo.
+  std::set<HHOOK> hooks_;
 };
 
 ToolbandModule::ToolbandModule()
@@ -126,6 +136,16 @@ HRESULT ToolbandModule::DllGetClassObject(REFCLSID clsid, REFIID iid,
   return Super::DllGetClassObject(clsid, iid, object);
 }
 
+void ToolbandModule::RegisterHookForSafetyNet(HHOOK hook) {
+  CComCritSecLock<CComCriticalSection> lock(m_csStaticDataInitAndTypeInfo);
+  hooks_.insert(hook);
+}
+
+void ToolbandModule::UnregisterHookForSafetyNet(HHOOK hook) {
+  CComCritSecLock<CComCriticalSection> lock(m_csStaticDataInitAndTypeInfo);
+  hooks_.erase(hook);
+}
+
 HRESULT ToolbandModule::DllRegisterServer() {
   // No typelib registration.
   HRESULT hr = Super::DllRegisterServer();
@@ -173,6 +193,15 @@ void ToolbandModule::Init() {
 
 void ToolbandModule::Term() {
   CComCritSecLock<CComCriticalSection> lock(m_csStaticDataInitAndTypeInfo);
+  // We do this before checking if we were initialized because it is not
+  // related to initialization or not, but to un/registration from outsiders.
+  while (hooks_.size() > 0) {
+    std::set<HHOOK>::iterator it = hooks_.begin();
+    VLOG(1) << "Hook '" << *it << "' has fallen in our safety net.";
+    ::UnhookWindowsHookEx(*it);
+    hooks_.erase(it);
+  }
+
   if (!module_initialized_)
     return;
   if (crash_reporting_initialized_) {
@@ -199,6 +228,14 @@ LONG ceee_module_util::LockModule() {
 
 LONG ceee_module_util::UnlockModule() {
   return module.Unlock();
+}
+
+void ceee_module_util::RegisterHookForSafetyNet(HHOOK hook) {
+  module.RegisterHookForSafetyNet(hook);
+}
+
+void ceee_module_util::UnregisterHookForSafetyNet(HHOOK hook) {
+  module.UnregisterHookForSafetyNet(hook);
 }
 
 // DLL Entry Point.

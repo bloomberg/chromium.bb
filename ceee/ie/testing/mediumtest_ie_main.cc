@@ -23,10 +23,11 @@ LONG LockModule() {
 LONG UnlockModule() {
   return 0;
 }
-void Lock() {
-}
-void Unlock() {
-}
+
+void Lock() {}
+void Unlock() {}
+void RegisterHookForSafetyNet(HHOOK hook) {}
+void UnregisterHookForSafetyNet(HHOOK hook) {}
 
 }  // namespace ceee_module_util
 

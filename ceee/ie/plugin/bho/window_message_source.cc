@@ -11,6 +11,7 @@
 #include "base/win_util.h"
 #include "ceee/common/window_utils.h"
 #include "ceee/common/windows_constants.h"
+#include "ceee/ie/common/ceee_module_util.h"
 
 WindowMessageSource::MessageSourceMap WindowMessageSource::message_source_map_;
 Lock WindowMessageSource::lock_;
@@ -37,6 +38,7 @@ bool WindowMessageSource::Initialize() {
     TearDown();
     return false;
   }
+  ceee_module_util::RegisterHookForSafetyNet(get_message_hook_);
 
   call_wnd_proc_ret_hook_ = ::SetWindowsHookEx(WH_CALLWNDPROCRET,
                                                CallWndProcRetHookProc, NULL,
@@ -45,16 +47,19 @@ bool WindowMessageSource::Initialize() {
     TearDown();
     return false;
   }
+  ceee_module_util::RegisterHookForSafetyNet(call_wnd_proc_ret_hook_);
   return true;
 }
 
 void WindowMessageSource::TearDown() {
   if (get_message_hook_ != NULL) {
+    ceee_module_util::UnregisterHookForSafetyNet(get_message_hook_);
     ::UnhookWindowsHookEx(get_message_hook_);
     get_message_hook_ = NULL;
   }
 
   if (call_wnd_proc_ret_hook_ != NULL) {
+    ceee_module_util::UnregisterHookForSafetyNet(call_wnd_proc_ret_hook_);
     ::UnhookWindowsHookEx(call_wnd_proc_ret_hook_);
     call_wnd_proc_ret_hook_ = NULL;
   }
