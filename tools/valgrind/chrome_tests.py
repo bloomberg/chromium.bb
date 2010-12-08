@@ -280,6 +280,17 @@ class ChromeTests:
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
                            cmd_args=self.UI_TEST_ARGS)
 
+  def TestAutomatedUI(self):
+    return self.SimpleTest("chrome", "automated_ui_tests",
+                           valgrind_test_args=self.UI_VALGRIND_ARGS,
+                           cmd_args=self.UI_TEST_ARGS)
+
+  def TestInteractiveUI(self):
+    return self.SimpleTest("chrome", "interactive_ui_tests",
+                           valgrind_test_args=self.UI_VALGRIND_ARGS,
+                           cmd_args=(self.UI_TEST_ARGS +
+                                     ["--test-terminate-timeout=240000"]))
+
   def TestReliability(self):
     script_dir = path_utils.ScriptDir()
     url_list_file = os.path.join(script_dir, "reliability", "url_list.txt")
@@ -395,11 +406,13 @@ class ChromeTests:
   # The known list of tests.
   # Recognise the original abbreviations as well as full executable names.
   _test_list = {
+    "automated_ui" : TestAutomatedUI,
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
     "googleurl": TestGURL,       "googleurl_unittests": TestGURL,
     "courgette": TestCourgette,  "courgette_unittests": TestCourgette,
     "ipc": TestIpc,              "ipc_tests": TestIpc,
+    "interactive_ui": TestInteractiveUI,
     "layout": TestLayout,        "layout_tests": TestLayout,
     "media": TestMedia,          "media_unittests": TestMedia,
     "net": TestNet,              "net_unittests": TestNet,
