@@ -170,7 +170,10 @@ INITIAL_ENV = {
   'MC_FLAGS_X8664' : '-assemble -filetype=obj -arch=x86_64 -triple=x86_64-nacl',
 
   'LD'       : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
-  'LD_FLAGS' : '--native-client -Ttext=0x00020000 -nostdlib -static',
+
+  'LD_FLAGS_COMMON': '--native-client -nostdlib',
+  'LD_FLAGS_STATIC': '${LD_FLAGS_COMMON} -static -Ttext=0x00020000',
+  'LD_FLAGS_SHARED': '${LD_FLAGS_COMMON} -shared',
 
   'BCLD'      : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
   'BCLD_FLAGS': '${GOLD_PLUGIN_ARGS}',
@@ -331,6 +334,11 @@ def PrepareFlags():
     env.clear('STDLIB_NATIVE_SUFFIX')
     env.clear('STDLIB_BC_PREFIX')
     env.clear('STDLIB_BC_SUFFIX')
+
+  if env.getbool('STATIC'):
+    env.set('LD_FLAGS', '${LD_FLAGS_STATIC}')
+  else:
+    env.set('LD_FLAGS', '${LD_FLAGS_SHARED}')
 
   sbtc = env.get('SANDBOXED_ARCH')
   if sbtc != '':
@@ -743,12 +751,6 @@ def OptimizeBC(input, output):
 # Final native linking step
 def LinkNative(arch, inputs, output):
   inputs = filter(lambda x: not FileType(x) == 'lib', inputs)
-  if not env.getbool('STATIC'):
-    ld_flags = env.get('LD_FLAGS')
-    ld_flags = ld_flags.replace('-static', '-shared')
-    ld_flags = re.sub(r"-Ttext=0x[0-9a-fA-F]+ ", "", ld_flags)
-    env.set('LD_FLAGS', ld_flags)
-
   RunWithEnv('RUN_LD', arch = arch,
              inputs = shell.join(inputs),
              output = output)
