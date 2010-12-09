@@ -691,6 +691,13 @@ if not env.Bit('mac'):
                          command=[nacl_tls_unittest])
   env.AddNodeToTestSuite(node, TEST_SUITES, 'run_nacl_tls_unittest')
 
+# Test that sel_ldr does not crash if the executable file cannot be opened.
+node = env.CommandSelLdrTestNacl(
+    'sel_ldr_exe_not_found.out',
+    command=['name_of_file_that_does_not_exist.nexe'],
+    exit_status='1')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_sel_ldr_exe_not_found_test')
+
 # ----------------------------------------------------------
 # Small tests with canned binaries
 # ----------------------------------------------------------

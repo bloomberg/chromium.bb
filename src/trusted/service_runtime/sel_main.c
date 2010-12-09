@@ -499,7 +499,7 @@ int main(int  argc,
     if (0 == GioMemoryFileSnapshotCtor(&gf, nacl_file)) {
       perror("sel_main");
       fprintf(stderr, "Cannot open \"%s\".\n", nacl_file);
-      errcode = LOAD_OPEN_ERROR;
+      exit(1);
     }
 
     if (LOAD_OK == errcode) {
