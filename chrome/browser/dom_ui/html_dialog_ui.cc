@@ -5,12 +5,15 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 
 #include "base/callback.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/bindings_policy.h"
+
+static base::LazyInstance<PropertyAccessor<HtmlDialogUIDelegate*> >
+    g_html_dialog_ui_property_accessor(base::LINKER_INITIALIZED);
 
 HtmlDialogUI::HtmlDialogUI(TabContents* tab_contents) : DOMUI(tab_contents) {
 }
@@ -28,7 +31,7 @@ HtmlDialogUI::~HtmlDialogUI() {
 
 // static
 PropertyAccessor<HtmlDialogUIDelegate*>& HtmlDialogUI::GetPropertyAccessor() {
-  return *Singleton< PropertyAccessor<HtmlDialogUIDelegate*> >::get();
+  return g_html_dialog_ui_property_accessor.Get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -69,7 +69,7 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
                                                            &browser_command))
       return false;
     const menus::AcceleratorGtk* accelerator_gtk =
-        Singleton<AcceleratorsGtk>()->GetPrimaryAcceleratorForCommand(
+        AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(
             browser_command);
     if (accelerator_gtk)
       *accelerator = *accelerator_gtk;

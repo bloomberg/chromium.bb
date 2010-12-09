@@ -5,9 +5,9 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -67,6 +67,9 @@ class ConfigurationPolicyProviderKeeper {
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderKeeper);
 };
+
+static base::LazyInstance<ConfigurationPolicyProviderKeeper>
+    g_configuration_policy_provider_keeper(base::LINKER_INITIALIZED);
 
 ConfigurationPolicyProvider*
     ConfigurationPolicyProviderKeeper::CreateManagedPlatformProvider() {
@@ -372,9 +375,8 @@ void ConfigurationPolicyPrefStore::Apply(ConfigurationPolicyType policy,
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore() {
-  ConfigurationPolicyProviderKeeper* keeper =
-      Singleton<ConfigurationPolicyProviderKeeper>::get();
-  return new ConfigurationPolicyPrefStore(keeper->managed_platform_provider());
+  return new ConfigurationPolicyPrefStore(
+      g_configuration_policy_provider_keeper.Get().managed_platform_provider());
 }
 
 // static
@@ -382,7 +384,7 @@ ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
     Profile* profile) {
   ConfigurationPolicyProviderKeeper* keeper =
-      Singleton<ConfigurationPolicyProviderKeeper>::get();
+      g_configuration_policy_provider_keeper.Pointer();
   ConfigurationPolicyProvider* provider = NULL;
   if (profile)
     provider = profile->GetPolicyContext()->GetDeviceManagementPolicyProvider();
@@ -394,9 +396,8 @@ ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
-  ConfigurationPolicyProviderKeeper* keeper =
-      Singleton<ConfigurationPolicyProviderKeeper>::get();
-  return new ConfigurationPolicyPrefStore(keeper->recommended_provider());
+  return new ConfigurationPolicyPrefStore(
+      g_configuration_policy_provider_keeper.Get().recommended_provider());
 }
 
 // static

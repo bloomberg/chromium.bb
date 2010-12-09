@@ -663,7 +663,7 @@ void BrowserWindowGtk::Close() {
   if (accel_group_) {
     // Disconnecting the keys we connected to our accelerator group frees the
     // closures allocated in ConnectAccelerators.
-    AcceleratorsGtk* accelerators = Singleton<AcceleratorsGtk>().get();
+    AcceleratorsGtk* accelerators = AcceleratorsGtk::GetInstance();
     for (AcceleratorsGtk::const_iterator iter = accelerators->begin();
          iter != accelerators->end(); ++iter) {
       gtk_accel_group_disconnect_key(accel_group_,
@@ -1721,7 +1721,7 @@ void BrowserWindowGtk::ConnectAccelerators() {
   accel_group_ = gtk_accel_group_new();
   gtk_window_add_accel_group(window_, accel_group_);
 
-  AcceleratorsGtk* accelerators = Singleton<AcceleratorsGtk>().get();
+  AcceleratorsGtk* accelerators = AcceleratorsGtk::GetInstance();
   for (AcceleratorsGtk::const_iterator iter = accelerators->begin();
        iter != accelerators->end(); ++iter) {
     gtk_accel_group_connect(

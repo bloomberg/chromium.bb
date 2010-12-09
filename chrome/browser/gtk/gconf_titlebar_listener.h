@@ -13,9 +13,10 @@
 #include <string>
 
 #include "app/gtk_signal.h"
-#include "base/singleton.h"
+#include "base/basictypes.h"
 
 class BrowserTitlebar;
+template <typename T> struct DefaultSingletonTraits;
 
 // On GNOME desktops, subscribes to the gconf key which controlls button order.
 // Everywhere else, SetTiltebarButtons() just calls back into BrowserTitlebar
@@ -24,6 +25,9 @@ class BrowserTitlebar;
 // Meant to be used as a Singleton through base/singleton.h's interface.
 class GConfTitlebarListener {
  public:
+  // Returns the singleton instance.
+  static GConfTitlebarListener* GetInstance();
+
   // Sets the current titlebar button order. On GNOME desktops, also subscribes
   // to further notifications when this changes.
   void SetTitlebarButtons(BrowserTitlebar* titlebar);

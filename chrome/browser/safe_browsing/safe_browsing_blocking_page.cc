@@ -11,7 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -86,12 +86,16 @@ class SafeBrowsingBlockingPageFactoryImpl
   }
 
  private:
-  friend struct DefaultSingletonTraits<SafeBrowsingBlockingPageFactoryImpl>;
+  friend struct base::DefaultLazyInstanceTraits<
+      SafeBrowsingBlockingPageFactoryImpl>;
 
   SafeBrowsingBlockingPageFactoryImpl() { }
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageFactoryImpl);
 };
+
+static base::LazyInstance<SafeBrowsingBlockingPageFactoryImpl>
+    g_safe_browsing_blocking_page_factory_impl(base::LINKER_INITIALIZED);
 
 SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     SafeBrowsingService* sb_service,
@@ -541,7 +545,7 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
     // Set up the factory if this has not been done already (tests do that
     // before this method is called).
     if (!factory_)
-      factory_ = Singleton<SafeBrowsingBlockingPageFactoryImpl>::get();
+      factory_ = g_safe_browsing_blocking_page_factory_impl.Pointer();
     SafeBrowsingBlockingPage* blocking_page =
         factory_->CreateSafeBrowsingPage(sb_service, tab_contents, resources);
     blocking_page->Show();

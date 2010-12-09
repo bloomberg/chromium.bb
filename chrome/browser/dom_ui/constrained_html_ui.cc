@@ -4,11 +4,14 @@
 
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
 
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/bindings_policy.h"
+
+static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
+    g_constrained_html_ui_property_accessor(base::LINKER_INITIALIZED);
 
 ConstrainedHtmlUI::ConstrainedHtmlUI(TabContents* contents)
     : DOMUI(contents) {
@@ -50,5 +53,5 @@ ConstrainedHtmlUIDelegate*
 // static
 PropertyAccessor<ConstrainedHtmlUIDelegate*>&
     ConstrainedHtmlUI::GetPropertyAccessor() {
-  return *Singleton<PropertyAccessor<ConstrainedHtmlUIDelegate*> >::get();
+  return g_constrained_html_ui_property_accessor.Get();
 }

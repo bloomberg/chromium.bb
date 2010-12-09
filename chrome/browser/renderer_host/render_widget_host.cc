@@ -101,7 +101,7 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility) ||
-      Singleton<BrowserAccessibilityState>()->IsAccessibleBrowser()) {
+          BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
     EnableRendererAccessibility();
   }
 }

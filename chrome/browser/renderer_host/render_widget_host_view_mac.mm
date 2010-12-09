@@ -524,7 +524,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 
   // Turn on accessibility only if VoiceOver is running.
   if (IsVoiceOverRunning()) {
-    Singleton<BrowserAccessibilityState>()->OnScreenReaderDetected();
+    BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
     render_widget_host_->EnableRendererAccessibility();
   }
 }

@@ -16,8 +16,8 @@
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -108,12 +108,15 @@ class DefaultDownloadDirectory {
       }
     }
   }
-  friend struct DefaultSingletonTraits<DefaultDownloadDirectory>;
+  friend struct base::DefaultLazyInstanceTraits<DefaultDownloadDirectory>;
   FilePath path_;
 };
 
+static base::LazyInstance<DefaultDownloadDirectory>
+    g_default_download_directory(base::LINKER_INITIALIZED);
+
 const FilePath& GetDefaultDownloadDirectory() {
-  return Singleton<DefaultDownloadDirectory>::get()->path();
+  return g_default_download_directory.Get().path();
 }
 
 bool CreateTemporaryFileForDownload(FilePath* temp_file) {

@@ -9,14 +9,16 @@
 #include "app/menus/accelerator_gtk.h"
 #include "base/hash_tables.h"
 
+template <typename T> struct DefaultSingletonTraits;
+
 class AcceleratorsGtk {
  public:
-  AcceleratorsGtk();
-  ~AcceleratorsGtk();
-
   typedef std::vector<std::pair<int, menus::AcceleratorGtk> >
       AcceleratorGtkList;
   typedef AcceleratorGtkList::const_iterator const_iterator;
+
+  // Returns the singleton instance.
+  static AcceleratorsGtk* GetInstance();
 
   const_iterator const begin() {
     return all_accelerators_.begin();
@@ -30,6 +32,11 @@ class AcceleratorsGtk {
   const menus::AcceleratorGtk* GetPrimaryAcceleratorForCommand(int command_id);
 
  private:
+  friend struct DefaultSingletonTraits<AcceleratorsGtk>;
+
+  AcceleratorsGtk();
+  ~AcceleratorsGtk();
+
   base::hash_map<int, menus::AcceleratorGtk> primary_accelerators_;
 
   AcceleratorGtkList all_accelerators_;

@@ -329,7 +329,7 @@ bool BrowserToolbarGtk::GetAcceleratorForCommandId(
     int id,
     menus::Accelerator* accelerator) {
   const menus::AcceleratorGtk* accelerator_gtk =
-      Singleton<AcceleratorsGtk>()->GetPrimaryAcceleratorForCommand(id);
+      AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(id);
   if (accelerator_gtk)
     *accelerator = *accelerator_gtk;
   return !!accelerator_gtk;

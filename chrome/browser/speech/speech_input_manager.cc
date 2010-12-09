@@ -10,7 +10,7 @@
 #include "app/l10n_util.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -124,7 +124,7 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   };
 
   // Private constructor to enforce singleton.
-  friend struct DefaultSingletonTraits<SpeechInputManagerImpl>;
+  friend struct base::DefaultLazyInstanceTraits<SpeechInputManagerImpl>;
   SpeechInputManagerImpl();
   virtual ~SpeechInputManagerImpl();
 
@@ -144,8 +144,11 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   scoped_refptr<HardwareInfo> hardware_info_;
 };
 
+static ::base::LazyInstance<SpeechInputManagerImpl> g_speech_input_manager_impl(
+    base::LINKER_INITIALIZED);
+
 SpeechInputManager* SpeechInputManager::Get() {
-  return Singleton<SpeechInputManagerImpl>::get();
+  return g_speech_input_manager_impl.Pointer();
 }
 
 SpeechInputManagerImpl::SpeechInputManagerImpl()

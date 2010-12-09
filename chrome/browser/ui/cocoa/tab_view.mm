@@ -80,7 +80,7 @@ const CGFloat kRapidCloseDist = 2.5;
   // TODO(dtseng): crbug.com/59978.
   // Retain in case we remove it from its superview.
   closeButtonRetainer_.reset([closeButton_ retain]);
-  if (Singleton<BrowserAccessibilityState>::get()->IsAccessibleBrowser()) {
+  if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
     // The superview gives up ownership of the closeButton here.
     [closeButton_ removeFromSuperview];
   }

@@ -143,7 +143,9 @@ class LoginUtilsImpl : public LoginUtils {
 
 class LoginUtilsWrapper {
  public:
-  LoginUtilsWrapper() {}
+  static LoginUtilsWrapper* GetInstance() {
+    return Singleton<LoginUtilsWrapper>::get();
+  }
 
   LoginUtils* get() {
     AutoLock create(create_lock_);
@@ -157,6 +159,10 @@ class LoginUtilsWrapper {
   }
 
  private:
+  friend struct DefaultSingletonTraits<LoginUtilsWrapper>;
+
+  LoginUtilsWrapper() {}
+
   Lock create_lock_;
   scoped_ptr<LoginUtils> ptr_;
 
@@ -454,11 +460,11 @@ void LoginUtilsImpl::PrewarmAuthentication() {
 }
 
 LoginUtils* LoginUtils::Get() {
-  return Singleton<LoginUtilsWrapper>::get()->get();
+  return LoginUtilsWrapper::GetInstance()->get();
 }
 
 void LoginUtils::Set(LoginUtils* mock) {
-  Singleton<LoginUtilsWrapper>::get()->reset(mock);
+  LoginUtilsWrapper::GetInstance()->reset(mock);
 }
 
 void LoginUtils::DoBrowserLaunch(Profile* profile) {

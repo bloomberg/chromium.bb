@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/logging.h"
+#include "base/singleton.h"
 #include "chrome/browser/chromeos/pulse_audio_mixer.h"
 
 namespace chromeos {
@@ -166,6 +167,11 @@ double AudioHandler::VolumeDbToPercent(double volume_db) {
 double AudioHandler::PercentToVolumeDb(double volume_percent) {
   return pow(volume_percent / 100.0, kVolumeBias) *
       (kMaxVolumeDb - kMinVolumeDb) + kMinVolumeDb;
+}
+
+// static
+AudioHandler* AudioHandler::instance() {
+  return Singleton<AudioHandler>::get();
 }
 
 }  // namespace chromeos

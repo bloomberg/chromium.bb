@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_
 #pragma once
 
-#include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 class ExtensionTestPassFunction : public SyncExtensionFunction {
   ~ExtensionTestPassFunction();
@@ -65,6 +66,8 @@ class ExtensionTestGetConfigFunction : public SyncExtensionFunction {
   // state, owned by the test code.
   class TestConfigState {
    public:
+    static TestConfigState* GetInstance();
+
     void set_config_state(DictionaryValue* config_state) {
       config_state_ = config_state;
     }

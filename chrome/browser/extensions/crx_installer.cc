@@ -9,9 +9,9 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -51,25 +51,28 @@ struct WhitelistedInstallData {
   std::set<std::string> ids;
 };
 
+static base::LazyInstance<WhitelistedInstallData>
+    g_whitelisted_install_data(base::LINKER_INITIALIZED);
+
 }  // namespace
 
 // static
 void CrxInstaller::SetWhitelistedInstallId(const std::string& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Singleton<WhitelistedInstallData>::get()->ids.insert(id);
+  g_whitelisted_install_data.Get().ids.insert(id);
 }
 
 // static
 bool CrxInstaller::IsIdWhitelisted(const std::string& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::set<std::string>& ids = Singleton<WhitelistedInstallData>::get()->ids;
+  std::set<std::string>& ids = g_whitelisted_install_data.Get().ids;
   return ContainsKey(ids, id);
 }
 
 // static
 bool CrxInstaller::ClearWhitelistedInstallId(const std::string& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::set<std::string>& ids = Singleton<WhitelistedInstallData>::get()->ids;
+  std::set<std::string>& ids = g_whitelisted_install_data.Get().ids;
   if (ContainsKey(ids, id)) {
     ids.erase(id);
     return true;

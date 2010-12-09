@@ -16,6 +16,7 @@
 #include "chrome/common/notification_type.h"
 
 class Browser;
+template <typename T> struct DefaultSingletonTraits;
 class Profile;
 
 namespace chromeos { // NOLINT
@@ -31,12 +32,8 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
     std::string mount_path;
   };
 
-  USBMountObserver() {}
-  ~USBMountObserver() {}
+  static USBMountObserver* Get();
 
-  static USBMountObserver* Get() {
-    return Singleton<USBMountObserver>::get();
-  }
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details);
@@ -48,8 +45,12 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
   void ScanForDevices(chromeos::MountLibrary* obj);
 
  private:
+  friend struct DefaultSingletonTraits<USBMountObserver>;
   typedef std::vector<BrowserWithPath>::iterator BrowserIterator;
   BrowserIterator FindBrowserForPath(const std::string& path);
+
+  USBMountObserver() {}
+  ~USBMountObserver() {}
 
   void RemoveBrowserFromVector(const std::string& path);
 

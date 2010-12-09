@@ -26,6 +26,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 
+template <typename T> struct DefaultSingletonTraits;
+
 static const std::string kPropertyPath = "path";
 static const std::string kPropertyTitle = "title";
 static const std::string kPropertyDirectory = "isDirectory";
@@ -158,8 +160,8 @@ class ImageBurnTaskProxy
 class ImageBurnResourceManager : public DownloadManager::Observer,
                                  public DownloadItem::Observer {
  public:
-  ImageBurnResourceManager();
-  ~ImageBurnResourceManager();
+  // Returns the singleton instance.
+  static ImageBurnResourceManager* GetInstance();
 
   // DownloadItem::Observer interface
   virtual void OnDownloadUpdated(DownloadItem* download);
@@ -190,6 +192,11 @@ class ImageBurnResourceManager : public DownloadManager::Observer,
   net::FileStream* CreateFileStream(FilePath* file_path);
 
  private:
+  friend struct DefaultSingletonTraits<ImageBurnResourceManager>;
+
+  ImageBurnResourceManager();
+  ~ImageBurnResourceManager();
+
   FilePath local_image_dir_file_path_;
   FilePath image_fecher_local_path_;
   bool image_download_started_;

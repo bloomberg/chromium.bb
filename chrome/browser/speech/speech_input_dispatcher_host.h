@@ -20,6 +20,8 @@ class SpeechInputDispatcherHost
     : public base::RefCountedThreadSafe<SpeechInputDispatcherHost>,
       public SpeechInputManager::Delegate {
  public:
+  class SpeechInputCallers;
+
   explicit SpeechInputDispatcherHost(int resource_message_filter_process_id);
 
   // SpeechInputManager::Delegate methods.
@@ -38,7 +40,6 @@ class SpeechInputDispatcherHost
   }
 
  private:
-  class SpeechInputCallers;
   friend class base::RefCountedThreadSafe<SpeechInputDispatcherHost>;
 
   virtual ~SpeechInputDispatcherHost();
@@ -56,7 +57,6 @@ class SpeechInputDispatcherHost
   SpeechInputManager* manager();
 
   int resource_message_filter_process_id_;
-  SpeechInputCallers* callers_;  // weak reference to a singleton.
 
   static SpeechInputManager::AccessorMethod* manager_accessor_;
 

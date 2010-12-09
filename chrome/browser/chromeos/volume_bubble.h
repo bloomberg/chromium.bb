@@ -6,17 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_VOLUME_BUBBLE_H_
 #pragma once
 
-#include "base/singleton.h"
 #include "chrome/browser/chromeos/setting_level_bubble.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 namespace chromeos {
 
 // Singleton class controlling volume bubble.
 class VolumeBubble : public SettingLevelBubble {
  public:
-  static VolumeBubble* instance() {
-    return Singleton<VolumeBubble>::get();
-  }
+  static VolumeBubble* instance();
 
  private:
   friend struct DefaultSingletonTraits<VolumeBubble>;

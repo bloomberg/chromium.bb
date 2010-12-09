@@ -129,7 +129,7 @@ void ServiceProcessControl::ConnectInternal() {
 
   // We just established a channel with the service process. Notify it if an
   // upgrade is available.
-  if (Singleton<UpgradeDetector>::get()->notify_upgrade()) {
+  if (UpgradeDetector::GetInstance()->notify_upgrade()) {
     Send(new ServiceMsg_UpdateAvailable);
   } else {
     if (registrar_.IsEmpty())

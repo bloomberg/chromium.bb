@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
+
+#include "base/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 
 BrowserAccessibilityState::BrowserAccessibilityState()
@@ -10,6 +12,11 @@ BrowserAccessibilityState::BrowserAccessibilityState()
 }
 
 BrowserAccessibilityState::~BrowserAccessibilityState() {
+}
+
+// static
+BrowserAccessibilityState* BrowserAccessibilityState::GetInstance() {
+  return Singleton<BrowserAccessibilityState>::get();
 }
 
 void BrowserAccessibilityState::OnScreenReaderDetected() {

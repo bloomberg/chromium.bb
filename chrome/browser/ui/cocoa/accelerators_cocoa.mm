@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/singleton.h"
 #include "chrome/app/chrome_command_ids.h"
 
 namespace {
@@ -46,6 +47,11 @@ AcceleratorsCocoa::AcceleratorsCocoa() {
     menus::AcceleratorCocoa accelerator(entry.key, entry.modifiers);
     accelerators_.insert(std::make_pair(entry.command_id, accelerator));
   }
+}
+
+// static
+AcceleratorsCocoa* AcceleratorsCocoa::GetInstance() {
+  return Singleton<AcceleratorsCocoa>::get();
 }
 
 const menus::AcceleratorCocoa* AcceleratorsCocoa::GetAcceleratorForCommand(

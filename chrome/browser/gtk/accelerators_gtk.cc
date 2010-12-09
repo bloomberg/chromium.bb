@@ -8,6 +8,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <X11/XF86keysym.h>
 
+#include "base/singleton.h"
 #include "chrome/app/chrome_command_ids.h"
 
 namespace {
@@ -189,6 +190,11 @@ AcceleratorsGtk::AcceleratorsGtk() {
 }
 
 AcceleratorsGtk::~AcceleratorsGtk() {}
+
+// static
+AcceleratorsGtk* AcceleratorsGtk::GetInstance() {
+  return Singleton<AcceleratorsGtk>::get();
+}
 
 const menus::AcceleratorGtk* AcceleratorsGtk::GetPrimaryAcceleratorForCommand(
     int command_id) {

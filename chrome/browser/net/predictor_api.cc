@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/thread.h"
@@ -330,7 +330,8 @@ class OffTheRecordObserver : public NotificationObserver {
   }
 
  private:
-  friend struct DefaultSingletonTraits<OffTheRecordObserver>;
+  friend struct base::DefaultLazyInstanceTraits<OffTheRecordObserver>;
+
   OffTheRecordObserver() : count_off_the_record_windows_(0) {}
   ~OffTheRecordObserver() {}
 
@@ -339,6 +340,9 @@ class OffTheRecordObserver : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordObserver);
 };
+
+static base::LazyInstance<OffTheRecordObserver> g_off_the_record_observer(
+    base::LINKER_INITIALIZED);
 
 //------------------------------------------------------------------------------
 // This section supports the about:dns page.
@@ -576,7 +580,7 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
 
   // We will register the incognito observer regardless of whether prefetching
   // is enabled, as it is also used to clear the host cache.
-  Singleton<OffTheRecordObserver>::get()->Register();
+  g_off_the_record_observer.Get().Register();
 
   if (trial_->group() != disabled_prefetch) {
     // Initialize the DNS prefetch system.

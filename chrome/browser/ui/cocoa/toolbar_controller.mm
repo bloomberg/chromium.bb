@@ -104,7 +104,7 @@ class WrenchAcceleratorDelegate : public menus::AcceleratorProvider {
     // string gets copied, too.
     menus::AcceleratorCocoa* out_accelerator =
         static_cast<menus::AcceleratorCocoa*>(accelerator_generic);
-    AcceleratorsCocoa* keymap = Singleton<AcceleratorsCocoa>::get();
+    AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
     const menus::AcceleratorCocoa* accelerator =
         keymap->GetAcceleratorForCommand(command_id);
     if (accelerator) {
@@ -226,7 +226,7 @@ class NotificationBridge : public NotificationObserver {
   [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
   [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
 
-  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
+  if (UpgradeDetector::GetInstance()->notify_upgrade())
     [self badgeWrenchMenu];
 
   [backButton_ setShowsBorderOnlyWhileMouseInside:YES];

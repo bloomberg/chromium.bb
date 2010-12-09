@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+
+static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
+    g_tab_contents_wrapper_property_accessor(base::LINKER_INITIALIZED);
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsWrapper, public:
@@ -29,7 +32,7 @@ TabContentsWrapper::~TabContentsWrapper() {
 }
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
-  return Singleton< PropertyAccessor<TabContentsWrapper*> >::get();
+  return g_tab_contents_wrapper_property_accessor.Pointer();
 }
 
 TabContentsWrapper* TabContentsWrapper::Clone() {

@@ -4,11 +4,15 @@
 
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 
+#include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+
+static base::LazyInstance<chromeos::SignedSettings::Delegate<bool> >
+    g_signed_settings_delegate(base::LINKER_INITIALIZED);
 
 namespace chromeos {
 
@@ -66,7 +70,7 @@ void SignedSettingsTempStorage::Finalize(PrefService* local_state) {
         temp_storage->GetStringWithoutPathExpansion(*it, &value);
         SignedSettings::CreateStorePropertyOp(
             *it, value,
-            Singleton< SignedSettings::Delegate<bool> >::get())->Execute();
+            g_signed_settings_delegate.Pointer())->Execute();
       }
       local_state->ClearPref(prefs::kSignedSettingsTempStorage);
     }

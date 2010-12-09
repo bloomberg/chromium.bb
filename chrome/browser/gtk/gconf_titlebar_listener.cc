@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/gtk/browser_titlebar.h"
@@ -24,6 +25,11 @@ const char* kMetacityGeneral = "/apps/metacity/general";
 }  // namespace
 
 // Public interface:
+
+// static
+GConfTitlebarListener* GConfTitlebarListener::GetInstance() {
+  return Singleton<GConfTitlebarListener>::get();
+}
 
 void GConfTitlebarListener::SetTitlebarButtons(BrowserTitlebar* titlebar) {
   if (client_) {

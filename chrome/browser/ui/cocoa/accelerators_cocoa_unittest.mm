@@ -12,7 +12,7 @@
 #include "testing/gtest_mac.h"
 
 TEST(AcceleratorsCocoaTest, GetAccelerator) {
-  AcceleratorsCocoa* keymap = Singleton<AcceleratorsCocoa>::get();
+  AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
   const menus::AcceleratorCocoa* accelerator =
       keymap->GetAcceleratorForCommand(IDC_COPY);
   ASSERT_TRUE(accelerator);
@@ -21,7 +21,7 @@ TEST(AcceleratorsCocoaTest, GetAccelerator) {
 }
 
 TEST(AcceleratorsCocoaTest, GetNullAccelerator) {
-  AcceleratorsCocoa* keymap = Singleton<AcceleratorsCocoa>::get();
+  AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
   const menus::AcceleratorCocoa* accelerator =
       keymap->GetAcceleratorForCommand(314159265);
   EXPECT_FALSE(accelerator);

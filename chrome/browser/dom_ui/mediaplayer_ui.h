@@ -9,7 +9,6 @@
 #include <set>
 #include <vector>
 
-#include "base/singleton.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/common/notification_observer.h"
@@ -19,6 +18,7 @@
 #include "net/base/directory_lister.h"
 #include "net/url_request/url_request.h"
 
+template <typename T> struct DefaultSingletonTraits;
 class GURL;
 class MediaplayerHandler;
 class Browser;
@@ -89,11 +89,11 @@ class MediaPlayer : public NotificationObserver,
                const NotificationDetails& details);
 
   // Getter for the singleton.
-  static MediaPlayer* Get() {
-    return Singleton<MediaPlayer>::get();
-  }
+  static MediaPlayer* Get();
 
  private:
+  friend struct DefaultSingletonTraits<MediaPlayer>;
+
   MediaPlayer();
 
   // Popup the mediaplayer, this shows the browser, and sets up its
@@ -147,7 +147,6 @@ class MediaPlayer : public NotificationObserver,
   // List of mimetypes that the mediaplayer should listen to.  Used for
   // interceptions of url GETs.
   std::set<std::string> supported_mime_types_;
-  friend struct DefaultSingletonTraits<MediaPlayer>;
   DISALLOW_COPY_AND_ASSIGN(MediaPlayer);
 };
 

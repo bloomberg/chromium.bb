@@ -10,6 +10,8 @@
 
 #include "app/menus/accelerator_cocoa.h"
 
+template <typename T> struct DefaultSingletonTraits;
+
 // This class maintains a map of command_ids to AcceleratorCocoa objects (see
 // chrome/app/chrome_command_ids.h). Currently, this only lists the commands
 // that are used in the Wrench menu.
@@ -19,20 +21,25 @@
 //
 //   #import "base/singleton.h"
 //   ...
-//   AcceleratorsCocoa* keymap = Singleton<AcceleratorsCocoa>::get();
+//   AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
 //   return keymap->GetAcceleratorForCommand(IDC_COPY);
 //
 class AcceleratorsCocoa {
  public:
-  AcceleratorsCocoa();
-  ~AcceleratorsCocoa() {}
-
   typedef std::map<int, menus::AcceleratorCocoa> AcceleratorCocoaMap;
 
   // Returns NULL if there is no accelerator for the command.
   const menus::AcceleratorCocoa* GetAcceleratorForCommand(int command_id);
 
+  // Returns the singleton instance.
+  static AcceleratorsCocoa* GetInstance();
+
  private:
+  friend struct DefaultSingletonTraits<AcceleratorsCocoa>;
+
+  AcceleratorsCocoa();
+  ~AcceleratorsCocoa() {}
+
   AcceleratorCocoaMap accelerators_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorsCocoa);

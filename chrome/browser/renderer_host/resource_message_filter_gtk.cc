@@ -10,8 +10,8 @@
 #include "app/clipboard/clipboard.h"
 #include "app/x11_util.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "chrome/browser/browser_thread.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/printing/print_dialog_gtk.h"
@@ -36,6 +36,9 @@ typedef std::map<int, FilePath> FdMap;
 struct PrintingFileDescriptorMap {
   FdMap map;
 };
+
+static base::LazyInstance<PrintingFileDescriptorMap>
+    g_printing_file_descriptor_map(base::LINKER_INITIALIZED);
 
 }  // namespace
 
@@ -234,7 +237,7 @@ void ResourceMessageFilter::DoOnAllocateTempFileForPrinting(
       file_util::CreateTemporaryFile(&path)) {
     int fd = open(path.value().c_str(), O_WRONLY);
     if (fd >= 0) {
-      FdMap* map = &Singleton<PrintingFileDescriptorMap>::get()->map;
+      FdMap* map = &g_printing_file_descriptor_map.Get().map;
       FdMap::iterator it = map->find(fd);
       if (it != map->end()) {
         NOTREACHED() << "The file descriptor is in use. fd=" << fd;
@@ -366,7 +369,7 @@ void ResourceMessageFilter::OnAllocateTempFileForPrinting(
 
 // Called on the IO thread.
 void ResourceMessageFilter::OnTempFileForPrintingWritten(int fd_in_browser) {
-  FdMap* map = &Singleton<PrintingFileDescriptorMap>::get()->map;
+  FdMap* map = &g_printing_file_descriptor_map.Get().map;
   FdMap::iterator it = map->find(fd_in_browser);
   if (it == map->end()) {
     NOTREACHED() << "Got a file descriptor that we didn't pass to the "

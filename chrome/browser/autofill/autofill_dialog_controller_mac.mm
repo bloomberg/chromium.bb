@@ -5,8 +5,8 @@
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/lazy_instance.h"
 #include "base/mac_util.h"
-#include "base/singleton.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
@@ -31,6 +31,9 @@ namespace {
 // Type for singleton object that contains the instance of the visible
 // dialog.
 typedef std::map<Profile*, AutoFillDialogController*> ProfileControllerMap;
+
+static base::LazyInstance<ProfileControllerMap> g_profile_controller_map(
+    base::LINKER_INITIALIZED);
 
 }  // namespace
 
@@ -268,7 +271,7 @@ class PreferenceObserver : public NotificationObserver {
   [self autorelease];
 
   // Remove ourself from the map.
-  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap* map = g_profile_controller_map.Pointer();
   ProfileControllerMap::iterator it = map->find(profile_);
   if (it != map->end()) {
     map->erase(it);
@@ -633,7 +636,7 @@ class PreferenceObserver : public NotificationObserver {
                    profile:(Profile*)profile {
   profile = profile->GetOriginalProfile();
 
-  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap* map = g_profile_controller_map.Pointer();
   DCHECK(map != NULL);
   ProfileControllerMap::iterator it = map->find(profile);
   if (it == map->end()) {

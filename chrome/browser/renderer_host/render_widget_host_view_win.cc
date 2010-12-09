@@ -1646,7 +1646,7 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
   if (kIdCustom == lparam) {
     // An MSAA client requestes our custom id. Assume that we have detected an
     // active windows screen reader.
-    Singleton<BrowserAccessibilityState>()->OnScreenReaderDetected();
+    BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
     render_widget_host_->EnableRendererAccessibility();
 
     // Return with failure.

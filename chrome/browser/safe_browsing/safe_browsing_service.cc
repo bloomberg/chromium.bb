@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -62,12 +62,15 @@ class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
   }
 
  private:
-  friend struct DefaultSingletonTraits<SafeBrowsingServiceFactoryImpl>;
+  friend struct base::DefaultLazyInstanceTraits<SafeBrowsingServiceFactoryImpl>;
 
   SafeBrowsingServiceFactoryImpl() { }
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactoryImpl);
 };
+
+static base::LazyInstance<SafeBrowsingServiceFactoryImpl>
+    g_safe_browsing_service_factory_impl(base::LINKER_INITIALIZED);
 
 struct SafeBrowsingService::WhiteListedEntry {
   int render_process_host_id;
@@ -97,7 +100,7 @@ SafeBrowsingService::SafeBrowsingCheck::~SafeBrowsingCheck() {}
 /* static */
 SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
   if (!factory_)
-    factory_ = Singleton<SafeBrowsingServiceFactoryImpl>::get();
+    factory_ = g_safe_browsing_service_factory_impl.Pointer();
   return factory_->CreateSafeBrowsingService();
 }
 

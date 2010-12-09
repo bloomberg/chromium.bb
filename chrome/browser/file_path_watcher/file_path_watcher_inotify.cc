@@ -20,11 +20,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
+#include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "base/task.h"
 #include "base/thread.h"
 
@@ -51,7 +51,7 @@ class InotifyReader {
   void OnInotifyEvent(const inotify_event* event);
 
  private:
-  friend struct DefaultSingletonTraits<InotifyReader>;
+  friend struct ::base::DefaultLazyInstanceTraits<InotifyReader>;
 
   typedef std::set<FilePathWatcherImpl*> WatcherSet;
 
@@ -198,6 +198,9 @@ class InotifyReaderTask : public Task {
 
   DISALLOW_COPY_AND_ASSIGN(InotifyReaderTask);
 };
+
+static base::LazyInstance<InotifyReader> g_inotify_reader(
+    base::LINKER_INITIALIZED);
 
 InotifyReader::InotifyReader()
     : thread_("inotify_reader"),
@@ -366,7 +369,7 @@ void FilePathWatcherImpl::Cancel() {
   for (WatchVector::iterator watch_entry(watches_.begin());
        watch_entry != watches_.end(); ++watch_entry) {
     if (watch_entry->watch_ != InotifyReader::kInvalidWatch)
-      Singleton<InotifyReader>::get()->RemoveWatch(watch_entry->watch_, this);
+      g_inotify_reader.Get().RemoveWatch(watch_entry->watch_, this);
   }
   watches_.clear();
   delegate_ = NULL;
@@ -385,8 +388,7 @@ bool FilePathWatcherImpl::UpdateWatches() {
        watch_entry != watches_.end(); ++watch_entry) {
     InotifyReader::Watch old_watch = watch_entry->watch_;
     if (path_valid) {
-      watch_entry->watch_ =
-          Singleton<InotifyReader>::get()->AddWatch(path, this);
+      watch_entry->watch_ = g_inotify_reader.Get().AddWatch(path, this);
       if (watch_entry->watch_ == InotifyReader::kInvalidWatch) {
         path_valid = false;
       }
@@ -395,7 +397,7 @@ bool FilePathWatcherImpl::UpdateWatches() {
     }
     if (old_watch != InotifyReader::kInvalidWatch &&
         old_watch != watch_entry->watch_) {
-      Singleton<InotifyReader>::get()->RemoveWatch(old_watch, this);
+      g_inotify_reader.Get().RemoveWatch(old_watch, this);
     }
     path = path.Append(watch_entry->subdir_);
   }

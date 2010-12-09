@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/singleton.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/task.h"
@@ -165,6 +166,11 @@ UpgradeDetector::UpgradeDetector()
 }
 
 UpgradeDetector::~UpgradeDetector() {
+}
+
+// static
+UpgradeDetector* UpgradeDetector::GetInstance() {
+  return Singleton<UpgradeDetector>::get();
 }
 
 void UpgradeDetector::CheckForUpgrade() {

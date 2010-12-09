@@ -5,9 +5,9 @@
 #import "chrome/browser/ui/cocoa/clear_browsing_data_controller.h"
 
 #include "app/l10n_util.h"
+#include "base/lazy_instance.h"
 #include "base/mac_util.h"
 #include "base/scoped_nsobject.h"
-#include "base/singleton.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,6 +40,9 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
 namespace {
 
 typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
+
+static base::LazyInstance<ProfileControllerMap> g_profile_controller_map(
+    base::LINKER_INITIALIZED);
 
 } // namespace
 
@@ -74,7 +77,7 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
   // profile.
   profile = profile->GetOriginalProfile();
 
-  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap* map = g_profile_controller_map.Pointer();
   DCHECK(map != NULL);
   ProfileControllerMap::iterator it = map->find(profile);
   if (it == map->end()) {
@@ -205,7 +208,7 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
 }
 
 - (void)closeDialog {
-  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap* map = g_profile_controller_map.Pointer();
   ProfileControllerMap::iterator it = map->find(profile_);
   if (it != map->end()) {
     map->erase(it);

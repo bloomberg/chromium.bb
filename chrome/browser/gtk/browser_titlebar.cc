@@ -307,7 +307,7 @@ void BrowserTitlebar::Init() {
 #if defined(USE_GCONF)
   // Either read the gconf database and register for updates (on GNOME), or use
   // the default value (anywhere else).
-  Singleton<GConfTitlebarListener>()->SetTitlebarButtons(this);
+  GConfTitlebarListener::GetInstance()->SetTitlebarButtons(this);
 #else
   BuildButtons(kDefaultButtonString);
 #endif
@@ -373,7 +373,7 @@ void BrowserTitlebar::Init() {
 BrowserTitlebar::~BrowserTitlebar() {
   ActiveWindowWatcherX::RemoveObserver(this);
 #if defined(USE_GCONF)
-  Singleton<GConfTitlebarListener>()->RemoveObserver(this);
+  GConfTitlebarListener::GetInstance()->RemoveObserver(this);
 #endif
 }
 
@@ -849,7 +849,7 @@ void BrowserTitlebar::ExecuteCommand(int command_id) {
 bool BrowserTitlebar::GetAcceleratorForCommandId(
     int command_id, menus::Accelerator* accelerator) {
   const menus::AcceleratorGtk* accelerator_gtk =
-      Singleton<AcceleratorsGtk>()->GetPrimaryAcceleratorForCommand(
+      AcceleratorsGtk::GetInstance()->GetPrimaryAcceleratorForCommand(
           command_id);
   if (accelerator_gtk)
     *accelerator = *accelerator_gtk;

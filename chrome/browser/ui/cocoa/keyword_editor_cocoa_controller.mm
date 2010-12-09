@@ -7,7 +7,7 @@
 #import "chrome/browser/ui/cocoa/keyword_editor_cocoa_controller.h"
 
 #import "base/mac_util.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -101,12 +101,15 @@ namespace {
 
 typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
 
+static base::LazyInstance<ProfileControllerMap> g_profile_controller_map(
+    base::LINKER_INITIALIZED);
+
 }  // namespace
 
 @implementation KeywordEditorCocoaController
 
 + (KeywordEditorCocoaController*)sharedInstanceForProfile:(Profile*)profile {
-  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap* map = g_profile_controller_map.Pointer();
   DCHECK(map != NULL);
   ProfileControllerMap::iterator it = map->find(profile);
   if (it != map->end()) {
@@ -125,7 +128,7 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
   // either way, arrange to use the original profile instead.
   profile = profile->GetOriginalProfile();
 
-  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap* map = g_profile_controller_map.Pointer();
   DCHECK(map != NULL);
   ProfileControllerMap::iterator it = map->find(profile);
   if (it == map->end()) {
@@ -194,7 +197,7 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
 - (void)windowWillClose:(NSNotification*)notif {
   [self autorelease];
 
-  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap* map = g_profile_controller_map.Pointer();
   ProfileControllerMap::iterator it = map->find(profile_);
   // It should not be possible for this to be missing.
   // TODO(shess): Except that the unit test reaches in directly.

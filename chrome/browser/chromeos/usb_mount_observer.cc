@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 
 #include "base/command_line.h"
+#include "base/singleton.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -22,6 +23,11 @@ const int kPopupLeft = 0;
 const int kPopupTop = 0;
 const int kPopupWidth = 250;
 const int kPopupHeight = 300;
+
+// static
+USBMountObserver* USBMountObserver::Get() {
+  return Singleton<USBMountObserver>::get();
+}
 
 void USBMountObserver::Observe(NotificationType type,
                                const NotificationSource& source,

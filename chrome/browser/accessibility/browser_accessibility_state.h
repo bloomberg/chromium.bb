@@ -7,7 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 // The BrowserAccessibilityState class is used to determine if Chrome should be
 // customized for users with assistive technology, such as screen readers. We
@@ -25,6 +26,9 @@
 // file for Universal Access with the key "voiceOverOnOffKey".
 class BrowserAccessibilityState {
  public:
+  // Returns the singleton instance.
+  static BrowserAccessibilityState* GetInstance();
+
   ~BrowserAccessibilityState();
 
   // Called when screen reader client is detected.

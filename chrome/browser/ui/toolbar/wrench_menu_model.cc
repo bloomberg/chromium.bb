@@ -301,7 +301,7 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
     return (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->status().status
             == chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT);
 #else
-    return Singleton<UpgradeDetector>::get()->notify_upgrade();
+    return UpgradeDetector::GetInstance()->notify_upgrade();
 #endif
   } else if (command_id == IDC_VIEW_INCOMPATIBILITIES) {
 #if defined(OS_WIN)

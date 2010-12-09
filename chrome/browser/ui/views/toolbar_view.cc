@@ -233,7 +233,7 @@ void ToolbarView::Init(Profile* profile) {
   SetProfile(profile);
 
   // Accessibility specific tooltip text.
-  if (Singleton<BrowserAccessibilityState>()->IsAccessibleBrowser()) {
+  if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
     back_->SetTooltipText(l10n_util::GetString(IDS_ACCNAME_TOOLTIP_BACK));
     forward_->SetTooltipText(l10n_util::GetString(IDS_ACCNAME_TOOLTIP_FORWARD));
   }
@@ -628,7 +628,7 @@ bool ToolbarView::IsUpgradeRecommended() {
   return (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->status().status ==
           chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT);
 #else
-  return (Singleton<UpgradeDetector>::get()->notify_upgrade());
+  return (UpgradeDetector::GetInstance()->notify_upgrade());
 #endif
 }
 

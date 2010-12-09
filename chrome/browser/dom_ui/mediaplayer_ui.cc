@@ -355,6 +355,11 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(MediaPlayer);
 MediaPlayer::~MediaPlayer() {
 }
 
+// static
+MediaPlayer* MediaPlayer::Get() {
+  return Singleton<MediaPlayer>::get();
+}
+
 void MediaPlayer::EnqueueMediaURL(const GURL& url, Browser* creator) {
   if (!Enabled()) {
     return;

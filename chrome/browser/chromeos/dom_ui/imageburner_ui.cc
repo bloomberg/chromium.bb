@@ -105,7 +105,7 @@ ImageBurnHandler::ImageBurnHandler(TabContents* contents)
           chromeos::CrosLibrary::Get()->GetBurnLibrary();
   burn_lib->AddObserver(this);
   local_image_file_path_.clear();
-  burn_resource_manager_ = Singleton<ImageBurnResourceManager>::get();
+  burn_resource_manager_ = ImageBurnResourceManager::GetInstance();
 }
 
 ImageBurnHandler::~ImageBurnHandler() {
@@ -398,7 +398,7 @@ void ImageBurnHandler::CreateLocalImagePath() {
 ImageBurnTaskProxy::ImageBurnTaskProxy(
                         const base::WeakPtr<ImageBurnHandler>& handler)
                             : handler_(handler) {
-  resource_manager_ = Singleton<ImageBurnResourceManager>::get();
+  resource_manager_ = ImageBurnResourceManager::GetInstance();
 }
 
 bool ImageBurnTaskProxy::ReportDownloadInitialized() {
@@ -462,6 +462,11 @@ ImageBurnResourceManager::~ImageBurnResourceManager() {
   }
   if (download_manager_)
     download_manager_->RemoveObserver(this);
+}
+
+// static
+ImageBurnResourceManager* ImageBurnResourceManager::GetInstance() {
+  return Singleton<ImageBurnResourceManager>::get();
 }
 
 void ImageBurnResourceManager::OnDownloadUpdated(DownloadItem* download) {

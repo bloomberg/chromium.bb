@@ -240,7 +240,7 @@ ThemeProvider* BrowserFrameWin::GetDefaultThemeProvider() const {
 }
 
 void BrowserFrameWin::OnScreenReaderDetected() {
-  Singleton<BrowserAccessibilityState>()->OnScreenReaderDetected();
+  BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
   WindowWin::OnScreenReaderDetected();
 }
 

@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_AUDIO_HANDLER_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 namespace chromeos {
 
@@ -15,9 +17,7 @@ class PulseAudioMixer;
 
 class AudioHandler {
  public:
-  static AudioHandler* instance() {
-    return Singleton<AudioHandler>::get();
-  }
+  static AudioHandler* instance();
 
   // Get volume level in our internal 0-100% range, 0 being pure silence.
   // Volume may go above 100% if another process changes PulseAudio's volume.

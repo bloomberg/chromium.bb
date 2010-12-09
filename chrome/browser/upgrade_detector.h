@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UPGRADE_DETECTOR_H_
 #pragma once
 
-#include "base/singleton.h"
 #include "base/timer.h"
 
+template <typename T> struct DefaultSingletonTraits;
 class PrefService;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -23,6 +23,9 @@ class PrefService;
 //
 class UpgradeDetector {
  public:
+  // Returns the singleton instance.
+  static UpgradeDetector* GetInstance();
+
   ~UpgradeDetector();
 
   static void RegisterPrefs(PrefService* prefs);
@@ -30,8 +33,9 @@ class UpgradeDetector {
   bool notify_upgrade() { return notify_upgrade_; }
 
  private:
-  UpgradeDetector();
   friend struct DefaultSingletonTraits<UpgradeDetector>;
+
+  UpgradeDetector();
 
   // Launches a task on the file thread to check if we have the latest version.
   void CheckForUpgrade();

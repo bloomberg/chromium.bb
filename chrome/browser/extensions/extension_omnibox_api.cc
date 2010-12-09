@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 
 #include "base/json/json_writer.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -36,8 +36,11 @@ const char kDescriptionStylesType[] = "type";
 const char kDescriptionStylesOffset[] = "offset";
 const char kDescriptionStylesLength[] = "length";
 
+static base::LazyInstance<PropertyAccessor<ExtensionOmniboxSuggestion> >
+    g_extension_omnibox_suggestion_property_accessor(base::LINKER_INITIALIZED);
+
 PropertyAccessor<ExtensionOmniboxSuggestion>& GetPropertyAccessor() {
-  return *Singleton< PropertyAccessor<ExtensionOmniboxSuggestion> >::get();
+  return g_extension_omnibox_suggestion_property_accessor.Get();
 }
 
 // Returns the suggestion object set by the extension via the
