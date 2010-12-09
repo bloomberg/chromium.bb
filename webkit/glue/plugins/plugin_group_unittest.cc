@@ -16,16 +16,34 @@
 #include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
+static const VersionRangeDefinition kPluginVersionRange[] = {
+    { "", "", "3.0.44" }
+};
+static const VersionRangeDefinition kPlugin3VersionRange[] = {
+    { "0", "4", "3.0.44" }
+};
+static const VersionRangeDefinition kPlugin4VersionRange[] = {
+    { "4", "5", "4.0.44" }
+};
+static const VersionRangeDefinition kPlugin34VersionRange[] = {
+    { "0", "4", "3.0.44" },
+    { "4", "5", "4.0.44" }
+};
+
 static const PluginGroupDefinition kPluginDef = {
-    "myplugin", "MyPlugin", "MyPlugin", "", "", "3.0.44", "http://latest/" };
+    "myplugin", "MyPlugin", "MyPlugin", kPluginVersionRange, 1,
+    "http://latest/" };
 static const PluginGroupDefinition kPluginDef3 = {
-    "myplugin-3", "MyPlugin 3", "MyPlugin", "0", "4", "3.0.44",
+    "myplugin-3", "MyPlugin 3", "MyPlugin", kPlugin3VersionRange, 1,
     "http://latest" };
 static const PluginGroupDefinition kPluginDef4 = {
-    "myplugin-4", "MyPlugin 4", "MyPlugin", "4", "5", "4.0.44",
+    "myplugin-4", "MyPlugin 4", "MyPlugin", kPlugin4VersionRange, 1,
+    "http://latest" };
+static const PluginGroupDefinition kPluginDef34 = {
+    "myplugin-34", "MyPlugin 3/4", "MyPlugin", kPlugin34VersionRange, 2,
     "http://latest" };
 static const PluginGroupDefinition kPluginDefNotVulnerable = {
-    "myplugin-latest", "MyPlugin", "MyPlugin", "", "", "", "http://latest" };
+    "myplugin-latest", "MyPlugin", "MyPlugin", NULL, 0, "http://latest" };
 
 // name, path, version, desc, mime_types, enabled.
 static WebPluginInfo kPlugin2043 = WebPluginInfo(
@@ -78,55 +96,64 @@ TEST(PluginGroupTest, PluginGroupMatchCorrectVersion) {
   EXPECT_FALSE(group->Match(kPlugin2043));
   EXPECT_FALSE(group->Match(kPlugin3043));
   EXPECT_TRUE(group->Match(kPlugin4043));
+
+  group.reset(PluginGroupTest::CreatePluginGroup(kPluginDef34));
+  EXPECT_TRUE(group->Match(kPlugin2043));
+  EXPECT_TRUE(group->Match(kPlugin3043));
+  EXPECT_TRUE(group->Match(kPlugin4043));
 }
 
 TEST(PluginGroupTest, PluginGroupDescription) {
   string16 desc3043(ASCIIToUTF16("MyPlugin version 3.0.43"));
   string16 desc3045(ASCIIToUTF16("MyPlugin version 3.0.45"));
-  WebPluginInfo plugin3043(kPlugin3043);
-  WebPluginInfo plugin3045(kPlugin3045);
 
-  {
-    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
-        kPluginDef3));
-    EXPECT_TRUE(group->Match(plugin3043));
-    group->AddPlugin(plugin3043, 0);
-    EXPECT_EQ(desc3043, group->description());
-    EXPECT_TRUE(group->IsVulnerable());
-    EXPECT_TRUE(group->Match(plugin3045));
-    group->AddPlugin(plugin3045, 1);
-    EXPECT_EQ(desc3043, group->description());
-    EXPECT_TRUE(group->IsVulnerable());
-  }
+  PluginGroupDefinition plugindefs[] = { kPluginDef3, kPluginDef34 };
+  for (size_t i = 0; i < 2; ++i) {
+    WebPluginInfo plugin3043(kPlugin3043);
+    WebPluginInfo plugin3045(kPlugin3045);
+    {
+      scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
+          plugindefs[i]));
+      EXPECT_TRUE(group->Match(plugin3043));
+      group->AddPlugin(plugin3043, 0);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+      EXPECT_TRUE(group->Match(plugin3045));
+      group->AddPlugin(plugin3045, 1);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+    }
 
-  {
-    // Disable the first plugin.
-    plugin3043.enabled = false;
-    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
-        kPluginDef3));
-    EXPECT_TRUE(group->Match(plugin3043));
-    group->AddPlugin(plugin3043, 0);
-    EXPECT_EQ(desc3043, group->description());
-    EXPECT_TRUE(group->IsVulnerable());
-    EXPECT_TRUE(group->Match(plugin3045));
-    group->AddPlugin(plugin3045, 1);
-    EXPECT_EQ(desc3045, group->description());
-    EXPECT_FALSE(group->IsVulnerable());
-  }
+    {
+      // Disable the first plugin.
+      plugin3043.enabled = false;
+      scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
+          plugindefs[i]));
+      EXPECT_TRUE(group->Match(plugin3043));
+      group->AddPlugin(plugin3043, 0);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+      EXPECT_FALSE(group->Enabled());
+      EXPECT_TRUE(group->Match(plugin3045));
+      group->AddPlugin(plugin3045, 1);
+      EXPECT_EQ(desc3045, group->description());
+      EXPECT_FALSE(group->IsVulnerable());
+    }
 
-  {
-    // Disable the second plugin.
-    plugin3045.enabled = false;
-    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
-        kPluginDef3));
-    EXPECT_TRUE(group->Match(plugin3043));
-    group->AddPlugin(plugin3043, 1);
-    EXPECT_EQ(desc3043, group->description());
-    EXPECT_TRUE(group->IsVulnerable());
-    EXPECT_TRUE(group->Match(plugin3045));
-    group->AddPlugin(plugin3045, 0);
-    EXPECT_EQ(desc3043, group->description());
-    EXPECT_TRUE(group->IsVulnerable());
+    {
+      // Disable the second plugin.
+      plugin3045.enabled = false;
+      scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
+          plugindefs[i]));
+      EXPECT_TRUE(group->Match(plugin3043));
+      group->AddPlugin(plugin3043, 1);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+      EXPECT_TRUE(group->Match(plugin3045));
+      group->AddPlugin(plugin3045, 0);
+      EXPECT_EQ(desc3043, group->description());
+      EXPECT_TRUE(group->IsVulnerable());
+    }
   }
 }
 
@@ -144,16 +171,19 @@ TEST(PluginGroupTest, PluginGroupDefinition) {
 }
 
 TEST(PluginGroupTest, DisableOutdated) {
-  scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
-      kPluginDef3));
-  group->AddPlugin(kPlugin3043, 0);
-  group->AddPlugin(kPlugin3045, 1);
-  EXPECT_EQ(ASCIIToUTF16("MyPlugin version 3.0.43"), group->description());
-  EXPECT_TRUE(group->IsVulnerable());
+  PluginGroupDefinition plugindefs[] = { kPluginDef3, kPluginDef34 };
+  for (size_t i = 0; i < 2; ++i) {
+    scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
+        plugindefs[i]));
+    group->AddPlugin(kPlugin3043, 0);
+    group->AddPlugin(kPlugin3045, 1);
+    EXPECT_EQ(ASCIIToUTF16("MyPlugin version 3.0.43"), group->description());
+    EXPECT_TRUE(group->IsVulnerable());
 
-  group->DisableOutdatedPlugins();
-  EXPECT_EQ(ASCIIToUTF16("MyPlugin version 3.0.45"), group->description());
-  EXPECT_FALSE(group->IsVulnerable());
+    group->DisableOutdatedPlugins();
+    EXPECT_EQ(ASCIIToUTF16("MyPlugin version 3.0.45"), group->description());
+    EXPECT_FALSE(group->IsVulnerable());
+  }
 }
 
 TEST(PluginGroupTest, VersionExtraction) {

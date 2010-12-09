@@ -15,9 +15,6 @@
 #include "chrome/common/notification_observer.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
-namespace plugin_test_internal {
-class PluginExceptionsTableModelTest;
-}
 struct WebPluginInfo;
 
 class PluginExceptionsTableModel : public RemoveRowsTableModel,
@@ -54,7 +51,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
   virtual void GetPlugins(std::vector<PluginGroup>* plugin_groups);
 
  private:
-  friend class plugin_test_internal::PluginExceptionsTableModelTest;
+  friend class PluginExceptionsTableModelTest;
 
   struct SettingsEntry {
    ContentSettingsPattern pattern;

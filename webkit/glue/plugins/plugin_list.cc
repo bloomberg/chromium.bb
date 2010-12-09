@@ -32,56 +32,102 @@ namespace NPAPI {
 // Plugins are listed here as soon as vulnerabilities and solutions
 // (new versions) are published.
 // TODO(panayiotis): Get the Real Player version on Mac, somehow.
+static const VersionRangeDefinition kQuicktimeVersionRange[] = {
+    { "", "", "7.6.6" }
+};
+static const VersionRangeDefinition kJavaVersionRange[] = {
+    { "", "", "" }
+};
+static const VersionRangeDefinition kFlashVersionRange[] = {
+    { "", "", "10.1.102" }
+};
+static const VersionRangeDefinition kSilverlightVersionRange[] = {
+    { "0", "4", "3.0.50106.0" },
+    { "4", "5", "" }
+};
+static const VersionRangeDefinition kFlip4MacVersionRange[] = {
+    { "", "", "2.2.1" }
+};
+static const VersionRangeDefinition kShockwaveVersionRange[] = {
+    { "",  "", "11.5.9.615" }
+};
 static const PluginGroupDefinition kGroupDefinitions[] = {
-  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", "", "", "7.6.6",
+  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", kQuicktimeVersionRange,
+    arraysize(kQuicktimeVersionRange),
     "http://www.apple.com/quicktime/download/" },
-  { "java-runtime-environment", "Java", "Java", "", "", "",
-    "http://support.apple.com/kb/HT1338" },
-  { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.102",
-    "http://get.adobe.com/flashplayer/" },
-  { "silverlight-3", "Silverlight 3", "Silverlight", "0", "4", "3.0.50106.0",
+  { "java-runtime-environment", "Java", "Java", kJavaVersionRange,
+    arraysize(kJavaVersionRange), "http://support.apple.com/kb/HT1338" },
+  { "adobe-flash-player", "Flash", "Shockwave Flash", kFlashVersionRange,
+    arraysize(kFlashVersionRange), "http://get.adobe.com/flashplayer/" },
+  { "silverlight", "Silverlight", "Silverlight", kSilverlightVersionRange,
+    arraysize(kSilverlightVersionRange),
     "http://www.microsoft.com/getsilverlight/" },
-  { "silverlight-4", "Silverlight 4", "Silverlight", "4", "5", "",
-    "http://www.microsoft.com/getsilverlight/" },
-  { "flip4mac", "Flip4Mac", "Flip4Mac", "", "", "2.2.1",
+  { "flip4mac", "Flip4Mac", "Flip4Mac", kFlip4MacVersionRange,
+    arraysize(kFlip4MacVersionRange),
     "http://www.telestream.net/flip4mac-wmv/overview.htm" },
-  { "shockwave", "Shockwave", "Shockwave for Director", "",  "", "11.5.9.615",
+  { "shockwave", "Shockwave", "Shockwave for Director", kShockwaveVersionRange,
+    arraysize(kShockwaveVersionRange),
     "http://www.adobe.com/shockwave/download/" }
 };
 
 #elif defined(OS_WIN)
 // TODO(panayiotis): We should group "RealJukebox NS Plugin" with the rest of
 // the RealPlayer files.
+static const VersionRangeDefinition kQuicktimeVersionRange[] = {
+    { "", "", "7.6.8" }
+};
+static const VersionRangeDefinition kJavaVersionRange[] = {
+    { "0", "7", "6.0.220" }  // "220" is not a typo.
+};
+static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
+    { "10", "11", "" },
+    { "9", "10", "9.4.1" },
+    { "0", "9", "8.2.5" }
+};
+static const VersionRangeDefinition kFlashVersionRange[] = {
+    { "", "", "10.1.102" }
+};
+static const VersionRangeDefinition kSilverlightVersionRange[] = {
+    { "0", "4", "3.0.50106.0" },
+    { "4", "5", "" }
+};
+static const VersionRangeDefinition kShockwaveVersionRange[] = {
+    { "", "", "11.5.9.615" }
+};
+static const VersionRangeDefinition kDivXVersionRange[] = {
+    { "", "", "1.4.3.4" }
+};
 static const PluginGroupDefinition kGroupDefinitions[] = {
-  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", "", "", "7.6.8",
+  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", kQuicktimeVersionRange,
+    arraysize(kQuicktimeVersionRange),
     "http://www.apple.com/quicktime/download/" },
-  { "java-runtime-environment", "Java 6", "Java", "", "6", "6.0.220",
-    "http://www.java.com/" },
-  { "adobe-reader", PluginGroup::kAdobeReader9GroupName, "Adobe Acrobat", "9",
-    "10", "9.4.1", "http://get.adobe.com/reader/" },
-  { "adobe-reader-8", PluginGroup::kAdobeReader8GroupName, "Adobe Acrobat", "0",
-    "9", "8.2.5", "http://get.adobe.com/reader/" },
-  { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.102",
-    "http://get.adobe.com/flashplayer/" },
-  { "silverlight-3", "Silverlight 3", "Silverlight", "0", "4", "3.0.50106.0",
+  { "java-runtime-environment", "Java 6", "Java", kJavaVersionRange,
+    arraysize(kJavaVersionRange), "http://www.java.com/" },
+  { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat",
+    kAdobeReaderVersionRange, arraysize(kAdobeReaderVersionRange),
+    "http://get.adobe.com/reader/" },
+  { "adobe-flash-player", "Flash", "Shockwave Flash", kFlashVersionRange,
+    arraysize(kFlashVersionRange), "http://get.adobe.com/flashplayer/" },
+  { "silverlight", "Silverlight", "Silverlight", kSilverlightVersionRange,
+    arraysize(kSilverlightVersionRange),
     "http://www.microsoft.com/getsilverlight/" },
-  { "silverlight-4", "Silverlight 4", "Silverlight", "4", "5", "",
-    "http://www.microsoft.com/getsilverlight/" },
-  { "shockwave", "Shockwave", "Shockwave for Director", "", "", "11.5.9.615",
+  { "shockwave", "Shockwave", "Shockwave for Director", kShockwaveVersionRange,
+    arraysize(kShockwaveVersionRange),
     "http://www.adobe.com/shockwave/download/" },
-  { "divx-player", "DivX Player", "DivX Web Player", "", "", "1.4.3.4",
+  { "divx-player", "DivX Player", "DivX Web Player", kDivXVersionRange,
+    arraysize(kDivXVersionRange),
     "http://download.divx.com/divx/autoupdate/player/"
     "DivXWebPlayerInstaller.exe" },
-  // These are here for grouping, no vulnerabilies known.
+  // These are here for grouping, no vulnerabilities known.
   { "windows-media-player", "Windows Media Player", "Windows Media Player",
-    "", "", "", "" },
+    NULL, 0, "" },
   { "microsoft-office", "Microsoft Office", "Microsoft Office",
-    "", "", "", "" },
+    NULL, 0, "" },
   // TODO(panayiotis): The vulnerable versions are
   //  (v >=  6.0.12.1040 && v <= 6.0.12.1663)
   //  || v == 6.0.12.1698  || v == 6.0.12.1741
-  { "realplayer", "RealPlayer", "RealPlayer", "", "", "",
-    "http://www.adobe.com/shockwave/download/" },
+  { "realplayer", "RealPlayer", "RealPlayer", NULL, 0,
+    "www.real.com/realplayer/downloads" },
 };
 
 #else

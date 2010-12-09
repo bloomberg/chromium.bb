@@ -223,14 +223,12 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     plugin_updater->EnablePluginGroup(enable, group_name);
     if (enable) {
       // See http://crbug.com/50105 for background.
-      string16 reader8 = ASCIIToUTF16(PluginGroup::kAdobeReader8GroupName);
-      string16 reader9 = ASCIIToUTF16(PluginGroup::kAdobeReader9GroupName);
+      string16 adobereader = ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName);
       string16 internalpdf = ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName);
-      if (group_name == reader8 || group_name == reader9) {
+      if (group_name == adobereader) {
         plugin_updater->EnablePluginGroup(false, internalpdf);
       } else if (group_name == internalpdf) {
-        plugin_updater->EnablePluginGroup(false, reader8);
-        plugin_updater->EnablePluginGroup(false, reader9);
+        plugin_updater->EnablePluginGroup(false, adobereader);
       }
     }
   } else {

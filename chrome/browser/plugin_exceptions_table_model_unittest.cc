@@ -21,7 +21,6 @@
 namespace plugin_test_internal {
 
 using ::testing::_;
-using ::testing::InSequence;
 using ::testing::Invoke;
 
 class MockTableModelObserver : public TableModelObserver {
@@ -49,6 +48,10 @@ class MockTableModelObserver : public TableModelObserver {
 
   TableModel* model_;
 };
+
+}  // namespace plugin_test_internal
+
+using ::testing::InSequence;
 
 class PluginExceptionsTableModelTest : public testing::Test {
  public:
@@ -154,7 +157,7 @@ TEST_F(PluginExceptionsTableModelTest, Basic) {
 }
 
 TEST_F(PluginExceptionsTableModelTest, RemoveOneRow) {
-  MockTableModelObserver observer(table_model_.get());
+  plugin_test_internal::MockTableModelObserver observer(table_model_.get());
   table_model_->SetObserver(&observer);
 
   EXPECT_CALL(observer, OnItemsRemoved(1, 1));
@@ -168,7 +171,7 @@ TEST_F(PluginExceptionsTableModelTest, RemoveOneRow) {
 }
 
 TEST_F(PluginExceptionsTableModelTest, RemoveLastRowInGroup) {
-  MockTableModelObserver observer(table_model_.get());
+  plugin_test_internal::MockTableModelObserver observer(table_model_.get());
   table_model_->SetObserver(&observer);
 
   EXPECT_CALL(observer, OnModelChanged());
@@ -202,7 +205,7 @@ TEST_F(PluginExceptionsTableModelTest, RemoveLastRowInGroup) {
 }
 
 TEST_F(PluginExceptionsTableModelTest, RemoveAllRows) {
-  MockTableModelObserver observer(table_model_.get());
+  plugin_test_internal::MockTableModelObserver observer(table_model_.get());
   table_model_->SetObserver(&observer);
 
   EXPECT_CALL(observer, OnModelChanged());
@@ -212,5 +215,3 @@ TEST_F(PluginExceptionsTableModelTest, RemoveAllRows) {
   CheckInvariants();
   table_model_->SetObserver(NULL);
 }
-
-}  // namespace plugin_test_internal

@@ -21,21 +21,45 @@ class Version;
 struct WebPluginInfo;
 
 namespace NPAPI {
-  class PluginList;
+class PluginList;
 };
-namespace plugin_test_internal {
-class PluginExceptionsTableModelTest;
-}
+
+// Hard-coded version ranges for plugin groups.
+struct VersionRangeDefinition {
+  // Matcher for lowest version matched by this range (inclusive). May be empty
+  // to match everything iff |version_matcher_high| is also empty.
+  const char* version_matcher_low;
+  // Matcher for highest version matched by this range (exclusive). May be empty
+  // to match anything higher than |version_matcher_low|.
+  const char* version_matcher_high;
+  const char* min_version;  // Minimum secure version.
+};
 
 // Hard-coded definitions of plugin groups.
 struct PluginGroupDefinition {
   const char* identifier;  // Unique identifier for this group.
   const char* name;  // Name of this group.
   const char* name_matcher;  // Substring matcher for the plugin name.
-  const char* version_matcher_low;  // Matchers for the plugin version.
-  const char* version_matcher_high;
-  const char* min_version;  // Minimum secure version.
+  const VersionRangeDefinition* versions;  // List of version ranges.
+  const size_t num_versions;  // Size of the array |versions| points to.
   const char* update_url;  // Location of latest secure version.
+};
+
+// Run-time structure to hold version range information.
+struct VersionRange {
+ public:
+  explicit VersionRange(VersionRangeDefinition definition);
+  VersionRange(const VersionRange& other);
+  VersionRange& operator=(const VersionRange& other);
+
+  std::string low_str;
+  std::string high_str;
+  std::string min_str;
+  scoped_ptr<Version> low;
+  scoped_ptr<Version> high;
+  scoped_ptr<Version> min;
+ private:
+  void InitFrom(const VersionRange& other);
 };
 
 // A PluginGroup can match a range of versions of a specific plugin (as defined
@@ -49,8 +73,7 @@ class PluginGroup {
  public:
   // Used by about:plugins to disable Reader plugin when internal PDF viewer is
   // enabled.
-  static const char* kAdobeReader8GroupName;
-  static const char* kAdobeReader9GroupName;
+  static const char* kAdobeReaderGroupName;
 
   PluginGroup(const PluginGroup& other);
 
@@ -118,7 +141,7 @@ class PluginGroup {
   friend class NPAPI::PluginList;
   friend class PluginGroupTest;
   friend class TableModelArrayControllerTest;
-  friend class plugin_test_internal::PluginExceptionsTableModelTest;
+  friend class PluginExceptionsTableModelTest;
 
   // Generates the (short) identifier string for the given plugin.
   static std::string GetIdentifier(const WebPluginInfo& wpi);
@@ -136,11 +159,17 @@ class PluginGroup {
   // the created PluginGroup.
   static PluginGroup* FromWebPluginInfo(const WebPluginInfo& wpi);
 
+  // Returns |true| if |version| is contained in [low, high) of |range|.
+  static bool IsVersionInRange(const Version& version,
+                               const VersionRange& range);
+
+  // Returns |true| iff |plugin_version| is both contained in |version_range|
+  // and declared outdated (== vulnerable) by it.
+  static bool IsPluginOutdated(const Version& plugin_version,
+                               const VersionRange& version_range);
+
   PluginGroup(const string16& group_name,
               const string16& name_matcher,
-              const std::string& version_range_low,
-              const std::string& version_range_high,
-              const std::string& min_version,
               const std::string& update_url,
               const std::string& identifier);
 
@@ -161,15 +190,10 @@ class PluginGroup {
   std::string identifier_;
   string16 group_name_;
   string16 name_matcher_;
-  std::string version_range_low_str_;
-  std::string version_range_high_str_;
-  scoped_ptr<Version> version_range_low_;
-  scoped_ptr<Version> version_range_high_;
   string16 description_;
   std::string update_url_;
   bool enabled_;
-  std::string min_version_str_;
-  scoped_ptr<Version> min_version_;
+  std::vector<VersionRange> version_ranges_;
   scoped_ptr<Version> version_;
   std::vector<WebPluginInfo> web_plugin_infos_;
   std::vector<int> web_plugin_positions_;

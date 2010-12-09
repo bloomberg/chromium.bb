@@ -219,8 +219,7 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
 
   if (force_enable_internal_pdf) {
     // See http://crbug.com/50105 for background.
-    EnablePluginGroup(false, ASCIIToUTF16(PluginGroup::kAdobeReader8GroupName));
-    EnablePluginGroup(false, ASCIIToUTF16(PluginGroup::kAdobeReader9GroupName));
+    EnablePluginGroup(false, ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
 
     // We want to save this, but doing so requires loading the list of plugins,
     // so do it after a minute as to not impact startup performance.  Note that

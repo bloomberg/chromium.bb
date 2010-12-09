@@ -13,8 +13,7 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
-const char* PluginGroup::kAdobeReader8GroupName = "Adobe Reader 8";
-const char* PluginGroup::kAdobeReader9GroupName = "Adobe Reader 9";
+const char* PluginGroup::kAdobeReaderGroupName = "Adobe Reader";
 
 /*static*/
 std::set<string16>* PluginGroup::policy_disabled_plugin_patterns_;
@@ -59,47 +58,57 @@ bool PluginGroup::IsPluginPathDisabledByPolicy(const FilePath& plugin_path) {
   return false;
 }
 
+VersionRange::VersionRange(VersionRangeDefinition definition)
+    : low_str(definition.version_matcher_low),
+      high_str(definition.version_matcher_high),
+      min_str(definition.min_version) {
+  if (!low_str.empty())
+    low.reset(Version::GetVersionFromString(low_str));
+  if (!high_str.empty())
+    high.reset(Version::GetVersionFromString(high_str));
+  if (!min_str.empty())
+    min.reset(Version::GetVersionFromString(min_str));
+}
+
+VersionRange::VersionRange(const VersionRange& other) {
+  InitFrom(other);
+}
+
+VersionRange& VersionRange::operator=(const VersionRange& other) {
+  InitFrom(other);
+  return *this;
+}
+
+void VersionRange::InitFrom(const VersionRange& other) {
+  low_str = other.low_str;
+  high_str = other.high_str;
+  min_str = other.min_str;
+  low.reset(Version::GetVersionFromString(other.low_str));
+  high.reset(Version::GetVersionFromString(other.high_str));
+  min.reset(Version::GetVersionFromString(other.min_str));
+}
+
 PluginGroup::PluginGroup(const string16& group_name,
                          const string16& name_matcher,
-                         const std::string& version_range_low,
-                         const std::string& version_range_high,
-                         const std::string& min_version,
                          const std::string& update_url,
                          const std::string& identifier)
     : identifier_(identifier),
       group_name_(group_name),
       name_matcher_(name_matcher),
-      version_range_low_str_(version_range_low),
-      version_range_high_str_(version_range_high),
       update_url_(update_url),
       enabled_(false),
-      min_version_str_(min_version),
       version_(Version::GetVersionFromString("0")) {
-  if (!version_range_low.empty())
-    version_range_low_.reset(Version::GetVersionFromString(version_range_low));
-  if (!version_range_high.empty()) {
-    version_range_high_.reset(
-        Version::GetVersionFromString(version_range_high));
-  }
-  if (!min_version.empty())
-    min_version_.reset(Version::GetVersionFromString(min_version));
 }
 
 void PluginGroup::InitFrom(const PluginGroup& other) {
   identifier_ = other.identifier_;
   group_name_ = other.group_name_;
   name_matcher_ = other.name_matcher_;
-  version_range_low_str_ = other.version_range_low_str_;
-  version_range_high_str_ = other.version_range_high_str_;
-  version_range_low_.reset(
-      Version::GetVersionFromString(version_range_low_str_));
-  version_range_high_.reset(
-      Version::GetVersionFromString(version_range_high_str_));
   description_ = other.description_;
   update_url_ = other.update_url_;
   enabled_ = other.enabled_;
-  min_version_str_ = other.min_version_str_;
-  min_version_.reset(Version::GetVersionFromString(min_version_str_));
+  for (size_t i = 0; i < other.version_ranges_.size(); ++i)
+    version_ranges_.push_back(other.version_ranges_[i]);
   DCHECK_EQ(other.web_plugin_infos_.size(), other.web_plugin_positions_.size());
   for (size_t i = 0; i < other.web_plugin_infos_.size(); ++i)
     AddPlugin(other.web_plugin_infos_[i], other.web_plugin_positions_[i]);
@@ -112,6 +121,7 @@ PluginGroup::PluginGroup(const PluginGroup& other) {
 }
 
 PluginGroup& PluginGroup::operator=(const PluginGroup& other) {
+  version_ranges_.clear();
   InitFrom(other);
   return *this;
 }
@@ -119,13 +129,13 @@ PluginGroup& PluginGroup::operator=(const PluginGroup& other) {
 /*static*/
 PluginGroup* PluginGroup::FromPluginGroupDefinition(
     const PluginGroupDefinition& definition) {
-  return new PluginGroup(ASCIIToUTF16(definition.name),
-                         ASCIIToUTF16(definition.name_matcher),
-                         definition.version_matcher_low,
-                         definition.version_matcher_high,
-                         definition.min_version,
-                         definition.update_url,
-                         definition.identifier);
+  PluginGroup* group = new PluginGroup(ASCIIToUTF16(definition.name),
+                                       ASCIIToUTF16(definition.name_matcher),
+                                       definition.update_url,
+                                       definition.identifier);
+  for (size_t i = 0; i < definition.num_versions; ++i)
+    group->version_ranges_.push_back(VersionRange(definition.versions[i]));
+  return group;
 }
 
 PluginGroup::~PluginGroup() { }
@@ -151,8 +161,7 @@ std::string PluginGroup::GetLongIdentifier(const WebPluginInfo& wpi) {
 /*static*/
 PluginGroup* PluginGroup::FromWebPluginInfo(const WebPluginInfo& wpi) {
   // Create a matcher from the name of this plugin.
-  return new PluginGroup(wpi.name, wpi.name, std::string(), std::string(),
-                         std::string(), std::string(),
+  return new PluginGroup(wpi.name, wpi.name, std::string(),
                          GetIdentifier(wpi));
 }
 
@@ -166,12 +175,11 @@ bool PluginGroup::Match(const WebPluginInfo& plugin) const {
     return false;
   }
 
-  if (version_range_low_.get() == NULL ||
-      version_range_high_.get() == NULL) {
+  if (version_ranges_.empty()) {
     return true;
   }
 
-  // There's a version range, we must be in it.
+  // There's at least one version range, the plugin's version must be in it.
   scoped_ptr<Version> plugin_version(
       Version::GetVersionFromString(UTF16ToWide(plugin.version)));
   if (plugin_version.get() == NULL) {
@@ -179,9 +187,14 @@ bool PluginGroup::Match(const WebPluginInfo& plugin) const {
     return false;
   }
 
-  // We match if we are in the range: [low, high)
-  return (version_range_low_->CompareTo(*plugin_version) <= 0 &&
-          version_range_high_->CompareTo(*plugin_version) > 0);
+  // Match if the plugin is contained in any of the defined VersionRanges.
+  for (size_t i = 0; i < version_ranges_.size(); ++i) {
+    if (IsVersionInRange(*plugin_version, version_ranges_[i])) {
+      return true;
+    }
+  }
+  // None of the VersionRanges matched.
+  return false;
 }
 
 Version* PluginGroup::CreateVersionFromString(const string16& version_string) {
@@ -322,18 +335,38 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
   return result;
 }
 
+/*static*/
+bool PluginGroup::IsVersionInRange(const Version& version,
+                                   const VersionRange& range) {
+  DCHECK(range.low.get() != NULL || range.high.get() == NULL)
+      << "Lower bound of version range must be defined.";
+  return (range.low.get() == NULL && range.high.get() == NULL) ||
+         (range.low->CompareTo(version) <= 0 &&
+             (range.high.get() == NULL || range.high->CompareTo(version) > 0));
+}
+
+/*static*/
+bool PluginGroup::IsPluginOutdated(const Version& plugin_version,
+                                   const VersionRange& version_range) {
+  if (IsVersionInRange(plugin_version, version_range)) {
+    if (version_range.min.get() &&
+        plugin_version.CompareTo(*version_range.min) < 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Returns true if the latest version of this plugin group is vulnerable.
 bool PluginGroup::IsVulnerable() const {
-  if (min_version_.get() == NULL || version_->GetString() == "0") {
-    return false;
+  for (size_t i = 0; i < version_ranges_.size(); ++i) {
+    if (IsPluginOutdated(*version_, version_ranges_[i]))
+      return true;
   }
-  return version_->CompareTo(*min_version_) < 0;
+  return false;
 }
 
 void PluginGroup::DisableOutdatedPlugins() {
-  if (!min_version_.get())
-    return;
-
   description_ = string16();
   enabled_ = false;
 
@@ -341,9 +374,13 @@ void PluginGroup::DisableOutdatedPlugins() {
            web_plugin_infos_.begin();
        it != web_plugin_infos_.end(); ++it) {
     scoped_ptr<Version> version(CreateVersionFromString(it->version));
-    if (version.get() && version->CompareTo(*min_version_) < 0) {
-      it->enabled = false;
-      NPAPI::PluginList::Singleton()->DisablePlugin(it->path);
+    if (version.get()) {
+      for (size_t i = 0; i < version_ranges_.size(); ++i) {
+        if (IsPluginOutdated(*version, version_ranges_[i])) {
+          it->enabled = false;
+          NPAPI::PluginList::Singleton()->DisablePlugin(it->path);
+        }
+      }
     }
     UpdateActivePlugin(*it);
   }
