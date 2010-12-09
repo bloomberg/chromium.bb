@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 
+#include "base/singleton.h"
+
 void AppModalDialogQueue::AddDialog(AppModalDialog* dialog) {
   if (!active_dialog_) {
     ShowModalDialog(dialog);
@@ -37,6 +39,11 @@ AppModalDialogQueue::AppModalDialogQueue()
 }
 
 AppModalDialogQueue::~AppModalDialogQueue() {}
+
+// static
+AppModalDialogQueue* AppModalDialogQueue::GetInstance() {
+  return Singleton<AppModalDialogQueue>::get();
+}
 
 void AppModalDialogQueue::ShowModalDialog(AppModalDialog* dialog) {
   // Be sure and set the active_dialog_ field first, otherwise if

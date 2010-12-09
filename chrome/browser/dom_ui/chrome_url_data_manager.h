@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/singleton.h"
 #include "base/task.h"
 #include "base/ref_counted.h"
 
@@ -32,8 +33,8 @@ class URLRequestJob;
 // it from the UI thread needs to go through an InvokeLater.
 class ChromeURLDataManager {
  public:
-  ChromeURLDataManager();
-  ~ChromeURLDataManager();
+  // Returns the singleton instance.
+  static ChromeURLDataManager* GetInstance();
 
   typedef int RequestID;
 
@@ -122,6 +123,10 @@ class ChromeURLDataManager {
 
  private:
   friend class URLRequestChromeJob;
+  friend struct DefaultSingletonTraits<ChromeURLDataManager>;
+
+  ChromeURLDataManager();
+  ~ChromeURLDataManager();
 
   // Parse a URL into the components used to resolve its request.
   static void URLToRequest(const GURL& url,

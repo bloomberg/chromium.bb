@@ -23,6 +23,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/unix_domain_socket_posix.h"
@@ -641,6 +642,11 @@ RenderSandboxHostLinux::RenderSandboxHostLinux()
       renderer_socket_(0),
       childs_lifeline_fd_(0),
       pid_(0) {
+}
+
+// static
+RenderSandboxHostLinux* RenderSandboxHostLinux::GetInstance() {
+  return Singleton<RenderSandboxHostLinux>::get();
 }
 
 void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {

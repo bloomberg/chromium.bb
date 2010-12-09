@@ -218,7 +218,7 @@ BrowserSignin::BrowserSignin(Profile* profile)
   BrowserSigninResourcesSource* source = new BrowserSigninResourcesSource();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
+      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(source)));
 }

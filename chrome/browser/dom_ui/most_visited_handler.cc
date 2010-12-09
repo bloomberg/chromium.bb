@@ -75,7 +75,7 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
       new DOMUIThumbnailSource(dom_ui->GetProfile());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
+      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(thumbnail_src)));
 
@@ -83,7 +83,7 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
       new DOMUIFavIconSource(dom_ui->GetProfile());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
+      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(favicon_src)));
 

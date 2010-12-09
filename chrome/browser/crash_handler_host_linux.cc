@@ -19,6 +19,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
@@ -364,6 +365,11 @@ void PluginCrashHandlerHostLinux::SetProcessType() {
   process_type_ = "plugin";
 }
 
+// static
+PluginCrashHandlerHostLinux* PluginCrashHandlerHostLinux::GetInstance() {
+  return Singleton<PluginCrashHandlerHostLinux>::get();
+}
+
 RendererCrashHandlerHostLinux::RendererCrashHandlerHostLinux() {
   InitCrashUploaderThread();
 }
@@ -373,4 +379,9 @@ RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {
 
 void RendererCrashHandlerHostLinux::SetProcessType() {
   process_type_ = "renderer";
+}
+
+// static
+RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
+  return Singleton<RendererCrashHandlerHostLinux>::get();
 }

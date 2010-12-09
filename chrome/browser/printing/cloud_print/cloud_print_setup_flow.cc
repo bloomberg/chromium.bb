@@ -102,7 +102,7 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
   profile_ = profile;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
+      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(new CloudPrintSetupSource())));
 }

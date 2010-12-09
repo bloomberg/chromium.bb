@@ -115,12 +115,13 @@ class ChildProcessLauncher::Context
       base::GlobalDescriptors::Mapping mapping;
       mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));
       const int crash_signal_fd =
-          Singleton<RendererCrashHandlerHostLinux>()->GetDeathSignalSocket();
+          RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
       if (crash_signal_fd >= 0) {
         mapping.push_back(std::pair<uint32_t, int>(kCrashDumpSignal,
                                                    crash_signal_fd));
       }
-      handle = Singleton<ZygoteHost>()->ForkRenderer(cmd_line->argv(), mapping);
+      handle = ZygoteHost::GetInstance()->ForkRenderer(cmd_line->argv(),
+                                                       mapping);
     } else
     // Fall through to the normal posix case below when we're not zygoting.
 #endif
@@ -143,10 +144,10 @@ class ChildProcessLauncher::Context
       if (is_renderer || is_plugin) {
         int crash_signal_fd;
         if (is_renderer) {
-          crash_signal_fd = Singleton<RendererCrashHandlerHostLinux>()->
+          crash_signal_fd = RendererCrashHandlerHostLinux::GetInstance()->
               GetDeathSignalSocket();
         } else {
-          crash_signal_fd = Singleton<PluginCrashHandlerHostLinux>()->
+          crash_signal_fd = PluginCrashHandlerHostLinux::GetInstance()->
               GetDeathSignalSocket();
         }
         if (crash_signal_fd >= 0) {
@@ -157,7 +158,7 @@ class ChildProcessLauncher::Context
       }
       if (is_renderer) {
         const int sandbox_fd =
-            Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
+            RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
         fds_to_map.push_back(std::make_pair(
             sandbox_fd,
             kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
@@ -253,7 +254,7 @@ class ChildProcessLauncher::Context
     if (zygote) {
       // If the renderer was created via a zygote, we have to proxy the reaping
       // through the zygote process.
-      Singleton<ZygoteHost>()->EnsureProcessTerminated(handle);
+      ZygoteHost::GetInstance()->EnsureProcessTerminated(handle);
     } else
 #endif  // OS_LINUX
     {
@@ -315,7 +316,8 @@ bool ChildProcessLauncher::DidProcessCrash() {
   base::ProcessHandle handle = context_->process_.handle();
 #if defined(OS_LINUX)
   if (context_->zygote_) {
-    did_crash = Singleton<ZygoteHost>()->DidProcessCrash(handle, &child_exited);
+    did_crash = ZygoteHost::GetInstance()->DidProcessCrash(handle,
+                                                           &child_exited);
   } else
 #endif
   {

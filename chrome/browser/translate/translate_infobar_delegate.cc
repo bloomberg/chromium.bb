@@ -157,19 +157,19 @@ void TranslateInfoBarDelegate::Translate() {
     prefs_.IncrementTranslationAcceptedCount(original_language_code);
   }
 
-  Singleton<TranslateManager>::get()->TranslatePage(
+  TranslateManager::GetInstance()->TranslatePage(
       tab_contents_,
       GetLanguageCodeAt(original_language_index()),
       GetLanguageCodeAt(target_language_index()));
 }
 
 void TranslateInfoBarDelegate::RevertTranslation() {
-  Singleton<TranslateManager>::get()->RevertTranslation(tab_contents_);
+  TranslateManager::GetInstance()->RevertTranslation(tab_contents_);
   tab_contents_->RemoveInfoBar(this);
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
-  Singleton<TranslateManager>::get()->
+  TranslateManager::GetInstance()->
       ReportLanguageDetectionError(tab_contents_);
 }
 
@@ -339,7 +339,7 @@ void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
     return;
   }
   // This is the "Try again..." case.
-  Singleton<TranslateManager>::get()->TranslatePage(
+  TranslateManager::GetInstance()->TranslatePage(
       tab_contents_, GetOriginalLanguageCode(), GetTargetLanguageCode());
 }
 

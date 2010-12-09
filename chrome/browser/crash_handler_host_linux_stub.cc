@@ -7,6 +7,8 @@
 
 #include "chrome/browser/crash_handler_host_linux.h"
 
+#include "base/singleton.h"
+
 CrashHandlerHostLinux::CrashHandlerHostLinux()
     : process_socket_(-1),
       browser_socket_(-1) {
@@ -30,8 +32,18 @@ PluginCrashHandlerHostLinux::PluginCrashHandlerHostLinux() {
 PluginCrashHandlerHostLinux::~PluginCrashHandlerHostLinux() {
 }
 
+// static
+PluginCrashHandlerHostLinux* PluginCrashHandlerHostLinux::GetInstance() {
+  return Singleton<PluginCrashHandlerHostLinux>::get();
+}
+
 RendererCrashHandlerHostLinux::RendererCrashHandlerHostLinux() {
 }
 
 RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {
+}
+
+// static
+RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
+  return Singleton<RendererCrashHandlerHostLinux>::get();
 }

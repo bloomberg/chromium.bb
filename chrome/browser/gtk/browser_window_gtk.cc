@@ -1204,8 +1204,8 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   if (is_active && changed) {
     // If there's an app modal dialog (e.g., JS alert), try to redirect
     // the user's attention to the window owning the dialog.
-    if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
-      Singleton<AppModalDialogQueue>()->ActivateModalDialog();
+    if (AppModalDialogQueue::GetInstance()->HasActiveDialog()) {
+      AppModalDialogQueue::GetInstance()->ActivateModalDialog();
       return;
     }
   }

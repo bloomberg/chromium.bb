@@ -121,8 +121,7 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   }
 
   void ExpireTranslateScriptImmediately() {
-    Singleton<TranslateManager>::get()->
-        set_translate_script_expiration_delay(0);
+    TranslateManager::GetInstance()->set_translate_script_expiration_delay(0);
   }
 
   // If there is 1 infobar and it is a translate infobar, deny translation and
@@ -155,8 +154,8 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
     // Also clears the translate script so it is fetched everytime and sets the
     // expiration delay to a large value by default (in case it was zeroed in
     // a previous test).
-    Singleton<TranslateManager>::get()->ClearTranslateScript();
-    Singleton<TranslateManager>::get()->
+    TranslateManager::GetInstance()->ClearTranslateScript();
+    TranslateManager::GetInstance()->
         set_translate_script_expiration_delay(60 * 60 * 1000);
 
     RenderViewHostTestHarness::SetUp();

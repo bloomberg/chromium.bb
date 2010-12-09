@@ -86,9 +86,9 @@ void BrowserMainPartsGtk::SetupSandbox() {
     sandbox_cmd = sandbox_binary;
 
   // Tickle the sandbox host and zygote host so they fork now.
-  RenderSandboxHostLinux* shost = Singleton<RenderSandboxHostLinux>::get();
+  RenderSandboxHostLinux* shost = RenderSandboxHostLinux::GetInstance();
   shost->Init(sandbox_cmd);
-  ZygoteHost* zhost = Singleton<ZygoteHost>::get();
+  ZygoteHost* zhost = ZygoteHost::GetInstance();
   zhost->Init(sandbox_cmd);
 }
 

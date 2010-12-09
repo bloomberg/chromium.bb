@@ -11,12 +11,16 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/singleton.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 // This is a singleton object which handles sandbox requests from the
 // renderers.
 class RenderSandboxHostLinux {
  public:
+  // Returns the singleton instance.
+  static RenderSandboxHostLinux* GetInstance();
+
   // Get the file descriptor which renderers should be given in order to signal
   // crashes to the browser.
   int GetRendererSocket() const {

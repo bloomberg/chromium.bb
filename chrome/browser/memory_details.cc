@@ -102,8 +102,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
 #if defined(OS_LINUX)
-  const pid_t zygote_pid = Singleton<ZygoteHost>()->pid();
-  const pid_t sandbox_helper_pid = Singleton<RenderSandboxHostLinux>()->pid();
+  const pid_t zygote_pid = ZygoteHost::GetInstance()->pid();
+  const pid_t sandbox_helper_pid = RenderSandboxHostLinux::GetInstance()->pid();
 #endif
 
   ProcessData* const chrome_browser = ChromeBrowser();

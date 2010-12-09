@@ -234,7 +234,7 @@ void MemoryDetails::CollectProcessData(
   }
 
   std::vector<pid_t> current_browser_processes;
-  const pid_t zygote = Singleton<ZygoteHost>()->pid();
+  const pid_t zygote = ZygoteHost::GetInstance()->pid();
   GetAllChildren(processes, getpid(), zygote, &current_browser_processes);
   ProcessData current_browser;
   GetProcessDataMemoryInformation(current_browser_processes, &current_browser);

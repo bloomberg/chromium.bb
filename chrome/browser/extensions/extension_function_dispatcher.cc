@@ -387,7 +387,7 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     DOMUIFavIconSource* favicon_source = new DOMUIFavIconSource(profile_);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
+        NewRunnableMethod(ChromeURLDataManager::GetInstance(),
                           &ChromeURLDataManager::AddDataSource,
                           make_scoped_refptr(favicon_source)));
   }

@@ -166,7 +166,7 @@ void OomPriorityManager::DoAdjustOomPriorities(StatsList renderer_stats) {
        iterator != renderer_stats.end(); ++iterator) {
     if (already_seen.find(iterator->renderer_handle) == already_seen.end()) {
       already_seen.insert(iterator->renderer_handle);
-      Singleton<ZygoteHost>::get()->AdjustRendererOOMScore(
+      ZygoteHost::GetInstance()->AdjustRendererOOMScore(
           iterator->renderer_handle,
           static_cast<int>(priority + 0.5f));
       priority += priority_increment;

@@ -12,9 +12,9 @@
 #include <string>
 
 #include "base/process.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 
+template <typename T> struct DefaultSingletonTraits;
 class GURL;
 class Profile;
 
@@ -38,7 +38,8 @@ typedef std::map<std::string, std::string> AboutTcmallocOutputsType;
 
 class AboutTcmallocOutputs {
  public:
-  AboutTcmallocOutputs() {}
+  // Returns the singleton instance.
+  static AboutTcmallocOutputs* GetInstance();
 
   AboutTcmallocOutputsType* outputs() { return &outputs_; }
 
@@ -55,6 +56,8 @@ class AboutTcmallocOutputs {
   }
 
  private:
+  AboutTcmallocOutputs() {}
+
   AboutTcmallocOutputsType outputs_;
 
   friend struct DefaultSingletonTraits<AboutTcmallocOutputs>;

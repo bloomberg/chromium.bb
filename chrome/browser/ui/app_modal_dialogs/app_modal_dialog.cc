@@ -49,5 +49,5 @@ void AppModalDialog::CloseModalDialog() {
 }
 
 void AppModalDialog::CompleteDialog() {
-  Singleton<AppModalDialogQueue>()->ShowNextDialog();
+  AppModalDialogQueue::GetInstance()->ShowNextDialog();
 }

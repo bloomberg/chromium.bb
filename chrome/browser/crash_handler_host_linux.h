@@ -10,7 +10,8 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 namespace base {
 class Thread;
@@ -79,6 +80,10 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
 };
 
 class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
+ public:
+  // Returns the singleton instance.
+  static PluginCrashHandlerHostLinux* GetInstance();
+
  private:
   friend struct DefaultSingletonTraits<PluginCrashHandlerHostLinux>;
   PluginCrashHandlerHostLinux();
@@ -92,6 +97,10 @@ class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
 };
 
 class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
+ public:
+  // Returns the singleton instance.
+  static RendererCrashHandlerHostLinux* GetInstance();
+
  private:
   friend struct DefaultSingletonTraits<RendererCrashHandlerHostLinux>;
   RendererCrashHandlerHostLinux();

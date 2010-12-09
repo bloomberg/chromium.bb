@@ -8,14 +8,18 @@
 
 #include <queue>
 
-#include "base/singleton.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 // Keeps a queue of AppModalDialogs, making sure only one app modal
 // dialog is shown at a time.
 // This class is a singleton.
 class AppModalDialogQueue {
  public:
+  // Returns the singleton instance.
+  static AppModalDialogQueue* GetInstance();
+
   // Adds a modal dialog to the queue, if there are no other dialogs in the
   // queue, the dialog will be shown immediately. Once it is shown, the
   // most recently active browser window (or whichever is currently active)

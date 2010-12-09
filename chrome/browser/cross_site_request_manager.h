@@ -11,7 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
-#include "base/singleton.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 // CrossSiteRequestManager is used to handle bookkeeping for cross-site
 // requests and responses between the UI and IO threads.  Such requests involve
@@ -22,6 +23,9 @@
 //
 class CrossSiteRequestManager {
  public:
+  // Returns the singleton instance.
+  static CrossSiteRequestManager* GetInstance();
+
   // Returns whether the RenderViewHost specified by the given IDs currently
   // has a pending cross-site request.  If so, we will have to delay the
   // response until the previous RenderViewHost runs its onunload handler.
@@ -38,8 +42,6 @@ class CrossSiteRequestManager {
   friend struct DefaultSingletonTraits<CrossSiteRequestManager>;
   typedef std::set<std::pair<int, int> > RenderViewSet;
 
-  // Obtain an instance of CrossSiteRequestManager via
-  // Singleton<CrossSiteRequestManager>().
   CrossSiteRequestManager();
   ~CrossSiteRequestManager();
 

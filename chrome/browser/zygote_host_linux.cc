@@ -66,6 +66,11 @@ ZygoteHost::~ZygoteHost() {
     close(control_fd_);
 }
 
+// static
+ZygoteHost* ZygoteHost::GetInstance() {
+  return Singleton<ZygoteHost>::get();
+}
+
 void ZygoteHost::Init(const std::string& sandbox_cmd) {
   DCHECK(!init_);
   init_ = true;
@@ -129,7 +134,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
-  const int sfd = Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
+  const int sfd = RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
   fds_to_map.push_back(std::make_pair(sfd, 5));
 
   int dummy_fd = -1;

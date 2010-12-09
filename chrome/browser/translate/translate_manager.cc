@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
+#include "base/singleton.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
@@ -142,6 +143,11 @@ base::LazyInstance<std::set<std::string> >
     TranslateManager::supported_languages_(base::LINKER_INITIALIZED);
 
 TranslateManager::~TranslateManager() {
+}
+
+// static
+TranslateManager* TranslateManager::GetInstance() {
+  return Singleton<TranslateManager>::get();
 }
 
 // static

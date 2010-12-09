@@ -1246,7 +1246,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       TranslatePrefs prefs(profile_->GetPrefs());
       prefs.RemoveLanguageFromBlacklist(original_lang);
       prefs.RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
-      Singleton<TranslateManager>::get()->TranslatePage(
+      TranslateManager::GetInstance()->TranslatePage(
           source_tab_contents_, original_lang, target_lang);
       break;
     }

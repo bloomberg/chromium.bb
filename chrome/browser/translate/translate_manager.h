@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/singleton.h"
 #include "base/task.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/translate_errors.h"
 
+template <typename T> struct DefaultSingletonTraits;
 class GURL;
 struct PageTranslatedDetails;
 class PrefService;
@@ -34,6 +34,9 @@ class TranslateInfoBarDelegate;
 class TranslateManager : public NotificationObserver,
                          public URLFetcher::Delegate {
  public:
+  // Returns the singleton instance.
+  static TranslateManager* GetInstance();
+
   virtual ~TranslateManager();
 
   // Translates the page contents from |source_lang| to |target_lang|.

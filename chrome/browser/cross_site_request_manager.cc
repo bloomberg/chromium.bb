@@ -4,6 +4,8 @@
 
 #include "chrome/browser/cross_site_request_manager.h"
 
+#include "base/singleton.h"
+
 bool CrossSiteRequestManager::HasPendingCrossSiteRequest(int renderer_id,
                                                          int render_view_id) {
   AutoLock lock(lock_);
@@ -29,3 +31,8 @@ void CrossSiteRequestManager::SetHasPendingCrossSiteRequest(int renderer_id,
 CrossSiteRequestManager::CrossSiteRequestManager() {}
 
 CrossSiteRequestManager::~CrossSiteRequestManager() {}
+
+// static
+CrossSiteRequestManager* CrossSiteRequestManager::GetInstance() {
+  return Singleton<CrossSiteRequestManager>::get();
+}

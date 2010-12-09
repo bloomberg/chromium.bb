@@ -153,7 +153,7 @@ RenderViewHost::~RenderViewHost() {
   delegate()->RenderViewDeleted(this);
 
   // Be sure to clean up any leftover state from cross-site requests.
-  Singleton<CrossSiteRequestManager>()->SetHasPendingCrossSiteRequest(
+  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
       process()->id(), routing_id(), false);
 }
 
@@ -368,7 +368,7 @@ void RenderViewHost::ClosePageIgnoringUnloadEvents() {
 
 void RenderViewHost::SetHasPendingCrossSiteRequest(bool has_pending_request,
                                                    int request_id) {
-  Singleton<CrossSiteRequestManager>()->SetHasPendingCrossSiteRequest(
+  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
       process()->id(), routing_id(), has_pending_request);
   pending_request_id_ = request_id;
 }

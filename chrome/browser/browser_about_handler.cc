@@ -17,6 +17,7 @@
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
+#include "base/singleton.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -88,9 +89,14 @@ using base::Time;
 using base::TimeDelta;
 
 #if defined(USE_TCMALLOC)
+// static
+AboutTcmallocOutputs* AboutTcmallocOutputs::GetInstance() {
+  return Singleton<AboutTcmallocOutputs>::get();
+}
+
 // Glue between the callback task and the method in the singleton.
 void AboutTcmallocRendererCallback(base::ProcessId pid, std::string output) {
-  Singleton<AboutTcmallocOutputs>::get()->RendererCallback(pid, output);
+  AboutTcmallocOutputs::GetInstance()->RendererCallback(pid, output);
 }
 #endif
 
@@ -364,7 +370,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
 std::string AboutTcmalloc(const std::string& query) {
   std::string data;
   AboutTcmallocOutputsType* outputs =
-      Singleton<AboutTcmallocOutputs>::get()->outputs();
+      AboutTcmallocOutputs::GetInstance()->outputs();
 
   // Display any stats for which we sent off requests the last time.
   data.append("<html><head><title>About tcmalloc</title></head><body>\n");
@@ -392,7 +398,7 @@ std::string AboutTcmalloc(const std::string& query) {
   char buffer[1024 * 32];
   MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
   std::string browser("Browser");
-  Singleton<AboutTcmallocOutputs>::get()->SetOutput(browser, buffer);
+  AboutTcmallocOutputs::GetInstance()->SetOutput(browser, buffer);
   RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
   while (!it.IsAtEnd()) {
     it.GetCurrentValue()->Send(new ViewMsg_GetRendererTcmalloc);
@@ -590,7 +596,7 @@ std::string AboutSandbox() {
   data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
   data.append("</h1>");
 
-  const int status = Singleton<ZygoteHost>()->sandbox_status();
+  const int status = ZygoteHost::GetInstance()->sandbox_status();
 
   data.append("<table>");
 
@@ -831,7 +837,7 @@ AboutSource::AboutSource()
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          Singleton<ChromeURLDataManager>::get(),
+          ChromeURLDataManager::GetInstance(),
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(this)));
 }

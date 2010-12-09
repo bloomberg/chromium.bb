@@ -237,7 +237,7 @@ void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
 }
 
 void ReleaseXIDDispatcher(unsigned long xid) {
-  GtkNativeViewManager* manager = Singleton<GtkNativeViewManager>::get();
+  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
   manager->ReleasePermanentXID(xid);
 }
 

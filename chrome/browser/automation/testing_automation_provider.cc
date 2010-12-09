@@ -1829,7 +1829,7 @@ void TestingAutomationProvider::SetBooleanPreference(int handle,
 void TestingAutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
                                                          int* dialog_button) {
   AppModalDialog* active_dialog =
-      Singleton<AppModalDialogQueue>()->active_dialog();
+      AppModalDialogQueue::GetInstance()->active_dialog();
   if (!active_dialog) {
     *showing_dialog = false;
     *dialog_button = MessageBoxFlags::DIALOGBUTTON_NONE;
@@ -1848,7 +1848,7 @@ void TestingAutomationProvider::ClickAppModalDialogButton(int button,
   *success = false;
 
   NativeAppModalDialog* native_dialog =
-      Singleton<AppModalDialogQueue>()->active_dialog()->native_dialog();
+      AppModalDialogQueue::GetInstance()->active_dialog()->native_dialog();
   if (native_dialog &&
       (native_dialog->GetAppModalDialogButtons() & button) == button) {
     if ((button & MessageBoxFlags::DIALOGBUTTON_OK) ==
@@ -1880,7 +1880,7 @@ void TestingAutomationProvider::WaitForBrowserWindowCountToBecome(
 
 void TestingAutomationProvider::WaitForAppModalDialogToBeShown(
     IPC::Message* reply_message) {
-  if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
+  if (AppModalDialogQueue::GetInstance()->HasActiveDialog()) {
     AutomationMsg_WaitForAppModalDialogToBeShown::WriteReplyParams(
         reply_message, true);
     Send(reply_message);

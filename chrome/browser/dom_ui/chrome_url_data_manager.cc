@@ -96,7 +96,7 @@ class URLRequestChromeFileJob : public URLRequestFileJob {
 void RegisterURLRequestChromeJob() {
   FilePath inspector_dir;
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
-    Singleton<ChromeURLDataManager>()->AddFileSource(
+    ChromeURLDataManager::GetInstance()->AddFileSource(
         chrome::kChromeUIDevToolsHost, inspector_dir);
   }
 
@@ -110,7 +110,7 @@ void RegisterURLRequestChromeJob() {
 void UnregisterURLRequestChromeJob() {
   FilePath inspector_dir;
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
-    Singleton<ChromeURLDataManager>()->RemoveFileSource(
+    ChromeURLDataManager::GetInstance()->RemoveFileSource(
         chrome::kChromeUIDevToolsHost);
   }
 }
@@ -158,8 +158,8 @@ bool ChromeURLDataManager::URLToFilePath(const GURL& url,
   URLToRequest(stripped_url, &source_name, &relative_path);
 
   FileSourceMap::const_iterator i(
-      Singleton<ChromeURLDataManager>()->file_sources_.find(source_name));
-  if (i == Singleton<ChromeURLDataManager>()->file_sources_.end())
+      ChromeURLDataManager::GetInstance()->file_sources_.find(source_name));
+  if (i == ChromeURLDataManager::GetInstance()->file_sources_.end())
     return false;
 
   // Check that |relative_path| is not an absolute path (otherwise AppendASCII()
@@ -177,6 +177,11 @@ bool ChromeURLDataManager::URLToFilePath(const GURL& url,
 ChromeURLDataManager::ChromeURLDataManager() : next_request_id_(0) { }
 
 ChromeURLDataManager::~ChromeURLDataManager() { }
+
+// static
+ChromeURLDataManager* ChromeURLDataManager::GetInstance() {
+  return Singleton<ChromeURLDataManager>::get();
+}
 
 void ChromeURLDataManager::AddDataSource(scoped_refptr<DataSource> source) {
   // TODO(jackson): A new data source with same name should not clobber the
@@ -287,7 +292,7 @@ void ChromeURLDataManager::DataSource::SendResponse(
     RefCountedMemory* bytes) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
+      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
                         &ChromeURLDataManager::DataAvailable,
                         request_id, scoped_refptr<RefCountedMemory>(bytes)));
 }
@@ -347,7 +352,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request)
 }
 
 URLRequestChromeJob::~URLRequestChromeJob() {
-  CHECK(!Singleton<ChromeURLDataManager>()->HasPendingJob(this));
+  CHECK(!ChromeURLDataManager::GetInstance()->HasPendingJob(this));
 }
 
 void URLRequestChromeJob::Start() {
@@ -358,7 +363,7 @@ void URLRequestChromeJob::Start() {
 }
 
 void URLRequestChromeJob::Kill() {
-  Singleton<ChromeURLDataManager>()->RemoveRequest(this);
+  ChromeURLDataManager::GetInstance()->RemoveRequest(this);
 }
 
 bool URLRequestChromeJob::GetMimeType(std::string* mime_type) const {
@@ -418,7 +423,8 @@ void URLRequestChromeJob::StartAsync() {
   if (!request_)
     return;
 
-  if (Singleton<ChromeURLDataManager>()->StartRequest(request_->url(), this)) {
+  if (ChromeURLDataManager::GetInstance()->StartRequest(request_->url(),
+                                                        this)) {
     NotifyHeadersComplete();
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,

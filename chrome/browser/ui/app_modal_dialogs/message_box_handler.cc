@@ -70,7 +70,7 @@ void RunJavascriptMessageBox(Profile* profile,
                              IPC::Message* reply_msg) {
   bool is_alert = dialog_flags == MessageBoxFlags::kIsJavascriptAlert;
   std::wstring title = GetTitle(profile, is_alert, frame_url);
-  Singleton<AppModalDialogQueue>()->AddDialog(new JavaScriptAppModalDialog(
+  AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       delegate, title, dialog_flags, message_text, default_prompt_text,
       display_suppress_checkbox, false, reply_msg));
 }
@@ -81,7 +81,7 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
   std::wstring full_message =
       message_text + L"\n\n" +
       l10n_util::GetString(IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER);
-  Singleton<AppModalDialogQueue>()->AddDialog(new JavaScriptAppModalDialog(
+  AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       tab_contents, l10n_util::GetString(IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE),
       MessageBoxFlags::kIsJavascriptConfirm, message_text, std::wstring(),
       false, true, reply_msg));

@@ -26,6 +26,9 @@ static const char kZygoteMagic[] = "ZYGOTE_OK";
 // process.
 class ZygoteHost {
  public:
+  // Returns the singleton instance.
+  static ZygoteHost* GetInstance();
+
   void Init(const std::string& sandbox_cmd);
 
   // Tries to start a renderer process.  Returns its pid on success, otherwise

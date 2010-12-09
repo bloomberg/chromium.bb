@@ -478,7 +478,7 @@ void ResourceDispatcherHost::BeginRequest(
   // not count as cross-site, otherwise it gets blocked indefinitely.
   if (request_data.resource_type == ResourceType::MAIN_FRAME &&
       process_type == ChildProcessInfo::RENDER_PROCESS &&
-      Singleton<CrossSiteRequestManager>::get()->
+      CrossSiteRequestManager::GetInstance()->
           HasPendingCrossSiteRequest(child_id, route_id)) {
     // Wrap the event handler to be sure the current page's onunload handler
     // has a chance to run before we render the new page.
