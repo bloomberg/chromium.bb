@@ -22,6 +22,8 @@ cr.define('options', function() {
       this.type = 'checkbox';
       var self = this;
 
+      self.initializeValueType(self.getAttribute('value-type'));
+
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
@@ -56,12 +58,6 @@ cr.define('options', function() {
                     value, self.metric);
                 break;
             }
-          });
-
-      // Initialize options.
-      this.ownerDocument.addEventListener('DOMContentLoaded',
-          function() {
-            self.initializeValueType(self.getAttribute('value-type'));
           });
     },
 
@@ -286,6 +282,12 @@ cr.define('options', function() {
     */
     decorate: function() {
       var self = this;
+
+      var values = self.getAttribute('data-values');
+      if (values) {
+        self.initializeValues(templateData[values]);
+      }
+
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
@@ -325,15 +327,6 @@ cr.define('options', function() {
                 Preferences.setStringPref(self.pref,
                     self.options[self.selectedIndex].value, self.metric);
                 break;
-            }
-          });
-
-      // Initialize options.
-      this.ownerDocument.addEventListener('DOMContentLoaded',
-          function() {
-            var values = self.getAttribute('data-values');
-            if (values) {
-              self.initializeValues(templateData[values]);
             }
           });
     },
