@@ -373,7 +373,7 @@
         "options.html", 
         "popup.html"
       ], 
-      "source_hash": "bbd36a3d1d5580b477929d081f5a3a467ad32c63", 
+      "source_hash": "0cdd7f644ec0a3aa6eb46dc61f5c692762381b63", 
       "zip_path": "examples/extensions/buildbot.zip"
     }, 
     {
@@ -404,7 +404,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "source_hash": "1b58516fac8ed4dc97854e0bccb286a77e829a64", 
+      "source_hash": "027409688a677867e3f2fcbc530ceac904ccedea", 
       "zip_path": "examples/extensions/chrome_search.zip"
     }, 
     {
@@ -1286,7 +1286,7 @@
         "util/sorttable.js", 
         "util/table2CSV.js"
       ], 
-      "source_hash": "7b6fde63c8dd0e626d176e8ce34ad43649746436", 
+      "source_hash": "7e592dbd3446353f7d98d1760f7cd773035aaaad", 
       "zip_path": "examples/extensions/benchmark.zip"
     }, 
     {
