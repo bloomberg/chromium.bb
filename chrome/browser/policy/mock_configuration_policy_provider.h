@@ -9,8 +9,8 @@
 #include <map>
 #include <utility>
 
-#include "base/stl_util-inl.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
 
@@ -25,6 +25,8 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
 
   // ConfigurationPolicyProvider method overrides.
   virtual bool Provide(ConfigurationPolicyStoreInterface* store);
+
+  MOCK_METHOD0(NotifyStoreOfPolicyChange, void());
 
  private:
   typedef std::map<ConfigurationPolicyType, Value*> PolicyMap;

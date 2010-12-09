@@ -34,15 +34,15 @@ static FilePath GetManagedPolicyPath() {
   return path.Append(base::SysCFStringRefToUTF8(bundle_id) + ".plist");
 }
 
-MacPreferencesPolicyLoader::MacPreferencesPolicyLoader(
+MacPreferencesPolicyProviderDelegate::MacPreferencesPolicyProviderDelegate(
     MacPreferences* preferences,
     const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list)
-    : FileBasedPolicyProvider::Delegate(GetManagedPolicyPath()),
+    : FileBasedPolicyProvider::ProviderDelegate(GetManagedPolicyPath()),
       policy_list_(policy_list),
       preferences_(preferences) {
 }
 
-DictionaryValue* MacPreferencesPolicyLoader::Load() {
+DictionaryValue* MacPreferencesPolicyProviderDelegate::Load() {
   preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
   DictionaryValue* policy = new DictionaryValue;
 
@@ -110,7 +110,7 @@ DictionaryValue* MacPreferencesPolicyLoader::Load() {
   return policy;
 }
 
-base::Time MacPreferencesPolicyLoader::GetLastModification() {
+base::Time MacPreferencesPolicyProviderDelegate::GetLastModification() {
   base::PlatformFileInfo file_info;
   if (!file_util::GetFileInfo(config_file_path(), &file_info) ||
       file_info.is_directory) {
@@ -123,14 +123,16 @@ base::Time MacPreferencesPolicyLoader::GetLastModification() {
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
     const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list)
     : FileBasedPolicyProvider(policy_list,
-          new MacPreferencesPolicyLoader(new MacPreferences, policy_list)) {
+          new MacPreferencesPolicyProviderDelegate(new MacPreferences,
+                                                   policy_list)) {
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
     const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
     MacPreferences* preferences)
     : FileBasedPolicyProvider(policy_list,
-          new MacPreferencesPolicyLoader(preferences, policy_list)) {
+          new MacPreferencesPolicyProviderDelegate(preferences,
+                                                   policy_list)) {
 }
 
 }  // namespace policy

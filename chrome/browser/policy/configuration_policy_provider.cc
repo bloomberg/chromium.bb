@@ -24,7 +24,7 @@ void ConfigurationPolicyProvider::NotifyStoreOfPolicyChange() {
 }
 
 void ConfigurationPolicyProvider::DecodePolicyValueTree(
-    DictionaryValue* policies,
+    const DictionaryValue* policies,
     ConfigurationPolicyStoreInterface* store) {
   const PolicyDefinitionList* policy_list(policy_definition_list());
   for (const PolicyDefinitionList::Entry* i = policy_list->begin;

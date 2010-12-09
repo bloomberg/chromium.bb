@@ -53,7 +53,7 @@ class ConfigurationPolicyProvider {
   virtual void NotifyStoreOfPolicyChange();
 
   // Decodes the value tree and writes the configuration to the given |store|.
-  void DecodePolicyValueTree(DictionaryValue* policies,
+  void DecodePolicyValueTree(const DictionaryValue* policies,
                              ConfigurationPolicyStoreInterface* store);
  protected:
   const PolicyDefinitionList* policy_definition_list() const {

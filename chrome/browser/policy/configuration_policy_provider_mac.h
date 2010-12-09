@@ -13,11 +13,12 @@
 
 namespace policy {
 
-// A policy loader implementation that read Mac OS X's managed preferences.
-class MacPreferencesPolicyLoader : public FileBasedPolicyProvider::Delegate {
+// A provider delegate implementation that reads Mac OS X's managed preferences.
+class MacPreferencesPolicyProviderDelegate
+    : public FileBasedPolicyProvider::ProviderDelegate {
  public:
   // Takes ownership of |preferences|.
-  MacPreferencesPolicyLoader(
+  MacPreferencesPolicyProviderDelegate(
       MacPreferences* preferences,
       const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list);
 
@@ -35,7 +36,7 @@ class MacPreferencesPolicyLoader : public FileBasedPolicyProvider::Delegate {
 
   scoped_ptr<MacPreferences> preferences_;
 
-  DISALLOW_COPY_AND_ASSIGN(MacPreferencesPolicyLoader);
+  DISALLOW_COPY_AND_ASSIGN(MacPreferencesPolicyProviderDelegate);
 };
 
 // An implementation of |ConfigurationPolicyProvider| using the mechanism

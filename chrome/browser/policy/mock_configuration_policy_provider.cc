@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 
+#include "base/stl_util-inl.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
 namespace policy {

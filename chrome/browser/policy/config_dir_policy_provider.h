@@ -10,23 +10,6 @@
 
 namespace policy {
 
-// A policy loader implementation backed by a set of files in a given directory.
-// The files should contain JSON-formatted policy settings. They are merged
-// together and the result is returned via the PolicyLoader interface. The files
-// are consulted in lexicographic file name order, so the last value read takes
-// precedence in case of preference key collisions.
-class ConfigDirPolicyLoader : public FileBasedPolicyProvider::Delegate {
- public:
-  explicit ConfigDirPolicyLoader(const FilePath& config_dir);
-
-  // FileBasedPolicyLoader::Delegate implementation.
-  virtual DictionaryValue* Load();
-  virtual base::Time GetLastModification();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ConfigDirPolicyLoader);
-};
-
 // Policy provider backed by JSON files in a configuration directory.
 class ConfigDirPolicyProvider : public FileBasedPolicyProvider {
  public:
@@ -36,6 +19,24 @@ class ConfigDirPolicyProvider : public FileBasedPolicyProvider {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigDirPolicyProvider);
+};
+
+// A provider delegate implementation backed by a set of files in a given
+// directory. The files should contain JSON-formatted policy settings. They are
+// merged together and the result is returned via the ProviderDelegate
+// interface. The files are consulted in lexicographic file name order, so the
+// last value read takes precedence in case of preference key collisions.
+class ConfigDirPolicyProviderDelegate
+    : public FileBasedPolicyProvider::ProviderDelegate {
+ public:
+  explicit ConfigDirPolicyProviderDelegate(const FilePath& config_dir);
+
+  // FileBasedPolicyProvider::ProviderDelegate implementation.
+  virtual DictionaryValue* Load();
+  virtual base::Time GetLastModification();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConfigDirPolicyProviderDelegate);
 };
 
 }  // namespace policy
