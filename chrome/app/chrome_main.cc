@@ -103,7 +103,7 @@ extern int ServiceProcessMain(const MainFunctionParams&);
 extern "C" {
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info,
-                                 TCHAR* command_line);
+                                 TCHAR* command_line_unused);
 }
 #elif defined(OS_POSIX)
 extern "C" {
@@ -321,13 +321,13 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
 }
 #endif  // defined(OS_LINUX)
 
-void SetupCRT(const CommandLine& parsed_command_line) {
+void SetupCRT(const CommandLine& command_line) {
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC
   _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
 #else
-  if (!parsed_command_line.HasSwitch(switches::kDisableBreakpad)) {
+  if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
     _CrtSetReportMode(_CRT_ASSERT, 0);
   }
 #endif
@@ -335,8 +335,8 @@ void SetupCRT(const CommandLine& parsed_command_line) {
   // Enable the low fragmentation heap for the CRT heap. The heap is not changed
   // if the process is run under the debugger is enabled or if certain gflags
   // are set.
-  if (parsed_command_line.HasSwitch(switches::kUseLowFragHeapCrt) &&
-      (parsed_command_line.GetSwitchValueASCII(switches::kUseLowFragHeapCrt)
+  if (command_line.HasSwitch(switches::kUseLowFragHeapCrt) &&
+      (command_line.GetSwitchValueASCII(switches::kUseLowFragHeapCrt)
        != "false")) {
     void* crt_heap = reinterpret_cast<void*>(_get_heap_handle());
     ULONG enable_lfh = 2;
@@ -348,9 +348,9 @@ void SetupCRT(const CommandLine& parsed_command_line) {
 
 // Enable the heap profiler if the appropriate command-line switch is
 // present, bailing out of the app we can't.
-void EnableHeapProfiler(const CommandLine& parsed_command_line) {
+void EnableHeapProfiler(const CommandLine& command_line) {
 #if defined(OS_WIN)
-  if (parsed_command_line.HasSwitch(switches::kMemoryProfiling))
+  if (command_line.HasSwitch(switches::kMemoryProfiling))
     if (!LoadMemoryProfiler())
       exit(-1);
 #endif
@@ -439,14 +439,14 @@ void SendTaskPortToParentProcess() {
 #endif  // defined(OS_MACOSX)
 
 void InitializeStatsTable(base::ProcessId browser_pid,
-                          const CommandLine & parsed_command_line) {
+                          const CommandLine& command_line) {
   // Initialize the Stats Counters table.  With this initialized,
   // the StatsViewer can be utilized to read counters outside of
   // Chrome.  These lines can be commented out to effectively turn
   // counters 'off'.  The table is created and exists for the life
   // of the process.  It is not cleaned up.
-  if (parsed_command_line.HasSwitch(switches::kEnableStatsTable) ||
-      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
+  if (command_line.HasSwitch(switches::kEnableStatsTable) ||
+      command_line.HasSwitch(switches::kEnableBenchmarking)) {
     // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
     // leaking shared memory regions on posix platforms.
     std::string statsfile =
@@ -599,7 +599,7 @@ int RunNamedProcessTypeMain(const std::string& process_type,
 #if defined(OS_WIN)
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info,
-                                 TCHAR* command_line) {
+                                 TCHAR* command_line_unused) {
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, char** argv) {
 #endif
@@ -625,19 +625,19 @@ int ChromeMain(int argc, char** argv) {
   CommandLine::Init(argc, argv);
 #endif
 
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
 #if defined(OS_POSIX)
-  if (HandleVersionSwitches(parsed_command_line))
+  if (HandleVersionSwitches(command_line))
     return 0;  // Got a --version switch; exit with a success error code.
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   // This will directly exit if the user asked for help.
-  HandleHelpSwitches(parsed_command_line);
+  HandleHelpSwitches(command_line);
 #endif
 #endif  // OS_POSIX
 
   std::string process_type =
-      parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
+      command_line.GetSwitchValueASCII(switches::kProcessType);
 
 #if defined(OS_MACOSX)
   mac_util::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
@@ -645,17 +645,17 @@ int ChromeMain(int argc, char** argv) {
 
   // If we are in diagnostics mode this is the end of the line. After the
   // diagnostics are run the process will invariably exit.
-  if (parsed_command_line.HasSwitch(switches::kDiagnostics)) {
-    return DiagnosticsMain(parsed_command_line);
+  if (command_line.HasSwitch(switches::kDiagnostics)) {
+    return DiagnosticsMain(command_line);
   }
 
 #if defined(OS_WIN)
   // Must do this before any other usage of command line!
-  if (HasDeprecatedArguments(parsed_command_line.command_line_string()))
+  if (HasDeprecatedArguments(command_line.command_line_string()))
     return 1;
 #endif
 
-  if (parsed_command_line.HasSwitch(switches::kEnableNaCl)) {
+  if (command_line.HasSwitch(switches::kEnableNaCl)) {
     // NaCl currently requires two flags to run
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kInternalNaCl);
@@ -663,7 +663,7 @@ int ChromeMain(int argc, char** argv) {
   }
 
 #if defined(OS_CHROMEOS)
-  if (parsed_command_line.HasSwitch(switches::kGuestSession)) {
+  if (command_line.HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kDisableSync);
@@ -676,7 +676,7 @@ int ChromeMain(int argc, char** argv) {
   if (SubprocessIsBrowserChild(process_type)) {
 #if defined(OS_WIN)
     std::string channel_name =
-        parsed_command_line.GetSwitchValueASCII(switches::kProcessChannelID);
+        command_line.GetSwitchValueASCII(switches::kProcessChannelID);
 
     int browser_pid_int;
     base::StringToInt(channel_name, &browser_pid_int);
@@ -706,7 +706,7 @@ int ChromeMain(int argc, char** argv) {
       signal(SIGINT, SIG_IGN);
 #endif
   }
-  SetupCRT(parsed_command_line);
+  SetupCRT(command_line);
 
   // Initialize the Chrome path provider.
   app::RegisterPathProvider();
@@ -714,7 +714,7 @@ int ChromeMain(int argc, char** argv) {
 
   // Notice a user data directory override if any
   const FilePath user_data_dir =
-      parsed_command_line.GetSwitchValuePath(switches::kUserDataDir);
+      command_line.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
     CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
 
@@ -744,7 +744,7 @@ int ChromeMain(int argc, char** argv) {
   //    itself.
   // * If Breakpad is disabled, we only turn on Crash Reporter for the
   //    Browser process in release mode.
-  if (!parsed_command_line.HasSwitch(switches::kDisableBreakpad)) {
+  if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
     bool disable_apple_crash_reporter = is_debug_build
                                         || mac_util::IsBackgroundOnlyProcess();
     if (!IsCrashReporterEnabled() && disable_apple_crash_reporter) {
@@ -764,10 +764,10 @@ int ChromeMain(int argc, char** argv) {
 
   // The helper's Info.plist marks it as a background only app.
   if (mac_util::IsBackgroundOnlyProcess()) {
-    CHECK(parsed_command_line.HasSwitch(switches::kProcessType))
+    CHECK(command_line.HasSwitch(switches::kProcessType))
         << "Helper application requires --type.";
   } else {
-    CHECK(!parsed_command_line.HasSwitch(switches::kProcessType))
+    CHECK(!command_line.HasSwitch(switches::kProcessType))
         << "Main application forbids --type, saw \"" << process_type << "\".";
   }
 #endif  // defined(OS_MACOSX)
@@ -776,16 +776,16 @@ int ChromeMain(int argc, char** argv) {
     InitCrashProcessInfo();
 #endif  // OS_MACOSX
 
-  InitializeStatsTable(browser_pid, parsed_command_line);
+  InitializeStatsTable(browser_pid, command_line);
 
   base::StatsScope<base::StatsCounterTimer>
       startup_timer(chrome::Counters::chrome_main());
 
   // Enable the heap profiler as early as possible!
-  EnableHeapProfiler(parsed_command_line);
+  EnableHeapProfiler(command_line);
 
   // Enable Message Loop related state asap.
-  if (parsed_command_line.HasSwitch(switches::kMessageLoopHistogrammer))
+  if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
     MessageLoop::EnableHistogrammer(true);
 
 #if defined(OS_WIN)
@@ -798,7 +798,7 @@ int ChromeMain(int argc, char** argv) {
     // official Chrome builds.
     false;
 #else
-    parsed_command_line.HasSwitch(switches::kSingleProcess);
+    command_line.HasSwitch(switches::kSingleProcess);
 #endif
   if (single_process)
     RenderProcessHost::set_run_renderer_in_process(true);
@@ -820,7 +820,7 @@ int ChromeMain(int argc, char** argv) {
   if (process_type.empty()) {
     file_state = logging::DELETE_OLD_LOG_FILE;
   }
-  logging::InitChromeLogging(parsed_command_line, file_state);
+  logging::InitChromeLogging(command_line, file_state);
 
   // Register internal Chrome schemes so they'll be parsed correctly. This must
   // happen before we process any URLs with the affected schemes, and must be
@@ -828,8 +828,8 @@ int ChromeMain(int argc, char** argv) {
   chrome::RegisterChromeSchemes();
 
 #ifdef NDEBUG
-  if (parsed_command_line.HasSwitch(switches::kSilentDumpOnDCHECK) &&
-      parsed_command_line.HasSwitch(switches::kEnableDCHECK)) {
+  if (command_line.HasSwitch(switches::kSilentDumpOnDCHECK) &&
+      command_line.HasSwitch(switches::kEnableDCHECK)) {
 #if defined(OS_WIN)
     logging::SetLogReportHandler(ChromeAssert);
 #endif
@@ -840,7 +840,7 @@ int ChromeMain(int argc, char** argv) {
     // Initialize ResourceBundle which handles files loaded from external
     // sources.  The language should have been passed in to us from the
     // browser process as a command line flag.
-    DCHECK(parsed_command_line.HasSwitch(switches::kLang) ||
+    DCHECK(command_line.HasSwitch(switches::kLang) ||
            process_type == switches::kZygoteProcess);
 
     // TODO(markusheintz): The command line flag --lang is actually processed
@@ -849,7 +849,7 @@ int ChromeMain(int argc, char** argv) {
     // the --lang flag to passe the value of the PrefService in here. Maybe this
     // value could be passed in a different way.
     ResourceBundle::InitSharedInstance(
-        parsed_command_line.GetSwitchValueASCII(switches::kLang));
+        command_line.GetSwitchValueASCII(switches::kLang));
 
 #if defined(OS_MACOSX)
     // Update the process name (need resources to get the strings, so
@@ -882,7 +882,7 @@ int ChromeMain(int argc, char** argv) {
 
   if (initialize_sandbox) {
     bool sandbox_initialized_ok =
-        sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
+        sandbox_wrapper.InitializeSandbox(command_line, process_type);
     // Die if the sandbox can't be enabled.
     CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "
                                   << process_type;
@@ -890,7 +890,7 @@ int ChromeMain(int argc, char** argv) {
 
   startup_timer.Stop();  // End of Startup Time Measurement.
 
-  MainFunctionParams main_params(parsed_command_line, sandbox_wrapper,
+  MainFunctionParams main_params(command_line, sandbox_wrapper,
                                  &autorelease_pool);
 
   // Note: If you are adding a new process type below, be sure to adjust the
