@@ -539,9 +539,22 @@ HRESULT BrowserHelperObject::OnCfExtensionReady(BSTR path, int response) {
 }
 
 void BrowserHelperObject::StartExtension(const wchar_t* base_dir) {
-  chrome_frame_host_->SetUrl(CComBSTR(chrome::kAboutBlankURL));
-
   LoadManifestFile(base_dir);
+
+  // Make sure to navigate the Chrome Frame instance to some html page in the
+  // extension, even a page that may not exist, to make sure that the existing
+  // chrome extension process is used with this Chrome Frame instance.  Note
+  // navigating to about:blank will cause chrome to use a new renderer process
+  // each time.
+  CComBSTR url(chrome::kAboutBlankURL);
+  if (!extension_id_.empty()) {
+    std::wstring url_string(L"chrome-extension://");
+    url_string += extension_id_;
+    url_string += L"/dummy_page_loaded_by_ceee_bho.html";
+    url = url_string.c_str();
+  }
+
+  chrome_frame_host_->SetUrl(url);
 
   // There is a race between launching Chrome to get the directory of
   // the extension, and the first page this BHO is attached to being loaded.

@@ -293,8 +293,7 @@ STDMETHODIMP_(void) ChromeFrameHost::OnCfLoad(IDispatch* event) {
 }
 
 STDMETHODIMP_(void) ChromeFrameHost::OnCfLoadError(IDispatch* event) {
-  DLOG(ERROR) << "OnCfLoadError";
-  DCHECK(false) << "OnCfLoadError";
+  DLOG(INFO) << "OnCfLoadError";
 }
 
 STDMETHODIMP_(void) ChromeFrameHost::OnCfExtensionReady(BSTR path,
