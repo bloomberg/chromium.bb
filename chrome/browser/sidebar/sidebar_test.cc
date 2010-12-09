@@ -44,9 +44,7 @@ class SidebarTest : public InProcessBrowserTest {
   }
 
   void NavigateSidebarForCurrentTabTo(const std::string& test_page) {
-    net::TestServer* server = test_server();
-    ASSERT_TRUE(server);
-    GURL url = server->GetURL(test_page);
+    GURL url = test_server()->GetURL(test_page);
 
     TabContents* tab = browser()->GetSelectedTabContents();
 
@@ -165,13 +163,9 @@ IN_PROC_BROWSER_TEST_F(SidebarTest, SidebarOnInactiveTab) {
   HideSidebarForCurrentTab();
 }
 
-// FAILS, http://crbug.com/57964
-#if defined(OS_WIN)
-#define MAYBE_SidebarNavigate DISABLED_SidebarNavigate
-#else
-#define MAYBE_SidebarNavigate SidebarNavigate
-#endif
-IN_PROC_BROWSER_TEST_F(SidebarTest, MAYBE_SidebarNavigate) {
+IN_PROC_BROWSER_TEST_F(SidebarTest, SidebarNavigate) {
+  ASSERT_TRUE(test_server()->Start());
+
   ShowSidebarForCurrentTab();
 
   NavigateSidebarForCurrentTabTo(kSimplePage);
