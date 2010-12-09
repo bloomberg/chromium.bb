@@ -112,7 +112,6 @@ void RegisterLocalState(PrefService* local_state) {
 void RegisterUserPrefs(PrefService* user_prefs) {
   // User prefs
   AutoFillManager::RegisterUserPrefs(user_prefs);
-  BackgroundModeManager::RegisterUserPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);

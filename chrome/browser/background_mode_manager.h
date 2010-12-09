@@ -44,8 +44,6 @@ class BackgroundModeManager
   BackgroundModeManager(Profile* profile, CommandLine* command_line);
   virtual ~BackgroundModeManager();
 
-  static void RegisterUserPrefs(PrefService* prefs);
-
   static bool IsBackgroundModeEnabled(const CommandLine* command_line);
 
  private:
@@ -95,12 +93,6 @@ class BackgroundModeManager
   // launch-on-startup is disabled if appropriate.
   void OnBackgroundAppUninstalled();
 
-  // Returns true if chrome has set "launch on startup" property for itself
-  // earlier and is allowed to reset it later, reducing likelihood of
-  // overriding user choices.
-  bool IsLaunchOnStartupResetAllowed();
-  void SetLaunchOnStartupResetAllowed(bool allowed);
-
   // Called to make sure that our launch-on-startup mode is properly set.
   // (virtual so we can override for tests).
   virtual void EnableLaunchOnStartup(bool should_launch);
@@ -118,6 +110,10 @@ class BackgroundModeManager
   // longer need to do this (either because the user has chosen to exit chrome
   // manually, or all apps have been loaded).
   void EndKeepAliveForStartup();
+
+  // Return an appropriate name for a Preferences menu entry.  Preferences is
+  // sometimes called Options or Settings.
+  string16 GetPreferencesMenuLabel();
 
   // Create a status tray icon to allow the user to shutdown Chrome when running
   // in background mode. Virtual to enable testing.
