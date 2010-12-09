@@ -1109,3 +1109,10 @@
    fun:remoting::protocol::RtpVideoReader::CheckFullPacket
    fun:remoting::protocol::RtpVideoReader::OnRtpPacket
 }
+{
+   bug_65993
+   Heapcheck:Leak
+   ...
+   fun:TestDelegate
+   fun:PrerenderInterceptorTest::MakeTestUrl
+}
