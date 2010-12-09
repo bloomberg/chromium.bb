@@ -140,6 +140,18 @@ class TestWebProgressNotifier : public WebProgressNotifier {
     return previous_travel_log_info_;
   }
 
+  virtual WebRequestNotifier* webrequest_notifier() {
+    return &web_request_notifier_;
+  }
+
+  class TestingWebRequestNotifier : public WebRequestNotifier {
+   public:
+    virtual bool ConnectBroker() {
+      return true;
+    }
+  };
+
+  TestingWebRequestNotifier web_request_notifier_;
   StrictMock<testing::MockWebNavigationEventsFunnel>
       mock_webnavigation_events_funnel_;
   bool mock_is_forward_back_;

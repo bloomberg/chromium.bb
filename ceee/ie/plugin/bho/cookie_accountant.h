@@ -26,7 +26,7 @@
 class CookieAccountant {
  public:
   // Patch cookie-related functions to observe IE session cookies.
-  void PatchWininetFunctions();
+  void Initialize();
 
   // Record Set-Cookie changes coming from the HTTP response headers.
   void RecordHttpResponseCookies(
@@ -56,9 +56,7 @@ class CookieAccountant {
   CookieAccountant()
       : broker_rpc_client_(true),
         cookie_events_funnel_(&broker_rpc_client_),
-        patching_wininet_functions_(false) {
-    HRESULT hr = broker_rpc_client_.Connect(true);
-    DCHECK(SUCCEEDED(hr));
+        initializing_(false) {
   }
 
   virtual ~CookieAccountant();
@@ -74,6 +72,9 @@ class CookieAccountant {
     return cookie_events_funnel_;
   }
 
+  // Connects to broker.
+  virtual void ConnectBroker();
+
   // Function patches that allow us to intercept scripted cookie changes.
   app::win::IATPatchFunction internet_set_cookie_ex_a_patch_;
   app::win::IATPatchFunction internet_set_cookie_ex_w_patch_;
@@ -82,7 +83,7 @@ class CookieAccountant {
   // We use this boolean instead of a simple lock so that threads that lose
   // the race will return immediately instead of blocking on the lock.
   // Protected by CookieAccountant::lock_.
-  bool patching_wininet_functions_;
+  bool initializing_;
 
   // A lock that protects access to the function patches.
   Lock lock_;

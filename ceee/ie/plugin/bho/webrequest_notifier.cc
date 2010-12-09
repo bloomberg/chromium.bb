@@ -34,14 +34,19 @@ WebRequestNotifier::WebRequestNotifier()
           initialize_state_(NOT_INITIALIZED),
           broker_rpc_client_(true),
           webrequest_events_funnel_(&broker_rpc_client_) {
-  HRESULT hr = broker_rpc_client_.Connect(true);
-  DCHECK(SUCCEEDED(hr));
 }
 
 WebRequestNotifier::~WebRequestNotifier() {
   DCHECK_EQ(start_count_, 0);
 }
 
+bool WebRequestNotifier::ConnectBroker() {
+  if (broker_rpc_client_.is_connected())
+    return true;
+  HRESULT hr = broker_rpc_client_.Connect(true);
+  DCHECK(SUCCEEDED(hr));
+  return SUCCEEDED(hr);
+}
 bool WebRequestNotifier::RequestToStart() {
   {
     CComCritSecLock<CComAutoCriticalSection> lock(critical_section_);
@@ -54,6 +59,9 @@ bool WebRequestNotifier::RequestToStart() {
 
   bool success = false;
   do {
+    if (!ConnectBroker())
+      break;
+
     // We are not going to unpatch any of the patched WinINet functions or the
     // status callback function. Instead, we pin our DLL in memory so that all
     // the patched functions can be accessed until the process goes away.

@@ -69,6 +69,10 @@ class MockCookieAccountant : public CookieAccountant {
     return mock_cookie_events_funnel_;
   }
 
+  virtual void ConnectBroker() {
+    return;
+  }
+
   static void set_singleton_instance(CookieAccountant* instance) {
     singleton_instance_ = instance;
   }

@@ -32,6 +32,10 @@ class TestWebRequestNotifier : public WebRequestNotifier {
     return mock_webrequest_events_funnel_;
   }
 
+  virtual bool ConnectBroker() {
+    return true;
+  }
+
   virtual bool QueryHttpInfoString(HINTERNET /*request*/,
                                    DWORD info_flag,
                                    std::wstring* value) {

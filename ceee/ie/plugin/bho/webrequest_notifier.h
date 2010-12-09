@@ -145,6 +145,9 @@ class WebRequestNotifier {
     return webrequest_events_funnel_;
   }
 
+  // Connects to broker.
+  virtual bool ConnectBroker();
+
   // Gets called before calling InternetSetStatusCallback.
   // @param internet The handle for which the callback is set.
   // @param callback The real callback function.

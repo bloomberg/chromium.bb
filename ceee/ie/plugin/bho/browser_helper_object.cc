@@ -119,11 +119,8 @@ HRESULT BrowserHelperObject::FinalConstruct() {
     LOG(INFO) <<
         "Refused to instantiate the BHO when the visual component is hidden.";
     return E_FAIL;
-  } else {
-    // Only the first call to this function really does anything.
-    CookieAccountant::GetInstance()->PatchWininetFunctions();
-    return S_OK;
   }
+  return S_OK;
 }
 
 void BrowserHelperObject::FinalRelease() {
@@ -391,6 +388,9 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
   if (FAILED(hr)) {
     return hr;
   }
+
+  // Do before HttpNegotiatePatch::Initialize.
+  CookieAccountant::GetInstance()->Initialize();
 
   // Patch IHttpNegotiate for user-agent and cookie functionality.
   HttpNegotiatePatch::Initialize();
