@@ -41,7 +41,7 @@ class EncoderRowBased : public Encoder {
                   int packet_size);
 
   // Encode a single dirty rect using compressor.
-  void EncodeRect(const gfx::Rect& rect, size_t rect_index);
+  void EncodeRect(const gfx::Rect& rect, bool last);
 
   // Marks a packet as the first in a series of rectangle updates.
   void PrepareUpdateStart(const gfx::Rect& rect, VideoPacket* packet);

@@ -81,6 +81,11 @@ class EncoderMessageTester {
         state_ = kWaitingForBeginRect;
         ++end_rect_;
       }
+
+      if ((packet->flags() & VideoPacket::LAST_PARTITION) != 0) {
+        // LAST_PARTITION must always be marked with LAST_PACKET.
+        EXPECT_TRUE((packet->flags() & VideoPacket::LAST_PACKET) != 0);
+      }
     }
   }
 

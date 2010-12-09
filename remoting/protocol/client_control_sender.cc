@@ -28,9 +28,7 @@ void ClientControlSender::NotifyResolution(
     const NotifyResolutionRequest* msg, Task* done) {
   protocol::ControlMessage message;
   message.mutable_notify_resolution()->CopyFrom(*msg);
-  buffered_writer_->Write(SerializeAndFrameMessage(message));
-  done->Run();
-  delete done;
+  buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 
 }  // namespace protocol

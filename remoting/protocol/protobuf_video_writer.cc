@@ -25,9 +25,7 @@ void ProtobufVideoWriter::Init(protocol::Session* session) {
 
 void ProtobufVideoWriter::ProcessVideoPacket(const VideoPacket* packet,
                                              Task* done) {
-  buffered_writer_->Write(SerializeAndFrameMessage(*packet));
-  done->Run();
-  delete done;
+  buffered_writer_->Write(SerializeAndFrameMessage(*packet), done);
 }
 
 int ProtobufVideoWriter::GetPendingPackets() {

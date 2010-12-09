@@ -36,6 +36,7 @@ class DecoderRowBased : public Decoder {
     kUninitialized,
     kReady,
     kProcessing,
+    kPartitionDone,
     kDone,
     kError,
   };
@@ -69,6 +70,8 @@ class DecoderRowBased : public Decoder {
 
   // True if we should decode the image upside down.
   bool reverse_rows_;
+
+  UpdatedRects updated_rects_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderRowBased);
 };

@@ -35,14 +35,17 @@ message VideoPacketFormat {
 message VideoPacket {
   // Bitmasks for use in the flags field below.
   //
-  // The encoder may fragment one update into multiple packets depending on
-  // how the encoder outputs data.  Thus, one update can logically consist of
-  // multiple packets.  The FIRST_PACKET and LAST_PACKET flags are used to
-  // indicate the start and end of a logical update.  Here are notable
-  // consequences:
+  // The encoder may fragment one update into multiple partitions.
+  // Each partition may be divided into multiple packets depending on
+  // how the encoder outputs data. Thus, one update can logically
+  // consist of multiple packets. The FIRST_PACKET and LAST_PACKET
+  // flags are used to indicate the start and end of a partition. The
+  // LAST_PARTITION flag is set for the last packet in the last
+  // partition. Here are notable consequences:
   //  * Both FIRST_PACKET and LAST_PACKET may be set if an update is only
   //    one packet long.
   //  * The VideoPacketFormat is only supplied in a FIRST_PACKET.
+  //  * LAST_PARTITION can be set only in packet that has LAST_PACKET set.
   //  * An local update cannot change format between a FIRST_PACKET and
   //    a LAST_PACKET.
   //  * All packets in one logical update must be processed in order, and
@@ -50,6 +53,7 @@ message VideoPacket {
   enum Flags {
     FIRST_PACKET = 1;
     LAST_PACKET = 2;
+    LAST_PARTITION = 4;
   }
   optional int32 flags = 1 [default = 0];
 

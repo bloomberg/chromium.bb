@@ -189,6 +189,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     switch (packet->kind) {
       case VPX_CODEC_CX_FRAME_PKT:
         got_data = true;
+        // TODO(sergeyu): Split each frame into multiple partitions.
         message->set_data(packet->data.frame.buf, packet->data.frame.sz);
         break;
       default:
@@ -197,7 +198,8 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   }
 
   message->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
-  message->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET);
+  message->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
+                     VideoPacket::LAST_PARTITION);
 
   data_available_callback->Run(message);
   delete data_available_callback;

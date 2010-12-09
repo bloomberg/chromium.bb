@@ -65,17 +65,15 @@ void EncoderRowBased::Encode(scoped_refptr<CaptureData> capture_data,
   callback_.reset(data_available_callback);
 
   const InvalidRects& rects = capture_data->dirty_rects();
-  int index = 0;
-  for (InvalidRects::const_iterator r = rects.begin();
-       r != rects.end(); ++r, ++index) {
-    EncodeRect(*r, index);
+  for (InvalidRects::const_iterator r = rects.begin(); r != rects.end(); ++r) {
+    EncodeRect(*r, r == --rects.end());
   }
 
   capture_data_ = NULL;
   callback_.reset();
 }
 
-void EncoderRowBased::EncodeRect(const gfx::Rect& rect, size_t rect_index) {
+void EncoderRowBased::EncodeRect(const gfx::Rect& rect, bool last) {
   CHECK(capture_data_->data_planes().data[0]);
   const int strides = capture_data_->data_planes().strides[0];
   const int bytes_per_pixel = GetBytesPerPixel(capture_data_->pixel_format());
@@ -117,6 +115,8 @@ void EncoderRowBased::EncodeRect(const gfx::Rect& rect, size_t rect_index) {
     // We have reached the end of stream.
     if (!compress_again) {
       packet->set_flags(packet->flags() | VideoPacket::LAST_PACKET);
+      if (last)
+        packet->set_flags(packet->flags() | VideoPacket::LAST_PARTITION);
       DCHECK(row_pos == row_size);
       DCHECK(row_y == rect.height() - 1);
     }

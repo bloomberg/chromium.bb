@@ -31,9 +31,7 @@ void InputSender::InjectKeyEvent(const KeyEvent* event, Task* done) {
   // TODO(hclam): Provide timestamp.
   evt->set_timestamp(0);
   evt->mutable_key()->CopyFrom(*event);
-  buffered_writer_->Write(SerializeAndFrameMessage(message));
-  done->Run();
-  delete done;
+  buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 
 void InputSender::InjectMouseEvent(const MouseEvent* event, Task* done) {
@@ -42,9 +40,7 @@ void InputSender::InjectMouseEvent(const MouseEvent* event, Task* done) {
   // TODO(hclam): Provide timestamp.
   evt->set_timestamp(0);
   evt->mutable_mouse()->CopyFrom(*event);
-  buffered_writer_->Write(SerializeAndFrameMessage(message));
-  done->Run();
-  delete done;
+  buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 
 }  // namespace protocol

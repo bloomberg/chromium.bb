@@ -5,7 +5,7 @@
 #ifndef REMOTING_PROTOCOL_BUFFERED_SOCKET_WRITER_H_
 #define REMOTING_PROTOCOL_BUFFERED_SOCKET_WRITER_H_
 
-#include <queue>
+#include <list>
 
 #include "base/lock.h"
 #include "base/ref_counted.h"
@@ -13,6 +13,7 @@
 #include "net/socket/socket.h"
 
 class MessageLoop;
+class Task;
 
 namespace net {
 class Socket;
@@ -45,7 +46,7 @@ class BufferedSocketWriterBase
 
   // Puts a new data chunk in the buffer. Returns false and doesn't enqueue
   // the data if called before Init(). Can be called on any thread.
-  bool Write(scoped_refptr<net::IOBufferWithSize> buffer);
+  bool Write(scoped_refptr<net::IOBufferWithSize> buffer, Task* done_task);
 
   // Returns current size of the buffer. Can be called on any thread.
   int GetBufferSize();
@@ -58,10 +59,15 @@ class BufferedSocketWriterBase
   void Close();
 
  protected:
-  typedef std::queue<scoped_refptr<net::IOBufferWithSize> > DataQueue;
+  class PendingPacket;
+  typedef std::list<PendingPacket*> DataQueue;
 
   DataQueue queue_;
   int buffer_size_;
+
+  // Removes element from the front of the queue and calls |done_task|
+  // for that element.
+  void PopQueue();
 
   // Following three methods must be implemented in child classes.
   // GetNextPacket() returns next packet that needs to be written to the

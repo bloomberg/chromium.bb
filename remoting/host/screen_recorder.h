@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/time.h"
+#include "base/timer.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/capturer.h"
 #include "remoting/proto/video.pb.h"
@@ -105,44 +105,39 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   void DoStart();
   void DoPause();
 
-  void DoSetRate(double rate);
   void DoSetMaxRate(double max_rate);
 
   // Hepler method to schedule next capture using the current rate.
-  void ScheduleNextCapture();
+  void StartCaptureTimer();
 
   void DoCapture();
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
-  void DoFinishEncode();
-
-  void DoGetInitInfo(scoped_refptr<protocol::ConnectionToClient> client);
+  void DoFinishSend();
 
   // Network thread -----------------------------------------------------------
 
-  void DoStartRateControl();
-  void DoPauseRateControl();
-
-  // Helper method to schedule next rate regulation task.
-  void ScheduleNextRateControl();
-
-  void DoRateControl();
-
-  // DoSendUpdate takes ownership of header and is responsible for deleting it.
+  // DoSendVideoPacket takes ownership of the |packet| and is responsible
+  // for deleting it.
   void DoSendVideoPacket(VideoPacket* packet);
+
   void DoSendInit(scoped_refptr<protocol::ConnectionToClient> connection,
                   int width, int height);
 
-  void DoAddClient(scoped_refptr<protocol::ConnectionToClient> connection);
+  void DoAddConnection(scoped_refptr<protocol::ConnectionToClient> connection);
   void DoRemoveClient(scoped_refptr<protocol::ConnectionToClient> connection);
   void DoRemoveAllClients();
+
+  // Callback for the last packet in one update. Deletes |packet| and
+  // schedules next screen capture.
+  void OnFrameSent(VideoPacket* packet);
 
   // Encoder thread -----------------------------------------------------------
 
   void DoEncode(scoped_refptr<CaptureData> capture_data);
 
-  // EncodeDataAvailableTask takes ownership of header and is responsible for
-  // deleting it.
+  // EncodeDataAvailableTask takes ownership of |packet|.
   void EncodeDataAvailableTask(VideoPacket* packet);
+  void SendVideoPacket(VideoPacket* packet);
 
   // Message loops used by this class.
   MessageLoop* capture_loop_;
@@ -166,18 +161,20 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   ConnectionToClientList connections_;
 
   // The following members are accessed on the capture thread.
-  double rate_;  // Number of captures to perform every second.
   bool started_;
-  base::Time last_capture_time_; // Saves the time last capture started.
-  int recordings_; // Count the number of recordings
-                   // (i.e. capture or encode) happening.
 
-  // The maximum rate is written on the capture thread and read on the network
-  // thread.
-  double max_rate_;  // Number of captures to perform every second.
+  // Timer that calls DoCapture.
+  base::RepeatingTimer<ScreenRecorder> capture_timer_;
 
-  // The following member is accessed on the network thread.
-  bool rate_control_started_;
+  // Count the number of recordings (i.e. capture or encode) happening.
+  int recordings_;
+
+  // Set to true if we've skipped last capture because there are too
+  // many pending frames.
+  int frame_skipped_;
+
+  // Number of captures to perform every second. Written on the capture thread.
+  double max_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenRecorder);
 };

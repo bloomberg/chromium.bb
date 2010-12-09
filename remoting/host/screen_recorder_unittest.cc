@@ -19,6 +19,7 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::SaveArg;
 
 namespace remoting {
 
@@ -102,8 +103,12 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
   EXPECT_CALL(*connection_, video_stub())
       .WillRepeatedly(Return(&video_stub));
 
+  Task* done_task = NULL;
+
   // Expect the client be notified.
-  EXPECT_CALL(video_stub, ProcessVideoPacket(_, _));
+  EXPECT_CALL(video_stub, ProcessVideoPacket(_, _))
+      .Times(1)
+      .WillOnce(SaveArg<1>(&done_task));
   EXPECT_CALL(video_stub, GetPendingPackets())
       .Times(AtLeast(0))
       .WillRepeatedly(Return(0));
@@ -113,6 +118,9 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
 
   // Make sure all tasks are completed.
   message_loop_.RunAllPending();
+
+  done_task->Run();
+  delete done_task;
 }
 
 // TODO(hclam): Add test for double buffering.

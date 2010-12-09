@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
 #include "remoting/proto/control.pb.h"
@@ -27,17 +28,11 @@ namespace remoting {
 // experiment to provide good latency.
 static const double kDefaultCaptureRate = 20.0;
 
-// Interval that we perform rate regulation.
-static const base::TimeDelta kRateControlInterval =
-    base::TimeDelta::FromSeconds(1);
-
-// We divide the pending update stream number by this value to determine the
-// rate divider.
-static const int kSlowDownFactor = 10;
-
-// A list of dividers used to divide the max rate to determine the current
-// capture rate.
-static const int kRateDividers[] = {1, 2, 4, 8, 16};
+// Maximum number of frames that can be processed similtaneously.
+// TODO(sergeyu): Should this be set to 1? Or should we change
+// dynamically depending on how fast network and CPU are? Experement
+// with it.
+static const int kMaxRecordings = 2;
 
 ScreenRecorder::ScreenRecorder(
     MessageLoop* capture_loop,
@@ -50,11 +45,10 @@ ScreenRecorder::ScreenRecorder(
       network_loop_(network_loop),
       capturer_(capturer),
       encoder_(encoder),
-      rate_(kDefaultCaptureRate),
       started_(false),
       recordings_(0),
-      max_rate_(kDefaultCaptureRate),
-      rate_control_started_(false) {
+      frame_skipped_(false),
+      max_rate_(kDefaultCaptureRate) {
   DCHECK(capture_loop_);
   DCHECK(encode_loop_);
   DCHECK(network_loop_);
@@ -83,10 +77,12 @@ void ScreenRecorder::SetMaxRate(double rate) {
 
 void ScreenRecorder::AddConnection(
     scoped_refptr<ConnectionToClient> connection) {
-  // Gets the init information for the connection.
-  capture_loop_->PostTask(
+  ScopedTracer tracer("AddConnection");
+
+  // Add the client to the list so it can receive update stream.
+  network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &ScreenRecorder::DoGetInitInfo, connection));
+      NewTracedMethod(this, &ScreenRecorder::DoAddConnection, connection));
 }
 
 void ScreenRecorder::RemoveConnection(
@@ -106,11 +102,13 @@ void ScreenRecorder::RemoveAllConnections() {
 
 Capturer* ScreenRecorder::capturer() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
+  DCHECK(capturer_.get());
   return capturer_.get();
 }
 
 Encoder* ScreenRecorder::encoder() {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
+  DCHECK(encoder_.get());
   return encoder_.get();
 }
 
@@ -118,6 +116,7 @@ Encoder* ScreenRecorder::encoder() {
 
 void ScreenRecorder::DoStart() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
+  DCHECK(!started_);
 
   if (started_) {
     NOTREACHED() << "Record session already started.";
@@ -125,12 +124,10 @@ void ScreenRecorder::DoStart() {
   }
 
   started_ = true;
-  DoCapture();
+  StartCaptureTimer();
 
-  // Starts the rate regulation.
-  network_loop_->PostTask(
-      FROM_HERE,
-      NewTracedMethod(this, &ScreenRecorder::DoStartRateControl));
+  // Capture first frame immedately.
+  DoCapture();
 }
 
 void ScreenRecorder::DoPause() {
@@ -141,56 +138,31 @@ void ScreenRecorder::DoPause() {
     return;
   }
 
+  capture_timer_.Stop();
   started_ = false;
-
-  // Pause the rate regulation.
-  network_loop_->PostTask(
-      FROM_HERE,
-      NewTracedMethod(this, &ScreenRecorder::DoPauseRateControl));
-}
-
-void ScreenRecorder::DoSetRate(double rate) {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-  if (rate == rate_)
-    return;
-
-  // Change the current capture rate.
-  rate_ = rate;
-
-  // If we have already started then schedule the next capture with the new
-  // rate.
-  if (started_)
-    ScheduleNextCapture();
 }
 
 void ScreenRecorder::DoSetMaxRate(double max_rate) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   // TODO(hclam): Should also check for small epsilon.
-  if (max_rate != 0) {
-    max_rate_ = max_rate;
-    DoSetRate(max_rate);
-  } else {
-    NOTREACHED() << "Rate is too small.";
+  DCHECK_GT(max_rate, 0.0) << "Rate is too small.";
+
+  max_rate_ = max_rate;
+
+  // Restart the timer with the new rate.
+  if (started_) {
+    capture_timer_.Stop();
+    StartCaptureTimer();
   }
 }
 
-void ScreenRecorder::ScheduleNextCapture() {
+void ScreenRecorder::StartCaptureTimer() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
-  ScopedTracer tracer("capture");
-
-  TraceContext::tracer()->PrintString("Capture Scheduled");
-
-  if (rate_ == 0)
-    return;
-
   base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
-      static_cast<int>(base::Time::kMillisecondsPerSecond / rate_));
-  capture_loop_->PostDelayedTask(
-      FROM_HERE,
-      NewTracedMethod(this, &ScreenRecorder::DoCapture),
-      interval.InMilliseconds());
+      static_cast<int>(base::Time::kMillisecondsPerSecond / max_rate_));
+  capture_timer_.Start(interval, this, &ScreenRecorder::DoCapture);
 }
 
 void ScreenRecorder::DoCapture() {
@@ -198,32 +170,22 @@ void ScreenRecorder::DoCapture() {
   // Make sure we have at most two oustanding recordings. We can simply return
   // if we can't make a capture now, the next capture will be started by the
   // end of an encode operation.
-  if (recordings_ >= 2 || !started_) {
+  if (recordings_ >= kMaxRecordings || !started_) {
+    frame_skipped_ = true;
     return;
   }
+
+  if (frame_skipped_) {
+    frame_skipped_ = false;
+    capture_timer_.Reset();
+  }
+
   TraceContext::tracer()->PrintString("Capture Started");
 
-  base::Time now = base::Time::Now();
-  base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
-      static_cast<int>(base::Time::kMillisecondsPerSecond / rate_));
-  base::TimeDelta elapsed = now - last_capture_time_;
-
-  // If this method is called sooner than the required interval we return
-  // immediately
-  if (elapsed < interval) {
-    return;
-  }
-
   // At this point we are going to perform one capture so save the current time.
-  last_capture_time_ = now;
   ++recordings_;
 
-  // Before we actually do a capture, schedule the next one.
-  ScheduleNextCapture();
-
   // And finally perform one capture.
-  DCHECK(capturer());
-
   capturer()->CaptureInvalidRects(
       NewCallback(this, &ScreenRecorder::CaptureDoneCallback));
 }
@@ -239,7 +201,7 @@ void ScreenRecorder::CaptureDoneCallback(
       NewTracedMethod(this, &ScreenRecorder::DoEncode, capture_data));
 }
 
-void ScreenRecorder::DoFinishEncode() {
+void ScreenRecorder::DoFinishSend() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   // Decrement the number of recording in process since we have completed
@@ -248,103 +210,43 @@ void ScreenRecorder::DoFinishEncode() {
 
   // Try to do a capture again. Note that the following method may do nothing
   // if it is too early to perform a capture.
-  if (rate_ > 0)
-    DoCapture();
-}
-
-void ScreenRecorder::DoGetInitInfo(
-    scoped_refptr<ConnectionToClient> connection) {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-
-  ScopedTracer tracer("init");
-
-  // Add the client to the list so it can receive update stream.
-  network_loop_->PostTask(
-      FROM_HERE,
-      NewTracedMethod(this, &ScreenRecorder::DoAddClient, connection));
+  DoCapture();
 }
 
 // Network thread --------------------------------------------------------------
 
-void ScreenRecorder::DoStartRateControl() {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  if (rate_control_started_) {
-    NOTREACHED() << "Rate regulation already started";
-    return;
-  }
-  rate_control_started_ = true;
-  ScheduleNextRateControl();
-}
-
-void ScreenRecorder::DoPauseRateControl() {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  if (!rate_control_started_) {
-    NOTREACHED() << "Rate regulation not started";
-    return;
-  }
-  rate_control_started_ = false;
-}
-
-void ScreenRecorder::ScheduleNextRateControl() {
-  ScopedTracer tracer("Rate Control");
-  network_loop_->PostDelayedTask(
-      FROM_HERE,
-      NewTracedMethod(this, &ScreenRecorder::DoRateControl),
-      kRateControlInterval.InMilliseconds());
-}
-
-void ScreenRecorder::DoRateControl() {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  // If we have been paused then shutdown the rate regulation loop.
-  if (!rate_control_started_)
-    return;
-
-  int max_pending_update_streams = 0;
-  for (size_t i = 0; i < connections_.size(); ++i) {
-    max_pending_update_streams =
-        std::max(max_pending_update_streams,
-                 connections_[i]->video_stub()->GetPendingPackets());
-  }
-
-  // If |slow_down| equals zero, we have no slow down.
-  size_t slow_down = max_pending_update_streams / kSlowDownFactor;
-  // Set new_rate to -1 for checking later.
-  double new_rate = -1;
-  // If the slow down is too large.
-  if (slow_down >= arraysize(kRateDividers)) {
-    // Then we stop the capture completely.
-    new_rate = 0;
-  } else {
-    // Slow down the capture rate using the divider.
-    new_rate = max_rate_ / kRateDividers[slow_down];
-  }
-  DCHECK_NE(new_rate, -1.0);
-
-  // Then set the rate.
-  capture_loop_->PostTask(
-      FROM_HERE,
-      NewTracedMethod(this, &ScreenRecorder::DoSetRate, new_rate));
-  ScheduleNextRateControl();
-}
-
 void ScreenRecorder::DoSendVideoPacket(VideoPacket* packet) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  TraceContext::tracer()->PrintString("DoSendUpdate");
+  TraceContext::tracer()->PrintString("DoSendVideoPacket");
+
+  bool last = (packet->flags() & VideoPacket::LAST_PARTITION) != 0;
 
   for (ConnectionToClientList::const_iterator i = connections_.begin();
        i < connections_.end(); ++i) {
-    (*i)->video_stub()->ProcessVideoPacket(
-        packet, new DeleteTask<VideoPacket>(packet));
+    Task* done_task = NULL;
+
+    // Call OnFrameSent() only for the last packet in the first connection.
+    if (last && i == connections_.begin()) {
+      done_task = NewTracedMethod(this, &ScreenRecorder::OnFrameSent, packet);
+    } else {
+      done_task = new DeleteTask<VideoPacket>(packet);
+    }
+
+    (*i)->video_stub()->ProcessVideoPacket(packet, done_task);
   }
 
-  TraceContext::tracer()->PrintString("DoSendUpdate done");
+  TraceContext::tracer()->PrintString("DoSendVideoPacket done");
 }
 
-void ScreenRecorder::DoAddClient(scoped_refptr<ConnectionToClient> connection) {
+void ScreenRecorder::OnFrameSent(VideoPacket* packet) {
+  delete packet;
+  capture_loop_->PostTask(
+      FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishSend));
+}
+
+void ScreenRecorder::DoAddConnection(
+    scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // TODO(hclam): Force a full frame for next encode.
@@ -356,8 +258,8 @@ void ScreenRecorder::DoRemoveClient(
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // TODO(hclam): Is it correct to do to a scoped_refptr?
-  ConnectionToClientList::iterator it
-      = std::find(connections_.begin(), connections_.end(), connection);
+  ConnectionToClientList::iterator it =
+      std::find(connections_.begin(), connections_.end(), connection);
   if (it != connections_.end()) {
     connections_.erase(it);
   }
@@ -380,14 +282,14 @@ void ScreenRecorder::DoEncode(
   // Early out if there's nothing to encode.
   if (!capture_data->dirty_rects().size()) {
     capture_loop_->PostTask(
-        FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishEncode));
+        FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishSend));
     return;
   }
 
   // TODO(hclam): Enable |force_refresh| if a new connection was
   // added.
   TraceContext::tracer()->PrintString("Encode start");
-  encoder_->Encode(capture_data, false,
+  encoder()->Encode(capture_data, false,
                    NewCallback(this, &ScreenRecorder::EncodeDataAvailableTask));
   TraceContext::tracer()->PrintString("Encode Done");
 }
@@ -395,20 +297,9 @@ void ScreenRecorder::DoEncode(
 void ScreenRecorder::EncodeDataAvailableTask(VideoPacket* packet) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
-  bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
-
-  // Before a new encode task starts, notify connected clients a new update
-  // stream is coming.
-  // Notify this will keep a reference to the DataBuffer in the
-  // task. The ownership will eventually pass to the ConnectionToClients.
   network_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &ScreenRecorder::DoSendVideoPacket, packet));
-
-  if (last) {
-    capture_loop_->PostTask(
-        FROM_HERE, NewTracedMethod(this, &ScreenRecorder::DoFinishEncode));
-  }
 }
 
 }  // namespace remoting

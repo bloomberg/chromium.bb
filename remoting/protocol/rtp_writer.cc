@@ -69,7 +69,7 @@ void RtpWriter::SendPacket(uint32 timestamp, bool marker,
                  payload_size);
 
   // And write the packet.
-  buffered_rtp_writer_->Write(buffer);
+  buffered_rtp_writer_->Write(buffer, NULL);
 }
 
 int RtpWriter::GetPendingPackets() {

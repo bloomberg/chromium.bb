@@ -32,7 +32,7 @@ void RtcpWriter::SendReport(const RtcpReceiverReport& report) {
   PackRtcpReceiverReport(report, reinterpret_cast<uint8*>(buffer->data()),
                          size);
 
-  buffered_rtcp_writer_->Write(buffer);
+  buffered_rtcp_writer_->Write(buffer, NULL);
 }
 
 }  // namespace protocol
