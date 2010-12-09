@@ -12,14 +12,14 @@
 #include <map>
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/ppapi_proxy/browser_host.h"
 #include "native_client/tests/fake_browser_ppapi/fake_resource.h"
+#include "ppapi/c/ppp.h"
 
 struct PPB_Var_Deprecated;
 
 namespace fake_browser_ppapi {
 
-class Host : public ppapi_proxy::BrowserHost {
+class Host {
  public:
   explicit Host(const char* plugin_file);
   virtual ~Host();
