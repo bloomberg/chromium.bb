@@ -6,6 +6,7 @@
 
 #include <atlbase.h>
 #include <atlhost.h>
+#include <iepmapi.h>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -213,7 +214,11 @@ CeeeBrokerModule::~CeeeBrokerModule() {
 }
 
 HRESULT WINAPI CeeeBrokerModule::UpdateRegistryAppId(BOOL reg) throw() {
-  return com::ModuleRegistrationWithoutAppid(IDR_BROKER_MODULE, reg);
+  HRESULT hr = com::ModuleRegistrationWithoutAppid(IDR_BROKER_MODULE, reg);
+  if (SUCCEEDED(hr)) {
+    hr = ::IERefreshElevationPolicy();
+  }
+  return hr;
 }
 
 namespace ceee_module_util {
