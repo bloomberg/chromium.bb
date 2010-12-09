@@ -110,3 +110,4 @@ const void* PpapiUnittest::GetMockInterface(const char* interface_name) const {
 }
 
 }  // namespace pepper
+
