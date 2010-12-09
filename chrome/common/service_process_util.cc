@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/singleton.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -154,6 +155,11 @@ ServiceProcessState::ServiceProcessState() : state_(NULL) {
 
 ServiceProcessState::~ServiceProcessState() {
   TearDownState();
+}
+
+// static
+ServiceProcessState* ServiceProcessState::GetInstance() {
+  return Singleton<ServiceProcessState>::get();
 }
 
 bool ServiceProcessState::Initialize() {

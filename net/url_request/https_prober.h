@@ -10,10 +10,10 @@
 #include <set>
 #include <string>
 
-#include "base/singleton.h"
 #include "base/task.h"
 #include "net/url_request/url_request.h"
 
+template <typename T> struct DefaultSingletonTraits;
 class URLRequestContext;
 
 namespace net {
@@ -33,8 +33,8 @@ class HTTPSProberDelegate {
 // transparently upgrading from HTTP to HTTPS (for example, for SPDY).
 class HTTPSProber : public net::URLRequest::Delegate {
  public:
-  HTTPSProber();
-  ~HTTPSProber();
+  // Returns the singleton instance.
+  static HTTPSProber* GetInstance();
 
   // HaveProbed returns true if the given host is known to have been probed
   // since the browser was last started.
@@ -62,6 +62,9 @@ class HTTPSProber : public net::URLRequest::Delegate {
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
  private:
+  HTTPSProber();
+  ~HTTPSProber();
+
   void Success(net::URLRequest* request);
   void Failure(net::URLRequest* request);
   void DoCallback(net::URLRequest* request, bool result);

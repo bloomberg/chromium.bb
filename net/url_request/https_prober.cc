@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/singleton.h"
 #include "net/url_request/https_prober.h"
 
 #include "net/url_request/url_request.h"
@@ -13,6 +14,11 @@ HTTPSProber::HTTPSProber() {
 }
 
 HTTPSProber::~HTTPSProber() {
+}
+
+// static
+HTTPSProber* HTTPSProber::GetInstance() {
+  return Singleton<HTTPSProber>::get();
 }
 
 bool HTTPSProber::HaveProbed(const std::string& host) const {

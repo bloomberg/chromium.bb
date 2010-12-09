@@ -12,6 +12,8 @@
 #include "base/shared_memory.h"
 #include "base/task.h"
 
+template <typename T> struct DefaultSingletonTraits;
+
 // Return the IPC channel to connect to the service process.
 //
 std::string GetServiceProcessChannelName();
@@ -48,11 +50,11 @@ bool ForceServiceProcessShutdown(const std::string& version);
 // and this class are shared.
 class ServiceProcessState {
  public:
-  ServiceProcessState();
-  ~ServiceProcessState();
+  // Returns the singleton instance.
+  static ServiceProcessState* GetInstance();
 
   // Tries to become the sole service process for the current user data dir.
-  // Returns false is another service process is already running.
+  // Returns false if another service process is already running.
   bool Initialize();
 
   // Signal that the service process is ready.
@@ -69,7 +71,10 @@ class ServiceProcessState {
 
   // Unregister the service process to run on startup.
   bool RemoveFromAutoRun();
+
  private:
+  ServiceProcessState();
+  ~ServiceProcessState();
 
   // Create the shared memory data for the service process.
   bool CreateSharedData();
@@ -95,6 +100,8 @@ class ServiceProcessState {
   struct StateData;
   StateData* state_;
   scoped_ptr<base::SharedMemory> shared_mem_service_data_;
+
+  friend struct DefaultSingletonTraits<ServiceProcessState>;
 };
 
 #endif  // CHROME_COMMON_SERVICE_PROCESS_UTIL_H_

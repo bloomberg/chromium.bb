@@ -136,7 +136,7 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
 
   // After the IPC server has started we signal that the service process is
   // ready.
-  Singleton<ServiceProcessState>::get()->SignalReady(
+  ServiceProcessState::GetInstance()->SignalReady(
       NewRunnableMethod(this, &ServiceProcess::Shutdown));
 
   // See if we need to stay running.
@@ -162,7 +162,7 @@ bool ServiceProcess::Teardown() {
   // might use it have been shut down.
   network_change_notifier_.reset();
 
-  Singleton<ServiceProcessState>::get()->SignalStopped();
+  ServiceProcessState::GetInstance()->SignalStopped();
   return true;
 }
 
@@ -207,7 +207,7 @@ void ServiceProcess::OnCloudPrintProxyDisabled() {
 void ServiceProcess::OnServiceEnabled() {
   enabled_services_++;
   if (1 == enabled_services_) {
-    Singleton<ServiceProcessState>::get()->AddToAutoRun();
+    ServiceProcessState::GetInstance()->AddToAutoRun();
   }
 }
 
@@ -215,7 +215,7 @@ void ServiceProcess::OnServiceDisabled() {
   DCHECK_NE(enabled_services_, 0);
   enabled_services_--;
   if (0 == enabled_services_) {
-    Singleton<ServiceProcessState>::get()->RemoveFromAutoRun();
+    ServiceProcessState::GetInstance()->RemoveFromAutoRun();
     // We will wait for some time to respond to IPCs before shutting down.
     ScheduleShutdownCheck();
   }

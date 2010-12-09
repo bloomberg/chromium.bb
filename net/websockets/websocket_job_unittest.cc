@@ -222,7 +222,7 @@ class WebSocketJobTest : public PlatformTest {
     addr.ai_addr = reinterpret_cast<sockaddr*>(&sa_in);
     addr.ai_next = NULL;
     websocket_->addresses_.Copy(&addr, true);
-    Singleton<WebSocketThrottle>::get()->PutInQueue(websocket_);
+    WebSocketThrottle::GetInstance()->PutInQueue(websocket_);
   }
   WebSocketJob::State GetWebSocketJobState() {
     return websocket_->state_;
@@ -230,7 +230,7 @@ class WebSocketJobTest : public PlatformTest {
   void CloseWebSocketJob() {
     if (websocket_->socket_) {
       websocket_->socket_->DetachDelegate();
-      Singleton<WebSocketThrottle>::get()->RemoveFromQueue(websocket_);
+      WebSocketThrottle::GetInstance()->RemoveFromQueue(websocket_);
     }
     websocket_->state_ = WebSocketJob::CLOSED;
     websocket_->delegate_ = NULL;

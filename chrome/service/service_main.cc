@@ -17,7 +17,7 @@
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const MainFunctionParams& parameters) {
   // If there is already a service process running, quit now.
-  if (!Singleton<ServiceProcessState>::get()->Initialize())
+  if (!ServiceProcessState::GetInstance()->Initialize())
     return 0;
 
   MessageLoopForUI main_message_loop;

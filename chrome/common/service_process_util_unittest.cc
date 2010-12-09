@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_version_info.h"
@@ -18,18 +19,28 @@ TEST(ServiceProcessUtilTest, ScopedVersionedName) {
   EXPECT_NE(std::string::npos, scoped_name.find(version_info.Version()));
 }
 
+class ServiceProcessStateTest : public testing::Test {
+ private:
+  // This is used to release the ServiceProcessState singleton after each test.
+  base::ShadowingAtExitManager at_exit_manager_;
+};
+
 #if defined(OS_WIN)
 // Singleton-ness is only implemented on Windows.
-TEST(ServiceProcessStateTest, Singleton) {
+// TODO(sanjeev): Rewrite this test to spawn a new process and test using the
+// ServiceProcessState singleton across processes.
+/*
+TEST_F(ServiceProcessStateTest, Singleton) {
   ServiceProcessState state;
   EXPECT_TRUE(state.Initialize());
   // The second instance should fail to Initialize.
   ServiceProcessState another_state;
   EXPECT_FALSE(another_state.Initialize());
 }
+*/
 #endif  // defined(OS_WIN)
 
-TEST(ServiceProcessStateTest, ReadyState) {
+TEST_F(ServiceProcessStateTest, ReadyState) {
 #if defined(OS_WIN)
   // On Posix, we use a lock file on disk to signal readiness. This lock file
   // could be lying around from previous crashes which could cause
@@ -38,15 +49,15 @@ TEST(ServiceProcessStateTest, ReadyState) {
   // Posix, this check will only execute on Windows.
   EXPECT_FALSE(CheckServiceProcessReady());
 #endif  // defined(OS_WIN)
-  ServiceProcessState state;
-  EXPECT_TRUE(state.Initialize());
-  state.SignalReady(NULL);
+  ServiceProcessState* state = ServiceProcessState::GetInstance();
+  EXPECT_TRUE(state->Initialize());
+  state->SignalReady(NULL);
   EXPECT_TRUE(CheckServiceProcessReady());
-  state.SignalStopped();
+  state->SignalStopped();
   EXPECT_FALSE(CheckServiceProcessReady());
 }
 
-TEST(ServiceProcessStateTest, SharedMem) {
+TEST_F(ServiceProcessStateTest, SharedMem) {
 #if defined(OS_WIN)
   // On Posix, named shared memory uses a file on disk. This file
   // could be lying around from previous crashes which could cause
@@ -55,8 +66,8 @@ TEST(ServiceProcessStateTest, SharedMem) {
   // implementation on Posix, this check will only execute on Windows.
   EXPECT_EQ(0, GetServiceProcessPid());
 #endif  // defined(OS_WIN)
-  ServiceProcessState state;
-  EXPECT_TRUE(state.Initialize());
+  ServiceProcessState* state = ServiceProcessState::GetInstance();
+  EXPECT_TRUE(state->Initialize());
   EXPECT_EQ(base::GetCurrentProcId(), GetServiceProcessPid());
 }
 
