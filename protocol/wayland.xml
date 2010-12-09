@@ -164,6 +164,12 @@
       <arg name="id" type="new_id" interface="drag"/>
     </request>
 
+    <!-- The configure event asks the client to resize its surface.
+         The size is a hint, in the sense that the client is free to
+         ignore it if it doesn't resize, pick a smaller size (to
+         satisfy aspect ration or resize in steps of NxM pixels).  The
+         client is free to dismiss all but the last configure event it
+         received. -->
     <event name="configure">
       <arg name="time" type="uint"/>
       <!-- Same as edges except also move (16) -->
