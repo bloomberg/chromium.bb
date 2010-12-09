@@ -170,14 +170,15 @@ $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
 ######################################################################
 # BITCODE - FRONTEND
 
-LLVM_FAKE_ROOT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi
-TRANSLATOR_ROOT=$(TC_ROOT)/linux_arm-untrusted/tools-sb
-BC_GCC=$(LLVM_FAKE_ROOT)/llvm-fake-sfigcc -emit-llvm
-BC_GPP=$(LLVM_FAKE_ROOT)/llvm-fake-sfig++ -emit-llvm
-BC_OPT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/bin/opt
-BC_LINK=$(LLVM_FAKE_ROOT)/bin/llvm-link
-LIB_BC_PATH=$(TC_ROOT)/linux_arm-untrusted/libs-bitcode
-BC_TRANSLATE=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -L$(LIB_BC_PATH)
+PNACL_ROOT=$(TC_ROOT)/linux_arm-untrusted
+PNACL_BIN=$(PNACL_ROOT)/bin
+TRANSLATOR_X8632=$(PNACL_BIN)/pnacl-translate --pnacl-sb-x86-32 -arch x86-32
+TRANSLATOR_X8664=$(PNACL_BIN)/pnacl-translate --pnacl-sb-x86-64 -arch x86-64
+BC_GCC=$(PNACL_BIN)/pnacl-gcc -emit-llvm
+BC_GPP=$(PNACL_BIN)/pnacl-g++ -emit-llvm
+BC_OPT=$(PNACL_BIN)/pnacl-bcopt -O3
+BC_LINK=$(PNACL_BIN)/pnacl-bclink
+BC_TRANSLATE=$(TIME_CMD) $(PNACL_BIN)/pnacl-bcld
 
 PNACL_FLAGS=--pnacl-driver-verbose
 
@@ -207,7 +208,7 @@ $(IT).preopt.bc: $(SRC:%.c=%.o.bc) $(CPPSRC:%.cc=%.o.bc)
 
 # optimized llvm bit code combined and interprocedurally re-optimized
 $(IT).opt.bc: $(IT).preopt.bc
-	$(BC_OPT) -f -O3 -std-compile-opts $< -o $@
+	$(BC_OPT) $< -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################
@@ -250,9 +251,7 @@ $(IT).pnacl.opt.x8664: $(IT).opt.bc
 # tools/llvm/utman.sh build-sandboxed-translators
 # tools/llvm/utman.sh install-translators
 ######################################################################
-# Note: we are using -arch arm here, BUT the actual arch should be irrelevant
-BC_PRELINK=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -emit-llvm -L$(LIB_BC_PATH) \
-	-arch arm
+BC_PRELINK=$(PNACL_BIN)/pnacl-bcld -emit-llvm
 
 # optimized llvm bit code combined and interprocedurally optimized
 $(IT).opt.prelinked.bc: $(IT).opt.bc
@@ -275,23 +274,23 @@ $(IT).prelinked.bc: $(IT).bc
 #$(IT).pnacl_translator.opt.arm: $(IT).opt.prelinked.bc
 #	$(BC_ARM_TRANSLATOR) $(IT).opt.prelinked.bc $@
 
-BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8632/translator
+BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_X8632}
 
 $(IT).pnacl_translator.x8632: $(IT).prelinked.bc
-	$(BC_X8632_TRANSLATOR) $(IT).prelinked.bc $@
+	$(BC_X8632_TRANSLATOR) $(PNACL_FLAGS) $(IT).prelinked.bc -o $@
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 $(IT).pnacl_translator.opt.x8632: $(IT).opt.prelinked.bc
-	$(BC_X8632_TRANSLATOR) $(IT).opt.prelinked.bc $@
+	$(BC_X8632_TRANSLATOR) $(PNACL_FLAGS) $(IT).opt.prelinked.bc -o $@
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 
-BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8664/translator
+BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_X8664}
 
 $(IT).pnacl_translator.x8664: $(IT).prelinked.bc
-	$(BC_X8664_TRANSLATOR) $(IT).prelinked.bc $@
+	$(BC_X8664_TRANSLATOR) $(PNACL_FLAGS) $(IT).prelinked.bc -o $@
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
 
 $(IT).pnacl_translator.opt.x8664: $(IT).opt.prelinked.bc
-	$(BC_X8664_TRANSLATOR) $(IT).opt.prelinked.bc $@
+	$(BC_X8664_TRANSLATOR) $(PNACL_FLAGS) $(IT).opt.prelinked.bc -o $@
 	@$(call LOG_TRANSLATE_TIME,$@,$(IT))
