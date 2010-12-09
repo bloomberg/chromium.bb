@@ -261,6 +261,7 @@ GCCPatterns = [
   ( '(.+\\.asm)',      "env.append('INPUTS', $0)"),
   ( '(.+\\.bc)',       "env.append('INPUTS', $0)"),
   ( '(.+\\.o)',        "env.append('INPUTS', $0)"),
+  ( '(.+\\.os)',       "env.append('INPUTS', $0)"),
   ( '(.+\\.ll)',       "env.append('INPUTS', $0)"),
   ( '(.+\\.nexe)',     "env.append('INPUTS', $0)"),
   ( '(.+\\.pexe)',     "env.append('INPUTS', $0)"),
@@ -278,6 +279,7 @@ GCCPatterns = [
   ( '(-I.+)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-pedantic)',            "env.append('CC_FLAGS', $0)"),
   ( ('(-isystem)','(.+)'),    "env.append('CC_FLAGS', $0, $1)"),
+  ( '-shared',                "env.set('STATIC', '0')"),
   ( '-static',                "env.set('STATIC', '1')"),
   ( '(-g.*)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-xassembler-with-cpp)', "env.append('CC_FLAGS', $0)"),
@@ -741,6 +743,12 @@ def OptimizeBC(input, output):
 # Final native linking step
 def LinkNative(arch, inputs, output):
   inputs = filter(lambda x: not FileType(x) == 'lib', inputs)
+  if not env.getbool('STATIC'):
+    ld_flags = env.get('LD_FLAGS')
+    ld_flags = ld_flags.replace('-static', '-shared')
+    ld_flags = re.sub(r"-Ttext=0x[0-9a-fA-F]+ ", "", ld_flags)
+    env.set('LD_FLAGS', ld_flags)
+
   RunWithEnv('RUN_LD', arch = arch,
              inputs = shell.join(inputs),
              output = output)
@@ -987,13 +995,14 @@ def FileType(filename):
     'S'   : 'S',
     's'   : 's',
     'o'   : 'o',
+    'os'  : 'o',
     'nexe': 'nexe'
   }
   if ext not in ExtensionMap:
     Log.Fatal('Unknown file extension: %s' % filename)
 
   # Ugly hack. Why do we name bitcode files .o ?
-  if ext == 'o':
+  if ext == 'o' or ext == 'os':
     try:
       fp = open(filename, 'rb')
     except Exception:
