@@ -88,7 +88,7 @@ bool NotificationUIManager::CancelAllBySourceOrigin(const GURL& source) {
   // because there may be multiple notifications from the same source.
   bool removed = false;
   NotificationDeque::iterator iter;
-  for (iter = show_queue_.begin(); iter != show_queue_.end(); ++iter) {
+  for (iter = show_queue_.begin(); iter != show_queue_.end();) {
     if ((*iter)->notification().origin_url() == source) {
       iter = show_queue_.erase(iter);
       removed = true;
