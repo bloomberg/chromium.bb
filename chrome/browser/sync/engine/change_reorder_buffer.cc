@@ -148,7 +148,10 @@ void ChangeReorderBuffer::GetAllChangesInTreeOrder(
           i->second == OP_UPDATE_POSITION_AND_PROPERTIES) {
         ReadNode node(sync_trans);
         CHECK(node.InitByIdLookup(i->first));
-        parents_of_position_changes.insert(node.GetParentId());
+
+        // We only care about parents of entry's with position-sensitive models.
+        if (node.GetEntry()->ShouldMaintainPosition())
+          parents_of_position_changes.insert(node.GetParentId());
       }
     }
   }
