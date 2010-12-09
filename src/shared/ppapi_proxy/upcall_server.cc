@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 //
 // Automatically generated code.  See srpcgen.py
@@ -6,14 +10,13 @@
 
 #include "trusted/srpcgen/upcall.h"
 #ifdef __native_client__
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
 #endif  // UNREFERENCED_PARAMETER
 #else
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #endif  // __native_client__
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 namespace {
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 //
 // Automatically generated code.  See srpcgen.py
@@ -6,14 +10,13 @@
 
 #include "trusted/srpcgen/ppp_rpc.h"
 #ifdef __native_client__
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
 #endif  // UNREFERENCED_PARAMETER
 #else
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #endif  // __native_client__
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 NaClSrpcError ObjectStubRpcClient::HasProperty(
     NaClSrpcChannel* channel,
@@ -21,8 +24,7 @@ NaClSrpcError ObjectStubRpcClient::HasProperty(
     nacl_abi_size_t name_bytes, char* name,
     nacl_abi_size_t exception_in_bytes, char* exception_in,
     int32_t* success,
-    nacl_abi_size_t* exception_bytes, char* exception
-)  {
+    nacl_abi_size_t* exception_bytes, char* exception)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -42,8 +44,7 @@ NaClSrpcError ObjectStubRpcClient::HasMethod(
     nacl_abi_size_t name_bytes, char* name,
     nacl_abi_size_t exception_in_bytes, char* exception_in,
     int32_t* success,
-    nacl_abi_size_t* exception_bytes, char* exception
-)  {
+    nacl_abi_size_t* exception_bytes, char* exception)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -63,8 +64,7 @@ NaClSrpcError ObjectStubRpcClient::GetProperty(
     nacl_abi_size_t name_bytes, char* name,
     nacl_abi_size_t exception_in_bytes, char* exception_in,
     nacl_abi_size_t* value_bytes, char* value,
-    nacl_abi_size_t* exception_bytes, char* exception
-)  {
+    nacl_abi_size_t* exception_bytes, char* exception)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -84,8 +84,7 @@ NaClSrpcError ObjectStubRpcClient::GetAllPropertyNames(
     nacl_abi_size_t exception_in_bytes, char* exception_in,
     int32_t* property_count,
     nacl_abi_size_t* properties_bytes, char* properties,
-    nacl_abi_size_t* exception_bytes, char* exception
-)  {
+    nacl_abi_size_t* exception_bytes, char* exception)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -105,8 +104,7 @@ NaClSrpcError ObjectStubRpcClient::SetProperty(
     nacl_abi_size_t name_bytes, char* name,
     nacl_abi_size_t value_bytes, char* value,
     nacl_abi_size_t exception_in_bytes, char* exception_in,
-    nacl_abi_size_t* exception_bytes, char* exception
-)  {
+    nacl_abi_size_t* exception_bytes, char* exception)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -125,8 +123,7 @@ NaClSrpcError ObjectStubRpcClient::RemoveProperty(
     nacl_abi_size_t capability_bytes, char* capability,
     nacl_abi_size_t name_bytes, char* name,
     nacl_abi_size_t exception_in_bytes, char* exception_in,
-    nacl_abi_size_t* exception_bytes, char* exception
-)  {
+    nacl_abi_size_t* exception_bytes, char* exception)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -147,8 +144,7 @@ NaClSrpcError ObjectStubRpcClient::Call(
     nacl_abi_size_t argv_bytes, char* argv,
     nacl_abi_size_t exception_in_bytes, char* exception_in,
     nacl_abi_size_t* ret_bytes, char* ret,
-    nacl_abi_size_t* exception_bytes, char* exception
-)  {
+    nacl_abi_size_t* exception_bytes, char* exception)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -171,8 +167,7 @@ NaClSrpcError ObjectStubRpcClient::Construct(
     nacl_abi_size_t argv_bytes, char* argv,
     nacl_abi_size_t exception_in_bytes, char* exception_in,
     nacl_abi_size_t* ret_bytes, char* ret,
-    nacl_abi_size_t* exception_bytes, char* exception
-)  {
+    nacl_abi_size_t* exception_bytes, char* exception)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -189,8 +184,7 @@ NaClSrpcError ObjectStubRpcClient::Construct(
 
 NaClSrpcError ObjectStubRpcClient::Deallocate(
     NaClSrpcChannel* channel,
-    nacl_abi_size_t capability_bytes, char* capability
-)  {
+    nacl_abi_size_t capability_bytes, char* capability)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -203,8 +197,7 @@ NaClSrpcError ObjectStubRpcClient::Deallocate(
 NaClSrpcError CompletionCallbackRpcClient::InvokeCompletionCallback(
     NaClSrpcChannel* channel,
     int32_t callback_id,
-    int32_t result
-)  {
+    int32_t result)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -222,8 +215,7 @@ NaClSrpcError PppRpcClient::PPP_InitializeModule(
     NaClSrpcImcDescType upcall_channel_desc,
     char* service_description,
     int32_t* nacl_pid,
-    int32_t* success
-)  {
+    int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -239,8 +231,7 @@ NaClSrpcError PppRpcClient::PPP_InitializeModule(
 }
 
 NaClSrpcError PppRpcClient::PPP_ShutdownModule(
-    NaClSrpcChannel* channel
-)  {
+    NaClSrpcChannel* channel)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -252,8 +243,7 @@ NaClSrpcError PppRpcClient::PPP_ShutdownModule(
 NaClSrpcError PppRpcClient::PPP_GetInterface(
     NaClSrpcChannel* channel,
     char* interface_name,
-    int32_t* exports_interface_name
-)  {
+    int32_t* exports_interface_name)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -270,8 +260,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidCreate(
     int32_t argc,
     nacl_abi_size_t argn_bytes, char* argn,
     nacl_abi_size_t argv_bytes, char* argv,
-    int32_t* success
-)  {
+    int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -287,8 +276,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidCreate(
 
 NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidDestroy(
     NaClSrpcChannel* channel,
-    int64_t instance
-)  {
+    int64_t instance)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -302,8 +290,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidChangeView(
     NaClSrpcChannel* channel,
     int64_t instance,
     nacl_abi_size_t position_bytes, int32_t* position,
-    nacl_abi_size_t clip_bytes, int32_t* clip
-)  {
+    nacl_abi_size_t clip_bytes, int32_t* clip)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -318,8 +305,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidChangeView(
 NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidChangeFocus(
     NaClSrpcChannel* channel,
     int64_t instance,
-    bool has_focus
-)  {
+    bool has_focus)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -334,8 +320,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_HandleInputEvent(
     NaClSrpcChannel* channel,
     int64_t instance,
     nacl_abi_size_t event_data_bytes, char* event_data,
-    int32_t* success
-)  {
+    int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -351,8 +336,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_HandleDocumentLoad(
     NaClSrpcChannel* channel,
     int64_t instance,
     int64_t url_loader,
-    int32_t* success
-)  {
+    int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
@@ -367,8 +351,7 @@ NaClSrpcError PppInstanceRpcClient::PPP_Instance_HandleDocumentLoad(
 NaClSrpcError PppInstanceRpcClient::PPP_Instance_GetInstanceObject(
     NaClSrpcChannel* channel,
     int64_t instance,
-    nacl_abi_size_t* capability_bytes, char* capability
-)  {
+    nacl_abi_size_t* capability_bytes, char* capability)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,

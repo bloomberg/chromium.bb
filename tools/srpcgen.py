@@ -50,6 +50,10 @@ import sys
 import os
 
 AUTOGEN_COMMENT = """\
+// Copyright (c) 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 //
 // Automatically generated code.  See srpcgen.py
@@ -60,12 +64,10 @@ AUTOGEN_COMMENT = """\
 HEADER_START = """\
 #ifndef xyz
 #define xyz
-#ifdef __native_client__
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-#else
+#ifndef __native_client__
 #include "native_client/src/include/portability.h"
+#endif  // __native_client__
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#endif  // __native_client__\n
 """
 
 HEADER_END = """\
@@ -75,14 +77,13 @@ HEADER_END = """\
 SOURCE_FILE_INCLUDES = """\
 #include "xyz"
 #ifdef __native_client__
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
 #endif  // UNREFERENCED_PARAMETER
 #else
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #endif  // __native_client__
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 """
 
 types = {'bool': ['b', 'bool', 'u.bval', ''],
@@ -142,7 +143,7 @@ def FormatRpcPrototype(is_server, class_name, indent, rpc):
     s += '    %sNaClSrpcChannel* channel' % indent
   s += '%s' % FormatArgs(False, rpc['inputs'])
   s += '%s' % FormatArgs(True, rpc['outputs'])
-  s += '\n%s)' % indent
+  s += ')'
   return  s
 
 
@@ -163,7 +164,7 @@ def PrintHeaderFile(output, is_server, guard_name, interface_name, specs):
       s += '  static %s;\n' % FormatRpcPrototype(is_server, '', '  ', rpc)
     s += '\n private:\n  %s();\n' % class_name
     s += '  %s(const %s&);\n' % (class_name, class_name)
-    s += '  void operator=(const %s);\n\n' % class_name
+    s += '  void operator=(const %s);\n' % class_name
     s += '};  // class %s\n\n' % class_name
   if is_server:
     s += 'class %s {\n' % interface_name
