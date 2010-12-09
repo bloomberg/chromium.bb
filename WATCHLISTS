@@ -179,8 +179,6 @@
                  'glider@chromium.org'],
     'mac': ['pam+watch@chromium.org'],
     'base': ['brettw-cc@chromium.org'],
-    'views': ['ben+cc@chromium.org'],
-    'browser': ['ben+cc@chromium.org'],
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
     'chromeos_login': ['nkostylev+cc@chromium.org'],
