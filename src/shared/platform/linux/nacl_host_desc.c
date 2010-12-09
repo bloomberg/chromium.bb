@@ -26,9 +26,6 @@
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
-#include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
