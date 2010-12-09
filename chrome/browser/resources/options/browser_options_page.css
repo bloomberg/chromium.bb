@@ -1,14 +1,14 @@
-#startupPageManagement {
+#startupPageManagement.fullView {
   border: 1px solid #d9d9d9;
   border-radius: 2px;
 }
 
-#startupPages {
+#startupPagesShortList {
   height: auto;
   padding-bottom: 1px;
 }
 
-#startupPageManagement > :last-child {
+#startupPageManagement.fullView > :last-child {
   border-top: 1px solid #d9d9d9;
   padding: 5px 10px;
 }

@@ -1,4 +1,4 @@
-<div class="page hidden" id="browserPage">
+<div id="browserPage" class="page hidden">
   <h1 i18n-content="browserPage"></h1>
   <section id="startupSection">
     <h3 i18n-content="startupGroupName"></h3>
@@ -14,15 +14,14 @@
       <label class="radio"><input type="radio" name="startup" id="startupShowPagesButton"
           pref="session.restore_on_startup" value="4"
           metric="Options_Startup_Custom">
-          <span i18n-content="startupShowPages"></span></label>
+          <span id="startupShowPagesLabel"
+              i18n-content="startupShowPages"></span></label>
       <div class="suboption">
-        <div id="startupPageManagement">
-          <list id="startupPages"></list>
+        <div id="startupPageManagement" class="fullView">
+          <list id="startupPagesShortList"></list>
           <div>
-            <button id="startupAddButton"
-                i18n-content="startupAddButton"></button>
-            <button id="startupRemoveButton"
-                i18n-content="startupRemoveButton"></button>
+            <button id="startupPageManagerButton"
+                i18n-content="startupManagePages"></button>
             <button id="startupUseCurrentButton"
                 i18n-content="startupUseCurrent"></button>
           </div>

@@ -6682,6 +6682,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
         Open the following pages:
       </message>
+      <message name="IDS_OPTIONS_STARTUP_SHOW_MANY_PAGES" desc="The label of the 'Open several specific pages' startup option radio button">
+        Open several specific pages
+      </message>
       <message name="IDS_OPTIONS_STARTUP_PAGE_TOOLTIP" desc="A tooltip to display for a page in the list of pages to open on startup">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - <ph name="PAGE_URL">$2<ex>http://www.google.com/</ex></ph>
       </message>
@@ -6691,8 +6694,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_STARTUP_REMOVE_BUTTON" desc="The label of the 'Remove' button for the custom startup urls list">
         &amp;Remove
       </message>
+      <message name="IDS_OPTIONS_STARTUP_MANAGE_BUTTON" desc="The label of the 'Use Current' button for the custom startup urls list">
+        Manage Startup Pages
+      </message>
       <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="The label of the 'Use Current' button for the custom startup urls list">
-        Use Current
+        Use Current Pages
+      </message>
+      <message name="IDS_STARTUP_PAGE_SUBPAGE_TITLE" desc="Title for startup page management subpage">
+        Startup Pages
       </message>
 
       <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">

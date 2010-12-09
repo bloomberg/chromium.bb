@@ -20,9 +20,10 @@ var OptionsPage = options.OptionsPage;
 var PasswordsExceptions = options.PasswordsExceptions;
 var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
+var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
-var ProxyOptions = options.ProxyOptions;
+var StartupPageManager = options.StartupPageManager;
 var SyncOptions = options.SyncOptions;
 
 /**
@@ -52,6 +53,8 @@ function load() {
 
   OptionsPage.register(BrowserOptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
+                              BrowserOptions.getInstance());
+  OptionsPage.registerSubPage(StartupPageManager.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
