@@ -92,14 +92,19 @@ cr.define('options', function() {
       }
 
       var page, length, childDiv;
-      for (var name in OptionsPage.registeredPages) {
-        if (name == this.name)
-          continue;
+      var pagesToSearch = this.getSearchablePages_();
+      for (var key in pagesToSearch) {
+        var page = pagesToSearch[key];
+
+        if (!active) {
+          page.visible = false;
+          this.unhighlightMatches_(page.tab);
+          this.unhighlightMatches_(page.pageDiv);
+        }
 
         // Update the visible state of all top-level elements that are not
         // sections (ie titles, button strips).  We do this before changing
         // the page visibility to avoid excessive re-draw.
-        page = OptionsPage.registeredPages[name];
         length = page.pageDiv.childNodes.length;
         for (var i = 0; i < length; i++) {
           childDiv = page.pageDiv.childNodes[i];
@@ -108,7 +113,7 @@ cr.define('options', function() {
               if (childDiv.nodeName.toLowerCase() != 'section')
                 childDiv.classList.add('search-hidden');
             } else {
-                childDiv.classList.remove('search-hidden');
+              childDiv.classList.remove('search-hidden');
             }
           }
         }
@@ -118,8 +123,6 @@ cr.define('options', function() {
           // When search is active, remove the 'hidden' tag.  This tag may have
           // been added by the OptionsPage.
           page.pageDiv.classList.remove('hidden');
-        } else {
-          page.visible = false;
         }
       }
     },
@@ -130,29 +133,43 @@ cr.define('options', function() {
      * @private
      */
     setSearchText_: function(text) {
-      var searchText = text.toLowerCase();
       var foundMatches = false;
 
-      // Build a list of pages to search.  Omit the search page.
-      var pagesToSearch = [];
-      for (var name in OptionsPage.registeredPages) {
-        if (name != this.name)
-          pagesToSearch.push(OptionsPage.registeredPages[name]);
-      }
+      // Generate search text by applying lowercase and escaping any characters
+      // that would be problematic for regular expressions.
+      var searchText =
+          text.toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
-      // Hide all sections.  If the search string matches a title page, show
-      // all sections of that page.
+      // Generate a regular expression and transform string for searching the
+      // navigation sidebar.
+      var navRegEx = new RegExp('(\\b' + searchText + ')', 'ig');
+      var navTransform = '<span class="search-highlighted">$1</span>';
+
+      // Generate a regular expression and transform string for searching the
+      // pages.
+      var sectionRegEx =
+          new RegExp('>([^<]*)?(\\b' + searchText + ')([^>]*)?<', 'ig');
+      var sectionTransform = '>$1<span class="search-highlighted">$2</span>$3<';
+
+      // Initialize all sections.  If the search string matches a title page,
+      // show sections for that page.
+      var pagesToSearch = this.getSearchablePages_();
       for (var key in pagesToSearch) {
         var page = pagesToSearch[key];
-        var pageTitle = page.title.toLowerCase();
-        // Hide non-sections in each page.
+        this.unhighlightMatches_(page.tab);
+        this.unhighlightMatches_(page.pageDiv);
+        var pageMatch = false;
+        if (searchText.length) {
+          pageMatch = this.performReplace_(navRegEx, navTransform, page.tab);
+        }
+        if (pageMatch)
+          foundMatches = true;
         for (var i = 0; i < page.pageDiv.childNodes.length; i++) {
           var childDiv = page.pageDiv.childNodes[i];
           if (childDiv.nodeType == 1 &&
               childDiv.nodeName.toLowerCase() == 'section') {
-            if (pageTitle == searchText) {
+            if (pageMatch) {
               childDiv.classList.remove('search-hidden');
-              foundMatches = true;
             } else {
               childDiv.classList.add('search-hidden');
             }
@@ -160,30 +177,18 @@ cr.define('options', function() {
         }
       }
 
-      // Now search all sections for anchored string matches.
-      if (!foundMatches && searchText.length) {
-        var searchRegEx = new RegExp('\\b' + searchText, 'i');
+      // Search all sections for anchored string matches.
+      if (searchText.length) {
         for (var key in pagesToSearch) {
           var page = pagesToSearch[key];
           for (var i = 0; i < page.pageDiv.childNodes.length; i++) {
             var childDiv = page.pageDiv.childNodes[i];
             if (childDiv.nodeType == 1 &&
-                childDiv.nodeName.toLowerCase() == 'section') {
-              var isMatch = false;
-              var sectionElements = childDiv.getElementsByTagName("*");
-              var length = sectionElements.length;
-              var element;
-              for (var j = 0; j < length; j++) {
-                element = sectionElements[j];
-                if (searchRegEx.test(element.textContent)) {
-                  isMatch = true;
-                  break;
-                }
-              }
-              if (isMatch) {
-                childDiv.classList.remove('search-hidden');
-                foundMatches = true;
-              }
+                childDiv.nodeName.toLowerCase() == 'section' &&
+                this.performReplace_(sectionRegEx, sectionTransform,
+                    childDiv)) {
+              childDiv.classList.remove('search-hidden');
+              foundMatches = true;
             }
           }
         }
@@ -200,6 +205,50 @@ cr.define('options', function() {
         $('searchPageInfo').classList.add('search-hidden');
         $('searchPageNoMatches').classList.remove('search-hidden');
       }
+    },
+
+    /**
+     * Performs a string replacement based on a regex and transform.
+     * @param {RegEx} regex A regular expression for finding search matches.
+     * @param {String} transform A string to apply the replace operation.
+     * @param {Element} element An HTML container element.
+     * @returns {Boolean} true if the element was changed.
+     * @private
+     */
+    performReplace_: function(regex, transform, element) {
+      var originalHTML = element.innerHTML;
+      var newHTML = originalHTML.replace(regex, transform);
+      if (originalHTML != newHTML) {
+        element.innerHTML = newHTML;
+        return true;
+      } else {
+        return false;
+      }
+    },
+
+    /**
+     * Removes all search highlight tags from a container element.
+     * @param {Element} element An HTML container element.
+     * @private
+     */
+    unhighlightMatches_: function(element) {
+      var regex =
+          new RegExp('<span class="search-highlighted">(.*?)</span>', 'g');
+      element.innerHTML = element.innerHTML.replace(regex, '$1');
+    },
+
+    /**
+     * Builds a list of pages to search.  Omits the search page.
+     * @returns {Array} An array of pages to search.
+     * @private
+     */
+    getSearchablePages_: function() {
+      var pages = [];
+      for (var name in OptionsPage.registeredPages) {
+        if (name != this.name)
+          pages.push(OptionsPage.registeredPages[name]);
+      }
+      return pages;
     }
   };
 

@@ -1,3 +1,7 @@
 .search-hidden {
   display: none;
 }
+
+.search-highlighted {
+  background-color: #fff29f;
+}
