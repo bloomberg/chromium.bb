@@ -235,6 +235,10 @@ void TaskManagerTableModel::OnItemsAdded(int start, int length) {
 void TaskManagerTableModel::OnItemsRemoved(int start, int length) {
   if (observer_)
     observer_->OnItemsRemoved(start, length);
+
+  // We may need to change the indentation of some items if the topmost item
+  // in the group was removed, so update the view.
+  OnModelChanged();
 }
 
 // The Task manager UI container.
