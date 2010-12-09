@@ -22,6 +22,10 @@ MOCK_STATIC_CLASS_BEGIN(MockCeeeModuleUtils)
                       SetOptionToolbandForceReposition);
     MOCK_STATIC_INIT2(ceee_module_util::GetOptionToolbandForceReposition,
                       GetOptionToolbandForceReposition);
+    MOCK_STATIC_INIT2(ceee_module_util::SetOptionEnableWebProgressApis,
+                      SetOptionEnableWebProgressApis);
+    MOCK_STATIC_INIT2(ceee_module_util::GetOptionEnableWebProgressApis,
+                      GetOptionEnableWebProgressApis);
     MOCK_STATIC_INIT2(ceee_module_util::SetIgnoreShowDWChanges,
                       SetIgnoreShowDWChanges);
     MOCK_STATIC_INIT2(ceee_module_util::GetIgnoreShowDWChanges,
@@ -33,6 +37,8 @@ MOCK_STATIC_CLASS_BEGIN(MockCeeeModuleUtils)
   MOCK_STATIC0(bool, , GetOptionToolbandIsHidden);
   MOCK_STATIC1(void, , SetOptionToolbandForceReposition, bool);
   MOCK_STATIC0(bool, , GetOptionToolbandForceReposition);
+  MOCK_STATIC1(void, , SetOptionEnableWebProgressApis, bool);
+  MOCK_STATIC0(bool, , GetOptionEnableWebProgressApis);
   MOCK_STATIC1(void, , SetIgnoreShowDWChanges, bool);
   MOCK_STATIC0(bool, , GetIgnoreShowDWChanges);
   MOCK_STATIC0(std::wstring, , GetExtensionPath);

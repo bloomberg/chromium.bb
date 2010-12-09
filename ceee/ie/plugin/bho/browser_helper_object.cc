@@ -397,12 +397,14 @@ HRESULT BrowserHelperObject::Initialize(IUnknown* site) {
 
   CheckToolBandVisibility(web_browser_);
 
-  web_progress_notifier_.reset(CreateWebProgressNotifier());
-  DCHECK(web_progress_notifier_ != NULL)
-      << "Failed to initialize WebProgressNotifier";
-  if (web_progress_notifier_ == NULL) {
-    TearDown();
-    return E_FAIL;
+  if (ceee_module_util::GetOptionEnableWebProgressApis()) {
+    web_progress_notifier_.reset(CreateWebProgressNotifier());
+    DCHECK(web_progress_notifier_ != NULL)
+        << "Failed to initialize WebProgressNotifier";
+    if (web_progress_notifier_ == NULL) {
+      TearDown();
+      return E_FAIL;
+    }
   }
 
   return S_OK;

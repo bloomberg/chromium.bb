@@ -74,6 +74,11 @@ bool GetOptionToolbandIsHidden();
 void SetOptionToolbandForceReposition(bool reposition_next_time);
 bool GetOptionToolbandForceReposition();
 
+// Stores/reads a registry entry that tracks whether to enable the Web progress
+// APIs (webNavigation and webRequest).
+void SetOptionEnableWebProgressApis(bool enable);
+bool GetOptionEnableWebProgressApis();
+
 // Indicates whether ShowDW calls should affect registry tracking of the
 // user's visibility preference.
 void SetIgnoreShowDWChanges(bool ignore);

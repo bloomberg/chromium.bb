@@ -316,6 +316,8 @@ class BrowserHelperObjectTest: public ShellBrowserTestImpl<BrowserEventSink> {
     StrictMock<testing::MockCeeeModuleUtils> ceee_module_utils;
     EXPECT_CALL(ceee_module_utils, GetOptionToolbandIsHidden())
         .WillRepeatedly(Return(false));
+    EXPECT_CALL(ceee_module_utils, GetOptionEnableWebProgressApis())
+        .WillRepeatedly(Return(false));
     // Never torn down as other threads in the test may need it after
     // teardown.
     ScriptHost::set_default_debug_application(&debug_app);

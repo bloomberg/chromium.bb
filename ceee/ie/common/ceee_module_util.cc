@@ -26,6 +26,8 @@ const wchar_t* kRegistryValueCrxInstalledPath = L"crx_installed_path";
 const wchar_t* kRegistryValueCrxInstalledTime = L"crx_installed_time";
 const wchar_t* kRegistryValueCrxInstalledByVersion =
     L"crx_installed_runtime_version";
+const wchar_t* kRegistryValueEnableWebProgressApis =
+    L"enable_webnav_webreq_apis";
 
 // Global state needed by the BHO and the
 // toolband, to indicate whether ShowDW calls should affect
@@ -242,6 +244,14 @@ void SetOptionToolbandForceReposition(bool reposition_next_time) {
 
 bool GetOptionToolbandForceReposition() {
   return !GetCeeeRegistryBoolean(kRegistryValueToolbandPlaced, false);
+}
+
+void SetOptionEnableWebProgressApis(bool enable) {
+  SetCeeeRegistryBoolean(kRegistryValueEnableWebProgressApis, enable);
+}
+
+bool GetOptionEnableWebProgressApis() {
+  return GetCeeeRegistryBoolean(kRegistryValueEnableWebProgressApis, false);
 }
 
 void SetIgnoreShowDWChanges(bool ignore) {
