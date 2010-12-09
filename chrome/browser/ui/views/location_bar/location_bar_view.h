@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
@@ -44,6 +43,7 @@ class Profile;
 class SelectedKeywordView;
 class StarView;
 class SuggestedTextView;
+class TabContents;
 class TabContentsWrapper;
 class TemplateURLModel;
 

@@ -8,7 +8,6 @@
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/infobar.h"

@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/native_web_keyboard_event.h"

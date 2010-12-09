@@ -26,8 +26,6 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/notification_service.h"

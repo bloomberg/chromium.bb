@@ -4,6 +4,8 @@
 
 #include "chrome/browser/file_select_helper.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/string_split.h"
@@ -15,8 +17,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/render_messages_params.h"

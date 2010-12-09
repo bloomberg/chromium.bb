@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"

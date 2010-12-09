@@ -14,7 +14,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"

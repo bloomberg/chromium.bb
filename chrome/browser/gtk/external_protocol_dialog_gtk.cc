@@ -15,8 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

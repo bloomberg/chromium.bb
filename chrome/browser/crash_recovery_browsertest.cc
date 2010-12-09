@@ -4,7 +4,6 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_transition_types.h"

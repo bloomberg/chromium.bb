@@ -15,7 +15,6 @@
 #include "chrome/browser/possible_url_model.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"

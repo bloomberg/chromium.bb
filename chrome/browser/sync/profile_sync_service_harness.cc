@@ -10,7 +10,6 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -359,7 +358,7 @@ bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(
       if (wait_state_ == FULLY_SYNCED) {
         // Client is online; sync was successful.
         return true;
-      } else if (wait_state_ == SERVER_UNREACHABLE){
+      } else if (wait_state_ == SERVER_UNREACHABLE) {
         // Client is offline; sync was unsuccessful.
         return false;
       } else {

@@ -7,7 +7,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/cros/mock_update_library.h"
 #include "chrome/browser/chromeos/update_observer.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/dom_element_proxy.h"
@@ -118,4 +117,3 @@ IN_PROC_BROWSER_TEST_F(UpdateBrowserTest, Notifications) {
 }
 
 }  // namespace
-

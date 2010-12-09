@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/string_split.h"
@@ -14,7 +16,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"

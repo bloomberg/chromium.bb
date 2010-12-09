@@ -14,7 +14,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "gfx/canvas.h"
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"

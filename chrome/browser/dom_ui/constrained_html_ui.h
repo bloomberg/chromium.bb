@@ -10,7 +10,7 @@
 
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/property_bag.h"
 
 class HtmlDialogUIDelegate;
 class Profile;

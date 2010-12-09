@@ -22,7 +22,6 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 
@@ -38,6 +37,7 @@ static const std::string kImageFileName = "chromeos_image.bin.gz";
 static const std::string kTempImageFolderName = "chromeos_image";
 
 class ImageBurnResourceManager;
+class TabContents;
 
 class ImageBurnUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -223,4 +223,3 @@ class ImageBurnUI : public DOMUI {
   DISALLOW_COPY_AND_ASSIGN(ImageBurnUI);
 };
 #endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_IMAGEBURNER_UI_H_
-

@@ -8,7 +8,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/common/extensions/extension.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/dom_ui/imageburner_ui.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_popup_api.h"
 
+#include <string>
+
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/window_sizer.h"

@@ -17,7 +17,6 @@
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 #include "chrome/browser/speech/speech_recognizer.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"

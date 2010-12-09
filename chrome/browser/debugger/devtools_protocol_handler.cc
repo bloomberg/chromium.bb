@@ -9,7 +9,6 @@
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/devtools_remote_listen_socket.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 
 DevToolsProtocolHandler::DevToolsProtocolHandler(int port)
     : port_(port),

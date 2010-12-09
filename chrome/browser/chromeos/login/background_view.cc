@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/dom_view.h"
 #include "cros/chromeos_wm_ipc_enums.h"
 #include "googleurl/src/gurl.h"
@@ -40,8 +40,8 @@
 
 // X Windows headers have "#define Status int". That interferes with
 // NetworkLibrary header which defines enum "Status".
-#include <X11/cursorfont.h>
-#include <X11/Xcursor/Xcursor.h>
+#include <X11/cursorfont.h>  // NOLINT
+#include <X11/Xcursor/Xcursor.h>  // NOLINT
 
 using views::WidgetGtk;
 

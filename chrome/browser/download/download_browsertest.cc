@@ -15,7 +15,6 @@
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_service.h"
