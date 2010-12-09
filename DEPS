@@ -256,7 +256,7 @@ deps_os = {
   "unix": {
     # Linux, really.
     "src/chrome/tools/test/reference_build/chrome_linux":
-      "/trunk/deps/reference_builds/chrome_linux@41515",
+      "/trunk/deps/reference_builds/chrome_linux@68697",
 
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@58316",
