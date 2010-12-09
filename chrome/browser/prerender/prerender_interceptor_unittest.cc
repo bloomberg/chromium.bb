@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/prerender_interceptor.h"
+#include "chrome/browser/prerender/prerender_interceptor.h"
 
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_ptr.h"
@@ -16,12 +15,9 @@
 #include "net/base/load_flags.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_request_unittest.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-namespace chrome_browser_net {
 
 class PrerenderInterceptorTest : public testing::Test {
- protected:
+ public:
   PrerenderInterceptorTest();
 
   void MakeTestUrl(const std::string& base);
@@ -31,7 +27,6 @@ class PrerenderInterceptorTest : public testing::Test {
   GURL gurl_;
   GURL last_intercepted_gurl_;
   scoped_ptr<net::URLRequest> req_;
-
  private:
   void SetLastInterceptedGurl(const GURL& url);
 
@@ -39,7 +34,6 @@ class PrerenderInterceptorTest : public testing::Test {
   MessageLoopForIO io_loop_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   BrowserThread ui_thread_;
-  TestDelegate delegate_;
 };
 
 PrerenderInterceptorTest::PrerenderInterceptorTest()
@@ -63,14 +57,12 @@ void PrerenderInterceptorTest::SetUp() {
 
 void PrerenderInterceptorTest::MakeTestUrl(const std::string& base) {
   gurl_ = test_server_.GetURL(base);
-  req_.reset(new TestURLRequest(gurl_, &delegate_));
+  req_.reset(new TestURLRequest(gurl_, new TestDelegate()));
 }
 
 void PrerenderInterceptorTest::SetLastInterceptedGurl(const GURL& url) {
   last_intercepted_gurl_ = url;
 }
-
-namespace {
 
 TEST_F(PrerenderInterceptorTest, Interception) {
   MakeTestUrl("files/prerender/doc1.html");
@@ -102,6 +94,3 @@ TEST_F(PrerenderInterceptorTest, WrongMimeType) {
   EXPECT_NE(gurl_, last_intercepted_gurl_);
 }
 
-}  // namespace
-
-}  // namespace chrome_browser_net

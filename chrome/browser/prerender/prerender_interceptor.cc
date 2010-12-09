@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/prerender_interceptor.h"
+#include "chrome/browser/prerender/prerender_interceptor.h"
 
 #include <string>
 
 #include "base/logging.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chrome_browser_net::PrerenderInterceptor);
-
-namespace chrome_browser_net {
+DISABLE_RUNNABLE_METHOD_REFCOUNT(PrerenderInterceptor);
 
 PrerenderInterceptor::PrerenderInterceptor()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -25,8 +24,8 @@ PrerenderInterceptor::PrerenderInterceptor()
 
 PrerenderInterceptor::PrerenderInterceptor(
     PrerenderInterceptorCallback* callback)
-    : callback_(callback) {
-  net::URLRequest::RegisterRequestInterceptor(this);
+  : callback_(callback) {
+    net::URLRequest::RegisterRequestInterceptor(this);
 }
 
 PrerenderInterceptor::~PrerenderInterceptor() {
@@ -39,7 +38,7 @@ net::URLRequestJob* PrerenderInterceptor::MaybeIntercept(
 }
 
 net::URLRequestJob* PrerenderInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request) {
+  net::URLRequest* request) {
   // TODO(gavinp): unfortunately, we can't figure out the origin
   // of this request here on systems where the referrer is blocked by
   // configuration.
@@ -74,4 +73,3 @@ void PrerenderInterceptor::PrerenderDispatch(
   DVLOG(2) << "PrerenderDispatchOnUIThread: url=" << url;
 }
 
-}  // namespace chrome_browser_net

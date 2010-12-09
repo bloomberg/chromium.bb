@@ -21,12 +21,12 @@ class ChromeNetLog;
 class ChromeURLRequestContextGetter;
 class ListValue;
 class PrefService;
+class PrerenderInterceptor;
 class URLRequestContext;
 
 namespace chrome_browser_net {
 class ConnectInterceptor;
 class Predictor;
-class PrerenderInterceptor;
 }  // namespace chrome_browser_net
 
 namespace net {
@@ -156,8 +156,7 @@ class IOThread : public BrowserProcessSubThread {
   // down.
   chrome_browser_net::ConnectInterceptor* speculative_interceptor_;
   chrome_browser_net::Predictor* predictor_;
-  scoped_ptr<chrome_browser_net::PrerenderInterceptor>
-    prerender_interceptor_;
+  scoped_ptr<PrerenderInterceptor> prerender_interceptor_;
 
   // List of live ProxyScriptFetchers.
   ProxyScriptFetchers fetchers_;

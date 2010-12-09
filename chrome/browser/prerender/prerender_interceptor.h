@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_PRERENDER_INTERCEPTOR_H_
-#define CHROME_BROWSER_NET_PRERENDER_INTERCEPTOR_H_
+#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_INTERCEPTOR_H_
+#define CHROME_BROWSER_PRERENDER_PRERENDER_INTERCEPTOR_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -13,8 +13,6 @@
 
 class GURL;
 
-namespace chrome_browser_net {
-
 // The PrerenderInterceptor watches prefetch requests, and when
 // they are for type text/html, notifies the prerendering
 // system about the fetch so it may consider the URL.
@@ -23,7 +21,7 @@ class PrerenderInterceptor : public net::URLRequest::Interceptor {
   PrerenderInterceptor();
   virtual ~PrerenderInterceptor();
 
-  // net::URLRequest::Interceptor overrides.  We only care about
+  // URLRequest::Interceptor overrides.  We only care about
   // MaybeInterceptResponse, but must capture MaybeIntercept since
   // it is pure virtual.
   virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
@@ -47,7 +45,5 @@ class PrerenderInterceptor : public net::URLRequest::Interceptor {
   DISALLOW_COPY_AND_ASSIGN(PrerenderInterceptor);
 };
 
-}  // namespace chrome_browser_net
-
-#endif  // CHROME_BROWSER_NET_PRERENDER_INTERCEPTOR_H_
+#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_INTERCEPTOR_H_
 
