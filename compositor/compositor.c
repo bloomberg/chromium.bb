@@ -1065,37 +1065,6 @@ notify_key(struct wl_input_device *device,
 }
 
 static void
-input_device_attach(struct wl_client *client,
-		    struct wl_input_device *device_base,
-		    uint32_t time,
-		    struct wl_buffer *buffer, int32_t x, int32_t y)
-{
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) device_base;
-
-	if (time < device->input_device.pointer_focus_time)
-		return;
-	if (device->input_device.pointer_focus == NULL)
-		return;
-
-	if (device->input_device.pointer_focus->client != client)
-		return;
-
-	if (buffer == NULL) {
-		wlsc_input_device_set_pointer_image(device,
-						    WLSC_POINTER_LEFT_PTR);
-		return;
-	}
-
-	wlsc_input_device_attach(device, buffer, x, y);
-}
-
-const static struct wl_input_device_interface input_device_interface = {
-	input_device_attach,
-};
-
-
-static void
 wl_drag_set_pointer_focus(struct wl_drag *drag,
 			  struct wl_surface *surface, uint32_t time,
 			  int32_t x, int32_t y, int32_t sx, int32_t sy)
@@ -1289,6 +1258,36 @@ static const struct wl_drag_interface drag_interface = {
 	drag_offer,
 	drag_activate,
 	drag_destroy,
+};
+
+static void
+input_device_attach(struct wl_client *client,
+		    struct wl_input_device *device_base,
+		    uint32_t time,
+		    struct wl_buffer *buffer, int32_t x, int32_t y)
+{
+	struct wlsc_input_device *device =
+		(struct wlsc_input_device *) device_base;
+
+	if (time < device->input_device.pointer_focus_time)
+		return;
+	if (device->input_device.pointer_focus == NULL)
+		return;
+
+	if (device->input_device.pointer_focus->client != client)
+		return;
+
+	if (buffer == NULL) {
+		wlsc_input_device_set_pointer_image(device,
+						    WLSC_POINTER_LEFT_PTR);
+		return;
+	}
+
+	wlsc_input_device_attach(device, buffer, x, y);
+}
+
+const static struct wl_input_device_interface input_device_interface = {
+	input_device_attach,
 };
 
 void
