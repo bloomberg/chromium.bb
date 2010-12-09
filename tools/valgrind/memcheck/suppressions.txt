@@ -3469,4 +3469,13 @@
    fun:_ZN3IPC12ChannelProxyC2ERKNS_13ChannelHandleENS_7Channel4ModeEP11MessageLoopPNS0_7ContextEb
    fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEP11MessageLoopbPN4base13WaitableEventE
 }
-
+{
+   bug_65988
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting8protocol24BufferedSocketWriterBase5WriteE13scoped_refptrIN3net16IOBufferWithSizeEEP4Task
+   fun:_ZN8remoting8protocol10RtcpWriter10SendReportERKNS0_18RtcpReceiverReportE
+   fun:_ZN8remoting8protocol14RtpVideoReader20SendReceiverReportIfEv
+   fun:_ZN8remoting8protocol14RtpVideoReader18RebuildVideoPacketESt15_Deque_iteratorINS1_17PacketsQueueEntryERS3_PS3_ES6_
+   fun:_ZN8remoting8protocol14RtpVideoReader15CheckFullPacketESt15_Deque_iteratorINS1_17PacketsQueueEntryERS3_PS3_E
+}
