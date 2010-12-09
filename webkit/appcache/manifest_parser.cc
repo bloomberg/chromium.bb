@@ -51,6 +51,13 @@ Manifest::~Manifest() {}
 
 bool ParseManifest(const GURL& manifest_url, const char* data, int length,
                    Manifest& manifest) {
+  // This is an implementation of the parsing algorithm specified in
+  // the HTML5 offline web application docs:
+  //   http://www.w3.org/TR/html5/offline.html
+  // Do not modify it without consulting those docs.
+  // Though you might be tempted to convert these wstrings to UTF-8 or
+  // string16, this implementation seems simpler given the constraints.
+
   static const std::wstring kSignature(L"CACHE MANIFEST");
 
   DCHECK(manifest.explicit_urls.empty());
