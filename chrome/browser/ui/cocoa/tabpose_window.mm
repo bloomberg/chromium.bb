@@ -380,6 +380,7 @@ class Tile {
   NSRect GetStartRectRelativeTo(const Tile& tile) const;
   NSRect thumb_rect() const { return thumb_rect_; }
 
+  NSRect GetFaviconStartRectRelativeTo(const Tile& tile) const;
   NSRect favicon_rect() const { return NSIntegralRect(favicon_rect_); }
   SkBitmap favicon() const;
 
@@ -394,6 +395,7 @@ class Tile {
   void set_font_metrics(CGFloat ascender, CGFloat descender);
   CGFloat title_font_size() const { return title_font_size_; }
 
+  NSRect GetTitleStartRectRelativeTo(const Tile& tile) const;
   NSRect title_rect() const { return NSIntegralRect(title_rect_); }
 
   // Returns an unelided title. The view logic is responsible for eliding.
@@ -427,6 +429,14 @@ NSRect Tile::GetStartRectRelativeTo(const Tile& tile) const {
   return rect;
 }
 
+NSRect Tile::GetFaviconStartRectRelativeTo(const Tile& tile) const {
+  NSRect thumb_start = GetStartRectRelativeTo(tile);
+  NSRect rect = favicon_rect_;
+  rect.origin.x += NSMinX(thumb_start) - NSMinX(thumb_rect_);
+  rect.origin.y += NSMinY(thumb_start) - NSMinY(thumb_rect_);
+  return rect;
+}
+
 SkBitmap Tile::favicon() const {
   if (contents_->is_app()) {
     SkBitmap* icon = contents_->GetExtensionAppIcon();
@@ -434,6 +444,14 @@ SkBitmap Tile::favicon() const {
       return *icon;
   }
   return contents_->GetFavIcon();
+}
+
+NSRect Tile::GetTitleStartRectRelativeTo(const Tile& tile) const {
+  NSRect thumb_start = GetStartRectRelativeTo(tile);
+  NSRect rect = title_rect_;
+  rect.origin.x += NSMinX(thumb_start) - NSMinX(thumb_rect_);
+  rect.origin.y += NSMinY(thumb_start) - NSMinY(thumb_rect_);
+  return rect;
 }
 
 // Changes |title_rect| and |favicon_rect| such that the favicon's and the
@@ -853,6 +871,19 @@ void AnimateCALayerFrameFromTo(
   [layer addAnimation:animation forKey:@"position"];
 }
 
+void AnimateCALayerOpacityFromTo(
+    CALayer* layer, double from, double to, NSTimeInterval duration) {
+  CABasicAnimation* animation;
+  animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
+  animation.fromValue = [NSNumber numberWithFloat:from];
+  animation.toValue = [NSNumber numberWithFloat:to];
+  animation.duration = duration;
+
+  layer.opacity = to;
+  // Add the animation, overriding the implicit animation.
+  [layer addAnimation:animation forKey:@"opacity"];
+}
+
 @interface TabposeWindow (Private)
 - (id)initForWindow:(NSWindow*)parent
                rect:(NSRect)rect
@@ -926,6 +957,9 @@ void AnimateCALayerFrameFromTo(
                      tileSet_->selected_tile()).size]);
   [layer setNeedsDisplay];
 
+  NSTimeInterval interval =
+      kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1);
+
   // Background color as placeholder for now.
   layer.get().backgroundColor = CGColorGetConstantColor(kCGColorWhite);
   if (showZoom) {
@@ -933,7 +967,7 @@ void AnimateCALayerFrameFromTo(
         layer,
         tile.GetStartRectRelativeTo(tileSet_->selected_tile()),
         tile.thumb_rect(),
-        kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1),
+        interval,
         animationDelegate);
   } else {
     layer.get().frame = NSRectToCGRect(tile.thumb_rect());
@@ -964,23 +998,39 @@ void AnimateCALayerFrameFromTo(
       mac_util::CopyNSImageToCGImage(nsFavicon));
 
   CALayer* faviconLayer = [CALayer layer];
-  faviconLayer.frame = NSRectToCGRect(tile.favicon_rect());
+  if (showZoom) {
+    AnimateCALayerFrameFromTo(
+        faviconLayer,
+        tile.GetFaviconStartRectRelativeTo(tileSet_->selected_tile()),
+        tile.favicon_rect(),
+        interval,
+        nil);
+    AnimateCALayerOpacityFromTo(faviconLayer, 0.0, 1.0, interval);
+  } else {
+    faviconLayer.frame = NSRectToCGRect(tile.favicon_rect());
+  }
   faviconLayer.contents = (id)favicon.get();
   faviconLayer.zPosition = 1;  // On top of the thumb shadow.
-  if (state_ == tabpose::kFadingIn)
-    faviconLayer.hidden = YES;
   [bgLayer_ addSublayer:faviconLayer];
   [allFaviconLayers_ addObject:faviconLayer];
 
   CATextLayer* titleLayer = [CATextLayer layer];
-  titleLayer.frame = NSRectToCGRect(tile.title_rect());
+  if (showZoom) {
+    AnimateCALayerFrameFromTo(
+        titleLayer,
+        tile.GetTitleStartRectRelativeTo(tileSet_->selected_tile()),
+        tile.title_rect(),
+        interval,
+        nil);
+    AnimateCALayerOpacityFromTo(titleLayer, 0.0, 1.0, interval);
+  } else {
+    titleLayer.frame = NSRectToCGRect(tile.title_rect());
+  }
   titleLayer.string = base::SysUTF16ToNSString(tile.title());
   titleLayer.fontSize = [font pointSize];
   titleLayer.truncationMode = kCATruncationEnd;
   titleLayer.font = font;
   titleLayer.zPosition = 1;  // On top of the thumb shadow.
-  if (state_ == tabpose::kFadingIn)
-    titleLayer.hidden = YES;
   [bgLayer_ addSublayer:titleLayer];
   [allTitleLayers_ addObject:titleLayer];
 }
@@ -1210,11 +1260,6 @@ void AnimateCALayerFrameFromTo(
     [self selectedLayer].zPosition = 1;
 
     selectionHighlight_.hidden = YES;
-    for (CALayer* layer in allFaviconLayers_.get())
-      layer.hidden = YES;
-    for (CALayer* layer in allTitleLayers_.get())
-      layer.hidden = YES;
-
     // Running animations with shadows is slow, so turn shadows off before
     // running the exit animation.
     for (CALayer* layer in allThumbnailLayers_.get())
@@ -1225,14 +1270,9 @@ void AnimateCALayerFrameFromTo(
   CGFloat duration =
       1.3 * kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1);
   ScopedCAActionSetDuration durationSetter(duration);
-  for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
+  for (int i = 0; i < tabStripModel_->count(); ++i) {
+    const tabpose::Tile& tile = tileSet_->tile_at(i);
     CALayer* layer = [allThumbnailLayers_ objectAtIndex:i];
-    // |start_thumb_rect_| was relative to the initial index, now this needs to
-    // be relative to |selectedIndex_| (whose start rect was relative to
-    // the initial index, too).
-    CGRect newFrame = NSRectToCGRect(
-        tileSet_->tile_at(i).GetStartRectRelativeTo(tileSet_->selected_tile()));
-
     // Add a delegate to one of the implicit animations to get a notification
     // once the animations are done.
     if (static_cast<int>(i) == tileSet_->selected_index()) {
@@ -1242,12 +1282,22 @@ void AnimateCALayerFrameFromTo(
       [layer addAnimation:animation forKey:@"frame"];
     }
 
-    layer.frame = newFrame;
+    layer.frame = NSRectToCGRect(
+        tile.GetStartRectRelativeTo(tileSet_->selected_tile()));
 
     if (static_cast<int>(i) == tileSet_->selected_index()) {
       // Redraw layer at big resolution, so that zoom-in isn't blocky.
       [layer setNeedsDisplay];
     }
+
+    CALayer* faviconLayer = [allFaviconLayers_ objectAtIndex:i];
+    faviconLayer.frame = NSRectToCGRect(
+        tile.GetFaviconStartRectRelativeTo(tileSet_->selected_tile()));
+    faviconLayer.opacity = 0;
+    CALayer* titleLayer = [allTitleLayers_ objectAtIndex:i];
+    titleLayer.frame = NSRectToCGRect(
+        tile.GetTitleStartRectRelativeTo(tileSet_->selected_tile()));
+    titleLayer.opacity = 0;
   }
 }
 
@@ -1260,10 +1310,6 @@ void AnimateCALayerFrameFromTo(
       state_ = tabpose::kFadedIn;
 
       selectionHighlight_.hidden = NO;
-      for (CALayer* layer in allFaviconLayers_.get())
-        layer.hidden = NO;
-      for (CALayer* layer in allTitleLayers_.get())
-        layer.hidden = NO;
 
       // Running animations with shadows is slow, so turn shadows on only after
       // the animation is done.
