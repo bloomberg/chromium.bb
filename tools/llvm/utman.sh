@@ -2584,6 +2584,10 @@ scons-clean-pnacl-build-dir () {
   rm -rf scons-out/nacl-$1-pnacl
 }
 
+scons-clean-pnacl-pic-build-dir () {
+  rm -rf scons-out/nacl-$1-pnacl-pic
+}
+
 scons-pnacl-build () {
   local platform=$1
   shift
@@ -2620,7 +2624,7 @@ test-scons-common () {
 test-scons-pic-common () {
   local platform=$1
   shift
-  scons-clean-pnacl-build-dir ${platform}
+  scons-clean-pnacl-pic-build-dir ${platform}
 
   test_setup=$(scons-determine-tests "$@")
   run-scons-tests ${platform} ${test_setup} nacl_pic=1
