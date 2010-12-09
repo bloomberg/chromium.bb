@@ -279,7 +279,8 @@ cr.define('options.passwordsExceptions', function() {
       };
 
       removeAll.onclick = function(event) {
-        AlertOverlay.show(undefined,
+        AlertOverlay.show(
+            undefined,
             localStrings.getString('passwordsRemoveAllWarning'),
             localStrings.getString('yesButtonLabel'),
             localStrings.getString('noButtonLabel'),

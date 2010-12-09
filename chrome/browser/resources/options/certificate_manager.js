@@ -93,10 +93,9 @@ cr.define('options', function() {
       AlertOverlay.show(
           localStrings.getStringF(id + 'DeleteConfirm', data.name),
           localStrings.getString(id + 'DeleteImpact'),
-          undefined,
-          undefined,
-          function() { chrome.send('deleteCertificate', [data.id]); }
-          );
+          localStrings.getString('ok'),
+          localStrings.getString('cancel'),
+          function() { chrome.send('deleteCertificate', [data.id]); });
     }
   }
 

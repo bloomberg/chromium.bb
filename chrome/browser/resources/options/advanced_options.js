@@ -62,10 +62,10 @@ var OptionsPage = options.OptionsPage;
       }
       $('optionsReset').onclick = function(event) {
         AlertOverlay.show(undefined,
-            localStrings.getString('optionsResetMessage'),
-            localStrings.getString('optionsResetOkLabel'),
-            localStrings.getString('optionsResetCancelLabel'),
-            function() { chrome.send('resetToDefaults'); });
+                          localStrings.getString('optionsResetMessage'),
+                          localStrings.getString('optionsResetOkLabel'),
+                          localStrings.getString('optionsResetCancelLabel'),
+                          function() { chrome.send('resetToDefaults'); });
       }
 
       if (cr.isWindows || cr.isMac) {

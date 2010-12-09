@@ -86,12 +86,11 @@ cr.define('options', function() {
     },
 
     showStopSyncingOverlay_: function(event) {
-      AlertOverlay.show(
-          localStrings.getString('stop_syncing_title'),
-          localStrings.getString('stop_syncing_explanation'),
-          localStrings.getString('stop_syncing_confirm_button_label'),
-          undefined,
-          function() { chrome.send('stopSyncing'); });
+      AlertOverlay.show(localStrings.getString('stop_syncing_title'),
+                        localStrings.getString('stop_syncing_explanation'),
+                        localStrings.getString('stop_syncing_confirm'),
+                        localStrings.getString('cancel'),
+                        function() { chrome.send('stopSyncing'); });
     },
 
     setElementVisible_: function(element, visible) {

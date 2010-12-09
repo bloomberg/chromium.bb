@@ -68,9 +68,10 @@ cr.define('options', function() {
    * callbacks.
    * @param {string} title The alert title to display to the user.
    * @param {string} message The alert message to display to the user.
-   * @param {string} okTitle The title of the OK button.  Can be undefined.
-   * @param {string} cancelTitle The title of the cancel button.  Can be
-   *     undefined.
+   * @param {string} okTitle The title of the OK button. If undefined or empty,
+   *     no button is shown.
+   * @param {string} cancelTitle The title of the cancel button. If undefined or
+   *     empty, no button is shown.
    * @param {function} okCallback A function to be called when the user presses
    *     the ok button.  The alert window will be closed automatically.  Can be
    *     undefined.
@@ -78,27 +79,31 @@ cr.define('options', function() {
    *     presses the cancel button.  The alert window will be closed
    *     automatically.  Can be undefined.
    */
-  AlertOverlay.show = function(title, message, okTitle, cancelTitle, okCallback,
-                               cancelCallback) {
+  AlertOverlay.show = function(
+      title, message, okTitle, cancelTitle, okCallback, cancelCallback) {
     if (title != undefined) {
       $('alertOverlayTitle').textContent = title;
       $('alertOverlayTitle').style.display = 'block';
     } else {
       $('alertOverlayTitle').style.display = 'none';
     }
+
     if (message != undefined) {
       $('alertOverlayMessage').textContent = message;
       $('alertOverlayMessage').style.display = 'block';
     } else {
       $('alertOverlayMessage').style.display = 'none';
     }
-    $('alertOverlayOk').textContent =
-        (okTitle != undefined ? okTitle
-                              : localStrings.getString('ok'));
-    if (cancelTitle != '') {
-      $('alertOverlayCancel').textContent =
-          (cancelTitle != undefined ? cancelTitle
-                                    : localStrings.getString('cancel'));
+
+    if (okTitle != undefined && okTitle != '') {
+      $('alertOverlayOk').textContent = okTitle;
+      $('alertOverlayOk').style.display = 'block';
+    } else {
+      $('alertOverlayOk').style.display = 'none';
+    }
+
+    if (cancelTitle != undefined && cancelTitle != '') {
+      $('alertOverlayCancel').textContent = cancelTitle;
       $('alertOverlayCancel').style.display = 'inline';
     } else {
       $('alertOverlayCancel').style.display = 'none';
