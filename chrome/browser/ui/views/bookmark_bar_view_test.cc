@@ -5,6 +5,7 @@
 #include "app/keyboard_codes.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -1291,7 +1292,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     views::MenuItemView* delete_menu =
-        menu->GetMenuItemByID(IDS_BOOKMARK_BAR_REMOVE);
+        menu->GetMenuItemByID(IDC_BOOKMARK_BAR_REMOVE);
     ASSERT_TRUE(delete_menu);
 
     // Click on the delete button.

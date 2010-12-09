@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -60,7 +61,7 @@ bool BookmarkContextMenu::IsCommandEnabled(int command_id) const {
 }
 
 bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
-  return id != IDS_BOOKMARK_BAR_REMOVE;
+  return id != IDC_BOOKMARK_BAR_REMOVE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,10 +72,6 @@ void BookmarkContextMenu::CloseMenu() {
   menu_->Cancel();
 }
 
-void BookmarkContextMenu::AddItem(int command_id) {
-  menu_->AppendMenuItemWithLabel(command_id, l10n_util::GetString(command_id));
-}
-
 void BookmarkContextMenu::AddItemWithStringId(int command_id, int string_id) {
   menu_->AppendMenuItemWithLabel(command_id, l10n_util::GetString(string_id));
 }
@@ -83,8 +80,8 @@ void BookmarkContextMenu::AddSeparator() {
   menu_->AppendSeparator();
 }
 
-void BookmarkContextMenu::AddCheckboxItem(int command_id) {
-  menu_->AppendMenuItem(command_id, l10n_util::GetString(command_id),
+void BookmarkContextMenu::AddCheckboxItem(int command_id, int string_id) {
+  menu_->AppendMenuItem(command_id, l10n_util::GetString(string_id),
                         views::MenuItemView::CHECKBOX);
 }
 

@@ -131,6 +131,9 @@ GtkWidget* MenuGtk::Delegate::GetDefaultImageForCommandId(int command_id) {
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
     case IDC_CONTENT_CONTEXT_SAVELINKAS:
+      stock = GTK_STOCK_SAVE_AS;
+      break;
+
     case IDC_SAVE_PAGE:
       stock = GTK_STOCK_SAVE;
       break;
@@ -156,6 +159,7 @@ GtkWidget* MenuGtk::Delegate::GetDefaultImageForCommandId(int command_id) {
       break;
 
     case IDC_CONTENT_CONTEXT_DELETE:
+    case IDC_BOOKMARK_BAR_REMOVE:
       stock = GTK_STOCK_DELETE;
       break;
 
@@ -240,6 +244,23 @@ GtkWidget* MenuGtk::Delegate::GetDefaultImageForCommandId(int command_id) {
     case IDC_DEV_TOOLS_INSPECT:
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
       stock = GTK_STOCK_PROPERTIES;
+      break;
+
+    case IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK:
+      stock = GTK_STOCK_ADD;
+      break;
+
+    case IDC_BOOKMARK_BAR_RENAME_FOLDER:
+    case IDC_BOOKMARK_BAR_EDIT:
+      stock = GTK_STOCK_EDIT;
+      break;
+
+    case IDC_BOOKMARK_BAR_NEW_FOLDER:
+      stock = GTK_STOCK_DIRECTORY;
+      break;
+
+    case IDC_BOOKMARK_BAR_OPEN_ALL:
+      stock = GTK_STOCK_OPEN;
       break;
 
     default:

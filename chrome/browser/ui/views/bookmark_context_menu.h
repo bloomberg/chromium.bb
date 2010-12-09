@@ -51,10 +51,9 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
 
   // Overridden from BookmarkContextMenuControllerViewsDelegate:
   virtual void CloseMenu();
-  virtual void AddItem(int command_id);
   virtual void AddItemWithStringId(int command_id, int string_id);
   virtual void AddSeparator();
-  virtual void AddCheckboxItem(int command_id);
+  virtual void AddCheckboxItem(int command_id, int string_id);
   virtual void WillRemoveBookmarks(
       const std::vector<const BookmarkNode*>& bookmarks);
   virtual void DidRemoveBookmarks();

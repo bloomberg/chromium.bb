@@ -26,10 +26,9 @@ class BookmarkContextMenuControllerViewsDelegate {
   virtual void CloseMenu() = 0;
 
   // Methods that add items to the underlying menu.
-  virtual void AddItem(int command_id) = 0;
   virtual void AddItemWithStringId(int command_id, int string_id) = 0;
   virtual void AddSeparator() = 0;
-  virtual void AddCheckboxItem(int command_id) = 0;
+  virtual void AddCheckboxItem(int command_id, int string_id) = 0;
 
   // Sent before bookmarks are removed.
   virtual void WillRemoveBookmarks(

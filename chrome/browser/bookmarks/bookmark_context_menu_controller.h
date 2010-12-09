@@ -70,14 +70,12 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   PageNavigator* navigator() const { return navigator_; }
 
  private:
-  // Adds a IDS_* style command to the menu.
-  void AddItem(int id);
-  // Adds a IDS_* style command to the menu with a different localized string.
+  // Adds a IDC_* style command to the menu with a localized string.
   void AddItem(int id, int localization_id);
   // Adds a separator to the menu.
   void AddSeparator();
   // Adds a checkable item to the menu.
-  void AddCheckboxItem(int id);
+  void AddCheckboxItem(int id, int localization_id);
 
   // Overridden from BaseBookmarkModelObserver:
   // Any change to the model results in closing the menu.
