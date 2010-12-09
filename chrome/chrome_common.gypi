@@ -489,7 +489,7 @@
             'conditions': [
               ['use_openssl==1', {
                  'dependencies': [
-                   '../build/linux/system.gyp:openssl',
+                   '../third_party/openssl/openssl.gyp:openssl',
                  ],
                },
                { # else !use_openssl
