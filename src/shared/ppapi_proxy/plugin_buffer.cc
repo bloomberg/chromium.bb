@@ -18,7 +18,7 @@
 namespace ppapi_proxy {
 
 namespace {
-PP_Resource Create(PP_Module module, int32_t size_in_bytes) {
+PP_Resource Create(PP_Module module, uint32_t size_in_bytes) {
   UNREFERENCED_PARAMETER(module);
   UNREFERENCED_PARAMETER(size_in_bytes);
   return kInvalidResourceId;
@@ -29,7 +29,7 @@ PP_Bool IsBuffer(PP_Resource resource) {
       ? PP_TRUE : PP_FALSE;
 }
 
-PP_Bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
+PP_Bool Describe(PP_Resource resource, uint32_t* size_in_bytes) {
   UNREFERENCED_PARAMETER(resource);
   UNREFERENCED_PARAMETER(size_in_bytes);
   return PP_FALSE;
