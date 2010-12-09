@@ -240,9 +240,10 @@ cr.define('options', function() {
 
     // Set up the overlay sheet. Clicks on the visible part of the parent page
     // should close the overlay, not fall through to the parent page.
+    var self = this;
     $('subpage-sheet-container').onclick = function(event) {
       if (!$('subpage-sheet').contains(event.target))
-        this.closeSubPage();
+        self.closeSubPage();
       event.stopPropagation();
     }
   };
