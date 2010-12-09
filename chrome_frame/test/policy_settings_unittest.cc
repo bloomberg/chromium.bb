@@ -11,9 +11,12 @@
 #include "base/win/registry.h"
 #include "chrome/common/policy_constants.h"
 #include "chrome_frame/policy_settings.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
+using chrome_frame_test::ScopedVirtualizeHklmAndHkcu;
+using chrome_frame_test::TempRegKeyOverride;
 
 namespace {
 
@@ -29,42 +32,6 @@ void DeleteChromeFramePolicyEntries(HKEY root) {
     key.DeleteKey(ASCIIToWide(policy::key::kApplicationLocaleValue).c_str());
   }
 }
-
-class TempRegKeyOverride {
- public:
-  static const wchar_t kTempTestKeyPath[];
-
-  TempRegKeyOverride(HKEY override, const wchar_t* temp_name)
-      : override_(override), temp_name_(temp_name) {
-    DCHECK(temp_name && lstrlenW(temp_name));
-    std::wstring key_path(kTempTestKeyPath);
-    key_path += L"\\" + temp_name_;
-    EXPECT_TRUE(temp_key_.Create(HKEY_CURRENT_USER, key_path.c_str(),
-                                 KEY_ALL_ACCESS));
-    EXPECT_EQ(ERROR_SUCCESS,
-              ::RegOverridePredefKey(override_, temp_key_.Handle()));
-  }
-
-  ~TempRegKeyOverride() {
-    ::RegOverridePredefKey(override_, NULL);
-    // The temp key will be deleted via a call to DeleteAllTempKeys().
-  }
-
-  static void DeleteAllTempKeys() {
-    RegKey key;
-    if (key.Open(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS)) {
-      key.DeleteKey(kTempTestKeyPath);
-    }
-  }
-
- protected:
-  HKEY override_;
-  RegKey temp_key_;
-  std::wstring temp_name_;
-};
-
-const wchar_t TempRegKeyOverride::kTempTestKeyPath[] =
-    L"Software\\Chromium\\TempTestKeys";
 
 bool InitializePolicyKey(HKEY policy_root, RegKey* policy_key) {
   EXPECT_TRUE(policy_key->Create(policy_root, policy::kRegistrySubKey,
@@ -136,28 +103,21 @@ bool SetChromeApplicationLocale(HKEY policy_root, const wchar_t* locale) {
 class PolicySettingsTest : public testing::Test {
  protected:
   void SetUp() {
-    TempRegKeyOverride::DeleteAllTempKeys();
-
-    hklm_pol_.reset(new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_pol"));
-    hkcu_pol_.reset(new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_pol"));
-
     ResetPolicySettings();
   }
 
   void TearDown() {
-    hkcu_pol_.reset(NULL);
-    hklm_pol_.reset(NULL);
-    TempRegKeyOverride::DeleteAllTempKeys();
   }
 
   void ResetPolicySettings() {
-    at_exit_manager_.ProcessCallbacksNow();
+    //at_exit_manager_.ProcessCallbacksNow();
+    DeleteAllSingletons();
   }
 
   // This is used to manage life cycle of PolicySettings singleton.
-  base::ShadowingAtExitManager at_exit_manager_;
-  scoped_ptr<TempRegKeyOverride> hklm_pol_;
-  scoped_ptr<TempRegKeyOverride> hkcu_pol_;
+  // base::ShadowingAtExitManager at_exit_manager_;
+
+  ScopedVirtualizeHklmAndHkcu registry_virtualization_;
 };
 
 TEST_F(PolicySettingsTest, RendererForUrl) {

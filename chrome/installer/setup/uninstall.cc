@@ -611,7 +611,7 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
   }
 
   // Close any Chrome Frame helper processes that may be running.
-  if (InstallUtil::IsChromeFrameProcess()) {
+  if (product.distribution()->GetType() == BrowserDistribution::CHROME_FRAME) {
     VLOG(1) << "Closing the Chrome Frame helper process";
     CloseChromeFrameHelperProcess();
   }

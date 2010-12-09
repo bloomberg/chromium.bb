@@ -9,8 +9,10 @@
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
 #include "chrome_frame/urlmon_bind_status_callback.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/urlmon_moniker_tests.h"
 
+using chrome_frame_test::ScopedVirtualizeHklmAndHkcu;
 using testing::Return;
 using testing::Eq;
 
@@ -20,6 +22,7 @@ class MonikerPatchTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    DeleteAllSingletons();
     PathService::Get(base::DIR_SOURCE_ROOT, &test_file_path_);
     test_file_path_ = test_file_path_.Append(FILE_PATH_LITERAL("chrome_frame"))
         .Append(FILE_PATH_LITERAL("test"))
@@ -58,6 +61,7 @@ class MonikerPatchTest : public testing::Test {
   }
 
   FilePath test_file_path_;
+  ScopedVirtualizeHklmAndHkcu virtualized_registry_;
 };
 
 // Tests the CacheStream class by writing content into a stream object

@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome_frame/utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_frame_test {
 
@@ -51,6 +52,9 @@ const char kChromeImageName[] = "chrome.exe";
 const wchar_t kIEProfileName[] = L"iexplore";
 const wchar_t kChromeLauncher[] = L"chrome_launcher.exe";
 const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
+
+const wchar_t TempRegKeyOverride::kTempTestKeyPath[] =
+    L"Software\\Chromium\\TempTestKeys";
 
 // Callback function for EnumThreadWindows.
 BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {
@@ -622,6 +626,42 @@ base::ProcessHandle StartCrashService() {
     }
     return NULL;
   }
+}
+
+TempRegKeyOverride::TempRegKeyOverride(HKEY override, const wchar_t* temp_name)
+    : override_(override), temp_name_(temp_name) {
+  DCHECK(temp_name && lstrlenW(temp_name));
+  std::wstring key_path(kTempTestKeyPath);
+  key_path += L"\\" + temp_name_;
+  EXPECT_TRUE(temp_key_.Create(HKEY_CURRENT_USER, key_path.c_str(),
+                               KEY_ALL_ACCESS));
+  EXPECT_EQ(ERROR_SUCCESS,
+            ::RegOverridePredefKey(override_, temp_key_.Handle()));
+}
+
+TempRegKeyOverride::~TempRegKeyOverride() {
+  ::RegOverridePredefKey(override_, NULL);
+  // The temp key will be deleted via a call to DeleteAllTempKeys().
+}
+
+// static
+void TempRegKeyOverride::DeleteAllTempKeys() {
+  base::win::RegKey key;
+  if (key.Open(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS)) {
+    key.DeleteKey(kTempTestKeyPath);
+  }
+}
+
+ScopedVirtualizeHklmAndHkcu::ScopedVirtualizeHklmAndHkcu() {
+  TempRegKeyOverride::DeleteAllTempKeys();
+  hklm_.reset(new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_fake"));
+  hkcu_.reset(new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_fake"));
+}
+
+ScopedVirtualizeHklmAndHkcu::~ScopedVirtualizeHklmAndHkcu() {
+  hkcu_.reset(NULL);
+  hklm_.reset(NULL);
+  TempRegKeyOverride::DeleteAllTempKeys();
 }
 
 }  // namespace chrome_frame_test

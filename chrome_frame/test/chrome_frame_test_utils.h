@@ -21,6 +21,8 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/scoped_comptr_win.h"
+#include "base/scoped_ptr.h"
+#include "base/win/registry.h"
 
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
@@ -177,6 +179,41 @@ class CloseIeAtEndOfScope {
 // during test runs.
 base::ProcessHandle StartCrashService();
 
+class TempRegKeyOverride {
+ public:
+  static const wchar_t kTempTestKeyPath[];
+
+  TempRegKeyOverride(HKEY override, const wchar_t* temp_name);
+  ~TempRegKeyOverride();
+
+  static void DeleteAllTempKeys();
+
+ protected:
+  HKEY override_;
+  base::win::RegKey temp_key_;
+  std::wstring temp_name_;
+};
+
+// Used in tests where we reference the registry and don't want to run into
+// problems where existing registry settings might conflict with the
+// expectations of the test.
+class ScopedVirtualizeHklmAndHkcu {
+ public:
+  ScopedVirtualizeHklmAndHkcu();
+  ~ScopedVirtualizeHklmAndHkcu();
+
+ protected:
+  scoped_ptr<TempRegKeyOverride> hklm_;
+  scoped_ptr<TempRegKeyOverride> hkcu_;
+};
+
 }  // namespace chrome_frame_test
+
+// TODO(tommi): This is a temporary workaround while we're getting our
+// Singleton story straight.  Ideally each test should clear up any singletons
+// it might have created, but test cases do not implicitly have their own
+// AtExitManager, so we have this workaround method for tests that depend on
+// "fresh" singletons.  The implementation is in chrome_frame_unittest_main.cc.
+void DeleteAllSingletons();
 
 #endif  // CHROME_FRAME_TEST_CHROME_FRAME_TEST_UTILS_H_

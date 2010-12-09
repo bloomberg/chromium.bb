@@ -6,17 +6,41 @@
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
 #include "base/win/registry.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::win::RegKey;
+using chrome_frame_test::TempRegKeyOverride;
 
 const wchar_t kChannelName[] = L"-dev";
 const wchar_t kSuffix[] = L"-fix";
 
-TEST(UtilTests, GetModuleVersionTest) {
+class UtilTests : public testing::Test {
+ protected:
+  void SetUp() {
+    TempRegKeyOverride::DeleteAllTempKeys();
+    DeleteAllSingletons();
+
+    hklm_pol_.reset(new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_fake"));
+    hkcu_pol_.reset(new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_fake"));
+  }
+
+  void TearDown() {
+    hkcu_pol_.reset(NULL);
+    hklm_pol_.reset(NULL);
+    TempRegKeyOverride::DeleteAllTempKeys();
+  }
+
+  // This is used to manage life cycle of PolicySettings singleton.
+  // base::ShadowingAtExitManager at_exit_manager_;
+  scoped_ptr<TempRegKeyOverride> hklm_pol_;
+  scoped_ptr<TempRegKeyOverride> hkcu_pol_;
+};
+
+TEST_F(UtilTests, GetModuleVersionTest) {
   HMODULE mod = GetModuleHandle(L"kernel32.dll");
   EXPECT_NE(mod, static_cast<HMODULE>(NULL));
   wchar_t path[MAX_PATH] = {0};
@@ -43,7 +67,7 @@ TEST(UtilTests, GetModuleVersionTest) {
   EXPECT_EQ(fixed_info->dwFileVersionLS, static_cast<DWORD>(low));
 }
 
-TEST(UtilTests, HaveSameOrigin) {
+TEST_F(UtilTests, HaveSameOrigin) {
   struct OriginCompare {
     const char* a;
     const char* b;
@@ -68,7 +92,7 @@ TEST(UtilTests, HaveSameOrigin) {
   }
 }
 
-TEST(UtilTests, IsValidUrlScheme) {
+TEST_F(UtilTests, IsValidUrlScheme) {
   struct Cases {
     const wchar_t* url;
     bool is_privileged;
@@ -102,7 +126,7 @@ TEST(UtilTests, IsValidUrlScheme) {
   }
 }
 
-TEST(UtilTests, GuidToString) {
+TEST_F(UtilTests, GuidToString) {
   // {3C5E2125-35BA-48df-A841-5F669B9D69FC}
   const GUID test_guid = { 0x3c5e2125, 0x35ba, 0x48df,
       { 0xa8, 0x41, 0x5f, 0x66, 0x9b, 0x9d, 0x69, 0xfc } };
@@ -115,12 +139,12 @@ TEST(UtilTests, GuidToString) {
   EXPECT_EQ(static_cast<size_t>(lstrlenW(compare)), str_guid.length());
 }
 
-TEST(UtilTests, GetTempInternetFiles) {
+TEST_F(UtilTests, GetTempInternetFiles) {
   FilePath path = GetIETemporaryFilesFolder();
   EXPECT_FALSE(path.empty());
 }
 
-TEST(UtilTests, ParseAttachTabUrlTest) {
+TEST_F(UtilTests, ParseAttachTabUrlTest) {
   ChromeFrameUrl cf_url;
 
   static const std::string kProfileName("iexplore");
@@ -202,7 +226,7 @@ class MockIInternetSecurityManager : public IInternetSecurityManager {
       HRESULT(DWORD zone, IEnumString** enum_string, DWORD flags));
 };
 
-TEST(UtilTests, CanNavigateTest) {
+TEST_F(UtilTests, CanNavigateTest) {
   MockIInternetSecurityManager mock;
 
   struct Zones {
@@ -293,7 +317,7 @@ TEST(UtilTests, CanNavigateTest) {
   SetConfigBool(kAllowUnsafeURLs, enable_gcf);
 }
 
-TEST(UtilTests, IsDefaultRendererTest) {
+TEST_F(UtilTests, IsDefaultRendererTest) {
   RegKey config_key(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_ALL_ACCESS);
   EXPECT_TRUE(config_key.Valid());
 
@@ -312,7 +336,7 @@ TEST(UtilTests, IsDefaultRendererTest) {
   config_key.WriteValue(kEnableGCFRendererByDefault, saved_default_renderer);
 }
 
-TEST(UtilTests, RendererTypeForUrlTest) {
+TEST_F(UtilTests, RendererTypeForUrlTest) {
   // Open all the keys we need.
   RegKey config_key(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_ALL_ACCESS);
   EXPECT_TRUE(config_key.Valid());
@@ -356,7 +380,7 @@ TEST(UtilTests, RendererTypeForUrlTest) {
   config_key.WriteValue(kEnableGCFRendererByDefault, saved_default_renderer);
 }
 
-TEST(UtilTests, XUaCompatibleDirectiveTest) {
+TEST_F(UtilTests, XUaCompatibleDirectiveTest) {
   int all_versions[] = {0, 1, 2, 5, 6, 7, 8, 9, 10, 11, 99, 100, 101, 1000};
 
   struct Cases {
