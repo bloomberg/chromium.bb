@@ -82,12 +82,10 @@ env.DualLibrary('ppapi_browser',
                  'upcall_server.cc',
                  common_obj,])
 
-
+# TODO(polina): this is only needed because fake_browser_ppapi
+# borrows code from the plugin side proxy. Don't do that.
 env.DualLibrary('ppapi_plugin',
-                ['plugin_instance.cc',
-                 'plugin_resource.cc',
-                 'plugin_resource_tracker.cc',
-                 'plugin_var.cc',
+                ['plugin_var.cc',
                  common_obj])
 
 

@@ -44,7 +44,7 @@ const void* FakeGetInterface(const char* interface_name) {
   if (std::strcmp(interface_name, PPB_CORE_INTERFACE) == 0) {
     return fake_browser_ppapi::Core::GetInterface();
   } else if (std::strcmp(interface_name, PPB_INSTANCE_INTERFACE) == 0) {
-    return ppapi_proxy::PluginInstance::GetInterface();
+    return fake_browser_ppapi::Instance::GetInterface();
   } else if (std::strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
     return host->var_interface();
   } else if (std::strcmp(interface_name, PPB_URLLOADER_INTERFACE) == 0) {

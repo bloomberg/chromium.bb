@@ -17,6 +17,37 @@ using fake_browser_ppapi::DebugPrintf;
 
 namespace fake_browser_ppapi {
 
+namespace {
+
+static Instance* GetInstancePointer(PP_Instance instance) {
+  return reinterpret_cast<Instance*>(static_cast<uintptr_t>(instance));
+}
+
+static PP_Var GetWindowObject(PP_Instance instance) {
+  return GetInstancePointer(instance)->GetWindowObject();
+}
+
+static PP_Var GetOwnerElementObject(PP_Instance instance) {
+  return GetInstancePointer(instance)->GetOwnerElementObject();
+}
+
+static PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
+  return
+      static_cast<PP_Bool>(GetInstancePointer(instance)->BindGraphics(device));
+}
+
+static PP_Bool IsFullFrame(PP_Instance instance) {
+  return static_cast<PP_Bool>(GetInstancePointer(instance)->IsFullFrame());
+}
+
+static PP_Var ExecuteScript(PP_Instance instance,
+                            PP_Var script,
+                            PP_Var* exception) {
+  return GetInstancePointer(instance)->ExecuteScript(script, exception);
+}
+
+}  // namespace
+
 PP_Var Instance::GetWindowObject() {
   DebugPrintf("Instance::GetWindowObject: instance=%p\n",
               reinterpret_cast<void*>(this));
@@ -53,6 +84,17 @@ PP_Var Instance::ExecuteScript(PP_Var script,
   UNREFERENCED_PARAMETER(script);
   UNREFERENCED_PARAMETER(exception);
   return PP_MakeUndefined();
+}
+
+const PPB_Instance* Instance::GetInterface() {
+  static const PPB_Instance instance_interface = {
+    fake_browser_ppapi::GetWindowObject,
+    fake_browser_ppapi::GetOwnerElementObject,
+    fake_browser_ppapi::BindGraphics,
+    fake_browser_ppapi::IsFullFrame,
+    fake_browser_ppapi::ExecuteScript
+  };
+  return &instance_interface;
 }
 
 }  // namespace fake_browser_ppapi

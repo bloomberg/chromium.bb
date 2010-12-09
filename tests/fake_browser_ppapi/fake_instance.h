@@ -8,7 +8,6 @@
 #define NATIVE_CLIENT_TESTS_FAKE_BROWSER_PPAPI_FAKE_INSTANCE_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_instance.h"
 #include "native_client/tests/fake_browser_ppapi/fake_window.h"
 #include "ppapi/c/ppb_instance.h"
 
@@ -17,7 +16,7 @@ namespace fake_browser_ppapi {
 class Host;
 
 // Implements the PPB_Instance interface.
-class Instance : public ppapi_proxy::PluginInstance {
+class Instance {
  public:
   explicit Instance(FakeWindow* window) : window_(window) {}
   virtual ~Instance() {}
@@ -28,6 +27,7 @@ class Instance : public ppapi_proxy::PluginInstance {
   virtual bool IsFullFrame();
   virtual PP_Var ExecuteScript(PP_Var script,
                                PP_Var* exception);
+  static const PPB_Instance* GetInterface();
 
  private:
   FakeWindow* window_;
