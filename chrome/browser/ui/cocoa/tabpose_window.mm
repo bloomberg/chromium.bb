@@ -380,7 +380,7 @@ class Tile {
   NSRect GetStartRectRelativeTo(const Tile& tile) const;
   NSRect thumb_rect() const { return thumb_rect_; }
 
-  NSRect favicon_rect() const { return favicon_rect_; }
+  NSRect favicon_rect() const { return NSIntegralRect(favicon_rect_); }
   SkBitmap favicon() const;
 
   // This changes |title_rect| and |favicon_rect| such that the favicon is on
@@ -394,7 +394,7 @@ class Tile {
   void set_font_metrics(CGFloat ascender, CGFloat descender);
   CGFloat title_font_size() const { return title_font_size_; }
 
-  NSRect title_rect() const { return title_rect_; }
+  NSRect title_rect() const { return NSIntegralRect(title_rect_); }
 
   // Returns an unelided title. The view logic is responsible for eliding.
   const string16& title() const { return contents_->GetTitle(); }
@@ -436,19 +436,23 @@ SkBitmap Tile::favicon() const {
   return contents_->GetFavIcon();
 }
 
-// Changes |title_rect| and |favicon_rect| such that the favicon is on the
-// font's baseline and that the minimum distance between thumb rect and
-// favicon and title rects doesn't change.
+// Changes |title_rect| and |favicon_rect| such that the favicon's and the
+// title's vertical center is aligned and that the minimum distance between
+// the thumb rect and favicon and title rects doesn't change.
 void Tile::set_font_metrics(CGFloat ascender, CGFloat descender) {
+  // Make the title height big enough to fit the font, and adopt the title
+  // position to keep its distance from the thumb rect.
   title_rect_.origin.y -= ascender + descender - NSHeight(title_rect_);
   title_rect_.size.height = ascender + descender;
 
-  if (NSHeight(favicon_rect_) < ascender) {
-    // Move favicon down.
-    favicon_rect_.origin.y = title_rect_.origin.y + descender;
+  // Align vertical center. Both rects are currently aligned on their top edge.
+  CGFloat delta_y = NSMidY(title_rect_) - NSMidY(favicon_rect_);
+  if (delta_y > 0) {
+    // Title is higher: Move favicon down to align the centers.
+    favicon_rect_.origin.y += delta_y;
   } else {
-    // Move title down.
-    title_rect_.origin.y = favicon_rect_.origin.y - descender;
+    // Favicon is higher: Move title down to align the centers.
+    title_rect_.origin.y -= delta_y;
   }
 }
 
