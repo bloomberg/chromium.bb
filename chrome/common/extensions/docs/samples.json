@@ -603,7 +603,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "source_hash": "eb3c20a0f9b6035a8e9e3a7448d5608bcc44fce7", 
+      "source_hash": "0aa8ec9a2c091e227661ca5010d08f6823e643a7", 
       "zip_path": "examples/api/omnibox/extension-docs.zip"
     }, 
     {

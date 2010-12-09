@@ -42,7 +42,7 @@
         this.corpus_.push({
           'name' : name,
           'url' : url,
-          'ranges' : [],
+          'style' : name,
           'description' : desc,
           'type' : type
         });
@@ -52,28 +52,35 @@
        * Locates a match from the supplied keywords against text.
        *
        * Keywords are matched in the order supplied, and a non-overlapping
-       * search is used.  The ranges are returned in a way that is easily
-       * converted to the style array required by the omnibox API.
+       * search is used.  The matches are returned in a styled string that 
+       * can be passed directly to the omnibox API.
        *
        * @param {Array.<String>} keywords A list of keywords to check.
        * @param {String} name The name to search against.
-       * @returns {Array.<Array.<number>>|null} A list of indexes corresponding
-       *     to matches, or null if no match was found.
+       * @returns {String|null} A string containing &lt;match&gt; markup
+       *     corresponding to the matched text, or null if no match was found.
        */
       APISearchCorpus.prototype.findMatch_ = function(keywords, name) {
-        var ranges = [];
+        var style = [];
         var indexFrom = 0;
+        var lowerName = name.toLowerCase();
         for (var i = 0; i < keywords.length; i++) {
           var keyword = keywords[i].toLowerCase();
-          var start = name.indexOf(keyword, indexFrom);
+          var start = lowerName.indexOf(keyword, indexFrom);
           if (start == -1) {
             return null;
           }
-          var end = start + keyword.length;
-          ranges.push([start, end]);
-          indexFrom = end + 1;
+          var end = start + keyword.length + 1;
+          
+          style.push(name.substring(indexFrom, start))
+          style.push('<match>');
+          style.push(name.substring(start, end));
+          style.push('</match>');
+          
+          indexFrom = end;
         }
-        return ranges;
+        style.push(name.substring(indexFrom));
+        return style.join('');
       };
 
       /**
@@ -95,11 +102,11 @@
         var searchText = text.toLowerCase();
         var keywords = searchText.split(' ');
         for (var i = 0; i < this.corpus_.length; i++) {
-          var name = this.corpus_[i]['name'].toLowerCase();
+          var name = this.corpus_[i]['name'];
           if (results.length < limit) {
             var result = this.findMatch_(keywords, name);
             if (result) {
-              this.corpus_[i]['ranges'] = result;
+              this.corpus_[i]['style'] = result;
               results.push(this.corpus_[i]);
             }
           }
@@ -312,35 +319,19 @@
        * @param {Object} match The match to convert.
        * @returns {Object} A suggestion object formatted for the omnibox API.
        */
-      OmniboxManager.prototype.matchToSuggestion_ = function(match) {
-        var styles = [ ];
-        var ranges = match['ranges'];
-        var desc = match['name'];
-        var name = match['name'];
-        var lastIndex = 0;
-        for (var i = 0; i < ranges.length; i++) {
-          styles.push(chrome.omnibox.styleMatch(ranges[i][0]));
-          styles.push(chrome.omnibox.styleNone(ranges[i][1]));
-          lastIndex = ranges[i][1];
-        }
-
+      OmniboxManager.prototype.convertMatchToSuggestion_ = function(match) {
+        var suggestion = [ match['style'] ];
         if (match['type']) {
           // Abusing the URL style a little, but want this to stand out.
-          desc = this.pushStyle_(styles, 'Url', desc, match['type']);
-          lastIndex = desc.length;
+          suggestion.push(['<url>', match['type'], '</url>'].join(''));
         }
         if (match['description']) {
-          desc = this.pushStyle_(styles, 'Dim', desc, match['description']);
-          lastIndex = desc.length;
+          suggestion.push(['<dim>', match['description'], '</dim>'].join(''));
         }
-
-        if (lastIndex == desc.length) styles.pop();
-
         return {
-          'content' : name,
-          'description' : desc,
-          'descriptionStyles' : styles
-        };
+          'content' : match['name'],
+          'description' : suggestion.join(' - ')
+        }
       };
 
       /**
@@ -353,7 +344,7 @@
         var matches = this.corpus_.search(text, 10);
         var suggestions = [];
         for (var i = 0; i < matches.length; i++) {
-          var suggestion = this.matchToSuggestion_(matches[i]);
+          var suggestion = this.convertMatchToSuggestion_(matches[i]);
           suggestions.push(suggestion);
         }
         suggest(suggestions);
@@ -372,39 +363,6 @@
         if (matches.length > 0) {
           this.tabManager_.open(matches[0]['url']);
         }
-      };
-
-      /**
-       * Helper function for constructing a suggestion style list.
-       *
-       * Adds a separator and text to a description, and modifies an array
-       * of styles so that the separator is not styled and the additional text
-       * obtains the requested style type.
-       *
-       * This method expects the list of styles to end with a styleNone style.
-       * It will modify the list so that the last element is a styleNone style.
-       * The last element will always be at the end of the returned string,
-       * which will throw an error unless it is removed before being passed
-       * to the API (this method is intended to be called a few times in a row).
-       * @see OmniboxManager.matchToSuggestion_ for code that removes this last
-       * entry.
-       *
-       * @param {Array.<Object>} styles An array of styles, in the format
-       *     expected by the omnibox API.
-       * @param {String} type The style type to apply - must be one of
-       *     "Dim", "Match", "None", and "Url".
-       * @param {String} desc The description text to append to and style.
-       * @param {String} text The text to append to the description.
-       * @returns {String} The description plus a separator and the supplied
-       *     text, intended to overwrite the variable which was passed into
-       *     this function as "desc".
-       */
-      OmniboxManager.prototype.pushStyle_ = function(styles, type, desc, text) {
-        desc += this.SEPARATOR;
-        styles.push(chrome.omnibox['style' + type](desc.length));
-        desc += text;
-        styles.push(chrome.omnibox.styleNone(desc.length));
-        return desc;
       };
 
       //////////////////////////////////////////////////////////////////////////
