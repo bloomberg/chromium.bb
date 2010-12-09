@@ -4,5 +4,5 @@
 
 deps = {
   "scons":
-    "svn://chrome-svn.corp.google.com/chrome/trunk/src/third_party/scons",
+    "http://src.chromium.org/svn/trunk/src/third_party/scons@44099",
 }
