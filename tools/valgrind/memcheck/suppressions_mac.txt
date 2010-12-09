@@ -1173,3 +1173,12 @@
    fun:_ZN13UtilityThreadC2Ev
    fun:_ZN13UtilityThreadC1Ev
 }
+{
+   bug_66102
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN6policy21FileBasedPolicyLoader11InitWatcherEv
+   ...
+   fun:_ZN54PrefValueStorePolicyRefreshTest_TestPolicyRefresh_Test8TestBodyEv
+}
