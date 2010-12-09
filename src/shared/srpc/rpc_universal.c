@@ -435,11 +435,11 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
     dim = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
-    arg->u.caval.carr = (char*) calloc(dim, sizeof(char));
-    if (NULL == arg->u.caval.carr) {
+    arg->arrays.carr = (char*) calloc(dim, sizeof(char));
+    if (NULL == arg->arrays.carr) {
       return 0;
     }
-    arg->u.caval.count = dim;
+    arg->u.count = dim;
     comma = strstr(token, ",");
     if (comma) {
       const char* p = comma + 1;
@@ -448,7 +448,7 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
         if (-1 == ival || ')' == ival) {
           break;
         }
-        arg->u.caval.carr[i] = ival;
+        arg->arrays.carr[i] = ival;
       }
     }
     break;
@@ -459,17 +459,17 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
     dim = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY;
-    arg->u.daval.darr = (double*) calloc(dim, sizeof(double));
-    if (NULL == arg->u.daval.darr) {
+    arg->arrays.darr = (double*) calloc(dim, sizeof(double));
+    if (NULL == arg->arrays.darr) {
       return 0;
     }
-    arg->u.daval.count = dim;
+    arg->u.count = dim;
     comma = token;
     for (i = 0; i < dim; ++i) {
       comma = strstr(comma, ",");
       if (!comma) break;
       ++comma;
-      arg->u.daval.darr[i] = strtod(comma, 0);
+      arg->arrays.darr[i] = strtod(comma, 0);
     }
     break;
    case NACL_SRPC_ARG_TYPE_HANDLE:
@@ -485,17 +485,17 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
     dim = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_INT_ARRAY;
-    arg->u.iaval.iarr = (int32_t*) calloc(dim, sizeof(int32_t));
-    if (NULL == arg->u.iaval.iarr) {
+    arg->arrays.iarr = (int32_t*) calloc(dim, sizeof(int32_t));
+    if (NULL == arg->arrays.iarr) {
       return 0;
     }
-    arg->u.iaval.count = dim;
+    arg->u.count = dim;
     comma = token;
     for (i = 0; i < dim; ++i) {
       comma = strstr(comma, ",");
       if (!comma) break;
       ++comma;
-      arg->u.iaval.iarr[i] = strtol(comma, 0, 0);
+      arg->arrays.iarr[i] = strtol(comma, 0, 0);
     }
     break;
    case NACL_SRPC_ARG_TYPE_LONG:
@@ -509,17 +509,17 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
      */
     dim = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_LONG_ARRAY;
-    arg->u.laval.larr = (int64_t*) calloc(dim, sizeof(int64_t));
-    if (NULL == arg->u.laval.larr) {
+    arg->arrays.larr = (int64_t*) calloc(dim, sizeof(int64_t));
+    if (NULL == arg->arrays.larr) {
       return 0;
     }
-    arg->u.laval.count = dim;
+    arg->u.count = dim;
     comma = token;
     for (i = 0; i < dim; ++i) {
       comma = strstr(comma, ",");
       if (!comma) break;
       ++comma;
-      arg->u.laval.larr[i] = STRTOLL(comma, 0, 0);
+      arg->arrays.larr[i] = STRTOLL(comma, 0, 0);
     }
     break;
    case NACL_SRPC_ARG_TYPE_STRING:
@@ -528,11 +528,11 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
      * This is a conservative estimate of the length, as it includes the
      * quotes and possibly some escape characters.
      */
-    arg->u.sval.str = malloc(strlen(token));
-    if (NULL == arg->u.sval.str) {
+    arg->arrays.str = malloc(strlen(token));
+    if (NULL == arg->arrays.str) {
       return 0;
     }
-    ScanEscapeString(arg->u.sval.str, token + 2);
+    ScanEscapeString(arg->arrays.str, token + 2);
     break;
     /*
      * The two cases below are added to avoid warnings, they are only used
@@ -616,8 +616,8 @@ static void DumpArg(const NaClSrpcArg* arg) {
     printf("b(%d)", arg->u.bval);
     break;
    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-    for (i = 0; i < arg->u.caval.count; ++i)
-      PrintOneChar(arg->u.caval.carr[i]);
+    for (i = 0; i < arg->u.count; ++i)
+      PrintOneChar(arg->arrays.carr[i]);
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE:
     printf("d(");
@@ -625,11 +625,11 @@ static void DumpArg(const NaClSrpcArg* arg) {
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-    count = arg->u.daval.count;
+    count = arg->u.count;
     printf("D(%"NACL_PRIu32"", count);
     for (i = 0; i < count; ++i) {
       printf(",");
-      DumpDouble(&(arg->u.daval.darr[i]));
+      DumpDouble(&(arg->arrays.darr[i]));
     }
     printf(")");
     break;
@@ -640,25 +640,25 @@ static void DumpArg(const NaClSrpcArg* arg) {
     printf("i(%"NACL_PRId32")", arg->u.ival);
     break;
    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-    count = arg->u.iaval.count;
+    count = arg->u.count;
     printf("I(%"NACL_PRIu32"", count);
     for (i = 0; i < count; ++i)
-      printf(",%"NACL_PRId32, arg->u.iaval.iarr[i]);
+      printf(",%"NACL_PRId32, arg->arrays.iarr[i]);
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_LONG:
     printf("l(%"NACL_PRId64")", arg->u.lval);
     break;
    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-    count = arg->u.laval.count;
+    count = arg->u.count;
     printf("L(%"NACL_PRIu32"", count);
     for (i = 0; i < count; ++i)
-      printf(",%"NACL_PRId64, arg->u.laval.larr[i]);
+      printf(",%"NACL_PRId64, arg->arrays.larr[i]);
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_STRING:
     printf("s(\"");
-    for (p = arg->u.sval.str; '\0' != *p; ++p)
+    for (p = arg->arrays.str; '\0' != *p; ++p)
       PrintOneChar(*p);
     printf("\")");
     break;
@@ -668,14 +668,14 @@ static void DumpArg(const NaClSrpcArg* arg) {
      */
    case NACL_SRPC_ARG_TYPE_OBJECT:
     /* this is a pointer that NaCl module can do nothing with */
-    printf("o(%p)", arg->u.oval);
+    printf("o(%p)", arg->arrays.oval);
     break;
    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-    count = arg->u.vaval.count;
+    count = arg->u.count;
     printf("A(%"NACL_PRIu32"", count);
     for (i = 0; i < count; ++i) {
       printf(",");
-      DumpArg(&arg->u.vaval.varr[i]);
+      DumpArg(&arg->arrays.varr[i]);
     }
     printf(")");
     break;
@@ -706,19 +706,19 @@ void FreeArrayArgs(NaClSrpcArg arg[], int count) {
   for (i = 0; i < count; ++i) {
     switch(arg[i].tag) {
      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      free(arg[i].u.caval.carr);
+      free(arg[i].arrays.carr);
       break;
      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      free(arg[i].u.daval.darr);
+      free(arg[i].arrays.darr);
       break;
      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      free(arg[i].u.iaval.iarr);
+      free(arg[i].arrays.iarr);
       break;
      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      free(arg[i].u.laval.larr);
+      free(arg[i].arrays.larr);
       break;
      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      FreeArrayArgs(arg[i].u.vaval.varr, arg[i].u.vaval.count);
+      FreeArrayArgs(arg[i].arrays.varr, arg[i].u.count);
       break;
      case NACL_SRPC_ARG_TYPE_INVALID:
      case NACL_SRPC_ARG_TYPE_BOOL:
@@ -762,7 +762,7 @@ static void UpcallString(NaClSrpcRpc* rpc,
                          NaClSrpcArg** outs,
                          NaClSrpcClosure* done) {
   UNREFERENCED_PARAMETER(outs);
-  printf("UpcallString: called with '%s'\n", ins[0]->u.sval.str);
+  printf("UpcallString: called with '%s'\n", ins[0]->arrays.str);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

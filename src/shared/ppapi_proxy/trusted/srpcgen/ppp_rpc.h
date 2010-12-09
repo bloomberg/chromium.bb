@@ -7,7 +7,7 @@
 #ifndef GEN_PPAPI_PROXY_PPP_RPC_H_
 #define GEN_PPAPI_PROXY_PPP_RPC_H_
 #ifdef __native_client__
-#include <nacl/nacl_srpc.h>
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #else
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"

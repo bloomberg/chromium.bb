@@ -34,7 +34,7 @@ void HelloWorld(NaClSrpcRpc *rpc,
   /*
    * Strdup must be used because the SRPC layer frees the string passed to it.
    */
-  out_args[0]->u.sval.str = strdup("hello, world.");
+  out_args[0]->arrays.str = strdup("hello, world.");
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

@@ -40,7 +40,7 @@ bool Map(void* obj, plugin::SrpcParams* params) {
   PLUGIN_PRINTF(("Map (shared_memory=%p)\n",
                  static_cast<void*>(shared_memory)));
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->u.oval = shared_memory;
+  params->outs()[0]->arrays.oval = shared_memory;
   return true;
 }
 

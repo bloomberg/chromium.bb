@@ -132,42 +132,42 @@ MethodInfo::~MethodInfo() {
 
 bool InitSrpcArgArray(NaClSrpcArg* arr, int size) {
   arr->tag = NACL_SRPC_ARG_TYPE_VARIANT_ARRAY;
-  arr->u.vaval.varr = reinterpret_cast<NaClSrpcArg*>(
-      calloc(size, sizeof(*(arr->u.vaval.varr))));
-  if (NULL == arr->u.vaval.varr) {
-    arr->u.vaval.count = 0;
+  arr->arrays.varr = reinterpret_cast<NaClSrpcArg*>(
+      calloc(size, sizeof(*(arr->arrays.varr))));
+  if (NULL == arr->arrays.varr) {
+    arr->u.count = 0;
     return false;
   }
-  arr->u.vaval.count = size;
+  arr->u.count = size;
   return true;
 }
 
 void FreeSrpcArg(NaClSrpcArg* arg) {
   switch (arg->tag) {
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      free(arg->u.caval.carr);
+      free(arg->arrays.carr);
       break;
     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      free(arg->u.daval.darr);
+      free(arg->arrays.darr);
       break;
     case NACL_SRPC_ARG_TYPE_HANDLE:
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      free(arg->u.iaval.iarr);
+      free(arg->arrays.iarr);
       break;
     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      free(arg->u.laval.larr);
+      free(arg->arrays.larr);
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
       // All strings that are passed in SrpcArg must be allocated using
       // malloc! We cannot use browser's allocation API
       // since some of SRPC arguments is handled outside of the plugin code.
-      free(arg->u.sval.str);
+      free(arg->arrays.str);
       break;
     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      if (arg->u.vaval.varr) {
-        for (uint32_t i = 0; i < arg->u.vaval.count; i++) {
-          FreeSrpcArg(&arg->u.vaval.varr[i]);
+      if (arg->arrays.varr) {
+        for (uint32_t i = 0; i < arg->u.count; i++) {
+          FreeSrpcArg(&arg->arrays.varr[i]);
         }
       }
       break;

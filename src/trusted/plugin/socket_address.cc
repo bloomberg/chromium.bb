@@ -24,7 +24,7 @@ bool RpcConnect(void* obj, plugin::SrpcParams *params) {
     return false;
   }
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->u.oval = connected_socket;
+  params->outs()[0]->arrays.oval = connected_socket;
   return true;
 }
 

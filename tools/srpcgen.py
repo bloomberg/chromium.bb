@@ -61,7 +61,7 @@ HEADER_START = """\
 #ifndef xyz
 #define xyz
 #ifdef __native_client__
-#include <nacl/nacl_srpc.h>
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #else
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -75,7 +75,7 @@ HEADER_END = """\
 SOURCE_FILE_INCLUDES = """\
 #include "xyz"
 #ifdef __native_client__
-#include <nacl/nacl_srpc.h>
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
 #endif  // UNREFERENCED_PARAMETER
@@ -86,15 +86,15 @@ SOURCE_FILE_INCLUDES = """\
 """
 
 types = {'bool': ['b', 'bool', 'u.bval', ''],
-         'char[]': ['C', 'char*', 'u.caval.carr', 'u.caval.count'],
+         'char[]': ['C', 'char*', 'arrays.carr', 'u.count'],
          'double': ['d', 'double', 'u.dval', ''],
-         'double[]': ['D', 'double*', 'u.daval.darr', 'u.daval.count'],
+         'double[]': ['D', 'double*', 'arrays.darr', 'u.count'],
          'handle': ['h', 'NaClSrpcImcDescType', 'u.hval', ''],
          'int32_t': ['i', 'int32_t', 'u.ival', ''],
-         'int32_t[]': ['I', 'int32_t*', 'u.iaval.iarr', 'u.iaval.count'],
+         'int32_t[]': ['I', 'int32_t*', 'arrays.iarr', 'u.count'],
          'int64_t': ['l', 'int64_t', 'u.lval', ''],
-         'int64_t[]': ['L', 'int64_t', 'u.laval.larr', 'u.laval.count'],
-         'string': ['s', 'char*', 'u.sval.str', ''],
+         'int64_t[]': ['L', 'int64_t', 'arrays.larr', 'u.count'],
+         'string': ['s', 'char*', 'arrays.str', ''],
         }
 
 

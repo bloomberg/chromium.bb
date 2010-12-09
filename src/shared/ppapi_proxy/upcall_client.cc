@@ -6,7 +6,7 @@
 
 #include "untrusted/srpcgen/upcall.h"
 #ifdef __native_client__
-#include <nacl/nacl_srpc.h>
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
 #endif  // UNREFERENCED_PARAMETER

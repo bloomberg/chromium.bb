@@ -6,7 +6,7 @@
 
 #include "untrusted/srpcgen/ppp_rpc.h"
 #ifdef __native_client__
-#include <nacl/nacl_srpc.h>
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
 #endif  // UNREFERENCED_PARAMETER
@@ -27,11 +27,11 @@ static void HasPropertyDispatcher(
   ObjectStubRpcServer::HasProperty(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr,
-      inputs[1]->u.caval.count, inputs[1]->u.caval.carr,
-      inputs[2]->u.caval.count, inputs[2]->u.caval.carr,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
       &(outputs[0]->u.ival),
-      &(outputs[1]->u.caval.count), outputs[1]->u.caval.carr
+      &(outputs[1]->u.count), outputs[1]->arrays.carr
   );
 }
 
@@ -45,11 +45,11 @@ static void HasMethodDispatcher(
   ObjectStubRpcServer::HasMethod(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr,
-      inputs[1]->u.caval.count, inputs[1]->u.caval.carr,
-      inputs[2]->u.caval.count, inputs[2]->u.caval.carr,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
       &(outputs[0]->u.ival),
-      &(outputs[1]->u.caval.count), outputs[1]->u.caval.carr
+      &(outputs[1]->u.count), outputs[1]->arrays.carr
   );
 }
 
@@ -63,11 +63,11 @@ static void GetPropertyDispatcher(
   ObjectStubRpcServer::GetProperty(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr,
-      inputs[1]->u.caval.count, inputs[1]->u.caval.carr,
-      inputs[2]->u.caval.count, inputs[2]->u.caval.carr,
-      &(outputs[0]->u.caval.count), outputs[0]->u.caval.carr,
-      &(outputs[1]->u.caval.count), outputs[1]->u.caval.carr
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.count), outputs[1]->arrays.carr
   );
 }
 
@@ -81,11 +81,11 @@ static void GetAllPropertyNamesDispatcher(
   ObjectStubRpcServer::GetAllPropertyNames(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr,
-      inputs[1]->u.caval.count, inputs[1]->u.caval.carr,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
       &(outputs[0]->u.ival),
-      &(outputs[1]->u.caval.count), outputs[1]->u.caval.carr,
-      &(outputs[2]->u.caval.count), outputs[2]->u.caval.carr
+      &(outputs[1]->u.count), outputs[1]->arrays.carr,
+      &(outputs[2]->u.count), outputs[2]->arrays.carr
   );
 }
 
@@ -99,11 +99,11 @@ static void SetPropertyDispatcher(
   ObjectStubRpcServer::SetProperty(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr,
-      inputs[1]->u.caval.count, inputs[1]->u.caval.carr,
-      inputs[2]->u.caval.count, inputs[2]->u.caval.carr,
-      inputs[3]->u.caval.count, inputs[3]->u.caval.carr,
-      &(outputs[0]->u.caval.count), outputs[0]->u.caval.carr
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.count, inputs[3]->arrays.carr,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
   );
 }
 
@@ -117,10 +117,10 @@ static void RemovePropertyDispatcher(
   ObjectStubRpcServer::RemoveProperty(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr,
-      inputs[1]->u.caval.count, inputs[1]->u.caval.carr,
-      inputs[2]->u.caval.count, inputs[2]->u.caval.carr,
-      &(outputs[0]->u.caval.count), outputs[0]->u.caval.carr
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
   );
 }
 
@@ -134,13 +134,13 @@ static void CallDispatcher(
   ObjectStubRpcServer::Call(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr,
-      inputs[1]->u.caval.count, inputs[1]->u.caval.carr,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
       inputs[2]->u.ival,
-      inputs[3]->u.caval.count, inputs[3]->u.caval.carr,
-      inputs[4]->u.caval.count, inputs[4]->u.caval.carr,
-      &(outputs[0]->u.caval.count), outputs[0]->u.caval.carr,
-      &(outputs[1]->u.caval.count), outputs[1]->u.caval.carr
+      inputs[3]->u.count, inputs[3]->arrays.carr,
+      inputs[4]->u.count, inputs[4]->arrays.carr,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.count), outputs[1]->arrays.carr
   );
 }
 
@@ -154,12 +154,12 @@ static void ConstructDispatcher(
   ObjectStubRpcServer::Construct(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr,
+      inputs[0]->u.count, inputs[0]->arrays.carr,
       inputs[1]->u.ival,
-      inputs[2]->u.caval.count, inputs[2]->u.caval.carr,
-      inputs[3]->u.caval.count, inputs[3]->u.caval.carr,
-      &(outputs[0]->u.caval.count), outputs[0]->u.caval.carr,
-      &(outputs[1]->u.caval.count), outputs[1]->u.caval.carr
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.count, inputs[3]->arrays.carr,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.count), outputs[1]->arrays.carr
   );
 }
 
@@ -174,7 +174,7 @@ static void DeallocateDispatcher(
   ObjectStubRpcServer::Deallocate(
       rpc,
       done,
-      inputs[0]->u.caval.count, inputs[0]->u.caval.carr
+      inputs[0]->u.count, inputs[0]->arrays.carr
   );
 }
 
@@ -207,7 +207,7 @@ static void PPP_InitializeModuleDispatcher(
       inputs[0]->u.ival,
       inputs[1]->u.lval,
       inputs[2]->u.hval,
-      inputs[3]->u.sval.str,
+      inputs[3]->arrays.str,
       &(outputs[0]->u.ival),
       &(outputs[1]->u.ival)
   );
@@ -238,7 +238,7 @@ static void PPP_GetInterfaceDispatcher(
   PppRpcServer::PPP_GetInterface(
       rpc,
       done,
-      inputs[0]->u.sval.str,
+      inputs[0]->arrays.str,
       &(outputs[0]->u.ival)
   );
 }
@@ -255,8 +255,8 @@ static void PPP_Instance_DidCreateDispatcher(
       done,
       inputs[0]->u.lval,
       inputs[1]->u.ival,
-      inputs[2]->u.caval.count, inputs[2]->u.caval.carr,
-      inputs[3]->u.caval.count, inputs[3]->u.caval.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.count, inputs[3]->arrays.carr,
       &(outputs[0]->u.ival)
   );
 }
@@ -288,8 +288,8 @@ static void PPP_Instance_DidChangeViewDispatcher(
       rpc,
       done,
       inputs[0]->u.lval,
-      inputs[1]->u.iaval.count, inputs[1]->u.iaval.iarr,
-      inputs[2]->u.iaval.count, inputs[2]->u.iaval.iarr
+      inputs[1]->u.count, inputs[1]->arrays.iarr,
+      inputs[2]->u.count, inputs[2]->arrays.iarr
   );
 }
 
@@ -320,7 +320,7 @@ static void PPP_Instance_HandleInputEventDispatcher(
       rpc,
       done,
       inputs[0]->u.lval,
-      inputs[1]->u.caval.count, inputs[1]->u.caval.carr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
       &(outputs[0]->u.ival)
   );
 }
@@ -352,7 +352,7 @@ static void PPP_Instance_GetInstanceObjectDispatcher(
       rpc,
       done,
       inputs[0]->u.lval,
-      &(outputs[0]->u.caval.count), outputs[0]->u.caval.carr
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
   );
 }
 

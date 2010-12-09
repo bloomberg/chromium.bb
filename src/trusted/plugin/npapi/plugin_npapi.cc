@@ -54,11 +54,11 @@ void InitializeIdentifiers() {
 bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
   NaClSrpcArg** ins = params->ins();
   PLUGIN_PRINTF(("UrlAsNaClDesc (obj=%p, url=%s, callback=%p)\n",
-                 obj, ins[0]->u.sval.str, ins[1]->u.oval));
+                 obj, ins[0]->arrays.str, ins[1]->arrays.oval));
 
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
-  const char* url = ins[0]->u.sval.str;
-  NPObject* callback_obj = reinterpret_cast<NPObject*>(ins[1]->u.oval);
+  const char* url = ins[0]->arrays.str;
+  NPObject* callback_obj = reinterpret_cast<NPObject*>(ins[1]->arrays.oval);
 
   plugin::UrlAsNaClDescNotify* callback =
       new(std::nothrow) plugin::UrlAsNaClDescNotify(plugin, url, callback_obj);
@@ -559,7 +559,7 @@ bool PluginNpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
     return false;
   }
   args->plugin = InstanceIdentifierToNPP(plugin->instance_id());
-  args->callback = reinterpret_cast<NPObject*>(params->ins()[0]->u.oval);
+  args->callback = reinterpret_cast<NPObject*>(params->ins()[0]->arrays.oval);
   NPN_RetainObject(args->callback);
   nacl::DescWrapper* socket = plugin->service_runtime_->async_receive_desc();
   NaClDescRef(socket->desc());

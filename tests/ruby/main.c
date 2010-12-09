@@ -45,13 +45,13 @@ void RubyEval(NaClSrpcRpc *rpc,
     rb_eval_string(INIT_RUBY_SCRIPT);
     initialized = 1;
   }
-  rb_eval_string(in_args[0]->u.sval);
+  rb_eval_string(in_args[0]->arrays.str);
   VALUE result = rb_eval_string("$stdout_logger.get_string()");
 
   /*
    * Strdup must be used because the SRPC layer frees the string passed to it.
    */
-  out_args[0]->u.sval = strdup(StringValuePtr(result));
+  out_args[0]->arrays.str = strdup(StringValuePtr(result));
 
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);

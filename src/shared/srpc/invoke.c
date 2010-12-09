@@ -146,46 +146,46 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
 /*
  * The first phase is the args[] vector construction.
  */
-#define SCALAR_ARG(arg, field, va, impl_type) \
-    (arg)->u.field = va_arg(va, impl_type)
-#define ARRAY_ARG(arg, field, array_name, va, impl_type) \
-    (arg)->u.field.count = va_arg(va, uint32_t);         \
-    (arg)->u.field.array_name = va_arg(va, impl_type)
-#define BOOL_ARG(arg, field, va, impl_type) \
+#define SCALAR_ARG(arg, field, va, impl_type)     \
+    (arg)->field = va_arg(va, impl_type)
+#define ARRAY_ARG(arg, array_name, va, impl_type) \
+    (arg)->u.count = va_arg(va, uint32_t);        \
+    (arg)->array_name = va_arg(va, impl_type)
+#define BOOL_ARG(arg, field, va, impl_type)       \
     (arg)->u.bval = (va_arg(va, impl_type) != 0)
 
 /*
  * The second phase is the rets[] vector construction before invocation.
  */
-#define SCALAR_RETINIT(arg, field, va, impl_type) \
-    (arg)->u.field = (impl_type) 0;               \
+#define SCALAR_RETINIT(arg, field, va, impl_type)     \
+    (arg)->field = (impl_type) 0;                     \
     SKIP(va, impl_type *)
-#define ARRAY_RETINIT(arg, field, array_name, va, impl_type) \
-    (arg)->u.field.count = *va_arg(va, uint32_t*);         \
-    (arg)->u.field.array_name = va_arg(va, impl_type)
-#define BOOL_RETINIT(arg, field, va, impl_type) \
+#define ARRAY_RETINIT(arg, array_name, va, impl_type) \
+    (arg)->u.count = *va_arg(va, uint32_t*);          \
+    (arg)->array_name = va_arg(va, impl_type)
+#define BOOL_RETINIT(arg, field, va, impl_type)       \
     SKIP(va, impl_type *)
 
 /*
  * The third phase is skipping the args[] after invocation.
  */
-#define SCALAR_SKIP(arg, field, va, impl_type) \
+#define SCALAR_SKIP(arg, field, va, impl_type)     \
     SKIP(va, impl_type)
-#define ARRAY_SKIP(arg, field, array_name, va, impl_type) \
-    SKIP(va, uint32_t)                                    \
+#define ARRAY_SKIP(arg, array_name, va, impl_type) \
+    SKIP(va, uint32_t)                             \
     SKIP(va, impl_type)
-#define BOOL_SKIP(arg, field, va, impl_type) \
+#define BOOL_SKIP(arg, field, va, impl_type)       \
     SCALAR_SKIP(arg, field, va, impl_type)
 
 /*
  * The fourth phase is copying the rets[] into the va_args after invocation.
  */
-#define SCALAR_RET(arg, field, va, impl_type) \
-    *va_arg(va, impl_type *) = (arg)->u.field
-#define ARRAY_RET(arg, field, array_name, va, impl_type) \
-    ARRAY_SKIP(arg, field, array_name, va, impl_type)
-#define BOOL_RET(arg, field, va, impl_type) \
-    *va_arg(va, impl_type *) = ((arg)->u.field != 0)
+#define SCALAR_RET(arg, field, va, impl_type)     \
+    *va_arg(va, impl_type *) = (arg)->field
+#define ARRAY_RET(arg, array_name, va, impl_type) \
+    ARRAY_SKIP(arg, array_name, va, impl_type)
+#define BOOL_RET(arg, field, va, impl_type)       \
+    *va_arg(va, impl_type *) = ((arg)->field != 0)
 
 /*
  * All the phases consist of a loop around a switch enumerating types.
@@ -193,34 +193,34 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
 #define ARGRET_SWITCH(phase, va, arg)                           \
     switch (*p) {                                               \
       case NACL_SRPC_ARG_TYPE_BOOL:                             \
-        BOOL_##phase(arg, bval, va, int);                       \
+        BOOL_##phase(arg, u.bval, va, int);                     \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:                       \
-        ARRAY_##phase(arg, caval, carr, va, char*);             \
+        ARRAY_##phase(arg, arrays.carr, va, char*);             \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_DOUBLE:                           \
-        SCALAR_##phase(arg, dval, va, double);                  \
+        SCALAR_##phase(arg, u.dval, va, double);                \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:                     \
-        ARRAY_##phase(arg, daval, darr, va, double*);           \
+        ARRAY_##phase(arg, arrays.darr, va, double*);           \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_HANDLE:                           \
-        SCALAR_##phase(arg, hval, va, NaClSrpcImcDescType);     \
+        SCALAR_##phase(arg, u.hval, va, NaClSrpcImcDescType);   \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_INT:                              \
-        SCALAR_##phase(arg, ival, va, int32_t);                 \
+        SCALAR_##phase(arg, u.ival, va, int32_t);               \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_INT_ARRAY:                        \
-        ARRAY_##phase(arg, iaval, iarr, va, int32_t*);          \
+        ARRAY_##phase(arg, arrays.iarr, va, int32_t*);          \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_LONG:                             \
-        SCALAR_##phase(arg, lval, va, int64_t);                 \
+        SCALAR_##phase(arg, u.lval, va, int64_t);               \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_LONG_ARRAY:                       \
-        ARRAY_##phase(arg, laval, larr, va, int64_t*);          \
+        ARRAY_##phase(arg, arrays.larr, va, int64_t*);          \
         break;                                                  \
       case NACL_SRPC_ARG_TYPE_STRING:                           \
-        SCALAR_##phase(arg, sval.str, va, char*);               \
+        SCALAR_##phase(arg, arrays.str, va, char*);             \
         break;                                                  \
       /*                                                        \
        * The two cases below are added to avoid warnings,       \
