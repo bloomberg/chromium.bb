@@ -1,2 +1,0 @@
-define dummy functions for setjmp() and   longjmp()
-which ARM's toolchain does not yet provide

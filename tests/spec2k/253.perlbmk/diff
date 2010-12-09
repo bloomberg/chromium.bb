@@ -92,20 +92,3 @@ diff -NaurbB src/spec_config.h src.patched/spec_config.h
  #endif
  
  /* I_SYS_NDIR:
-@@ -2295,9 +2302,16 @@
- #define Siglongjmp(buf,retval) siglongjmp((buf),(retval))
- #else
- #define Sigjmp_buf jmp_buf
-+
-+/* @LOCALAMOD */
-+#if 1
-+#define Sigsetjmp(buf,save_mask) 0
-+#define Siglongjmp(buf,retval)  0
-+#else
- #define Sigsetjmp(buf,save_mask) setjmp((buf))
- #define Siglongjmp(buf,retval) longjmp((buf),(retval))
- #endif
-+#endif
- 
- /* USE_DYNAMIC_LOADING:
-  *	This symbol, if defined, indicates that dynamic loading of

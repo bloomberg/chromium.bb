@@ -1,5 +1,2 @@
 Eliminate signal, kill, termio, etc.
 which are apparently stubbed out in the x86 but not the ARM toolchain
-
-Regarding setjmp/longjmp, see:
-http://code.google.com/p/nativeclient/issues/detail?id=609
