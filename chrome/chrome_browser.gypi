@@ -3482,6 +3482,7 @@
         }],
         ['chromeos==1', {
           'sources!': [
+            'browser/background_mode_manager_linux.cc',
             'browser/password_manager/native_backend_gnome_x.h',
             'browser/password_manager/native_backend_gnome_x.cc',
             'browser/password_manager/native_backend_kwallet_x.h',
