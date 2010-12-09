@@ -240,6 +240,10 @@ class ChromeTests:
                                "--ui-test-action-timeout=120000",
                                "--ui-test-action-max-timeout=280000"])
 
+  def TestSafeBrowsing(self):
+    return self.SimpleTest("chrome", "safe_browsing_tests",
+                           cmd_args=["--test-terminate-timeout=40000"])
+
   def TestIpc(self):
     return self.SimpleTest("ipc", "ipc_tests",
                            valgrind_test_args=["--trace_children"])
@@ -420,6 +424,7 @@ class ChromeTests:
     "printing": TestPrinting,    "printing_unittests": TestPrinting,
     "reliability": TestReliability, "reliability_tests": TestReliability,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
+    "safe_browsing": TestSafeBrowsing, "safe_browsing_tests": TestSafeBrowsing,
     "startup": TestStartup,      "startup_tests": TestStartup,
     "sync": TestSync,            "sync_unit_tests": TestSync,
     "test_shell": TestTestShell, "test_shell_tests": TestTestShell,
