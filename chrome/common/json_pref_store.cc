@@ -30,7 +30,46 @@ JsonPrefStore::~JsonPrefStore() {
     writer_.DoScheduledWrite();
 }
 
-PrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
+PrefStore::ReadResult JsonPrefStore::GetValue(const std::string& key,
+                                              Value** result) const {
+  return prefs_->Get(key, result) ? READ_OK : READ_NO_VALUE;
+}
+
+void JsonPrefStore::AddObserver(PrefStore::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void JsonPrefStore::RemoveObserver(PrefStore::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void JsonPrefStore::SetValue(const std::string& key, Value* value) {
+  DCHECK(value);
+  scoped_ptr<Value> new_value(value);
+  Value* old_value = NULL;
+  prefs_->Get(key, &old_value);
+  if (!old_value || !value->Equals(old_value)) {
+    prefs_->Set(key, new_value.release());
+    FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
+  }
+}
+
+void JsonPrefStore::SetValueSilently(const std::string& key, Value* value) {
+  DCHECK(value);
+  scoped_ptr<Value> new_value(value);
+  Value* old_value = NULL;
+  prefs_->Get(key, &old_value);
+  if (!old_value || !value->Equals(old_value))
+    prefs_->Set(key, new_value.release());
+}
+
+void JsonPrefStore::RemoveValue(const std::string& key) {
+  if (prefs_->Remove(key, NULL)) {
+    FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
+  }
+}
+
+PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
   if (path_.empty()) {
     read_only_ = true;
     return PREF_READ_ERROR_FILE_NOT_SPECIFIED;

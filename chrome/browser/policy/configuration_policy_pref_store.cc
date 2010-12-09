@@ -322,19 +322,27 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
       proxy_disabled_(false),
       proxy_configuration_specified_(false),
       use_system_proxy_(false) {
+  if (!provider_->Provide(this))
+    LOG(WARNING) << "Failed to get policy from provider.";
+  FinalizeDefaultSearchPolicySettings();
 }
 
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {}
 
-PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
-  proxy_disabled_ = false;
-  proxy_configuration_specified_ = false;
-  lower_priority_proxy_settings_overridden_ = false;
+PrefStore::ReadResult ConfigurationPolicyPrefStore::GetValue(
+    const std::string& key,
+    Value** value) const {
+  Value* configured_value = NULL;
+  if (!prefs_->Get(key, &configured_value) || !configured_value)
+    return READ_NO_VALUE;
 
-  const bool success = (provider_ == NULL || provider_->Provide(this));
-  FinalizeDefaultSearchPolicySettings();
-  return success ? PrefStore::PREF_READ_ERROR_NONE :
-      PrefStore::PREF_READ_ERROR_OTHER;
+  // Check whether there's a default value, which indicates READ_USE_DEFAULT
+  // should be returned.
+  if (configured_value->IsType(Value::TYPE_NULL))
+    return READ_USE_DEFAULT;
+
+  *value = configured_value;
+  return READ_OK;
 }
 
 void ConfigurationPolicyPrefStore::Apply(ConfigurationPolicyType policy,
@@ -466,7 +474,9 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(
     GetProxyPreferenceSet(&proxy_preference_set);
     for (ProxyPreferenceSet::const_iterator i = proxy_preference_set.begin();
          i != proxy_preference_set.end(); ++i) {
-      prefs_->Set(*i, PrefStore::CreateUseDefaultSentinelValue());
+      // We use values of TYPE_NULL to mark preferences for which
+      // READ_USE_DEFAULT should be returned by GetValue().
+      prefs_->Set(*i, Value::CreateNullValue());
     }
     lower_priority_proxy_settings_overridden_ = true;
   }

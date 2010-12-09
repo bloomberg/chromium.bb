@@ -26,6 +26,11 @@ class PrefNotifier;
 class PrefStore;
 class Profile;
 
+// TODO(danno, mnissler): Remove after policy refresh cleanup.
+namespace policy {
+class ConfigurationPolicyPrefStore;
+}
+
 // The PrefValueStore manages various sources of values for Preferences
 // (e.g., configuration policies, extensions, and user settings). It returns
 // the value of a Preference from the source with the highest priority, and
@@ -79,9 +84,6 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
   // Preference::GetValue() instead of calling this method directly.
   bool GetValue(const std::string& name, Value** out_value) const;
 
-  // Same as GetValue but only searches the user store.
-  bool GetUserValue(const std::string& name, Value** out_value) const;
-
   // Adds a preference to the mapping of names to types.
   void RegisterPreferenceType(const std::string& name, Value::ValueType type);
 
@@ -89,58 +91,12 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
   // Value::TYPE_NULL if the preference has never been registered.
   Value::ValueType GetRegisteredType(const std::string& name) const;
 
-  // Read preference values into the three PrefStores so that they are available
-  // through the GetValue method. Return the first error that occurs (but
-  // continue reading the remaining PrefStores).
-  PrefStore::PrefReadError ReadPrefs();
-
-  // Persists prefs (to disk or elsewhere). Returns true if writing values was
-  // successful. In practice, only the user prefs are expected to be written
-  // out.
-  // TODO(mnissler, danno): Handle writes through PrefService and remove.
-  bool WritePrefs();
-
-  // Calls the method ScheduleWritePrefs on the PrefStores. In practice, only
-  // the user prefs are expected to be written out.
-  // TODO(mnissler, danno): Handle writes through PrefService and remove.
-  void ScheduleWritePrefs();
-
   // Returns true if the PrefValueStore contains the given preference (i.e.,
   // it's been registered), and a value with the correct type has been actively
   // set in some pref store. The application default specified when the pref was
   // registered does not count as an "actively set" value, but another pref
   // store setting a value that happens to be equal to the default does.
   bool HasPrefPath(const char* name) const;
-
-  // Returns true if the PrefValueStore is read-only.  Because the managed
-  // platform, device management and recommended PrefStores are always
-  // read-only, the PrefValueStore as a whole is read-only if the PrefStore
-  // containing the user preferences is read-only.
-  bool ReadOnly() const;
-
-  // Alters the user-defined value of a preference. Even if the preference is
-  // managed this method allows the user-defined value of the preference to be
-  // set. However, GetValue calls will not return this value as long as the
-  // preference is overriden by a store of higher precedence. Note that the
-  // PrefValueStore takes the ownership of the value referenced by |in_value|.
-  // It is an error to call this when no user PrefStore has been set. Triggers
-  // notifications if the user-visible value changes.
-  // TODO(mnissler, danno): Handle writes in PrefService and notifications in
-  // the pref store implementation, so we can remove this call.
-  void SetUserPrefValue(const char* name, Value* in_value);
-
-  // Like SetUserPrefValue, but silently puts the value without triggering
-  // notifications.
-  // TODO(mnissler, danno): Handle writes in PrefService and notifications in
-  // the pref store implementation, so we can remove this call.
-  void SetUserPrefValueSilently(const char* name, Value* in_value);
-
-  // Removes a value from the user PrefStore. If a preference is overriden by a
-  // store of higher precedence, this function will have no immediately visible
-  // effect. Triggers notifications if the user-visible value changes.
-  // TODO(mnissler, danno): Handle writes in PrefService and notifications in
-  // the pref store implementation, so we can remove this call.
-  void RemoveUserPrefValue(const char* name);
 
   // These methods return true if a preference with the given name is in the
   // indicated pref store, even if that value is currently being overridden by
@@ -160,11 +116,6 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
   // Check whether a Preference value is modifiable by the user, i.e. whether
   // there is no higher-priority source controlling it.
   bool PrefValueUserModifiable(const char* name) const;
-
-  // Returns true if there are proxy preferences in user-modifiable
-  // preference stores (e.g. CommandLinePrefStore, ExtensionPrefStore)
-  // that conflict with proxy settings specified by proxy policy.
-  bool HasPolicyConflictingUserProxySettings() const;
 
  private:
   // PrefStores must be listed here in order from highest to lowest priority.
@@ -196,7 +147,7 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
   // the PrefStore for changes, forwarding notifications to PrefValueStore. This
   // indirection is here for the sake of disambiguating notifications from the
   // individual PrefStores.
-  class PrefStoreKeeper : public PrefStore::ObserverInterface {
+  class PrefStoreKeeper : public PrefStore::Observer {
    public:
     PrefStoreKeeper();
     virtual ~PrefStoreKeeper();
@@ -210,7 +161,7 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
     const PrefStore* store() const { return pref_store_.get(); }
 
    private:
-    // PrefStore::ObserverInterface implementation.
+    // PrefStore::Observer implementation.
     virtual void OnPrefValueChanged(const std::string& key);
     virtual void OnInitializationCompleted();
 
@@ -228,11 +179,11 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
 
   typedef std::map<std::string, Value::ValueType> PrefTypeMap;
 
-  friend class PrefValueStoreTest;
-  FRIEND_TEST_ALL_PREFIXES(PrefValueStoreTest, TestPolicyRefresh);
-  FRIEND_TEST_ALL_PREFIXES(PrefValueStoreTest,
+  friend class PrefValueStorePolicyRefreshTest;
+  FRIEND_TEST_ALL_PREFIXES(PrefValueStorePolicyRefreshTest, TestPolicyRefresh);
+  FRIEND_TEST_ALL_PREFIXES(PrefValueStorePolicyRefreshTest,
                            TestRefreshPolicyPrefsCompletion);
-  FRIEND_TEST_ALL_PREFIXES(PrefValueStoreTest,
+  FRIEND_TEST_ALL_PREFIXES(PrefValueStorePolicyRefreshTest,
                            TestConcurrentPolicyRefresh);
 
   // Returns true if the actual type is a valid type for the expected type when
@@ -281,17 +232,17 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
   // that initiated the policy refresh. RefreshPolicyPrefsCompletion takes
   // ownership of the |callback| object.
   void RefreshPolicyPrefsCompletion(
-      PrefStore* new_managed_platform_pref_store,
-      PrefStore* new_device_management_pref_store,
-      PrefStore* new_recommended_pref_store);
+      policy::ConfigurationPolicyPrefStore* new_managed_platform_pref_store,
+      policy::ConfigurationPolicyPrefStore* new_device_management_pref_store,
+      policy::ConfigurationPolicyPrefStore* new_recommended_pref_store);
 
   // Called during policy refresh to do the ReadPrefs on the FILE thread.
   // RefreshPolicyPrefsOnFileThread takes ownership of the |callback| object.
   void RefreshPolicyPrefsOnFileThread(
       BrowserThread::ID calling_thread_id,
-      PrefStore* new_managed_platform_pref_store,
-      PrefStore* new_device_management_pref_store,
-      PrefStore* new_recommended_pref_store);
+      policy::ConfigurationPolicyPrefStore* new_managed_platform_pref_store,
+      policy::ConfigurationPolicyPrefStore* new_device_management_pref_store,
+      policy::ConfigurationPolicyPrefStore* new_recommended_pref_store);
 
   // NotificationObserver methods:
   virtual void Observe(NotificationType type,

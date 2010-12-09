@@ -68,19 +68,19 @@ class KeywordEditorControllerTest : public testing::Test,
   void SimulateDefaultSearchIsManaged(const std::string& url) {
     ASSERT_FALSE(url.empty());
     TestingPrefService* service = profile_->GetTestingPrefService();
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderEnabled,
         Value::CreateBooleanValue(true));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderSearchURL,
         Value::CreateStringValue(url));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderName,
         Value::CreateStringValue("managed"));
     // Clear the IDs that are not specified via policy.
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderID, new StringValue(""));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
     model_->Observe(
         NotificationType::PREF_CHANGED,

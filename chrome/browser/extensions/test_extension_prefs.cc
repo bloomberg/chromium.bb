@@ -6,26 +6,32 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
 // Mock ExtensionPrefs class with artificial clock to guarantee that no two
 // extensions get the same installation time stamp and we can reliably
 // assert the installation order in the tests below.
 class MockExtensionPrefs : public ExtensionPrefs {
  public:
-  MockExtensionPrefs(PrefService* prefs, const FilePath& root_dir_)
-    : ExtensionPrefs(prefs, root_dir_),
-      currentTime(base::Time::Now())
-  {}
+  MockExtensionPrefs(PrefService* prefs,
+                     const FilePath& root_dir_,
+                     ExtensionPrefStore* pref_store)
+    : ExtensionPrefs(prefs, root_dir_, pref_store),
+      currentTime(base::Time::Now()) {}
   ~MockExtensionPrefs() {}
 
  protected:
@@ -36,6 +42,8 @@ class MockExtensionPrefs : public ExtensionPrefs {
     return currentTime;
   }
 };
+
+}  // namespace
 
 TestExtensionPrefs::TestExtensionPrefs() : pref_service_(NULL) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -62,10 +70,14 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     file_loop.RunAllPending();
   }
 
-  // Create a |PrefService| instance that contains only user defined values.
-  pref_service_.reset(PrefService::CreateUserPrefService(preferences_file_));
+  ExtensionPrefStore* pref_store = new ExtensionPrefStore;
+  PrefServiceMockBuilder builder;
+  builder.WithUserFilePrefs(preferences_file_);
+  builder.WithExtensionPrefs(pref_store);
+  pref_service_.reset(builder.Create());
   ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
-  prefs_.reset(new MockExtensionPrefs(pref_service_.get(), temp_dir_.path()));
+  prefs_.reset(new MockExtensionPrefs(pref_service_.get(), temp_dir_.path(),
+                                      pref_store));
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {

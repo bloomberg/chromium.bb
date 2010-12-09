@@ -194,58 +194,51 @@ class TemplateURLModelTest : public testing::Test {
                                           const char* encodings,
                                           const char* keyword) {
     TestingPrefService* service = profile()->GetTestingPrefService();
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderEnabled,
         Value::CreateBooleanValue(enabled));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderName,
         Value::CreateStringValue(name));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderSearchURL,
         Value::CreateStringValue(search_url));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderSuggestURL,
         Value::CreateStringValue(suggest_url));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderIconURL,
         Value::CreateStringValue(icon_url));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderEncodings,
         Value::CreateStringValue(encodings));
-    service->SetManagedPrefWithoutNotification(
+    service->SetManagedPref(
         prefs::kDefaultSearchProviderKeyword,
         Value::CreateStringValue(keyword));
-    // Clear the IDs that are not specified via policy.
-    service->SetManagedPrefWithoutNotification(
-        prefs::kDefaultSearchProviderID, new StringValue(""));
-    service->SetManagedPrefWithoutNotification(
-        prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
-    NotifyManagedPrefsHaveChanged();
   }
 
   // Remove all the managed preferences for the default search provider and
   // trigger notification.
   void RemoveManagedDefaultSearchPreferences() {
     TestingPrefService* service = profile()->GetTestingPrefService();
-    service->RemoveManagedPrefWithoutNotification(
-        prefs::kDefaultSearchProviderEnabled);
-    service->RemoveManagedPrefWithoutNotification(
-        prefs::kDefaultSearchProviderName);
-    service->RemoveManagedPrefWithoutNotification(
+    service->RemoveManagedPref(
         prefs::kDefaultSearchProviderSearchURL);
-    service->RemoveManagedPrefWithoutNotification(
+    service->RemoveManagedPref(
+        prefs::kDefaultSearchProviderEnabled);
+    service->RemoveManagedPref(
+        prefs::kDefaultSearchProviderName);
+    service->RemoveManagedPref(
         prefs::kDefaultSearchProviderSuggestURL);
-    service->RemoveManagedPrefWithoutNotification(
+    service->RemoveManagedPref(
         prefs::kDefaultSearchProviderIconURL);
-    service->RemoveManagedPrefWithoutNotification(
+    service->RemoveManagedPref(
         prefs::kDefaultSearchProviderEncodings);
-    service->RemoveManagedPrefWithoutNotification(
+    service->RemoveManagedPref(
         prefs::kDefaultSearchProviderKeyword);
-    service->RemoveManagedPrefWithoutNotification(
+    service->RemoveManagedPref(
         prefs::kDefaultSearchProviderID);
-    service->RemoveManagedPrefWithoutNotification(
+    service->RemoveManagedPref(
         prefs::kDefaultSearchProviderPrepopulateID);
-    NotifyManagedPrefsHaveChanged();
   }
 
   // Creates a TemplateURL with the same prepopluated id as a real prepopulated
@@ -264,7 +257,12 @@ class TemplateURLModelTest : public testing::Test {
   // Helper methods to make calling TemplateURLModelTestUtil methods less
   // visually noisy in the test code.
   void VerifyObserverCount(int expected_changed_count) {
-    test_util_.VerifyObserverCount(expected_changed_count);
+    EXPECT_EQ(expected_changed_count, test_util_.GetObserverCount());
+    test_util_.ResetObserverCount();
+  }
+  void VerifyObserverFired() {
+    EXPECT_LE(1, test_util_.GetObserverCount());
+    test_util_.ResetObserverCount();
   }
   void BlockTillServiceProcessesRequests() {
     TemplateURLModelTestUtil::BlockTillServiceProcessesRequests();
@@ -1113,7 +1111,7 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   const char kEncodings[] = "UTF-16;UTF-32";
   SetManagedDefaultSearchPreferences(true, kName, kSearchURL, "", kIconURL,
                                      kEncodings, "");
-  VerifyObserverCount(1);
+  VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(2 + initial_count, model()->GetTemplateURLs().size());
 
@@ -1137,7 +1135,7 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   const char kNewSuggestURL[] = "http://other.com/suggest?t={searchTerms}";
   SetManagedDefaultSearchPreferences(true, kNewName, kNewSearchURL,
                                      kNewSuggestURL, "", "", "");
-  VerifyObserverCount(1);
+  VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(2 + initial_count, model()->GetTemplateURLs().size());
 
@@ -1153,7 +1151,7 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
 
   // Remove all the managed prefs and check that we are no longer managed.
   RemoveManagedDefaultSearchPreferences();
-  VerifyObserverCount(1);
+  VerifyObserverFired();
   EXPECT_FALSE(model()->is_default_search_managed());
   EXPECT_EQ(1 + initial_count, model()->GetTemplateURLs().size());
 
@@ -1166,7 +1164,7 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
 
   // Disable the default search provider through policy.
   SetManagedDefaultSearchPreferences(false, "", "", "", "", "", "");
-  VerifyObserverCount(1);
+  VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_TRUE(NULL == model()->GetDefaultSearchProvider());
   EXPECT_EQ(1 + initial_count, model()->GetTemplateURLs().size());
@@ -1174,7 +1172,7 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   // Re-enable it.
   SetManagedDefaultSearchPreferences(true, kName, kSearchURL, "", kIconURL,
                                      kEncodings, "");
-  VerifyObserverCount(1);
+  VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(2 + initial_count, model()->GetTemplateURLs().size());
 

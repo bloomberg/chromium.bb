@@ -16,7 +16,7 @@
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/remoting/remoting_directory_service.h"
 
-class JsonPrefStore;
+class ServiceProcessPrefs;
 class ServiceIPCServer;
 
 namespace net {
@@ -152,7 +152,7 @@ class ServiceProcess : public RemotingDirectoryService::Client,
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
   scoped_ptr<CloudPrintProxy> cloud_print_proxy_;
-  scoped_ptr<JsonPrefStore> service_prefs_;
+  scoped_ptr<ServiceProcessPrefs> service_prefs_;
   scoped_ptr<ServiceIPCServer> ipc_server_;
 
 #if defined(ENABLE_REMOTING)

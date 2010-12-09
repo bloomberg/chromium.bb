@@ -34,7 +34,7 @@
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -352,9 +352,9 @@ ExtensionsServiceTestBase::~ExtensionsServiceTestBase() {
 void ExtensionsServiceTestBase::InitializeExtensionsService(
     const FilePath& pref_file, const FilePath& extensions_install_dir) {
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
-  // Create a preference service that only contains user defined
-  // preference values.
-  PrefService* prefs = PrefService::CreateUserPrefService(pref_file);
+  // Create a PrefService that only contains user defined preference values.
+  PrefService* prefs =
+      PrefServiceMockBuilder().WithUserFilePrefs(pref_file).Create();
   Profile::RegisterUserPrefs(prefs);
   browser::RegisterUserPrefs(prefs);
   profile->SetPrefService(prefs);

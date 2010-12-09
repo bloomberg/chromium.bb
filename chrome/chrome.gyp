@@ -1132,6 +1132,8 @@
         'service/service_main.cc',
         'service/service_process.cc',
         'service/service_process.h',
+        'service/service_process_prefs.cc',
+        'service/service_process_prefs.h',
         'service/service_utility_process_host.cc',
         'service/service_utility_process_host.h',
         'service/cloud_print/cloud_print_consts.cc',

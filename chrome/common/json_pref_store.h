@@ -8,9 +8,12 @@
 
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/file_path.h"
+#include "base/observer_list.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/pref_store.h"
 #include "chrome/common/important_file_writer.h"
+#include "chrome/common/persistent_pref_store.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -18,8 +21,10 @@ class MessageLoopProxy;
 
 class DictionaryValue;
 class FilePath;
+class Value;
 
-class JsonPrefStore : public PrefStore,
+// A writable PrefStore implementation that is used for user preferences.
+class JsonPrefStore : public PersistentPrefStore,
                       public ImportantFileWriter::DataSerializer {
  public:
   // |file_message_loop_proxy| is the MessageLoopProxy for a thread on which
@@ -28,21 +33,24 @@ class JsonPrefStore : public PrefStore,
                 base::MessageLoopProxy* file_message_loop_proxy);
   virtual ~JsonPrefStore();
 
-  // PrefStore methods:
+  // PrefStore overrides:
+  virtual ReadResult GetValue(const std::string& key, Value** result) const;
+  virtual void AddObserver(PrefStore::Observer* observer);
+  virtual void RemoveObserver(PrefStore::Observer* observer);
+
+  // PersistentPrefStore overrides:
+  virtual void SetValue(const std::string& key, Value* value);
+  virtual void SetValueSilently(const std::string& key, Value* value);
+  virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const { return read_only_; }
-
-  virtual DictionaryValue* prefs() const { return prefs_.get(); }
-
   virtual PrefReadError ReadPrefs();
-
   virtual bool WritePrefs();
-
   virtual void ScheduleWritePrefs();
 
-  // ImportantFileWriter::DataSerializer methods:
-  virtual bool SerializeData(std::string* data);
-
  private:
+  // ImportantFileWriter::DataSerializer overrides:
+  bool SerializeData(std::string* output);
+
   FilePath path_;
 
   scoped_ptr<DictionaryValue> prefs_;
@@ -51,6 +59,10 @@ class JsonPrefStore : public PrefStore,
 
   // Helper for safely writing pref data.
   ImportantFileWriter writer_;
+
+  ObserverList<PrefStore::Observer, true> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };
 
 #endif  // CHROME_COMMON_JSON_PREF_STORE_H_

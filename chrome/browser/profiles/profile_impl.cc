@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
@@ -276,12 +277,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
   pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
   pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
-
-  // Ensure that preferences set by extensions are restored in the profile
-  // as early as possible. The constructor takes care of that.
-  extension_prefs_.reset(new ExtensionPrefs(
-      GetPrefs(),
-      GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName)));
 
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(prefs, CommandLine::ForCurrentProcess());
@@ -671,7 +666,9 @@ net::TransportSecurityState*
 
 PrefService* ProfileImpl::GetPrefs() {
   if (!prefs_.get()) {
+    ExtensionPrefStore* extension_pref_store = new ExtensionPrefStore;
     prefs_.reset(PrefService::CreatePrefService(GetPrefFilePath(),
+                                                extension_pref_store,
                                                 GetOriginalProfile()));
 
     // The Profile class and ProfileManager class may read some prefs so
@@ -687,6 +684,13 @@ PrefService* ProfileImpl::GetPrefs() {
     prefs_->SetBoolean(prefs::kSessionExitedCleanly, false);
     // Make sure we save to disk that the session has opened.
     prefs_->ScheduleSavePersistentPrefs();
+
+    // Ensure that preferences set by extensions are restored in the profile
+    // as early as possible. The constructor takes care of that.
+    extension_prefs_.reset(new ExtensionPrefs(
+        prefs_.get(),
+        GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName),
+        extension_pref_store));
 
     DCHECK(!net_pref_observer_.get());
     net_pref_observer_.reset(new NetPrefObserver(prefs_.get()));

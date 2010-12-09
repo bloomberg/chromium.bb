@@ -16,6 +16,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
 
+class ExtensionPrefStore;
+
 // Class for managing global and per-extension preferences.
 //
 // This class distinguishes the following kinds of preferences:
@@ -57,7 +59,9 @@ class ExtensionPrefs {
     LAUNCH_WINDOW
   };
 
-  explicit ExtensionPrefs(PrefService* prefs, const FilePath& root_dir);
+  explicit ExtensionPrefs(PrefService* prefs,
+                          const FilePath& root_dir,
+                          ExtensionPrefStore* extension_pref_store);
   ~ExtensionPrefs();
 
   // Returns a copy of the Extensions prefs.
@@ -386,6 +390,9 @@ class ExtensionPrefs {
 
   // Base extensions install directory.
   FilePath install_directory_;
+
+  // Used to manipulate extension preferences.
+  ExtensionPrefStore* pref_store_;
 
   // The URLs of all of the toolstrips.
   URLList shelf_order_;

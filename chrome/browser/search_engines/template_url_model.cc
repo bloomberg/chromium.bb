@@ -844,12 +844,12 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
   std::vector<std::string> encodings_vector;
   base::SplitString(encodings, ';', &encodings_vector);
   (*default_provider)->set_input_encodings(encodings_vector);
-  if (!id_string.empty()) {
+  if (!id_string.empty() && !*is_managed) {
     int64 value;
     base::StringToInt64(id_string, &value);
     (*default_provider)->set_id(value);
   }
-  if (!prepopulate_id.empty()) {
+  if (!prepopulate_id.empty() && !*is_managed) {
     int value;
     base::StringToInt(prepopulate_id, &value);
     (*default_provider)->set_prepopulate_id(value);
@@ -1258,4 +1258,3 @@ void TemplateURLModel::NotifyObservers() {
   FOR_EACH_OBSERVER(TemplateURLModelObserver, model_observers_,
                     OnTemplateURLModelChanged());
 }
-

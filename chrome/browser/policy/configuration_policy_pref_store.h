@@ -34,7 +34,8 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   virtual ~ConfigurationPolicyPrefStore();
 
   // PrefStore methods:
-  virtual PrefReadError ReadPrefs();
+  virtual ReadResult GetValue(const std::string& key, Value** result) const;
+
   virtual DictionaryValue* prefs() const { return prefs_.get(); }
 
   // ConfigurationPolicyStore methods:

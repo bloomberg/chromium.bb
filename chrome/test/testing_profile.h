@@ -25,6 +25,7 @@ class BookmarkModel;
 class BrowserThemeProvider;
 class CommandLine;
 class DesktopNotificationService;
+class ExtensionPrefStore;
 class ExtensionPrefs;
 class FaviconService;
 class FindBarState;
@@ -405,6 +406,9 @@ class TestingProfile : public Profile {
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
+
+  // Extension pref store, created for use by |extension_prefs_|.
+  scoped_ptr<ExtensionPrefStore> extension_pref_store_;
 
   // The Extension Preferences. Only created if CreateExtensionsService is
   // invoked.

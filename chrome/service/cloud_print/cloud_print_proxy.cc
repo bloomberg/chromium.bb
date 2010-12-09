@@ -10,10 +10,10 @@
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/json_pref_store.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/service_process.h"
+#include "chrome/service/service_process_prefs.h"
 
 // This method is invoked on the IO thread to launch the browser process to
 // display a desktop notification that the Cloud Print token is invalid and
@@ -48,7 +48,8 @@ CloudPrintProxy::~CloudPrintProxy() {
   Shutdown();
 }
 
-void CloudPrintProxy::Initialize(JsonPrefStore* service_prefs, Client* client) {
+void CloudPrintProxy::Initialize(ServiceProcessPrefs* service_prefs,
+                                 Client* client) {
   DCHECK(CalledOnValidThread());
   service_prefs_ = service_prefs;
   client_ = client;
@@ -60,22 +61,22 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
     return;
 
   std::string proxy_id;
-  service_prefs_->prefs()->GetString(prefs::kCloudPrintProxyId, &proxy_id);
+  service_prefs_->GetString(prefs::kCloudPrintProxyId, &proxy_id);
   if (proxy_id.empty()) {
     proxy_id = cloud_print::PrintSystem::GenerateProxyId();
-    service_prefs_->prefs()->SetString(prefs::kCloudPrintProxyId, proxy_id);
+    service_prefs_->SetString(prefs::kCloudPrintProxyId, proxy_id);
     service_prefs_->WritePrefs();
   }
 
   // Getting print system specific settings from the preferences.
   DictionaryValue* print_system_settings = NULL;
-  service_prefs_->prefs()->GetDictionary(prefs::kCloudPrintPrintSystemSettings,
-                                         &print_system_settings);
+  service_prefs_->GetDictionary(prefs::kCloudPrintPrintSystemSettings,
+                                &print_system_settings);
 
   // Check if there is an override for the cloud print server URL.
   std::string cloud_print_server_url_str;
-  service_prefs_->prefs()->GetString(prefs::kCloudPrintServiceURL,
-                                     &cloud_print_server_url_str);
+  service_prefs_->GetString(prefs::kCloudPrintServiceURL,
+                            &cloud_print_server_url_str);
   if (cloud_print_server_url_str.empty()) {
     cloud_print_server_url_str = kDefaultCloudPrintServerUrl;
   }
@@ -90,15 +91,15 @@ void CloudPrintProxy::EnableForUser(const std::string& lsid) {
     backend_->InitializeWithLsid(lsid, proxy_id);
   } else {
     std::string cloud_print_token;
-    service_prefs_->prefs()->GetString(prefs::kCloudPrintAuthToken,
-                                       &cloud_print_token);
+    service_prefs_->GetString(prefs::kCloudPrintAuthToken,
+                              &cloud_print_token);
     DCHECK(!cloud_print_token.empty());
     std::string cloud_print_xmpp_token;
-    service_prefs_->prefs()->GetString(prefs::kCloudPrintXMPPAuthToken,
-                                       &cloud_print_xmpp_token);
+    service_prefs_->GetString(prefs::kCloudPrintXMPPAuthToken,
+                              &cloud_print_xmpp_token);
     DCHECK(!cloud_print_xmpp_token.empty());
-    service_prefs_->prefs()->GetString(prefs::kCloudPrintEmail,
-                                       &cloud_print_email_);
+    service_prefs_->GetString(prefs::kCloudPrintEmail,
+                              &cloud_print_email_);
     DCHECK(!cloud_print_email_.empty());
     backend_->InitializeWithToken(cloud_print_token, cloud_print_xmpp_token,
                                   cloud_print_email_, proxy_id);
@@ -125,13 +126,6 @@ bool CloudPrintProxy::IsEnabled(std::string* email) const {
   return enabled;
 }
 
-void CloudPrintProxy::Shutdown() {
-  DCHECK(CalledOnValidThread());
-  if (backend_.get())
-    backend_->Shutdown();
-  backend_.reset();
-}
-
 // Notification methods from the backend. Called on UI thread.
 void CloudPrintProxy::OnPrinterListAvailable(
     const printing::PrinterList& printer_list) {
@@ -147,11 +141,12 @@ void CloudPrintProxy::OnAuthenticated(
     const std::string& email) {
   DCHECK(CalledOnValidThread());
   cloud_print_email_ = email;
-  service_prefs_->prefs()->SetString(prefs::kCloudPrintAuthToken,
-                                     cloud_print_token);
-  service_prefs_->prefs()->SetString(prefs::kCloudPrintXMPPAuthToken,
-                                     cloud_print_xmpp_token);
-  service_prefs_->prefs()->SetString(prefs::kCloudPrintEmail, email);
+  service_prefs_->SetString(prefs::kCloudPrintAuthToken,
+                            cloud_print_token);
+  service_prefs_->SetString(prefs::kCloudPrintXMPPAuthToken,
+                            cloud_print_xmpp_token);
+  service_prefs_->SetString(prefs::kCloudPrintEmail,
+                            email);
   service_prefs_->WritePrefs();
 }
 
@@ -163,4 +158,11 @@ void CloudPrintProxy::OnAuthenticationFailed() {
   // expired.
   g_service_process->io_thread()->message_loop_proxy()->PostTask(
       FROM_HERE, NewRunnableFunction(&ShowTokenExpiredNotificationInBrowser));
+}
+
+void CloudPrintProxy::Shutdown() {
+  DCHECK(CalledOnValidThread());
+  if (backend_.get())
+    backend_->Shutdown();
+  backend_.reset();
 }

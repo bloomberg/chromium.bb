@@ -7,14 +7,40 @@
 #include "base/values.h"
 
 TestingPrefStore::TestingPrefStore()
-    : prefs_(new DictionaryValue()),
-      read_only_(true),
+    : read_only_(true),
       prefs_written_(false),
       init_complete_(false) { }
 
-PrefStore::PrefReadError TestingPrefStore::ReadPrefs() {
-  prefs_.reset(new DictionaryValue());
-  return PrefStore::PREF_READ_ERROR_NONE;
+PrefStore::ReadResult TestingPrefStore::GetValue(const std::string& key,
+                                                 Value** value) const {
+  return prefs_.GetValue(key, value) ? READ_OK : READ_NO_VALUE;
+}
+
+void TestingPrefStore::AddObserver(PrefStore::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TestingPrefStore::RemoveObserver(PrefStore::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void TestingPrefStore::SetValue(const std::string& key, Value* value) {
+  if (prefs_.SetValue(key, value))
+    NotifyPrefValueChanged(key);
+}
+
+void TestingPrefStore::SetValueSilently(const std::string& key, Value* value) {
+  prefs_.SetValue(key, value);
+}
+
+void TestingPrefStore::RemoveValue(const std::string& key) {
+  if (prefs_.RemoveValue(key))
+    NotifyPrefValueChanged(key);
+}
+
+PersistentPrefStore::PrefReadError TestingPrefStore::ReadPrefs() {
+  prefs_.Clear();
+  return PersistentPrefStore::PREF_READ_ERROR_NONE;
 }
 
 bool TestingPrefStore::WritePrefs() {
@@ -22,15 +48,53 @@ bool TestingPrefStore::WritePrefs() {
   return prefs_written_;
 }
 
-void TestingPrefStore::NotifyPrefValueChanged(const std::string& key) {
-  PrefStoreBase::NotifyPrefValueChanged(key);
-}
-
-void TestingPrefStore::NotifyInitializationCompleted() {
-  PrefStoreBase::NotifyInitializationCompleted();
-}
-
 void TestingPrefStore::SetInitializationCompleted() {
   init_complete_ = true;
   NotifyInitializationCompleted();
+}
+
+void TestingPrefStore::NotifyPrefValueChanged(const std::string& key) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
+}
+
+void TestingPrefStore::NotifyInitializationCompleted() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted());
+}
+
+void TestingPrefStore::SetString(const std::string& key,
+                                 const std::string& value) {
+  SetValue(key, Value::CreateStringValue(value));
+}
+
+void TestingPrefStore::SetInteger(const std::string& key, int value) {
+  SetValue(key, Value::CreateIntegerValue(value));
+}
+
+void TestingPrefStore::SetBoolean(const std::string& key, bool value) {
+  SetValue(key, Value::CreateBooleanValue(value));
+}
+
+bool TestingPrefStore::GetString(const std::string& key,
+                                 std::string* value) const {
+  Value* stored_value;
+  if (!prefs_.GetValue(key, &stored_value) || !stored_value)
+    return false;
+
+  return stored_value->GetAsString(value);
+}
+
+bool TestingPrefStore::GetInteger(const std::string& key, int* value) const {
+  Value* stored_value;
+  if (!prefs_.GetValue(key, &stored_value) || !stored_value)
+    return false;
+
+  return stored_value->GetAsInteger(value);
+}
+
+bool TestingPrefStore::GetBoolean(const std::string& key, bool* value) const {
+  Value* stored_value;
+  if (!prefs_.GetValue(key, &stored_value) || !stored_value)
+    return false;
+
+  return stored_value->GetAsBoolean(value);
 }

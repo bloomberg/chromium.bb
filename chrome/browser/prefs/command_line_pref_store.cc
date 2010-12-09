@@ -34,16 +34,12 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 };
 
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
-    : command_line_(command_line),
-      prefs_(new DictionaryValue()) {}
-
-CommandLinePrefStore::~CommandLinePrefStore() {}
-
-PrefStore::PrefReadError CommandLinePrefStore::ReadPrefs() {
+    : command_line_(command_line) {
   ApplySimpleSwitches();
   ValidateProxySwitches();
-  return PrefStore::PREF_READ_ERROR_NONE;
 }
+
+CommandLinePrefStore::~CommandLinePrefStore() {}
 
 void CommandLinePrefStore::ApplySimpleSwitches() {
   // Look for each switch we know about and set its preference accordingly.
@@ -51,7 +47,7 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
     if (command_line_->HasSwitch(string_switch_map_[i].switch_name)) {
       Value* value = Value::CreateStringValue(command_line_->
           GetSwitchValueASCII(string_switch_map_[i].switch_name));
-      prefs_->Set(string_switch_map_[i].preference_path, value);
+      SetValue(string_switch_map_[i].preference_path, value);
     }
   }
 
@@ -59,7 +55,7 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
     if (command_line_->HasSwitch(boolean_switch_map_[i].switch_name)) {
       Value* value = Value::CreateBooleanValue(
           boolean_switch_map_[i].set_value);
-      prefs_->Set(boolean_switch_map_[i].preference_path, value);
+      SetValue(boolean_switch_map_[i].preference_path, value);
     }
   }
 }

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -26,8 +28,10 @@ class ExtensionTestingProfile : public TestingProfile {
     DCHECK(!GetExtensionsService());
 
     manager_.reset(ExtensionProcessManager::Create(this));
+    ExtensionPrefStore* pref_store = new ExtensionPrefStore;
     extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
-                                              GetExtensionsInstallDir()));
+                                              GetExtensionsInstallDir(),
+                                              pref_store));
     service_ = new ExtensionsService(this,
                                      CommandLine::ForCurrentProcess(),
                                      GetExtensionsInstallDir(),

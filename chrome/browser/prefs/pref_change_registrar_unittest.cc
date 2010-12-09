@@ -15,6 +15,8 @@
 using testing::Mock;
 using testing::Eq;
 
+namespace {
+
 // A mock provider that allows us to capture pref observer changes.
 class MockPrefService : public TestingPrefService {
  public:
@@ -24,6 +26,8 @@ class MockPrefService : public TestingPrefService {
   MOCK_METHOD2(AddPrefObserver, void(const char*, NotificationObserver*));
   MOCK_METHOD2(RemovePrefObserver, void(const char*, NotificationObserver*));
 };
+
+}  // namespace
 
 class PrefChangeRegistrarTest : public testing::Test {
  public:

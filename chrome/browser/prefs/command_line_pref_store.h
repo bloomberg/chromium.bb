@@ -9,20 +9,17 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/pref_store.h"
+#include "base/values.h"
+#include "chrome/browser/prefs/value_map_pref_store.h"
 
 class DictionaryValue;
 
 // This PrefStore keeps track of preferences set by command-line switches,
 // such as proxy settings.
-class CommandLinePrefStore : public PrefStore {
+class CommandLinePrefStore : public ValueMapPrefStore {
  public:
   explicit CommandLinePrefStore(const CommandLine* command_line);
   virtual ~CommandLinePrefStore();
-
-  // PrefStore methods:
-  virtual PrefReadError ReadPrefs();
-  virtual DictionaryValue* prefs() const { return prefs_.get(); }
 
  protected:
   // Logs a message and returns false if the proxy switches are
@@ -50,8 +47,6 @@ class CommandLinePrefStore : public PrefStore {
 
   // Weak reference.
   const CommandLine* command_line_;
-
-  scoped_ptr<DictionaryValue> prefs_;
 
   static const StringSwitchToPreferenceMapEntry string_switch_map_[];
 

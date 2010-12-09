@@ -7,46 +7,61 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/pref_store_base.h"
+#include "chrome/browser/prefs/pref_value_map.h"
+#include "chrome/common/persistent_pref_store.h"
 
 class DictionaryValue;
 
-// |TestingPrefStore| is a stub implementation of the |PrefStore| interface.
-// It allows to get and set the state of the |PrefStore| as well as triggering
-// notifications.
-class TestingPrefStore : public PrefStoreBase {
+// |TestingPrefStore| is a preference store implementation that allows tests to
+// explicitly manipulate the contents of the store, triggering notifications
+// where appropriate.
+class TestingPrefStore : public PersistentPrefStore {
  public:
   TestingPrefStore();
   virtual ~TestingPrefStore() {}
 
-  virtual DictionaryValue* prefs() const { return prefs_.get(); }
+  // Overriden from PrefStore.
+  virtual ReadResult GetValue(const std::string& key, Value** result) const;
+  virtual void AddObserver(PrefStore::Observer* observer);
+  virtual void RemoveObserver(PrefStore::Observer* observer);
+  virtual bool IsInitializationComplete() const { return init_complete_; }
 
-  virtual PrefStore::PrefReadError ReadPrefs();
-
+  // PersistentPrefStore overrides:
+  virtual void SetValue(const std::string& key, Value* value);
+  virtual void SetValueSilently(const std::string& key, Value* value);
+  virtual void RemoveValue(const std::string& key);
   virtual bool ReadOnly() const { return read_only_; }
-
+  virtual PersistentPrefStore::PrefReadError ReadPrefs();
   virtual bool WritePrefs();
+  virtual void ScheduleWritePrefs() {}
+
+  // Marks the store as having completed initialization.
+  void SetInitializationCompleted();
+
+  // Used for tests to trigger notifications explicitly.
+  void NotifyPrefValueChanged(const std::string& key);
+  void NotifyInitializationCompleted();
+
+  // Some convenience getters/setters.
+  void SetString(const std::string& key, const std::string& value);
+  void SetInteger(const std::string& key, int value);
+  void SetBoolean(const std::string& key, bool value);
+
+  bool GetString(const std::string& key, std::string* value) const;
+  bool GetInteger(const std::string& key, int* value) const;
+  bool GetBoolean(const std::string& key, bool* value) const;
 
   // Getter and Setter methods for setting and getting the state of the
-  // |DummyPrefStore|.
+  // |TestingPrefStore|.
   virtual void set_read_only(bool read_only) { read_only_ = read_only; }
-  virtual void set_prefs(DictionaryValue* prefs) { prefs_.reset(prefs); }
   virtual void set_prefs_written(bool status) { prefs_written_ = status; }
   virtual bool get_prefs_written() { return prefs_written_; }
 
-  // Publish these functions so testing code can call them.
-  virtual void NotifyPrefValueChanged(const std::string& key);
-  virtual void NotifyInitializationCompleted();
-
-  // Whether the store has completed all asynchronous initialization.
-  virtual bool IsInitializationComplete() { return init_complete_; }
-
-  // Mark the store as having completed initialization.
-  void SetInitializationCompleted();
-
  private:
-  scoped_ptr<DictionaryValue> prefs_;
+  // Stores the preference values.
+  PrefValueMap prefs_;
 
   // Flag that indicates if the PrefStore is read-only
   bool read_only_;
@@ -56,6 +71,8 @@ class TestingPrefStore : public PrefStoreBase {
 
   // Whether initialization has been completed.
   bool init_complete_;
+
+  ObserverList<PrefStore::Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingPrefStore);
 };

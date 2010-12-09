@@ -40,8 +40,8 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
   // TemplateURLModelObserver implemementation.
   virtual void OnTemplateURLModelChanged();
 
-  // Checks that the observer count is what is expected.
-  void VerifyObserverCount(int expected_changed_count);
+  // Gets the observer count.
+  int GetObserverCount();
 
   // Sets the observer count to 0.
   void ResetObserverCount();

@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -140,9 +141,12 @@ static void ExtentToStringSet(const ExtensionExtent& host_extent,
 
 }  // namespace
 
-ExtensionPrefs::ExtensionPrefs(PrefService* prefs, const FilePath& root_dir)
+ExtensionPrefs::ExtensionPrefs(PrefService* prefs,
+                               const FilePath& root_dir,
+                               ExtensionPrefStore* pref_store)
     : prefs_(prefs),
-      install_directory_(root_dir) {
+      install_directory_(root_dir),
+      pref_store_(pref_store) {
   // TODO(asargent) - Remove this in a couple of months. (See comment above
   // CleanupBadExtensionKeys).
   CleanupBadExtensionKeys(prefs_);
@@ -1190,6 +1194,7 @@ void ExtensionPrefs::InitPrefStore() {
 
   // Store winning preference for each extension controlled preference.
   UpdatePrefStore(ext_controlled_prefs);
+  pref_store_->OnInitializationCompleted();
 }
 
 const Value* ExtensionPrefs::GetWinningExtensionControlledPrefValue(
@@ -1229,25 +1234,15 @@ void ExtensionPrefs::UpdatePrefStore(
 }
 
 void ExtensionPrefs::UpdatePrefStore(const std::string& pref_key) {
-  PrefStore* extension_pref_store =
-      pref_service()->GetExtensionPrefStore();
-  if (extension_pref_store == NULL)
-    return;  // Profile is being shut down, Pref Service is already gone.
+  if (pref_store_ == NULL)
+    return;
   const Value* winning_pref_value =
       GetWinningExtensionControlledPrefValue(pref_key);
-  Value* old_value = NULL;
-  extension_pref_store->prefs()->Get(pref_key, &old_value);
-  bool changed = !Value::Equals(winning_pref_value, old_value);
 
-  if (winning_pref_value) {
-    extension_pref_store->prefs()->Set(pref_key,
-                                       winning_pref_value->DeepCopy());
-  } else {
-    extension_pref_store->prefs()->Remove(pref_key, NULL);
-  }
-
-  if (changed)
-    pref_service()->pref_notifier()->OnPreferenceChanged(pref_key.c_str());
+  if (winning_pref_value)
+    pref_store_->SetExtensionPref(pref_key, winning_pref_value->DeepCopy());
+  else
+    pref_store_->RemoveExtensionPref(pref_key);
 }
 
 void ExtensionPrefs::SetExtensionControlledPref(const std::string& extension_id,

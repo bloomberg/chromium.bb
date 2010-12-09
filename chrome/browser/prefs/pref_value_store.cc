@@ -52,9 +52,6 @@ PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
                                Profile* profile)
     : pref_notifier_(pref_notifier),
       profile_(profile) {
-  // NULL default pref store is usually bad, but may be OK for some unit tests.
-  if (!default_prefs)
-    LOG(WARNING) << "default pref store is null";
   InitPrefStore(MANAGED_PLATFORM_STORE, managed_platform_prefs);
   InitPrefStore(DEVICE_MANAGEMENT_STORE, device_management_prefs);
   InitPrefStore(EXTENSION_STORE, extension_prefs);
@@ -85,11 +82,6 @@ bool PrefValueStore::GetValue(const std::string& name,
   return false;
 }
 
-bool PrefValueStore::GetUserValue(const std::string& name,
-                                  Value** out_value) const {
-  return GetValueFromStore(name.c_str(), USER_STORE, out_value);
-}
-
 void PrefValueStore::RegisterPreferenceType(const std::string& name,
                                             Value::ValueType type) {
   pref_types_[name] = type;
@@ -101,46 +93,6 @@ Value::ValueType PrefValueStore::GetRegisteredType(
   if (found == pref_types_.end())
     return Value::TYPE_NULL;
   return found->second;
-}
-
-bool PrefValueStore::WritePrefs() {
-  bool success = true;
-  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
-    PrefStore* store = GetPrefStore(static_cast<PrefStoreType>(i));
-    if (store)
-      success = store->WritePrefs() && success;
-  }
-  return success;
-}
-
-void PrefValueStore::ScheduleWritePrefs() {
-  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
-    PrefStore* store = GetPrefStore(static_cast<PrefStoreType>(i));
-    if (store)
-      store->ScheduleWritePrefs();
-  }
-}
-
-PrefStore::PrefReadError PrefValueStore::ReadPrefs() {
-  PrefStore::PrefReadError result = PrefStore::PREF_READ_ERROR_NONE;
-  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
-    PrefStore* store = GetPrefStore(static_cast<PrefStoreType>(i));
-    if (store) {
-      PrefStore::PrefReadError this_error = store->ReadPrefs();
-      if (result == PrefStore::PREF_READ_ERROR_NONE)
-        result = this_error;
-    }
-  }
-
-  if (HasPolicyConflictingUserProxySettings()) {
-    LOG(WARNING) << "user-requested proxy options have been overridden"
-                 << " by a proxy configuration specified in a centrally"
-                 << " administered policy.";
-  }
-
-  // TODO(markusheintz): Return a better error status: maybe a struct with
-  // the error status of all PrefStores.
-  return result;
 }
 
 bool PrefValueStore::HasPrefPath(const char* path) const {
@@ -179,34 +131,6 @@ void PrefValueStore::NotifyPrefChanged(
     pref_notifier_->OnPreferenceChanged(path);
 }
 
-void PrefValueStore::SetUserPrefValue(const char* name, Value* in_value) {
-  DCHECK(in_value);
-  Value* old_value = NULL;
-  GetPrefStore(USER_STORE)->prefs()->Get(name, &old_value);
-  bool value_changed = !old_value || !old_value->Equals(in_value);
-  GetPrefStore(USER_STORE)->prefs()->Set(name, in_value);
-
-  if (value_changed)
-    NotifyPrefChanged(name, USER_STORE);
-}
-
-void PrefValueStore::SetUserPrefValueSilently(const char* name,
-                                              Value* in_value) {
-  DCHECK(in_value);
-  GetPrefStore(USER_STORE)->prefs()->Set(name, in_value);
-}
-
-bool PrefValueStore::ReadOnly() const {
-  return GetPrefStore(USER_STORE)->ReadOnly();
-}
-
-void PrefValueStore::RemoveUserPrefValue(const char* name) {
-  if (GetPrefStore(USER_STORE)) {
-    if (GetPrefStore(USER_STORE)->prefs()->Remove(name, NULL))
-      NotifyPrefChanged(name, USER_STORE);
-  }
-}
-
 bool PrefValueStore::PrefValueInManagedPlatformStore(const char* name) const {
   return PrefValueInStore(name, MANAGED_PLATFORM_STORE);
 }
@@ -239,22 +163,6 @@ bool PrefValueStore::PrefValueUserModifiable(const char* name) const {
   PrefStoreType effective_store = ControllingPrefStoreForPref(name);
   return effective_store >= USER_STORE ||
          effective_store == INVALID_STORE;
-}
-
-bool PrefValueStore::HasPolicyConflictingUserProxySettings() const {
-  using policy::ConfigurationPolicyPrefStore;
-  ConfigurationPolicyPrefStore::ProxyPreferenceSet proxy_prefs;
-  ConfigurationPolicyPrefStore::GetProxyPreferenceSet(&proxy_prefs);
-  ConfigurationPolicyPrefStore::ProxyPreferenceSet::const_iterator i;
-  for (i = proxy_prefs.begin(); i != proxy_prefs.end(); ++i) {
-    if ((PrefValueInManagedPlatformStore(*i) ||
-         PrefValueInDeviceManagementStore(*i)) &&
-        PrefValueInStoreRange(*i,
-                              COMMAND_LINE_STORE,
-                              USER_STORE))
-      return true;
-  }
-  return false;
 }
 
 // Returns true if the actual value is a valid type for the expected type when
@@ -316,25 +224,27 @@ bool PrefValueStore::GetValueFromStore(const char* name,
   // Only return true if we find a value and it is the correct type, so stale
   // values with the incorrect type will be ignored.
   const PrefStore* store = GetPrefStore(static_cast<PrefStoreType>(store_type));
-  if (store && store->prefs()->Get(name, out_value)) {
-    // If the value is the sentinel that redirects to the default store,
-    // re-fetch the value from the default store explicitly. Because the default
-    // values are not available when creating stores, the default value must be
-    // fetched dynamically for every redirect.
-    if (PrefStore::IsUseDefaultSentinelValue(*out_value)) {
-      store = GetPrefStore(DEFAULT_STORE);
-      if (!store || !store->prefs()->Get(name, out_value)) {
-        *out_value = NULL;
-        return false;
-      }
-      store_type = DEFAULT_STORE;
-    }
-    if (IsValidType(GetRegisteredType(name),
-                    (*out_value)->GetType(),
-                    store_type)) {
-      return true;
+  if (store) {
+    switch (store->GetValue(name, out_value)) {
+      case PrefStore::READ_USE_DEFAULT:
+        store = GetPrefStore(DEFAULT_STORE);
+        if (!store || store->GetValue(name, out_value) != PrefStore::READ_OK) {
+          *out_value = NULL;
+          return false;
+        }
+        // Fall through...
+      case PrefStore::READ_OK:
+        if (IsValidType(GetRegisteredType(name),
+                        (*out_value)->GetType(),
+                        store_type)) {
+          return true;
+        }
+        break;
+      case PrefStore::READ_NO_VALUE:
+        break;
     }
   }
+
   // No valid value found for the given preference name: set the return false.
   *out_value = NULL;
   return false;
@@ -342,37 +252,16 @@ bool PrefValueStore::GetValueFromStore(const char* name,
 
 void PrefValueStore::RefreshPolicyPrefsOnFileThread(
     BrowserThread::ID calling_thread_id,
-    PrefStore* new_managed_platform_pref_store,
-    PrefStore* new_device_management_pref_store,
-    PrefStore* new_recommended_pref_store) {
+    policy::ConfigurationPolicyPrefStore* new_managed_platform_pref_store,
+    policy::ConfigurationPolicyPrefStore* new_device_management_pref_store,
+    policy::ConfigurationPolicyPrefStore* new_recommended_pref_store) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<PrefStore> managed_platform_pref_store(
+  scoped_ptr<policy::ConfigurationPolicyPrefStore> managed_platform_pref_store(
       new_managed_platform_pref_store);
-  scoped_ptr<PrefStore> device_management_pref_store(
+  scoped_ptr<policy::ConfigurationPolicyPrefStore> device_management_pref_store(
       new_device_management_pref_store);
-  scoped_ptr<PrefStore> recommended_pref_store(new_recommended_pref_store);
-
-  PrefStore::PrefReadError read_error =
-      new_managed_platform_pref_store->ReadPrefs();
-  if (read_error != PrefStore::PREF_READ_ERROR_NONE) {
-    LOG(ERROR) << "refresh of managed policy failed: PrefReadError = "
-               << read_error;
-    return;
-  }
-
-  read_error = new_device_management_pref_store->ReadPrefs();
-  if (read_error != PrefStore::PREF_READ_ERROR_NONE) {
-    LOG(ERROR) << "refresh of device management policy failed: "
-               << "PrefReadError = " << read_error;
-    return;
-  }
-
-  read_error = new_recommended_pref_store->ReadPrefs();
-  if (read_error != PrefStore::PREF_READ_ERROR_NONE) {
-    LOG(ERROR) << "refresh of recommended policy failed: PrefReadError = "
-               << read_error;
-    return;
-  }
+  scoped_ptr<policy::ConfigurationPolicyPrefStore> recommended_pref_store(
+      new_recommended_pref_store);
 
   BrowserThread::PostTask(
       calling_thread_id, FROM_HERE,
@@ -392,12 +281,12 @@ void PrefValueStore::RefreshPolicyPrefs() {
   // created and the refreshed policy read into them. The new stores
   // are swapped with the old from a Task on the UI thread after the
   // load is complete.
-  PrefStore* new_managed_platform_pref_store(
+  ConfigurationPolicyPrefStore* new_managed_platform_pref_store(
       ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore());
-  PrefStore* new_device_management_pref_store(
+  ConfigurationPolicyPrefStore* new_device_management_pref_store(
       ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
           profile_));
-  PrefStore* new_recommended_pref_store(
+  ConfigurationPolicyPrefStore* new_recommended_pref_store(
       ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore());
   BrowserThread::ID current_thread_id;
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&current_thread_id));
@@ -412,27 +301,31 @@ void PrefValueStore::RefreshPolicyPrefs() {
 }
 
 void PrefValueStore::RefreshPolicyPrefsCompletion(
-    PrefStore* new_managed_platform_pref_store,
-    PrefStore* new_device_management_pref_store,
-    PrefStore* new_recommended_pref_store) {
+    policy::ConfigurationPolicyPrefStore* new_managed_platform_pref_store,
+    policy::ConfigurationPolicyPrefStore* new_device_management_pref_store,
+    policy::ConfigurationPolicyPrefStore* new_recommended_pref_store) {
   // Determine the paths of all the changed preferences values in the three
   // policy-related stores (managed platform, device management and
   // recommended).
   DictionaryValue* managed_platform_prefs_before(
-      GetPrefStore(MANAGED_PLATFORM_STORE)->prefs());
+      static_cast<policy::ConfigurationPolicyPrefStore*>(
+          GetPrefStore(MANAGED_PLATFORM_STORE))->prefs());
   DictionaryValue* managed_platform_prefs_after(
       new_managed_platform_pref_store->prefs());
   DictionaryValue* device_management_prefs_before(
-      GetPrefStore(DEVICE_MANAGEMENT_STORE)->prefs());
+      static_cast<policy::ConfigurationPolicyPrefStore*>(
+          GetPrefStore(DEVICE_MANAGEMENT_STORE))->prefs());
   DictionaryValue* device_management_prefs_after(
       new_device_management_pref_store->prefs());
   DictionaryValue* recommended_prefs_before(
-      GetPrefStore(RECOMMENDED_STORE)->prefs());
+      static_cast<policy::ConfigurationPolicyPrefStore*>(
+          GetPrefStore(RECOMMENDED_STORE))->prefs());
   DictionaryValue* recommended_prefs_after(new_recommended_pref_store->prefs());
 
   std::vector<std::string> changed_managed_platform_paths;
-  managed_platform_prefs_before->GetDifferingPaths(managed_platform_prefs_after,
-                                          &changed_managed_platform_paths);
+  managed_platform_prefs_before->GetDifferingPaths(
+      managed_platform_prefs_after,
+      &changed_managed_platform_paths);
 
   std::vector<std::string> changed_device_management_paths;
   device_management_prefs_before->GetDifferingPaths(
@@ -440,8 +333,9 @@ void PrefValueStore::RefreshPolicyPrefsCompletion(
       &changed_device_management_paths);
 
   std::vector<std::string> changed_recommended_paths;
-  recommended_prefs_before->GetDifferingPaths(recommended_prefs_after,
-                                              &changed_recommended_paths);
+  recommended_prefs_before->GetDifferingPaths(
+      recommended_prefs_after,
+      &changed_recommended_paths);
 
   // Merge all three vectors of changed value paths together, filtering
   // duplicates in a post-processing step.

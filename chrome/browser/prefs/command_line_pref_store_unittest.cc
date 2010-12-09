@@ -34,10 +34,12 @@ TEST(CommandLinePrefStoreTest, SimpleStringPref) {
   CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitchASCII(switches::kLang, "hi-MOM");
   CommandLinePrefStore store(&cl);
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
+  Value* actual = NULL;
+  EXPECT_EQ(PrefStore::READ_OK,
+            store.GetValue(prefs::kApplicationLocale, &actual));
   std::string result;
-  EXPECT_TRUE(store.prefs()->GetString(prefs::kApplicationLocale, &result));
+  EXPECT_TRUE(actual->GetAsString(&result));
   EXPECT_EQ("hi-MOM", result);
 }
 
@@ -46,10 +48,11 @@ TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
   CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitch(switches::kNoProxyServer);
   CommandLinePrefStore store(&cl);
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
+  Value* actual = NULL;
+  ASSERT_EQ(PrefStore::READ_OK, store.GetValue(prefs::kNoProxyServer, &actual));
   bool result;
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &result));
+  EXPECT_TRUE(actual->GetAsBoolean(&result));
   EXPECT_TRUE(result);
 }
 
@@ -59,15 +62,10 @@ TEST(CommandLinePrefStoreTest, NoPrefs) {
   cl.AppendSwitch(unknown_string);
   cl.AppendSwitchASCII(unknown_bool, "a value");
   CommandLinePrefStore store(&cl);
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
-  bool bool_result = false;
-  EXPECT_FALSE(store.prefs()->GetBoolean(unknown_bool, &bool_result));
-  EXPECT_FALSE(bool_result);
-
-  std::string string_result = "";
-  EXPECT_FALSE(store.prefs()->GetString(unknown_string, &string_result));
-  EXPECT_EQ("", string_result);
+  Value* actual = NULL;
+  EXPECT_EQ(PrefStore::READ_NO_VALUE, store.GetValue(unknown_bool, &actual));
+  EXPECT_EQ(PrefStore::READ_NO_VALUE, store.GetValue(unknown_string, &actual));
 }
 
 // Tests a complex command line with multiple known and unknown switches.
@@ -79,21 +77,23 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
   cl.AppendSwitchASCII(switches::kProxyBypassList, "list");
   cl.AppendSwitchASCII(unknown_bool, "a value");
   CommandLinePrefStore store(&cl);
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
+  Value* actual = NULL;
+  EXPECT_EQ(PrefStore::READ_NO_VALUE, store.GetValue(unknown_bool, &actual));
+  ASSERT_EQ(PrefStore::READ_OK,
+            store.GetValue(prefs::kProxyAutoDetect, &actual));
   bool bool_result = false;
-  EXPECT_FALSE(store.prefs()->GetBoolean(unknown_bool, &bool_result));
-  EXPECT_FALSE(bool_result);
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect, &bool_result));
+  EXPECT_TRUE(actual->GetAsBoolean(&bool_result));
   EXPECT_TRUE(bool_result);
 
+  EXPECT_EQ(PrefStore::READ_NO_VALUE, store.GetValue(unknown_string, &actual));
   std::string string_result = "";
-  EXPECT_FALSE(store.prefs()->GetString(unknown_string, &string_result));
-  EXPECT_EQ("", string_result);
-  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
+  ASSERT_EQ(PrefStore::READ_OK, store.GetValue(prefs::kProxyServer, &actual));
+  EXPECT_TRUE(actual->GetAsString(&string_result));
   EXPECT_EQ("proxy", string_result);
-  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
-      &string_result));
+  ASSERT_EQ(PrefStore::READ_OK,
+            store.GetValue(prefs::kProxyBypassList, &actual));
+  EXPECT_TRUE(actual->GetAsString(&string_result));
   EXPECT_EQ("list", string_result);
 }
 
@@ -103,19 +103,16 @@ TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
 
   // No switches.
   TestCommandLinePrefStore store(&cl);
-  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
   EXPECT_TRUE(store.ProxySwitchesAreValid());
 
   // Only no-proxy.
   cl.AppendSwitch(switches::kNoProxyServer);
   TestCommandLinePrefStore store2(&cl);
-  EXPECT_EQ(store2.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
   EXPECT_TRUE(store2.ProxySwitchesAreValid());
 
   // Another proxy switch too.
   cl.AppendSwitch(switches::kProxyAutoDetect);
   TestCommandLinePrefStore store3(&cl);
-  EXPECT_EQ(store3.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
   EXPECT_FALSE(store3.ProxySwitchesAreValid());
 
   // All proxy switches except no-proxy.
@@ -125,6 +122,5 @@ TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
   cl2.AppendSwitchASCII(switches::kProxyPacUrl, "url");
   cl2.AppendSwitchASCII(switches::kProxyBypassList, "list");
   TestCommandLinePrefStore store4(&cl2);
-  EXPECT_EQ(store4.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
   EXPECT_TRUE(store4.ProxySwitchesAreValid());
 }

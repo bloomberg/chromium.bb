@@ -64,6 +64,8 @@
         'browser/net/url_request_mock_net_error_job.cc',
         'browser/net/url_request_mock_net_error_job.h',
         'browser/prefs/pref_observer_mock.h',
+        'browser/prefs/pref_service_mock_builder.cc',
+        'browser/prefs/pref_service_mock_builder.h',
         'browser/prefs/testing_pref_store.cc',
         'browser/prefs/testing_pref_store.h',
         'browser/renderer_host/mock_render_process_host.cc',

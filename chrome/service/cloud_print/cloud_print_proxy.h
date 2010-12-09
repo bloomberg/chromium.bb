@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 
-class JsonPrefStore;
+class ServiceProcessPrefs;
 
 // CloudPrintProxy is the layer between the service process UI thread
 // and the cloud print proxy backend.
@@ -31,7 +31,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
 
   // Initializes the object. This should be called every time an object of this
   // class is constructed.
-  void Initialize(JsonPrefStore* service_prefs, Client* client);
+  void Initialize(ServiceProcessPrefs* service_prefs, Client* client);
 
   // Enables/disables cloud printing for the user
   void EnableForUser(const std::string& lsid);
@@ -60,7 +60,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   scoped_ptr<CloudPrintProxyBackend> backend_;
   // This class does not own this. It is guaranteed to remain valid for the
   // lifetime of this class.
-  JsonPrefStore* service_prefs_;
+  ServiceProcessPrefs* service_prefs_;
   // This class does not own this. If non-NULL, It is guaranteed to remain
   // valid for the lifetime of this class.
   Client* client_;

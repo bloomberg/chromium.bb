@@ -16,11 +16,11 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_ipc_server.h"
+#include "chrome/service/service_process_prefs.h"
 #include "net/base/network_change_notifier.h"
 
 #if defined(ENABLE_REMOTING)
@@ -95,11 +95,10 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   FilePath pref_path = user_data_dir.Append(chrome::kServiceStateFileName);
-  service_prefs_.reset(new JsonPrefStore(pref_path,
-                                         file_thread_->message_loop_proxy()));
+  service_prefs_.reset(
+      new ServiceProcessPrefs(pref_path, file_thread_->message_loop_proxy()));
   service_prefs_->ReadPrefs();
 
-  DictionaryValue* values = service_prefs_->prefs();
   bool remoting_host_enabled = false;
 
   // For development, we allow forcing the enabling of the host daemon via a
@@ -107,7 +106,8 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
   //
   // TODO(ajwong): When we've gotten the preference setting workflow more
   // stable, we should remove the command-line flag force-enable.
-  values->GetBoolean(prefs::kRemotingHostEnabled, &remoting_host_enabled);
+  service_prefs_->GetBoolean(prefs::kRemotingHostEnabled,
+                             &remoting_host_enabled);
   remoting_host_enabled |= command_line.HasSwitch(switches::kEnableRemoting);
 
 #if defined(ENABLE_REMOTING)
@@ -122,8 +122,8 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
       command_line.HasSwitch(switches::kEnableCloudPrintProxy);
   if (!cloud_print_proxy_enabled) {
     // Then check if the cloud print proxy was previously enabled.
-    values->GetBoolean(prefs::kCloudPrintProxyEnabled,
-                       &cloud_print_proxy_enabled);
+    service_prefs_->GetBoolean(prefs::kCloudPrintProxyEnabled,
+                               &cloud_print_proxy_enabled);
   }
 
   if (cloud_print_proxy_enabled) {
@@ -192,14 +192,14 @@ CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
 
 void ServiceProcess::OnCloudPrintProxyEnabled() {
   // Save the preference that we have enabled the cloud print proxy.
-  service_prefs_->prefs()->SetBoolean(prefs::kCloudPrintProxyEnabled, true);
+  service_prefs_->SetBoolean(prefs::kCloudPrintProxyEnabled, true);
   service_prefs_->WritePrefs();
   OnServiceEnabled();
 }
 
 void ServiceProcess::OnCloudPrintProxyDisabled() {
   // Save the preference that we have disabled the cloud print proxy.
-  service_prefs_->prefs()->SetBoolean(prefs::kCloudPrintProxyEnabled, false);
+  service_prefs_->SetBoolean(prefs::kCloudPrintProxyEnabled, false);
   service_prefs_->WritePrefs();
   OnServiceDisabled();
 }
@@ -311,7 +311,7 @@ void ServiceProcess::OnRemotingHostAdded() {
   talk_token_ = "";
 
   // Save the preference that we have enabled the remoting host.
-  service_prefs_->prefs()->SetBoolean(prefs::kRemotingHostEnabled, true);
+  service_prefs_->SetBoolean(prefs::kRemotingHostEnabled, true);
 
   // Force writing prefs to the disk.
   service_prefs_->WritePrefs();

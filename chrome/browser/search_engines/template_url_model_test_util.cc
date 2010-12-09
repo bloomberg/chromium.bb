@@ -167,9 +167,8 @@ void TemplateURLModelTestUtil::OnTemplateURLModelChanged() {
   changed_count_++;
 }
 
-void TemplateURLModelTestUtil::VerifyObserverCount(int expected_changed_count) {
-  ASSERT_EQ(expected_changed_count, changed_count_);
-  changed_count_ = 0;
+int TemplateURLModelTestUtil::GetObserverCount() {
+  return changed_count_;
 }
 
 void TemplateURLModelTestUtil::ResetObserverCount() {
@@ -188,7 +187,8 @@ void TemplateURLModelTestUtil::VerifyLoad() {
   ASSERT_FALSE(model()->loaded());
   model()->Load();
   BlockTillServiceProcessesRequests();
-  VerifyObserverCount(1);
+  EXPECT_EQ(1, GetObserverCount());
+  ResetObserverCount();
 }
 
 void TemplateURLModelTestUtil::ChangeModelToLoadState() {

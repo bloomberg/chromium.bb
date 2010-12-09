@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
@@ -328,7 +329,10 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
 scoped_refptr<ExtensionsService> TestingProfile::CreateExtensionsService(
     const CommandLine* command_line,
     const FilePath& install_directory) {
-  extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),install_directory));
+  extension_pref_store_.reset(new ExtensionPrefStore);
+  extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
+                                            install_directory,
+                                            extension_pref_store_.get()));
   extensions_service_ = new ExtensionsService(this,
                                               command_line,
                                               install_directory,

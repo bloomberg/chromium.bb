@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
@@ -65,12 +66,12 @@ class PrefProxyConfigServiceTestBase : public TESTBASE {
       : ui_thread_(BrowserThread::UI, &loop_),
         io_thread_(BrowserThread::IO, &loop_) {}
 
-  virtual void SetUp() {
-    ASSERT_TRUE(pref_service_.get());
-    PrefProxyConfigService::RegisterUserPrefs(pref_service_.get());
+  virtual void Init(PrefService* pref_service) {
+    ASSERT_TRUE(pref_service);
+    PrefProxyConfigService::RegisterUserPrefs(pref_service);
     fixed_config_.set_pac_url(GURL(kFixedPacUrl));
     delegate_service_ = new TestProxyConfigService(fixed_config_);
-    proxy_config_tracker_ = new PrefProxyConfigTracker(pref_service_.get());
+    proxy_config_tracker_ = new PrefProxyConfigTracker(pref_service);
     proxy_config_service_.reset(
         new PrefProxyConfigService(proxy_config_tracker_.get(),
                                    delegate_service_));
@@ -80,12 +81,10 @@ class PrefProxyConfigServiceTestBase : public TESTBASE {
     proxy_config_tracker_->DetachFromPrefService();
     loop_.RunAllPending();
     proxy_config_service_.reset();
-    pref_service_.reset();
   }
 
   MessageLoop loop_;
   TestProxyConfigService* delegate_service_; // weak
-  scoped_ptr<TestingPrefService> pref_service_;
   scoped_ptr<PrefProxyConfigService> proxy_config_service_;
   net::ProxyConfig fixed_config_;
 
@@ -99,9 +98,11 @@ class PrefProxyConfigServiceTest
     : public PrefProxyConfigServiceTestBase<testing::Test> {
  protected:
   virtual void SetUp() {
-    pref_service_.reset(new TestingPrefService);
-    PrefProxyConfigServiceTestBase<testing::Test>::SetUp();
+    pref_service_.reset(new TestingPrefService());
+    Init(pref_service_.get());
   }
+
+  scoped_ptr<TestingPrefService> pref_service_;
 };
 
 TEST_F(PrefProxyConfigServiceTest, BaseConfiguration) {
@@ -240,13 +241,14 @@ class PrefProxyConfigServiceCommandLineTest
       else if (name)
         command_line_.AppendSwitch(name);
     }
-    pref_service_.reset(new TestingPrefService(NULL, NULL, &command_line_));
-    PrefProxyConfigServiceTestBase<
-        testing::TestWithParam<CommandLineTestParams> >::SetUp();
+    pref_service_.reset(
+        PrefServiceMockBuilder().WithCommandLine(&command_line_).Create());
+    Init(pref_service_.get());
   }
 
  private:
   CommandLine command_line_;
+  scoped_ptr<PrefService> pref_service_;
 };
 
 TEST_P(PrefProxyConfigServiceCommandLineTest, CommandLine) {
