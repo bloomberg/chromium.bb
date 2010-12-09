@@ -89,26 +89,27 @@ bool WebCursor::Deserialize(const Pickle* pickle, void** iter) {
       size_y > kMaxCursorDimension)
     return false;
 
-  if (type == WebCursorInfo::TypeCustom && (size_x == 0 || size_y == 0))
-    return false;
+  if (type == WebCursorInfo::TypeCustom) {
+    type_ = type;
+    if (size_x > 0 && size_y > 0) {
+      // The * 4 is because the expected format is an array of RGBA pixel
+      // values.
+      if (size_x * size_y * 4 > data_len)
+        return false;
 
-  // The * 4 is because the expected format is an array of RGBA pixel values.
-  if (size_x * size_y * 4 > data_len)
-    return false;
+      hotspot_.set_x(hotspot_x);
+      hotspot_.set_y(hotspot_y);
+      custom_size_.set_width(size_x);
+      custom_size_.set_height(size_y);
+      ClampHotspot();
 
-  type_ = type;
-  hotspot_.set_x(hotspot_x);
-  hotspot_.set_y(hotspot_y);
-  custom_size_.set_width(size_x);
-  custom_size_.set_height(size_y);
-  ClampHotspot();
-
-  custom_data_.clear();
-  if (data_len > 0) {
-    custom_data_.resize(data_len);
-    memcpy(&custom_data_[0], data, data_len);
+      custom_data_.clear();
+      if (data_len > 0) {
+        custom_data_.resize(data_len);
+        memcpy(&custom_data_[0], data, data_len);
+      }
+    }
   }
-
   return DeserializePlatformData(pickle, iter);
 }
 

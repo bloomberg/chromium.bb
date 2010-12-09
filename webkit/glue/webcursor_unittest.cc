@@ -15,7 +15,7 @@ TEST(WebCursorTest, CursorSerialization) {
   // This is a valid custom cursor.
   Pickle ok_custom_pickle;
   // Type and hotspots.
-  ok_custom_pickle.WriteInt(0);
+  ok_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   ok_custom_pickle.WriteInt(0);
   ok_custom_pickle.WriteInt(0);
   // X & Y
@@ -32,7 +32,7 @@ TEST(WebCursorTest, CursorSerialization) {
   // This custom cursor has not been send with enough data.
   Pickle short_custom_pickle;
   // Type and hotspots.
-  short_custom_pickle.WriteInt(0);
+  short_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   short_custom_pickle.WriteInt(0);
   short_custom_pickle.WriteInt(0);
   // X & Y
@@ -49,7 +49,7 @@ TEST(WebCursorTest, CursorSerialization) {
   // This custom cursor has enough data but is too big.
   Pickle large_custom_pickle;
   // Type and hotspots.
-  large_custom_pickle.WriteInt(0);
+  large_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   large_custom_pickle.WriteInt(0);
   large_custom_pickle.WriteInt(0);
   // X & Y
@@ -68,7 +68,7 @@ TEST(WebCursorTest, CursorSerialization) {
   // This custom cursor uses negative lengths.
   Pickle neg_custom_pickle;
   // Type and hotspots.
-  neg_custom_pickle.WriteInt(0);
+  neg_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   neg_custom_pickle.WriteInt(0);
   neg_custom_pickle.WriteInt(0);
   // X & Y
@@ -81,6 +81,17 @@ TEST(WebCursorTest, CursorSerialization) {
   neg_custom_pickle.WriteUInt32(0);
   iter = NULL;
   EXPECT_FALSE(custom_cursor.Deserialize(&neg_custom_pickle, &iter));
+
+#if defined(OS_WIN)
+  Pickle win32_custom_pickle;
+  WebCursor win32_custom_cursor;
+  win32_custom_cursor.InitFromExternalCursor(
+      reinterpret_cast<HCURSOR>(1000));
+  EXPECT_TRUE(win32_custom_cursor.Serialize(&win32_custom_pickle));
+  iter = NULL;
+  EXPECT_TRUE(custom_cursor.Deserialize(&win32_custom_pickle, &iter));
+  EXPECT_EQ(reinterpret_cast<HCURSOR>(1000), custom_cursor.GetCursor(NULL));
+#endif  // OS_WIN
 }
 
 TEST(WebCursorTest, ClampHotspot) {
