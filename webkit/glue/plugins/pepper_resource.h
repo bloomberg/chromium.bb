@@ -26,6 +26,7 @@ namespace pepper {
   F(Graphics2D) \
   F(Graphics3D) \
   F(ImageData) \
+  F(MockResource) \
   F(ObjectVar) \
   F(PluginModule) \
   F(PrivateFontFile) \

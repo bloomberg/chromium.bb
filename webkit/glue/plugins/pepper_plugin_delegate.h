@@ -281,7 +281,7 @@ class PluginDelegate {
   // Returns a MessageLoopProxy instance associated with the message loop
   // of the file thread in this renderer.
   virtual scoped_refptr<base::MessageLoopProxy>
-  GetFileThreadMessageLoopProxy() = 0;
+      GetFileThreadMessageLoopProxy() = 0;
 
   // Create a fullscreen container for a plugin instance. This effectively
   // switches the plugin to fullscreen.

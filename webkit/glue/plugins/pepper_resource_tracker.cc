@@ -22,6 +22,9 @@ scoped_refptr<Resource> ResourceTracker::GetResource(PP_Resource res) const {
   return result->second.first;
 }
 
+// static
+ResourceTracker* ResourceTracker::singleton_override_ = NULL;
+
 ResourceTracker::ResourceTracker()
     : last_id_(0) {
 }
@@ -31,6 +34,8 @@ ResourceTracker::~ResourceTracker() {
 
 // static
 ResourceTracker* ResourceTracker::Get() {
+  if (singleton_override_)
+    return singleton_override_;
   return Singleton<ResourceTracker>::get();
 }
 
@@ -73,7 +78,7 @@ bool ResourceTracker::UnrefResource(PP_Resource res) {
 
 void ResourceTracker::ForceDeletePluginResourceRefs(PP_Resource res) {
   ResourceMap::iterator i = live_resources_.find(res);
-  if (i != live_resources_.end())
+  if (i == live_resources_.end())
     return;  // Nothing to do.
 
   i->second.second = 0;
@@ -167,6 +172,18 @@ PluginModule* ResourceTracker::GetModule(PP_Module module) {
   if (found == module_map_.end())
     return NULL;
   return found->second;
+}
+
+// static
+void ResourceTracker::SetSingletonOverride(ResourceTracker* tracker) {
+  DCHECK(!singleton_override_);
+  singleton_override_ = tracker;
+}
+
+// static
+void ResourceTracker::ClearSingletonOverride() {
+  DCHECK(singleton_override_);
+  singleton_override_ = NULL;
 }
 
 }  // namespace pepper

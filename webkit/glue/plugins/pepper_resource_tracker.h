@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
@@ -21,6 +22,7 @@ namespace pepper {
 class PluginInstance;
 class PluginModule;
 class Resource;
+class ResourceTrackerTest;
 
 // This class maintains a global list of all live pepper resources. It allows
 // us to check resource ID validity and to map them to a specific module.
@@ -91,6 +93,7 @@ class ResourceTracker {
  private:
   friend struct DefaultSingletonTraits<ResourceTracker>;
   friend class Resource;
+  friend class ResourceTrackerTest;
 
   // Prohibit creation other then by the Singleton class.
   ResourceTracker();
@@ -100,6 +103,15 @@ class ResourceTracker {
   // refcount of 1. The assigned resource ID will be returned. Used only by the
   // Resource class.
   PP_Resource AddResource(Resource* resource);
+
+  // Overrides the singleton object. This is used for tests which want to
+  // specify their own tracker (otherwise, you can get cross-talk between
+  // tests since the data will live into the subsequent tests).
+  static void SetSingletonOverride(ResourceTracker* tracker);
+  static void ClearSingletonOverride();
+
+  // See SetSingletonOverride above.
+  static ResourceTracker* singleton_override_;
 
   // Last assigned resource ID.
   PP_Resource last_id_;
