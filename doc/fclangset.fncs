@@ -58,6 +58,36 @@ two or three letter language from ISO 639 and Tt is a territory from ISO
 3166.
 @@
 
+@RET@		FcBool
+@FUNC@		FcLangSetDel
+@TYPE1@		FcLangSet *			@ARG1@		ls
+@TYPE2@		const FcChar8 *			@ARG2@		lang
+@PURPOSE@	remove a language from a langset
+@DESC@
+<parameter>lang</parameter> is removed from <parameter>ls</parameter>.
+<parameter>lang</parameter> should be of the form Ll-Tt where Ll is a
+two or three letter language from ISO 639 and Tt is a territory from ISO
+3166.
+@@
+
+@RET@		FcLangSet *
+@FUNC@		FcLangSetUnion
+@TYPE1@		const FcLangSet *		@ARG1@		ls_a
+@TYPE2@		const FcLangSet *		@ARG2@		ls_b
+@PURPOSE@	Add langsets
+@DESC@
+Returns a set including only those languages found in either <parameter>ls_a</parameter> or <parameter>ls_b</parameter>.
+@@
+
+@RET@		FcLangSet *
+@FUNC@		FcLangSetSubtract
+@TYPE1@		const FcLangSet *		@ARG1@		ls_a
+@TYPE2@		const FcLangSet *		@ARG2@		ls_b
+@PURPOSE@	Subtract langsets
+@DESC@
+Returns a set including only those languages found in <parameter>ls_a</parameter> but not <parameter>ls_b</parameter>.
+@@
+
 @RET@		FcLangResult
 @FUNC@		FcLangSetCompare
 @TYPE1@		const FcLangSet *		@ARG1@		ls_a
