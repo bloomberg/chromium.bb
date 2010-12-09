@@ -6,6 +6,7 @@
 import cgi
 import logging
 import re
+import os
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -43,10 +44,10 @@ DEFAULT_CACHE_TIME = 300
 class MainPage(webapp.RequestHandler):
   # get page from memcache, or else fetch it from src
   def get(self):
-    path = self.request.path
+    path = os.path.realpath(os.path.join('/', self.request.path))
     # special path to invoke the unit tests
     # TODO(nickbaum): is there a less ghetto way to invoke the unit test?
-    if path == "/test/":
+    if path == "/test":
       self.unitTest()
       return
     # if root, redirect to index.html
