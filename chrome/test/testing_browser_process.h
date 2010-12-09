@@ -98,6 +98,11 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
+  virtual safe_browsing::ClientSideDetectionService*
+      safe_browsing_detection_service() {
+    return NULL;
+  }
+
   virtual Clipboard* clipboard() {
     if (!clipboard_.get()) {
       // Note that we need a MessageLoop for the next call to work.

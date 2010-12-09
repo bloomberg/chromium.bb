@@ -71,6 +71,8 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   virtual DownloadStatusUpdater* download_status_updater();
   virtual base::WaitableEvent* shutdown_event();
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
+  virtual safe_browsing::ClientSideDetectionService*
+      safe_browsing_detection_service();
   virtual void CheckForInspectorFiles();
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -113,6 +115,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateStatusTrayManager();
   void CreateTabCloseableStateWatcher();
   void CreatePrintPreviewTabController();
+  void CreateSafeBrowsingDetectionService();
+
+  bool IsSafeBrowsingDetectionServiceEnabled();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabledForChildProcesses(bool enabled);
@@ -178,6 +183,10 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   scoped_ptr<NotificationService> main_notification_service_;
 
   scoped_ptr<TabCloseableStateWatcher> tab_closeable_state_watcher_;
+
+  bool created_safe_browsing_detection_service_;
+  scoped_ptr<safe_browsing::ClientSideDetectionService>
+     safe_browsing_detection_service_;
 
   unsigned int module_ref_count_;
   bool did_start_;

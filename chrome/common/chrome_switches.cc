@@ -416,7 +416,10 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // blocked pop-ups only.
 const char kEnableBlockContentAnimation[] = "enable-blocked-content-animation";
 
-// Enable experimental client-side detection of phishing pages.
+// In the browser process this switch is used to enable or disable the
+// client-side phishing detection.  In the renderer this switch is only enabled
+// if this switch is enabled in the browser and the user has opted in to UMA
+// stats and SafeBrowsing is enabled in the preferences.
 const char kEnableClientSidePhishingDetection[] =
     "enable-client-side-phishing-detection";
 

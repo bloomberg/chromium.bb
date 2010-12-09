@@ -44,6 +44,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
@@ -98,6 +99,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_devtools_manager_(false),
       created_sidebar_manager_(false),
       created_notification_ui_manager_(false),
+      created_safe_browsing_detection_service_(false),
       module_ref_count_(0),
       did_start_(false),
       checked_for_new_frames_(false),
@@ -483,6 +485,15 @@ TabCloseableStateWatcher* BrowserProcessImpl::tab_closeable_state_watcher() {
   return tab_closeable_state_watcher_.get();
 }
 
+safe_browsing::ClientSideDetectionService*
+    BrowserProcessImpl::safe_browsing_detection_service() {
+  DCHECK(CalledOnValidThread());
+  if (!created_safe_browsing_detection_service_) {
+    CreateSafeBrowsingDetectionService();
+  }
+  return safe_browsing_detection_service_.get();
+}
+
 void BrowserProcessImpl::CheckForInspectorFiles() {
   file_thread()->message_loop()->PostTask
       (FROM_HERE,
@@ -710,6 +721,38 @@ void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
 void BrowserProcessImpl::CreatePrintPreviewTabController() {
   DCHECK(print_preview_tab_controller_.get() == NULL);
   print_preview_tab_controller_ = new printing::PrintPreviewTabController();
+}
+
+void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
+  DCHECK(safe_browsing_detection_service_.get() == NULL);
+  // Set this flag to true so that we don't retry indefinitely to
+  // create the service class if there was an error.
+  created_safe_browsing_detection_service_ = true;
+
+  FilePath model_file_path;
+  Profile* profile = profile_manager() ?
+    profile_manager()->GetDefaultProfile() : NULL;
+  if (IsSafeBrowsingDetectionServiceEnabled() &&
+      PathService::Get(chrome::DIR_USER_DATA, &model_file_path) &&
+      profile && profile->GetRequestContext()) {
+    safe_browsing_detection_service_.reset(
+        safe_browsing::ClientSideDetectionService::Create(
+            model_file_path.Append(chrome::kSafeBrowsingPhishingModelFilename),
+            profile->GetRequestContext()));
+  }
+}
+
+bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
+  // The safe browsing client-side detection is enabled only if the switch is
+  // enabled, the user has opted in to UMA usage stats and SafeBrowsing
+  // is enabled.
+  Profile* profile = profile_manager() ?
+      profile_manager()->GetDefaultProfile() : NULL;
+  return (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableClientSidePhishingDetection) &&
+          metrics_service() && metrics_service()->reporting_active() &&
+          profile && profile->GetPrefs() &&
+          profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled));
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits

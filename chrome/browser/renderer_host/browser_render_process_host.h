@@ -13,7 +13,9 @@
 #include <string>
 
 #include "app/surface/transport_dib.h"
+#include "base/platform_file.h"
 #include "base/process.h"
+#include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/child_process_launcher.h"
@@ -170,6 +172,15 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Tell the renderer that auto spell correction has been enabled/disabled.
   void EnableAutoSpellCorrect(bool enable);
 
+  // Initializes client-side phishing detection.  Starts reading the phishing
+  // model from the client-side detection service class.  Once the model is read
+  // OpenPhishingModelDone() is invoked.
+  void InitClientSidePhishingDetection();
+
+  // Called once the client-side detection service class is done with opening
+  // the model file.
+  void OpenPhishingModelDone(base::PlatformFile model_file);
+
   NotificationRegistrar registrar_;
 
   // The count of currently visible widgets.  Since the host can be a container
@@ -219,6 +230,8 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // messages that are sent once the process handle is available.  This is
   // because the queued messages may have dependencies on the init messages.
   std::queue<IPC::Message*> queued_messages_;
+
+  base::ScopedCallbackFactory<BrowserRenderProcessHost> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRenderProcessHost);
 };

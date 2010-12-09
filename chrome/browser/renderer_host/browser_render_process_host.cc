@@ -49,6 +49,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
@@ -215,7 +216,8 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
       accessibility_enabled_(false),
-      extension_process_(false) {
+      extension_process_(false),
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   widget_helper_ = new RenderWidgetHelper();
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
@@ -626,7 +628,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFileSystem,
     switches::kPpapiOutOfProcess,
     switches::kEnablePrintPreview,
-    switches::kEnableClientSidePhishingDetection,
     switches::kEnableCrxlessWebApps
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
@@ -636,6 +637,12 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
   if (profile()->IsOffTheRecord() &&
       !browser_cmd.HasSwitch(switches::kDisableDatabases)) {
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
+  }
+
+  // Only enable client-side phishing detection in the renderer if it is enabled
+  // in the browser process.
+  if (g_browser_process->safe_browsing_detection_service()) {
+    renderer_cmd->AppendSwitch(switches::kEnableClientSidePhishingDetection);
   }
 }
 
@@ -1087,6 +1094,8 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   if (profile()->GetSpellCheckHost())
     InitSpellChecker();
 
+  InitClientSidePhishingDetection();
+
   if (max_page_id_ != -1)
     Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
 
@@ -1177,4 +1186,30 @@ void BrowserRenderProcessHost::InitSpellChecker() {
 
 void BrowserRenderProcessHost::EnableAutoSpellCorrect(bool enable) {
   Send(new ViewMsg_SpellChecker_EnableAutoSpellCorrect(enable));
+}
+
+void BrowserRenderProcessHost::InitClientSidePhishingDetection() {
+  if (g_browser_process->safe_browsing_detection_service()) {
+    // The BrowserRenderProcessHost object might get deleted before the
+    // safe browsing client-side detection service class is done with opening
+    // the model file.  To avoid crashing we use the callback factory which will
+    // cancel the callback if |this| is destroyed.
+    g_browser_process->safe_browsing_detection_service()->GetModelFile(
+        callback_factory_.NewCallback(
+            &BrowserRenderProcessHost::OpenPhishingModelDone));
+  }
+}
+
+void BrowserRenderProcessHost::OpenPhishingModelDone(
+    base::PlatformFile model_file) {
+  if (model_file != base::kInvalidPlatformFileValue) {
+    IPC::PlatformFileForTransit file;
+#if defined(OS_POSIX)
+    file = base::FileDescriptor(model_file, false);
+#elif defined(OS_WIN)
+    ::DuplicateHandle(::GetCurrentProcess(), model_file, GetHandle(), &file, 0,
+                      false, DUPLICATE_SAME_ACCESS);
+#endif
+    Send(new ViewMsg_SetPhishingModel(file));
+  }
 }

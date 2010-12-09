@@ -18,6 +18,11 @@
 #include "ipc/ipc_message.h"
 
 class AutomationProviderList;
+
+namespace safe_browsing {
+class ClientSideDetectionService;
+}
+
 class Clipboard;
 class DevToolsManager;
 class DownloadRequestLimiter;
@@ -139,6 +144,11 @@ class BrowserProcess {
 
   // Returns the object that watches for changes in the closeable state of tab.
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher() = 0;
+
+  // Returns an object which handles communication with the SafeBrowsing
+  // client-side detection servers.
+  virtual safe_browsing::ClientSideDetectionService*
+      safe_browsing_detection_service() = 0;
 
   // Trigger an asynchronous check to see if we have the inspector's files on
   // disk.
