@@ -70,6 +70,11 @@ class MyChannelDescriptorListener : public IPC::Channel::Listener {
   virtual void OnChannelError() {
     MessageLoop::current()->Quit();
   }
+
+  bool GotExpectedNumberOfDescriptors() {
+    return kNumFDsToSend == num_fds_received_;
+  }
+
  private:
   ino_t expected_inode_num_;
   unsigned num_fds_received_;
@@ -90,7 +95,7 @@ void TestDescriptorServer(IPC::Channel &chan,
                                              3, // message type
                                              IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<base::FileDescriptor>::Write(message, descriptor);
-    chan.Send(message);
+    ASSERT_TRUE(chan.Send(message));
   }
 
   // Run message loop.
@@ -111,7 +116,13 @@ int TestDescriptorClient(ino_t expected_inode_num) {
   IPC::Channel chan(kTestClientChannel, IPC::Channel::MODE_CLIENT,
                     &listener);
   CHECK(chan.Connect());
+
+  // Run message loop so IPC Channel can handle message IO.
   MessageLoop::current()->Run();
+
+  // Verify that the message loop was exited due to getting the correct
+  // number of descriptors, and not because the channel closing unexpectedly.
+  CHECK(listener.GotExpectedNumberOfDescriptors());
 
   return 0;
 }
