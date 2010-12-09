@@ -36,7 +36,6 @@
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/untrusted/av/nacl_av_priv.h"
 
 typedef NPWindow PluginWindow;

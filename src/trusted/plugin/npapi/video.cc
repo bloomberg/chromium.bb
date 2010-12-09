@@ -29,6 +29,7 @@
 #include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/shared_memory.h"
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 
 using nacl::can_cast;
 using nacl::saturate_cast;

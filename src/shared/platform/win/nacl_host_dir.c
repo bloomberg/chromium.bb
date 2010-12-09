@@ -22,7 +22,6 @@
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/dirent.h"
