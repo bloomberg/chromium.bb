@@ -10,16 +10,19 @@
 #include <stack>
 
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome_frame/test/win_event_receiver.h"
+#include "chrome_frame/utils.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "chrome_frame/test/win_event_receiver.h"
+#include "ia2_api_all.h"  // Generated NOLINT
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/xulrunner-sdk/win/include/accessibility/AccessibleEventId.h"
 
 namespace chrome_frame_test {
 
@@ -105,11 +108,11 @@ bool AccObject::DoDefaultAction() {
 }
 
 bool AccObject::LeftClick() {
-  return PostMouseButtonMessages(WM_LBUTTONDOWN, WM_LBUTTONUP);
+  return PostMouseClickAtCenter(WM_LBUTTONDOWN, WM_LBUTTONUP);
 }
 
 bool AccObject::RightClick() {
-  return PostMouseButtonMessages(WM_RBUTTONDOWN, WM_RBUTTONUP);
+  return PostMouseClickAtCenter(WM_RBUTTONDOWN, WM_RBUTTONUP);
 }
 
 bool AccObject::Focus() {
@@ -382,6 +385,56 @@ bool AccObject::GetWindowClassName(std::wstring* class_name) {
   return false;
 }
 
+bool AccObject::GetSelectionRange(int* start_offset, int* end_offset) {
+  DCHECK(start_offset);
+  DCHECK(end_offset);
+  ScopedComPtr<IAccessibleText> accessible_text;
+  HRESULT hr = DoQueryService(IID_IAccessibleText,
+                              accessible_,
+                              accessible_text.Receive());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Could not get IAccessibleText interface. Error: " << hr
+               << "\nIs IAccessible2Proxy.dll registered?";
+    return false;
+  }
+
+  LONG selection_count = 0;
+  accessible_text->get_nSelections(&selection_count);
+  LONG start = 0, end = 0;
+  if (selection_count > 0) {
+    if (FAILED(accessible_text->get_selection(0, &start, &end))) {
+      LOG(WARNING) << "Could not get first selection";
+      return false;
+    }
+  }
+  *start_offset = start;
+  *end_offset = end;
+  return true;
+}
+
+bool AccObject::GetSelectedText(std::wstring* text) {
+  DCHECK(text);
+  int start = 0, end = 0;
+  if (!GetSelectionRange(&start, &end))
+    return false;
+  ScopedComPtr<IAccessibleText> accessible_text;
+  HRESULT hr = DoQueryService(IID_IAccessibleText,
+                              accessible_,
+                              accessible_text.Receive());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Could not get IAccessibleText interface. Error: " << hr
+               << "\nIs IAccessible2Proxy.dll registered?";
+    return false;
+  }
+  base::win::ScopedBstr text_bstr;
+  if (FAILED(accessible_text->get_text(start, end, text_bstr.Receive()))) {
+    LOG(WARNING) << "Could not get text from selection range";
+    return false;
+  }
+  text->assign(text_bstr, text_bstr.Length());
+  return true;
+}
+
 bool AccObject::IsSimpleElement() {
   return V_I4(&child_id_) != CHILDID_SELF;
 }
@@ -456,10 +509,10 @@ AccObject* AccObject::CreateFromVariant(AccObject* object,
       // The object in question was actually a full object.
       return CreateFromDispatch(dispatch.get());
     }
-    LOG(WARNING) << "Failed to determine if child id refers to a full "
-                  << "object. Error: " << result << std::endl
-                  << "Parent object: " << WideToUTF8(object->GetDescription())
-                  << std::endl << "Child ID: " << V_I4(&variant);
+    VLOG(1) << "Failed to determine if child id refers to a full "
+            << "object. Error: " << result << std::endl
+            << "Parent object: " << WideToUTF8(object->GetDescription())
+            << std::endl << "Child ID: " << V_I4(&variant);
     return NULL;
   } else if (V_VT(&variant) == VT_DISPATCH) {
     return CreateFromDispatch(V_DISPATCH(&variant));
@@ -468,8 +521,8 @@ AccObject* AccObject::CreateFromVariant(AccObject* object,
   return NULL;
 }
 
-bool AccObject::PostMouseButtonMessages(int button_up, int button_down) {
- std::wstring class_name;
+bool AccObject::PostMouseClickAtCenter(int button_down, int button_up) {
+   std::wstring class_name;
   if (!GetWindowClassName(&class_name)) {
     DLOG(ERROR) << "Could not get class name of window for accessibility "
                 << "object: " << GetDescription();
@@ -484,14 +537,21 @@ bool AccObject::PostMouseButtonMessages(int button_up, int button_down) {
     if (!GetLocationInClient(&location))
       return false;
   }
+
+  gfx::Point center = location.CenterPoint();
+  return PostMouseButtonMessages(button_down, button_up,
+                                 center.x(), center.y());
+}
+
+bool AccObject::PostMouseButtonMessages(
+    int button_down, int button_up, int x, int y) {
   HWND container_window;
   if (!GetWindow(&container_window))
     return false;
 
-  gfx::Point center = location.CenterPoint();
-  LPARAM coordinates = (center.y() << 16) | center.x();
-  ::PostMessage(container_window, button_up, 0, coordinates);
+  LPARAM coordinates = MAKELPARAM(x, y);
   ::PostMessage(container_window, button_down, 0, coordinates);
+  ::PostMessage(container_window, button_up, 0, coordinates);
   return true;
 }
 
@@ -614,6 +674,7 @@ void AccEventObserver::EventHandler::Handle(DWORD event,
                                             LONG child_id) {
   if (!observer_)
     return;
+
   switch (event) {
     case EVENT_SYSTEM_MENUPOPUPSTART:
       observer_->OnMenuPopup(hwnd);
@@ -621,6 +682,13 @@ void AccEventObserver::EventHandler::Handle(DWORD event,
     case IA2_EVENT_DOCUMENT_LOAD_COMPLETE:
       observer_->OnAccDocLoad(hwnd);
       break;
+    case IA2_EVENT_TEXT_CARET_MOVED: {
+      scoped_refptr<AccObject> object(
+          AccObject::CreateFromEvent(hwnd, object_id, child_id));
+      if (object)
+        observer_->OnTextCaretMoved(hwnd, object.get());
+      break;
+    }
     case EVENT_OBJECT_VALUECHANGE:
       if (observer_->is_watching_) {
         scoped_refptr<AccObject> object(
@@ -668,6 +736,12 @@ bool IsDesktopUnlocked() {
   if (desk)
     ::CloseDesktop(desk);
   return desk;
+}
+
+FilePath GetIAccessible2ProxyStubPath() {
+  FilePath path;
+  PathService::Get(chrome::DIR_APP, &path);
+  return path.AppendASCII("IAccessible2Proxy.dll");
 }
 
 }  // namespace chrome_frame_test

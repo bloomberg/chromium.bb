@@ -27,6 +27,10 @@ MATCHER_P(UrlPathEq, url, "equals the path and query portion of the url") {
   return arg == chrome_frame_test::GetPathAndQueryFromUrl(url);
 }
 
+MATCHER_P(AccSatisfies, matcher, "satisfies the given AccObjectMatcher") {
+  return matcher.DoesMatch(arg);
+}
+
 // IWebBrowser2 actions
 
 ACTION_P2(Navigate, mock, navigate_url) {
@@ -321,6 +325,15 @@ ACTION_P(VerifyAddressBarUrlWithGcf, mock) {
 
 ACTION_P2(ExpectDocumentReadystate, mock, ready_state) {
   mock->ExpectDocumentReadystate(ready_state);
+}
+
+ACTION_P(VerifySelectedText, expected_text) {
+  std::wstring actual_text;
+  bool got_selection = arg1->GetSelectedText(&actual_text);
+  EXPECT_TRUE(got_selection);
+  if (got_selection) {
+    EXPECT_EQ(expected_text, actual_text);
+  }
 }
 
 // Polling actions

@@ -266,6 +266,7 @@ class MockAccEventObserver : public AccEventObserver {
   MOCK_METHOD3(OnAccValueChange, void (HWND, AccObject*,  // NOLINT
                                        const std::wstring&));
   MOCK_METHOD1(OnMenuPopup, void (HWND));  // NOLINT
+  MOCK_METHOD2(OnTextCaretMoved, void (HWND, AccObject*));  // NOLINT
 };
 
 // This test fixture provides common methods needed for testing CF

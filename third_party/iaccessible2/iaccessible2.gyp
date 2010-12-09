@@ -32,6 +32,22 @@
         ],
       },
     },
+    {
+      'target_name': 'IAccessible2Proxy',
+      'type': 'shared_library',
+      'msvs_guid': '39B1D9D7-7405-42D7-B76F-D26F13E7610E',
+      'defines': [ 'REGISTER_PROXY_DLL' ],
+      'dependencies': [ 'iaccessible2' ],
+      'sources': [
+        'IAccessible2Proxy.def',
+        '<(INTERMEDIATE_DIR)/../iaccessible2/dlldata.c',
+      ],
+      'link_settings': {
+        'libraries': [
+          '-lrpcrt4.lib',
+        ],
+      },
+    },
   ],
 }
 

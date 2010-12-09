@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
 
@@ -57,6 +58,11 @@ int main(int argc, char **argv) {
     // TODO(robertshield): Make these tests restore the original registration
     // once done.
     ScopedChromeFrameRegistrar registrar;
+
+    // Register IAccessible2 proxy stub DLL, needed for some tests.
+    ScopedChromeFrameRegistrar ia2_registrar(
+        chrome_frame_test::GetIAccessible2ProxyStubPath().value());
+
     ret = test_suite.Run();
   }
 

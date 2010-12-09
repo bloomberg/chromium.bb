@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_comptr_win.h"
 #include "base/win/scoped_variant.h"
@@ -21,12 +22,16 @@ class Rect;
 
 namespace chrome_frame_test {
 
-// Wrapper for MSAA objects. In MSAA, there are two types of objects. The first,
-// called an object or full object, has its own IAccessible interface. The
-// second, called a simple element, does not have its own IAccessible interface
-// and cannot have children. Simple elements must be referenced by combination
-// of the parent object and the element's id in MSAA. This class handles this
-// distinction transparently to the client.
+// Wrapper for MSAA/IAccessible2 accessibility objects. IAccessible2 is an
+// open standard which serves as a complement to MSAA and specifies additional
+// interfaces and methods. Chrome currently supports a subset of this API.
+//
+// In MSAA, there are two types of objects. The first, called an object or full
+// object, has its own IAccessible interface. The second, called a simple
+// element, does not have its own IAccessible interface and cannot have
+// children. Simple elements must be referenced by combination of the parent
+// object and the element's id in MSAA. This class handles this distinction
+// transparently to the client.
 class AccObject : public base::RefCounted<AccObject> {
  public:
   typedef std::vector<scoped_refptr<AccObject> > RefCountedAccObjectVector;
@@ -126,6 +131,16 @@ class AccObject : public base::RefCounted<AccObject> {
   // on success. If this object does not have a window, this will return false.
   bool GetWindowClassName(std::wstring* class_name);
 
+  // Gets the range of text that is selected in this object. If no text is
+  // selected, |start_offset| and |end_offset| will be set to 0. Returns true
+  // on success.
+  // Requires IAccessible2 support.
+  bool GetSelectionRange(int* start_offset, int* end_offset);
+
+  // Gets the text that is selected in this object. Returns true on success.
+  // Requires IAccessible2 support.
+  bool GetSelectedText(std::wstring* text);
+
   // Returns whether this object is a simple element.
   bool IsSimpleElement();
 
@@ -151,8 +166,12 @@ class AccObject : public base::RefCounted<AccObject> {
   static AccObject* CreateFromVariant(AccObject* object,
                                       const VARIANT& variant);
 
-  // Helper method for posting mouse button messages at this object's location.
-  bool PostMouseButtonMessages(int button_up, int button_down);
+  // Posts the given mouse button down and up messages at this object's center.
+  // Returns true on success.
+  bool PostMouseClickAtCenter(int button_down, int button_up);
+
+  // Helper method for posting mouse button messages.
+  bool PostMouseButtonMessages(int button_up, int button_down, int x, int y);
 
   ScopedComPtr<IAccessible> accessible_;
   base::win::ScopedVariant child_id_;
@@ -223,6 +242,10 @@ class AccEventObserver : public WinEventListener {
   virtual void OnAccValueChange(HWND hwnd, AccObject* object,
                                 const std::wstring& new_value) = 0;
 
+  // Called when the text caret moves within the given object.  This is
+  // triggered when the text selection changes also.
+  virtual void OnTextCaretMoved(HWND hwnd, AccObject* object) = 0;
+
   // Called when a new menu is shown.
   virtual void OnMenuPopup(HWND hwnd) = 0;
 
@@ -261,6 +284,9 @@ void DumpAccessibilityTreeForWindow(HWND hwnd);
 
 // Returns whether the desktop is unlocked.
 bool IsDesktopUnlocked();
+
+// Returns the location of the IAccessible2 COM proxy stub DLL.
+FilePath GetIAccessible2ProxyStubPath();
 
 }  // namespace chrome_frame_test
 
