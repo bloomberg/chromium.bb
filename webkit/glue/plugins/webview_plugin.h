@@ -17,6 +17,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 
+namespace WebKit {
+class WebMouseEvent;
+}
 struct WebPreferences;
 
 // This class implements the WebPlugin interface by forwarding drawing and
@@ -39,6 +42,9 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
     // Called before the WebViewPlugin is destroyed. The delegate should delete
     // itself here.
     virtual void WillDestroyPlugin() = 0;
+
+    // Called upon a context menu event.
+    virtual void ShowContextMenu(const WebKit::WebMouseEvent&) = 0;
   };
 
   explicit WebViewPlugin(Delegate* delegate);

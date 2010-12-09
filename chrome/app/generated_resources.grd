@@ -500,6 +500,12 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_TRANSLATE_SELECTION" desc="The name of the Translate 'string' to English command of the content area context menu">
           &amp;Translate '<ph name="TEXT">$1<ex>les fleurs bleues</ex></ph>' to <ph name="LANGUAGE">$2<ex>English</ex></ph>
         </message>
+        <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="The name of the Run command on the blocked plugin context menu">
+          Run this plugin
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PLUGIN_HIDE" desc="The name of the Hide command on the blocked plugin context menu">
+          Hide this plugin
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
@@ -681,6 +687,12 @@ each locale. -->
         </message>
         <message name="IDS_CONTENT_CONTEXT_TRANSLATE_SELECTION" desc="In Title Case: The name of the Translate 'string' to English command of the content area context menu">
           &amp;Translate '<ph name="TEXT">$1<ex>les fleurs bleues</ex></ph>' to <ph name="LANGUAGE">$2<ex>English</ex></ph>
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="In Title Case: The name of the Run command on the blocked plugin context menu">
+          Run This Plugin
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PLUGIN_HIDE" desc="In Title Case: The name of the Hide command on the blocked plugin context menu">
+          Hide This Plugin
         </message>
       </if>
 

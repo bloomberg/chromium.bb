@@ -8,6 +8,7 @@
 
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/renderer/custom_menu_listener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/glue/plugins/webview_plugin.h"
@@ -18,7 +19,8 @@ class RenderView;
 
 class BlockedPlugin : public CppBoundClass,
                       public WebViewPlugin::Delegate,
-                      public NotificationObserver {
+                      public NotificationObserver,
+                      public CustomMenuListener {
  public:
   BlockedPlugin(RenderView* render_view,
                 WebKit::WebFrame* frame,
@@ -33,11 +35,15 @@ class BlockedPlugin : public CppBoundClass,
   // WebViewPlugin::Delegate methods:
   virtual void BindWebFrame(WebKit::WebFrame* frame);
   virtual void WillDestroyPlugin();
+  virtual void ShowContextMenu(const WebKit::WebMouseEvent&);
 
   // NotificationObserver methods:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // CustomMenuListener methods:
+  virtual void MenuItemSelected(unsigned id);
 
  private:
   virtual ~BlockedPlugin();
@@ -50,10 +56,15 @@ class BlockedPlugin : public CppBoundClass,
   // Load the blocked plugin.
   void LoadPlugin();
 
+  // Hide the blocked plugin.
+  void HidePlugin();
+
   RenderView* render_view_;
   WebKit::WebFrame* frame_;
   WebKit::WebPluginParams plugin_params_;
   WebViewPlugin* plugin_;
+  // The name of the plugin that was blocked.
+  string16 name_;
 
   NotificationRegistrar registrar_;
 };

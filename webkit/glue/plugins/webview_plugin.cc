@@ -9,6 +9,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -30,6 +31,7 @@ using WebKit::WebDragOperationsMask;
 using WebKit::WebFrame;
 using WebKit::WebImage;
 using WebKit::WebInputEvent;
+using WebKit::WebMouseEvent;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebPoint;
@@ -143,6 +145,14 @@ void WebViewPlugin::updateGeometry(
 
 bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
                                      WebCursorInfo& cursor) {
+  if (event.type == WebInputEvent::ContextMenu) {
+    if (delegate_) {
+      const WebMouseEvent& mouse_event =
+          reinterpret_cast<const WebMouseEvent&>(event);
+      delegate_->ShowContextMenu(mouse_event);
+    }
+    return true;
+  }
   current_cursor_ = cursor;
   bool handled = web_view_->handleInputEvent(event);
   cursor = current_cursor_;

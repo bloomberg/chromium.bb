@@ -552,7 +552,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       accessibility_ack_pending_(false),
       pending_app_icon_requests_(0),
       session_storage_namespace_id_(session_storage_namespace_id),
-      decrement_shared_popup_at_destruction_(false) {
+      decrement_shared_popup_at_destruction_(false),
+      custom_menu_listener_(NULL) {
 #if defined(OS_MACOSX)
   // On Mac, the select popups are rendered by the browser.
   // Note that we don't do this in RenderMain otherwise this would not be called
@@ -840,6 +841,15 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
   if (pepper_module)
     return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
   return CreateNPAPIPlugin(frame, params, info.path, mime_type);
+}
+
+void RenderView::CustomMenuListenerInstall(CustomMenuListener* listening) {
+  custom_menu_listener_ = listening;
+}
+
+void RenderView::CustomMenuListenerDestroyed(CustomMenuListener* dead) {
+  if (custom_menu_listener_ == dead)
+    custom_menu_listener_ = NULL;
 }
 
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
@@ -2435,6 +2445,7 @@ bool RenderView::runModalBeforeUnloadDialog(
 
 void RenderView::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
+  custom_menu_listener_ = NULL;
   ContextMenuParams params = ContextMenuParams(data);
   if (!params.misspelled_word.empty() && RenderThread::current()) {
     int misspelled_offset, misspelled_length;
@@ -4713,7 +4724,10 @@ void RenderView::OnSetAltErrorPageURL(const GURL& url) {
 }
 
 void RenderView::OnCustomContextMenuAction(unsigned action) {
-  webview()->performCustomContextMenuAction(action);
+  if (custom_menu_listener_)
+    custom_menu_listener_->MenuItemSelected(action);
+  else
+    webview()->performCustomContextMenuAction(action);
 }
 
 void RenderView::OnTranslatePage(int page_id,

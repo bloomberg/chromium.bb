@@ -55,6 +55,7 @@
 
 class AudioMessageFilter;
 class AutoFillHelper;
+class CustomMenuListener;
 class DictionaryValue;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
@@ -336,6 +337,15 @@ class RenderView : public RenderWidget,
   // messages for the given "Chrome Plugin." The Chrome Plugin API is used
   // only by gears and this function can be deleted when we remove gears.
   uint32 GetCPBrowsingContext();
+
+  // Handles registering and deregistering customer handlers for custom
+  // context menu events.
+  // To install a custom context menu, call showContextMenu() with your
+  // custom entries, followed immediately by CustomMenuListenerInstall() to
+  // register a listener for when a custom menu item is selected. Note that
+  // subsequent calls to showContextMenu() will clear the custom listener.
+  void CustomMenuListenerInstall(CustomMenuListener* listening);
+  void CustomMenuListenerDestroyed(CustomMenuListener* dead);
 
 #if defined(OS_MACOSX)
   // Enables/disabled plugin IME for the given plugin.
@@ -1462,6 +1472,9 @@ class RenderView : public RenderWidget,
 
   // The external popup for the currently showing select popup.
   scoped_ptr<ExternalPopupMenu> external_popup_menu_;
+
+  // The custom menu event listener, if any.
+  CustomMenuListener* custom_menu_listener_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above
