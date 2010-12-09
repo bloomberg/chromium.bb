@@ -351,7 +351,7 @@ static int name##Get(NaClSrpcImcBuffer* buffer,                 \
       1 != __NaClSrpcImcRead(buffer,                            \
                              sizeof(impl_type),                 \
                              1,                                 \
-                             &arg->field)) {                    \
+                             &arg->u.field)) {                  \
     return 0;                                                   \
   }                                                             \
   return 1;                                                     \
@@ -361,7 +361,7 @@ static int name##Put(const NaClSrpcArg* arg,                    \
                      int write_value,                           \
                      NaClSrpcImcBuffer* buffer) {               \
   if (write_value) {                                            \
-    return 1 == __NaClSrpcImcWrite(&arg->field,                 \
+    return 1 == __NaClSrpcImcWrite(&arg->u.field,               \
                                    sizeof(impl_type),           \
                                    1,                           \
                                    buffer);                     \
@@ -370,7 +370,7 @@ static int name##Put(const NaClSrpcArg* arg,                    \
 }                                                               \
                                                                 \
 static void name##Print(const NaClSrpcArg* arg) {               \
-  dprintf(("%"format"", arg->field));                           \
+  dprintf(("%"format"", arg->u.field));                        \
 }                                                               \
                                                                 \
 static uint32_t name##Length(const NaClSrpcArg* arg,            \
@@ -396,12 +396,12 @@ static const ArgEltInterface k##name##IoInterface = {           \
 /*
  * The basic parameter types.
  */
-BASIC_TYPE_IO_DECLARE(Bool, char, u.bval, "1d")
-BASIC_TYPE_IO_DECLARE(Double, double, u.dval, "f")
-BASIC_TYPE_IO_DECLARE(Int, int32_t, u.ival, NACL_PRId32)
-BASIC_TYPE_IO_DECLARE(Long, int64_t, u.lval, NACL_PRId64)
+BASIC_TYPE_IO_DECLARE(Bool, char, bval, "1d")
+BASIC_TYPE_IO_DECLARE(Double, double, dval, "f")
+BASIC_TYPE_IO_DECLARE(Int, int32_t, ival, NACL_PRId32)
+BASIC_TYPE_IO_DECLARE(Long, int64_t, lval, NACL_PRId64)
 
-#define ARRAY_TYPE_IO_DECLARE(name, impl_type, array)                          \
+#define ARRAY_TYPE_IO_DECLARE(name, impl_type, field, array)                   \
 static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
                         int allocate_memory,                                   \
                         int read_value,                                        \
@@ -412,23 +412,23 @@ static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
     return 0;                                                                  \
   }                                                                            \
   if (allocate_memory) {                                                       \
-    if (dim >= NACL_ABI_SIZE_T_MAX / sizeof(*arg->array)) {                    \
+    if (dim >= NACL_ABI_SIZE_T_MAX / sizeof(*arg->u.field.array)) {            \
       return 0;                                                                \
     }                                                                          \
-    arg->array =                                                               \
-        (impl_type*) malloc(dim * sizeof(*arg->array));                        \
-    if (NULL == arg->array) {                                                  \
+    arg->u.field.array =                                                       \
+        (impl_type*) malloc(dim * sizeof(*arg->u.field.array));                \
+    if (NULL == arg->u.field.array) {                                          \
       return 0;                                                                \
     }                                                                          \
-    arg->u.count = dim;                                                        \
-  } else if (arg->u.count < dim) {                                             \
+    arg->u.field.count = dim;                                                  \
+  } else if (arg->u.field.count < dim) {                                       \
     return 0;                                                                  \
   }                                                                            \
   if (read_value &&                                                            \
       dim != __NaClSrpcImcRead(buffer,                                         \
                                sizeof(impl_type),                              \
                                dim,                                            \
-                               arg->array)) {                                  \
+                               arg->u.field.array)) {                          \
     return 0;                                                                  \
   }                                                                            \
   return 1;                                                                    \
@@ -438,14 +438,14 @@ static int name##ArrPut(const NaClSrpcArg* arg,                                \
                         int write_value,                                       \
                         NaClSrpcImcBuffer* buffer) {                           \
   if (1 !=                                                                     \
-      __NaClSrpcImcWrite(&arg->u.count, sizeof(uint32_t), 1, buffer)) {        \
+      __NaClSrpcImcWrite(&arg->u.field.count, sizeof(uint32_t), 1, buffer)) {  \
     return 0;                                                                  \
   }                                                                            \
   if (write_value) {                                                           \
-    return arg->u.count ==                                                     \
-        __NaClSrpcImcWrite(arg->array,                                         \
+    return arg->u.field.count ==                                               \
+        __NaClSrpcImcWrite(arg->u.field.array,                                 \
                            sizeof(impl_type),                                  \
-                           arg->u.count,                                       \
+                           arg->u.field.count,                                 \
                            buffer);                                            \
   }                                                                            \
   return 1;                                                                    \
@@ -453,8 +453,8 @@ static int name##ArrPut(const NaClSrpcArg* arg,                                \
                                                                                \
 static void name##ArrPrint(const NaClSrpcArg* arg) {                           \
   dprintf(("[%"NACL_PRIu32"], array = %p",                                     \
-           arg->u.count,                                                       \
-           (void*) arg->array));                                               \
+           arg->u.field.count,                                                 \
+           (void*) arg->u.field.array));                                       \
 }                                                                              \
                                                                                \
 static uint32_t name##ArrLength(const NaClSrpcArg* arg,                        \
@@ -462,15 +462,15 @@ static uint32_t name##ArrLength(const NaClSrpcArg* arg,                        \
                                 int* handles) {                                \
   *handles = 0;                                                                \
   if (write_value) {                                                           \
-    return sizeof(uint32_t) + sizeof(impl_type) * arg->u.count;                \
+    return sizeof(uint32_t) + sizeof(impl_type) * arg->u.field.count;          \
   } else {                                                                     \
     return sizeof(uint32_t);                                                   \
   }                                                                            \
 }                                                                              \
                                                                                \
 static void name##ArrFree(NaClSrpcArg* arg) {                                  \
-  free(arg->array);                                                            \
-  arg->array = NULL;                                                           \
+  free(arg->u.field.array);                                                    \
+  arg->u.field.array = NULL;                                                   \
 }                                                                              \
                                                                                \
 static const ArgEltInterface k##name##ArrIoInterface = {                       \
@@ -480,10 +480,10 @@ static const ArgEltInterface k##name##ArrIoInterface = {                       \
 /*
  * The three array parameter types.
  */
-ARRAY_TYPE_IO_DECLARE(Char, char, arrays.carr)
-ARRAY_TYPE_IO_DECLARE(Double, double, arrays.darr)
-ARRAY_TYPE_IO_DECLARE(Int, int32_t, arrays.iarr)
-ARRAY_TYPE_IO_DECLARE(Long, int64_t, arrays.larr)
+ARRAY_TYPE_IO_DECLARE(Char, char, caval, carr)
+ARRAY_TYPE_IO_DECLARE(Double, double, daval, darr)
+ARRAY_TYPE_IO_DECLARE(Int, int32_t, iaval, iarr)
+ARRAY_TYPE_IO_DECLARE(Long, int64_t, laval, larr)
 
 /*
  * Handle (descriptor) type I/O support.
@@ -559,14 +559,14 @@ static int StringGet(NaClSrpcImcBuffer* buffer,
     if (dim >= NACL_ABI_SIZE_T_MAX) {
       return 0;
     }
-    arg->arrays.str = (char*) malloc(dim + 1);
-    if (NULL == arg->arrays.str) {
+    arg->u.sval.str = (char*) malloc(dim + 1);
+    if (NULL == arg->u.sval.str) {
       return 0;
     }
-    if (dim != __NaClSrpcImcRead(buffer, sizeof(char), dim, arg->arrays.str)) {
+    if (dim != __NaClSrpcImcRead(buffer, sizeof(char), dim, arg->u.sval.str)) {
       return 0;
     }
-    arg->arrays.str[dim] = '\0';
+    arg->u.sval.str[dim] = '\0';
   }
   return 1;
 }
@@ -575,9 +575,9 @@ static int StringPut(const NaClSrpcArg* arg,
                      int write_value,
                      NaClSrpcImcBuffer* buffer) {
   if (write_value) {
-    uint32_t slen = (uint32_t) strlen(arg->arrays.str);
+    uint32_t slen = (uint32_t) strlen(arg->u.sval.str);
     if (1 != __NaClSrpcImcWrite(&slen, sizeof(slen), 1, buffer) ||
-        slen != __NaClSrpcImcWrite(arg->arrays.str, 1,
+        slen != __NaClSrpcImcWrite(arg->u.sval.str, 1,
                                    (nacl_abi_size_t) slen, buffer)) {
       return 0;
     }
@@ -586,8 +586,8 @@ static int StringPut(const NaClSrpcArg* arg,
 }
 
 static void StringPrint(const NaClSrpcArg* arg) {
-  dprintf((", strlen %u, '%s'", (unsigned) strlen(arg->arrays.str),
-           arg->arrays.str));
+  dprintf((", strlen %u, '%s'", (unsigned) strlen(arg->u.sval.str),
+           arg->u.sval.str));
 }
 
 static uint32_t StringLength(const NaClSrpcArg* arg,
@@ -596,7 +596,7 @@ static uint32_t StringLength(const NaClSrpcArg* arg,
   *handles = 0;
   if (write_value) {
     uint32_t size = nacl_abi_size_t_saturate(sizeof(uint32_t)
-        + strlen(arg->arrays.str));
+        + strlen(arg->u.sval.str));
     return size;
   } else {
     return 0;
@@ -604,8 +604,8 @@ static uint32_t StringLength(const NaClSrpcArg* arg,
 }
 
 static void StringFree(NaClSrpcArg* arg) {
-  free(arg->arrays.str);
-  arg->arrays.str = NULL;
+  free(arg->u.sval.str);
+  arg->u.sval.str = NULL;
 }
 
 static const ArgEltInterface kStringIoInterface = {

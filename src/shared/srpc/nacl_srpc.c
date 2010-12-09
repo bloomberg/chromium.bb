@@ -35,7 +35,7 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
   outs[0] = &out_carray;
   outs[1] = NULL;
   out_carray.tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
-  out_carray.arrays.carr = NULL;
+  out_carray.u.caval.carr = NULL;
   /* Set up the basic service descriptor to make the service discovery call. */
   tmp_service = (NaClSrpcService*) malloc(sizeof(*tmp_service));
   if (NULL == tmp_service) {
@@ -49,9 +49,9 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
   outs[0] = &out_carray;
   outs[1] = NULL;
   out_carray.tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
-  out_carray.u.count = NACL_SRPC_MAX_SERVICE_DISCOVERY_CHARS;
-  out_carray.arrays.carr = calloc(NACL_SRPC_MAX_SERVICE_DISCOVERY_CHARS, 1);
-  if (NULL == out_carray.arrays.carr) {
+  out_carray.u.caval.count = NACL_SRPC_MAX_SERVICE_DISCOVERY_CHARS;
+  out_carray.u.caval.carr = calloc(NACL_SRPC_MAX_SERVICE_DISCOVERY_CHARS, 1);
+  if (NULL == out_carray.u.caval.carr) {
     goto cleanup;
   }
   /* Invoke service discovery, getting description string */
@@ -68,18 +68,18 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
     goto cleanup;
   }
   /* Build the real service from the resulting string. */
-  if (!NaClSrpcServiceStringCtor(service, out_carray.arrays.carr)) {
+  if (!NaClSrpcServiceStringCtor(service, out_carray.u.caval.carr)) {
     goto cleanup;
   }
   channel->client = service;
   /* Free the service string */
-  free(out_carray.arrays.carr);
+  free(out_carray.u.caval.carr);
   /* Return success */
   return 1;
 
  cleanup:
   free(service);
-  free(out_carray.arrays.carr);
+  free(out_carray.u.caval.carr);
   NaClSrpcServiceDtor(tmp_service);
   free(tmp_service);
   return 0;

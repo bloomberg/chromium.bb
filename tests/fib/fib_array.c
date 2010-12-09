@@ -27,8 +27,8 @@ void FibonacciArray(NaClSrpcRpc *rpc,
   int v0 = in_args[0]->u.ival;
   int v1 = in_args[1]->u.ival;
   int v2;
-  int num = out_args[0]->u.count;
-  int32_t *dest = out_args[0]->arrays.iarr;
+  int num = out_args[0]->u.iaval.count;
+  int32_t *dest = out_args[0]->u.iaval.iarr;
   int i;
 
   if (num < 2) {

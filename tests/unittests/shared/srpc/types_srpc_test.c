@@ -39,8 +39,8 @@ static void handlePutArr(NaClSrpcRpc* rpc,
   int i;
   UNREFERENCED_PARAMETER(outs);
 
-  for (i = 0; i < (int)ins[0]->u.count; i++) {
-    int cur = ins[0]->arrays.carr[i];
+  for (i = 0; i < (int)ins[0]->u.caval.count; i++) {
+    int cur = ins[0]->u.caval.carr[i];
     if (TEST_NUM != cur) {
       fprintf(stderr,
               "Wrong char at pos %d. Expected %d, has %d\n",
@@ -83,8 +83,7 @@ void WINAPI serviceThread(void* arg) {
 }
 
 int main(int argc, char* argv[]) {
-  nacl_abi_size_t char_array_count;
-  char* char_array_carr;
+  struct NaClSrpcCharArray char_array;
   NaClHandle pair[2];
 #ifdef __native_client__
   int imc_desc[2];
@@ -143,17 +142,17 @@ int main(int argc, char* argv[]) {
     failWithErrno("NaClSrpcClientCtor");
   }
 
-  char_array_count = TEST_ARRAY_LENGTH;
-  char_array_carr = (char*) calloc(TEST_ARRAY_LENGTH, sizeof(char));
-  if (!char_array_carr) {
+  char_array.count = TEST_ARRAY_LENGTH;
+  char_array.carr = (char*) calloc(TEST_ARRAY_LENGTH, sizeof(char));
+  if (!char_array.carr) {
     failWithErrno("calloc for char_array");
   }
-  memset(char_array_carr, TEST_NUM, TEST_ARRAY_LENGTH);
+  memset(char_array.carr, TEST_NUM, TEST_ARRAY_LENGTH);
 
   error = NaClSrpcInvokeBySignature(&channel,
                                     "putArr:C:",
-                                    char_array_count,
-                                    char_array_carr);
+                                    char_array.count,
+                                    char_array.carr);
 
   if (NACL_SRPC_RESULT_OK != error) {
     fprintf(stderr,
@@ -161,7 +160,7 @@ int main(int argc, char* argv[]) {
             NaClSrpcErrorString(error));
     exit(EXIT_FAILURE);
   }
-  free(char_array_carr);
+  free(char_array.carr);
 
   NaClSrpcDtor(&channel);
 #ifdef __native_client__

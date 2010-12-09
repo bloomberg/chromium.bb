@@ -550,7 +550,7 @@ void OpenPhoto(NaClSrpcRpc* rpc,
                NaClSrpcArg** in_args,
                NaClSrpcArg** out_args,
                NaClSrpcClosure* done) {
-  char* filename = in_args[0]->arrays.str;
+  char* filename = in_args[0]->u.sval;
   g_darkroom.SetLoadFilename(filename);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);

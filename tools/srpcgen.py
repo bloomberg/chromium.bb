@@ -86,15 +86,15 @@ SOURCE_FILE_INCLUDES = """\
 """
 
 types = {'bool': ['b', 'bool', 'u.bval', ''],
-         'char[]': ['C', 'char*', 'arrays.carr', 'u.count'],
+         'char[]': ['C', 'char*', 'u.caval.carr', 'u.caval.count'],
          'double': ['d', 'double', 'u.dval', ''],
-         'double[]': ['D', 'double*', 'arrays.darr', 'u.count'],
+         'double[]': ['D', 'double*', 'u.daval.darr', 'u.daval.count'],
          'handle': ['h', 'NaClSrpcImcDescType', 'u.hval', ''],
          'int32_t': ['i', 'int32_t', 'u.ival', ''],
-         'int32_t[]': ['I', 'int32_t*', 'arrays.iarr', 'u.count'],
+         'int32_t[]': ['I', 'int32_t*', 'u.iaval.iarr', 'u.iaval.count'],
          'int64_t': ['l', 'int64_t', 'u.lval', ''],
-         'int64_t[]': ['L', 'int64_t', 'arrays.larr', 'u.count'],
-         'string': ['s', 'char*', 'arrays.str', ''],
+         'int64_t[]': ['L', 'int64_t', 'u.laval.larr', 'u.laval.count'],
+         'string': ['s', 'char*', 'u.sval.str', ''],
         }
 
 

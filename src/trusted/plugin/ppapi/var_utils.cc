@@ -212,16 +212,20 @@ bool PPVarToAllocateNaClSrpcArg(const pp::Var& var,
     case NACL_SRPC_ARG_TYPE_OBJECT:
       break;  // nothing to do
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      PPVarToAllocateArray(var, &arg->u.count, &arg->arrays.carr, exception);
+      PPVarToAllocateArray(var, &arg->u.caval.count, &arg->u.caval.carr,
+                           exception);
       break;
     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      PPVarToAllocateArray(var, &arg->u.count, &arg->arrays.darr, exception);
+      PPVarToAllocateArray(var, &arg->u.daval.count, &arg->u.daval.darr,
+                           exception);
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      PPVarToAllocateArray(var, &arg->u.count, &arg->arrays.iarr, exception);
+      PPVarToAllocateArray(var, &arg->u.iaval.count, &arg->u.iaval.iarr,
+                           exception);
       break;
     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      PPVarToAllocateArray(var, &arg->u.count, &arg->arrays.larr, exception);
+      PPVarToAllocateArray(var, &arg->u.laval.count, &arg->u.laval.larr,
+                           exception);
       break;
     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
     case NACL_SRPC_ARG_TYPE_INVALID:
@@ -256,26 +260,26 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
       arg->u.lval = PPVarToNumber<int64_t>(var, exception);
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      arg->arrays.str = PPVarToString(var, exception);
+      arg->u.sval.str = PPVarToString(var, exception);
       break;
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      PPVarToArray(var, &arg->u.count, &arg->arrays.carr, exception);
+      PPVarToArray(var, &arg->u.caval.count, &arg->u.caval.carr, exception);
       break;
     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      PPVarToArray(var, &arg->u.count, &arg->arrays.darr, exception);
+      PPVarToArray(var, &arg->u.daval.count, &arg->u.daval.darr, exception);
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      PPVarToArray(var, &arg->u.count, &arg->arrays.iarr, exception);
+      PPVarToArray(var, &arg->u.iaval.count, &arg->u.iaval.iarr, exception);
       break;
     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      PPVarToArray(var, &arg->u.count, &arg->arrays.larr, exception);
+      PPVarToArray(var, &arg->u.laval.count, &arg->u.laval.larr, exception);
       break;
     case NACL_SRPC_ARG_TYPE_HANDLE:
       arg->u.hval = reinterpret_cast<NaClSrpcImcDescType>(
           PPVarToNaClDesc(var, exception));
       break;
     case NACL_SRPC_ARG_TYPE_OBJECT:
-      arg->arrays.oval = reinterpret_cast<void*>(
+      arg->u.oval = reinterpret_cast<void*>(
           PPVarToScriptableHandle(var, exception));
       // There are currently no predeclared PPAPI plugin methods that
       // take objects as input, so this should never be reached.
@@ -396,25 +400,29 @@ pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, PluginPpapi* plugin,
       var = pp::Var(static_cast<int32_t>(arg->u.lval));
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      var = pp::Var(arg->arrays.str);
+      var = pp::Var(arg->u.sval.str);
       break;
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      var = ArrayToPPVar(arg->arrays.carr, arg->u.count, plugin, exception);
+      var = ArrayToPPVar(arg->u.caval.carr, arg->u.caval.count, plugin,
+                         exception);
       break;
     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      var = ArrayToPPVar(arg->arrays.darr, arg->u.count, plugin, exception);
+      var = ArrayToPPVar(arg->u.daval.darr, arg->u.daval.count, plugin,
+                        exception);
       break;
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      var = ArrayToPPVar(arg->arrays.iarr, arg->u.count, plugin, exception);
+      var = ArrayToPPVar(arg->u.iaval.iarr, arg->u.iaval.count, plugin,
+                         exception);
       break;
     case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-      var = ArrayToPPVar(arg->arrays.larr, arg->u.count, plugin, exception);
+      var = ArrayToPPVar(arg->u.laval.larr, arg->u.laval.count, plugin,
+                         exception);
       break;
     case NACL_SRPC_ARG_TYPE_HANDLE:
       var = NaClDescToPPVar(arg->u.hval, plugin, exception);
       break;
     case NACL_SRPC_ARG_TYPE_OBJECT:
-      var = ObjectToPPVar(arg->arrays.oval);
+      var = ObjectToPPVar(arg->u.oval);
       break;
     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
     case NACL_SRPC_ARG_TYPE_INVALID:

@@ -127,51 +127,78 @@ enum NaClSrpcArgType {
   NACL_SRPC_ARG_TYPE_VARIANT_ARRAY = 'A'  /**< array of NaClSrpcArg structs */
 };
 
+/**
+ * Argument data type for passing arrays of NaClSrpcArg.
+ */
+struct NaClSrpcVariantArray {
+  /** The number of elements in the array */
+  nacl_abi_size_t     count;
+  /** A chunk of memory containing <code>count</code> NaClSrpcArg structures */
+  struct NaClSrpcArg  *varr;
+};
+
+/**
+ * Argument data type for passing arrays of char.
+ * @see NaClSrpcArg
+ */
+struct NaClSrpcCharArray {
+  /** The number of characters in the array */
+  nacl_abi_size_t  count;
+  /** A chunk of memory containing <code>count</code> characters */
+  char             *carr;
+};
+
+/**
+ * Argument data type for passing arrays of double.
+ * @see NaClSrpcArg
+ */
+struct NaClSrpcDoubleArray {
+  /** The number of doubles in the array */
+  nacl_abi_size_t   count;
+  /** A chunk of memory containing <code>count</code> doubles */
+  double            *darr;
+};
+
+/**
+ * Argument data type for passing arrays of int32_t.
+ * @see NaClSrpcArg
+ */
+struct NaClSrpcIntArray {
+  /** The number of integers in the array */
+  nacl_abi_size_t  count;
+  /** A chunk of memory containing <code>count</code> int32_t */
+  int32_t          *iarr;
+};
+
+/**
+ * Argument data type for passing arrays of int64_t.
+ * @see NaClSrpcArg
+ */
+struct NaClSrpcLongArray {
+  /** The number of doubles in the array */
+  nacl_abi_size_t   count;
+  /** A chunk of memory containing <code>count</code> int64_t */
+  int64_t           *larr;
+};
+
+/**
+ * Argument data type for passing character strings.
+ * @see NaClSrpcArg
+ */
+struct NaClSrpcString {
+  /** The number of characters in the string.
+   * (Only guaranteed to be valid during serialization.)
+   */
+  nacl_abi_size_t   count;
+  /** A chunk of memory containing <code>count</code> char */
+  char              *str;
+};
+
 #ifdef __cplusplus
 namespace nacl_srpc {
 class ScriptableHandleBase;
 }
 #endif
-
-#define NACL_SRPC_ARG_SERIALIZED_FIELDS                                        \
-  /**                                                                          \
-   * Determines which type this argument contains.  Its value determines       \
-   * which element of union <code>u</code> may be validly referred to.         \
-   */                                                                          \
-  enum NaClSrpcArgType  tag;                                                   \
-  /**                                                                          \
-   * Padding (unused) to ensure 8-byte alignment of the union u.               \
-   */                                                                          \
-  uint32_t              reserved_pad;                                          \
-  /*                                                                           \
-   * For efficiency, doubles should be 8-byte aligned so that                  \
-   * loading them would require a single bus cycle, and arrays of              \
-   * NaClSrpcArgs will have to be 8-byte aligned as well, so it's              \
-   * either a 4 byte padding between the tag and the union or                  \
-   * (implicitly) at the end.  gcc does not (by default) enforce               \
-   * 8-byte alignment but visual studio does, so we explicitly pad             \
-   * so that both compilers will use the same memory layout, even if           \
-   * the gcc -malign-double flag were omitted.                                 \
-   */                                                                          \
-  /**                                                                          \
-   * A union containing the value of the argument.  The element containing     \
-   * the valid data is determined by <code>tag</code>.                         \
-   */                                                                          \
-  union {                                                                      \
-    /** A boolean scalar value */                                              \
-    int                 bval;                                                  \
-    /** An array size (count) value */                                         \
-    nacl_abi_size_t     count;                                                 \
-    /** A double-precision floating point scalar value */                      \
-    double              dval;                                                  \
-    /** A handle used to pass descriptors */                                   \
-    NaClSrpcImcDescType hval;                                                  \
-    /** An integer scalar value */                                             \
-    int32_t             ival;                                                  \
-    /** A int64_t scalar value */                                              \
-    int64_t             lval;                                                  \
-    /** An object value that can be exported to the browser as is */           \
-  } u
 
 /**
  *  Used to convey parameters to and from RPC invocations.  It is a variant
@@ -179,27 +206,61 @@ class ScriptableHandleBase;
  *  a bool or an array of characters, etc.
  */
 struct NaClSrpcArg {
-  /* Data that is serialized for a value or template, regardless of type. */
-  NACL_SRPC_ARG_SERIALIZED_FIELDS;
-  /* Data that used to represent an array value, but is not serialized. */
+  /**
+   * Determines which type this argument contains.  Its value determines
+   * which element of union <code>u</code> may be validly referred to.
+   */
+  enum NaClSrpcArgType         tag;
+  /**
+   * Padding (unused) to ensure 8-byte alignment of the union u.
+   */
+  uint32_t                     reserved_pad;
+  /*
+   * For efficiency, doubles should be 8-byte aligned so that
+   * loading them would require a single bus cycle, and arrays of
+   * NaClSrpcArgs will have to be 8-byte aligned as well, so it's
+   * either a 4 byte padding between the tag and the union or
+   * (implicitly) at the end.  gcc does not (by default) enforce
+   * 8-byte alignment but visual studio does, so we explicitly pad
+   * so that both compilers will use the same memory layout, even if
+   * the gcc -malign-double flag were omitted.
+   */
+  /**
+   * A union containing the value of the argument.  The element containing
+   * the valid data is determined by <code>tag</code>.
+   */
   union {
-    char                *carr;
-    double              *darr;
-    int32_t             *iarr;
-    int64_t             *larr;
-    /** This field is ordinarily used with predeclared methods, and is never
-     *  used directly for communicating with nexes.  It usually points to an
-     *  object scriptable by the browser, i.e.  NPAPI's NPObject or PPAPI's
-     *  ScriptableObject.  Declaring it as void* to avoid including browser
-     *  specific types here.
-     *  TODO(polina): where can one assert for this?
-     *  Also, as these pointers are overlaid, oval is used in array object
-     *  serialization to avoid repeated type checks.
+    /** A boolean value */
+    int                         bval;
+    /** An integer value */
+    int32_t                     ival;
+    /** A int64_t value */
+    int64_t                     lval;
+    /** A double-precision floating point value */
+    double                      dval;
+    /** An array of character values */
+    struct NaClSrpcCharArray    caval;
+    /** An array of double-precision floating point values */
+    struct NaClSrpcDoubleArray  daval;
+    /** An array of int32_t values */
+    struct NaClSrpcIntArray     iaval;
+    /** An array of int64_t values */
+    struct NaClSrpcLongArray    laval;
+    /** A string value */
+    struct NaClSrpcString       sval;
+    /** A handle used to pass descriptors */
+    NaClSrpcImcDescType         hval;
+    /** An object value that can be exported to the browser as is */
+    /** This field is only used with predeclared methods, never for
+     *  communicating with nexes. TODO(polina): where can one assert for this?
+     *  This usually points to an object scriptable by
+     *  the browser, i.e. NPAPI's NPObject or PPAPI's ScriptableObject.
+     *  Declaring it as void* to avoid including browser specific stuff here.
      */
-    void                *oval;
-    char                *str;
-    struct NaClSrpcArg  *varr;
-  } arrays;
+    void                        *oval;
+    /** An array of variant type values. @see NaClSrpcArg */
+    struct NaClSrpcVariantArray vaval;
+  } u;
 };
 
 /**
@@ -207,19 +268,15 @@ struct NaClSrpcArg {
  */
 typedef struct NaClSrpcArg NaClSrpcArg;
 
-#define NACL_SRPC_RPC_SERIALIZED_FIELDS        \
-  uint32_t                  protocol_version;  \
-  uint64_t                  request_id;        \
-  uint8_t                   is_request;        \
-  uint32_t                  rpc_number;        \
-  NaClSrpcError             result             \
-
 /**
  * Remote procedure call state structure.
  */
 struct NaClSrpcRpc {
-  /* State that is serialized. */
-  NACL_SRPC_RPC_SERIALIZED_FIELDS;
+  uint32_t                  protocol_version;
+  uint64_t                  request_id;
+  uint8_t                   is_request;
+  uint32_t                  rpc_number;
+  NaClSrpcError             result;
   /* State maintained for transmission/reception, but not serialized */
   struct NaClSrpcChannel*   channel;
   const char*               ret_types;

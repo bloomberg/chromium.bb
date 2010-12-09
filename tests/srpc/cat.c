@@ -42,7 +42,7 @@ void Cat(NaClSrpcRpc *rpc,
     P("%d", st_size);
 #undef P
   }
-  bufsize = out_args[0]->u.count;
+  bufsize = out_args[0]->u.caval.count;
   printf("read loop, up to %d chars\n", bufsize);
   if ((stb.st_mode & S_IFMT) == S_IFSHM) {
     /* Chrome integration returns a shared memory descriptor for this now. */
@@ -56,10 +56,10 @@ void Cat(NaClSrpcRpc *rpc,
     }
     for (nchar = 0; nchar < bufsize - 1; ++nchar) {
       ch = file_map[nchar];
-      out_args[0]->arrays.carr[nchar] = ch;
+      out_args[0]->u.caval.carr[nchar] = ch;
       putchar(ch);
     }
-    out_args[0]->arrays.carr[nchar] = '\0';
+    out_args[0]->u.caval.carr[nchar] = '\0';
     printf("EOF\n");
   } else {
     FILE *iob = fdopen(fd, "r");
@@ -70,15 +70,15 @@ void Cat(NaClSrpcRpc *rpc,
       return;
     }
     for (nchar = 0; EOF != (ch = getc(iob)) && nchar < bufsize-1; ++nchar) {
-      out_args[0]->arrays.carr[nchar] = ch;
+      out_args[0]->u.caval.carr[nchar] = ch;
       putchar(ch);
     }
-    out_args[0]->arrays.carr[nchar] = '\0';
+    out_args[0]->u.caval.carr[nchar] = '\0';
     printf("EOF\n");
     fclose(iob);
   }
   printf("got %d bytes\n", nchar);
-  printf("out param: %.*s\n", nchar, out_args[0]->arrays.carr);
+  printf("out param: %.*s\n", nchar, out_args[0]->u.caval.carr);
   rpc->result = NACL_SRPC_RESULT_OK;
   done->Run(done);
 }

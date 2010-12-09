@@ -66,7 +66,7 @@ bool ShmFactory(void* obj, plugin::SrpcParams* params) {
   }
 
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->arrays.oval = shared_memory;
+  params->outs()[0]->u.oval = shared_memory;
   return true;
 }
 
@@ -78,7 +78,7 @@ bool DefaultSocketAddress(void* obj, plugin::SrpcParams* params) {
   }
   // Plug the scriptable object into the return values.
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->arrays.oval = plugin->socket_address()->AddRef();
+  params->outs()[0]->u.oval = plugin->socket_address()->AddRef();
   return true;
 }
 
@@ -118,7 +118,7 @@ bool GetNexesProperty(void* obj, plugin::SrpcParams* params) {
 // assign to the "src" property based on the supported sandbox.
 bool SetNexesProperty(void* obj, plugin::SrpcParams* params) {
   return reinterpret_cast<plugin::Plugin*>(obj)->
-      SetNexesPropertyImpl(params->ins()[0]->arrays.str);
+      SetNexesPropertyImpl(params->ins()[0]->u.sval.str);
 }
 
 bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
@@ -126,7 +126,7 @@ bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
   const char* url = plugin->nacl_module_url().c_str();
   PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", url));
   if (NACL_NO_URL != plugin->nacl_module_url()) {
-    params->outs()[0]->arrays.str = strdup(url);
+    params->outs()[0]->u.sval.str = strdup(url);
     return true;
   } else {
     // No url to set 'src' to.
@@ -137,7 +137,7 @@ bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
 bool SetSrcProperty(void* obj, plugin::SrpcParams* params) {
   PLUGIN_PRINTF(("SetSrcProperty ()\n"));
   return reinterpret_cast<plugin::Plugin*>(obj)->
-      SetSrcPropertyImpl(params->ins()[0]->arrays.str);
+      SetSrcPropertyImpl(params->ins()[0]->u.sval.str);
 }
 
 bool GetHeightProperty(void* obj, plugin::SrpcParams* params) {
@@ -197,7 +197,7 @@ bool Plugin::SendAsyncMessage(void* obj, SrpcParams* params,
 
   // TODO(mseaborn): Handle strings containing NULLs.  This might
   // involve using a different SRPC type.
-  char* utf8string = params->ins()[0]->arrays.str;
+  char* utf8string = params->ins()[0]->u.sval.str;
   char* data;
   size_t data_size;
   if (!ByteStringFromUTF8(utf8string, strlen(utf8string), &data, &data_size)) {
