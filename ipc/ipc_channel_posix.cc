@@ -102,7 +102,7 @@ class PipeMap {
     ChannelToFDMap::iterator i = map_.find(channel_id);
     if (i != map_.end()) {
       if (HANDLE_EINTR(close(i->second)) < 0)
-        PLOG(ERROR) << "close";
+        PLOG(ERROR) << "close " << channel_id;
       map_.erase(i);
     }
   }
@@ -137,7 +137,7 @@ int ChannelNameToFD(const std::string& channel_id) {
   if (fd != -1) {
     int dup_fd = dup(fd);
     if (dup_fd < 0)
-      PLOG(FATAL) << "dup(" << fd << ")";
+      PLOG(FATAL) << "dup(" << fd << ") " << channel_id;
     return dup_fd;
   }
 
@@ -169,8 +169,9 @@ bool CreateServerFifo(const std::string& pipe_name, int* server_listen_fd) {
 
   // Make socket non-blocking
   if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
+    PLOG(ERROR) << "fcntl " << pipe_name;
     if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << pipe_name;
     return false;
   }
 
@@ -188,16 +189,18 @@ bool CreateServerFifo(const std::string& pipe_name, int* server_listen_fd) {
   // Bind the socket.
   if (bind(fd, reinterpret_cast<const sockaddr*>(&unix_addr),
            unix_addr_len) != 0) {
+    PLOG(ERROR) << "bind " << pipe_name;
     if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << pipe_name;
     return false;
   }
 
   // Start listening on the socket.
   const int listen_queue_length = 1;
   if (listen(fd, listen_queue_length) != 0) {
+    PLOG(ERROR) << "listen " << pipe_name;
     if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << pipe_name;
     return false;
   }
 
@@ -213,8 +216,9 @@ bool ServerAcceptFifoConnection(int server_listen_fd, int* server_socket) {
   if (accept_fd < 0)
     return false;
   if (fcntl(accept_fd, F_SETFL, O_NONBLOCK) == -1) {
+    PLOG(ERROR) << "fcntl " << accept_fd;
     if (HANDLE_EINTR(close(accept_fd)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << accept_fd;
     return false;
   }
 
@@ -224,25 +228,30 @@ bool ServerAcceptFifoConnection(int server_listen_fd, int* server_socket) {
 
 bool ClientConnectToFifo(const std::string &pipe_name, int* client_socket) {
   DCHECK(client_socket);
+  DCHECK_GT(pipe_name.length(), 0u);
   DCHECK_LT(pipe_name.length(), kMaxPipeNameLength);
+
+  if (pipe_name.length() == 0 || pipe_name.length() >= kMaxPipeNameLength) {
+    return false;
+  }
 
   // Create socket.
   int fd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (fd < 0) {
-    LOG(ERROR) << "fd is invalid";
+    PLOG(ERROR) << "socket " << pipe_name;
     return false;
   }
 
   // Make socket non-blocking
   if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
-    LOG(ERROR) << "fcntl failed";
+    PLOG(ERROR) << "fcntl " << pipe_name;
     if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << pipe_name;
     return false;
   }
 
   // Create server side of socket.
-  struct sockaddr_un  server_unix_addr;
+  struct sockaddr_un server_unix_addr;
   memset(&server_unix_addr, 0, sizeof(server_unix_addr));
   server_unix_addr.sun_family = AF_UNIX;
   snprintf(server_unix_addr.sun_path, kMaxPipeNameLength, "%s",
@@ -252,8 +261,9 @@ bool ClientConnectToFifo(const std::string &pipe_name, int* client_socket) {
 
   if (HANDLE_EINTR(connect(fd, reinterpret_cast<sockaddr*>(&server_unix_addr),
                            server_unix_addr_len)) != 0) {
+    PLOG(ERROR) << "connect " << pipe_name;
     if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << pipe_name;
     return false;
   }
 
@@ -613,11 +623,11 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       if (message_tail) {
         int len = static_cast<int>(message_tail - p);
         Message m(p, len);
-
-        if (m.header()->num_fds) {
+        const uint16 header_fds = m.header()->num_fds;
+        if (header_fds) {
           // the message has file descriptors
           const char* error = NULL;
-          if (m.header()->num_fds > num_fds - fds_i) {
+          if (header_fds > num_fds - fds_i) {
             // the message has been completely received, but we didn't get
             // enough file descriptors.
 #if defined(IPC_USES_READWRITE)
@@ -664,12 +674,12 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
                 }
               }
             }
-            if (m.header()->num_fds > num_fds - fds_i)
+            if (header_fds > num_fds - fds_i)
 #endif
               error = "Message needs unreceived descriptors";
           }
 
-          if (m.header()->num_fds >
+          if (header_fds >
               FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE) {
             // There are too many descriptors in this message
             error = "Message requires an excessive number of descriptors";
@@ -679,7 +689,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
             LOG(WARNING) << error
                          << " channel:" << this
                          << " message-type:" << m.type()
-                         << " header()->num_fds:" << m.header()->num_fds
+                         << " header()->num_fds:" << header_fds
                          << " num_fds:" << num_fds
                          << " fds_i:" << fds_i;
 #if defined(CHROMIUM_SELINUX)
@@ -697,11 +707,11 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           }
 
           m.file_descriptor_set()->SetDescriptors(
-              &fds[fds_i], m.header()->num_fds);
-          fds_i += m.header()->num_fds;
+              &fds[fds_i], header_fds);
+          fds_i += header_fds;
         }
         DVLOG(2) << "received message on channel @" << this
-                 << " with type " << m.type();
+                 << " with type " << m.type() << " on fd " << pipe_;
         if (m.routing_id() == MSG_ROUTING_NONE &&
             m.type() == HELLO_MESSAGE_TYPE) {
           // The Hello message contains only the process id.
@@ -921,7 +931,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 
       // Message sent OK!
       DVLOG(2) << "sent message @" << msg << " on channel @" << this
-               << " with type " << msg->type();
+               << " with type " << msg->type() << " on fd " << pipe_;
       delete output_queue_.front();
       output_queue_.pop();
     }
@@ -1018,7 +1028,7 @@ void Channel::ChannelImpl::Close() {
 
   if (server_listen_pipe_ != -1) {
     if (HANDLE_EINTR(close(server_listen_pipe_)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << server_listen_pipe_;
     server_listen_pipe_ = -1;
   }
 
@@ -1027,7 +1037,7 @@ void Channel::ChannelImpl::Close() {
   write_watcher_.StopWatchingFileDescriptor();
   if (pipe_ != -1) {
     if (HANDLE_EINTR(close(pipe_)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << pipe_;
     pipe_ = -1;
   }
   if (client_pipe_ != -1) {
@@ -1037,12 +1047,12 @@ void Channel::ChannelImpl::Close() {
 #if defined(IPC_USES_READWRITE)
   if (fd_pipe_ != -1) {
     if (HANDLE_EINTR(close(fd_pipe_)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << fd_pipe_;
     fd_pipe_ = -1;
   }
   if (remote_fd_pipe_ != -1) {
     if (HANDLE_EINTR(close(remote_fd_pipe_)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << remote_fd_pipe_;
     remote_fd_pipe_ = -1;
   }
 #endif
@@ -1062,7 +1072,7 @@ void Channel::ChannelImpl::Close() {
   for (std::vector<int>::iterator
        i = input_overflow_fds_.begin(); i != input_overflow_fds_.end(); ++i) {
     if (HANDLE_EINTR(close(*i)) < 0)
-      PLOG(ERROR) << "close";
+      PLOG(ERROR) << "close " << *i;
   }
   input_overflow_fds_.clear();
 }
