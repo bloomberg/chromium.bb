@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fi">
+<translation id="1105130903706696483">Avaa avoinna olleet sivut uudelleen napsauttamalla Palauta.</translation>
+<translation id="1185134272377778587">Tietoja Chromiumista</translation>
+<translation id="1497070702591980399">Chromiumin profiilintuontisovellus</translation>
+<translation id="1708666629004767631">Chromiumista on uudempi, entistä turvallisempi versio saatavilla.</translation>
+<translation id="2484334055677766392">Chromiumin käyttökieli:</translation>
+<translation id="2485422356828889247">Poista</translation>
+<translation id="2558235863893655150">Haluatko, että Chromium tallentaa salasanasi?</translation>
+<translation id="263863604136125912">Käynnistä Chromium</translation>
+<translation id="2648074677641340862">Asennuksen aikana tapahtui käyttöjärjestelmätason virhe. Lataa Chromium uudelleen.</translation>
+<translation id="2712549016134575851">Ristiriita toisen asennetun sovelluksen kanssa havaittu.</translation>
+<translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
+<translation id="3509308970982693815">Sulje kaikki Chromiumin ikkunat ja yritä uudelleen.</translation>
+<translation id="3555616473548901994">Poistaminen valmis.</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="4932687624772039103">Chromium ei tue käyttöjärjestelmää <ph name="OS_NAME"/>.</translation>
+<translation id="5398878173008909840">Chromiumista on uudempi versio saatavilla.</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
+<translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
+<translation id="6248213926982192922">Aseta Chromium oletusselaimeksi</translation>
+<translation id="6373523479360886564">Haluatko varmasti poistaa Chromiumin asennuksen?</translation>
+<translation id="6510925080656968729">Poista Chromiumin asennus</translation>
+<translation id="6676384891291319759">Käytä internetiä</translation>
+<translation id="6757767188268205357">Älä häiritse</translation>
+<translation id="7123348595797445166">Kokeile (valmiiksi asennettu)</translation>
+<translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="7421823331379285070">Chromium vaatii toimiakseen Windows XP:n tai uudemman. Osa ominaisuuksista ei välttämättä toimi.</translation>
+<translation id="7526756929942730853">Kun tyhjennät Chromiumin asetukset, kaikki tekemäsi muutokset palautetaan oletusasetuksille. Haluatko tyhjentää Chromiumin asetukset?</translation>
+<translation id="7641113255207688324">Chromium ei ole oletusselaimesi.</translation>
+<translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
+<translation id="786596160034915371">Tällä koneella on jo asennettuna uudempi versio Chromiumista. Jos se ei toimi, poista Chromium ja lataa se uudelleen.</translation>
+<translation id="8191012240651979172">Chromium on jo asennettu tälle käyttäjälle. Jos se ei toimi, poista Chromium ja lataa se uudelleen.</translation>
+<translation id="8422904359318093226">Chromium ei toimi kunnolla</translation>
+<translation id="8453117565092476964">Asennustiedosto on korruptoitunut tai virheellinen. Lataa Chromium uudelleen.</translation>
+<translation id="8621669128220841554">Asennus epäonnistui määrittelemättömästä syystä. Lataa Chromium uudelleen.</translation>
+<translation id="8738921060445980047">Tuntematon versio.</translation>
+<translation id="8770560772173120024">Chromium tuo parhaillaan suosikkeja/kirjanmerkkejä.</translation>
+<translation id="8860251088736138354">Oho, Chromium kaatui! Käynnistetäänkö uudelleen?</translation>
+<translation id="8862326446509486874">Sinulla ei ole käyttöoikeuksia järjestelmätason asennukseen. Kokeile asennusohjelman suorittamista uudelleen järjestelmänvalvojana.</translation>
+<translation id="8865765905101981392">Internet-selain</translation>
+<translation id="9013262824292842194">Chromium vaatii Windows Vistan, Windows XP:n SP2:lla tai uudemman.</translation>
+<translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
+<translation id="9191268552238695869">Ylläpitäjä on asentanut järjestelmään Chromiumin ja se on kaikkien käyttäjien käytettävissä. Järjestelmälaajuinen Chromium korvaa henkilökohtaisen Chromium-asennuksesi.</translation>
+</translationbundle>

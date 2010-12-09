@@ -120,7 +120,11 @@ be available for now. -->
     <output filename="chromium_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
-    <!-- No translations available. -->
+    <file path="../third_party/launchpad_translations/chromium_strings_cs.xtb" lang="cs" />
+    <file path="../third_party/launchpad_translations/chromium_strings_de.xtb" lang="de" />
+    <file path="../third_party/launchpad_translations/chromium_strings_es.xtb" lang="es" />
+    <file path="../third_party/launchpad_translations/chromium_strings_fi.xtb" lang="fi" />
+    <file path="../third_party/launchpad_translations/chromium_strings_pt-BR.xtb" lang="pt-BR" />
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">

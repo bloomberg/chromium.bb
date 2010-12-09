@@ -1,0 +1,10 @@
+Name: Launchpad Translations
+URL: http://people.ubuntu.com/~fta/chromium/translations/trunk/patched-files/chrome/app/resources/
+InfoURL: https://launchpad.net/chromium-browser
+
+Description:
+Translations for Chromium provided by Launchpad.  These translations are not
+used in Google Chrome.
+
+For more information about licensing, see
+https://help.launchpad.net/Translations/LicensingFAQ
