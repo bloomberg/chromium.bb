@@ -627,6 +627,11 @@ void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
   [field_ clearUndoChain];
 }
 
+void AutocompleteEditViewMac::OnStartingIME() {
+  if (model_->is_keyword_hint() && !model_->keyword().empty())
+    model_->AcceptKeyword();
+}
+
 bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
     const std::wstring& display_text, size_t user_text_length) {
   // TODO(shess): Make sure that this actually works.  The round trip

@@ -264,6 +264,15 @@
 }
 
 - (void)setMarkedText:(id)aString selectedRange:(NSRange)selRange {
+  if (![self hasMarkedText]) {
+    // Before input methods set composition text in the omnibox, we need to
+    // examine whether the autocompletion controller accepts the keyword to
+    // avoid committing the current composition text wrongly.
+    AutocompleteTextFieldObserver* observer = [self observer];
+    if (observer)
+      observer->OnStartingIME();
+  }
+
   [super setMarkedText:aString selectedRange:selRange];
 
   // Because the AutocompleteEditViewMac class treats marked text as content,

@@ -74,6 +74,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
                                            bool save_original_selection);
   virtual bool OnInlineAutocompleteTextMaybeChanged(
       const std::wstring& display_text, size_t user_text_length);
+  virtual void OnStartingIME();
   virtual void OnRevertTemporaryText();
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
