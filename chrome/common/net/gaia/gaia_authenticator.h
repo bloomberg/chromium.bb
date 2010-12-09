@@ -180,9 +180,7 @@ class GaiaAuthenticator {
   virtual bool PerformGaiaRequest(const AuthParams& params,
                                   AuthResults* results);
   virtual bool Post(const GURL& url, const std::string& post_body,
-                    unsigned long* response_code, std::string* response_body) {
-    return false;
-  }
+                    unsigned long* response_code, std::string* response_body);
 
   // Caller should fill in results->LSID before calling. Result in
   // results->primary_email.
@@ -193,10 +191,7 @@ class GaiaAuthenticator {
   // TODO(sanjeevr): This should be made pure virtual. But this class is
   // currently directly being used in sync/engine/authenticator.cc, which is
   // wrong.
-  virtual int GetBackoffDelaySeconds(int current_backoff_delay) {
-    NOTREACHED();
-    return current_backoff_delay;
-  }
+  virtual int GetBackoffDelaySeconds(int current_backoff_delay);
 
  public:
   // Retrieve email.

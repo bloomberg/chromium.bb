@@ -42,6 +42,8 @@ using webkit_glue::PasswordForm;
 
 // Importer.
 
+void Importer::Cancel() { cancelled_ = true; }
+
 Importer::Importer()
     : cancelled_(false),
       import_to_bookmark_bar_(false),

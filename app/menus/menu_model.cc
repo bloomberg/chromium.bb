@@ -6,6 +6,10 @@
 
 namespace menus {
 
+int MenuModel::GetFirstItemIndex(gfx::NativeMenu native_menu) const {
+  return 0;
+}
+
 bool MenuModel::IsVisibleAt(int index) const {
   return true;
 }
@@ -27,6 +31,10 @@ bool MenuModel::GetModelAndIndexForCommandId(int command_id,
     }
   }
   return false;
+}
+
+const gfx::Font* MenuModel::GetLabelFontAt(int index) const {
+  return NULL;
 }
 
 // Default implementation ignores the disposition.

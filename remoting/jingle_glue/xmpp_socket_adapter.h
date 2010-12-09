@@ -27,9 +27,9 @@ class XmppSocketAdapter : public buzz::AsyncSocket,
                     bool allow_unverified_certs);
   virtual ~XmppSocketAdapter();
 
-  virtual State state() { return state_; }
-  virtual Error error() { return error_; }
-  virtual int GetError() { return wsa_error_; }
+  virtual State state();
+  virtual Error error();
+  virtual int GetError();
 
   void set_firewall(bool firewall) { firewall_ = firewall; }
 

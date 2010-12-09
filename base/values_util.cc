@@ -12,3 +12,7 @@ RefCountedList::~RefCountedList() {
   if (list_)
     delete list_;
 }
+
+ListValue* RefCountedList::Get() {
+  return list_;
+}

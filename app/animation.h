@@ -72,7 +72,7 @@ class Animation : public AnimationContainerElement {
   // Invoked from stop to determine if cancel should be invoked. If this returns
   // true the delegate is notified the animation was canceled, otherwise the
   // delegate is notified the animation stopped.
-  virtual bool ShouldSendCanceledFromStop() { return false; }
+  virtual bool ShouldSendCanceledFromStop();
 
   AnimationContainer* container() { return container_.get(); }
   base::TimeTicks start_time() const { return start_time_; }
@@ -81,7 +81,7 @@ class Animation : public AnimationContainerElement {
   // AnimationContainer::Element overrides
   virtual void SetStartTime(base::TimeTicks start_time);
   virtual void Step(base::TimeTicks time_now) = 0;
-  virtual base::TimeDelta GetTimerInterval() const { return timer_interval_; }
+  virtual base::TimeDelta GetTimerInterval() const;
 
  private:
   // Interval for the animation.

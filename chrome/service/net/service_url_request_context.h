@@ -37,12 +37,7 @@ class ServiceURLRequestContext : public URLRequestContext {
   }
 
   // URLRequestContext overrides
-  virtual const std::string& GetUserAgent(const GURL& url) const {
-    // If the user agent is set explicitly return that, otherwise call the
-    // base class method to return default value.
-    return user_agent_.empty() ?
-        URLRequestContext::GetUserAgent(url) : user_agent_;
-  }
+  virtual const std::string& GetUserAgent(const GURL& url) const;
 
  protected:
   virtual ~ServiceURLRequestContext();

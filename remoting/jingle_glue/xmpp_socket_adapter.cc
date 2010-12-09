@@ -50,6 +50,18 @@ XmppSocketAdapter::~XmppSocketAdapter() {
   }
 }
 
+buzz::AsyncSocket::State XmppSocketAdapter::state() {
+  return state_;
+}
+
+buzz::AsyncSocket::Error XmppSocketAdapter::error() {
+  return error_;
+}
+
+int XmppSocketAdapter::GetError() {
+  return wsa_error_;
+}
+
 bool XmppSocketAdapter::FreeState() {
   int code = 0;
 

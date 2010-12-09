@@ -47,6 +47,10 @@ void ThrobAnimation::Hide() {
   SlideAnimation::Hide();
 }
 
+void ThrobAnimation::SetSlideDuration(int duration) {
+  slide_duration_ = duration;
+}
+
 void ThrobAnimation::Step(base::TimeTicks time_now) {
   LinearAnimation::Step(time_now);
 

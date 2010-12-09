@@ -54,7 +54,7 @@ class HostDispatcher : public Dispatcher {
   static void RemoveForInstance(PP_Instance instance);
 
   // Dispatcher overrides.
-  virtual bool IsPlugin() const { return false; }
+  virtual bool IsPlugin() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);

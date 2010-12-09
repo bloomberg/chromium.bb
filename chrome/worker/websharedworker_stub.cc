@@ -39,6 +39,10 @@ void WebSharedWorkerStub::OnChannelError() {
     OnTerminateWorkerContext();
 }
 
+const GURL& WebSharedWorkerStub::url() const {
+  return url_;
+}
+
 void WebSharedWorkerStub::OnStartWorkerContext(
     const GURL& url, const string16& user_agent, const string16& source_code) {
   // Ignore multiple attempts to start this worker (can happen if two pages

@@ -35,7 +35,7 @@ class Module {
   // This function will be automatically called after the object is created.
   // This is where you can put functions that rely on other parts of the API,
   // now that the module has been created.
-  virtual bool Init() { return true; }
+  virtual bool Init();
 
   // Returns the internal module handle.
   PP_Module pp_module() const { return pp_module_; }

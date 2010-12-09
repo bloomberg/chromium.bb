@@ -66,6 +66,10 @@ void PluginDispatcher::SetGlobal(PluginDispatcher* dispatcher) {
   g_dispatcher = dispatcher;
 }
 
+bool PluginDispatcher::IsPlugin() const {
+  return true;
+}
+
 void PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Handle some plugin-specific control messages.

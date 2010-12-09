@@ -201,7 +201,7 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
   // return NULL to indicate the interface is unknown.  The derived filter
   // should NOT AddRef() the interface.  The DemuxerStream::QueryInterface()
   // public template function will assign the interface to a scoped_refptr<>.
-  virtual void* QueryInterface(const char* interface_id) { return NULL; }
+  virtual void* QueryInterface(const char* interface_id);
 
   friend class base::RefCountedThreadSafe<DemuxerStream>;
   virtual ~DemuxerStream();

@@ -80,6 +80,14 @@ void SlideAnimation::Hide() {
   Start();
 }
 
+void SlideAnimation::SetSlideDuration(int duration) {
+  slide_duration_ = duration;
+}
+
+double SlideAnimation::GetCurrentValue() const {
+  return value_current_;
+}
+
 void SlideAnimation::AnimateToState(double state) {
   if (state > 1.0)
     state = 1.0;

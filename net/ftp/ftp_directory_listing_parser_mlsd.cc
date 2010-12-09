@@ -60,6 +60,10 @@ FtpDirectoryListingParserMlsd::FtpDirectoryListingParserMlsd() {}
 
 FtpDirectoryListingParserMlsd::~FtpDirectoryListingParserMlsd() {}
 
+FtpServerType FtpDirectoryListingParserMlsd::GetServerType() const {
+  return SERVER_MLSD;
+}
+
 bool FtpDirectoryListingParserMlsd::ConsumeLine(const string16& line) {
   // The first space indicates where the filename begins.
   string16::size_type first_space_pos = line.find(' ');

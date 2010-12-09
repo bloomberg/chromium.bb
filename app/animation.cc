@@ -107,6 +107,14 @@ bool Animation::ShouldRenderRichAnimation() {
   return true;
 }
 
+bool Animation::ShouldSendCanceledFromStop() {
+  return false;
+}
+
 void Animation::SetStartTime(base::TimeTicks start_time) {
   start_time_ = start_time;
+}
+
+base::TimeDelta Animation::GetTimerInterval() const {
+  return timer_interval_;
 }

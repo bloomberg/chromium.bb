@@ -56,6 +56,10 @@ void WebWorkerStub::OnChannelError() {
     OnTerminateWorkerContext();
 }
 
+const GURL& WebWorkerStub::url() const {
+  return url_;
+}
+
 void WebWorkerStub::OnMessageReceived(const IPC::Message& message) {
   if (!impl_)
     return;

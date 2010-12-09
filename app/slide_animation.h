@@ -61,11 +61,11 @@ class SlideAnimation : public LinearAnimation {
   // Sets the time a slide will take. Note that this isn't actually
   // the amount of time an animation will take as the current value of
   // the slide is considered.
-  virtual void SetSlideDuration(int duration) { slide_duration_ = duration; }
+  virtual void SetSlideDuration(int duration);
   int GetSlideDuration() const { return slide_duration_; }
   void SetTweenType(Tween::Type tween_type) { tween_type_ = tween_type; }
 
-  virtual double GetCurrentValue() const { return value_current_; }
+  virtual double GetCurrentValue() const;
   bool IsShowing() const { return showing_; }
   bool IsClosing() const { return !showing_ && value_end_ < value_current_; }
 

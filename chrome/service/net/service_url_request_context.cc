@@ -139,6 +139,14 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   accept_charset_ = "iso-8859-1,*,utf-8";
 }
 
+const std::string& ServiceURLRequestContext::GetUserAgent(
+    const GURL& url) const {
+  // If the user agent is set explicitly return that, otherwise call the
+  // base class method to return default value.
+  return user_agent_.empty() ?
+      URLRequestContext::GetUserAgent(url) : user_agent_;
+}
+
 ServiceURLRequestContext::~ServiceURLRequestContext() {
   delete ftp_transaction_factory_;
   delete http_transaction_factory_;

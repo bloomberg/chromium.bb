@@ -38,6 +38,18 @@ TCPSocketParams::TCPSocketParams(const std::string& host, int port,
 
 TCPSocketParams::~TCPSocketParams() {}
 
+void TCPSocketParams::Initialize(RequestPriority priority,
+                                 const GURL& referrer,
+                                 bool disable_resolver_cache) {
+  // The referrer is used by the DNS prefetch system to correlate resolutions
+  // with the page that triggered them. It doesn't impact the actual addresses
+  // that we resolve to.
+  destination_.set_referrer(referrer);
+  destination_.set_priority(priority);
+  if (disable_resolver_cache)
+    destination_.set_allow_cached_response(false);
+}
+
 // TCPConnectJobs will time out after this many seconds.  Note this is the total
 // time, including both host resolution and TCP connect() times.
 //
@@ -272,6 +284,10 @@ void TCPClientSocketPool::CloseIdleSockets() {
   base_.CloseIdleSockets();
 }
 
+int TCPClientSocketPool::IdleSocketCount() const {
+  return base_.idle_socket_count();
+}
+
 int TCPClientSocketPool::IdleSocketCountInGroup(
     const std::string& group_name) const {
   return base_.IdleSocketCountInGroup(group_name);
@@ -280,6 +296,21 @@ int TCPClientSocketPool::IdleSocketCountInGroup(
 LoadState TCPClientSocketPool::GetLoadState(
     const std::string& group_name, const ClientSocketHandle* handle) const {
   return base_.GetLoadState(group_name, handle);
+}
+
+DictionaryValue* TCPClientSocketPool::GetInfoAsValue(
+    const std::string& name,
+    const std::string& type,
+    bool include_nested_pools) const {
+  return base_.GetInfoAsValue(name, type);
+}
+
+base::TimeDelta TCPClientSocketPool::ConnectionTimeout() const {
+  return base_.ConnectionTimeout();
+}
+
+ClientSocketPoolHistograms* TCPClientSocketPool::histograms() const {
+  return base_.histograms();
 }
 
 }  // namespace net

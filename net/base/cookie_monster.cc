@@ -1323,6 +1323,10 @@ void CookieMonster::DeleteCookie(const GURL& url,
   }
 }
 
+CookieMonster* CookieMonster::GetCookieMonster() {
+  return this;
+}
+
 CookieList CookieMonster::GetAllCookies() {
   AutoLock autolock(lock_);
   InitIfNecessary();

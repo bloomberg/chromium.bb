@@ -20,3 +20,8 @@ WorkerWebApplicationCacheHostImpl::WorkerWebApplicationCacheHostImpl(
                                     init_info.parent_process_id,
                                     init_info.parent_appcache_host_id);
 }
+
+bool WorkerWebApplicationCacheHostImpl::selectCacheWithManifest(
+    const WebKit::WebURL& manifestURL) {
+  return true;
+}

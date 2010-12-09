@@ -13,5 +13,11 @@ PluginResource::PluginResource() {
 PluginResource::~PluginResource() {
 }
 
+#define DEFINE_TYPE_GETTER(RESOURCE)                    \
+  RESOURCE* PluginResource::As##RESOURCE() { return NULL; }
+FOR_ALL_RESOURCES(DEFINE_TYPE_GETTER)
+#undef DEFINE_TYPE_GETTER
+
+
 }  // namespace proxy
 }  // namespace pp

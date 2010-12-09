@@ -72,6 +72,10 @@ void HostDispatcher::RemoveForInstance(PP_Instance instance) {
     g_instance_to_dispatcher->erase(found);
 }
 
+bool HostDispatcher::IsPlugin() const {
+  return false;
+}
+
 }  // namespace proxy
 }  // namespace pp
 

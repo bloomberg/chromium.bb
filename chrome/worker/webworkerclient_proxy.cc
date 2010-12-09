@@ -117,6 +117,14 @@ WebKit::WebWorker* WebWorkerClientProxy::createWorker(
                             0, appcache_host_id_);
 }
 
+WebKit::WebNotificationPresenter*
+WebWorkerClientProxy::notificationPresenter() {
+  // TODO(johnnyg): Notifications are not yet hooked up to workers.
+  // Coming soon.
+  NOTREACHED();
+  return NULL;
+}
+
 WebApplicationCacheHost* WebWorkerClientProxy::createApplicationCacheHost(
     WebKit::WebApplicationCacheHostClient* client) {
   WorkerWebApplicationCacheHostImpl* host =

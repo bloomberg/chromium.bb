@@ -85,14 +85,12 @@ class BitmapPlatformDevice : public PlatformDevice {
   // A stub copy constructor.  Needs to be properly implemented.
   BitmapPlatformDevice(const BitmapPlatformDevice& other);
 
-  virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(BitmapPlatformDeviceFactory);
-  }
+  virtual SkDeviceFactory* getDeviceFactory();
 
   virtual void makeOpaque(int x, int y, int width, int height);
 
   // Bitmaps aren't vector graphics.
-  virtual bool IsVectorial() { return false; }
+  virtual bool IsVectorial();
 
   // If someone wants to paint on a Cairo surface version of our
   // buffer, then give them the surface we're already using.

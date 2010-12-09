@@ -23,4 +23,9 @@ bool WebPluginGeometry::Equals(const WebPluginGeometry& rhs) const {
          rects_valid == rhs.rects_valid &&
          visible == rhs.visible;
 }
+
+WebPluginDelegate* WebPlugin::delegate() {
+  return NULL;
+}
+
 }  // namespace webkit_glue

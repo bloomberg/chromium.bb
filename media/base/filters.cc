@@ -133,6 +133,10 @@ const char* VideoRenderer::major_mime_type() const {
   return mime_type::kMajorTypeVideo;
 }
 
+void* DemuxerStream::QueryInterface(const char* interface_id) {
+  return NULL;
+}
+
 DemuxerStream::~DemuxerStream() {}
 
 VideoDecoder::VideoDecoder() {}

@@ -49,7 +49,7 @@ class MenuModel {
   // IMPORTANT: If the model implementation returns something _other_ than 0
   //            here, it must offset the values for |index| it passes to the
   //            methods below by this number - this is NOT done automatically!
-  virtual int GetFirstItemIndex(gfx::NativeMenu native_menu) const { return 0; }
+  virtual int GetFirstItemIndex(gfx::NativeMenu native_menu) const;
 
   // Returns the number of items in the menu.
   virtual int GetItemCount() const = 0;
@@ -70,7 +70,7 @@ class MenuModel {
 
   // Returns the font use for the label at the specified index.
   // If NULL, then use default font.
-  virtual const gfx::Font* GetLabelFontAt(int index) const { return NULL; }
+  virtual const gfx::Font* GetLabelFontAt(int index) const;
 
   // Gets the acclerator information for the specified index, returning true if
   // there is a shortcut accelerator for the item, false otherwise.

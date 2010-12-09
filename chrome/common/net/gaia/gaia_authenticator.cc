@@ -196,6 +196,13 @@ bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
   }
 }
 
+bool GaiaAuthenticator::Post(const GURL& url,
+                             const std::string& post_body,
+                             unsigned long* response_code,
+                             std::string* response_body) {
+  return false;
+}
+
 bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   // Use the provided Gaia server, but change the path to what V1 expects.
@@ -236,6 +243,11 @@ bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
     return true;
   }
   return false;
+}
+
+int GaiaAuthenticator::GetBackoffDelaySeconds(int current_backoff_delay) {
+  NOTREACHED();
+  return current_backoff_delay;
 }
 
 // We need to call this explicitly when we need to obtain a long-lived session

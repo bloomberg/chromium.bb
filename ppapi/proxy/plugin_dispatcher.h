@@ -43,7 +43,7 @@ class PluginDispatcher : public Dispatcher {
   static void SetGlobal(PluginDispatcher* dispatcher);
 
   // Dispatcher overrides.
-  virtual bool IsPlugin() const { return true; }
+  virtual bool IsPlugin() const;
 
   // IPC::Channel::Listener implementation.
   virtual void OnMessageReceived(const IPC::Message& msg);

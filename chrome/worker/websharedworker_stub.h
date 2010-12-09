@@ -25,7 +25,7 @@ class WebSharedWorkerStub : public WebWorkerStubBase {
   virtual void OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
 
-  virtual const GURL& url() const { return url_; }
+  virtual const GURL& url() const;
 
  private:
   virtual ~WebSharedWorkerStub();

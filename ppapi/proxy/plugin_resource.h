@@ -50,7 +50,7 @@ class PluginResource {
   // NULL if the resource does not match the specified type. Used by the Cast()
   // function.
   #define DEFINE_TYPE_GETTER(RESOURCE)  \
-      virtual RESOURCE* As##RESOURCE() { return NULL; }
+    virtual RESOURCE* As##RESOURCE();
   FOR_ALL_RESOURCES(DEFINE_TYPE_GETTER)
   #undef DEFINE_TYPE_GETTER
 

@@ -464,7 +464,7 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
                            ImporterBridge* bridge) = 0;
 
   // Cancels the import process.
-  virtual void Cancel() { cancelled_ = true; }
+  virtual void Cancel();
 
   void set_import_to_bookmark_bar(bool import_to_bookmark_bar) {
     import_to_bookmark_bar_ = import_to_bookmark_bar;

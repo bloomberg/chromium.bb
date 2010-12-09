@@ -15,9 +15,7 @@ class RefCountedList : public base::RefCountedThreadSafe<RefCountedList> {
   explicit RefCountedList(ListValue* list);
   virtual ~RefCountedList();
 
-  virtual ListValue* Get() {
-    return list_;
-  }
+  virtual ListValue* Get();
 
  private:
   ListValue* list_;

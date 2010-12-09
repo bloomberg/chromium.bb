@@ -45,9 +45,7 @@ class WorkerWebApplicationCacheHostImpl
   // Cache selection is also different for workers. We know at construction
   // time what cache to select and do so then.
   virtual void selectCacheWithoutManifest() {}
-  virtual bool selectCacheWithManifest(const WebKit::WebURL& manifestURL) {
-    return true;
-  }
+  virtual bool selectCacheWithManifest(const WebKit::WebURL& manifestURL);
 };
 
 #endif  // CHROME_WORKER_WORKER_WEBAPPLICATIONCACHEHOST_IMPL_H_

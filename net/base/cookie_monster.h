@@ -146,7 +146,7 @@ class CookieMonster : public CookieStore {
   // Deletes all cookies with that might apply to |url| that has |cookie_name|.
   virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
 
-  virtual CookieMonster* GetCookieMonster() { return this; }
+  virtual CookieMonster* GetCookieMonster();
 
   // Sets a cookie given explicit user-provided cookie attributes. The cookie
   // name, value, domain, etc. are each provided as separate strings. This

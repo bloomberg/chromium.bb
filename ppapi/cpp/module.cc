@@ -144,6 +144,10 @@ Module::~Module() {
   core_ = NULL;
 }
 
+bool Module::Init() {
+  return true;
+}
+
 const void* Module::GetPluginInterface(const char* interface_name) {
   if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0)
     return &instance_interface;
