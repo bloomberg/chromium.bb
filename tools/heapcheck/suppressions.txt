@@ -1113,6 +1113,5 @@
    bug_65993
    Heapcheck:Leak
    ...
-   fun:TestDelegate
    fun:PrerenderInterceptorTest::MakeTestUrl
 }
