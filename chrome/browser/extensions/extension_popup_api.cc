@@ -243,6 +243,12 @@ class ExtensionPopupHost : public ExtensionPopup::Observer,
     // If no view is to be focused, then Chrome was deactivated, so hide the
     // popup.
     if (focused_now) {
+      // On XP, the focus change handler may be invoked when the delegate has
+      // already been revoked.
+      // TODO(twiz@chromium.org):  Resolve the trigger of this behaviour.
+      if (!dispatcher_ || !dispatcher_->delegate())
+        return;
+
       gfx::NativeView host_view =
           dispatcher_->delegate()->GetNativeViewOfHost();
 
