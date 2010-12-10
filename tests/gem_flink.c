@@ -96,7 +96,7 @@ test_bad_flink(int fd)
 
 	flink.handle = 0x10101010;
 	ret = ioctl(fd, DRM_IOCTL_GEM_FLINK, &flink);
-	assert(ret == -1 && errno == EBADF);
+	assert(ret == -1 && errno == ENOENT);
 }
 
 static void

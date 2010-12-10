@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	mmap.size = 4096;
 	printf("Testing mmaping of bad object.\n");
 	ret = ioctl(fd, DRM_IOCTL_I915_GEM_MMAP, &mmap);
-	assert(ret == -1 && errno == EBADF);
+	assert(ret == -1 && errno == ENOENT);
 
 	memset(&create, 0, sizeof(create));
 	create.size = OBJECT_SIZE;

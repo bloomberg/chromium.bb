@@ -127,11 +127,11 @@ int main(int argc, char **argv)
 
 	printf("Testing read of bad buffer handle\n");
 	ret = do_read(fd, 1234, buf, 0, 1024);
-	assert(ret == -1 && errno == EBADF);
+	assert(ret == -1 && errno == ENOENT);
 
 	printf("Testing write of bad buffer handle\n");
 	ret = do_write(fd, 1234, buf, 0, 1024);
-	assert(ret == -1 && errno == EBADF);
+	assert(ret == -1 && errno == ENOENT);
 
 	close(fd);
 
