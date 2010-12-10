@@ -8,6 +8,7 @@
 #include <X11/XF86keysym.h>
 
 #include "chrome/browser/chromeos/audio_handler.h"
+#include "chrome/browser/chromeos/brightness_bubble.h"
 #include "chrome/browser/chromeos/volume_bubble.h"
 #include "cros/chromeos_wm_ipc_enums.h"
 
@@ -131,6 +132,7 @@ void SystemKeyEventListener::OnVolumeMute() {
   // http://crosbug.com/3751
   audio_handler_->SetMute(true);
   VolumeBubble::instance()->ShowBubble(0);
+  BrightnessBubble::instance()->HideBubble();
 }
 
 void SystemKeyEventListener::OnVolumeDown() {
@@ -141,6 +143,7 @@ void SystemKeyEventListener::OnVolumeDown() {
     VolumeBubble::instance()->ShowBubble(
         audio_handler_->GetVolumePercent());
   }
+  BrightnessBubble::instance()->HideBubble();
 }
 
 void SystemKeyEventListener::OnVolumeUp() {
@@ -150,6 +153,7 @@ void SystemKeyEventListener::OnVolumeUp() {
     audio_handler_->AdjustVolumeByPercent(kStepPercentage);
   VolumeBubble::instance()->ShowBubble(
       audio_handler_->GetVolumePercent());
+  BrightnessBubble::instance()->HideBubble();
 }
 
 }  // namespace chromeos

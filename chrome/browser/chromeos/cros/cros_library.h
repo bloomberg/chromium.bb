@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 namespace chromeos {
 
+class BrightnessLibrary;
 class BurnLibrary;
 class CryptohomeLibrary;
 class KeyboardLibrary;
@@ -50,6 +51,8 @@ class CrosLibrary {
     // when the CrosLibrary is deleted (or other mocks are set).
     // Setter for LibraryLoader.
     void SetLibraryLoader(LibraryLoader* loader, bool own);
+    // Setter for BrightnessLibrary.
+    void SetBrightnessLibrary(BrightnessLibrary* library, bool own);
     // Setter for BurnLibrary.
     void SetBurnLibrary(BurnLibrary* library, bool own);
     // Setter for CryptohomeLibrary.
@@ -87,6 +90,9 @@ class CrosLibrary {
 
   // This gets the CrosLibrary.
   static CrosLibrary* Get();
+
+  // Getter for BrightnessLibrary.
+  BrightnessLibrary* GetBrightnessLibrary();
 
   // Getter for BurnLibrary.
   BurnLibrary* GetBurnLibrary();
@@ -190,6 +196,7 @@ class CrosLibrary {
     bool own_;
   };
 
+  Library<BrightnessLibrary> brightness_lib_;
   Library<BurnLibrary> burn_lib_;
   Library<CryptohomeLibrary> crypto_lib_;
   Library<KeyboardLibrary> keyboard_lib_;

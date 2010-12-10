@@ -81,6 +81,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -444,7 +445,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
     // Connect the chromeos notifications
 
     // This observer is a singleton. It is never deleted but the pointer is kept
-    // in a global so that it isn't reported as a leak.
+    // in a static so that it isn't reported as a leak.
     static chromeos::LowBatteryObserver* low_battery_observer =
         new chromeos::LowBatteryObserver(profile);
     chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(
@@ -461,6 +462,11 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
         ->AddNetworkManagerObserver(network_message_observer);
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()
         ->AddCellularDataPlanObserver(network_message_observer);
+
+    static chromeos::BrightnessObserver* brightness_observer =
+        new chromeos::BrightnessObserver();
+    chromeos::CrosLibrary::Get()->GetBrightnessLibrary()
+        ->AddObserver(brightness_observer);
 
     profile->SetupChromeOSEnterpriseExtensionObserver();
   }

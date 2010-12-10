@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
+#include "chrome/browser/chromeos/cros/brightness_library.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
@@ -38,6 +39,10 @@ CrosLibrary::~CrosLibrary() {
 // static
 CrosLibrary* CrosLibrary::Get() {
   return Singleton<CrosLibrary>::get();
+}
+
+BrightnessLibrary* CrosLibrary::GetBrightnessLibrary() {
+  return brightness_lib_.GetDefaultImpl(use_stub_impl_);
 }
 
 BurnLibrary* CrosLibrary::GetBurnLibrary() {
@@ -136,6 +141,11 @@ void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
   // going to be happy.
   library_->loaded_ = false;
   library_->load_error_ = false;
+}
+
+void CrosLibrary::TestApi::SetBrightnessLibrary(
+    BrightnessLibrary* library, bool own) {
+  library_->brightness_lib_.SetImpl(library, own);
 }
 
 void CrosLibrary::TestApi::SetBurnLibrary(

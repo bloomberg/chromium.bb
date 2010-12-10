@@ -587,6 +587,7 @@
         <include name="IDR_VOLUME_BUBBLE_UP_ICON" file="volume_up_icon.png" type="BINDATA" />
         <include name="IDR_VOLUME_BUBBLE_DOWN_ICON" file="volume_down_icon.png" type="BINDATA" />
         <include name="IDR_VOLUME_BUBBLE_MUTE_ICON" file="volume_mute_icon.png" type="BINDATA" />
+        <include name="IDR_BRIGHTNESS_BUBBLE_ICON" file="brightness_icon.png" type="BINDATA" />
         <include name="IDR_SCROLL_BACKGROUND" file="chromeos_scroll_background.png" type="BINDATA" />
         <include name="IDR_SCROLL_BACKGROUND_BORDER_UP" file="chromeos_scroll_background_border_up.png" type="BINDATA" />
         <include name="IDR_SCROLL_BACKGROUND_BORDER_DOWN" file="chromeos_scroll_background_border_down.png" type="BINDATA" />

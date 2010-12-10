@@ -115,9 +115,13 @@ void SettingLevelBubble::ShowBubble(int percent) {
                        this, &SettingLevelBubble::OnTimeout);
 }
 
-void SettingLevelBubble::OnTimeout() {
+void SettingLevelBubble::HideBubble() {
   if (bubble_)
     bubble_->Close();
+}
+
+void SettingLevelBubble::OnTimeout() {
+  HideBubble();
 }
 
 void SettingLevelBubble::InfoBubbleClosing(InfoBubble* info_bubble, bool) {

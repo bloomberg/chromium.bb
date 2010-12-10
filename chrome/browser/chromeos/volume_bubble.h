@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_VOLUME_BUBBLE_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "chrome/browser/chromeos/setting_level_bubble.h"
 
 template <typename T> struct DefaultSingletonTraits;

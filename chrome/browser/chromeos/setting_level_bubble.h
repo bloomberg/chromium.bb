@@ -8,6 +8,7 @@
 
 #include "app/animation_delegate.h"
 #include "app/slide_animation.h"
+#include "base/basictypes.h"
 #include "base/timer.h"
 #include "chrome/browser/views/info_bubble.h"
 
@@ -23,6 +24,7 @@ class SettingLevelBubble : public InfoBubbleDelegate,
                            public AnimationDelegate {
  public:
   void ShowBubble(int percent);
+  void HideBubble();
 
  protected:
   explicit SettingLevelBubble(SkBitmap* increase_icon,
