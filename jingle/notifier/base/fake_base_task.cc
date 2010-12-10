@@ -1,11 +1,7 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A simple wrapper around invalidation::InvalidationClient that
-// handles all the startup/shutdown details and hookups.
 
-#include "base/message_loop.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "talk/xmpp/asyncsocket.h"
@@ -42,7 +38,7 @@ FakeBaseTask::FakeBaseTask() {
   EXPECT_CALL(*mock_async_socket, Connect(_)).WillOnce(Return(true));
   weak_xmpp_client->Connect(settings, "en", mock_async_socket, NULL);
   // Initialize the XMPP client.
-  MessageLoop::current()->RunAllPending();
+  task_pump_.RunTasks();
 
   base_task_ = weak_xmpp_client->AsWeakPtr();
 }

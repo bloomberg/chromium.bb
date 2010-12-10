@@ -123,7 +123,9 @@ void ServerNotifierThread::DoListenForUpdates() {
 
 void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  DCHECK(chrome_invalidation_client_.get());
+  if (!chrome_invalidation_client_.get()) {
+    return;
+  }
   chrome_invalidation_client_->RegisterTypes();
   observers_->Notify(&Observer::OnSubscriptionStateChange, true);
 }

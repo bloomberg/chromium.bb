@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/const_communicator.h"
@@ -17,9 +16,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "talk/xmpp/xmppclientsettings.h"
-
-// We manage the lifetime of notifier::MediatorThreadImpl ourselves.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 
 namespace notifier {
 

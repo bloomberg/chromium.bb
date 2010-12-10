@@ -27,6 +27,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "base/thread.h"
 #include "base/weak_ptr.h"
 #include "jingle/notifier/base/notifier_options.h"
@@ -111,5 +112,8 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
 };
 
 }  // namespace notifier
+
+// We manage the lifetime of notifier::MediatorThreadImpl ourselves.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 
 #endif  // JINGLE_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_

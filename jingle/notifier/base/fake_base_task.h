@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// A simple wrapper around invalidation::InvalidationClient that
-// handles all the startup/shutdown details and hookups.
+// A stand-in for stuff that expects a weak pointer to a BaseTask for
+// testing.
 
 #ifndef JINGLE_NOTIFIER_FAKE_XMPP_CLIENT_H_
 #define JINGLE_NOTIFIER_FAKE_XMPP_CLIENT_H_
@@ -19,7 +19,6 @@ class Task;
 
 namespace notifier {
 
-// This class expects a message loop to exist on the current thread.
 class FakeBaseTask {
  public:
   FakeBaseTask();

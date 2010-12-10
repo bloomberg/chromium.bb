@@ -2643,6 +2643,7 @@
         'browser/sync/notifier/chrome_invalidation_client_unittest.cc',
         'browser/sync/notifier/chrome_system_resources_unittest.cc',
         'browser/sync/notifier/registration_manager_unittest.cc',
+        'browser/sync/notifier/server_notifier_thread_unittest.cc',
         'browser/sync/profile_sync_factory_mock.cc',
         'browser/sync/profile_sync_factory_mock.h',
         'browser/sync/sessions/ordered_commit_set_unittest.cc',
