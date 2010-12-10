@@ -5137,16 +5137,16 @@ class GLGenerator(object):
   def WriteServiceUnitTests(self, filename):
     """Writes the service decorder unit tests."""
     num_tests = len(self.functions)
-    step = (num_tests + 1) / 2
+    FUNCTIONS_PER_FILE = 98  # hard code this so it doesn't change.
     count = 0
-    for test_num in range(0, num_tests, step):
+    for test_num in range(0, num_tests, FUNCTIONS_PER_FILE):
       count += 1
       name = filename % count
       file = CHeaderWriter(
           name,
           "// It is included by gles2_cmd_decoder_unittest_%d.cc\n" % count)
       file.SetFileNum(count)
-      end = test_num + step
+      end = test_num + FUNCTIONS_PER_FILE
       if end > num_tests:
         end = num_tests
       for idx in range(test_num, end):
