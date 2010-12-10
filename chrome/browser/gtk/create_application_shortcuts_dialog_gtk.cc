@@ -87,10 +87,7 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
       GTK_RESPONSE_REJECT,
       NULL);
   gtk_widget_realize(create_dialog_);
-  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(create_dialog_),
-                                       IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS,
-                                       -1,  // height
-                                       false);  // resizable
+  gtk_window_set_resizable(GTK_WINDOW(create_dialog_), false);
   gtk_util::AddButtonToDialog(create_dialog_,
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
@@ -117,11 +114,19 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
   gtk_box_pack_start(GTK_BOX(hbox), description_label, FALSE, FALSE, 0);
   gtk_label_set_line_wrap(GTK_LABEL(description_label), TRUE);
   gtk_widget_realize(description_label);
-  int label_height;
-  gtk_util::GetWidgetSizeFromCharacters(description_label, -1,
-                                        kDescriptionLabelHeightLines, NULL,
-                                        &label_height);
-  gtk_widget_set_size_request(description_label, -1, label_height);
+
+  // Set the size request on the label so it knows where to line wrap. The width
+  // is the desired size of the dialog less the space reserved for padding and
+  // the image.
+  int label_width, label_height;
+  gtk_util::GetWidgetSizeFromResources(
+      description_label,
+      IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS, -1, &label_width, NULL);
+  label_width -= gtk_util::kControlSpacing * 3 +
+      gdk_pixbuf_get_width(favicon_pixbuf_);
+  gtk_util::GetWidgetSizeFromCharacters(
+      description_label, -1, kDescriptionLabelHeightLines, NULL, &label_height);
+  gtk_widget_set_size_request(description_label, label_width, label_height);
   gtk_misc_set_alignment(GTK_MISC(description_label), 0, 0.5);
   std::string description(UTF16ToUTF8(shortcut_info_.description));
   std::string title(UTF16ToUTF8(shortcut_info_.title));
