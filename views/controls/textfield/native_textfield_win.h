@@ -16,7 +16,7 @@
 #include <vsstyle.h>
 
 #include "app/menus/simple_menu_model.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "gfx/insets.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 
@@ -236,7 +236,7 @@ class NativeTextfieldWin
   gfx::Insets content_insets_;
 
   // This interface is useful for accessing the CRichEditCtrl at a low level.
-  mutable ScopedComPtr<ITextDocument> text_object_model_;
+  mutable base::win::ScopedComPtr<ITextDocument> text_object_model_;
 
   // The position and the length of the ongoing composition string.
   // These values are used for removing a composition string from a search

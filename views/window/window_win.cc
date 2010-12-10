@@ -1416,7 +1416,7 @@ void WindowWin::ResetWindowRegion(bool force) {
 }
 
 void WindowWin::UpdateAccessibleName(std::wstring& accessible_name) {
-  ScopedComPtr<IAccPropServices> pAccPropServices;
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {
@@ -1429,7 +1429,7 @@ void WindowWin::UpdateAccessibleName(std::wstring& accessible_name) {
 }
 
 void WindowWin::UpdateAccessibleRole() {
-  ScopedComPtr<IAccPropServices> pAccPropServices;
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
     IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {
@@ -1445,7 +1445,7 @@ void WindowWin::UpdateAccessibleRole() {
 }
 
 void WindowWin::UpdateAccessibleState() {
-  ScopedComPtr<IAccPropServices> pAccPropServices;
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
     IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {

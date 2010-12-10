@@ -15,8 +15,8 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "base/scoped_comptr_win.h"
 #include "base/scoped_vector.h"
+#include "base/win/scoped_comptr.h"
 #include "gfx/window_impl.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout_manager.h"
@@ -570,7 +570,7 @@ class WidgetWin : public gfx::WindowImpl,
   bool restore_focus_when_enabled_;
 
   // Instance of accessibility information and handling for MSAA root
-  ScopedComPtr<IAccessible> accessibility_root_;
+  base::win::ScopedComPtr<IAccessible> accessibility_root_;
 
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;
 

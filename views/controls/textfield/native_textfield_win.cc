@@ -116,7 +116,7 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   }
 
   // Set up the text_object_model_.
-  ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
+  base::win::ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
   ole_interface.Attach(GetOleInterface());
   if (ole_interface)
     text_object_model_.QueryFrom(ole_interface);
@@ -358,7 +358,7 @@ void NativeTextfieldWin::InitializeAccessibilityInfo() {
   // Set the accessible state.
   accessibility_state_ = 0;
 
-  ScopedComPtr<IAccPropServices> pAccPropServices;
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (!SUCCEEDED(hr))
@@ -390,7 +390,7 @@ void NativeTextfieldWin::InitializeAccessibilityInfo() {
 
 void NativeTextfieldWin::UpdateAccessibleState(uint32 state_flag,
                                                bool set_value) {
-  ScopedComPtr<IAccPropServices> pAccPropServices;
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (!SUCCEEDED(hr))
@@ -408,7 +408,7 @@ void NativeTextfieldWin::UpdateAccessibleState(uint32 state_flag,
 }
 
 void NativeTextfieldWin::UpdateAccessibleValue(const std::wstring& value) {
-  ScopedComPtr<IAccPropServices> pAccPropServices;
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (!SUCCEEDED(hr))
@@ -1046,7 +1046,7 @@ void NativeTextfieldWin::SetContainsMouse(bool contains_mouse) {
 
 ITextDocument* NativeTextfieldWin::GetTextObjectModel() const {
   if (!text_object_model_) {
-    ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
+    base::win::ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
     ole_interface.Attach(GetOleInterface());
     if (ole_interface)
       text_object_model_.QueryFrom(ole_interface);

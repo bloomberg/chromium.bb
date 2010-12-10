@@ -622,7 +622,7 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
   // Accessibility readers will send an OBJID_CLIENT message
   if (OBJID_CLIENT == l_param) {
     // Retrieve MSAA dispatch object for the root view.
-    ScopedComPtr<IAccessible> root(
+    base::win::ScopedComPtr<IAccessible> root(
         ViewAccessibility::GetAccessibleForView(GetRootView()));
 
     // Create a reference that MSAA will marshall to the client.

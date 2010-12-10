@@ -8,7 +8,7 @@
 #include <oleacc.h>
 
 #include "base/logging.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win_util.h"
 #include "base/win/windows_version.h"
 #include "views/controls/button/checkbox.h"
@@ -73,7 +73,7 @@ void NativeButtonWin::UpdateDefault() {
 void NativeButtonWin::UpdateAccessibleName() {
   std::wstring name;
   if (native_button_->GetAccessibleName(&name)) {
-    ScopedComPtr<IAccPropServices> pAccPropServices;
+    base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
     HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
         IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
     if (SUCCEEDED(hr)) {
