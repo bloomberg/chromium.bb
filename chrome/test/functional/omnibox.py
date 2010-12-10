@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import tempfile
+import urlparse
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
@@ -212,6 +213,54 @@ class OmniboxTest(pyauto.PyUITest):
     self.assertTrue(matches)
     # Verify there are no suggest results
     self.assertFalse([x for x in matches if x['type'] == 'search-suggest'])
+
+  def _CheckBookmarkResultForVariousInputs(self, url, title, windex=0):
+    """Check if we get the Bookmark for complete and partial inputs."""
+    # Check if the complete URL would get the bookmark
+    url_matches = self._GetOmniboxMatchesFor(url, windex=windex)
+    self._VerifyHasBookmarkResult(url_matches)
+    # Check if the complete title would get the bookmark
+    title_matches = self._GetOmniboxMatchesFor(title, windex=windex)
+    self._VerifyHasBookmarkResult(title_matches)
+    # Check if the partial URL would get the bookmark
+    split_url = urlparse.urlsplit(url)
+    search_term = split_url.path
+    partial_url = self._GetOmniboxMatchesFor(search_term, windex=windex)
+    self._VerifyHasBookmarkResult(partial_url)
+    # Check if the partial title would get the bookmark
+    split_title = title.split()
+    search_term = split_title[len(split_title) - 1]
+    partial_title = self._GetOmniboxMatchesFor(search_term, windex=windex)
+    self._VerifyHasBookmarkResult(partial_title)
+
+  def _VerifyHasBookmarkResult(self, matches):
+    """Verify that we have a bookmark result."""
+    matches_starred = [result for result in matches if result['starred']]
+    self.assertTrue(matches_starred)
+    self.assertEqual(1, len(matches_starred))
+
+  def testBookmarkResultInNewTabAndWindow(self):
+    """Verify that omnibox can recognize bookmark in the search options
+    in new tabs and Windows.
+    """
+    url = self.GetFileURLForDataPath('title2.html')
+    self.NavigateToURL(url)
+    title = 'This is Awesomeness'
+    bookmarks = self.GetBookmarkModel()
+    bar_id = bookmarks.BookmarkBar()['id']
+    self.AddBookmarkURL(bar_id, 0, title, url)
+    bookmarks = self.GetBookmarkModel()
+    nodes = bookmarks.FindByTitle(title)
+    self.AppendTab(pyauto.GURL(url))
+    self._CheckBookmarkResultForVariousInputs(url, title)
+    self.OpenNewBrowserWindow(True)
+    self.assertEqual(2, self.GetBrowserWindowCount())
+    self.NavigateToURL(url, 1, 0)
+    self._CheckBookmarkResultForVariousInputs(url, title, windex=1)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.assertEqual(3, self.GetBrowserWindowCount())
+    self.NavigateToURL(url, 2, 0)
+    self._CheckBookmarkResultForVariousInputs(url, title, windex=2)
 
 
 if __name__ == '__main__':
