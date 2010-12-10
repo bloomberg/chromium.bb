@@ -105,8 +105,8 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               'eh_catch_many.cc',
               'eh_loop_break.cc']:
     tests = ['toolchain_tests', 'small_tests']
-    # http://code.google.com/p/nativeclient/issues/detail?id=720
-    if e.Bit('target_arm') and src != 'stack_frame.cc':
+    # http://code.google.com/p/nativeclient/issues/detail?id=1127
+    if e.Bit('target_arm'):
       tests = ['broken_tests']
     # http://code.google.com/p/nativeclient/issues/detail?id=1106
     if src =='unwind_trace.cc':
