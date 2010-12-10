@@ -174,6 +174,20 @@ class PrefsTest(pyauto.PyUITest):
     for pref in pref_list:
       self.assertEqual(self.GetPrefsInfo().Prefs(pref), False)
 
+  def testJavaScriptEnableDisable(self):
+    """Verify enabling disabling javascript prefs work """
+
+    self.assertTrue(
+        self.GetPrefsInfo().Prefs('webkit.webprefs.javascript_enabled'))
+    url = self.GetFileURLForDataPath(
+              os.path.join('javaScriptTitle.html'))
+    title1 = 'Title from script javascript enabled'
+    self.NavigateToURL(url)
+    self.assertEqual(title1, self.GetActiveTabTitle())
+    self.SetPrefs('webkit.webprefs.javascript_enabled', False)
+    title = 'This is html title'
+    self.NavigateToURL(url)
+    self.assertEqual(title, self.GetActiveTabTitle())
 
 if __name__ == '__main__':
   pyauto_functional.Main()
