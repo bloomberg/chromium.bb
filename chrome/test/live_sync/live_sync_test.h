@@ -174,6 +174,9 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Test server of type sync, started on demand.
   net::TestServer sync_server_;
 
+  // Helper class to whitelist the notification port.
+  scoped_ptr<net::ScopedPortException> xmpp_port_;
+
   // Used to differentiate between single-client, two-client, multi-client and
   // many-client tests.
   TestType test_type_;

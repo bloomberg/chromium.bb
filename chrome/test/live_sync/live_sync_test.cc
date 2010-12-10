@@ -335,6 +335,7 @@ bool LiveSyncTest::SetUpLocalPythonTestServer() {
 
   net::HostPortPair xmpp_host_port_pair(sync_server_.host_port_pair());
   xmpp_host_port_pair.set_port(xmpp_port);
+  xmpp_port_.reset(new net::ScopedPortException(xmpp_port));
 
   if (!cl->HasSwitch(switches::kSyncNotificationHost)) {
     cl->AppendSwitchASCII(switches::kSyncNotificationHost,
@@ -379,6 +380,7 @@ bool LiveSyncTest::TearDownLocalPythonTestServer() {
     LOG(ERROR) << "Could not stop local python test server.";
     return false;
   }
+  xmpp_port_.reset();
   return true;
 }
 

@@ -159,6 +159,8 @@ bool TestServer::Start() {
     return false;
   }
 
+  allowed_port_.reset(new ScopedPortException(host_port_pair_.port()));
+
   started_ = true;
   return true;
 }
@@ -180,6 +182,8 @@ bool TestServer::Stop() {
   } else {
     VLOG(1) << "Kill failed?";
   }
+
+  allowed_port_.reset();
 
   return ret;
 }
