@@ -46,7 +46,7 @@ def RemoveDownloadedTestFile(test, file_name):
   pyauto_utils.RemovePath(downloaded_pkg + '.crdownload')
 
 
-def GoogleAccountsLogin(test, url, username, password):
+def GoogleAccountsLogin(test, username, password, tab_index=0, windex=0):
   """Log into Google Accounts.
 
   Attempts to login to Google by entering the username/password into the google
@@ -56,28 +56,36 @@ def GoogleAccountsLogin(test, url, username, password):
     test: derived from pyauto.PyUITest - base class for UI test cases.
     username: users login input.
     password: users login password input.
+    tab_index: The tab index, default is 0.
+    windex: The window index, default is 0.
   """
-  test.NavigateToURL('https://www.google.com/accounts/')
-  email_id = 'document.getElementById("Email").value = \"%s\"; ' \
+  test.NavigateToURL('https://www.google.com/accounts/', windex, tab_index)
+  email_id = 'document.getElementById("Email").value = "%s"; ' \
              'window.domAutomationController.send("done")' % username
-  password = 'document.getElementById("Passwd").value = \"%s\"; ' \
+  password = 'document.getElementById("Passwd").value = "%s"; ' \
              'window.domAutomationController.send("done")' % password
-  test.ExecuteJavascript(email_id);
-  test.ExecuteJavascript(password);
+  test.ExecuteJavascript(email_id, windex, tab_index);
+  test.ExecuteJavascript(password, windex, tab_index);
   test.ExecuteJavascript('document.getElementById("gaia_loginform").submit();'
-                         'window.domAutomationController.send("done")')
+                         'window.domAutomationController.send("done")',
+                         windex, tab_index)
 
 
-def VerifyGoogleAccountCredsFilled(test, username, password):
+def VerifyGoogleAccountCredsFilled(test, username, password, tab_index=0,
+                                   windex=0):
   """Verify stored/saved user and password values to the values in the field.
 
   Args:
     test: derived from pyauto.PyUITest - base class for UI test cases.
     username: user log in input.
     password: user log in password input.
+    tab_index: The tab index, default is 0.
+    windex: The window index, default is 0.
   """
-  email_value = test.GetDOMValue('document.getElementById("Email").value')
-  passwd_value = test.GetDOMValue('document.getElementById("Passwd").value')
+  email_value = test.GetDOMValue('document.getElementById("Email").value',
+                                 windex, tab_index)
+  passwd_value = test.GetDOMValue('document.getElementById("Passwd").value',
+                                  windex, tab_index)
   test.assertEqual(email_value, username)
   test.assertEqual(passwd_value, password)
 
