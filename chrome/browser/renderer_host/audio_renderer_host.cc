@@ -56,7 +56,7 @@ AudioRendererHost::~AudioRendererHost() {
 }
 
 void AudioRendererHost::OnChannelClosing() {
-  BrowserIOMessageFilter::OnChannelClosing();
+  BrowserMessageFilter::OnChannelClosing();
 
   // Since the IPC channel is gone, close all requested audio streams.
   DeleteEntries();
@@ -233,10 +233,10 @@ void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,
 
 ///////////////////////////////////////////////////////////////////////////////
 // IPC Messages handler
-bool AudioRendererHost::OnMessageReceived(const IPC::Message& message) {
+bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
+                                          bool* message_was_ok) {
   bool handled = true;
-  bool message_was_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateAudioStream, OnCreateStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PlayAudioStream, OnPlayStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PauseAudioStream, OnPauseStream)
@@ -247,9 +247,6 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetAudioVolume, OnSetVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
-
-  if (!message_was_ok)
-    BadMessageReceived(message.type());
 
   return handled;
 }

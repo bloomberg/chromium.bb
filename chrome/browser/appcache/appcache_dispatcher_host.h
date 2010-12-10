@@ -12,7 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/appcache/appcache_frontend_proxy.h"
-#include "chrome/browser/browser_io_message_filter.h"
+#include "chrome/browser/browser_message_filter.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "ipc/ipc_message.h"
 #include "webkit/appcache/appcache_backend_impl.h"
@@ -25,7 +25,7 @@ class URLRequestContextGetter;
 // its child processes. There is a distinct host for each child process.
 // Messages are handled on the IO thread. The ResourceMessageFilter and
 // WorkerProcessHost create an instance and delegates calls to it.
-class AppCacheDispatcherHost : public BrowserIOMessageFilter {
+class AppCacheDispatcherHost : public BrowserMessageFilter {
  public:
   // Constructor for use on the IO thread.
   AppCacheDispatcherHost(URLRequestContext* request_context,
@@ -38,8 +38,9 @@ class AppCacheDispatcherHost : public BrowserIOMessageFilter {
   ~AppCacheDispatcherHost();
 
   // BrowserIOMessageFilter implementation
-  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelConnected(int32 peer_pid);
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
 
  private:
   // IPC message handlers

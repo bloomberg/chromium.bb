@@ -14,7 +14,7 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_child_process_host.h"
-#include "chrome/browser/browser_io_message_filter.h"
+#include "chrome/browser/browser_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
@@ -223,7 +223,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   // Holds all the IPC message filters.  Since the worker process host is on the
   // IO thread, we don't have a IPC::ChannelProxy and so we manage filters
   // manually.
-  std::vector<scoped_refptr<BrowserIOMessageFilter> > filters_;
+  std::vector<scoped_refptr<BrowserMessageFilter> > filters_;
 
   // A callback to create a routing id for the associated worker process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;

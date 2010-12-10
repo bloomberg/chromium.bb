@@ -60,7 +60,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "chrome/browser/browser_io_message_filter.h"
+#include "chrome/browser/browser_message_filter.h"
 #include "chrome/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 #include "media/audio/audio_io.h"
@@ -70,7 +70,7 @@
 class AudioManager;
 struct ViewHostMsg_Audio_CreateStream_Params;
 
-class AudioRendererHost : public BrowserIOMessageFilter,
+class AudioRendererHost : public BrowserMessageFilter,
                           public media::AudioOutputController::EventHandler {
  public:
   typedef std::pair<int32, int> AudioEntryId;
@@ -107,10 +107,11 @@ class AudioRendererHost : public BrowserIOMessageFilter,
   AudioRendererHost();
 
 
-  // BrowserIOMessageFilter implementation
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  // BrowserMessageFilter implementation.
   virtual void OnChannelClosing();
   virtual void OnDestruct() const;
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
 
   /////////////////////////////////////////////////////////////////////////////
   // AudioOutputController::EventHandler implementations.

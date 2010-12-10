@@ -31,7 +31,7 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
 AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
 
 void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
-  BrowserIOMessageFilter::OnChannelConnected(peer_pid);
+  BrowserMessageFilter::OnChannelConnected(peer_pid);
 
   DCHECK(request_context_.get() || request_context_getter_.get());
 
@@ -56,11 +56,11 @@ void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
   }
 }
 
-bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message) {
+bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
+                                               bool* message_was_ok) {
   bool handled = true;
-  bool message_was_ok = true;
 
-  IPC_BEGIN_MESSAGE_MAP_EX(AppCacheDispatcherHost, message, message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(AppCacheDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(AppCacheMsg_RegisterHost, OnRegisterHost);
     IPC_MESSAGE_HANDLER(AppCacheMsg_UnregisterHost, OnUnregisterHost);
     IPC_MESSAGE_HANDLER(AppCacheMsg_GetResourceList, OnGetResourceList);
@@ -75,9 +75,6 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_SwapCache, OnSwapCache);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
-
-  if (!message_was_ok)
-    BadMessageReceived(message.type());
 
   return handled;
 }
