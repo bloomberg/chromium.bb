@@ -102,10 +102,9 @@ int PlatformFontWin::GetAverageCharacterWidth() const {
   return font_ref_->ave_char_width();
 }
 
-int PlatformFontWin::GetStringWidth(const std::wstring& text) const {
+int PlatformFontWin::GetStringWidth(const string16& text) const {
   int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(WideToUTF16Hack(text),
-                            Font(const_cast<PlatformFontWin*>(this)),
+  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontWin*>(this)),
                             &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }

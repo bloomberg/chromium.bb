@@ -45,7 +45,7 @@ class PlatformFontWin : public PlatformFont {
   virtual int GetHeight() const;
   virtual int GetBaseline() const;
   virtual int GetAverageCharacterWidth() const;
-  virtual int GetStringWidth(const std::wstring& text) const;
+  virtual int GetStringWidth(const string16& text) const;
   virtual int GetExpectedTextWidth(int length) const;
   virtual int GetStyle() const;
   virtual const std::wstring& GetFontName() const;

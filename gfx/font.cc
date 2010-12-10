@@ -4,6 +4,7 @@
 
 #include "gfx/font.h"
 
+#include "base/utf_string_conversions.h"
 #include "gfx/platform_font.h"
 
 namespace gfx {
@@ -58,7 +59,7 @@ int Font::GetAverageCharacterWidth() const {
 }
 
 int Font::GetStringWidth(const std::wstring& text) const {
-  return platform_font_->GetStringWidth(text);
+  return platform_font_->GetStringWidth(WideToUTF16Hack(text));
 }
 
 int Font::GetExpectedTextWidth(int length) const {

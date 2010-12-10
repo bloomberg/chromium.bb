@@ -219,10 +219,9 @@ int PlatformFontGtk::GetAverageCharacterWidth() const {
   return SkScalarRound(average_width_);
 }
 
-int PlatformFontGtk::GetStringWidth(const std::wstring& text) const {
+int PlatformFontGtk::GetStringWidth(const string16& text) const {
   int width = 0, height = 0;
-  CanvasSkia::SizeStringInt(WideToUTF16Hack(text),
-                            Font(const_cast<PlatformFontGtk*>(this)),
+  CanvasSkia::SizeStringInt(text, Font(const_cast<PlatformFontGtk*>(this)),
                             &width, &height, gfx::Canvas::NO_ELLIPSIS);
   return width;
 }
@@ -385,7 +384,7 @@ void PlatformFontGtk::InitPangoMetrics() {
     // Yes, this is how Microsoft recommends calculating the dialog unit
     // conversions.
     int text_width = GetStringWidth(
-        L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+        ASCIIToUTF16("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
     double dialog_units = (text_width / 26 + 1) / 2;
     average_width_ = std::min(pango_width, dialog_units);
     pango_font_description_free(pango_desc);
