@@ -19,9 +19,6 @@ namespace {
 
 TEST(FtpDirectoryListingBufferTest, Parse) {
   const char* test_files[] = {
-    "dir-listing-hprc-1",
-    "dir-listing-hprc-2",
-    "dir-listing-hprc-3",
     "dir-listing-ls-1",
     "dir-listing-ls-1-utf8",
     "dir-listing-ls-2",
@@ -45,8 +42,6 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
     "dir-listing-ls-20",  // TODO(phajdan.jr): should use windows-1251 encoding.
     "dir-listing-ls-21",  // TODO(phajdan.jr): should use windows-1251 encoding.
     "dir-listing-ls-22",  // TODO(phajdan.jr): should use windows-1251 encoding.
-    "dir-listing-mlsd-1",
-    "dir-listing-mlsd-2",
     "dir-listing-netware-1",
     "dir-listing-netware-2",
     "dir-listing-vms-1",
