@@ -17,7 +17,7 @@
 #include "net/url_request/url_request_unittest.h"
 
 class PrerenderInterceptorTest : public testing::Test {
- public:
+ protected:
   PrerenderInterceptorTest();
 
   void MakeTestUrl(const std::string& base);
@@ -27,6 +27,7 @@ class PrerenderInterceptorTest : public testing::Test {
   GURL gurl_;
   GURL last_intercepted_gurl_;
   scoped_ptr<net::URLRequest> req_;
+
  private:
   void SetLastInterceptedGurl(const GURL& url);
 
@@ -34,6 +35,7 @@ class PrerenderInterceptorTest : public testing::Test {
   MessageLoopForIO io_loop_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   BrowserThread ui_thread_;
+  TestDelegate delegate_for_req_;
 };
 
 PrerenderInterceptorTest::PrerenderInterceptorTest()
@@ -57,17 +59,16 @@ void PrerenderInterceptorTest::SetUp() {
 
 void PrerenderInterceptorTest::MakeTestUrl(const std::string& base) {
   gurl_ = test_server_.GetURL(base);
-  req_.reset(new TestURLRequest(gurl_, new TestDelegate()));
+  req_.reset(new TestURLRequest(gurl_, &delegate_for_req_));
 }
 
 void PrerenderInterceptorTest::SetLastInterceptedGurl(const GURL& url) {
   last_intercepted_gurl_ = url;
 }
 
-// Temporarily disabling PrerenderInterceptorTest's due to a leak.
-// I have a fix, but will land in the morning.
-// http://crbug.com/65993
-TEST_F(PrerenderInterceptorTest, DISABLED_Interception) {
+namespace {
+
+TEST_F(PrerenderInterceptorTest, Interception) {
   MakeTestUrl("files/prerender/doc1.html");
   req_->set_load_flags(req_->load_flags() | net::LOAD_PREFETCH);
   req_->Start();
@@ -77,7 +78,7 @@ TEST_F(PrerenderInterceptorTest, DISABLED_Interception) {
   EXPECT_EQ(gurl_, last_intercepted_gurl_);
 }
 
-TEST_F(PrerenderInterceptorTest, DISABLED_NotAPrefetch) {
+TEST_F(PrerenderInterceptorTest, NotAPrefetch) {
   MakeTestUrl("files/prerender/doc2.html");
   req_->set_load_flags(req_->load_flags() & ~net::LOAD_PREFETCH);
   req_->Start();
@@ -87,7 +88,7 @@ TEST_F(PrerenderInterceptorTest, DISABLED_NotAPrefetch) {
   EXPECT_NE(gurl_, last_intercepted_gurl_);
 }
 
-TEST_F(PrerenderInterceptorTest, DISABLED_WrongMimeType) {
+TEST_F(PrerenderInterceptorTest, WrongMimeType) {
   MakeTestUrl("files/prerender/image.jpeg");
   req_->set_load_flags(req_->load_flags() | net::LOAD_PREFETCH);
   req_->Start();
@@ -97,3 +98,4 @@ TEST_F(PrerenderInterceptorTest, DISABLED_WrongMimeType) {
   EXPECT_NE(gurl_, last_intercepted_gurl_);
 }
 
+}  // namespace

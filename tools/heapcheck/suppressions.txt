@@ -1110,12 +1110,6 @@
    fun:remoting::protocol::RtpVideoReader::OnRtpPacket
 }
 {
-   bug_65993
-   Heapcheck:Leak
-   ...
-   fun:PrerenderInterceptorTest::MakeTestUrl
-}
-{
    bug_66054_a
    Heapcheck:Leak
    ...
