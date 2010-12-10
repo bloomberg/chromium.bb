@@ -7,10 +7,48 @@ made in recent releases.
 </p>
 
 <ul>
+  <li> <a href="#9">Google Chrome 9</a> </li>
   <li> <a href="#8">Google Chrome 8</a> </li>
   <li> <a href="#7">Google Chrome 7</a> </li>
   <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
+
+
+<h2 id="9"> Google Chrome 9 </h2>
+
+<h4> New APIs </h4>
+  <ul>
+    <li>The <a href="omnibox.html">omnibox API</a> allows you to
+      register a keyword with Chrome's address bar. </li>
+  </ul>
+
+<h4> Manifest changes </h4>
+  <ul>
+    <li> The <a href="manifest.html#homepage_url">homepage_url</a> field
+      lets you specify the extension or app's homepage. </li>
+  </ul>
+</h4>
+
+<!-- <h4> New experimental APIs </h4> -->
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li> The <a href="tabs.html#type-Tab">Tab</a> object
+      now has a <code>pinned</code> property
+      that's reflected in various <code>chrome.tabs</code> methods.
+      For example,
+      you can <a href="tabs.html#method-create">create</a>
+      a pinned tab. </li>
+    <li> The <a href="windows.html#method-create">chrome.windows.create()</a>
+      method's first parameter can now be an array of strings,
+      letting you create an array of tabs. </li>
+    <li> The <a href="windows.html#method-create">chrome.windows.create()</a>
+      method now has a <code>tabId</code> parameter.
+      You can use it to move a tab or panel into a new window. </li>
+    <li> The new
+      <a href="management.html#method-get">chrome.management.get()</a> method
+      lets you get information about the specified extension or app. </li>
+  </ul>
 
 
 <h2 id="8"> Google Chrome 8 </h2>
@@ -65,42 +103,42 @@ No API or manifest changes worth noting.
 <h4> New APIs </h4>
   <ul>
     <li>The <a href="contextMenus.html">context menus API</a> allows you to
-      add context menus to pages or specific objects on a page
+      add context menus to pages or specific objects on a page </li>
     <li>The <a href="cookies.html">cookies API</a> allows you to manage the
-      browser's cookie system 
+      browser's cookie system  </li>
     <li>The <a href="idle.html">idle API</a> allows you to detect when the
-      machine's idle state changes
+      machine's idle state changes </li>
   </ul>
 
 <h4> New experimental APIs </h4>
   <ul>
     <li>The <a href="experimental.omnibox.html">omnibox API</a> allows you to
-      add functionality to the browser's address bar
+      add functionality to the browser's address bar </li>
     <li>The <a href="experimental.infobars.html">infobars API</a> allows you
-      to add a UI panel across the top of a tab
+      to add a UI panel across the top of a tab </li>
   </ul>
 
 <h4> Additions to existing APIs </h4>
   <ul>
     <li>The <a
       href="extension.html#method-getViews">chrome.extension.getViews()</a>
-      method can now return popup views
+      method can now return popup views </li>
     <li>A new <a
       href="windows.html#property-WINDOW_ID_NONE">WINDOW_ID_NONE</a> constant
-      identifies when focus shifts away from the browser
+      identifies when focus shifts away from the browser </li>
     <li>The new <a
       href="tabs.html#method-getCurrent">chrome.tabs.getCurrent()</a> method
-      returns the tab associated with the currently executing script
+      returns the tab associated with the currently executing script </li>
   </ul>
 
 <h4> Manifest changes </h4>
   <ul>
     <li>The <a href="manifest.html#geolocation">geolocation</a> permission
-      gives an extension access to the user's physical location
+      gives an extension access to the user's physical location </li>
     <li><a href="match_patterns.html">Match patterns</a> can now select all
-      schemes or all URLs
+      schemes or all URLs </li>
     <li>Access to file:/// URLs no longer triggers the "access to your machine"
       security warning, but now requires user opt-in from the extensions
-      management page
+      management page </li>
   </ul>
 

@@ -4134,7 +4134,7 @@
       },
       {
         "name": "get",
-        "description": "Return information about the installed extension with the given ID.",
+        "description": "Return information about the installed extension or app that has the given ID.",
         "parameters": [
           {
             "name": "id",
