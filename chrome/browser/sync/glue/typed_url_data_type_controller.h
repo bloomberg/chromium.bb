@@ -19,6 +19,7 @@
 
 class NotificationSource;
 class NotificationDetails;
+class HistoryService;
 class Profile;
 class ProfileSyncFactory;
 class ProfileSyncService;

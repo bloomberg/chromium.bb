@@ -17,7 +17,6 @@
 #include "base/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
@@ -108,8 +107,8 @@ class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {
 class ThreadNotificationService
     : public base::RefCountedThreadSafe<ThreadNotificationService> {
  public:
-   explicit ThreadNotificationService(base::Thread* notification_thread)
-    : done_event_(false, false),
+  explicit ThreadNotificationService(base::Thread* notification_thread)
+      : done_event_(false, false),
       notification_thread_(notification_thread) {}
 
   void Init() {

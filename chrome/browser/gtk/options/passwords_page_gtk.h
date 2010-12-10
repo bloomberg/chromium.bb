@@ -8,13 +8,15 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
 #include <vector>
 
 #include "app/gtk_signal.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_observer.h"
+
+class Profile;
 
 class PasswordsPageGtk : public NotificationObserver {
  public:

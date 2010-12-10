@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 
+class PasswordStore;
 class Profile;
 class ProfileSyncFactory;
 class ProfileSyncService;

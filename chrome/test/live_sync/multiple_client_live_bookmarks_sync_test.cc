@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
+
+#include "base/string_util.h"
+#include "chrome/browser/profiles/profile.h"
 
 IN_PROC_BROWSER_TEST_F(MultipleClientLiveBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

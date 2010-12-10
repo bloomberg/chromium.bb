@@ -7,8 +7,9 @@
 #pragma once
 
 #include "chrome/browser/idle.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_function.h"
+
+class Profile;
 
 // Event router class for events related to the idle API.
 class ExtensionIdleEventRouter {

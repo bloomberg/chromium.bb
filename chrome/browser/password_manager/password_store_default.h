@@ -6,12 +6,16 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_DEFAULT_H_
 #pragma once
 
+#include <set>
+#include <vector>
+
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
+
+class Profile;
 
 // Simple password store implementation that delegates everything to
 // the LoginDatabase.

@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/test/live_sync/bookmark_model_verifier.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -177,7 +178,7 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
             int index) {
     ASSERT_EQ(GetBookmarkModel(profile)->GetNodeByID(node->id()), node)
         << "Node " << node->GetTitle() << " does not belong to "
-        << "Profile " << profile;;
+        << "Profile " << profile;
     verifier_helper_->Move(
         GetBookmarkModel(profile), node, new_parent, index);
   }
@@ -187,7 +188,7 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
   void Remove(int profile, const BookmarkNode* parent, int index) {
     ASSERT_EQ(GetBookmarkModel(profile)->GetNodeByID(parent->id()), parent)
         << "Node " << parent->GetTitle() << " does not belong to "
-        << "Profile " << profile;;
+        << "Profile " << profile;
     verifier_helper_->Remove(GetBookmarkModel(profile), parent, index);
   }
 
@@ -196,7 +197,7 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
   void SortChildren(int profile, const BookmarkNode* parent) {
     ASSERT_EQ(GetBookmarkModel(profile)->GetNodeByID(parent->id()), parent)
         << "Node " << parent->GetTitle() << " does not belong to "
-        << "Profile " << profile;;
+        << "Profile " << profile;
     verifier_helper_->SortChildren(GetBookmarkModel(profile), parent);
   }
 
@@ -205,7 +206,7 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
   void ReverseChildOrder(int profile, const BookmarkNode* parent) {
     ASSERT_EQ(GetBookmarkModel(profile)->GetNodeByID(parent->id()), parent)
         << "Node " << parent->GetTitle() << " does not belong to "
-        << "Profile " << profile;;
+        << "Profile " << profile;
     verifier_helper_->ReverseChildOrder(GetBookmarkModel(profile), parent);
   }
 

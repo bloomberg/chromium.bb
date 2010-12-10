@@ -12,7 +12,8 @@
 
 #include "app/gtk_signal.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/profiles/profile.h"
+
+class Profile;
 
 // A page in the show saved passwords dialog that lists what sites we never
 // show passwords for, with controls for the user to add/remove sites from that

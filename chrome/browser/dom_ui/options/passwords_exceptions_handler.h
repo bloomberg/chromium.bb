@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_DOM_UI_OPTIONS_PASSWORDS_EXCEPTIONS_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_OPTIONS_PASSWORDS_EXCEPTIONS_HANDLER_H_
 
+#include <string>
+#include <vector>
+
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/profiles/profile.h"
 
 class PasswordsExceptionsHandler : public OptionsPageUIHandler {
  public:

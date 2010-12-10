@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,13 +11,13 @@
 
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationEntry;
+class Profile;
 
 // TabNavigation  -------------------------------------------------------------
 
@@ -190,4 +190,3 @@ struct ForeignSession {
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_SESSION_TYPES_H_
-

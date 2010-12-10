@@ -4,6 +4,8 @@
 
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 
+#include "chrome/browser/profiles/profile.h"
+
 IN_PROC_BROWSER_TEST_F(SingleClientLiveBookmarksSyncTest, OfflineToOnline) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 

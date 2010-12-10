@@ -18,7 +18,6 @@
 class BrowserActionButton;
 class FilePath;
 class Pickle;
-class Profile;
 
 class BrowserActionDragData {
  public:

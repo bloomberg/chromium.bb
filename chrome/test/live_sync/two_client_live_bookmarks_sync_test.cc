@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/live_sync/live_bookmarks_sync_test.h"
+
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
-#include "chrome/test/live_sync/live_bookmarks_sync_test.h"
+#include "chrome/browser/profiles/profile.h"
 
 const std::string kGenericURL = "http://www.host.ext:1234/path/filename";
 const std::wstring kGenericURLTitle = L"URL Title";
@@ -1471,4 +1473,3 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     ASSERT_TRUE(CountBookmarksWithTitlesMatching(1, IndexedURLTitle(i)) == i);
   }
 }
-

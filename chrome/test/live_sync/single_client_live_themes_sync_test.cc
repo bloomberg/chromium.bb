@@ -5,6 +5,7 @@
 #include "chrome/test/live_sync/live_themes_sync_test.h"
 
 #include "base/basictypes.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 
 class SingleClientLiveThemesSyncTest : public LiveThemesSyncTest {
