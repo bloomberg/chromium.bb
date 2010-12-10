@@ -8,18 +8,27 @@
 
 #include <vector>
 
-#include "unicode/ubrk.h"
-#include "unicode/uchar.h"
-
 #include "base/basictypes.h"
 #include "base/string16.h"
 
 // The WordIterator class iterates through the words and word breaks
-// in a string.  (In the string " foo bar! ", the word breaks are at the
-// periods in ". .foo. .bar.!. .".)
+// in a UTF-16 string.
 //
-// To extract the words from a string, move a WordIterator through the
-// string and test whether IsWord() is true.  E.g.,
+// It provides two modes, BREAK_WORD and BREAK_LINE, which modify how
+// trailing non-word characters are aggregated into the returned word.
+//
+// Under BREAK_WORD mode (more common), the non-word characters are
+// not included with a returned word (e.g. in the UTF-16 equivalent of
+// the string " foo bar! ", the word breaks are at the periods in
+// ". .foo. .bar.!. .").
+//
+// Under BREAK_LINE mode (less common), the non-word characters are
+// included in the word, breaking only when a space-equivalent character
+// is encountered (e.g. in the UTF16-equivalent of the string " foo bar! ",
+// the word breaks are at the periods in ". .foo .bar! .").
+//
+// To extract the words from a string, move a BREAK_WORD WordIterator
+// through the string and test whether IsWord() is true.  E.g.,
 //   WordIterator iter(&str, WordIterator::BREAK_WORD);
 //   if (!iter.Init()) return false;
 //   while (iter.Advance()) {
@@ -68,11 +77,11 @@ class WordIterator {
   string16 GetWord() const;
 
  private:
-  // ICU iterator.
-  UBreakIterator* iter_;
-#if !defined(WCHAR_T_IS_UTF16)
-  std::vector<UChar> chars_;
-#endif
+  // ICU iterator, avoiding ICU ubrk.h dependence.
+  // This is actually an ICU UBreakiterator* type, which turns out to be
+  // a typedef for a void* in the ICU headers. Using void* directly prevents
+  // callers from needing access to the ICU public headers directory.
+  void* iter_;
 
   // The string we're iterating over.
   const string16* string_;

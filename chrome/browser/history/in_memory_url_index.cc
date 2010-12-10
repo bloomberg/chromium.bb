@@ -16,6 +16,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "unicode/utypes.h"  // for int32_t
 
 using base::Time;
 using base::TimeDelta;

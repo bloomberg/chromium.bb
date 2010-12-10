@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "unicode/ubrk.h"
+#include "unicode/uchar.h"
 #include "unicode/ustring.h"
 
 const size_t npos = -1;
