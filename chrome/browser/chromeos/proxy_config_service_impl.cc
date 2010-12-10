@@ -489,36 +489,34 @@ bool ProxyConfigServiceImpl::IOGetProxyConfig(net::ProxyConfig* net_config) {
   return false;
 }
 
-void ProxyConfigServiceImpl::OnSettingsOpSucceeded(bool value) {
-  VLOG(1) << "Stored proxy setting to device";
+void ProxyConfigServiceImpl::OnSettingsOpCompleted(
+    SignedSettings::ReturnCode code,
+    bool value) {
+  if (SignedSettings::SUCCESS == code)
+    VLOG(1) << "Stored proxy setting to device";
+  else
+    LOG(WARNING) << "Error storing proxy setting to device";
   store_property_op_ = NULL;
   if (persist_to_device_pending_)
     PersistConfigToDevice();
 }
 
-void ProxyConfigServiceImpl::OnSettingsOpSucceeded(std::string value) {
-  VLOG(1) << "Retrieved proxy setting from device, value=[" << value << "]";
-  if (reference_config_.Deserialize(value)) {
-    OnUISetProxyConfig(false);
+void ProxyConfigServiceImpl::OnSettingsOpCompleted(
+    SignedSettings::ReturnCode code,
+    std::string value) {
+  if (SignedSettings::SUCCESS == code) {
+    VLOG(1) << "Retrieved proxy setting from device, value=[" << value << "]";
+    if (reference_config_.Deserialize(value)) {
+      OnUISetProxyConfig(false);
+    } else {
+      LOG(WARNING) << "Error deserializing device's proxy setting";
+      InitConfigToDefault(true);
+    }
   } else {
-    LOG(WARNING) << "Error deserializing device's proxy setting";
+    LOG(WARNING) << "Error retrieving proxy setting from device";
     InitConfigToDefault(true);
   }
   retrieve_property_op_ = NULL;
-}
-
-void ProxyConfigServiceImpl::OnSettingsOpFailed(
-    SignedSettings::FailureCode code) {
-  if (retrieve_property_op_) {
-    LOG(WARNING) << "Error retrieving proxy setting from device";
-    InitConfigToDefault(true);
-    retrieve_property_op_ = NULL;
-  } else {
-    LOG(WARNING) << "Error storing proxy setting to device";
-    store_property_op_ = NULL;
-    if (persist_to_device_pending_)
-      PersistConfigToDevice();
-  }
 }
 
 //------------------ ProxyConfigServiceImpl: private methods -------------------

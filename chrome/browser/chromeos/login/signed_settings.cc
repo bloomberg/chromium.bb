@@ -24,7 +24,7 @@ SignedSettings::SignedSettings()
 
 SignedSettings::~SignedSettings() {}
 
-SignedSettings::FailureCode SignedSettings::MapKeyOpCode(
+SignedSettings::ReturnCode SignedSettings::MapKeyOpCode(
     OwnerManager::KeyOpCode return_code) {
   return (return_code == OwnerManager::KEY_UNAVAILABLE ?
           KEY_UNAVAILABLE : OPERATION_FAILED);
@@ -149,7 +149,7 @@ void CheckWhitelistOp::Execute() {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
   std::vector<uint8> sig;
   if (!CrosLibrary::Get()->GetLoginLibrary()->CheckWhitelist(email_, &sig)) {
-    d_->OnSettingsOpFailed(NOT_FOUND);
+    d_->OnSettingsOpCompleted(NOT_FOUND, false);
     return;
   }
   // Posts a task to the FILE thread to verify |sig|.
@@ -169,9 +169,9 @@ void CheckWhitelistOp::OnKeyOpComplete(
     return;
   }
   if (return_code == OwnerManager::SUCCESS) {
-    d_->OnSettingsOpSucceeded(true);
+    d_->OnSettingsOpCompleted(SUCCESS, true);
   } else {
-    d_->OnSettingsOpFailed(SignedSettings::MapKeyOpCode(return_code));
+    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
   }
 }
 
@@ -205,17 +205,17 @@ void WhitelistOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
   if (return_code == OwnerManager::SUCCESS) {
     // OnComplete() will be called by this call, if it succeeds.
     if (!InitiateWhitelistOp(payload))
-      d_->OnSettingsOpFailed(OPERATION_FAILED);
+      d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
   } else {
-    d_->OnSettingsOpFailed(SignedSettings::MapKeyOpCode(return_code));
+    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
   }
 }
 
 void WhitelistOp::OnComplete(bool value) {
   if (value)
-    d_->OnSettingsOpSucceeded(value);
+    d_->OnSettingsOpCompleted(SUCCESS, value);
   else
-    d_->OnSettingsOpFailed(NOT_FOUND);
+    d_->OnSettingsOpCompleted(NOT_FOUND, false);
 }
 
 bool WhitelistOp::InitiateWhitelistOp(const std::vector<uint8>& signature) {
@@ -241,7 +241,7 @@ void StorePropertyOp::Execute() {
         g_browser_process->local_state() &&
         SignedSettingsTempStorage::Store(name_, value_,
                                          g_browser_process->local_state())) {
-      d_->OnSettingsOpSucceeded(true);
+      d_->OnSettingsOpCompleted(SUCCESS, true);
       return;
     }
   }
@@ -263,6 +263,7 @@ void StorePropertyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                           return_code, payload));
     return;
   }
+  VLOG(2) << "StorePropertyOp::OnKeyOpComplete return_code = " << return_code;
   // Now, sure we're on the UI thread.
   if (return_code == OwnerManager::SUCCESS) {
     // OnComplete() will be called by this call, if it succeeds.
@@ -270,18 +271,18 @@ void StorePropertyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                                                                    value_,
                                                                    payload,
                                                                    this)) {
-      d_->OnSettingsOpFailed(OPERATION_FAILED);
+      d_->OnSettingsOpCompleted(OPERATION_FAILED, false);
     }
   } else {
-    d_->OnSettingsOpFailed(SignedSettings::MapKeyOpCode(return_code));
+    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
   }
 }
 
 void StorePropertyOp::OnComplete(bool value) {
   if (value)
-    d_->OnSettingsOpSucceeded(value);
+    d_->OnSettingsOpCompleted(SUCCESS, value);
   else
-    d_->OnSettingsOpFailed(NOT_FOUND);
+    d_->OnSettingsOpCompleted(NOT_FOUND, false);
 }
 
 RetrievePropertyOp::RetrievePropertyOp(const std::string& name,
@@ -316,7 +317,7 @@ void RetrievePropertyOp::Execute() {
   if (!CrosLibrary::Get()->GetLoginLibrary()->RetrieveProperty(name_,
                                                                &value_,
                                                                &sig)) {
-    d_->OnSettingsOpFailed(NOT_FOUND);
+    d_->OnSettingsOpCompleted(NOT_FOUND, std::string());
     return;
   }
   std::string to_verify = base::StringPrintf("%s=%s",
@@ -339,9 +340,10 @@ void RetrievePropertyOp::OnKeyOpComplete(
   }
   // Now, sure we're on the UI thread.
   if (return_code == OwnerManager::SUCCESS)
-    d_->OnSettingsOpSucceeded(value_);
+    d_->OnSettingsOpCompleted(SUCCESS, value_);
   else
-    d_->OnSettingsOpFailed(SignedSettings::MapKeyOpCode(return_code));
+    d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code),
+                              std::string());
 }
 
 }  // namespace chromeos

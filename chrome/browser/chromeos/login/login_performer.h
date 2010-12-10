@@ -83,7 +83,7 @@ class LoginPerformer : public LoginStatusConsumer,
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 
   // SignedSettingsHelper::Callback implementation:
-  virtual void OnCheckWhiteListCompleted(bool success,
+  virtual void OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
                                          const std::string& email);
 
   // NotificationObserver implementation:

@@ -90,11 +90,6 @@ class OpContext {
     delete this;
   }
 
-  // Callback on op failure.
-  virtual void OnOpFailed() {
-    OnOpCompleted();
-  }
-
   bool executing_;
   Delegate* delegate_;
 
@@ -121,29 +116,25 @@ class WhitelistOpContext : public SignedSettings::Delegate<bool>,
   }
 
   // chromeos::SignedSettings::Delegate implementation
-  virtual void OnSettingsOpSucceeded(bool value) {
+  virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                     bool value) {
     if (callback_) {
       switch (type_) {
         case CHECK:
-          callback_->OnCheckWhiteListCompleted(value, email_);
+          callback_->OnCheckWhitelistCompleted(code, email_);
           break;
         case ADD:
-          callback_->OnWhitelistCompleted(value, email_);
+          callback_->OnWhitelistCompleted(code, email_);
           break;
         case REMOVE:
-          callback_->OnUnwhitelistCompleted(value, email_);
+          callback_->OnUnwhitelistCompleted(code, email_);
           break;
         default:
           LOG(ERROR) << "Unknown WhitelistOpContext type " << type_;
           break;
       }
     }
-
     OnOpCompleted();
-  }
-
-  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code) {
-    OnOpFailed();
   }
 
  protected:
@@ -163,27 +154,6 @@ class WhitelistOpContext : public SignedSettings::Delegate<bool>,
         LOG(ERROR) << "Unknown WhitelistOpContext type " << type_;
         break;
     }
-  }
-
-  virtual void OnOpFailed() {
-    if (callback_) {
-      switch (type_) {
-        case CHECK:
-          callback_->OnCheckWhiteListCompleted(false, email_);
-          break;
-        case ADD:
-          callback_->OnWhitelistCompleted(false, email_);
-          break;
-        case REMOVE:
-          callback_->OnUnwhitelistCompleted(false, email_);
-          break;
-        default:
-          LOG(ERROR) << "Unknown WhitelistOpContext type " << type_;
-          break;
-      }
-    }
-
-    OnOpCompleted();
   }
 
  private:
@@ -206,26 +176,18 @@ class StorePropertyOpContext : public SignedSettings::Delegate<bool>,
   }
 
   // chromeos::SignedSettings::Delegate implementation
-  virtual void OnSettingsOpSucceeded(bool value) {
+  virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                     bool unused) {
+    VLOG(2) << "OnSettingsOpCompleted, code = " << code;
     if (callback_)
-      callback_->OnStorePropertyCompleted(true, name_, value_);
+      callback_->OnStorePropertyCompleted(code, name_, value_);
     OnOpCompleted();
-  }
-
-  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code) {
-    OnOpFailed();
   }
 
  protected:
   // OpContext implemenetation
   virtual void CreateOp() {
     op_ = SignedSettings::CreateStorePropertyOp(name_, value_, this);
-  }
-
-  virtual void OnOpFailed() {
-    if (callback_)
-      callback_->OnStorePropertyCompleted(false, name_, value_);
-    OnOpCompleted();
   }
 
  private:
@@ -247,27 +209,18 @@ class RetrievePropertyOpContext
   }
 
   // chromeos::SignedSettings::Delegate implementation
-  virtual void OnSettingsOpSucceeded(std::string value) {
+  virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                     std::string value) {
     if (callback_)
-      callback_->OnRetrievePropertyCompleted(true, name_, value);
+      callback_->OnRetrievePropertyCompleted(code, name_, value);
 
     OnOpCompleted();
-  }
-
-  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code) {
-    OnOpFailed();
   }
 
  protected:
   // OpContext implemenetation
   virtual void CreateOp() {
     op_ = SignedSettings::CreateRetrievePropertyOp(name_, this);
-  }
-
-  virtual void OnOpFailed() {
-    if (callback_)
-      callback_->OnRetrievePropertyCompleted(false, name_, std::string());
-    OnOpCompleted();
   }
 
  private:

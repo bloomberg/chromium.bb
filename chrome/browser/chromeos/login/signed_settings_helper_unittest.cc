@@ -19,16 +19,20 @@ namespace chromeos {
 
 class MockSignedSettingsHelperCallback : public SignedSettingsHelper::Callback {
  public:
-  MOCK_METHOD2(OnCheckWhiteListCompleted, void(
-      bool success, const std::string& email));
+  MOCK_METHOD2(OnCheckWhitelistCompleted, void(
+      SignedSettings::ReturnCode code, const std::string& email));
   MOCK_METHOD2(OnWhitelistCompleted, void(
-      bool success, const std::string& email));
+      SignedSettings::ReturnCode code, const std::string& email));
   MOCK_METHOD2(OnUnwhitelistCompleted, void(
-      bool success, const std::string& email));
+      SignedSettings::ReturnCode code, const std::string& email));
   MOCK_METHOD3(OnStorePropertyCompleted, void(
-      bool success, const std::string& name, const std::string& value));
+      SignedSettings::ReturnCode code,
+      const std::string& name,
+      const std::string& value));
   MOCK_METHOD3(OnRetrievePropertyCompleted, void(
-      bool success, const std::string& name, const std::string& value));
+      SignedSettings::ReturnCode code,
+      const std::string& name,
+      const std::string& value));
 };
 
 class SignedSettingsHelperTest : public ::testing::Test,
@@ -88,19 +92,19 @@ TEST_F(SignedSettingsHelperTest, SerializedOps) {
   EXPECT_CALL(m_, IsAlreadyOwned()).Times(2);
   InSequence s;
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
-  EXPECT_CALL(cb, OnCheckWhiteListCompleted(true, _))
+  EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
   EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
-  EXPECT_CALL(cb, OnWhitelistCompleted(true, _))
+  EXPECT_CALL(cb, OnWhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
   EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
-  EXPECT_CALL(cb, OnUnwhitelistCompleted(true, _))
+  EXPECT_CALL(cb, OnUnwhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
   EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
-  EXPECT_CALL(cb, OnStorePropertyCompleted(true, _, _))
+  EXPECT_CALL(cb, OnStorePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
-  EXPECT_CALL(cb, OnRetrievePropertyCompleted(true, _, _))
+  EXPECT_CALL(cb, OnRetrievePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
 
   pending_ops_ = 5;
@@ -120,13 +124,13 @@ TEST_F(SignedSettingsHelperTest, CanceledOps) {
   EXPECT_CALL(m_, IsAlreadyOwned()).Times(2);
   InSequence s;
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
-  EXPECT_CALL(cb, OnCheckWhiteListCompleted(true, _))
+  EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
   EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
-  EXPECT_CALL(cb, OnWhitelistCompleted(true, _))
+  EXPECT_CALL(cb, OnWhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
   EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
-  EXPECT_CALL(cb, OnUnwhitelistCompleted(true, _))
+  EXPECT_CALL(cb, OnUnwhitelistCompleted(SignedSettings::SUCCESS, _))
       .Times(1);
 
   // CheckWhitelistOp for cb_to_be_canceled still gets executed but callback
@@ -134,10 +138,10 @@ TEST_F(SignedSettingsHelperTest, CanceledOps) {
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
 
   EXPECT_CALL(m_, StartSigningAttempt(_, _)).Times(1);
-  EXPECT_CALL(cb, OnStorePropertyCompleted(true, _, _))
+  EXPECT_CALL(cb, OnStorePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
-  EXPECT_CALL(cb, OnRetrievePropertyCompleted(true, _, _))
+  EXPECT_CALL(cb, OnRetrievePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
 
   pending_ops_ = 6;

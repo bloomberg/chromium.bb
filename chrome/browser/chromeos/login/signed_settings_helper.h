@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNED_SETTINGS_HELPER_H_
 #pragma once
 
-#include <string>
+#include "chrome/browser/chromeos/login/signed_settings.h"
 
 namespace chromeos {
 
@@ -20,24 +20,29 @@ class SignedSettingsHelper {
    public:
     // Callback of CheckWhitelistOp. |success| indicates whether the op succeeds
     // or not. |email| is the email that is checked against.
-    virtual void OnCheckWhiteListCompleted(
-        bool success, const std::string& email) {}
+    virtual void OnCheckWhitelistCompleted(
+        SignedSettings::ReturnCode code,
+        const std::string& email) {}
 
     // Callback of WhitelistOp that adds |email| to the whitelist.
     virtual void OnWhitelistCompleted(
-        bool success, const std::string& email) {}
+        SignedSettings::ReturnCode code, const std::string& email) {}
 
     // Callback of WhitelistOp that removes |email| to the whitelist.
     virtual void OnUnwhitelistCompleted(
-        bool success, const std::string& email) {}
+        SignedSettings::ReturnCode code, const std::string& email) {}
 
     // Callback of StorePropertyOp.
     virtual void OnStorePropertyCompleted(
-        bool success, const std::string& name, const std::string& value) {}
+        SignedSettings::ReturnCode code,
+        const std::string& name,
+        const std::string& value) {}
 
     // Callback of RetrievePropertyOp.
     virtual void OnRetrievePropertyCompleted(
-        bool success, const std::string& name, const std::string& value) {}
+        SignedSettings::ReturnCode code,
+        const std::string& name,
+        const std::string& value) {}
   };
 
   // Class factory

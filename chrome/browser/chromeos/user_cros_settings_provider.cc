@@ -305,7 +305,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
   }
 
   // Implementation of SignedSettingsHelper::Callback.
-  virtual void OnRetrievePropertyCompleted(bool success,
+  virtual void OnRetrievePropertyCompleted(SignedSettings::ReturnCode code,
                                            const std::string& name,
                                            const std::string& value) {
     if (!IsControlledBooleanSetting(name) && !IsControlledStringSetting(name)) {
@@ -314,6 +314,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
     }
     DCHECK(GetOwnershipStatus() != OWNERSHIP_UNKNOWN);
 
+    bool success = code == SignedSettings::SUCCESS;
     PrefService* prefs = g_browser_process->local_state();
     if (!success && GetOwnershipStatus() == OWNERSHIP_TAKEN) {
       LOG(ERROR) << "On owned device: failed to retrieve cros "
@@ -366,32 +367,34 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
   }
 
   // Implementation of SignedSettingsHelper::Callback.
-  virtual void OnStorePropertyCompleted(bool success,
+  virtual void OnStorePropertyCompleted(SignedSettings::ReturnCode code,
                                         const std::string& name,
                                         const std::string& value) {
-    VLOG(1) << "Store cros setting " << name << "=" << value << ", success="
-            << success;
+    VLOG(1) << "Store cros setting " << name << "=" << value << ", code="
+            << code;
 
     // Reload the setting if store op fails.
-    if (!success)
+    if (code != SignedSettings::SUCCESS)
       SignedSettingsHelper::Get()->StartRetrieveProperty(name, this);
   }
 
   // Implementation of SignedSettingsHelper::Callback.
-  virtual void OnWhitelistCompleted(bool success, const std::string& email) {
-    VLOG(1) << "Add " << email << " to whitelist, success=" << success;
+  virtual void OnWhitelistCompleted(SignedSettings::ReturnCode code,
+                                    const std::string& email) {
+    VLOG(1) << "Add " << email << " to whitelist, code=" << code;
 
     // Reload the whitelist on settings op failure.
-    if (!success)
+    if (code != SignedSettings::SUCCESS)
       CrosSettings::Get()->FireObservers(kAccountsPrefUsers);
   }
 
   // Implementation of SignedSettingsHelper::Callback.
-  virtual void OnUnwhitelistCompleted(bool success, const std::string& email) {
-    VLOG(1) << "Remove " << email << " from whitelist, success=" << success;
+  virtual void OnUnwhitelistCompleted(SignedSettings::ReturnCode code,
+                                      const std::string& email) {
+    VLOG(1) << "Remove " << email << " from whitelist, code=" << code;
 
     // Reload the whitelist on settings op failure.
-    if (!success)
+    if (code != SignedSettings::SUCCESS)
       CrosSettings::Get()->FireObservers(kAccountsPrefUsers);
   }
 
@@ -559,7 +562,6 @@ bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
 void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {
   SignedSettingsHelper::Get()->StartWhitelistOp(
       email, true, UserCrosSettingsTrust::GetSharedInstance());
-
   PrefService* prefs = g_browser_process->local_state();
   ListValue* cached_whitelist = prefs->GetMutableList(kAccountsPrefUsers);
   cached_whitelist->Append(Value::CreateStringValue(email));

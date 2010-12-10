@@ -33,26 +33,27 @@ class DummyDelegate : public SignedSettings::Delegate<T> {
  public:
   explicit DummyDelegate(T to_expect)
       : expect_success_(false),
-        expected_failure_(SignedSettings::NOT_FOUND),
+        expected_failure_(SignedSettings::SUCCESS),
         expected_(to_expect),
         run_(false) {}
   virtual ~DummyDelegate() { EXPECT_TRUE(run_); }
-  virtual void OnSettingsOpSucceeded(T value) {
+  virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                     T value) {
     run_ = true;
-    EXPECT_TRUE(expect_success_);
-    EXPECT_EQ(expected_, value);
-  }
-  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code) {
-    run_ = true;
-    EXPECT_FALSE(expect_success_);
+    if (expect_success_)
+      EXPECT_EQ(expected_, value);
     EXPECT_EQ(expected_failure_, code);
   }
-  virtual void expect_success() { expect_success_ = true; }
-  virtual void expect_failure(SignedSettings::FailureCode code) {
+  virtual void expect_success() {
+    expect_success_ = true;
+    expected_failure_ = SignedSettings::SUCCESS;
+  }
+  virtual void expect_failure(SignedSettings::ReturnCode code) {
+    expect_success_ = false;
     expected_failure_ = code;
   }
   bool expect_success_;
-  SignedSettings::FailureCode expected_failure_;
+  SignedSettings::ReturnCode expected_failure_;
   T expected_;
   bool run_;
 };

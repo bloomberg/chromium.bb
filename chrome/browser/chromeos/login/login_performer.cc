@@ -156,9 +156,9 @@ void LoginPerformer::OnPasswordChangeDetected(
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, SignedSettingsHelper::Callback implementation:
 
-void LoginPerformer::OnCheckWhiteListCompleted(bool success,
+void LoginPerformer::OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
                                                const std::string& email) {
-  if (success) {
+  if (code == SignedSettings::SUCCESS) {
     // Whitelist check passed, continue with authentication.
     StartAuthentication();
   } else {

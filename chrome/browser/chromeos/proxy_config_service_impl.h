@@ -190,9 +190,10 @@ class ProxyConfigServiceImpl
   bool UISetProxyConfigBypassRules(const net::ProxyBypassRules& bypass_rules);
 
   // Implementation for SignedSettings::Delegate
-  virtual void OnSettingsOpSucceeded(bool value);
-  virtual void OnSettingsOpSucceeded(std::string value);
-  virtual void OnSettingsOpFailed(SignedSettings::FailureCode code);
+  virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                     std::string value);
+  virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
+                                     bool value);
 
  private:
   friend class base::RefCountedThreadSafe<ProxyConfigServiceImpl>;
