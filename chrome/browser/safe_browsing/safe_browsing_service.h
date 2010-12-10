@@ -23,6 +23,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
+class MalwareDetails;
 class PrefService;
 class SafeBrowsingDatabase;
 class SafeBrowsingProtocolManager;
@@ -181,6 +182,10 @@ class SafeBrowsingService
   // the current page is 'safe'.
   void LogPauseDelay(base::TimeDelta time);
 
+  // When a safebrowsing blocking page goes away, it calls this method
+  // so the service can serialize and send MalwareDetails.
+  virtual void ReportMalwareDetails(scoped_refptr<MalwareDetails> details);
+
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
   SafeBrowsingService();
@@ -286,8 +291,8 @@ class SafeBrowsingService
   // Invoked on the UI thread to show the blocking page.
   void DoDisplayBlockingPage(const UnsafeResource& resource);
 
-  // Report any pages that contain malware or phishing to the SafeBrowsing
-  // service.
+  // As soon as we create a blocking page, we schedule this method to
+  // report hits to the malware or phishing list to the server.
   void ReportSafeBrowsingHit(const GURL& malicious_url,
                              const GURL& page_url,
                              const GURL& referrer_url,

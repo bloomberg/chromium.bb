@@ -20,12 +20,16 @@
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -106,7 +110,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
                        unsafe_resources[0].url),
       sb_service_(sb_service),
       is_main_frame_(IsMainPage(unsafe_resources)),
-      unsafe_resources_(unsafe_resources) {
+      unsafe_resources_(unsafe_resources),
+      malware_details_(NULL) {
   RecordUserAction(SHOW);
   if (!is_main_frame_) {
     navigation_entry_index_to_remove_ =
@@ -114,6 +119,23 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   } else {
     navigation_entry_index_to_remove_ = -1;
   }
+
+  // Start computing malware details. They will be sent only
+  // if the user opts-in on the blocking page later.
+  // If there's more than one malicious resources, it means the user
+  // clicked through the first warning, so we don't prepare additional
+  // reports.
+  if (unsafe_resources.size() == 1 &&
+      unsafe_resources[0].threat_type == SafeBrowsingService::URL_MALWARE &&
+      malware_details_ == NULL &&
+      CanShowMalwareDetailsOption()) {
+    malware_details_ = new MalwareDetails(tab(), unsafe_resources[0]);
+  }
+}
+
+bool SafeBrowsingBlockingPage::CanShowMalwareDetailsOption() {
+  return (!tab()->profile()->IsOffTheRecord() &&
+          tab()->GetURL().SchemeIs(chrome::kHttpScheme));
 }
 
 SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {
@@ -399,6 +421,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 
 void SafeBrowsingBlockingPage::Proceed() {
   RecordUserAction(PROCEED);
+  FinishMalwareDetails();  // Send the malware details, if we opted to.
 
   NotifySafeBrowsingService(sb_service_, unsafe_resources_, true);
 
@@ -436,6 +459,7 @@ void SafeBrowsingBlockingPage::DontProceed() {
   }
 
   RecordUserAction(DONT_PROCEED);
+  FinishMalwareDetails();  // Send the malware details, if we opted to.
 
   NotifySafeBrowsingService(sb_service_, unsafe_resources_, false);
 
@@ -499,6 +523,25 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
   }
 
   UserMetrics::RecordComputedAction(action);
+}
+
+void SafeBrowsingBlockingPage::FinishMalwareDetails() {
+  if (malware_details_ == NULL)
+    return;  // Not all interstitials have malware details (eg phishing).
+
+  const PrefService::Preference* pref =
+      tab()->profile()->GetPrefs()->FindPreference(
+          prefs::kSafeBrowsingReportingEnabled);
+
+  bool value;
+  if (pref && pref->GetValue()->GetAsBoolean(&value) && value) {
+    // Give the details object to the service class, so it can send it.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            sb_service_, &SafeBrowsingService::ReportMalwareDetails,
+            malware_details_));
+  }
 }
 
 // static

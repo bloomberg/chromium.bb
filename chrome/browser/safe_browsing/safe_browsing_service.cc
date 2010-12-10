@@ -14,6 +14,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
@@ -35,11 +36,12 @@ using base::Time;
 using base::TimeDelta;
 
 // The default URL prefix where browser fetches chunk updates, hashes,
-// and reports malware.
+// and reports safe browsing hits.
 static const char* const kSbDefaultInfoURLPrefix =
     "http://safebrowsing.clients.google.com/safebrowsing";
 
-// The default URL prefix where browser fetches MAC client key.
+// The default URL prefix where browser fetches MAC client key and reports
+// malware details.
 static const char* const kSbDefaultMacKeyURLPrefix =
     "https://sb-ssl.google.com/safebrowsing";
 
@@ -845,6 +847,8 @@ void SafeBrowsingService::DoDisplayBlockingPage(
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
+// A safebrowsing hit is sent right after we create a blocking page,
+// only for UMA users.
 void SafeBrowsingService::ReportSafeBrowsingHit(
     const GURL& malicious_url,
     const GURL& page_url,
@@ -861,4 +865,17 @@ void SafeBrowsingService::ReportSafeBrowsingHit(
   protocol_manager_->ReportSafeBrowsingHit(malicious_url, page_url,
                                            referrer_url, is_subresource,
                                            threat_type);
+}
+
+// A MalwareDetails report is sent after the blocking page is going
+// away, at which point we see if the user had opted-in using the
+// checkbox on the blocking page.
+void SafeBrowsingService::ReportMalwareDetails(
+    scoped_refptr<MalwareDetails> details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  scoped_ptr<const std::string> serialized(details->GetSerializedReport());
+  if (!serialized->empty()) {
+    DVLOG(1) << "Sending serialized malware details.";
+    protocol_manager_->ReportMalwareDetails(*serialized);
+  }
 }

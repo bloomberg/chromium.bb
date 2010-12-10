@@ -193,7 +193,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
             "9g==", pm.UpdateUrl(true).spec());
 }
 
-TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingReportUrl) {
+TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
   SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
                                  kInfoUrlPrefix, kMacKeyUrlPrefix, false);
   pm.version_ = kAppVer;
@@ -205,7 +205,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingReportUrl) {
             "pver=2.2&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=1",
-            pm.SafeBrowsingReportUrl(
+            pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
                 true, SafeBrowsingService::URL_MALWARE).spec());
 
@@ -215,9 +215,20 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingReportUrl) {
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=0",
-            pm.SafeBrowsingReportUrl(
+            pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
                 false, SafeBrowsingService::URL_PHISHING).spec());
+}
+
+TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareDetailsUrl) {
+  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
+                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+
+  pm.version_ = kAppVer;
+  pm.set_additional_query(kAdditionalQuery);  // AdditionalQuery is not used.
+  EXPECT_EQ("https://key.prefix.com/bar/clientreport/malware?"
+            "client=unittest&appver=1.0&pver=1.0",
+            pm.MalwareDetailsUrl().spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestMacKeyUrl) {

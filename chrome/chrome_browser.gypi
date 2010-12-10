@@ -21,6 +21,7 @@
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'browser/policy/proto/device_management_proto.gyp:device_management_proto_cpp',
         'safe_browsing_csd_proto',
+        'safe_browsing_report_proto',
         'syncapi',
         'theme_resources',
         'userfeedback_proto',
@@ -2196,6 +2197,10 @@
         'browser/safe_browsing/client_side_detection_service.h',
         '<(protoc_out_dir)/chrome/browser/safe_browsing/csd.pb.cc',
         '<(protoc_out_dir)/chrome/browser/safe_browsing/csd.pb.h',
+        '<(protoc_out_dir)/chrome/browser/safe_browsing/report.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/safe_browsing/report.pb.h',
+        'browser/safe_browsing/malware_details.cc',
+        'browser/safe_browsing/malware_details.h',
         'browser/safe_browsing/protocol_manager.cc',
         'browser/safe_browsing/protocol_manager.h',
         'browser/safe_browsing/protocol_parser.cc',
@@ -4380,6 +4385,52 @@
       'target_name': 'safe_browsing_csd_proto',
       'type': 'none',
       'sources': [ 'browser/safe_browsing/csd.proto' ],
+      'rules': [
+        {
+          'rule_name': 'genproto',
+          'extension': 'proto',
+          'inputs': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+          ],
+          'variables': {
+            # The protoc compiler requires a proto_path argument with the
+            # directory containing the .proto file.
+            # There's no generator variable that corresponds to this, so fake
+            # it.
+            'rule_input_relpath': 'browser/safe_browsing',
+          },
+          'outputs': [
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
+          ],
+          'action': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+            '--proto_path=./<(rule_input_relpath)',
+            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
+            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
+          ],
+          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
+        },
+      ],
+      'dependencies': [
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../third_party/protobuf/protobuf.gyp:protoc#host',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(protoc_out_dir)',
+        ]
+      },
+      'export_dependent_settings': [
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+      ],
+    },
+    {
+      # Protobuf compiler / generator for the safebrowsing reporting
+      # protocol buffer.
+      'target_name': 'safe_browsing_report_proto',
+      'type': 'none',
+      'sources': [ 'browser/safe_browsing/report.proto' ],
       'rules': [
         {
           'rule_name': 'genproto',

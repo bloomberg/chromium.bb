@@ -9,13 +9,17 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -51,6 +55,26 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
   void AddURLResult(const GURL& url, UrlCheckResult checkresult) {
     badurls[url.spec()] = checkresult;
   }
+
+  virtual void ReportMalwareDetails(scoped_refptr<MalwareDetails> details) {
+    details_.push_back(details);
+    // Notify the UI thread, that we got a report.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            NewRunnableMethod(this,
+                            &FakeSafeBrowsingService::OnMalwareDetailsDone));
+  }
+
+  void OnMalwareDetailsDone() {
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MessageLoopForUI::current()->Quit();
+  }
+
+  std::list<scoped_refptr<MalwareDetails> >* GetDetails() {
+    return &details_;
+  }
+
+  std::list<scoped_refptr<MalwareDetails> > details_;
+
 
  private:
   base::hash_map<std::string, UrlCheckResult> badurls;
@@ -102,7 +126,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
             g_browser_process->resource_dispatcher_host()->
             safe_browsing_service());
 
-    ASSERT_TRUE(service != NULL);
+    ASSERT_TRUE(service);
     service->AddURLResult(url, checkresult);
   }
 
@@ -139,6 +163,17 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     NavigationController* controller =
         &browser()->GetSelectedTabContents()->controller();
     ui_test_utils::WaitForNavigation(controller);
+  }
+
+  void AssertReportSent() {
+    // When a report is scheduled in the IO thread we should get notified.
+    ui_test_utils::RunMessageLoop();
+
+    FakeSafeBrowsingService* service =
+        static_cast<FakeSafeBrowsingService*>(
+            g_browser_process->resource_dispatcher_host()->
+            safe_browsing_service());
+    ASSERT_EQ(1u, service->GetDetails()->size());
   }
 
  private:
@@ -256,6 +291,27 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeProceed) {
   AssertNoInterstitial();    // Assert the interstitial is gone
 
   EXPECT_EQ(url, browser()->GetSelectedTabContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
+                       MalwareIframeReportDetails) {
+  // Enable reporting of malware details.
+  browser()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingReportingEnabled, true);
+  EXPECT_TRUE(browser()->GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingReportingEnabled));
+
+  GURL url = test_server()->GetURL(kMalwarePage);
+  GURL iframe_url = test_server()->GetURL(kMalwareIframe);
+  AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  SendCommand("\"proceed\"");    // Simulate the user clicking "back"
+  AssertNoInterstitial();  // Assert the interstitial is gone
+
+  EXPECT_EQ(url, browser()->GetSelectedTabContents()->GetURL());
+  AssertReportSent();
 }
 
 }  // namespace

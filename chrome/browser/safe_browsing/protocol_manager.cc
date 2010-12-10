@@ -47,8 +47,8 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     const std::string& client_key,
     const std::string& wrapped_key,
     URLRequestContextGetter* request_context_getter,
-    const std::string& info_url_prefix,
-    const std::string& mackey_url_prefix,
+    const std::string& http_url_prefix,
+    const std::string& https_url_prefix,
     bool disable_auto_update)
     : sb_service_(sb_service),
       request_type_(NO_REQUEST),
@@ -65,10 +65,10 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       update_size_(0),
       client_name_(client_name),
       request_context_getter_(request_context_getter),
-      info_url_prefix_(info_url_prefix),
-      mackey_url_prefix_(mackey_url_prefix),
+      http_url_prefix_(http_url_prefix),
+      https_url_prefix_(https_url_prefix),
       disable_auto_update_(disable_auto_update) {
-  DCHECK(!info_url_prefix_.empty() && !mackey_url_prefix_.empty());
+  DCHECK(!http_url_prefix_.empty() && !https_url_prefix_.empty());
 
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
@@ -88,7 +88,7 @@ SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
                                       hash_requests_.end());
   hash_requests_.clear();
 
-  // Delete in-progress safebrowsing reports.
+  // Delete in-progress safebrowsing reports (hits and details).
   STLDeleteContainerPointers(safebrowsing_reports_.begin(),
                              safebrowsing_reports_.end());
   safebrowsing_reports_.clear();
@@ -588,21 +588,37 @@ void SafeBrowsingProtocolManager::OnChunkInserted() {
   }
 }
 
+// Sends a SafeBrowsing "hit" for UMA users.
 void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
     const GURL& malicious_url,
     const GURL& page_url,
     const GURL& referrer_url,
     bool is_subresource,
     SafeBrowsingService::UrlCheckResult threat_type) {
-  GURL report_url = SafeBrowsingReportUrl(malicious_url, page_url,
-                                          referrer_url, is_subresource,
-                                          threat_type);
+  GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
+                                       referrer_url, is_subresource,
+                                       threat_type);
   URLFetcher* report = new URLFetcher(report_url, URLFetcher::GET, this);
   report->set_load_flags(net::LOAD_DISABLE_CACHE);
   report->set_request_context(request_context_getter_);
   report->Start();
   safebrowsing_reports_.insert(report);
 }
+
+// Sends malware details for users who opt-in.
+void SafeBrowsingProtocolManager::ReportMalwareDetails(
+    const std::string& report) {
+  GURL report_url = MalwareDetailsUrl();
+  URLFetcher* fetcher = new URLFetcher(report_url, URLFetcher::POST, this);
+  fetcher->set_load_flags(net::LOAD_DISABLE_CACHE);
+  fetcher->set_request_context(request_context_getter_);
+  fetcher->set_upload_data("application/octet-stream", report);
+  // Don't try too hard to send reports on failures.
+  fetcher->set_automatically_retry_on_5xx(false);
+  fetcher->Start();
+  safebrowsing_reports_.insert(fetcher);
+}
+
 
 // static
 std::string SafeBrowsingProtocolManager::FormatList(
@@ -662,7 +678,7 @@ std::string SafeBrowsingProtocolManager::ComposeUrl(
 }
 
 GURL SafeBrowsingProtocolManager::UpdateUrl(bool use_mac) const {
-  std::string url = ComposeUrl(info_url_prefix_, "downloads", client_name_,
+  std::string url = ComposeUrl(http_url_prefix_, "downloads", client_name_,
                                version_, additional_query_);
   if (use_mac) {
     url.append("&wrkey=");
@@ -672,7 +688,7 @@ GURL SafeBrowsingProtocolManager::UpdateUrl(bool use_mac) const {
 }
 
 GURL SafeBrowsingProtocolManager::GetHashUrl(bool use_mac) const {
-  std::string url= ComposeUrl(info_url_prefix_, "gethash", client_name_,
+  std::string url= ComposeUrl(http_url_prefix_, "gethash", client_name_,
                               version_, additional_query_);
   if (use_mac) {
     url.append("&wrkey=");
@@ -682,17 +698,18 @@ GURL SafeBrowsingProtocolManager::GetHashUrl(bool use_mac) const {
 }
 
 GURL SafeBrowsingProtocolManager::MacKeyUrl() const {
-  return GURL(ComposeUrl(mackey_url_prefix_, "newkey", client_name_, version_,
+  return GURL(ComposeUrl(https_url_prefix_, "newkey", client_name_, version_,
                          additional_query_));
 }
 
-GURL SafeBrowsingProtocolManager::SafeBrowsingReportUrl(
+GURL SafeBrowsingProtocolManager::SafeBrowsingHitUrl(
     const GURL& malicious_url, const GURL& page_url,
     const GURL& referrer_url, bool is_subresource,
     SafeBrowsingService::UrlCheckResult threat_type) const {
   DCHECK(threat_type == SafeBrowsingService::URL_MALWARE ||
          threat_type == SafeBrowsingService::URL_PHISHING);
-  std::string url = ComposeUrl(info_url_prefix_, "report", client_name_,
+  // The malware and phishing hits go over HTTP.
+  std::string url = ComposeUrl(http_url_prefix_, "report", client_name_,
                                version_, additional_query_);
   return GURL(StringPrintf("%s&evts=%s&evtd=%s&evtr=%s&evhr=%s&evtb=%d",
       url.c_str(),
@@ -702,6 +719,16 @@ GURL SafeBrowsingProtocolManager::SafeBrowsingReportUrl(
       EscapeQueryParamValue(page_url.spec(), true).c_str(),
       EscapeQueryParamValue(referrer_url.spec(), true).c_str(),
       is_subresource));
+}
+
+GURL SafeBrowsingProtocolManager::MalwareDetailsUrl() const {
+  // The malware details go over HTTPS.
+  std::string url = StringPrintf(
+          "%s/clientreport/malware?client=%s&appver=%s&pver=1.0",
+          https_url_prefix_.c_str(),
+          client_name_.c_str(),
+          version_.c_str());
+  return GURL(url);
 }
 
 GURL SafeBrowsingProtocolManager::NextChunkUrl(const std::string& url) const {

@@ -39,6 +39,7 @@
 class DictionaryValue;
 class MessageLoop;
 class SafeBrowsingBlockingPageFactory;
+class MalwareDetails;
 class TabContents;
 
 class SafeBrowsingBlockingPage : public InterstitialPage {
@@ -104,6 +105,16 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
   // SBInterstitial[Phishing|Malware|Multiple][Show|Proceed|DontProceed].
   void RecordUserAction(BlockingPageEvent event);
 
+  // See if we should even show the malware details option. For example, we
+  // don't show it in incognito mode.
+  bool CanShowMalwareDetailsOption();
+
+  // Called when the insterstitial is going away. If there is a
+  // pending malware details object, we look at the user's
+  // preferences, and if the option to send malware details is
+  // enabled, the report is scheduled to be sent on the |sb_service_|.
+  void FinishMalwareDetails();
+
   // A list of SafeBrowsingService::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one
   // interstitial at a time.
@@ -135,6 +146,11 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
 
   // The list of unsafe resources this page is warning about.
   UnsafeResourceList unsafe_resources_;
+
+  // A MalwareDetails object that we start generating when the
+  // blocking page is shown. The object will be sent when the warning
+  // is gone (if the user enables the feature).
+  scoped_refptr<MalwareDetails> malware_details_;
 
   // The factory used to instanciate SafeBrowsingBlockingPage objects.
   // Usefull for tests, so they can provide their own implementation of
