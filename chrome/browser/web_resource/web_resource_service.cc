@@ -518,10 +518,14 @@ bool CanShowPromo(Profile* profile) {
     }
   }
 
+  // Note that HasProfileSyncService() will be false for ChromeOS, so
+  // promo_options will only be true if the user has an extension installed.
+  // See http://crosbug/10209
   bool promo_options =
-      sync_ui_util::GetStatus(
-          profile->GetProfileSyncService()) == sync_ui_util::SYNCED ||
-          has_extensions;
+      (profile->HasProfileSyncService() &&
+          sync_ui_util::GetStatus(
+              profile->GetProfileSyncService()) == sync_ui_util::SYNCED) ||
+      has_extensions;
 
   return !promo_closed &&
          promo_options &&
