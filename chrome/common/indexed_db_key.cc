@@ -34,7 +34,7 @@ void IndexedDBKey::Set(const string16& string) {
   string_ = string;
 }
 
-void IndexedDBKey::Set(int32_t number) {
+void IndexedDBKey::Set(double number) {
   type_ = WebIDBKey::NumberType;
   number_ = number;
 }
@@ -43,8 +43,7 @@ void IndexedDBKey::Set(const WebIDBKey& key) {
   type_ = key.type();
   string_ = key.type() == WebIDBKey::StringType ?
                 static_cast<string16>(key.string()) : string16();
-  number_ = key.type() == WebIDBKey::NumberType ?
-      static_cast<int32_t>(key.number()) : 0;
+  number_ = key.type() == WebIDBKey::NumberType ? key.number() : 0;
 }
 
 IndexedDBKey::operator WebIDBKey() const {

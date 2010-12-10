@@ -58,7 +58,7 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
                                      param_type* r) {
   int type;
   string16 string;
-  int32 number;
+  double number;
   bool ok =
       ReadParam(m, iter, &type) &&
       ReadParam(m, iter, &string) &&

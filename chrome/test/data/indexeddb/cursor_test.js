@@ -28,7 +28,7 @@ function cursorSuccess()
 
   debug('Cursor opened successfully.');
   shouldBe("event.result.direction", "0");
-  shouldBe("event.result.key", "'myKey'");
+  shouldBe("event.result.key", "3.14");
   shouldBe("event.result.value", "'myValue'");
 
   cursor.continue();
@@ -37,7 +37,7 @@ function cursorSuccess()
 function openCursor(objectStore)
 {
   debug('Opening cursor');
-  var keyRange = webkitIDBKeyRange.lowerBound('myKey');
+  var keyRange = webkitIDBKeyRange.lowerBound(3.12);
   var result = objectStore.openCursor({range: keyRange});
   result.onsuccess = cursorSuccess;
   result.onerror = unexpectedErrorCallback;
@@ -54,7 +54,7 @@ function populateObjectStore()
   debug('Populating object store');
   deleteAllObjectStores(db);
   window.objectStore = db.createObjectStore('test');
-  var result = objectStore.add('myValue', 'myKey');
+  var result = objectStore.add('myValue', 3.14);
   result.onsuccess = dataAddedSuccess;
   result.onerror = unexpectedErrorCallback;
 }

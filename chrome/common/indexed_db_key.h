@@ -19,19 +19,19 @@ class IndexedDBKey {
   void SetNull();
   void SetInvalid();
   void Set(const string16& string);
-  void Set(int32_t number);
+  void Set(double number);
   void Set(const WebKit::WebIDBKey& key);
 
   WebKit::WebIDBKey::Type type() const { return type_; }
   const string16& string() const { return string_; }
-  int32_t number() const { return number_; }
+  double number() const { return number_; }
 
   operator WebKit::WebIDBKey() const;
 
  private:
   WebKit::WebIDBKey::Type type_;
   string16 string_;
-  int32_t number_;
+  double number_;
 };
 
 #endif  // CHROME_COMMON_INDEXED_DB_KEY_H_
