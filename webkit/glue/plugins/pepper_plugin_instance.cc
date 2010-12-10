@@ -244,6 +244,13 @@ void ZoomChanged(PP_Instance instance_id, double factor) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
+
+  // We only want to tell the page to change its zoom if the whole page is the
+  // PDF.  If we're in an iframe, then don't do anything.
+  WebFrame* frame = instance->container()->element().document().frame();
+  if (!frame->view()->mainFrame()->document().isPluginDocument())
+    return;
+
   double zoom_level = WebView::zoomFactorToZoomLevel(factor);
   // The conversino from zoom level to factor, and back, can introduce rounding
   // errors.  i.e. WebKit originally tells us 3.0, but by the time we tell the
