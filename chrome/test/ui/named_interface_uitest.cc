@@ -23,10 +23,17 @@ class NamedInterfaceTest : public UITest {
   }
 };
 
+// This test is flaky on Linux bots.  http://crbug.com/66414
+#if defined(OS_LINUX)
+#define MAYBE_BasicNamedInterface FLAKY_BasicNamedInterface
+#else
+#define MAYBE_BasicNamedInterface BasicNamedInterface
+#endif
+
 // Basic sanity test for named testing interface which
 // launches a browser instance that uses a named socket, then
 // sends it some commands to open some tabs over that socket.
-TEST_F(NamedInterfaceTest, BasicNamedInterface) {
+TEST_F(NamedInterfaceTest, MAYBE_BasicNamedInterface) {
   scoped_refptr<BrowserProxy> browser_proxy(
       automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
