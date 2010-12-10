@@ -67,10 +67,6 @@ class InstantLoader : public NotificationObserver {
   bool ShouldCommitInstantOnMouseUp();
   void CommitInstantLoader();
 
-  // Resets the template_url_id_ to zero and shows this loader. This is only
-  // intended to be invoked from InstantLoaderDoesntSupportInstant.
-  void ClearTemplateURLID();
-
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -141,13 +137,10 @@ class InstantLoader : public NotificationObserver {
 
   // If we're showing instant results this is the ID of the TemplateURL driving
   // the results. A value of 0 means there is no TemplateURL.
-  TemplateURLID template_url_id_;
+  const TemplateURLID template_url_id_;
 
   // The url we're displaying.
   GURL url_;
-
-  // The URL first used to load instant results.
-  GURL initial_instant_url_;
 
   // Delegate of the preview TabContents. Used to detect when the user does some
   // gesture on the TabContents and the preview needs to be activated.

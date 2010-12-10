@@ -186,9 +186,7 @@ class InstantController : public InstantLoaderDelegate {
   virtual gfx::Rect GetInstantBounds();
   virtual bool ShouldCommitInstantOnMouseUp();
   virtual void CommitInstantLoader(InstantLoader* loader);
-  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
-                                                 bool needs_reload,
-                                                 const GURL& url_to_load);
+  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader);
   virtual void AddToBlacklist(InstantLoader* loader, const GURL& url);
 
 

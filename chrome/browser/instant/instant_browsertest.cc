@@ -11,6 +11,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -58,10 +59,16 @@ class InstantTest : public InProcessBrowserTest {
     model->SetDefaultSearchProvider(template_url);
   }
 
-  // Type a character to get instant to trigger.
-  void SetupLocationBar() {
+  virtual void FindLocationBar() {
+    if (location_bar_)
+      return;
     location_bar_ = browser()->window()->GetLocationBar();
     ASSERT_TRUE(location_bar_);
+  }
+
+  // Type a character to get instant to trigger.
+  void SetupLocationBar() {
+    FindLocationBar();
     location_bar_->location_entry()->SetUserText(L"a");
   }
 
@@ -95,7 +102,7 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   void SetLocationBarText(const std::wstring& text) {
-    ASSERT_TRUE(location_bar_);
+    ASSERT_NO_FATAL_FAILURE(FindLocationBar());
     location_bar_->location_entry()->SetUserText(text);
     ui_test_utils::WaitForNotification(
         NotificationType::INSTANT_CONTROLLER_SHOWN);
@@ -176,6 +183,63 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
       false, "window.chrome.searchBox.verbatim", preview_));
   EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
       1, "window.onchangecalls", preview_));
+}
+
+// Makes sure that if the server doesn't support the instant API we don't show
+// anything.
+IN_PROC_BROWSER_TEST_F(InstantTest, SearchServerDoesntSupportInstant) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  location_bar_->location_entry()->SetUserText(L"a");
+  ASSERT_TRUE(browser()->instant());
+  // Because we typed in a search string we should think we're showing instant
+  // results.
+  EXPECT_TRUE(browser()->instant()->IsShowingInstant());
+  // But because we're waiting to determine if the page really supports instant
+  // we shouldn't be showing the preview.
+  EXPECT_FALSE(browser()->instant()->is_active());
+
+  // When the response comes back that the page doesn't support instant the tab
+  // should be closed.
+  ui_test_utils::WaitForNotification(NotificationType::TAB_CLOSED);
+  EXPECT_FALSE(browser()->instant()->IsShowingInstant());
+  EXPECT_FALSE(browser()->instant()->is_active());
+}
+
+// Verifies transitioning from loading a non-search string to a search string
+// with the provider not supporting instant works (meaning we don't display
+// anything).
+IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearchDoesntSupportInstant) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
+  GURL url(test_server()->GetURL("files/instant/empty.html"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
+  // The preview should be active and showing.
+  ASSERT_TRUE(browser()->instant()->is_active());
+  TabContentsWrapper* initial_tab = browser()->instant()->GetPreviewContents();
+  ASSERT_TRUE(initial_tab);
+  RenderWidgetHostView* rwhv =
+      initial_tab->tab_contents()->GetRenderWidgetHostView();
+  ASSERT_TRUE(rwhv);
+  ASSERT_TRUE(rwhv->IsShowing());
+
+  // Now type in some search text.
+  location_bar_->location_entry()->SetUserText(L"a");
+
+  // Instant should still be live.
+  ASSERT_TRUE(browser()->instant()->is_active());
+  // Because we typed in a search string we should think we're showing instant
+  // results.
+  EXPECT_TRUE(browser()->instant()->MightSupportInstant());
+  // Instant should not be current (it's still loading).
+  EXPECT_FALSE(browser()->instant()->IsCurrent());
+
+  // When the response comes back that the page doesn't support instant the tab
+  // should be closed.
+  ui_test_utils::WaitForNotification(NotificationType::TAB_CLOSED);
+  EXPECT_FALSE(browser()->instant()->IsShowingInstant());
+  EXPECT_FALSE(browser()->instant()->is_active());
 }
 
 // Verify that the onsubmit event is dispatched upon pressing enter.

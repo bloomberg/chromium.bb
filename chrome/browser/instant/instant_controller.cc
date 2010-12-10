@@ -371,29 +371,27 @@ void InstantController::CommitInstantLoader(InstantLoader* loader) {
 }
 
 void InstantController::InstantLoaderDoesntSupportInstant(
-    InstantLoader* loader,
-    bool needs_reload,
-    const GURL& url_to_load) {
+    InstantLoader* loader) {
   DCHECK(!loader->ready());  // We better not be showing this loader.
   DCHECK(loader->template_url_id());
 
+  VLOG(1) << " provider does not support instant";
+
+  // Don't attempt to use instant for this search engine again.
   BlacklistFromInstant(loader->template_url_id());
 
   if (loader_manager_->active_loader() == loader) {
-    // The loader is active. Continue to use it, but make sure it isn't tied to
-    // to the search engine anymore. ClearTemplateURLID ends up showing the
-    // loader.
-    loader_manager_->RemoveLoaderFromInstant(loader);
-    loader->ClearTemplateURLID();
-
-    if (needs_reload) {
-      string16 suggested_text;
-      loader->Update(tab_contents_, 0, url_to_load, last_transition_type_,
-                     loader->user_text(), false, &suggested_text);
-    }
+    // The loader is active, shut down instant.
+    DestroyPreviewContents();
   } else {
+    if (loader_manager_->current_loader() == loader && is_active_) {
+      // There is a pending loader and we're active. Hide the preview. When then
+      // pending loader finishes loading we'll notify the delegate to show.
+      DCHECK(loader_manager_->pending_loader());
+      is_active_ = false;
+      delegate_->HideInstant();
+    }
     loader_manager_->DestroyLoader(loader);
-    loader = NULL;
   }
 }
 

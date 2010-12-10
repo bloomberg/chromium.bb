@@ -557,7 +557,6 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
       CommandLine* cl = CommandLine::ForCurrentProcess();
       if (cl->HasSwitch(switches::kInstantURL))
         instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
-      initial_instant_url_ = url;
       preview_contents_->controller().LoadURL(
           instant_url, GURL(), transition_type);
       frame_load_observer_.reset(
@@ -645,20 +644,6 @@ bool InstantLoader::ShouldCommitInstantOnMouseUp() {
 
 void InstantLoader::CommitInstantLoader() {
   delegate_->CommitInstantLoader(this);
-}
-
-void InstantLoader::ClearTemplateURLID() {
-  // This should only be invoked for sites we thought supported instant.
-  DCHECK(template_url_id_);
-
-  // The frame load observer should have completed.
-  DCHECK(!frame_load_observer_.get());
-
-  // We shouldn't be ready.
-  DCHECK(!ready());
-
-  template_url_id_ = 0;
-  ShowPreview();
 }
 
 void InstantLoader::SetCompleteSuggestedText(
@@ -759,16 +744,9 @@ gfx::Rect InstantLoader::GetOmniboxBoundsInTermsOfPreview() {
 }
 
 void InstantLoader::PageDoesntSupportInstant(bool needs_reload) {
-  GURL url_to_load = url_;
-
-  // Because we didn't process any of the requests to load in Update we're
-  // actually at initial_instant_url_. We need to reset url_ so that callers see
-  // the correct state.
-  url_ = initial_instant_url_;
-
   frame_load_observer_.reset(NULL);
 
-  delegate_->InstantLoaderDoesntSupportInstant(this, needs_reload, url_to_load);
+  delegate_->InstantLoaderDoesntSupportInstant(this);
 }
 
 void InstantLoader::ProcessBoundsChange() {

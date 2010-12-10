@@ -36,12 +36,8 @@ class InstantLoaderDelegate {
   virtual void CommitInstantLoader(InstantLoader* loader) = 0;
 
   // Invoked if the loader was created with the intention that the site supports
-  // instant, but it turned out the site doesn't support instant. If
-  // |needs_reload| is true, |Update| was invoked on the loader with a url that
-  // has changed since the initial url, and |url_to_load| is that url.
-  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
-                                                 bool needs_reload,
-                                                 const GURL& url_to_load) = 0;
+  // instant, but it turned out the site doesn't support instant.
+  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader) = 0;
 
   // Adds the specified url to the set of urls instant won't prefetch for.
   virtual void AddToBlacklist(InstantLoader* loader, const GURL& url) = 0;
