@@ -558,8 +558,9 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     return;
   }
 
-  for (ScopedVector<AutoFillProfile>::iterator iter = web_profiles_.begin();
-       iter != web_profiles_.end(); ++iter) {
+  const std::vector<AutoFillProfile*>& profiles = this->profiles();
+  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
     const FormGroup* profile = *iter;
     if (!profile) {
       DLOG(ERROR) << "NULL information in profiles list";
@@ -580,7 +581,7 @@ void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
     credit_card->GetPossibleFieldTypes(clean_info, possible_types);
   }
 
-  if (possible_types->size() == 0)
+  if (possible_types->empty())
     possible_types->insert(UNKNOWN_TYPE);
 }
 
