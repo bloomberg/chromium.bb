@@ -11,7 +11,6 @@
 ######################################################################
 # Directory Layout Description
 ######################################################################
-
 # All directories are relative to BASE which is
 # currently native_client/toolchain/linux_arm-untrusted
 #
