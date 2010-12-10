@@ -224,8 +224,7 @@ class OmniboxTest(pyauto.PyUITest):
     self._VerifyHasBookmarkResult(title_matches)
     # Check if the partial URL would get the bookmark
     split_url = urlparse.urlsplit(url)
-    search_term = split_url.path
-    partial_url = self._GetOmniboxMatchesFor(search_term, windex=windex)
+    partial_url = self._GetOmniboxMatchesFor(split_url.scheme, windex=windex)
     self._VerifyHasBookmarkResult(partial_url)
     # Check if the partial title would get the bookmark
     split_title = title.split()

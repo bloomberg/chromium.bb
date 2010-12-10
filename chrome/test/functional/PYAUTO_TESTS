@@ -81,8 +81,6 @@
     # Unsafe downloads tests broken. crbug.com/66081
     '-downloads.DownloadsTest.testDeclineDangerousDownload',
     '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
-    # crbug.com/66448
-    '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
     '-prefs.PrefsTest.testDownloadDirPref',
     # crbug.com/64269
     '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
