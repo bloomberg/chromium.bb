@@ -1845,8 +1845,6 @@ struct kernel_statfs {
                                    void *newtls, int *child_tidptr) {
       long __res;
       {
-        register void *__tls  __asm__("r8")  = newtls;
-        register int  *__ctid __asm__("r10") = child_tidptr;
         __asm__ __volatile__(/* if (fn == NULL)
                               *   return -EINVAL;
                               */
@@ -1877,6 +1875,8 @@ struct kernel_statfs {
                               *                %r10 = child_tidptr)
                               */
                              "movq   %2,%%rax\n"
+                             "movq   %9,%%r8\n"
+                             "movq   %10,%%r10\n"
                              LSS_ENTRYPOINT
 
                              /* if (%rax != 0)
@@ -1907,8 +1907,9 @@ struct kernel_statfs {
                              : "=a" (__res)
                              : "0"(-EINVAL), "i"(__NR_clone), "i"(__NR_exit),
                                "r"(fn), "S"(child_stack), "D"(flags), "r"(arg),
-                               "d"(parent_tidptr), "r"(__tls), "r"(__ctid)
-                             : "rsp", "memory", "r11", "rcx");
+                               "d"(parent_tidptr), "r"(newtls),
+                               "r"(child_tidptr)
+                             : "rsp", "memory", "r8", "r10", "r11", "rcx");
       }
       LSS_RETURN(int, __res);
     }
@@ -2727,7 +2728,7 @@ struct kernel_statfs {
   LSS_INLINE _syscall2(int,     sigaltstack,     const stack_t*, s,
                        const stack_t*, o)
   #if defined(__NR_sigreturn)
-  LSS_INLINE _syscall1(int,     sigreturn,       unsigned long, u);
+  LSS_INLINE _syscall1(int,     sigreturn,       unsigned long, u)
   #endif
   LSS_INLINE _syscall2(int,     stat,            const char*, f,
                       struct kernel_stat*,   b)
@@ -2744,7 +2745,7 @@ struct kernel_statfs {
                        const struct kernel_iovec*, v, size_t, c)
   #if defined(__NR_getcpu)
     LSS_INLINE _syscall3(long, getcpu, unsigned *, cpu,
-                         unsigned *, node, void *, unused);
+                         unsigned *, node, void *, unused)
   #endif
   #if defined(__x86_64__) ||                                                  \
      (defined(__mips__) && _MIPS_SIM != _MIPS_SIM_ABI32)
