@@ -47,14 +47,9 @@ class AsynchronousPolicyLoader
   friend class base::RefCountedThreadSafe<AsynchronousPolicyLoader>;
   virtual ~AsynchronousPolicyLoader() {}
 
-  // Schedules a call to UpdatePolicy on |origin_loop_|.
+  // Schedules a call to UpdatePolicy on |origin_loop_|. Takes ownership of
+  // |new_policy|.
   void PostUpdatePolicyTask(DictionaryValue* new_policy);
-
-  // Replaces the existing policy to value map with a new one, sending
-  // notification to the provider if there is a policy change. Must be called on
-  // |origin_loop_| so that it's safe to call back into the provider, which is
-  // not thread-safe.
-  void UpdatePolicy(DictionaryValue* new_policy);
 
   AsynchronousPolicyProvider::Delegate* delegate() {
     return delegate_.get();
@@ -66,6 +61,12 @@ class AsynchronousPolicyLoader
 
  private:
   friend class AsynchronousPolicyLoaderTest;
+
+  // Replaces the existing policy to value map with a new one, sending
+  // notification to the provider if there is a policy change. Must be called on
+  // |origin_loop_| so that it's safe to call back into the provider, which is
+  // not thread-safe. Takes ownership of |new_policy|.
+  void UpdatePolicy(DictionaryValue* new_policy);
 
   // Provides the low-level mechanics for loading policy.
   scoped_ptr<AsynchronousPolicyProvider::Delegate> delegate_;

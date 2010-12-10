@@ -61,9 +61,10 @@ void AsynchronousPolicyLoader::PostUpdatePolicyTask(
 }
 
 void AsynchronousPolicyLoader::UpdatePolicy(DictionaryValue* new_policy_raw) {
+  scoped_ptr<DictionaryValue> new_policy(new_policy_raw);
   DCHECK(policy_.get());
-  if (!policy_->Equals(new_policy_raw)) {
-    policy_.reset(new_policy_raw);
+  if (!policy_->Equals(new_policy.get())) {
+    policy_.reset(new_policy.release());
     // TODO(danno): Change the notification between the provider and the
     // PrefStore into a notification mechanism, removing the need for the
     // WeakPtr for the provider.
