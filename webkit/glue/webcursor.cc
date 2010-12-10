@@ -89,8 +89,9 @@ bool WebCursor::Deserialize(const Pickle* pickle, void** iter) {
       size_y > kMaxCursorDimension)
     return false;
 
+  type_ = type;
+
   if (type == WebCursorInfo::TypeCustom) {
-    type_ = type;
     if (size_x > 0 && size_y > 0) {
       // The * 4 is because the expected format is an array of RGBA pixel
       // values.
