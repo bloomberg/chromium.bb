@@ -20,12 +20,13 @@ class MockContentSettingsProvider : public ContentSettingsProviderInterface {
   virtual ~MockContentSettingsProvider();
 
   // ContentSettingsProviderInterface implementation.
-  virtual bool CanProvideDefaultSetting(ContentSettingsType content_type);
+  virtual bool CanProvideDefaultSetting(ContentSettingsType content_type) const;
   virtual ContentSetting ProvideDefaultSetting(
-      ContentSettingsType content_type);
+      ContentSettingsType content_type) const;
   virtual void UpdateDefaultSetting(ContentSettingsType content_type,
                                     ContentSetting setting);
-  virtual bool DefaultSettingIsManaged(ContentSettingsType content_type);
+  virtual void ResetToDefaults();
+  virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
 
  private:
   ContentSettingsType content_type_;

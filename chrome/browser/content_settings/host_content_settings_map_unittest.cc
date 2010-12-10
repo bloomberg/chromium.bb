@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map_unittest.h"
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -32,40 +32,6 @@ bool SettingsEqual(const ContentSettings& settings1,
   }
   return true;
 }
-
-class StubSettingsObserver : public NotificationObserver {
- public:
-  StubSettingsObserver() : last_notifier(NULL), counter(0) {
-    registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
-                   NotificationService::AllSources());
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    ++counter;
-    Source<HostContentSettingsMap> content_settings(source);
-    Details<ContentSettingsDetails> settings_details(details);
-    last_notifier = content_settings.ptr();
-    last_pattern = settings_details.ptr()->pattern();
-    last_update_all = settings_details.ptr()->update_all();
-    last_update_all_types = settings_details.ptr()->update_all_types();
-    last_type = settings_details.ptr()->type();
-    // This checks that calling a Get function from an observer doesn't
-    // deadlock.
-    last_notifier->GetContentSettings(GURL("http://random-hostname.com/"));
-  }
-
-  HostContentSettingsMap* last_notifier;
-  ContentSettingsPattern last_pattern;
-  bool last_update_all;
-  bool last_update_all_types;
-  int counter;
-  ContentSettingsType last_type;
-
- private:
-  NotificationRegistrar registrar_;
-};
 
 class HostContentSettingsMapTest : public testing::Test {
  public:
@@ -830,75 +796,6 @@ TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_COOKIES));
  }
-
-// When a default-content-setting is set to a managed setting a
-// CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
-// if the managed setting is removed.
-TEST_F(HostContentSettingsMapTest, ObserveManagedSettingsChange) {
-  TestingProfile profile;
-  HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
-  StubSettingsObserver observer;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
-
-  // TODO(markusheintz): I think it would be better to send notifications only
-  // for a specific content-settings-type.
-
-  // Set the managed default-content-setting.
-  prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
-  EXPECT_EQ(ContentSettingsPattern(), observer.last_pattern);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_TRUE(observer.last_update_all_types);
-  EXPECT_EQ(1, observer.counter);
-
-  // Remove the managed default-content-setting.
-  prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
-  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
-  EXPECT_EQ(ContentSettingsPattern(), observer.last_pattern);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_TRUE(observer.last_update_all_types);
-  EXPECT_EQ(2, observer.counter);
-}
-
-// When a default-content-setting is set to a managed setting a
-// CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
-// if the managed setting is removed. In this test-case the actual managed
-// setting is the same. Just the managed status of the default-content-setting
-// changes.
-TEST_F(HostContentSettingsMapTest, ObserveManagedSettingsNoChange) {
-  TestingProfile profile;
-  HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
-  StubSettingsObserver observer;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
-
-  // TODO(markusheintz): I think it would be better to send notifications only
-  // for a specific content-settings-type.
-
-  // Set the managed default-content-setting. In this case the actual setting
-  // does not change.
-  prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
-  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
-  EXPECT_EQ(ContentSettingsPattern(), observer.last_pattern);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_TRUE(observer.last_update_all_types);
-  EXPECT_EQ(1, observer.counter);
-
-  // Remove the managed default-content-setting.
-  prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
-  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
-  EXPECT_EQ(ContentSettingsPattern(), observer.last_pattern);
-  EXPECT_TRUE(observer.last_update_all);
-  EXPECT_TRUE(observer.last_update_all_types);
-  EXPECT_EQ(2, observer.counter);
-}
 
 // If a setting for a default-content-setting-type is set while the type is
 // managed, then the new setting should be preserved and used after the

@@ -6,8 +6,7 @@
 
 #include <string>
 
-#include "chrome/browser/content_settings/content_settings_details.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/host_content_settings_map_unittest.h"
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_indexed_db_helper.h"
@@ -22,28 +21,6 @@
 
 
 namespace {
-
-class StubSettingsObserver : public NotificationObserver {
- public:
-  StubSettingsObserver() : counter(0) {
-    registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
-                   NotificationService::AllSources());
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    ++counter;
-    Details<ContentSettingsDetails> settings_details(details);
-    last_pattern = settings_details.ptr()->pattern();
-  }
-
-  ContentSettingsPattern last_pattern;
-  int counter;
-
- private:
-  NotificationRegistrar registrar_;
-};
 
 class CookiesTreeModelTest : public testing::Test {
  public:

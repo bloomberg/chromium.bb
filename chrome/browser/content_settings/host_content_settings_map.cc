@@ -9,6 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/policy_content_settings_provider.h"
+#include "chrome/browser/content_settings/pref_content_settings_provider.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,18 +22,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_parse.h"
-#include "net/base/dns_util.h"
 #include "net/base/net_util.h"
 #include "net/base/static_cookie_policy.h"
 
 namespace {
-
-// Base pref path of the prefs that contain the managed default content
-// settings values.
-const std::string kManagedSettings =
-      "profile.managed_default_content_settings";
 
 // The preference keys where resource identifiers are stored for
 // ContentSettingsType values that support resource identifiers.
@@ -54,28 +48,6 @@ const char* kTypeNames[CONTENT_SETTINGS_NUM_TYPES] = {
   "popups",
   NULL,  // Not used for Geolocation
   NULL,  // Not used for Notifications
-};
-
-// The preferences used to manage ContentSettingsTypes.
-const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
-  prefs::kManagedDefaultCookiesSetting,
-  prefs::kManagedDefaultImagesSetting,
-  prefs::kManagedDefaultJavaScriptSetting,
-  prefs::kManagedDefaultPluginsSetting,
-  prefs::kManagedDefaultPopupsSetting,
-  NULL,  // Not used for Geolocation
-  NULL,  // Not used for Notifications
-};
-
-// The default setting for each content type.
-const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES] = {
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_COOKIES
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_IMAGES
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
-  CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
-  CONTENT_SETTING_ASK,    // Not used for Geolocation
-  CONTENT_SETTING_ASK,    // Not used for Notifications
 };
 
 // True if a given content settings type requires additional resource
@@ -115,6 +87,12 @@ ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
   return setting;
 }
 
+typedef std::vector<linked_ptr<ContentSettingsProviderInterface> >::iterator
+    provider_iterator;
+typedef
+    std::vector<linked_ptr<ContentSettingsProviderInterface> >::const_iterator
+        const_provider_iterator;
+
 }  // namespace
 
 
@@ -125,10 +103,20 @@ struct HostContentSettingsMap::ExtendedContentSettings {
 
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     : profile_(profile),
-      block_third_party_cookies_(false),
-      is_block_third_party_cookies_managed_(false),
       is_off_the_record_(profile_->IsOffTheRecord()),
-      updating_preferences_(false) {
+      updating_preferences_(false),
+      block_third_party_cookies_(false),
+      is_block_third_party_cookies_managed_(false) {
+  // The order in which the content settings providers are created is critical,
+  // as providers that are further down in the list (i.e. added later) override
+  // providers further up.
+  content_settings_providers_.push_back(
+      linked_ptr<ContentSettingsProviderInterface>(
+          new PrefContentSettingsProvider(profile)));
+  content_settings_providers_.push_back(
+      linked_ptr<ContentSettingsProviderInterface>(
+          new PolicyContentSettingsProvider(profile)));
+
   PrefService* prefs = profile_->GetPrefs();
 
   MigrateObsoleteCookiePref(prefs);
@@ -136,11 +124,6 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   MigrateObsoletePopupsPref(prefs);
 
   MigrateObsoletePerhostPref(prefs);
-
-  // Read global defaults.
-  DCHECK_EQ(arraysize(kTypeNames),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  ReadDefaultSettings(false);
 
   // Read misc. global settings.
   block_third_party_cookies_ =
@@ -165,48 +148,21 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   ReadExceptions(false);
 
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
   pref_change_registrar_.Add(prefs::kContentSettingsPatterns, this);
   pref_change_registrar_.Add(prefs::kBlockThirdPartyCookies, this);
   pref_change_registrar_.Add(prefs::kBlockNonsandboxedPlugins, this);
-  // The following preferences are only used to indicate if a
-  // default-content-setting is managed and to hold the managed default-setting
-  // value. If the value for any of the following perferences is set then the
-  // corresponding default-content-setting is managed. These preferences exist
-  // in parallel to the preference default-content-settings.  If a
-  // default-content-settings-type is managed any user defined excpetions
-  // (patterns) for this type are ignored.
-  pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
   notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                               Source<Profile>(profile_));
 }
 
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
   prefs->RegisterIntegerPref(prefs::kContentSettingsVersion,
       ContentSettingsPattern::kContentSettingsPatternVersion);
   prefs->RegisterDictionaryPref(prefs::kContentSettingsPatterns);
   prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies, false);
   prefs->RegisterBooleanPref(prefs::kBlockNonsandboxedPlugins, false);
   prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
-
-  // Preferences for default content setting policies. A policy is not set of
-  // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
-      CONTENT_SETTING_DEFAULT);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultImagesSetting,
-      CONTENT_SETTING_DEFAULT);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultJavaScriptSetting,
-      CONTENT_SETTING_DEFAULT);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultPluginsSetting,
-      CONTENT_SETTING_DEFAULT);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
-      CONTENT_SETTING_DEFAULT);
 
   // Obsolete prefs, for migration:
   prefs->RegisterIntegerPref(prefs::kCookieBehavior,
@@ -217,10 +173,21 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
     ContentSettingsType content_type) const {
-  AutoLock auto_lock(lock_);
-  if (IsDefaultContentSettingManaged(content_type))
-    return managed_default_content_settings_.settings[content_type];
-  return default_content_settings_.settings[content_type];
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  for (const_provider_iterator provider = content_settings_providers_.begin();
+       provider != content_settings_providers_.end(); ++provider) {
+    if (!(*provider)->CanProvideDefaultSetting(content_type))
+      continue;
+    ContentSetting provided_setting =
+        (*provider)->ProvideDefaultSetting(content_type);
+    if (provided_setting != CONTENT_SETTING_DEFAULT)
+      setting = provided_setting;
+  }
+  // The method GetDefaultContentSetting always has to return an explicit
+  // value that is to be used as default. We here rely on the
+  // PrefContentSettingProvider to always provide a value.
+  CHECK_NE(CONTENT_SETTING_DEFAULT, setting);
+  return setting;
 }
 
 ContentSetting HostContentSettingsMap::GetContentSetting(
@@ -318,22 +285,17 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
     const GURL& url) const {
   ContentSettings output = GetNonDefaultContentSettings(url);
 
-  AutoLock auto_lock(lock_);
-
   // If we require a resource identifier, set the content settings to default,
   // otherwise make the defaults explicit.
   for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
     if (RequiresResourceIdentifier(ContentSettingsType(j))) {
       output.settings[j] = CONTENT_SETTING_DEFAULT;
     } else {
-      if (output.settings[j] == CONTENT_SETTING_DEFAULT) {
-        output.settings[j] = default_content_settings_.settings[j];
-      }
       // A managed default content setting has the highest priority and hence
       // will overwrite any previously set value.
-      if (IsDefaultContentSettingManaged(ContentSettingsType(j))) {
-        output.settings[j] =
-            managed_default_content_settings_.settings[j];
+      if ((output.settings[j] == CONTENT_SETTING_DEFAULT) ||
+          IsDefaultContentSettingManaged(ContentSettingsType(j))) {
+        output.settings[j] = GetDefaultContentSetting(ContentSettingsType(j));
       }
     }
   }
@@ -441,7 +403,6 @@ void HostContentSettingsMap::SetDefaultContentSetting(
          setting != CONTENT_SETTING_ASK ||
          CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableClickToPlay));
-  PrefService* prefs = profile_->GetPrefs();
 
   // The default settings may not be directly modified for OTR sessions.
   // Instead, they are synced to the main profile's setting.
@@ -450,29 +411,10 @@ void HostContentSettingsMap::SetDefaultContentSetting(
     return;
   }
 
-  DictionaryValue* default_settings_dictionary =
-      prefs->GetMutableDictionary(prefs::kDefaultContentSettings);
-  std::string dictionary_path(kTypeNames[content_type]);
-  updating_preferences_ = true;
-  {
-    AutoLock auto_lock(lock_);
-    ScopedPrefUpdate update(prefs, prefs::kDefaultContentSettings);
-    if ((setting == CONTENT_SETTING_DEFAULT) ||
-        (setting == kDefaultSettings[content_type])) {
-      default_content_settings_.settings[content_type] =
-          kDefaultSettings[content_type];
-      default_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
-                                                              NULL);
-    } else {
-      default_content_settings_.settings[content_type] = setting;
-      default_settings_dictionary->SetWithoutPathExpansion(
-          dictionary_path, Value::CreateIntegerValue(setting));
-    }
+  for (provider_iterator provider = content_settings_providers_.begin();
+       provider != content_settings_providers_.end(); ++provider) {
+    (*provider)->UpdateDefaultSetting(content_type, setting);
   }
-  updating_preferences_ = false;
-
-  NotifyObservers(
-      ContentSettingsDetails(ContentSettingsPattern(), content_type, ""));
 }
 
 void HostContentSettingsMap::SetContentSetting(
@@ -727,10 +669,10 @@ void HostContentSettingsMap::ResetToDefaults() {
 
   {
     AutoLock auto_lock(lock_);
-    default_content_settings_ = ContentSettings();
-    ForceDefaultsToBeExplicit();
-    // Clear all content settings map except the
-    // managed_default_content_settings.
+    for (provider_iterator provider = content_settings_providers_.begin();
+         provider != content_settings_providers_.end(); ++provider) {
+      (*provider)->ResetToDefaults();
+    }
     host_content_settings_.clear();
     off_the_record_settings_.clear();
     // Don't reset block third party cookies if they are managed.
@@ -742,7 +684,6 @@ void HostContentSettingsMap::ResetToDefaults() {
   if (!is_off_the_record_) {
     PrefService* prefs = profile_->GetPrefs();
     updating_preferences_ = true;
-    prefs->ClearPref(prefs::kDefaultContentSettings);
     prefs->ClearPref(prefs::kContentSettingsPatterns);
     // If the block third party cookies preference is managed we still must
     // clear it in order to restore the default value for later when the
@@ -761,46 +702,25 @@ void HostContentSettingsMap::Observe(NotificationType type,
                                      const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (NotificationType::PREF_CHANGED == type) {
+  if (type == NotificationType::PREF_CHANGED) {
+    DCHECK_EQ(profile_->GetPrefs(), Source<PrefService>(source).ptr());
     if (updating_preferences_)
       return;
 
     std::string* name = Details<std::string>(details).ptr();
-    if (prefs::kDefaultContentSettings == *name) {
-      ReadDefaultSettings(true);
-    } else if (prefs::kContentSettingsPatterns == *name) {
+    if (*name == prefs::kContentSettingsPatterns) {
       ReadExceptions(true);
-    } else if (prefs::kBlockThirdPartyCookies == *name) {
+    } else if (*name == prefs::kBlockThirdPartyCookies) {
       AutoLock auto_lock(lock_);
       block_third_party_cookies_ = profile_->GetPrefs()->GetBoolean(
           prefs::kBlockThirdPartyCookies);
       is_block_third_party_cookies_managed_ =
           profile_->GetPrefs()->IsManagedPreference(
               prefs::kBlockThirdPartyCookies);
-    } else if (prefs::kBlockNonsandboxedPlugins == *name) {
+    } else if (*name == prefs::kBlockNonsandboxedPlugins) {
       AutoLock auto_lock(lock_);
       block_nonsandboxed_plugins_ = profile_->GetPrefs()->GetBoolean(
           prefs::kBlockNonsandboxedPlugins);
-    } else if (prefs::kManagedDefaultCookiesSetting == *name) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES,
-                                  profile_->GetPrefs(),
-                                  &managed_default_content_settings_);
-    } else if (prefs::kManagedDefaultImagesSetting == *name) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_IMAGES,
-                                  profile_->GetPrefs(),
-                                  &managed_default_content_settings_);
-    } else if (prefs::kManagedDefaultJavaScriptSetting == *name) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                                  profile_->GetPrefs(),
-                                  &managed_default_content_settings_);
-    } else if (prefs::kManagedDefaultPluginsSetting == *name) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                  profile_->GetPrefs(),
-                                  &managed_default_content_settings_);
-    } else if (prefs::kManagedDefaultPopupsSetting == *name) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_POPUPS,
-                                  profile_->GetPrefs(),
-                                  &managed_default_content_settings_);
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
@@ -811,7 +731,8 @@ void HostContentSettingsMap::Observe(NotificationType type,
                                              CONTENT_SETTINGS_TYPE_DEFAULT,
                                              ""));
     }
-  } else if (NotificationType::PROFILE_DESTROYED == type) {
+  } else if (type == NotificationType::PROFILE_DESTROYED) {
+    DCHECK_EQ(profile_, Source<Profile>(source).ptr());
     UnregisterObservers();
   } else {
     NOTREACHED() << "Unexpected notification";
@@ -881,16 +802,6 @@ void HostContentSettingsMap::GetResourceSettingsFromDictionary(
   }
 }
 
-void HostContentSettingsMap::ForceDefaultsToBeExplicit() {
-  DCHECK_EQ(arraysize(kDefaultSettings),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (default_content_settings_.settings[i] == CONTENT_SETTING_DEFAULT)
-      default_content_settings_.settings[i] = kDefaultSettings[i];
-  }
-}
-
 bool HostContentSettingsMap::AllDefault(
     const ExtendedContentSettings& settings) const {
   for (size_t i = 0; i < arraysize(settings.content_settings.settings); ++i) {
@@ -900,64 +811,19 @@ bool HostContentSettingsMap::AllDefault(
   return settings.content_settings_for_resources.empty();
 }
 
-void HostContentSettingsMap::ReadDefaultSettings(bool overwrite) {
-  PrefService* prefs = profile_->GetPrefs();
-  const DictionaryValue* default_settings_dictionary =
-      prefs->GetDictionary(prefs::kDefaultContentSettings);
-
-  if (overwrite)
-    default_content_settings_ = ContentSettings();
-
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (default_settings_dictionary != NULL) {
-    GetSettingsFromDictionary(default_settings_dictionary,
-                              &default_content_settings_);
-  }
-  ForceDefaultsToBeExplicit();
-
-  // Read managed default content settings.
-  ReadManagedDefaultSettings(prefs, &managed_default_content_settings_);
-}
-
-void HostContentSettingsMap::ReadManagedDefaultSettings(
-    const PrefService* prefs, ContentSettings* settings) {
-  for (size_t type = 0; type < arraysize(kPrefToManageType); ++type) {
-    if (kPrefToManageType[type] == NULL) {
-      // TODO(markusheintz): Handle Geolocation and notification separately.
-      continue;
-    }
-    UpdateManagedDefaultSetting(ContentSettingsType(type), prefs, settings);
-  }
-}
-
-void HostContentSettingsMap::UpdateManagedDefaultSetting(
-    ContentSettingsType type,
-    const PrefService* prefs,
-    ContentSettings* settings) {
-  // If a pref to manage a default-content-setting was not set (NOTICE:
-  // "HasPrefPath" returns false if no value was set for a registered pref) then
-  // the default value of the preference is used. The default value of a
-  // preference to manage a default-content-settings is
-  // CONTENT_SETTING_DEFAULT. This indicates that no managed value is set. If a
-  // pref was set, than it MUST be managed.
-  DCHECK(!prefs->HasPrefPath(kPrefToManageType[type]) ||
-          prefs->IsManagedPreference(kPrefToManageType[type]));
-  AutoLock auto_lock(lock_);
-  settings->settings[type] = IntToContentSetting(
-      prefs->GetInteger(kPrefToManageType[type]));
-}
-
 bool HostContentSettingsMap::IsDefaultContentSettingManaged(
     ContentSettingsType content_type) const {
-  // All managed_default_content_settings_ are always set explicitly or
-  // initialized to CONTENT_SETTINGS_DEFAULT. Hence each content settings type
-  // that is set to CONTENT_SETTINGS_DEFAULT is not managed since it was not set
-  // explicitly.
-  return managed_default_content_settings_.settings[content_type] !=
-      CONTENT_SETTING_DEFAULT;
+  for (const_provider_iterator provider = content_settings_providers_.begin();
+       provider != content_settings_providers_.end(); ++provider) {
+    if ((*provider)->DefaultSettingIsManaged(content_type))
+      return true;
+  }
+  return false;
 }
 
 void HostContentSettingsMap::ReadExceptions(bool overwrite) {
+  AutoLock lock(lock_);
+
   PrefService* prefs = profile_->GetPrefs();
   DictionaryValue* all_settings_dictionary =
       prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);

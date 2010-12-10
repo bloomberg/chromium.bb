@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/linked_ptr.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/notification_registrar.h"
 
 class ContentSettingsDetails;
+class ContentSettingsProviderInterface;
 class DictionaryValue;
 class GURL;
 class PrefService;
@@ -187,29 +189,8 @@ class HostContentSettingsMap
   void GetResourceSettingsFromDictionary(const DictionaryValue* dictionary,
                                          ResourceContentSettings* settings);
 
-  // Forces the default settings to be explicitly set instead of themselves
-  // being CONTENT_SETTING_DEFAULT.
-  void ForceDefaultsToBeExplicit();
-
   // Returns true if |settings| consists entirely of CONTENT_SETTING_DEFAULT.
   bool AllDefault(const ExtendedContentSettings& settings) const;
-
-  // Reads the default settings from the prefereces service. If |overwrite| is
-  // true and the preference is missing, the local copy will be cleared as well.
-  void ReadDefaultSettings(bool overwrite);
-
-  // Reads managed default content settings from the preference service |prefs|.
-  // |settings| is set to the respective content setting for managed settings,
-  // and to CONTENT_SETTING_DEFAULT for other settings.
-  void ReadManagedDefaultSettings(const PrefService* prefs,
-                                  ContentSettings* settings);
-
-  // Updates the managed setting of the default-content-settings-type |type|.
-  // The updated setting is read from the preference service |prefs| and written
-  // to |settings|.
-  void UpdateManagedDefaultSetting(ContentSettingsType type,
-                                   const PrefService* prefs,
-                                   ContentSettings* settings);
 
   // Reads the host exceptions from the prefereces service. If |overwrite| is
   // true and the preference is missing, the local copy will be cleared as well.
@@ -240,9 +221,22 @@ class HostContentSettingsMap
   NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Copies of the pref data, so that we can read it on the IO thread.
-  ContentSettings default_content_settings_;
-  ContentSettings managed_default_content_settings_;
+  // Whether this settings map is for an OTR session.
+  bool is_off_the_record_;
+
+  // Whether we are currently updating preferences, this is used to ignore
+  // notifications from the preferences service that we triggered ourself.
+  bool updating_preferences_;
+
+  // Content setting providers.
+  std::vector<linked_ptr<ContentSettingsProviderInterface> >
+      content_settings_providers_;
+
+  // Used around accesses to the following objects to guarantee thread safety.
+  mutable Lock lock_;
+
+  // Copies of the pref data, so that we can read it on threads other than the
+  // UI thread.
   HostContentSettings host_content_settings_;
 
   // Differences to the preference-stored host content settings for
@@ -253,16 +247,6 @@ class HostContentSettingsMap
   bool block_third_party_cookies_;
   bool is_block_third_party_cookies_managed_;
   bool block_nonsandboxed_plugins_;
-
-  // Used around accesses to the settings objects to guarantee thread safety.
-  mutable Lock lock_;
-
-  // Whether this settings map is for an OTR session.
-  bool is_off_the_record_;
-
-  // Whether we are currently updating preferences, this is used to ignore
-  // notifications from the preferences service that we triggered ourself.
-  bool updating_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };

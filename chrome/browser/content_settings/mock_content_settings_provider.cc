@@ -19,12 +19,12 @@ MockContentSettingsProvider::~MockContentSettingsProvider() {
 }
 
 bool MockContentSettingsProvider::CanProvideDefaultSetting(
-    ContentSettingsType content_type) {
+    ContentSettingsType content_type) const {
   return content_type == content_type_;
 }
 
 ContentSetting MockContentSettingsProvider::ProvideDefaultSetting(
-    ContentSettingsType content_type) {
+    ContentSettingsType content_type) const {
   return content_type == content_type_ ? setting_ : CONTENT_SETTING_DEFAULT;
 }
 
@@ -36,6 +36,9 @@ void MockContentSettingsProvider::UpdateDefaultSetting(
 }
 
 bool MockContentSettingsProvider::DefaultSettingIsManaged(
-    ContentSettingsType content_type) {
+    ContentSettingsType content_type) const {
   return content_type == content_type_ && is_managed_;
+}
+
+void MockContentSettingsProvider::ResetToDefaults() {
 }
