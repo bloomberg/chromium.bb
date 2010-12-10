@@ -44,8 +44,8 @@ import sys
 INITIAL_ENV = {
   # Internal settings
   'EMIT_LL'     : '0',   # Produce an intermediate .ll file
-  'USE_MC_ASM'  : '0',   # Use llvm-mc instead of nacl-as
-  'MC_DIRECT'   : '0',   # Use MC direct object emission instead of
+  'USE_MC_ASM'  : '1',   # Use llvm-mc instead of nacl-as
+  'MC_DIRECT'   : '1',   # Use MC direct object emission instead of
                          # producing an intermediate .s file
   'CLEANUP'     : '0',   # Clean up temporary files
   'SANDBOXED_ARCH': '',  # Use sandboxed toolchain for this arch.
@@ -335,6 +335,11 @@ def PrepareFlags():
     env.clear('STDLIB_BC_PREFIX')
     env.clear('STDLIB_BC_SUFFIX')
 
+  # Disable MC for ARM until we have it working
+  if env.has('ARCH') and env.get('ARCH') == 'ARM':
+    env.set('USE_MC_ASM', '0')
+    env.set('MC_DIRECT', '0')
+
   if env.getbool('STATIC'):
     env.set('LD_FLAGS', '${LD_FLAGS_STATIC}')
   else:
@@ -346,6 +351,12 @@ def PrepareFlags():
     env.set('AS', '${AS_SB_%s}' % sbtc)
     env.set('LD', '${LD_SB_%s}' % sbtc)
     env.set('LD_FLAGS', '${LD_SB_FLAGS}')
+
+    # Disable MC for sandboxed toolchain
+    # until we've sandboxed llvm-mc
+    env.set('USE_MC_ASM', '0')
+    env.set('MC_DIRECT', '0')
+
 
 ######################################################################
 # Chain Map
