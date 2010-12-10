@@ -289,24 +289,6 @@ def Windows_install(files, args):
   InstallSuccess(os.path.join(plugin_dir, 'sel_ldr.exe'))
 
 
-def Mac_install_sdl(files, unused_args):
-  global_sdl_dir = os.path.join('/Library/Frameworks/SDL.framework')
-  local_sdl_dir = os.path.join(GetHomeDir(),'Library/Frameworks/SDL.framework')
-  for sdl_dir in [global_sdl_dir, local_sdl_dir]:
-    if os.path.isdir(sdl_dir):
-       print '*'
-       print '* It looks like SDL is already installed as'
-       print '*   ', sdl_dir
-       print '* For Native Client we recommend SDL Version 1.2.13'
-       print '* Please make sure your SDL version is compatible'
-       print '* with Native Client.'
-       print '*'
-       return
-
-  sdl = FindFileByName(files, 'SDL.framework')
-  CopyDir(sdl, local_sdl_dir)
-
-
 def Mac_install(files, args):
   plugin_dir = GetPluginDir(args)
   TryMakedir(plugin_dir)
@@ -409,7 +391,6 @@ def main(argv):
       FatalError('NOT YET IMPLEMENTED')
       return -1
     else:
-      Mac_install_sdl(files, args)
       Mac_install(files, args)
   else:
     print 'Install cannot continue. Unknown platform %s' % pl

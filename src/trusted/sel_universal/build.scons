@@ -52,7 +52,7 @@ Return()
 #       The idea is to remove all the sdl cruft from sel_ldr once this
 #       become more mature
 ######################################################################
-if ARGUMENTS.get('sdl', 'hermetic') == 'none':
+if ARGUMENTS.get('sdl', 'none') == 'none':
   Return()
 
 # TODO(robertm): x86/64 has not been tested - it may just work
@@ -89,7 +89,7 @@ def AddSdlRequirements(sdl_env, target):
   # TODO(robetrm): reinvestigate this
   if sdl_env.Bit('target_arm'):
     return
-  if ARGUMENTS.get('sdl', 'hermetic') == 'none':
+  if ARGUMENTS.get('sdl', 'none') == 'none':
     return
 
   sdl_env.Requires(target, ReplicateDlls(sdl_env))
@@ -99,14 +99,14 @@ def MakeSdlEnv(env):
   # TODO(robertm): consider always using SDL here and get rid of
   #                this function as we already make sure above that we
   #                are in dsl mode
-  if ARGUMENTS.get('sdl', 'hermetic') == 'none':
+  if ARGUMENTS.get('sdl', 'none') == 'none':
     return env
 
   sdl_env = env.Clone()
   sdl_env.Append(CPPDEFINES=['HAVE_SDL'])
   sdl_env.Tool('sdl')
   print '=' * 70
-  print 'SDL build (%s) enabled for %s' % (ARGUMENTS.get('sdl', 'hermetic'),
+  print 'SDL build (%s) enabled for %s' % (ARGUMENTS.get('sdl', 'none'),
                                            sdl_env['BUILD_TYPE'])
   print sdl_env.subst('Using version in ${SDL_DIR}')
   print '=' * 70

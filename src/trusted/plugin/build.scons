@@ -297,7 +297,7 @@ else:
 if not ppapi_env.Bit('chrome'):
   if not env.Bit('mac'):  # linux, windows, arm
     # This builds with
-    #   MODE=... ppNaClPlugin sel_ldr sdl=none
+    #   MODE=... ppNaClPlugin sel_ldr
     # with the output going to
     #   scons-out/.../staging/libppNaClPlugin.so on Linux and
     #   scons-out/.../staging/ppNaClPlugin.dll on Windows.
@@ -308,7 +308,7 @@ if not ppapi_env.Bit('chrome'):
     ppapi_env.AddPluginPrerequisite([ppapi_plugin])
   else:  # mac
     # This builds with
-    #   MODE=... scons-out/.../staging/ppNaClPlugin.bundle sel_ldr sdl=none.
+    #   MODE=... scons-out/.../staging/ppNaClPlugin.bundle sel_ldr
     # This places both ppNaClPlugin.bundle/ and sel_ldr into staging/.
     # One must either set $NACL_SEL_LDR=path/to/sel_ldr or manually
     # copy sel_ldr to path/to/ppNaClPlugin.bundle/Contents/Resources/.

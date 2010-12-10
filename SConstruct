@@ -1495,7 +1495,7 @@ naclsdk_mode=<mode>   where <mode>:
                     'local': use locally installed sdk kit
                     'download': use the download copy (default)
                     'custom:<path>': use kit at <path>
-                    'manual': use settings from env vars NACL_SDL_xxx
+                    'manual': use settings from env vars NACL_SDK_xxx
 
 
 --prebuilt          Do not build things, just do install steps
@@ -1588,7 +1588,7 @@ windows_env.AppendENVPath('PATH',
 (windows_debug_env,
  windows_optimized_env) = GenerateOptimizationLevels(windows_env)
 
-if ARGUMENTS.get('sdl', 'hermetic') != 'none':
+if ARGUMENTS.get('sdl', 'none') != 'none':
   # These will only apply to sdl!=none builds!
   windows_debug_env.Append(CPPDEFINES = ['_DLL', '_MT'])
   windows_optimized_env.Append(CPPDEFINES = ['_DLL', '_MT'])
