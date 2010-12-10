@@ -3491,3 +3491,9 @@
    fun:_Znw*
    fun:_ZN6policy47AsynchronousPolicyTestBase_ProviderRefresh_Test8TestBodyEv
 }
+{
+   bug_66277
+   Memcheck:Leak
+   ...
+   fun:*MalwareDetailsTest_*
+}
