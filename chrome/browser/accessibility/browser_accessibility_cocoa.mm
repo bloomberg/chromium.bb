@@ -244,19 +244,23 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
     return [NSNumber numberWithBool:
         !GetState(browserAccessibility_, WebAccessibility::STATE_UNAVAILABLE)];
   }
+  if ([attribute isEqualToString:@"AXVisited"]) {
+    return [NSNumber numberWithBool:
+        GetState(browserAccessibility_, WebAccessibility::STATE_TRAVERSED)];
+  }
 
   // AXWebArea attributes.
   if ([attribute isEqualToString:@"AXLoaded"])
     return [NSNumber numberWithBool:YES];
   if ([attribute isEqualToString:@"AXURL"]) {
+    WebAccessibility::Attribute urlAttribute =
+        [[self role] isEqualToString:@"AXWebArea"] ?
+            WebAccessibility::ATTR_DOC_URL :
+            WebAccessibility::ATTR_LINK_TARGET;
     return NSStringForWebAccessibilityAttribute(
         browserAccessibility_->attributes(),
-        WebAccessibility::ATTR_DOC_URL);
+        urlAttribute);
   }
-
-  // TODO(dtseng): provide complete implementations for the following.
-  if ([attribute isEqualToString:@"AXVisited"])
-    return [NSNumber numberWithBool:NO];
 
   // Text related attributes.
   if ([attribute isEqualToString:
@@ -359,14 +363,14 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       NSAccessibilityTopLevelUIElementAttribute,
       NSAccessibilityValueAttribute,
       NSAccessibilityWindowAttribute,
+      @"AXURL",
+      @"AXVisited",
       nil]];
 
   // Specific role attributes.
   if ([self role] == @"AXWebArea") {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXLoaded",
-        @"AXURL",
-        @"AXVisited",
         nil]];
   }
 
