@@ -242,12 +242,17 @@ class PodImageView : public views::ImageView {
 UserView::UserView(Delegate* delegate, bool is_login, bool need_background)
     : delegate_(delegate),
       signout_view_(NULL),
-      image_view_(new RoundedView<PodImageView>),
+      image_view_(NULL),
       throbber_(CreateDefaultSmoothedThrobber()),
       remove_button_(NULL) {
   DCHECK(delegate);
   if (!is_login)
     signout_view_ = new SignoutView(this);
+
+  if (need_background)
+    image_view_ = new RoundedView<PodImageView>;
+  else
+    image_view_ = new PodImageView;
 
   Init(need_background);
 }

@@ -10,10 +10,10 @@ namespace chromeos {
 namespace rounded_view {
 
 // Corner radius of the RoundedView.
-const int kCornerRadius = 5;
+const SkScalar kCornerRadius = SkIntToScalar(5);
 
 // Stroke width to be used by the RoundedView.
-const int kStrokeWidth = 1;
+const SkScalar kStrokeWidth = SkIntToScalar(1);
 
 // Color of the inner frame of the RoundedView.
 const SkColor kInnerFrameColor = SK_ColorWHITE;
@@ -69,8 +69,13 @@ SkPath RoundedView<C>::GetClipPath() const {
   SkRect view_rect = GetViewRect();
   view_rect.inset(2 * rounded_view::kStrokeWidth,
                   2 * rounded_view::kStrokeWidth);
+  // 3 is used instead of 2 to avoid empty points between the clip and
+  // the frame.
   round_view.addRoundRect(
-      GetViewRect(), rounded_view::kCornerRadius, rounded_view::kCornerRadius);
+      view_rect,
+      rounded_view::kCornerRadius - 3 * rounded_view::kStrokeWidth,
+      rounded_view::kCornerRadius - 3 * rounded_view::kStrokeWidth);
+
   return round_view;
 }
 
@@ -92,14 +97,26 @@ void RoundedView<C>::DrawFrame(gfx::Canvas* canvas) {
   paint.setAntiAlias(true);
   SkRect view_rect = GetViewRect();
 
+  // Used to make nested rounded rects look better.
+  const SkScalar kOriginShift = 1.0;
+  const SkScalar kDelta = 0.3;
+
   // Draw inner frame.
+  view_rect.fLeft -= kOriginShift;
+  view_rect.fTop -= kOriginShift;
   view_rect.inset(rounded_view::kStrokeWidth, rounded_view::kStrokeWidth);
   paint.setColor(rounded_view::kInnerFrameColor);
-  canvas->AsCanvasSkia()->drawRoundRect(view_rect, rounded_view::kCornerRadius,
-                                        rounded_view::kCornerRadius, paint);
+  canvas->AsCanvasSkia()->
+      drawRoundRect(view_rect,
+                    rounded_view::kCornerRadius - rounded_view::kStrokeWidth,
+                    rounded_view::kCornerRadius - rounded_view::kStrokeWidth,
+                    paint);
 
   // Draw outer frame.
-  view_rect.inset(-rounded_view::kStrokeWidth, -rounded_view::kStrokeWidth);
+  view_rect.fLeft -= kDelta;
+  view_rect.fTop -= kDelta;
+  view_rect.offset(rounded_view::kStrokeWidth - kDelta,
+                   rounded_view::kStrokeWidth - kDelta);
   paint.setColor(rounded_view::kOuterFrameColor);
   canvas->AsCanvasSkia()->drawRoundRect(view_rect, rounded_view::kCornerRadius,
                                         rounded_view::kCornerRadius, paint);

@@ -20,21 +20,30 @@ namespace chromeos {
 // Label with customized paddings and long text fade out.
 class UsernameView : public views::Label {
  public:
-  UsernameView(const std::wstring& username);
   virtual ~UsernameView() {}
 
   // Overriden from views::Label.
   virtual void Paint(gfx::Canvas* canvas);
 
+  // Returns the shaped username view to be used on the login screen. If
+  // |user_small_shape| is true, then one pixel margins are used. This is done
+  // to match the shape of the scaled frame of the user image. The caller gets
+  // the ownership.
+  static UsernameView* CreateShapedUsernameView(const std::wstring& username,
+                                                bool use_small_shape);
+
+ protected:
+  // Constructs username view for the given |username|. Consider using
+  // |CreateShapedUsernameView| to match the login page style.
+  explicit UsernameView(const std::wstring& username);
+
  private:
+
   // Paints username to the bitmap with the bounds given.
   void PaintUsername(const gfx::Rect& bounds);
 
   // Holds painted username.
   scoped_ptr<SkBitmap> text_image_;
-
-  // Holds width of the text drawn.
-  int text_width_;
 
   // Holds margins width (depends on the height).
   int margin_width_;

@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/guest_user_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/chromeos/login/rounded_view.h"
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/username_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -86,35 +85,6 @@ void CloseWindow(views::WidgetGtk* window) {
   window->SetWidgetDelegate(NULL);
   window->Close();
 }
-
-// Class that sets up half rounded rectangle (only the bottom corners are
-// rounded) as a clip region of the view.
-// For more info see the file "chrome/browser/chromeos/login/rounded_view.h".
-template<typename C>
-class HalfRoundedView : public chromeos::RoundedView<C> {
- public:
-  explicit HalfRoundedView(const std::wstring &text): RoundedView<C>(text) {
-  }
-
- protected:
-  // Overrides ViewFilter.
-  virtual void DrawFrame(gfx::Canvas* canvas) {
-    // No frame is needed.
-  }
-
-  virtual SkRect GetViewRect() const {
-    gfx::Rect bounds = C::GetLocalBounds(false);
-    SkRect view_rect;
-    // The rectangle will be intersected with the bounds, so the correct half
-    // of the round rectangle will be obtained.
-    view_rect.iset(bounds.x(), bounds.y() - bounds.width(),
-                   bounds.x() + bounds.width(),
-                   bounds.y() + bounds.height());
-    view_rect.inset(2 * rounded_view::kStrokeWidth,
-                    2 * rounded_view::kStrokeWidth);
-    return view_rect;
-  }
-};
 
 }  // namespace
 
@@ -495,8 +465,17 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
     text = UTF8ToWide(user_.GetDisplayName());
   }
 
-  views::Label *label = is_new_user_ ?
-      new views::Label(text) : new HalfRoundedView<UsernameView>(text);
+  views::Label *label = NULL;
+
+  if (is_new_user_) {
+    label = new views::Label(text);
+  } else if (type == WM_IPC_WINDOW_LOGIN_LABEL) {
+    label = UsernameView::CreateShapedUsernameView(text, false);
+  } else {
+    DCHECK(type == WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
+    // TODO(altimofeev): switch to the rounded username view.
+    label = UsernameView::CreateShapedUsernameView(text, true);
+  }
 
   label->SetColor(kTextColor);
   label->SetFont(font);

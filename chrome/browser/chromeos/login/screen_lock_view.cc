@@ -138,7 +138,7 @@ void ScreenLockView::Init() {
 
   AddChildView(main_);
 
-  UsernameView* username = new UsernameView(text);
+  UsernameView* username = UsernameView::CreateShapedUsernameView(text, false);
   username_ = username;
   username->SetColor(login::kTextColor);
   username->SetFont(font);
