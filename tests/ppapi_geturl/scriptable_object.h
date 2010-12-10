@@ -4,9 +4,10 @@
 #ifndef TESTS_PPAPI_GETURL_SCRIPTABLE_OBJECT_H_
 #define TESTS_PPAPI_GETURL_SCRIPTABLE_OBJECT_H_
 
-#include <ppapi/c/pp_instance.h>
-#include <ppapi/c/dev/ppp_class_deprecated.h>
 #include <string>
+
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/dev/ppp_class_deprecated.h"
 
 // ppapi_geturl example is deliberately using C PPAPI interface.
 // C++ PPAPI layer has pp::ScriptableObject (now deprecated) wrapper class.
@@ -15,7 +16,7 @@ class ScriptableObject {
   explicit ScriptableObject(PP_Instance instance);
   const PPP_Class_Deprecated* ppp_class() const;
 
-  bool LoadUrl(std::string url, std::string* error);
+  void LoadUrl(bool stream_as_file, std::string url);
 
  protected:
   static bool HasProperty(void* object,
@@ -57,4 +58,3 @@ class ScriptableObject {
 };
 
 #endif  // TESTS_PPAPI_GETURL_SCRIPTABLE_OBJECT_H_
-

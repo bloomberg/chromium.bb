@@ -4,14 +4,15 @@
 #ifndef TESTS_PPAPI_GETURL_MODULE_H_
 #define TESTS_PPAPI_GETURL_MODULE_H_
 
-#include <ppapi/c/pp_module.h>
-#include <ppapi/c/pp_resource.h>
-#include <ppapi/c/ppb.h>
-#include <ppapi/c/ppb_core.h>
-#include <ppapi/c/dev/ppb_var_deprecated.h>
-#include <ppapi/c/ppp.h>
-#include <ppapi/c/ppp_instance.h>
 #include <string>
+
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/ppb.h"
+#include "ppapi/c/ppb_core.h"
+#include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/c/ppp.h"
+#include "ppapi/c/ppp_instance.h"
 
 // ppapi_geturl example is deliberately using C PPAPI interface.
 // C++ PPAPI layer has pp::Module wrapper class.
@@ -36,7 +37,8 @@ class Module {
 
   // Calls JS ReportResult() defined in ppapi_geturl.html
   void ReportResult(PP_Instance pp_instance,
-                    const char* fname,
+                    const char* url,
+                    bool as_file,
                     const char* text,
                     bool success);
  private:
@@ -52,4 +54,3 @@ class Module {
 };
 
 #endif  // TESTS_PPAPI_GETURL_MODULE_H_
-

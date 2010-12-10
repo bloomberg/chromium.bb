@@ -19,37 +19,34 @@ PPP_Instance instance_interface;
 Module* singeton_ = NULL;
 }
 
-PP_Bool Instance_DidCreate(PP_Instance pp_instance,
-                        uint32_t argc,
-                        const char* argn[],
-                        const char* argv[]) {
+PP_Bool Instance_DidCreate(PP_Instance /*pp_instance*/,
+                           uint32_t /*argc*/,
+                           const char* /*argn*/[],
+                           const char* /*argv*/[]) {
   printf("--- Instance_DidCreate\n");
   return PP_TRUE;
 }
 
-void Instance_DidDestroy(PP_Instance instance) {
+void Instance_DidDestroy(PP_Instance /*instance*/) {
   printf("--- Instance_DidDestroy\n");
 }
 
-void Instance_DidChangeView(PP_Instance pp_instance,
-                            const PP_Rect* position,
-                            const PP_Rect* clip) {
-  printf("--- Instance_DidChangeView\n");
+void Instance_DidChangeView(PP_Instance /*pp_instance*/,
+                            const PP_Rect* /*position*/,
+                            const PP_Rect* /*clip*/) {
 }
 
-void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {
-  printf("--- Instance_DidChangeFocus\n");
+void Instance_DidChangeFocus(PP_Instance /*pp_instance*/,
+                             PP_Bool /*has_focus*/) {
 }
 
-PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
-                               const PP_InputEvent* event) {
-  printf("--- Instance_HandleInputEvent\n");
+PP_Bool Instance_HandleInputEvent(PP_Instance /*pp_instance*/,
+                                  const PP_InputEvent* /*event*/) {
   return PP_FALSE;
 }
 
-PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
-                                 PP_Resource pp_url_loader) {
-  printf("--- Instance_HandleDocumentLoad\n");
+PP_Bool Instance_HandleDocumentLoad(PP_Instance /*pp_instance*/,
+                                    PP_Resource /*pp_url_loader*/) {
   return PP_FALSE;
 }
 
@@ -206,9 +203,12 @@ std::string Module::ErrorCodeToStr(int32_t error_code) {
 }
 
 void Module::ReportResult(PP_Instance pp_instance,
-                          const char* fname,
+                          const char* url,
+                          bool as_file,
                           const char* text,
                           bool success) {
+  printf("--- ReportResult('%s', as_file=%d, '%s', success=%d)\n",
+         url, as_file, text, success);
   const PPB_Instance* ppb_instance =
       static_cast<const PPB_Instance*>(Get()->GetBrowserInterface(
           PPB_INSTANCE_INTERFACE));
@@ -228,11 +228,11 @@ void Module::ReportResult(PP_Instance pp_instance,
   }
   PP_Var method_name_var = Module::StrToVar("ReportResult");
   PP_Var exception_var = PP_MakeUndefined();
-  PP_Var args[3];
-  args[0] = Module::StrToVar(fname);
-  args[1] = Module::StrToVar(text);
-  args[2] = PP_MakeBool(success ? PP_TRUE : PP_FALSE);
-
+  PP_Var args[4];
+  args[0] = Module::StrToVar(url);
+  args[1] = PP_MakeBool(as_file ? PP_TRUE : PP_FALSE);
+  args[2] = Module::StrToVar(text);
+  args[3] = PP_MakeBool(success ? PP_TRUE : PP_FALSE);
   ppb_var_interface->Call(window_var,
                           method_name_var,
                           sizeof(args) / sizeof(args[0]),
@@ -241,7 +241,7 @@ void Module::ReportResult(PP_Instance pp_instance,
 
   ppb_var_interface->Release(method_name_var);
   ppb_var_interface->Release(args[0]);
-  ppb_var_interface->Release(args[1]);
+  ppb_var_interface->Release(args[2]);
   ppb_var_interface->Release(exception_var);
   ppb_var_interface->Release(window_var);
 }

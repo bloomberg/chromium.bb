@@ -28,54 +28,45 @@ const PPP_Class_Deprecated* ScriptableObject::ppp_class() const {
   return &ppp_class_;
 }
 
-bool ScriptableObject::HasProperty(void* object,
+bool ScriptableObject::HasProperty(void* /*object*/,
                                    PP_Var name,
-                                   PP_Var* exception) {
-  bool result = false;
-  std::string str = Module::VarToStr(name);
-  if (str == "__moduleReady")
-    result = true;
-  return result;
+                                   PP_Var* /*exception*/) {
+  return (Module::VarToStr(name) == "__moduleReady");
 }
 
-bool ScriptableObject::HasMethod(void* object,
+bool ScriptableObject::HasMethod(void* /*object*/,
                                  PP_Var name,
-                                 PP_Var* exception) {
-  bool result = false;
-  std::string str = Module::VarToStr(name);
-  if (str == "loadUrl")
-    result = true;
-  return result;
+                                 PP_Var* /*exception*/) {
+  return (Module::VarToStr(name) == "loadUrl");
 }
 
-PP_Var ScriptableObject::GetProperty(void* object,
+PP_Var ScriptableObject::GetProperty(void* /*object*/,
                                      PP_Var name,
-                                     PP_Var* exception) {
+                                     PP_Var* /*exception*/) {
   std::string str = Module::VarToStr(name);
   PP_Var var = PP_MakeUndefined();
   if (str == "__moduleReady")
     var = PP_MakeInt32(1);
-
   return var;
 }
 
 void ScriptableObject::GetAllPropertyNames(void* object,
-                                           uint32_t* property_count,
-                                           PP_Var** properties,
-                                           PP_Var* exception) {
+                                           uint32_t* /*property_count*/,
+                                           PP_Var** /*properties*/,
+                                           PP_Var* /*exception*/) {
   printf("--- ScriptableObject::GetAllPropertyNames(%p)\n", object);
 }
 
 void ScriptableObject::SetProperty(void* object,
-                                   PP_Var name,
-                                   PP_Var value,
-                                   PP_Var* exception) {
+                                   PP_Var /*name*/,
+                                   PP_Var /*value*/,
+                                   PP_Var* /*exception*/) {
   printf("--- ScriptableObject::SetProperty(%p)\n", object);
 }
 
 void ScriptableObject::RemoveProperty(void* object,
-                                      PP_Var name,
-                                      PP_Var* exception) {
+                                      PP_Var /*name*/,
+                                      PP_Var* /*exception*/) {
   printf("--- ScriptableObject::RemoveProperty(%p)\n", object);
 }
 
@@ -83,40 +74,41 @@ PP_Var ScriptableObject::Call(void* object,
                               PP_Var method_name,
                               uint32_t argc,
                               PP_Var* argv,
-                              PP_Var* exception) {
-  ScriptableObject* this_object = static_cast<ScriptableObject*>(object);
-  std::string str = Module::VarToStr(method_name);
-  printf("--- ScriptableObject::Call(%p, '%s'", object, str.c_str());
+                              PP_Var* /*exception*/) {
+  std::string name = Module::VarToStr(method_name);
+  printf("--- ScriptableObject::Call(%p, '%s'", object, name.c_str());
   for (uint32_t i = 0; i < argc; i++) {
-    std::string str =  Module::VarToStr(argv[i]);
-    printf(", '%s'", str.c_str());
+    printf(", '%s'", Module::VarToStr(argv[i]).c_str());
   }
   printf(")\n");
-  if (str == "loadUrl") {
+  if (name == "loadUrl") {
     std::string url;
-    if (argc > 0)
+    if (argc > 0) {
       url = Module::VarToStr(argv[0]);
-
-    ScriptableObject* this_obj = static_cast<ScriptableObject*>(object);
-    if (this_obj) {
-      std::string error;
-      if (!this_obj->LoadUrl(url, &error)) {
-        *exception = Module::StrToVar(error);
-        Module::Get()->ReportResult(this_object->instance_,
-                                    url.c_str(),
-                                    error.c_str(),
-                                    false);
-      }
+    }
+    bool stream_as_file = false;
+    if (argc > 1) {
+      stream_as_file = argv[1].value.as_bool;
+    }
+    ScriptableObject* this_object = static_cast<ScriptableObject*>(object);
+    if (this_object) {
+      // Note that we don't set the exception when LoadUrl fails because
+      // error reporting is done via ReportResult(). Otherwise,
+      // we will trigger "Uncaught Error: Error calling method on NPObject.",
+      // which will make JS handling code more complicated if we want
+      // the rest of the statements after the failing call to be executed.
+      this_object->LoadUrl(stream_as_file, url);
     }
   }
   PP_Var var = PP_MakeUndefined();
+  printf("--- ScriptableObject::Call(%s): done\n", name.c_str());
   return var;
 }
 
 PP_Var ScriptableObject::Construct(void* object,
-                                   uint32_t argc,
-                                   PP_Var* argv,
-                                   PP_Var* exception) {
+                                   uint32_t /*argc*/,
+                                   PP_Var* /*argv*/,
+                                   PP_Var* /*exception*/) {
   printf("--- ScriptableObject::Construct(%p)\n", object);
   PP_Var var = PP_MakeUndefined();
   return var;
@@ -127,17 +119,19 @@ void ScriptableObject::Deallocate(void* object) {
   delete static_cast<ScriptableObject*>(object);
 }
 
-bool ScriptableObject::LoadUrl(std::string url,
-                               std::string* error) {
+void ScriptableObject::LoadUrl(bool stream_as_file, std::string url) {
   printf("--- ScriptableObject::LoadUrl('%s')\n", url.c_str());
-  UrlLoadRequest* url_req = new UrlLoadRequest(instance_);
-  if (NULL == url_req) {
-    *error = "Memory allocation failed";
-    return false;
+  UrlLoadRequest* url_load_request = new UrlLoadRequest(instance_);
+  if (NULL == url_load_request) {
+    Module::Get()->ReportResult(instance_,
+                                url.c_str(),
+                                stream_as_file,
+                                "LoadUrl: memory allocation failed",
+                                false);
+    return;
   }
-  if (!url_req->Init(url, error)) {
-    delete url_req;
-    return false;
-  }
-  return true;
+  // On success or failure url_load_request will call ReportResult().
+  // This is the time to clean it up.
+  url_load_request->set_delete_this_after_report();
+  url_load_request->Load(stream_as_file, url);
 }
