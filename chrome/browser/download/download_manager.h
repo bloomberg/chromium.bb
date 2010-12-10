@@ -208,13 +208,6 @@ class DownloadManager
   // Called when the user has validated the download of a dangerous file.
   void DangerousDownloadValidated(DownloadItem* download);
 
-  // Performs the last steps required when a download has been completed.
-  // It is necessary to break down the flow when a download is finished as
-  // dangerous downloads are downloaded to temporary files that need to be
-  // renamed on the file thread first.
-  // Invoked on the UI thread.
-  void DownloadFinished(DownloadItem* download);
-
  private:
   // This class is used to let an incognito DownloadManager observe changes to
   // a normal DownloadManager, to propagate ModelChanged() calls from the parent
@@ -296,38 +289,40 @@ class DownloadManager
 
   DownloadItem* GetDownloadItem(int id);
 
-  // 'downloads_' is map of all downloads in this profile. The key is the handle
-  // returned by the history system, which is unique across sessions. This map
-  // owns all the DownloadItems once they have been created in the history
-  // system.
+  // Debugging routine to confirm relationship between below
+  // containers; no-op if NDEBUG.
+  void AssertContainersConsistent() const;
+
+  // 'downloads_' is the owning set for all downloads known to the
+  // DownloadManager.  This includes downloads started by the user in
+  // this session, downloads initialized from the history system, and
+  // "save page as" downloads.  All other DownloadItem containers in
+  // the DownloadManager are maps; they do not own the DownloadItems.
+  // Note that this is the only place that "save page as" downloads are
+  // kept, as the DownloadManager's only job is to hold onto those
+  // until destruction.
+  //
+  // 'history_downloads_' is map of all downloads in this profile. The key
+  // is the handle returned by the history system, which is unique
+  // across sessions.
   //
   // 'in_progress_' is a map of all downloads that are in progress and that have
   // not yet received a valid history handle. The key is the ID assigned by the
-  // ResourceDispatcherHost, which is unique for the current session. This map
-  // does not own the DownloadItems.
-  //
-  // 'dangerous_finished_' is a map of dangerous download that have finished
-  // but were not yet approved by the user.  Similarly to in_progress_, the key
-  // is the ID assigned by the ResourceDispatcherHost and the map does not own
-  // the DownloadItems.  It is used on shutdown to delete completed downloads
-  // that have not been approved.
+  // ResourceDispatcherHost, which is unique for the current session.
   //
   // When a download is created through a user action, the corresponding
   // DownloadItem* is placed in 'in_progress_' and remains there until it has
   // received a valid handle from the history system. Once it has a valid
-  // handle, the DownloadItem* is placed in the 'downloads_' map. When the
-  // download is complete, it is removed from 'in_progress_'. Downloads from
-  // past sessions read from a persisted state from the history system are
-  // placed directly into 'downloads_' since they have valid handles in the
-  // history system.
-  typedef base::hash_map<int64, DownloadItem*> DownloadMap;
-  DownloadMap downloads_;
-  DownloadMap in_progress_;
-  DownloadMap dangerous_finished_;
+  // handle, the DownloadItem* is placed in the 'history_downloads_'
+  // map.  When the download is complete, it is removed from
+  // 'in_progress_'.  Downloads from past sessions read from a
+  // persisted state from the history system are placed directly into
+  // 'history_downloads_' since they have valid handles in the history system.
+  std::set<DownloadItem*> downloads_;
 
-  // Collection of all save-page-as downloads in this profile.
-  // It owns the DownloadItems.
-  std::vector<DownloadItem*> save_page_downloads_;
+  typedef base::hash_map<int64, DownloadItem*> DownloadMap;
+  DownloadMap history_downloads_;
+  DownloadMap in_progress_;
 
   // True if the download manager has been initialized and requires a shutdown.
   bool shutdown_needed_;

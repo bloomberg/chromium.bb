@@ -83,53 +83,44 @@ void DownloadManager::Shutdown() {
                           this));
   }
 
-  // 'in_progress_' may contain DownloadItems that have not finished the start
-  // complete (from the history service) and thus aren't in downloads_.
-  DownloadMap::iterator it = in_progress_.begin();
-  std::set<DownloadItem*> to_remove;
-  for (; it != in_progress_.end(); ++it) {
-    DownloadItem* download = it->second;
-    if (download->safety_state() == DownloadItem::DANGEROUS) {
-      // Forget about any download that the user did not approve.
-      // Note that we cannot call download->Remove() this would invalidate our
-      // iterator.
-      to_remove.insert(download);
-      continue;
-    }
-    DCHECK_EQ(DownloadItem::IN_PROGRESS, download->state());
-    download->Cancel(false);
-    download_history_->UpdateEntry(download);
-    if (download->db_handle() == DownloadHistory::kUninitializedHandle) {
-      // An invalid handle means that 'download' does not yet exist in
-      // 'downloads_', so we have to delete it here.
-      delete download;
+  AssertContainersConsistent();
+
+  // Go through all downloads in downloads_.  Dangerous ones we need to
+  // remove on disk, and in progress ones we need to cancel.
+  for (std::set<DownloadItem*>::iterator it = downloads_.begin();
+       it != downloads_.end();) {
+    DownloadItem* download = *it;
+
+    // Save iterator from potential erases in this set done by called code.
+    // Iterators after an erasure point are still valid for lists and
+    // associative containers such as sets.
+    it++;
+
+    if (download->safety_state() == DownloadItem::DANGEROUS &&
+        (download->state() == DownloadItem::IN_PROGRESS ||
+         download->state() == DownloadItem::COMPLETE)) {
+      // The user hasn't accepted it, so we need to remove it
+      // from the disk.  This may or may not result in it being
+      // removed from the DownloadManager queues and deleted
+      // (specifically, DownloadManager::RemoveDownload only
+      // removes and deletes it if it's known to the history service)
+      // so the only thing we know after calling this function is that
+      // the download was deleted if-and-only-if it was removed
+      // from all queues.
+      download->Remove(true);
+    } else if (download->state() == DownloadItem::IN_PROGRESS) {
+      download->Cancel(false);
+      download_history_->UpdateEntry(download);
     }
   }
 
-  // 'dangerous_finished_' contains all complete downloads that have not been
-  // approved.  They should be removed.
-  it = dangerous_finished_.begin();
-  for (; it != dangerous_finished_.end(); ++it)
-    to_remove.insert(it->second);
+  // At this point, all dangerous downloads have had their files removed
+  // and all in progress downloads have been cancelled.  We can now delete
+  // anything left.
+  STLDeleteElements(&downloads_);
 
-  // Remove the dangerous download that are not approved.
-  for (std::set<DownloadItem*>::const_iterator rm_it = to_remove.begin();
-       rm_it != to_remove.end(); ++rm_it) {
-    DownloadItem* download = *rm_it;
-    int64 handle = download->db_handle();
-    download->Remove(true);
-    // Same as above, delete the download if it is not in 'downloads_' (as the
-    // Remove() call above won't have deleted it).
-    if (handle == DownloadHistory::kUninitializedHandle)
-      delete download;
-  }
-  to_remove.clear();
-
+  // And clear all non-owning containers.
   in_progress_.clear();
-  dangerous_finished_.clear();
-  STLDeleteValues(&downloads_);
-  STLDeleteContainerPointers(save_page_downloads_.begin(),
-                             save_page_downloads_.end());
 
   file_manager_ = NULL;
 
@@ -149,8 +140,8 @@ void DownloadManager::GetTemporaryDownloads(
     const FilePath& dir_path, std::vector<DownloadItem*>* result) {
   DCHECK(result);
 
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
+  for (DownloadMap::iterator it = history_downloads_.begin();
+       it != history_downloads_.end(); ++it) {
     if (it->second->is_temporary() &&
         it->second->full_path().DirName() == dir_path)
       result->push_back(it->second);
@@ -161,8 +152,8 @@ void DownloadManager::GetAllDownloads(
     const FilePath& dir_path, std::vector<DownloadItem*>* result) {
   DCHECK(result);
 
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
+  for (DownloadMap::iterator it = history_downloads_.begin();
+       it != history_downloads_.end(); ++it) {
     if (!it->second->is_temporary() &&
         (dir_path.empty() || it->second->full_path().DirName() == dir_path))
       result->push_back(it->second);
@@ -173,8 +164,8 @@ void DownloadManager::GetCurrentDownloads(
     const FilePath& dir_path, std::vector<DownloadItem*>* result) {
   DCHECK(result);
 
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
+  for (DownloadMap::iterator it = history_downloads_.begin();
+       it != history_downloads_.end(); ++it) {
     if (!it->second->is_temporary() &&
         (it->second->state() == DownloadItem::IN_PROGRESS ||
          it->second->safety_state() == DownloadItem::DANGEROUS) &&
@@ -196,8 +187,8 @@ void DownloadManager::SearchDownloads(const string16& query,
 
   string16 query_lower(l10n_util::ToLower(query));
 
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
+  for (DownloadMap::iterator it = history_downloads_.begin();
+       it != history_downloads_.end(); ++it) {
     DownloadItem* download_item = it->second;
 
     if (download_item->is_temporary() || download_item->is_extension_install())
@@ -252,9 +243,10 @@ bool DownloadManager::Init(Profile* profile) {
 // create a download item and store it in our download map, and inform the
 // history system of a new download. Since this method can be called while the
 // history service thread is still reading the persistent state, we do not
-// insert the new DownloadItem into 'downloads_' or inform our observers at this
-// point. OnCreateDatabaseEntryComplete() handles that finalization of the the
-// download creation as a callback from the history thread.
+// insert the new DownloadItem into 'history_downloads_' or inform our
+// observers at this point. OnCreateDatabaseEntryComplete() handles that
+// finalization of the the download creation as a callback from the
+// history thread.
 void DownloadManager::StartDownload(DownloadCreateInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(info);
@@ -439,6 +431,7 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info,
                                             profile_->IsOffTheRecord());
   DCHECK(!ContainsKey(in_progress_, info->download_id));
   in_progress_[info->download_id] = download;
+  downloads_.insert(download);
 
   bool download_finished = ContainsKey(pending_finished_downloads_,
                                        info->download_id);
@@ -538,7 +531,6 @@ void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
   // anything. When the user notifies us, it will trigger a call to
   // ProceedWithFinishedDangerousDownload.
   if (download->safety_state() == DownloadItem::DANGEROUS) {
-    dangerous_finished_[download_id] = download;
     return;
   }
 
@@ -566,18 +558,6 @@ void DownloadManager::DownloadRenamedToFinalName(int download_id,
   if (!item)
     return;
   item->OnDownloadRenamedToFinalName(full_path);
-}
-
-void DownloadManager::DownloadFinished(DownloadItem* download) {
-  VLOG(20) << __FUNCTION__ << "()"
-           << " download = " << download->DebugString(true);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // If this was a dangerous download, it has now been approved and must be
-  // removed from dangerous_finished_ so it does not get deleted on shutdown.
-  dangerous_finished_.erase(download->id());
-
-  download->Finished();
 }
 
 // Called on the file thread.  Renames the downloaded file to its original name.
@@ -618,8 +598,8 @@ void DownloadManager::DangerousDownloadRenamed(int64 download_handle,
            << " success = " << success
            << " new_path = \"" << new_path.value() << "\""
            << " new_path_uniquifier = " << new_path_uniquifier;
-  DownloadMap::iterator it = downloads_.find(download_handle);
-  if (it == downloads_.end()) {
+  DownloadMap::iterator it = history_downloads_.find(download_handle);
+  if (it == history_downloads_.end()) {
     NOTREACHED();
     return;
   }
@@ -634,7 +614,7 @@ void DownloadManager::DangerousDownloadRenamed(int64 download_handle,
   }
 
   // Continue the download finished sequence.
-  DownloadFinished(download);
+  download->Finished();
 }
 
 void DownloadManager::DownloadCancelled(int32 download_id) {
@@ -715,8 +695,8 @@ void DownloadManager::PauseDownloadRequest(ResourceDispatcherHost* rdh,
 }
 
 void DownloadManager::RemoveDownload(int64 download_handle) {
-  DownloadMap::iterator it = downloads_.find(download_handle);
-  if (it == downloads_.end())
+  DownloadMap::iterator it = history_downloads_.find(download_handle);
+  if (it == history_downloads_.end())
     return;
 
   // Make history update.
@@ -724,10 +704,9 @@ void DownloadManager::RemoveDownload(int64 download_handle) {
   download_history_->RemoveEntry(download);
 
   // Remove from our tables and delete.
-  downloads_.erase(it);
-  it = dangerous_finished_.find(download->id());
-  if (it != dangerous_finished_.end())
-    dangerous_finished_.erase(it);
+  history_downloads_.erase(it);
+  int downloads_count = downloads_.erase(download);
+  DCHECK_EQ(1, downloads_count);
 
   // Tell observers to refresh their views.
   NotifyModelChanged();
@@ -739,9 +718,9 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
                                             const base::Time remove_end) {
   download_history_->RemoveEntriesBetween(remove_begin, remove_end);
 
-  DownloadMap::iterator it = downloads_.begin();
+  DownloadMap::iterator it = history_downloads_.begin();
   std::vector<DownloadItem*> pending_deletes;
-  while (it != downloads_.end()) {
+  while (it != history_downloads_.end()) {
     DownloadItem* download = it->second;
     DownloadItem::DownloadState state = download->state();
     if (download->start_time() >= remove_begin &&
@@ -749,13 +728,9 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
         (state == DownloadItem::COMPLETE ||
          state == DownloadItem::CANCELLED)) {
       // Remove from the map and move to the next in the list.
-      downloads_.erase(it++);
+      history_downloads_.erase(it++);
 
       // Also remove it from any completed dangerous downloads.
-      DownloadMap::iterator dit = dangerous_finished_.find(download->id());
-      if (dit != dangerous_finished_.end())
-        dangerous_finished_.erase(dit);
-
       pending_deletes.push_back(download);
 
       continue;
@@ -791,7 +766,7 @@ int DownloadManager::RemoveAllDownloads() {
 }
 
 void DownloadManager::SavePageAsDownloadStarted(DownloadItem* download_item) {
-  save_page_downloads_.push_back(download_item);
+  downloads_.insert(download_item);
 }
 
 // Initiate a download of a specific URL. We send the request to the
@@ -923,8 +898,9 @@ void DownloadManager::OnQueryDownloadEntriesComplete(
     std::vector<DownloadCreateInfo>* entries) {
   for (size_t i = 0; i < entries->size(); ++i) {
     DownloadItem* download = new DownloadItem(this, entries->at(i));
-    DCHECK(!ContainsKey(downloads_, download->db_handle()));
-    downloads_[download->db_handle()] = download;
+    DCHECK(!ContainsKey(history_downloads_, download->db_handle()));
+    downloads_.insert(download);
+    history_downloads_[download->db_handle()] = download;
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
              << " download = " << download->DebugString(true);
   }
@@ -933,7 +909,7 @@ void DownloadManager::OnQueryDownloadEntriesComplete(
 
 // Once the new DownloadItem's creation info has been committed to the history
 // service, we associate the DownloadItem with the db handle, update our
-// 'downloads_' map and inform observers.
+// 'history_downloads_' map and inform observers.
 void DownloadManager::OnCreateDownloadEntryComplete(
     DownloadCreateInfo info,
     int64 db_handle) {
@@ -957,8 +933,9 @@ void DownloadManager::OnCreateDownloadEntryComplete(
   download->set_db_handle(db_handle);
 
   // Insert into our full map.
-  DCHECK(downloads_.find(download->db_handle()) == downloads_.end());
-  downloads_[download->db_handle()] = download;
+  DCHECK(history_downloads_.find(download->db_handle()) ==
+         history_downloads_.end());
+  history_downloads_[download->db_handle()] = download;
 
   // Show in the appropropriate browser UI.
   ShowDownloadInBrowser(info, download);
@@ -1010,13 +987,28 @@ void DownloadManager::NotifyModelChanged() {
 }
 
 DownloadItem* DownloadManager::GetDownloadItem(int id) {
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
+  for (DownloadMap::iterator it = history_downloads_.begin();
+       it != history_downloads_.end(); ++it) {
     DownloadItem* item = it->second;
     if (item->id() == id)
       return item;
   }
   return NULL;
+}
+
+void DownloadManager::AssertContainersConsistent() const {
+#if !defined(NDEBUG)
+  // Confirm that everything in all maps is also in downloads_.
+  const DownloadMap* maps[] = {&in_progress_, &history_downloads_};
+  for (int i = 0; i < static_cast<int>(ARRAYSIZE_UNSAFE(maps)); i++) {
+    for (DownloadMap::const_iterator it = maps[i]->begin();
+         it != maps[i]->end(); it++) {
+      DCHECK_EQ(1u, downloads_.count(it->second));
+    }
+  }
+  // Note that downloads_ also includes save page as downloads; that's not
+  // checked.
+#endif
 }
 
 // DownloadManager::OtherDownloadManagerObserver implementation ----------------

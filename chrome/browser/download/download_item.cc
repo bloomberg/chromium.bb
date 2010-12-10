@@ -408,7 +408,7 @@ void DownloadItem::OnSafeDownloadFinished(DownloadFileManager* file_manager) {
     return;
   }
 
-  download_manager_->DownloadFinished(this);
+  Finished();
 }
 
 void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
@@ -420,7 +420,7 @@ void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
   if (needed_rename && safety_state() == SAFE) {
     // This was called from OnSafeDownloadFinished; continue to call
     // DownloadFinished.
-    download_manager_->DownloadFinished(this);
+    Finished();
   }
 }
 
