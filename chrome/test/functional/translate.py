@@ -513,6 +513,13 @@ class TranslateTest(pyauto.PyUITest):
     self.AppendTab(pyauto.GURL('about:blank'), 2)
     _AssertTranslateInfobarShowing(window_index=2, tab_index=1)
 
+  def testNoTranslateInfobarAfterNeverTranslate(self):
+    """Verify Translate Info bar should not stay on the page after opting
+       Never translate the page"""
+    url = self._GetDefaultSpanishURL()
+    self._NavigateAndWaitForBar(url)
+    self.SelectTranslateOption('never_translate_language')
+    self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
 
 if __name__ == '__main__':
   pyauto_functional.Main()
