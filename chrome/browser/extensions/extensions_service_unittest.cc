@@ -2892,7 +2892,9 @@ void ExtensionsServiceTest::TestExternalProvider(
 // Tests the external installation feature
 #if defined(OS_WIN)
 TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
+  // This should all work, even when normal extension installation is disabled.
   InitializeEmptyExtensionsService();
+  set_extensions_enabled(false);
 
   // Now add providers. Extension system takes ownership of the objects.
   MockExtensionProvider* reg_provider =
@@ -2914,7 +2916,9 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
 }
 
 TEST_F(ExtensionsServiceTest, ExternalInstallPrefUpdateUrl) {
+  // This should all work, even when normal extension installation is disabled.
   InitializeEmptyExtensionsService();
+  set_extensions_enabled(false);
 
   // TODO(skerner): The mock provider is not a good model of a provider
   // that works with update URLs, because it adds file and version info.
@@ -2927,6 +2931,39 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPrefUpdateUrl) {
       new MockExtensionProvider(Extension::EXTERNAL_PREF_DOWNLOAD);
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF_DOWNLOAD);
+}
+
+// Tests that external extensions get uninstalled when the external extension
+// providers can't account for them.
+TEST_F(ExtensionsServiceTest, ExternalUninstall) {
+  // Start the extensions service with one external extension already installed.
+  FilePath source_install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
+  source_install_dir = source_install_dir
+      .AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions");
+  FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("PreferencesExternal");
+
+  // This initializes the extensions service with no ExternalExtensionProviders.
+  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+  set_extensions_enabled(false);
+
+  service_->Init();
+  loop_.RunAllPending();
+
+  ASSERT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(0u, loaded_.size());
+
+  // Verify that it's not the disabled extensions flag causing it not to load.
+  set_extensions_enabled(true);
+  service_->ReloadExtensions();
+  loop_.RunAllPending();
+
+  ASSERT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(0u, loaded_.size());
 }
 
 TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {

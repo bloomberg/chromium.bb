@@ -190,11 +190,8 @@ class ExtensionsServiceBackend
       public ExternalExtensionProvider::Visitor {
  public:
   // |install_directory| is a path where to look for extensions to load.
-  // |load_external_extensions| indicates whether or not backend should load
-  // external extensions listed in JSON file and Windows registry.
   ExtensionsServiceBackend(PrefService* prefs,
-                           const FilePath& install_directory,
-                           bool load_external_extensions);
+                           const FilePath& install_directory);
 
   // Loads a single extension from |path| where |path| is the top directory of
   // a specific extension where its manifest file lives.
@@ -285,15 +282,11 @@ class ExtensionsServiceBackend
 
 ExtensionsServiceBackend::ExtensionsServiceBackend(
     PrefService* prefs,
-    const FilePath& install_directory,
-    bool load_external_extensions)
+    const FilePath& install_directory)
         : frontend_(NULL),
           install_directory_(install_directory),
           alert_on_error_(false),
           external_extension_added_(false) {
-  if (!load_external_extensions)
-    return;
-
   // TODO(aa): This ends up doing blocking IO on the UI thread because it reads
   // pref data in the ctor and that is called on the UI thread. Would be better
   // to re-read data each time we list external extensions, anyway.
@@ -595,8 +588,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
   }
 
   backend_ = new ExtensionsServiceBackend(profile->GetPrefs(),
-                                          install_directory_,
-                                          extensions_enabled_);
+                                          install_directory_);
 
   // Use monochrome icons for Omnibox icons.
   omnibox_popup_icon_manager_.set_monochrome(true);
@@ -855,7 +847,7 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
       GetExtensionByIdInternal(extension_id, true, true);
 
   // Callers should not send us nonexistent extensions.
-  DCHECK(extension);
+  CHECK(extension);
 
   // Get hold of information we need after unloading, since the extension
   // pointer will be invalid then.
@@ -1570,7 +1562,8 @@ void ExtensionsService::OnExtensionLoaded(const Extension* extension) {
   // is set (http://crbug.com/29067).
   if (!extensions_enabled() &&
       !extension->is_theme() &&
-      extension->location() != Extension::COMPONENT)
+      extension->location() != Extension::COMPONENT &&
+      !Extension::IsExternalLocation(extension->location()))
     return;
 
   // Check if the extension's privileges have changed and disable the
