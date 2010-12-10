@@ -140,6 +140,7 @@
         '../../base/test/run_all_unittests.cc',
         'files/src/google/cacheinvalidation/system-resources-for-test.h',
         'files/src/google/cacheinvalidation/invalidation-client-impl_test.cc',
+        'files/src/google/cacheinvalidation/persistence-manager_test.cc',
         'files/src/google/cacheinvalidation/persistence-utils_test.cc',
         'files/src/google/cacheinvalidation/throttle_test.cc',
       ],
