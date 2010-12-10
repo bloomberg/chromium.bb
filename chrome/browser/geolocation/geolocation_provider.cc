@@ -5,6 +5,7 @@
 #include "chrome/browser/geolocation/geolocation_provider.h"
 
 #include "base/singleton.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
 
 // This class is guaranteed to outlive its internal thread, so ref counting
@@ -47,6 +48,10 @@ bool GeolocationProvider::RemoveObserver(GeolocationObserver* observer) {
 void GeolocationProvider::OnObserversChanged() {
   DCHECK(OnClientThread());
   if (observers_.empty()) {
+    // http://crbug.com/66077: This is a bug.  The geolocation thread may
+    // transitively (via other threads it joins) block on long-running tasks /
+    // IO.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     Stop();
   } else {
     if (!IsRunning()) {

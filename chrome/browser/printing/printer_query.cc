@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/printer_query.h"
 
 #include "base/message_loop.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/printing/print_job_worker.h"
 
 namespace printing {
@@ -96,6 +97,10 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
 
 void PrinterQuery::StopWorker() {
   if (worker_.get()) {
+    // http://crbug.com/66082: We're blocking on the PrinterQuery's worker
+    // thread.  It's not clear to me if this may result in blocking the current
+    // thread for an unacceptable time.  We should probably fix it.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     worker_->Stop();
     worker_.reset();
   }
