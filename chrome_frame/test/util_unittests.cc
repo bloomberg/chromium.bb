@@ -18,6 +18,13 @@ using chrome_frame_test::TempRegKeyOverride;
 const wchar_t kChannelName[] = L"-dev";
 const wchar_t kSuffix[] = L"-fix";
 
+// Registry override in the UtilsTest will cause shell APIs to fail
+// So separate this test from the rest
+TEST(SimpleUtilTests, GetTempInternetFiles) {
+  FilePath path = GetIETemporaryFilesFolder();
+  EXPECT_FALSE(path.empty());
+}
+
 class UtilTests : public testing::Test {
  protected:
   void SetUp() {
@@ -137,11 +144,6 @@ TEST_F(UtilTests, GuidToString) {
   std::wstring str_guid(GuidToString(test_guid));
   EXPECT_EQ(0, str_guid.compare(compare));
   EXPECT_EQ(static_cast<size_t>(lstrlenW(compare)), str_guid.length());
-}
-
-TEST_F(UtilTests, GetTempInternetFiles) {
-  FilePath path = GetIETemporaryFilesFolder();
-  EXPECT_FALSE(path.empty());
 }
 
 TEST_F(UtilTests, ParseAttachTabUrlTest) {
