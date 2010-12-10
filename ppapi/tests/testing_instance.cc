@@ -93,6 +93,8 @@ void TestingInstance::AppendError(const std::string& message) {
 }
 
 void TestingInstance::ExecuteTests(int32_t unused) {
+  SetCookie("STARTUP_COOKIE", "STARTED");
+
   // Clear the console.
   // This does: window.document.getElementById("console").innerHTML = "";
   pp::Var window = GetWindowObject();
@@ -168,7 +170,7 @@ void TestingInstance::LogHTML(const std::string& html) {
 }
 
 void TestingInstance::SetCookie(const std::string& name,
-                             const std::string& value) {
+                                const std::string& value) {
   // window.document.cookie = "<name>=<value>; path=/"
   std::string cookie_string = name + "=" + value + "; path=/";
   pp::Var document = GetWindowObject().GetProperty("document");
