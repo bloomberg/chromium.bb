@@ -1287,6 +1287,10 @@ void BrowserWindowGtk::DestroyBrowser() {
 void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
   GetLocationBar()->location_entry()->ClosePopup();
 
+  TabContents* tab_contents = GetDisplayedTabContents();
+  if (tab_contents)
+    tab_contents->WindowMoveOrResizeStarted();
+
   if (bounds_.size() != bounds.size())
     OnSizeChanged(bounds.width(), bounds.height());
 
