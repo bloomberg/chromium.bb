@@ -87,6 +87,29 @@ class ContentTest(pyauto.PyUITest):
                              ['User Agent', 'Command Line'],
                              ['odmomfodfm disfnodugdzuoufgbn ifdnf fif'])
 
+  def testHttpsPage(self):
+    """Test content in https://www.google.com"""
+    url = 'https://www.google.com'
+    self.NavigateToURL(url)
+    html_regular = self.GetTabContents()
+    self.assertTrue('Google Search' in html_regular)
+    self.assertTrue('I&#39;m Feeling Lucky' in html_regular)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(url, 1, 0)
+    html_incognito = self.GetTabContents(0, 1)
+    self.assertTrue('Google Search' in html_incognito)
+    self.assertTrue('I&#39;m Feeling Lucky' in html_incognito)
+
+  def testTopSitesContent(self):
+    """Test content in TopSites and Verify chrome is not getting blocked by
+       user-agent test by those websites."""
+    topsites_file = os.path.join(self.DataDir(), 'content', 'topsites_content')
+    topsites = self.EvalDataFrom(topsites_file)
+    for (url, name) in topsites.iteritems():
+      self.NavigateToURL(url)
+      html = self.GetTabContents()
+      self.assertTrue(name in html)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
