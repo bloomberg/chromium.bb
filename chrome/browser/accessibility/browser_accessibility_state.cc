@@ -5,7 +5,6 @@
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 
 #include "base/singleton.h"
-#include "chrome/browser/profiles/profile.h"
 
 BrowserAccessibilityState::BrowserAccessibilityState()
     : screen_reader_active_(false) {

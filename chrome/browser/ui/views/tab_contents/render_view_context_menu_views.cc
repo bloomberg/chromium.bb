@@ -5,9 +5,8 @@
 #include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 
 #include "app/keyboard_codes.h"
-#include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/profiles/profile.h"
 #include "grit/generated_resources.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"

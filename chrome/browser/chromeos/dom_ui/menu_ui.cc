@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/dom_ui/menu_ui.h"
 
+#include <algorithm>
+
 #include "app/menus/menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
@@ -20,7 +22,6 @@
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/url_constants.h"
@@ -314,8 +315,7 @@ MenuUIHTMLSource::MenuUIHTMLSource(const chromeos::MenuSourceDelegate* delegate,
       delegate_(delegate),
       menu_class_(menu_class),
       menu_source_id_(menu_source_id),
-      menu_css_id_(menu_css_id)
-{
+      menu_css_id_(menu_css_id) {
 }
 
 void MenuUIHTMLSource::StartDataRequest(const std::string& path,

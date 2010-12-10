@@ -18,7 +18,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/drag_download_file.h"
 #include "chrome/browser/download/drag_download_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/web_drag_source_win.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"

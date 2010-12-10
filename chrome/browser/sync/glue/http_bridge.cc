@@ -8,7 +8,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profiles/profile.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"

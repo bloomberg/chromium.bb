@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 
 #include <string>
+#include <vector>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

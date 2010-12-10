@@ -19,7 +19,6 @@
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/devtools_messages.h"

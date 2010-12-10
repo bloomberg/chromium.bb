@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"

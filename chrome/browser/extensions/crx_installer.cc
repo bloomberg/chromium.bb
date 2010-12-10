@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_paths.h"

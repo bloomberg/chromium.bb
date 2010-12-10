@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"

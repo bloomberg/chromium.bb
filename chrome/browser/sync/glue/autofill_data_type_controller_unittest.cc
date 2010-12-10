@@ -11,7 +11,6 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/model_associator_mock.h"

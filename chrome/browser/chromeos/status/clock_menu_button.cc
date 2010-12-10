@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
@@ -41,7 +40,7 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
   set_use_menu_button_paint(true);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(kFontSizeDelta));
-  SetEnabledColor(0xB3FFFFFF); // White with 70% Alpha
+  SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
   SetShowMultipleIconStates(false);
   set_alignment(TextButton::ALIGN_CENTER);
   UpdateTextAndSetNextTimer();
