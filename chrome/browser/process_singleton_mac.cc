@@ -62,10 +62,8 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
 }
 
 // Attempt to acquire an exclusive lock on an empty file in the
-// profile directory.  Returns |true| if it gets the lock.
-// TODO(shess): The older code always returned |true|.  Monitor the
-// histograms and convert the marked failure cases to |false| once
-// it's clear that it is safe to do.  http://crbug.com/58986
+// profile directory.  Returns |true| if it gets the lock.  Returns
+// |false| if the lock is held, or if there is an error.
 // TODO(shess): Rather than logging failures, popup an alert.  Punting
 // that for now because it would require confidence that this code is
 // never called in a situation where an alert wouldn't work.
@@ -80,8 +78,7 @@ bool ProcessSingleton::Create() {
     DPCHECK(lock_fd_ != -1) << "Unexpected failure opening profile lockfile";
     UMA_HISTOGRAM_ENUMERATION("ProcessSingleton.OpenError",
                               capture_errno, kMaxErrno);
-    // TODO(shess): Change to |false|.
-    return true;
+    return false;
   }
 
   // Acquire an exclusive lock in non-blocking fashion.  If the lock
@@ -98,8 +95,7 @@ bool ProcessSingleton::Create() {
     if (capture_errno != EWOULDBLOCK) {
       UMA_HISTOGRAM_ENUMERATION("ProcessSingleton.LockError",
                                 capture_errno, kMaxErrno);
-      // TODO(shess): Change to |false|.
-      return true;
+      return false;
     }
 
     // The file is open by another process and locked.
