@@ -68,11 +68,9 @@ class ContentSettingBubbleModel : public NotificationObserver {
     RadioGroup radio_group;
     std::vector<DomainList> domain_lists;
     std::set<std::string> resource_identifiers;
+    std::string custom_link;
+    bool custom_link_enabled;
     std::string manage_link;
-    std::string clear_link;
-    std::string info_link;
-    std::string load_plugins_link_title;
-    bool load_plugins_link_enabled;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
@@ -87,10 +85,8 @@ class ContentSettingBubbleModel : public NotificationObserver {
 
   virtual void OnRadioClicked(int radio_index) {}
   virtual void OnPopupClicked(int index) {}
+  virtual void OnCustomLinkClicked() {}
   virtual void OnManageLinkClicked() {}
-  virtual void OnClearLinkClicked() {}
-  virtual void OnInfoLinkClicked() {}
-  virtual void OnLoadPluginsLinkClicked() {}
 
  protected:
   ContentSettingBubbleModel(TabContents* tab_contents, Profile* profile,
@@ -109,20 +105,14 @@ class ContentSettingBubbleModel : public NotificationObserver {
   void add_domain_list(const DomainList& domain_list) {
     bubble_content_.domain_lists.push_back(domain_list);
   }
+  void set_custom_link(const std::string& link) {
+    bubble_content_.custom_link = link;
+  }
+  void set_custom_link_enabled(bool enabled) {
+    bubble_content_.custom_link_enabled = enabled;
+  }
   void set_manage_link(const std::string& link) {
     bubble_content_.manage_link = link;
-  }
-  void set_clear_link(const std::string& link) {
-    bubble_content_.clear_link = link;
-  }
-  void set_info_link(const std::string& link) {
-    bubble_content_.info_link = link;
-  }
-  void set_load_plugins_link_title(const std::string& title) {
-    bubble_content_.load_plugins_link_title = title;
-  }
-  void set_load_plugins_link_enabled(bool enabled) {
-    bubble_content_.load_plugins_link_enabled = enabled;
   }
   void AddBlockedResource(const std::string& resource_identifier);
 

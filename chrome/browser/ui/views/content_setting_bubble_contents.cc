@@ -115,11 +115,9 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       profile_(profile),
       tab_contents_(tab_contents),
       info_bubble_(NULL),
-      close_button_(NULL),
+      custom_link_(NULL),
       manage_link_(NULL),
-      clear_link_(NULL),
-      info_link_(NULL),
-      load_plugins_link_(NULL) {
+      close_button_(NULL) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents));
 }
@@ -164,29 +162,17 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 
 void ContentSettingBubbleContents::LinkActivated(views::Link* source,
                                                  int event_flags) {
+  if (source == custom_link_) {
+    content_setting_bubble_model_->OnCustomLinkClicked();
+    info_bubble_->set_fade_away_on_close(true);
+    info_bubble_->Close();  // CAREFUL: This deletes us.
+    return;
+  }
   if (source == manage_link_) {
     info_bubble_->set_fade_away_on_close(true);
     content_setting_bubble_model_->OnManageLinkClicked();
     // CAREFUL: Showing the settings window activates it, which deactivates the
     // info bubble, which causes it to close, which deletes us.
-    return;
-  }
-  if (source == clear_link_) {
-    content_setting_bubble_model_->OnClearLinkClicked();
-    info_bubble_->set_fade_away_on_close(true);
-    info_bubble_->Close();  // CAREFUL: This deletes us.
-    return;
-  }
-  if (source == info_link_) {
-    content_setting_bubble_model_->OnInfoLinkClicked();
-    info_bubble_->set_fade_away_on_close(true);
-    info_bubble_->Close();  // CAREFUL: This deletes us.
-    return;
-  }
-  if (source == load_plugins_link_) {
-    content_setting_bubble_model_->OnLoadPluginsLinkClicked();
-    info_bubble_->set_fade_away_on_close(true);
-    info_bubble_->Close();  // CAREFUL: This deletes us.
     return;
   }
 
@@ -216,17 +202,20 @@ void ContentSettingBubbleContents::InitControlLayout() {
 
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model_->bubble_content();
+  bool bubble_content_empty = true;
 
   if (!bubble_content.title.empty()) {
     views::Label* title_label = new views::Label(UTF8ToWide(
         bubble_content.title));
     layout->StartRow(0, single_column_set_id);
     layout->AddView(title_label);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    bubble_content_empty = false;
   }
 
   const std::set<std::string>& plugins = bubble_content.resource_identifiers;
   if (!plugins.empty()) {
+    if (!bubble_content_empty)
+      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
       std::wstring name = UTF16ToWide(
@@ -235,8 +224,8 @@ void ContentSettingBubbleContents::InitControlLayout() {
         name = UTF8ToWide(*it);
       layout->StartRow(0, single_column_set_id);
       layout->AddView(new views::Label(name));
+      bubble_content_empty = false;
     }
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
   if (content_setting_bubble_model_->content_type() ==
@@ -253,7 +242,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
     for (std::vector<ContentSettingBubbleModel::PopupItem>::const_iterator
          i(bubble_content.popup_items.begin());
          i != bubble_content.popup_items.end(); ++i) {
-      if (i != bubble_content.popup_items.begin())
+      if (!bubble_content_empty)
         layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
       layout->StartRow(0, popup_column_set_id);
 
@@ -263,32 +252,26 @@ void ContentSettingBubbleContents::InitControlLayout() {
       popup_links_[link] = i - bubble_content.popup_items.begin();
       layout->AddView(new Favicon((*i).bitmap, this, link));
       layout->AddView(link);
+      bubble_content_empty = false;
     }
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-    views::Separator* separator = new views::Separator;
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(separator);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
   const ContentSettingBubbleModel::RadioGroup& radio_group =
       bubble_content.radio_group;
-  for (ContentSettingBubbleModel::RadioItems::const_iterator i =
-       radio_group.radio_items.begin();
-       i != radio_group.radio_items.end(); ++i) {
-    views::RadioButton* radio = new views::RadioButton(UTF8ToWide(*i), 0);
-    radio->set_listener(this);
-    radio_group_.push_back(radio);
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(radio);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  }
-  if (!radio_group_.empty()) {
-    views::Separator* separator = new views::Separator;
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(separator, 1, 1, GridLayout::FILL, GridLayout::FILL);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  if (!radio_group.radio_items.empty()) {
+    for (ContentSettingBubbleModel::RadioItems::const_iterator i =
+         radio_group.radio_items.begin();
+         i != radio_group.radio_items.end(); ++i) {
+      views::RadioButton* radio = new views::RadioButton(UTF8ToWide(*i), 0);
+      radio->set_listener(this);
+      radio_group_.push_back(radio);
+      if (!bubble_content_empty)
+        layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+      layout->StartRow(0, single_column_set_id);
+      layout->AddView(radio);
+      bubble_content_empty = false;
+    }
+    DCHECK(!radio_group_.empty());
     // Now that the buttons have been added to the view hierarchy, it's safe
     // to call SetChecked() on them.
     radio_group_[radio_group.default_item]->SetChecked(true);
@@ -316,43 +299,21 @@ void ContentSettingBubbleContents::InitControlLayout() {
       layout->StartRow(0, indented_single_column_set_id);
       layout->AddView(new views::Label(UTF8ToWide(*j), domain_font));
     }
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    bubble_content_empty = false;
   }
 
-  if (!bubble_content.clear_link.empty()) {
-    clear_link_ = new views::Link(UTF8ToWide(bubble_content.clear_link));
-    clear_link_->SetController(this);
+  if (!bubble_content.custom_link.empty()) {
+    custom_link_ = new views::Link(UTF8ToWide(bubble_content.custom_link));
+    custom_link_->SetEnabled(bubble_content.custom_link_enabled);
+    custom_link_->SetController(this);
+    if (!bubble_content_empty)
+      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     layout->StartRow(0, single_column_set_id);
-    layout->AddView(clear_link_);
-
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(new views::Separator, 1, 1,
-                    GridLayout::FILL, GridLayout::FILL);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddView(custom_link_);
+    bubble_content_empty = false;
   }
 
-  if (!bubble_content.info_link.empty()) {
-    info_link_ = new views::Link(UTF8ToWide(bubble_content.info_link));
-    info_link_->SetController(this);
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(info_link_);
-
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(new views::Separator, 1, 1,
-                    GridLayout::FILL, GridLayout::FILL);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  }
-
-  if (!bubble_content.load_plugins_link_title.empty()) {
-    load_plugins_link_ = new views::Link(
-        UTF8ToWide(bubble_content.load_plugins_link_title));
-    load_plugins_link_->SetEnabled(bubble_content.load_plugins_link_enabled);
-    load_plugins_link_->SetController(this);
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(load_plugins_link_);
-
+  if (!bubble_content_empty) {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     layout->StartRow(0, single_column_set_id);
     layout->AddView(new views::Separator, 1, 1,

@@ -192,10 +192,6 @@ void ContentSettingBubbleGtk::BuildBubble() {
       // We can attach signal handlers now that all defaults are set.
       g_signal_connect(*i, "toggled", G_CALLBACK(OnRadioToggledThunk), this);
     }
-    if (!radio_group_gtk_.empty()) {
-      gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(), FALSE,
-                         FALSE, 0);
-    }
   }
 
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i =
@@ -219,47 +215,25 @@ void ContentSettingBubbleGtk::BuildBubble() {
                        gtk_util::kControlSpacing);
   }
 
-  if (!content.clear_link.empty()) {
-    GtkWidget* clear_link_box = gtk_hbox_new(FALSE, 0);
-    GtkWidget* clear_link = gtk_chrome_link_button_new(
-        content.clear_link.c_str());
-    g_signal_connect(clear_link, "clicked", G_CALLBACK(OnClearLinkClickedThunk),
-                     this);
-    gtk_box_pack_start(GTK_BOX(clear_link_box), clear_link, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bubble_content), clear_link_box,
-                       FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(),
-                       FALSE, FALSE, 0);
-  }
-
-  if (!content.info_link.empty()) {
-    GtkWidget* info_link_box = gtk_hbox_new(FALSE, 0);
-    GtkWidget* info_link = gtk_chrome_link_button_new(
-        content.info_link.c_str());
-    g_signal_connect(info_link, "clicked", G_CALLBACK(OnInfoLinkClickedThunk),
-                     this);
-    gtk_box_pack_start(GTK_BOX(info_link_box), info_link, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bubble_content), info_link_box,
-                       FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(),
+  if (!content.custom_link.empty()) {
+    GtkWidget* custom_link_box = gtk_hbox_new(FALSE, 0);
+    GtkWidget* custom_link = NULL;
+    if (content.custom_link_enabled) {
+      custom_link = gtk_chrome_link_button_new(content.custom_link.c_str());
+      g_signal_connect(custom_link, "clicked",
+                       G_CALLBACK(OnCustomLinkClickedThunk), this);
+    } else {
+      custom_link = gtk_label_new(content.custom_link.c_str());
+      gtk_misc_set_alignment(GTK_MISC(custom_link), 0, 0.5);
+    }
+    DCHECK(custom_link);
+    gtk_box_pack_start(GTK_BOX(custom_link_box), custom_link, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bubble_content), custom_link_box,
                        FALSE, FALSE, 0);
   }
 
-  if (!content.load_plugins_link_title.empty()) {
-    GtkWidget* load_plugins_link_box = gtk_hbox_new(FALSE, 0);
-    GtkWidget* load_plugins_link = gtk_chrome_link_button_new(
-        content.load_plugins_link_title.c_str());
-    gtk_widget_set_sensitive(load_plugins_link,
-                             content.load_plugins_link_enabled);
-    g_signal_connect(load_plugins_link, "clicked",
-                     G_CALLBACK(OnLoadPluginsLinkClickedThunk), this);
-    gtk_box_pack_start(GTK_BOX(load_plugins_link_box), load_plugins_link,
-                       FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bubble_content), load_plugins_link_box,
-                       FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(),
-                       FALSE, FALSE, 0);
-  }
+  gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(),
+                     FALSE, FALSE, 0);
 
   GtkWidget* bottom_box = gtk_hbox_new(FALSE, 0);
 
@@ -331,22 +305,12 @@ void ContentSettingBubbleGtk::OnCloseButtonClicked(GtkWidget *button) {
   Close();
 }
 
+void ContentSettingBubbleGtk::OnCustomLinkClicked(GtkWidget* button) {
+  content_setting_bubble_model_->OnCustomLinkClicked();
+  Close();
+}
+
 void ContentSettingBubbleGtk::OnManageLinkClicked(GtkWidget* button) {
   content_setting_bubble_model_->OnManageLinkClicked();
-  Close();
-}
-
-void ContentSettingBubbleGtk::OnClearLinkClicked(GtkWidget* button) {
-  content_setting_bubble_model_->OnClearLinkClicked();
-  Close();
-}
-
-void ContentSettingBubbleGtk::OnInfoLinkClicked(GtkWidget* button) {
-  content_setting_bubble_model_->OnInfoLinkClicked();
-  Close();
-}
-
-void ContentSettingBubbleGtk::OnLoadPluginsLinkClicked(GtkWidget* button) {
-  content_setting_bubble_model_->OnLoadPluginsLinkClicked();
   Close();
 }

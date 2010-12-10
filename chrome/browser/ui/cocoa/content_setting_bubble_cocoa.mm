@@ -315,35 +315,42 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   NSRect containerFrame = [contentsContainer_ frame];
   NSRect frame = NSMakeRect(0, 0, NSWidth(containerFrame), kGeoLabelHeight);
 
-  // "Clear" button.
-  if (!content.clear_link.empty()) {
-    NSRect buttonFrame = NSMakeRect(0, 0,
-                                    NSWidth(containerFrame),
-                                    kGeoClearButtonHeight);
-    scoped_nsobject<NSButton> button([[NSButton alloc]
-                                      initWithFrame:buttonFrame]);
-    [button setTitle:base::SysUTF8ToNSString(content.clear_link)];
-    [button setTarget:self];
-    [button setAction:@selector(clearGeolocationForCurrentHost:)];
-    [button setBezelStyle:NSRoundRectBezelStyle];
-    SetControlSize(button, NSSmallControlSize);
-    [button sizeToFit];
+  // "Clear" button / text field.
+  if (!content.custom_link.empty()) {
+    scoped_nsobject<NSControl> control;
+    if(content.custom_link_enabled) {
+      NSRect buttonFrame = NSMakeRect(0, 0,
+                                      NSWidth(containerFrame),
+                                      kGeoClearButtonHeight);
+      NSButton* button = [[NSButton alloc] initWithFrame:buttonFrame];
+      control.reset(button);
+      [button setTitle:base::SysUTF8ToNSString(content.custom_link)];
+      [button setTarget:self];
+      [button setAction:@selector(clearGeolocationForCurrentHost:)];
+      [button setBezelStyle:NSRoundRectBezelStyle];
+      SetControlSize(button, NSSmallControlSize);
+      [button sizeToFit];
+    } else {
+      // Add the notification that settings will be cleared on next reload.
+      control.reset([LabelWithFrame(
+          base::SysUTF8ToNSString(content.custom_link), frame) retain]);
+      SetControlSize(control.get(), NSSmallControlSize);
+    }
 
-    // If the button is wider than the container, widen the window.
-    CGFloat buttonWidth = NSWidth([button frame]);
-    if (buttonWidth > NSWidth(containerFrame)) {
+    // If the new control is wider than the container, widen the window.
+    CGFloat controlWidth = NSWidth([control frame]);
+    if (controlWidth > NSWidth(containerFrame)) {
       NSRect windowFrame = [[self window] frame];
-      windowFrame.size.width += buttonWidth - NSWidth(containerFrame);
+      windowFrame.size.width += controlWidth - NSWidth(containerFrame);
       [[self window] setFrame:windowFrame display:NO];
       // Fetch the updated sizes.
       containerFrame = [contentsContainer_ frame];
       frame = NSMakeRect(0, 0, NSWidth(containerFrame), kGeoLabelHeight);
     }
 
-    // Add the button.
-    [contentsContainer_ addSubview:button];
-
-    frame.origin.y = NSMaxY([button frame]) + kGeoPadding;
+    DCHECK(control);
+    [contentsContainer_ addSubview:control];
+    frame.origin.y = NSMaxY([control frame]) + kGeoPadding;
   }
 
   typedef
@@ -390,7 +397,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (void)sizeToFitLoadPluginsButton {
   const ContentSettingBubbleModel::BubbleContent& content =
       contentSettingBubbleModel_->bubble_content();
-  [loadAllPluginsButton_ setEnabled:content.load_plugins_link_enabled];
+  [loadAllPluginsButton_ setEnabled:content.custom_link_enabled];
 
   // Resize horizontally to fit button if necessary.
   NSRect windowFrame = [[self window] frame];
@@ -451,24 +458,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
       [selectedCell tag] == kAllowTag ? 0 : 1);
 }
 
-- (IBAction)closeBubble:(id)sender {
-  [self close];
-}
-
-- (IBAction)manageBlocking:(id)sender {
-  contentSettingBubbleModel_->OnManageLinkClicked();
-}
-
-- (IBAction)showMoreInfo:(id)sender {
-  contentSettingBubbleModel_->OnInfoLinkClicked();
-  [self close];
-}
-
-- (IBAction)loadAllPlugins:(id)sender {
-  contentSettingBubbleModel_->OnLoadPluginsLinkClicked();
-  [self close];
-}
-
 - (void)popupLinkClicked:(id)sender {
   content_setting_bubble::PopupLinks::iterator i(popupLinks_.find(sender));
   DCHECK(i != popupLinks_.end());
@@ -476,7 +465,25 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 }
 
 - (void)clearGeolocationForCurrentHost:(id)sender {
-  contentSettingBubbleModel_->OnClearLinkClicked();
+  contentSettingBubbleModel_->OnCustomLinkClicked();
+  [self close];
+}
+
+- (IBAction)showMoreInfo:(id)sender {
+  contentSettingBubbleModel_->OnCustomLinkClicked();
+  [self close];
+}
+
+- (IBAction)loadAllPlugins:(id)sender {
+  contentSettingBubbleModel_->OnCustomLinkClicked();
+  [self close];
+}
+
+- (IBAction)manageBlocking:(id)sender {
+  contentSettingBubbleModel_->OnManageLinkClicked();
+}
+
+- (IBAction)closeBubble:(id)sender {
   [self close];
 }
 

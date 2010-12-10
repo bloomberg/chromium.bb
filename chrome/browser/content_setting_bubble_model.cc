@@ -25,8 +25,9 @@
 
 class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
  public:
-  ContentSettingTitleAndLinkModel(TabContents* tab_contents, Profile* profile,
-      ContentSettingsType content_type)
+  ContentSettingTitleAndLinkModel(TabContents* tab_contents,
+                                  Profile* profile,
+                                  ContentSettingsType content_type)
       : ContentSettingBubbleModel(tab_contents, profile, content_type) {
      // Notifications do not have a bubble.
      DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
@@ -118,52 +119,45 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   }
 };
 
-class ContentSettingTitleLinkAndInfoModel
+class ContentSettingTitleLinkAndCustomModel
     : public ContentSettingTitleAndLinkModel {
  public:
-  ContentSettingTitleLinkAndInfoModel(TabContents* tab_contents,
-                                      Profile* profile,
-                                      ContentSettingsType content_type)
+  ContentSettingTitleLinkAndCustomModel(TabContents* tab_contents,
+                                        Profile* profile,
+                                        ContentSettingsType content_type)
       : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
-    SetInfoLink();
+    SetCustomLink();
   }
 
  private:
-  void SetInfoLink() {
-    static const int kInfoIDs[] = {
+  void SetCustomLink() {
+    static const int kCustomIDs[] = {
       IDS_BLOCKED_COOKIES_INFO,
-      0,  // Images do not have an info link.
-      0,  // Javascript doesn't have an info link.
-      0,  // Plugins do not have an info link.
-      0,  // Popups do not have an info link.
-      0,  // Geolocation does not have an info link.
+      0,  // Images do not have a custom link.
+      0,  // Javascript doesn't have a custom link.
+      IDS_BLOCKED_PLUGINS_LOAD_ALL,
+      0,  // Popups do not have a custom link.
+      0,  // Geolocation custom links are set within that class.
       0,  // Notifications do not have a bubble.
     };
-    COMPILE_ASSERT(arraysize(kInfoIDs) == CONTENT_SETTINGS_NUM_TYPES,
+    COMPILE_ASSERT(arraysize(kCustomIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
-    if (kInfoIDs[content_type()])
-      set_info_link(l10n_util::GetStringUTF8(kInfoIDs[content_type()]));
+    if (kCustomIDs[content_type()])
+      set_custom_link(l10n_util::GetStringUTF8(kCustomIDs[content_type()]));
   }
 
-  virtual void OnInfoLinkClicked() {
-    DCHECK(content_type() == CONTENT_SETTINGS_TYPE_COOKIES);
-    if (tab_contents()) {
-      NotificationService::current()->Notify(
-          NotificationType::COLLECTED_COOKIES_SHOWN,
-          Source<TabSpecificContentSettings>(
-              tab_contents()->GetTabSpecificContentSettings()),
-          NotificationService::NoDetails());
-      tab_contents()->delegate()->ShowCollectedCookiesDialog(tab_contents());
-    }
-  }
+  virtual void OnCustomLinkClicked() {}
 };
 
 
-class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
+class ContentSettingSingleRadioGroup
+    : public ContentSettingTitleLinkAndCustomModel {
  public:
-  ContentSettingSingleRadioGroup(TabContents* tab_contents, Profile* profile,
-      ContentSettingsType content_type)
-      : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type),
+  ContentSettingSingleRadioGroup(TabContents* tab_contents,
+                                 Profile* profile,
+                                 ContentSettingsType content_type)
+      : ContentSettingTitleLinkAndCustomModel(tab_contents, profile,
+                                              content_type),
         block_setting_(CONTENT_SETTING_BLOCK) {
     SetRadioGroup();
   }
@@ -286,37 +280,58 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
   }
 };
 
-class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
+class ContentSettingCookiesBubbleModel
+    : public ContentSettingTitleLinkAndCustomModel {
  public:
-  ContentSettingPluginBubbleModel(TabContents* tab_contents, Profile* profile,
-                                  ContentSettingsType content_type)
-      : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
-    DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_PLUGINS);
-    SetLoadPluginsLinkTitle();
+  ContentSettingCookiesBubbleModel(TabContents* tab_contents,
+                                   Profile* profile,
+                                   ContentSettingsType content_type)
+      : ContentSettingTitleLinkAndCustomModel(tab_contents, profile,
+                                              content_type) {
+    DCHECK_EQ(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
+    set_custom_link_enabled(true);
   }
 
  private:
-  void SetLoadPluginsLinkTitle() {
-    set_load_plugins_link_title(
-        l10n_util::GetStringUTF8(IDS_BLOCKED_PLUGINS_LOAD_ALL));
-   }
-
-  virtual void OnLoadPluginsLinkClicked() {
-    UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
+  virtual void OnCustomLinkClicked() OVERRIDE {
     if (tab_contents()) {
-      tab_contents()->render_view_host()->LoadBlockedPlugins();
+      NotificationService::current()->Notify(
+          NotificationType::COLLECTED_COOKIES_SHOWN,
+          Source<TabSpecificContentSettings>(
+              tab_contents()->GetTabSpecificContentSettings()),
+          NotificationService::NoDetails());
+      tab_contents()->delegate()->ShowCollectedCookiesDialog(tab_contents());
     }
-    set_load_plugins_link_enabled(false);
-    TabSpecificContentSettings* settings =
-        tab_contents()->GetTabSpecificContentSettings();
-    settings->set_load_plugins_link_enabled(false);
+  }
+};
+
+class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
+ public:
+  ContentSettingPluginBubbleModel(TabContents* tab_contents,
+                                  Profile* profile,
+                                  ContentSettingsType content_type)
+      : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
+    DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_PLUGINS);
+    set_custom_link_enabled(tab_contents && tab_contents->
+        GetTabSpecificContentSettings()->load_plugins_link_enabled());
+  }
+
+ private:
+  virtual void OnCustomLinkClicked() OVERRIDE {
+    UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
+    DCHECK(tab_contents());
+    tab_contents()->render_view_host()->LoadBlockedPlugins();
+    set_custom_link_enabled(false);
+    tab_contents()->GetTabSpecificContentSettings()->
+        set_load_plugins_link_enabled(false);
   }
 };
 
 class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
  public:
-  ContentSettingPopupBubbleModel(TabContents* tab_contents, Profile* profile,
-      ContentSettingsType content_type)
+  ContentSettingPopupBubbleModel(TabContents* tab_contents,
+                                 Profile* profile,
+                                 ContentSettingsType content_type)
       : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
     SetPopups();
   }
@@ -361,7 +376,7 @@ class ContentSettingDomainListBubbleModel
       : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
     DCHECK_EQ(CONTENT_SETTINGS_TYPE_GEOLOCATION, content_type) <<
         "SetDomains currently only supports geolocation content type";
-    SetDomainsAndClearLink();
+    SetDomainsAndCustomLink();
   }
 
  private:
@@ -373,7 +388,7 @@ class ContentSettingDomainListBubbleModel
       add_domain_list(domain_list);
     }
   }
-  void SetDomainsAndClearLink() {
+  void SetDomainsAndCustomLink() {
     TabSpecificContentSettings* content_settings =
         tab_contents()->GetTabSpecificContentSettings();
     const GeolocationSettingsState& settings =
@@ -390,21 +405,16 @@ class ContentSettingDomainListBubbleModel
                        IDS_GEOLOCATION_BUBBLE_SECTION_DENIED);
 
     if (tab_state_flags & GeolocationSettingsState::TABSTATE_HAS_EXCEPTION) {
-      set_clear_link(
-          l10n_util::GetStringUTF8(IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
+      set_custom_link(l10n_util::GetStringUTF8(
+                      IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
+      set_custom_link_enabled(true);
     } else if (tab_state_flags &
                GeolocationSettingsState::TABSTATE_HAS_CHANGED) {
-      // It is a slight abuse of the domain list field to use it for the reload
-      // hint, but works fine for now. TODO(joth): If we need to style it
-      // differently, consider adding an explicit field, or generalize the
-      // domain list to be a flat list of style formatted lines.
-      DomainList reload_section;
-      reload_section.title = l10n_util::GetStringUTF8(
-          IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR);
-      add_domain_list(reload_section);
+      set_custom_link(l10n_util::GetStringUTF8(
+                      IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR));
     }
   }
-  virtual void OnClearLinkClicked() {
+  virtual void OnCustomLinkClicked() OVERRIDE {
     if (!tab_contents())
       return;
     // Reset this embedder's entry to default for each of the requesting
@@ -431,8 +441,8 @@ ContentSettingBubbleModel*
         Profile* profile,
         ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
-    return new ContentSettingTitleLinkAndInfoModel(tab_contents, profile,
-                                                   content_type);
+    return new ContentSettingCookiesBubbleModel(tab_contents, profile,
+                                                content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_POPUPS) {
     return new ContentSettingPopupBubbleModel(tab_contents, profile,
@@ -451,17 +461,12 @@ ContentSettingBubbleModel*
 }
 
 ContentSettingBubbleModel::ContentSettingBubbleModel(
-    TabContents* tab_contents, Profile* profile,
+    TabContents* tab_contents,
+    Profile* profile,
     ContentSettingsType content_type)
-    : tab_contents_(tab_contents), profile_(profile),
+    : tab_contents_(tab_contents),
+      profile_(profile),
       content_type_(content_type) {
-  if (tab_contents) {
-    TabSpecificContentSettings* settings =
-        tab_contents->GetTabSpecificContentSettings();
-    set_load_plugins_link_enabled(settings->load_plugins_link_enabled());
-  } else {
-    set_load_plugins_link_enabled(true);
-  }
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents));
 }
@@ -478,7 +483,7 @@ ContentSettingBubbleModel::DomainList::DomainList() {}
 ContentSettingBubbleModel::DomainList::~DomainList() {}
 
 ContentSettingBubbleModel::BubbleContent::BubbleContent()
-    : load_plugins_link_enabled(false) {
+    : custom_link_enabled(false) {
 }
 
 ContentSettingBubbleModel::BubbleContent::~BubbleContent() {}

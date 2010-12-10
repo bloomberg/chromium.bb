@@ -30,21 +30,14 @@ class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
            contents(), profile_.get(), CONTENT_SETTINGS_TYPE_GEOLOCATION));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
-    EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
-    EXPECT_EQ(0U, bubble_content.popup_items.size());
-    // The reload hint is currently implemented as a tacked on domain title, so
-    // account for this.
-    if (expect_reload_hint)
-      ++expected_domains;
+    EXPECT_TRUE(bubble_content.title.empty());
+    EXPECT_TRUE(bubble_content.radio_group.radio_items.empty());
+    EXPECT_TRUE(bubble_content.popup_items.empty());
     EXPECT_EQ(expected_domains, bubble_content.domain_lists.size());
-    if (expect_clear_link)
-      EXPECT_NE(std::string(), bubble_content.clear_link);
-    else
-      EXPECT_EQ(std::string(), bubble_content.clear_link);
-    EXPECT_NE(std::string(), bubble_content.manage_link);
-    EXPECT_EQ(std::string(), bubble_content.info_link);
-    EXPECT_EQ(std::string(), bubble_content.title);
-    EXPECT_EQ(std::string(), bubble_content.load_plugins_link_title);
+    EXPECT_NE(expect_clear_link || expect_reload_hint,
+              bubble_content.custom_link.empty());
+    EXPECT_EQ(expect_clear_link, bubble_content.custom_link_enabled);
+    EXPECT_FALSE(bubble_content.manage_link.empty());
   }
 
   BrowserThread ui_thread_;
@@ -61,12 +54,11 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
          contents(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
+  EXPECT_FALSE(bubble_content.title.empty());
   EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
   EXPECT_EQ(0, bubble_content.radio_group.default_item);
-  EXPECT_NE(std::string(), bubble_content.manage_link);
-  EXPECT_EQ(std::string(), bubble_content.info_link);
-  EXPECT_NE(std::string(), bubble_content.title);
-  EXPECT_EQ(std::string(), bubble_content.load_plugins_link_title);
+  EXPECT_TRUE(bubble_content.custom_link.empty());
+  EXPECT_FALSE(bubble_content.manage_link.empty());
 }
 
 TEST_F(ContentSettingBubbleModelTest, Cookies) {
@@ -80,11 +72,11 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
          contents(), profile_.get(), CONTENT_SETTINGS_TYPE_COOKIES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
-  EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
-  EXPECT_NE(std::string(), bubble_content.manage_link);
-  EXPECT_NE(std::string(), bubble_content.info_link);
-  EXPECT_NE(std::string(), bubble_content.title);
-  EXPECT_EQ(std::string(), bubble_content.load_plugins_link_title);
+  EXPECT_FALSE(bubble_content.title.empty());
+  EXPECT_TRUE(bubble_content.radio_group.radio_items.empty());
+  EXPECT_FALSE(bubble_content.custom_link.empty());
+  EXPECT_TRUE(bubble_content.custom_link_enabled);
+  EXPECT_FALSE(bubble_content.manage_link.empty());
 }
 
 TEST_F(ContentSettingBubbleModelTest, Plugins) {
@@ -98,11 +90,11 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
          contents(), profile_.get(), CONTENT_SETTINGS_TYPE_PLUGINS));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
+  EXPECT_FALSE(bubble_content.title.empty());
   EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
-  EXPECT_NE(std::string(), bubble_content.manage_link);
-  EXPECT_EQ(std::string(), bubble_content.info_link);
-  EXPECT_NE(std::string(), bubble_content.title);
-  EXPECT_NE(std::string(), bubble_content.load_plugins_link_title);
+  EXPECT_FALSE(bubble_content.custom_link.empty());
+  EXPECT_TRUE(bubble_content.custom_link_enabled);
+  EXPECT_FALSE(bubble_content.manage_link.empty());
 }
 
 TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
