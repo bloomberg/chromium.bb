@@ -1430,8 +1430,8 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
 }
 
 string16 RenderViewContextMenu::PrintableSelectionText() {
-  return WideToUTF16(l10n_util::TruncateString(params_.selection_text,
-                                               kMaxSelectionTextLength));
+  return l10n_util::TruncateString(WideToUTF16Hack(params_.selection_text),
+                                   kMaxSelectionTextLength);
 }
 
 // Controller functions --------------------------------------------------------

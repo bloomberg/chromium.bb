@@ -73,10 +73,8 @@ string16 ExtensionMenuItem::TitleWithReplacement(
   // put "%s" in titles that won't get substituted.
   ReplaceSubstringsAfterOffset(&result, 0, ASCIIToUTF16("%s"), selection);
 
-  if (result.length() > max_length) {
-    result = WideToUTF16(l10n_util::TruncateString(UTF16ToWideHack(result),
-                                                   max_length));
-  }
+  if (result.length() > max_length)
+    result = l10n_util::TruncateString(result, max_length);
   return result;
 }
 

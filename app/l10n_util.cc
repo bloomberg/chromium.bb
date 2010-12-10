@@ -44,9 +44,6 @@ static const FilePath::CharType kLocaleFileExtension[] = L".dll";
 static const FilePath::CharType kLocaleFileExtension[] = ".pak";
 #endif
 
-// Added to the end of strings that are too big in TrucateString.
-static const wchar_t* const kElideString = L"\x2026";
-
 static const char* const kAcceptLanguageList[] = {
   "af",     // Afrikaans
   "am",     // Amharic
@@ -681,27 +678,25 @@ std::wstring GetStringF(int message_id, int64 a) {
   return GetStringF(message_id, UTF8ToWide(base::Int64ToString(a)));
 }
 
-std::wstring TruncateString(const std::wstring& string, size_t length) {
+string16 TruncateString(const string16& string, size_t length) {
   if (string.size() <= length)
     // String fits, return it.
     return string;
 
   if (length == 0) {
-    // No room for the ellide string, return an empty string.
-    return std::wstring(L"");
+    // No room for the elide string, return an empty string.
+    return string16();
   }
   size_t max = length - 1;
+
+  // Added to the end of strings that are too big.
+  static const char16 kElideString[] = { 0x2026, 0 };
 
   if (max == 0) {
     // Just enough room for the elide string.
     return kElideString;
   }
 
-#if defined(WCHAR_T_IS_UTF32)
-  const string16 string_utf16 = WideToUTF16(string);
-#else
-  const std::wstring &string_utf16 = string;
-#endif
   // Use a line iterator to find the first boundary.
   UErrorCode status = U_ZERO_ERROR;
   scoped_ptr<icu::RuleBasedBreakIterator> bi(
@@ -710,14 +705,14 @@ std::wstring TruncateString(const std::wstring& string, size_t length) {
               icu::Locale::getDefault(), status)));
   if (U_FAILURE(status))
     return string.substr(0, max) + kElideString;
-  bi->setText(string_utf16.c_str());
+  bi->setText(string.c_str());
   int32_t index = bi->preceding(static_cast<int32_t>(max));
   if (index == icu::BreakIterator::DONE) {
     index = static_cast<int32_t>(max);
   } else {
     // Found a valid break (may be the beginning of the string). Now use
     // a character iterator to find the previous non-whitespace character.
-    icu::StringCharacterIterator char_iterator(string_utf16.c_str());
+    icu::StringCharacterIterator char_iterator(string.c_str());
     if (index == 0) {
       // No valid line breaks. Start at the end again. This ensures we break
       // on a valid character boundary.

@@ -707,16 +707,17 @@ void RenderWidgetHostViewGtk::SetTooltipText(const std::wstring& tooltip_text) {
   // accidentally DOS the user with a mega tooltip (since GTK doesn't do
   // this itself).
   // I filed https://bugzilla.gnome.org/show_bug.cgi?id=604641 upstream.
-  const std::wstring& clamped_tooltip =
-      l10n_util::TruncateString(tooltip_text, kMaxTooltipLength);
+  const string16 clamped_tooltip =
+      l10n_util::TruncateString(WideToUTF16Hack(tooltip_text),
+                                kMaxTooltipLength);
 
   if (clamped_tooltip.empty()) {
     gtk_widget_set_has_tooltip(view_.get(), FALSE);
   } else {
     gtk_widget_set_tooltip_text(view_.get(),
-                                WideToUTF8(clamped_tooltip).c_str());
+                                UTF16ToUTF8(clamped_tooltip).c_str());
 #if defined(OS_CHROMEOS)
-    tooltip_window_->SetTooltipText(clamped_tooltip);
+    tooltip_window_->SetTooltipText(UTF16ToWideHack(clamped_tooltip));
 #endif  // defined(OS_CHROMEOS)
   }
 }

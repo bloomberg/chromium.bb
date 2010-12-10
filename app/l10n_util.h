@@ -163,7 +163,7 @@ std::wstring GetStringF(int message_id, int64 a);
 // character (unicode character 0x2026) to render ...
 // The supplied string is returned if the string has length characters or
 // less.
-std::wstring TruncateString(const std::wstring& string, size_t length);
+string16 TruncateString(const string16& string, size_t length);
 
 // Returns the lower case equivalent of string.
 string16 ToLower(const string16& string);
