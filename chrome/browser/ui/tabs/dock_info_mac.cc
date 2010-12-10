@@ -6,10 +6,10 @@
 
 bool DockInfo::GetNewWindowBounds(gfx::Rect* new_window_bounds,
                                   bool* maximize_new_window) const {
-  // TODO(pinkerton): Implement DockInfo, http://crbug.com/9274.
+  // TODO(pinkerton): Implement DockInfo, http://crbug.com/9427.
   return true;
 }
 
 void DockInfo::AdjustOtherWindowBounds() const {
-  // TODO(pinkerton): Implement DockInfo, http://crbug.com/9274.
+  // TODO(pinkerton): Implement DockInfo, http://crbug.com/9427.
 }

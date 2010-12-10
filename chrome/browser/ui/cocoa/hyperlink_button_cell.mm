@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,6 @@
   [self setFont:font];
 
   // Do not change button appearance when we are pushed.
-  // TODO(rsesek): Change text color to red?
   [self setHighlightsBy:NSNoCellMask];
 
   // We need to set this so that we can override |-mouseEntered:| and

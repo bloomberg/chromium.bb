@@ -82,7 +82,6 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
       Init();
     }
 
-    // TODO(???): NULL here means we're OTR. Show this in the GUI somehow?
     tab_restore_service_ = profile_->GetTabRestoreService();
     if (tab_restore_service_) {
       tab_restore_service_->AddObserver(this);

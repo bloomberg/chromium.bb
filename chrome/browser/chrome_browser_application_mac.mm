@@ -188,8 +188,6 @@ BOOL SwizzleNSExceptionInit() {
 + (void)initialize {
   // Turn all deallocated Objective-C objects into zombies, keeping
   // the most recent 10,000 of them on the treadmill.
-  // TODO(shess): Convert to a DCHECK() before the next beta channel.
-  // http://crbug.com/45676
   ObjcEvilDoers::ZombieEnable(YES, 10000);
 }
 

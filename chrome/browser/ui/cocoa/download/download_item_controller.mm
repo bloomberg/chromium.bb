@@ -236,8 +236,6 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   if ([[self view] window])
     [self updateTheme:[[[self view] window] themeProvider]];
 
-  // TODO(thakis): Make this prettier, by fading the items out or overlaying
-  // the partial visible one with a horizontal alpha gradient -- crbug.com/17830
   NSView* view = [self view];
   NSRect containerFrame = [[view superview] frame];
   [view setHidden:(NSMaxX([view frame]) > NSWidth(containerFrame))];
