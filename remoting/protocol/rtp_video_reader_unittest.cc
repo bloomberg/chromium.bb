@@ -58,6 +58,10 @@ class RtpVideoReaderTest : public testing::Test,
     InitData(100);
   }
 
+  virtual void TearDown() {
+    message_loop_.RunAllPending();
+  }
+
   void Reset() {
     session_ = new FakeSession();
     reader_.reset(new RtpVideoReader());

@@ -1100,16 +1100,6 @@
    fun:remoting::ScreenRecorderTest_OneRecordCycle_Test::TestBody
 }
 {
-   bug_65988
-   Heapcheck:Leak
-   ...
-   fun:remoting::protocol::RtcpWriter::SendReport
-   fun:remoting::protocol::RtpVideoReader::SendReceiverReportIf
-   fun:remoting::protocol::RtpVideoReader::RebuildVideoPacket
-   fun:remoting::protocol::RtpVideoReader::CheckFullPacket
-   fun:remoting::protocol::RtpVideoReader::OnRtpPacket
-}
-{
    bug_66054_a
    Heapcheck:Leak
    ...

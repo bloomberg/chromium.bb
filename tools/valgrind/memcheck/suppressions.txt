@@ -3461,16 +3461,6 @@
    fun:_ZN7WebCore11RenderBlock37computeBlockDirectionPositionsForLineEPNS_13RootInlineBoxEPNS_7BidiRunERN3WTF7HashMapIPKNS_13InlineTextBoxESt4pairINS5_6VectorIPKNS_14SimpleFontDataELj0EEENS_13GlyphOverflowEENS5_7PtrHashIS9_EENS5_10HashTraitsIS9_EENSK_ISH_EEEERNS_21VerticalPositionCacheE
 }
 {
-   bug_65988
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8remoting8protocol24BufferedSocketWriterBase5WriteE13scoped_refptrIN3net16IOBufferWithSizeEEP4Task
-   fun:_ZN8remoting8protocol10RtcpWriter10SendReportERKNS0_18RtcpReceiverReportE
-   fun:_ZN8remoting8protocol14RtpVideoReader20SendReceiverReportIfEv
-   fun:_ZN8remoting8protocol14RtpVideoReader18RebuildVideoPacketESt15_Deque_iteratorINS1_17PacketsQueueEntryERS3_PS3_ES6_
-   fun:_ZN8remoting8protocol14RtpVideoReader15CheckFullPacketESt15_Deque_iteratorINS1_17PacketsQueueEntryERS3_PS3_E
-}
-{
    bug_66277
    Memcheck:Leak
    ...
