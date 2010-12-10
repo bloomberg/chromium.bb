@@ -5,7 +5,7 @@
 # be found in the LICENSE file.
 
 set -o nounset
-#set -o errexit
+set -o errexit
 
 ######################################################################
 # CONFIGURATION
