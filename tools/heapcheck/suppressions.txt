@@ -1134,3 +1134,9 @@
    Heapcheck:Leak
    fun:policy::AsynchronousPolicyTestBase_ProviderRefresh_Test::TestBody
 }
+{
+   bug_66227
+   Heapcheck:Leak
+   ...
+   fun:MalwareDetailsTest_*
+}
