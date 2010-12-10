@@ -46,9 +46,6 @@
   ;; Fixup paths.
   (cd (get-chrome-root))
 
-  ;; Delete Windows \r.
-  (delete-trailing-whitespace)
-
   ;; Fix up path references.
   ; XXX is there something I should so so this stuff doesn't end up on the
   ; undo stack?
@@ -82,9 +79,10 @@
   "Load the given test data filename and do the trybot parse on it."
 
   (switch-to-buffer (get-buffer-create "*trybot-test*"))
-  (let ((inhibit-read-only t))
+  (let ((inhibit-read-only t)
+        (coding-system-for-read 'utf-8-dos))
     (erase-buffer)
-    (insert-file-contents-literally
+    (insert-file-contents
        (concat (get-chrome-root) "tools/emacs/" filename))
 
     (trybot-fixup)))
@@ -97,6 +95,10 @@
   "Load the Mac test data and do the trybot parse on it."
   (interactive)
   (trybot-test "trybot-mac.txt"))
+(defun trybot-test-linux ()
+  "Load the Linux test data and do the trybot parse on it."
+  (interactive)
+  (trybot-test "trybot-linux.txt"))
 
 (defun trybot (url)
   "Fetch a trybot URL and fix up the output into a compilation-mode buffer."
@@ -112,9 +114,11 @@
 
   ;; Extract the body out of the URL.
   ; TODO: delete HTTP headers somehow.
-  (switch-to-buffer (get-buffer-create "*trybot*"))
-  (buffer-swap-text (url-retrieve-synchronously url))
+  (let ((inhibit-read-only t)
+        (coding-system-for-read 'utf-8-dos))
+    (switch-to-buffer (get-buffer-create "*trybot*"))
+    (buffer-swap-text (url-retrieve-synchronously url))
 
-  (trybot-fixup))
+    (trybot-fixup)))
 
 (provide 'trybot)
