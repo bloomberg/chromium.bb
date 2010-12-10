@@ -20,14 +20,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-/*
- * This redefines main when SDL is used to allow SDL to keep the main loop.
- */
-#if defined(HAVE_SDL)
-# include <SDL.h>
-#endif
-
-
 /* Based on NaClAppThreadCtor() */
 static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {
   struct NaClDescEffectorLdr *effp;

@@ -18,11 +18,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-#if defined(HAVE_SDL)
-#include <SDL.h>
-#endif
-
-
 size_t    gNumBytes = 10 * NACL_MAP_PAGESIZE;
 uint32_t  gLinearGeneratorSeed = 0xdeadbeef;
 

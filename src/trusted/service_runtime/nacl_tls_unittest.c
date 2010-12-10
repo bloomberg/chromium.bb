@@ -173,7 +173,7 @@ static int MyWaitForThreadExit(HANDLE handle) {
 #endif
 
 /* Tests that threads can access TLS. */
-int main(int argc, char *argv[]) {
+int main() {
 #define NUM_THREADS (10)
 
   int i;
@@ -186,10 +186,6 @@ int main(int argc, char *argv[]) {
   int tls_data_return[NUM_THREADS];
   struct ThreadData param;
   int test_passed;
-
-  /* main() type signature is constrained by SDL. */
-  UNREFERENCED_PARAMETER(argc);
-  UNREFERENCED_PARAMETER(argv);
 
   /* Initialize NaCl. */
   Init();

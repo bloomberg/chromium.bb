@@ -6,19 +6,11 @@
 
 #include <stdio.h>
 
-#if defined(HAVE_SDL)
-#  include <SDL.h>
-#endif
-
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 
-int main(int argc,
-         char **argv) {
+int main() {
   int num_errors = 0;
-
-  UNREFERENCED_PARAMETER(argc);
-  UNREFERENCED_PARAMETER(argv);
 
 #define TEST(T, M, V, fmt) do {                                \
     printf("%s: expect %" fmt "\n", #T, V);                    \

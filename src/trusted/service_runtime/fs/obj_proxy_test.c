@@ -21,10 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(HAVE_SDL)
-# include <SDL.h>
-#endif
-
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_secure_random.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"

@@ -6,10 +6,6 @@
 
 #include <stdio.h>
 
-#if defined(HAVE_SDL)
-#  include <SDL.h>
-#endif
-
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"

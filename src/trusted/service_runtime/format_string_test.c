@@ -7,20 +7,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#if defined(HAVE_SDL)
-# include <SDL.h>
-#endif
-
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_assert.h"
 
 
-int main(int  ac,
-         char **av) {
+int main() {
   char buf[100];
-
-  UNREFERENCED_PARAMETER(ac);
-  UNREFERENCED_PARAMETER(av);
 
   sprintf(buf, "%"NACL_PRIxS, (size_t) -1);
   printf("got:%s\n", buf);

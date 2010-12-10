@@ -4,10 +4,6 @@
  * be found in the LICENSE file.
  */
 
-#if defined(HAVE_SDL)
-#include <SDL.h>
-#endif
-
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"

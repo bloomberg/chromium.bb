@@ -10,15 +10,8 @@
 #include <stdio.h>
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 
-#if defined (HAVE_SDL)
-#include <SDL.h>
-#endif
-
-int main(int argc, char* argv[]) {
+int main() {
   uint16_t a, b, c, d, e;
-
-  UNREFERENCED_PARAMETER(argc);
-  UNREFERENCED_PARAMETER(argv);
 
   /* Initialize LDT services. */
   NaClLdtInit();

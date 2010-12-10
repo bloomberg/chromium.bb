@@ -7,10 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#if defined(HAVE_SDL)
-#  include <SDL.h>
-#endif
-
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
@@ -112,14 +108,10 @@ void PrintStrTbl(char const *name, char const *const *tbl) {
   printf("--------\n");
 }
 
-int main(int ac, char **av) {
+int main() {
   int errors = 0;
   int i;
   struct NaClEnvCleanser nec;
-
-  /* main's type signature is constrained by SDL */
-  UNREFERENCED_PARAMETER(ac);
-  UNREFERENCED_PARAMETER(av);
 
   printf("Environment Cleanser Test\n\n");
   printf("\nWhitelist self-check\n\n");

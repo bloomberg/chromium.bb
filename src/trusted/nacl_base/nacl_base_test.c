@@ -8,22 +8,13 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-#if defined(HAVE_SDL)
-#  include <SDL.h>
-#endif
-
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 
-int main(int  argc,
-         char **argv) {
+int main() {
   char buffer[4096];
   char *bufptr = buffer;
   size_t ix;
-
-  /* type signature of main is constrained by SDL */
-  UNREFERENCED_PARAMETER(argc);
-  UNREFERENCED_PARAMETER(argv);
 
   NACL_ASSERT_IS_POINTER(bufptr);
   NACL_ASSERT_IS_ARRAY(buffer);

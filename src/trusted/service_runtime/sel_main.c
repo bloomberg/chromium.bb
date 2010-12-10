@@ -43,11 +43,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 
-/* may redefine main() to install a hook */
-#if defined(HAVE_SDL)
-#include <SDL.h>
-#endif
-
 static void VmentryPrinter(void           *state,
                     struct NaClVmmapEntry *vmep) {
   UNREFERENCED_PARAMETER(state);

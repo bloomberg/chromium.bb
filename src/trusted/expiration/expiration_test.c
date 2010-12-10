@@ -10,10 +10,6 @@
 
 #include <errno.h>
 
-#if defined(HAVE_SDL)
-# include <SDL.h>
-#endif
-
 #include "native_client/src/trusted/expiration/expiration.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 
@@ -39,14 +35,10 @@ time_t TestMktimeFn(struct tm *in_broken_out) {
   return gTestMktimeOutValue;
 }
 
-int main(int argc, char **argv) {
+int main() {
   int errors = 0;
 
   static struct tm exp_tm;
-
-  /* main type signature is constrained by SDL */
-  UNREFERENCED_PARAMETER(argc);
-  UNREFERENCED_PARAMETER(argv);
 
   printf("One second after expiration is expired\n");
   gTestTimeOutValue = 1001;  /* now */

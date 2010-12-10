@@ -37,10 +37,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-#if defined(HAVE_SDL)
-# include <SDL.h>
-#endif
-
 void Usage(void) {
   fprintf(stderr, "Usage: gio_nacl_desc_test src_file dst_file\n");
 }

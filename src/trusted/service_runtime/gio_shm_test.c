@@ -26,10 +26,6 @@
 
 #define MAX_CHECK (4096)
 
-#if defined(HAVE_SDL)
-#include <SDL.h>
-#endif
-
 int           gVerbose = 0;
 unsigned int  gRandomSeed = 0x31415926;
 size_t        gNumSamples = 2048;
