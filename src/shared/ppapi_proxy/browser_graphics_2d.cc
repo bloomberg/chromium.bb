@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "srpcgen/ppb_rpc.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
@@ -11,29 +10,11 @@
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_size.h"
+#include "srpcgen/ppb_rpc.h"
 
 //
 // The following methods are the SRPC dispatchers for ppapi/c/ppb_graphics_2d.h.
 //
-
-namespace {
-
-const PPB_Graphics2D* GetInterface() {
-  static const PPB_Graphics2D* graphics2d_interface = NULL;
-
-  if (graphics2d_interface == NULL) {
-    graphics2d_interface = reinterpret_cast<const PPB_Graphics2D*>(
-        ppapi_proxy::GetBrowserInterface(PPB_GRAPHICS_2D_INTERFACE));
-  }
-  if (graphics2d_interface == NULL) {
-    ppapi_proxy::DebugPrintf(
-        "ERROR: attempt to get PPB_Graphics2D interface failed.\n");
-  }
-  CHECK(graphics2d_interface != NULL);
-  return graphics2d_interface;
-}
-
-}  // namespace
 
 void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
                                                    NaClSrpcClosure* done,
@@ -48,7 +29,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
   if (size_bytes != sizeof(struct PP_Size)) {
     return;
   }
-  PP_Resource pp_resource = GetInterface()->Create(
+  PP_Resource pp_resource = ppapi_proxy::PPBGraphics2DInterface()->Create(
       static_cast<PP_Module>(module),
       const_cast<const struct PP_Size*>(
           reinterpret_cast<struct PP_Size*>(size)),
@@ -65,7 +46,8 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_IsGraphics2D(NaClSrpcRpc* rpc,
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   *success = 0;
   PP_Bool pp_success =
-      GetInterface()->IsGraphics2D(static_cast<PP_Resource>(resource));
+      ppapi_proxy::PPBGraphics2DInterface()->IsGraphics2D(
+          static_cast<PP_Resource>(resource));
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -85,7 +67,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Describe(
     return;
   }
   PP_Bool is_opaque;
-  PP_Bool pp_success = GetInterface()->Describe(
+  PP_Bool pp_success = ppapi_proxy::PPBGraphics2DInterface()->Describe(
       static_cast<PP_Resource>(graphics_2d),
       reinterpret_cast<struct PP_Size*>(size),
       &is_opaque);
@@ -109,7 +91,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
       src_rect_bytes != sizeof(struct PP_Rect)) {
     return;
   }
-  GetInterface()->PaintImageData(
+  ppapi_proxy::PPBGraphics2DInterface()->PaintImageData(
       static_cast<PP_Resource>(graphics_2d),
       static_cast<PP_Resource>(image),
       const_cast<const struct PP_Point*>(
@@ -133,7 +115,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
       amount_bytes != sizeof(struct PP_Point)) {
     return;
   }
-  GetInterface()->Scroll(
+  ppapi_proxy::PPBGraphics2DInterface()->Scroll(
       static_cast<PP_Resource>(graphics_2d),
       const_cast<const struct PP_Rect*>(
           reinterpret_cast<struct PP_Rect*>(clip_rect)),
@@ -149,7 +131,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_ReplaceContents(
     int64_t image) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  GetInterface()->ReplaceContents(
+  ppapi_proxy::PPBGraphics2DInterface()->ReplaceContents(
       static_cast<PP_Resource>(graphics_2d),
       static_cast<PP_Resource>(image));
   rpc->result = NACL_SRPC_RESULT_OK;

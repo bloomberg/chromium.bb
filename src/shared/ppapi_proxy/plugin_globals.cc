@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_core.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
+#include "native_client/src/shared/ppapi_proxy/utility.h"
 
 namespace ppapi_proxy {
 
@@ -47,12 +49,22 @@ PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
   return module_id_for_plugin;
 }
 
-const PPB_Core* CoreInterface() {
-  return reinterpret_cast<const PPB_Core*>(PluginCore::GetInterface());
+const void* GetBrowserInterfaceSafe(const char* interface_name) {
+  const void* ppb_interface = GetBrowserInterface(interface_name);
+  if (ppb_interface == NULL)
+    DebugPrintf("Plugin::PPB_GetInterface: %s not found\n", interface_name);
+  CHECK(ppb_interface);
+  return ppb_interface;
 }
 
-const PPB_Var_Deprecated* VarInterface() {
-  return PluginVar::GetInterface();
+const PPB_Core* PPBCoreInterface() {
+  return reinterpret_cast<const PPB_Core*>(
+      GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
+}
+
+const PPB_Var_Deprecated* PPBVarInterface() {
+  return reinterpret_cast<const PPB_Var_Deprecated*>(
+      GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
 }
 
 }  // namespace ppapi_proxy

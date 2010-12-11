@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <map>
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/ppapi_proxy/utility.h"
+
 
 namespace ppapi_proxy {
 
@@ -20,11 +23,9 @@ namespace {
 std::map<PP_Instance, BrowserPpp*>* instance_to_ppp_map = NULL;
 std::map<NaClSrpcChannel*, PP_Module>* channel_to_module_id_map = NULL;
 
-// The GetInterface pointer from the browser.
+// The function pointer from the browser
+// Set by SetPPBGetInterface().
 PPB_GetInterface get_interface;
-// For efficiency, cached results from GetInterface.
-const PPB_Core* core_interface;
-const PPB_Var_Deprecated* var_interface;
 
 }  // namespace
 
@@ -92,23 +93,55 @@ PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
   return (*channel_to_module_id_map)[channel];
 }
 
-void SetBrowserGetInterface(PPB_GetInterface get_interface_function) {
+void SetPPBGetInterface(PPB_GetInterface get_interface_function) {
   get_interface = get_interface_function;
-  const void* core = (*get_interface_function)(PPB_CORE_INTERFACE);
-  core_interface = reinterpret_cast<const PPB_Core*>(core);
-  const void* var = (*get_interface_function)(PPB_VAR_DEPRECATED_INTERFACE);
-  var_interface = reinterpret_cast<const PPB_Var_Deprecated*>(var);
 }
 
 const void* GetBrowserInterface(const char* interface_name) {
   return (*get_interface)(interface_name);
 }
 
-const PPB_Core* CoreInterface() {
+const void* GetBrowserInterfaceSafe(const char* interface_name) {
+  const void* ppb_interface = (*get_interface)(interface_name);
+  if (ppb_interface == NULL)
+    DebugPrintf("Browser::PPB_GetInterface: %s not found\n", interface_name);
+  CHECK(ppb_interface != NULL);
+  return ppb_interface;
+}
+
+const PPB_Core* PPBCoreInterface() {
+  static const PPB_Core* core_interface = NULL;
+  if (core_interface == NULL) {
+    core_interface = reinterpret_cast<const PPB_Core*>(
+        GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
+  }
   return core_interface;
 }
 
-const PPB_Var_Deprecated* VarInterface() {
+const PPB_Graphics2D* PPBGraphics2DInterface() {
+  static const PPB_Graphics2D* graphics2d_interface = NULL;
+  if (graphics2d_interface == NULL) {
+    graphics2d_interface = reinterpret_cast<const PPB_Graphics2D*>(
+        GetBrowserInterfaceSafe(PPB_GRAPHICS_2D_INTERFACE));
+  }
+  return graphics2d_interface;
+}
+
+const PPB_ImageData* PPBImageDataInterface() {
+  static const PPB_ImageData* image_data_interface = NULL;
+  if (image_data_interface == NULL) {
+    image_data_interface = reinterpret_cast<const PPB_ImageData*>(
+        GetBrowserInterfaceSafe(PPB_IMAGEDATA_INTERFACE));
+  }
+  return image_data_interface;
+}
+
+const PPB_Var_Deprecated* PPBVarInterface() {
+  static const PPB_Var_Deprecated* var_interface = NULL;
+  if (var_interface == NULL) {
+    var_interface = reinterpret_cast<const PPB_Var_Deprecated*>(
+        GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
+  }
   return var_interface;
 }
 

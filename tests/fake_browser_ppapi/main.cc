@@ -39,31 +39,33 @@ namespace {
 
 Host* host = NULL;
 
-const void* FakeGetInterface(const char* interface_name) {
-  DebugPrintf("Getting interface for name '%s'\n", interface_name);
+const void* FakeGetBrowserInterface(const char* interface_name) {
+  DebugPrintf("PPB_GetInterface: name='%s'\n", interface_name);
+  const void* ppb = NULL;
   if (std::strcmp(interface_name, PPB_CORE_INTERFACE) == 0) {
-    return fake_browser_ppapi::Core::GetInterface();
+    ppb = fake_browser_ppapi::Core::GetInterface();
   } else if (std::strcmp(interface_name, PPB_INSTANCE_INTERFACE) == 0) {
-    return fake_browser_ppapi::Instance::GetInterface();
+    ppb = fake_browser_ppapi::Instance::GetInterface();
   } else if (std::strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
-    return host->var_interface();
+    ppb = host->var_interface();
   } else if (std::strcmp(interface_name, PPB_URLLOADER_INTERFACE) == 0) {
-    return fake_browser_ppapi::URLLoader::GetInterface();
+    ppb = fake_browser_ppapi::URLLoader::GetInterface();
   } else if (std::strcmp(interface_name,
                          PPB_URLREQUESTINFO_INTERFACE) == 0) {
-    return fake_browser_ppapi::URLRequestInfo::GetInterface();
+    ppb = fake_browser_ppapi::URLRequestInfo::GetInterface();
   } else if (std::strcmp(interface_name,
                          PPB_URLRESPONSEINFO_INTERFACE) == 0) {
-    return fake_browser_ppapi::URLResponseInfo::GetInterface();
+    ppb = fake_browser_ppapi::URLResponseInfo::GetInterface();
   } else if (std::strcmp(interface_name, PPB_FILEIO_DEV_INTERFACE) == 0) {
-    return fake_browser_ppapi::FileIO::GetInterface();
+    ppb = fake_browser_ppapi::FileIO::GetInterface();
   } else if (std::strcmp(interface_name,
                          PPB_FILEIOTRUSTED_DEV_INTERFACE) == 0) {
-    return fake_browser_ppapi::FileIOTrusted::GetInterface();
+    ppb = fake_browser_ppapi::FileIOTrusted::GetInterface();
   } else {
     NACL_UNIMPLEMENTED();
   }
-  return NULL;
+  DebugPrintf("PPB_GetInterface: value=%p\n", ppb);
+  return ppb;
 }
 
 // Module ids are needed for some call APIs, but the fake browser does
@@ -132,7 +134,7 @@ void TestInstance(PP_Module browser_module_id,
   PP_Var instance_object = instance_interface->GetInstanceObject(instance_id);
   const PPB_Var_Deprecated* var_interface =
       reinterpret_cast<const PPB_Var_Deprecated*>(
-      FakeGetInterface(PPB_VAR_DEPRECATED_INTERFACE));
+          FakeGetBrowserInterface(PPB_VAR_DEPRECATED_INTERFACE));
   TestScriptableObject(instance_object,
                        browser_instance.GetInterface(),
                        var_interface,
@@ -177,7 +179,8 @@ int main(int argc, char** argv) {
   host->set_var_interface(ppapi_proxy::PluginVar::GetInterface());
 
   // Test startup.
-  CHECK(host->InitializeModule(PluginModuleId(), FakeGetInterface) == PP_OK);
+  CHECK(host->InitializeModule(PluginModuleId(), FakeGetBrowserInterface) ==
+        PP_OK);
 
   // Get an instance of the plugin.
   const PPP_Instance* instance_interface =

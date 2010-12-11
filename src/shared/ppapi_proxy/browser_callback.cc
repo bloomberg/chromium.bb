@@ -23,16 +23,7 @@ void InvokeRemoteCallback(void* remote_callback_info, int32_t result) {
     // Method was invoked with an error condition.  Clean up and return.
     return;
   }
-  static const PPB_Core* core_interface = NULL;
-  if (core_interface == NULL) {
-    core_interface = CoreInterface();
-  }
-  if (core_interface == NULL) {
-    // We cannot run the closure if we can't find the core interface.
-    DebugPrintf("ERROR: CompletionCallbackInvoker has no Core interface.\n");
-    return;
-  }
-  if (!core_interface->IsMainThread()) {
+  if (PPBCoreInterface()->IsMainThread()) {
     // We cannot run the closure on other than the main thread.
     DebugPrintf("ERROR: CompletionCallbackInvoker run off the main thread.\n");
     return;
@@ -46,4 +37,3 @@ void InvokeRemoteCallback(void* remote_callback_info, int32_t result) {
 }
 
 }  // namespace ppapi_proxy
-

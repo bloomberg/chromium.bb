@@ -1,10 +1,10 @@
 /*
  * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
-#include "native_client/src/shared/ppapi_proxy/plugin_getinterface.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include <stdlib.h>
 #include <string.h>
 #include "native_client/src/shared/ppapi_proxy/plugin_audio.h"
@@ -19,13 +19,13 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_url_response_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/ppb_core.h"
+#include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
 
+// SRPC-abstraction wrapper for PPB_GetInterface method.
+
 namespace {
-// TODO(sehr): Each interface struct pointer getter should ask the browser
-// whether it supports its respective interface before using it.
 
 typedef const void* (*GetInterfacePtr)();
 struct InterfaceMapElement {
@@ -57,9 +57,18 @@ const InterfaceMapElement interface_map[] = {
   { PPB_VAR_DEPRECATED_INTERFACE,
     reinterpret_cast<GetInterfacePtr>(PluginVar::GetInterface) },
 };
-}
 
-const void* GetInterfaceProxy(const char* interface_name) {
+}  // namespace
+
+const void* GetBrowserInterface(const char* interface_name) {
+  DebugPrintf("Plugin::PPB_GetInterface('%s')\n", interface_name);
+  int32_t exports_interface_name;
+  NaClSrpcError retval =
+      PpbRpcClient::PPB_GetInterface(GetMainSrpcChannel(),
+                                    const_cast<char*>(interface_name),
+                                     &exports_interface_name);
+  if (retval != NACL_SRPC_RESULT_OK || !exports_interface_name)
+    return NULL;
   // The key strings are macros that may not sort in an obvious order relative
   // to the name.  Hence, although we would like to use bsearch, we search
   // linearly.
@@ -70,6 +79,5 @@ const void* GetInterfaceProxy(const char* interface_name) {
   }
   return NULL;
 }
-
 
 }  // namespace ppapi_proxy

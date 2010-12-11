@@ -194,6 +194,20 @@ NaClSrpcError ObjectStubRpcClient::Deallocate(
   return retval;
 }
 
+NaClSrpcError PpbRpcClient::PPB_GetInterface(
+    NaClSrpcChannel* channel,
+    char* interface_name,
+    int32_t* exports_interface_name)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_GetInterface:s:i",
+      interface_name,
+      exports_interface_name
+  );
+  return retval;
+}
+
 NaClSrpcError PpbCoreRpcClient::PPB_Core_AddRefResource(
     NaClSrpcChannel* channel,
     int64_t resource)  {

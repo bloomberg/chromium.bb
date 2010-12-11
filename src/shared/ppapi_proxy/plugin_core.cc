@@ -113,8 +113,8 @@ static PP_Bool IsMainThread() {
 
 namespace ppapi_proxy {
 
-const void* PluginCore::GetInterface() {
-  static const PPB_Core intf = {
+const PPB_Core* PluginCore::GetInterface() {
+  static const PPB_Core core_interface = {
     AddRefResource,
     ReleaseResource,
     MemAlloc,
@@ -124,7 +124,7 @@ const void* PluginCore::GetInterface() {
     CallOnMainThread,
     IsMainThread
   };
-  return reinterpret_cast<const void*>(&intf);
+  return &core_interface;
 }
 
 void PluginCore::MarkMainThread() {

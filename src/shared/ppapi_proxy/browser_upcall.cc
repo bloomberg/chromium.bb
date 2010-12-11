@@ -106,9 +106,9 @@ void PppUpcallRpcServer::PPB_Core_CallOnMainThread(
   PP_CompletionCallback completion_callback =
       PP_MakeCompletionCallback(InvokeRemoteCallback, remote_callback_info);
   // Enqueue the closure.
-  ppapi_proxy::CoreInterface()->CallOnMainThread(delay_in_milliseconds,
-                                                 completion_callback,
-                                                 0);
+  ppapi_proxy::PPBCoreInterface()->CallOnMainThread(delay_in_milliseconds,
+                                                    completion_callback,
+                                                    0);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

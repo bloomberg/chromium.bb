@@ -9,6 +9,8 @@
 
 #include "native_client/src/include/nacl_macros.h"
 
+class PPB_Core;
+
 namespace ppapi_proxy {
 
 // Implements the untrusted side of the PPB_Core interface.
@@ -17,7 +19,7 @@ namespace ppapi_proxy {
 class PluginCore {
  public:
   // Return an interface pointer usable by PPAPI plugins.
-  static const void* GetInterface();
+  static const PPB_Core* GetInterface();
   // Mark the calling thread as the main thread for IsMainThread.
   static void MarkMainThread();
 

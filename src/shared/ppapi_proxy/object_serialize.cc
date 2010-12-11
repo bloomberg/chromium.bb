@@ -107,7 +107,7 @@ uint32_t PpVarSize(const PP_Var& var) {
       return sizeof(SerializedDouble);
     case PP_VARTYPE_STRING: {
       uint32_t string_length;
-      (void) VarInterface()->VarToUtf8(var, &string_length);
+      (void) PPBVarInterface()->VarToUtf8(var, &string_length);
       string_length = RoundedStringBytes(string_length);
       if (std::numeric_limits<uint32_t>::max() == string_length ||
           AddWouldOverflow(string_length, sizeof(SerializedFixed))) {
@@ -187,7 +187,7 @@ bool SerializePpVar(const PP_Var* vars,
       }
       case PP_VARTYPE_STRING: {
         uint32_t string_length;
-        const char* str = VarInterface()->VarToUtf8(vars[i], &string_length);
+        const char* str = PPBVarInterface()->VarToUtf8(vars[i], &string_length);
         SerializedString* ss = reinterpret_cast<SerializedString*>(p);
         ss->fixed.u.string_length = string_length;
         memcpy(reinterpret_cast<void*>(ss->string_bytes),
@@ -231,22 +231,22 @@ bool DeserializeString(char* p,
   uint32_t rounded_length = RoundedStringBytes(string_length);
   if (0 == string_length) {
     // Zero-length string.  Rely on what the PPB_Var_Deprecated does.
-    *var = VarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
-                                       ss->string_bytes,
-                                       0);
+    *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
+                                          ss->string_bytes,
+                                          0);
   } else {
     // We need to copy the string payload using memory allocated by
     // NPN_MemAlloc.
-    void* copy = CoreInterface()->MemAlloc(string_length + 1);
+    void* copy = PPBCoreInterface()->MemAlloc(string_length + 1);
     if (NULL == copy) {
       // Memory allocation failed.
       return false;
     } else {
       memmove(copy, ss->string_bytes, string_length);
     }
-    *var = VarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
-                                       reinterpret_cast<const char*>(copy),
-                                       string_length);
+    *var = PPBVarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
+                                          reinterpret_cast<const char*>(copy),
+                                          string_length);
   }
   // Compute the "element_size", or offset in the serialized form from
   // the serialized string that we just read.

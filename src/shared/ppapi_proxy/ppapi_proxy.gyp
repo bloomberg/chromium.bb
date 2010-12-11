@@ -17,6 +17,7 @@
         'browser_graphics_2d.cc',
         'browser_image_data.cc',
         'browser_instance.cc',
+        'browser_ppb_rpc_server.cc',
         'browser_ppp.cc',
         'browser_upcall.cc',
         'object.cc',

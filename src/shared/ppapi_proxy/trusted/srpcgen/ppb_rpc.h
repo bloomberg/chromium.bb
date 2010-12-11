@@ -93,6 +93,20 @@ class ObjectStubRpcServer {
   void operator=(const ObjectStubRpcServer);
 };  // class ObjectStubRpcServer
 
+class PpbRpcServer {
+ public:
+  static void PPB_GetInterface(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      char* interface_name,
+      int32_t* exports_interface_name);
+
+ private:
+  PpbRpcServer();
+  PpbRpcServer(const PpbRpcServer&);
+  void operator=(const PpbRpcServer);
+};  // class PpbRpcServer
+
 class PpbCoreRpcServer {
  public:
   static void PPB_Core_AddRefResource(

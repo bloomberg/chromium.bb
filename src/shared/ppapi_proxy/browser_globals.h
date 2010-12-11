@@ -10,6 +10,8 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/c/ppb_image_data.h"
 
 struct NaClSrpcChannel;
 
@@ -43,20 +45,18 @@ void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel);
 // Looks up the association with a given channel.
 PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel);
 
-// We need to keep the browser GetInterface function pointer, as parts of the
-// proxy will need to invoke interfaces such as the 2D and 3D APIs.
-void SetBrowserGetInterface(PPB_GetInterface get_interface_function);
+// Support for getting PPB_ browser interfaces.
+// Safe version CHECK's for NULL.
+void SetPPBGetInterface(PPB_GetInterface get_interface_function);
 const void* GetBrowserInterface(const char* interface_name);
-
-// We need an interface to get PPB_Core that is spelled the same way for
-// both plugins and the browser side of the proxy.
-// Set by SetBrowserGetInterface.
-const PPB_Core* CoreInterface();
-
-// We need an interface to get PPB_Var_Deprecated that is spelled the same way
-// for both plugins and the browser side of the proxy.
-// Set by SetBrowserGetInterface.
-const PPB_Var_Deprecated* VarInterface();
+const void* GetBrowserInterfaceSafe(const char* interface_name);
+// Functions marked "shared" are to be provided by both the browser and the
+// plugin side of the proxy, so they can be used by the shared proxy code
+// under both trusted and untrusted compilation.
+const PPB_Core* PPBCoreInterface();  // shared
+const PPB_Graphics2D* PPBGraphics2DInterface();
+const PPB_ImageData* PPBImageDataInterface();
+const PPB_Var_Deprecated* PPBVarInterface();  // shared
 
 // PPAPI constants used in the proxy.
 extern const PP_Resource kInvalidResourceId;

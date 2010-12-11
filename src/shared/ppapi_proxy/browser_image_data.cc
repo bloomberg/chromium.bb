@@ -15,31 +15,14 @@
 // The following methods are the SRPC dispatchers for ppapi/c/ppb_image_data.h.
 //
 
-namespace {
-
-const PPB_ImageData* GetInterface() {
-  static const PPB_ImageData* image_data_interface = NULL;
-
-  if (image_data_interface == NULL) {
-    image_data_interface = reinterpret_cast<const PPB_ImageData*>(
-        ppapi_proxy::GetBrowserInterface(PPB_IMAGEDATA_INTERFACE));
-  }
-  if (image_data_interface == NULL) {
-    ppapi_proxy::DebugPrintf("ERROR: attempt to get PPB_ImageData failed.\n");
-  }
-  CHECK(image_data_interface != NULL);
-  return image_data_interface;
-}
-
-}  // namespace
-
 void PpbImageDataRpcServer::PPB_ImageData_GetNativeImageDataFormat(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     int32_t* format) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  PP_ImageDataFormat pp_format = GetInterface()->GetNativeImageDataFormat();
+  PP_ImageDataFormat pp_format =
+      ppapi_proxy::PPBImageDataInterface()->GetNativeImageDataFormat();
   *format = static_cast<int32_t>(pp_format);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -52,7 +35,7 @@ void PpbImageDataRpcServer::PPB_ImageData_IsImageDataFormatSupported(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   PP_Bool pp_success =
-      GetInterface()->IsImageDataFormatSupported(
+      ppapi_proxy::PPBImageDataInterface()->IsImageDataFormatSupported(
           static_cast<PP_ImageDataFormat>(format));
   *success = static_cast<int32_t>(pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -72,11 +55,12 @@ void PpbImageDataRpcServer::PPB_ImageData_Create(
     return;
   }
   PP_Resource pp_resource =
-      GetInterface()->Create(static_cast<PP_Module>(module),
-                             static_cast<PP_ImageDataFormat>(format),
-                             static_cast<const struct PP_Size*>(
-                                 reinterpret_cast<struct PP_Size*>(size)),
-                             (init_to_zero ? PP_TRUE : PP_FALSE));
+      ppapi_proxy::PPBImageDataInterface()->Create(
+          static_cast<PP_Module>(module),
+          static_cast<PP_ImageDataFormat>(format),
+          static_cast<const struct PP_Size*>(
+              reinterpret_cast<struct PP_Size*>(size)),
+          (init_to_zero ? PP_TRUE : PP_FALSE));
   *resource = static_cast<int64_t>(pp_resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -89,7 +73,8 @@ void PpbImageDataRpcServer::PPB_ImageData_IsImageData(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   PP_Bool pp_success =
-      GetInterface()->IsImageData(static_cast<PP_Resource>(resource));
+      ppapi_proxy::PPBImageDataInterface()->IsImageData(
+          static_cast<PP_Resource>(resource));
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -106,7 +91,7 @@ void PpbImageDataRpcServer::PPB_ImageData_Describe(
     return;
   }
   PP_Bool pp_success =
-      GetInterface()->Describe(
+      ppapi_proxy::PPBImageDataInterface()->Describe(
           static_cast<PP_Resource>(resource),
           reinterpret_cast<struct PP_ImageDataDesc*>(desc));
   *success = (pp_success == PP_TRUE);

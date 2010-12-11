@@ -6,8 +6,6 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
-#include "srpcgen/ppb_rpc.h"
-#include "srpcgen/ppp_rpc.h"
 #ifdef __native_client__
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #else
@@ -17,6 +15,8 @@
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_var.h"
+#include "srpcgen/ppb_rpc.h"
+#include "srpcgen/ppp_rpc.h"
 
 //
 // These methods provide dispatching to the implementation of the object stubs.
@@ -26,7 +26,7 @@ using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::ObjectCapability;
 using ppapi_proxy::DeserializeTo;
 using ppapi_proxy::SerializeTo;
-using ppapi_proxy::VarInterface;
+using ppapi_proxy::PPBVarInterface;
 
 namespace {
 
@@ -75,7 +75,7 @@ void ObjectStubRpcServer::HasProperty(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  *success = VarInterface()->HasProperty(var, name, &exception);
+  *success = PPBVarInterface()->HasProperty(var, name, &exception);
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
@@ -118,7 +118,7 @@ void ObjectStubRpcServer::HasMethod(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  *success = VarInterface()->HasMethod(var, name, &exception);
+  *success = PPBVarInterface()->HasMethod(var, name, &exception);
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
@@ -162,7 +162,7 @@ void ObjectStubRpcServer::GetProperty(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  PP_Var value = VarInterface()->GetProperty(var, name, &exception);
+  PP_Var value = PPBVarInterface()->GetProperty(var, name, &exception);
   // Return the value PP_Var.
   if (!SerializeTo(&value, value_bytes, value_length)) {
     // Serialization of value failed.
@@ -258,7 +258,7 @@ void ObjectStubRpcServer::SetProperty(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  VarInterface()->SetProperty(var, name, value, &exception);
+  PPBVarInterface()->SetProperty(var, name, value, &exception);
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
@@ -300,7 +300,7 @@ void ObjectStubRpcServer::RemoveProperty(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  VarInterface()->RemoveProperty(var, name, &exception);
+  PPBVarInterface()->RemoveProperty(var, name, &exception);
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
@@ -357,11 +357,11 @@ void ObjectStubRpcServer::Call(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  PP_Var ret = VarInterface()->Call(var,
-                                    name,
-                                    static_cast<uint32_t>(argc),
-                                    argv.get(),
-                                    &exception);
+  PP_Var ret = PPBVarInterface()->Call(var,
+                                       name,
+                                       static_cast<uint32_t>(argc),
+                                       argv.get(),
+                                       &exception);
   // Return ret.
   if (!SerializeTo(&ret, ret_bytes, ret_length)) {
     // Serialization of ret failed.
@@ -413,10 +413,10 @@ void ObjectStubRpcServer::Construct(NaClSrpcRpc* rpc,
     return;
   }
   // Invoke the method.
-  PP_Var ret = VarInterface()->Construct(var,
-                                         static_cast<uint32_t>(argc),
-                                         argv.get(),
-                                         &exception);
+  PP_Var ret = PPBVarInterface()->Construct(var,
+                                            static_cast<uint32_t>(argc),
+                                            argv.get(),
+                                            &exception);
   // Return ret.
   if (!SerializeTo(&ret, ret_bytes, ret_length)) {
     // Serialization of ret failed.

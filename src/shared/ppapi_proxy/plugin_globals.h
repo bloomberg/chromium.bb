@@ -30,11 +30,15 @@ void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel);
 // Save the plugin's module_id.
 PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel);
 
-// Get the PPB_Core interface passed in from the browser.
-const PPB_Core* CoreInterface();
-
-// Get the PPB_Var_Deprecated interface passed in from the browser.
-const PPB_Var_Deprecated* VarInterface();
+// Support for getting PPB_ browser interfaces.
+// Safe version CHECK's for NULL.
+const void* GetBrowserInterface(const char* interface_name);
+const void* GetBrowserInterfaceSafe(const char* interface_name);
+// Functions marked "shared" are to be provided by both the browser and the
+// plugin side of the proxy, so they can be used by the shared proxy code
+// under both trusted and untrusted compilation.
+const PPB_Core* PPBCoreInterface();  // shared
+const PPB_Var_Deprecated* PPBVarInterface();  // shared
 
 // PPAPI constants used in the proxy.
 extern const PP_Resource kInvalidResourceId;

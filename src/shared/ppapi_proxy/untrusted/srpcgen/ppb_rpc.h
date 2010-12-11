@@ -84,6 +84,19 @@ class ObjectStubRpcClient {
   void operator=(const ObjectStubRpcClient);
 };  // class ObjectStubRpcClient
 
+class PpbRpcClient {
+ public:
+  static NaClSrpcError PPB_GetInterface(
+      NaClSrpcChannel* channel,
+      char* interface_name,
+      int32_t* exports_interface_name);
+
+ private:
+  PpbRpcClient();
+  PpbRpcClient(const PpbRpcClient&);
+  void operator=(const PpbRpcClient);
+};  // class PpbRpcClient
+
 class PpbCoreRpcClient {
  public:
   static NaClSrpcError PPB_Core_AddRefResource(

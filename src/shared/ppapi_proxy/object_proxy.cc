@@ -9,8 +9,6 @@
 #include <map>
 #include <string>
 
-#include "srpcgen/ppb_rpc.h"
-#include "srpcgen/ppp_rpc.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability_process.h"
@@ -24,6 +22,8 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_var.h"
+#include "srpcgen/ppb_rpc.h"
+#include "srpcgen/ppp_rpc.h"
 
 namespace ppapi_proxy {
 
@@ -370,9 +370,9 @@ PP_Var ObjectProxy::New(const ObjectCapability& capability,
   }
   Object* proxy = static_cast<Object*>(new ObjectProxy(capability, channel));
   PP_Var* var = new PP_Var;
-  *var = VarInterface()->CreateObject(LookupModuleIdForSrpcChannel(channel),
-                                      &Object::object_class,
-                                      proxy);
+  *var = PPBVarInterface()->CreateObject(LookupModuleIdForSrpcChannel(channel),
+                                         &Object::object_class,
+                                         proxy);
   (*capability_proxy_map)[capability] = var;
   // TODO(sehr): increment the ref count of the object in var here.
   return *var;

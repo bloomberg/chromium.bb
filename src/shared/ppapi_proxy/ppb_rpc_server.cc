@@ -181,6 +181,21 @@ static void DeallocateDispatcher(
   );
 }
 
+static void PPB_GetInterfaceDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbRpcServer::PPB_GetInterface(
+      rpc,
+      done,
+      inputs[0]->arrays.str,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_Core_AddRefResourceDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -417,6 +432,7 @@ NACL_SRPC_METHOD_ARRAY(PpbRpcs::srpc_methods) = {
   { "Call:CCiCC:CC", CallDispatcher },
   { "Construct:CiCC:CC", ConstructDispatcher },
   { "Deallocate:C:", DeallocateDispatcher },
+  { "PPB_GetInterface:s:i", PPB_GetInterfaceDispatcher },
   { "PPB_Core_AddRefResource:l:", PPB_Core_AddRefResourceDispatcher },
   { "PPB_Core_ReleaseResource:l:", PPB_Core_ReleaseResourceDispatcher },
   { "PPB_Core_GetTime::d", PPB_Core_GetTimeDispatcher },
