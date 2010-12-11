@@ -626,7 +626,7 @@ bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
 
 gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
                                                      GdkEventExpose* expose) {
-  if (!UpgradeDetector::GetInstance()->notify_upgrade())
+  if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
     return FALSE;
 
   const SkBitmap& badge =

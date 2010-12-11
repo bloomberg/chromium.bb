@@ -7,25 +7,27 @@
 #include <map>
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop_proxy.h"
+#include "base/singleton.h"
 
 namespace webkit_blob {
 
 namespace {
 
 typedef std::map<FilePath, DeletableFileReference*> DeleteableFileMap;
-static base::LazyInstance<DeleteableFileMap> g_deletable_file_map(
-    base::LINKER_INITIALIZED);
+
+DeleteableFileMap* map() {
+  return Singleton<DeleteableFileMap>::get();
+}
 
 }  // namespace
 
 // static
 scoped_refptr<DeletableFileReference> DeletableFileReference::Get(
     const FilePath& path) {
-  DeleteableFileMap::iterator found = g_deletable_file_map.Get().find(path);
+  DeleteableFileMap::iterator found = map()->find(path);
   DeletableFileReference* reference =
-      (found == g_deletable_file_map.Get().end()) ? NULL : found->second;
+      (found == map()->end()) ? NULL : found->second;
   return scoped_refptr<DeletableFileReference>(reference);
 }
 
@@ -34,7 +36,7 @@ scoped_refptr<DeletableFileReference> DeletableFileReference::GetOrCreate(
     const FilePath& path, base::MessageLoopProxy* file_thread) {
   DCHECK(file_thread);
   typedef std::pair<DeleteableFileMap::iterator, bool> InsertResult;
-  InsertResult result = g_deletable_file_map.Get().insert(
+  InsertResult result = map()->insert(
       DeleteableFileMap::value_type(path, NULL));
   if (result.second == false)
     return scoped_refptr<DeletableFileReference>(result.first->second);
@@ -49,12 +51,12 @@ scoped_refptr<DeletableFileReference> DeletableFileReference::GetOrCreate(
 DeletableFileReference::DeletableFileReference(
     const FilePath& path, base::MessageLoopProxy* file_thread)
     : path_(path), file_thread_(file_thread) {
-  DCHECK(g_deletable_file_map.Get().find(path_)->second == NULL);
+  DCHECK(map()->find(path_)->second == NULL);
 }
 
 DeletableFileReference::~DeletableFileReference() {
-  DCHECK(g_deletable_file_map.Get().find(path_)->second == this);
-  g_deletable_file_map.Get().erase(path_);
+  DCHECK(map()->find(path_)->second == this);
+  map()->erase(path_);
   base::FileUtilProxy::Delete(file_thread_, path_, false /* recursive */, NULL);
 }
 

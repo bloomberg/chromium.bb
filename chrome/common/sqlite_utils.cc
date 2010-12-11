@@ -8,8 +8,8 @@
 
 #include "base/file_path.h"
 #include "base/lock.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 
@@ -76,13 +76,10 @@ class DefaultSQLErrorHandlerFactory : public SQLErrorHandlerFactory {
   Lock lock_;
 };
 
-static base::LazyInstance<DefaultSQLErrorHandlerFactory>
-    g_default_sql_error_handler_factory(base::LINKER_INITIALIZED);
-
 SQLErrorHandlerFactory* GetErrorHandlerFactory() {
   // TODO(cpu): Testing needs to override the error handler.
   // Destruction of DefaultSQLErrorHandlerFactory handled by at_exit manager.
-  return g_default_sql_error_handler_factory.Pointer();
+  return Singleton<DefaultSQLErrorHandlerFactory>::get();
 }
 
 namespace sqlite_utils {

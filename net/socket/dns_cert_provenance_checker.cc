@@ -19,10 +19,10 @@
 #include "base/basictypes.h"
 #include "base/crypto/encryptor.h"
 #include "base/crypto/symmetric_key.h"
-#include "base/lazy_instance.h"
 #include "base/non_thread_safe.h"
 #include "base/pickle.h"
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "net/base/completion_callback.h"
 #include "net/base/dns_util.h"
 #include "net/base/dnsrr_resolver.h"
@@ -72,15 +72,12 @@ class DnsCertLimits {
   }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<DnsCertLimits>;
+  friend struct DefaultSingletonTraits<DnsCertLimits>;
 
   std::set<std::string> uploaded_hostnames_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsCertLimits);
 };
-
-static base::LazyInstance<DnsCertLimits> g_dns_cert_limits(
-    base::LINKER_INITIALIZED);
 
 // DnsCertProvenanceCheck performs the DNS lookup of the certificate. This
 // class is self-deleting.
@@ -108,7 +105,7 @@ class DnsCertProvenanceCheck : public NonThreadSafe {
     if (der_certs_.empty())
       return;
 
-    DnsCertLimits* const limits = g_dns_cert_limits.Pointer();
+    DnsCertLimits* const limits = Singleton<DnsCertLimits>::get();
     if (limits->HaveReachedMaxUploads() ||
         limits->HaveUploadedForHostname(hostname_)) {
       return;
@@ -149,7 +146,7 @@ class DnsCertProvenanceCheck : public NonThreadSafe {
       LOG(ERROR) << "FAILED"
                  << " hostname:" << hostname_
                  << " domain:" << domain_;
-      g_dns_cert_limits.Get().DidUpload(hostname_);
+      Singleton<DnsCertLimits>::get()->DidUpload(hostname_);
       delegate_->OnDnsCertLookupFailed(hostname_, der_certs_);
     } else if (status == OK) {
       LOG(ERROR) << "GOOD"

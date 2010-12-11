@@ -6,9 +6,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
-#include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/singleton.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -29,7 +29,6 @@ namespace appcache {
 namespace {
 
 typedef IDMap<WebApplicationCacheHostImpl> HostsMap;
-static base::LazyInstance<HostsMap> g_hosts_map(base::LINKER_INITIALIZED);
 
 // Note: the order of the elements in this array must match those
 // of the EventID enum in appcache_interfaces.h.
@@ -46,10 +45,14 @@ GURL ClearUrlRef(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
+HostsMap* all_hosts() {
+  return Singleton<HostsMap>::get();
+}
+
 }  // anon namespace
 
 WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
-  return g_hosts_map.Get().Lookup(id);
+  return all_hosts()->Lookup(id);
 }
 
 WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromFrame(
@@ -68,7 +71,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     AppCacheBackend* backend)
     : client_(client),
       backend_(backend),
-      ALLOW_THIS_IN_INITIALIZER_LIST(host_id_(g_hosts_map.Get().Add(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(host_id_(all_hosts()->Add(this))),
       has_status_(false),
       status_(UNCACHED),
       has_cached_status_(false),
@@ -83,7 +86,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
 
 WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {
   backend_->UnregisterHost(host_id_);
-  g_hosts_map.Get().Remove(host_id_);
+  all_hosts()->Remove(host_id_);
 }
 
 void WebApplicationCacheHostImpl::OnCacheSelected(

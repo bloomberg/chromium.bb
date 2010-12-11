@@ -222,7 +222,7 @@ std::wstring WindowImpl::GetWindowClassName() {
   ATOM atom = RegisterClassEx(&class_ex);
   DCHECK(atom);
 
-  ClassRegistrar::GetInstance()->RegisterClass(class_info, name, atom);
+  Singleton<ClassRegistrar>()->RegisterClass(class_info, name, atom);
 
   return name;
 }

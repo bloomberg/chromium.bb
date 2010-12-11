@@ -6,9 +6,9 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
+#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/base/completion_callback.h"
@@ -47,8 +47,6 @@ class Driver {
   int clients_;
 };
 
-static base::LazyInstance<Driver> g_driver(base::LINKER_INITIALIZED);
-
 // A network client
 class Client {
  public:
@@ -62,7 +60,7 @@ class Client {
     int rv = factory->CreateTransaction(&transaction_);
     DCHECK_EQ(net::OK, rv);
     buffer_->AddRef();
-    g_driver.Get().ClientStarted();
+    driver_->ClientStarted();
     request_info_.url = url_;
     request_info_.method = "GET";
     int state = transaction_->Start(
@@ -103,7 +101,7 @@ class Client {
   void OnRequestComplete(int result) {
     static base::StatsCounter requests("FetchClient.requests");
     requests.Increment();
-    g_driver.Get().ClientStopped();
+    driver_->ClientStopped();
     printf(".");
   }
 
@@ -114,6 +112,7 @@ class Client {
   scoped_refptr<net::IOBuffer> buffer_;
   net::CompletionCallbackImpl<Client> connect_callback_;
   net::CompletionCallbackImpl<Client> read_callback_;
+  Singleton<Driver> driver_;
 };
 
 int main(int argc, char**argv) {

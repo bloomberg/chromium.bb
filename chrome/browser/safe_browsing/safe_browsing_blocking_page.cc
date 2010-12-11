@@ -76,9 +76,6 @@ static const char* const kTakeMeBackCommand = "takeMeBack";
 // static
 SafeBrowsingBlockingPageFactory* SafeBrowsingBlockingPage::factory_ = NULL;
 
-static base::LazyInstance<SafeBrowsingBlockingPage::UnsafeResourceMap>
-    g_unsafe_resource_map(base::LINKER_INITIALIZED);
-
 // The default SafeBrowsingBlockingPageFactory.  Global, made a singleton so we
 // don't leak it.
 class SafeBrowsingBlockingPageFactoryImpl
@@ -562,7 +559,7 @@ void SafeBrowsingBlockingPage::NotifySafeBrowsingService(
 // static
 SafeBrowsingBlockingPage::UnsafeResourceMap*
     SafeBrowsingBlockingPage::GetUnsafeResourcesMap() {
-  return g_unsafe_resource_map.Pointer();
+  return Singleton<UnsafeResourceMap>::get();
 }
 
 // static

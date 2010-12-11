@@ -672,11 +672,6 @@ string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
 
 //  ----------------------------------------------------------------------------
 
-// static
-EnumerateModulesModel* EnumerateModulesModel::GetSingleton() {
-  return Singleton<EnumerateModulesModel>::get();
-}
-
 void EnumerateModulesModel::ScanNow() {
   if (scanning_)
     return;  // A scan is already in progress.

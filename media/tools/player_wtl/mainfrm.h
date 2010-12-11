@@ -61,10 +61,10 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
 
   virtual BOOL OnIdle() {
     BOOL bEnable = !m_view.bmp_.IsNull();
-    BOOL bMovieOpen = media::Movie::GetInstance()->IsOpen() ? true : false;
+    BOOL bMovieOpen = media::Movie::get()->IsOpen() ? true : false;
 
-    float current_position = media::Movie::GetInstance()->GetPosition();
-    float duration = media::Movie::GetInstance()->GetDuration();
+    float current_position = media::Movie::get()->GetPosition();
+    float duration = media::Movie::get()->GetDuration();
     if (enable_exit && bEnable &&
         duration > 0.0f && current_position >= duration) {
       OnFileExit(0, 0, 0);
@@ -304,8 +304,8 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
   }
 
   void UpdateSpeedUICheck() {
-    if (media::Movie::GetInstance()) {
-      float play_rate = media::Movie::GetInstance()->GetPlayRate();
+    if (media::Movie::get()) {
+      float play_rate = media::Movie::get()->GetPlayRate();
       UISetCheck(ID_PLAY_HALFSPEED,      (play_rate == 0.5f));
       UISetCheck(ID_PLAY_NORMALSPEED,    (play_rate == 1.0f));
       UISetCheck(ID_PLAY_DOUBLESPEED,    (play_rate == 2.0f));
@@ -422,10 +422,10 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
       TogglePrintPreview();
 
     // If a movie is open, close it.
-    media::Movie::GetInstance()->Close();
+    media::Movie::get()->Close();
 
     if (IsMovie(file_name)) {
-      success = media::Movie::GetInstance()->Open(file_name, m_view.renderer_);
+      success = media::Movie::get()->Open(file_name, m_view.renderer_);
     } else {
       HBITMAP hbmp = NULL;
       hbmp = (HBITMAP)::LoadImage(NULL, file_name, IMAGE_BITMAP, 0, 0,
@@ -590,7 +590,7 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     if (m_bPrintPreview)
       TogglePrintPreview();
 
-    media::Movie::GetInstance()->Close();
+    media::Movie::get()->Close();
     m_view.Reset();
     UpdateTitleBar(NULL);
     m_szFilePath[0] = 0;
@@ -643,44 +643,44 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
   }
 
   void OnPlayPlayPause(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/) {
-    bool paused = !media::Movie::GetInstance()->GetPause();
-    media::Movie::GetInstance()->SetPause(paused);
+    bool paused = !media::Movie::get()->GetPause();
+    media::Movie::get()->SetPause(paused);
   }
 
   void OnPlayStepForward(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/) {
-    float current_position = media::Movie::GetInstance()->GetPosition();
-    media::Movie::GetInstance()->SetPosition(current_position + 10.0f);
+    float current_position = media::Movie::get()->GetPosition();
+    media::Movie::get()->SetPosition(current_position + 10.0f);
   }
 
   void OnPlayStepBackward(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/) {
-    float current_position = media::Movie::GetInstance()->GetPosition();
-    media::Movie::GetInstance()->SetPosition(current_position - 10.0f);
+    float current_position = media::Movie::get()->GetPosition();
+    media::Movie::get()->SetPosition(current_position - 10.0f);
   }
 
   void OnPlayGotoStart(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/) {
-    media::Movie::GetInstance()->SetPosition(0.0);
+    media::Movie::get()->SetPosition(0.0);
   }
 
   void OnPlayGotoEnd(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/) {
-    float current_position = media::Movie::GetInstance()->GetDuration();
-    media::Movie::GetInstance()->SetPosition(current_position - 30.0f);
+    float current_position = media::Movie::get()->GetDuration();
+    media::Movie::get()->SetPosition(current_position - 30.0f);
   }
 
   void SetPlayRate(int play_speed) {
     if (play_speed == 0) {
-      media::Movie::GetInstance()->Play(0.5f);
+      media::Movie::get()->Play(0.5f);
     } else if (play_speed == 2) {
-      media::Movie::GetInstance()->Play(2.0f);
+      media::Movie::get()->Play(2.0f);
     } else if (play_speed == 3) {
-      media::Movie::GetInstance()->Play(3.0f);
+      media::Movie::get()->Play(3.0f);
     } else if (play_speed == 4) {
-      media::Movie::GetInstance()->Play(4.0f);
+      media::Movie::get()->Play(4.0f);
     } else if (play_speed == 5) {
-      media::Movie::GetInstance()->Play(8.0f);
+      media::Movie::get()->Play(8.0f);
     } else if (play_speed == 6) {
-      media::Movie::GetInstance()->Play(16.0f);
+      media::Movie::get()->Play(16.0f);
     } else {
-      media::Movie::GetInstance()->Play(1.0f);
+      media::Movie::get()->Play(1.0f);
     }
   }
 
@@ -699,23 +699,22 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
   }
 
   void OnOptionsDraw(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/) {
-    bool enable_draw = !media::Movie::GetInstance()->GetDrawEnable();
-    media::Movie::GetInstance()->SetDrawEnable(enable_draw);
+    bool enable_draw = !media::Movie::get()->GetDrawEnable();
+    media::Movie::get()->SetDrawEnable(enable_draw);
     UISetCheck(ID_OPTIONS_DRAW, enable_draw);
     UpdateLayout();
   }
 
   void OnOptionsAudio(UINT /*uNotifyCode*/, int /*nID*/, CWindow /*wnd*/) {
-    bool enable_audio = !media::Movie::GetInstance()->GetAudioEnable();
-    media::Movie::GetInstance()->SetAudioEnable(enable_audio);
+    bool enable_audio = !media::Movie::get()->GetAudioEnable();
+    media::Movie::get()->SetAudioEnable(enable_audio);
     UISetCheck(ID_OPTIONS_AUDIO, enable_audio);
     UpdateLayout();
   }
 
   void OnOptionsDumpYUVFile(UINT /*uNotify*/, int /*nID*/, CWindow /*wnd*/) {
-    bool enable_dump_yuv_file =
-        !media::Movie::GetInstance()->GetDumpYuvFileEnable();
-    media::Movie::GetInstance()->SetDumpYuvFileEnable(enable_dump_yuv_file);
+    bool enable_dump_yuv_file = !media::Movie::get()->GetDumpYuvFileEnable();
+    media::Movie::get()->SetDumpYuvFileEnable(enable_dump_yuv_file);
     UISetCheck(ID_OPTIONS_DUMPYUVFILE, enable_dump_yuv_file);
     UpdateLayout();
   }

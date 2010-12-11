@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome_frame/external_tab.h"
-#include "base/lazy_instance.h"
+#include "base/singleton.h"
 #include "base/tracked.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
@@ -14,8 +14,7 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(ExternalTabProxy);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(UIDelegate);
 
 namespace {
-  static base::LazyInstance<ChromeProxyFactory> g_proxy_factory(
-      base::LINKER_INITIALIZED);
+  Singleton<ChromeProxyFactory> g_proxy_factory;
 
   struct UserDataHolder : public SyncMessageContext {
     explicit UserDataHolder(void* p) : data(p) {}
@@ -25,7 +24,7 @@ namespace {
 
 
 ExternalTabProxy::ExternalTabProxy() : state_(NONE), tab_(0), tab_wnd_(NULL),
-    chrome_wnd_(NULL), proxy_factory_(g_proxy_factory.Pointer()), proxy_(NULL),
+    chrome_wnd_(NULL), proxy_factory_(g_proxy_factory.get()), proxy_(NULL),
     ui_delegate_(NULL) {
 }
 

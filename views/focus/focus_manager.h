@@ -126,9 +126,6 @@ class FocusManager {
  public:
   class WidgetFocusManager {
    public:
-    // Returns the singleton instance.
-    static WidgetFocusManager* GetInstance();
-
     // Adds/removes a WidgetFocusChangeListener |listener| to the set of
     // active listeners.
     void AddFocusChangeListener(WidgetFocusChangeListener* listener);

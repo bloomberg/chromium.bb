@@ -114,13 +114,6 @@ template <typename Type> intptr_t
 template <typename Type> base::subtle::Atomic32
     StaticMemorySingletonTraits<Type>::dead_ = 0;
 
-// This is a hack to work around a limitation where a template argument cannot
-// be declared as a friend directly. This is used in the below Singleton
-// template.
-template <typename T>
-struct FriendMaker {
-  typedef T FriendType;
-};
 
 // The Singleton<Type, Traits, DifferentiatingType> class manages a single
 // instance of Type which will be created on first use and will be destroyed at
@@ -131,36 +124,15 @@ struct FriendMaker {
 // singletons having the same memory allocation functions but serving a
 // different purpose. This is mainly used for Locks serving different purposes.
 //
-// Example usage:
-//
-// In your header:
-//   #include "base/singleton.h"
-//   class FooClass {
-//    public:
-//     static FooClass* GetInstance();  <-- See comment below on this.
-//     void Bar() { ... }
-//    private:
-//     FooClass() { ... }
-//     friend struct DefaultSingletonTraits<FooClass>;
-//
-//     DISALLOW_COPY_AND_ASSIGN(FooClass);
-//   };
-//
-// In your source file:
-//  FooClass* FooClass::GetInstance() {
-//    return Singleton<FooClass>::get();
-//  }
-//
-// And to call methods on FooClass:
-//   FooClass::GetInstance()->Bar();
-//
-// NOTE: It is important that FooClass::GetInstance() is not inlined in the
-// header, so that when source files from multiple targets include this header
-// they don't end up with different copies of the inlined code creating multiple
-// copies of the singleton.
+// Example usages: (none are preferred, they all result in the same code)
+//   1. FooClass* ptr = Singleton<FooClass>::get();
+//      ptr->Bar();
+//   2. Singleton<FooClass>()->Bar();
+//   3. Singleton<FooClass>::get()->Bar();
 //
 // Singleton<> has no non-static members and doesn't need to actually be
-// instantiated.
+// instantiated. It does no harm to instantiate it and use it as a class member
+// or at global level since it is acting as a POD type.
 //
 // This class is itself thread-safe. The underlying Type must of course be
 // thread-safe if you want to use it concurrently. Two parameters may be tuned
@@ -180,6 +152,20 @@ struct FriendMaker {
 // shouldn't be false unless absolutely necessary. Remember that the heap where
 // the object is allocated may be destroyed by the CRT anyway.
 //
+// If you want to ensure that your class can only exist as a singleton, make
+// its constructors private, and make DefaultSingletonTraits<> a friend:
+//
+//   #include "base/singleton.h"
+//   class FooClass {
+//    public:
+//     void Bar() { ... }
+//    private:
+//     FooClass() { ... }
+//     friend struct DefaultSingletonTraits<FooClass>;
+//
+//     DISALLOW_COPY_AND_ASSIGN(FooClass);
+//   };
+//
 // Caveats:
 // (a) Every call to get(), operator->() and operator*() incurs some overhead
 //     (16ns on my P4/2.8GHz) to check whether the object has already been
@@ -193,13 +179,7 @@ template <typename Type,
           typename Traits = DefaultSingletonTraits<Type>,
           typename DifferentiatingType = Type>
 class Singleton {
- private:
-#if defined(OS_WIN)
-  friend typename FriendMaker<Type>::FriendType;
-#else
-  friend class FriendMaker<Type>::FriendType;
-#endif
-
+ public:
   // This class is safe to be constructed and copy-constructed since it has no
   // member.
 
@@ -260,6 +240,16 @@ class Singleton {
     return reinterpret_cast<Type*>(value);
   }
 
+  // Shortcuts.
+  Type& operator*() {
+    return *get();
+  }
+
+  Type* operator->() {
+    return get();
+  }
+
+ private:
   // Adapter function for use with AtExit().  This should be called single
   // threaded, so don't use atomic operations.
   // Calling OnExit while singleton is in use by other threads is a mistake.

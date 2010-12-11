@@ -9,13 +9,13 @@
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
-#include "base/lazy_instance.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #endif
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
+#include "base/singleton.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/plugin_messages.h"
@@ -47,7 +47,9 @@ using webkit_glue::WebPluginAcceleratedSurface;
 #endif
 
 typedef std::map<CPBrowsingContext, WebPluginProxy*> ContextMap;
-static base::LazyInstance<ContextMap> g_context_map(base::LINKER_INITIALIZED);
+static ContextMap& GetContextMap() {
+  return *Singleton<ContextMap>::get();
+}
 
 WebPluginProxy::WebPluginProxy(
     PluginChannel* channel,
@@ -91,7 +93,7 @@ WebPluginProxy::WebPluginProxy(
 
 WebPluginProxy::~WebPluginProxy() {
   if (cp_browsing_context_)
-    g_context_map.Get().erase(cp_browsing_context_);
+    GetContextMap().erase(cp_browsing_context_);
 
 #if defined(USE_X11)
   if (windowless_shm_pixmap_ != None)
@@ -269,14 +271,14 @@ CPBrowsingContext WebPluginProxy::GetCPBrowsingContext() {
   if (cp_browsing_context_ == 0) {
     Send(new PluginHostMsg_GetCPBrowsingContext(route_id_,
                                                 &cp_browsing_context_));
-    g_context_map.Get()[cp_browsing_context_] = this;
+    GetContextMap()[cp_browsing_context_] = this;
   }
   return cp_browsing_context_;
 }
 
 WebPluginProxy* WebPluginProxy::FromCPBrowsingContext(
     CPBrowsingContext context) {
-  return g_context_map.Get()[context];
+  return GetContextMap()[context];
 }
 
 WebPluginResourceClient* WebPluginProxy::GetResourceClient(int id) {

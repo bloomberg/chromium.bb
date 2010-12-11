@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/extensions/bindings_utils.h"
 
-#include "base/lazy_instance.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/renderer/render_view.h"
@@ -22,14 +21,11 @@ struct SingletonData {
   ContextList contexts;
   PendingRequestMap pending_requests;
 };
-static base::LazyInstance<SingletonData> g_singleton_data(
-    base::LINKER_INITIALIZED);
 
 typedef std::map<int, std::string> StringMap;
-static base::LazyInstance<StringMap> g_string_map(base::LINKER_INITIALIZED);
 
 const char* GetStringResource(int resource_id) {
-  StringMap* strings = g_string_map.Pointer();
+  StringMap* strings = Singleton<StringMap>::get();
   StringMap::iterator it = strings->find(resource_id);
   if (it == strings->end()) {
     it = strings->insert(std::make_pair(
@@ -88,7 +84,7 @@ ContextInfo::ContextInfo(v8::Persistent<v8::Context> context,
 ContextInfo::~ContextInfo() {}
 
 ContextList& GetContexts() {
-  return g_singleton_data.Get().contexts;
+  return Singleton<SingletonData>::get()->contexts;
 }
 
 ContextList GetContextsForExtension(const std::string& extension_id) {
@@ -138,7 +134,7 @@ ContextList::iterator FindContext(v8::Handle<v8::Context> context) {
 }
 
 PendingRequestMap& GetPendingRequestMap() {
-  return g_singleton_data.Get().pending_requests;
+  return Singleton<SingletonData>::get()->pending_requests;
 }
 
 RenderView* GetRenderViewForCurrentContext() {

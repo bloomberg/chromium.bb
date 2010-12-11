@@ -13,8 +13,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/i18n/time_formatting.h"
@@ -37,8 +37,7 @@ struct PrintDebugDumpPath {
   FilePath debug_dump_path;
 };
 
-static base::LazyInstance<PrintDebugDumpPath> g_debug_dump_info(
-    base::LINKER_INITIALIZED);
+Singleton<PrintDebugDumpPath> g_debug_dump_info;
 
 }  // namespace
 
@@ -245,7 +244,7 @@ void PrintedDocument::PrintHeaderFooter(gfx::NativeDrawingContext context,
 }
 
 void PrintedDocument::DebugDump(const PrintedPage& page) {
-  if (!g_debug_dump_info.Get().enabled)
+  if (!g_debug_dump_info->enabled)
     return;
 
   string16 filename;
@@ -259,19 +258,19 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   filename += ASCIIToUTF16("_.emf");
 #if defined(OS_WIN)
   page.native_metafile()->SaveTo(
-      g_debug_dump_info.Get().debug_dump_path.Append(filename).ToWStringHack());
+      g_debug_dump_info->debug_dump_path.Append(filename).ToWStringHack());
 #else  // OS_WIN
   NOTIMPLEMENTED();
 #endif  // OS_WIN
 }
 
 void PrintedDocument::set_debug_dump_path(const FilePath& debug_dump_path) {
-  g_debug_dump_info.Get().enabled = !debug_dump_path.empty();
-  g_debug_dump_info.Get().debug_dump_path = debug_dump_path;
+  g_debug_dump_info->enabled = !debug_dump_path.empty();
+  g_debug_dump_info->debug_dump_path = debug_dump_path;
 }
 
 const FilePath& PrintedDocument::debug_dump_path() {
-  return g_debug_dump_info.Get().debug_dump_path;
+  return g_debug_dump_info->debug_dump_path;
 }
 
 PrintedDocument::Mutable::Mutable(PrintedPagesSource* source)

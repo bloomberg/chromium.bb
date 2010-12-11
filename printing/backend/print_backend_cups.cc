@@ -12,9 +12,9 @@
 #include <pthread.h>
 
 #include "base/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/logging.h"
+#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
@@ -65,9 +65,6 @@ class GcryptInitializer {
       LOG(ERROR) << "Gnutls initialization failed";
   }
 };
-
-static base::LazyInstance<GcryptInitializer> g_gcrypt_initializer(
-    base::LINKER_INITIALIZED);
 
 }  // namespace
 #endif
@@ -191,7 +188,7 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
     const DictionaryValue* print_backend_settings) {
 #if !defined(OS_MACOSX)
   // Initialize gcrypt library.
-  g_gcrypt_initializer.Get();
+  Singleton<GcryptInitializer>::get();
 #endif
 
   std::string print_server_url_str;

@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -168,7 +168,8 @@ class TimeFormatter {
       STLDeleteContainerPointers(time_elapsed_formatter_.begin(),
                                  time_elapsed_formatter_.end());
     }
-    friend struct base::DefaultLazyInstanceTraits<TimeFormatter>;
+    friend class Singleton<TimeFormatter>;
+    friend struct DefaultSingletonTraits<TimeFormatter>;
 
     std::vector<icu::PluralFormat*> short_formatter_;
     std::vector<icu::PluralFormat*> time_left_formatter_;
@@ -180,9 +181,6 @@ class TimeFormatter {
 
     DISALLOW_COPY_AND_ASSIGN(TimeFormatter);
 };
-
-static base::LazyInstance<TimeFormatter> g_time_formatter(
-    base::LINKER_INITIALIZED);
 
 void TimeFormatter::BuildFormats(
     FormatType format_type, std::vector<icu::PluralFormat*>* time_formats) {
@@ -255,6 +253,8 @@ icu::PluralFormat* TimeFormatter::createFallbackFormat(
   return format;
 }
 
+Singleton<TimeFormatter> time_formatter;
+
 static string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
   if (delta.ToInternalValue() < 0) {
     NOTREACHED() << "Negative duration";
@@ -264,7 +264,7 @@ static string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
   int number;
 
   const std::vector<icu::PluralFormat*>& formatters =
-    g_time_formatter.Get().formatter(format_type);
+    time_formatter->formatter(format_type);
 
   UErrorCode error = U_ZERO_ERROR;
   icu::UnicodeString time_string;

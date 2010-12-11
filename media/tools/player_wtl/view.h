@@ -182,8 +182,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     }
 
     // Append each frame to end of file.
-    bool enable_dump_yuv_file =
-        media::Movie::GetInstance()->GetDumpYuvFileEnable();
+    bool enable_dump_yuv_file = media::Movie::get()->GetDumpYuvFileEnable();
     if (enable_dump_yuv_file) {
       DumpYUV(video_frame);
     }
@@ -192,7 +191,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     double yuv_time_start = GetTime();  // Start timer.
 #endif
 
-    bool enable_draw = media::Movie::GetInstance()->GetDrawEnable();
+    bool enable_draw = media::Movie::get()->GetDrawEnable();
     if (enable_draw) {
       DCHECK(bm.bmBitsPixel == 32);
       DrawYUV(video_frame,
