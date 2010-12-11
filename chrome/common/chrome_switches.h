@@ -207,6 +207,7 @@ extern const char kHomePage[];
 extern const char kHostRules[];
 extern const char kHostResolverParallelism[];
 extern const char kHostResolverRules[];
+extern const char kIgnoreGpuBlacklist[];
 extern const char kImport[];
 extern const char kImportFromFile[];
 extern const char kInProcessPlugins[];

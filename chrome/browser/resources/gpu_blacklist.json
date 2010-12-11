@@ -1,0 +1,16 @@
+{
+  "name": "gpu blacklist",
+  "version": "0.1",
+  "entries": [
+    { // ATI Radeon X1900 on Mac
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "device_id": "0x7249",
+      "blacklist": [
+        "webgl"
+      ]
+    }
+  ]
+}

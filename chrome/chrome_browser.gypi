@@ -1304,6 +1304,8 @@
         'browser/google/google_url_tracker.h',
         'browser/google/google_util.cc',
         'browser/google/google_util.h',
+        'browser/gpu_blacklist.cc',
+        'browser/gpu_blacklist.h',
         'browser/gpu_process_host.cc',
         'browser/gpu_process_host.h',
         'browser/gpu_process_host_ui_shim.cc',

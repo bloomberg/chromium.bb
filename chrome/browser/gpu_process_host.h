@@ -16,6 +16,7 @@
 
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+class GpuBlacklist;
 class GPUInfo;
 class ResourceMessageFilter;
 
@@ -120,8 +121,12 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   bool CanLaunchGpuProcess() const;
   bool LaunchGpuProcess();
 
+  bool LoadGpuBlacklist();
+
   bool initialized_;
   bool initialized_successfully_;
+
+  scoped_ptr<GpuBlacklist> gpu_blacklist_;
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.

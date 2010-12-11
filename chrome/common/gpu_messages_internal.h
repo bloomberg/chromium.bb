@@ -33,6 +33,11 @@ class GPUInfo;
 IPC_MESSAGE_CONTROL1(GpuMsg_EstablishChannel,
                      int /* renderer_id */)
 
+// Tells the GPU process to close the channel identified by IPC channel
+// handle.  If no channel can be identified, do nothing.
+IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel,
+                     IPC::ChannelHandle /* channel_handle */)
+
 // Provides a synchronization point to guarantee that the processing of
 // previous asynchronous messages (i.e., GpuMsg_EstablishChannel) has
 // completed. (This message can't be synchronous because the

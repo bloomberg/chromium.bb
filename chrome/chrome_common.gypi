@@ -67,6 +67,8 @@
           'common/geoposition.h',
           'common/gpu_create_command_buffer_config.cc',
           'common/gpu_create_command_buffer_config.h',
+          'common/gpu_feature_flags.cc',
+          'common/gpu_feature_flags.h',
           'common/gpu_info.h',
           'common/gpu_info.cc',
           'common/gpu_messages.cc',

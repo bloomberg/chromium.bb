@@ -17,6 +17,10 @@
 #include "chrome/gpu/x_util.h"
 #include "gfx/native_widget_types.h"
 
+namespace IPC {
+struct ChannelHandle;
+}
+
 class GpuThread : public ChildThread {
  public:
   GpuThread();
@@ -33,6 +37,7 @@ class GpuThread : public ChildThread {
 
   // Message handlers.
   void OnEstablishChannel(int renderer_id);
+  void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnSynchronize();
   void OnCollectGraphicsInfo();
 #if defined(OS_MACOSX)

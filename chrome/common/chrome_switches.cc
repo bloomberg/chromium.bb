@@ -725,6 +725,9 @@ const char kHostResolverParallelism[]       = "host-resolver-parallelism";
 // These mappings only apply to the host resolver.
 const char kHostResolverRules[]             = "host-resolver-rules";
 
+// Ignores GPU blacklist.
+const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
+
 // Perform importing from another browser. The value associated with this
 // setting encodes the target browser and what items to import.
 const char kImport[]                        = "import";

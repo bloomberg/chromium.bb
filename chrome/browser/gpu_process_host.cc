@@ -5,19 +5,24 @@
 #include "chrome/browser/gpu_process_host.h"
 
 #include "app/app_switches.h"
+#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/string_piece.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/gpu_feature_flags.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
+#include "grit/browser_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
@@ -97,6 +102,9 @@ bool GpuProcessHost::EnsureInitialized() {
 }
 
 bool GpuProcessHost::Init() {
+  if (!LoadGpuBlacklist())
+    return false;
+
   if (!CreateChannel())
     return false;
 
@@ -199,8 +207,20 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
 void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle,
     const GPUInfo& gpu_info) {
+  GpuFeatureFlags gpu_feature_flags;
+  if (channel_handle.name.size() != 0) {
+    gpu_feature_flags = gpu_blacklist_->DetermineGpuFeatureFlags(
+        GpuBlacklist::kOsAny, NULL, gpu_info);
+  }
   const ChannelRequest& request = sent_requests_.front();
-  SendEstablishChannelReply(channel_handle, gpu_info, request.filter);
+  // Currently if any of the GPU features are blacklised, we don't establish a
+  // GPU channel.
+  if (gpu_feature_flags.flags() != 0) {
+    Send(new GpuMsg_CloseChannel(channel_handle));
+    SendEstablishChannelReply(IPC::ChannelHandle(), gpu_info, request.filter);
+  } else {
+    SendEstablishChannelReply(channel_handle, gpu_info, request.filter);
+  }
   sent_requests_.pop();
 }
 
@@ -536,3 +556,21 @@ bool GpuProcessHost::LaunchGpuProcess() {
                             kLaunched, kGPUProcessLifetimeEvent_Max);
   return true;
 }
+
+bool GpuProcessHost::LoadGpuBlacklist() {
+  if (gpu_blacklist_.get() != NULL)
+    return true;
+  static const base::StringPiece gpu_blacklist_json(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_GPU_BLACKLIST));
+  GpuBlacklist* blacklist = new GpuBlacklist();
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) ||
+      blacklist->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true)) {
+    gpu_blacklist_.reset(blacklist);
+    return true;
+  }
+  delete blacklist;
+  return false;
+}
+

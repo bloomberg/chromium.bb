@@ -57,6 +57,8 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP_EX(GpuThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel,
                         OnEstablishChannel)
+    IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel,
+                        OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_Synchronize,
                         OnSynchronize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo,
@@ -101,6 +103,16 @@ void GpuThread::OnEstablishChannel(int renderer_id) {
   }
 
   Send(new GpuHostMsg_ChannelEstablished(channel_handle, gpu_info_));
+}
+
+void GpuThread::OnCloseChannel(const IPC::ChannelHandle& channel_handle) {
+  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
+       iter != gpu_channels_.end(); ++iter) {
+    if (iter->second->GetChannelName() == channel_handle.name) {
+      gpu_channels_.erase(iter);
+      return;
+    }
+  }
 }
 
 void GpuThread::OnSynchronize() {
