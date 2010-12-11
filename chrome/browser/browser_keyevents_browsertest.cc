@@ -649,47 +649,29 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_ReservedAccelerators) {
 
   ASSERT_EQ(1, browser()->tab_count());
 
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+  static const KeyEventTestData kTestCtrlOrCmdT = {
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-  static const KeyEventTestData kTestCtrlT = {
     app::VKEY_T, true, false, false, false,
     true, false, false, false, 1,
     { "D 17 0 true false false false" }
-  };
-
-  // Press Ctrl+T, which will open a new tab. It cannot be suppressed.
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlT));
-  EXPECT_EQ(2, browser()->tab_count());
-  browser()->SelectNumberedTab(0);
-  ASSERT_EQ(0, browser()->selected_index());
-
-  int result_length;
-  ASSERT_NO_FATAL_FAILURE(GetResultLength(0, &result_length));
-  EXPECT_EQ(1, result_length);
-
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
-
-  // Reserved accelerators can't be suppressed.
-  ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
-  // Press Ctrl+W, which will close the tab.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_W, true, false, false, false));
-  EXPECT_EQ(1, browser()->tab_count());
-#elif defined(OS_MACOSX)
-  static const KeyEventTestData kTestCmdT = {
+#else  // OS_MACOSX
     app::VKEY_T, false, false, false, true,
     true, false, false, false, 1,
     { "D 91 0 false false false true" }
+#endif
   };
 
   ui_test_utils::WindowedNotificationObserver wait_for_new_tab(
       NotificationType::TAB_PARENTED,
       NotificationService::AllSources());
 
-  // Press Cmd+T, which will open a new tab. It cannot be suppressed.
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCmdT));
+  // Press Ctrl/Cmd+T, which will open a new tab. It cannot be suppressed.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlOrCmdT));
 
-  wait_for_new_tab.WaitFor(Source<NavigationController>(
-      &browser()->GetTabContentsAt(1)->controller()));
+  ASSERT_NO_FATAL_FAILURE(
+      wait_for_new_tab.WaitFor(Source<NavigationController>(
+      &browser()->GetTabContentsAt(1)->controller())));
 
   int result_length;
   ASSERT_NO_FATAL_FAILURE(GetResultLength(0, &result_length));
@@ -710,9 +692,21 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_ReservedAccelerators) {
   // Reserved accelerators can't be suppressed.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(1, true));
 
-  // Press Cmd+W, which will close the tab.
+  ui_test_utils::WindowedNotificationObserver wait_for_tab_closed(
+      NotificationType::TAB_CLOSED, Source<NavigationController>(
+          &browser()->GetTabContentsAt(1)->controller()));
+
+  // Press Ctrl/Cmd+W, which will close the tab.
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), app::VKEY_W, true, false, false, false));
+#else  // OS_MACOSX
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), app::VKEY_W, false, false, false, true));
+#endif
+
+  ASSERT_NO_FATAL_FAILURE(wait_for_tab_closed.Wait());
+
   EXPECT_EQ(1, browser()->tab_count());
 #elif defined(TOOLKIT_GTK)
   // Ctrl-[a-z] are not treated as reserved accelerators on GTK.
