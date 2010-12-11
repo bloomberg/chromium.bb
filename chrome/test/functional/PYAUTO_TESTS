@@ -53,7 +53,7 @@
     'passwords',
     'pdf',
     'plugins',
-    # 'popups',  crbug.com/59208
+    'popups',
     'prefs',
     'search_engines',
     'special_tabs',
