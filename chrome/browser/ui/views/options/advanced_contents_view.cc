@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/views/list_background.h"
 #include "chrome/browser/ui/views/options/content_settings_window_view.h"
 #include "chrome/browser/ui/views/options/fonts_languages_window_view.h"
-#include "chrome/browser/ui/views/restart_message_box.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -524,8 +523,6 @@ void PrivacySection::ButtonPressed(
                                 "Options_MetricsReportingCheckbox_Disable"),
                             profile()->GetPrefs());
     ResolveMetricsReportingEnabled();
-    if (enabled == reporting_enabled_checkbox_->checked())
-      RestartMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
     enable_metrics_recording_.SetValue(enabled);
   } else if (sender == content_settings_button_) {
     UserMetricsRecordAction(UserMetricsAction("Options_ContentSettings"), NULL);
