@@ -86,7 +86,7 @@ TEST_F(WatchdogTest, AlarmTest) {
 
 // Make sure a basic alarm fires when the time has expired.
 TEST_F(WatchdogTest, AlarmPriorTimeTest) {
-  WatchdogCounter watchdog(TimeDelta::TimeDelta(), "Enabled2", true);
+  WatchdogCounter watchdog(TimeDelta(), "Enabled2", true);
   // Set a time in the past.
   watchdog.ArmSomeTimeDeltaAgo(TimeDelta::FromSeconds(2));
   // It should instantly go off, but certainly in less than 5 minutes.
