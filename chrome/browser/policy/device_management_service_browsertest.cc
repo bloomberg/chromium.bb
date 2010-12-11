@@ -58,7 +58,7 @@ class CannedResponseInterceptor : public net::URLRequest::Interceptor {
 
  private:
   // net::URLRequest::Interceptor overrides.
-  virtual URLRequestJob* MaybeIntercept(net::URLRequest* request) {
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) {
     if (request->url().GetOrigin() == service_url_.GetOrigin() &&
         request->url().path() == service_url_.path()) {
       return new URLRequestTestJob(request,

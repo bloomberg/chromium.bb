@@ -30,7 +30,7 @@ class ViewAppCacheInternalsJob : public URLRequestSimpleJob {
                        std::string* charset,
                        std::string* data) const;
 
-  // Overridden method from URLRequestJob.
+  // Overridden method from net::URLRequestJob.
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
 
  private:

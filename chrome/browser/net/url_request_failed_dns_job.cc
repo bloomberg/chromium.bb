@@ -15,7 +15,7 @@ const char URLRequestFailedDnsJob::kTestUrl[] =
     "http://url.handled.by.fake.dns/";
 
 URLRequestFailedDnsJob::URLRequestFailedDnsJob(net::URLRequest* request)
-    : URLRequestJob(request),
+    : net::URLRequestJob(request),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
 URLRequestFailedDnsJob::~URLRequestFailedDnsJob() {}
@@ -35,7 +35,7 @@ void URLRequestFailedDnsJob::AddUrlHandler() {
 }
 
 /*static */
-URLRequestJob* URLRequestFailedDnsJob::Factory(net::URLRequest* request,
+net::URLRequestJob* URLRequestFailedDnsJob::Factory(net::URLRequest* request,
     const std::string& scheme) {
   return new URLRequestFailedDnsJob(request);
 }

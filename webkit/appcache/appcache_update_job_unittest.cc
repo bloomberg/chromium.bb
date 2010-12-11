@@ -41,8 +41,8 @@ class MockHttpServer {
     return GURL("http://mockhost/" + path);
   }
 
-  static URLRequestJob* JobFactory(net::URLRequest* request,
-                                   const std::string& scheme) {
+  static net::URLRequestJob* JobFactory(net::URLRequest* request,
+                                        const std::string& scheme) {
     if (request->url().host() != "mockhost")
       return new URLRequestErrorJob(request, -1);
 
@@ -287,8 +287,8 @@ class MockFrontend : public AppCacheFrontend {
 };
 
 // Helper factories to simulate redirected URL responses for tests.
-static URLRequestJob* RedirectFactory(net::URLRequest* request,
-                                      const std::string& scheme) {
+static net::URLRequestJob* RedirectFactory(net::URLRequest* request,
+                                           const std::string& scheme) {
   return new URLRequestTestJob(request,
                                URLRequestTestJob::test_redirect_headers(),
                                URLRequestTestJob::test_data_1(),
@@ -322,8 +322,8 @@ class RetryRequestTestJob : public URLRequestTestJob {
     expected_requests_ = 0;
   }
 
-  static URLRequestJob* RetryFactory(net::URLRequest* request,
-                                     const std::string& scheme) {
+  static net::URLRequestJob* RetryFactory(net::URLRequest* request,
+                                          const std::string& scheme) {
     ++num_requests_;
     if (num_retries_ > 0 && request->original_url() == kRetryUrl) {
       --num_retries_;
@@ -424,8 +424,8 @@ class HttpHeadersRequestTestJob : public URLRequestTestJob {
     already_checked_ = false;
   }
 
-  static URLRequestJob* IfModifiedSinceFactory(net::URLRequest* request,
-                                               const std::string& scheme) {
+  static net::URLRequestJob* IfModifiedSinceFactory(net::URLRequest* request,
+                                                    const std::string& scheme) {
     if (!already_checked_) {
       already_checked_ = true;  // only check once for a test
       const net::HttpRequestHeaders& extra_headers =

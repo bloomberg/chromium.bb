@@ -57,8 +57,9 @@ void URLRequestMockNetErrorJob::RemoveMockedURL(const GURL& url) {
 }
 
 // static
-URLRequestJob* URLRequestMockNetErrorJob::Factory(net::URLRequest* request,
-                                                  const std::string& scheme) {
+net::URLRequestJob* URLRequestMockNetErrorJob::Factory(
+    net::URLRequest* request,
+    const std::string& scheme) {
   GURL url = request->url();
 
   URLMockInfoMap::const_iterator iter = url_mock_info_map_.find(url);

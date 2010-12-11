@@ -65,14 +65,15 @@ AppCacheInterceptor::~AppCacheInterceptor() {
   net::URLRequest::UnregisterRequestInterceptor(this);
 }
 
-URLRequestJob* AppCacheInterceptor::MaybeIntercept(net::URLRequest* request) {
+net::URLRequestJob* AppCacheInterceptor::MaybeIntercept(
+    net::URLRequest* request) {
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
     return NULL;
   return handler->MaybeLoadResource(request);
 }
 
-URLRequestJob* AppCacheInterceptor::MaybeInterceptRedirect(
+net::URLRequestJob* AppCacheInterceptor::MaybeInterceptRedirect(
     net::URLRequest* request,
     const GURL& location) {
   AppCacheRequestHandler* handler = GetHandler(request);
@@ -81,7 +82,7 @@ URLRequestJob* AppCacheInterceptor::MaybeInterceptRedirect(
   return handler->MaybeLoadFallbackForRedirect(request, location);
 }
 
-URLRequestJob* AppCacheInterceptor::MaybeInterceptResponse(
+net::URLRequestJob* AppCacheInterceptor::MaybeInterceptResponse(
     net::URLRequest* request) {
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)

@@ -33,7 +33,8 @@ AutoUpdateInterceptor::~AutoUpdateInterceptor() {
   net::URLRequest::UnregisterRequestInterceptor(this);
 }
 
-URLRequestJob* AutoUpdateInterceptor::MaybeIntercept(net::URLRequest* request) {
+net::URLRequestJob* AutoUpdateInterceptor::MaybeIntercept(
+    net::URLRequest* request) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (request->url().scheme() != "http" ||
       request->url().host() != "localhost") {

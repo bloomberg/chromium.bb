@@ -164,7 +164,7 @@ class ResourceQueueTest : public testing::Test,
   virtual void OnResponseStarted(net::URLRequest* request) {
     response_started_count_++;
     // We're not going to do anything more with the request. Cancel it now
-    // to avoid leaking URLRequestJob.
+    // to avoid leaking net::URLRequestJob.
     request->Cancel();
   }
 

@@ -124,10 +124,10 @@ class AppCacheURLRequestJobTest : public testing::Test {
     bool kill_with_io_pending_;
   };
 
-  static URLRequestJob* MockHttpJobFactory(net::URLRequest* request,
-                                           const std::string& scheme) {
+  static net::URLRequestJob* MockHttpJobFactory(net::URLRequest* request,
+                                                const std::string& scheme) {
     if (mock_factory_job_) {
-      URLRequestJob* temp = mock_factory_job_;
+      net::URLRequestJob* temp = mock_factory_job_;
       mock_factory_job_ = NULL;
       return temp;
     } else {

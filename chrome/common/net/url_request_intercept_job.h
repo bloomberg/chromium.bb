@@ -37,7 +37,7 @@ class URLRequestInterceptJob : public net::URLRequestJob,
   void OnStartCompleted(int result);
   void OnReadCompleted(int bytes_read);
 
-  // URLRequestJob
+  // net::URLRequestJob
   virtual void Start();
   virtual void Kill();
   virtual bool GetMimeType(std::string* mime_type) const;

@@ -27,7 +27,7 @@ class GViewRequestInterceptor : public net::URLRequest::Interceptor {
   virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
 
   // Determines if the requested document can be viewed by the Google
-  // Document Viewer.  If it can, returns a URLRequestJob that
+  // Document Viewer.  If it can, returns a net::URLRequestJob that
   // redirects the browser to the view URL.
   virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
 

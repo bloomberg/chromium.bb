@@ -22,8 +22,9 @@ FilePath GetMockFilePath() {
 }  // namespace
 
 /* static */
-URLRequestJob* URLRequestMockLinkDoctorJob::Factory(net::URLRequest* request,
-                                                    const std::string& scheme) {
+net::URLRequestJob* URLRequestMockLinkDoctorJob::Factory(
+    net::URLRequest* request,
+    const std::string& scheme) {
   return new URLRequestMockLinkDoctorJob(request);
 }
 

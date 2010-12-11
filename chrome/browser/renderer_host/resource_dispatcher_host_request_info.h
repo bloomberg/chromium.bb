@@ -168,7 +168,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   int host_render_view_id() const { return host_render_view_id_; }
 
   // We hold a reference to the requested blob data to ensure it doesn't
-  // get finally released prior to the URLRequestJob being started.
+  // get finally released prior to the net::URLRequestJob being started.
   webkit_blob::BlobData* requested_blob_data() const {
     return requested_blob_data_.get();
   }

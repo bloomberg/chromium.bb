@@ -51,7 +51,7 @@ URLRequestAutomationJob::URLRequestAutomationJob(
     int request_id,
     AutomationResourceMessageFilter* filter,
     bool is_pending)
-    : URLRequestJob(request),
+    : net::URLRequestJob(request),
       id_(0),
       tab_(tab),
       message_filter_(filter),
@@ -90,8 +90,9 @@ bool URLRequestAutomationJob::EnsureProtocolFactoryRegistered() {
   return true;
 }
 
-URLRequestJob* URLRequestAutomationJob::Factory(net::URLRequest* request,
-                                                const std::string& scheme) {
+net::URLRequestJob* URLRequestAutomationJob::Factory(
+    net::URLRequest* request,
+    const std::string& scheme) {
   bool scheme_is_http = request->url().SchemeIs("http");
   bool scheme_is_https = request->url().SchemeIs("https");
 
@@ -127,7 +128,7 @@ URLRequestJob* URLRequestAutomationJob::Factory(net::URLRequest* request,
   return NULL;
 }
 
-// URLRequestJob Implementation.
+// net::URLRequestJob Implementation.
 void URLRequestAutomationJob::Start() {
   if (!is_pending()) {
     // Start reading asynchronously so that all error reporting and data
@@ -152,7 +153,7 @@ void URLRequestAutomationJob::Kill() {
     }
   }
   DisconnectFromMessageFilter();
-  URLRequestJob::Kill();
+  net::URLRequestJob::Kill();
 }
 
 bool URLRequestAutomationJob::ReadRawData(

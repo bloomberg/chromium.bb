@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // This class simulates a slow download.  This used in a UI test to test the
@@ -15,7 +15,7 @@
 #include "base/task.h"
 #include "net/url_request/url_request_job.h"
 
-class URLRequestSlowDownloadJob : public URLRequestJob {
+class URLRequestSlowDownloadJob : public net::URLRequestJob {
  public:
   explicit URLRequestSlowDownloadJob(net::URLRequest* request);
 
@@ -23,7 +23,7 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   // send the second chunk.
   void CheckDoneStatus();
 
-  // URLRequestJob methods
+  // net::URLRequestJob methods
   virtual void Start();
   virtual bool GetMimeType(std::string* mime_type) const;
   virtual void GetResponseInfo(net::HttpResponseInfo* info);

@@ -22,7 +22,7 @@ namespace appcache {
 
 AppCacheURLRequestJob::AppCacheURLRequestJob(
     net::URLRequest* request, AppCacheStorage* storage)
-    : URLRequestJob(request), storage_(storage),
+    : net::URLRequestJob(request), storage_(storage),
       has_been_started_(false), has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),
       cache_id_(kNoCacheId), is_fallback_(false),
@@ -197,7 +197,7 @@ void AppCacheURLRequestJob::OnReadComplete(int result) {
   NotifyReadComplete(result);
 }
 
-// URLRequestJob overrides ------------------------------------------------
+// net::URLRequestJob overrides ------------------------------------------------
 
 void AppCacheURLRequestJob::Start() {
   DCHECK(!has_been_started());
@@ -213,7 +213,7 @@ void AppCacheURLRequestJob::Kill() {
       storage_->CancelDelegateCallbacks(this);
       storage_ = NULL;
     }
-    URLRequestJob::Kill();
+    net::URLRequestJob::Kill();
     method_factory_.RevokeAll();
   }
 }

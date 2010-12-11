@@ -19,8 +19,8 @@ const int URLRequestSlowHTTPJob::kDelayMs = 1000;
 using base::TimeDelta;
 
 /* static */
-URLRequestJob* URLRequestSlowHTTPJob::Factory(net::URLRequest* request,
-                                              const std::string& scheme) {
+net::URLRequestJob* URLRequestSlowHTTPJob::Factory(net::URLRequest* request,
+                                                   const std::string& scheme) {
   return new URLRequestSlowHTTPJob(request,
                                    GetOnDiskPath(base_path_, request, scheme));
 }

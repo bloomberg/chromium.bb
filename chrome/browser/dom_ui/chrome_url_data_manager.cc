@@ -34,15 +34,15 @@
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
 
-// URLRequestChromeJob is a URLRequestJob that manages running chrome-internal
-// resource requests asynchronously.
+// URLRequestChromeJob is a net::URLRequestJob that manages running
+// chrome-internal resource requests asynchronously.
 // It hands off URL requests to ChromeURLDataManager, which asynchronously
 // calls back once the data is available.
 class URLRequestChromeJob : public net::URLRequestJob {
  public:
   explicit URLRequestChromeJob(net::URLRequest* request);
 
-  // URLRequestJob implementation.
+  // net::URLRequestJob implementation.
   virtual void Start();
   virtual void Kill();
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
@@ -60,7 +60,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   virtual ~URLRequestChromeJob();
 
   // Helper for Start(), to let us start asynchronously.
-  // (This pattern is shared by most URLRequestJob implementations.)
+  // (This pattern is shared by most net::URLRequestJob implementations.)
   void StartAsync();
 
   // Do the actual copy from data_ (the data we're serving) into |buf|.
@@ -82,7 +82,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestChromeJob);
 };
 
-// URLRequestChromeFileJob is a URLRequestJob that acts like a file:// URL
+// URLRequestChromeFileJob is a net::URLRequestJob that acts like a file:// URL
 class URLRequestChromeFileJob : public URLRequestFileJob {
  public:
   URLRequestChromeFileJob(net::URLRequest* request, const FilePath& path);
@@ -322,8 +322,8 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
       base::i18n::IsRTL() ? "rtl" : "ltr");
 }
 
-URLRequestJob* ChromeURLDataManager::Factory(net::URLRequest* request,
-                                             const std::string& scheme) {
+net::URLRequestJob* ChromeURLDataManager::Factory(net::URLRequest* request,
+                                                  const std::string& scheme) {
   // Try first with a file handler
   FilePath path;
   if (ChromeURLDataManager::URLToFilePath(request->url(), &path))
@@ -346,7 +346,7 @@ URLRequestJob* ChromeURLDataManager::Factory(net::URLRequest* request,
 }
 
 URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request)
-    : URLRequestJob(request),
+    : net::URLRequestJob(request),
       data_offset_(0),
       pending_buf_size_(0) {
 }

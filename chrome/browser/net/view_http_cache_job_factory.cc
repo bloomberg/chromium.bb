@@ -19,7 +19,10 @@ namespace {
 class ViewHttpCacheJob : public net::URLRequestJob {
  public:
   explicit ViewHttpCacheJob(net::URLRequest* request)
-      : URLRequestJob(request), data_offset_(0), cancel_(false), busy_(false),
+      : net::URLRequestJob(request),
+        data_offset_(0),
+        cancel_(false),
+        busy_(false),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             callback_(this, &ViewHttpCacheJob::OnIOComplete)) {}
 
@@ -75,7 +78,7 @@ void ViewHttpCacheJob::Kill() {
   // is safe.
   cancel_ = true;
   if (!busy_)
-    URLRequestJob::Kill();
+    net::URLRequestJob::Kill();
 }
 
 bool ViewHttpCacheJob::GetMimeType(std::string* mime_type) const {
@@ -108,7 +111,7 @@ void ViewHttpCacheJob::OnIOComplete(int result) {
   Release();  // Acquired on Start().
 
   if (cancel_)
-    return URLRequestJob::Kill();
+    return net::URLRequestJob::Kill();
 
   // Notify that the headers are complete.
   NotifyHeadersComplete();
@@ -123,7 +126,7 @@ bool ViewHttpCacheJobFactory::IsSupportedURL(const GURL& url) {
 }
 
 // Static.
-URLRequestJob* ViewHttpCacheJobFactory::CreateJobForRequest(
+net::URLRequestJob* ViewHttpCacheJobFactory::CreateJobForRequest(
     net::URLRequest* request) {
   return new ViewHttpCacheJob(request);
 }

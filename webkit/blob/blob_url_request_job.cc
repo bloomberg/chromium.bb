@@ -44,7 +44,7 @@ BlobURLRequestJob::BlobURLRequestJob(
     net::URLRequest* request,
     BlobData* blob_data,
     base::MessageLoopProxy* file_thread_proxy)
-    : URLRequestJob(request),
+    : net::URLRequestJob(request),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       blob_data_(blob_data),
       file_thread_proxy_(file_thread_proxy),
@@ -92,7 +92,7 @@ void BlobURLRequestJob::DidStart() {
 void BlobURLRequestJob::Kill() {
   stream_.Close();
 
-  URLRequestJob::Kill();
+  net::URLRequestJob::Kill();
   callback_factory_.RevokeAll();
   method_factory_.RevokeAll();
 }

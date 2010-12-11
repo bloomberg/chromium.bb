@@ -150,8 +150,9 @@ class BlobURLRequestJobTest : public testing::Test {
     io_thread_.reset(NULL);
   }
 
-  static URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
-                                                 const std::string& scheme) {
+  static net::URLRequestJob* BlobURLRequestJobFactory(
+      net::URLRequest* request,
+      const std::string& scheme) {
     BlobURLRequestJob* temp = blob_url_request_job_;
     blob_url_request_job_ = NULL;
     return temp;

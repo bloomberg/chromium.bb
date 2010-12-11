@@ -255,9 +255,9 @@ class ResourceDispatcherHostTest : public testing::Test,
         scheme_, &ResourceDispatcherHostTest::Factory);
   }
 
-  // Our own URLRequestJob factory.
-  static URLRequestJob* Factory(net::URLRequest* request,
-                                const std::string& scheme) {
+  // Our own net::URLRequestJob factory.
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme) {
     if (test_fixture_->response_headers_.empty()) {
       return new URLRequestTestJob(request);
     } else {

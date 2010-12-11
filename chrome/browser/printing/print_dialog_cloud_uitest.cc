@@ -57,7 +57,7 @@ class TestData {
   friend struct DefaultSingletonTraits<TestData>;
 };
 
-// A simple test URLRequestJob. We don't care what it does, only that
+// A simple test net::URLRequestJob. We don't care what it does, only that
 // whether it starts and finishes.
 class SimpleTestJob : public URLRequestTestJob {
  public:
@@ -208,8 +208,8 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   AutoQuitDelegate delegate_;
 };
 
-URLRequestJob* PrintDialogCloudTest::Factory(net::URLRequest* request,
-                                             const std::string& scheme) {
+net::URLRequestJob* PrintDialogCloudTest::Factory(net::URLRequest* request,
+                                                  const std::string& scheme) {
   if (TestController::GetInstance()->use_delegate())
     request->set_delegate(TestController::GetInstance()->delegate());
   if (request &&

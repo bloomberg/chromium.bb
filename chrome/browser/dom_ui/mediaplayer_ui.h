@@ -78,7 +78,7 @@ class MediaPlayer : public NotificationObserver,
   virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
 
   // Determines if the requested document can be viewed by the
-  // MediaPlayer.  If it can, returns a URLRequestJob that
+  // MediaPlayer.  If it can, returns a net::URLRequestJob that
   // redirects the browser to the view URL.
   // Implementation of net::URLRequest::Interceptor.
   virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);

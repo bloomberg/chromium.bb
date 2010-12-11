@@ -24,7 +24,7 @@ class Message;
 struct AutomationURLResponse;
 }
 
-// URLRequestJob implementation that loads the resources using
+// net::URLRequestJob implementation that loads the resources using
 // automation.
 class URLRequestAutomationJob : public net::URLRequestJob {
  public:
@@ -37,7 +37,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
 
   static net::URLRequest::ProtocolFactory Factory;
 
-  // URLRequestJob methods.
+  // net::URLRequestJob methods.
   virtual void Start();
   virtual void Kill();
   virtual bool GetMimeType(std::string* mime_type) const;
@@ -73,7 +73,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
                        AutomationResourceMessageFilter* new_filter);
 
  protected:
-  // Protected URLRequestJob override.
+  // Protected net::URLRequestJob override.
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
 
   void StartAsync();

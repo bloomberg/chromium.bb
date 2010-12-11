@@ -144,8 +144,9 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
 
 // Factory registered with net::URLRequest to create URLRequestJobs for
 // extension:// URLs.
-static URLRequestJob* CreateExtensionURLRequestJob(net::URLRequest* request,
-                                                   const std::string& scheme) {
+static net::URLRequestJob* CreateExtensionURLRequestJob(
+    net::URLRequest* request,
+    const std::string& scheme) {
   ChromeURLRequestContext* context =
       static_cast<ChromeURLRequestContext*>(request->context());
 
@@ -203,8 +204,9 @@ static URLRequestJob* CreateExtensionURLRequestJob(net::URLRequest* request,
 
 // Factory registered with net::URLRequest to create URLRequestJobs for
 // chrome-user-script:/ URLs.
-static URLRequestJob* CreateUserScriptURLRequestJob(net::URLRequest* request,
-                                                    const std::string& scheme) {
+static net::URLRequestJob* CreateUserScriptURLRequestJob(
+    net::URLRequest* request,
+    const std::string& scheme) {
   ChromeURLRequestContext* context =
       static_cast<ChromeURLRequestContext*>(request->context());
 

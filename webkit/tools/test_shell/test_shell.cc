@@ -86,8 +86,8 @@ const int kSVGTestWindowHeight = 360;
 // URLRequestTestShellFileJob is used to serve the inspector
 class URLRequestTestShellFileJob : public URLRequestFileJob {
  public:
-  static URLRequestJob* InspectorFactory(net::URLRequest* request,
-                                         const std::string& scheme) {
+  static net::URLRequestJob* InspectorFactory(net::URLRequest* request,
+                                              const std::string& scheme) {
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
     path = path.AppendASCII("resources");

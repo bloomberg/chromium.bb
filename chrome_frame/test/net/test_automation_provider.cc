@@ -69,8 +69,8 @@ bool TestAutomationProvider::Send(IPC::Message* msg) {
   return AutomationProvider::Send(msg);
 }
 
-URLRequestJob* TestAutomationProvider::Factory(net::URLRequest* request,
-                                               const std::string& scheme) {
+net::URLRequestJob* TestAutomationProvider::Factory(net::URLRequest* request,
+                                                    const std::string& scheme) {
   if (CFTestsDisabled())
     return NULL;
 

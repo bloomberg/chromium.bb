@@ -45,7 +45,7 @@ void URLRequestSlowDownloadJob::AddUrlHandler() {
 }
 
 /*static */
-URLRequestJob* URLRequestSlowDownloadJob::Factory(
+net::URLRequestJob* URLRequestSlowDownloadJob::Factory(
     net::URLRequest* request,
     const std::string& scheme) {
   URLRequestSlowDownloadJob* job = new URLRequestSlowDownloadJob(request);
@@ -65,7 +65,7 @@ void URLRequestSlowDownloadJob::FinishPendingRequests() {
 }
 
 URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
-    : URLRequestJob(request),
+    : net::URLRequestJob(request),
       first_download_size_remaining_(kFirstDownloadSize),
       should_finish_download_(false),
       should_send_second_chunk_(false),

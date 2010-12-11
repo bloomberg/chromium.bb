@@ -28,7 +28,7 @@ class GViewURLRequestTestJob : public URLRequestTestJob {
     // created -- the first is for the viewable document URL, and the
     // second is for the rediected URL.  In order to test the
     // interceptor, the mime type of the first request must be one of
-    // the supported viewable mime types.  So when the URLRequestJob
+    // the supported viewable mime types.  So when the net::URLRequestJob
     // is a request for one of the test URLs that point to viewable
     // content, return an appropraite mime type.  Otherwise, return
     // "text/html".
@@ -60,8 +60,8 @@ class GViewRequestInterceptorTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  static URLRequestJob* Factory(net::URLRequest* request,
-                                const std::string& scheme) {
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme) {
     return new GViewURLRequestTestJob(request);
   }
 

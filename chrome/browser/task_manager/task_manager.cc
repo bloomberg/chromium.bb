@@ -865,26 +865,26 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
 }
 
 
-// In order to retrieve the network usage, we register for URLRequestJob
+// In order to retrieve the network usage, we register for net::URLRequestJob
 // notifications. Every time we get notified some bytes were read we bump a
 // counter of read bytes for the associated resource. When the timer ticks,
 // we'll compute the actual network usage (see the Refresh method).
-void TaskManagerModel::OnJobAdded(URLRequestJob* job) {
+void TaskManagerModel::OnJobAdded(net::URLRequestJob* job) {
 }
 
-void TaskManagerModel::OnJobRemoved(URLRequestJob* job) {
+void TaskManagerModel::OnJobRemoved(net::URLRequestJob* job) {
 }
 
-void TaskManagerModel::OnJobDone(URLRequestJob* job,
+void TaskManagerModel::OnJobDone(net::URLRequestJob* job,
                                  const URLRequestStatus& status) {
 }
 
-void TaskManagerModel::OnJobRedirect(URLRequestJob* job,
+void TaskManagerModel::OnJobRedirect(net::URLRequestJob* job,
                                      const GURL& location,
                                      int status_code) {
 }
 
-void TaskManagerModel::OnBytesRead(URLRequestJob* job, const char* buf,
+void TaskManagerModel::OnBytesRead(net::URLRequestJob* job, const char* buf,
                                    int byte_count) {
   int render_process_host_child_id = -1, routing_id = -1;
   ResourceDispatcherHost::RenderViewForRequest(job->request(),

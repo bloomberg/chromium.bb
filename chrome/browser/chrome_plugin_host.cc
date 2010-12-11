@@ -56,7 +56,7 @@ using base::TimeDelta;
 class PluginRequestInterceptor
     : public PluginHelper, public net::URLRequest::Interceptor {
  public:
-  static URLRequestJob* UninterceptedProtocolHandler(
+  static net::URLRequestJob* UninterceptedProtocolHandler(
       net::URLRequest* request, const std::string& scheme) {
     // This will get called if a plugin failed to intercept a request for a
     // protocol it has registered.  In that case, we return NULL and the request
@@ -97,7 +97,7 @@ class PluginRequestInterceptor
   }
 
   // net::URLRequest::Interceptor
-  virtual URLRequestJob* MaybeIntercept(net::URLRequest* request) {
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) {
     // TODO(darin): This DCHECK fails in the unit tests because our interceptor
     // is being persisted across unit tests.  As a result, each time we get
     // poked on a different thread, but never from more than one thread at a

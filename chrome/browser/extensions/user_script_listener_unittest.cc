@@ -93,8 +93,8 @@ ResourceDispatcherHostRequestInfo* CreateRequestInfo(int request_id) {
       0, false, false, false, -1, -1);
 }
 
-// A simple test URLRequestJob. We don't care what it does, only that whether it
-// starts and finishes.
+// A simple test net::URLRequestJob. We don't care what it does, only that
+// whether it starts and finishes.
 class SimpleTestJob : public URLRequestTestJob {
  public:
   explicit SimpleTestJob(net::URLRequest* request)
@@ -136,7 +136,7 @@ class UserScriptListenerTest
   }
 
   // net::URLRequest::Interceptor
-  virtual URLRequestJob* MaybeIntercept(net::URLRequest* request) {
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) {
     return new SimpleTestJob(request);
   }
 

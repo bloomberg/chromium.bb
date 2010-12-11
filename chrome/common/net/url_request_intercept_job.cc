@@ -29,7 +29,7 @@ using base::TimeDelta;
 URLRequestInterceptJob::URLRequestInterceptJob(net::URLRequest* request,
                                                ChromePluginLib* plugin,
                                                ScopableCPRequest* cprequest)
-    : URLRequestJob(request),
+    : net::URLRequestJob(request),
       cprequest_(cprequest),
       plugin_(plugin),
       read_buffer_(NULL),
@@ -67,7 +67,7 @@ void URLRequestInterceptJob::Kill() {
                                                     CPERR_CANCELLED);
     DetachPlugin();
   }
-  URLRequestJob::Kill();
+  net::URLRequestJob::Kill();
   method_factory_.RevokeAll();
 }
 

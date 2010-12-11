@@ -21,10 +21,10 @@ class MetadataRequestHandler : public net::URLRequestJob {
  public:
   explicit MetadataRequestHandler(net::URLRequest* request);
 
-  static URLRequestJob* Factory(net::URLRequest* request,
-                                const std::string& scheme);
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme);
 
-  // URLRequestJob implementation.
+  // net::URLRequestJob implementation.
   virtual void Start();
   virtual void Kill();
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
@@ -41,7 +41,7 @@ class MetadataRequestHandler : public net::URLRequestJob {
 };
 
 MetadataRequestHandler::MetadataRequestHandler(net::URLRequest* request)
-    : URLRequestJob(request),
+    : net::URLRequestJob(request),
       data_offset_(0) {
   parsed = false;
 }
@@ -49,7 +49,7 @@ MetadataRequestHandler::MetadataRequestHandler(net::URLRequest* request)
 MetadataRequestHandler::~MetadataRequestHandler() {
 }
 
-URLRequestJob* MetadataRequestHandler::Factory(net::URLRequest* request,
+net::URLRequestJob* MetadataRequestHandler::Factory(net::URLRequest* request,
                                                const std::string& scheme) {
   return new MetadataRequestHandler(request);
 }

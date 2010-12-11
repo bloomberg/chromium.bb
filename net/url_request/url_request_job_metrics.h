@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Records IO statistics associated with a URLRequestJob.
+// Records IO statistics associated with a net::URLRequestJob.
 // See description in navigation_profiler.h for an overview of perf profiling.
 
 #ifndef NET_URL_REQUEST_URL_REQUEST_JOB_METRICS_H_

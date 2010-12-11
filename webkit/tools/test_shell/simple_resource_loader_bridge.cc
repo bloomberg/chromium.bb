@@ -97,8 +97,8 @@ struct TestShellRequestContextParams {
   bool accept_all_cookies;
 };
 
-static URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
-                                               const std::string& scheme) {
+static net::URLRequestJob* BlobURLRequestJobFactory(net::URLRequest* request,
+                                                    const std::string& scheme) {
   webkit_blob::BlobStorageController* blob_storage_controller =
       static_cast<TestShellRequestContext*>(request->context())->
           blob_storage_controller();

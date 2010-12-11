@@ -43,14 +43,14 @@ GViewRequestInterceptor::~GViewRequestInterceptor() {
   net::URLRequest::UnregisterRequestInterceptor(this);
 }
 
-URLRequestJob* GViewRequestInterceptor::MaybeIntercept(
+net::URLRequestJob* GViewRequestInterceptor::MaybeIntercept(
     net::URLRequest* request) {
   // Don't attempt to intercept here as we want to wait until the mime
   // type is fully determined.
   return NULL;
 }
 
-URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
+net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
     net::URLRequest* request) {
   // Do not intercept this request if it is a download.
   if (request->load_flags() & net::LOAD_IS_DOWNLOAD) {

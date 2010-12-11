@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// A URLRequestJob class that substitutes LinkDoctor requests.
+// A net::URLRequestJob class that substitutes LinkDoctor requests.
 
 #ifndef CHROME_BROWSER_NET_URL_REQUEST_MOCK_LINK_DOCTOR_JOB_H_
 #define CHROME_BROWSER_NET_URL_REQUEST_MOCK_LINK_DOCTOR_JOB_H_

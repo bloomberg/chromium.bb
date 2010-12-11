@@ -16,17 +16,17 @@ URLRequestJobTracker::URLRequestJobTracker() {
 
 URLRequestJobTracker::~URLRequestJobTracker() {
   DLOG_IF(WARNING, active_jobs_.size() != 0) <<
-    "Leaking " << active_jobs_.size() << " URLRequestJob object(s), this could "
-    "be because the net::URLRequest forgot to free it (bad), or if the program "
-    "was terminated while a request was active (normal).";
+    "Leaking " << active_jobs_.size() << " net::URLRequestJob object(s), this "
+    "could be because the net::URLRequest forgot to free it (bad), or if the "
+    "program was terminated while a request was active (normal).";
 }
 
-void URLRequestJobTracker::AddNewJob(URLRequestJob* job) {
+void URLRequestJobTracker::AddNewJob(net::URLRequestJob* job) {
   active_jobs_.push_back(job);
   FOR_EACH_OBSERVER(JobObserver, observers_, OnJobAdded(job));
 }
 
-void URLRequestJobTracker::RemoveJob(URLRequestJob* job) {
+void URLRequestJobTracker::RemoveJob(net::URLRequestJob* job) {
   JobList::iterator iter = std::find(active_jobs_.begin(), active_jobs_.end(),
                                      job);
   if (iter == active_jobs_.end()) {
@@ -38,19 +38,19 @@ void URLRequestJobTracker::RemoveJob(URLRequestJob* job) {
   FOR_EACH_OBSERVER(JobObserver, observers_, OnJobRemoved(job));
 }
 
-void URLRequestJobTracker::OnJobDone(URLRequestJob* job,
+void URLRequestJobTracker::OnJobDone(net::URLRequestJob* job,
                                      const URLRequestStatus& status) {
   FOR_EACH_OBSERVER(JobObserver, observers_, OnJobDone(job, status));
 }
 
-void URLRequestJobTracker::OnJobRedirect(URLRequestJob* job,
+void URLRequestJobTracker::OnJobRedirect(net::URLRequestJob* job,
                                          const GURL& location,
                                          int status_code) {
   FOR_EACH_OBSERVER(JobObserver, observers_,
                     OnJobRedirect(job, location, status_code));
 }
 
-void URLRequestJobTracker::OnBytesRead(URLRequestJob* job,
+void URLRequestJobTracker::OnBytesRead(net::URLRequestJob* job,
                                        const char* buf,
                                        int byte_count) {
   FOR_EACH_OBSERVER(JobObserver, observers_,

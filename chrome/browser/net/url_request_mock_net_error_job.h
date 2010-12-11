@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A URLRequestJob class that simulates network errors (including https
+// A net::URLRequestJob class that simulates network errors (including https
 // related).
 // It is based on URLRequestMockHttpJob.
 

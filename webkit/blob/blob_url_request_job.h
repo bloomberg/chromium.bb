@@ -31,7 +31,7 @@ class BlobURLRequestJob : public net::URLRequestJob {
                     base::MessageLoopProxy* resolving_message_loop_proxy);
   virtual ~BlobURLRequestJob();
 
-  // URLRequestJob methods.
+  // net::URLRequestJob methods.
   virtual void Start();
   virtual void Kill();
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);

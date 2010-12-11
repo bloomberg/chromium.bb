@@ -16,7 +16,7 @@
 
 namespace appcache {
 
-// A URLRequestJob derivative that knows how to return a response stored
+// A net::URLRequestJob derivative that knows how to return a response stored
 // in the appcache.
 class AppCacheURLRequestJob : public net::URLRequestJob,
                               public AppCacheStorage::Delegate {
@@ -55,7 +55,7 @@ class AppCacheURLRequestJob : public net::URLRequestJob,
   int64 cache_id() { return cache_id_; }
   const AppCacheEntry& entry() { return entry_; }
 
-  // URLRequestJob's Kill method is made public so the users of this
+  // net::URLRequestJob's Kill method is made public so the users of this
   // class in the appcache namespace can call it.
   virtual void Kill();
 
@@ -104,7 +104,7 @@ class AppCacheURLRequestJob : public net::URLRequestJob,
   // AppCacheResponseReader completion callback
   void OnReadComplete(int result);
 
-  // URLRequestJob methods, see url_request_job.h for doc comments
+  // net::URLRequestJob methods, see url_request_job.h for doc comments
   virtual void Start();
   virtual net::LoadState GetLoadState() const;
   virtual bool GetCharset(std::string* charset);

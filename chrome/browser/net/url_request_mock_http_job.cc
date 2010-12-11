@@ -21,8 +21,8 @@ static const FilePath::CharType kMockHeaderFileSuffix[] =
 FilePath URLRequestMockHTTPJob::base_path_;
 
 /* static */
-URLRequestJob* URLRequestMockHTTPJob::Factory(net::URLRequest* request,
-                                              const std::string& scheme) {
+net::URLRequestJob* URLRequestMockHTTPJob::Factory(net::URLRequest* request,
+                                                   const std::string& scheme) {
   return new URLRequestMockHTTPJob(request,
                                    GetOnDiskPath(base_path_, request, scheme));
 }
@@ -82,7 +82,7 @@ bool URLRequestMockHTTPJob::IsRedirectResponse(GURL* location,
                                                int* http_status_code) {
   // Override the URLRequestFileJob implementation to invoke the default one
   // based on HttpResponseInfo.
-  return URLRequestJob::IsRedirectResponse(location, http_status_code);
+  return net::URLRequestJob::IsRedirectResponse(location, http_status_code);
 }
 
 // Private const version.
