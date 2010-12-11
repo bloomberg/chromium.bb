@@ -119,7 +119,7 @@ TestAutomationProvider* TestAutomationProvider::NewAutomationProvider(
     Profile* p, const std::string& channel,
     TestAutomationProviderDelegate* delegate) {
   TestAutomationProvider* automation = new TestAutomationProvider(p, delegate);
-  automation->InitializeChannel(channel);
+  automation->ConnectToChannel(channel);
   automation->SetExpectedTabCount(1);
   return automation;
 }

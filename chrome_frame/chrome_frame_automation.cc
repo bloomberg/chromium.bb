@@ -144,12 +144,9 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
 };
 
 ChromeFrameAutomationProxyImpl::ChromeFrameAutomationProxyImpl(
-    AutomationProxyCacheEntry* entry,
-    std::string channel_id, int launch_timeout)
+    AutomationProxyCacheEntry* entry, int launch_timeout)
     : AutomationProxy(launch_timeout, false), proxy_entry_(entry) {
   TRACE_EVENT_BEGIN("chromeframe.automationproxy", this, "");
-
-  InitializeChannel(channel_id, false);
 
   sync_ = new CFMsgDispatcher();
   message_filter_ = new TabProxyNotificationMessageFilter(tracker_.get());
@@ -274,10 +271,8 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   // destruction notification.
 
   // At same time we must destroy/stop the thread from another thread.
-  std::string channel_id = AutomationProxy::GenerateChannelID();
   ChromeFrameAutomationProxyImpl* proxy =
-      new ChromeFrameAutomationProxyImpl(this, channel_id,
-                                         params->launch_timeout());
+      new ChromeFrameAutomationProxyImpl(this, params->launch_timeout());
 
   // Ensure that the automation proxy actually respects our choice on whether
   // or not to check the version.
@@ -287,7 +282,7 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   scoped_ptr<CommandLine> command_line(
       chrome_launcher::CreateLaunchCommandLine());
   command_line->AppendSwitchASCII(switches::kAutomationClientChannelID,
-                                  channel_id);
+                                  proxy->channel_id());
 
   // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
   // and registry keys that Chrome looks in via the BrowserDistribution

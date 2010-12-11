@@ -298,9 +298,8 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
     : mode_(mode),
       is_blocked_on_write_(false),
       message_send_bytes_written_(0),
-      uses_fifo_(
-          CommandLine::ForCurrentProcess()->HasSwitch(switches::kIPCUseFIFO) ||
-          mode == MODE_NAMED_SERVER || mode == MODE_NAMED_CLIENT),
+      uses_fifo_(CommandLine::ForCurrentProcess()->HasSwitch(
+                     switches::kIPCUseFIFO)),
       server_listen_pipe_(-1),
       pipe_(-1),
       client_pipe_(-1),
@@ -311,11 +310,6 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
       listener_(listener),
       waiting_connect_(true),
       factory_(this) {
-  if (mode_ == MODE_NAMED_SERVER)
-    mode_ = MODE_SERVER;
-  if (mode_ == MODE_NAMED_CLIENT)
-    mode_ = MODE_CLIENT;
-
   if (!CreatePipe(channel_handle, mode_)) {
     // The pipe may have been closed already.
     LOG(WARNING) << "Unable to create pipe named \"" << channel_handle.name

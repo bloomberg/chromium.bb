@@ -315,8 +315,7 @@ class TestChromeFrameAutomationProxyImpl
  public:
   TestChromeFrameAutomationProxyImpl()
         // 1 is an unneeded timeout.
-      : ChromeFrameAutomationProxyImpl(
-          NULL, AutomationProxy::GenerateChannelID(), 1) {
+      : ChromeFrameAutomationProxyImpl(NULL, 1) {
   }
   MOCK_METHOD3(
       SendAsAsync,
@@ -470,3 +469,4 @@ TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
   EXPECT_CALL(mock_proxy_, ReleaseTabProxy(testing::Eq(tab_handle_))).Times(1);
   client_->Uninitialize();
 }
+

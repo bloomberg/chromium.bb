@@ -92,7 +92,6 @@ class ChromeFrameAutomationProxyImpl
  protected:
   friend class AutomationProxyCacheEntry;
   ChromeFrameAutomationProxyImpl(AutomationProxyCacheEntry* entry,
-                                 std::string channel_id,
                                  int launch_timeout);
 
   class CFMsgDispatcher;
