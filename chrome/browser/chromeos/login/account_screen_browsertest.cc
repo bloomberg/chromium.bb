@@ -74,7 +74,7 @@ static net::URLRequestJob* InspectorHook(net::URLRequest* request,
                           NewRunnableFunction(QuitUIMessageLoop));
 
   // Do not navigate to the given URL. Navigate to about:blank instead.
-  return new URLRequestAboutJob(request);
+  return new net::URLRequestAboutJob(request);
 }
 
 // Sometimes times out: http://crbug.com/60050.
