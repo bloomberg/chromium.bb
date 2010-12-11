@@ -6,12 +6,13 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
-#include "srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_getinterface.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_upcall.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/c/ppp.h"
+#include "srpcgen/ppp_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
 
@@ -104,6 +105,10 @@ void PppRpcServer::PPP_InitializeModule(
     return;
   }
   ppapi_proxy::SetModuleIdForSrpcChannel(rpc->channel, module);
+  if (!ppapi_proxy::PluginUpcallStartup()) {
+    DebugPrintf("  Failed to initialize upcall locks, etc.\n");
+    return;
+  }
   *success = ::PPP_InitializeModule(module, ppapi_proxy::GetInterfaceProxy);
   *nacl_pid = GETPID();
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -115,6 +120,7 @@ void PppRpcServer::PPP_ShutdownModule(NaClSrpcRpc* rpc,
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   DebugPrintf("Plugin::PPP_ShutdownModule\n");
   ::PPP_ShutdownModule();
+  ppapi_proxy::PluginUpcallShutdown();
   ppapi_proxy::UnsetModuleIdForSrpcChannel(rpc->channel);
   StopUpcallSrpcChannel();
   StopMainSrpcChannel();

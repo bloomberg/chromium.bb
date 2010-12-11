@@ -9,14 +9,15 @@
 #include <map>
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
-#include "srpcgen/ppb_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource_tracker.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_upcall.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "ppapi/c/ppb_core.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/ppb_core.h"
 #include "ppapi/cpp/common.h"
+#include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
 
@@ -92,8 +93,9 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
               ", result=%" NACL_PRIu32 "\n",
               delay_in_milliseconds,
               result);
-  NACL_UNIMPLEMENTED();
-  // See how NPN_PluginThreadAsyncCall is implemented in npruntime.
+  ppapi_proxy::PluginUpcallCoreCallOnMainThread(delay_in_milliseconds,
+                                                callback,
+                                                result);
 }
 
 static PP_Bool IsMainThread() {
