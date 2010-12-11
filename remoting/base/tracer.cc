@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/condition_variable.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/ref_counted.h"
@@ -88,7 +89,7 @@ class OutputLogger {
   }
 
  private:
-  friend struct DefaultSingletonTraits<OutputLogger>;
+  friend struct base::DefaultLazyInstanceTraits<OutputLogger>;
 
   ~OutputLogger() {
     {
@@ -107,6 +108,11 @@ class OutputLogger {
   ConditionVariable wake_;
   std::list<TraceBuffer*> buffers_;
 };
+
+static base::LazyInstance<OutputLogger> g_output_logger(
+    base::LINKER_INITIALIZED);
+static base::LazyInstance<base::ThreadLocalPointer<TraceContext> >
+    g_thread_local_trace_context(base::LINKER_INITIALIZED);
 
 }  // namespace
 
@@ -136,7 +142,7 @@ Tracer::~Tracer() {
   AutoLock l(lock_);
 
   if (buffer_.get()) {
-    Singleton<OutputLogger>::get()->OutputTrace(buffer_.release());
+    g_output_logger.Get().OutputTrace(buffer_.release());
   }
 }
 
@@ -158,11 +164,11 @@ void TraceContext::PopTracer() {
 // static
 TraceContext* TraceContext::Get() {
   TraceContext* context =
-      Singleton<base::ThreadLocalPointer<TraceContext> >::get()->Get();
+      g_thread_local_trace_context.Get().Get();
   if (context == NULL) {
     context = new TraceContext();
     context->PushTracerInternal(new Tracer("default", 0.0));
-    Singleton<base::ThreadLocalPointer<TraceContext> >::get()->Set(context);
+    g_thread_local_trace_context.Get().Set(context);
   }
   return context;
 }

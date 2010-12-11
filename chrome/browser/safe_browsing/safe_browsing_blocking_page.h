@@ -44,6 +44,9 @@ class TabContents;
 
 class SafeBrowsingBlockingPage : public InterstitialPage {
  public:
+  typedef std::vector<SafeBrowsingService::UnsafeResource> UnsafeResourceList;
+  typedef std::map<TabContents*, UnsafeResourceList> UnsafeResourceMap;
+
   virtual ~SafeBrowsingBlockingPage();
 
   // Shows a blocking page warning the user about phishing/malware for a
@@ -65,8 +68,6 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
   virtual std::string GetHTMLContents();
   virtual void Proceed();
   virtual void DontProceed();
-
-  typedef std::vector<SafeBrowsingService::UnsafeResource> UnsafeResourceList;
 
  protected:
   friend class SafeBrowsingBlockingPageTest;
@@ -118,7 +119,6 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
   // A list of SafeBrowsingService::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one
   // interstitial at a time.
-  typedef std::map<TabContents*, UnsafeResourceList> UnsafeResourceMap;
   static UnsafeResourceMap* GetUnsafeResourcesMap();
 
   // Notifies the SafeBrowsingService on the IO thread whether to proceed or not

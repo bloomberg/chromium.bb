@@ -218,9 +218,7 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
 // notification.
 class EnumerateModulesModel {
  public:
-  static EnumerateModulesModel* GetSingleton() {
-    return Singleton<EnumerateModulesModel>::get();
-  }
+  static EnumerateModulesModel* GetSingleton();
 
   // Returns the number of suspected bad modules found in the last scan.
   // Returns 0 if no scan has taken place yet.

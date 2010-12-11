@@ -63,6 +63,12 @@ void FocusManager::WidgetFocusManager::OnWidgetFocusEvent(
   }
 }
 
+// static
+FocusManager::WidgetFocusManager*
+FocusManager::WidgetFocusManager::GetInstance() {
+  return Singleton<WidgetFocusManager>::get();
+}
+
 // FocusManager -----------------------------------------------------
 
 FocusManager::FocusManager(Widget* widget)
@@ -82,7 +88,7 @@ FocusManager::~FocusManager() {
 
 // static
 FocusManager::WidgetFocusManager* FocusManager::GetWidgetFocusManager() {
-  return Singleton<WidgetFocusManager>::get();
+  return WidgetFocusManager::GetInstance();
 }
 
 bool FocusManager::OnKeyEvent(const KeyEvent& event) {

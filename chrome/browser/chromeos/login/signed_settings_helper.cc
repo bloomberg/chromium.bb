@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
-#include "base/singleton.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 
@@ -262,9 +262,12 @@ class SignedSettingsHelperImpl : public SignedSettingsHelper,
 
   std::vector<OpContext*> pending_contexts_;
 
-  friend struct DefaultSingletonTraits<SignedSettingsHelperImpl>;
+  friend struct base::DefaultLazyInstanceTraits<SignedSettingsHelperImpl>;
   DISALLOW_COPY_AND_ASSIGN(SignedSettingsHelperImpl);
 };
+
+static base::LazyInstance<SignedSettingsHelperImpl>
+    g_signed_settings_helper_impl(base::LINKER_INITIALIZED);
 
 SignedSettingsHelperImpl::SignedSettingsHelperImpl() {
 }
@@ -371,7 +374,7 @@ void SignedSettingsHelperImpl::OnOpCompleted(OpContext* context) {
 }
 
 SignedSettingsHelper* SignedSettingsHelper::Get() {
-  return Singleton<SignedSettingsHelperImpl>::get();
+  return g_signed_settings_helper_impl.Pointer();
 }
 
 }  // namespace chromeos

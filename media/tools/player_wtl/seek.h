@@ -34,12 +34,12 @@ class CSeek : public CSimpleDialog<IDD_SEEK>,
                   BOOL& bHandled) {
     static float previous_position = -1.0f;
 
-    float position = media::Movie::get()->GetPosition();
+    float position = media::Movie::GetInstance()->GetPosition();
     if (static_cast<int>(position * 10) !=
         static_cast<int>(previous_position * 10)) {
       previous_position = position;
       wchar_t szBuff[200];
-      float duration = media::Movie::get()->GetDuration();
+      float duration = media::Movie::GetInstance()->GetDuration();
       float fps = 29.97f;
       wsprintf(szBuff, L"%i.%i / %i.%i, %i / %i",
                static_cast<int>(position),
@@ -58,8 +58,8 @@ class CSeek : public CSimpleDialog<IDD_SEEK>,
 
   virtual BOOL OnIdle() {
     wchar_t szBuff[200];
-    float position = media::Movie::get()->GetPosition();
-    float duration = media::Movie::get()->GetDuration();
+    float position = media::Movie::GetInstance()->GetPosition();
+    float duration = media::Movie::GetInstance()->GetDuration();
     // TODO(fbarchard): Use frame rate property when it exists.
     float fps = 29.97f;
     wsprintf(szBuff, L"%i.%i / %i.%i, %i / %i",

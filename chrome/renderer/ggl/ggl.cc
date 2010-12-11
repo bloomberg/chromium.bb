@@ -4,8 +4,8 @@
 
 #include "build/build_config.h"
 
+#include "base/lazy_instance.h"
 #include "base/ref_counted.h"
-#include "base/singleton.h"
 #include "base/weak_ptr.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/ggl/ggl.h"
@@ -48,6 +48,10 @@ class GLES2Initializer {
  private:
   DISALLOW_COPY_AND_ASSIGN(GLES2Initializer);
 };
+
+static base::LazyInstance<GLES2Initializer> g_gles2_initializer(
+    base::LINKER_INITIALIZED);
+
 }  // namespace anonymous
 
 // Manages a GL context.
@@ -163,7 +167,7 @@ bool Context::Initialize(gfx::NativeViewId view,
     return false;
 
   // Ensure the gles2 library is initialized first in a thread safe way.
-  Singleton<GLES2Initializer>::get();
+  g_gles2_initializer.Get();
 
   // Allocate a frame buffer ID with respect to the parent.
   if (parent_.get()) {

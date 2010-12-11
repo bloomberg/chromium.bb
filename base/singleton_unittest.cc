@@ -16,83 +16,127 @@ template<typename Type>
 struct LockTrait : public DefaultSingletonTraits<Type> {
 };
 
-struct Init5Trait : public DefaultSingletonTraits<int> {
-  static int* New() {
-    return new int(5);
-  }
-};
-
 typedef void (*CallbackFunc)();
 
-struct CallbackTrait : public DefaultSingletonTraits<CallbackFunc> {
-  static void Delete(CallbackFunc* p) {
-    if (*p)
-      (*p)();
-    DefaultSingletonTraits<CallbackFunc>::Delete(p);
+class IntSingleton {
+ public:
+  class DummyDifferentiatingClass {
+  };
+
+  struct Init5Trait : public DefaultSingletonTraits<IntSingleton> {
+    static IntSingleton* New() {
+      IntSingleton* instance = new IntSingleton();
+      instance->value_ = 5;
+      return instance;
+    }
+  };
+
+  static IntSingleton* GetInstance() {
+    return Singleton<IntSingleton>::get();
   }
-};
-
-struct StaticCallbackTrait : public StaticMemorySingletonTraits<CallbackFunc> {
-  static void Delete(CallbackFunc* p) {
-    if (*p)
-      (*p)();
-    StaticMemorySingletonTraits<CallbackFunc>::Delete(p);
+  static IntSingleton* GetInstanceWithDefaultTraits() {
+    return Singleton<IntSingleton,
+                     DefaultSingletonTraits<IntSingleton> >::get();
   }
-};
+  static IntSingleton* GetInstanceWithDifferentiatingClass() {
+    return Singleton<IntSingleton,
+                     DefaultSingletonTraits<IntSingleton>,
+                     DummyDifferentiatingClass>::get();
+  }
+  static IntSingleton* GetInstanceWithLockTrait() {
+    return Singleton<IntSingleton, LockTrait<IntSingleton> >::get();
+  }
+  static IntSingleton* GetInstanceWithInit5Trait() {
+    return Singleton<IntSingleton, Init5Trait>::get();
+  }
 
-
-struct NoLeakTrait : public CallbackTrait {
-};
-
-struct LeakTrait : public CallbackTrait {
-  static const bool kRegisterAtExit = false;
+  int value_;
 };
 
 int* SingletonInt1() {
-  return Singleton<int>::get();
+  return &IntSingleton::GetInstance()->value_;
 }
 
 int* SingletonInt2() {
   // Force to use a different singleton than SingletonInt1.
-  return Singleton<int, DefaultSingletonTraits<int> >::get();
+  return &IntSingleton::GetInstanceWithDefaultTraits()->value_;
 }
-
-class DummyDifferentiatingClass {
-};
 
 int* SingletonInt3() {
   // Force to use a different singleton than SingletonInt1 and SingletonInt2.
-  // Note that any type can be used; int, float, std::wstring...
-  return Singleton<int, DefaultSingletonTraits<int>,
-                   DummyDifferentiatingClass>::get();
+  return &IntSingleton::GetInstanceWithDifferentiatingClass()->value_;
 }
 
 int* SingletonInt4() {
-  return Singleton<int, LockTrait<int> >::get();
+  return &IntSingleton::GetInstanceWithLockTrait()->value_;
 }
 
 int* SingletonInt5() {
-  return Singleton<int, Init5Trait>::get();
+  return &IntSingleton::GetInstanceWithInit5Trait()->value_;
+}
+
+class CallbackSingleton {
+ public:
+  struct CallbackTrait : public DefaultSingletonTraits<CallbackSingleton> {
+    static void Delete(CallbackSingleton* instance) {
+      if (instance->callback_)
+        (instance->callback_)();
+      DefaultSingletonTraits<CallbackSingleton>::Delete(instance);
+    }
+  };
+
+  struct NoLeakTrait : public CallbackTrait {
+  };
+
+  struct LeakTrait : public CallbackTrait {
+    static const bool kRegisterAtExit = false;
+  };
+
+  CallbackSingleton() : callback_(NULL) {
+  }
+
+  static CallbackSingleton* GetInstanceWithNoLeakTrait() {
+    return Singleton<CallbackSingleton, NoLeakTrait>::get();
+  }
+  static CallbackSingleton* GetInstanceWithLeakTrait() {
+    return Singleton<CallbackSingleton, LeakTrait>::get();
+  }
+  static CallbackSingleton* GetInstanceWithStaticTrait();
+
+  CallbackFunc callback_;
+};
+
+struct StaticCallbackTrait
+    : public StaticMemorySingletonTraits<CallbackSingleton> {
+  static void Delete(CallbackSingleton* instance) {
+    if (instance->callback_)
+      (instance->callback_)();
+    StaticMemorySingletonTraits<CallbackSingleton>::Delete(instance);
+  }
+};
+
+CallbackSingleton* CallbackSingleton::GetInstanceWithStaticTrait() {
+  return Singleton<CallbackSingleton, StaticCallbackTrait>::get();
 }
 
 void SingletonNoLeak(CallbackFunc CallOnQuit) {
-  *Singleton<CallbackFunc, NoLeakTrait>::get() = CallOnQuit;
+  CallbackSingleton::GetInstanceWithNoLeakTrait()->callback_ = CallOnQuit;
 }
 
 void SingletonLeak(CallbackFunc CallOnQuit) {
-  *Singleton<CallbackFunc, LeakTrait>::get() = CallOnQuit;
+  CallbackSingleton::GetInstanceWithLeakTrait()->callback_ = CallOnQuit;
 }
 
 CallbackFunc* GetLeakySingleton() {
-  return Singleton<CallbackFunc, LeakTrait>::get();
+  return &CallbackSingleton::GetInstanceWithLeakTrait()->callback_;
 }
 
 void SingletonStatic(CallbackFunc CallOnQuit) {
-  *Singleton<CallbackFunc, StaticCallbackTrait>::get() = CallOnQuit;
+  CallbackSingleton::GetInstanceWithStaticTrait()->callback_ = CallOnQuit;
 }
 
 CallbackFunc* GetStaticSingleton() {
-  return Singleton<CallbackFunc, StaticCallbackTrait>::get();
+  return &CallbackSingleton::GetInstanceWithStaticTrait()->callback_;
 }
 
 }  // namespace
@@ -235,7 +279,7 @@ TEST_F(SingletonTest, Basic) {
     {
       // Resurrect the static singleton, and assert that it
       // still points to the same (static) memory.
-      StaticMemorySingletonTraits<CallbackFunc>::Resurrect();
+      StaticMemorySingletonTraits<CallbackSingleton>::Resurrect();
       EXPECT_EQ(GetStaticSingleton(), static_singleton);
     }
   }

@@ -55,7 +55,7 @@ int Run(wchar_t* win_cmd_line, int cmd_show) {
 
   int result = the_loop.Run();
 
-  media::Movie::get()->Close();
+  media::Movie::GetInstance()->Close();
 
   g_module.RemoveMessageLoop();
   return result;
