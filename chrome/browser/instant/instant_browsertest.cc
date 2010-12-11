@@ -210,7 +210,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SearchServerDoesntSupportInstant) {
 // Verifies transitioning from loading a non-search string to a search string
 // with the provider not supporting instant works (meaning we don't display
 // anything).
-IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearchDoesntSupportInstant) {
+// Flaky, http://crbug.com/66539.
+IN_PROC_BROWSER_TEST_F(InstantTest,
+                       FLAKY_NonSearchToSearchDoesntSupportInstant) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   GURL url(test_server()->GetURL("files/instant/empty.html"));
