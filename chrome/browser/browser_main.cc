@@ -382,6 +382,22 @@ void BrowserMainParts::SpdyFieldTrial() {
       CHECK(!is_spdy_trial);
     }
   }
+
+  // Setup SPDY CWND Field trial.
+  const base::FieldTrial::Probability kSpdyCwndDivisor = 100;
+  const base::FieldTrial::Probability kSpdyCwnd32 = 20;     // fixed at 32
+  const base::FieldTrial::Probability kSpdyCwnd16 = 20;     // fixed at 16
+  const base::FieldTrial::Probability kSpdyCwndMin16 = 20;  // no less than 16
+  const base::FieldTrial::Probability kSpdyCwndMin10 = 20;  // no less than 10
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("SpdyCwnd", kSpdyCwndDivisor));
+  trial->AppendGroup("cwnd32", kSpdyCwnd32);
+  trial->AppendGroup("cwnd16", kSpdyCwnd16);
+  trial->AppendGroup("cwndMin16", kSpdyCwndMin16);
+  trial->AppendGroup("cwndMin10", kSpdyCwndMin10);
+  trial->AppendGroup("cwndDynamic",
+                     base::FieldTrial::kAllRemainingProbability);
+
   if (parsed_command_line().HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
     int value = 0;
     base::StringToInt(parsed_command_line().GetSwitchValueASCII(

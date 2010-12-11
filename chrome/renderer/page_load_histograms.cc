@@ -666,6 +666,36 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
+  // Record SpdyCwnd field trial results.
+  if (navigation_state->was_fetched_via_spdy()) {
+    switch (load_type) {
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal.spdy.", "SpdyCwnd"),
+            begin_to_finish_all_loads);
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
+            "PLT.StartToFinish_LinkLoadNormal.spdy.", "SpdyCwnd"),
+            start_to_finish_all_loads);
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
+            "PLT.StartToCommit_LinkLoadNormal.spdy.", "SpdyCwnd"),
+            start_to_commit);
+        break;
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad.spdy.", "SpdyCwnd"),
+            begin_to_finish_all_loads);
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
+            "PLT.StartToFinish_NormalLoad.spdy.", "SpdyCwnd"),
+            start_to_finish_all_loads);
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
+            "PLT.StartToCommit_NormalLoad.spdy.", "SpdyCwnd"),
+            start_to_commit);
+        break;
+      default:
+        break;
+    }
+  }
+
   // Record page load time and abandonment rates for proxy cases.
   if (navigation_state->was_fetched_via_proxy()) {
     if (scheme_type == URLPattern::SCHEME_HTTPS) {
