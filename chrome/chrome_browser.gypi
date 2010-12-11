@@ -934,6 +934,8 @@
         'browser/dom_ui/options/cookies_view_handler.h',
         'browser/dom_ui/options/core_options_handler.cc',
         'browser/dom_ui/options/core_options_handler.h',
+        'browser/dom_ui/options/dom_options_util.cc',
+        'browser/dom_ui/options/dom_options_util.h',
         'browser/dom_ui/options/font_settings_handler.cc',
         'browser/dom_ui/options/font_settings_handler.h',
         'browser/dom_ui/options/font_settings_utils.h',

@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
+#include "chrome/browser/dom_ui/options/dom_options_util.h"
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -45,7 +46,8 @@ void BrowserOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   localized_strings->SetString("startupGroupName",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_GROUP_NAME)));
   localized_strings->SetString("startupShowDefaultAndNewTab",
       l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB));
   localized_strings->SetString("startupShowLastSession",
@@ -57,17 +59,20 @@ void BrowserOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("startupUseCurrent",
       l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_USE_CURRENT));
   localized_strings->SetString("homepageGroupName",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_GROUP_NAME)));
   localized_strings->SetString("homepageUseNewTab",
       l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_USE_NEWTAB));
   localized_strings->SetString("homepageUseURL",
       l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_USE_URL));
   localized_strings->SetString("toolbarGroupName",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_TOOLBAR_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_TOOLBAR_GROUP_NAME)));
   localized_strings->SetString("toolbarShowHomeButton",
       l10n_util::GetStringUTF16(IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON));
   localized_strings->SetString("defaultSearchGroupName",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME)));
   localized_strings->SetString("defaultSearchManageEngines",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES));
   localized_strings->SetString("instantName",
@@ -81,7 +86,8 @@ void BrowserOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("instantConfirmMessage",
       l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_MESSAGE));
   localized_strings->SetString("defaultBrowserGroupName",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME)));
   localized_strings->SetString("defaultBrowserUnknown",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));

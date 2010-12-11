@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/dom_ui/options/dom_options_util.h"
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -54,12 +55,14 @@ void PersonalOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   localized_strings->SetString("syncSection",
-      l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME)));
   localized_strings->SetString("privacyDashboardLink",
       l10n_util::GetStringUTF16(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
 
   localized_strings->SetString("passwords",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_GROUP_NAME)));
   localized_strings->SetString("passwordsAskToSave",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_ASKTOSAVE));
   localized_strings->SetString("passwordsNeverSave",
@@ -68,12 +71,14 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS));
 
   localized_strings->SetString("autofill",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME)));
   localized_strings->SetString("manageAutofillSettings",
       l10n_util::GetStringUTF16(IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS));
 
   localized_strings->SetString("browsingData",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME)));
   localized_strings->SetString("importData",
       l10n_util::GetStringUTF16(IDS_OPTIONS_IMPORT_DATA_BUTTON));
 
@@ -84,7 +89,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
 
 #if defined(TOOLKIT_GTK)
   localized_strings->SetString("appearance",
-      l10n_util::GetStringUTF16(IDS_APPEARANCE_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_APPEARANCE_GROUP_NAME)));
   localized_strings->SetString("themesGTKButton",
       l10n_util::GetStringUTF16(IDS_THEMES_GTK_BUTTON));
   localized_strings->SetString("themesSetClassic",
@@ -95,7 +101,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
 #else
   localized_strings->SetString("themes",
-      l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME)));
   localized_strings->SetString("themesReset",
       l10n_util::GetStringUTF16(IDS_THEMES_RESET_BUTTON));
 #endif

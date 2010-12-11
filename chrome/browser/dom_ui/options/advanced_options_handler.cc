@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/dom_ui/options/dom_options_util.h"
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -82,7 +83,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("autoOpenFileTypesResetToDefault",
       l10n_util::GetStringUTF16(IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT));
   localized_strings->SetString("gearSettingsGroupName",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME)));
   localized_strings->SetString("gearSettingsConfigureGearsButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON));
@@ -124,15 +126,25 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON));
   localized_strings->SetString("advancedSectionTitlePrivacy",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)));
   localized_strings->SetString("advancedSectionTitleContent",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT)));
   localized_strings->SetString("advancedSectionTitleSecurity",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY)));
   localized_strings->SetString("advancedSectionTitleNetwork",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK)));
   localized_strings->SetString("advancedSectionTitleTranslate",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE));
+      dom_options_util::StripColon(
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE)));
   localized_strings->SetString("translateEnableTranslate",
       l10n_util::GetStringUTF16(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE));
 #if !defined(OS_CHROMEOS)
