@@ -115,7 +115,7 @@ class AdvancedOptionsHandler
 #endif
 
   // Setup the checked state for the metrics reporting checkbox.
-  void SetupMetricsReportingCheckbox();
+  void SetupMetricsReportingCheckbox(bool user_changed);
 
   // Setup the visibility for the metrics reporting setting.
   void SetupMetricsReportingSettingVisibility();

@@ -179,11 +179,13 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_OKLABEL));
   localized_strings->SetString("optionsResetCancelLabel",
       l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_CANCELLABEL));
+  localized_strings->SetString("optionsRestartRequired",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED));
 }
 
 void AdvancedOptionsHandler::Initialize() {
   DCHECK(dom_ui_);
-  SetupMetricsReportingCheckbox();
+  SetupMetricsReportingCheckbox(false);
   SetupMetricsReportingSettingVisibility();
   SetupDefaultZoomLevel();
   SetupDownloadLocationPath();
@@ -354,7 +356,9 @@ void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
           UserMetricsAction("Options_MetricsReportingCheckbox_Disable"));
   bool is_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
   enable_metrics_recording_.SetValue(is_enabled);
-  SetupMetricsReportingCheckbox();
+
+  bool user_changed = (enabled == is_enabled);
+  SetupMetricsReportingCheckbox(user_changed);
 #endif
 }
 
@@ -476,14 +480,14 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
 }
 #endif
 
-void AdvancedOptionsHandler::SetupMetricsReportingCheckbox() {
+void AdvancedOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   FundamentalValue checked(enable_metrics_recording_.GetValue());
   FundamentalValue disabled(enable_metrics_recording_.IsManaged());
   FundamentalValue user_has_changed(user_changed);
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
-      disabled);
+      disabled, user_has_changed);
 #endif
 }
 
