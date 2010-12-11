@@ -290,7 +290,8 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     if (icon)
       menu->SetIcon(menu->GetItemCount() - 1, *icon);
   }
-  menu->AddSeparator();
+  if (applications_.size() > 0)
+    menu->AddSeparator();
   menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   context_menu_ = menu;
   status_icon_->SetContextMenu(menu);
