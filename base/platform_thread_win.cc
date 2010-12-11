@@ -125,10 +125,6 @@ bool PlatformThread::CreateNonJoinable(size_t stack_size, Delegate* delegate) {
 // static
 void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   DCHECK(thread_handle);
-  // Joining another thread may block the current thread for a long time, since
-  // the thread referred to by |thread_handle| may still be running long-lived /
-  // blocking tasks.
-  base::ThreadRestrictions::AssertIOAllowed();
 
   // Wait for the thread to exit.  It should already have terminated but make
   // sure this assumption is valid.
