@@ -67,7 +67,8 @@ void SyncOptionsHandler::Initialize() {
   DictionaryValue args;
   SyncSetupFlow::GetArgsForConfigure(service, &args);
 
-  dom_ui_->CallJavascriptFunction(L"SyncOptions.setRegisteredDataTypes", args);
+  dom_ui_->CallJavascriptFunction(
+      L"PersonalOptions.setRegisteredDataTypes", args);
 }
 
 void SyncOptionsHandler::RegisterMessages() {

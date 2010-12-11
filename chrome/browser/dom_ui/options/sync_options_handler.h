@@ -9,6 +9,7 @@
 #include "chrome/browser/dom_ui/options/options_ui.h"
 
 // Chrome sync options page UI handler.
+// TODO(jhawkins): Move the meat of this class to PersonalOptionsHandler.
 class SyncOptionsHandler : public OptionsPageUIHandler {
  public:
   SyncOptionsHandler();

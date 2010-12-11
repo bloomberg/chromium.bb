@@ -7,6 +7,7 @@ cr.define('options', function() {
   var Preferences = options.Preferences;
   /////////////////////////////////////////////////////////////////////////////
   // PrefCheckbox class:
+  // TODO(jhawkins): Refactor all this copy-pasted code!
 
   // Define a constructor that uses an input element as its underlying element.
   var PrefCheckbox = cr.ui.define('input');
@@ -25,27 +26,31 @@ cr.define('options', function() {
       self.initializeValueType(self.getAttribute('value-type'));
 
       // Listen to pref changes.
-      Preferences.getInstance().addEventListener(this.pref,
+      Preferences.getInstance().addEventListener(
+          this.pref,
           function(event) {
             var value = event.value && event.value['value'] != undefined ?
                 event.value['value'] : event.value;
+
             // Invert pref value if inverted_pref == true.
             if (self.inverted_pref)
               self.checked = !Boolean(value);
             else
               self.checked = Boolean(value);
+
             self.managed = event.value && event.value['managed'] != undefined ?
                 event.value['managed'] : false;
-            self.disabled = self.managed;
-            // Honor manually_disabled property, so options pages can
-            // disable preferences manually when needed.
-            if (self.manually_disabled) {
+
+            // Managed UI elements can only be disabled as a result of being
+            // managed. They cannot be enabled as a result of a pref being
+            // unmanaged.
+            if (self.managed)
               self.disabled = true;
-            }
           });
 
       // Listen to user events.
-      this.addEventListener('click',
+      this.addEventListener(
+          'click',
           function(e) {
             var value = self.inverted_pref ? !self.checked : self.checked;
             switch(self.valueType) {
@@ -113,12 +118,12 @@ cr.define('options', function() {
             self.managed = event.value && event.value['managed'] != undefined ?
                 event.value['managed'] : false;
             self.checked = String(value) == self.value;
-            self.disabled = self.managed;
-            // Honor manually_disabled property, so options pages can
-            // disable preferences manually when needed.
-            if (self.manually_disabled) {
+
+            // Managed UI elements can only be disabled as a result of being
+            // managed. They cannot be enabled as a result of a pref being
+            // unmanaged.
+            if (self.managed)
               self.disabled = true;
-            }
           });
 
       // Listen to user events.
@@ -177,7 +182,12 @@ cr.define('options', function() {
                 event.value['value'] : event.value;
             self.managed = event.value && event.value['managed'] != undefined ?
                 event.value['managed'] : false;
-            self.disabled = self.managed;
+
+            // Managed UI elements can only be disabled as a result of being
+            // managed. They cannot be enabled as a result of a pref being
+            // unmanaged.
+            if (self.managed)
+              self.disabled = true;
           });
 
       // Listen to user events.
@@ -293,22 +303,34 @@ cr.define('options', function() {
           function(event) {
             var value = event.value && event.value['value'] != undefined ?
                 event.value['value'] : event.value;
+
+            // Make sure |value| is a string, because the value is stored as a
+            // string in the HTMLOptionElement.
+            value = value.toString();
+
             self.managed = event.value && event.value['managed'] != undefined ?
                 event.value['managed'] : false;
-            self.disabled = self.managed;
-            // Honor manually_disabled property, so options pages can
-            // disable preferences manually when needed.
-            if (self.manually_disabled) {
+
+            // Managed UI elements can only be disabled as a result of being
+            // managed. They cannot be enabled as a result of a pref being
+            // unmanaged.
+            if (self.managed)
               self.disabled = true;
-            }
+
+            var found = false;
             for (var i = 0; i < self.options.length; i++) {
               if (self.options[i].value == value) {
                 self.selectedIndex = i;
-                return;
+                found = true;
               }
             }
+
             // Item not found, select first item.
-            self.selectedIndex = 0;
+            if (!found)
+              self.selectedIndex = 0;
+
+            if (self.onchange != undefined)
+              self.onchange(event);
           });
 
       // Listen to user events.
@@ -320,8 +342,9 @@ cr.define('options', function() {
                     self.options[self.selectedIndex].value, self.metric);
                 break;
               case 'boolean':
-                Preferences.setBooleanValue(self.pref,
-                    self.options[self.selectedIndex].value, self.metric);
+                var option = self.options[self.selectedIndex];
+                var value = (option.value == 'true') ? true : false;
+                Preferences.setBooleanPref(self.pref, value, self.metric);
                 break;
               case 'string':
                 Preferences.setStringPref(self.pref,
@@ -334,8 +357,9 @@ cr.define('options', function() {
     /**
      * Sets up options in select element.
      * @param {Array} options List of option and their display text.
-     * Each element in the array is an array of length 2 which contains options
-     * value in the first element and display text in the second element.
+     *     Each element in the array is an array of length 2 which contains
+     *     options value in the first element and display text in the second
+     *     element. May be undefined.
      *
      * TODO(zelidrag): move this to that i18n template classes.
      */
@@ -343,6 +367,7 @@ cr.define('options', function() {
       options.forEach(function (values) {
         if (this.dataType == undefined)
           this.dataType = typeof values[0];
+
         this.appendChild(new Option(values[1], values[0]));
       }, this);
     }
@@ -383,7 +408,12 @@ cr.define('options', function() {
                 event.value['value'] : event.value;
             self.managed = event.value && event.value['managed'] != undefined ?
                 event.value['managed'] : false;
-            self.disabled = self.managed;
+
+            // Managed UI elements can only be disabled as a result of being
+            // managed. They cannot be enabled as a result of a pref being
+            // unmanaged.
+            if (self.managed)
+              self.disabled = true;
           });
 
       // Listen to user events.

@@ -24,7 +24,6 @@ var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
 var StartupPageManager = options.StartupPageManager;
-var SyncOptions = options.SyncOptions;
 
 /**
  * DOMContentLoaded handler, sets up the page.
@@ -60,8 +59,6 @@ function load() {
   OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
                               PersonalOptions.getInstance());
   OptionsPage.registerSubPage(PasswordsExceptions.getInstance(),
-                              PersonalOptions.getInstance());
-  OptionsPage.registerSubPage(SyncOptions.getInstance(),
                               PersonalOptions.getInstance());
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());

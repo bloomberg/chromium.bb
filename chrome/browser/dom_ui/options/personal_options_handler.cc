@@ -99,6 +99,22 @@ void PersonalOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("themesReset",
       l10n_util::GetStringUTF16(IDS_THEMES_RESET_BUTTON));
 #endif
+
+  // Sync select control.
+  ListValue* sync_select_list = new ListValue;
+  ListValue* datatypes = new ListValue;
+  datatypes->Append(Value::CreateBooleanValue(false));
+  datatypes->Append(
+      Value::CreateStringValue(
+          l10n_util::GetStringUTF8(IDS_SYNC_OPTIONS_SELECT_DATATYPES)));
+  sync_select_list->Append(datatypes);
+  ListValue* everything = new ListValue;
+  everything->Append(Value::CreateBooleanValue(true));
+  everything->Append(
+      Value::CreateStringValue(
+          l10n_util::GetStringUTF8(IDS_SYNC_OPTIONS_SELECT_EVERYTHING)));
+  sync_select_list->Append(everything);
+  localized_strings->Set("syncSelectList", sync_select_list);
 }
 
 void PersonalOptionsHandler::RegisterMessages() {
@@ -178,21 +194,6 @@ void PersonalOptionsHandler::OnStateChanged() {
 
   label.reset(Value::CreateStringValue(start_stop_button_label));
   dom_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonLabel",
-                                  *label);
-
-  visible.reset(Value::CreateBooleanValue(
-      sync_setup_completed && !status_has_error));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setCustomizeButtonVisible",
-                                  *visible);
-
-  enabled.reset(Value::CreateBooleanValue(!managed));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setCustomizeButtonEnabled",
-                                  *enabled);
-
-  string16 customize_button_label =
-    l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL);
-  label.reset(Value::CreateStringValue(customize_button_label));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setCustomizeButtonLabel",
                                   *label);
 
 #if !defined(OS_CHROMEOS)

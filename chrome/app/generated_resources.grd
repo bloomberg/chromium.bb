@@ -8212,6 +8212,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Sync
         </message>
       </if>
+      <message name="IDS_SYNC_OPTIONS_SELECT_DATATYPES" desc="The select ooption that allows the user to select which datatypes to sync.">
+        Choose what to Sync
+      </message>
+      <message name="IDS_SYNC_OPTIONS_SELECT_EVERYTHING" desc="The select option that selects all features to be synced.">
+        Everything
+      </message>
       <message name="IDS_SYNC_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when sync has not been set up by the user.">
         You are not set up to sync your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data with your other computers.
       </message>

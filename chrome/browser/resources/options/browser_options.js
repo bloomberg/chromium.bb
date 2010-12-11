@@ -93,10 +93,8 @@ cr.define('options', function() {
         // Disable all controls under the startup section.
         var elements =
             $('startupSection').querySelectorAll('input, button, list');
-        for (var i = 0; i < elements.length; i++) {
+        for (var i = 0; i < elements.length; i++)
           elements[i].disabled = true;
-          elements[i].manually_disabled = true;
-        }
       } else {
         // Initialize control enabled states.
         Preferences.getInstance().addEventListener('session.restore_on_startup',
