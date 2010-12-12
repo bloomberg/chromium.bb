@@ -6,13 +6,17 @@
 
 #include "ceee/ie/common/ceee_module_util.h"
 
+#include <iepmapi.h>
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stringize_macros.h"
 #include "base/win/registry.h"
+#include "ceee/common/com_utils.h"
 #include "ceee/common/process_utils_win.h"
+#include "ceee/ie/common/ie_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 
 #include "version.h"  // NOLINT
@@ -304,6 +308,37 @@ bool GetCollectStatsConsent() {
       return false;
   }
   return (1 == value);
+}
+
+bool RefreshElevationPolicyIfNeeded() {
+  if (ie_util::GetIeVersion() < ie_util::IEVERSION_IE7)
+    return false;
+
+  // This may access InternetRegistry instead of real one. However this is
+  // acceptable, we just refresh policy twice.
+  base::win::RegKey hkcu(HKEY_CURRENT_USER, kRegistryPath,
+                         KEY_WRITE | KEY_QUERY_VALUE);
+  LOG_IF(ERROR, !hkcu.Valid()) << "Failed to open reg key: " << kRegistryPath;
+  if (!hkcu.Valid())
+    return false;
+
+  std::wstring expected_version = TO_L_STRING(CHROME_VERSION_STRING);
+
+  static const wchar_t kValueName[] = L"last_elevation_refresh";
+  std::wstring last_elevation_refresh_version;
+  bool result = hkcu.ReadValue(kValueName, &last_elevation_refresh_version);
+  if (last_elevation_refresh_version == expected_version)
+    return false;
+
+  HRESULT hr = ::IERefreshElevationPolicy();
+  VLOG(1) << "Elevation policy refresh result: " << com::LogHr(hr);
+
+  // Write after refreshing because it's better to refresh twice, than to miss
+  // once.
+  result = hkcu.WriteValue(kValueName, expected_version.c_str());
+  LOG_IF(ERROR, !result) << "Failed to write a registry value: " << kValueName;
+
+  return true;
 }
 
 }  // namespace ceee_module_util

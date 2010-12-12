@@ -64,6 +64,9 @@
           ],
         },
       ],
+      'libraries': [
+        'iepmapi.lib',
+      ],
     },
   ],
 }

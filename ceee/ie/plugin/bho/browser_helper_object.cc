@@ -266,10 +266,7 @@ HRESULT BrowserHelperObject::GetBrokerRegistrar(ICeeeBrokerRegistrar** broker) {
   DCHECK(broker);
   if (broker == NULL)
     return E_INVALIDARG;
-  HRESULT hr = ::CoCreateInstance(CLSID_CeeeBroker, NULL, CLSCTX_ALL,
-                                  IID_ICeeeBrokerRegistrar,
-                                  reinterpret_cast<void**>(broker));
-  DCHECK(SUCCEEDED(hr) && *broker) << "CoCreating Broker. " << com::LogHr(hr);
+  HRESULT hr = StartCeeeBroker(broker);
   if (FAILED(hr) || *broker == NULL)
     return com::AlwaysError(hr);
   return hr;

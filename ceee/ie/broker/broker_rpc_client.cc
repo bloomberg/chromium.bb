@@ -7,15 +7,17 @@
 #include "ceee/ie/broker/broker_rpc_client.h"
 
 #include <atlbase.h>
+
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/tuple.h"
 #include "base/win/scoped_comptr.h"
-#include "broker_lib.h"  // NOLINT
-#include "broker_rpc_lib.h"  // NOLINT
 #include "ceee/common/com_utils.h"
 #include "ceee/ie/broker/broker_rpc_utils.h"
+#include "ceee/ie/common/ceee_module_util.h"
 
+#include "broker_lib.h"  // NOLINT
+#include "broker_rpc_lib.h"  // NOLINT
 
 namespace {
 
@@ -115,16 +117,8 @@ void BrokerRpcClient::ReleaseContext() {
   } RpcEndExcept
 }
 
-HRESULT BrokerRpcClient::StartServer(IUnknown** server) {
-  base::win::ScopedComPtr<IUnknown> broker;
-  // TODO(vitalybuka@google.com): Start broker without COM after the last
-  // COM interface is removed.
-  HRESULT hr = broker.CreateInstance(CLSID_CeeeBroker);
-  LOG_IF(ERROR, FAILED(hr)) << "Failed to create broker. " << com::LogHr(hr);
-  if (FAILED(hr))
-    return hr;
-  *server = broker.Detach();
-  return S_OK;
+HRESULT BrokerRpcClient::StartServer(ICeeeBrokerRegistrar** server) {
+  return StartCeeeBroker(server);
 }
 
 HRESULT BrokerRpcClient::Connect(bool start_server) {
@@ -132,7 +126,7 @@ HRESULT BrokerRpcClient::Connect(bool start_server) {
     return S_OK;
 
   // Keep alive until RPC is connected.
-  base::win::ScopedComPtr<IUnknown> broker;
+  base::win::ScopedComPtr<ICeeeBrokerRegistrar> broker;
   if (start_server) {
     HRESULT hr = StartServer(broker.Receive());
     if (FAILED(hr))
@@ -210,4 +204,18 @@ HRESULT BrokerRpcClient::SendUmaHistogramData(const char* name,
                 &BrokerRpcClient_SendUmaHistogramData,
                 MakeRefTuple(binding_handle_, name, sample, min, max,
                           bucket_count));
+}
+
+HRESULT StartCeeeBroker(ICeeeBrokerRegistrar** broker) {
+  ceee_module_util::RefreshElevationPolicyIfNeeded();
+  base::win::ScopedComPtr<ICeeeBrokerRegistrar> broker_tmp;
+  // TODO(vitalybuka@google.com): Start broker without COM after the last
+  // COM interface is removed.
+  HRESULT hr = broker_tmp.CreateInstance(CLSID_CeeeBroker);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to create broker. " << com::LogHr(hr);
+    return hr;
+  }
+  *broker = broker_tmp.Detach();
+  return S_OK;
 }

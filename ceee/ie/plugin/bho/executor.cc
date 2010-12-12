@@ -38,6 +38,7 @@
 #include "base/values.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_comptr.h"
 #include "ceee/common/com_utils.h"
 #include "ceee/common/window_utils.h"
 #include "ceee/common/windows_constants.h"
@@ -170,12 +171,8 @@ LRESULT CeeeExecutorCreator::GetMsgProc(int code, WPARAM wparam,
           DCHECK(SUCCEEDED(hr)) << "CoCreating Executor. " << com::LogHr(hr);
         }
 
-        CComPtr<ICeeeBrokerRegistrar> broker;
-        hr = broker.CoCreateInstance(CLSID_CeeeBroker);
-        LOG_IF(ERROR, FAILED(hr)) << "Failed to create broker, hr=" <<
-            com::LogHr(hr);
-        DCHECK(SUCCEEDED(hr)) << "CoCreating Broker. " << com::LogHr(hr);
-
+        base::win::ScopedComPtr<ICeeeBrokerRegistrar> broker;
+        hr = StartCeeeBroker(broker.Receive());
         if (SUCCEEDED(hr)) {
           hr = broker->RegisterWindowExecutor(::GetCurrentThreadId(), executor);
           DCHECK(SUCCEEDED(hr)) << "Registering Executor. " << com::LogHr(hr);

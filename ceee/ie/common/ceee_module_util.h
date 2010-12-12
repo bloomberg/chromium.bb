@@ -103,6 +103,9 @@ extern const wchar_t kInternetExplorerModuleName[];
 // The name of the CEEE Broker executable.
 extern const wchar_t kCeeeBrokerModuleName[];
 
+// Refreshes elevation policy. Returns false if refresh was not needed.
+bool RefreshElevationPolicyIfNeeded();
+
 }  // namespace
 
 #endif  // CEEE_IE_COMMON_TOOLBAND_MODULE_UTIL_H__
