@@ -14,7 +14,7 @@
 
 class FilePath;
 
-class URLRequestMockHTTPJob : public URLRequestFileJob {
+class URLRequestMockHTTPJob : public net::URLRequestFileJob {
  public:
   URLRequestMockHTTPJob(net::URLRequest* request, const FilePath& file_path);
 

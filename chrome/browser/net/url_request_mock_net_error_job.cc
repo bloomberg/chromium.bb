@@ -67,9 +67,9 @@ net::URLRequestJob* URLRequestMockNetErrorJob::Factory(
 
   MockInfo mock_info = iter->second;
 
-  // URLRequestMockNetErrorJob derives from URLRequestFileJob.  We pass a
-  // FilePath so that the URLRequestFileJob methods will do the loading from
-  // the files.
+  // URLRequestMockNetErrorJob derives from net::URLRequestFileJob.  We pass a
+  // FilePath so that the net::URLRequestFileJob methods will do the loading
+  // from the files.
   std::wstring file_url(L"file:///");
   file_url.append(mock_info.base);
   file_url.append(UTF8ToWide(url.path()));

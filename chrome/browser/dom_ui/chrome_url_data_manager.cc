@@ -83,7 +83,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
 };
 
 // URLRequestChromeFileJob is a net::URLRequestJob that acts like a file:// URL
-class URLRequestChromeFileJob : public URLRequestFileJob {
+class URLRequestChromeFileJob : public net::URLRequestFileJob {
  public:
   URLRequestChromeFileJob(net::URLRequest* request, const FilePath& path);
 
@@ -434,7 +434,7 @@ void URLRequestChromeJob::StartAsync() {
 
 URLRequestChromeFileJob::URLRequestChromeFileJob(net::URLRequest* request,
                                                  const FilePath& path)
-    : URLRequestFileJob(request, path) {
+    : net::URLRequestFileJob(request, path) {
 }
 
 URLRequestChromeFileJob::~URLRequestChromeFileJob() { }

@@ -84,7 +84,7 @@ const int kSVGTestWindowWidth = 480;
 const int kSVGTestWindowHeight = 360;
 
 // URLRequestTestShellFileJob is used to serve the inspector
-class URLRequestTestShellFileJob : public URLRequestFileJob {
+class URLRequestTestShellFileJob : public net::URLRequestFileJob {
  public:
   static net::URLRequestJob* InspectorFactory(net::URLRequest* request,
                                               const std::string& scheme) {
@@ -98,7 +98,7 @@ class URLRequestTestShellFileJob : public URLRequestFileJob {
 
  private:
   URLRequestTestShellFileJob(net::URLRequest* request, const FilePath& path)
-      : URLRequestFileJob(request, path) {
+      : net::URLRequestFileJob(request, path) {
   }
   virtual ~URLRequestTestShellFileJob() { }
 

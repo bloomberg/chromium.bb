@@ -199,7 +199,7 @@ static net::URLRequestJob* CreateExtensionURLRequestJob(
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     resource_file_path = resource.GetFilePath();
   }
-  return new URLRequestFileJob(request, resource_file_path);
+  return new net::URLRequestFileJob(request, resource_file_path);
 }
 
 // Factory registered with net::URLRequest to create URLRequestJobs for
@@ -216,7 +216,7 @@ static net::URLRequestJob* CreateUserScriptURLRequestJob(
   ExtensionResource resource(request->url().host(), directory_path,
       extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
 
-  return new URLRequestFileJob(request, resource.GetFilePath());
+  return new net::URLRequestFileJob(request, resource.GetFilePath());
 }
 
 void RegisterExtensionProtocols() {

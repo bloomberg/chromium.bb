@@ -823,7 +823,7 @@ void FilebrowseHandler::GetChildrenForPath(FilePath& path, bool is_refresh) {
 
 #if defined(OS_CHROMEOS)
   // Don't allow listing files in inaccessible dirs.
-  if (URLRequestFileJob::AccessDisabled(path))
+  if (net::URLRequestFileJob::AccessDisabled(path))
     return;
 #endif  // OS_CHROMEOS
 
@@ -971,7 +971,7 @@ void FilebrowseHandler::HandleDeleteFile(const ListValue* args) {
   FilePath currentpath(path);
 
   // Don't allow file deletion in inaccessible dirs.
-  if (URLRequestFileJob::AccessDisabled(currentpath))
+  if (net::URLRequestFileJob::AccessDisabled(currentpath))
     return;
 
   for (unsigned int x = 0; x < active_download_items_.size(); x++) {
@@ -1008,7 +1008,7 @@ void FilebrowseHandler::HandleCopyFile(const ListValue* value) {
       FilePath DestPath = FilePath(dest);
 
       // Don't allow file copy to inaccessible dirs.
-      if (URLRequestFileJob::AccessDisabled(DestPath))
+      if (net::URLRequestFileJob::AccessDisabled(DestPath))
         return;
 
       TaskProxy* task = new TaskProxy(AsWeakPtr(), SrcPath, DestPath);

@@ -70,7 +70,7 @@ FilePath URLRequestMockHTTPJob::GetOnDiskPath(const FilePath& base_path,
 
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(net::URLRequest* request,
                                              const FilePath& file_path)
-    : URLRequestFileJob(request, file_path) { }
+    : net::URLRequestFileJob(request, file_path) { }
 
 // Public virtual version.
 void URLRequestMockHTTPJob::GetResponseInfo(net::HttpResponseInfo* info) {
@@ -80,8 +80,8 @@ void URLRequestMockHTTPJob::GetResponseInfo(net::HttpResponseInfo* info) {
 
 bool URLRequestMockHTTPJob::IsRedirectResponse(GURL* location,
                                                int* http_status_code) {
-  // Override the URLRequestFileJob implementation to invoke the default one
-  // based on HttpResponseInfo.
+  // Override the net::URLRequestFileJob implementation to invoke the default
+  // one based on HttpResponseInfo.
   return net::URLRequestJob::IsRedirectResponse(location, http_status_code);
 }
 
