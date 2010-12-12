@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
@@ -82,9 +83,11 @@ class InstalledBubbleContent : public views::View,
     icon_->SetImage(*icon);
     AddChildView(icon_);
 
+    std::wstring extension_name = UTF8ToWide(extension->name());
+    base::i18n::AdjustStringForLocaleDirection(&extension_name);
     heading_ = new views::Label(
         l10n_util::GetStringF(IDS_EXTENSION_INSTALLED_HEADING,
-                              UTF8ToWide(extension->name())));
+                              extension_name));
     heading_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

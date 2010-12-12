@@ -5,6 +5,7 @@
 #import "extension_installed_bubble_controller.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -283,8 +284,10 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   int newWindowHeight = 2 * extension_installed_bubble::kOuterVerticalMargin;
 
   // First part of extension installed message.
+  string16 extension_name = UTF8ToUTF16(extension_->name().c_str());
+  base::i18n::AdjustStringForLocaleDirection(&extension_name);
   [extensionInstalledMsg_ setStringValue:l10n_util::GetNSStringF(
-      IDS_EXTENSION_INSTALLED_HEADING, UTF8ToUTF16(extension_->name()))];
+      IDS_EXTENSION_INSTALLED_HEADING, extension_name)];
   [GTMUILocalizerAndLayoutTweaker
       sizeToFitFixedWidthTextField:extensionInstalledMsg_];
   newWindowHeight += [extensionInstalledMsg_ frame].size.height +

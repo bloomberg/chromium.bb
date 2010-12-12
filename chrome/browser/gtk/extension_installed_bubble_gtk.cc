@@ -197,8 +197,10 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Heading label
   GtkWidget* heading_label = gtk_label_new(NULL);
+  string16 extension_name = UTF8ToUTF16(extension_->name());
+  base::i18n::AdjustStringForLocaleDirection(&extension_name);
   std::string heading_text = l10n_util::GetStringFUTF8(
-      IDS_EXTENSION_INSTALLED_HEADING, UTF8ToUTF16(extension_->name()));
+      IDS_EXTENSION_INSTALLED_HEADING, extension_name);
   char* markup = g_markup_printf_escaped("<span size=\"larger\">%s</span>",
       heading_text.c_str());
   gtk_label_set_markup(GTK_LABEL(heading_label), markup);

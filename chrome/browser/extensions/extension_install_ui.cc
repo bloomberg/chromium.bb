@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -289,9 +290,11 @@ void ExtensionInstallUI::ShowGenericExtensionInstalledInfoBar(
   if (!tab_contents)
     return;
 
+  string16 extension_name = UTF8ToUTF16(new_extension->name());
+  base::i18n::AdjustStringForLocaleDirection(&extension_name);
   string16 msg =
       l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALLED_HEADING,
-                                 UTF8ToUTF16(new_extension->name())) +
+                                 extension_name) +
       UTF8ToUTF16(" ") +
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
   InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
