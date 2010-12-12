@@ -94,6 +94,7 @@ bool SSLConfigServiceWin::GetSSLConfigNow(SSLConfig* config) {
 void SSLConfigServiceWin::SetRevCheckingEnabled(bool enabled) {
   // This registry access goes to disk and will slow down the IO thread.
   // http://crbug.com/61455
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   DWORD value = enabled;
   RegKey internet_settings(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                            KEY_WRITE);
@@ -116,6 +117,7 @@ void SSLConfigServiceWin::SetTLS1Enabled(bool enabled) {
 void SSLConfigServiceWin::SetSSLVersionEnabled(int version, bool enabled) {
   // This registry access goes to disk and will slow down the IO thread.
   // http://crbug.com/61455
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   RegKey internet_settings(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                            KEY_READ | KEY_WRITE);
   DWORD value;
