@@ -191,7 +191,7 @@ wl_client_connection_update(struct wl_connection *connection,
 	if (mask & WL_CONNECTION_WRITABLE)
 		emask |= WL_EVENT_WRITEABLE;
 
-	return wl_event_source_fd_update(client->source, mask);
+	return wl_event_source_fd_update(client->source, emask);
 }
 
 WL_EXPORT struct wl_display *
