@@ -3466,3 +3466,16 @@
    ...
    fun:*MalwareDetailsTest_*
 }
+{
+   bug_66608
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12GpuBlacklist17GpuBlacklistEntry29GetGpuBlacklistEntryFromValueEP15DictionaryValue
+   fun:_ZN12GpuBlacklist16LoadGpuBlacklistERKSsb
+   fun:_ZN14GpuProcessHost16LoadGpuBlacklistEv
+   fun:_ZN14GpuProcessHost4InitEv
+   fun:_ZN14GpuProcessHost17EnsureInitializedEv
+   fun:_ZN14GpuProcessHost4SendEPN3IPC7MessageE
+   fun:_ZN14GpuProcessHost19EstablishGpuChannelEiP21ResourceMessageFilter
+   fun:_ZN21ResourceMessageFilter21OnEstablishGpuChannelEv
+}
