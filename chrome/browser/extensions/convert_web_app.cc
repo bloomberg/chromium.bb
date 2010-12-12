@@ -101,6 +101,9 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   root->SetString(keys::kDescription, UTF16ToUTF8(web_app.description));
   root->SetString(keys::kLaunchWebURL, web_app.app_url.spec());
 
+  if (!web_app.launch_container.empty())
+    root->SetString(keys::kLaunchContainer, web_app.launch_container);
+
   // Add the icons.
   DictionaryValue* icons = new DictionaryValue();
   root->Set(keys::kIcons, icons);
