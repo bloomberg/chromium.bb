@@ -349,6 +349,8 @@ bool GpuBlacklist::LoadGpuBlacklist(const std::string& json_context,
       if (!current_os_only ||
           entry_os == kOsAny || entry_os == os_filter)
         blacklist_.push_back(entries[i]);
+      else
+        delete entries[i];
     }
   }
   return true;
