@@ -51,6 +51,8 @@
 		8B4BDABE12012CEF009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
 		8B4BDAC512012D05009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		D23F4B2E12A7E13200686C8D /* minidump_generator_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = D23F4B2C12A7E13200686C8D /* minidump_generator_test.cc */; };
+		D23F4B3312A7E17700686C8D /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2F9A41512131EF0002747C1 /* libgtest.a */; };
 		D244536A12426F00009BBCE0 /* logging.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535112426EBB009BBCE0 /* logging.cc */; };
 		D244536B12426F00009BBCE0 /* minidump.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535212426EBB009BBCE0 /* minidump.cc */; };
 		D244536C12426F00009BBCE0 /* pathname_stripper.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535312426EBB009BBCE0 /* pathname_stripper.cc */; };
@@ -62,6 +64,10 @@
 		D2A5DD301188633800081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
 		D2A5DD401188640400081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
 		D2A5DD411188642E00081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
+		D2C1DBE412AFC270006917BD /* logging.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535112426EBB009BBCE0 /* logging.cc */; };
+		D2C1DBE512AFC270006917BD /* minidump.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535212426EBB009BBCE0 /* minidump.cc */; };
+		D2C1DBE612AFC270006917BD /* pathname_stripper.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535312426EBB009BBCE0 /* pathname_stripper.cc */; };
+		D2C1DBE712AFC270006917BD /* basic_code_modules.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244534F12426E98009BBCE0 /* basic_code_modules.cc */; };
 		D2F9A3D51212F87C002747C1 /* exception_handler_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = D2F9A3D41212F87C002747C1 /* exception_handler_test.cc */; };
 		D2F9A43D12131F55002747C1 /* gmock-all.cc in Sources */ = {isa = PBXBuildFile; fileRef = D2F9A43C12131F55002747C1 /* gmock-all.cc */; };
 		D2F9A44012131F65002747C1 /* gtest_main.cc in Sources */ = {isa = PBXBuildFile; fileRef = D2F9A43E12131F65002747C1 /* gtest_main.cc */; };
@@ -135,7 +141,6 @@
 		F93803D50F8083B7004D428B /* macho_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C537C0ECCE635009BE4BA /* macho_utilities.cc */; };
 		F93803D60F8083B7004D428B /* macho_walker.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C537E0ECCE635009BE4BA /* macho_walker.cc */; };
 		F93803D70F8083B7004D428B /* string_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53820ECCE635009BE4BA /* string_utilities.cc */; };
-		F93803DA0F8083D8004D428B /* minidump_generator_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = F93803D90F8083D8004D428B /* minidump_generator_test.cc */; };
 		F93DE2D80F82A70E00608B94 /* minidump_file_writer_unittest.cc in Sources */ = {isa = PBXBuildFile; fileRef = F93DE2D70F82A70E00608B94 /* minidump_file_writer_unittest.cc */; };
 		F93DE2D90F82A73500608B94 /* minidump_file_writer.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C538F0ECCE70A009BE4BA /* minidump_file_writer.cc */; };
 		F93DE2DA0F82A73500608B94 /* convert_UTF.c in Sources */ = {isa = PBXBuildFile; fileRef = F92C53870ECCE6C0009BE4BA /* convert_UTF.c */; };
@@ -311,6 +316,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = D21F97D211CBA0F200239E38;
 			remoteInfo = test_assembler_unittest;
+		};
+		D23F4B2F12A7E16200686C8D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2F9A41412131EF0002747C1;
+			remoteInfo = gtest;
 		};
 		D2F9A44212131F80002747C1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -512,6 +524,7 @@
 		8B31FFF611F0C90500FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B4BDAA7120124EA009C7060 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		8DC2EF5B0486A6940098B216 /* Breakpad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Breakpad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D23F4B2C12A7E13200686C8D /* minidump_generator_test.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump_generator_test.cc; path = tests/minidump_generator_test.cc; sourceTree = "<group>"; };
 		D244534F12426E98009BBCE0 /* basic_code_modules.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = basic_code_modules.cc; path = ../../processor/basic_code_modules.cc; sourceTree = SOURCE_ROOT; };
 		D244535112426EBB009BBCE0 /* logging.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = logging.cc; path = ../../processor/logging.cc; sourceTree = SOURCE_ROOT; };
 		D244535212426EBB009BBCE0 /* minidump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump.cc; path = ../../processor/minidump.cc; sourceTree = SOURCE_ROOT; };
@@ -602,7 +615,6 @@
 		F92C56A70ECE04C5009BE4BA /* crash_report_sender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crash_report_sender.h; path = sender/crash_report_sender.h; sourceTree = "<group>"; };
 		F92C56A80ECE04C5009BE4BA /* crash_report_sender.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = crash_report_sender.m; path = sender/crash_report_sender.m; sourceTree = "<group>"; };
 		F93803BE0F80820F004D428B /* generator_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = generator_test; sourceTree = BUILT_PRODUCTS_DIR; };
-		F93803D90F8083D8004D428B /* minidump_generator_test.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump_generator_test.cc; path = handler/minidump_generator_test.cc; sourceTree = "<group>"; };
 		F93DE2D10F82A67300608B94 /* minidump_file_writer_unittest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = minidump_file_writer_unittest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F93DE2D70F82A70E00608B94 /* minidump_file_writer_unittest.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump_file_writer_unittest.cc; path = ../minidump_file_writer_unittest.cc; sourceTree = SOURCE_ROOT; };
 		F93DE32C0F82C55600608B94 /* handler_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = handler_test; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -696,6 +708,7 @@
 			files = (
 				8B31029411F0D54300FCF3E4 /* Foundation.framework in Frameworks */,
 				8B4BDABE12012CEF009C7060 /* libcrypto.dylib in Frameworks */,
+				D23F4B3312A7E17700686C8D /* libgtest.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -815,7 +828,6 @@
 		F92C53590ECCE3BB009BE4BA /* handler */ = {
 			isa = PBXGroup;
 			children = (
-				F93803D90F8083D8004D428B /* minidump_generator_test.cc */,
 				F92C53670ECCE3FD009BE4BA /* breakpad_exc_server.c */,
 				F92C53680ECCE3FD009BE4BA /* breakpad_exc_server.h */,
 				F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */,
@@ -1009,6 +1021,7 @@
 		F9C77DDF0F7DD7CF0045F7DB /* tests */ = {
 			isa = PBXGroup;
 			children = (
+				D23F4B2C12A7E13200686C8D /* minidump_generator_test.cc */,
 				D2F9A4CE121336F7002747C1 /* crash_generation_server_test.cc */,
 				D2F9A3D41212F87C002747C1 /* exception_handler_test.cc */,
 				F9C77DE00F7DD7E30045F7DB /* SimpleStringDictionaryTest.h */,
@@ -1178,6 +1191,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				D23F4B3012A7E16200686C8D /* PBXTargetDependency */,
 			);
 			name = generator_test;
 			productName = generator_test;
@@ -1621,6 +1635,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2C1DBE412AFC270006917BD /* logging.cc in Sources */,
+				D2C1DBE512AFC270006917BD /* minidump.cc in Sources */,
+				D2C1DBE612AFC270006917BD /* pathname_stripper.cc in Sources */,
+				D2C1DBE712AFC270006917BD /* basic_code_modules.cc in Sources */,
 				D2F9A4DF12133AD9002747C1 /* crash_generation_client.cc in Sources */,
 				D2F9A4E012133AD9002747C1 /* crash_generation_server.cc in Sources */,
 				D24BBD291211EDB100F3D417 /* MachIPC.mm in Sources */,
@@ -1636,7 +1654,7 @@
 				F93803D50F8083B7004D428B /* macho_utilities.cc in Sources */,
 				F93803D60F8083B7004D428B /* macho_walker.cc in Sources */,
 				F93803D70F8083B7004D428B /* string_utilities.cc in Sources */,
-				F93803DA0F8083D8004D428B /* minidump_generator_test.cc in Sources */,
+				D23F4B2E12A7E13200686C8D /* minidump_generator_test.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1732,6 +1750,11 @@
 			isa = PBXTargetDependency;
 			name = minidump_upload;
 			targetProxy = 8B31051E11F1010E00FCF3E4 /* PBXContainerItemProxy */;
+		};
+		D23F4B3012A7E16200686C8D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2F9A41412131EF0002747C1 /* gtest */;
+			targetProxy = D23F4B2F12A7E16200686C8D /* PBXContainerItemProxy */;
 		};
 		D2F9A44312131F80002747C1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2094,7 +2117,15 @@
 		F93803C00F808210004D428B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ../..;
+				GCC_PREPROCESSOR_DEFINITIONS = "BP_LOGGING_INCLUDE=\\\"client/mac/tests/testlogging.h\\\"";
+				HEADER_SEARCH_PATHS = (
+					../..,
+					../../..,
+					../../testing,
+					../../testing/include,
+					../../testing/gtest,
+					../../testing/gtest/include,
+				);
 				PRODUCT_NAME = generator_test;
 			};
 			name = Debug;
