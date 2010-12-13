@@ -17,9 +17,6 @@
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/platform/linux/nacl_time_types.h"
 
-#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/linux/nacl_syscall_inl.h"
 
 #define NANOS_PER_UNIT  (1000*1000*1000)
