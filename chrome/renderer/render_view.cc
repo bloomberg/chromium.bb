@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/database_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
@@ -3766,7 +3767,7 @@ bool RenderView::allowDatabase(
     return false;  // Uninitialized document?
 
   bool result;
-  if (!Send(new ViewHostMsg_AllowDatabase(routing_id_,
+  if (!Send(new DatabaseHostMsg_Allow(routing_id_,
       origin.toString().utf8(), name, display_name, estimated_size, &result)))
     return false;
   Send(new ViewHostMsg_WebDatabaseAccessed(routing_id_,

@@ -32,7 +32,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
 class ChromeURLRequestContext;
-class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
 struct FontDescriptor;
 class GeolocationDispatcherHostOld;
@@ -436,9 +435,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Handles Indexed Database related messages.
   scoped_refptr<IndexedDBDispatcherHost> indexed_db_dispatcher_host_;
-
-  // Handles HTML5 DB related messages
-  scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;
 
   // A cache of notifications preferences which is used to handle
   // Desktop Notifications permission messages.

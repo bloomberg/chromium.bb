@@ -4,8 +4,9 @@
 
 #include "chrome/common/db_message_filter.h"
 
-#include "chrome/common/render_messages.h"
+#include "chrome/common/database_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 DBMessageFilter::DBMessageFilter() {
 }
@@ -13,8 +14,8 @@ DBMessageFilter::DBMessageFilter() {
 bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DBMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_DatabaseUpdateSize, OnDatabaseUpdateSize)
-    IPC_MESSAGE_HANDLER(ViewMsg_DatabaseCloseImmediately,
+    IPC_MESSAGE_HANDLER(DatabaseMsg_UpdateSize, OnDatabaseUpdateSize)
+    IPC_MESSAGE_HANDLER(DatabaseMsg_CloseImmediately,
                         OnDatabaseCloseImmediately)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

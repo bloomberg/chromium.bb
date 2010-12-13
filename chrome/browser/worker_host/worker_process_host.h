@@ -12,17 +12,14 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_channel.h"
 
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
-class DatabaseDispatcherHost;
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
@@ -210,7 +207,6 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   Instances instances_;
 
   scoped_refptr<ChromeURLRequestContext> request_context_;
-  scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;
 
   // Holds all the IPC message filters.  Since the worker process host is on the
   // IO thread, we don't have a IPC::ChannelProxy and so we manage filters

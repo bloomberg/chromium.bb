@@ -41,7 +41,6 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
@@ -252,9 +251,6 @@ ResourceMessageFilter::ResourceMessageFilter(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(indexed_db_dispatcher_host_(
           new IndexedDBDispatcherHost(this, profile))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
-          new DatabaseDispatcherHost(profile->GetDatabaseTracker(), this,
-              profile->GetHostContentSettingsMap()))),
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
       host_zoom_map_(profile->GetHostZoomMap()),
@@ -288,9 +284,6 @@ ResourceMessageFilter::~ResourceMessageFilter() {
   // Tell the Indexed DB dispatcher host to stop sending messages via us.
   indexed_db_dispatcher_host_->Shutdown();
 
-  // Shut down the database dispatcher host.
-  db_dispatcher_host_->Shutdown();
-
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
       NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
@@ -320,7 +313,6 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
   dom_storage_dispatcher_host_->Init(id(), handle());
   indexed_db_dispatcher_host_->Init(id(), handle());
-  db_dispatcher_host_->Init(handle());
 }
 
 void ResourceMessageFilter::OnChannelError() {
@@ -347,7 +339,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
       dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       indexed_db_dispatcher_host_->OnMessageReceived(msg) ||
-      db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(
           msg, this, next_route_id_callback(), &msg_is_ok) ||
       geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ;

@@ -902,18 +902,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_NotifyRenderViewType,
 IPC_MESSAGE_ROUTED1(ViewMsg_ExecuteCode,
                     ViewMsg_ExecuteCode_Params)
 
-// Notifies the child process of the new database size
-IPC_MESSAGE_CONTROL4(ViewMsg_DatabaseUpdateSize,
-                     string16 /* the origin */,
-                     string16 /* the database name */,
-                     int64 /* the new database size */,
-                     int64 /* space available to origin */)
-
-// Asks the child process to close a database immediately
-IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseCloseImmediately,
-                     string16 /* the origin */,
-                     string16 /* the database name */)
-
 // Storage events are broadcast to renderer processes.
 IPC_MESSAGE_CONTROL1(ViewMsg_DOMStorageEvent,
                      ViewMsg_DOMStorageEvent_Params)
@@ -2659,54 +2647,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_AsyncOpenFile,
 // Sent by the renderer process to acknowledge receipt of a
 // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_OnCSSInserted)
-
-// Sent by the renderer process to check whether access to web databases is
-// granted by content settings. This may block and trigger a cookie prompt.
-IPC_SYNC_MESSAGE_ROUTED4_1(ViewHostMsg_AllowDatabase,
-                           std::string /* origin_url */,
-                           string16 /* database name */,
-                           string16 /* database display name */,
-                           unsigned long /* estimated size */,
-                           bool /* result */)
-
-// Asks the browser process to open a DB file with the given name.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DatabaseOpenFile,
-                            string16 /* vfs file name */,
-                            int /* desired flags */,
-                            IPC::PlatformFileForTransit /* file_handle */)
-
-// Asks the browser process to delete a DB file
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DatabaseDeleteFile,
-                            string16 /* vfs file name */,
-                            bool /* whether or not to sync the directory */,
-                            int /* SQLite error code */)
-
-// Asks the browser process to return the attributes of a DB file
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DatabaseGetFileAttributes,
-                            string16 /* vfs file name */,
-                            int32 /* the attributes for the given DB file */)
-
-// Asks the browser process to return the size of a DB file
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DatabaseGetFileSize,
-                            string16 /* vfs file name */,
-                            int64 /* the size of the given DB file */)
-
-// Notifies the browser process that a new database has been opened
-IPC_MESSAGE_CONTROL4(ViewHostMsg_DatabaseOpened,
-                     string16 /* origin identifier */,
-                     string16 /* database name */,
-                     string16 /* database description */,
-                     int64 /* estimated size */)
-
-// Notifies the browser process that a database might have been modified
-IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseModified,
-                     string16 /* origin identifier */,
-                     string16 /* database name */)
-
-// Notifies the browser process that a database is about to close
-IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseClosed,
-                     string16 /* origin identifier */,
-                     string16 /* database name */)
 
 // Notifies the browser of the language (ISO 639_1 code language, such as fr,
 // en, zh...) of the current page.

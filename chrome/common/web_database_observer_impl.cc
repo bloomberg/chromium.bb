@@ -7,8 +7,9 @@
 #include "base/auto_reset.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/database_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 WebDatabaseObserverImpl::WebDatabaseObserverImpl(
     IPC::Message::Sender* sender)
@@ -20,7 +21,7 @@ void WebDatabaseObserverImpl::databaseOpened(
     const WebKit::WebDatabase& database) {
   string16 origin_identifier = database.securityOrigin().databaseIdentifier();
   string16 database_name = database.name();
-  sender_->Send(new ViewHostMsg_DatabaseOpened(
+  sender_->Send(new DatabaseHostMsg_Opened(
       origin_identifier, database_name,
       database.displayName(), database.estimatedSize()));
   database_connections_.AddConnection(origin_identifier, database_name);
@@ -28,7 +29,7 @@ void WebDatabaseObserverImpl::databaseOpened(
 
 void WebDatabaseObserverImpl::databaseModified(
     const WebKit::WebDatabase& database) {
-  sender_->Send(new ViewHostMsg_DatabaseModified(
+  sender_->Send(new DatabaseHostMsg_Modified(
       database.securityOrigin().databaseIdentifier(), database.name()));
 }
 
@@ -36,7 +37,7 @@ void WebDatabaseObserverImpl::databaseClosed(
     const WebKit::WebDatabase& database) {
   string16 origin_identifier = database.securityOrigin().databaseIdentifier();
   string16 database_name = database.name();
-  sender_->Send(new ViewHostMsg_DatabaseClosed(
+  sender_->Send(new DatabaseHostMsg_Closed(
       origin_identifier, database_name));
   database_connections_.RemoveConnection(origin_identifier, database_name);
   if (waiting_for_dbs_to_close_ && database_connections_.IsEmpty())

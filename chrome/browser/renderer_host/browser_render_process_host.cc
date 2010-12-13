@@ -46,6 +46,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/blob_message_filter.h"
+#include "chrome/browser/renderer_host/database_message_filter.h"
 #include "chrome/browser/renderer_host/file_utilities_message_filter.h"
 #include "chrome/browser/renderer_host/pepper_file_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -405,6 +406,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new BlobMessageFilter(id(), profile()->GetBlobStorageContext()));
   channel_->AddFilter(new FileUtilitiesMessageFilter(id()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
+  channel_->AddFilter(new DatabaseMessageFilter(
+      profile()->GetDatabaseTracker(), profile()->GetHostContentSettingsMap()));
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

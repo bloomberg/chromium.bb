@@ -61,6 +61,7 @@ enum IPCMessageStart {
   FirefoxImporterUnittestMsgStart,
   FileUtilitiesMsgStart,
   MimeRegistryMsgStart,
+  DatabaseMsgStart,
 };
 
 class DictionaryValue;

@@ -5,7 +5,7 @@
 #include "chrome/common/database_util.h"
 
 #include "chrome/common/child_thread.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/database_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -20,7 +20,7 @@ WebKitClient::FileHandle DatabaseUtil::databaseOpenFile(
 
   scoped_refptr<IPC::SyncMessageFilter> filter(
       ChildThread::current()->sync_message_filter());
-  filter->Send(new ViewHostMsg_DatabaseOpenFile(
+  filter->Send(new DatabaseHostMsg_OpenFile(
       vfs_file_name, desired_flags, &file_handle));
 
   return IPC::PlatformFileForTransitToPlatformFile(file_handle);
@@ -31,7 +31,7 @@ int DatabaseUtil::databaseDeleteFile(
   int rv = SQLITE_IOERR_DELETE;
   scoped_refptr<IPC::SyncMessageFilter> filter(
       ChildThread::current()->sync_message_filter());
-  filter->Send(new ViewHostMsg_DatabaseDeleteFile(
+  filter->Send(new DatabaseHostMsg_DeleteFile(
       vfs_file_name, sync_dir, &rv));
   return rv;
 }
@@ -40,7 +40,7 @@ long DatabaseUtil::databaseGetFileAttributes(const WebString& vfs_file_name) {
   int32 rv = -1;
   scoped_refptr<IPC::SyncMessageFilter> filter(
       ChildThread::current()->sync_message_filter());
-  filter->Send(new ViewHostMsg_DatabaseGetFileAttributes(vfs_file_name, &rv));
+  filter->Send(new DatabaseHostMsg_GetFileAttributes(vfs_file_name, &rv));
   return rv;
 }
 
@@ -48,6 +48,6 @@ long long DatabaseUtil::databaseGetFileSize(const WebString& vfs_file_name) {
   int64 rv = 0LL;
   scoped_refptr<IPC::SyncMessageFilter> filter(
       ChildThread::current()->sync_message_filter());
-  filter->Send(new ViewHostMsg_DatabaseGetFileSize(vfs_file_name, &rv));
+  filter->Send(new DatabaseHostMsg_GetFileSize(vfs_file_name, &rv));
   return rv;
 }

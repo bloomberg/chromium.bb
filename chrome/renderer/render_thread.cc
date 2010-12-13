@@ -27,6 +27,7 @@
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/database_messages.h"
 #include "chrome/common/db_message_filter.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/plugin_messages.h"
@@ -392,7 +393,7 @@ bool RenderThread::Send(IPC::Message* msg) {
         case ViewHostMsg_CookiesEnabled::ID:
         case ViewHostMsg_DOMStorageSetItem::ID:
         case ViewHostMsg_SyncLoad::ID:
-        case ViewHostMsg_AllowDatabase::ID:
+        case DatabaseHostMsg_Allow::ID:
           may_show_cookie_prompt = true;
           pumping_events = true;
           break;

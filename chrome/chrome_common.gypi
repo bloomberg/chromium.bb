@@ -48,6 +48,8 @@
           'common/content_settings_helper.cc',
           'common/content_settings_helper.h',
           'common/content_settings_types.h',
+          'common/database_messages.cc',
+          'common/database_messages.h',
           'common/debug_flags.cc',
           'common/debug_flags.h',
           'common/devtools_messages.cc',
