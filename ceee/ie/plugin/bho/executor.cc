@@ -102,6 +102,12 @@ HRESULT CeeeExecutorCreator::CreateWindowExecutor(long thread_id,
     return E_FAIL;
   }
 
+  // We have seen a case where a hook may call us in the Broker process
+  // but the DLL is not loaded anymore... This is weird... But to make sure
+  // this doesn't cause a crash when it happens, we pin ourselves here to make
+  // sure we won't be called when unloaded.
+  PinModule();
+
   // We unfortunately can't Send a synchronous message here.
   // If we do, any calls back to the broker fail with the following error:
   // "An outgoing call cannot be made since the application is dispatching an
