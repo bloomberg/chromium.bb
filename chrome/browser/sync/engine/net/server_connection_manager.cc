@@ -329,6 +329,10 @@ std::string ServerConnectionManager::GetServerHost() const {
   return gurl.host();
 }
 
+ServerConnectionManager::Post* ServerConnectionManager::MakePost() {
+  return NULL;  // For testing.
+}
+
 bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
                                  syncable::DirectoryManager* manager,
                                  const std::string& share) {

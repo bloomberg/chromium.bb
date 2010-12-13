@@ -233,9 +233,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // TODO(timsteele): What happens if the bookmark model is loaded, a change
   // takes place, and the backend isn't initialized yet?
   bool sync_initialized() const { return backend_initialized_; }
-  virtual bool unrecoverable_error_detected() const {
-    return unrecoverable_error_detected_;
-  }
+  virtual bool unrecoverable_error_detected() const;
   const std::string& unrecoverable_error_message() {
     return unrecoverable_error_message_;
   }

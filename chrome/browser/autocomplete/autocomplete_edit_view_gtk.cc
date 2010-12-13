@@ -462,6 +462,14 @@ gfx::Font AutocompleteEditViewGtk::GetFont() {
                    rc_style->font_desc : text_view_->style->font_desc);
 }
 
+AutocompleteEditModel* AutocompleteEditViewGtk::model() {
+  return model_.get();
+}
+
+const AutocompleteEditModel* AutocompleteEditViewGtk::model() const {
+  return model_.get();
+}
+
 void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
   // If any text has been selected, register it as the PRIMARY selection so it

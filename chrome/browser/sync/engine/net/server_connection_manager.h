@@ -275,9 +275,7 @@ class ServerConnectionManager {
 
   // Factory method to create a Post object we can use for communication with
   // the server.
-  virtual Post* MakePost() {
-    return NULL;  // For testing.
-  };
+  virtual Post* MakePost();
 
   void set_client_id(const std::string& client_id) {
     DCHECK(client_id_.empty());

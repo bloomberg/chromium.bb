@@ -130,6 +130,10 @@ Transport::~Transport() {
   // TODO(juberti): teardown
 }
 
+Transport* Transport::AsTransport() {
+  return this;
+}
+
 bool Transport::Init(const char* name,
                      const char* proto) {
   // TODO(juberti): impl

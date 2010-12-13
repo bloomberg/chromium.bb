@@ -53,7 +53,7 @@ class MultiAnimation : public Animation {
 
   // Returns the current value. The current value for a MultiAnimation is
   // determined from the tween type of the current part.
-  virtual double GetCurrentValue() const { return current_value_; }
+  virtual double GetCurrentValue() const;
 
   // Returns the index of the current part.
   size_t current_part_index() const { return current_part_index_; }

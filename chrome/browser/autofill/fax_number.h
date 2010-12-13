@@ -12,29 +12,17 @@ class FormGroup;
 
 class FaxNumber : public PhoneNumber {
  public:
-  FaxNumber() {}
-  virtual FormGroup* Clone() const { return new FaxNumber(*this); }
+  FaxNumber();
+  virtual ~FaxNumber();
+
+  virtual FormGroup* Clone() const;
 
  protected:
-  virtual AutoFillFieldType GetNumberType() const {
-    return PHONE_FAX_NUMBER;
-  }
-
-  virtual AutoFillFieldType GetCityCodeType() const {
-    return PHONE_FAX_CITY_CODE;
-  }
-
-  virtual AutoFillFieldType GetCountryCodeType() const {
-    return PHONE_FAX_COUNTRY_CODE;
-  }
-
-  virtual AutoFillFieldType GetCityAndNumberType() const {
-    return PHONE_FAX_CITY_AND_NUMBER;
-  }
-
-  virtual AutoFillFieldType GetWholeNumberType() const {
-    return PHONE_FAX_WHOLE_NUMBER;
-  }
+  virtual AutoFillFieldType GetNumberType() const;
+  virtual AutoFillFieldType GetCityCodeType() const;
+  virtual AutoFillFieldType GetCountryCodeType() const;
+  virtual AutoFillFieldType GetCityAndNumberType() const;
+  virtual AutoFillFieldType GetWholeNumberType() const;
 
  private:
   explicit FaxNumber(const FaxNumber& phone) : PhoneNumber(phone) {}

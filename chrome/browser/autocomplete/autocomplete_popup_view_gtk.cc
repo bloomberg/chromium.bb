@@ -337,6 +337,10 @@ AutocompletePopupViewGtk::~AutocompletePopupViewGtk() {
     g_object_unref(it->second);
 }
 
+bool AutocompletePopupViewGtk::IsOpen() const {
+  return opened_;
+}
+
 void AutocompletePopupViewGtk::InvalidateLine(size_t line) {
   // TODO(deanm): Is it possible to use some constant for the width, instead
   // of having to query the width of the window?

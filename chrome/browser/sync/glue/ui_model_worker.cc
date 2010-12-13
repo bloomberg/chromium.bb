@@ -89,6 +89,10 @@ void UIModelWorker::Stop() {
   state_ = STOPPED;
 }
 
+ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
+  return GROUP_UI;
+}
+
 bool UIModelWorker::CurrentThreadIsWorkThread() {
   return MessageLoop::current() == ui_loop_;
 }

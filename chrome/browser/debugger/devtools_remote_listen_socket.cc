@@ -206,6 +206,10 @@ void DevToolsRemoteListenSocket::HandleMessage() {
   }
 }
 
+void DevToolsRemoteListenSocket::Listen() {
+  ListenSocket::Listen();
+}
+
 void DevToolsRemoteListenSocket::Accept() {
   SOCKET conn = ListenSocket::Accept(socket_);
   if (conn != INVALID_SOCKET) {

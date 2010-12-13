@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/logging.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/form_field.h"
 
@@ -28,17 +27,13 @@ class NameField : public FormField {
 // A form field that can parse a full name field.
 class FullNameField : public NameField {
  public:
-  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const {
-    bool ok = Add(field_type_map, field_, AutoFillType(NAME_FULL));
-    DCHECK(ok);
-    return true;
-  }
+  virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
 
   static FullNameField* Parse(
       std::vector<AutoFillField*>::const_iterator* iter);
 
  private:
-  explicit FullNameField(AutoFillField* field) : field_(field) {}
+  explicit FullNameField(AutoFillField* field);
 
   AutoFillField* field_;
   DISALLOW_COPY_AND_ASSIGN(FullNameField);

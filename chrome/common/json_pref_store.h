@@ -42,7 +42,7 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual void SetValue(const std::string& key, Value* value);
   virtual void SetValueSilently(const std::string& key, Value* value);
   virtual void RemoveValue(const std::string& key);
-  virtual bool ReadOnly() const { return read_only_; }
+  virtual bool ReadOnly() const;
   virtual PrefReadError ReadPrefs();
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs();

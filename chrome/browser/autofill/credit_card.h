@@ -32,7 +32,7 @@ class CreditCard : public FormGroup {
   virtual string16 GetFieldText(const AutoFillType& type) const;
   virtual string16 GetPreviewText(const AutoFillType& type) const;
   virtual void SetInfo(const AutoFillType& type, const string16& value);
-  virtual const string16 Label() const { return label_; }
+  virtual const string16 Label() const;
 
   // The number altered for display, for example: ******1234
   string16 ObfuscatedNumber() const;

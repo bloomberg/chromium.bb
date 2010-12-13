@@ -26,7 +26,7 @@ class DevToolsRemoteListenSocket : public ListenSocket,
       DevToolsRemoteListener* message_listener);
 
  protected:
-  virtual void Listen() { ListenSocket::Listen(); }
+  virtual void Listen();
   virtual void Accept();
   virtual void Close();
   virtual void SendInternal(const char* bytes, int len);

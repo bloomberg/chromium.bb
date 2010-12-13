@@ -64,9 +64,7 @@ class PluginStream : public base::RefCounted<PluginStream> {
   // Close the stream.
   virtual bool Close(NPReason reason);
 
-  virtual webkit_glue::WebPluginResourceClient* AsResourceClient() {
-    return NULL;
-  }
+  virtual webkit_glue::WebPluginResourceClient* AsResourceClient();
 
   // Cancels any HTTP requests initiated by the stream.
   virtual void CancelRequest() {}

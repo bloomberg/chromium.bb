@@ -10,7 +10,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 
 // If you inherit from resource, make sure you add the class name here.
-#define FOR_ALL_RESOURCES(F) \
+#define FOR_ALL_PLUGIN_RESOURCES(F)                   \
   F(Audio) \
   F(AudioConfig) \
   F(Buffer) \
@@ -27,7 +27,7 @@ namespace proxy {
 
 // Forward declaration of Resource classes.
 #define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;
-FOR_ALL_RESOURCES(DECLARE_RESOURCE_CLASS)
+FOR_ALL_PLUGIN_RESOURCES(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 
 class PluginResource {
@@ -51,7 +51,7 @@ class PluginResource {
   // function.
   #define DEFINE_TYPE_GETTER(RESOURCE)  \
     virtual RESOURCE* As##RESOURCE();
-  FOR_ALL_RESOURCES(DEFINE_TYPE_GETTER)
+  FOR_ALL_PLUGIN_RESOURCES(DEFINE_TYPE_GETTER)
   #undef DEFINE_TYPE_GETTER
 
   DISALLOW_COPY_AND_ASSIGN(PluginResource);
@@ -62,7 +62,7 @@ class PluginResource {
   template <> inline Type* PluginResource::Cast<Type>() {  \
       return As##Type();                             \
   }
-FOR_ALL_RESOURCES(DEFINE_RESOURCE_CAST)
+FOR_ALL_PLUGIN_RESOURCES(DEFINE_RESOURCE_CAST)
 #undef DEFINE_RESOURCE_CAST
 
 }  // namespace proxy

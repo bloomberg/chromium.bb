@@ -117,13 +117,11 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   // SimpleMenuModel::Delegate implementation.
   // In our case, |command_id| is be the index into the model's extension list.
-  virtual bool IsCommandIdChecked(int command_id) const { return false; }
-  virtual bool IsCommandIdEnabled(int command_id) const { return true; }
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) {
-    return false;
-  }
+      menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // MenuGtk::Delegate implementation.

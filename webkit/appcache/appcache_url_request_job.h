@@ -125,9 +125,7 @@ class AppCacheURLRequestJob : public net::URLRequestJob,
   // FilterContext methods
   virtual bool GetMimeType(std::string* mime_type) const;
   virtual int GetResponseCode() const;
-  virtual bool IsCachedContent() const {
-    return is_delivering_appcache_response();
-  }
+  virtual bool IsCachedContent() const;
 
   AppCacheStorage* storage_;
   bool has_been_started_;

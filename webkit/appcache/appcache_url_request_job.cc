@@ -256,6 +256,10 @@ int AppCacheURLRequestJob::GetResponseCode() const {
   return http_info()->headers->response_code();
 }
 
+bool AppCacheURLRequestJob::IsCachedContent() const {
+  return is_delivering_appcache_response();
+}
+
 bool AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size,
                                         int *bytes_read) {
   DCHECK(is_delivering_appcache_response());

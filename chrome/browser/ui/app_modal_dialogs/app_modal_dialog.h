@@ -56,7 +56,7 @@ class AppModalDialog {
   // added to the AppModalDialogQueue. When the current modal dialog finishes
   // and it's time to show the next dialog in the queue IsValid is invoked.
   // If IsValid returns false the dialog is deleted and not shown.
-  virtual bool IsValid() { return !skip_this_dialog_; }
+  virtual bool IsValid();
 
  protected:
   // Overridden by subclasses to create the feature-specific native dialog box.

@@ -28,7 +28,7 @@ class Var : public Resource {
   virtual ~Var();
 
   // Resource overrides.
-  virtual Var* AsVar() { return this; }
+  virtual Var* AsVar();
 
   // Returns a PP_Var that corresponds to the given NPVariant. The contents of
   // the NPVariant will be copied unless the NPVariant corresponds to an
@@ -114,7 +114,7 @@ class StringVar : public Var {
   const std::string& value() const { return value_; }
 
   // Resource overrides.
-  virtual StringVar* AsStringVar() { return this; }
+  virtual StringVar* AsStringVar();
 
   // Helper function to create a PP_Var of type string that contains a copy of
   // the given string. The input data must be valid UTF-8 encoded text, if it
@@ -154,7 +154,7 @@ class ObjectVar : public Var {
   virtual ~ObjectVar();
 
   // Resource overrides.
-  virtual ObjectVar* AsObjectVar() { return this; }
+  virtual ObjectVar* AsObjectVar();
 
   // Returns the underlying NPObject corresponding to this ObjectVar.
   // Guaranteed non-NULL.

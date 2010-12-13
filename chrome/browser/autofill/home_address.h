@@ -14,37 +14,18 @@ class FormGroup;
 // A specialization of Address that identifies itself as a home address.
 class HomeAddress : public Address {
  public:
-  HomeAddress() {}
-  virtual FormGroup* Clone() const { return new HomeAddress(*this); }
+  HomeAddress();
+  virtual ~HomeAddress();
+  virtual FormGroup* Clone() const;
 
  protected:
-  virtual AutoFillFieldType GetLine1Type() const {
-    return ADDRESS_HOME_LINE1;
-  }
-
-  virtual AutoFillFieldType GetLine2Type() const {
-    return ADDRESS_HOME_LINE2;
-  }
-
-  virtual AutoFillFieldType GetAptNumType() const {
-    return ADDRESS_HOME_APT_NUM;
-  }
-
-  virtual AutoFillFieldType GetCityType() const {
-    return ADDRESS_HOME_CITY;
-  }
-
-  virtual AutoFillFieldType GetStateType() const {
-    return ADDRESS_HOME_STATE;
-  }
-
-  virtual AutoFillFieldType GetZipCodeType() const {
-    return ADDRESS_HOME_ZIP;
-  }
-
-  virtual AutoFillFieldType GetCountryType() const {
-    return ADDRESS_HOME_COUNTRY;
-  }
+  virtual AutoFillFieldType GetLine1Type() const;
+  virtual AutoFillFieldType GetLine2Type() const;
+  virtual AutoFillFieldType GetAptNumType() const;
+  virtual AutoFillFieldType GetCityType() const;
+  virtual AutoFillFieldType GetStateType() const;
+  virtual AutoFillFieldType GetZipCodeType() const;
+  virtual AutoFillFieldType GetCountryType() const;
 
  private:
   explicit HomeAddress(const HomeAddress& address) : Address(address) {}

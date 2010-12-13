@@ -19,7 +19,7 @@ class ImageData : public PluginResource {
   virtual ~ImageData();
 
   // Resource overrides.
-  virtual ImageData* AsImageData() { return this; }
+  virtual ImageData* AsImageData();
 
   void* Map();
   void Unmap();

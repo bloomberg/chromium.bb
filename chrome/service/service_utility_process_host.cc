@@ -102,6 +102,10 @@ FilePath ServiceUtilityProcessHost::GetUtilityProcessCmd() {
   return GetChildPath(true);
 }
 
+bool ServiceUtilityProcessHost::CanShutdown() {
+  return true;
+}
+
 void ServiceUtilityProcessHost::OnChildDied() {
   if (waiting_for_reply_) {
     // If we are yet to receive a reply then notify the client that the

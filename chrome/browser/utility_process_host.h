@@ -154,12 +154,10 @@ class UtilityProcessHost : public BrowserChildProcessHost {
 
   // BrowserChildProcessHost:
   virtual void OnProcessCrashed();
-  virtual bool CanShutdown() { return true; }
+  virtual bool CanShutdown();
   virtual URLRequestContext* GetRequestContext(
       uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data) {
-    return NULL;
-  }
+      const ViewHostMsg_Resource_Request& request_data);
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;

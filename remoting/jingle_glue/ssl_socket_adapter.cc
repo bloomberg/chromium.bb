@@ -234,6 +234,10 @@ int TransportSocket::GetPeerAddress(net::AddressList* address) const {
   return net::OK;
 }
 
+const net::BoundNetLog& TransportSocket::NetLog() const {
+  return net_log_;
+}
+
 void TransportSocket::SetSubresourceSpeculation() {
   NOTREACHED();
 }

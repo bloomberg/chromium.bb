@@ -99,9 +99,7 @@ class MetricsLogBase {
     version_extension_ = extension;
   }
 
-  virtual MetricsLog* AsMetricsLog() {
-    return NULL;
-  }
+  virtual MetricsLog* AsMetricsLog();
 
  protected:
   class XmlWrapper;

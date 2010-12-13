@@ -103,7 +103,7 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   // NULL if the resource does not match the specified type. Used by the Cast()
   // function.
   #define DEFINE_TYPE_GETTER(RESOURCE)  \
-      virtual RESOURCE* As##RESOURCE() { return NULL; }
+    virtual RESOURCE* As##RESOURCE();
   FOR_ALL_RESOURCES(DEFINE_TYPE_GETTER)
   #undef DEFINE_TYPE_GETTER
 
@@ -135,7 +135,6 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
 FOR_ALL_RESOURCES(DEFINE_RESOURCE_CAST)
 #undef DEFINE_RESOURCE_CAST
 
-#undef FOR_ALL_RESOURCES
 }  // namespace pepper
 
 #endif  // WEBKIT_GLUE_PLUGINS_PEPPER_RESOURCE_H_

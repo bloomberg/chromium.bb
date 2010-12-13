@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/logging.h"
 #include "base/string16.h"
 
 class SkBitmap;
@@ -78,10 +77,7 @@ class TreeModel {
 
   // Sets the title of the specified node.
   // This is only invoked if the node is editable and the user edits a node.
-  virtual void SetTitle(TreeModelNode* node,
-                        const string16& title) {
-    NOTREACHED();
-  }
+  virtual void SetTitle(TreeModelNode* node, const string16& title);
 
   // Returns the set of icons for the nodes in the tree. You only need override
   // this if you don't want to use the default folder icons.
@@ -90,7 +86,7 @@ class TreeModel {
   // Returns the index of the icon to use for |node|. Return -1 to use the
   // default icon. The index is relative to the list of icons returned from
   // GetIcons.
-  virtual int GetIconIndex(TreeModelNode* node) { return -1; }
+  virtual int GetIconIndex(TreeModelNode* node);
 
  protected:
   virtual ~TreeModel() {}

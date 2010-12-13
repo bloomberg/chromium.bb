@@ -589,6 +589,10 @@ bool PersonalDataManager::HasPassword() {
   return !password_hash_.empty();
 }
 
+bool PersonalDataManager::IsDataLoaded() const {
+  return is_data_loaded_;
+}
+
 const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
   // |profile_| is NULL in AutoFillManagerTest.
   bool auxiliary_profiles_enabled = profile_ ? profile_->GetPrefs()->GetBoolean(
@@ -609,6 +613,14 @@ const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
   profiles_.insert(profiles_.end(),
       auxiliary_profiles_.begin(), auxiliary_profiles_.end());
   return profiles_;
+}
+
+const std::vector<AutoFillProfile*>& PersonalDataManager::web_profiles() {
+  return web_profiles_.get();
+}
+
+const std::vector<CreditCard*>& PersonalDataManager::credit_cards() {
+  return credit_cards_.get();
 }
 
 AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(

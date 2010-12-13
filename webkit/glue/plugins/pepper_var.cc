@@ -652,6 +652,10 @@ Var::Var(PluginModule* module) : Resource(module) {
 Var::~Var() {
 }
 
+Var* Var::AsVar() {
+  return this;
+}
+
 // static
 PP_Var Var::NPVariantToPPVar(PluginModule* module, const NPVariant* variant) {
   switch (variant->type) {
@@ -744,6 +748,10 @@ StringVar::StringVar(PluginModule* module, const char* str, uint32 len)
 StringVar::~StringVar() {
 }
 
+StringVar* StringVar::AsStringVar() {
+  return this;
+}
+
 // static
 PP_Var StringVar::StringToPPVar(PluginModule* module, const std::string& var) {
   return StringToPPVar(module, var.c_str(), var.size());
@@ -783,6 +791,10 @@ ObjectVar::ObjectVar(PluginModule* module, NPObject* np_object)
 ObjectVar::~ObjectVar() {
   module()->RemoveNPObjectVar(this);
   WebBindings::releaseObject(np_object_);
+}
+
+ObjectVar* ObjectVar::AsObjectVar() {
+  return this;
 }
 
 // static

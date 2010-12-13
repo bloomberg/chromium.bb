@@ -69,6 +69,10 @@ void JsonPrefStore::RemoveValue(const std::string& key) {
   }
 }
 
+bool JsonPrefStore::ReadOnly() const {
+  return read_only_;
+}
+
 PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
   if (path_.empty()) {
     read_only_ = true;

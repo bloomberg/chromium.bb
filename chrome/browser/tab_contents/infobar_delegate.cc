@@ -14,12 +14,54 @@
 
 // InfoBarDelegate: ------------------------------------------------------------
 
+bool InfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
+  return false;
+}
+
 bool InfoBarDelegate::ShouldExpire(
     const NavigationController::LoadCommittedDetails& details) const {
   bool is_reload =
       PageTransition::StripQualifier(details.entry->transition_type()) ==
           PageTransition::RELOAD;
   return is_reload || (contents_unique_id_ != details.entry->unique_id());
+}
+
+SkBitmap* InfoBarDelegate::GetIcon() const {
+  return NULL;
+}
+
+AlertInfoBarDelegate* InfoBarDelegate::AsAlertInfoBarDelegate() {
+  return NULL;
+}
+
+LinkInfoBarDelegate* InfoBarDelegate::AsLinkInfoBarDelegate() {
+  return NULL;
+}
+
+ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
+  return NULL;
+}
+
+ThemeInstalledInfoBarDelegate*
+InfoBarDelegate::AsThemePreviewInfobarDelegate() {
+  return NULL;
+}
+
+TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
+  return NULL;
+}
+
+ExtensionInfoBarDelegate* InfoBarDelegate::AsExtensionInfoBarDelegate() {
+  return NULL;
+}
+
+CrashedExtensionInfoBarDelegate*
+InfoBarDelegate::AsCrashedExtensionInfoBarDelegate() {
+  return NULL;
+}
+
+InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() {
+  return WARNING_TYPE;
 }
 
 InfoBarDelegate::InfoBarDelegate(TabContents* contents)
@@ -35,6 +77,10 @@ void InfoBarDelegate::StoreActiveEntryUniqueID(TabContents* contents) {
 
 // AlertInfoBarDelegate: -------------------------------------------------------
 
+SkBitmap* AlertInfoBarDelegate::GetIcon() const {
+  return NULL;
+}
+
 bool AlertInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   AlertInfoBarDelegate* alert_delegate = delegate->AsAlertInfoBarDelegate();
   if (!alert_delegate)
@@ -43,17 +89,43 @@ bool AlertInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   return alert_delegate->GetMessageText() == GetMessageText();
 }
 
+AlertInfoBarDelegate* AlertInfoBarDelegate::AsAlertInfoBarDelegate() {
+  return this;
+}
+
 AlertInfoBarDelegate::AlertInfoBarDelegate(TabContents* contents)
     : InfoBarDelegate(contents) {
 }
 
 // LinkInfoBarDelegate: --------------------------------------------------------
 
+string16 LinkInfoBarDelegate::GetMessageTextWithOffset(
+    size_t* link_offset) const {
+  *link_offset = string16::npos;
+  return string16();
+}
+
+SkBitmap* LinkInfoBarDelegate::GetIcon() const {
+  return NULL;
+}
+
+bool LinkInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  return true;
+}
+
+LinkInfoBarDelegate* LinkInfoBarDelegate::AsLinkInfoBarDelegate() {
+  return this;
+}
+
 LinkInfoBarDelegate::LinkInfoBarDelegate(TabContents* contents)
     : InfoBarDelegate(contents) {
 }
 
 // ConfirmInfoBarDelegate: -----------------------------------------------------
+
+int ConfirmInfoBarDelegate::GetButtons() const {
+  return BUTTON_NONE;
+}
 
 string16 ConfirmInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
@@ -63,6 +135,30 @@ string16 ConfirmInfoBarDelegate::GetButtonLabel(
     return l10n_util::GetStringUTF16(IDS_CANCEL);
   NOTREACHED();
   return string16();
+}
+
+bool ConfirmInfoBarDelegate::NeedElevation(InfoBarButton button) const {
+  return false;
+}
+
+bool ConfirmInfoBarDelegate::Accept() {
+  return true;
+}
+
+bool ConfirmInfoBarDelegate::Cancel() {
+  return true;
+}
+
+string16 ConfirmInfoBarDelegate::GetLinkText() {
+  return string16();
+}
+
+bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  return true;
+}
+
+ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {
+  return this;
 }
 
 ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(TabContents* contents)

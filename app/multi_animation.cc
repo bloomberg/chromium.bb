@@ -31,6 +31,10 @@ MultiAnimation::MultiAnimation(const Parts& parts)
 
 MultiAnimation::~MultiAnimation() {}
 
+double MultiAnimation::GetCurrentValue() const {
+  return current_value_;
+}
+
 void MultiAnimation::Step(base::TimeTicks time_now) {
   double last_value = current_value_;
   size_t last_index = current_part_index_;

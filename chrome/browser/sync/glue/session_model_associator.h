@@ -52,10 +52,8 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
   explicit SessionModelAssociator(ProfileSyncService* sync_service);
   virtual ~SessionModelAssociator();
 
-
   // AssociatorInterface and PerDataTypeAssociator Interface implementation.
   virtual void AbortAssociation() {
-    return;
     // No implementation needed, this associator runs on the main
     // thread.
   }
@@ -100,9 +98,7 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
   // Returns false if no sync node was found for the given chrome node id or
   // if the initialization of sync node fails.
   virtual bool InitSyncNodeFromChromeId(const std::string& id,
-                                        sync_api::BaseNode* sync_node) {
-      return false;
-  }
+                                        sync_api::BaseNode* sync_node);
 
   // The has_nodes out parameter is set to true if the sync model has
   // nodes other than the permanent tagged nodes.  The method may

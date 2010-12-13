@@ -162,20 +162,16 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
 // The node at the root of the CookieTree that gets inserted into the view.
 class CookieTreeRootNode : public CookieTreeNode {
  public:
-  explicit CookieTreeRootNode(CookiesTreeModel* model) : model_(model) {}
-  virtual ~CookieTreeRootNode() {}
+  explicit CookieTreeRootNode(CookiesTreeModel* model);
+  virtual ~CookieTreeRootNode();
 
   CookieTreeOriginNode* GetOrCreateOriginNode(const GURL& url);
 
   // CookieTreeNode methods:
-  virtual CookiesTreeModel* GetModel() const { return model_; }
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(string16(),
-                        DetailedInfo::TYPE_ROOT,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  }
- private:
+  virtual CookiesTreeModel* GetModel() const;
+  virtual DetailedInfo GetDetailedInfo() const;
 
+ private:
   CookiesTreeModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieTreeRootNode);
@@ -236,15 +232,11 @@ class CookieTreeCookieNode : public CookieTreeNode {
   // Does not take ownership of cookie, and cookie should remain valid at least
   // as long as the CookieTreeCookieNode is valid.
   explicit CookieTreeCookieNode(net::CookieMonster::CanonicalCookie* cookie);
-  virtual ~CookieTreeCookieNode() {}
+  virtual ~CookieTreeCookieNode();
 
   // CookieTreeNode methods:
   virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_COOKIE,
-                        cookie_, NULL, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
  private:
   // Cookie_ is not owned by the node, and is expected to remain valid as long
@@ -257,13 +249,9 @@ class CookieTreeCookieNode : public CookieTreeNode {
 class CookieTreeCookiesNode : public CookieTreeNode {
  public:
   CookieTreeCookiesNode();
-  virtual ~CookieTreeCookiesNode() {}
+  virtual ~CookieTreeCookiesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_COOKIES,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
   void AddCookieNode(CookieTreeCookieNode* child) {
     AddChildSortedByTitle(child);
@@ -285,11 +273,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   virtual ~CookieTreeAppCacheNode() {}
 
   virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_APPCACHE,
-                        NULL, NULL, NULL, NULL, appcache_info_, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
  private:
   const appcache::AppCacheInfo* appcache_info_;
@@ -299,13 +283,9 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
 class CookieTreeAppCachesNode : public CookieTreeNode {
  public:
   CookieTreeAppCachesNode();
-  virtual ~CookieTreeAppCachesNode() {}
+  virtual ~CookieTreeAppCachesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_APPCACHES,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
   void AddAppCacheNode(CookieTreeAppCacheNode* child) {
     AddChildSortedByTitle(child);
@@ -324,14 +304,10 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
   // valid at least as long as the CookieTreeDatabaseNode is valid.
   explicit CookieTreeDatabaseNode(
       BrowsingDataDatabaseHelper::DatabaseInfo* database_info);
-  virtual ~CookieTreeDatabaseNode() {}
+  virtual ~CookieTreeDatabaseNode();
 
   virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_DATABASE,
-                        NULL, database_info_, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
  private:
   // database_info_ is not owned by the node, and is expected to remain
@@ -344,13 +320,9 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
 class CookieTreeDatabasesNode : public CookieTreeNode {
  public:
   CookieTreeDatabasesNode();
-  virtual ~CookieTreeDatabasesNode() {}
+  virtual ~CookieTreeDatabasesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_DATABASES,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
   void AddDatabaseNode(CookieTreeDatabaseNode* child) {
     AddChildSortedByTitle(child);
@@ -369,15 +341,11 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
   // valid.
   explicit CookieTreeLocalStorageNode(
       BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info);
-  virtual ~CookieTreeLocalStorageNode() {}
+  virtual ~CookieTreeLocalStorageNode();
 
   // CookieTreeNode methods:
   virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_LOCAL_STORAGE,
-                        NULL, NULL, local_storage_info_, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
  private:
   // local_storage_info_ is not owned by the node, and is expected to remain
@@ -390,13 +358,9 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
 class CookieTreeLocalStoragesNode : public CookieTreeNode {
  public:
   CookieTreeLocalStoragesNode();
-  virtual ~CookieTreeLocalStoragesNode() {}
+  virtual ~CookieTreeLocalStoragesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_LOCAL_STORAGES,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
   void AddLocalStorageNode(CookieTreeLocalStorageNode* child) {
     AddChildSortedByTitle(child);
@@ -416,14 +380,10 @@ class CookieTreeSessionStorageNode : public CookieTreeNode {
   // is valid.
   explicit CookieTreeSessionStorageNode(
       BrowsingDataLocalStorageHelper::LocalStorageInfo* session_storage_info);
-  virtual ~CookieTreeSessionStorageNode() {}
+  virtual ~CookieTreeSessionStorageNode();
 
   // CookieTreeNode methods:
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_SESSION_STORAGE,
-                        NULL, NULL, NULL, session_storage_info_, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
  private:
   // session_storage_info_ is not owned by the node, and is expected to remain
@@ -436,13 +396,9 @@ class CookieTreeSessionStorageNode : public CookieTreeNode {
 class CookieTreeSessionStoragesNode : public CookieTreeNode {
  public:
   CookieTreeSessionStoragesNode();
-  virtual ~CookieTreeSessionStoragesNode() {}
+  virtual ~CookieTreeSessionStoragesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_SESSION_STORAGES,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
   void AddSessionStorageNode(CookieTreeSessionStorageNode* child) {
     AddChildSortedByTitle(child);
@@ -461,15 +417,11 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
   // is valid.
   explicit CookieTreeIndexedDBNode(
       BrowsingDataIndexedDBHelper::IndexedDBInfo* indexed_db_info);
-  virtual ~CookieTreeIndexedDBNode() {}
+  virtual ~CookieTreeIndexedDBNode();
 
   // CookieTreeNode methods:
   virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_INDEXED_DB,
-                        NULL, NULL, NULL, NULL, NULL, indexed_db_info_);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
  private:
   // indexed_db_info_ is not owned by the node, and is expected to remain
@@ -482,13 +434,9 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
 class CookieTreeIndexedDBsNode : public CookieTreeNode {
  public:
   CookieTreeIndexedDBsNode();
-  virtual ~CookieTreeIndexedDBsNode() {}
+  virtual ~CookieTreeIndexedDBsNode();
 
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetParent()->GetTitle(),
-                        DetailedInfo::TYPE_INDEXED_DBS,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
   void AddIndexedDBNode(CookieTreeIndexedDBNode* child) {
     AddChildSortedByTitle(child);

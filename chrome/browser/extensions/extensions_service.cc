@@ -597,6 +597,22 @@ ExtensionsService::ExtensionsService(Profile* profile,
                                                 0, kOmniboxIconPaddingRight));
 }
 
+const ExtensionList* ExtensionsService::extensions() const {
+  return &extensions_;
+}
+
+const ExtensionList* ExtensionsService::disabled_extensions() const {
+  return &disabled_extensions_;
+}
+
+const PendingExtensionMap& ExtensionsService::pending_extensions() const {
+  return pending_extensions_;
+}
+
+bool ExtensionsService::HasInstalledExtensions() {
+  return !(extensions_.empty() && disabled_extensions_.empty());
+}
+
 ExtensionsService::~ExtensionsService() {
   DCHECK(!profile_);  // Profile should have told us it's going away.
   UnloadAllExtensions();
@@ -1354,6 +1370,10 @@ void ExtensionsService::DestroyingProfile() {
   pref_change_registrar_.RemoveAll();
   profile_ = NULL;
   toolbar_model_.DestroyingProfile();
+}
+
+ExtensionPrefs* ExtensionsService::extension_prefs() {
+  return extension_prefs_;
 }
 
 void ExtensionsService::CheckAdminBlacklist() {

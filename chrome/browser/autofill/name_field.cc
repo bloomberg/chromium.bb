@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/name_field.h"
 
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -16,6 +17,12 @@ NameField* NameField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
   if (field == NULL && !is_ecml)
     field = FullNameField::Parse(iter);
   return field;
+}
+
+bool FullNameField::GetFieldInfo(FieldTypeMap* field_type_map) const {
+  bool ok = Add(field_type_map, field_, AutoFillType(NAME_FULL));
+  DCHECK(ok);
+  return true;
 }
 
 FullNameField* FullNameField::Parse(
@@ -35,6 +42,10 @@ FullNameField* FullNameField::Parse(
     return new FullNameField(field);
 
   return NULL;
+}
+
+FullNameField::FullNameField(AutoFillField* field)
+    : field_(field) {
 }
 
 FirstLastNameField* FirstLastNameField::Parse1(

@@ -75,13 +75,12 @@ class ShaderTranslator : public ShaderTranslatorInterface {
   virtual bool Translate(const char* shader);
 
   // Overridden from ShaderTranslatorInterface.
-  virtual const char* translated_shader() const {
-      return translated_shader_.get(); }
-  virtual const char* info_log() const { return info_log_.get(); }
+  virtual const char* translated_shader() const;
+  virtual const char* info_log() const;
 
   // Overridden from ShaderTranslatorInterface.
-  virtual const VariableMap& attrib_map() const { return attrib_map_; }
-  virtual const VariableMap& uniform_map() const { return uniform_map_; }
+  virtual const VariableMap& attrib_map() const;
+  virtual const VariableMap& uniform_map() const;
 
  private:
   void ClearResults();

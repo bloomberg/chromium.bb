@@ -158,15 +158,11 @@ class ExtensionsService
                     bool autoupdate_enabled);
 
   // Gets the list of currently installed extensions.
-  virtual const ExtensionList* extensions() const { return &extensions_; }
-  virtual const ExtensionList* disabled_extensions() const {
-    return &disabled_extensions_;
-  }
+  virtual const ExtensionList* extensions() const;
+  virtual const ExtensionList* disabled_extensions() const;
 
   // Gets the set of pending extensions.
-  virtual const PendingExtensionMap& pending_extensions() const {
-    return pending_extensions_;
-  }
+  virtual const PendingExtensionMap& pending_extensions() const;
 
   // Registers an extension to be loaded as a component extension.
   void register_component_extension(const ComponentExtensionInfo& info) {
@@ -174,9 +170,7 @@ class ExtensionsService
   }
 
   // Returns true if any extensions are installed.
-  virtual bool HasInstalledExtensions() {
-    return !(extensions_.empty() && disabled_extensions_.empty());
-  }
+  virtual bool HasInstalledExtensions();
 
   const FilePath& install_directory() const { return install_directory_; }
 
@@ -404,7 +398,7 @@ class ExtensionsService
   // it.
   void DestroyingProfile();
 
-  virtual ExtensionPrefs* extension_prefs() { return extension_prefs_; }
+  virtual ExtensionPrefs* extension_prefs();
 
   // Whether the extension service is ready.
   // TODO(skerner): Get rid of this method.  crbug.com/63756

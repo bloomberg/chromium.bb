@@ -151,20 +151,10 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   virtual void ThreadMain();
   void ThreadMainLoop();
 
-  virtual void SetConnected(bool connected) {
-    DCHECK(!thread_.IsRunning());
-    vault_.connected_ = connected;
-  }
+  virtual void SetConnected(bool connected);
 
-  virtual void SetSyncerPollingInterval(base::TimeDelta interval) {
-    // TODO(timsteele): Use TimeDelta internally.
-    syncer_polling_interval_ = static_cast<int>(interval.InSeconds());
-  }
-  virtual void SetSyncerShortPollInterval(base::TimeDelta interval) {
-    // TODO(timsteele): Use TimeDelta internally.
-    syncer_short_poll_interval_seconds_ =
-        static_cast<int>(interval.InSeconds());
-  }
+  virtual void SetSyncerPollingInterval(base::TimeDelta interval);
+  virtual void SetSyncerShortPollInterval(base::TimeDelta interval);
 
   // Needed to emulate the behavior of pthread_create, which synchronously
   // started the thread and set the value of thread_running_ to true.
@@ -305,7 +295,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   void ExitPausedState();
 
   // For unit tests only.
-  virtual void DisableIdleDetection() { disable_idle_detection_ = true; }
+  virtual void DisableIdleDetection();
 
   // This sets all conditions for syncer thread termination but does not
   // actually join threads.  It is expected that Stop will be called at some

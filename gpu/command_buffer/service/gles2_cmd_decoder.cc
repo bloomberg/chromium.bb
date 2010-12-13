@@ -382,6 +382,11 @@ bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
 
 // }  // anonymous namespace.
 
+bool GLES2Decoder::GetServiceTextureId(uint32 client_texture_id,
+                                       uint32* service_texture_id) {
+  return false;
+}
+
 GLES2Decoder::GLES2Decoder()
     : debug_(false) {
 }

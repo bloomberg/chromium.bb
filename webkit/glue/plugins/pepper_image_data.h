@@ -53,7 +53,7 @@ class ImageData : public Resource {
   static bool IsImageDataFormatSupported(PP_ImageDataFormat format);
 
   // Resource overrides.
-  virtual ImageData* AsImageData() { return this; }
+  virtual ImageData* AsImageData();
 
   // PPB_ImageData implementation.
   bool Init(PP_ImageDataFormat format,

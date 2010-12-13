@@ -122,6 +122,18 @@ VectorPlatformDevice::~VectorPlatformDevice() {
   cairo_destroy(context_);
 }
 
+SkDeviceFactory* VectorPlatformDevice::getDeviceFactory() {
+  return SkNEW(VectorPlatformDeviceFactory);
+}
+
+bool VectorPlatformDevice::IsVectorial() {
+  return true;
+}
+
+PlatformDevice::PlatformSurface VectorPlatformDevice::beginPlatformPaint() {
+  return context_;
+}
+
 void VectorPlatformDevice::drawBitmap(const SkDraw& draw,
                                       const SkBitmap& bitmap,
                                       const SkMatrix& matrix,

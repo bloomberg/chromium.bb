@@ -931,6 +931,10 @@ void RenderViewHost::Shutdown() {
   RenderWidgetHost::Shutdown();
 }
 
+bool RenderViewHost::IsRenderView() const {
+  return true;
+}
+
 void RenderViewHost::CreateNewWindow(
     int route_id,
     WindowContainerType window_container_type,

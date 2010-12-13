@@ -142,6 +142,10 @@ bool ImageData::IsImageDataFormatSupported(PP_ImageDataFormat format) {
       format == PP_IMAGEDATAFORMAT_RGBA_PREMUL;
 }
 
+ImageData* ImageData::AsImageData() {
+  return this;
+}
+
 bool ImageData::Init(PP_ImageDataFormat format,
                      int width, int height,
                      bool init_to_zero) {

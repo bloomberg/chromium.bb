@@ -108,6 +108,12 @@ int64 SessionModelAssociator::GetSyncIdFromChromeId(const std::string& id) {
   return node.GetId();
 }
 
+bool SessionModelAssociator::InitSyncNodeFromChromeId(
+    const std::string& id,
+    sync_api::BaseNode* sync_node) {
+  return false;
+}
+
 bool SessionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(CalledOnValidThread());
   CHECK(has_nodes);

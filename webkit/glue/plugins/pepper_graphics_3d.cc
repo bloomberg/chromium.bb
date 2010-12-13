@@ -145,6 +145,10 @@ void Graphics3D::ResetCurrent() {
   CurrentContextKey::get()->Set(NULL);
 }
 
+Graphics3D* Graphics3D::AsGraphics3D() {
+  return this;
+}
+
 Graphics3D::~Graphics3D() {
   Destroy();
 }

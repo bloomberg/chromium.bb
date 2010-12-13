@@ -132,19 +132,15 @@ class PersonalDataManager
   bool HasPassword();
 
   // Returns whether the personal data has been loaded from the web database.
-  virtual bool IsDataLoaded() const { return is_data_loaded_; }
+  virtual bool IsDataLoaded() const;
 
   // This PersonalDataManager owns these profiles and credit cards.  Their
   // lifetime is until the web database is updated with new profile and credit
   // card information, respectively.  |profiles()| returns both web and
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
   const std::vector<AutoFillProfile*>& profiles();
-  virtual const std::vector<AutoFillProfile*>& web_profiles() {
-    return web_profiles_.get();
-  }
-  virtual const std::vector<CreditCard*>& credit_cards() {
-    return credit_cards_.get();
-  }
+  virtual const std::vector<AutoFillProfile*>& web_profiles();
+  virtual const std::vector<CreditCard*>& credit_cards();
 
   // Creates a profile labeled |label|.
   // This must be called on the DB thread with the expectation that the

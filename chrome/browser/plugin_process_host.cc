@@ -319,6 +319,10 @@ void PluginProcessHost::OnChannelError() {
   CancelRequests();
 }
 
+bool PluginProcessHost::CanShutdown() {
+  return sent_requests_.empty();
+}
+
 void PluginProcessHost::CancelRequests() {
   for (size_t i = 0; i < pending_requests_.size(); ++i)
     pending_requests_[i]->OnError();

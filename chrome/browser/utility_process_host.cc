@@ -165,6 +165,16 @@ void UtilityProcessHost::OnProcessCrashed() {
       NewRunnableMethod(client_.get(), &Client::OnProcessCrashed));
 }
 
+bool UtilityProcessHost::CanShutdown() {
+  return true;
+}
+
+URLRequestContext* UtilityProcessHost::GetRequestContext(
+    uint32 request_id,
+    const ViewHostMsg_Resource_Request& request_data) {
+  return NULL;
+}
+
 void UtilityProcessHost::Client::OnMessageReceived(
     const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(UtilityProcessHost, message)

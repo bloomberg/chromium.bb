@@ -27,3 +27,11 @@
     watcher = new ::TabCloseableStateWatcher();
   return watcher;
 }
+
+bool TabCloseableStateWatcher::CanCloseTab(const Browser* browser) const {
+  return true;
+}
+
+bool TabCloseableStateWatcher::CanCloseBrowser(Browser* browser) {
+  return true;
+}

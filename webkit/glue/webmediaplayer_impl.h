@@ -226,12 +226,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // Internal states of loading and network.
   // TODO(hclam): Ask the pipeline about the state rather than having reading
   // them from members which would cause race conditions.
-  virtual WebKit::WebMediaPlayer::NetworkState networkState() const {
-    return network_state_;
-  }
-  virtual WebKit::WebMediaPlayer::ReadyState readyState() const {
-    return ready_state_;
-  }
+  virtual WebKit::WebMediaPlayer::NetworkState networkState() const;
+  virtual WebKit::WebMediaPlayer::ReadyState readyState() const;
 
   virtual unsigned long long bytesLoaded() const;
   virtual unsigned long long totalBytes() const;

@@ -144,7 +144,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
   void OnPluginSetCursorVisibility(bool visible);
 #endif
 
-  virtual bool CanShutdown() { return sent_requests_.empty(); }
+  virtual bool CanShutdown();
 
   void CancelRequests();
 

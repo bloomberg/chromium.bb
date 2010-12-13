@@ -58,9 +58,9 @@ class BackgroundContents : public RenderViewHostDelegate,
   RenderViewHost* render_view_host() { return render_view_host_; }
 
   // RenderViewHostDelegate implementation.
-  virtual BackgroundContents* GetAsBackgroundContents() { return this; }
-  virtual RenderViewHostDelegate::View* GetViewDelegate() { return this; }
-  virtual const GURL& GetURL() const { return url_; }
+  virtual BackgroundContents* GetAsBackgroundContents();
+  virtual RenderViewHostDelegate::View* GetViewDelegate();
+  virtual const GURL& GetURL() const;
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
   virtual void DidNavigate(RenderViewHost* render_view_host,

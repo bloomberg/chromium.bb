@@ -67,3 +67,8 @@ void SidebarContainer::SetIcon(const SkBitmap& bitmap) {
 void SidebarContainer::SetTitle(const string16& title) {
   title_ = title;
 }
+
+bool SidebarContainer::IsPopup(const TabContents* source) const {
+  return false;
+}
+

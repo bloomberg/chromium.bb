@@ -83,9 +83,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   ViewType::Type extension_host_type() const { return extension_host_type_; }
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual TabContents* associated_tab_contents() const {
-    return associated_tab_contents_;
-  }
+  virtual TabContents* associated_tab_contents() const;
   void set_associated_tab_contents(TabContents* associated_tab_contents) {
     associated_tab_contents_ = associated_tab_contents;
   }
@@ -109,7 +107,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   void DisableScrollbarsForSmallWindows(const gfx::Size& size_limit);
 
   // RenderViewHostDelegate::View implementation.
-  virtual const GURL& GetURL() const { return url_; }
+  virtual const GURL& GetURL() const;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual ViewType::Type GetRenderViewType() const;
   virtual FileSelect* GetFileSelectDelegate();
@@ -192,8 +190,8 @@ class ExtensionHost : public RenderViewHostDelegate,
                                   const std::wstring& prompt);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
-  virtual TabContents* AsTabContents() { return NULL; }
-  virtual ExtensionHost* AsExtensionHost() { return this; }
+  virtual TabContents* AsTabContents();
+  virtual ExtensionHost* AsExtensionHost();
 
  protected:
   // Internal functions used to support the CreateNewWidget() method. If a

@@ -649,6 +649,20 @@ void BrowserActionsToolbarGtk::AnimationEnded(const Animation* animation) {
   UpdateChevronVisibility();
 }
 
+bool BrowserActionsToolbarGtk::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool BrowserActionsToolbarGtk::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool BrowserActionsToolbarGtk::GetAcceleratorForCommandId(
+    int command_id,
+    menus::Accelerator* accelerator) {
+  return false;
+}
+
 void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
   const Extension* extension = model_->GetExtensionByIndex(command_id);
   ExtensionAction* browser_action = extension->browser_action();

@@ -392,6 +392,10 @@ void DevToolsWindow::UpdateTheme() {
       ExecuteJavascriptInWebFrame(L"", UTF8ToWide(command));
 }
 
+bool DevToolsWindow::CanReloadContents(TabContents* source) const {
+  return false;
+}
+
 bool DevToolsWindow::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   if (docked_) {

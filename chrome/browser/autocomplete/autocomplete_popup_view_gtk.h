@@ -35,7 +35,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   ~AutocompletePopupViewGtk();
 
   // Overridden from AutocompletePopupView:
-  virtual bool IsOpen() const { return opened_; }
+  virtual bool IsOpen() const;
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
   virtual gfx::Rect GetTargetBounds();

@@ -42,9 +42,7 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   // *without* a ModelSafeGroup restriction in place on the SyncSession.
   // Returns true on success, false on failure.
   // TODO(tim): Remove this (bug 36594).
-  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session) {
-    return true;
-  }
+  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session);
 
   // Abstract method to be implemented by subclasses to handle logic that
   // operates on the model.  This is invoked with a SyncSession ModelSafeGroup

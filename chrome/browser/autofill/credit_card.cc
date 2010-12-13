@@ -337,6 +337,10 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
   }
 }
 
+const string16 CreditCard::Label() const {
+  return label_;
+}
+
 string16 CreditCard::ObfuscatedNumber() const {
   if (number().empty())
     return string16();  // No CC number, means empty preview.

@@ -38,6 +38,10 @@ void AppModalDialog::CreateAndShowDialog() {
   native_dialog_->ShowAppModalDialog();
 }
 
+bool AppModalDialog::IsValid() {
+  return !skip_this_dialog_;
+}
+
 void AppModalDialog::ActivateModalDialog() {
   DCHECK(native_dialog_);
   native_dialog_->ActivateAppModalDialog();

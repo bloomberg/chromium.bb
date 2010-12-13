@@ -136,6 +136,24 @@ bool ShaderTranslator::Translate(const char* shader) {
   return success;
 }
 
+const char* ShaderTranslator::translated_shader() const {
+  return translated_shader_.get();
+}
+
+const char* ShaderTranslator::info_log() const {
+  return info_log_.get();
+}
+
+const ShaderTranslatorInterface::VariableMap&
+ShaderTranslator::attrib_map() const {
+  return attrib_map_;
+}
+
+const ShaderTranslatorInterface::VariableMap&
+ShaderTranslator::uniform_map() const {
+  return uniform_map_;
+}
+
 void ShaderTranslator::ClearResults() {
   translated_shader_.reset();
   info_log_.reset();

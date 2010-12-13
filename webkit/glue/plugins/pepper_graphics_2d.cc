@@ -243,6 +243,10 @@ bool Graphics2D::Init(int width, int height, bool is_always_opaque) {
   return true;
 }
 
+Graphics2D* Graphics2D::AsGraphics2D() {
+  return this;
+}
+
 PP_Bool Graphics2D::Describe(PP_Size* size, PP_Bool* is_always_opaque) {
   size->width = image_data_->width();
   size->height = image_data_->height();

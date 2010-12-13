@@ -26,6 +26,10 @@ ImageData::~ImageData() {
   Unmap();
 }
 
+ImageData* ImageData::AsImageData() {
+  return this;
+}
+
 void* ImageData::Map() {
 #if defined(OS_WIN)
   NOTIMPLEMENTED();

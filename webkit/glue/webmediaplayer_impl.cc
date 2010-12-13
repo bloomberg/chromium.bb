@@ -505,6 +505,14 @@ int WebMediaPlayerImpl::dataRate() const {
   return 0;
 }
 
+WebKit::WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
+  return network_state_;
+}
+
+WebKit::WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
+  return ready_state_;
+}
+
 const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   DCHECK(MessageLoop::current() == main_loop_);
 

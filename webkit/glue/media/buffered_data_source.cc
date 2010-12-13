@@ -253,6 +253,26 @@ void BufferedResourceLoader::SetAllowDefer(bool is_allowed) {
   DisableDeferIfNeeded();
 }
 
+int64 BufferedResourceLoader::content_length() {
+  return content_length_;
+}
+
+int64 BufferedResourceLoader::instance_size() {
+  return instance_size_;
+}
+
+bool BufferedResourceLoader::partial_response() {
+  return partial_response_;
+}
+
+bool BufferedResourceLoader::network_activity() {
+  return !completed_ && !deferred_;
+}
+
+const GURL& BufferedResourceLoader::url() {
+  return url_;
+}
+
 void BufferedResourceLoader::SetURLLoaderForTest(WebURLLoader* mock_loader) {
   url_loader_.reset(mock_loader);
   keep_test_loader_ = true;

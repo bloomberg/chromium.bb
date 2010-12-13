@@ -18,40 +18,27 @@ class BaseBookmarkModelObserver : public BookmarkModelObserver {
 
   virtual void BookmarkModelChanged() = 0;
 
-  virtual void Loaded(BookmarkModel* model) {}
+  virtual void Loaded(BookmarkModel* model);
 
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {
-    BookmarkModelChanged();
-  }
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) {
-    BookmarkModelChanged();
-  }
+                                 int new_index);
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) {
-    BookmarkModelChanged();
-  }
+                                 int index);
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node) {
-    BookmarkModelChanged();
-  }
+                                   const BookmarkNode* node);
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) {
-    BookmarkModelChanged();
-  }
+                                   const BookmarkNode* node);
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) {
-  }
+                                         const BookmarkNode* node);
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) {
-    BookmarkModelChanged();
-  }
+                                             const BookmarkNode* node);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseBookmarkModelObserver);

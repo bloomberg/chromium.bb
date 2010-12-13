@@ -58,9 +58,7 @@ class InfoBarDelegate {
   // because a matching one already exists. If this function returns true, the
   // TabContents will not add the new delegate because it considers one to
   // already be present.
-  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const {
-    return false;
-  }
+  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
 
   // Returns true if the InfoBar should be closed automatically after the page
   // is navigated. The default behavior is to return true if the page is
@@ -81,52 +79,36 @@ class InfoBarDelegate {
 
   // Return the icon to be shown for this InfoBar. If the returned bitmap is
   // NULL, no icon is shown.
-  virtual SkBitmap* GetIcon() const { return NULL; }
+  virtual SkBitmap* GetIcon() const;
 
   // Returns a pointer to the AlertInfoBarDelegate interface, if implemented.
-  virtual AlertInfoBarDelegate* AsAlertInfoBarDelegate() {
-    return NULL;
-  }
+  virtual AlertInfoBarDelegate* AsAlertInfoBarDelegate();
 
   // Returns a pointer to the LinkInfoBarDelegate interface, if implemented.
-  virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate() {
-    return NULL;
-  }
+  virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate();
 
   // Returns a pointer to the ConfirmInfoBarDelegate interface, if implemented.
-  virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() {
-    return NULL;
-  }
+  virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
 
   // Returns a pointer to the ThemeInstalledInfoBarDelegate interface, if
   // implemented.
-  virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate() {
-    return NULL;
-  }
+  virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
 
   // Returns a pointer to the TranslateInfoBarDelegate interface, if
   // implemented.
-  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() {
-    return NULL;
-  }
+  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
   // Returns a pointer to the ExtensionInfoBarDelegate interface, if
   // implemented.
-  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() {
-    return NULL;
-  }
+  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
 
   // Returns a pointer to the CrashedExtensionInfoBarDelegate interface, if
   // implemented.
-  virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate() {
-    return NULL;
-  }
+  virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate();
 
   // Returns the type of the infobar.  The type determines the appearance (such
   // as background color) of the infobar.
-  virtual Type GetInfoBarType() {
-    return WARNING_TYPE;
-  }
+  virtual Type GetInfoBarType();
 
  protected:
   // Provided to subclasses as a convenience to initialize the state of this
@@ -157,12 +139,12 @@ class AlertInfoBarDelegate : public InfoBarDelegate {
   virtual string16 GetMessageText() const = 0;
 
   // Overridden from InfoBarDelegate.
-  virtual SkBitmap* GetIcon() const { return NULL; }
+  virtual SkBitmap* GetIcon() const;
 
   // Overridden from InfoBarDelegate:
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
   virtual InfoBar* CreateInfoBar();
-  virtual AlertInfoBarDelegate* AsAlertInfoBarDelegate() { return this; }
+  virtual AlertInfoBarDelegate* AsAlertInfoBarDelegate();
 
  protected:
   explicit AlertInfoBarDelegate(TabContents* contents);
@@ -178,31 +160,24 @@ class LinkInfoBarDelegate : public InfoBarDelegate {
   // is the position where the link should be inserted. If |link_offset| is set
   // to string16::npos (it is by default), the link is right aligned within
   // the InfoBar rather than being embedded in the message text.
-  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const {
-    *link_offset = string16::npos;
-    return string16();
-  }
+  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const;
 
   // Returns the text of the link to be displayed.
   virtual string16 GetLinkText() const = 0;
 
   // Overridden from InfoBarDelegate.
-  virtual SkBitmap* GetIcon() const { return NULL; }
+  virtual SkBitmap* GetIcon() const;
 
   // Called when the Link is clicked. The |disposition| specifies how the
   // resulting document should be loaded (based on the event flags present when
   // the link was clicked). This function returns true if the InfoBar should be
   // closed now or false if it should remain until the user explicitly closes
   // it.
-  virtual bool LinkClicked(WindowOpenDisposition disposition) {
-    return true;
-  }
+  virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   // Overridden from InfoBarDelegate:
   virtual InfoBar* CreateInfoBar();
-  virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate() {
-    return this;
-  }
+  virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate();
 
  protected:
   explicit LinkInfoBarDelegate(TabContents* contents);
@@ -223,30 +198,26 @@ class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
   };
 
   // Return the buttons to be shown for this InfoBar.
-  virtual int GetButtons() const {
-    return BUTTON_NONE;
-  }
+  virtual int GetButtons() const;
 
   // Return the label for the specified button. The default implementation
   // returns "OK" for the OK button and "Cancel" for the Cancel button.
   virtual string16 GetButtonLabel(InfoBarButton button) const;
 
   // Return whether or not the specified button needs elevation.
-  virtual bool NeedElevation(InfoBarButton button) const { return false; }
+  virtual bool NeedElevation(InfoBarButton button) const;
 
   // Called when the OK button is pressed. If the function returns true, the
   // InfoBarDelegate should be removed from the associated TabContents.
-  virtual bool Accept() { return true; }
+  virtual bool Accept();
 
   // Called when the Cancel button is pressed.  If the function returns true,
   // the InfoBarDelegate should be removed from the associated TabContents.
-  virtual bool Cancel() { return true; }
+  virtual bool Cancel();
 
   // Returns the text of the link to be displayed, if any. Otherwise returns
   // and empty string.
-  virtual string16 GetLinkText() {
-    return string16();
-  }
+  virtual string16 GetLinkText();
 
   // Called when the Link is clicked. The |disposition| specifies how the
   // resulting document should be loaded (based on the event flags present when
@@ -254,15 +225,11 @@ class ConfirmInfoBarDelegate : public AlertInfoBarDelegate {
   // closed now or false if it should remain until the user explicitly closes
   // it.
   // Will only be called if GetLinkText() returns non-empty string.
-  virtual bool LinkClicked(WindowOpenDisposition disposition) {
-    return true;
-  }
+  virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   // Overridden from InfoBarDelegate:
   virtual InfoBar* CreateInfoBar();
-  virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() {
-    return this;
-  }
+  virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
 
  protected:
   explicit ConfirmInfoBarDelegate(TabContents* contents);

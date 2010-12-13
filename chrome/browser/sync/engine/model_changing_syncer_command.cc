@@ -29,4 +29,9 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
   }
 }
 
+bool ModelChangingSyncerCommand::ModelNeutralExecuteImpl(
+    sessions::SyncSession* session) {
+  return true;
+}
+
 }  // namespace browser_sync

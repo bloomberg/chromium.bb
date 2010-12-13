@@ -27,6 +27,10 @@ DownloadShelfContextMenu::DownloadShelfContextMenu(
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {
 }
 
+DownloadItem* DownloadShelfContextMenu::download() const {
+  return download_;
+}
+
 bool DownloadShelfContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case OPEN_WHEN_COMPLETE:

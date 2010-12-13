@@ -159,7 +159,7 @@ class BrowserThemeProvider : public NonThreadSafe,
 
   // Set the current theme to the native theme. On some platforms, the native
   // theme is the default theme.
-  virtual void SetNativeTheme() { UseDefaultTheme(); }
+  virtual void SetNativeTheme();
 
   // Whether we're using the chrome default theme. Virtual so linux can check
   // if we're using the GTK theme.

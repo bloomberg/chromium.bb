@@ -32,15 +32,11 @@ class TabCloseableStateWatcher {
   // - setting up tab's context menu to determine if "Close tab" should
   //   should be enabled
   // - determining if accelerator keys to close tab should be processed
-  virtual bool CanCloseTab(const Browser* browser) const {
-    return true;
-  }
+  virtual bool CanCloseTab(const Browser* browser) const;
 
   // Called from Browser::IsClosingPermitted which is in turn called from
   // Browser::ShouldCloseWindow to check if |browser| can be closed.
-  virtual bool CanCloseBrowser(Browser* browser) {
-    return true;
-  }
+  virtual bool CanCloseBrowser(Browser* browser);
 
   // Called from Browser::CancelWindowClose when closing of window is canceled.
   // Watcher is potentially interested in this, especially when the closing of

@@ -41,9 +41,7 @@ class Graphics3D : public Resource {
   static void ResetCurrent();
 
   // Resource override.
-  virtual Graphics3D* AsGraphics3D() {
-    return this;
-  }
+  virtual Graphics3D* AsGraphics3D();
 
   bool Init(PP_Instance instance_id, int32_t config,
             const int32_t* attrib_list);

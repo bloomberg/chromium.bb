@@ -549,6 +549,7 @@
         'browser/debugger/debugger_remote_service.h',
         'browser/debugger/debugger_wrapper.cc',
         'browser/debugger/debugger_wrapper.h',
+        'browser/debugger/devtools_client_host.cc',
         'browser/debugger/devtools_client_host.h',
         'browser/debugger/devtools_http_protocol_handler.cc',
         'browser/debugger/devtools_http_protocol_handler.h',

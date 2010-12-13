@@ -41,19 +41,14 @@ class DevToolsClientHost {
     close_listener_ = listener;
   }
 
-  virtual DevToolsWindow* AsDevToolsWindow() { return NULL; }
+  virtual DevToolsWindow* AsDevToolsWindow();
 
  protected:
   DevToolsClientHost() : close_listener_(NULL) {}
 
   // Should be called when the devtools client is going to die and this
   // DevToolsClientHost should not be used anymore.
-  void NotifyCloseListener() {
-    if (close_listener_) {
-      close_listener_->ClientHostClosing(this);
-      close_listener_ = NULL;
-    }
-  }
+  void NotifyCloseListener();
 
  private:
   CloseListener* close_listener_;

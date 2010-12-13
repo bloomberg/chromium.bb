@@ -99,21 +99,21 @@ class BufferedResourceLoader :
 
   // Gets the content length in bytes of the instance after this loader has been
   // started. If this value is -1, then content length is unknown.
-  virtual int64 content_length() { return content_length_; }
+  virtual int64 content_length();
 
   // Gets the original size of the file requested. If this value is -1, then
   // the size is unknown.
-  virtual int64 instance_size() { return instance_size_; }
+  virtual int64 instance_size();
 
   // Returns true if the response for this loader is a partial response.
   // It means a 206 response in HTTP/HTTPS protocol.
-  virtual bool partial_response() { return partial_response_; }
+  virtual bool partial_response();
 
   // Returns true if network is currently active.
-  virtual bool network_activity() { return !completed_ && !deferred_; }
+  virtual bool network_activity();
 
   // Returns resulting URL.
-  virtual const GURL& url() { return url_; }
+  virtual const GURL& url();
 
   // Used to inject a mock used for unittests.
   virtual void SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader);

@@ -39,7 +39,7 @@ class Graphics2D : public Resource {
   bool is_always_opaque() const { return is_always_opaque_; }
 
   // Resource override.
-  virtual Graphics2D* AsGraphics2D() { return this; }
+  virtual Graphics2D* AsGraphics2D();
 
   // PPB_Graphics2D functions.
   PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque);

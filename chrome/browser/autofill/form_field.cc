@@ -105,6 +105,10 @@ class EmailField : public FormField {
   AutoFillField* field_;
 };
 
+FormFieldType FormField::GetFormFieldType() const {
+  return kOtherFieldType;
+}
+
 // static
 bool FormField::Match(AutoFillField* field,
                       const string16& pattern,

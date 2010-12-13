@@ -364,6 +364,22 @@ void SyncerThread::ThreadMainLoop() {
 #endif
 }
 
+void SyncerThread::SetConnected(bool connected) {
+  DCHECK(!thread_.IsRunning());
+  vault_.connected_ = connected;
+}
+
+void SyncerThread::SetSyncerPollingInterval(base::TimeDelta interval) {
+  // TODO(timsteele): Use TimeDelta internally.
+  syncer_polling_interval_ = static_cast<int>(interval.InSeconds());
+}
+
+void SyncerThread::SetSyncerShortPollInterval(base::TimeDelta interval) {
+  // TODO(timsteele): Use TimeDelta internally.
+  syncer_short_poll_interval_seconds_ =
+      static_cast<int>(interval.InSeconds());
+}
+
 void SyncerThread::WaitUntilConnectedOrQuit() {
   VLOG(1) << "Syncer thread waiting for connection.";
   Notify(SyncEngineEvent::SYNCER_THREAD_WAITING_FOR_CONNECTION);
@@ -426,6 +442,10 @@ void SyncerThread::ExitPausedState() {
   vault_.paused_ = false;
   vault_field_changed_.Broadcast();
   Notify(SyncEngineEvent::SYNCER_THREAD_RESUMED);
+}
+
+void SyncerThread::DisableIdleDetection() {
+  disable_idle_detection_ = true;
 }
 
 // We check how long the user's been idle and sync less often if the machine is

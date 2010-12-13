@@ -118,6 +118,12 @@ gfx::NativeViewId RenderWidgetHost::GetNativeViewId() {
   return 0;
 }
 
+bool RenderWidgetHost::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event,
+    bool* is_keyboard_shortcut) {
+  return false;
+}
+
 void RenderWidgetHost::Init() {
   DCHECK(process_->HasConnection());
 
@@ -137,6 +143,10 @@ void RenderWidgetHost::Shutdown() {
   }
 
   Destroy();
+}
+
+bool RenderWidgetHost::IsRenderView() const {
+  return false;
 }
 
 void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {

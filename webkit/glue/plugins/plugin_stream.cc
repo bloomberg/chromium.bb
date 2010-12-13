@@ -244,6 +244,10 @@ bool PluginStream::Close(NPReason reason) {
   return true;
 }
 
+webkit_glue::WebPluginResourceClient* PluginStream::AsResourceClient() {
+  return NULL;
+}
+
 void PluginStream::Notify(NPReason reason) {
   if (notify_needed_) {
     instance_->NPP_URLNotify(stream_.url, reason, notify_data_);

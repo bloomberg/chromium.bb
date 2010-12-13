@@ -33,12 +33,10 @@ class VectorPlatformDevice : public PlatformDevice {
                                       int width, int height);
   virtual ~VectorPlatformDevice();
 
-  virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(VectorPlatformDeviceFactory);
-  }
+  virtual SkDeviceFactory* getDeviceFactory();
 
-  virtual bool IsVectorial() { return true; }
-  virtual PlatformSurface beginPlatformPaint() { return context_; }
+  virtual bool IsVectorial();
+  virtual PlatformSurface beginPlatformPaint();
 
   // We translate following skia APIs into corresponding Cairo APIs.
   virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,

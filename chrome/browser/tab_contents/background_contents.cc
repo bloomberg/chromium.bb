@@ -58,6 +58,18 @@ BackgroundContents::~BackgroundContents() {
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 
+BackgroundContents* BackgroundContents::GetAsBackgroundContents() {
+  return this;
+}
+
+RenderViewHostDelegate::View* BackgroundContents::GetViewDelegate() {
+  return this;
+}
+
+const GURL& BackgroundContents::GetURL() const {
+  return url_;
+}
+
 ViewType::Type BackgroundContents::GetRenderViewType() const {
   return ViewType::BACKGROUND_CONTENTS;
 }

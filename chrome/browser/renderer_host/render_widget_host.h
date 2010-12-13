@@ -177,7 +177,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   virtual void Shutdown();
 
   // Manual RTTI FTW. We are not hosting a web page.
-  virtual bool IsRenderView() const { return false; }
+  virtual bool IsRenderView() const;
 
   // IPC::Channel::Listener
   virtual void OnMessageReceived(const IPC::Message& msg);
@@ -428,9 +428,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // be handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
   // |*is_keyboard_shortcut| should be set to true.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) {
-    return false;
-  }
+                                      bool* is_keyboard_shortcut);
 
   // Called when a keyboard event was not processed by the renderer. This is
   // overridden by RenderView to send upwards to its delegate.

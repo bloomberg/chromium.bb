@@ -36,6 +36,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditController
 
+bool AutocompleteEditController::AcceptCurrentInstantPreview() {
+  return false;
+}
+
 AutocompleteEditController::~AutocompleteEditController() {
 }
 

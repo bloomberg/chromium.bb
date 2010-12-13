@@ -19,9 +19,7 @@ class Transport : public Resource {
   explicit Transport(PluginModule* module);
   virtual ~Transport();
   static const PPB_Transport_Dev* GetInterface();
-  virtual Transport* AsTransport() {
-    return this;
-  }
+  virtual Transport* AsTransport();
   bool Init(const char* name,
             const char* proto);
  private:

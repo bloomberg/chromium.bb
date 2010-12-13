@@ -26,6 +26,7 @@
             'system_monitor_mac.mm',
             'system_monitor_posix.cc',
             'system_monitor_win.cc',
+            'tree_model.cc',
             'tree_model.h',
             'tree_node_iterator.h',
             'tree_node_model.h',

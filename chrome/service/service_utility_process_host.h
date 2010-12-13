@@ -99,7 +99,7 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   virtual FilePath GetUtilityProcessCmd();
 
   // Overriden from ChildProcessHost.
-  virtual bool CanShutdown() { return true; }
+  virtual bool CanShutdown();
   virtual void OnChildDied();
 
  private:

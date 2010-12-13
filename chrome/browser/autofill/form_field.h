@@ -75,7 +75,7 @@ class FormField {
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const = 0;
 
   // Returns the type of form field of the class implementing this interface.
-  virtual FormFieldType GetFormFieldType() const { return kOtherFieldType; }
+  virtual FormFieldType GetFormFieldType() const;
 
   // Returns true if |field| contains the regexp |pattern| in the name or label.
   // If |match_label_only| is true, then only the field's label is considered.

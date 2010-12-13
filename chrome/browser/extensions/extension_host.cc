@@ -177,6 +177,10 @@ void ExtensionHost::CreateView(Browser* browser) {
 #endif
 }
 
+TabContents* ExtensionHost::associated_tab_contents() const {
+  return associated_tab_contents_;
+}
+
 RenderProcessHost* ExtensionHost::render_process_host() const {
   return render_view_host_->process();
 }
@@ -442,6 +446,14 @@ gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {
   }
 
   return NULL;
+}
+
+TabContents* ExtensionHost::AsTabContents() {
+  return NULL;
+}
+
+ExtensionHost* ExtensionHost::AsExtensionHost() {
+  return this;
 }
 
 void ExtensionHost::OnMessageBoxClosed(IPC::Message* reply_msg,
@@ -740,6 +752,10 @@ void ExtensionHost::HandleMouseActivate() {
 
 ViewType::Type ExtensionHost::GetRenderViewType() const {
   return extension_host_type_;
+}
+
+const GURL& ExtensionHost::GetURL() const {
+  return url_;
 }
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {

@@ -48,7 +48,7 @@ class DownloadShelfContextMenu : public menus::SimpleMenuModel::Delegate {
  public:
   virtual ~DownloadShelfContextMenu();
 
-  virtual DownloadItem* download() const { return download_; }
+  virtual DownloadItem* download() const;
 
   enum ContextMenuCommands {
     SHOW_IN_FOLDER = 1,  // Open a file explorer window with the item selected.

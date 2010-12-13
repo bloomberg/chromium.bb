@@ -326,6 +326,10 @@ void BrowserThemeProvider::UseDefaultTheme() {
   UserMetrics::RecordAction(UserMetricsAction("Themes_Reset"), profile_);
 }
 
+void BrowserThemeProvider::SetNativeTheme() {
+  UseDefaultTheme();
+}
+
 bool BrowserThemeProvider::UsingDefaultTheme() {
   return GetThemeID() == BrowserThemeProvider::kDefaultThemeID;
 }
