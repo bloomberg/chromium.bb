@@ -49,8 +49,10 @@ _eglIndexConfig(const _EGLConfig *conf, EGLint key)
       return key - _EGL_CONFIG_FIRST_ATTRIB;
    
    switch (key) {
+#ifdef EGL_NOK_texture_from_pixmap
    case EGL_Y_INVERTED_NOK:
       return _EGL_CONFIG_FIRST_EXTRA_ATTRIB;
+#endif
    default:
       return -1;
    }

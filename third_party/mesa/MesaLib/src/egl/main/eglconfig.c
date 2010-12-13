@@ -212,9 +212,11 @@ static const struct {
                                     ATTRIB_CRITERION_IGNORE,
                                     0 },
 
+#ifdef EGL_NOK_texture_from_pixmap
    { EGL_Y_INVERTED_NOK,            ATTRIB_TYPE_BOOLEAN,
                                     ATTRIB_CRITERION_EXACT,
                                     EGL_DONT_CARE },
+#endif
 
 };
 
@@ -489,8 +491,10 @@ _eglIsConfigAttribValid(_EGLConfig *conf, EGLint attr)
    case EGL_MATCH_NATIVE_PIXMAP:
 #endif
       return EGL_FALSE;
+#ifdef EGL_NOK_texture_from_pixmap
    case EGL_Y_INVERTED_NOK:
       return conf->Display->Extensions.NOK_texture_from_pixmap;
+#endif
    default:
       break;
    }
