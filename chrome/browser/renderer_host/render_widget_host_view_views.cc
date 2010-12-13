@@ -27,6 +27,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "views/event.h"
 #include "views/widget/widget.h"
+#include "views/widget/widget_gtk.h"
 
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
@@ -192,7 +193,7 @@ void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
 void RenderWidgetHostViewViews::MovePluginWindows(
     const std::vector<webkit_glue::WebPluginGeometry>& moves) {
   // TODO(anicolao): NIY
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewViews::Focus() {
@@ -326,6 +327,13 @@ BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
 }
 
 gfx::NativeView RenderWidgetHostViewViews::native_view() const {
+  // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
+  // WidgetGtk-specific function call should not be necessary.
+  views::WidgetGtk* widget = static_cast<views::WidgetGtk*>(GetWidget());
+  return widget ? widget->window_contents() : NULL;
+}
+
+gfx::NativeView RenderWidgetHostViewViews::GetNativeView() {
   if (GetWidget())
     return GetWidget()->GetNativeView();
   return NULL;
@@ -381,7 +389,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
         backing_store->XShowRect(origin,
-            paint_rect, x11_util::GetX11WindowFromGtkWidget(native_view()));
+            paint_rect, x11_util::GetX11WindowFromGdkWindow(window));
       } else {
         // If the grey blend is showing, we make two drawing calls. Use double
         // buffering to prevent flicker. Use CairoShowRect because XShowRect
@@ -420,8 +428,6 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
       tab_switch_paint_time_ = base::TimeTicks();
     }
   } else {
-    if (window)
-      gdk_window_clear(window);
     if (whiteout_start_time_.is_null())
       whiteout_start_time_ = base::TimeTicks::Now();
   }

@@ -75,7 +75,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void AcceleratedCompositingActivated(bool activated);
 
   gfx::NativeView native_view() const;
-  virtual gfx::NativeView GetNativeView() { return native_view(); }
+  virtual gfx::NativeView GetNativeView();
 
   virtual void Paint(gfx::Canvas* canvas);
 
