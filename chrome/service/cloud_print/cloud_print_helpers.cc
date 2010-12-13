@@ -231,3 +231,11 @@ void CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(
                              std::string(), post_data);
 }
 
+bool CloudPrintHelpers::IsDryRunJob(const std::vector<std::string>& tags) {
+  std::vector<std::string>::const_iterator it;
+  for (it = tags.begin(); it != tags.end(); ++it) {
+    if (*it == kTagDryRunFlag)
+      return true;
+  }
+  return false;
+}

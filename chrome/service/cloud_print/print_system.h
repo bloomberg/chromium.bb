@@ -126,6 +126,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
                        const std::string& print_data_mime_type,
                        const std::string& printer_name,
                        const std::string& job_title,
+                       const std::vector<std::string>& tags,
                        JobSpooler::Delegate* delegate) = 0;
   };
 

@@ -57,6 +57,8 @@ class CloudPrintHelpers {
       const std::string& mime_boundary,
       std::string* post_data);
 
+  // Returns true is tags indicate a dry run (test) job.
+  static bool IsDryRunJob(const std::vector<std::string>& tags);
  private:
   CloudPrintHelpers() {
   }

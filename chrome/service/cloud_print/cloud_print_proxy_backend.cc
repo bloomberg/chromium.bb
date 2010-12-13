@@ -637,7 +637,7 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
     printer_data->GetString(kPrinterCapsHashValue,
         &printer_info_cloud.caps_hash);
     ListValue* tags_list = NULL;
-    printer_data->GetList(kPrinterTagsValue, &tags_list);
+    printer_data->GetList(kTagsValue, &tags_list);
     if (tags_list) {
       for (size_t index = 0; index < tags_list->GetSize(); index++) {
         std::string tag;

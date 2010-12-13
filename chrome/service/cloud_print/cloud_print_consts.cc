@@ -25,9 +25,10 @@ const char kFileUrlValue[] = "fileUrl";
 const char kJobListValue[] = "jobs";
 const char kTitleValue[] = "title";
 const char kPrinterCapsHashValue[] = "capsHash";
-const char kPrinterTagsValue[] = "tags";
+const char kTagsValue[] = "tags";
 const char kProxyTagPrefix[] = "__cp__";
 const char kTagsHashTagName[] = "__cp__tagshash";
+const char kTagDryRunFlag[] = "__cp__dry_run";
 
 
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";

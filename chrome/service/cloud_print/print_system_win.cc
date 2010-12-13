@@ -348,7 +348,9 @@ class PrintSystemWin : public PrintSystem {
                        const std::string& print_data_mime_type,
                        const std::string& printer_name,
                        const std::string& job_title,
+                       const std::vector<std::string>& tags,
                        JobSpooler::Delegate* delegate) {
+      // TODO(gene): add tags handling.
       return core_->Spool(print_ticket, print_data_file_path,
                           print_data_mime_type, printer_name, job_title,
                           delegate);

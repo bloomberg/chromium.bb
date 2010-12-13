@@ -26,6 +26,8 @@
 #include "base/task.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "googleurl/src/gurl.h"
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend.h"
@@ -45,6 +47,10 @@ const int kCheckForPrinterUpdatesMs = 6*60*60*1000;
 
 // Job update timeput
 const int kJobUpdateTimeoutMs = 5000;
+
+// Job id for dry run (it should not affect CUPS job ids, since 0 job-id is
+// invalid in CUPS.
+const int kDryRunJobId = 0;
 
 }  // namespace
 
@@ -93,7 +99,9 @@ class PrintSystemCUPS : public PrintSystem {
                               const FilePath& print_data_file_path,
                               const std::string& print_data_mime_type,
                               const std::string& printer_name,
-                              const std::string& job_title);
+                              const std::string& job_title,
+                              const std::vector<std::string>& tags,
+                              bool* dry_run);
   bool GetPrinterInfo(const std::string& printer_name,
                       printing::PrinterBasicInfo* info);
   bool ParsePrintTicket(const std::string& print_ticket,
@@ -310,21 +318,25 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
                      const std::string& print_data_mime_type,
                      const std::string& printer_name,
                      const std::string& job_title,
+                     const std::vector<std::string>& tags,
                      JobSpooler::Delegate* delegate) {
     DCHECK(delegate);
+    bool dry_run = false;
     int job_id = print_system_->SpoolPrintJob(
         print_ticket, print_data_file_path, print_data_mime_type,
-        printer_name, job_title);
+        printer_name, job_title, tags, &dry_run);
     MessageLoop::current()->PostTask(FROM_HERE,
                                      NewRunnableFunction(
                                          &JobSpoolerCUPS::NotifyDelegate,
                                          delegate,
-                                         job_id));
+                                         job_id,
+                                         dry_run));
     return true;
   }
 
-  static void NotifyDelegate(JobSpooler::Delegate* delegate, int job_id) {
-    if (job_id)
+  static void NotifyDelegate(JobSpooler::Delegate* delegate,
+                             int job_id, bool dry_run) {
+    if (dry_run || job_id)
       delegate->OnJobSpoolSucceeded(job_id);
     else
       delegate->OnJobSpoolFailed();
@@ -493,6 +505,21 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
   int num_jobs = GetJobs(&jobs, server_info->url,
                          short_printer_name.c_str(), 1, -1);
 
+
+  // Check if the request is for dummy dry run job.
+  // We check this after calling GetJobs API to see if this printer is actually
+  // accessible through CUPS.
+  if (job_id == kDryRunJobId) {
+    if (num_jobs >= 0) {
+      job_details->status = PRINT_JOB_STATUS_COMPLETED;
+      VLOG(1) << "CP_CUPS: Dry run job succeeded for: " << printer_name;
+    } else {
+      job_details->status = PRINT_JOB_STATUS_ERROR;
+      VLOG(1) << "CP_CUPS: Dry run job faield for: " << printer_name;
+    }
+    return true;
+  }
+
   bool found = false;
   for (int i = 0; i < num_jobs; i++) {
     if (jobs[i].id == job_id) {
@@ -615,7 +642,9 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
     const FilePath& print_data_file_path,
     const std::string& print_data_mime_type,
     const std::string& printer_name,
-    const std::string& job_title) {
+    const std::string& job_title,
+    const std::vector<std::string>& tags,
+    bool* dry_run) {
   DCHECK(initialized_);
   VLOG(1) << "CP_CUPS: Spooling print job for: " << printer_name;
 
@@ -632,8 +661,16 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
   bool res = ParsePrintTicket(print_ticket, &options);
   DCHECK(res);  // If print ticket is invalid we still print using defaults.
 
+  // Check if this is a dry run (test) job.
+  *dry_run = CloudPrintHelpers::IsDryRunJob(tags);
+  if (*dry_run) {
+    VLOG(1) << "CP_CUPS: Dry run job spooled.";
+    return kDryRunJobId;
+  }
+
   std::vector<cups_option_t> cups_options;
   std::map<std::string, std::string>::iterator it;
+
   for (it = options.begin(); it != options.end(); ++it) {
     cups_option_t opt;
     opt.name = const_cast<char*>(it->first.c_str());

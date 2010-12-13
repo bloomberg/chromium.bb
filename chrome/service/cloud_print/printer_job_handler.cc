@@ -350,6 +350,17 @@ PrinterJobHandler::HandleJobMetadataResponse(
         std::string print_ticket_url;
         job_data->GetString(kTicketUrlValue, &print_ticket_url);
         job_data->GetString(kFileUrlValue, &print_data_url_);
+
+        // Get tags for print job.
+        job_details_.tags_.clear();
+        ListValue* tags = NULL;
+        if (job_data->GetList(kTagsValue, &tags)) {
+          for (size_t i = 0; i < tags->GetSize(); i++) {
+            std::string value;
+            if (tags->GetString(i, &value))
+              job_details_.tags_.push_back(value);
+          }
+        }
         SetNextDataHandler(&PrinterJobHandler::HandlePrintTicketResponse);
         request_ = new CloudPrintURLFetcher;
         request_->StartGetRequest(GURL(print_ticket_url.c_str()),
@@ -567,6 +578,7 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
                                             job_details.print_data_mime_type_,
                                             printer_name,
                                             job_details.job_title_,
+                                            job_details.tags_,
                                             this)) {
     OnJobSpoolFailed();
   }
