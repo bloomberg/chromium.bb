@@ -33,8 +33,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
                    const FilePath& root_directory,
                    const FilePath& key_file);
 
-  // Starts the packing thread job. See http://crbug.com/27944 for more details
-  // on why this function is needed.
+  // Starts the packing job.
   void Start();
 
   // The client should call this when it is destroyed to prevent
@@ -45,12 +44,15 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   static std::wstring StandardSuccessMessage(const FilePath& crx_file,
                                              const FilePath& key_file);
 
+  void set_asynchronous(bool async) { asynchronous_ = async; }
+
  private:
   friend class base::RefCountedThreadSafe<PackExtensionJob>;
 
   virtual ~PackExtensionJob();
 
-  void RunOnFileThread();
+  // If |asynchronous_| is false, this is run on whichever thread calls it.
+  void Run();
   void ReportSuccessOnClientThread();
   void ReportFailureOnClientThread(const std::string& error);
 
@@ -60,6 +62,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   FilePath key_file_;
   FilePath crx_file_out_;
   FilePath key_file_out_;
+  bool asynchronous_;
 
   DISALLOW_COPY_AND_ASSIGN(PackExtensionJob);
 };

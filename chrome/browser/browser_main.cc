@@ -1277,8 +1277,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // If the command line specifies --pack-extension, attempt the pack extension
   // startup action and exit.
   if (parsed_command_line.HasSwitch(switches::kPackExtension)) {
-    extensions_startup::HandlePackExtension(parsed_command_line);
-    return ResultCodes::NORMAL_EXIT;
+    ExtensionsStartupUtil extension_startup_util;
+    if (extension_startup_util.PackExtension(parsed_command_line)) {
+      return ResultCodes::NORMAL_EXIT;
+    } else {
+      return ResultCodes::PACK_EXTENSION_ERROR;
+    }
   }
 
 #if !defined(OS_MACOSX)
@@ -1573,8 +1577,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // specifies --uninstall-extension, attempt the uninstall extension startup
   // action.
   if (parsed_command_line.HasSwitch(switches::kUninstallExtension)) {
-    if (extensions_startup::HandleUninstallExtension(parsed_command_line,
-                                                     profile)) {
+    ExtensionsStartupUtil ext_startup_util;
+    if (ext_startup_util.UninstallExtension(parsed_command_line, profile)) {
       return ResultCodes::NORMAL_EXIT;
     } else {
       return ResultCodes::UNINSTALL_EXTENSION_ERROR;

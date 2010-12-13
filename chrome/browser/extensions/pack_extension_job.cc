@@ -15,15 +15,19 @@
 PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& root_directory,
                                    const FilePath& key_file)
-    : client_(client), key_file_(key_file) {
+    : client_(client), key_file_(key_file), asynchronous_(true) {
   root_directory_ = root_directory.StripTrailingSeparators();
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
 }
 
 void PackExtensionJob::Start() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &PackExtensionJob::RunOnFileThread));
+  if (asynchronous_) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &PackExtensionJob::Run));
+  } else {
+    Run();
+  }
 }
 
 void PackExtensionJob::ClearClient() {
@@ -32,7 +36,7 @@ void PackExtensionJob::ClearClient() {
 
 PackExtensionJob::~PackExtensionJob() {}
 
-void PackExtensionJob::RunOnFileThread() {
+void PackExtensionJob::Run() {
   crx_file_out_ = FilePath(root_directory_.value() +
                            chrome::kExtensionFileExtension);
 
@@ -44,16 +48,24 @@ void PackExtensionJob::RunOnFileThread() {
   // returns. See bug 20734.
   ExtensionCreator creator;
   if (creator.Run(root_directory_, crx_file_out_, key_file_, key_file_out_)) {
-    BrowserThread::PostTask(
-        client_thread_id_, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PackExtensionJob::ReportSuccessOnClientThread));
+    if (asynchronous_) {
+      BrowserThread::PostTask(
+          client_thread_id_, FROM_HERE,
+          NewRunnableMethod(this,
+                            &PackExtensionJob::ReportSuccessOnClientThread));
+    } else {
+      ReportSuccessOnClientThread();
+    }
   } else {
-    BrowserThread::PostTask(
-        client_thread_id_, FROM_HERE,
-        NewRunnableMethod(
-            this, &PackExtensionJob::ReportFailureOnClientThread,
-            creator.error_message()));
+    if (asynchronous_) {
+      BrowserThread::PostTask(
+          client_thread_id_, FROM_HERE,
+          NewRunnableMethod(
+              this, &PackExtensionJob::ReportFailureOnClientThread,
+              creator.error_message()));
+    } else {
+      ReportFailureOnClientThread(creator.error_message());
+    }
   }
 }
 

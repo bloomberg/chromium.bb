@@ -285,8 +285,8 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
     // in the process that is running with the target profile, otherwise the
     // uninstall will fail to unload and remove all components.
     if (parsed_command_line.HasSwitch(switches::kUninstallExtension)) {
-      extensions_startup::HandleUninstallExtension(parsed_command_line,
-                                                   profile);
+      ExtensionsStartupUtil ext_startup_util;
+      ext_startup_util.UninstallExtension(parsed_command_line, profile);
       return TRUE;
     }
 

@@ -58,6 +58,7 @@ class ResultCodes {
     PROFILE_IN_USE,             // The profile was in use on another host.
 
     UNINSTALL_EXTENSION_ERROR,  // Failed to silently uninstall an extension.
+    PACK_EXTENSION_ERROR,       // Failed to pack an extension via the cmd line.
 
     EXIT_LAST_CODE              // Last return code (keep it last).
   };
