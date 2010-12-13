@@ -271,17 +271,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
         StartFetchingSetting(kBooleanSettings[i]);
       for (size_t i = 0; i < arraysize(kStringSettings); ++i)
         StartFetchingSetting(kStringSettings[i]);
-    } else if (source == SOURCE_OBSERVE) {
-      DCHECK(new_status == OWNERSHIP_TAKEN);
-      if (CrosLibrary::Get()->EnsureLoaded()) {
-        // TODO(dilmah,cmasone): We would not need following piece of code as
-        // long as failure callback from SignedSettings will allow us to
-        // discriminate missing settings from failed signature verification.
-        // Otherwise we must set default values for boolean settings.
-        UserManager::Get()->set_current_user_is_owner(true);
-        for (size_t i = 0; i < arraysize(kBooleanSettings); ++i)
-          Set(kBooleanSettings[i], Value::CreateBooleanValue(true));
-      }
     }
   }
 
@@ -314,44 +303,49 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
     }
     DCHECK(GetOwnershipStatus() != OWNERSHIP_UNKNOWN);
 
-    bool success = code == SignedSettings::SUCCESS;
     PrefService* prefs = g_browser_process->local_state();
-    if (!success && GetOwnershipStatus() == OWNERSHIP_TAKEN) {
-      LOG(ERROR) << "On owned device: failed to retrieve cros "
-                    "setting, name=" << name;
-      if (retries_left_ > 0) {
-        retries_left_ -= 1;
-        StartFetchingSetting(name);
-        return;
+    switch (code) {
+      case SignedSettings::SUCCESS:
+      case SignedSettings::NOT_FOUND:
+      case SignedSettings::KEY_UNAVAILABLE: {
+        bool fallback_to_default = (code == SignedSettings::NOT_FOUND) ||
+            (GetOwnershipStatus() == OWNERSHIP_NONE);
+        DCHECK(fallback_to_default || code == SignedSettings::SUCCESS);
+        if (fallback_to_default)
+          VLOG(1) << "Going default for cros setting " << name;
+        else
+          VLOG(1) << "Retrieved cros setting " << name << "=" << value;
+        if (IsControlledBooleanSetting(name)) {
+          // We assume our boolean settings are true before explicitly set.
+          UpdateCacheBool(name, (value == kTrueIncantation),
+              fallback_to_default ? USE_VALUE_DEFAULT : USE_VALUE_SUPPLIED);
+        } else if (IsControlledStringSetting(name)) {
+          UpdateCacheString(name, value,
+              fallback_to_default ? USE_VALUE_DEFAULT : USE_VALUE_SUPPLIED);
+        }
+        break;
       }
-      LOG(ERROR) << "No retries left";
-      if (IsControlledBooleanSetting(name)) {
-        // For boolean settings we can just set safe (false) values
-        // and continue as trusted.
-        // TODO(dilmah): after http://crosbug.com/9666 is fixed:
-        // replace it to USE_VALUE_SUPPLIED.
-        // Until that we use default value as a quick "fix" for:
-        // http://crosbug.com/9876 and http://crosbug.com/9818
-        // Since we cannot discriminate missing and spoofed setting ATM: assume
-        // that it is missing (common case for old images).
-        UpdateCacheBool(name, false, USE_VALUE_DEFAULT);
-      } else {
-        prefs->ClearPref((name + kTrustedSuffix).c_str());
-        return;
-      }
-    } else {
-      DCHECK(success || GetOwnershipStatus() == OWNERSHIP_NONE);
-      if (success)
-        VLOG(1) << "Retrieved cros setting " << name << "=" << value;
-      else
-        VLOG(1) << "We are disowned. Going default for cros setting " << name;
-      if (IsControlledBooleanSetting(name)) {
-        // Our boolean settings are true by default (if not explicitly present).
-        UpdateCacheBool(name, (value == kTrueIncantation),
-                        success ? USE_VALUE_SUPPLIED : USE_VALUE_DEFAULT);
-      } else if (IsControlledStringSetting(name)) {
-        UpdateCacheString(name, value,
-                          success ? USE_VALUE_SUPPLIED : USE_VALUE_DEFAULT);
+      case SignedSettings::OPERATION_FAILED:
+      default: {
+        DCHECK(code == SignedSettings::OPERATION_FAILED);
+        DCHECK(GetOwnershipStatus() == OWNERSHIP_TAKEN);
+        LOG(ERROR) << "On owned device: failed to retrieve cros "
+                      "setting, name=" << name;
+        if (retries_left_ > 0) {
+          retries_left_ -= 1;
+          StartFetchingSetting(name);
+          return;
+        }
+        LOG(ERROR) << "No retries left";
+        if (IsControlledBooleanSetting(name)) {
+          // For boolean settings we can just set safe (false) values
+          // and continue as trusted.
+          UpdateCacheBool(name, false, USE_VALUE_SUPPLIED);
+        } else {
+          prefs->ClearPref((name + kTrustedSuffix).c_str());
+          return;
+        }
+        break;
       }
     }
     prefs->SetBoolean((name + kTrustedSuffix).c_str(), true);
@@ -362,7 +356,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
         MessageLoop::current()->PostTask(FROM_HERE, callbacks_vector[i]);
       callbacks_vector.clear();
     }
-    if (success)
+    if (code == SignedSettings::SUCCESS)
       CrosSettings::Get()->FireObservers(name.c_str());
   }
 
