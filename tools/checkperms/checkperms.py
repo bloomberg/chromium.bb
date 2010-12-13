@@ -36,6 +36,7 @@ WHITELIST_EXTENSIONS = [
     'py',
     'rb',
     'sh',
+    'sed',
 ]
 
 # Files that end the following paths are whitelisted too.
