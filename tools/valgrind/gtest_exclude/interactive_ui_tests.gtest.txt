@@ -1,0 +1,9 @@
+# These test fail due to mmap Valgrind failures, see http://crbug.com/66677
+CollectedCookiesTest.DoubleDisplay
+CollectedCookiesTest.NavigateAway
+InfoBarsUITest.TestInfoBarsCloseOnNewTheme
+FastShutdown.SlowTermination
+MouseLeaveTest.TestOnMouseOut
+NotificationsPermissionTest.TestNoUserGestureInfobar
+NotificationsPermissionTest.TestUserGestureInfobar
+
