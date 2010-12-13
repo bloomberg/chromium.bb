@@ -30,7 +30,7 @@ static const char kRedirectLoopLearnMoreUrl[] =
 static const char kWeakDHKeyLearnMoreUrl[] =
     "http://sites.google.com/a/chromium.org/dev/err_ssl_weak_server_ephemeral_dh_key";
 static const char kESETLearnMoreUrl[] =
-    "http://sites.google.com/a/chromium.org/dev/err_eset_anti_virus_ssl_interception";
+    "http://kb.eset.com/esetkb/index?page=content&id=SOLN2588";
 
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE     = 0,
