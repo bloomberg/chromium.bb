@@ -284,9 +284,12 @@ struct InstInfo {
 };
 
 typedef struct NCDecoderState {
-  uint8_t *mpc;
-  uint8_t *nextbyte;
-  uint8_t dbindex;  /* index into decodebuffer */
+  uint8_t *mpc;      /* Pointer to beginning of instruction. */
+  uint8_t *nextbyte; /* Pointer to next byte to read. */
+  uint8_t length;    /* number of bytes read. */
+  uint8_t overflow;  /* number of bytes past limit read. */
+  uint8_t *mlimit;   /* Pointer to end of memory. */
+  uint8_t dbindex;   /* index into decodebuffer */
   NaClPcAddress vpc;
   const struct OpInfo *opinfo;
   struct InstInfo inst;
