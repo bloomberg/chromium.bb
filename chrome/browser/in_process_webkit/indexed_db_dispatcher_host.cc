@@ -926,6 +926,7 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnObjectStore(
     return;
 
   WebIDBObjectStore* object_store = idb_transaction->objectStore(name, *ec);
+  *object_store_id = object_store ? parent_->Add(object_store) : 0;
 }
 
 void IndexedDBDispatcherHost::
