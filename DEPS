@@ -50,8 +50,6 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/newlib@" + Var("tools_rev"),
   "third_party/scons":
     Var("native_client_trunk") + "/src/third_party/scons@" + Var("tools_rev"),
-  "third_party/sdl":
-    Var("native_client_trunk") + "/src/third_party/sdl@" + Var("tools_rev"),
   "third_party/selenium":
     (Var("native_client_trunk") + "/src/third_party/selenium@" +
      Var("tools_rev")),

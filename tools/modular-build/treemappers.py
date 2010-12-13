@@ -120,7 +120,6 @@ def NaClSourceSubset(input_tree):
       "native_client/tools/tests",
       "third_party/npapi",
       "third_party/scons",
-      "third_party/sdl",
       # Pulled in from SVN repos via DEPS
       "base",
       "build",
