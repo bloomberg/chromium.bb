@@ -358,7 +358,7 @@ TEST_F(ExtensionManifestTest, GetHomepageURL) {
   // can be different in testing, so we just check the part before id.
   extension = LoadAndExpectSuccess("homepage_google_hosted.json");
   EXPECT_TRUE(StartsWithASCII(extension->GetHomepageURL().spec(),
-                              "https://chrome.google.com/extensions/detail/",
+                              "https://chrome.google.com/webstore/detail/",
                               false));
 
   extension = LoadAndExpectSuccess("homepage_externally_hosted.json");

@@ -7,7 +7,7 @@
   },
   "app": {
     "launch": {
-      "web_url": "https://chrome.google.com/extensions"
+      "web_url": "https://chrome.google.com/webstore"
     },
     "urls": [
       "*://chrome.google.com/extensions",

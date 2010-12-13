@@ -280,7 +280,7 @@ const char* kIllegalPlugins =
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {
-const char* kGalleryBrowsePrefix = "https://chrome.google.com/extensions";
+const char* kGalleryBrowsePrefix = "https://chrome.google.com/webstore";
 const char* kMiniGalleryBrowsePrefix = "https://tools.google.com/chrome/";
 const char* kMiniGalleryDownloadPrefix = "https://dl-ssl.google.com/chrome/";
 }
