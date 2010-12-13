@@ -30,18 +30,23 @@
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/browser/device_orientation/message_filter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/mime_registry_message_filter.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
+#include "chrome/browser/renderer_host/blob_message_filter.h"
+#include "chrome/browser/renderer_host/file_utilities_message_filter.h"
 #include "chrome/browser/renderer_host/pepper_file_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -50,6 +55,8 @@
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
+#include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
+#include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
@@ -389,6 +396,15 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(
       new AppCacheDispatcherHost(profile()->GetRequestContext(), id()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
+  channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
+  channel_->AddFilter(
+      new SearchProviderInstallStateMessageFilter(id(), profile()));
+  channel_->AddFilter(new FileSystemDispatcherHost(profile()));
+  channel_->AddFilter(new device_orientation::MessageFilter());
+  channel_->AddFilter(
+      new BlobMessageFilter(id(), profile()->GetBlobStorageContext()));
+  channel_->AddFilter(new FileUtilitiesMessageFilter(id()));
+  channel_->AddFilter(new MimeRegistryMessageFilter());
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

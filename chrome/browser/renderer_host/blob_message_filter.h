@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_BLOB_DISPATCHER_HOST_H_
-#define CHROME_BROWSER_RENDERER_HOST_BLOB_DISPATCHER_HOST_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_BLOB_MESSAGE_FILTER_H_
+#define CHROME_BROWSER_RENDERER_HOST_BLOB_MESSAGE_FILTER_H_
 
 #include "base/hash_tables.h"
-#include "base/ref_counted.h"
+#include "chrome/browser/browser_message_filter.h"
 
 class ChromeBlobStorageContext;
 class GURL;
@@ -19,14 +19,16 @@ namespace webkit_blob {
 class BlobData;
 }
 
-class BlobDispatcherHost {
+class BlobMessageFilter : public BrowserMessageFilter {
  public:
-  BlobDispatcherHost(int process_id,
-                     ChromeBlobStorageContext* blob_storage_context);
-  ~BlobDispatcherHost();
+  BlobMessageFilter(int process_id,
+                    ChromeBlobStorageContext* blob_storage_context);
+  ~BlobMessageFilter();
 
-  void Shutdown();
-  bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
+  // BrowserMessageFilter implementation.
+  virtual void OnChannelClosing();
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
 
  private:
   void OnRegisterBlobUrl(const GURL& url,
@@ -43,7 +45,7 @@ class BlobDispatcherHost {
   // all of them when the renderer process dies.
   base::hash_set<std::string> blob_urls_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BlobDispatcherHost);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(BlobMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_BLOB_DISPATCHER_HOST_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_BLOB_MESSAGE_FILTER_H_

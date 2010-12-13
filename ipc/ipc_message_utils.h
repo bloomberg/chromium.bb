@@ -59,6 +59,8 @@ enum IPCMessageStart {
   ServiceMsgStart,
   PpapiMsgStart,
   FirefoxImporterUnittestMsgStart,
+  FileUtilitiesMsgStart,
+  MimeRegistryMsgStart,
 };
 
 class DictionaryValue;

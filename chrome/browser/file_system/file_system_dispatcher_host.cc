@@ -10,7 +10,6 @@
 #include "base/file_path.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -82,37 +81,25 @@ class BrowserFileSystemCallbackDispatcher
   int request_id_;
 };
 
-FileSystemDispatcherHost::FileSystemDispatcherHost(
-    IPC::Message::Sender* sender, Profile* profile)
-    : message_sender_(sender),
-      process_handle_(0),
-      shutdown_(false),
-      context_(profile->GetFileSystemContext()),
+FileSystemDispatcherHost::FileSystemDispatcherHost(Profile* profile)
+    : context_(profile->GetFileSystemContext()),
       host_content_settings_map_(profile->GetHostContentSettingsMap()),
       request_context_getter_(profile->GetRequestContext()) {
-  DCHECK(message_sender_);
 }
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
-    IPC::Message::Sender* sender, ChromeURLRequestContext* context)
-    : message_sender_(sender),
-      process_handle_(0),
-      shutdown_(false),
-      context_(context->browser_file_system_context()),
+    ChromeURLRequestContext* context)
+    : context_(context->browser_file_system_context()),
       host_content_settings_map_(context->host_content_settings_map()),
       request_context_(context) {
-  DCHECK(message_sender_);
 }
 
 FileSystemDispatcherHost::~FileSystemDispatcherHost() {
 }
 
-void FileSystemDispatcherHost::Init(base::ProcessHandle process_handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!shutdown_);
-  DCHECK(!process_handle_);
-  DCHECK(process_handle);
-  process_handle_ = process_handle;
+void FileSystemDispatcherHost::OnChannelConnected(int32 peer_pid) {
+  BrowserMessageFilter::OnChannelConnected(peer_pid);
+
   if (request_context_getter_.get()) {
     DCHECK(!request_context_.get());
     request_context_ = request_context_getter_->GetURLRequestContext();
@@ -120,14 +107,8 @@ void FileSystemDispatcherHost::Init(base::ProcessHandle process_handle) {
   DCHECK(request_context_.get());
 }
 
-void FileSystemDispatcherHost::Shutdown() {
-  message_sender_ = NULL;
-  shutdown_ = true;
-}
-
 bool FileSystemDispatcherHost::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
-  DCHECK(!shutdown_);
   *message_was_ok = true;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(FileSystemDispatcherHost, message, *message_was_ok)
@@ -249,14 +230,6 @@ void FileSystemDispatcherHost::OnCancel(
     Send(new ViewMsg_FileSystem_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
   }
-}
-
-void FileSystemDispatcherHost::Send(IPC::Message* message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!shutdown_ && message_sender_)
-    message_sender_->Send(message);
-  else
-    delete message;
 }
 
 SandboxedFileSystemOperation* FileSystemDispatcherHost::GetNewOperation(

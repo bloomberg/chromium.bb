@@ -5,10 +5,6 @@
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 
 namespace speech_input {
@@ -108,10 +104,9 @@ int SpeechInputDispatcherHost::SpeechInputCallers::request_id(int id) {
 SpeechInputManager::AccessorMethod*
     SpeechInputDispatcherHost::manager_accessor_ = &SpeechInputManager::Get;
 
-SpeechInputDispatcherHost::SpeechInputDispatcherHost(
-    int resource_message_filter_process_id)
-    : resource_message_filter_process_id_(resource_message_filter_process_id) {
-  // This is initialized by ResourceMessageFilter. Do not add any non-trivial
+SpeechInputDispatcherHost::SpeechInputDispatcherHost(int render_process_id)
+    : render_process_id_(render_process_id) {
+  // This is initialized by Browser. Do not add any non-trivial
   // initialization here, instead do it lazily when required (e.g. see the
   // method |manager()|) or add an Init() method.
 }
@@ -124,10 +119,10 @@ SpeechInputManager* SpeechInputDispatcherHost::manager() {
 }
 
 bool SpeechInputDispatcherHost::OnMessageReceived(
-    const IPC::Message& msg, bool* msg_was_ok) {
+    const IPC::Message& message, bool* message_was_ok) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(SpeechInputDispatcherHost, msg, *msg_was_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(SpeechInputDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_StartRecognition,
                         OnStartRecognition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_CancelRecognition,
@@ -146,9 +141,9 @@ void SpeechInputDispatcherHost::OnStartRecognition(
     const std::string& language,
     const std::string& grammar) {
   int caller_id = g_speech_input_callers.Get().CreateId(
-      resource_message_filter_process_id_, render_view_id, request_id);
+      render_process_id_, render_view_id, request_id);
   manager()->StartRecognition(this, caller_id,
-                              resource_message_filter_process_id_,
+                              render_process_id_,
                               render_view_id, element_rect,
                               language, grammar);
 }
@@ -156,7 +151,7 @@ void SpeechInputDispatcherHost::OnStartRecognition(
 void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,
                                                     int request_id) {
   int caller_id = g_speech_input_callers.Get().GetId(
-      resource_message_filter_process_id_, render_view_id, request_id);
+      render_process_id_, render_view_id, request_id);
   if (caller_id) {
     manager()->CancelRecognition(caller_id);
     // Request sequence ended so remove mapping.
@@ -167,16 +162,9 @@ void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,
 void SpeechInputDispatcherHost::OnStopRecording(int render_view_id,
                                                 int request_id) {
   int caller_id = g_speech_input_callers.Get().GetId(
-      resource_message_filter_process_id_, render_view_id, request_id);
+      render_process_id_, render_view_id, request_id);
   if (caller_id)
     manager()->StopRecording(caller_id);
-}
-
-void SpeechInputDispatcherHost::SendMessageToRenderView(IPC::Message* message,
-                                                        int render_view_id) {
-  CallRenderViewHost(
-      resource_message_filter_process_id_, render_view_id,
-      &RenderViewHost::Send, message);
 }
 
 void SpeechInputDispatcherHost::SetRecognitionResult(
@@ -186,11 +174,9 @@ void SpeechInputDispatcherHost::SetRecognitionResult(
   int caller_render_view_id =
       g_speech_input_callers.Get().render_view_id(caller_id);
   int caller_request_id = g_speech_input_callers.Get().request_id(caller_id);
-  SendMessageToRenderView(
-      new ViewMsg_SpeechInput_SetRecognitionResult(caller_render_view_id,
-                                                   caller_request_id,
-                                                   result),
-      caller_render_view_id);
+  Send(new ViewMsg_SpeechInput_SetRecognitionResult(caller_render_view_id,
+                                                    caller_request_id,
+                                                    result));
   VLOG(1) << "SpeechInputDispatcherHost::SetRecognitionResult exit";
 }
 
@@ -200,10 +186,8 @@ void SpeechInputDispatcherHost::DidCompleteRecording(int caller_id) {
   int caller_render_view_id =
     g_speech_input_callers.Get().render_view_id(caller_id);
   int caller_request_id = g_speech_input_callers.Get().request_id(caller_id);
-  SendMessageToRenderView(
-      new ViewMsg_SpeechInput_RecordingComplete(caller_render_view_id,
-                                                caller_request_id),
-      caller_render_view_id);
+  Send(new ViewMsg_SpeechInput_RecordingComplete(caller_render_view_id,
+                                                 caller_request_id));
   VLOG(1) << "SpeechInputDispatcherHost::DidCompleteRecording exit";
 }
 
@@ -213,10 +197,8 @@ void SpeechInputDispatcherHost::DidCompleteRecognition(int caller_id) {
   int caller_render_view_id =
     g_speech_input_callers.Get().render_view_id(caller_id);
   int caller_request_id = g_speech_input_callers.Get().request_id(caller_id);
-  SendMessageToRenderView(
-      new ViewMsg_SpeechInput_RecognitionComplete(caller_render_view_id,
-                                                  caller_request_id),
-      caller_render_view_id);
+  Send(new ViewMsg_SpeechInput_RecognitionComplete(caller_render_view_id,
+                                                   caller_request_id));
   // Request sequence ended, so remove mapping.
   g_speech_input_callers.Get().RemoveId(caller_id);
   VLOG(1) << "SpeechInputDispatcherHost::DidCompleteRecognition exit";

@@ -1031,3 +1031,7 @@ void class_name::OnMessageReceived(const IPC::Message& msg) \
 #define IPC_END_MESSAGE_MAP_EX() \
   } \
 }
+
+// This corresponds to an enum value from IPCMessageStart.
+#define IPC_MESSAGE_CLASS(message) \
+  message.type() >> 16

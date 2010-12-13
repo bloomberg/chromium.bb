@@ -8,8 +8,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/database_util.h"
 #include "chrome/common/file_system/webfilesystem_impl.h"
+#include "chrome/common/file_utilities_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/mime_registry_messages.h"
 #include "chrome/common/webblobregistry_impl.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/worker/worker_thread.h"
@@ -55,7 +57,7 @@ static bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
 
 bool WorkerWebKitClientImpl::FileUtilities::getFileSize(const WebString& path,
                                                         long long& result) {
-  if (SendSyncMessageFromAnyThread(new ViewHostMsg_GetFileSize(
+  if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileSize(
           webkit_glue::WebStringToFilePath(path),
           reinterpret_cast<int64*>(&result)))) {
     return result >= 0;
@@ -69,8 +71,8 @@ bool WorkerWebKitClientImpl::FileUtilities::getFileModificationTime(
     const WebString& path,
     double& result) {
   base::Time time;
-  if (SendSyncMessageFromAnyThread(new ViewHostMsg_GetFileModificationTime(
-          webkit_glue::WebStringToFilePath(path), &time))) {
+  if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileModificationTime(
+              webkit_glue::WebStringToFilePath(path), &time))) {
     result = time.ToDoubleT();
     return !time.is_null();
   }
@@ -228,7 +230,7 @@ WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsNonImageMIMEType(
 WebString WorkerWebKitClientImpl::mimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
-  SendSyncMessageFromAnyThread(new ViewHostMsg_GetMimeTypeFromExtension(
+  SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromExtension(
       webkit_glue::WebStringToFilePathString(file_extension), &mime_type));
   return ASCIIToUTF16(mime_type);
 }
@@ -236,7 +238,7 @@ WebString WorkerWebKitClientImpl::mimeTypeForExtension(
 WebString WorkerWebKitClientImpl::mimeTypeFromFile(
     const WebString& file_path) {
   std::string mime_type;
-  SendSyncMessageFromAnyThread(new ViewHostMsg_GetMimeTypeFromFile(
+  SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromFile(
       FilePath(webkit_glue::WebStringToFilePathString(file_path)),
       &mime_type));
   return ASCIIToUTF16(mime_type);
@@ -246,8 +248,8 @@ WebString WorkerWebKitClientImpl::preferredExtensionForMIMEType(
     const WebString& mime_type) {
   FilePath::StringType file_extension;
   SendSyncMessageFromAnyThread(
-      new ViewHostMsg_GetPreferredExtensionForMimeType(UTF16ToASCII(mime_type),
-          &file_extension));
+      new MimeRegistryMsg_GetPreferredExtensionForMimeType(
+          UTF16ToASCII(mime_type), &file_extension));
   return webkit_glue::FilePathStringToWebString(file_extension);
 }
 

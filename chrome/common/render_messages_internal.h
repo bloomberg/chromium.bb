@@ -1931,17 +1931,6 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavIcon,
                     bool /* true if there was a network error */,
                     SkBitmap /* image_data */)
 
-// Sent to query MIME information.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetMimeTypeFromExtension,
-                            FilePath::StringType /* extension */,
-                            std::string /* mime_type */)
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetMimeTypeFromFile,
-                            FilePath /* file_path */,
-                            std::string /* mime_type */)
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPreferredExtensionForMimeType,
-                            std::string /* mime_type */,
-                            FilePath::StringType /* extension */)
-
 // Get the CPBrowsingContext associated with the renderer sending this
 // message.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPBrowsingContext,
@@ -2659,23 +2648,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionDidCompleteTaskEvents,
 // WebIDBTransaction::~WebIDBTransaction() message.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionDestroyed,
                      int32 /* idb_transaction_id */)
-
-// Get file size in bytes. Set result to -1 if failed to get the file size.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,
-                            FilePath /* path */,
-                            int64 /* result */)
-
-// Get file modification time in seconds. Set result to 0 if failed to get the
-// file modification time.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileModificationTime,
-                            FilePath /* path */,
-                            base::Time /* result */)
-
-// Open the file.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_OpenFile,
-                            FilePath /* path */,
-                            int /* mode */,
-                            IPC::PlatformFileForTransit /* result */)
 
 // Opens a file asynchronously. The response returns a file descriptor
 // and an error code from base/platform_file.h.

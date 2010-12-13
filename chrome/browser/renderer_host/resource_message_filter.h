@@ -31,22 +31,17 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
-class BlobDispatcherHost;
 class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
-class FileSystemDispatcherHost;
-class FileUtilitiesDispatcherHost;
 struct FontDescriptor;
 class GeolocationDispatcherHostOld;
 class HostZoomMap;
 class IndexedDBDispatcherHost;
-class MimeRegistryDispatcher;
 class NotificationsPrefsCache;
 class PpapiPluginProcessHost;
 class Profile;
 class RenderWidgetHelper;
-class SearchProviderInstallStateDispatcherHost;
 class URLRequestContextGetter;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
@@ -57,10 +52,6 @@ struct PlatformFileInfo;
 class SharedMemory;
 }
 
-namespace device_orientation {
-class DispatcherHost;
-}
-
 namespace net {
 class CookieStore;
 }
@@ -68,10 +59,6 @@ class CookieStore;
 namespace printing {
 class PrinterQuery;
 class PrintJobManager;
-}
-
-namespace speech_input {
-class SpeechInputDispatcherHost;
 }
 
 namespace webkit_glue {
@@ -473,32 +460,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
 
-  // Used to handle speech input related messages.
-  scoped_refptr<speech_input::SpeechInputDispatcherHost>
-      speech_input_dispatcher_host_;
-
   // Used to handle geolocation-related messages.
   scoped_refptr<GeolocationDispatcherHostOld> geolocation_dispatcher_host_;
-
-  // Used to handle search provider related messages.
-  scoped_ptr<SearchProviderInstallStateDispatcherHost>
-      search_provider_install_state_dispatcher_host_;
-
-  // Used to handle device orientation related messages.
-  scoped_refptr<device_orientation::DispatcherHost>
-      device_orientation_dispatcher_host_;
-
-  // Handles FileSystem API related messages
-  scoped_refptr<FileSystemDispatcherHost> file_system_dispatcher_host_;
-
-  // Handles blob related messages.
-  scoped_ptr<BlobDispatcherHost> blob_dispatcher_host_;
-
-  // Handles file utilities messages.
-  scoped_refptr<FileUtilitiesDispatcherHost> file_utilities_dispatcher_host_;
-
-  // Handles mime registry requests.
-  scoped_refptr<MimeRegistryDispatcher> mime_registry_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

@@ -9,9 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "base/process.h"
-#include "base/ref_counted.h"
-#include "ipc/ipc_message.h"
+#include "chrome/browser/browser_message_filter.h"
 #include "webkit/fileapi/file_system_types.h"
 
 namespace base {
@@ -33,20 +31,19 @@ namespace fileapi {
 class SandboxedFileSystemOperation;
 }
 
-class FileSystemDispatcherHost
-    : public base::RefCountedThreadSafe<FileSystemDispatcherHost> {
+class FileSystemDispatcherHost : public BrowserMessageFilter {
  public:
   // Used by the renderer.
-  FileSystemDispatcherHost(IPC::Message::Sender* sender,
-                           Profile* profile);
+  explicit FileSystemDispatcherHost(Profile* profile);
   // Used by the worker, since it has the context handy already.
-  FileSystemDispatcherHost(IPC::Message::Sender* sender,
-                           ChromeURLRequestContext* context);
+  explicit FileSystemDispatcherHost(ChromeURLRequestContext* context);
   ~FileSystemDispatcherHost();
-  void Init(base::ProcessHandle process_handle);
-  void Shutdown();
 
-  bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
+  // BrowserMessageFilter implementation.
+  virtual void OnChannelConnected(int32 peer_pid);
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
+
 
   void OnOpenFileSystem(int request_id,
                         const GURL& origin_url,
@@ -78,20 +75,11 @@ class FileSystemDispatcherHost
                    const base::Time& last_access_time,
                    const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);
-  void Send(IPC::Message* message);
   void UnregisterOperation(int request_id);
 
  private:
   // Creates a new SandboxedFileSystemOperation.
   fileapi::SandboxedFileSystemOperation* GetNewOperation(int request_id);
-
-  // The sender to be used for sending out IPC messages.
-  IPC::Message::Sender* message_sender_;
-
-  // The handle of this process.
-  base::ProcessHandle process_handle_;
-
-  bool shutdown_;
 
   scoped_refptr<BrowserFileSystemContext> context_;
 

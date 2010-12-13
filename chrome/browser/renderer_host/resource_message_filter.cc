@@ -19,10 +19,8 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/clipboard_dispatcher.h"
-#include "chrome/browser/device_orientation/dispatcher_host.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host_old.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/gpu_process_host.h"
@@ -30,7 +28,6 @@
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
-#include "chrome/browser/mime_registry_dispatcher.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -43,15 +40,11 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
-#include "chrome/browser/renderer_host/file_utilities_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
-#include "chrome/browser/search_engines/search_provider_install_state_dispatcher_host.h"
-#include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
@@ -268,26 +261,9 @@ ResourceMessageFilter::ResourceMessageFilter(
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_dispatcher_host_(
-          new speech_input::SpeechInputDispatcherHost(this->id()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
           GeolocationDispatcherHostOld::New(
-              this->id(), profile->GetGeolocationPermissionContext()))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          search_provider_install_state_dispatcher_host_(
-              new SearchProviderInstallStateDispatcherHost(this, profile,
-                                                           child_id))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(device_orientation_dispatcher_host_(
-          new device_orientation::DispatcherHost(this->id()))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
-          new FileSystemDispatcherHost(this, profile))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
-          new BlobDispatcherHost(
-              this->id(), profile->GetBlobStorageContext()))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(file_utilities_dispatcher_host_(
-          new FileUtilitiesDispatcherHost(this, this->id()))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(mime_registry_dispatcher_(
-          new MimeRegistryDispatcher(this))) {
+              this->id(), profile->GetGeolocationPermissionContext()))) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
@@ -314,18 +290,6 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 
   // Shut down the database dispatcher host.
   db_dispatcher_host_->Shutdown();
-
-  // Shut down the async file_system dispatcher host.
-  file_system_dispatcher_host_->Shutdown();
-
-  // Shut down the blob dispatcher host.
-  blob_dispatcher_host_->Shutdown();
-
-  // Shut down the async file_utilities dispatcher host.
-  file_utilities_dispatcher_host_->Shutdown();
-
-  // Shut down the mime registry dispatcher host.
-  mime_registry_dispatcher_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -357,8 +321,6 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   dom_storage_dispatcher_host_->Init(id(), handle());
   indexed_db_dispatcher_host_->Init(id(), handle());
   db_dispatcher_host_->Init(handle());
-  file_system_dispatcher_host_->Init(handle());
-  file_utilities_dispatcher_host_->Init(handle());
 }
 
 void ResourceMessageFilter::OnChannelError() {
@@ -388,15 +350,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(
           msg, this, next_route_id_callback(), &msg_is_ok) ||
-      geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      speech_input_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      search_provider_install_state_dispatcher_host_->OnMessageReceived(
-          msg, &msg_is_ok) ||
-      device_orientation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      file_system_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      blob_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      file_utilities_dispatcher_host_->OnMessageReceived(msg) ||
-      mime_registry_dispatcher_->OnMessageReceived(msg);
+      geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ;
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

@@ -20,13 +20,9 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 
-class BlobDispatcherHost;
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
 class DatabaseDispatcherHost;
-class FileSystemDispatcherHost;
-class FileUtilitiesDispatcherHost;
-class MimeRegistryDispatcher;
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
@@ -215,10 +211,6 @@ class WorkerProcessHost : public BrowserChildProcessHost {
 
   scoped_refptr<ChromeURLRequestContext> request_context_;
   scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;
-  scoped_ptr<BlobDispatcherHost> blob_dispatcher_host_;
-  scoped_refptr<FileSystemDispatcherHost> file_system_dispatcher_host_;
-  scoped_refptr<FileUtilitiesDispatcherHost> file_utilities_dispatcher_host_;
-  scoped_refptr<MimeRegistryDispatcher> mime_registry_dispatcher_;
 
   // Holds all the IPC message filters.  Since the worker process host is on the
   // IO thread, we don't have a IPC::ChannelProxy and so we manage filters

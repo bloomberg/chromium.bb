@@ -12,6 +12,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_util.h"
 #include "chrome/common/file_system/webfilesystem_impl.h"
+#include "chrome/common/file_utilities_messages.h"
+#include "chrome/common/mime_registry_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/webblobregistry_impl.h"
 #include "chrome/common/webmessageportchannel_impl.h"
@@ -324,8 +326,9 @@ WebString RendererWebKitClientImpl::MimeRegistry::mimeTypeForExtension(
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   std::string mime_type;
-  RenderThread::current()->Send(new ViewHostMsg_GetMimeTypeFromExtension(
-      webkit_glue::WebStringToFilePathString(file_extension), &mime_type));
+  RenderThread::current()->Send(
+      new MimeRegistryMsg_GetMimeTypeFromExtension(
+          webkit_glue::WebStringToFilePathString(file_extension), &mime_type));
   return ASCIIToUTF16(mime_type);
 
 }
@@ -338,7 +341,7 @@ WebString RendererWebKitClientImpl::MimeRegistry::mimeTypeFromFile(
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   std::string mime_type;
-  RenderThread::current()->Send(new ViewHostMsg_GetMimeTypeFromFile(
+  RenderThread::current()->Send(new MimeRegistryMsg_GetMimeTypeFromFile(
       FilePath(webkit_glue::WebStringToFilePathString(file_path)),
       &mime_type));
   return ASCIIToUTF16(mime_type);
@@ -354,8 +357,8 @@ WebString RendererWebKitClientImpl::MimeRegistry::preferredExtensionForMIMEType(
   // these calls over to the browser process.
   FilePath::StringType file_extension;
   RenderThread::current()->Send(
-      new ViewHostMsg_GetPreferredExtensionForMimeType(UTF16ToASCII(mime_type),
-          &file_extension));
+      new MimeRegistryMsg_GetPreferredExtensionForMimeType(
+          UTF16ToASCII(mime_type), &file_extension));
   return webkit_glue::FilePathStringToWebString(file_extension);
 }
 
@@ -363,7 +366,7 @@ WebString RendererWebKitClientImpl::MimeRegistry::preferredExtensionForMIMEType(
 
 bool RendererWebKitClientImpl::FileUtilities::getFileSize(const WebString& path,
                                                        long long& result) {
-  if (SendSyncMessageFromAnyThread(new ViewHostMsg_GetFileSize(
+  if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileSize(
           webkit_glue::WebStringToFilePath(path),
           reinterpret_cast<int64*>(&result)))) {
     return result >= 0;
@@ -384,7 +387,7 @@ bool RendererWebKitClientImpl::FileUtilities::getFileModificationTime(
     const WebString& path,
     double& result) {
   base::Time time;
-  if (SendSyncMessageFromAnyThread(new ViewHostMsg_GetFileModificationTime(
+  if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileModificationTime(
           webkit_glue::WebStringToFilePath(path), &time))) {
     result = time.ToDoubleT();
     return !time.is_null();
@@ -398,7 +401,7 @@ base::PlatformFile RendererWebKitClientImpl::FileUtilities::openFile(
     const WebString& path,
     int mode) {
   IPC::PlatformFileForTransit handle = IPC::InvalidPlatformFileForTransit();
-  SendSyncMessageFromAnyThread(new ViewHostMsg_OpenFile(
+  SendSyncMessageFromAnyThread(new FileUtilitiesMsg_OpenFile(
       webkit_glue::WebStringToFilePath(path), mode, &handle));
   return IPC::PlatformFileForTransitToPlatformFile(handle);
 }

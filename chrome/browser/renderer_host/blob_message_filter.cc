@@ -2,29 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/blob_dispatcher_host.h"
+#include "chrome/browser/renderer_host/blob_message_filter.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
-#include "ipc/ipc_message.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 
-BlobDispatcherHost::BlobDispatcherHost(
+BlobMessageFilter::BlobMessageFilter(
     int process_id,
     ChromeBlobStorageContext* blob_storage_context)
     : process_id_(process_id),
       blob_storage_context_(blob_storage_context) {
 }
 
-BlobDispatcherHost::~BlobDispatcherHost() {
+BlobMessageFilter::~BlobMessageFilter() {
 }
 
-void BlobDispatcherHost::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+void BlobMessageFilter::OnChannelClosing() {
+  BrowserMessageFilter::OnChannelClosing();
 
   // Unregister all the blob URLs that are previously registered in this
   // process.
@@ -34,13 +32,12 @@ void BlobDispatcherHost::Shutdown() {
   }
 }
 
-bool BlobDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                           bool* msg_is_ok) {
+bool BlobMessageFilter::OnMessageReceived(const IPC::Message& message,
+                                          bool* message_was_ok) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  *msg_is_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(BlobDispatcherHost, message, *msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(BlobMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterBlobUrl, OnRegisterBlobUrl)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterBlobUrlFrom, OnRegisterBlobUrlFrom)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnregisterBlobUrl, OnUnregisterBlobUrl)
@@ -50,7 +47,7 @@ bool BlobDispatcherHost::OnMessageReceived(const IPC::Message& message,
 }
 
 // Check if the child process has been granted permission to register the files.
-bool BlobDispatcherHost::CheckPermission(
+bool BlobMessageFilter::CheckPermission(
     webkit_blob::BlobData* blob_data) const {
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
@@ -65,7 +62,7 @@ bool BlobDispatcherHost::CheckPermission(
   return true;
 }
 
-void BlobDispatcherHost::OnRegisterBlobUrl(
+void BlobMessageFilter::OnRegisterBlobUrl(
     const GURL& url, const scoped_refptr<webkit_blob::BlobData>& blob_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!CheckPermission(blob_data.get()))
@@ -74,14 +71,14 @@ void BlobDispatcherHost::OnRegisterBlobUrl(
   blob_urls_.insert(url.spec());
 }
 
-void BlobDispatcherHost::OnRegisterBlobUrlFrom(
+void BlobMessageFilter::OnRegisterBlobUrlFrom(
     const GURL& url, const GURL& src_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->RegisterBlobUrlFrom(url, src_url);
   blob_urls_.insert(url.spec());
 }
 
-void BlobDispatcherHost::OnUnregisterBlobUrl(const GURL& url) {
+void BlobMessageFilter::OnUnregisterBlobUrl(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->UnregisterBlobUrl(url);
   blob_urls_.erase(url.spec());
